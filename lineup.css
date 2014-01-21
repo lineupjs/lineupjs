@@ -1,0 +1,25 @@
+div.bar {
+  display: inline-block;
+  width: 20px;
+  height: 75px;
+  background-color: blue;
+  margin-right: 2px;
+}
+
+.axis path,
+.axis line {
+    fill:none;
+    stroke: gray;
+    shape-rendering: crispEdges;
+}
+.axis text{
+    fill: olive;
+}
+
+.bar {
+  fill: steelblue;
+}
+
+.bar:hover {
+  fill: orange;
+}
