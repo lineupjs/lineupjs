@@ -9,12 +9,11 @@
 	<!--<script src="js/jquery-ui-1.10.4.custom.js"></script>-->
 	<script src="js/d3.v3.js"></script>
 	<script src="lineup.js"></script>
-	
-	<link href="data.css" rel="stylesheet">
 <body>
 	<table id="wsv" >
 	</table>
 	<script>
+		d3.select("head").append("link").attr("href","data.css").attr("rel","stylesheet");
 		d3.json("data.json", function(desc) {
 			LineUp("#wsv", desc.file, desc.columns);
 		})

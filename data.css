@@ -7,6 +7,13 @@ th#max {
 	background-color : lightgrey;
 }
 
+th#stacked {
+	background-color : #17becf;
+}
+td div.stacked {
+	background-color : #17becf;	
+}
+
 th#academic {
 	background-color : #1f77b4;
 }

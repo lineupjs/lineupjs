@@ -145,12 +145,12 @@ LineUpStacked.prototype = $.extend({},LineUpComposite.prototype, LineUpNumber.pr
 		var w = this.weights();
 		var s = 0;
 		for (var i = this.children.length - 1; i >= 0; i--) {
-			s += w[i] * this.children[i].getN(row);
+			s += w[i] * this.children[i].getS(row);
 		};
 		return s;
 	},
 	get : function(row) {
-		return ""+this.getN(row);
+		return d3.round(this.getN(row),3);
 	}
 });
 

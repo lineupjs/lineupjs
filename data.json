@@ -7,42 +7,48 @@
 			"width" : 200
 		},
 		{	
-			"type" : "max",
-			"id" : "max",
-			"label" : "max (academic, employer)",
+			"type" : "stacked",
+			"id" : "stacked",
+			"label" : "Combined",
 			"children" : [
 				{	
 					"column": "academic",
 					"type" : "number",
+					"width" : 150,
 					"domain" : [0,100]
 				},
 				{	
 					"column": "employer",
 					"type" : "number",
+					"width" : 230,
+					"domain" : [0,100]
+				},
+				{	
+					"column": "faculty",
+					"type" : "number",
+					"width" : 160,
+					"domain" : [0,100]
+				},
+				{	
+					"column": "citations",
+					"type" : "number",
+					"width" : 140,
+					"domain" : [0,100]
+				},
+				{	
+					"column": "international",
+					"type" : "number",
+					"width" : 320,
+					"domain" : [0,100]
+				},
+				{	
+					"column": "internationalstudents",
+					"label" : "international students",
+					"type" : "number",
+					"width" : 300,
 					"domain" : [0,100]
 				}		
 			]
-		},
-		{	
-			"column": "faculty",
-			"type" : "number",
-			"domain" : [0,100]
-		},
-		{	
-			"column": "international",
-			"type" : "number",
-			"domain" : [0,100]
-		},
-		{	
-			"column": "internationalstudents",
-			"label" : "international students",
-			"type" : "number",
-			"domain" : [0,100]
-		},
-		{	
-			"column": "citations",
-			"type" : "number",
-			"domain" : [0,100]
 		}
 	]
 }
