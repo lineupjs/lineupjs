@@ -2,6 +2,9 @@
 	"file" : "wur2013.txt",
 	"columns" : [
 		{	
+			"type" : "rank"
+		},
+		{	
 			"column": "schoolname",
 			"type" : "string",
 			"width" : 200

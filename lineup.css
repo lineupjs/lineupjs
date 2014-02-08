@@ -27,3 +27,7 @@ table.lineup tr:hover td div {
 table.lineup tr:hover {
   background-color: orange;
 }
+
+th#rank {
+  background-color : lightgrey;
+}
