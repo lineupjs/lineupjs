@@ -1,5 +1,6 @@
 {
 	"file" : "wur2013.txt",
+	"css" : "data.css",
 	"columns" : [
 		{	
 			"type" : "rank"

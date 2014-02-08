@@ -13,8 +13,8 @@
 	<table id="wsv" >
 	</table>
 	<script>
-		d3.select("head").append("link").attr("href","data.css").attr("rel","stylesheet");
 		d3.json("data.json", function(desc) {
+			d3.select("head").append("link").attr("href",desc.css).attr("rel","stylesheet");
 			LineUp("#wsv", desc.file, desc.columns);
 		})
 		
