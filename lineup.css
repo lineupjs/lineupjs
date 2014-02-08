@@ -16,6 +16,12 @@ table.lineup th.sortBy {
 table.lineup td div {
   height: 20px;
   overflow: visible;
+  font-size: 0; 
+  vertical-align: middle;
+}
+
+table.lineup tr:hover td div {
+  font-size: 12px;
 }
 
 table.lineup tr:hover {
