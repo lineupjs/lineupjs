@@ -1,25 +1,17 @@
-div.bar {
-  display: inline-block;
-  width: 20px;
-  height: 75px;
-  background-color: blue;
-  margin-right: 2px;
+table.lineup {
+  table-layout: fixed;
+}
+table.lineup th, table.lineup td {
+  overflow: hidden;
+}
+table.lineup th.sortBy {
+  background-color: red;
+}
+table.lineup td div {
+  height: 20px;
+  overflow: visible;
 }
 
-.axis path,
-.axis line {
-    fill:none;
-    stroke: gray;
-    shape-rendering: crispEdges;
-}
-.axis text{
-    fill: olive;
-}
-
-.bar {
-  fill: steelblue;
-}
-
-.bar:hover {
-  fill: orange;
+table.lineup td div:hover {
+  background-color: orange;
 }
