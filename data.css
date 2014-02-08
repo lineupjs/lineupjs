@@ -1,0 +1,49 @@
+
+th#schoolname {
+	background-color : lightgrey;
+}
+
+th#max {
+	background-color : lightgrey;
+}
+th#academic {
+	background-color : #1f77b4;
+}
+td div.academic {
+	background-color : #1f77b4;	
+}
+
+th#employer {
+	background-color : #2ca02c;
+}
+td div.employer {
+	background-color : #2ca02c;	
+}
+
+th#faculty {
+	background-color : #9467bd;
+}
+td div.faculty {
+	background-color : #9467bd;	
+}
+
+th#international {
+	background-color : #8c564b;
+}
+td div.international {
+	background-color : #8c564b;	
+}
+
+th#internationalstudents {
+	background-color : #e377c2;
+}
+td div.internationalstudents {
+	background-color : #e377c2;
+}
+
+th#citations {
+	background-color : #7f7f7f;
+}
+td div.citations {
+	background-color : #7f7f7f;	
+}

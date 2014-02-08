@@ -1,17 +1,23 @@
 table.lineup {
   table-layout: fixed;
 }
-table.lineup th, table.lineup td {
+table.lineup th {
+  overflow: hidden;
+}
+table.lineup th:hover {
+  cursor: pointer;
+}
+table.lineup td {
   overflow: hidden;
 }
 table.lineup th.sortBy {
-  background-color: red;
+  border: 3px solid orange;
 }
 table.lineup td div {
   height: 20px;
   overflow: visible;
 }
 
-table.lineup td div:hover {
+table.lineup tr:hover {
   background-color: orange;
 }

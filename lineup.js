@@ -1,28 +1,34 @@
 function LineUpColumn(desc) {
 	this._desc = desc;
 	this.column = desc.column;
-	this.color = desc.color;
 	this.width = desc.width || 100;
 	this.label= desc.label || desc.column;
+	this.id = desc.id || this.column;
 }
 LineUpColumn.prototype = {
-	load : function($cell, value) {
-		this.update($cell, value)
+	load : function($cell, row) {
+		this.update($cell, row)
 	},
-	update : function($cell, value) {
-		$cell.text(value)	
+	update : function($cell, row) {
+		$cell.text(this.get(row))	
 	},
 	loadTh : function($cell) {
-		$cell.attr("id",this.column);
-		$cell.text(this.label)
+		$cell.attr("id",this.id)
+			.text(this.label)
+	},
+	get : function(row) {
+		return row[this.column];
 	},
 	loadCol : function($col) {
 		$col.attr("width",this.width)
 	},
 	sortBy : function(a,b) {
-		var va = a[this.column];
-		var vb = b[this.column];
+		var va = this.get(a);
+		var vb = this.get(b);
 		return d3.ascending(va,vb);
+	},
+	filterBy : function(row) {
+		return true;
 	}
 };
 
@@ -30,33 +36,123 @@ function LineUpNumber(desc) {
 	LineUpColumn.call(this,desc)
 
 	this.scale = d3.scale.linear().domain(desc.domain).range([0,1]);
+	this.filter = desc.filter || [0,100];
 }
 LineUpNumber.prototype = $.extend({},LineUpColumn.prototype,{
-	load : function($cell, value) {
+	load : function($cell, row) {
 		$cell.append("div");
-		this.update($cell, value);
+		this.update($cell, row);
 	},
-	update : function($cell, value) {
-		var n = +value;
+	update : function($cell, row) {
 		$cell.select("div")
-			.style("width",this.scale(n)*100+"%")
-			.style("background-color",this.color)
-			.text(value);
+			.attr("class",this.id)
+			.style("width",this.getS(row)*100+"%")
+			.text(this.get(row));
+	},
+	getS : function(row) {
+		return this.scale(this.getN(row));
+	},
+	getN : function(row) {
+		return +this.get(row);
 	},
 	sortBy : function(a,b) {
-		var va = +a[this.column];
-		var vb = +b[this.column];
+		var va = this.getN(a);
+		var vb = this.getN(b);
 		return d3.descending(va,vb);
+	},
+	filterBy : function(row) {
+		var n = this.getN(row);
+		return n >= this.filter[0] && n <= this.filter[1];
 	}
 });
 
 function LineUpString(desc) {
 	LineUpColumn.call(this,desc)
+	this.filter = desc.filter || undefined;
 }
 LineUpString.prototype = $.extend({},LineUpColumn.prototype, {
-
+	filterBy : function(value) {
+		if (!this.filter)
+			return true
+		return value.contains(this.filter);
+	}
 });
 
+function LineUpComposite(desc, toColumn) {
+	LineUpColumn.call(this,desc)
+	this.children = desc.children.map(toColumn);
+}
+LineUpComposite.prototype = $.extend({},LineUpColumn.prototype, {
+	
+});
+
+function LineUpMax(desc,toColumn) {
+	LineUpComposite.call(this,desc,toColumn)
+	this.filter = desc.filter || [0,1];
+}
+LineUpMax.prototype = $.extend({},LineUpComposite.prototype, LineUpNumber.prototype, {
+	select : function(row) {
+		var m = -1;
+		var mi = 0;
+		for (var i = this.children.length - 1; i >= 0; i--) {
+			var child = this.children[i];
+			var cm = child.getS(row);
+			if (cm > m) {
+				m = cm;
+				mi = i;
+			}
+		};
+		var best = this.children[mi];
+		return best;
+	},
+	update : function($cell, row) {
+		LineUpNumber.prototype.update.call(this,$cell,row);
+		$cell.select("div")
+			.classed(this.select(row).column,true);
+	},
+	getS : function(row) {
+		return this.getN(row);
+	},
+	getN : function(row) {
+		return this.select(row).getS(row);
+	},
+	get : function(row) {
+		return this.select(row).get(row);
+	}
+});
+
+function LineUpStacked(desc,toColumn) {
+	LineUpComposite.call(this,desc,toColumn)
+	this.filter = desc.filter || [0,1];
+}
+LineUpStacked.prototype = $.extend({},LineUpComposite.prototype, LineUpNumber.prototype, {
+	weights : function() {
+		var r = [];
+		var ws = 0;
+		for (var i = this.children.length - 1; i >= 0; i--) {
+			r[i] = this.children[i].width;
+			ws += r[i];
+		};
+		for (var i = r.length - 1; i >= 0; i--) {
+			r[i] = r[i] / ws;
+		};
+		return r;		
+	},
+	getS : function(row) {
+		return this.getN(row);
+	},
+	getN : function(row) {
+		var w = this.weights();
+		var s = 0;
+		for (var i = this.children.length - 1; i >= 0; i--) {
+			s += w[i] * this.children[i].getN(row);
+		};
+		return s;
+	},
+	get : function(row) {
+		return ""+this.getN(row);
+	}
+});
 
 function LineUp(tableId, file, columns) {
 	var $table = d3.select(tableId).classed("lineup",true);
@@ -67,13 +163,14 @@ function LineUp(tableId, file, columns) {
 	var colTypes = {
 		"number" : LineUpNumber,
 		"string" : LineUpString,
+		"max" : LineUpMax,
+		"stacked" : LineUpStacked,
 	};
 
-	var colors = d3.scale.category10();
-	this.cols = columns.map(function(c,i) {
-		c.color = colors(i);
-		return new colTypes[c.type](c)
-	});
+	function toColumn(desc) {
+		return new colTypes[desc.type](desc, toColumn);
+	}
+	this.cols = columns.map(toColumn);
 
 	//create header line
 	$table.selectAll("col").data(cols)
@@ -98,28 +195,34 @@ function LineUp(tableId, file, columns) {
 		data.sort(cmp)
 		update()
 	}
-	function columnRow(row) {
-		return cols.map(function(c) { return { desc : c, value : row[c.column]}})
-	}
 	
 	function updateLine(row) {
-		var $line = d3.select(this).selectAll("td").data(columnRow(row))
+		var $line = d3.select(this).selectAll("td").data(cols)
 			.each(function(c) {
-				c.desc.update(d3.select(this),c.value)
+				c.update(d3.select(this),row)
 			});
 		$line.exit()
 			.remove();
 		$line.enter()
 			.append("td")
 			.each(function(c) {
-				c.desc.load(d3.select(this),c.value);
+				c.load(d3.select(this),row);
 				return this;
 			});
 	}
 
 	function update() {
 		//create content lines
-		var $row = $tbody.selectAll("tr").data(data.slice(0,100));
+		var d = data;
+		d = d.filter(function(row) {
+			for (var i = cols.length - 1; i >= 0; i--) {
+				if (!cols[i].filterBy(row))
+					return false;
+			}
+			return true;
+		});
+		d = d.slice(0,100);
+		var $row = $tbody.selectAll("tr").data(d);
 		$row.each(updateLine);
 		$row.exit()
 			.remove();

@@ -7,14 +7,21 @@
 			"width" : 200
 		},
 		{	
-			"column": "academic",
-			"type" : "number",
-			"domain" : [0,100]
-		},
-		{	
-			"column": "employer",
-			"type" : "number",
-			"domain" : [0,100]
+			"type" : "max",
+			"id" : "max",
+			"label" : "max (academic, employer)",
+			"children" : [
+				{	
+					"column": "academic",
+					"type" : "number",
+					"domain" : [0,100]
+				},
+				{	
+					"column": "employer",
+					"type" : "number",
+					"domain" : [0,100]
+				}		
+			]
 		},
 		{	
 			"column": "faculty",
