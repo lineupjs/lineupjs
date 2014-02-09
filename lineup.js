@@ -6,21 +6,36 @@ function LineUpColumn(desc) {
 	this.id = desc.id || this.column;
 }
 LineUpColumn.prototype = {
+	init : function(table, data) {
+		this.table = table
+	},
 	load : function($cell, row, i) {
 		this.update($cell, row, i)
 	},
 	update : function($cell, row, i) {
 		$cell.text(this.get(row, i))	
 	},
-	loadTh : function($cell) {
-		$cell.attr("id",this.id)
-			.text(this.label)
-	},
 	get : function(row) {
 		return row[this.column];
 	},
+	findTh : function() { return d3.select("#"+this.id+"_th")},
+	loadTh : function($cell) {
+		$cell.attr("id",this.id+"_th").attr("class",this.id);
+		$cell.append("div").attr("class","drag");
+		var that = this;
+		var table = this.findTable();
+		$cell.append("span").text(this.label);
+		$cell.on("dblclick", function(col) {
+			table.sortBy(that);
+		})
+	},
+	findCol : function() { return d3.select("#"+this.id+"_col")},
 	loadCol : function($col) {
-		$col.attr("width",this.width)
+		$col.attr("id",this.id+"_col").style("width",this.width+"px")
+	},
+	changeWidth : function(delta) {
+		this.width += delta;
+		this.findCol().style("width",this.width+"px");
 	},
 	sortBy : function(a,b) {
 		var va = this.get(a);
@@ -29,6 +44,11 @@ LineUpColumn.prototype = {
 	},
 	filterBy : function(row) {
 		return true;
+	},
+	findTable : function() {
+		if (this.parent)
+			return this.parent.findTable();
+		return this.table;
 	}
 };
 
@@ -39,6 +59,13 @@ function LineUpNumber(desc) {
 	this.filter = desc.filter || [0,100];
 }
 LineUpNumber.prototype = $.extend({},LineUpColumn.prototype,{
+	init : function(table, data) {
+		LineUpColumn.prototype.init.call(this, table, data)
+		var that = this;
+		data.forEach(function(row) {
+			row[that.column] = that.getN(row);
+		})
+	},
 	load : function($cell, row) {
 		$cell.append("div");
 		this.update($cell, row);
@@ -53,7 +80,10 @@ LineUpNumber.prototype = $.extend({},LineUpColumn.prototype,{
 		return this.scale(this.getN(row));
 	},
 	getN : function(row) {
-		return +this.get(row);
+		return +LineUpColumn.prototype.get.call(this, row);
+	},
+	get : function(row) {
+		return d3.round(this.getN(row),3)
 	},
 	sortBy : function(a,b) {
 		var va = this.getN(a);
@@ -99,7 +129,13 @@ function LineUpComposite(desc, toColumn) {
 	};
 }
 LineUpComposite.prototype = $.extend({},LineUpColumn.prototype, {
-	
+	init : function(table, data) {
+		LineUpColumn.prototype.init.call(this, table, data)
+		var that = this;
+		this.children.forEach(function(child) {
+			child.init(table, data)
+		})
+	},
 });
 
 function LineUpMax(desc,toColumn) {
@@ -107,7 +143,13 @@ function LineUpMax(desc,toColumn) {
 	this.filter = desc.filter || [0,1];
 }
 LineUpMax.prototype = $.extend({},LineUpComposite.prototype, LineUpNumber.prototype, {
+	init : function(table, data) {
+		LineUpComposite.prototype.init.call(this, table, data)
+	},
 	select : function(row) {
+		var key = "_"+this.id
+		if (row[key] !== undefined)
+			return this.children[row[key]]
 		var m = -1;
 		var mi = 0;
 		for (var i = this.children.length - 1; i >= 0; i--) {
@@ -118,6 +160,7 @@ LineUpMax.prototype = $.extend({},LineUpComposite.prototype, LineUpNumber.protot
 				mi = i;
 			}
 		};
+		row[key] = mi;
 		var best = this.children[mi];
 		return best;
 	},
@@ -151,6 +194,9 @@ function LineUpStacked(desc,toColumn) {
 	};
 }
 LineUpStacked.prototype = $.extend({},LineUpComposite.prototype, LineUpNumber.prototype, {
+	init : function(table, data) {
+		LineUpComposite.prototype.init.call(this, table, data)
+	},
 	weights : function() {
 		var r = [];
 		var ws = 0;
@@ -167,11 +213,16 @@ LineUpStacked.prototype = $.extend({},LineUpComposite.prototype, LineUpNumber.pr
 		return this.getN(row);
 	},
 	getN : function(row) {
+		var key = "_"+this.id
+		if (row[key] !== undefined)
+			return row[key]
+
 		var w = this.weights();
 		var s = 0;
 		for (var i = this.children.length - 1; i >= 0; i--) {
 			s += w[i] * this.children[i].getS(row);
 		};
+		row[key] = s;
 		return s;
 	},
 	get : function(row) {
@@ -179,66 +230,50 @@ LineUpStacked.prototype = $.extend({},LineUpComposite.prototype, LineUpNumber.pr
 	}
 });
 
-function LineUp(tableId, file, columns) {
-	var $table = d3.select(tableId).classed("lineup",true);
-	var $thead = $table.append("thead");
-	var $tbody = $table.append("tbody");
-	var data = [];
-
-	var colTypes = {
-		"number" : LineUpNumber,
-		"string" : LineUpString,
-		"max" : LineUpMax,
-		"stacked" : LineUpStacked,
-		"rank" : LineUpRank,
-	};
-
-	function toColumn(desc) {
-		return new colTypes[desc.type](desc, toColumn);
-	}
-	var cols = columns.map(toColumn);
-
-	function flatCols() {
-		var r = [];
-		function flatImpl(c) {
-			c.forEach(function(cx) {
-				if (cx.hierarchical && !cx.compressed) {
-					flatImpl(cx.hierarchical);
-				} else {
-					r.push(cx);
-				}
-			})
-		}
-		flatImpl(cols)
-		return r;
-	}
+function LineUpTable(tableId, data, cols, options) {
+	this.$table = d3.select(tableId).classed("lineup",true);
+	this.$colgroups = this.$table.append("colgroup");
+	this.$thead = this.$table.append("thead");
+	this.$tbody = this.$table.append("tbody");
+	this.options = options;
 	
+	this.data = data;
+	this.cols = cols;
+	var that = this;
+	cols.forEach(function(col) {
+		col.init(that, data);
+	})
 
-	(function() {
+	this.init()
+}
+LineUpTable.prototype = $.extend({}, {
+	init : function() {
 		//compute nesting level
 		var hasSecondLevel = false;
-		cols.forEach(function(c) { if (c.hierarchical && !c.compressed) hasSecondLevel = true });
+		this.cols.forEach(function(c) { if (c.hierarchical && !c.compressed) hasSecondLevel = true });
 		//create header line
-		var flatcols = flatCols();
-		$table.selectAll("col").data(flatcols)
-			.enter()
-				.append("col")
-					.each(function(col) { 
-						col.loadCol(d3.select(this)); 
-					})
+		var flatcols = this.flatCols();
+		var $colgroups = this.$colgroups;
+		var $thead = this.$thead;
+
+		this.cols.forEach(function(c) {
+			var e;
+			if (c.hierarchical && !c.compressed) {
+				//e = $colgroups.append("colgroup");
+				c.hierarchical.forEach(function (cc) {
+					cc.loadCol($colgroups.append("col"))
+				})
+			} else {
+				c.loadCol($colgroups.append("col"));
+			}			
+		})
 		
 		function fillTh(col) {
 			var $th = d3.select(this);
 			col.loadTh($th);
-			if (col.sortBy)
-				$th.on("click", function(col) {
-						d3.selectAll("th").classed("sortBy",false)
-						d3.select("th#"+col.column).classed("sortBy",true)
-						sortBy(function(a,b) { return col.sortBy(a,b) }); 
-					})
 		}
 		//create header lin e
-		$thead.append("tr").selectAll("th").data(cols)
+		$thead.append("tr").selectAll("th").data(this.cols)
 			.enter()
 				.append("th")
 				.each(fillTh)
@@ -259,32 +294,35 @@ function LineUp(tableId, file, columns) {
 						d3.select(this).remove();
 				})
 		}
-	})()
-	
-		
-	function sortBy(cmp) {
-		data.sort(cmp)
-		update()
-	}
+	},
 
-	function updateLine(row, i, flatcols) {
-		var $row = d3.select(this);
-		var $line = $row.selectAll("td").data(flatcols)
-			.each(function(c) {
-				c.update(d3.select(this),row, i)
-			});
-		$line.exit()
-			.remove();
-		$line.enter()
-			.append("td")
-			.each(function(c) {
-				c.load(d3.select(this),row, i);
-			});
-	}
+	flatCols : function() {
+		var r = [];
+		function flatImpl(c) {
+			c.forEach(function(cx) {
+				if (cx.hierarchical && !cx.compressed) {
+					flatImpl(cx.hierarchical);
+				} else {
+					r.push(cx);
+				}
+			})
+		}
+		flatImpl(this.cols)
+		return r;
+	},
 
-	function update() {
+	sortBy : function(col) {
+		this.$thead.selectAll("th").classed("sortBy",false);
+		col.findTh().classed("sortBy",true);
+
+		this.data.sort(function(a,b) { return col.sortBy(a,b) });
+		this.update();
+	},
+
+	update : function() {
 		//create content lines
-		var d = data;
+		var d = this.data;
+		var cols = this.cols
 		d = d.filter(function(row) {
 			for (var i = cols.length - 1; i >= 0; i--) {
 				if (!cols[i].filterBy(row))
@@ -293,23 +331,63 @@ function LineUp(tableId, file, columns) {
 			return true;
 		});
 		d = d.slice(0,100);
-		var $row = $tbody.selectAll("tr").data(d);
+		var $row = this.$tbody.selectAll("tr").data(d);
 
-		var flatcols = flatCols();
-		function tmp(x, i) {
-			return updateLine.call(this,x,i,flatcols);
+		var flatcols = this.flatCols();
+		var that = this;
+		function updateLine(row, i) {
+			var $row = d3.select(this);
+			var $line = $row.selectAll("td").data(flatcols)
+				.each(function(c) {
+					c.update(d3.select(this),row, i)
+				});
+			$line.exit()
+				.remove();
+			$line.enter()
+				.append("td")
+				.each(function(c) {
+					c.load(d3.select(this),row, i);
+				});
 		}
 		
-		$row.each(tmp);
+		$row.each(updateLine);
 		$row.exit()
 			.remove();
 		$row.enter()
-			.append("tr").each(tmp);
+			.append("tr").each(updateLine);
 		$row.order();
 	}
+});
 
-	d3.tsv(file, function(_data) {
-		data = _data;
-		update();
+function LineUp(tableId, data, columns, options) {
+	
+	options = $.extend({}, options, {})
+
+	var colTypes = $.extend({},options.colTypes, {
+		"number" : LineUpNumber,
+		"string" : LineUpString,
+		"max" : LineUpMax,
+		"stacked" : LineUpStacked,
+		"rank" : LineUpRank,
 	});
+
+
+	function toColumn(desc) {
+		return new colTypes[desc.type](desc, toColumn);
+	}
+	var cols = columns.map(toColumn);
+	options.toColumn = toColumn;
+
+	return new LineUpTable(tableId, data, cols, options)
+	//function onDragged(e) {
+	//	//var $th =d3.select(e.currentTarget);
+	//	console.log($th.text());
+	//}
+
+	//$(tableId).colResizable({
+	//	liveDrag: true, 
+	//	draggingClass: "dragging", 
+	//	headerOnly : true,
+	//	onDrag: onDragged
+	//});	
 }

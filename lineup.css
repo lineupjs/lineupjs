@@ -1,27 +1,41 @@
 table.lineup {
   table-layout: fixed;
+  width: 100%;
 }
+
 table.lineup th {
   overflow: hidden;
+  white-space:nowrap;
+  border: 3px solid lightgrey;
 }
 table.lineup th:hover {
   cursor: pointer;
 }
+table.lineup th div.drag {
+  display: inline;
+  position: relative;
+  right: 0;
+  width: 10px;
+  height: 20px;
+  background-color: red;
+  float: right;
+}
 table.lineup td {
   overflow: hidden;
+  white-space:nowrap;
 }
 table.lineup th.sortBy {
   border: 3px solid orange;
 }
 table.lineup td div {
-  height: 20px;
+  height: 14pt;
   overflow: visible;
   font-size: 0; 
   vertical-align: middle;
 }
 
 table.lineup tr:hover td div {
-  font-size: 12px;
+  font-size: 12pt;
 }
 
 table.lineup tr:hover {

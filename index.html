@@ -6,6 +6,7 @@
 	<!--<link href="css/ui-darkness/jquery-ui-1.10.4.custom.css" rel="stylesheet">-->
 	<link href="lineup.css" rel="stylesheet">
 	<script src="js/jquery-1.10.2.js"></script>
+	<script src="js/colResizable-1.3.js"></script>
 	<!--<script src="js/jquery-ui-1.10.4.custom.js"></script>-->
 	<script src="js/d3.v3.js"></script>
 	<script src="lineup.js"></script>
@@ -15,7 +16,10 @@
 	<script>
 		d3.json("data.json", function(desc) {
 			d3.select("head").append("link").attr("href",desc.css).attr("rel","stylesheet");
-			LineUp("#wsv", desc.file, desc.columns);
+			d3.tsv(desc.file, function(_data) {
+				var table = LineUp("#wsv", _data, desc.columns);
+				table.update();
+			});			
 		})
 		
 	</script>
