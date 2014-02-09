@@ -4,6 +4,7 @@ function LineUpColumn(desc) {
 	this.width = desc.width || 100;
 	this.label= desc.label || desc.column;
 	this.id = desc.id || this.column;
+	this.collapsed = desc.collapsed || false;
 }
 LineUpColumn.prototype = {
 	init : function(table, data) {
@@ -13,29 +14,35 @@ LineUpColumn.prototype = {
 		this.update($cell, row, i)
 	},
 	update : function($cell, row, i) {
-		$cell.text(this.get(row, i))	
+		$cell.text(this.get(row, i));	
 	},
 	get : function(row) {
 		return row[this.column];
 	},
-	findTh : function() { return d3.select("#"+this.id+"_th")},
+	findTh : function() { return this.$th; },
 	loadTh : function($cell) {
 		$cell.attr("id",this.id+"_th").attr("class",this.id);
 		$cell.append("div").attr("class","drag");
 		var that = this;
-		var table = this.findTable();
 		$cell.append("span").text(this.label);
-		$cell.on("dblclick", function(col) {
-			table.sortBy(that);
+		$cell.on("click", function(col) {
+			that.sortByMe();
 		})
+		this.$th = $cell
 	},
 	findCol : function() { return d3.select("#"+this.id+"_col")},
 	loadCol : function($col) {
-		$col.attr("id",this.id+"_col").style("width",this.width+"px")
+		$col.attr("id",this.id+"_col").attr("width",this.width)
 	},
 	changeWidth : function(delta) {
 		this.width += delta;
 		this.findCol().style("width",this.width+"px");
+	},
+	sortByMe : function() {
+		var table = this.findTable();
+		if (this.parent)
+			this.parent.mode='single';
+		table.sortBy(this);
 	},
 	sortBy : function(a,b) {
 		var va = this.get(a);
@@ -71,10 +78,13 @@ LineUpNumber.prototype = $.extend({},LineUpColumn.prototype,{
 		this.update($cell, row);
 	},
 	update : function($cell, row) {
-		$cell.select("div")
+		$cell.attr("class","n")
+		var $div = $cell.select("div")
 			.attr("class",this.id)
 			.style("width",this.getS(row)*100+"%")
-			.text(this.get(row));
+			.text(this.get(row))
+		if (this.parent)
+			this.parent.align(this,$div, row)
 	},
 	getS : function(row) {
 		return this.scale(this.getN(row));
@@ -136,6 +146,9 @@ LineUpComposite.prototype = $.extend({},LineUpColumn.prototype, {
 			child.init(table, data)
 		})
 	},
+	align : function(child, $div, row) {
+
+	}
 });
 
 function LineUpMax(desc,toColumn) {
@@ -192,6 +205,8 @@ function LineUpStacked(desc,toColumn) {
 		if (child.hierarchical)
 			child.compressed = true;
 	};
+
+	this.mode = 'stacked' //single, stacked, alignBy
 }
 LineUpStacked.prototype = $.extend({},LineUpComposite.prototype, LineUpNumber.prototype, {
 	init : function(table, data) {
@@ -227,6 +242,28 @@ LineUpStacked.prototype = $.extend({},LineUpComposite.prototype, LineUpNumber.pr
 	},
 	get : function(row) {
 		return d3.round(this.getN(row),3);
+	},
+	align : function(child, $div, row) {
+		$div.style("margin-left",null); //remove old
+		if (this.mode === 'single')
+			return;
+		var index = this.children.indexOf(child);
+		if (index <= 0)
+			return;
+		var shift = 0;
+		for (var i = index-1; i >= 0; i--) {
+			var col = this.children[i];
+			var vi = 1. - col.getS(row);
+			var sh = col.$th.node().clientWidth * vi; //-th + th*v
+			shift -= sh;
+		}
+		if (shift < 0)
+			$div.style("margin-left",d3.round(shift,0)+"px");
+			
+	},
+	sortByMe : function() {
+		this.mode = 'stacked';
+		LineUpComposite.prototype.sortByMe.call(this);
 	}
 });
 

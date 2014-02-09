@@ -12,36 +12,38 @@ table.lineup th:hover {
   cursor: pointer;
 }
 table.lineup th div.drag {
-  display: inline;
-  position: relative;
-  right: 0;
+  height: 14pt;
   width: 10px;
-  height: 20px;
+  /*margin-right: -20px;*/
   background-color: red;
   float: right;
+  z-index: 2;
 }
-table.lineup td {
+table.lineup tbody td {
   overflow: hidden;
   white-space:nowrap;
+}
+table.lineup tbody td.n {
+  overflow: auto;
 }
 table.lineup th.sortBy {
   border: 3px solid orange;
 }
-table.lineup td div {
+table.lineup tbody td > div {
   height: 14pt;
   overflow: visible;
   font-size: 0; 
   vertical-align: middle;
 }
 
-table.lineup tr:hover td div {
+table.lineup tbody tr:hover td > div {
   font-size: 12pt;
 }
 
-table.lineup tr:hover {
+table.lineup tbody tr:hover {
   background-color: orange;
 }
 
-th#rank {
+th.rank_th {
   background-color : lightgrey;
 }
