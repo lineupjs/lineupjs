@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>LineUp alpha</title>
+
+    <!--standard inclusions and require function-->
+    <script src="js/jquery-1.10.2.js"></script>
+    <script src="js/d3.v3.js"></script>
+    <!--<script>-->
+        <!--// programmatic loading of JS files:-->
+        <!--// http://stackoverflow.com/a/7352694-->
+        <!--function require(script) {-->
+            <!--$.ajax({-->
+                <!--url: script,-->
+                <!--dataType: "script",-->
+                <!--async: false,           // <-- This is the key-->
+                <!--success: function () {-->
+                    <!--// all good...-->
+                <!--},-->
+                <!--error: function () {-->
+                    <!--throw new Error("Could not load script " + script);-->
+                <!--}-->
+            <!--});-->
+        <!--}-->
+    <!--</script>-->
+
+    <!--LineUp inclusions-->
+    <script src="datastructure.js"></script>
+    <script src="event-manager.js"></script>
+    <script src="lineup.js"></script>
+
+
+    <style>
+        #lugui-table-header{
+          position: fixed;
+          top: 5px;
+          left: 5px;
+          width: 100px;
+            height: 50px;
+          background-color: lightblue;
+        }
+
+        #lugui-table-body-wrapper{
+            position: fixed;
+            top:55px;
+            left:5px;
+            width: 100px;
+            height:100px;
+            overflow-x: auto;
+            overflow-y: scroll;
+        }
+
+
+    </style>
+
+</head>
+<body>
+   <div id="lugui-table-header"></div>
+   <div id="lugui-table-body-wrapper">
+       <div id="lugui-table-body"></div>
+
+   </div>
+
+
+
+
+</body>
+</html>

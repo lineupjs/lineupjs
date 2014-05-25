@@ -291,9 +291,16 @@ function LineUpLocalStorage(tableId, data, columns, options){
     cols.forEach(function(col) {
         col.init(that, data);
     })
-
-
 }
+
+LineUpLocalStorage.prototype = $.extend({},{},{
+   getColumnHeaders: function(){
+       return this.cols;
+   }
+
+});
+
+
 /**
  * LineUp Query object to send to a storage instance requesting updates
  * @constructor
