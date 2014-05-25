@@ -296,6 +296,10 @@ function LineUpLocalStorage(tableId, data, columns, options){
 LineUpLocalStorage.prototype = $.extend({},{},{
    getColumnHeaders: function(){
        return this.cols;
+   },
+
+   getData: function(){
+       return this.data;
    }
 
 });
