@@ -6,25 +6,31 @@ var LineUpGlobal = {
 
 var LineUp = function(spec){
     this.storage = spec.storage;
+    this.sortedColumn = [];
 
 }
 
 LineUp.prototype.startVis = function(){
 
-    console.log("runit");
-
-    var fake = []
-    for (i =0; i<100;i++){
-        fake.push(Math.random()*50)
-    }
-    var fakeVis =
-        d3.select("#lugui-table-body").selectAll("p").data(fake)
-    fakeVis.enter().append("p").text(function(d){return d});
-
-    this.storage.getColumnHeaders().forEach(function(d){
-        console.log(d);
-        console.log(d instanceof LineUpStackedColumn);
-    })
+//    console.log("runit");
+//
+//    var fake = []
+//    for (i =0; i<100;i++){
+//        fake.push(Math.random()*50)
+//    }
+//    var fakeVis =
+//        d3.select("#lugui-table-body").selectAll("p").data(fake)
+//    fakeVis.enter().append("p").text(function(d){return d});
+//
+//    this.storage.getColumnHeaders().forEach(function(d){
+//        console.log(d);
+//        if (d instanceof  LineUpStackedColumn){
+//            d.hierarchical.forEach(function(d){
+//                console.log(d, d.scale.domain(), d.scale.range());
+//            })
+//        }
+//        console.log(d instanceof LineUpStackedColumn);
+//    })
 
 
 
@@ -35,8 +41,8 @@ LineUp.prototype.startVis = function(){
 
 
 LineUp.prototype.updateHeader = function(headers){
-
-    var svg = d3.select("#lugui-table-header-svg")
+    console.log("update Header");
+    var svg = d3.select("#lugui-table-header-svg");
     var that = this;
     var offset = 0;
     var headersEnriched = headers.map(function(d){
@@ -66,7 +72,10 @@ LineUp.prototype.updateHeader = function(headers){
 
     function dragended(d) {
         d3.select(this).classed("dragging", false);
-//        that.updateBody(that.storage.getColumnHeaders(),that.storage.getData())
+        if (that.sortedColumn instanceof LineUpStackedColumn){
+            that.storage.resortData({columnID: that.sortedColumn.id});
+            that.updateBody(that.storage.getColumnHeaders(), that.storage.getData());
+        }
     }
 
     // ==== level 1 columns =====
@@ -83,6 +92,13 @@ LineUp.prototype.updateHeader = function(headers){
         height:50-4
     }).style({
         "fill":function(d,i){return LineUpGlobal.columnColors(i)}
+    }).on({
+        "click":function(d){
+            that.storage.resortData({columnID: d.header.id});
+            that.updateBody(that.storage.getColumnHeaders(), that.storage.getData());
+            that.sortedColumn= d.header;
+            that.updateHeader(that.storage.getColumnHeaders());
+        }
     });
 
     level1HeaderEnter.append("circle").attr({
@@ -94,11 +110,6 @@ LineUp.prototype.updateHeader = function(headers){
             else return 50/2;},
         r:5
 
-    }).on({
-//        "click": function(d){
-//            console.log("cl");
-//            that.reweightHeader({column:d3.select(this).data()[0], value:20})
-//        }
     }).call(dragWeight)
 
     level1HeaderEnter.append("text").attr({
@@ -129,6 +140,10 @@ LineUp.prototype.updateHeader = function(headers){
         cx:function(d){return d.header.width-6}
     })
 
+    level1Headers.select("text").classed("sortedColumn",function(d){
+        if (d.header.id == that.sortedColumn.id) return true;
+        else return false;
+    })
 
 
 
@@ -164,6 +179,15 @@ LineUp.prototype.updateHeader = function(headers){
         "fill": function (d, i) {
             return LineUpGlobal.columnColors(i + colorOffset)
         }
+    }).on({
+        "click":function(d){
+//            console.log(d);
+            that.storage.resortData({columnID: d.header.id});
+            that.updateBody(that.storage.getColumnHeaders(), that.storage.getData())
+            that.sortedColumn= d.header;
+            that.updateHeader(that.storage.getColumnHeaders())
+        }
+
     });
 
     level2HeaderEnter.append("circle").attr({
@@ -173,6 +197,7 @@ LineUp.prototype.updateHeader = function(headers){
         r:5
 
     }).call(dragWeight);
+
 
     level2HeaderEnter.append("text").attr({
         "class":"headerLabel",
@@ -195,6 +220,10 @@ LineUp.prototype.updateHeader = function(headers){
         cx:function(d){return d.header.width-6-2}
     })
 
+    level2Headers.select("text").classed("sortedColumn",function(d){
+        if (d.header.id == that.sortedColumn.id) return true;
+        else return false;
+    })
 
 
 
@@ -241,7 +270,7 @@ LineUp.prototype.reweightHeader= function(change){
 
 LineUp.prototype.updateBody = function(headers, data){
 
-//    console.log(data);
+    console.log("DDD",data);
 
     var offset = 0;
     var headerInfo =  d3.map();
@@ -250,29 +279,32 @@ LineUp.prototype.updateBody = function(headers, data){
         offset+= d.width+2;
     });
 
-    var indexOffset=headers.length; // TODO: REPLACE by flatten function !!
+    this.indexOffset=headers.length; // TODO: REPLACE by flatten function !!
+    var that = this;
 //    console.log(headerInfo);
     headers
         .filter(function(d){return (d instanceof LineUpStackedColumn)})
         .forEach(function(headerI){
-            indexOffset++;
             var xOffset = headerInfo.get(headerI.id).offset;
-
             headerI.hierarchical.forEach(function(d){
-                headerInfo.set(d.id,{offset:xOffset,header:d, index:indexOffset});
+                headerInfo.set(d.id,{offset:xOffset,header:d, index:that.indexOffset});
                 xOffset+= d.width;
+                that.indexOffset= that.indexOffset+1;
+
             })
         });
 
 
     var datLength = data.length;
-    var rowScale = d3.scale.ordinal().domain(data.map(function(d,i){return i})).rangeBands([0,(datLength*20)],0,.2);
+    var rowScale = d3.scale.ordinal()
+        .domain(data.map(function(d,i){return d.schoolname}))// TODO (important): chnge this to ID !!
+        .rangeBands([0,(datLength*20)],0,.2);
 
     d3.select("#lugui-table-body-svg").attr({
         height: datLength*20
     })
 
-    var allRows = d3.select("#lugui-table-body-svg").selectAll(".row").data(data)
+    var allRows = d3.select("#lugui-table-body-svg").selectAll(".row").data(data, function(d){return d.schoolname})
     allRows.exit().remove();
 
     // --- append ---
@@ -282,16 +314,18 @@ LineUp.prototype.updateBody = function(headers, data){
 
 
 
-    allRowsEnter.selectAll(".tableData")
+    // -- the text columns
+    allRowsEnter.selectAll(".tableData.text")
         .data(function(d,i){
-//            console.log(Object.keys(d).map(function(key){return d[key]}));
-            var data = Object.keys(d).filter(function(key){return headerInfo.has(key)}).map(function(key){return {key:key,value:d[key]};});
-            data.push({key:"rank",value:i});
+            var data = Object.keys(d)
+                .filter(function(key){return headerInfo.has(key) && (headerInfo.get(key).header instanceof LineUpStringColumn)})
+                .map(function(key){return {key:key,value:d[key]};});
+            data.push({key:"rank",value:i});// TODO: should be fixed to the real rank
             return data;
-        }).enter().append("text")
+        }).enter()
+        .append("text")
         .attr({
-            "class":"tableData",
-
+            "class":"tableData text",
             x:function(d){
                 return headerInfo.get(d.key).offset
             },
@@ -299,29 +333,51 @@ LineUp.prototype.updateBody = function(headers, data){
         }).text(function(d){return d.value});
 
 
+    allRowsEnter.selectAll(".tableData.bar")
+        .data(function(d,i){
+            var data = Object.keys(d)
+                .filter(function(key){return headerInfo.has(key) && (headerInfo.get(key).header instanceof LineUpNumberColumn)})
+                .map(function(key){return {key:key,value:d[key]};});
+            return data;
+        }).enter()
+        .append("rect")
+        .attr({
+            "class":"tableData bar",
+            y:2,
+            height:20-4
+        });
+
 
     //--- update ---
-    allRows.attr({
+    allRows.transition().duration(1000).attr({
         "transform":function(d, i){
-
-               return  "translate("+2+","+rowScale(i)+")"
+//                console.log(rowScale(d.schoolname), d.schoolname);
+               return  "translate("+2+","+rowScale(d.schoolname)+")" // TODO(important): remove this by ID !!
         }
     })
 
-    allRows.selectAll(".tableData")
-        .data(function(d,i){
-//            console.log(Object.keys(d).map(function(key){return d[key]}));
-            var data = Object.keys(d).filter(function(key){return headerInfo.has(key)}).map(function(key){return {key:key,value:d[key]};});
-            data.push({key:"rank",value:i});
-            return data;
-        })
+    allRows.selectAll(".tableData.text")
         .attr({
             x:function(d){
                 return headerInfo.get(d.key).offset
             }
+        }).style({
+            fill: function(d){ return LineUpGlobal.columnColors(headerInfo.get(d.key).index)}
         })
 
+    allRows.selectAll(".tableData.bar")
+        .attr({
+            x:function(d){
+                return headerInfo.get(d.key).offset
+            },
+            width:function(d){
+                var hi = headerInfo.get(d.key)
 
+                return Math.max(hi.header.scale(+d.value)*hi.header.width-2,0)
+            }
+        }).style({
+            fill: function(d){ return LineUpGlobal.columnColors(headerInfo.get(d.key).index)}
+        })
 
 
 

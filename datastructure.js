@@ -300,7 +300,58 @@ LineUpLocalStorage.prototype = $.extend({},{},{
 
    getData: function(){
        return this.data;
+   },
+   flatHeaders:function(){
+       var res = [];
+
+       this.cols.forEach(function(col){
+           if (col instanceof LineUpStackedColumn){
+               res.push(col);
+               col.hierarchical.forEach(function(subcol){
+                   res.push(subcol);
+               })
+
+           }else{
+               res.push(col);
+           }
+       })
+
+       return res;
+   },
+   resortData: function(spec){
+       spec.columnID;
+
+//       var sortFunction = function(){return 0}
+       var fh = this.flatHeaders();
+
+       fh.forEach(function(header){
+           if (header.id === spec.columnID){
+               if (header instanceof LineUpStackedColumn){
+                    sortFunction= function(a,b){
+                        var aValue =0;
+                        var bValue =0;
+
+                        header.hierarchical.forEach(function(subhead){
+                            aValue += subhead.scale(a[subhead.id])*subhead.width;
+                            bValue += subhead.scale(b[subhead.id])*subhead.width;
+                        })
+                        return d3.descending(aValue, bValue);
+                    }
+               }else{
+                   sortFunction = function(a,b){
+                       return d3.descending(a[header.id],b[header.id]);
+                   }
+
+               }
+
+           }
+
+       })
+
+        this.data.sort(sortFunction);
+       console.log(this.data);
    }
+
 
 });
 
