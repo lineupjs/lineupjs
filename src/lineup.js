@@ -1,45 +1,47 @@
-//require('datastructure.js');
-
+/**
+ * Global LineUp Variables
+ * @property {d3.scale} columncolors - color scale for columns
+ */
 var LineUpGlobal = {
-    columnColors: d3.scale.category10()
-}
+    columnColors: d3.scale.category10(),
+    htmlLayout: {
+        menuheight: 25,
+        menuExpandheight: 50,
+        headerheight: 50,
+        windowOffsetX: 5,
+        windowOffsetY: 5,
+        headerOffsetY: function(){return (this.menuheight + this.windowOffsetY + 3) },
+        bodyOffsetY: function(){return (this.menuheight + this.windowOffsetY + this.headerheight +3) }
 
+    }
+
+};
+
+/**
+ * Constructor to Create a LineUp Visualization
+ * @param spec - the specifications object
+ * @param spec.storage - a LineUp Storage, see {@link LineUpLocalStorage}
+ * @constructor
+ */
 var LineUp = function(spec){
     this.storage = spec.storage;
     this.sortedColumn = [];
 
-}
+};
 
+/**
+ * the function to start the LineUp visualization
+ */
 LineUp.prototype.startVis = function(){
-
-//    console.log("runit");
-//
-//    var fake = []
-//    for (i =0; i<100;i++){
-//        fake.push(Math.random()*50)
-//    }
-//    var fakeVis =
-//        d3.select("#lugui-table-body").selectAll("p").data(fake)
-//    fakeVis.enter().append("p").text(function(d){return d});
-//
-//    this.storage.getColumnHeaders().forEach(function(d){
-//        console.log(d);
-//        if (d instanceof  LineUpStackedColumn){
-//            d.hierarchical.forEach(function(d){
-//                console.log(d, d.scale.domain(), d.scale.range());
-//            })
-//        }
-//        console.log(d instanceof LineUpStackedColumn);
-//    })
-
-
-
 
     this.updateHeader(this.storage.getColumnHeaders())
     this.updateBody(this.storage.getColumnHeaders(), this.storage.getData())
 }
 
-
+/**
+ * Render the given headers
+ * @param headers - the array of headers, see {@link LineUpColumn}
+ */
 LineUp.prototype.updateHeader = function(headers){
     console.log("update Header");
     var svg = d3.select("#lugui-table-header-svg");
@@ -229,7 +231,12 @@ LineUp.prototype.updateHeader = function(headers){
 
 };
 
-
+/**
+ * called when a Header width changed, calls {@link updateHeader}
+ * @param change - the change information
+ * @param change.column - the changed column, see {@link LineUpColumn}
+ * @param change.value - the new column width
+ */
 LineUp.prototype.reweightHeader= function(change){
 
     var headers = this.storage.getColumnHeaders()
@@ -267,7 +274,11 @@ LineUp.prototype.reweightHeader= function(change){
 
 };
 
-
+/**
+ * updates the table body
+ * @param headers - the headers as in {@link updateHeader}
+ * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
+ */
 LineUp.prototype.updateBody = function(headers, data){
 
     console.log("DDD",data);
@@ -389,46 +400,53 @@ LineUp.prototype.updateBody = function(headers, data){
 }
 
 
-
-
-// document ready
-$(function(){
-
+var layoutHTML= function(){
     //add svgs:
     d3.select("#lugui-table-header").append("svg").attr({
         id:"lugui-table-header-svg",
-        width:($(window).width()-10),
-        height:50
+        width:($(window).width()),
+        height:LineUpGlobal.htmlLayout.headerheight
     })
 
     d3.select("#lugui-table-body").append("svg").attr({
         id:"lugui-table-body-svg",
-        width:($(window).width()-10),
-        height:50
+        width:($(window).width())
     })
+
+    // constant layout attributes:
+    $("#lugui-menu").css({
+        "top" : LineUpGlobal.htmlLayout.windowOffsetY +"px",
+        "left" : LineUpGlobal.htmlLayout.windowOffsetX+"px",
+        "height": LineUpGlobal.htmlLayout.menuheight+"px"
+    })
+    $("#lugui-table-header").css({
+        "top" : LineUpGlobal.htmlLayout.headerOffsetY() +"px",
+        "left" : LineUpGlobal.htmlLayout.windowOffsetX+"px",
+        "height": LineUpGlobal.htmlLayout.headerheight+"px"
+    })
+
+    $("#lugui-table-body-wrapper").css({
+        "top" : LineUpGlobal.htmlLayout.bodyOffsetY()+"px",
+        "left" : LineUpGlobal.htmlLayout.windowOffsetX+"px"
+    })
+
 
 
     // ----- Adjust UI elements...
     var resizeGUI = function(){
-        d3.select("#lugui-table-header").style({
-            "width": ($(window).width()-10)+"px"
-        })
-        d3.select("#lugui-table-header-svg").attr({
-            "width": ($(window).width()-10)
-        })
+        d3.selectAll("#lugui-menu, #lugui-table-header, #lugui-table-body-wrapper").style({
+            "width": ($(window).width() - 2* LineUpGlobal.htmlLayout.windowOffsetX)+"px"
+        });
+        d3.selectAll("#lugui-table-header-svg, #lugui-table-body-svg").attr({
+            "width": ($(window).width()- 2* LineUpGlobal.htmlLayout.windowOffsetX)
+        });
         d3.select("#lugui-table-body-wrapper").style({
-            "width": ($(window).width()-10)+"px",
-            "height": ($(window).height()-5-50)+"px" // see CSS in main HTML !!!
-        })
-
-        d3.select("#lugui-table-body-svg").attr({
-            "width": ($(window).width()-10)
-        })
-    }
+            "height": ($(window).height()-LineUpGlobal.htmlLayout.bodyOffsetY())+"px"
+        });
+    };
 
     // .. on window changes...
     $(window).resize(function(){
-        console.log("resize: "+ $(window).size());
         resizeGUI();
     });
 
@@ -437,10 +455,25 @@ $(function(){
 
 
 
+}
 
-    d3.json("data.json", function(desc) {
+
+
+
+// document ready
+$(
+    function () {
+
+
+    layoutHTML();
+
+
+
+
+
+    d3.json("data/data.json", function(desc) {
         d3.select("head").append("link").attr("href",desc.css).attr("rel","stylesheet");
-        d3.tsv(desc.file, function(_data) {
+        d3.tsv("data/"+desc.file, function(_data) {
             var spec = {};
             spec.storage = new LineUpLocalStorage("#wsv", _data, desc.columns);
 

@@ -293,11 +293,19 @@ function LineUpLocalStorage(tableId, data, columns, options){
     })
 }
 
-LineUpLocalStorage.prototype = $.extend({},{},{
+
+LineUpLocalStorage.prototype = $.extend({},{},
+    /** @lends LineUpLocalStorage.prototype */
+    {
+
    getColumnHeaders: function(){
        return this.cols;
    },
 
+    /**
+     *  get the data
+     *  @returns data
+     */
    getData: function(){
        return this.data;
    },

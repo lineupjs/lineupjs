@@ -5,48 +5,33 @@
     <title>LineUp alpha</title>
 
     <!--standard inclusions and require function-->
-    <script src="js/jquery-1.10.2.js"></script>
-    <script src="js/d3.v3.js"></script>
-    <!--<script>-->
-        <!--// programmatic loading of JS files:-->
-        <!--// http://stackoverflow.com/a/7352694-->
-        <!--function require(script) {-->
-            <!--$.ajax({-->
-                <!--url: script,-->
-                <!--dataType: "script",-->
-                <!--async: false,           // <-- This is the key-->
-                <!--success: function () {-->
-                    <!--// all good...-->
-                <!--},-->
-                <!--error: function () {-->
-                    <!--throw new Error("Could not load script " + script);-->
-                <!--}-->
-            <!--});-->
-        <!--}-->
-    <!--</script>-->
+    <script src="libs/jquery-1.10.2.js"></script>
+    <script src="libs/d3.v3.js"></script>
 
     <!--LineUp inclusions-->
-    <script src="datastructure.js"></script>
-    <script src="event-manager.js"></script>
-    <script src="lineup.js"></script>
-
+    <script src="src/datastructure.js"></script>
+    <script src="src/event-manager.js"></script>
 
     <style>
+        #lugui-menu{
+            position: fixed;
+            background-color: lightgray;
+            padding-left: 5px;
+            padding-right: 5px;
+            /*padding-top: 2px;*/
+
+            border: 2px solid darkgrey;
+            border-radius: 5px;
+        }
+
+
         #lugui-table-header{
           position: fixed;
-          top: 5px;
-          left: 5px;
-          width: 100px;
-            height: 50px;
           background-color: lightblue;
         }
 
         #lugui-table-body-wrapper{
             position: fixed;
-            top:55px;
-            left:5px;
-            width: 100px;
-            height:100px;
             overflow-x: auto;
             overflow-y: scroll;
         }
@@ -62,6 +47,7 @@
             font-size: 9pt;
             dominant-baseline:middle;
             fill:white;
+            pointer-events:none;
         }
         .tableData{
             font-family: Helvetica;
@@ -78,16 +64,42 @@
 
     </style>
 
+    <!--<link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">-->
+    <!--<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">-->
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+
+
 </head>
 <body>
+   <div id="lugui-menu">
+       <!--<div id="lugui-dataset-selector"></div>-->
+       <!--<div class="text-left">-->
+           <!--LineUp.JS-->
+
+       <div style="display: inline-block; float: left">
+           LineUp.js
+
+       </div>
+       <div style="display: inline-block; float: right">
+           <select id="lugui-dataset-selector" ></select>
+           <i class="fa fa-info-circle" style="color: #555555;"></i>
+           <!--position: relative;top: 2px;-->
+       </div>
+       <!--</div>-->
+       <!--class="form-control input-sm"-->
+       <!--<div id="lugui-info" class="text-right" > <i class="fa fa-info-circle" style="color: #555555;"></i></div>-->
+
+
+   </div>
    <div id="lugui-table-header"></div>
    <div id="lugui-table-body-wrapper">
        <div id="lugui-table-body"></div>
-
    </div>
 
 
-
+   <script src="src/lineup.js"></script>
 
 </body>
 </html>
