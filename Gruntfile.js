@@ -77,6 +77,7 @@ module.exports = function(grunt) {
               }
           }
       },
+      clean: ["doc", "dist"]
   });
 
   // These plugins provide necessary tasks.
@@ -86,6 +87,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-jsdoc');
+  grunt.loadNpmTasks('grunt-contrib-clean');
 
   // Default task.
   grunt.registerTask('default', ['jshint', 'nodeunit', 'concat', 'uglify']);
