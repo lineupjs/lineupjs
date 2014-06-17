@@ -371,8 +371,8 @@ var LineUp;
       }
       function updateScale() {
         var newScale = d3.scale.linear()
-          .domain([getRaw_min, getRaw_max])
-          .range([getNormalized_min, getNormalized_max]);
+          .domain([getRaw_min(), getRaw_max()])
+          .range([getNormalized_min(), getNormalized_max()]);
         callback(newScale);
       }
       
@@ -387,6 +387,16 @@ var LineUp;
       }
       function getNormalized_max() {
         return (upperNormalized-initialLowerX) / (initialUpperX-initialLowerX) * d3.max(initialScale.range());
+      }
+      
+      function filterData() {
+        var result = {};
+        for (var index in data) {
+          if (origRawScale(data_accessor(d)) > lowerRaw && origRawScale(data_accessor(d)) < upperRaw) {
+            result[index] = d;
+          }
+        }
+        return result;
       }
     };
     return editor;
