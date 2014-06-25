@@ -1,0 +1,15 @@
+{
+    "datasets":
+    [
+        {
+            "baseURL":"data",
+            "descriptionFile":"data.json",
+            "name":"University Rankings"
+        },
+        {
+            "baseURL":"data",
+            "descriptionFile":"data.json",
+            "name":"unnamed"
+        }
+    ]
+}
