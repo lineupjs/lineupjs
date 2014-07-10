@@ -3,7 +3,7 @@
  * @property {d3.scale} columncolors - color scale for columns
  */
 var LineUpGlobal = {
-    columnColors: d3.scale.category10(),
+    columnColors: d3.scale.category20(),
     htmlLayout: {
         menuHeight: 25,
         menuHeightExpanded: 50,
@@ -15,12 +15,14 @@ var LineUpGlobal = {
 
     },
     renderingOptions: {
-        stacked:false,
-        animated:true
+        stacked:false
+//        ,
+//        animated:true
     },
     datasets:[],
     actualDataSet: [],
-    lineUpRenderer:null
+    lineUpRenderer:null,
+    sortingOrderAsc:false
 
 
 
@@ -61,7 +63,7 @@ var LineUp = function(spec){
     function dragWeightEnded() {
         d3.select(this).classed("dragging", false);
         if (that.sortedColumn instanceof LineUpStackedColumn){
-            that.storage.resortData({columnID: that.sortedColumn.id});
+            that.storage.resortData({columnID: that.sortedColumn.column});
             that.updateBody(that.storage.getColumnHeaders(), that.storage.getData());
         }
     }
@@ -107,8 +109,8 @@ LineUp.prototype.updateMenu = function () {
         "click":function(d){
             LineUpGlobal.renderingOptions[d.key] = !LineUpGlobal.renderingOptions[d.key]
             that.updateMenu();
-            that.updateHeader(this.storage.getColumnHeaders())
-            that.updateBody(this.storage.getColumnHeaders(), this.storage.getData())
+            that.updateHeader(that.storage.getColumnHeaders())
+            that.updateBody(that.storage.getColumnHeaders(), that.storage.getData())
         }
     })
     kvNodes.html(function(d){
@@ -124,12 +126,21 @@ LineUp.prototype.updateMenu = function () {
  * @param headers - the array of headers, see {@link LineUpColumn}
  */
 LineUp.prototype.updateHeader = function(headers){
-    console.log("update Header");
+//    console.log("update Header");
     var svg = d3.select("#lugui-table-header-svg");
     var that = this;
     var offset = 0;
     var headersEnriched = headers.map(function(d){
-        var hObject = {offset:offset,header:d};
+
+        var isGray = (d instanceof LineUpStringColumn)
+            || (d instanceof LineUpStackedColumn)
+            || (d.id == "rank")
+        var hObject = {
+            offset:offset,
+            header:d,
+            sortedBy:((that.sortedColumn!=[])?that.sortedColumn.column== d.column:false),
+            isGray:isGray
+        };
         offset+= d.width+2;
         return hObject;
     });
@@ -149,10 +160,23 @@ LineUp.prototype.updateHeader = function(headers){
         width:function(d){return d.header.width},
         height:50-4
     }).style({
-        "fill":function(d,i){return LineUpGlobal.columnColors(i)}
+        "fill":function(d,i){
+            if (d.isGray) return "#666666";
+            else return LineUpGlobal.columnColors(i)
+        }
     }).on({
         "click":function(d){
-            that.storage.resortData({columnID: d.header.column});
+//            console.log("CLICK",LineUpGlobal, d.column);
+            if (that.sortedColumn!=[] && (d.header.column == that.sortedColumn.column))
+            {
+
+                LineUpGlobal.sortingOrderAsc = LineUpGlobal.sortingOrderAsc?false:true;
+            }else{
+                LineUpGlobal.sortingOrderAsc = false;
+            }
+
+
+            that.storage.resortData({columnID: d.header.column, asc:LineUpGlobal.sortingOrderAsc});
             that.updateBody(that.storage.getColumnHeaders(), that.storage.getData());
             that.sortedColumn= d.header;
             that.updateHeader(that.storage.getColumnHeaders());
@@ -177,9 +201,24 @@ LineUp.prototype.updateHeader = function(headers){
                 return ((50-4)/4);
             else return 50/2;
         },
-        x:3
+        x:12
     }).text(function (d) {
         return d.header.label;
+    })
+
+    level1HeaderEnter.append("text").attr({
+        'class':'headerSort',
+        y: function (d) {
+            if (d.header instanceof LineUpStackedColumn)
+                return ((50-4)/4);
+            else return 50/2;
+        },
+        x:2
+    }).style({
+
+        'font-family':'FontAwesome',
+        'font-size':'10pt',
+        'fill':'white'
     })
 
 
@@ -201,10 +240,18 @@ LineUp.prototype.updateHeader = function(headers){
         }
     }).call(this.dragWeight)
 
-    level1Headers.select("text").classed("sortedColumn",function(d){
-        if (d.header.id == that.sortedColumn.id) return true;
-        else return false;
-    })
+    level1Headers.select(".headerLabel")
+        .classed("sortedColumn",function(d){
+            return d.sortedBy
+//            if (d.header.id == that.sortedColumn.id) return true;
+//            else return false;
+        })
+
+    level1Headers.select(".headerSort").text(function(d){
+        return ((d.sortedBy)?
+            ((LineUpGlobal.sortingOrderAsc)?'\uf0de':'\uf0dd')
+            :"");})
+
 
 
 
@@ -216,7 +263,11 @@ LineUp.prototype.updateHeader = function(headers){
         .forEach(function(d){
             var parentOffset = d.offset;
             d.header.hierarchical.forEach(function(subHeader){
-                var hObject = {offset:parentOffset, header:subHeader};
+                var hObject = {
+                    offset:parentOffset,
+                    header:subHeader,
+                    sortedBy:((that.sortedColumn!=[])?that.sortedColumn.column== subHeader.column:false)
+                };
                 parentOffset+=subHeader.width;
                 l2Headers.push(hObject)
             })
@@ -242,8 +293,16 @@ LineUp.prototype.updateHeader = function(headers){
         }
     }).on({
         "click":function(d){
-//            console.log(d);
-            that.storage.resortData({columnID: d.header.column});
+            if (that.sortedColumn!=[] && (d.header.column == that.sortedColumn.column))
+            {
+
+                LineUpGlobal.sortingOrderAsc = LineUpGlobal.sortingOrderAsc?false:true;
+            }else{
+                LineUpGlobal.sortingOrderAsc = false;
+            }
+
+
+            that.storage.resortData({columnID: d.header.column, asc:LineUpGlobal.sortingOrderAsc});
             that.updateBody(that.storage.getColumnHeaders(), that.storage.getData())
             that.sortedColumn= d.header;
             that.updateHeader(that.storage.getColumnHeaders())
@@ -263,11 +322,21 @@ LineUp.prototype.updateHeader = function(headers){
     level2HeaderEnter.append("text").attr({
         "class":"headerLabel",
         y:(50-4)/4,
-        x:3
+        x:12
     }).text(function (d) {
         return d.header.label;
     })
 
+    level2HeaderEnter.append("text").attr({
+        'class':'headerSort',
+        y:(50-4)/4,
+        x:2
+    }).style({
+
+        'font-family':'FontAwesome',
+        'font-size':'10pt',
+        'fill':'white'
+    })
 
     // --- update ---
     level2Headers.attr({
@@ -281,11 +350,15 @@ LineUp.prototype.updateHeader = function(headers){
         cx:function(d){return d.header.width-6-2}
     })
 
-    level2Headers.select("text").classed("sortedColumn",function(d){
+    level2Headers.select(".headerLabel").classed("sortedColumn",function(d){
         if (d.header.id == that.sortedColumn.id) return true;
         else return false;
     })
 
+    level2Headers.select(".headerSort").text(function(d){
+        return ((d.sortedBy)?
+            ((LineUpGlobal.sortingOrderAsc)?'\uf0de':'\uf0dd')
+            :"");})
 
 
 };
@@ -344,7 +417,11 @@ LineUp.prototype.updateBody = function(headers, data){
     var offset = 0;
     var headerInfo =  d3.map();
     headers.forEach(function(d, index){
-        headerInfo.set(d.id,{offset:offset,header:d, index:index});
+        var isGray = (d instanceof LineUpStringColumn)
+            || (d instanceof LineUpCompositeColumn)
+            || (d.name == "rank")
+
+        headerInfo.set(d.id,{offset:offset,header:d, index:index, inStack:false, isGray:isGray});
         offset+= d.width+2;
     });
 
@@ -354,17 +431,17 @@ LineUp.prototype.updateBody = function(headers, data){
     this.indexOffset=headers.length; // TODO: REPLACE by flatten function !!
     var that = this;
 ////    console.log(headerInfo);
-//    headers
-//        .filter(function(d){return (d instanceof LineUpStackedColumn)})
-//        .forEach(function(stackedColumn){
-//            var xOffset = headerInfo.get(stackedColumn.id).offset;
-//            stackedColumn.hierarchical.forEach(function(innerColumn){
-//                headerInfo.set(innerColumn.id,{offset:xOffset,header:innerColumn, index:that.indexOffset});
-//                xOffset+= innerColumn.width;
-//                that.indexOffset= that.indexOffset+1;
-//
-//            })
-//        });
+    headers
+        .filter(function(d){return (d instanceof LineUpStackedColumn)})
+        .forEach(function(stackedColumn){
+            var xOffset = headerInfo.get(stackedColumn.id).offset;
+            stackedColumn.hierarchical.forEach(function(innerColumn){
+                headerInfo.set(innerColumn.id,{offset:xOffset,header:innerColumn, index:that.indexOffset, inStack:true, isGray:false});
+                xOffset+= innerColumn.width;
+                that.indexOffset= that.indexOffset+1;
+
+            })
+        });
 
 
     var datLength = data.length;
@@ -392,12 +469,15 @@ LineUp.prototype.updateBody = function(headers, data){
             var data = Object.keys(d)
                 .filter(function(key){return headerInfo.has(key) && (headerInfo.get(key).header instanceof LineUpStringColumn)})
                 .map(function(key){return {key:key,value:d[key]};});
-            data.push({key:"rank",value:i});// TODO: should be fixed to the real rank
+            data.push({key:"rank",value:d["rank"]});// TODO: should be fixed to the real rank
             return data;
         }).enter()
         .append("text")
         .attr({
-            "class":"tableData text",
+            "class":function(d){
+                if (d.key == "rank") return "tableData text rank";
+                else return "tableData text";
+            },
             x:function(d){
                 return headerInfo.get(d.key).offset
             },
@@ -405,10 +485,14 @@ LineUp.prototype.updateBody = function(headers, data){
         }).text(function(d){return d.value});
 
 
+
+
+
+
     allRowsEnter.selectAll(".tableData.bar")
         .data(function(d,i){
             var data = Object.keys(d)
-                .filter(function(key){return headerInfo.has(key) && (headerInfo.get(key).header instanceof LineUpNumberColumn)})
+                .filter(function(key){return headerInfo.has(key) && (headerInfo.get(key).header instanceof LineUpNumberColumn && !headerInfo.get(key).inStack)})
                 .map(function(key){return {key:key,value:d[key]};});
             return data;
         }).enter()
@@ -419,12 +503,14 @@ LineUp.prototype.updateBody = function(headers, data){
             height:20-4
         });
 
-    allRowsEnter.selectAll(".tableData.stacked")
+    allRows.selectAll(".tableData.stacked")
         .data(function(d,i){
-//            console.log(Object.keys(d));
-            var data = Object.keys(d)
-                .filter(function(key){return headerInfo.has(key) && (headerInfo.get(key).header instanceof LineUpStackedColumn)})
-                .map(function(key){return {key:key,value:d[key]};});
+            var data = headerInfo.keys()
+                .filter(function(key){
+                    return (headerInfo.get(key).header instanceof LineUpStackedColumn)}
+                )
+                .map(function(key){return {key:headerInfo.get(key).header.column,value:headerInfo.get(key), parentData:d};});
+//            console.log("data:",data);
             return data;
         }).enter()
         .append("g")
@@ -433,8 +519,48 @@ LineUp.prototype.updateBody = function(headers, data){
             y:2,
             height:20-4
         });
+    var allStack = allRows.selectAll(".tableData.stacked").selectAll("rect").data(
+        function(d){
+//            console.log("d",d);
+            var res =0;
+            var subcolumns = [];
+            d.value.header.hierarchical.forEach(function(subhead) {
+//                console.log("p", d.parentData);
+                var width = subhead.scale(d.parentData[subhead.column])* subhead.width;
 
+                subcolumns.push({
+                    headerInfo:subhead,
+                    width:width,
+                    offset:res
+                })
+                if (LineUpGlobal.renderingOptions.stacked){
+                    res += width;
+                }else{
+                    res += subhead.width;
+                }
+                //subhead.scale(d.parentData[subhead.column]) * subhead.width;
 
+            });
+//            console.log("subc",subcolumns);
+            return subcolumns
+            }
+    )
+     allStack.enter().append("rect").attr({
+            y:2,
+            height:20-4
+        }).style({
+
+            fill: function(d){
+//                console.log("hi",headerInfo);
+                return LineUpGlobal.columnColors(headerInfo.get(d.headerInfo.id).index)
+            }
+        })
+     allStack.transition().attr({
+         x:function(d){return d.offset;},
+         width: function (d) {
+             return (d.width>2)?d.width-2: d.width
+         }
+     })
 
 
     //--- update ---
@@ -451,8 +577,20 @@ LineUp.prototype.updateBody = function(headers, data){
                 return headerInfo.get(d.key).offset
             }
         }).style({
-            fill: function(d){ return LineUpGlobal.columnColors(headerInfo.get(d.key).index)}
+            fill: function(d){
+                return "#333333"
+//                return LineUpGlobal.columnColors(headerInfo.get(d.key).index)
+            }
         })
+
+    allRows.selectAll(".tableData.text.rank")
+        .data(function(d){
+//            console.log(d);
+            return [{key:"rank",value:d["rank"]}]
+        }
+        )
+        .text(function(d){return d.value});
+
 
     allRows.selectAll(".tableData.bar")
         .attr({
@@ -470,7 +608,9 @@ LineUp.prototype.updateBody = function(headers, data){
 
     allRows.selectAll(".tableData.stacked")
         .attr({
-            "transform":function(d) {return "translate("+headerInfo.get(d.key).offset+","+2+")";}
+            "transform":function(d) {
+                return "translate("+ d.value.offset+","+2+")";
+            }
 //            x:function(d){
 //                return headerInfo.get(d.key).offset
 //            },

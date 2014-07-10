@@ -335,29 +335,42 @@ LineUpLocalStorage.prototype = $.extend({},{},
    },
    resortData: function(spec){
        spec.columnID;
-       var ascending = spec.ascending || false;
 
+       var asc = spec.asc || false;
+
+       console.log("spec", spec);
        console.log("resort: ",spec);
-       var sortFunction = function(){return 0};
+       var accessFunction = function(){return 0};
+
        var fh = this.flatHeaders();
 
        fh.forEach(function(header){
            if (header.column === spec.columnID){
                if (header instanceof LineUpStackedColumn){
-                    sortFunction= function(a,b){
-                        var aValue =0;
-                        var bValue =0;
-
-                        header.hierarchical.forEach(function(subhead){
-                            aValue += subhead.scale(a[subhead.column])*subhead.width;
-                            bValue += subhead.scale(b[subhead.column])*subhead.width;
-                        })
-                        return d3.descending(aValue, bValue);
+                   accessFunction = function(a){
+                       var res = 0;
+                       header.hierarchical.forEach(function(subhead) {
+                           res += subhead.scale(a[subhead.column]) * subhead.width;
+                       });
+                       return res;
                     }
+//                    accessFunction= function(a,b){
+//                        var aValue =0;
+//                        var bValue =0;
+//
+//                        header.hierarchical.forEach(function(subhead){
+//                            aValue += subhead.scale(a[subhead.column])*subhead.width;
+//                            bValue += subhead.scale(b[subhead.column])*subhead.width;
+//                        })
+//                        return d3.descending(aValue, bValue);
+//                    }
                }else{
-                   sortFunction = function(a,b){
-                       return d3.descending(a[header.column],b[header.column]);
+                   accessFunction = function(a){
+                       return a[header.column]
                    }
+//                   accessFunction = function(a,b){
+//                       return d3.descending(a[header.column],b[header.column]);
+//                   }
 
                }
 
@@ -366,9 +379,14 @@ LineUpLocalStorage.prototype = $.extend({},{},
        })
 
 //       console.log(sortFunction);
-       this.data.sort(sortFunction);
+       console.log(accessFunction);
+       this.data.sort(function(a,b){
+           return d3.descending(accessFunction(a), accessFunction(b))
+       });
 
+        this.assignRanks(accessFunction);
 
+       if (asc) this.data.reverse();
 
 
 
@@ -378,7 +396,26 @@ LineUpLocalStorage.prototype = $.extend({},{},
    /*
    * assigns the ranks to the data which is expected to be sorted in decreasing order
    * */
-   assignRanks:function(){
+   assignRanks:function(accessFunction){
+
+       console.log("assign Ranks:", accessFunction);
+
+       var actualRank =1;
+       var actualValue = -1;
+       this.data.forEach(function(d){
+           if (actualValue==-1) actualValue = accessFunction(d);
+
+           if (actualValue!=accessFunction(d)){
+               actualRank++;
+               actualValue = accessFunction(d);
+           }
+           d.rank = actualRank;
+
+
+
+
+
+       })
 
 
    }

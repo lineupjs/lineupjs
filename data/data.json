@@ -16,13 +16,7 @@
             "width" : 150,
             "domain" : [0,100]
         },
-        {
-            "type" : "stacked",
-            "id" : "stacked1",
-            "label" : "c1",
-            "children":[]
-        },
-		{	
+		{
 			"type" : "stacked",
 			"id" : "stacked",
 			"label" : "Combined",
