@@ -12,6 +12,8 @@
  * @class
  */
 function LineUpColumn(desc) {
+//    console.log(desc);
+//    console.log(desc.width);
     this._desc = desc;
     this.column = desc.column;
     this.width = desc.width || 100;
@@ -22,6 +24,8 @@ function LineUpColumn(desc) {
 LineUpColumn.prototype = {
     init : function(table, data) {
         this.table = table
+        console.log("init "+this.id+": "+this.width);
+
     },
     getValue : function(row) {
         return row[this.column];
@@ -207,7 +211,10 @@ function LineUpStackedColumn(desc,toColumn) {
     this.hierarchical = this.children;
     this.compressed = false;
     this.filter = desc.filter || [0,1];
-    this.width = 0;
+    this.width = (this.children.length>0)?0:100; // width 100 if a new stacked column
+    this.label = "Stacked Column"
+    this.column = "stacked_"+(Date.now() + Math.floor(Math.random()*10000))
+
     for (var i = this.children.length - 1; i >= 0; i--) {
         var child = this.children[i];
         this.width += child.width;
@@ -328,26 +335,28 @@ LineUpLocalStorage.prototype = $.extend({},{},
    },
    resortData: function(spec){
        spec.columnID;
+       var ascending = spec.ascending || false;
 
-//       var sortFunction = function(){return 0}
+       console.log("resort: ",spec);
+       var sortFunction = function(){return 0};
        var fh = this.flatHeaders();
 
        fh.forEach(function(header){
-           if (header.id === spec.columnID){
+           if (header.column === spec.columnID){
                if (header instanceof LineUpStackedColumn){
                     sortFunction= function(a,b){
                         var aValue =0;
                         var bValue =0;
 
                         header.hierarchical.forEach(function(subhead){
-                            aValue += subhead.scale(a[subhead.id])*subhead.width;
-                            bValue += subhead.scale(b[subhead.id])*subhead.width;
+                            aValue += subhead.scale(a[subhead.column])*subhead.width;
+                            bValue += subhead.scale(b[subhead.column])*subhead.width;
                         })
                         return d3.descending(aValue, bValue);
                     }
                }else{
                    sortFunction = function(a,b){
-                       return d3.descending(a[header.id],b[header.id]);
+                       return d3.descending(a[header.column],b[header.column]);
                    }
 
                }
@@ -356,9 +365,26 @@ LineUpLocalStorage.prototype = $.extend({},{},
 
        })
 
-        this.data.sort(sortFunction);
-       console.log(this.data);
+//       console.log(sortFunction);
+       this.data.sort(sortFunction);
+
+
+
+
+
+
+//       console.log(this.data);
+   },
+   /*
+   * assigns the ranks to the data which is expected to be sorted in decreasing order
+   * */
+   assignRanks:function(){
+
+
    }
+
+
+
 
 
 });

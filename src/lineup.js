@@ -5,15 +5,25 @@
 var LineUpGlobal = {
     columnColors: d3.scale.category10(),
     htmlLayout: {
-        menuheight: 25,
-        menuExpandheight: 50,
+        menuHeight: 25,
+        menuHeightExpanded: 50,
         headerheight: 50,
         windowOffsetX: 5,
         windowOffsetY: 5,
-        headerOffsetY: function(){return (this.menuheight + this.windowOffsetY + 3) },
-        bodyOffsetY: function(){return (this.menuheight + this.windowOffsetY + this.headerheight +3) }
+        headerOffsetY: function(){return (this.menuHeight + this.windowOffsetY + 3) },
+        bodyOffsetY: function(){return (this.menuHeight + this.windowOffsetY + this.headerheight +3) }
 
-    }
+    },
+    renderingOptions: {
+        stacked:false,
+        animated:true
+    },
+    datasets:[],
+    actualDataSet: [],
+    lineUpRenderer:null
+
+
+
 
 };
 
@@ -27,16 +37,87 @@ var LineUp = function(spec){
     this.storage = spec.storage;
     this.sortedColumn = [];
 
+
+    var that = this;
+
+
+    /*
+    * define dragging behaviour for header weights
+    * */
+
+    function dragWeightStarted() {
+        d3.event.sourceEvent.stopPropagation();
+        d3.select(this).classed("dragging", true);
+    }
+
+
+    function draggedWeight() {
+        var newValue = Math.max(d3.mouse(this.parentNode)[0],2);
+//       d3.select(this).attr("cx", d.x = newValue );
+        that.reweightHeader({column:d3.select(this).data()[0], value:newValue})
+        that.updateBody(that.storage.getColumnHeaders(),that.storage.getData())
+    }
+
+    function dragWeightEnded() {
+        d3.select(this).classed("dragging", false);
+        if (that.sortedColumn instanceof LineUpStackedColumn){
+            that.storage.resortData({columnID: that.sortedColumn.id});
+            that.updateBody(that.storage.getColumnHeaders(), that.storage.getData());
+        }
+    }
+
+
+    this.dragWeight= d3.behavior.drag()
+        .origin(function(d) { return d; })
+        .on("dragstart", dragWeightStarted)
+        .on("drag", draggedWeight)
+        .on("dragend", dragWeightEnded);
+
+
+
 };
+
+LineUp.prototype.changeDataStorage= function(spec){
+//    d3.select("#lugui-table-header-svg").selectAll().remove();
+    this.storage = spec.storage;
+    this.sortedColumn = [];
+    this.startVis();
+}
+
 
 /**
  * the function to start the LineUp visualization
  */
 LineUp.prototype.startVis = function(){
 
-    this.updateHeader(this.storage.getColumnHeaders())
+    this.updateMenu();
+    this.updateHeader(this.storage.getColumnHeaders());
     this.updateBody(this.storage.getColumnHeaders(), this.storage.getData())
+
 }
+
+
+LineUp.prototype.updateMenu = function () {
+    var kv = getKeyValueFromObject(LineUpGlobal.renderingOptions)
+
+    var that = this;
+    var kvNodes =d3.select("#lugui-menu-rendering").selectAll("span").data(kv,function(d){return d.key;})
+    kvNodes.exit().remove();
+    kvNodes.enter().append("span").on({
+        "click":function(d){
+            LineUpGlobal.renderingOptions[d.key] = !LineUpGlobal.renderingOptions[d.key]
+            that.updateMenu();
+            that.updateHeader(this.storage.getColumnHeaders())
+            that.updateBody(this.storage.getColumnHeaders(), this.storage.getData())
+        }
+    })
+    kvNodes.html(function(d){
+        return '<a href="#"> <i class="fa '+ (d.value?'fa-check-circle-o':'fa-circle-o')+'" ></i> '+ d.key+'</a>&nbsp;&nbsp;'
+    })
+
+}
+
+
 
 /**
  * Render the given headers
@@ -51,34 +132,9 @@ LineUp.prototype.updateHeader = function(headers){
         var hObject = {offset:offset,header:d};
         offset+= d.width+2;
         return hObject;
-    })
+    });
+    console.log("headersEnriched", headersEnriched);
 
-    var dragWeight= d3.behavior.drag()
-        .origin(function(d) { return d; })
-        .on("dragstart", dragstarted)
-        .on("drag", dragged)
-        .on("dragend", dragended);
-
-    function dragstarted(d) {
-        d3.event.sourceEvent.stopPropagation();
-        d3.select(this).classed("dragging", true);
-    }
-
-
-    function dragged(d) {
-        var newValue = Math.max(d3.mouse(this.parentNode)[0],2);
-//       d3.select(this).attr("cx", d.x = newValue );
-       that.reweightHeader({column:d3.select(this).data()[0], value:newValue})
-        that.updateBody(that.storage.getColumnHeaders(),that.storage.getData())
-    }
-
-    function dragended(d) {
-        d3.select(this).classed("dragging", false);
-        if (that.sortedColumn instanceof LineUpStackedColumn){
-            that.storage.resortData({columnID: that.sortedColumn.id});
-            that.updateBody(that.storage.getColumnHeaders(), that.storage.getData());
-        }
-    }
 
     // ==== level 1 columns =====
     var level1Headers =svg.selectAll(".l1Header").data(headersEnriched);
@@ -96,7 +152,7 @@ LineUp.prototype.updateHeader = function(headers){
         "fill":function(d,i){return LineUpGlobal.columnColors(i)}
     }).on({
         "click":function(d){
-            that.storage.resortData({columnID: d.header.id});
+            that.storage.resortData({columnID: d.header.column});
             that.updateBody(that.storage.getColumnHeaders(), that.storage.getData());
             that.sortedColumn= d.header;
             that.updateHeader(that.storage.getColumnHeaders());
@@ -112,7 +168,7 @@ LineUp.prototype.updateHeader = function(headers){
             else return 50/2;},
         r:5
 
-    }).call(dragWeight)
+    })
 
     level1HeaderEnter.append("text").attr({
         "class":"headerLabel",
@@ -134,13 +190,16 @@ LineUp.prototype.updateHeader = function(headers){
     level1Headers.select("rect").attr({
         width:function(d){return d.header.width},
         height: function(d){
+
             if (d.header instanceof LineUpStackedColumn)
                 return ((50-4)/2-2);
             else return 50-4;}
     });
-    level1Headers.selectAll(".weightHandle").attr({
-        cx:function(d){return d.header.width-6}
-    })
+    level1Headers.select(".weightHandle").attr({
+        cx:function(d){
+            return (d.header.width-6)
+        }
+    }).call(this.dragWeight)
 
     level1Headers.select("text").classed("sortedColumn",function(d){
         if (d.header.id == that.sortedColumn.id) return true;
@@ -184,7 +243,7 @@ LineUp.prototype.updateHeader = function(headers){
     }).on({
         "click":function(d){
 //            console.log(d);
-            that.storage.resortData({columnID: d.header.id});
+            that.storage.resortData({columnID: d.header.column});
             that.updateBody(that.storage.getColumnHeaders(), that.storage.getData())
             that.sortedColumn= d.header;
             that.updateHeader(that.storage.getColumnHeaders())
@@ -198,7 +257,7 @@ LineUp.prototype.updateHeader = function(headers){
         cy:(50-4)/4,
         r:5
 
-    }).call(dragWeight);
+    }).call(this.dragWeight);
 
 
     level2HeaderEnter.append("text").attr({
@@ -218,7 +277,7 @@ LineUp.prototype.updateHeader = function(headers){
         width:function(d){return d.header.width-2},
         height: (50-4)/2-2
     });
-    level2Headers.selectAll(".weightHandle").attr({
+    level2Headers.select(".weightHandle").attr({
         cx:function(d){return d.header.width-6-2}
     })
 
@@ -239,7 +298,7 @@ LineUp.prototype.updateHeader = function(headers){
  */
 LineUp.prototype.reweightHeader= function(change){
 
-    var headers = this.storage.getColumnHeaders()
+    var headers = this.storage.getColumnHeaders();
     headers.forEach(function(d){
         if (d instanceof LineUpStackedColumn){
 
@@ -253,7 +312,7 @@ LineUp.prototype.reweightHeader= function(change){
             }else{
                 d.hierarchical.forEach(function (subHeader) {
                     if (subHeader.id === change.column.header.id ){
-                        var diff = change.value - subHeader.width
+                        var diff = change.value - subHeader.width;
                         subHeader.width +=diff;
                         d.width+=diff;
                     }
@@ -281,8 +340,7 @@ LineUp.prototype.reweightHeader= function(change){
  */
 LineUp.prototype.updateBody = function(headers, data){
 
-    console.log("DDD",data);
-
+    // generate ColumnLayout
     var offset = 0;
     var headerInfo =  d3.map();
     headers.forEach(function(d, index){
@@ -290,20 +348,23 @@ LineUp.prototype.updateBody = function(headers, data){
         offset+= d.width+2;
     });
 
+
+    console.log(headerInfo);
+
     this.indexOffset=headers.length; // TODO: REPLACE by flatten function !!
     var that = this;
-//    console.log(headerInfo);
-    headers
-        .filter(function(d){return (d instanceof LineUpStackedColumn)})
-        .forEach(function(headerI){
-            var xOffset = headerInfo.get(headerI.id).offset;
-            headerI.hierarchical.forEach(function(d){
-                headerInfo.set(d.id,{offset:xOffset,header:d, index:that.indexOffset});
-                xOffset+= d.width;
-                that.indexOffset= that.indexOffset+1;
-
-            })
-        });
+////    console.log(headerInfo);
+//    headers
+//        .filter(function(d){return (d instanceof LineUpStackedColumn)})
+//        .forEach(function(stackedColumn){
+//            var xOffset = headerInfo.get(stackedColumn.id).offset;
+//            stackedColumn.hierarchical.forEach(function(innerColumn){
+//                headerInfo.set(innerColumn.id,{offset:xOffset,header:innerColumn, index:that.indexOffset});
+//                xOffset+= innerColumn.width;
+//                that.indexOffset= that.indexOffset+1;
+//
+//            })
+//        });
 
 
     var datLength = data.length;
@@ -313,15 +374,15 @@ LineUp.prototype.updateBody = function(headers, data){
 
     d3.select("#lugui-table-body-svg").attr({
         height: datLength*20
-    })
+    });
 
-    var allRows = d3.select("#lugui-table-body-svg").selectAll(".row").data(data, function(d){return d.schoolname})
+    var allRows = d3.select("#lugui-table-body-svg").selectAll(".row").data(data, function(d){return d.schoolname}) // TODO: ID
     allRows.exit().remove();
 
     // --- append ---
     var allRowsEnter = allRows.enter().append("g").attr({
         "class":"row"
-    })
+    });
 
 
 
@@ -358,6 +419,23 @@ LineUp.prototype.updateBody = function(headers, data){
             height:20-4
         });
 
+    allRowsEnter.selectAll(".tableData.stacked")
+        .data(function(d,i){
+//            console.log(Object.keys(d));
+            var data = Object.keys(d)
+                .filter(function(key){return headerInfo.has(key) && (headerInfo.get(key).header instanceof LineUpStackedColumn)})
+                .map(function(key){return {key:key,value:d[key]};});
+            return data;
+        }).enter()
+        .append("g")
+        .attr({
+            "class":"tableData stacked",
+            y:2,
+            height:20-4
+        });
+
+
+
 
     //--- update ---
     allRows.transition().duration(1000).attr({
@@ -390,6 +468,18 @@ LineUp.prototype.updateBody = function(headers, data){
             fill: function(d){ return LineUpGlobal.columnColors(headerInfo.get(d.key).index)}
         })
 
+    allRows.selectAll(".tableData.stacked")
+        .attr({
+            "transform":function(d) {return "translate("+headerInfo.get(d.key).offset+","+2+")";}
+//            x:function(d){
+//                return headerInfo.get(d.key).offset
+//            },
+//            width:function(d){
+//                var hi = headerInfo.get(d.key)
+//
+//                return Math.max(hi.header.scale(+d.value)*hi.header.width-2,0)
+//            }
+        })
 
 
 
@@ -417,7 +507,7 @@ var layoutHTML= function(){
     $("#lugui-menu").css({
         "top" : LineUpGlobal.htmlLayout.windowOffsetY +"px",
         "left" : LineUpGlobal.htmlLayout.windowOffsetX+"px",
-        "height": LineUpGlobal.htmlLayout.menuheight+"px"
+        "height": LineUpGlobal.htmlLayout.menuHeight+"px"
     })
     $("#lugui-table-header").css({
         "top" : LineUpGlobal.htmlLayout.headerOffsetY() +"px",
@@ -468,19 +558,63 @@ $(
     layoutHTML();
 
 
+    var loadDataset = function(ds){
+        d3.json(ds.baseURL+"/"+ds.descriptionFile, function(desc) {
+//            d3.select("head").append("link").attr("href",desc.css).attr("rel","stylesheet");
+            d3.tsv(ds.baseURL+"/"+desc.file, function(_data) {
+                var spec = {};
+                spec.storage = new LineUpLocalStorage("#wsv", _data, desc.columns);
+
+                console.log(spec.storage.flatHeaders());
+
+                if (LineUpGlobal.lineUpRenderer){
+                    LineUpGlobal.lineUpRenderer.changeDataStorage(spec)
+                }else{
+                    LineUpGlobal.lineUpRenderer = new LineUp(spec);
+                    LineUpGlobal.lineUpRenderer.startVis();
+                }
+
+
+            });
+        })
+    }
 
 
 
-    d3.json("data/data.json", function(desc) {
-        d3.select("head").append("link").attr("href",desc.css).attr("rel","stylesheet");
-        d3.tsv("data/"+desc.file, function(_data) {
-            var spec = {};
-            spec.storage = new LineUpLocalStorage("#wsv", _data, desc.columns);
+    d3.json("datasets.json", function(error,data){
+        console.log("datasets:", data, error);
 
-            var lu = new LineUp(spec);
-            lu.startVis();
+        LineUpGlobal.datasets = data.datasets;
+        var ds = d3.select("#lugui-dataset-selector").selectAll("option").data(data.datasets)
+        ds.enter().append("option")
+        .attr({
+            value:function(d,i){return i;}
+        }).text(function(d){return d.name;})
+
+
+        document.getElementById('lugui-dataset-selector').addEventListener('change', function () {
+//            console.log(LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value]);
+            loadDataset(LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value])
+
 
         });
-    })
+
+        //and start with 0:
+        loadDataset(LineUpGlobal.datasets[0]);
+
+
+    });
+
+
+
+
 
 })
+
+
+function getKeyValueFromObject(o){
+    return Object.keys(o).map(function (key) {
+        return {key:key, value:o[key]};
+    })
+}
+
