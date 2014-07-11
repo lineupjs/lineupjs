@@ -3,7 +3,7 @@
     [
         {
             "baseURL":"data",
-            "descriptionFile":"data.json",
+            "descriptionFile":"data_small.json",
             "name":"University Rankings"
         },
         {
