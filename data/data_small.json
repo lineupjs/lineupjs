@@ -1,6 +1,7 @@
 {
 	"file" : "wur2013.txt",
 	"css" : "data.css",
+    "primaryKey":"schoolname",
 	"columns" : [
 		{	
 			"type" : "rank"

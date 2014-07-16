@@ -12,8 +12,7 @@
  * @class
  */
 function LineUpColumn(desc) {
-//    console.log(desc);
-//    console.log(desc.width);
+
     this._desc = desc;
     this.column = desc.column;
     this.width = desc.width || 100;
@@ -22,32 +21,11 @@ function LineUpColumn(desc) {
     this.collapsed = desc.collapsed || false;
 }
 LineUpColumn.prototype = {
-    init : function(table, data) {
-        this.table = table
-        console.log("init "+this.id+": "+this.width);
-
-    },
     getValue : function(row) {
         return row[this.column];
     },
-    sortByMe : function() {
-        var table = this.findTable();
-        if (this.parent)
-            this.parent.mode='single';
-        table.sortBy(this);
-    },
-    sortBy : function(a,b) {
-        var va = this.get(a);
-        var vb = this.get(b);
-        return d3.ascending(va,vb);
-    },
     filterBy : function(row) {
         return true;
-    },
-    findTable : function() {
-        if (this.parent)
-            return this.parent.findTable();
-        return this.table;
     }
 };
 
@@ -64,31 +42,14 @@ function LineUpNumberColumn(desc) {
     this.filter = desc.filter || [0,100];
 }
 LineUpNumberColumn.prototype = $.extend({},LineUpColumn.prototype,{
-        init : function(table, data) {
-        LineUpColumn.prototype.init.call(this, table, data)
-        var that = this;
-        data.forEach(function(row) {
-            row[that.column] = that.getN(row);
-        })
-    },
-    getS : function(row) {
-        return this.scale(this.getN(row));
-    },
-    getN : function(row) {
-        return +LineUpColumn.prototype.getValue.call(this, row);
-    },
     getValue : function(row) {
-        return d3.round(this.getN(row),3)
-    },
-    sortBy : function(a,b) {
-        var va = this.getN(a);
-        var vb = this.getN(b);
-        return d3.descending(va,vb);
+        return +LineUpColumn.prototype.getValue.call(this, row);
     },
     filterBy : function(row) {
         var n = this.getN(row);
         return n >= this.filter[0] && n <= this.filter[1];
     }
+
 });
 
 /**
@@ -122,10 +83,7 @@ function LineUpRankColumn(desc) {
     this.label = desc.label || "Rank";
 }
 LineUpRankColumn.prototype = $.extend({},LineUpColumn.prototype, {
-    getValue : function(row, i) {
-        return i+1;
-    },
-    sortBy : undefined
+
 });
 
 /**
@@ -143,61 +101,52 @@ function LineUpCompositeColumn(desc, toColumn) {
     };
 }
 LineUpCompositeColumn.prototype = $.extend({},LineUpColumn.prototype, {
-    init : function(table, data) {
-        LineUpColumn.prototype.init.call(this, table, data)
-        var that = this;
-        this.children.forEach(function(child) {
-            child.init(table, data)
-        })
-    },
-    align : function(child, $div, row) {
 
-    }
 });
 
-/**
- * A {@link LineUpCompositeColumn} implementation for Max Column
- * @param desc The description object
- * @param toColumn A function to convert desc.children to columns
- * @constructor
- * @extends LineUpCompositeColumn
- */
-function LineUpMaxColumn(desc,toColumn) {
-    LineUpCompositeColumn.call(this,desc,toColumn)
-    this.filter = desc.filter || [0,1];
-}
-LineUpMaxColumn.prototype = $.extend({},LineUpCompositeColumn.prototype, LineUpNumberColumn.prototype, {
-    init : function(table, data) {
-        LineUpCompositeColumn.prototype.init.call(this, table, data)
-    },
-    select : function(row) {
-        var key = "_"+this.id
-        if (row[key] !== undefined)
-            return this.children[row[key]]
-        var m = -1;
-        var mi = 0;
-        for (var i = this.children.length - 1; i >= 0; i--) {
-            var child = this.children[i];
-            var cm = child.getS(row);
-            if (cm > m) {
-                m = cm;
-                mi = i;
-            }
-        };
-        row[key] = mi;
-        var best = this.children[mi];
-        return best;
-    },
-    getS : function(row) {
-        return this.getN(row);
-    },
-    getN : function(row) {
-        return this.select(row).getS(row);
-    },
-    getValue: function(row) {
-        return this.select(row).getValue(row);
-    }
-});
+///**
+// * A {@link LineUpCompositeColumn} implementation for Max Column
+// * @param desc The description object
+// * @param toColumn A function to convert desc.children to columns
+// * @constructor
+// * @extends LineUpCompositeColumn
+// */
+//function LineUpMaxColumn(desc,toColumn) {
+//    LineUpCompositeColumn.call(this,desc,toColumn)
+//    this.filter = desc.filter || [0,1];
+//}
+//LineUpMaxColumn.prototype = $.extend({},LineUpCompositeColumn.prototype, LineUpNumberColumn.prototype, {
+//    init : function(table, data) {
+//        LineUpCompositeColumn.prototype.init.call(this, table, data)
+//    },
+//    select : function(row) {
+//        var key = "_"+this.id
+//        if (row[key] !== undefined)
+//            return this.children[row[key]]
+//        var m = -1;
+//        var mi = 0;
+//        for (var i = this.children.length - 1; i >= 0; i--) {
+//            var child = this.children[i];
+//            var cm = child.getS(row);
+//            if (cm > m) {
+//                m = cm;
+//                mi = i;
+//            }
+//        };
+//        row[key] = mi;
+//        var best = this.children[mi];
+//        return best;
+//    },
+//    getS : function(row) {
+//        return this.getN(row);
+//    },
+//    getN : function(row) {
+//        return this.select(row).getS(row);
+//    },
+//    getValue: function(row) {
+//        return this.select(row).getValue(row);
+//    }
+//});
 
 /**
  * A {@link LineUpCompositeColumn} implementation for Stacked Column
@@ -225,9 +174,7 @@ function LineUpStackedColumn(desc,toColumn) {
     this.mode = 'stacked' //single, stacked, alignBy
 }
 LineUpStackedColumn.prototype = $.extend({},LineUpCompositeColumn.prototype, LineUpNumberColumn.prototype, {
-    init : function(table, data) {
-        LineUpCompositeColumn.prototype.init.call(this, table, data)
-    },
+
     weights : function() {
         var r = [];
         var ws = 0;
@@ -240,28 +187,18 @@ LineUpStackedColumn.prototype = $.extend({},LineUpCompositeColumn.prototype, Lin
         };
         return r;
     },
-    getS : function(row) {
-        return this.getN(row);
-    },
-    getN : function(row) {
-        var key = "_"+this.id
-        if (row[key] !== undefined)
-            return row[key]
-
-        var w = this.weights();
-        var s = 0;
-        for (var i = this.children.length - 1; i >= 0; i--) {
-            s += w[i] * this.children[i].getS(row);
-        };
-        row[key] = s;
-        return s;
-    },
     getValue : function(row) {
-        return d3.round(this.getN(row),3);
-    },
-    sortByMe : function() {
-        this.mode = 'stacked';
-        LineUpCompositeColumn.prototype.sortByMe.call(this);
+
+/* nice idea to minimize calculation */
+//        var key = "_"+this.id
+//        if (row[key] !== undefined)
+//            return row[key]
+
+        var res = 0;
+        this.hierarchical.forEach(function(subhead) {
+            res += subhead.scale(row[subhead.column]) * subhead.width;
+        });
+        return res;
     }
 });
 
@@ -279,7 +216,7 @@ function LineUpLocalStorage(tableId, data, columns, options){
     var colTypes = $.extend({},options.colTypes, {
         "number" : LineUpNumberColumn,
         "string" : LineUpStringColumn,
-        "max" : LineUpMaxColumn,
+//        "max" : LineUpMaxColumn,
         "stacked" : LineUpStackedColumn,
         "rank" : LineUpRankColumn
     });
@@ -295,9 +232,10 @@ function LineUpLocalStorage(tableId, data, columns, options){
     this.data = data;
     this.cols = cols;
     var that = this;
-    cols.forEach(function(col) {
-        col.init(that, data);
-    })
+ /* maybe needed later */
+//    cols.forEach(function(col) {
+//        col.init(that, data);
+//    })
 }
 
 
@@ -338,67 +276,36 @@ LineUpLocalStorage.prototype = $.extend({},{},
 
        var asc = spec.asc || false;
 
-       console.log("spec", spec);
        console.log("resort: ",spec);
        var accessFunction = function(){return 0};
 
        var fh = this.flatHeaders();
 
+       //TODO: semi-optimal !! (maybe a map?)
+       // find selected header
+       var selectedHeader = {};
        fh.forEach(function(header){
-           if (header.column === spec.columnID){
-               if (header instanceof LineUpStackedColumn){
-                   accessFunction = function(a){
-                       var res = 0;
-                       header.hierarchical.forEach(function(subhead) {
-                           res += subhead.scale(a[subhead.column]) * subhead.width;
-                       });
-                       return res;
-                    }
-//                    accessFunction= function(a,b){
-//                        var aValue =0;
-//                        var bValue =0;
-//
-//                        header.hierarchical.forEach(function(subhead){
-//                            aValue += subhead.scale(a[subhead.column])*subhead.width;
-//                            bValue += subhead.scale(b[subhead.column])*subhead.width;
-//                        })
-//                        return d3.descending(aValue, bValue);
-//                    }
-               }else{
-                   accessFunction = function(a){
-                       return a[header.column]
-                   }
-//                   accessFunction = function(a,b){
-//                       return d3.descending(a[header.column],b[header.column]);
-//                   }
-
+               if (header.column === spec.columnID){
+                   selectedHeader = header;
                }
-
-           }
-
        })
 
-//       console.log(sortFunction);
-       console.log(accessFunction);
+
        this.data.sort(function(a,b){
-           return d3.descending(accessFunction(a), accessFunction(b))
+           return d3.descending(selectedHeader.getValue(a), selectedHeader.getValue(b))
        });
 
-        this.assignRanks(accessFunction);
+        this.assignRanks(function (a){return selectedHeader.getValue(a)});
 
        if (asc) this.data.reverse();
 
-
-
-
-//       console.log(this.data);
    },
    /*
    * assigns the ranks to the data which is expected to be sorted in decreasing order
    * */
    assignRanks:function(accessFunction){
 
-       console.log("assign Ranks:", accessFunction);
+//       console.log("assign Ranks:", accessFunction);
 
        var actualRank =1;
        var actualValue = -1;
@@ -411,13 +318,7 @@ LineUpLocalStorage.prototype = $.extend({},{},
            }
            d.rank = actualRank;
 
-
-
-
-
        })
-
-
    }
 
 

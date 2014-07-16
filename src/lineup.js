@@ -22,7 +22,8 @@ var LineUpGlobal = {
     datasets:[],
     actualDataSet: [],
     lineUpRenderer:null,
-    sortingOrderAsc:false
+    sortingOrderAsc:false,
+    primaryKey:""
 
 
 
@@ -144,7 +145,7 @@ LineUp.prototype.updateHeader = function(headers){
         offset+= d.width+2;
         return hObject;
     });
-    console.log("headersEnriched", headersEnriched);
+    //console.log("headersEnriched", headersEnriched);
 
 
     // ==== level 1 columns =====
@@ -426,11 +427,10 @@ LineUp.prototype.updateBody = function(headers, data){
     });
 
 
-    console.log(headerInfo);
+
 
     this.indexOffset=headers.length; // TODO: REPLACE by flatten function !!
     var that = this;
-////    console.log(headerInfo);
     headers
         .filter(function(d){return (d instanceof LineUpStackedColumn)})
         .forEach(function(stackedColumn){
@@ -446,14 +446,14 @@ LineUp.prototype.updateBody = function(headers, data){
 
     var datLength = data.length;
     var rowScale = d3.scale.ordinal()
-        .domain(data.map(function(d,i){return d.schoolname}))// TODO (important): chnge this to ID !!
+        .domain(data.map(function(d,i){return d[LineUpGlobal.primaryKey]}))// TODO (important): chnge this to ID !!
         .rangeBands([0,(datLength*20)],0,.2);
 
     d3.select("#lugui-table-body-svg").attr({
         height: datLength*20
     });
 
-    var allRows = d3.select("#lugui-table-body-svg").selectAll(".row").data(data, function(d){return d.schoolname}) // TODO: ID
+    var allRows = d3.select("#lugui-table-body-svg").selectAll(".row").data(data, function(d){return d[LineUpGlobal.primaryKey]}) // TODO: ID
     allRows.exit().remove();
 
     // --- append ---
@@ -510,7 +510,6 @@ LineUp.prototype.updateBody = function(headers, data){
                     return (headerInfo.get(key).header instanceof LineUpStackedColumn)}
                 )
                 .map(function(key){return {key:headerInfo.get(key).header.column,value:headerInfo.get(key), parentData:d};});
-//            console.log("data:",data);
             return data;
         }).enter()
         .append("g")
@@ -521,11 +520,10 @@ LineUp.prototype.updateBody = function(headers, data){
         });
     var allStack = allRows.selectAll(".tableData.stacked").selectAll("rect").data(
         function(d){
-//            console.log("d",d);
+
             var res =0;
             var subcolumns = [];
             d.value.header.hierarchical.forEach(function(subhead) {
-//                console.log("p", d.parentData);
                 var width = subhead.scale(d.parentData[subhead.column])* subhead.width;
 
                 subcolumns.push({
@@ -541,7 +539,6 @@ LineUp.prototype.updateBody = function(headers, data){
                 //subhead.scale(d.parentData[subhead.column]) * subhead.width;
 
             });
-//            console.log("subc",subcolumns);
             return subcolumns
             }
     )
@@ -567,7 +564,7 @@ LineUp.prototype.updateBody = function(headers, data){
     allRows.transition().duration(1000).attr({
         "transform":function(d, i){
 //                console.log(rowScale(d.schoolname), d.schoolname);
-               return  "translate("+2+","+rowScale(d.schoolname)+")" // TODO(important): remove this by ID !!
+               return  "translate("+2+","+rowScale(d[LineUpGlobal.primaryKey])+")" // TODO(important): remove this by ID !!
         }
     })
 
@@ -611,14 +608,6 @@ LineUp.prototype.updateBody = function(headers, data){
             "transform":function(d) {
                 return "translate("+ d.value.offset+","+2+")";
             }
-//            x:function(d){
-//                return headerInfo.get(d.key).offset
-//            },
-//            width:function(d){
-//                var hi = headerInfo.get(d.key)
-//
-//                return Math.max(hi.header.scale(+d.value)*hi.header.width-2,0)
-//            }
         })
 
 
@@ -700,12 +689,12 @@ $(
 
     var loadDataset = function(ds){
         d3.json(ds.baseURL+"/"+ds.descriptionFile, function(desc) {
-//            d3.select("head").append("link").attr("href",desc.css).attr("rel","stylesheet");
+
+            LineUpGlobal.primaryKey = desc.primaryKey;
+
             d3.tsv(ds.baseURL+"/"+desc.file, function(_data) {
                 var spec = {};
                 spec.storage = new LineUpLocalStorage("#wsv", _data, desc.columns);
-
-                console.log(spec.storage.flatHeaders());
 
                 if (LineUpGlobal.lineUpRenderer){
                     LineUpGlobal.lineUpRenderer.changeDataStorage(spec)
@@ -733,9 +722,7 @@ $(
 
 
         document.getElementById('lugui-dataset-selector').addEventListener('change', function () {
-//            console.log(LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value]);
             loadDataset(LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value])
-
 
         });
 
