@@ -564,7 +564,7 @@ LineUp.prototype.updateBody = function(headers, data){
     allRows.transition().duration(1000).attr({
         "transform":function(d, i){
 //                console.log(rowScale(d.schoolname), d.schoolname);
-               return  "translate("+2+","+rowScale(d[LineUpGlobal.primaryKey])+")" // TODO(important): remove this by ID !!
+               return  "translate("+2+","+rowScale(d[LineUpGlobal.primaryKey])+")" // TODO(important!!!): remove this by ID !!
         }
     })
 
