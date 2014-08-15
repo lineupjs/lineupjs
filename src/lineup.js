@@ -115,7 +115,7 @@ LineUp.prototype.updateMenu = function () {
         }
     })
     kvNodes.html(function(d){
-        return '<a href="#"> <i class="fa '+ (d.value?'fa-check-circle-o':'fa-circle-o')+'" ></i> '+ d.key+'</a>&nbsp;&nbsp;'
+        return '<a href="#"> <i class="fa '+ (d.value?'fa-check-square-o':'fa-square-o')+'" ></i> '+ d.key+'</a>&nbsp;&nbsp;'
     })
 
 }
@@ -158,6 +158,8 @@ LineUp.prototype.updateHeader = function(headers){
     });
 
     level1HeaderEnter.append("rect").attr({
+        "class":"labelBG",
+        y:0,
         width:function(d){return d.header.width},
         height:50-4
     }).style({
@@ -184,16 +186,17 @@ LineUp.prototype.updateHeader = function(headers){
         }
     });
 
-    level1HeaderEnter.append("circle").attr({
+    level1HeaderEnter.append("rect").attr({
         "class":"weightHandle",
-        cx:function(d){return d.header.width-6},
-        cy:function(d){
+        x:function(d){return d.header.width-3},
+        y:0,
+        height:function(d){
             if (d.header instanceof LineUpStackedColumn)
-                return ((50-4)/4);
-            else return 50/2;},
-        r:5
-
+                return 25-4;
+            else return 50-4;},
+        width:5
     })
+
 
     level1HeaderEnter.append("text").attr({
         "class":"headerLabel",
@@ -227,17 +230,18 @@ LineUp.prototype.updateHeader = function(headers){
     level1Headers.attr({
         "transform":function(d){return "translate("+ d.offset+","+2+")";}
     });
-    level1Headers.select("rect").attr({
-        width:function(d){return d.header.width},
+    level1Headers.select(".labelBG").attr({
+        width:function(d){return d.header.width-5},
         height: function(d){
 
             if (d.header instanceof LineUpStackedColumn)
                 return ((50-4)/2-2);
             else return 50-4;}
     });
+
     level1Headers.select(".weightHandle").attr({
-        cx:function(d){
-            return (d.header.width-6)
+        x:function(d){
+            return (d.header.width-5)
         }
     }).call(this.dragWeight)
 
@@ -286,8 +290,10 @@ LineUp.prototype.updateHeader = function(headers){
         "class":"l2Header"
     });
     level2HeaderEnter.append("rect").attr({
+        "class":"labelBG",
+        y:0,
         width:function(d){return d.header.width-2},
-        height:(50-4)/2-2
+        height:(25-4)//(50-4)/2-2
     }).style({
         "fill": function (d, i) {
             return LineUpGlobal.columnColors(i + colorOffset)
@@ -311,13 +317,22 @@ LineUp.prototype.updateHeader = function(headers){
 
     });
 
-    level2HeaderEnter.append("circle").attr({
-        "class":"weightHandle",
-        cx:function(d){return d.header.width-6-2},
-        cy:(50-4)/4,
-        r:5
+//    level2HeaderEnter.append("circle").attr({
+//        "class":"weightHandle",
+//        cx:function(d){return d.header.width-6-2},
+//        cy:(50-4)/4,
+//        r:5
+//
+//    }).call(this.dragWeight);
 
+    level2HeaderEnter.append("rect").attr({
+        "class":"weightHandle",
+        x:function(d){return d.header.width-5},
+        y:0,
+        height:25-4,
+        width:5
     }).call(this.dragWeight);
+
 
 
     level2HeaderEnter.append("text").attr({
@@ -343,12 +358,12 @@ LineUp.prototype.updateHeader = function(headers){
     level2Headers.attr({
         "transform":function(d){return "translate("+ d.offset+","+(2+50/2)+")";}
     });
-    level2Headers.select("rect").attr({
-        width:function(d){return d.header.width-2},
+    level2Headers.select(".labelBG").attr({
+        width:function(d){return d.header.width-2-5},
         height: (50-4)/2-2
     });
     level2Headers.select(".weightHandle").attr({
-        cx:function(d){return d.header.width-6-2}
+        x:function(d){return d.header.width-5-2}
     })
 
     level2Headers.select(".headerLabel").classed("sortedColumn",function(d){
