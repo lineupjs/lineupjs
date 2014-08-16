@@ -1,0 +1,61 @@
+{
+	"file" : "wur2013.txt",
+	"css" : "data.css",
+    "primaryKey":"schoolname",
+	"columns" : [
+		{	
+			"type" : "rank"
+		},
+		{	
+			"column": "schoolname",
+			"type" : "string",
+			"width" : 200
+		},
+		{
+			"type" : "stacked",
+			"id" : "stacked",
+			"label" : "Combined",
+			"children" : [
+                {
+                    "column": "academic",
+                    "type" : "number",
+                    "id":"acStack",
+                    "width" : 100,
+                    "domain" : [0,100]
+                },
+
+				{	
+					"column": "employer",
+					"type" : "number",
+					"width" : 100,
+					"domain" : [0,100]
+				},
+				{	
+					"column": "faculty",
+					"type" : "number",
+					"width" : 120,
+					"domain" : [0,100]
+				},
+				{	
+					"column": "citations",
+					"type" : "number",
+					"width" : 130,
+					"domain" : [0,100]
+				},
+				{	
+					"column": "international",
+					"type" : "number",
+					"width" : 200,
+					"domain" : [0,100]
+				},
+				{	
+					"column": "internationalstudents",
+					"label" : "international students",
+					"type" : "number",
+					"width" : 150,
+					"domain" : [0,100]
+				}		
+			]
+		}
+	]
+}

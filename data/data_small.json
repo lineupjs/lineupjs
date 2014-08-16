@@ -3,59 +3,90 @@
 	"css" : "data.css",
     "primaryKey":"schoolname",
 	"columns" : [
-		{	
-			"type" : "rank"
-		},
-		{	
-			"column": "schoolname",
-			"type" : "string",
-			"width" : 200
-		},
 		{
-			"type" : "stacked",
-			"id" : "stacked",
-			"label" : "Combined",
-			"children" : [
+			"column": "schoolname",
+			"type" : "string"
+		},
+        {
+            "column": "academic",
+            "type" : "number",
+            "domain" : [0,100]
+        },
+
+        {
+            "column": "employer",
+            "type" : "number",
+            "domain" : [0,100]
+        },
+        {
+            "column": "faculty",
+            "type" : "number",
+            "domain" : [0,100]
+        },
+        {
+            "column": "citations",
+            "type" : "number",
+            "domain" : [0,100]
+        },
+        {
+            "column": "international",
+            "type" : "number",
+            "domain" : [0,100]
+        },
+        {
+            "column": "internationalstudents",
+            "label" : "international students",
+            "type" : "number",
+            "domain" : [0,100]
+        }
+	],
+    "layout":{
+        "primary":[
+        {
+            "column": "schoolname",
+            "width" : 200
+        },
+        {
+            "column": "academic",
+            "width" : 100
+        },
+        {
+            "type" : "stacked",
+            "label" : "Combined",
+            "children" : [
                 {
                     "column": "academic",
-                    "type" : "number",
-                    "id":"acStack",
-                    "width" : 100,
-                    "domain" : [0,100]
+                    "width" : 100
                 },
 
-				{	
-					"column": "employer",
-					"type" : "number",
-					"width" : 100,
-					"domain" : [0,100]
-				},
-				{	
-					"column": "faculty",
-					"type" : "number",
-					"width" : 120,
-					"domain" : [0,100]
-				},
-				{	
-					"column": "citations",
-					"type" : "number",
-					"width" : 130,
-					"domain" : [0,100]
-				},
-				{	
-					"column": "international",
-					"type" : "number",
-					"width" : 200,
-					"domain" : [0,100]
-				},
-				{	
-					"column": "internationalstudents",
-					"label" : "international students",
-					"type" : "number",
-					"width" : 150,
-					"domain" : [0,100]
-				}		
-			]
-		}
-	]
+                {
+                    "column": "employer",
+                    "width" : 100
+                },
+                {
+                    "column": "faculty",
+                    "width" : 120
+                },
+                {
+                    "column": "citations",
+                    "width" : 130
+                },
+                {
+                    "column": "international",
+                    "width" : 200
+                },
+                {
+                    "column": "internationalstudents",
+                    "width" : 150
+                }
+            ]
+        },
+            { "type" : "stacked",
+                "label" : "Combined 2"
+            }
+
+
+
+    ]
+    }
 }
