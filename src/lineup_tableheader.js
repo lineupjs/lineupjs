@@ -57,7 +57,7 @@ LineUp.prototype.updateHeader = function(headers){
         "click":function(d){
             // TODO: adapt to comparison mode !!
             console.log(d.columnBundle);
-            if (LineUpGlobal.columnBundles[d.columnBundle].sortedColumn!=null && (d.getDataID() ==   LineUpGlobal.columnBundles[d.columnBundle].sortedColumn))
+            if (LineUpGlobal.columnBundles[d.columnBundle].sortedColumn!=null && (d.getDataID() ==   LineUpGlobal.columnBundles[d.columnBundle].sortedColumn.getDataID()))
             {
 
                 LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc = LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc?false:true;
@@ -66,9 +66,9 @@ LineUp.prototype.updateHeader = function(headers){
             }
 
 //TODO
-//            that.storage.resortData({columnID: d.header.column, asc:LineUpGlobal.sortingOrderAsc});
-//            that.updateBody(that.storage.getColumnHeaders(), that.storage.getData());
-            LineUpGlobal.columnBundles[d.columnBundle].sortedColumn= d.getDataID();
+            that.storage.resortData({column: d, asc:LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc});
+            that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
+            LineUpGlobal.columnBundles[d.columnBundle].sortedColumn= d;
             that.updateHeader(that.storage.getColumnLayout());
         }
     });
@@ -110,7 +110,12 @@ LineUp.prototype.updateHeader = function(headers){
 
     allHeaders.select(".headerLabel")
         .classed("sortedColumn",function(d){
-            return d.getDataID() == LineUpGlobal.columnBundles[d.columnBundle].sortedColumn
+            var sc = LineUpGlobal.columnBundles[d.columnBundle].sortedColumn
+            if (sc){
+                return d.getDataID() == sc.getDataID()
+            }else{
+                return false;
+            }
         })
 
 
@@ -131,9 +136,11 @@ LineUp.prototype.updateHeader = function(headers){
 
 
     allHeaders.select(".headerSort").text(function(d){
-        return ((d.getDataID() == LineUpGlobal.columnBundles[d.columnBundle].sortedColumn)?
+        var sc = LineUpGlobal.columnBundles[d.columnBundle].sortedColumn
+        return ((sc && d.getDataID() == LineUpGlobal.columnBundles[d.columnBundle].sortedColumn.getDataID())?
             ((LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc)?'\uf0de':'\uf0dd')
             :"");})
+
 
 
 };

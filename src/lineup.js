@@ -24,21 +24,24 @@ var LineUpGlobal = {
     datasets:[],
     actualDataSet: [],
     lineUpRenderer:null,
-    sortingOrderAsc:false,
+//    sortingOrderAsc:false,
     primaryKey:"",
 
     headerUpdateRequired:true,
     columnBundles:{
         "primary":{
-            sortedColumn:[],
+            sortedColumn:null,
             sortingOrderAsc:true
         },
         "secondary":{
             sortedColumn:[],
             sortingOrderAsc:true
         }
-    }
+    },
 
+    svgLayout:{
+      rowHeight:20
+    }
 
 
 
@@ -52,7 +55,7 @@ var LineUpGlobal = {
  */
 var LineUp = function(spec){
     this.storage = spec.storage;
-    this.sortedColumn = [];
+//    this.sortedColumn = [];
 
 
     var that = this;
@@ -70,26 +73,23 @@ var LineUp = function(spec){
 
     function draggedWeight() {
         var newValue = Math.max(d3.mouse(this.parentNode)[0],2);
-//       d3.select(this).attr("cx", d.x = newValue );
         that.reweightHeader({column:d3.select(this).data()[0], value:newValue})
-//        that.updateBody(that.storage.getColumnHeaders(),that.storage.getData())
-        // TODO: updateBody activate !!
+        that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
     }
 
     function dragWeightEnded() {
         d3.select(this).classed("dragging", false);
-//        if (that.sortedColumn instanceof LineUpStackedColumn){
-//            that.storage.resortData({columnID: that.sortedColumn.column});
-//            that.updateBody(that.storage.getColumnHeaders(), that.storage.getData());
+        if (LineUpGlobal.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn){
+            that.storage.resortData({column: LineUpGlobal.columnBundles.primary.sortedColumn});
+            that.updateBody(that.storage.getColumnLayout(), that.storage.getData());
+        }
 
-//        }
-
-        // TODO: updateBody activate !!
+        // TODO: integrate columnbundles dynamically !!
     }
 
 
     this.dragWeight= d3.behavior.drag()
-//        .origin(function(d) { return d; })
+        .origin(function(d) { return d; })
         .on("dragstart", dragWeightStarted)
         .on("drag", draggedWeight)
         .on("dragend", dragWeightEnded);
@@ -113,10 +113,9 @@ LineUp.prototype.startVis = function(){
 
     this.updateMenu();
     this.assignColors(this.storage.getRawColumns());
-//    this.layoutHeaders();
-//    console.log(this.storage.getColumnLayout());
     this.updateHeader(this.storage.getColumnLayout());
-//    this.updateBody(this.storage.getColumnHeaders(), this.storage.getData())
+    console.log(this.storage.getData());
+    this.updateBody(this.storage.getColumnLayout(), this.storage.getData())
 
 }
 
@@ -131,8 +130,8 @@ LineUp.prototype.updateMenu = function () {
         "click":function(d){
             LineUpGlobal.renderingOptions[d.key] = !LineUpGlobal.renderingOptions[d.key]
             that.updateMenu();
-            that.updateHeader(that.storage.getColumnHeaders())
-            that.updateBody(that.storage.getColumnHeaders(), that.storage.getData())
+            that.updateHeader(that.storage.getColumnLayout())
+            that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), true)
         }
     })
     kvNodes.html(function(d){

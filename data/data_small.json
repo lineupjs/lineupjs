@@ -42,14 +42,15 @@
 	],
     "layout":{
         "primary":[
-        {
-            "column": "schoolname",
-            "width" : 200
-        },
+
         {
             "column": "academic",
             "width" : 100
         },
+            {
+                "column": "schoolname",
+                "width" : 200
+            },
         {
             "type" : "stacked",
             "label" : "Combined",

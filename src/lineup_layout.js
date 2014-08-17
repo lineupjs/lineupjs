@@ -39,18 +39,6 @@ LineUp.prototype.layoutBody = function(headers, data){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 
@@ -93,19 +81,8 @@ LineUp.prototype.assignColors = function(headers){
 
 LineUp.prototype.layoutAll = function(headers, data){
 
-        this.layoutHeader(headers,data);
+        this.layoutHeaders(headers);
         this.layoutBody(headers,data);
-
-
-
-
-
-
-
-
-
-
-
 
 
 
