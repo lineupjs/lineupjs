@@ -91,6 +91,8 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
             return data;
         })
 
+        textRows.exit().remove();
+
         textRows
         .attr({
             x:function(d){
@@ -136,6 +138,8 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
             return data;
         })
 
+    barRows.exit().remove();
+
         barRows.enter()
         .append("rect")
         .attr({
@@ -169,6 +173,7 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
             });
             return data;
         })
+    stackRows.exit().remove();
         stackRows.enter()
         .append("g")
         .attr({
@@ -219,10 +224,6 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
     allStack.enter().append("rect").attr({
         y:2,
         height:LineUpGlobal.svgLayout.rowHeight-4
-    }).style({
-        fill: function(d){
-            return LineUpGlobal.colorMapping.get(d.child.getDataID())
-        }
     });
 
 
@@ -232,12 +233,20 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
             width: function (d) {
                 return (d.width>2)?d.width-2: d.width
             }
+        }).style({
+            fill: function(d){
+                return LineUpGlobal.colorMapping.get(d.child.getDataID())
+            }
         })
     }else{
         allStack.attr({
             x:function(d){return d.offsetX;},
             width: function (d) {
                 return (d.width>2)?d.width-2: d.width
+            }
+        }).style({
+            fill: function(d){
+                return LineUpGlobal.colorMapping.get(d.child.getDataID())
             }
         })
 

@@ -7,7 +7,13 @@
  */
 LineUp.prototype.updateHeader = function(headers){
 //    console.log("update Header");
-    var svg = d3.select("#lugui-table-header-svg");
+
+    d3.select("#lugui-table-header-svg").selectAll(".main").data([1]).enter().append("g").attr("class","main");
+    d3.select("#lugui-table-header-svg").selectAll(".overlay").data([1]).enter().append("g").attr("class","overlay");
+
+
+    var svg = d3.select("#lugui-table-header-svg .main");
+    var svgOverlay = d3.select("#lugui-table-header-svg .overlay");
     var that = this;
 
     if (LineUpGlobal.headerUpdateRequired) this.layoutHeaders(headers)
@@ -22,7 +28,7 @@ LineUp.prototype.updateHeader = function(headers){
 
     // -- Handle the header groups (exit,enter, update)
 
-    var allHeaders = svg.selectAll(".header").data(allHeaderData);
+    var allHeaders = svg.selectAll(".header").data(allHeaderData, function(d){return d.id;});
     allHeaders.exit().remove();
 
     // --- adding Element to class allHeaders
@@ -55,8 +61,11 @@ LineUp.prototype.updateHeader = function(headers){
         }
     }).on({
         "click":function(d){
+
+            // no sorting for empty stacked columns !!!
+            if (d instanceof LayoutStackedColumn && d.children.length<1) return;
+
             // TODO: adapt to comparison mode !!
-            console.log(d.columnBundle);
             if (LineUpGlobal.columnBundles[d.columnBundle].sortedColumn!=null && (d.getDataID() ==   LineUpGlobal.columnBundles[d.columnBundle].sortedColumn.getDataID()))
             {
 
@@ -65,7 +74,6 @@ LineUp.prototype.updateHeader = function(headers){
                 LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc = false;
             }
 
-//TODO
             that.storage.resortData({column: d, asc:LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc});
             that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
             LineUpGlobal.columnBundles[d.columnBundle].sortedColumn= d;
@@ -85,27 +93,21 @@ LineUp.prototype.updateHeader = function(headers){
         "class":"weightHandle",
         x:function(d){return d.getColumnWidth()-5},
         y:0,
-        width:5,
-        height:function(d){return d.height}
+        width:5
     })
 
     allHeaders.select(".weightHandle").attr({
         x:function(d){
             return (d.getColumnWidth()-5)
-        }
+        },
+        height:function(d){return d.height}
     }).call(this.dragWeight) // TODO: adopt dragWeight function !
 
 
     // -- handle Text
     allHeadersEnter.append("text").attr({
         "class":"headerLabel",
-        y: function (d) {
-            return d.height/2
-        },
         x:12
-    }).text(function (d) {
-        if (d instanceof LayoutStackedColumn) return d.label
-        else return d.column.label;
     })
 
     allHeaders.select(".headerLabel")
@@ -116,6 +118,15 @@ LineUp.prototype.updateHeader = function(headers){
             }else{
                 return false;
             }
+        })
+        .attr({
+            y: function (d) {
+                if (d instanceof LayoutStackedColumn || d.parent!=null) return d.height/2;
+                else return d.height*3/4;
+            }
+        }).text(function (d) {
+            if (d instanceof LayoutStackedColumn) return d.label
+            else return d.column.label;
         })
 
 
@@ -140,6 +151,107 @@ LineUp.prototype.updateHeader = function(headers){
         return ((sc && d.getDataID() == LineUpGlobal.columnBundles[d.columnBundle].sortedColumn.getDataID())?
             ((LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc)?'\uf0de':'\uf0dd')
             :"");})
+        .attr({
+            y: function (d) {
+                return d.height/2
+            }
+        })
+
+
+
+
+
+    // add info Button to All Stacked Columns
+    allHeadersEnter.filter(function(d){return d instanceof LayoutStackedColumn;}).append("text").attr({
+        class:"stackedColumnInfo fontawe"
+    })
+        .text("\uf1de")
+        .on("click", function(d){
+            that.stackedColumnOptionsGui(d)
+        })
+
+
+
+    allHeaders.filter(function(d){return d instanceof LayoutStackedColumn;}).select(".stackedColumnInfo").attr({
+        x:function(d){return d.getColumnWidth()-15},
+        y:function(d){return d.height/2}
+    })
+
+
+    // add delete Button to All Single Columns
+    allHeadersEnter.filter(function(d){return (!(d instanceof LayoutStackedColumn) && d.parent==null)}).append("text").attr({
+        class:"singleColumnDelete fontawe"
+    })
+        .text("\uf014")
+        .on("click", function(d){
+            that.storage.removeSingleColumn(d);
+            that.updateAll();
+        })
+    allHeaders.filter(function(d){return (!(d instanceof LayoutStackedColumn) && d.parent==null);}).select(".singleColumnDelete").attr({
+        x:function(d){return d.getColumnWidth()-15},
+        y:function(d){return d.height/4}
+    })
+
+
+
+
+
+
+    // ==================
+    // -- Render add ons
+    //===================
+
+
+    // add column sign:
+    var plusButton = [];
+    if (LineUpGlobal.svgLayout.plusSigns.hasOwnProperty("addStackedColumn"))
+        plusButton.push(LineUpGlobal.svgLayout.plusSigns["addStackedColumn"])
+
+    var addColumnButton = svg.selectAll(".addColumnButton").data(plusButton);
+    addColumnButton.exit().remove();
+
+
+    var addColumnButtonEnter = addColumnButton.enter().append("g").attr({
+        class:"addColumnButton"
+    })
+
+    addColumnButton.attr({
+        "transform":function(d) {return "translate("+ d.x+","+ d.y+")";}
+    })
+
+    addColumnButtonEnter.append("rect").attr({
+        x:0,
+        y:0,
+        rx:5,
+        ry:5,
+        width:function(d){return d.w;},
+        height:function(d){return d.h;}
+    }).on("click", function(d){d.action();})
+
+    addColumnButtonEnter.append("text").attr({
+        x:function(d){return d.w/2;},
+        y:function(d){return d.h/2;}
+    }).text('\uf067')
+
+
+
+
+
+
+
+
+
+
+    // ===============
+    // Helperfunctions
+    // ===============
+
+
+
+
+
+
+
 
 
 
@@ -159,3 +271,5 @@ LineUp.prototype.reweightHeader= function(change){
 
 
 };
+
+

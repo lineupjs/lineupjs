@@ -3,6 +3,7 @@
  */
 LineUp.prototype.layoutHeaders = function(headers){
 
+    var that = this;
     var offset = 0;
 
     var res = headers.forEach(function(d){
@@ -11,12 +12,35 @@ LineUp.prototype.layoutHeaders = function(headers){
         d.offsetY = 2;
         d.height = LineUpGlobal.htmlLayout.headerHeight-4;
         offset+= d.getColumnWidth();
+
 //        console.log(d.getColumnWidth());
     })
 
 
+    var addSign={}
+    if (LineUpGlobal.svgLayout.plusSigns.hasOwnProperty("addStackedColumn")){
+        addSign = LineUpGlobal.svgLayout.plusSigns["addStackedColumn"];
+        addSign.x = offset+4;
+    }else{
+        addSign = {
+            title: "add stacked column",
+            action:function(){that.addNewStackedColumnDialog(that)},
+            x:offset+4, y:2,
+            w:LineUpGlobal.htmlLayout.headerHeight/2-4,h:LineUpGlobal.htmlLayout.headerHeight/2-4
+        }
+        LineUpGlobal.svgLayout.plusSigns["addStackedColumn"] = addSign;
+    }
+
+
+
+
+//    console.log( LineUpGlobal.svgLayout.plusSigns["addStackedColumn"]);
+
+
+
     headers.filter(function(d){return (d instanceof LayoutStackedColumn);})
         .forEach(function(d){
+
             d.height = LineUpGlobal.htmlLayout.headerHeight/2-4;
 
             var localOffset = 0;

@@ -21,6 +21,13 @@ var LineUpGlobal = {
 //        ,
 //        animated:true
     },
+    actionOptions: [
+        {name:" new combined", icon:"fa-plus", action:"addNewStackedColumnDialog"},
+        {name:" manage single", icon:"fa-sliders", action:"manageSingleColumnDialog"}
+
+
+
+    ],
     datasets:[],
     actualDataSet: [],
     lineUpRenderer:null,
@@ -40,9 +47,13 @@ var LineUpGlobal = {
     },
 
     svgLayout:{
-      rowHeight:20
+      rowHeight:20,
+      plusSigns:{} // description of all plus signs ! -- names: addStackedColumn,...
+    },
+    modes:{
+        stackedColumnModified:null,
+        columnDragged:null
     }
-
 
 
 };
@@ -138,6 +149,20 @@ LineUp.prototype.updateMenu = function () {
         return '<a href="#"> <i class="fa '+ (d.value?'fa-check-square-o':'fa-square-o')+'" ></i> '+ d.key+'</a>&nbsp;&nbsp;'
     })
 
+    var actionNodes = d3.select("#lugui-menu-actions").selectAll("span").data(LineUpGlobal.actionOptions)
+        .enter().append("span").html(
+        function(d){
+            return '<i class="fa '+ (d.icon)+'" ></i>'+ d.name+'&nbsp;&nbsp;'
+        }
+    ).on("click", function (d) {
+            console.log(d.action);
+            that[d.action](d);
+        })
+
+
+
+
+
 }
 
 
@@ -198,7 +223,12 @@ var layoutHTML= function(){
 
 }
 
+LineUp.prototype.updateAll =function(){
+    var that = this;
+    that.updateHeader(that.storage.getColumnLayout());
+    that.updateBody(that.storage.getColumnLayout(), that.storage.getData());
 
+}
 
 
 // document ready

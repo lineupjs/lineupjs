@@ -47,7 +47,7 @@
 
         }
         a:hover{
-            font-size: 11pt;
+            /*font-size: 11pt;*/
             font-weight: bold;
         }
 
@@ -61,6 +61,27 @@
             overflow-x: auto;
             overflow-y: scroll;
         }
+
+
+        #lugui-menu-actions span{
+            font-size: 10pt;
+            font-weight: normal;
+            font-style: normal;
+            text-decoration: none;
+            color: royalblue;
+            background-color: white;
+            border-radius: 4px;
+            padding: 1px;
+            padding-left: 5px;
+            padding-right: 5px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+
+        #lugui-menu-actions span:hover{
+            background-color: darkgrey;
+        }
+
         .weightHandle{
             fill:white;
             /*stroke:grey;*/
@@ -95,6 +116,78 @@
             top:.5pt;
         }
 
+        .addColumnButton rect{
+            fill:white;
+            border-radius:5px;
+        }
+        .addColumnButton rect:hover{
+            fill:darkgray;
+
+        }
+
+        .addColumnButton text{
+            font-family:'FontAwesome';
+            font-size:10pt;
+            font-weight: bold;
+            fill:black;
+            dominant-baseline:central;
+            text-anchor: middle;
+            pointer-events:none;
+            user-select: none;
+        }
+
+        .fontawe{
+            font-family:'FontAwesome';
+            font-size:10pt;
+            dominant-baseline:central;
+            text-anchor: middle;
+        }
+
+        .stackedColumnInfo{
+            fill:lightgrey;
+        }
+
+        .stackedColumnInfo:hover{
+            fill:white;
+        }
+
+
+
+        /* for gui helper */
+        .stackedOption rect{
+            fill: white;
+            opacity: .9;
+        }
+        .stackedOption text{
+            font-family:'FontAwesome';
+            font-size: 9pt;
+            dominant-baseline:central;
+            font-weight: bold;
+            fill:black;
+            cursor: pointer;
+
+        }
+        .stackedOption text:hover{
+            fill:royalblue;
+        }
+
+        .popup{
+            background:white;
+
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 10px 10px 5px #888888;
+
+            font-family:'Lato', Helvetica, Arial;
+            font-size:10pt;
+            dominant-baseline:central;
+            text-anchor: middle;
+        }
+
+
+        .selectionTable tr:hover{
+            background-color: lightblue;
+        }
 
     </style>
 
@@ -112,6 +205,7 @@
         &nbsp;
 
         <span id="lugui-menu-rendering"> </span>
+        <span id="lugui-menu-actions"> </span>
     </div>
 
     <!--<div style="display: inline-block; float: left; padding-left:5px; padding-top:2px;">-->
@@ -146,5 +240,6 @@
 <script src="src/lineup_tableheader.js"></script>
 <script src="src/lineup_tablebody.js"></script>
 <script src="src/lineup_layout.js"></script>
+<script src="src/lineup_gui_helper.js"></script>
 </body>
 </html>

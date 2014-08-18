@@ -181,7 +181,8 @@ function LayoutStackedColumn(desc, rawColumns, toLayoutColumn) {
     this.childrenWeights = []
     this.childrenWidths = []
     this.toLayoutColumn = toLayoutColumn;
-    this.init();
+    this.children=[]
+    this.init(desc);
     var that = this;
     this.sortBy=function(a,b){
         var aAll =0;
@@ -202,7 +203,7 @@ function LayoutStackedColumn(desc, rawColumns, toLayoutColumn) {
 
 LayoutStackedColumn.prototype = $.extend({},LayoutCompositeColumn.prototype,{
 
-    init: function () {
+    init: function (desc) {
         var that = this;
         if (this.childrenLinks.length <1){
             // if new empty stacked column
@@ -232,14 +233,15 @@ LayoutStackedColumn.prototype = $.extend({},LayoutCompositeColumn.prototype,{
                 this.scale.domain([0, d3.sum(this.childrenWeights)]).range([0, this.columnWidth]);
             }
 
+            this.children = this.childrenLinks.map(function (d,i) {
+//            console.log(that);
+                return that.toLayoutColumn({column: d.column, width:that.childrenWidths[i], parent:that })
+            })
 
         }
 
 
-        this.children = this.childrenLinks.map(function (d,i) {
-//            console.log(that);
-            return that.toLayoutColumn({column: d.column, width:that.childrenWidths[i], parent:that })
-        })
+
 
 
 
@@ -307,25 +309,16 @@ function LineUpLocalStorage(tableId, data, columns, layout, options){
     this.options = options;
     this.data = data;
     this.rawcols = rawcols;
-    var that = this;
+    this.layout = layout;
+
+    this.bundles = {
+        "primary":{
+            layoutColumns:[],
+            needsLayout:true  // this triggers the layout generation at first access to "getColumnLayout"
+        }
+    };
 
 
-    var layoutColumnTypes = {
-        "single": LayoutSingleColumn,
-        "stacked": LayoutStackedColumn
-    }
-
-    function toLayoutColumn(desc){
-        var type = desc.type || "single";
-        return new layoutColumnTypes[type](desc,that.rawcols, toLayoutColumn)
-    }
-
-    this.primary= {}
-    this.primary.layoutColumns = layout.primary.map(toLayoutColumn);
-
-//    console.log(layout);
-
-//    console.log(this.primary.layoutColumns);
 }
 
 
@@ -334,95 +327,146 @@ LineUpLocalStorage.prototype = $.extend({},{},
     {
 
         getRawColumns: function () {
-          return this.rawcols;
+            return this.rawcols;
         },
-
-
         getColumnLayout: function(key){
             var _key = key|| "primary";
-            return this[_key].layoutColumns;
+            if (this.bundles[_key].needsLayout){
+                this.generateLayout(this.layout, _key);
+                this.bundles[_key].needsLayout = false;
+            }
+
+            return this.bundles[_key].layoutColumns;
         },
 
-   getColumnHeaders: function(){
-       return this.cols;
-   },
+        /**
+         *  get the data
+         *  @returns data
+         */
+        getData: function(){
+            return this.data;
+        },
+        resortData: function(spec){
 
-    /**
-     *  get the data
-     *  @returns data
-     */
-   getData: function(){
-       return this.data;
-   },
-   flatHeaders:function(){
-       var res = [];
+            var asc = spec.asc || false;
 
-//       this.cols.forEach(function(col){
-//           if (col instanceof LineUpStackedColumn){
-//               res.push(col);
-//               col.hierarchical.forEach(function(subcol){
-//                   res.push(subcol);
-//               })
-//
-//           }else{
-//               res.push(col);
-//           }
-//       })
-
-       return res;
-   },
-   resortData: function(spec){
-
-       var asc = spec.asc || false;
-
-       console.log("resort: ",spec);
-//       var accessFunction = function(){return 0};
-//
-//       var fh = this.flatHeaders();
-//
-//       //TODO: semi-optimal !! (maybe a map?)
-//       // find selected header
-//       var selectedHeader = {};
-//       fh.forEach(function(header){
-//               if (header.column === spec.columnID){
-//                   selectedHeader = header;
-//               }
-//       })
-
-
-       this.data.sort(spec.column.sortBy);
-
+            console.log("resort: ",spec);
+            this.data.sort(spec.column.sortBy);
 //        this.assignRanks(function (a){return selectedHeader.getValue(a)});
 
-       if (asc) this.data.reverse();
+            if (asc) this.data.reverse();
 
-   },
-   /*
-   * assigns the ranks to the data which is expected to be sorted in decreasing order
-   * */
-   assignRanks:function(accessFunction){
+        },
+        /*
+         * assigns the ranks to the data which is expected to be sorted in decreasing order
+         * */
+        assignRanks:function(accessFunction){
 
 //       console.log("assign Ranks:", accessFunction);
 
-       var actualRank =1;
-       var actualValue = -1;
-       this.data.forEach(function(d){
-           if (actualValue==-1) actualValue = accessFunction(d);
+            var actualRank =1;
+            var actualValue = -1;
+            this.data.forEach(function(d){
+                if (actualValue==-1) actualValue = accessFunction(d);
 
-           if (actualValue!=accessFunction(d)){
-               actualRank++;
-               actualValue = accessFunction(d);
-           }
-           d.rank = actualRank;
+                if (actualValue!=accessFunction(d)){
+                    actualRank++;
+                    actualValue = accessFunction(d);
+                }
+                d.rank = actualRank;
 
-       })
-   }
+            })
+        },
+        generateLayout:function(layout, bundle){
+            var that = this;
+            var _bundle = bundle || "primary";
+
+            var layoutColumnTypes = {
+                "single": LayoutSingleColumn,
+                "stacked": LayoutStackedColumn
+            }
+
+            function toLayoutColumn(desc){
+                var type = desc.type || "single";
+                return new layoutColumnTypes[type](desc,that.rawcols, toLayoutColumn)
+            }
+
+            this.bundles[_bundle]= {}
+            this.bundles[_bundle].layoutColumns = layout[_bundle].map(toLayoutColumn);
+        },
+        addStackedColumn:function(spec,bundle){
+            var _spec = spec ||{label:"Stacked", children:[]}
+            var _bundle = bundle || "primary";
+
+            var that = this;
+
+            //TODO: make less redundant with generateLayout
+            var layoutColumnTypes = {
+                "single": LayoutSingleColumn,
+                "stacked": LayoutStackedColumn
+            }
+
+            function toLayoutColumn(desc){
+                var type = desc.type || "single";
+                return new layoutColumnTypes[type](desc,that.rawcols, toLayoutColumn)
+            }
+
+
+            this.bundles[_bundle].layoutColumns.push(new LayoutStackedColumn(_spec,this.rawcols,toLayoutColumn))
+
+        },
+        removeStackedColumn:function(d,bundle){
+            var _bundle = bundle || "primary";
+
+            var headerColumns = this.bundles[_bundle].layoutColumns;
+            var indexOfElement = _.indexOf(headerColumns,d);//function(c){ return (c.id == d.id)});
+
+
+            if (indexOfElement!= undefined){
+                var addColumns = [];
+//                d.children.forEach(function(ch){
+//
+//                    // if there is NO column of same data type
+//                   if (headerColumns.filter(function (hc) {return hc.getDataID() == ch.getDataID()}).length ==0){
+//                       ch.parent=null;
+//                       addColumns.push(ch);
+//                   }
+//
+//                })
+
+//                headerColumns.splice(indexOfElement,1,addColumns)
+
+                Array.prototype.splice.apply(headerColumns,[indexOfElement,1].concat(addColumns))
+
+                console.log("hc",indexOfElement,headerColumns);
+
+            }
+
+
+        },
+        setColumnLabel:function(col,newValue, bundle){
+            var _bundle = bundle || "primary";
+
+            //TODO: could be done for all Column header
+            var headerColumns = this.bundles[_bundle].layoutColumns;
+            headerColumns.filter(function(d){return d.id == col.id;})[0].label= newValue;
+        },
+        removeSingleColumn: function(col,bundle){
+            var _bundle = bundle || "primary";
+
+            //TODO: could be done for all Column header
+            var headerColumns = this.bundles[_bundle].layoutColumns;
+            console.log("remove",headerColumns.indexOf(col));
+            headerColumns.splice(headerColumns.indexOf(col),1);
+            console.log("remove",headerColumns);
+        }
 
 
 
 
 
-});
+
+    });
 
 
 /**
