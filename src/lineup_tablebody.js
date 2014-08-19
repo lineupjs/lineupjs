@@ -78,7 +78,9 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
 
     // -- the text columns
 
-    var allTextHeaders = allHeaders.filter(function(d){return (d.hasOwnProperty('column') && (d.column instanceof LineUpStringColumn));})
+    var allTextHeaders = allHeaders.filter(function(d){
+        return (d.hasOwnProperty('column') && (d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn));
+    })
 
     const rowCenter = (LineUpGlobal.svgLayout.rowHeight/2);
 
@@ -93,15 +95,8 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
 
         textRows.exit().remove();
 
-        textRows
-        .attr({
-            x:function(d){
-//                console.log("u", d.offsetX);
-                return d.offsetX
-            }
-        })
 
-        textRows.enter()
+       textRows.enter()
         .append("text")
         .attr({
             "class":function(d){
@@ -113,6 +108,17 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
             },
             y:rowCenter
         }).text(function(d){return d.value})
+
+        textRows
+        .attr({
+            x:function(d){
+//                console.log("u", d.offsetX);
+                return d.offsetX
+            }
+        })// only changed texts:
+
+        // TODO: render Rank Column (it's th only one which has text updates)
+        textRows.text(function(d){return d.value})
 
 
 

@@ -23,8 +23,8 @@ var LineUpGlobal = {
     },
     actionOptions: [
         {name:" new combined", icon:"fa-plus", action:"addNewStackedColumnDialog"},
-        {name:" manage single", icon:"fa-sliders", action:"manageSingleColumnDialog"}
-
+        {name:" manage single", icon:"fa-sliders", action:"manageSingleColumnDialog"},
+        {name:" save layout", icon:"fa-sliders", action:"saveLayout"}
 
 
     ],
@@ -48,7 +48,14 @@ var LineUpGlobal = {
 
     svgLayout:{
       rowHeight:20,
-      plusSigns:{} // description of all plus signs ! -- names: addStackedColumn,...
+      plusSigns:{
+          addStackedColumn: {
+              title: "add stacked column",
+              action:"addNewEmptyStackedColumn",
+              x: 0, y: 2,
+              w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
+          }
+      } // description of all plus signs ! -- names: addStackedColumn,...
     },
     modes:{
         stackedColumnModified:null,
@@ -94,6 +101,7 @@ var LineUp = function(spec){
             that.storage.resortData({column: LineUpGlobal.columnBundles.primary.sortedColumn});
             that.updateBody(that.storage.getColumnLayout(), that.storage.getData());
         }
+//        that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
 
         // TODO: integrate columnbundles dynamically !!
     }
@@ -290,6 +298,52 @@ $(
 
 
 })
+
+
+LineUp.prototype.saveLayout = function(){
+    var x = this.storage.getColumnLayout()
+        .filter(function(d){
+            return true;
+//            return !(d instanceof LayoutRankColumn) ;
+        })
+        .map(function(d){return d.description();})
+    console.log(x);
+    var t = JSON.stringify(x);
+
+    newColDesc = JSON.parse(t)
+
+
+    var layoutColumnTypes = {
+        "single": LayoutSingleColumn,
+        "stacked": LayoutStackedColumn,
+        "rank": LayoutRankColumn
+    }
+
+    var that = this;
+    function toLayoutColumn(desc){
+        var type = desc.type || "single";
+        return new layoutColumnTypes[type](desc,that.storage.getRawColumns(), toLayoutColumn)
+    }
+
+    // create Rank Column
+//            new LayoutRankColumn();
+
+
+
+    var layoutColumns = newColDesc.map(toLayoutColumn);
+    console.log(layoutColumns);
+
+
+
+    var copy =this.storage.getColumnLayout()
+        .filter(function(d){return !(d instanceof LayoutRankColumn) ;})
+        .map(function(d){return d.makeCopy();})
+
+
+    console.log(copy);
+
+
+}
 
 
 function getKeyValueFromObject(o){

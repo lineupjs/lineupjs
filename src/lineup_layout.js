@@ -16,20 +16,22 @@ LineUp.prototype.layoutHeaders = function(headers){
 //        console.log(d.getColumnWidth());
     })
 
+    console.log("layout Headers:", headers);
 
     var addSign={}
     if (LineUpGlobal.svgLayout.plusSigns.hasOwnProperty("addStackedColumn")){
         addSign = LineUpGlobal.svgLayout.plusSigns["addStackedColumn"];
         addSign.x = offset+4;
-    }else{
-        addSign = {
-            title: "add stacked column",
-            action:function(){that.addNewStackedColumnDialog(that)},
-            x:offset+4, y:2,
-            w:LineUpGlobal.htmlLayout.headerHeight/2-4,h:LineUpGlobal.htmlLayout.headerHeight/2-4
-        }
-        LineUpGlobal.svgLayout.plusSigns["addStackedColumn"] = addSign;
     }
+//    else{
+//        addSign = {
+//            title: "add stacked column",
+//            action:function(){that.addNewStackedColumnDialog(that)},
+//            x:offset+4, y:2,
+//            w:LineUpGlobal.htmlLayout.headerHeight/2-4,h:LineUpGlobal.htmlLayout.headerHeight/2-4
+//        }
+//        LineUpGlobal.svgLayout.plusSigns["addStackedColumn"] = addSign;
+//    }
 
 
 
@@ -45,7 +47,8 @@ LineUp.prototype.layoutHeaders = function(headers){
 
             var localOffset = 0;
             var parentOffset = d.offsetX;
-            d.children.map(function(child){
+            var allChilds = d.children.concat(d.emptyColumns);
+            allChilds.map(function(child){
                 child.offsetX = parentOffset +localOffset;
                 child.localOffsetX = localOffset;
                 localOffset+=child.getColumnWidth();

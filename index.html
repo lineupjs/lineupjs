@@ -10,7 +10,8 @@
     <script src="libs/underscore-min.js"></script>
 
     <!--LineUp inclusions-->
-    <script src="src/datastructure.js"></script>
+    <script src="src/lineup_datastructure.js"></script>
+    <script src="src/lineup_storage.js"></script>
     <script src="src/event-manager.js"></script>
 
 
@@ -107,6 +108,10 @@
             fill:darkgrey;
         }
 
+        .emptyHeader{
+            opacity: .5;
+        }
+
         .sortedColumn{
             font-weight: bolder;
             font-size: 11pt;
@@ -187,6 +192,16 @@
 
         .selectionTable tr:hover{
             background-color: lightblue;
+        }
+
+
+        .dragObject{
+            opacity:.5;
+        }
+
+        .dragHeader{
+            fill:grey;
+            opacity:.6;
         }
 
     </style>

@@ -203,7 +203,7 @@ LineUp.prototype.stackedColumnOptionsGui= function(selectedColumn){
 
     function removeStackedColumn(col){
         svgOverlay.selectAll(".stackedOption").remove();
-        that.storage.removeStackedColumn(col);
+        that.storage.removeColumn(col);
         that.updateAll();
 
     };
