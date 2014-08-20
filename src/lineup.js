@@ -23,7 +23,7 @@ var LineUpGlobal = {
     },
     actionOptions: [
         {name:" new combined", icon:"fa-plus", action:"addNewStackedColumnDialog"},
-        {name:" manage single", icon:"fa-sliders", action:"manageSingleColumnDialog"},
+        {name:" add single columns", icon:"fa-plus", action:"addNewSingleColumnDialog"},
         {name:" save layout", icon:"fa-sliders", action:"saveLayout"}
 
 

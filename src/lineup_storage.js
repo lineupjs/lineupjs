@@ -169,6 +169,13 @@ LineUpLocalStorage.prototype = $.extend({},{},
             this.bundles[_bundle].layoutColumns.push(new LayoutStackedColumn(_spec,this.rawcols,toLayoutColumn))
 
         },
+        addSingleColumn:function(spec,bundle){
+            var _bundle = bundle || "primary";
+            this.bundles[_bundle].layoutColumns.push(new LayoutSingleColumn(spec,this.rawcols))
+
+        },
+
+
         removeColumn:function(col,bundle){
             var _bundle = bundle || "primary";
 

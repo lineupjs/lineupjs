@@ -11,41 +11,8 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
     console.log("bupdate");
     var _stackTransition = stackTransition || false;
 
-//    // generate ColumnLayout
-//    var offset = 0;
-//    var headerInfo =  d3.map();
-//    headers.forEach(function(d, index){
-//        var isGray = (d instanceof LineUpStringColumn)
-//            || (d instanceof LineUpCompositeColumn)
-//            || (d.name == "rank")
-//
-//        headerInfo.set(d.id,{offset:offset,header:d, index:index, inStack:false, isGray:isGray});
-//        offset+= d.width+2;
-//    });
-//
-//
-//
-//
-//    this.indexOffset=headers.length; // TODO: REPLACE by flatten function !!
-//    var that = this;
-//    headers
-//        .filter(function(d){return (d instanceof LineUpStackedColumn)})
-//        .forEach(function(stackedColumn){
-//            var xOffset = headerInfo.get(stackedColumn.id).offset;
-//            stackedColumn.hierarchical.forEach(function(innerColumn){
-//                headerInfo.set(innerColumn.id,{offset:xOffset,header:innerColumn, index:that.indexOffset, inStack:true, isGray:false});
-//                xOffset+= innerColumn.width;
-//                that.indexOffset= that.indexOffset+1;
-//
-//            })
-//        });
-
-
-
     var allHeaders = [];
     headers.forEach(function(d){d.flattenMe(allHeaders)})
-
-
 
     var datLength = data.length;
     var rowScale = d3.scale.ordinal()
@@ -59,20 +26,147 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
 
     // -- handle all row groups
 
-    var allRows = d3.select("#lugui-table-body-svg").selectAll(".row").data(data, function(d){return d[LineUpGlobal.primaryKey]})
-    allRows.exit().remove();
+    var allRowsSuper = d3.select("#lugui-table-body-svg").selectAll(".row").data(data, function(d){return d[LineUpGlobal.primaryKey]})
+    allRowsSuper.exit().remove();
 
     // --- append ---
-    var allRowsEnter = allRows.enter().append("g").attr({
+    var allRowsSuperEnter = allRowsSuper.enter().append("g").attr({
         "class":"row"
-    });
+    })
 
     //    //--- update ---
-    allRows.transition().duration(1000).attr({
+    allRowsSuper.transition().duration(1000).attr({
         "transform":function(d, i){
             return  "translate("+0+","+rowScale(d[LineUpGlobal.primaryKey])+")"
         }
     })
+
+
+    allRowsSuperEnter.append("g").attr("class","content");
+
+
+    allRowsSuperEnter.append("g").attr("class","overlay").append("rect").attr({
+        x:0,y:0,height:LineUpGlobal.svgLayout.rowHeight, width:window.innerWidth-30, opacity:.000001
+    }).on({
+        "mouseenter":function(row){
+            d3.select(this).attr({
+                opacity:.4,
+                fill:"#ffffff"
+            })
+
+            var zeroFormat = d3.format(".1f");
+//            d3.select(this.parent).classed("hovered", true)
+            var textOverlays=[];
+            headers.forEach(function(col){
+                if (col instanceof LayoutSingleColumn && col.column instanceof LineUpNumberColumn){
+                    textOverlays.push({value:col.column.getValue(row),
+                        x:col.offsetX,
+                        needsWhiteBG:false,
+                        w:col.getColumnWidth()})
+                }else if (col instanceof LayoutSingleColumn ){
+                    textOverlays.push({value:col.column.getValue(row),
+                        x:col.offsetX,
+                        needsWhiteBG:true,
+                        w:col.getColumnWidth()})
+                }else if (col instanceof LayoutRankColumn ){
+                    textOverlays.push({value:col.column.getValue(row),
+                        x:col.offsetX,
+                        needsWhiteBG:true,
+                        w:col.getColumnWidth()})
+
+                }else if (col instanceof  LayoutStackedColumn){
+
+
+                        allStackOffset = 0;
+                        allStackW =0;
+
+                        col.children.map(function(child,i){
+                            allStackW= child.getWidth(row)
+
+                            textOverlays.push( {
+                                    value:zeroFormat(child.column.getValue(row))
+                                        +" -> ("+zeroFormat(child.getWidth(row))+")",
+                                    needsWhiteBG:false,
+                                    w: allStackW,
+                                    x: (allStackOffset+col.offsetX)}
+                            )
+                            if (LineUpGlobal.renderingOptions.stacked){
+                                allStackOffset += allStackW;
+                            }else{
+                                allStackOffset += child.getColumnWidth();
+                            }
+
+                            return allStackRes
+
+                        })
+
+
+                }
+
+
+
+
+            }
+            )
+
+            /** TODO: CLIPPING ???? -- http://jsfiddle.net/dsummersl/EqLBJ/1/
+             *   var clip = chart.append("defs").append("svg:clipPath")
+             .attr("id", "clip")
+             .append("svg:rect")
+             .attr("id", "clip-rect")
+             .attr("x", "0")
+             .attr("y", "0")
+             .attr("width", width)
+             .attr("height", height);
+
+             var chartBody = chart.append("g")
+             .attr("clip-path", "url(#clip)")
+             */
+
+
+            d3.select(this.parentNode).selectAll(".whiteRect")
+                .data(textOverlays.filter(function(e){return e.needsWhiteBG;})).enter()
+                .append("rect").attr({
+                    class:"whiteRect",
+                    x:function(d){return d.x;},
+                    y:0,
+                    height:LineUpGlobal.svgLayout.rowHeight,
+                    width:function(d){return d.w;}
+                }).style({
+                    fill:"#ffffff",
+                    opacity:1,
+                    "pointer-events":"none"
+                })
+
+            d3.select(this.parentNode).selectAll("text").data(textOverlays).enter().append("text").
+                attr({
+                    class:"tableData",
+                    x:function(d){return d.x+((d.needsWhiteBG)?+0:+3);},
+                    y:LineUpGlobal.svgLayout.rowHeight/2
+                }).style({
+                    fill:"black",
+                    "font-weight":"bold",
+                    "pointer-events":"none"
+//                    "font-size":"7pt"
+//                    "text-anchor":"end"
+                }).text(function(d){return d.value;})
+
+
+
+        },
+        "mouseout":function(d){
+            d3.select(this.parentNode).selectAll("text").remove();
+            d3.select(this.parentNode).selectAll(".whiteRect").remove();
+            d3.select(this).attr({
+                opacity:0.000001
+//                fill:white
+            })
+        }
+    });
+    allRowsSuper.selectAll(".overlay rect").attr({
+        width:window.innerWidth-30
+    })
+    var allRows = allRowsSuper.selectAll(".content");
 
 
 
@@ -88,7 +182,12 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
         .data(function(d,i){
 
             var data = allTextHeaders.map(function(column){
-                return {value:column.column.getValue(d), offsetX:column.offsetX};
+                return {
+                    value:column.column.getValue(d),
+                    offsetX:column.offsetX,
+                    columnW: column.getColumnWidth(),
+                    isRank:(column instanceof LayoutRankColumn)
+                };
             })
             return data;
         })
@@ -117,8 +216,21 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
             }
         })// only changed texts:
 
-        // TODO: render Rank Column (it's th only one which has text updates)
-        textRows.text(function(d){return d.value})
+        // TODO: cut texts to columnwidth
+        allRows.selectAll(".tableData.text.rank").text(function(d){return d.value;})
+//        textRows.filter(function(d){return d;}).text(function(d){
+////            console.log("hh",d.value!=undefined,d);
+////            if (d.value!=undefined && d.value.isString()){
+////                console.log("hh",d.value,d);
+////                return d.value.slice(0,Math.min(d.columnW/6, d.value.length))
+////            }
+////
+////            else
+////                return "";
+//            return d.value
+//        })
+
+
 
 
 
@@ -191,7 +303,7 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
     stackRows
     .attr({
         "transform":function(d) {
-            return "translate("+ d.parent.offsetX+","+2+")";
+            return "translate("+ d.parent.offsetX+","+0+")";
         }
     })
 

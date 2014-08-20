@@ -45,6 +45,8 @@ function LineUpNumberColumn(desc) {
 LineUpNumberColumn.prototype = $.extend({},LineUpColumn.prototype,{
     getValue : function(row) {
         return +LineUpColumn.prototype.getValue.call(this, row);
+    },getValue : function(row) {
+        return +LineUpColumn.prototype.getValue.call(this, row);
     },
     filterBy : function(row) {
         var n = this.getN(row);
