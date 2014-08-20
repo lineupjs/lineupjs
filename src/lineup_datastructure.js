@@ -372,6 +372,18 @@ LayoutStackedColumn.prototype = $.extend({},LayoutCompositeColumn.prototype,{
 //        console.log(this.childrenWidths, this.childrenWeights);
         this.children.forEach(function(d,i){return d.setColumnWidth(that.childrenWidths[i], true)});
     },
+    updateWeights:function(weights){
+        this.childrenWeights = weights;
+        this.scale.domain([0,d3.sum(this.childrenWeights)]);
+
+        var that = this;
+        this.childrenWidths = this.childrenWeights.map(function(d){return that.scale(d)});
+        this.columnWidth = d3.sum(this.childrenWidths);
+        this.children.forEach(function(d,i){return d.setColumnWidth(that.childrenWidths[i], true)});
+
+        console.log(this.childrenWeights);
+        console.log(this.childrenWidths);
+    },
     removeChild:function(child){
         var indexOfChild = this.children.indexOf(child);
         var that = this;

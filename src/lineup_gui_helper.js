@@ -228,6 +228,136 @@ LineUp.prototype.addNewSingleColumnDialog=function(){
 
 }
 
+
+LineUp.prototype.reweightStackedColumnDialog=function(col){
+    var that = this;
+    console.log(that);
+
+    var x = +(window.innerWidth)/2-100;
+    var y = +100;
+
+    var label = "Stacked"
+
+    var popupBG= d3.select("body")
+        .append("div").attr({
+            "class":"popupBG"
+        }).style({
+            position:"fixed",
+            left:0+"px",
+            top:0+"px",
+            width:window.innerWidth+"px",
+            height:window.innerHeight+"px",
+            background:"white",
+            opacity:".3"
+        })
+
+    var popup = d3.select("body").append("div")
+        .attr({
+            "class":"popup"
+        }).style({
+            position:"fixed",
+            left:x+"px",
+            top:y+"px",
+            width:"400px",
+            height:"200px"
+
+        })
+        .html(
+            '<span style="font-weight: bold"> re-weight column "'+col.label+'"</span>'+
+            '<div class="selectionTable"></div>' +
+            '<button class="cancel"><i class="fa fa-times"></i> cancel</button>'+
+            '<button class="ok"><i class="fa fa-check"></i> ok</button>'
+    )
+
+    var theTable = popup.select(".selectionTable").style({
+        width:"390px",
+        height:"160px",
+        background:"white",
+        "overflow-x": "auto",
+        "overflow-y": "scroll"
+    }).append("table").style({
+        width:"95%",
+        border:0
+    })
+
+    console.log(col.childrenWeights);
+    var newWeights = col.childrenWeights.map(function(d){return d+0;})
+    var predictScale = d3.scale.linear().domain([0,d3.max(newWeights)]).range([0,120])
+    // list all data rows !
+    var trData = col.children
+        .map(function(d,i){return {
+            d: d.column.label,
+            dataID: d.getDataID(),
+            weight:col.childrenWeights[i],
+            index:i
+        };})
+
+    var trs = theTable.selectAll("tr").data(trData)
+    trs.enter().append("tr");
+//    trs.append("td").attr("class", "checkmark")
+    trs.append("td")
+        .style({
+            width:"20px"
+        })
+        .append("input").attr({
+        class:"weightInput",
+        type:"text",
+        value:function(d){return d.weight;},
+        size:5
+    }).on("input", function(d) {
+        newWeights[d.index] = +this.value;
+        redraw();
+    })
+
+    trs.append("td").append("div").attr("class","predictBar").style({
+        width:function(d){return predictScale(d.weight)+"px";},
+        height:20+"px",
+        "background-color":function(d){return LineUpGlobal.colorMapping.get(d.dataID)}
+    })
+
+    trs.append("td").attr("class","datalabel").text(function(d){return d.d;})
+
+    function redraw(){
+        trData = col.children
+            .map(function(d,i){return {
+                d: d.column.label,
+                dataID: d.getDataID(),
+                weight:newWeights[i],
+                index:i
+            };})
+        var trs = theTable.selectAll("tr").data(trData);
+        predictScale.domain([0,d3.max(newWeights)]);
+        trs.select(".predictBar").transition().style({
+            width:function(d){return predictScale(d.weight)+"px";}
+        })
+    }
+    redraw();
+
+
+    popup.select(".ok").style({
+        position:"absolute",
+        right:10+"px"
+    }).on("click", function(){
+
+        col.updateWeights(newWeights);
+
+        that.storage.resortData({})
+
+        popupBG.remove();
+        popup.remove();
+
+        that.updateAll();
+
+
+    })
+
+    popup.select(".cancel").on("click",function(){
+        popupBG.remove();
+        popup.remove();
+    })
+
+}
+
 /**
  * handles the rendering and action of StackedColumn options menu
  * @param selectedColumn -- the stacked column
@@ -249,7 +379,8 @@ LineUp.prototype.stackedColumnOptionsGui= function(selectedColumn){
     LineUpGlobal.modes.stackedColumnModified = selectedColumn;
     var options = [
         {name:"\uf014 remove", action:removeStackedColumn},
-        {name:"\uf044 rename",action:renameStackedColumn}
+        {name:"\uf044 rename",action:renameStackedColumn},
+        {name:"\uf0ae re-weight",action:that.reweightStackedColumnDialog}
     ]
 
     var menuLength = options.length*100;
@@ -277,7 +408,12 @@ LineUp.prototype.stackedColumnOptionsGui= function(selectedColumn){
         })
         .text(function(d){return d.name;})
 
-    stackedOptions.selectAll("text").on("click",function(d){d.action(selectedColumn);})
+    stackedOptions.selectAll("text").on("click",function(d){
+        svgOverlay.selectAll(".stackedOption").remove();
+        d.action.call(that,selectedColumn);
+
+
+    })
 
     stackedOptions.transition().attr({
         "transform":function(d) {return "translate("+ (d.d.offsetX+ d.d.columnWidth - menuLength)+","+ (LineUpGlobal.htmlLayout.headerHeight/2-2) +")";}
@@ -286,14 +422,12 @@ LineUp.prototype.stackedColumnOptionsGui= function(selectedColumn){
 
 
     function removeStackedColumn(col){
-        svgOverlay.selectAll(".stackedOption").remove();
         that.storage.removeColumn(col);
         that.updateAll();
 
     };
 
     function renameStackedColumn(col){
-        svgOverlay.selectAll(".stackedOption").remove();
         var x = +(window.innerWidth)/2-100;
         var y = +100;
 

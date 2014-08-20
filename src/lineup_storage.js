@@ -69,20 +69,22 @@ LineUpLocalStorage.prototype = $.extend({},{},
         },
         resortData: function(spec){
 
-            var asc = spec.asc || false;
+            var asc = spec.asc || LineUpGlobal.columnBundles.primary.sortingOrderAsc;
             var _key = spec.key|| "primary";
+            var column = spec.column || LineUpGlobal.columnBundles.primary.sortedColumn;
 
+            if (column==null) return;
             console.log("resort: ",spec);
-            this.data.sort(spec.column.sortBy);
+            this.data.sort(column.sortBy);
 
             var rankColumn = this.bundles[_key].layoutColumns.filter(function(d){return d.column instanceof LineUpRankColumn;})
             if (rankColumn.length>0){
 
-                if (spec.column instanceof LayoutStackedColumn){
+                if (column instanceof LayoutStackedColumn){
                     this.assignRanks(
                         this.data,
                         function(d) {
-                            return spec.column.getValue(d)
+                            return column.getValue(d)
                         },
                         rankColumn[0].column
                     );
@@ -90,7 +92,7 @@ LineUpLocalStorage.prototype = $.extend({},{},
                     this.assignRanks(
                         this.data,
                         function(d) {
-                            return spec.column.column.getValue(d)
+                            return column.column.getValue(d)
                         },
                         rankColumn[0].column
                     );
@@ -128,11 +130,13 @@ LineUpLocalStorage.prototype = $.extend({},{},
         },
         generateLayout:function(layout, bundle){
             var that = this;
+            console.log(that);
             var _bundle = bundle || "primary";
 
             var layoutColumnTypes = {
                 "single": LayoutSingleColumn,
-                "stacked": LayoutStackedColumn
+                "stacked": LayoutStackedColumn,
+                "rank":LayoutRankColumn
             }
 
             function toLayoutColumn(desc){
@@ -146,7 +150,11 @@ LineUpLocalStorage.prototype = $.extend({},{},
 
             this.bundles[_bundle]= {}
             this.bundles[_bundle].layoutColumns = layout[_bundle].map(toLayoutColumn);
-            this.bundles[_bundle].layoutColumns.unshift(new LayoutRankColumn())
+            console.log(this.bundles[_bundle].layoutColumns, layout);
+            if (this.bundles[_bundle].layoutColumns.filter(function(d){return d instanceof LayoutRankColumn;}).length<1){
+                this.bundles[_bundle].layoutColumns.unshift(new LayoutRankColumn())
+            }
+
         },
         addStackedColumn:function(spec,bundle){
             var _spec = spec ||{label:"Stacked", children:[]}
@@ -201,11 +209,13 @@ LineUpLocalStorage.prototype = $.extend({},{},
 
                 }
 
+
             }else if (col instanceof LayoutSingleColumn){
                 if (col.parent==null || col.parent == undefined){
                     headerColumns.splice(headerColumns.indexOf(col),1);
                 }else{
                     col.parent.removeChild(col);
+                    this.resortData({})
                 }
             }
 
@@ -222,6 +232,7 @@ LineUpLocalStorage.prototype = $.extend({},{},
            var _bundle = bundle || "primary";
 
            var headerColumns = this.bundles[_bundle].layoutColumns;
+            var that = this;
 
            // different cases:
            if (column.parent==null && targetColumn.parent == null){
@@ -259,6 +270,7 @@ LineUpLocalStorage.prototype = $.extend({},{},
                targetColumn.parent.addChild(column, targetColumn, position)
 
            }
+           this.resortData({})
          },
         copyColumn:function(column, targetColumn, position, bundle){
             var _bundle = bundle || "primary";
@@ -266,6 +278,8 @@ LineUpLocalStorage.prototype = $.extend({},{},
             var headerColumns = this.bundles[_bundle].layoutColumns;
 
             var newColumn = column.makeCopy();
+
+            var that = this;
 
             // different cases:
             if (targetColumn.parent == null){
@@ -279,8 +293,8 @@ LineUpLocalStorage.prototype = $.extend({},{},
             else if (!(targetColumn.parent == null)){
                    // copy into stacked Column
                 targetColumn.parent.addChild(newColumn, targetColumn, position);
-
             }
+            this.resortData({})
         }
 
 

@@ -47,7 +47,9 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
 
     allRowsSuperEnter.append("g").attr("class","overlay").append("rect").attr({
         x:0,y:0,height:LineUpGlobal.svgLayout.rowHeight, width:window.innerWidth-30, opacity:.000001
-    }).on({
+    })
+
+    allRowsSuper.select(".overlay rect").on({
         "mouseenter":function(row){
             d3.select(this).attr({
                 opacity:.4,

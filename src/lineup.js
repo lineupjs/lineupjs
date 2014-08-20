@@ -5,7 +5,7 @@
 var LineUpGlobal = {
     colorMapping: d3.map(),
     columnColors: d3.scale.category20(),
-    grayColor:"#666666",
+    grayColor:"#999999",
     htmlLayout: {
         menuHeight: 25,
         menuHeightExpanded: 50,
@@ -24,7 +24,8 @@ var LineUpGlobal = {
     actionOptions: [
         {name:" new combined", icon:"fa-plus", action:"addNewStackedColumnDialog"},
         {name:" add single columns", icon:"fa-plus", action:"addNewSingleColumnDialog"},
-        {name:" save layout", icon:"fa-sliders", action:"saveLayout"}
+        {name:" save layout", icon:"fa-floppy-o", action:"saveLayout"},
+        {name:" load layout", icon:"fa-recycle", action:"loadLayout"}
 
 
     ],
@@ -284,12 +285,12 @@ $(
 
         document.getElementById('lugui-dataset-selector').addEventListener('change', function () {
             loadDataset(LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value])
-
+            LineUpGlobal.actualDataSet= LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value];
         });
 
         //and start with 0:
         loadDataset(LineUpGlobal.datasets[0]);
-
+        LineUpGlobal.actualDataSet= LineUpGlobal.datasets[0];
 
     });
 
@@ -310,40 +311,76 @@ LineUp.prototype.saveLayout = function(){
     console.log(x);
     var t = JSON.stringify(x);
 
-    newColDesc = JSON.parse(t)
-
-
-    var layoutColumnTypes = {
-        "single": LayoutSingleColumn,
-        "stacked": LayoutStackedColumn,
-        "rank": LayoutRankColumn
+    if(typeof(Storage) !== "undefined") {
+        localStorage.setItem("LineUp-"+LineUpGlobal.actualDataSet.descriptionFile, t);
+    } else {
+      window.alert("Sorry, no webStorage support.")
     }
 
-    var that = this;
-    function toLayoutColumn(desc){
-        var type = desc.type || "single";
-        return new layoutColumnTypes[type](desc,that.storage.getRawColumns(), toLayoutColumn)
-    }
 
-    // create Rank Column
-//            new LayoutRankColumn();
-
-
-
-    var layoutColumns = newColDesc.map(toLayoutColumn);
-    console.log(layoutColumns);
-
-
-
-    var copy =this.storage.getColumnLayout()
-        .filter(function(d){return !(d instanceof LayoutRankColumn) ;})
-        .map(function(d){return d.makeCopy();})
-
-
-    console.log(copy);
 
 
 }
+LineUp.prototype.loadLayout = function(){
+    var x = this.storage.getColumnLayout()
+        .filter(function(d){
+            return true;
+//            return !(d instanceof LayoutRankColumn) ;
+        })
+        .map(function(d){return d.description();})
+    console.log(x);
+    var t = JSON.stringify(x);
+
+    var that = this;
+    if(typeof(Storage) !== "undefined") {
+
+        var t = localStorage.getItem("LineUp-"+LineUpGlobal.actualDataSet.descriptionFile);
+        if (t!=null){
+            var newColDesc = JSON.parse(t)
+            that.storage.generateLayout({primary:newColDesc});
+            that.updateAll();
+
+        }
+
+    } else {
+        window.alert("Sorry, no webStorage support.")
+    }
+
+
+//
+//
+//    var layoutColumnTypes = {
+//        "single": LayoutSingleColumn,
+//        "stacked": LayoutStackedColumn,
+//        "rank": LayoutRankColumn
+//    }
+//
+//    var that = this;
+//    function toLayoutColumn(desc){
+//        var type = desc.type || "single";
+//        return new layoutColumnTypes[type](desc,that.storage.getRawColumns(), toLayoutColumn)
+//    }
+//
+//    // create Rank Column
+////            new LayoutRankColumn();
+//
+//
+//
+//    var layoutColumns = newColDesc.map(toLayoutColumn);
+//    console.log(layoutColumns);
+//
+//
+//
+//    var copy =this.storage.getColumnLayout()
+//        .filter(function(d){return !(d instanceof LayoutRankColumn) ;})
+//        .map(function(d){return d.makeCopy();})
+//
+//
+//    console.log(copy);
+
+
+}
+
 
 
 function getKeyValueFromObject(o){

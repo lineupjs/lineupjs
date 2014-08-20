@@ -418,7 +418,8 @@ LineUp.prototype.addResortDragging= function(xss){
         }
 
         if (hitted == null && moved){
-            that.storage.removeColumn
+            that.storage.removeColumn(this.__data__);
+            that.updateAll();
         }
 
 
