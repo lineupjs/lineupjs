@@ -9,7 +9,7 @@
  * @param options
  * @class
  */
-function LineUpLocalStorage(tableId, data, columns, layout, options){
+function LineUpLocalStorage(data, columns, layout, options){
     options = $.extend({}, options, {});
 
     var colTypes = $.extend({},options.colTypes, {

@@ -255,7 +255,7 @@ $(
 
             d3.tsv(ds.baseURL+"/"+desc.file, function(_data) {
                 var spec = {};
-                spec.storage = new LineUpLocalStorage("#wsv", _data, desc.columns, desc.layout);
+                spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout);
 
                 if (LineUpGlobal.lineUpRenderer){
                     LineUpGlobal.lineUpRenderer.changeDataStorage(spec)
