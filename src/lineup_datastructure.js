@@ -12,23 +12,18 @@
  * @class
  */
 function LineUpColumn(desc) {
-
-    this._desc = desc;
     this.column = desc.column;
-    this.width = desc.width || 100;
     this.label= desc.label || desc.column;
-    this.id = desc.id || this.column;
-    this.collapsed = desc.collapsed || false;
     this.layout = {};
 }
-LineUpColumn.prototype = {
+LineUpColumn.prototype = $.extend({},{}, {
     getValue : function(row) {
         return row[this.column];
     },
     filterBy : function(row) {
         return true;
     }
-};
+});
 
 /**
  * A {@link LineUpColumn} implementation for Numbers
@@ -45,11 +40,9 @@ function LineUpNumberColumn(desc) {
 LineUpNumberColumn.prototype = $.extend({},LineUpColumn.prototype,{
     getValue : function(row) {
         return +LineUpColumn.prototype.getValue.call(this, row);
-    },getValue : function(row) {
-        return +LineUpColumn.prototype.getValue.call(this, row);
     },
     filterBy : function(row) {
-        var n = this.getN(row);
+        var n = this.getValue(row);
         return n >= this.filter[0] && n <= this.filter[1];
     }
 
@@ -67,8 +60,9 @@ function LineUpStringColumn(desc) {
 }
 LineUpStringColumn.prototype = $.extend({},LineUpColumn.prototype, {
     filterBy : function(value) {
-        if (!this.filter)
-            return true
+        if (!this.filter) {
+          return true;
+        }
         return value.contains(this.filter);
     }
 });
@@ -80,17 +74,19 @@ LineUpStringColumn.prototype = $.extend({},LineUpColumn.prototype, {
  * @extends LineUpColumn
  */
 function LineUpRankColumn(desc) {
-    LineUpColumn.call(this,desc);
-    this.width = desc.width || 40;
-    this.id = "rank";
-    this.label = desc.label || "Rank";
-    this.values = d3.map();
+  LineUpColumn.call(this, desc);
+  this.label = desc.label || "Rank";
+  //maps keys to ranks
+  this.values = d3.map();
 
 }
-LineUpRankColumn.prototype = $.extend({},LineUpColumn.prototype, {
-        setValue:function(row,d){this.values.set(row[LineUpGlobal.primaryKey],d)},
-        getValue:function(row){return this.values.get(row[LineUpGlobal.primaryKey])}
-
+LineUpRankColumn.prototype = $.extend({}, LineUpColumn.prototype, {
+  setValue: function (row, d) {
+    this.values.set(row[LineUpGlobal.primaryKey], d)
+  },
+  getValue: function (row) {
+    return this.values.get(row[LineUpGlobal.primaryKey])
+  }
 });
 
 
@@ -116,27 +112,29 @@ function LayoutColumn(desc){
 
     this.parent = desc.parent; // or null
     this.columnBundle = desc.columnBundle || "primary";
+    //define it here to have a dedicated this pointer
     this.sortBy=function(a,b){
         return d3.descending(that.column.getValue(a), that.column.getValue(b))
     }
-
 }
 
-LayoutColumn.prototype = {
+LayoutColumn.prototype = $.extend({},{},{
     setColumnWidth: function (newWidth, ignoreParent) {
         var _ignoreParent = ignoreParent || false;
 //        console.log("UPdate", newWidth, _ignoreParent);
         this.columnWidth = newWidth;
         this.scale.range([0, newWidth]);
-        if (!ignoreParent && this.parent) this.parent.updateWidthFromChild({id: this.id, newWidth: newWidth});
+        if (!ignoreParent && this.parent) {
+          this.parent.updateWidthFromChild({id: this.id, newWidth: newWidth});
+        }
     },
     getColumnWidth:function(){
         return this.columnWidth ;
     },
 
-    flattenMe:function(array){
-            array.push(this)
-    },
+  flattenMe: function (array) {
+    array.push(this)
+  },
     description:function(){
         var res = {};
         res.width = this.columnWidth;
@@ -147,7 +145,7 @@ LayoutColumn.prototype = {
     makeCopy:function(){
         return new LayoutColumn(this.description());
     }
-};
+});
 
 
 
@@ -210,7 +208,6 @@ function LayoutRankColumn(desc, rawColumns){
     LayoutColumn.call(this, desc?desc:{}, []);
     this.columnLink = 'rank';
     this.columnWidth = desc?(desc.width||50):50;
-    var that = this;
     this.column = new LineUpRankColumn({column:"rank"});
     this.id = _.uniqueId(this.columnLink+"_");
 }
@@ -484,7 +481,7 @@ LayoutEmptyColumn.prototype = $.extend({},LayoutColumn.prototype,{
         return this.id
     }
 
-})
+});
 
 
 
