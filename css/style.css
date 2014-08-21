@@ -76,6 +76,11 @@ a:hover{
     /*stroke:white;*/
 }
 
+text.headerSort {
+    font-family:'FontAwesome',
+    font-size:'10pt',
+    fill:'white'
+}
 
 .tableData{
     font-family: 'Lato', Helvetica, Arial;

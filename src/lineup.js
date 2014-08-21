@@ -9,7 +9,9 @@ var LineUpGlobal = {
     htmlLayout: {
         menuHeight: 25,
         menuHeightExpanded: 50,
+        headerID: "#lugui-table-header-svg",
         headerHeight: 50,
+        bodyID: "#lugui-table-body-svg",
         windowOffsetX: 5,
         windowOffsetY: 5,
         headerOffsetY: function(){return (this.menuHeight + this.windowOffsetY + 3) },
@@ -177,11 +179,13 @@ LineUp.prototype.updateMenu = function () {
 
 var layoutHTML= function(){
     //add svgs:
-    d3.select("#lugui-table-header").append("svg").attr({
+    var header = d3.select("#lugui-table-header").append("svg").attr({
         id:"lugui-table-header-svg",
         width:($(window).width()),
         height:LineUpGlobal.htmlLayout.headerHeight
     });
+    header.append('g').attr('class','main');
+    header.append('g').attr('class','overlay');
 
     d3.select("#lugui-table-body").append("svg").attr({
         id:"lugui-table-body-svg",

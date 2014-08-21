@@ -7,13 +7,10 @@
  */
 LineUp.prototype.updateHeader = function(headers){
 //    console.log("update Header");
+    var rootsvg = d3.select(LineUpGlobal.htmlLayout.headerID);
+    var svg = rootsvg.select('g.main');
+    var svgOverlay = rootsvg.select('g.overlay');
 
-    d3.select("#lugui-table-header-svg").selectAll(".main").data([1]).enter().append("g").attr("class","main");
-    d3.select("#lugui-table-header-svg").selectAll(".overlay").data([1]).enter().append("g").attr("class","overlay");
-
-
-    var svg = d3.select("#lugui-table-header-svg .main");
-    var svgOverlay = d3.select("#lugui-table-header-svg .overlay");
     var that = this;
 
     if (LineUpGlobal.headerUpdateRequired) this.layoutHeaders(headers)
@@ -149,13 +146,7 @@ LineUp.prototype.updateHeader = function(headers){
            return d.height/2
         },
         x:2
-    }).style({
-        'font-family':'FontAwesome',
-        'font-size':'10pt',
-        'fill':'white'
-    })
-
-
+    });
 
     allHeaders.select(".headerSort").text(function(d){
         var sc = LineUpGlobal.columnBundles[d.columnBundle].sortedColumn
@@ -328,9 +319,6 @@ LineUp.prototype.addResortDragging= function(xss){
         if (d instanceof LayoutEmptyColumn) return;
 
         moved = true;
-        var svgOverlay = d3.select("#lugui-table-header-svg").select(".overlay");
-
-
         var dragHeader = svgOverlay.selectAll(".dragHeader").data([d])
         var dragHeaderEnter = dragHeader.enter().append("g").attr({
             class:"dragHeader"
@@ -399,8 +387,8 @@ LineUp.prototype.addResortDragging= function(xss){
         if (d instanceof LayoutEmptyColumn) return;
 
         d3.select(this).classed("dragObject",false);
-        d3.select("#lugui-table-header-svg .overlay").selectAll(".dragHeader").remove();
-        d3.select("#lugui-table-header-svg .overlay").selectAll(".columnTick").remove();
+        svgOverlay.selectAll(".dragHeader").remove();
+        svgOverlay.selectAll(".columnTick").remove();
 
         if (hitted && hitted.column == this.__data__) return;
 

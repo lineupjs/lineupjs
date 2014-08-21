@@ -7,7 +7,7 @@
  * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
  */
 LineUp.prototype.updateBody = function(headers, data, stackTransition){
-
+    var svg = d3.select(LineUpGlobal.htmlLayout.bodyID);
     console.log("bupdate");
     var _stackTransition = stackTransition || false;
 
@@ -18,15 +18,14 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
     var rowScale = d3.scale.ordinal()
         .domain(data.map(function(d,i){return d[LineUpGlobal.primaryKey]}))
         .rangeBands([0,(datLength*LineUpGlobal.svgLayout.rowHeight)],0,.2);
-
-    d3.select("#lugui-table-body-svg").attr({
+    svg.attr({
         height: datLength*LineUpGlobal.svgLayout.rowHeight
     });
 
 
     // -- handle all row groups
 
-    var allRowsSuper = d3.select("#lugui-table-body-svg").selectAll(".row").data(data, function(d){return d[LineUpGlobal.primaryKey]})
+    var allRowsSuper = svg.selectAll(".row").data(data, function(d){return d[LineUpGlobal.primaryKey]})
     allRowsSuper.exit().remove();
 
     // --- append ---
