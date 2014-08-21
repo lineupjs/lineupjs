@@ -8,7 +8,7 @@ LineUp.prototype.addNewStackedColumnDialog=function(){
     var x = +(window.innerWidth)/2-100;
     var y = +100;
 
-    var label = "Stacked"
+    var label = "Stacked";
 
     var popupBG= d3.select("body")
         .append("div").attr({
@@ -21,7 +21,7 @@ LineUp.prototype.addNewStackedColumnDialog=function(){
             height:window.innerHeight+"px",
             background:"white",
             opacity:".3"
-        })
+        });
 
     var popup = d3.select("body").append("div")
         .attr({
@@ -40,7 +40,7 @@ LineUp.prototype.addNewStackedColumnDialog=function(){
             '<div class="selectionTable"></div>' +
             '<button class="cancel"><i class="fa fa-times"></i> cancel</button>'+
             '<button class="ok"><i class="fa fa-check"></i> ok</button>'
-    )
+    );
 
     var theTable = popup.select(".selectionTable").style({
         width:"390px",
@@ -51,16 +51,16 @@ LineUp.prototype.addNewStackedColumnDialog=function(){
     }).append("table").style({
         width:"95%",
         border:0
-    })
+    });
 
 
     // list all data rows !
     var trData = that.storage.getRawColumns().filter(function(d){return (d instanceof LineUpNumberColumn);}).map(function(d){return {d:d, isChecked:false, weight:1.0};})
 
-    var trs = theTable.selectAll("tr").data(trData)
+    var trs = theTable.selectAll("tr").data(trData);
     trs.enter().append("tr");
-    trs.append("td").attr("class", "checkmark")
-    trs.append("td").attr("class","datalabel").style("opacity",.8).text(function(d){return d.d.label;})
+    trs.append("td").attr("class", "checkmark");
+    trs.append("td").attr("class","datalabel").style("opacity",.8).text(function(d){return d.d.label;});
     trs.append("td").append("input").attr({
         class:"weightInput",
         type:"text",
@@ -70,16 +70,16 @@ LineUp.prototype.addNewStackedColumnDialog=function(){
     }).on("input", function(d) {
         d.weight = +this.value;
         redraw();
-    })
+    });
 
     function redraw(){
-        var trs = theTable.selectAll("tr").data(trData)
+        var trs = theTable.selectAll("tr").data(trData);
         trs.select(".checkmark").html(function(d){return (d.isChecked)?'<i class="fa fa-check-square-o"></i>':'<i class="fa fa-square-o"></i>'})
             .on("click",function(d){
                 d.isChecked = !d.isChecked;
                 redraw();
-            })
-        trs.select(".datalabel").style("opacity",function(d){return d.isChecked?"1.0":".8";})
+            });
+        trs.select(".datalabel").style("opacity",function(d){return d.isChecked?"1.0":".8";});
         trs.select(".weightInput").attr('disabled',function(d){return d.isChecked?null:true;})
     }
     redraw();
@@ -103,7 +103,7 @@ LineUp.prototype.addNewStackedColumnDialog=function(){
             label:name,
             width:(Math.max(allChecked.length*100,100)),
             children:allChecked.map(function(d){return {column: d.d.id, weight: d.weight};})
-        }
+        };
 
         that.storage.addStackedColumn(desc);
 
@@ -113,14 +113,14 @@ LineUp.prototype.addNewStackedColumnDialog=function(){
         that.updateAll();
 
 
-    })
+    });
 
     popup.select(".cancel").on("click",function(){
         popupBG.remove();
         popup.remove();
     })
 
-}
+};
 
 LineUp.prototype.addNewSingleColumnDialog=function(){
     var that = this;
@@ -128,7 +128,7 @@ LineUp.prototype.addNewSingleColumnDialog=function(){
     var x = +(window.innerWidth)/2-100;
     var y = +100;
 
-    var label = "Stacked"
+    var label = "Stacked";
 
     var popupBG= d3.select("body")
         .append("div").attr({
@@ -141,7 +141,7 @@ LineUp.prototype.addNewSingleColumnDialog=function(){
             height:window.innerHeight+"px",
             background:"white",
             opacity:".3"
-        })
+        });
 
     var popup = d3.select("body").append("div")
         .attr({
@@ -160,7 +160,7 @@ LineUp.prototype.addNewSingleColumnDialog=function(){
             '<div class="selectionTable"></div>' +
             '<button class="cancel"><i class="fa fa-times"></i> cancel</button>'+
             '<button class="ok"><i class="fa fa-check"></i> ok</button>'
-    )
+    );
 
     var theTable = popup.select(".selectionTable").style({
         width:"390px",
@@ -171,7 +171,7 @@ LineUp.prototype.addNewSingleColumnDialog=function(){
     }).append("table").style({
         width:"95%",
         border:0
-    })
+    });
 
 
     // list all data rows !
@@ -211,7 +211,7 @@ LineUp.prototype.addNewSingleColumnDialog=function(){
 //            children:allChecked.map(function(d){return {column: d.d.id, weight: d.weight};})
 //        }
 
-        allChecked.forEach(function(d){that.storage.addSingleColumn({column: d.d.id})})
+        allChecked.forEach(function(d){that.storage.addSingleColumn({column: d.d.id})});
 
         popupBG.remove();
         popup.remove();
@@ -219,14 +219,14 @@ LineUp.prototype.addNewSingleColumnDialog=function(){
         that.updateAll();
 
 
-    })
+    });
 
     popup.select(".cancel").on("click",function(){
         popupBG.remove();
         popup.remove();
     })
 
-}
+};
 
 
 LineUp.prototype.reweightStackedColumnDialog=function(col){
@@ -236,7 +236,7 @@ LineUp.prototype.reweightStackedColumnDialog=function(col){
     var x = +(window.innerWidth)/2-100;
     var y = +100;
 
-    var label = "Stacked"
+    var label = "Stacked";
 
     var popupBG= d3.select("body")
         .append("div").attr({
@@ -249,7 +249,7 @@ LineUp.prototype.reweightStackedColumnDialog=function(col){
             height:window.innerHeight+"px",
             background:"white",
             opacity:".3"
-        })
+        });
 
     var popup = d3.select("body").append("div")
         .attr({
@@ -267,7 +267,7 @@ LineUp.prototype.reweightStackedColumnDialog=function(col){
             '<div class="selectionTable"></div>' +
             '<button class="cancel"><i class="fa fa-times"></i> cancel</button>'+
             '<button class="ok"><i class="fa fa-check"></i> ok</button>'
-    )
+    );
 
     var theTable = popup.select(".selectionTable").style({
         width:"390px",
@@ -278,7 +278,7 @@ LineUp.prototype.reweightStackedColumnDialog=function(col){
     }).append("table").style({
         width:"95%",
         border:0
-    })
+    });
 
     console.log(col.childrenWeights);
     var newWeights = col.childrenWeights.map(function(d){return d+0;})
@@ -290,9 +290,9 @@ LineUp.prototype.reweightStackedColumnDialog=function(col){
             dataID: d.getDataID(),
             weight:col.childrenWeights[i],
             index:i
-        };})
+        };});
 
-    var trs = theTable.selectAll("tr").data(trData)
+    var trs = theTable.selectAll("tr").data(trData);
     trs.enter().append("tr");
 //    trs.append("td").attr("class", "checkmark")
     trs.append("td")
@@ -307,13 +307,13 @@ LineUp.prototype.reweightStackedColumnDialog=function(col){
     }).on("input", function(d) {
         newWeights[d.index] = +this.value;
         redraw();
-    })
+    });
 
     trs.append("td").append("div").attr("class","predictBar").style({
         width:function(d){return predictScale(d.weight)+"px";},
         height:20+"px",
         "background-color":function(d){return LineUpGlobal.colorMapping.get(d.dataID)}
-    })
+    });
 
     trs.append("td").attr("class","datalabel").text(function(d){return d.d;})
 
@@ -324,7 +324,7 @@ LineUp.prototype.reweightStackedColumnDialog=function(col){
                 dataID: d.getDataID(),
                 weight:newWeights[i],
                 index:i
-            };})
+            };});
         var trs = theTable.selectAll("tr").data(trData);
         predictScale.domain([0,d3.max(newWeights)]);
         trs.select(".predictBar").transition().style({
@@ -341,7 +341,7 @@ LineUp.prototype.reweightStackedColumnDialog=function(col){
 
         col.updateWeights(newWeights);
 
-        that.storage.resortData({})
+        that.storage.resortData({});
 
         popupBG.remove();
         popup.remove();
@@ -349,14 +349,14 @@ LineUp.prototype.reweightStackedColumnDialog=function(col){
         that.updateAll();
 
 
-    })
+    });
 
     popup.select(".cancel").on("click",function(){
         popupBG.remove();
         popup.remove();
     })
 
-}
+};
 
 /**
  * handles the rendering and action of StackedColumn options menu
@@ -367,7 +367,7 @@ LineUp.prototype.stackedColumnOptionsGui= function(selectedColumn){
     var svgOverlay = d3.select("#lugui-table-header-svg").select(".overlay");
     var that = this;
     // remove when clicked on already selected item
-    var disappear = (LineUpGlobal.modes.stackedColumnModified == selectedColumn)
+    var disappear = (LineUpGlobal.modes.stackedColumnModified == selectedColumn);
     if (disappear){
         svgOverlay.selectAll(".stackedOption").remove();
         LineUpGlobal.modes.stackedColumnModified = null;
@@ -381,11 +381,11 @@ LineUp.prototype.stackedColumnOptionsGui= function(selectedColumn){
         {name:"\uf014 remove", action:removeStackedColumn},
         {name:"\uf044 rename",action:renameStackedColumn},
         {name:"\uf0ae re-weight",action:that.reweightStackedColumnDialog}
-    ]
+    ];
 
     var menuLength = options.length*100;
 
-    var stackedOptions = svgOverlay.selectAll(".stackedOption").data([{d:selectedColumn, o:options}])
+    var stackedOptions = svgOverlay.selectAll(".stackedOption").data([{d:selectedColumn, o:options}]);
     stackedOptions.exit().remove();
 
 
@@ -394,30 +394,30 @@ LineUp.prototype.stackedColumnOptionsGui= function(selectedColumn){
         .attr({
             "class":"stackedOption",
             "transform":function(d) {return "translate("+ (d.d.offsetX+ d.d.columnWidth - menuLength)+","+ (LineUpGlobal.htmlLayout.headerHeight/2-2) +")";}
-        })
+        });
     stackedOptionsEnter.append("rect").attr({
         x:0,
         y:0,
         width:menuLength,
         height:LineUpGlobal.htmlLayout.headerHeight/2-4
-    })
+    });
     stackedOptionsEnter.selectAll("text").data(function(d){return d.o;}).enter().append("text")
         .attr({
             x:function(d,i){return i*100+5;},
             y:LineUpGlobal.htmlLayout.headerHeight/4-2
         })
-        .text(function(d){return d.name;})
+        .text(function(d){return d.name;});
 
     stackedOptions.selectAll("text").on("click",function(d){
         svgOverlay.selectAll(".stackedOption").remove();
         d.action.call(that,selectedColumn);
 
 
-    })
+    });
 
     stackedOptions.transition().attr({
         "transform":function(d) {return "translate("+ (d.d.offsetX+ d.d.columnWidth - menuLength)+","+ (LineUpGlobal.htmlLayout.headerHeight/2-2) +")";}
-    })
+    });
 
 
 
@@ -447,20 +447,20 @@ LineUp.prototype.stackedColumnOptionsGui= function(selectedColumn){
                 '<input type="text" id="popupInputText"  size="35" value="'+col.label+'"><br>' +
                 '<button class="cancel"><i class="fa fa-times"></i> cancel</button>'+
                 '<button class="ok"><i class="fa fa-check"></i> ok</button>'
-        )
+        );
 
         popup.select(".ok").style({
             position:"absolute",
             right:10+"px"
         }).on("click", renameIt)
 
-        popup.select(".cancel").on("click",function(){popup.remove()})
+        popup.select(".cancel").on("click",function(){popup.remove()});
 
 
 
 
         function renameIt(){
-            var newValue = document.getElementById("popupInputText").value
+            var newValue = document.getElementById("popupInputText").value;
             if (newValue.length>0){
                 that.storage.setColumnLabel(col,newValue);
                 that.updateHeader(that.storage.getColumnLayout());
@@ -472,8 +472,5 @@ LineUp.prototype.stackedColumnOptionsGui= function(selectedColumn){
 
 
 
-    };
-
-
-
-}
+    }
+};

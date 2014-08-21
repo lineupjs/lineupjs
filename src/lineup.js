@@ -92,7 +92,7 @@ var LineUp = function(spec){
 
     function draggedWeight() {
         var newValue = Math.max(d3.mouse(this.parentNode)[0],2);
-        that.reweightHeader({column:d3.select(this).data()[0], value:newValue})
+        that.reweightHeader({column:d3.select(this).data()[0], value:newValue});
         that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
     }
 
@@ -123,7 +123,7 @@ LineUp.prototype.changeDataStorage= function(spec){
     this.storage = spec.storage;
     this.sortedColumn = [];
     this.startVis();
-}
+};
 
 
 /**
@@ -137,26 +137,26 @@ LineUp.prototype.startVis = function(){
     console.log(this.storage.getData());
     this.updateBody(this.storage.getColumnLayout(), this.storage.getData())
 
-}
+};
 
 
 LineUp.prototype.updateMenu = function () {
-    var kv = getKeyValueFromObject(LineUpGlobal.renderingOptions)
+    var kv = getKeyValueFromObject(LineUpGlobal.renderingOptions);
 
     var that = this;
-    var kvNodes =d3.select("#lugui-menu-rendering").selectAll("span").data(kv,function(d){return d.key;})
+    var kvNodes =d3.select("#lugui-menu-rendering").selectAll("span").data(kv,function(d){return d.key;});
     kvNodes.exit().remove();
     kvNodes.enter().append("span").on({
         "click":function(d){
-            LineUpGlobal.renderingOptions[d.key] = !LineUpGlobal.renderingOptions[d.key]
+            LineUpGlobal.renderingOptions[d.key] = !LineUpGlobal.renderingOptions[d.key];
             that.updateMenu();
-            that.updateHeader(that.storage.getColumnLayout())
+            that.updateHeader(that.storage.getColumnLayout());
             that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), true)
         }
-    })
+    });
     kvNodes.html(function(d){
         return '<a href="#"> <i class="fa '+ (d.value?'fa-check-square-o':'fa-square-o')+'" ></i> '+ d.key+'</a>&nbsp;&nbsp;'
-    })
+    });
 
     var actionNodes = d3.select("#lugui-menu-actions").selectAll("span").data(LineUpGlobal.actionOptions)
         .enter().append("span").html(
@@ -172,7 +172,7 @@ LineUp.prototype.updateMenu = function () {
 
 
 
-}
+};
 
 
 var layoutHTML= function(){
@@ -181,29 +181,29 @@ var layoutHTML= function(){
         id:"lugui-table-header-svg",
         width:($(window).width()),
         height:LineUpGlobal.htmlLayout.headerHeight
-    })
+    });
 
     d3.select("#lugui-table-body").append("svg").attr({
         id:"lugui-table-body-svg",
         width:($(window).width())
-    })
+    });
 
     // constant layout attributes:
     $("#lugui-menu").css({
         "top" : LineUpGlobal.htmlLayout.windowOffsetY +"px",
         "left" : LineUpGlobal.htmlLayout.windowOffsetX+"px",
         "height": LineUpGlobal.htmlLayout.menuHeight+"px"
-    })
+    });
     $("#lugui-table-header").css({
         "top" : LineUpGlobal.htmlLayout.headerOffsetY() +"px",
         "left" : LineUpGlobal.htmlLayout.windowOffsetX+"px",
         "height": LineUpGlobal.htmlLayout.headerHeight+"px"
-    })
+    });
 
     $("#lugui-table-body-wrapper").css({
         "top" : LineUpGlobal.htmlLayout.bodyOffsetY()+"px",
         "left" : LineUpGlobal.htmlLayout.windowOffsetX+"px"
-    })
+    });
 
 
 
@@ -230,14 +230,14 @@ var layoutHTML= function(){
 
 
 
-}
+};
 
 LineUp.prototype.updateAll =function(){
     var that = this;
     that.updateHeader(that.storage.getColumnLayout());
     that.updateBody(that.storage.getColumnLayout(), that.storage.getData());
 
-}
+};
 
 
 // document ready
@@ -268,7 +268,7 @@ $(
             });
 
         })
-    }
+    };
 
 
 
@@ -276,15 +276,15 @@ $(
         console.log("datasets:", data, error);
 
         LineUpGlobal.datasets = data.datasets;
-        var ds = d3.select("#lugui-dataset-selector").selectAll("option").data(data.datasets)
+        var ds = d3.select("#lugui-dataset-selector").selectAll("option").data(data.datasets);
         ds.enter().append("option")
         .attr({
             value:function(d,i){return i;}
-        }).text(function(d){return d.name;})
+        }).text(function(d){return d.name;});
 
 
         document.getElementById('lugui-dataset-selector').addEventListener('change', function () {
-            loadDataset(LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value])
+            loadDataset(LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value]);
             LineUpGlobal.actualDataSet= LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value];
         });
 
@@ -298,7 +298,7 @@ $(
 
 
 
-})
+});
 
 
 LineUp.prototype.saveLayout = function(){
@@ -307,7 +307,7 @@ LineUp.prototype.saveLayout = function(){
             return true;
 //            return !(d instanceof LayoutRankColumn) ;
         })
-        .map(function(d){return d.description();})
+        .map(function(d){return d.description();});
     console.log(x);
     var t = JSON.stringify(x);
 
@@ -320,14 +320,14 @@ LineUp.prototype.saveLayout = function(){
 
 
 
-}
+};
 LineUp.prototype.loadLayout = function(){
     var x = this.storage.getColumnLayout()
         .filter(function(d){
             return true;
 //            return !(d instanceof LayoutRankColumn) ;
         })
-        .map(function(d){return d.description();})
+        .map(function(d){return d.description();});
     console.log(x);
     var t = JSON.stringify(x);
 
@@ -336,7 +336,7 @@ LineUp.prototype.loadLayout = function(){
 
         var t = localStorage.getItem("LineUp-"+LineUpGlobal.actualDataSet.descriptionFile);
         if (t!=null){
-            var newColDesc = JSON.parse(t)
+            var newColDesc = JSON.parse(t);
             that.storage.generateLayout({primary:newColDesc});
             that.updateAll();
 
@@ -379,7 +379,7 @@ LineUp.prototype.loadLayout = function(){
 //    console.log(copy);
 
 
-}
+};
 
 
 

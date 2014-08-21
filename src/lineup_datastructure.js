@@ -37,7 +37,7 @@ LineUpColumn.prototype = {
  * @extends LineUpColumn
  */
 function LineUpNumberColumn(desc) {
-    LineUpColumn.call(this,desc)
+    LineUpColumn.call(this,desc);
 
     this.scale = d3.scale.linear().domain(desc.domain).range([0,1]);
     this.filter = desc.filter || [0,100];
@@ -62,7 +62,7 @@ LineUpNumberColumn.prototype = $.extend({},LineUpColumn.prototype,{
  * @extends LineUpColumn
  */
 function LineUpStringColumn(desc) {
-    LineUpColumn.call(this,desc)
+    LineUpColumn.call(this,desc);
     this.filter = desc.filter || undefined;
 }
 LineUpStringColumn.prototype = $.extend({},LineUpColumn.prototype, {
@@ -80,7 +80,7 @@ LineUpStringColumn.prototype = $.extend({},LineUpColumn.prototype, {
  * @extends LineUpColumn
  */
 function LineUpRankColumn(desc) {
-    LineUpColumn.call(this,desc)
+    LineUpColumn.call(this,desc);
     this.width = desc.width || 40;
     this.id = "rank";
     this.label = desc.label || "Rank";
@@ -108,11 +108,11 @@ LineUpRankColumn.prototype = $.extend({},LineUpColumn.prototype, {
 
 
 function LayoutColumn(desc){
-    var that = this
+    var that = this;
     this.columnWidth = desc.width ||100;
-    this.id = _.uniqueId("Column_")
+    this.id = _.uniqueId("Column_");
 
-    this.scale = d3.scale.linear().range([0,that.columnWidth])
+    this.scale = d3.scale.linear().range([0,that.columnWidth]);
 
     this.parent = desc.parent; // or null
     this.columnBundle = desc.columnBundle || "primary";
@@ -140,14 +140,14 @@ LayoutColumn.prototype = {
     description:function(){
         var res = {};
         res.width = this.columnWidth;
-        res.columnBundle = this.columnBundle
+        res.columnBundle = this.columnBundle;
 
         return res;
     },
     makeCopy:function(){
         return new LayoutColumn(this.description());
     }
-}
+};
 
 
 
@@ -183,8 +183,8 @@ LayoutSingleColumn.prototype = $.extend({},LayoutColumn.prototype,{
     description:function(){
         var res = {};
         res.width = this.columnWidth;
-        res.columnBundle = this.columnBundle
-        res.column = this.columnLink
+        res.columnBundle = this.columnBundle;
+        res.column = this.columnLink;
 
 
         return res;
@@ -202,7 +202,7 @@ LayoutSingleColumn.prototype = $.extend({},LayoutColumn.prototype,{
         return res;
     }
 
-})
+});
 
 
 
@@ -236,7 +236,7 @@ LayoutRankColumn.prototype = $.extend({},LayoutColumn.prototype,{
         return res;
     }
 
-})
+});
 
 
 
@@ -392,13 +392,13 @@ LayoutStackedColumn.prototype = $.extend({},LayoutCompositeColumn.prototype,{
 
         this.columnWidth = d3.sum(this.childrenWidths);
         this.scale.range([0, this.columnWidth]);
-        this.scale.domain([0,d3.sum(this.childrenWeights)])
+        this.scale.domain([0,d3.sum(this.childrenWeights)]);
 
 
         this.children.splice(indexOfChild,1);
         child.parent=null;
         if (this.children.length<1){
-            this.emptyColumns=[new LayoutEmptyColumn({parent:that})]
+            this.emptyColumns=[new LayoutEmptyColumn({parent:that})];
             this.columnWidth = 100;
         }
 

@@ -10,7 +10,7 @@
  * @class
  */
 function LineUpLocalStorage(tableId, data, columns, layout, options){
-    options = $.extend({}, options, {})
+    options = $.extend({}, options, {});
 
     var colTypes = $.extend({},options.colTypes, {
         "number" : LineUpNumberColumn,
