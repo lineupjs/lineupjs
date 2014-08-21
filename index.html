@@ -14,257 +14,53 @@
     <script src="src/lineup_storage.js"></script>
     <script src="src/event-manager.js"></script>
 
-
-    <!--<link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">-->
-    <!--<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">-->
-
-    <!--<link href="css/bootstrap.min.css" rel="stylesheet">-->
     <link href="css/font-awesome.min.css" rel="stylesheet">
 
     <link href='http://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
 
-    <style>
-        #lugui-menu{
-            position: fixed;
-            background-color: lightgray;
-            /*padding-left: 5px;*/
-            /*padding-right: 5px;*/
-
-            /*border: 2px solid darkgrey;*/
-            border-radius: 5px;
-
-            font-family: 'Lato', Helvetica, Arial;
-            font-weight: normal;
-            font-size: 11pt;
-            white-space: nowrap;
-        }
-
-        a{
-            font-size: 10pt;
-            font-weight: normal;
-            font-style: normal;
-            text-decoration: none;
-            color: royalblue;
-
-        }
-        a:hover{
-            /*font-size: 11pt;*/
-            font-weight: bold;
-        }
-
-        #lugui-table-header{
-            position: fixed;
-            background-color: lightgray;
-        }
-
-        #lugui-table-body-wrapper{
-            position: fixed;
-            overflow-x: auto;
-            overflow-y: scroll;
-        }
-
-
-        #lugui-menu-actions span{
-            font-size: 10pt;
-            font-weight: normal;
-            font-style: normal;
-            text-decoration: none;
-            color: royalblue;
-            background-color: white;
-            border-radius: 4px;
-            padding: 1px;
-            padding-left: 5px;
-            padding-right: 5px;
-            margin-right: 5px;
-            cursor: pointer;
-        }
-
-        #lugui-menu-actions span:hover{
-            background-color: darkgrey;
-        }
-
-        .weightHandle{
-            fill:white;
-            /*stroke:grey;*/
-            /*stroke-width:1;*/
-            cursor: col-resize;
-        }
-
-        .headerLabel{
-            font-family: 'Lato', Helvetica, Arial;
-            font-weight: bold;
-            font-size: 9pt;
-            dominant-baseline:middle;
-            fill:black;
-            pointer-events:none;
-            /*stroke-size:.1;*/
-            /*stroke:white;*/
-        }
-
-
-        .tableData{
-            font-family: 'Lato', Helvetica, Arial;
-            font-weight: normal;
-            font-size: 9pt;
-            dominant-baseline:middle;
-            fill:darkgrey;
-        }
-
-        .emptyHeader{
-            opacity: .5;
-        }
-
-        .sortedColumn{
-            font-weight: bolder;
-            font-size: 11pt;
-        }
-        .fa{
-            position: relative;
-            top:.5pt;
-        }
-
-        .addColumnButton rect{
-            fill:white;
-            border-radius:5px;
-        }
-        .addColumnButton rect:hover{
-            fill:darkgray;
-
-        }
-
-        .addColumnButton text{
-            font-family:'FontAwesome';
-            font-size:10pt;
-            font-weight: bold;
-            fill:black;
-            dominant-baseline:central;
-            text-anchor: middle;
-            pointer-events:none;
-            user-select: none;
-        }
-
-        .fontawe{
-            font-family:'FontAwesome';
-            font-size:10pt;
-            dominant-baseline:central;
-            text-anchor: middle;
-        }
-
-        .stackedColumnInfo{
-            fill:lightgrey;
-            cursor: pointer;
-
-        }
-
-        .stackedColumnInfo:hover{
-            fill:white;
-        }
-
-
-
-        /* for gui helper */
-        .stackedOption rect{
-            fill: white;
-            opacity: .9;
-        }
-        .stackedOption text{
-            font-family:'FontAwesome';
-            font-size: 9pt;
-            dominant-baseline:central;
-            font-weight: bold;
-            fill:black;
-            cursor: pointer;
-
-        }
-        .stackedOption text:hover{
-            fill:royalblue;
-        }
-
-        .popup{
-            background:white;
-
-            border-radius: 10px;
-            padding: 10px;
-            box-shadow: 10px 10px 5px #888888;
-
-            font-family:'Lato', Helvetica, Arial;
-            font-size:10pt;
-            dominant-baseline:central;
-            text-anchor: middle;
-        }
-
-
-        .selectionTable tr:hover{
-            background-color: lightblue;
-        }
-
-
-        .dragObject{
-            opacity:.5;
-        }
-
-        .dragHeader{
-            fill:grey;
-            opacity:.6;
-        }
-
-        .row .hovered{
-            fill:black;
-            /*fill: ;*/
-            opacity: 1;
-        }
-
-    </style>
-
+    <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
-<div id="lugui-menu">
-    <!--<div id="lugui-dataset-selector"></div>-->
-    <!--<div class="text-left">-->
-    <!--LineUp.JS-->
+    <div id="lugui-menu">
+        <!--<div id="lugui-dataset-selector"></div>-->
+        <!--<div class="text-left">-->
+        <!--LineUp.JS-->
 
-    <div style="display: inline-block; float: left; padding-left:5px; padding-top:2px;">
-        LineUp.js
-        &nbsp;
-        &nbsp;
-        &nbsp;
+        <div style="display: inline-block; float: left; padding-left:5px; padding-top:2px;">
+            LineUp.js
+            &nbsp;
+            &nbsp;
+            &nbsp;
 
-        <span id="lugui-menu-rendering"> </span>
-        <span id="lugui-menu-actions"> </span>
+            <span id="lugui-menu-rendering"> </span>
+            <span id="lugui-menu-actions"> </span>
+        </div>
+
+        <!--<div style="display: inline-block; float: left; padding-left:5px; padding-top:2px;">-->
+            <!--<a href="#">test</a>-->
+        <!--</div>-->
+
+        <!--<div style="display: inline-block; float: left">-->
+            <!--LineUp.js2-->
+        <!--</div>-->
+        <div style="display: inline-block; float: right; padding-right:5px; padding-top:2px;">
+            <select id="lugui-dataset-selector" ></select>
+            <i class="fa fa-info-circle" style="color: #555555;"></i>
+            <!--position: relative;top: 2px;-->
+        </div>
+        <!--</div>-->
+        <!--class="form-control input-sm"-->
+        <!--<div id="lugui-info" class="text-right" > <i class="fa fa-info-circle" style="color: #555555;"></i></div>-->
+    </div>
+    <div id="lugui-table-header"></div>
+    <div id="lugui-table-body-wrapper">
+        <div id="lugui-table-body"></div>
     </div>
 
-    <!--<div style="display: inline-block; float: left; padding-left:5px; padding-top:2px;">-->
-        <!--<a href="#">test</a>-->
-    <!--</div>-->
-
-
-
-    <!--<div style="display: inline-block; float: left">-->
-        <!--LineUp.js2-->
-    <!--</div>-->
-
-
-    <div style="display: inline-block; float: right; padding-right:5px; padding-top:2px;">
-        <select id="lugui-dataset-selector" ></select>
-        <i class="fa fa-info-circle" style="color: #555555;"></i>
-        <!--position: relative;top: 2px;-->
-    </div>
-    <!--</div>-->
-    <!--class="form-control input-sm"-->
-    <!--<div id="lugui-info" class="text-right" > <i class="fa fa-info-circle" style="color: #555555;"></i></div>-->
-
-
-</div>
-<div id="lugui-table-header"></div>
-<div id="lugui-table-body-wrapper">
-    <div id="lugui-table-body"></div>
-</div>
-
-
-<script src="src/lineup.js"></script>
-<script src="src/lineup_tableheader.js"></script>
-<script src="src/lineup_tablebody.js"></script>
-<script src="src/lineup_layout.js"></script>
-<script src="src/lineup_gui_helper.js"></script>
+    <script src="src/lineup.js"></script>
+    <script src="src/lineup_tableheader.js"></script>
+    <script src="src/lineup_tablebody.js"></script>
+    <script src="src/lineup_layout.js"></script>
+    <script src="src/lineup_gui_helper.js"></script>
 </body>
 </html>
