@@ -45,7 +45,7 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
 
 
     allRowsSuperEnter.append("g").attr("class","overlay").append("rect").attr({
-        x:0,y:0,height:LineUpGlobal.svgLayout.rowHeight, width:window.innerWidth-30, opacity:.000001
+        x:0,y:0,height:LineUpGlobal.svgLayout.rowHeight, width: '100%', opacity:.000001
     })
 
     allRowsSuper.select(".overlay rect").on({
@@ -165,7 +165,7 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
         }
     });
     allRowsSuper.selectAll(".overlay rect").attr({
-        width:window.innerWidth-30
+        width: '100%'
     })
     var allRows = allRowsSuper.selectAll(".content");
 
@@ -175,50 +175,78 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
 
     var allTextHeaders = allHeaders.filter(function(d){
         return (d.hasOwnProperty('column') && (d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn));
+    });
+
+  var textClipPath = svg.select('defs').selectAll('clippath').data(allTextHeaders);
+  textClipPath.enter().append('clippath')
+    .attr('id', function (d) {
+      return 'clip-' + d.column.id;
     })
+    .append('rect').attr({
+      y: 0,
+      height: '100%'
+    });
+  textClipPath.exit().remove();
+  textClipPath.select('rect')
+    .attr({
+      x: function (d) {
+        return d.offsetX;
+      },
+      width: function (d) {
+        return Math.max(d.getColumnWidth()-2,0);
+      }
+    });
 
     const rowCenter = (LineUpGlobal.svgLayout.rowHeight/2);
 
-        var textRows = allRows.selectAll(".tableData.text")
-        .data(function(d,i){
+  var textRows = allRows.selectAll(".tableData.text")
+    .data(function (d, i) {
 
-            var data = allTextHeaders.map(function(column){
-                return {
-                    value:column.column.getValue(d),
-                    offsetX:column.offsetX,
-                    columnW: column.getColumnWidth(),
-                    isRank:(column instanceof LayoutRankColumn)
-                };
-            })
-            return data;
-        })
+      var data = allTextHeaders.map(function (column) {
+        return {
+          value: column.column.getValue(d),
+          offsetX: column.offsetX,
+          columnW: column.getColumnWidth(),
+          isRank: (column instanceof LayoutRankColumn),
+          clip : 'url(#clip-'+column.column.id+')'
+        };
+      });
+      return data;
+    })
 
-        textRows.exit().remove();
+  textRows.exit().remove();
 
 
-       textRows.enter()
-        .append("text")
-        .attr({
-            "class":function(d){
-                if (d.isRank) return "tableData text rank";
-                else return "tableData text";
-            },
-            x:function(d){
-                return d.offsetX
-            },
-            y:rowCenter
-        }).text(function(d){return d.value})
+  textRows.enter()
+    .append("text")
+    .attr({
+      'class': function (d) {
+        return "tableData text"+(d.isRank ? ' rank' : '');
+      },
+      x: function (d) {
+        return d.offsetX
+      },
+      y: rowCenter
+    })
+    .style('clip-path', function(d) {
+      return d.clip;
+    })
+    .text(function (d) {
+      return d.value
+    });
 
-        textRows
-        .attr({
-            x:function(d){
+  textRows
+    .attr({
+      x: function (d) {
 //                console.log("u", d.offsetX);
-                return d.offsetX
-            }
-        })// only changed texts:
+        return d.offsetX
+      }
+    })// only changed texts:
 
-        // TODO: cut texts to columnwidth
-        allRows.selectAll(".tableData.text.rank").text(function(d){return d.value;})
+  // TODO: cut texts to columnwidth
+  allRows.selectAll(".tableData.text.rank").text(function (d) {
+    return d.value;
+  })
 //        textRows.filter(function(d){return d;}).text(function(d){
 ////            console.log("hh",d.value!=undefined,d);
 ////            if (d.value!=undefined && d.value.isString()){
@@ -259,25 +287,27 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
 
     barRows.exit().remove();
 
-        barRows.enter()
-        .append("rect")
-        .attr({
-            "class":"tableData bar",
-            y:2,
-            height:LineUpGlobal.svgLayout.rowHeight-4
-        });
+  barRows.enter()
+    .append("rect")
+    .attr({
+      "class": "tableData bar",
+      y: 2,
+      height: LineUpGlobal.svgLayout.rowHeight - 4
+    });
 
-        barRows
-        .attr({
-            x:function(d){
-                return d.offsetX
-            },
-            width:function(d){
-                return Math.max(+d.value-2,0)
-            }
-        }).style({
-            fill: function(d){ return LineUpGlobal.colorMapping.get(d.key)}
-        })
+  barRows
+    .attr({
+      x: function (d) {
+        return d.offsetX
+      },
+      width: function (d) {
+        return Math.max(+d.value - 2, 0)
+      }
+    }).style({
+      fill: function (d) {
+        return LineUpGlobal.colorMapping.get(d.key)
+      }
+    });
 
 
     // -- RENDER the stacked columns (update, exit, enter)

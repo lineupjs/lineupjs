@@ -180,17 +180,18 @@ LineUp.prototype.updateMenu = function () {
 var layoutHTML= function(){
     //add svgs:
     var header = d3.select("#lugui-table-header").append("svg").attr({
-        id:"lugui-table-header-svg",
+        id:LineUpGlobal.htmlLayout.headerID.substr(1), //remove #
         width:($(window).width()),
         height:LineUpGlobal.htmlLayout.headerHeight
     });
     header.append('g').attr('class','main');
     header.append('g').attr('class','overlay');
 
-    d3.select("#lugui-table-body").append("svg").attr({
-        id:"lugui-table-body-svg",
+    var body = d3.select("#lugui-table-body").append("svg").attr({
+        id:LineUpGlobal.htmlLayout.bodyID.substr(1),
         width:($(window).width())
     });
+  body.append('defs');
 
     // constant layout attributes:
     $("#lugui-menu").css({
