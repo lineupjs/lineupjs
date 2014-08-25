@@ -113,14 +113,15 @@ LineUpLocalStorage.prototype = $.extend({}, {},
     assignRanks: function (data, accessor, rankColumn) {
 
       var actualRank = 1;
+      var sameRank = 1;
       var actualValue = -1;
 
-      data.forEach(function (row) {
+      data.forEach(function (row, i) {
         if (actualValue == -1) actualValue = accessor(row);
 
 //                console.log(row, accessor(row));
         if (actualValue != accessor(row)) {
-          actualRank++;
+          actualRank = i+1; //we have 1,1,3, not 1,1,2
           actualValue = accessor(row);
         }
 //                console.log(row[LineUpGlobal.primaryKey],actualValue,actualRank);
