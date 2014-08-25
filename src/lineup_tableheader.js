@@ -5,15 +5,17 @@
  * Render the given headers
  * @param headers - the array of headers, see {@link LineUpColumn}
  */
-LineUp.prototype.updateHeader = function (headers) {
+LineUp.prototype.updateHeader = function (headers, config) {
 //    console.log("update Header");
-  var rootsvg = d3.select(LineUpGlobal.htmlLayout.headerID);
+  var rootsvg = d3.select(config.htmlLayout.headerID);
   var svg = rootsvg.select('g.main');
   var svgOverlay = rootsvg.select('g.overlay');
 
   var that = this;
 
-  if (LineUpGlobal.headerUpdateRequired) this.layoutHeaders(headers)
+  if (config.headerUpdateRequired) {
+    this.layoutHeaders(headers, config)
+  }
 
   var allHeaderData = [];
   headers.forEach(function (d) {
@@ -39,7 +41,7 @@ LineUp.prototype.updateHeader = function (headers) {
       return d instanceof LayoutEmptyColumn;
     })
     .call(function (d) {
-      that.addResortDragging(this)
+      that.addResortDragging(this, config)
     })
 
   // --- changing nodes for allHeaders
@@ -65,10 +67,10 @@ LineUp.prototype.updateHeader = function (headers) {
     "fill": function (d, i) {
       if (d instanceof LayoutEmptyColumn) {
         return "lightgray"
-      } else if (d instanceof LayoutStackedColumn || !LineUpGlobal.colorMapping.has(d.column.id)) {
-        return LineUpGlobal.grayColor;
+      } else if (d instanceof LayoutStackedColumn || !config.colorMapping.has(d.column.id)) {
+        return config.grayColor;
       } else {
-        return LineUpGlobal.colorMapping.get(d.column.id);
+        return config.colorMapping.get(d.column.id);
       }
 
     }
@@ -78,7 +80,7 @@ LineUp.prototype.updateHeader = function (headers) {
       // no sorting for empty stacked columns !!!
       if (d instanceof LayoutStackedColumn && d.children.length < 1) return;
 
-      var bundle = LineUpGlobal.columnBundles[d.columnBundle];
+      var bundle = config.columnBundles[d.columnBundle];
       // TODO: adapt to comparison mode !!
       if (bundle.sortedColumn != null && (d.getDataID() == bundle.sortedColumn.getDataID())) {
         bundle.sortingOrderAsc = bundle.sortingOrderAsc ? false : true;
@@ -87,9 +89,9 @@ LineUp.prototype.updateHeader = function (headers) {
       }
 
       that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData());
+      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false, config);
       bundle.sortedColumn = d;
-      that.updateHeader(that.storage.getColumnLayout());
+      that.updateHeader(that.storage.getColumnLayout(), config);
     }
   });
 
@@ -135,7 +137,7 @@ LineUp.prototype.updateHeader = function (headers) {
 
   allHeaders.select(".headerLabel")
     .classed("sortedColumn", function (d) {
-      var sc = LineUpGlobal.columnBundles[d.columnBundle].sortedColumn
+      var sc = config.columnBundles[d.columnBundle].sortedColumn
       if (sc) {
         return d.getDataID() == sc.getDataID()
       } else {
@@ -163,9 +165,9 @@ LineUp.prototype.updateHeader = function (headers) {
   });
 
   allHeaders.select(".headerSort").text(function (d) {
-    var sc = LineUpGlobal.columnBundles[d.columnBundle].sortedColumn
-    return ((sc && d.getDataID() == LineUpGlobal.columnBundles[d.columnBundle].sortedColumn.getDataID()) ?
-      ((LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc) ? '\uf0de' : '\uf0dd')
+    var sc = config.columnBundles[d.columnBundle].sortedColumn
+    return ((sc && d.getDataID() == sc.getDataID()) ?
+      ((config.columnBundles[d.columnBundle].sortingOrderAsc) ? '\uf0de' : '\uf0dd')
       : "");
   })
     .attr({
@@ -248,8 +250,8 @@ LineUp.prototype.updateHeader = function (headers) {
 
   // add column sign:
   var plusButton = [];
-  if (LineUpGlobal.svgLayout.plusSigns.hasOwnProperty("addStackedColumn"))
-    plusButton.push(LineUpGlobal.svgLayout.plusSigns["addStackedColumn"])
+  if (config.svgLayout.plusSigns.hasOwnProperty("addStackedColumn"))
+    plusButton.push(config.svgLayout.plusSigns["addStackedColumn"])
 
   var addColumnButton = svg.selectAll(".addColumnButton").data(plusButton);
   addColumnButton.exit().remove();
@@ -300,8 +302,8 @@ LineUp.prototype.updateHeader = function (headers) {
 // ===============
 
 
-LineUp.prototype.addResortDragging = function (xss) {
-  if (LineUpGlobal.config.nodragging) {
+LineUp.prototype.addResortDragging = function (xss, config) {
+  if (config.config.nodragging) {
     return;
   }
 
@@ -312,7 +314,7 @@ LineUp.prototype.addResortDragging = function (xss) {
     .on("dragend", dragend);
 
   var that = this;
-  var rootsvg = d3.select(LineUpGlobal.htmlLayout.headerID);
+  var rootsvg = d3.select(config.htmlLayout.headerID);
   var svgOverlay = rootsvg.select('g.overlay');
   x.call(xss)
 
@@ -447,7 +449,7 @@ LineUp.prototype.addResortDragging = function (xss) {
 
 LineUp.prototype.addNewEmptyStackedColumn = function () {
   this.storage.addStackedColumn();
-  this.updateHeader(this.storage.getColumnLayout());
+  this.updateHeader(this.storage.getColumnLayout(), LineUpGlobal);
 }
 
 
@@ -461,7 +463,7 @@ LineUp.prototype.reweightHeader = function (change) {
 
 //    console.log(change);
   change.column.setColumnWidth(change.value);
-  this.updateHeader(this.storage.getColumnLayout());
+  this.updateHeader(this.storage.getColumnLayout(), LineUpGlobal);
 
 
 };

@@ -67,9 +67,10 @@ var LineUpGlobal = {
   modes: {
     stackedColumnModified: null,
     columnDragged: null
+  },
+  config: {
+    nodragging : false
   }
-
-
 };
 
 /**
@@ -99,7 +100,7 @@ var LineUp = function (spec) {
   function draggedWeight() {
     var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
     that.reweightHeader({column: d3.select(this).data()[0], value: newValue});
-    that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
+    that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false, LineUpGlobal)
   }
 
   function dragWeightEnded() {
@@ -107,7 +108,7 @@ var LineUp = function (spec) {
 
     if (LineUpGlobal.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
       that.storage.resortData({column: LineUpGlobal.columnBundles.primary.sortedColumn});
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData());
+      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false, LineUpGlobal);
     }
 //        that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
 
@@ -144,15 +145,15 @@ LineUp.prototype.startVis = function () {
   //initial sort
   //this.storage.resortData({});
 
-  this.updateHeader(this.storage.getColumnLayout());
+  this.updateHeader(this.storage.getColumnLayout(), LineUpGlobal);
   console.log(this.storage.getData());
-  this.updateBody(this.storage.getColumnLayout(), this.storage.getData())
+  this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), false, LineUpGlobal);
 
 };
 
 
 LineUp.prototype.updateMenu = function () {
-  var kv = getKeyValueFromObject(LineUpGlobal.renderingOptions);
+  var kv = d3.entries(LineUpGlobal.renderingOptions);
 
   var that = this;
   var kvNodes = d3.select("#lugui-menu-rendering").selectAll("span").data(kv, function (d) {
@@ -162,8 +163,8 @@ LineUp.prototype.updateMenu = function () {
   kvNodes.enter().append("span").on('click',function (d) {
       LineUpGlobal.renderingOptions[d.key] = !LineUpGlobal.renderingOptions[d.key];
       that.updateMenu();
-      that.updateHeader(that.storage.getColumnLayout());
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), true)
+      that.updateHeader(that.storage.getColumnLayout(), LineUpGlobal);
+      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), true, LineUpGlobal)
     });
   kvNodes.html(function (d) {
     return '<a href="#"> <i class="fa ' + (d.value ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d.key + '</a>&nbsp;&nbsp;'
@@ -243,8 +244,8 @@ var layoutHTML = function () {
 
 LineUp.prototype.updateAll = function () {
   var that = this;
-  that.updateHeader(that.storage.getColumnLayout());
-  that.updateBody(that.storage.getColumnLayout(), that.storage.getData());
+  that.updateHeader(that.storage.getColumnLayout(), LineUpGlobal);
+  that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false, LineUpGlobal)
 
 };
 
@@ -260,16 +261,17 @@ $(
     var loadDataset = function (ds) {
       d3.json(ds.baseURL + "/" + ds.descriptionFile, function (desc) {
 
-        LineUpGlobal.primaryKey = desc.primaryKey;
 
         d3.tsv(ds.baseURL + "/" + desc.file, function (_data) {
           var spec = {};
-          spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout);
+          LineUpGlobal.primaryKey = desc.primaryKey;
+          spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, LineUpGlobal);
 
           if (LineUpGlobal.lineUpRenderer) {
             LineUpGlobal.lineUpRenderer.changeDataStorage(spec)
           } else {
             LineUpGlobal.lineUpRenderer = new LineUp(spec);
+            LineUpGlobal.lineUpRenderer.config = LineUpGlobal;
             LineUpGlobal.lineUpRenderer.startVis();
           }
 
@@ -389,11 +391,3 @@ LineUp.prototype.loadLayout = function () {
 
 
 };
-
-
-function getKeyValueFromObject(o) {
-  return Object.keys(o).map(function (key) {
-    return {key: key, value: o[key]};
-  })
-}
-

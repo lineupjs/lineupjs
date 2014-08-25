@@ -70,12 +70,12 @@ LineUpLocalStorage.prototype = $.extend({}, {},
     },
     resortData: function (spec) {
 
-      var asc = spec.asc || LineUpGlobal.columnBundles.primary.sortingOrderAsc;
+      var asc = spec.asc || this.options.columnBundles.primary.sortingOrderAsc;
       var _key = spec.key || "primary";
-      var column = spec.column || LineUpGlobal.columnBundles.primary.sortedColumn;
+      var column = spec.column || this.options.columnBundles.primary.sortedColumn;
 
       if (column == null) return;
-      console.log("resort: ", spec);
+      //console.log("resort: ", spec);
       this.data.sort(column.sortBy);
 
       var rankColumn = this.bundles[_key].layoutColumns.filter(function (d) {

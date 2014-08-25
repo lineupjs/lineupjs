@@ -1,26 +1,24 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/15/14.
  */
-LineUp.prototype.layoutHeaders = function (headers) {
-
-  var that = this;
+LineUp.prototype.layoutHeaders = function (headers, config) {
   var offset = 0;
 
-  var res = headers.forEach(function (d) {
+  headers.forEach(function (d) {
 //        console.log(d);
     d.offsetX = offset;
     d.offsetY = 2;
-    d.height = LineUpGlobal.htmlLayout.headerHeight - 4;
+    d.height = config.htmlLayout.headerHeight - 4;
     offset += d.getColumnWidth();
 
 //        console.log(d.getColumnWidth());
   })
 
-  console.log("layout Headers:", headers);
+  //console.log("layout Headers:", headers);
 
-  var addSign = {}
-  if (LineUpGlobal.svgLayout.plusSigns.hasOwnProperty("addStackedColumn")) {
-    addSign = LineUpGlobal.svgLayout.plusSigns["addStackedColumn"];
+  var addSign = {};
+  if (config.svgLayout.plusSigns.hasOwnProperty("addStackedColumn")) {
+    addSign = config.svgLayout.plusSigns["addStackedColumn"];
     addSign.x = offset + 4;
   }
 //    else{
@@ -42,7 +40,7 @@ LineUp.prototype.layoutHeaders = function (headers) {
   })
     .forEach(function (d) {
 
-      d.height = LineUpGlobal.htmlLayout.headerHeight / 2 - 4;
+      d.height = config.htmlLayout.headerHeight / 2 - 4;
 
       var localOffset = 0;
       var parentOffset = d.offsetX;
@@ -52,20 +50,14 @@ LineUp.prototype.layoutHeaders = function (headers) {
         child.localOffsetX = localOffset;
         localOffset += child.getColumnWidth();
 
-        child.offsetY = LineUpGlobal.htmlLayout.headerHeight / 2 + 2;
-        child.height = LineUpGlobal.htmlLayout.headerHeight / 2 - 4;
+        child.offsetY = config.htmlLayout.headerHeight / 2 + 2;
+        child.height = config.htmlLayout.headerHeight / 2 - 4;
       })
 
     })
 
 
-}
-
-LineUp.prototype.layoutBody = function (headers, data) {
-
-
-}
-
+};
 
 LineUp.prototype.assignColors = function (headers) {
   //Color schemes are in LineUpGlobal (.columnColors / .grayColor)
@@ -92,17 +84,7 @@ LineUp.prototype.assignColors = function (headers) {
     }
 
 
-  })
+  });
 
-  console.log(LineUpGlobal.colorMapping);
-
-
-}
-
-LineUp.prototype.layoutAll = function (headers, data) {
-
-  this.layoutHeaders(headers);
-  this.layoutBody(headers, data);
-
-
-}
+  //console.log(LineUpGlobal.colorMapping);
+};

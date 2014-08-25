@@ -219,10 +219,10 @@
 
   }
 
-  LineUp.prototype.updateBody = function (headers, data, stackTransition) {
-    var svg = d3.select(LineUpGlobal.htmlLayout.bodyID);
-    console.log("bupdate");
-    var _stackTransition = stackTransition || false;
+  LineUp.prototype.updateBody = function (headers, data, stackTransition, config) {
+    var svg = d3.select(config.htmlLayout.bodyID);
+    //console.log("bupdate");
+    stackTransition = stackTransition || false;
 
     var allHeaders = [];
     headers.forEach(function (d) {
@@ -232,18 +232,18 @@
     var datLength = data.length;
     var rowScale = d3.scale.ordinal()
       .domain(data.map(function (d, i) {
-        return d[LineUpGlobal.primaryKey]
+        return d[config.primaryKey]
       }))
-      .rangeBands([0, (datLength * LineUpGlobal.svgLayout.rowHeight)], 0, .2);
+      .rangeBands([0, (datLength * config.svgLayout.rowHeight)], 0, .2);
     svg.attr({
-      height: datLength * LineUpGlobal.svgLayout.rowHeight
+      height: datLength * config.svgLayout.rowHeight
     });
 
 
     // -- handle all row groups
 
     var allRowsSuper = svg.selectAll(".row").data(data, function (d) {
-      return d[LineUpGlobal.primaryKey]
+      return d[config.primaryKey]
     });
     allRowsSuper.exit().remove();
 
@@ -255,7 +255,7 @@
     //    //--- update ---
     allRowsSuper.transition().duration(1000).attr({
       "transform": function (d, i) {
-        return  "translate(" + 0 + "," + rowScale(d[LineUpGlobal.primaryKey]) + ")"
+        return  "translate(" + 0 + "," + rowScale(d[config.primaryKey]) + ")"
       }
     });
 
@@ -264,7 +264,7 @@
 
 
     allRowsSuperEnter.append("g").attr("class", "overlay").append("rect").attr({
-      x: 0, y: 0, height: LineUpGlobal.svgLayout.rowHeight, width: '100%', opacity: .000001
+      x: 0, y: 0, height: config.svgLayout.rowHeight, width: '100%', opacity: .000001
     });
 
     allRowsSuper.select(".overlay rect").on({
@@ -299,8 +299,8 @@
 
               var allStackOffset = 0;
 
-              col.children.forEach(function (child, i) {
-                var allStackW = child.getWidth(row)
+              col.children.forEach(function (child) {
+                var allStackW = child.getWidth(row);
 
                 textOverlays.push({
                     value: zeroFormat(child.column.getValue(row))
@@ -309,7 +309,7 @@
                     w: allStackW,
                     x: (allStackOffset + col.offsetX)}
                 );
-                if (LineUpGlobal.renderingOptions.stacked) {
+                if (config.renderingOptions.stacked) {
                   allStackOffset += allStackW;
                 } else {
                   allStackOffset += child.getColumnWidth();
@@ -344,7 +344,7 @@
               return d.x;
             },
             y: 0,
-            height: LineUpGlobal.svgLayout.rowHeight,
+            height: config.svgLayout.rowHeight,
             width: function (d) {
               return d.w;
             }
@@ -360,7 +360,7 @@
             x: function (d) {
               return d.x + ((d.needsWhiteBG) ? +0 : +3);
             },
-            y: LineUpGlobal.svgLayout.rowHeight / 2
+            y: config.svgLayout.rowHeight / 2
           }).style({
             fill: "black",
             "font-weight": "bold",
@@ -388,8 +388,8 @@
     var allRows = allRowsSuper.selectAll(".content");
 
 
-    updateText(allHeaders, allRows, svg, LineUpGlobal);
-    updateSingleBars(headers, allRows, LineUpGlobal);
-    updateStackBars(headers, allRows, _stackTransition, LineUpGlobal);
+    updateText(allHeaders, allRows, svg, config);
+    updateSingleBars(headers, allRows, config);
+    updateStackBars(headers, allRows, stackTransition, config);
   }
 }())

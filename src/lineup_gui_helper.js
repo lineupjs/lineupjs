@@ -159,7 +159,7 @@
 
   LineUp.prototype.addNewSingleColumnDialog = function () {
     var that = this;
-    var popup = createPopup('add single columns')
+    var popup = createPopup('add single columns');
     // list all data rows !
     var trData = that.storage.getRawColumns()
 //        .filter(function(d){return (d instanceof LineUpNumberColumn);})
@@ -169,7 +169,7 @@
 
     var trs = popup.table.selectAll("tr").data(trData)
     trs.enter().append("tr");
-    trs.append("td").attr("class", "checkmark")
+    trs.append("td").attr("class", "checkmark");
     trs.append("td").attr("class", "datalabel").style("opacity", .8).text(function (d) {
       return d.d.label;
     });
@@ -178,7 +178,7 @@
     function redraw() {
       var trs = popup.table.selectAll("tr").data(trData)
       trs.select(".checkmark").html(function (d) {
-        return (d.isChecked) ? '<i class="fa fa-check-square-o"></i>' : '<i class="fa fa-square-o"></i>'
+        return '<i class="fa fa-'+((d.isChecked) ? 'check-':'')+'square-o"></i>'
       })
         .on("click", function (d) {
           d.isChecked = !d.isChecked;
@@ -216,7 +216,7 @@
 
   LineUp.prototype.reweightStackedColumnDialog = function (col) {
     var that = this;
-    var popup = createPopup('re-weight column "' + col.label + '"');
+    var popup = createPopup('re-weight column "' + col.label + '"', undefined);
 
     console.log(col.childrenWeights);
     var newWeights = col.childrenWeights.map(function (d) {
@@ -413,14 +413,12 @@
         var newValue = document.getElementById("popupInputText").value;
         if (newValue.length > 0) {
           that.storage.setColumnLabel(col, newValue);
-          that.updateHeader(that.storage.getColumnLayout());
+          that.updateHeader(that.storage.getColumnLayout(), LineUpGlobal);
           popup.remove();
         } else {
           window.alert("non empty string required");
         }
       }
-
-
     }
   }
-}())
+}());
