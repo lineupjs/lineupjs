@@ -213,28 +213,12 @@
     });
   };
 
-
-  LineUp.prototype.reweightStackedColumnDialog = function (col) {
-    var that = this;
-    var popup = createPopup('re-weight column "' + col.label + '"', undefined);
-
-    console.log(col.childrenWeights);
-    var newWeights = col.childrenWeights.map(function (d) {
-      return d + 0;
-    });
-    var predictScale = d3.scale.linear().domain([0, d3.max(newWeights)]).range([0, 120]);
-    // list all data rows !
-    var trData = col.children
-      .map(function (d, i) {
-        return {
-          d: d.column.label,
-          dataID: d.getDataID(),
-          weight: col.childrenWeights[i],
-          index: i
-        };
-      });
-
-    var trs = popup.table.selectAll("tr").data(trData);
+  LineUp.prototype.reweightStackedColumnWidget = function(data, $table) {
+    var toWeight = function(d) {
+      return d.weight;
+    };
+    var predictScale = d3.scale.linear().domain([0, d3.max(data, toWeight)]).range([0, 120]);
+    var trs = $table.selectAll("tr").data(data);
     trs.enter().append("tr");
 //    trs.append("td").attr("class", "checkmark")
     trs.append("td")
@@ -249,7 +233,7 @@
         },
         size: 5
       }).on("input", function (d) {
-        newWeights[d.index] = +this.value;
+        data[d.index].weight = +this.value;
         redraw();
       });
 
@@ -268,17 +252,8 @@
     });
 
     function redraw() {
-      trData = col.children
-        .map(function (d, i) {
-          return {
-            d: d.column.label,
-            dataID: d.getDataID(),
-            weight: newWeights[i],
-            index: i
-          };
-        });
-      var trs = popup.table.selectAll("tr").data(trData);
-      predictScale.domain([0, d3.max(newWeights)]);
+      var trs = $table.selectAll("tr").data(data);
+      predictScale.domain([0, d3.max(data,toWeight)]);
       trs.select(".predictBar").transition().style({
         width: function (d) {
           return predictScale(d.weight) + "px";
@@ -287,10 +262,30 @@
     }
 
     redraw();
+  };
 
+  LineUp.prototype.reweightStackedColumnDialog = function (col) {
+    var that = this;
+    var popup = createPopup('re-weight column "' + col.label + '"', undefined);
+
+    //console.log(col.childrenWeights);
+    // list all data rows !
+    var trData = col.children
+      .map(function (d, i) {
+        return {
+          d: d.column.label,
+          dataID: d.getDataID(),
+          weight: +col.childrenWeights[i],
+          index: i
+        };
+      });
+
+    this.reweightStackedColumnWidget(trData, popup.table);
 
     popup.onOK(function () {
-      col.updateWeights(newWeights);
+      col.updateWeights(trData.map(function(d) {
+        return d.weight;
+      }));
       that.storage.resortData({});
 
       popup.remove();
