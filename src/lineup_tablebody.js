@@ -177,6 +177,7 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
         return (d.hasOwnProperty('column') && (d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn));
     });
 
+  //generate clip paths for the text columns to avoid text overflow
   var textClipPath = svg.select('defs').selectAll('clippath').data(allTextHeaders);
   textClipPath.enter().append('clippath')
     .attr('id', function (d) {
@@ -232,7 +233,7 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
       return d.clip;
     })
     .text(function (d) {
-      return d.value
+      return d.value;
     });
 
   textRows
@@ -246,7 +247,7 @@ LineUp.prototype.updateBody = function(headers, data, stackTransition){
   // TODO: cut texts to columnwidth
   allRows.selectAll(".tableData.text.rank").text(function (d) {
     return d.value;
-  })
+  });
 //        textRows.filter(function(d){return d;}).text(function(d){
 ////            console.log("hh",d.value!=undefined,d);
 ////            if (d.value!=undefined && d.value.isString()){

@@ -296,6 +296,8 @@ LineUp.prototype.addResortDragging= function(xss){
         .on("dragend", dragend);
 
     var that = this;
+    var rootsvg = d3.select(LineUpGlobal.htmlLayout.headerID);
+    var svgOverlay = rootsvg.select('g.overlay');
     x.call(xss)
 
 

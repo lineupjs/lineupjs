@@ -77,9 +77,9 @@ a:hover{
 }
 
 text.headerSort {
-    font-family:'FontAwesome',
-    font-size:'10pt',
-    fill:'white'
+    font-family:'FontAwesome';
+    font-size: 10pt;
+    fill: white;
 }
 
 .tableData{
