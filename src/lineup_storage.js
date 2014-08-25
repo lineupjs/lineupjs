@@ -150,16 +150,15 @@ LineUpLocalStorage.prototype = $.extend({}, {},
       // create Rank Column
 //            new LayoutRankColumn();
 
-
-      this.bundles[_bundle] = {}
-      this.bundles[_bundle].layoutColumns = layout[_bundle].map(toLayoutColumn);
-      console.log(this.bundles[_bundle].layoutColumns, layout);
-      if (this.bundles[_bundle].layoutColumns.filter(function (d) {
+      var b  = {};
+      b.layoutColumns = layout[_bundle].map(toLayoutColumn);
+      console.log(b.layoutColumns, layout);
+      if (b.layoutColumns.filter(function (d) {
         return d instanceof LayoutRankColumn;
       }).length < 1) {
-        this.bundles[_bundle].layoutColumns.unshift(new LayoutRankColumn())
+        b.layoutColumns.unshift(new LayoutRankColumn())
       }
-
+      this.bundles[_bundle] = b;
     },
     addStackedColumn: function (spec, bundle) {
       var _spec = spec || {label: "Stacked", children: []}

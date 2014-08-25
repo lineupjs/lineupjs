@@ -142,7 +142,7 @@ LineUp.prototype.startVis = function () {
   this.updateMenu();
   this.assignColors(this.storage.getRawColumns());
   //initial sort
-  this.storage.resortData({});
+  //this.storage.resortData({});
 
   this.updateHeader(this.storage.getColumnLayout());
   console.log(this.storage.getData());
@@ -159,14 +159,12 @@ LineUp.prototype.updateMenu = function () {
     return d.key;
   });
   kvNodes.exit().remove();
-  kvNodes.enter().append("span").on({
-    "click": function (d) {
+  kvNodes.enter().append("span").on('click',function (d) {
       LineUpGlobal.renderingOptions[d.key] = !LineUpGlobal.renderingOptions[d.key];
       that.updateMenu();
       that.updateHeader(that.storage.getColumnLayout());
       that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), true)
-    }
-  });
+    });
   kvNodes.html(function (d) {
     return '<a href="#"> <i class="fa ' + (d.value ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d.key + '</a>&nbsp;&nbsp;'
   });
@@ -286,26 +284,24 @@ $(
       console.log("datasets:", data, error);
 
       LineUpGlobal.datasets = data.datasets;
-      var ds = d3.select("#lugui-dataset-selector").selectAll("option").data(data.datasets);
+      var $s = d3.select("#lugui-dataset-selector");
+      var ds = $s.selectAll("option").data(data.datasets);
       ds.enter().append("option")
-        .attr({
-          value: function (d, i) {
-            return i;
-          }
+        .attr('value', function (d, i) {
+          return i;
         }).text(function (d) {
           return d.name;
         });
 
-
-      document.getElementById('lugui-dataset-selector').addEventListener('change', function () {
-        loadDataset(LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value]);
-        LineUpGlobal.actualDataSet = LineUpGlobal.datasets[document.getElementById('lugui-dataset-selector').value];
+      var s = $s.node();
+      s.addEventListener('change', function () {
+        loadDataset(LineUpGlobal.datasets[s.value]);
+        LineUpGlobal.actualDataSet = LineUpGlobal.datasets[s.value];
       });
 
       //and start with 0:
       loadDataset(LineUpGlobal.datasets[0]);
       LineUpGlobal.actualDataSet = LineUpGlobal.datasets[0];
-
     });
 
 

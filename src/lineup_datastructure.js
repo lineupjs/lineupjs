@@ -14,6 +14,7 @@
 function LineUpColumn(desc) {
   this.column = desc.column;
   this.label = desc.label || desc.column;
+  this.id = desc.id || this.column;
   this.layout = {};
 }
 LineUpColumn.prototype = $.extend({}, {}, {
