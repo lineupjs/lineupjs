@@ -86,7 +86,6 @@ var LineUp = function (spec) {
 
   var that = this;
 
-
   /*
    * define dragging behaviour for header weights
    * */
@@ -123,8 +122,6 @@ var LineUp = function (spec) {
     .on("dragstart", dragWeightStarted)
     .on("drag", draggedWeight)
     .on("dragend", dragWeightEnded);
-
-
 };
 
 LineUp.prototype.changeDataStorage = function (spec) {
@@ -186,19 +183,14 @@ LineUp.prototype.updateMenu = function () {
 
 var layoutHTML = function () {
   //add svgs:
-  var header = d3.select("#lugui-table-header").append("svg").attr({
-    id: LineUpGlobal.htmlLayout.headerID.substr(1), //remove #
+  var header = d3.select(LineUpGlobal.htmlLayout.headerID).attr({
     width: ($(window).width()),
     height: LineUpGlobal.htmlLayout.headerHeight
   });
-  header.append('g').attr('class', 'main');
-  header.append('g').attr('class', 'overlay');
 
-  var body = d3.select("#lugui-table-body").append("svg").attr({
-    id: LineUpGlobal.htmlLayout.bodyID.substr(1),
+  var body = d3.select(LineUpGlobal.htmlLayout.bodyID).attr({
     width: ($(window).width())
   });
-  body.append('defs');
 
   // constant layout attributes:
   $("#lugui-menu").css({
