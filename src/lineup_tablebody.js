@@ -190,14 +190,18 @@ LineUp.prototype.updateBody = function (headers, data, stackTransition) {
   });
 
   //generate clip paths for the text columns to avoid text overflow
-  var textClipPath = svg.select('defs').selectAll('clippath').data(allTextHeaders);
-  textClipPath.enter().append('clippath')
+  //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
+  //there is a bug in webkit which present camelCase selectors
+  var textClipPath = svg.select('defs').selectAll(function() {
+    return this.getElementsByTagName("clipPath");
+  }).data(allTextHeaders);
+  textClipPath.enter().append('clipPath')
     .attr('id', function (d) {
       return 'clip-' + d.column.id;
     })
     .append('rect').attr({
       y: 0,
-      height: '100%'
+      height: '1000'
     });
   textClipPath.exit().remove();
   textClipPath.select('rect')
@@ -239,10 +243,10 @@ LineUp.prototype.updateBody = function (headers, data, stackTransition) {
       x: function (d) {
         return d.offsetX
       },
-      y: rowCenter
-    })
-    .style('clip-path', function (d) {
-      return d.clip;
+      y: rowCenter,
+      'clip-path' : function (d) {
+        return d.clip;
+      }
     })
     .text(function (d) {
       return d.value;

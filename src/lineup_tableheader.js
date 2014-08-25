@@ -75,21 +75,20 @@ LineUp.prototype.updateHeader = function (headers) {
   }).on({
     "click": function (d) {
       if (d3.event.defaultPrevented || d instanceof LayoutEmptyColumn) return;
-
       // no sorting for empty stacked columns !!!
       if (d instanceof LayoutStackedColumn && d.children.length < 1) return;
 
+      var bundle = LineUpGlobal.columnBundles[d.columnBundle];
       // TODO: adapt to comparison mode !!
-      if (LineUpGlobal.columnBundles[d.columnBundle].sortedColumn != null && (d.getDataID() == LineUpGlobal.columnBundles[d.columnBundle].sortedColumn.getDataID())) {
-
-        LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc = LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc ? false : true;
+      if (bundle.sortedColumn != null && (d.getDataID() == bundle.sortedColumn.getDataID())) {
+        bundle.sortingOrderAsc = bundle.sortingOrderAsc ? false : true;
       } else {
-        LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc = false;
+        bundle.sortingOrderAsc = false;
       }
 
-      that.storage.resortData({column: d, asc: LineUpGlobal.columnBundles[d.columnBundle].sortingOrderAsc});
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
-      LineUpGlobal.columnBundles[d.columnBundle].sortedColumn = d;
+      that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
+      that.updateBody(that.storage.getColumnLayout(), that.storage.getData());
+      bundle.sortedColumn = d;
       that.updateHeader(that.storage.getColumnLayout());
     }
   });
@@ -302,7 +301,9 @@ LineUp.prototype.updateHeader = function (headers) {
 
 
 LineUp.prototype.addResortDragging = function (xss) {
-
+  if (LineUpGlobal.config.nodragging) {
+    return;
+  }
 
   var x = d3.behavior.drag()
 //                .origin(function(d) { return d; })
