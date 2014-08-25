@@ -14,28 +14,16 @@
     var y = +100;
 
     var popupBG = d3.select("body")
-      .append("div").attr({
-        "class": "lu-popupBG"
-      }).style({
-        position: "fixed",
-        left: 0 + "px",
-        top: 0 + "px",
-        width: window.innerWidth + "px",
-        height: window.innerHeight + "px",
-        background: "white",
-        opacity: ".3"
-      });
+      .append("div").attr("class","lu-popupBG");
 
     var popup = d3.select("body").append("div")
       .attr({
         "class": "lu-popup"
       }).style({
-        position: "fixed",
         left: x + "px",
         top: y + "px",
         width: "400px",
         height: "200px"
-
       })
       .html(
         '<span style="font-weight: bold">' + title + '</span>' +
@@ -47,23 +35,12 @@
 
     var theTable = popup.select(".selectionTable").style({
       width: "390px",
-      height: "160px",
-      background: "white",
-      "overflow-x": "auto",
-      "overflow-y": "scroll"
-    }).append("table").style({
-      width: "95%",
-      border: 0
-    });
+      height: "160px"
+    }).append("table");
 
     popup.select(".cancel").on("click", function () {
       popupBG.remove();
       popup.remove();
-    });
-
-    popup.select(".ok").style({
-      position: "absolute",
-      right: 10 + "px"
     });
 
     return {
@@ -159,7 +136,7 @@
 
   LineUp.prototype.addNewSingleColumnDialog = function () {
     var that = this;
-    var popup = createPopup('add single columns');
+    var popup = createPopup('add single columns', undefined);
     // list all data rows !
     var trData = that.storage.getRawColumns()
 //        .filter(function(d){return (d instanceof LineUpNumberColumn);})
@@ -167,7 +144,7 @@
         return {d: d, isChecked: false, weight: 1.0};
       });
 
-    var trs = popup.table.selectAll("tr").data(trData)
+    var trs = popup.table.selectAll("tr").data(trData);
     trs.enter().append("tr");
     trs.append("td").attr("class", "checkmark");
     trs.append("td").attr("class", "datalabel").style("opacity", .8).text(function (d) {
@@ -176,7 +153,7 @@
 
 
     function redraw() {
-      var trs = popup.table.selectAll("tr").data(trData)
+      var trs = popup.table.selectAll("tr").data(trData);
       trs.select(".checkmark").html(function (d) {
         return '<i class="fa fa-'+((d.isChecked) ? 'check-':'')+'square-o"></i>'
       })
@@ -369,8 +346,7 @@
     function removeStackedColumn(col) {
       that.storage.removeColumn(col);
       that.updateAll();
-
-    };
+    }
 
     function renameStackedColumn(col) {
       var x = +(window.innerWidth) / 2 - 100;
@@ -380,7 +356,6 @@
         .attr({
           "class": "lu-popup"
         }).style({
-          position: "fixed",
           left: x + "px",
           top: y + "px",
           width: "200px",
@@ -394,10 +369,7 @@
           '<button class="ok"><i class="fa fa-check"></i> ok</button>'
       );
 
-      popup.select(".ok").style({
-        position: "absolute",
-        right: 10 + "px"
-      }).on("click", renameIt)
+      popup.select(".ok").on("click", renameIt);
 
       popup.select(".cancel").on("click", function () {
         popup.remove()

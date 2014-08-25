@@ -12,7 +12,7 @@ LineUp.prototype.layoutHeaders = function (headers, config) {
     offset += d.getColumnWidth();
 
 //        console.log(d.getColumnWidth());
-  })
+  });
 
   //console.log("layout Headers:", headers);
 

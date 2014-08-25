@@ -101,11 +101,6 @@ LineUpRankColumn.prototype = $.extend({}, LineUpColumn.prototype, {
  *  --- FROM HERE ON ONLY Layout Columns ---
  */
 
-
-
-
-
-
 function LayoutColumn(desc) {
   var that = this;
   this.columnWidth = desc.width || 100;
@@ -192,8 +187,7 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 
     return res;
   },
-  makeCopy: function (rawColumns) {
-    var that = this;
+  makeCopy: function () {
     var description = this.description();
     description.column = "";
     var res = new LayoutSingleColumn(description);
@@ -208,7 +202,7 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 });
 
 
-function LayoutRankColumn(desc, rawColumns) {
+function LayoutRankColumn(desc) {
   LayoutColumn.call(this, desc ? desc : {}, []);
   this.columnLink = 'rank';
   this.columnWidth = desc ? (desc.width || 50) : 50;
@@ -226,12 +220,12 @@ LayoutRankColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   },
   description: function () {
     var res = {};
-    res.type = "rank"
+    res.type = "rank";
     res.width = this.columnWidth;
 
     return res;
   },
-  makeCopy: function (rawColumns) {
+  makeCopy: function () {
     var description = this.description();
     var res = new LayoutRankColumn(description);
     return res;
@@ -257,10 +251,10 @@ LayoutCompositeColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 
 function LayoutStackedColumn(desc, rawColumns, toLayoutColumn) {
   LayoutCompositeColumn.call(this, desc, rawColumns);
-  this.childrenWeights = []
-  this.childrenWidths = []
+  this.childrenWeights = [];
+  this.childrenWidths = [];
   this.toLayoutColumn = toLayoutColumn;
-  this.children = []
+  this.children = [];
   this.emptyColumns = [];
   this.init(desc);
   var that = this;
@@ -268,16 +262,9 @@ function LayoutStackedColumn(desc, rawColumns, toLayoutColumn) {
     var aAll = 0;
     var bAll = 0;
     that.children.forEach(function (d, i) {
-      // TODO: How to handle real values vs. normalized Values?
-//            aAll+=d.column.getValue(a)*that.childrenWeights[i];
-//            bAll+=d.column.getValue(b)*that.childrenWeights[i];
       aAll += d.getWidth(a);
       bAll += d.getWidth(b);
-    })
-
-
-//        var aAll = d3.sum(that.children.map(function(d,i){return d.column.getValue(a)*that.childrenWeights[i];}))
-//        var bAll = d3.sum(that.children.map(function(d,i){return d.column.getValue(b)*that.childrenWeights[i];}))
+    });
     return d3.descending(aAll, bAll)
   }
 
@@ -291,7 +278,7 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
     var all = 0;
     this.children.forEach(function (d, i) {
       all += d.column.getValue(row) * that.childrenWeights[i];
-    })
+    });
     return all;
 
   },
@@ -325,10 +312,9 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
         this.childrenWidths = this.childrenLinks.map(function (d) {
           return +(d.width || 100)
         });
-
         this.childrenWeights = this.childrenWidths.map(function (d) {
           return d / 100.0
-        })
+        });
         this.columnWidth = d3.sum(this.childrenWidths);
         this.scale.domain([0, d3.sum(this.childrenWeights)]).range([0, this.columnWidth]);
       }
@@ -350,7 +336,7 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
     array.push(this);
     this.children.forEach(function (d) {
       d.flattenMe(array);
-    })
+    });
 
     if (addEmptyColumns) {
       this.emptyColumns.forEach(function (d) {
@@ -359,7 +345,7 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
     }
   },
   updateWidthFromChild: function (spec) {
-    var that = this
+    var that = this;
 
     // adopt weight and global size
     this.childrenWidths = this.children.map(function (d) {
@@ -431,14 +417,12 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
       if (position == "r") targetIndex++;
     }
 
-
-    var that = this;
     this.childrenWeights.splice(targetIndex, 0, this.scale.invert(child.getColumnWidth()));
     this.childrenWidths.splice(targetIndex, 0, child.getColumnWidth());
 
     this.columnWidth = d3.sum(this.childrenWidths);
     this.scale.range([0, this.columnWidth]);
-    this.scale.domain([0, d3.sum(this.childrenWeights)])
+    this.scale.domain([0, d3.sum(this.childrenWeights)]);
 
     child.parent = this;
     this.children.splice(targetIndex, 0, child);
@@ -451,13 +435,13 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
   description: function () {
     var res = {};
     res.type = "stacked";
-    res.columnBundle = this.columnBundle
+    res.columnBundle = this.columnBundle;
     var that = this;
     res.children = this.children.map(function (d, i) {
       return {column: d.columnLink, weight: that.childrenWeights[i]}
-    })
+    });
     res.width = this.columnWidth;
-    res.label = this.label
+    res.label = this.label;
     return res;
   },
   makeCopy: function () {
@@ -468,41 +452,35 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
 
     res.children = that.children.map(function (d) {
       return d.makeCopy();
-    })
+    });
     res.children.forEach(function (d) {
       d.parent = res
-    })
+    });
     res.childrenWeights = this.childrenWeights.slice(0);
     res.scale.domain([0, d3.sum(this.childrenWeights)]);
     res.childrenWidths = this.childrenWeights.map(function (d) {
       return that.scale(d);
-    })
+    });
 
     return res;
   }
-
-
-
-
-
 });
 
 
 function LayoutEmptyColumn(spec) {
   LayoutColumn.call(this, spec, []);
   this.columnLink = 'empty';
-  var that = this;
-  this.column = {getValue: function (a) {
-    return ""
-  }, getRawValue: function (a) {
-    return "";
-  }};
+  this.column = {
+    getValue: function (a) {
+      return ""
+    },
+    getRawValue: function (a) {
+      return "";
+    }};
   this.id = _.uniqueId(this.columnLink + "_");
-  this.label = "{empty}"
+  this.label = "{empty}";
   this.columnWidth = 50
 }
-
-
 LayoutEmptyColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   getLabel: function () {
     return this.label
@@ -510,7 +488,6 @@ LayoutEmptyColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   getDataID: function () {
     return this.id
   }
-
 });
 
 
