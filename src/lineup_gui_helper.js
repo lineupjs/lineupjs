@@ -15,7 +15,7 @@
 
     var popupBG = d3.select("body")
       .append("div").attr({
-        "class": "popupBG"
+        "class": "lu-popupBG"
       }).style({
         position: "fixed",
         left: 0 + "px",
@@ -28,7 +28,7 @@
 
     var popup = d3.select("body").append("div")
       .attr({
-        "class": "popup"
+        "class": "lu-popup"
       }).style({
         position: "fixed",
         left: x + "px",
@@ -378,7 +378,7 @@
 
       var popup = d3.select("body").append("div")
         .attr({
-          "class": "popup"
+          "class": "lu-popup"
         }).style({
           position: "fixed",
           left: x + "px",

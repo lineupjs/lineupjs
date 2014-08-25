@@ -1,5 +1,5 @@
 
-#lugui-menu {
+.lu #lugui-menu {
     position: fixed;
     background-color: lightgray;
     /*padding-left: 5px;*/
@@ -14,7 +14,7 @@
     white-space: nowrap;
 }
 
-a {
+.lu a {
     font-size: 10pt;
     font-weight: normal;
     font-style: normal;
@@ -23,23 +23,23 @@ a {
 
 }
 
-a:hover {
+.lu a:hover {
     /*font-size: 11pt;*/
     font-weight: bold;
 }
 
-#lugui-table-header {
+.lu #lugui-table-header {
     position: fixed;
     background-color: lightgray;
 }
 
-#lugui-table-body-wrapper {
+.lu #lugui-table-body-wrapper {
     position: fixed;
     overflow-x: auto;
     overflow-y: scroll;
 }
 
-#lugui-menu-actions span {
+.lu #lugui-menu-actions span {
     font-size: 10pt;
     font-weight: normal;
     font-style: normal;
@@ -54,18 +54,18 @@ a:hover {
     cursor: pointer;
 }
 
-#lugui-menu-actions span:hover {
+.lu #lugui-menu-actions span:hover {
     background-color: darkgrey;
 }
 
-.weightHandle {
+.lu .weightHandle {
     fill: white;
     /*stroke:grey;*/
     /*stroke-width:1;*/
     cursor: col-resize;
 }
 
-.headerLabel {
+.lu .headerLabel {
     font-family: 'Lato', Helvetica, Arial;
     font-weight: bold;
     font-size: 9pt;
@@ -76,13 +76,13 @@ a:hover {
     /*stroke:white;*/
 }
 
-text.headerSort {
+.lu text.headerSort {
     font-family: 'FontAwesome';
     font-size: 10pt;
     fill: white;
 }
 
-.tableData {
+.lu .tableData {
     font-family: 'Lato', Helvetica, Arial;
     font-weight: normal;
     font-size: 9pt;
@@ -90,31 +90,31 @@ text.headerSort {
     fill: darkgrey;
 }
 
-.emptyHeader {
+.lu .emptyHeader {
     opacity: .5;
 }
 
-.sortedColumn {
+.lu .sortedColumn {
     font-weight: bolder;
     font-size: 11pt;
 }
 
-.fa {
+.lu .fa {
     position: relative;
     top: .5pt;
 }
 
-.addColumnButton rect {
+.lu .addColumnButton rect {
     fill: white;
     border-radius: 5px;
 }
 
-.addColumnButton rect:hover {
+.lu .addColumnButton rect:hover {
     fill: darkgray;
 
 }
 
-.addColumnButton text {
+.lu .addColumnButton text {
     font-family: 'FontAwesome';
     font-size: 10pt;
     font-weight: bold;
@@ -125,29 +125,29 @@ text.headerSort {
     user-select: none;
 }
 
-.fontawe {
+.lu .fontawe {
     font-family: 'FontAwesome';
     font-size: 10pt;
     dominant-baseline: central;
     text-anchor: middle;
 }
 
-.stackedColumnInfo, .singleColumnDelete {
+.lu .stackedColumnInfo, .singleColumnDelete {
     fill: lightgrey;
     cursor: pointer;
 }
 
-.stackedColumnInfo:hover, .singleColumnDelete:hover {
+.lu .stackedColumnInfo:hover, .singleColumnDelete:hover {
     fill: white;
 }
 
 /* for gui helper */
-.stackedOption rect {
+.lu .stackedOption rect {
     fill: white;
     opacity: .9;
 }
 
-.stackedOption text {
+.lu .stackedOption text {
     font-family: 'FontAwesome';
     font-size: 9pt;
     dominant-baseline: central;
@@ -157,11 +157,27 @@ text.headerSort {
 
 }
 
-.stackedOption text:hover {
+.lu .stackedOption text:hover {
     fill: royalblue;
 }
 
-.popup {
+.lu .dragObject {
+    opacity: .5;
+}
+
+.lu .dragHeader {
+    fill: grey;
+    opacity: .6;
+}
+
+.lu .row .hovered {
+    fill: black;
+    /*fill: ;*/
+    opacity: 1;
+}
+
+
+.lu-popup {
     background: white;
 
     border-radius: 10px;
@@ -174,21 +190,6 @@ text.headerSort {
     text-anchor: middle;
 }
 
-.selectionTable tr:hover {
+.lu-popup .selectionTable tr:hover {
     background-color: lightblue;
-}
-
-.dragObject {
-    opacity: .5;
-}
-
-.dragHeader {
-    fill: grey;
-    opacity: .6;
-}
-
-.row .hovered {
-    fill: black;
-    /*fill: ;*/
-    opacity: 1;
 }
