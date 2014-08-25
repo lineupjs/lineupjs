@@ -132,13 +132,12 @@ text.headerSort {
     text-anchor: middle;
 }
 
-.stackedColumnInfo {
+.stackedColumnInfo, .singleColumnDelete {
     fill: lightgrey;
     cursor: pointer;
-
 }
 
-.stackedColumnInfo:hover {
+.stackedColumnInfo:hover, .singleColumnDelete:hover {
     fill: white;
 }
 
