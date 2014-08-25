@@ -21,6 +21,9 @@ LineUpColumn.prototype = $.extend({}, {}, {
   getValue: function (row) {
     return row[this.column];
   },
+  getRawValue : function(row) {
+    return this.getValue(row);
+  },
   filterBy: function (row) {
     return true;
   }
@@ -35,12 +38,15 @@ LineUpColumn.prototype = $.extend({}, {}, {
 function LineUpNumberColumn(desc) {
   LineUpColumn.call(this, desc);
 
-  this.scale = d3.scale.linear().domain(desc.domain).range([0, 1]);
-  this.filter = desc.filter || [0, 100];
+  this.scale = d3.scale.linear().domain(desc.domain || [0,100]).range(desc.range || [0, 1]);
+  this.filter = desc.filter || this.scale.domain();
 }
 LineUpNumberColumn.prototype = $.extend({}, LineUpColumn.prototype, {
   getValue: function (row) {
-    return +LineUpColumn.prototype.getValue.call(this, row);
+    return this.scale(+LineUpColumn.prototype.getValue.call(this, row));
+  },
+  getRawValue : function(row) {
+    return LineUpColumn.prototype.getValue.call(this, row);
   },
   filterBy: function (row) {
     var n = this.getValue(row);
@@ -105,7 +111,8 @@ function LayoutColumn(desc) {
   this.columnWidth = desc.width || 100;
   this.id = _.uniqueId("Column_");
 
-  this.scale = d3.scale.linear().range([0, that.columnWidth]);
+  //from normalized value to width value
+  this.scale = d3.scale.linear().domain([0,1]).range([0, that.columnWidth]);
 
   this.parent = desc.parent; // or null
   this.columnBundle = desc.columnBundle || "primary";
@@ -159,9 +166,9 @@ function LayoutSingleColumn(desc, rawColumns) {
 LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 
   init: function () {
-    if (this.column.hasOwnProperty("scale") && this.column.scale != null) {
+    /*if (this.column.hasOwnProperty("scale") && this.column.scale != null) {
       this.scale.domain(this.column.scale.domain());
-    }
+    }*/
 
   },
   // ONLY for numerical columns
@@ -391,8 +398,8 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
       return d.setColumnWidth(that.childrenWidths[i], true)
     });
 
-    console.log(this.childrenWeights);
-    console.log(this.childrenWidths);
+    //console.log(this.childrenWeights);
+    //console.log(this.childrenWidths);
   },
   removeChild: function (child) {
     var indexOfChild = this.children.indexOf(child);
@@ -487,6 +494,8 @@ function LayoutEmptyColumn(spec) {
   var that = this;
   this.column = {getValue: function (a) {
     return ""
+  }, getRawValue: function (a) {
+    return "";
   }};
   this.id = _.uniqueId(this.columnLink + "_");
   this.label = "{empty}"

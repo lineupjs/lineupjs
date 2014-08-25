@@ -47,6 +47,7 @@
         var data = allTextHeaders.map(function (column) {
           return {
             value: column.column.getValue(d),
+            label: column.column.getRawValue(d),
             offsetX: column.offsetX,
             columnW: column.getColumnWidth(),
             isRank: (column instanceof LayoutRankColumn),
@@ -74,7 +75,7 @@
         }
       })
       .text(function (d) {
-        return d.value;
+        return d.label;
       });
 
     textRows
@@ -107,7 +108,9 @@
     var barRows = allRows.selectAll(".tableData.bar")
       .data(function (d) {
         var data = allSingleBarHeaders.map(function (column) {
-          return {key: column.getDataID(), value: column.getWidth(d), offsetX: column.offsetX};
+          return {key: column.getDataID(), value: column.getWidth(d),
+            label: column.column.getRawValue(d),
+            offsetX: column.offsetX};
         });
         return data;
       });
@@ -279,17 +282,17 @@
         var textOverlays = [];
         headers.forEach(function (col) {
             if (col instanceof LayoutSingleColumn && col.column instanceof LineUpNumberColumn) {
-              textOverlays.push({value: col.column.getValue(row),
+              textOverlays.push({value: col.column.getValue(row), label: col.column.getRawValue(row),
                 x: col.offsetX,
                 needsWhiteBG: false,
                 w: col.getColumnWidth()})
             } else if (col instanceof LayoutSingleColumn) {
-              textOverlays.push({value: col.column.getValue(row),
+              textOverlays.push({value: col.column.getValue(row), label: col.column.getRawValue(row),
                 x: col.offsetX,
                 needsWhiteBG: true,
                 w: col.getColumnWidth()})
             } else if (col instanceof LayoutRankColumn) {
-              textOverlays.push({value: col.column.getValue(row),
+              textOverlays.push({value: col.column.getValue(row), label: col.column.getRawValue(row),
                 x: col.offsetX,
                 needsWhiteBG: true,
                 w: col.getColumnWidth()})
@@ -303,7 +306,7 @@
                 var allStackW = child.getWidth(row);
 
                 textOverlays.push({
-                    value: zeroFormat(child.column.getValue(row))
+                    label: child.column.getRawValue(row)
                       + " -> (" + zeroFormat(child.getWidth(row)) + ")",
                     needsWhiteBG: false,
                     w: allStackW,
@@ -368,7 +371,7 @@
 //                    "font-size":"7pt"
 //                    "text-anchor":"end"
           }).text(function (d) {
-            return d.value;
+            return d.label;
           })
 
 
