@@ -1,5 +1,5 @@
 
-#lugui-menu{
+#lugui-menu {
     position: fixed;
     background-color: lightgray;
     /*padding-left: 5px;*/
@@ -14,7 +14,7 @@
     white-space: nowrap;
 }
 
-a{
+a {
     font-size: 10pt;
     font-weight: normal;
     font-style: normal;
@@ -22,24 +22,24 @@ a{
     color: royalblue;
 
 }
-a:hover{
+
+a:hover {
     /*font-size: 11pt;*/
     font-weight: bold;
 }
 
-#lugui-table-header{
+#lugui-table-header {
     position: fixed;
     background-color: lightgray;
 }
 
-#lugui-table-body-wrapper{
+#lugui-table-body-wrapper {
     position: fixed;
     overflow-x: auto;
     overflow-y: scroll;
 }
 
-
-#lugui-menu-actions span{
+#lugui-menu-actions span {
     font-size: 10pt;
     font-weight: normal;
     font-style: normal;
@@ -54,142 +54,142 @@ a:hover{
     cursor: pointer;
 }
 
-#lugui-menu-actions span:hover{
+#lugui-menu-actions span:hover {
     background-color: darkgrey;
 }
 
-.weightHandle{
-    fill:white;
+.weightHandle {
+    fill: white;
     /*stroke:grey;*/
     /*stroke-width:1;*/
     cursor: col-resize;
 }
 
-.headerLabel{
+.headerLabel {
     font-family: 'Lato', Helvetica, Arial;
     font-weight: bold;
     font-size: 9pt;
-    dominant-baseline:middle;
-    fill:black;
-    pointer-events:none;
+    dominant-baseline: middle;
+    fill: black;
+    pointer-events: none;
     /*stroke-size:.1;*/
     /*stroke:white;*/
 }
 
 text.headerSort {
-    font-family:'FontAwesome';
+    font-family: 'FontAwesome';
     font-size: 10pt;
     fill: white;
 }
 
-.tableData{
+.tableData {
     font-family: 'Lato', Helvetica, Arial;
     font-weight: normal;
     font-size: 9pt;
-    dominant-baseline:middle;
-    fill:darkgrey;
+    dominant-baseline: middle;
+    fill: darkgrey;
 }
 
-.emptyHeader{
+.emptyHeader {
     opacity: .5;
 }
 
-.sortedColumn{
+.sortedColumn {
     font-weight: bolder;
     font-size: 11pt;
 }
-.fa{
+
+.fa {
     position: relative;
-    top:.5pt;
+    top: .5pt;
 }
 
-.addColumnButton rect{
-    fill:white;
-    border-radius:5px;
+.addColumnButton rect {
+    fill: white;
+    border-radius: 5px;
 }
-.addColumnButton rect:hover{
-    fill:darkgray;
+
+.addColumnButton rect:hover {
+    fill: darkgray;
 
 }
 
-.addColumnButton text{
-    font-family:'FontAwesome';
-    font-size:10pt;
+.addColumnButton text {
+    font-family: 'FontAwesome';
+    font-size: 10pt;
     font-weight: bold;
-    fill:black;
-    dominant-baseline:central;
+    fill: black;
+    dominant-baseline: central;
     text-anchor: middle;
-    pointer-events:none;
+    pointer-events: none;
     user-select: none;
 }
 
-.fontawe{
-    font-family:'FontAwesome';
-    font-size:10pt;
-    dominant-baseline:central;
+.fontawe {
+    font-family: 'FontAwesome';
+    font-size: 10pt;
+    dominant-baseline: central;
     text-anchor: middle;
 }
 
-.stackedColumnInfo{
-    fill:lightgrey;
+.stackedColumnInfo {
+    fill: lightgrey;
     cursor: pointer;
 
 }
 
-.stackedColumnInfo:hover{
-    fill:white;
+.stackedColumnInfo:hover {
+    fill: white;
 }
 
-
-
 /* for gui helper */
-.stackedOption rect{
+.stackedOption rect {
     fill: white;
     opacity: .9;
 }
-.stackedOption text{
-    font-family:'FontAwesome';
+
+.stackedOption text {
+    font-family: 'FontAwesome';
     font-size: 9pt;
-    dominant-baseline:central;
+    dominant-baseline: central;
     font-weight: bold;
-    fill:black;
+    fill: black;
     cursor: pointer;
 
 }
-.stackedOption text:hover{
-    fill:royalblue;
+
+.stackedOption text:hover {
+    fill: royalblue;
 }
 
-.popup{
-    background:white;
+.popup {
+    background: white;
 
     border-radius: 10px;
     padding: 10px;
     box-shadow: 10px 10px 5px #888888;
 
-    font-family:'Lato', Helvetica, Arial;
-    font-size:10pt;
-    dominant-baseline:central;
+    font-family: 'Lato', Helvetica, Arial;
+    font-size: 10pt;
+    dominant-baseline: central;
     text-anchor: middle;
 }
 
-
-.selectionTable tr:hover{
+.selectionTable tr:hover {
     background-color: lightblue;
 }
 
-
-.dragObject{
-    opacity:.5;
+.dragObject {
+    opacity: .5;
 }
 
-.dragHeader{
-    fill:grey;
-    opacity:.6;
+.dragHeader {
+    fill: grey;
+    opacity: .6;
 }
 
-.row .hovered{
-    fill:black;
+.row .hovered {
+    fill: black;
     /*fill: ;*/
     opacity: 1;
 }

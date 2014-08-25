@@ -2,7 +2,7 @@
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/17/14.
  */
 
-(function() {
+(function () {
   /**
    * creates a simple popup window with a table
    * @param title
@@ -38,8 +38,8 @@
 
       })
       .html(
-        '<span style="font-weight: bold">'+title+'</span>' +
-          (label ? '<input type="text" id="popupInputText"  size="35" value="' + label + '"><br>' : '') +
+        '<span style="font-weight: bold">' + title + '</span>' +
+        (label ? '<input type="text" id="popupInputText"  size="35" value="' + label + '"><br>' : '') +
         '<div class="selectionTable"></div>' +
         '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
         '<button class="ok"><i class="fa fa-check"></i> ok</button>'
@@ -67,21 +67,22 @@
     });
 
     return {
-      popup : popup,
+      popup: popup,
       table: theTable,
-      remove : function() {
+      remove: function () {
         popup.remove();
         popupBG.remove();
       },
-      onOK : function(handler) {
+      onOK: function (handler) {
         return popup.select(".ok").on("click", handler);
       }
     }
   }
+
   LineUp.prototype.addNewStackedColumnDialog = function () {
     var that = this;
 
-    var popup = createPopup('add stacked column:','Stacked');
+    var popup = createPopup('add stacked column:', 'Stacked');
     // list all data rows !
     var trData = that.storage.getRawColumns().filter(function (d) {
       return (d instanceof LineUpNumberColumn);
