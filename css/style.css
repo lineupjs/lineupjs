@@ -147,12 +147,12 @@
     text-anchor: middle;
 }
 
-.lu .stackedColumnInfo, .singleColumnDelete {
+.lu .stackedColumnInfo, .singleColumnDelete, .singleColumnFilter {
     fill: lightgrey;
     cursor: pointer;
 }
 
-.lu .stackedColumnInfo:hover, .singleColumnDelete:hover {
+.lu .stackedColumnInfo:hover, .singleColumnDelete:hover, .singleColumnFilter:hover {
     fill: white;
 }
 

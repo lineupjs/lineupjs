@@ -270,6 +270,49 @@
     });
   };
 
+  LineUp.prototype.openMappingEditor = function(selectedColumn) {
+    var bak = selectedColumn.column.scale;
+    var that = this;
+    var act = bak;
+    var callback = function(newscale) {
+      //scale = newscale;
+      console.log("scale: "+newscale.domain()+ " "+newscale.range());
+      act = newscale;
+    };
+
+    var popup = d3.select("body").append("div")
+      .attr({
+        "class": "lu-popup"
+      }).style({
+        left: +(window.innerWidth) / 2 - 100 + "px",
+        top: 100 + "px",
+        width: "420px",
+        height: "450px"
+
+      })
+      .html(
+        '<div style="font-weight: bold"> change mapping: </div>' +
+        '<div class="mappingArea"></div>'+
+        '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
+        '<button class="ok"><i class="fa fa-check"></i> ok</button>'
+    );
+    var editor = LineUp.mappingEditor(bak, this.storage.data, function(row) {
+      return +selectedColumn.column.getRawValue(row);
+    }, callback);
+
+    popup.select('.mappingArea').call(editor);
+
+    popup.select(".ok").on("click", function () {
+      selectedColumn.column.scale = act;
+      that.updateAll();
+      popup.remove()
+    });
+    popup.select(".cancel").on("click", function () {
+      selectedColumn.column.scale = bak;
+      popup.remove()
+    });
+  };
+
   /**
    * handles the rendering and action of StackedColumn options menu
    * @param selectedColumn -- the stacked column

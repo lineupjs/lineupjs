@@ -205,7 +205,7 @@ LineUp.prototype.updateHeader = function (headers, config) {
 
 
   var deleteButton = allHeaders.selectAll(".singleColumnDelete").data(function (d) {
-    return (!(d instanceof LayoutStackedColumn) && d.parent == null) ? [d] : []
+    return (!(d instanceof LayoutStackedColumn)) ? [d] : [];
   });
   deleteButton.exit().remove();
 
@@ -222,6 +222,29 @@ LineUp.prototype.updateHeader = function (headers, config) {
   deleteButton.attr({
     x: function (d) {
       return d.getColumnWidth() - 15
+    },
+    y: function (d) {
+      return d.height / 4
+    }
+  })
+
+  var filterButton = allHeaders.selectAll(".singleColumnFilter").data(function (d) {
+    return (d instanceof LayoutSingleColumn && d.column instanceof LineUpNumberColumn) ? [d] : []
+  });
+  filterButton.exit().remove();
+
+  // --- adding Element to class weightHandle
+  filterButton.enter().append("text").attr({
+    "class": "singleColumnFilter fontawe"
+  }).text("\uf0b0")
+    .on("click", function (d) {
+      that.openMappingEditor(d);
+      //that.updateAll();
+    });
+  // --- changing nodes for weightHandle
+  filterButton.attr({
+    x: function (d) {
+      return d.getColumnWidth() - 28
     },
     y: function (d) {
       return d.height / 4
