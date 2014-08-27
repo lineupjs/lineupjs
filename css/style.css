@@ -190,8 +190,9 @@
 }
 .lu .row.hover text {
     fill: black;
+    font-weight: bold;
 }
-.lu .row.hover rect.tableData {
+.lu .row.hover rect.tableData, .lu .row.hover g.tableData rect {
     opacity: 0.5;
 }
 .lu .row .hoveronly {

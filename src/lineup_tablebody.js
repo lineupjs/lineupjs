@@ -297,7 +297,12 @@
     // --- append ---
     var allRowsSuperEnter = allRowsSuper.enter().append("g").attr({
       "class": "row"
-    })
+    });
+    allRowsSuperEnter.append('rect').attr({
+      'class' : 'filler',
+      width : '100%',
+      height : config.svgLayout.rowHeight
+    });
 
     //    //--- update ---
     allRowsSuper.transition().duration(1000).attr({
@@ -305,49 +310,18 @@
         return  "translate(" + 0 + "," + rowScale(d[config.primaryKey]) + ")"
       }
     });
-allRowsSuperEnter.append("g").attr("class", "content");
-
-
-    allRowsSuperEnter.append("g").attr("class", "overlay").append("rect").attr({
-      x: 0, y: 0, height: config.svgLayout.rowHeight, width: '100%', opacity: .000001
-    });
-
-    allRowsSuper.select(".overlay").on({
-      "mouseenter": function (row) {
-        d3.select('rect').attr({
-          opacity: .4,
-          fill: "#ffffff"
-        });
-
+    allRowsSuper.on({
+      mouseenter: function(row) {
+        d3.select(this).classed('hover',true);
         var zeroFormat = d3.format(".1f");
 //            d3.select(this.parent).classed("hovered", true)
         var textOverlays = [];
         headers.forEach(function (col) {
-            if (col instanceof LayoutSingleColumn && col.column instanceof LineUpNumberColumn) {
+            if (col.column instanceof LineUpNumberColumn) {
               textOverlays.push({value: col.column.getValue(row), label: col.column.getRawValue(row),
                 x: col.offsetX,
-                needsWhiteBG: false,
                 w: col.getColumnWidth()})
-            } else if (col instanceof LayoutSingleColumn) {
-              textOverlays.push({value: col.column.getValue(row), label: col.column.getRawValue(row),
-                x: col.offsetX,
-                needsWhiteBG: true,
-                w: col.getColumnWidth()})
-            } else if (col instanceof LayoutRankColumn) {
-              textOverlays.push({value: col.column.getValue(row), label: col.column.getRawValue(row),
-                x: col.offsetX,
-                needsWhiteBG: true,
-                w: col.getColumnWidth()})
-            } else if (col instanceof LayoutActionColumn) {
-              textOverlays.push({
-                action: true,
-                x : col.offsetX,
-                needsWhiteBG : false,
-                w: col.getColumnWidth()
-              })
             } else if (col instanceof  LayoutStackedColumn) {
-
-
               var allStackOffset = 0;
 
               col.children.forEach(function (child) {
@@ -356,7 +330,6 @@ allRowsSuperEnter.append("g").attr("class", "content");
                 textOverlays.push({
                     label: child.column.getRawValue(row)
                       + " -> (" + zeroFormat(child.getWidth(row)) + ")",
-                    needsWhiteBG: false,
                     w: allStackW,
                     x: (allStackOffset + col.offsetX)}
                 );
@@ -369,86 +342,23 @@ allRowsSuperEnter.append("g").attr("class", "content");
             }
           }
         );
-
-        /** TODO: CLIPPING ???? -- http://jsfiddle.net/dsummersl/EqLBJ/1/
-         *   var clip = chart.append("defs").append("svg:clipPath")
-         .attr("id", "clip")
-         .append("svg:rect")
-         .attr("id", "clip-rect")
-         .attr("x", "0")
-         .attr("y", "0")
-         .attr("width", width)
-         .attr("height", height);
-
-         var chartBody = chart.append("g")
-         .attr("clip-path", "url(#clip)")
-         */
-
-
-        d3.select(this).selectAll(".whiteRect")
-          .data(textOverlays.filter(function (e) {
-            return e.needsWhiteBG;
-          })).enter()
-          .append("rect").attr({
-            class: "whiteRect",
+        d3.select(this).selectAll("text.hoveronly").data(textOverlays).enter().append("text").
+          attr({
+            class: "tableData hoveronly",
             x: function (d) {
               return d.x;
             },
-            y: 0,
-            height: config.svgLayout.rowHeight,
-            width: function (d) {
-              return d.w;
-            }
-          }).style({
-            fill: "#ffffff",
-            opacity: 1,
-            "pointer-events": "none"
-          });
-
-        d3.select(this).selectAll("text").data(textOverlays.filter(function (e) {
-          return !e.action;
-        })).enter().append("text").
-          attr({
-            class: "tableData",
-            x: function (d) {
-              return d.x + ((d.needsWhiteBG) ? +0 : +3);
-            },
             y: config.svgLayout.rowHeight / 2
-          }).style({
-            fill: "black",
-            "font-weight": "bold",
-            "pointer-events": "none"
-//                    "font-size":"7pt"
-//                    "text-anchor":"end"
           }).text(function (d) {
             return d.label;
-          })
-        d3.select(this).selectAll("g").data(textOverlays.filter(function (e) {
-          return e.action;
-        })).enter().append("g").
-          attr({
-            'class': "tableData action",
-            'transform' : function (d) {
-              return 'translate(' + (d.x+10) + ','+(config.svgLayout.rowHeight*0.5+1)+')';
-            }
-          }).each(function(item) {
-            createActions(d3.select(this), row, config);
           });
-
       },
-      "mouseleave": function (d) {
-        d3.select(this).selectAll("text,g").remove();
-        d3.select(this).selectAll(".whiteRect").remove();
-        d3.select('rect').attr({
-          opacity: 0.000001
-//                fill:white
-        })
+      mouseleave: function(row) {
+        d3.select(this).classed('hover',false).selectAll('text.hoveronly').remove();
       }
     });
-    allRowsSuper.selectAll(".overlay rect").attr({
-      width: '100%'
-    });
-    var allRows = allRowsSuper.selectAll(".content");
+
+    var allRows = allRowsSuper;
 
 
     updateText(allHeaders, allRows, svg, config);
