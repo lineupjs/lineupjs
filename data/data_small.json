@@ -10,7 +10,8 @@
     {
       "column": "academic",
       "type": "number",
-      "domain": [0, 100]
+      "domain": [0, 100],
+      "range" : [1,0]
     },
     {
       "column": "employer",

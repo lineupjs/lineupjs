@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>LineUp Mapping Editor Test</title>
+
+    <!--standard inclusions and require function-->
+    <script src="js/jquery-1.10.2.js"></script>
+    <script src="js/jquery-ui-1.10.4.custom.js"></script>
+    <link href="css/ui-darkness/jquery-ui-1.10.4.custom.css" rel="stylesheet" >
+    <script src="js/d3.v3.js"></script>
+
+
+    <!--LineUp inclusions-->
+    <link href="lineup-mappingeditor.css" rel="stylesheet" >
+    <script src="lineup-mappingeditor.js" ></script>
+</head>
+<body>
+    <script>
+        $(function() {
+            var $root = d3.select("body").append("div");
+
+            d3.tsv("wur2013.txt", function(_data) {
+                var column = "academic";
+                var col = function(row) { return + row[column]; };
+                var scale = d3.scale.linear().range([0,1]).domain([0,100]);
+                var callback = function(newscale) {
+                    scale = newscale;
+                    console.log("scale: "+newscale.domain()+ " "+newscale.range());
+                }
+                var editor = LineUp.mappingEditor(scale, _data, col, callback);
+                $root
+                  .attr("title","Mapping Editor "+column)
+                  .call(editor);
+
+                //the mapping editor can be viewed within a dialog by uncommenting the following linear
+                //I feel that the editor is easier to test without the dialog
+                $($root.node()).dialog({width:'auto'});
+            });
+        });
+    </script>
+</body>
+</html>
