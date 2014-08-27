@@ -276,7 +276,7 @@
    */
   LineUp.prototype.stackedColumnOptionsGui = function (selectedColumn) {
     console.log(selectedColumn);
-    var svgOverlay = d3.select(LineUpGlobal.htmlLayout.headerID).select(".overlay");
+    var svgOverlay = this.$header.select(".overlay");
     var that = this;
     // remove when clicked on already selected item
     var disappear = (LineUpGlobal.modes.stackedColumnModified == selectedColumn);
@@ -332,8 +332,6 @@
     stackedOptions.selectAll("text").on("click", function (d) {
       svgOverlay.selectAll(".stackedOption").remove();
       d.action.call(that, selectedColumn);
-
-
     });
 
     stackedOptions.transition().attr({

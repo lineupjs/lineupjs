@@ -9,9 +9,7 @@ var LineUpGlobal = {
   htmlLayout: {
     menuHeight: 25,
     menuHeightExpanded: 50,
-    headerID: "#lugui-table-header-svg",
     headerHeight: 50,
-    bodyID: "#lugui-table-body-svg",
     windowOffsetX: 5,
     windowOffsetY: 5,
     headerOffsetY: function () {
@@ -32,12 +30,7 @@ var LineUpGlobal = {
     {name: " add single columns", icon: "fa-plus", action: "addNewSingleColumnDialog"},
     {name: " save layout", icon: "fa-floppy-o", action: "saveLayout"},
     {name: " load layout", icon: "fa-recycle", action: "loadLayout"}
-
-
   ],
-  datasets: [],
-  actualDataSet: [],
-  lineUpRenderer: null,
 //    sortingOrderAsc:false,
   primaryKey: "",
 
@@ -62,7 +55,16 @@ var LineUpGlobal = {
         x: 0, y: 2,
         w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
       }
-    } // description of all plus signs ! -- names: addStackedColumn,...
+    }, // description of all plus signs ! -- names: addStackedColumn,...
+    rowActions: [
+      /*{
+        name: "explore",
+        icon: "\uf067",
+        action: function(row) {
+          console.log(row);
+        }
+      }*/
+    ]
   },
   modes: {
     stackedColumnModified: null,
@@ -79,12 +81,14 @@ var LineUpGlobal = {
  * @param spec.storage - a LineUp Storage, see {@link LineUpLocalStorage}
  * @constructor
  */
-var LineUp = function (spec) {
+var LineUp = function (spec, $header, $body) {
   this.storage = spec.storage;
 //    this.sortedColumn = [];
-
+  this.$header = $header;
+  this.$body = $body;
 
   var that = this;
+
 
   /*
    * define dragging behaviour for header weights
@@ -174,7 +178,11 @@ LineUp.prototype.updateMenu = function () {
     }
   ).on("click", function (d) {
       console.log(d.action);
-      that[d.action](d);
+      if ($.isFunction(d.action)) {
+        d.action.call(that, d);
+      } else {
+        that[d.action](d);
+      }
     })
 
 
@@ -183,12 +191,12 @@ LineUp.prototype.updateMenu = function () {
 
 var layoutHTML = function () {
   //add svgs:
-  var header = d3.select(LineUpGlobal.htmlLayout.headerID).attr({
+  var header = d3.select("#lugui-table-header-svg").attr({
     width: ($(window).width()),
     height: LineUpGlobal.htmlLayout.headerHeight
   });
 
-  var body = d3.select(LineUpGlobal.htmlLayout.bodyID).attr({
+  var body = d3.select("#lugui-table-body-svg").attr({
     width: ($(window).width())
   });
 
@@ -245,31 +253,28 @@ LineUp.prototype.updateAll = function () {
 // document ready
 $(
   function () {
-
-
     layoutHTML();
-
+    var $header = d3.select("#lugui-table-header-svg");
+    var $body = d3.select("#lugui-table-body-svg");
+    var lineup = null;
+    var datasets = [];
+    var actualDataSet = null;
 
     var loadDataset = function (ds) {
       d3.json(ds.baseURL + "/" + ds.descriptionFile, function (desc) {
-
-
         d3.tsv(ds.baseURL + "/" + desc.file, function (_data) {
           var spec = {};
           LineUpGlobal.primaryKey = desc.primaryKey;
           spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, LineUpGlobal);
 
-          if (LineUpGlobal.lineUpRenderer) {
-            LineUpGlobal.lineUpRenderer.changeDataStorage(spec)
+          if (lineup) {
+            lineup.changeDataStorage(spec);
           } else {
-            LineUpGlobal.lineUpRenderer = new LineUp(spec);
-            LineUpGlobal.lineUpRenderer.config = LineUpGlobal;
-            LineUpGlobal.lineUpRenderer.startVis();
+            lineup = new LineUp(spec, $header, $body);
+            lineup.config = LineUpGlobal;
+            lineup.startVis();
           }
-
-
         });
-
       })
     };
 
@@ -277,7 +282,7 @@ $(
     d3.json("datasets.json", function (error, data) {
       console.log("datasets:", data, error);
 
-      LineUpGlobal.datasets = data.datasets;
+      datasets = data.datasets;
       var $s = d3.select("#lugui-dataset-selector");
       var ds = $s.selectAll("option").data(data.datasets);
       ds.enter().append("option")
@@ -289,16 +294,14 @@ $(
 
       var s = $s.node();
       s.addEventListener('change', function () {
-        loadDataset(LineUpGlobal.datasets[s.value]);
-        LineUpGlobal.actualDataSet = LineUpGlobal.datasets[s.value];
+        loadDataset(datasets[s.value]);
+        actualDataSet = datasets[s.value];
       });
 
       //and start with 0:
-      loadDataset(LineUpGlobal.datasets[0]);
-      LineUpGlobal.actualDataSet = LineUpGlobal.datasets[0];
+      loadDataset(datasets[0]);
+      actualDataSet = datasets[0];
     });
-
-
   });
 
 
@@ -348,38 +351,4 @@ LineUp.prototype.loadLayout = function () {
   } else {
     window.alert("Sorry, no webStorage support.")
   }
-
-
-//
-//
-//    var layoutColumnTypes = {
-//        "single": LayoutSingleColumn,
-//        "stacked": LayoutStackedColumn,
-//        "rank": LayoutRankColumn
-//    }
-//
-//    var that = this;
-//    function toLayoutColumn(desc){
-//        var type = desc.type || "single";
-//        return new layoutColumnTypes[type](desc,that.storage.getRawColumns(), toLayoutColumn)
-//    }
-//
-//    // create Rank Column
-////            new LayoutRankColumn();
-//
-//
-//
-//    var layoutColumns = newColDesc.map(toLayoutColumn);
-//    console.log(layoutColumns);
-//
-//
-//
-//    var copy =this.storage.getColumnLayout()
-//        .filter(function(d){return !(d instanceof LayoutRankColumn) ;})
-//        .map(function(d){return d.makeCopy();})
-//
-//
-//    console.log(copy);
-
-
 };

@@ -492,6 +492,30 @@ LayoutEmptyColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 
 
 
+function LayoutActionColumn(spec) {
+  LayoutColumn.call(this, spec || {}, []);
+  this.columnLink = 'action';
+  this.column = {
+    getValue: function (a) {
+      return ""
+    },
+    getRawValue: function (a) {
+      return "";
+    }};
+  this.id = _.uniqueId(this.columnLink + "_a");
+  this.label = "";
+  this.columnWidth = 50
+}
+LayoutActionColumn.prototype = $.extend({}, LayoutColumn.prototype, {
+  getLabel: function () {
+    return this.label
+  },
+  getDataID: function () {
+    return this.id
+  }
+});
+
+
 
 
 

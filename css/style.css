@@ -90,6 +90,21 @@
     fill: darkgrey;
 }
 
+.lu .tableData.action text {
+    font-family: 'FontAwesome';
+    font-size: 10pt;
+    font-weight: bold;
+    dominant-baseline: central;
+    text-anchor: middle;
+    fill: grey;
+    user-select: none;
+}
+
+.lu .tableData.action text:hover {
+    cursor: pointer;
+    fill: black;
+}
+
 .lu .emptyHeader {
     opacity: .5;
 }
@@ -170,10 +185,18 @@
     opacity: .6;
 }
 
-.lu .row .hovered {
+.lu .row rect.filler {
+    fill: transparent;
+}
+.lu .row.hover text {
     fill: black;
-    /*fill: ;*/
-    opacity: 1;
+}
+.lu .row.hover rect.tableData {
+    opacity: 0.5;
+}
+.lu .row .hoveronly {
+    pointer-events: none;
+    user-select: none;
 }
 
 .lu-popupBG {

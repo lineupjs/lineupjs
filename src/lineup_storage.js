@@ -154,11 +154,20 @@ LineUpLocalStorage.prototype = $.extend({}, {},
       var b  = {};
       b.layoutColumns = layout[_bundle].map(toLayoutColumn);
       console.log(b.layoutColumns, layout);
+      //if there is no rank column create one
       if (b.layoutColumns.filter(function (d) {
         return d instanceof LayoutRankColumn;
       }).length < 1) {
         b.layoutColumns.unshift(new LayoutRankColumn())
       }
+
+      //if we have row actions and no action column create one
+      if (this.options.svgLayout.rowActions.length > 0 && b.layoutColumns.filter(function (d) {
+        return d instanceof LayoutActionColumn;
+      }).length < 1) {
+        b.layoutColumns.push(new LayoutActionColumn())
+      }
+
       this.bundles[_bundle] = b;
     },
     addStackedColumn: function (spec, bundle) {

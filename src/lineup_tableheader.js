@@ -7,7 +7,7 @@
  */
 LineUp.prototype.updateHeader = function (headers, config) {
 //    console.log("update Header");
-  var rootsvg = d3.select(config.htmlLayout.headerID);
+  var rootsvg = this.$header;
   var svg = rootsvg.select('g.main');
   var svgOverlay = rootsvg.select('g.overlay');
 
@@ -38,7 +38,7 @@ LineUp.prototype.updateHeader = function (headers, config) {
   })
     .classed("emptyHeader", function (d) {
 
-      return d instanceof LayoutEmptyColumn;
+      return d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn;
     })
     .call(function (d) {
       that.addResortDragging(this, config)
@@ -67,7 +67,7 @@ LineUp.prototype.updateHeader = function (headers, config) {
     "fill": function (d, i) {
       if (d instanceof LayoutEmptyColumn) {
         return "lightgray"
-      } else if (d instanceof LayoutStackedColumn || !config.colorMapping.has(d.column.id)) {
+      } else if (d instanceof LayoutStackedColumn || !config.colorMapping.has(d.column.id) || d instanceof LayoutActionColumn) {
         return config.grayColor;
       } else {
         return config.colorMapping.get(d.column.id);
@@ -76,7 +76,7 @@ LineUp.prototype.updateHeader = function (headers, config) {
     }
   }).on({
     "click": function (d) {
-      if (d3.event.defaultPrevented || d instanceof LayoutEmptyColumn) return;
+      if (d3.event.defaultPrevented || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) return;
       // no sorting for empty stacked columns !!!
       if (d instanceof LayoutStackedColumn && d.children.length < 1) return;
 
@@ -109,7 +109,7 @@ LineUp.prototype.updateHeader = function (headers, config) {
 
 
   allHeadersEnter.filter(function (d) {
-    return !(d instanceof LayoutEmptyColumn);
+    return !(d instanceof LayoutEmptyColumn) && !(d instanceof LayoutActionColumn);
   }).append("rect").attr({
     "class": "weightHandle",
     x: function (d) {
@@ -150,7 +150,7 @@ LineUp.prototype.updateHeader = function (headers, config) {
         else return d.height * 3 / 4;
       }
     }).text(function (d) {
-      if (d instanceof LayoutStackedColumn || d instanceof LayoutEmptyColumn) return d.label
+      if (d instanceof LayoutStackedColumn || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) return d.label
       else return d.column.label;
     })
 
@@ -281,7 +281,11 @@ LineUp.prototype.updateHeader = function (headers, config) {
   }).on("click", function (d) {
     console.log(d.action);
     console.log(that);
-    that[d.action]();
+    if ($.isFunction(d.action)) {
+      d.action.call(that, d);
+    } else {
+      that[d.action](d);
+    }
   })
 
   addColumnButtonEnter.append("text").attr({
@@ -314,7 +318,7 @@ LineUp.prototype.addResortDragging = function (xss, config) {
     .on("dragend", dragend);
 
   var that = this;
-  var rootsvg = d3.select(config.htmlLayout.headerID);
+  var rootsvg = this.$header;
   var svgOverlay = rootsvg.select('g.overlay');
   x.call(xss)
 
@@ -370,7 +374,7 @@ LineUp.prototype.addResortDragging = function (xss, config) {
     })
 
     function contains(header, x, y) {
-
+      //TODO check if types match
       if (x > header.offsetX && (x - header.offsetX) < header.getColumnWidth()) {
         if (y > header.offsetY && (y - header.offsetY) < header.height) {
           if ((x - header.offsetX < header.getColumnWidth() / 2))

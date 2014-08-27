@@ -222,8 +222,52 @@
 
   }
 
+  function createActions($elem, item, config) {
+    var $r = $elem.selectAll('text').data(config.svgLayout.rowActions);
+    $r.enter().append('text').append('title');
+    $r.exit().remove();
+    $r.attr({
+      x : function(d,i) {
+        return i*config.svgLayout.rowHeight;
+      }
+    }).text(function(d) {
+      return d.icon;
+    }).on('click', function(d) {
+      d.action.call(this, item, d);
+    }).select('title').text(function(d) { return d.name;});
+  }
+
+  function updateActionBars(headers, allRows, config) {
+    // -- handle the Single columns  (!! use unflattened headers for filtering)
+    var allActionBarHeaders = headers.filter(function (d) {
+      return (d instanceof LayoutActionColumn);
+    });
+    var actionRows = allRows.selectAll(".tableData.action")
+      .data(function (d) {
+        var data = allActionBarHeaders.map(function (column) {
+          return {key: column.getDataID(), value: column.getColumnWidth(d),
+            data: d,
+            offsetX: column.offsetX};
+        });
+        return data;
+      });
+    actionRows.enter()
+      .append("g")
+      .attr('class',"tableData action")
+      .each(function(item) {
+        createActions(d3.select(this), item, config);
+      });
+
+    actionRows.exit().remove();
+
+    actionRows
+      .attr('transform',function (d) {
+        return 'translate(' + (d.offsetX+10) + ','+(config.svgLayout.rowHeight*0.5+1)+')';
+      });
+  }
+
   LineUp.prototype.updateBody = function (headers, data, stackTransition, config) {
-    var svg = d3.select(config.htmlLayout.bodyID);
+    var svg = this.$body;
     //console.log("bupdate");
     stackTransition = stackTransition || false;
 
@@ -253,7 +297,7 @@
     // --- append ---
     var allRowsSuperEnter = allRowsSuper.enter().append("g").attr({
       "class": "row"
-    });
+    })
 
     //    //--- update ---
     allRowsSuper.transition().duration(1000).attr({
@@ -261,18 +305,16 @@
         return  "translate(" + 0 + "," + rowScale(d[config.primaryKey]) + ")"
       }
     });
-
-
-    allRowsSuperEnter.append("g").attr("class", "content");
+allRowsSuperEnter.append("g").attr("class", "content");
 
 
     allRowsSuperEnter.append("g").attr("class", "overlay").append("rect").attr({
       x: 0, y: 0, height: config.svgLayout.rowHeight, width: '100%', opacity: .000001
     });
 
-    allRowsSuper.select(".overlay rect").on({
+    allRowsSuper.select(".overlay").on({
       "mouseenter": function (row) {
-        d3.select(this).attr({
+        d3.select('rect').attr({
           opacity: .4,
           fill: "#ffffff"
         });
@@ -296,7 +338,13 @@
                 x: col.offsetX,
                 needsWhiteBG: true,
                 w: col.getColumnWidth()})
-
+            } else if (col instanceof LayoutActionColumn) {
+              textOverlays.push({
+                action: true,
+                x : col.offsetX,
+                needsWhiteBG : false,
+                w: col.getColumnWidth()
+              })
             } else if (col instanceof  LayoutStackedColumn) {
 
 
@@ -337,7 +385,7 @@
          */
 
 
-        d3.select(this.parentNode).selectAll(".whiteRect")
+        d3.select(this).selectAll(".whiteRect")
           .data(textOverlays.filter(function (e) {
             return e.needsWhiteBG;
           })).enter()
@@ -357,7 +405,9 @@
             "pointer-events": "none"
           });
 
-        d3.select(this.parentNode).selectAll("text").data(textOverlays).enter().append("text").
+        d3.select(this).selectAll("text").data(textOverlays.filter(function (e) {
+          return !e.action;
+        })).enter().append("text").
           attr({
             class: "tableData",
             x: function (d) {
@@ -373,13 +423,23 @@
           }).text(function (d) {
             return d.label;
           })
-
+        d3.select(this).selectAll("g").data(textOverlays.filter(function (e) {
+          return e.action;
+        })).enter().append("g").
+          attr({
+            'class': "tableData action",
+            'transform' : function (d) {
+              return 'translate(' + (d.x+10) + ','+(config.svgLayout.rowHeight*0.5+1)+')';
+            }
+          }).each(function(item) {
+            createActions(d3.select(this), row, config);
+          });
 
       },
-      "mouseout": function (d) {
-        d3.select(this.parentNode).selectAll("text").remove();
-        d3.select(this.parentNode).selectAll(".whiteRect").remove();
-        d3.select(this).attr({
+      "mouseleave": function (d) {
+        d3.select(this).selectAll("text,g").remove();
+        d3.select(this).selectAll(".whiteRect").remove();
+        d3.select('rect').attr({
           opacity: 0.000001
 //                fill:white
         })
@@ -394,5 +454,6 @@
     updateText(allHeaders, allRows, svg, config);
     updateSingleBars(headers, allRows, config);
     updateStackBars(headers, allRows, stackTransition, config);
+    updateActionBars(headers, allRows, config);
   }
-}())
+}());
