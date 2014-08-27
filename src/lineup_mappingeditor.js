@@ -5,25 +5,27 @@ var LineUp;
 
 (function (LineUp, d3, $) {
   'use strict';
-  LineUp.mappingEditor = function (scale, data, data_accessor, callback) {
+  LineUp.mappingEditor = function (scale, dataDomain, data, data_accessor, callback) {
     var editor = function ($root) {
-      
-      var $svg = $root.append("svg").attr({
-        "class": "lugui-me",
-        width: 400,
-        height: 400
-      });
-      
-      $svg.append("rect").attr({
-        width: 400,
-        height: 400,
-        fill: "white"
-      });
-      
+
+
       var width = 400,
         height = 400,
-        //radius for mapper circles
+      //radius for mapper circles
         radius = 10;
+
+      var $svg = $root.append("svg").attr({
+        "class": "lugui-me",
+        width: width,
+        height: height
+      });
+
+      $svg.append("rect").attr({
+        width: "100%",
+        height: "100%",
+        fill: "white"
+      });
+
       
       //left limit for the axes
       var lowerLimitX = 50;
@@ -41,17 +43,19 @@ var LineUp;
       var lowerRaw = lowerLimitX;
       //x coordinate for the raw axis upper bound
       var upperRaw = upperLimitX;
-      
+
       var normalizedAxisScale = d3.scale.linear()
-                     .domain(scale.domain())
-                     .range([lowerNormalized, upperNormalized]);
+        .clamp(true)
+          .domain(dataDomain)
+        .range([lowerNormalized, upperNormalized]);
       var rawAxisScale = d3.scale.linear()
-                     .domain(scale.domain())
-                     .range([lowerRaw, upperRaw]);
+        .clamp(true)
+        .domain(dataDomain)
+        .range([lowerRaw, upperRaw]);
       //this is needed for filtering the shown datalines
       var originalRawAxisScale = d3.scale.linear()
-                     .domain(scale.domain())
-                     .range([lowerRaw, upperRaw]);
+        .domain(dataDomain)
+        .range([lowerRaw, upperRaw]);
 					 
       
       //upper axis for scored values
@@ -66,13 +70,13 @@ var LineUp;
         .attr("x", lowerLimitX)
         .attr("y", scoreAxisY - 25)
         .attr("dy", ".75em")
-        .text(d3.min(scale.range()));
+        .text(0);
       //label for maximum scored value
       $svg.append("text")
         .attr("x", upperLimitX)
         .attr("y", scoreAxisY - 25)
         .attr("dy", ".75em")
-        .text(d3.max(scale.range()));
+        .text(1);
       $svg.append("text")
         .attr("x", 175)
         .attr("y", 25)
@@ -90,13 +94,13 @@ var LineUp;
         .attr("x", lowerLimitX)
         .attr("y", rawAxisY + 20)
         .attr("dy", ".75em")
-        .text(d3.min(scale.domain()));
+        .text(d3.min(dataDomain));
       //label for maximum raw value
       $svg.append("text")
         .attr("x", upperLimitX)
         .attr("y", rawAxisY + 20)
         .attr("dy", ".75em")
-        .text(d3.max(scale.domain()));
+        .text(d3.max(dataDomain));
       $svg.append("text")
         .attr("x", 180)
         .attr("y", 385)
@@ -361,10 +365,10 @@ var LineUp;
       }
       
       function getRaw_min() {
-        return (lowerRaw-lowerLimitX) / (upperLimitX-lowerLimitX) * d3.max(scale.domain());
+        return (lowerRaw-lowerLimitX) / (upperLimitX-lowerLimitX) * d3.max(dataDomain);
       }
       function getRaw_max() {
-        return (upperRaw-lowerLimitX) / (upperLimitX-lowerLimitX) * d3.max(scale.domain());
+        return (upperRaw-lowerLimitX) / (upperLimitX-lowerLimitX) * d3.max(dataDomain);
       }
       function getNormalized_min() {
         return (lowerNormalized-lowerLimitX) / (upperLimitX-lowerLimitX) * d3.max(scale.range());

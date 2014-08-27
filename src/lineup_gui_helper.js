@@ -271,13 +271,14 @@
   };
 
   LineUp.prototype.openMappingEditor = function(selectedColumn) {
-    var bak = selectedColumn.column.scale;
+    var col = selectedColumn.column;
+    var bak = col.scale;
     var that = this;
     var act = bak;
     var callback = function(newscale) {
       //scale = newscale;
       console.log("scale: "+newscale.domain()+ " "+newscale.range());
-      act = newscale;
+      act = newscale.clamp(true);
     };
 
     var popup = d3.select("body").append("div")
@@ -294,12 +295,13 @@
         '<div style="font-weight: bold"> change mapping: </div>' +
         '<div class="mappingArea"></div>'+
         '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
+        '<button class="reset"><i class="fa fa-undo"></i> revert</button>' +
         '<button class="ok"><i class="fa fa-check"></i> ok</button>'
     );
-    var editor = LineUp.mappingEditor(bak, this.storage.data, function(row) {
-      return +selectedColumn.column.getRawValue(row);
-    }, callback);
-
+    var access = function(row) {
+      return +col.getRawValue(row);
+    };
+    var editor = LineUp.mappingEditor(bak, col.scaleOri.domain(),this.storage.data, access, callback);
     popup.select('.mappingArea').call(editor);
 
     popup.select(".ok").on("click", function () {
@@ -310,6 +312,12 @@
     popup.select(".cancel").on("click", function () {
       selectedColumn.column.scale = bak;
       popup.remove()
+    });
+    popup.select(".reset").on("click", function () {
+      act = bak = col.scale = col.scaleOri;
+      editor = LineUp.mappingEditor(bak, col.scaleOri.domain(), that.storage.data, access, callback);
+      popup.selectAll('.mappingArea *').remove();
+      popup.select('.mappingArea').call(editor);
     });
   };
 

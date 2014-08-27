@@ -38,7 +38,9 @@ LineUpColumn.prototype = $.extend({}, {}, {
 function LineUpNumberColumn(desc) {
   LineUpColumn.call(this, desc);
 
-  this.scale = d3.scale.linear().domain(desc.domain || [0,100]).range(desc.range || [0, 1]);
+  this.scale = d3.scale.linear().clamp(true)
+    .domain(desc.domain || [0,100]).range(desc.range || [0, 1]);
+  this.scaleOri = this.scale.copy();
   this.filter = desc.filter || this.scale.domain();
 }
 LineUpNumberColumn.prototype = $.extend({}, LineUpColumn.prototype, {

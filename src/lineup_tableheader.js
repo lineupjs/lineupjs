@@ -227,7 +227,7 @@ LineUp.prototype.updateHeader = function (headers, config) {
       return d.height / 4
     }
   })
-
+/* TODO fix mapping editor to be fully functional
   var filterButton = allHeaders.selectAll(".singleColumnFilter").data(function (d) {
     return (d instanceof LayoutSingleColumn && d.column instanceof LineUpNumberColumn) ? [d] : []
   });
@@ -250,7 +250,7 @@ LineUp.prototype.updateHeader = function (headers, config) {
       return d.height / 4
     }
   })
-
+*/
 
 //    allHeadersEnter.filter(function(d){return (!(d instanceof LayoutStackedColumn) && d.parent==null)}).append("text").attr({
 //        class:"singleColumnDelete fontawe"
