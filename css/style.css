@@ -1,0 +1,243 @@
+
+.lu #lugui-menu {
+    position: fixed;
+    background-color: lightgray;
+    /*padding-left: 5px;*/
+    /*padding-right: 5px;*/
+
+    /*border: 2px solid darkgrey;*/
+    border-radius: 5px;
+
+    font-family: 'Lato', Helvetica, Arial;
+    font-weight: normal;
+    font-size: 11pt;
+    white-space: nowrap;
+}
+
+.lu a {
+    font-size: 10pt;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: none;
+    color: royalblue;
+
+}
+
+.lu a:hover {
+    /*font-size: 11pt;*/
+    font-weight: bold;
+}
+
+.lu #lugui-table-header {
+    position: fixed;
+    background-color: lightgray;
+}
+
+.lu #lugui-table-body-wrapper {
+    position: fixed;
+    overflow-x: auto;
+    overflow-y: scroll;
+}
+
+.lu #lugui-menu-actions span {
+    font-size: 10pt;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: none;
+    color: royalblue;
+    background-color: white;
+    border-radius: 4px;
+    padding: 1px;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.lu #lugui-menu-actions span:hover {
+    background-color: darkgrey;
+}
+
+.lu .weightHandle {
+    fill: white;
+    /*stroke:grey;*/
+    /*stroke-width:1;*/
+    cursor: col-resize;
+}
+
+.lu .headerLabel {
+    font-family: 'Lato', Helvetica, Arial;
+    font-weight: bold;
+    font-size: 9pt;
+    dominant-baseline: middle;
+    fill: black;
+    pointer-events: none;
+    /*stroke-size:.1;*/
+    /*stroke:white;*/
+}
+
+.lu text.headerSort {
+    font-family: 'FontAwesome';
+    font-size: 10pt;
+    fill: white;
+}
+
+.lu .tableData {
+    font-family: 'Lato', Helvetica, Arial;
+    font-weight: normal;
+    font-size: 9pt;
+    dominant-baseline: middle;
+    fill: darkgrey;
+}
+
+.lu .tableData.action text {
+    font-family: 'FontAwesome';
+    font-size: 10pt;
+    font-weight: bold;
+    dominant-baseline: central;
+    text-anchor: middle;
+    fill: grey;
+    user-select: none;
+}
+
+.lu .tableData.action text:hover {
+    cursor: pointer;
+    fill: black;
+}
+
+.lu .emptyHeader {
+    opacity: .5;
+}
+
+.lu .sortedColumn {
+    font-weight: bolder;
+    font-size: 11pt;
+}
+
+.lu .fa {
+    position: relative;
+    top: .5pt;
+}
+
+.lu .addColumnButton rect {
+    fill: white;
+    border-radius: 5px;
+}
+
+.lu .addColumnButton rect:hover {
+    fill: darkgray;
+
+}
+
+.lu .addColumnButton text {
+    font-family: 'FontAwesome';
+    font-size: 10pt;
+    font-weight: bold;
+    fill: black;
+    dominant-baseline: central;
+    text-anchor: middle;
+    pointer-events: none;
+    user-select: none;
+}
+
+.lu .fontawe {
+    font-family: 'FontAwesome';
+    font-size: 10pt;
+    dominant-baseline: central;
+    text-anchor: middle;
+}
+
+.lu .stackedColumnInfo, .singleColumnDelete, .singleColumnFilter {
+    fill: lightgrey;
+    cursor: pointer;
+}
+
+.lu .stackedColumnInfo:hover, .singleColumnDelete:hover, .singleColumnFilter:hover {
+    fill: white;
+}
+
+/* for gui helper */
+.lu .stackedOption rect {
+    fill: white;
+    opacity: .9;
+}
+
+.lu .stackedOption text {
+    font-family: 'FontAwesome';
+    font-size: 9pt;
+    dominant-baseline: central;
+    font-weight: bold;
+    fill: black;
+    cursor: pointer;
+
+}
+
+.lu .stackedOption text:hover {
+    fill: royalblue;
+}
+
+.lu .dragObject {
+    opacity: .5;
+}
+
+.lu .dragHeader {
+    fill: grey;
+    opacity: .6;
+}
+
+.lu .row rect.filler {
+    fill: transparent;
+}
+.lu .row.hover text {
+    fill: black;
+    font-weight: bold;
+}
+.lu .row.hover rect.tableData, .lu .row.hover g.tableData rect {
+    opacity: 0.5;
+}
+.lu .row .hoveronly {
+    pointer-events: none;
+    user-select: none;
+}
+
+.lu-popupBG {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0.3;
+}
+
+.lu-popup {
+    background: white;
+    position: fixed;
+
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 10px 10px 5px #888888;
+
+    font-family: 'Lato', Helvetica, Arial;
+    font-size: 10pt;
+    dominant-baseline: central;
+    text-anchor: middle;
+}
+
+.lu-popup .selectionTable {
+    background: white;
+    overflow-x: auto;
+    overflow-y: scroll;
+}
+.lu-popup .selectionTable table {
+    width: 95%;
+    border: 0;
+}
+.lu-popup .ok {
+    position: absolute;
+    right: 10px;
+}
+
+.lu-popup .selectionTable tr:hover {
+    background-color: lightblue;
+}
