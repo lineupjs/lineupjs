@@ -11,7 +11,7 @@
       "column": "academic",
       "type": "number",
       "domain": [0, 100],
-      "range" : [1,0]
+      "range" : [0, 1]
     },
     {
       "column": "employer",
