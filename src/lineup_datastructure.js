@@ -164,8 +164,8 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 
   init: function () {
     /*if (this.column.hasOwnProperty("scale") && this.column.scale != null) {
-      this.scale.domain(this.column.scale.domain());
-    }*/
+     this.scale.domain(this.column.scale.domain());
+     }*/
 
   },
   // ONLY for numerical columns
@@ -246,8 +246,10 @@ function LayoutCompositeColumn(desc, rawColumns) {
 LayoutCompositeColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   getDataID: function () {
     return this.id
+  },
+  getLabel: function () {
+    return this.label
   }
-
 });
 
 
@@ -495,7 +497,8 @@ LayoutEmptyColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 
 
 function LayoutActionColumn(spec) {
-  LayoutColumn.call(this, spec || {}, []);
+  spec = spec || {};
+  LayoutColumn.call(this, spec, []);
   this.columnLink = 'action';
   this.column = {
     getValue: function (a) {
@@ -506,7 +509,7 @@ function LayoutActionColumn(spec) {
     }};
   this.id = _.uniqueId(this.columnLink + "_a");
   this.label = "";
-  this.columnWidth = 50
+  this.columnWidth = spec.width || 50
 }
 LayoutActionColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   getLabel: function () {

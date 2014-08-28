@@ -233,7 +233,7 @@
     }).text(function(d) {
       return d.icon;
     }).on('click', function(d) {
-      d.action.call(this, item, d);
+      d.action.call(this, item.data, d);
     }).select('title').text(function(d) { return d.name;});
   }
 

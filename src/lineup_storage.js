@@ -140,7 +140,8 @@ LineUpLocalStorage.prototype = $.extend({}, {},
       var layoutColumnTypes = {
         "single": LayoutSingleColumn,
         "stacked": LayoutStackedColumn,
-        "rank": LayoutRankColumn
+        "rank": LayoutRankColumn,
+        "actions": LayoutActionColumn
       }
 
       function toLayoutColumn(desc) {
@@ -312,8 +313,23 @@ LineUpLocalStorage.prototype = $.extend({}, {},
         targetColumn.parent.addChild(newColumn, targetColumn, position);
       }
       this.resortData({})
-    }
+    },
 
+    /**
+     * returns a column by name
+     * @param name
+     * @returns {*}
+     */
+    getColumnByName : function(name) {
+      var cols = this.getColumnLayout();
+      for(var i = cols.length - 1; i>=0; --i) {
+        var col = cols[i];
+        if (col.getLabel() === name || (col.column && col.column.column === name)) {
+          return col;
+        }
+      }
+      return null;
+    }
 
 
 
