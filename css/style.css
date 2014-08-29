@@ -241,3 +241,18 @@
 .lu-popup .selectionTable tr:hover {
     background-color: lightblue;
 }
+
+.lu-tooltip {
+    background-color: white;
+    min-width: 400px;
+}
+.lu-tooltip table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.lu-tooltip tbody th{
+    width: 30%;
+}
+.lu-tooltip td, .lu-tooltip th {
+    border: 1px solid black;
+}

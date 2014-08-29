@@ -266,6 +266,36 @@
       });
   }
 
+  function createRepr(col,row) {
+    if (col instanceof LayoutStackedColumn) {
+      return col.getValue(row);
+    }
+    if (col instanceof LayoutSingleColumn && col.column instanceof LineUpNumberColumn) {
+      return +col.column.getRawValue(row);
+    }
+    if (col.column) {
+      return col.column.getValue(row);
+    }
+    return "";
+    //}
+    //if (col instanceof LineUpRankColumn || header instanceof )
+  }
+
+  function generateTooltip(row, headers, config) {
+    var $table = $('<div><table><thead><tr><th>Column</th><th>Value</th></tr></thead><tbody></tbody></table></div>');
+    var $body = $table.find('tbody');
+    headers.forEach(function(header) {
+      var r = createRepr(header, row);
+      if (typeof r === 'undefined') {
+        r = "";
+      } else if (typeof r === 'number') {
+        r = config.numberformat(r);
+      }
+      $('<tr><th>'+header.getLabel()+'</th><td>'+r+'</td></tr>').appendTo($body);
+    });
+    return $table.html();
+  }
+
   LineUp.prototype.updateBody = function (headers, data, stackTransition, config) {
     var svg = this.$body;
     //console.log("bupdate");
@@ -310,15 +340,16 @@
         return  "translate(" + 0 + "," + rowScale(d[config.primaryKey]) + ")"
       }
     });
+    var that = this;
     allRowsSuper.on({
-      mouseenter: function(row) {
+      mouseenter: function(row, i) {
         d3.select(this).classed('hover',true);
         var zeroFormat = d3.format(".1f");
 //            d3.select(this.parent).classed("hovered", true)
         var textOverlays = [];
         headers.forEach(function (col) {
             if (col.column instanceof LineUpNumberColumn) {
-              textOverlays.push({value: col.column.getValue(row), label: col.column.getRawValue(row),
+              textOverlays.push({value: col.column.getValue(row), label: config.numberformat(+col.column.getRawValue(row)),
                 x: col.offsetX,
                 w: col.getColumnWidth()})
             } else if (col instanceof  LayoutStackedColumn) {
@@ -328,7 +359,7 @@
                 var allStackW = child.getWidth(row);
 
                 textOverlays.push({
-                    label: child.column.getRawValue(row)
+                    label: config.numberformat(+child.column.getRawValue(row))
                       + " -> (" + zeroFormat(child.getWidth(row)) + ")",
                     w: allStackW,
                     x: (allStackOffset + col.offsetX)}
@@ -352,8 +383,27 @@
           }).text(function (d) {
             return d.label;
           });
+
+        that.tooltip.html(generateTooltip(row, allHeaders, config)).show();
+        var $tooltip = $('.lu-tooltip');
+        /*var h = $tooltip.height();
+        var up = (that.storage.data.length-i) * config.svgLayout.rowHeight < $tooltip.height();
+        if(up) {
+          that.tooltip.direction('n');
+        } else {
+          that.tooltip.direction('s');
+        }
+        that.tooltip.show(this);*/
+        $tooltip.hide();
+       //if(up) {
+          //$tooltip.delay(200).slideUp(500);
+        //} else {
+        $tooltip.delay(200).slideDown(500);
+        //}
       },
       mouseleave: function(row) {
+        $('.lu-tooltip').stop();
+        that.tooltip.hide();
         d3.select(this).classed('hover',false).selectAll('text.hoveronly').remove();
       }
     });

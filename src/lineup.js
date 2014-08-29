@@ -6,6 +6,7 @@ var LineUpGlobal = {
   colorMapping: d3.map(),
   columnColors: d3.scale.category20(),
   grayColor: "#999999",
+  numberformat : d3.format('.3n'),
   htmlLayout: {
     menuHeight: 25,
     menuHeightExpanded: 50,
@@ -89,6 +90,9 @@ var LineUp = function (spec, $header, $body) {
 
   var that = this;
 
+
+  this.tooltip = d3.tip().direction('s').attr('class','lu-tooltip').html('test');
+  this.tooltip($body);
 
   /*
    * define dragging behaviour for header weights
