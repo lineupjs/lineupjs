@@ -437,4 +437,21 @@
       }
     }
   }
+
+  LineUp.prototype.tooltip = (function() {
+    var $tooltip = $('<div class="lu-tooltip"/>').appendTo("body");
+    function showTooltip(content, xy) {
+      $tooltip.html(content).css({
+        left: xy.x + "px",
+        top: xy.y + "px"
+      }).delay(200).slideDown(500);
+    }
+    function hideTooltip() {
+      $tooltip.stop().hide();
+    }
+    return {
+      show: showTooltip,
+      hide: hideTooltip
+    }
+  }())
 }());

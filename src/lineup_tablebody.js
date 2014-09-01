@@ -377,6 +377,7 @@
             }
           }
         );
+        //craete clip paths which clips the overlay text of the bars
         var shift = rowScale(row[config.primaryKey]);
         //generate clip paths for the text columns to avoid text overflow
         //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
@@ -416,25 +417,12 @@
             return d.label;
           });
 
-        that.tooltip.html(generateTooltip(row, allHeaders, config)).show();
-        var $tooltip = $('.lu-tooltip');
-        /*var h = $tooltip.height();
-        var up = (that.storage.data.length-i) * config.svgLayout.rowHeight < $tooltip.height();
-        if(up) {
-          that.tooltip.direction('n');
-        } else {
-          that.tooltip.direction('s');
-        }
-        that.tooltip.show(this);*/
-        $tooltip.hide();
-       //if(up) {
-          //$tooltip.delay(200).slideUp(500);
-        //} else {
-        $tooltip.delay(200).slideDown(500);
-        //}
+        that.tooltip.show(generateTooltip(row, allHeaders, config),{
+          x : d3.event.x,
+          y: d3.event.y+config.svgLayout.rowHeight/2
+        });
       },
       mouseleave: function(row) {
-        $('.lu-tooltip').stop();
         that.tooltip.hide();
         d3.select(this).classed('hover',false).selectAll('text.hoveronly').remove();
       }

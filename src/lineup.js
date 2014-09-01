@@ -90,10 +90,6 @@ var LineUp = function (spec, $header, $body) {
 
   var that = this;
 
-
-  this.tooltip = d3.tip().direction('s').attr('class','lu-tooltip').html('test');
-  this.tooltip($body);
-
   /*
    * define dragging behaviour for header weights
    * */
