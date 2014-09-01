@@ -321,6 +321,51 @@
     });
   };
 
+  LineUp.prototype.uploadUI = function(dropCallback) {
+    var popup = d3.select("body").append("div")
+      .attr({
+        "class": "lu-popup"
+      }).style({
+        left: +(window.innerWidth) / 2 - 100 + "px",
+        top: 100 + "px",
+        width: "200px",
+        height: "100px"
+      })
+      .html(
+        '<div class="drop_zone">Drop files here</div>'+
+        '<button class="cancel"><i class="fa fa-times"></i> cancel</button>'
+    );
+    popup.select(".cancel").on("click", function () {
+      popup.remove();
+    });
+
+
+    function handleFileSelect(evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      console.log('drop',evt.dataTransfer.files);
+      var files = Array.prototype.slice.call(evt.dataTransfer.files); // FileList object.
+      dropCallback(files);
+      popup.remove();
+    };
+
+    function handleDragOver(evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+    }
+    var $drop = popup.select('.drop_zone');
+    var drop = $drop.node();
+    drop.addEventListener('dragenter', function() {
+      $drop.classed('dragging',true);
+    }, false);
+    drop.addEventListener('dragleave', function() {
+      $drop.classed('dragging',false);
+    }, false);
+    drop.addEventListener('dragover', handleDragOver, false);
+    drop.addEventListener('drop', handleFileSelect, false);
+  };
+
   /**
    * handles the rendering and action of StackedColumn options menu
    * @param selectedColumn -- the stacked column

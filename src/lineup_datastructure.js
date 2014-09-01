@@ -181,12 +181,8 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   },
 
   description: function () {
-    var res = {};
-    res.width = this.columnWidth;
-    res.columnBundle = this.columnBundle;
+    var res = LayoutColumn.prototype.description.call(this);
     res.column = this.columnLink;
-
-
     return res;
   },
   makeCopy: function () {
@@ -221,10 +217,8 @@ LayoutRankColumn.prototype = $.extend({}, LayoutColumn.prototype, {
     return this.column.id
   },
   description: function () {
-    var res = {};
+    var res = LayoutColumn.prototype.description.call(this);
     res.type = "rank";
-    res.width = this.columnWidth;
-
     return res;
   },
   makeCopy: function () {
@@ -437,14 +431,12 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
 
   },
   description: function () {
-    var res = {};
+    var res = LayoutColumn.prototype.description.call(this);
     res.type = "stacked";
-    res.columnBundle = this.columnBundle;
     var that = this;
     res.children = this.children.map(function (d, i) {
       return {column: d.columnLink, weight: that.childrenWeights[i]}
     });
-    res.width = this.columnWidth;
     res.label = this.label;
     return res;
   },
@@ -517,6 +509,11 @@ LayoutActionColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   },
   getDataID: function () {
     return this.id
+  },
+  description : function() {
+    var res = LayoutColumn.prototype.description.call(this);
+    res.type = 'actions';
+    return res;
   }
 });
 

@@ -84,6 +84,7 @@ var LineUpGlobal = {
  */
 var LineUp = function (spec, $header, $body) {
   this.storage = spec.storage;
+  this.spec = spec;
 //    this.sortedColumn = [];
   this.$header = $header;
   this.$body = $body;
@@ -131,6 +132,7 @@ var LineUp = function (spec, $header, $body) {
 LineUp.prototype.changeDataStorage = function (spec) {
 //    d3.select("#lugui-table-header-svg").selectAll().remove();
   this.storage = spec.storage;
+  this.spec = spec;
   this.sortedColumn = [];
   this.startVis();
 };
@@ -258,26 +260,38 @@ $(
     var $body = d3.select("#lugui-table-body-svg");
     var lineup = null;
     var datasets = [];
-    var actualDataSet = null;
+
+    function loadDataImpl(name, desc, _data) {
+      var spec = {};
+      LineUpGlobal.primaryKey = desc.primaryKey;
+      spec.name = name;
+      spec.dataspec = desc;
+      delete spec.dataspec.file;
+      delete spec.dataspec.separator;
+      spec.dataspec.data = _data;
+      spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, LineUpGlobal);
+
+      if (lineup) {
+        lineup.changeDataStorage(spec);
+      } else {
+        lineup = new LineUp(spec, $header, $body);
+        lineup.config = LineUpGlobal;
+        lineup.startVis();
+      }
+    }
 
     var loadDataset = function (ds) {
+      var name = ds.descriptionFile.substring(0,ds.descriptionFile.length-5);
       d3.json(ds.baseURL + "/" + ds.descriptionFile, function (desc) {
-        d3.dsv(ds.separator || '\t', 'text/plain')(ds.baseURL + "/" + desc.file, function (_data) {
-          var spec = {};
-          LineUpGlobal.primaryKey = desc.primaryKey;
-          spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, LineUpGlobal);
-
-          if (lineup) {
-            lineup.changeDataStorage(spec);
-          } else {
-            lineup = new LineUp(spec, $header, $body);
-            lineup.config = LineUpGlobal;
-            lineup.startVis();
-          }
-        });
+        if (desc.data) {
+          loadDataImpl(name, desc, desc.data);
+        } else if (desc.file) {
+          d3.dsv(desc.separator || '\t', 'text/plain')(ds.baseURL + "/" + desc.file, function (_data) {
+            loadDataImpl(name, desc, _data);
+          });
+        }
       })
     };
-
 
     d3.json("datasets.json", function (error, data) {
       console.log("datasets:", data, error);
@@ -295,60 +309,88 @@ $(
       var s = $s.node();
       s.addEventListener('change', function () {
         loadDataset(datasets[s.value]);
-        actualDataSet = datasets[s.value];
       });
 
       //and start with 0:
       loadDataset(datasets[0]);
-      actualDataSet = datasets[0];
     });
-  });
+});
 
 
 LineUp.prototype.saveLayout = function () {
-  var x = this.storage.getColumnLayout()
-    .filter(function (d) {
-      return true;
-//            return !(d instanceof LayoutRankColumn) ;
-    })
+  //full spec
+  var s = $.extend({},{},this.spec.dataspec);
+  //create current layout
+  var descs = this.storage.getColumnLayout()
     .map(function (d) {
       return d.description();
     });
-  console.log(x);
-  var t = JSON.stringify(x);
-
-  if (typeof(Storage) !== "undefined") {
-    localStorage.setItem("LineUp-" + LineUpGlobal.actualDataSet.descriptionFile, t);
-  } else {
-    window.alert("Sorry, no webStorage support.")
-  }
-
-
+  s.layout = _.groupBy(descs, function(d) {
+    return d.columnBundle;
+  });
+  //stringify with pretty print
+  var str = JSON.stringify(s, null, '\t');
+  //create blob and save it
+  var blob = new Blob([str], {type: "application/json;charset=utf-8"});
+  saveAs(blob, 'LineUp-' + this.spec.name+'.json');
 };
+
 LineUp.prototype.loadLayout = function () {
-  var x = this.storage.getColumnLayout()
-    .filter(function (d) {
-      return true;
-//            return !(d instanceof LayoutRankColumn) ;
-    })
-    .map(function (d) {
-      return d.description();
-    });
-  console.log(x);
-  var t = JSON.stringify(x);
-
   var that = this;
-  if (typeof(Storage) !== "undefined") {
+  function loadDataImpl(name, desc, _data) {
+    var spec = {};
+    LineUpGlobal.primaryKey = desc.primaryKey;
+    spec.name = name;
+    spec.dataspec = desc;
+    delete spec.dataspec.file;
+    delete spec.dataspec.separator;
+    spec.dataspec.data = _data;
+    spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, LineUpGlobal);
 
-    var t = localStorage.getItem("LineUp-" + LineUpGlobal.actualDataSet.descriptionFile);
-    if (t != null) {
-      var newColDesc = JSON.parse(t);
-      that.storage.generateLayout({primary: newColDesc});
-      that.updateAll();
-
-    }
-
-  } else {
-    window.alert("Sorry, no webStorage support.")
+    that.changeDataStorage(spec);
   }
+
+  function loadDataFile(name, desc, datafile) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var data_s = e.target.result;
+      var _data = d3.dsv(desc.separator || '\t', 'text/plain').parse(data_s);
+      loadDataImpl(name, desc, _data);
+    };
+    // Read in the image file as a data URL.
+    reader.readAsText(datafile);
+  }
+
+  this.uploadUI(function (files) {
+    var descs = files.filter(function (f) {
+      return f.name.match(/.*\.json/i) || f.type === 'application/json';
+    });
+
+    if (descs.length > 0) {
+      var reader = new FileReader();
+
+      // Closure to capture the file information.
+      reader.onload = function(e) {
+        var desc = e.target.result;
+        var name = descs[0].name.substring(0,descs[0].name.length-5);
+        desc = JSON.parse(desc);
+        if (desc.data) {
+          loadDataImpl(name, desc, desc.data);
+        } else if (desc.url) {
+          d3.dsv(desc.separator || '\t', 'text/plain')(desc.url, function (_data) {
+            loadDataImpl(name, desc, _data);
+          });
+        } else if (desc.file) {
+          var d = files.filter(function (f) {
+            return f.name === desc.file;
+          });
+          if (d.length > 0) {
+            loadDataFile(name, desc, d[0]);
+          }
+        }
+      };
+      // Read in the image file as a data URL.
+      reader.readAsText(descs[0]);
+    }
+  });
 };
