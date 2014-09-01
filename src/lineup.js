@@ -262,7 +262,7 @@ $(
 
     var loadDataset = function (ds) {
       d3.json(ds.baseURL + "/" + ds.descriptionFile, function (desc) {
-        d3.tsv(ds.baseURL + "/" + desc.file, function (_data) {
+        d3.dsv(ds.separator || '\t', 'text/plain')(ds.baseURL + "/" + desc.file, function (_data) {
           var spec = {};
           LineUpGlobal.primaryKey = desc.primaryKey;
           spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, LineUpGlobal);
