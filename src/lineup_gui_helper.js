@@ -447,7 +447,7 @@
       }).delay(200).slideDown(500);
     }
     function hideTooltip() {
-      $tooltip.stop().hide();
+      $tooltip.stop(true).hide();
     }
     return {
       show: showTooltip,
