@@ -76,9 +76,6 @@
         'clip-path': function (d) {
           return d.clip;
         }
-      })
-      .text(function (d) {
-        return d.label;
       });
 
     textRows
@@ -88,6 +85,9 @@
           return d.offsetX
         }
       })
+      .text(function (d) {
+        return d.label;
+      });
 
     allRows.selectAll(".tableData.text.rank").text(function (d) {
       return d.value;
