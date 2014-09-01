@@ -7,22 +7,16 @@
  * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
  */
 (function() {
-  function updateText(allHeaders, allRows, svg, config) {
-    // -- the text columns
-
-    var allTextHeaders = allHeaders.filter(function (d) {
-      return (d.hasOwnProperty('column') && (d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn));
-    });
-
+  function updateClipPaths(headers, svg) {
     //generate clip paths for the text columns to avoid text overflow
     //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
     //there is a bug in webkit which present camelCase selectors
-    var textClipPath = svg.select('defs').selectAll(function () {
+    var textClipPath = svg.select('defs.column').selectAll(function () {
       return this.getElementsByTagName("clipPath");
-    }).data(allTextHeaders);
+    }).data(headers);
     textClipPath.enter().append('clipPath')
       .attr('id', function (d) {
-        return 'clip-' + d.column.id;
+        return 'clip-' + d.id;
       })
       .append('rect').attr({
         y: 0,
@@ -38,6 +32,15 @@
           return Math.max(d.getColumnWidth() - 2, 0);
         }
       });
+  }
+  function updateText(allHeaders, allRows, svg, config) {
+    // -- the text columns
+
+    var allTextHeaders = allHeaders.filter(function (d) {
+      return (d.hasOwnProperty('column') && (d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn));
+    });
+
+    updateClipPaths(allTextHeaders, svg);
 
     const rowCenter = (config.svgLayout.rowHeight / 2);
 
@@ -51,7 +54,7 @@
             offsetX: column.offsetX,
             columnW: column.getColumnWidth(),
             isRank: (column instanceof LayoutRankColumn),
-            clip: 'url(#clip-' + column.column.id + ')'
+            clip: 'url(#clip-' + column.id + ')'
           };
         });
         return data;
@@ -349,7 +352,7 @@
         var textOverlays = [];
         headers.forEach(function (col) {
             if (col.column instanceof LineUpNumberColumn) {
-              textOverlays.push({value: col.column.getValue(row), label: config.numberformat(+col.column.getRawValue(row)),
+              textOverlays.push({id: col.id, value: col.column.getValue(row), label: config.numberformat(+col.column.getRawValue(row)),
                 x: col.offsetX,
                 w: col.getColumnWidth()})
             } else if (col instanceof  LayoutStackedColumn) {
@@ -359,9 +362,10 @@
                 var allStackW = child.getWidth(row);
 
                 textOverlays.push({
+                    id : child.id,
                     label: config.numberformat(+child.column.getRawValue(row))
                       + " -> (" + zeroFormat(child.getWidth(row)) + ")",
-                    w: allStackW,
+                    w: config.renderingOptions.stacked ? allStackW : child.getColumnWidth(),
                     x: (allStackOffset + col.offsetX)}
                 );
                 if (config.renderingOptions.stacked) {
@@ -373,13 +377,41 @@
             }
           }
         );
+        var shift = rowScale(row[config.primaryKey]);
+        //generate clip paths for the text columns to avoid text overflow
+        //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
+        //there is a bug in webkit which present camelCase selectors
+        var textClipPath = svg.select('defs.overlay').selectAll(function () {
+          return this.getElementsByTagName("clipPath");
+        }).data(textOverlays);
+          textClipPath.enter().append('clipPath')
+            .append('rect').attr({
+              height: '1000'
+            });
+          textClipPath.exit().remove();
+          textClipPath.attr('y',shift).attr('id', function (d) {
+            return 'clip-' + d.id;
+          });
+        textClipPath.select('rect')
+            .attr({
+              x: function (d) {
+                return d.x;
+              },
+              width: function (d) {
+                return Math.max(d.w - 2, 0);
+              }
+            });
+
         d3.select(this).selectAll("text.hoveronly").data(textOverlays).enter().append("text").
           attr({
-            class: "tableData hoveronly",
+            'class': "tableData hoveronly",
             x: function (d) {
               return d.x;
             },
-            y: config.svgLayout.rowHeight / 2
+            y: config.svgLayout.rowHeight / 2,
+            'clip-path' : function(d) {
+              return 'url(#clip-'+ d.id+')';
+            }
           }).text(function (d) {
             return d.label;
           });
