@@ -489,14 +489,27 @@
       $tooltip.html(content).css({
         left: xy.x + "px",
         top: xy.y + "px"
-      }).delay(200).slideDown(500);
+      }).fadeIn();
     }
     function hideTooltip() {
       $tooltip.stop(true).hide();
     }
+    function moveTooltip(xy) {
+      if (xy.x) {
+        $tooltip.css({
+          left: xy.x + "px"
+        });
+      }
+      if (xy.y) {
+        $tooltip.css({
+          top: xy.y + "px"
+        });
+      }
+    }
     return {
       show: showTooltip,
-      hide: hideTooltip
+      hide: hideTooltip,
+      move: moveTooltip
     }
   }())
 }());

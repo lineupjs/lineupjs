@@ -346,7 +346,8 @@
     var that = this;
     allRowsSuper.on({
       mouseenter: function(row, i) {
-        d3.select(this).classed('hover',true);
+        var $row = d3.select(this);
+        $row.classed('hover',true);
         var zeroFormat = d3.format(".1f");
 //            d3.select(this.parent).classed("hovered", true)
         var textOverlays = [];
@@ -403,7 +404,7 @@
               }
             });
 
-        d3.select(this).selectAll("text.hoveronly").data(textOverlays).enter().append("text").
+        $row.selectAll("text.hoveronly").data(textOverlays).enter().append("text").
           attr({
             'class': "tableData hoveronly",
             x: function (d) {
@@ -417,9 +418,25 @@
             return d.label;
           });
 
+        function absoluteRowPos(elem) {
+          var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+          var matrix = elem.getScreenCTM(),
+              tbbox = elem.getBBox(),
+              point = that.$body.node().createSVGPoint();
+          point.x = tbbox.x;
+          point.y = tbbox.y + tbbox.height;
+          point = point.matrixTransform(matrix);
+          return scrollTop + point.y;
+        }
+
         that.tooltip.show(generateTooltip(row, allHeaders, config),{
-          x : d3.event.x,
-          y: d3.event.y+config.svgLayout.rowHeight/2
+          x : d3.event.x+10,
+          y: absoluteRowPos(this)
+        });
+      },
+      mousemove: function(row) {
+        that.tooltip.move({
+          x : d3.event.x
         });
       },
       mouseleave: function(row) {
