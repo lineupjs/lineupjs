@@ -50,7 +50,7 @@ var LineUp = function (spec, $header, $body, config) {
   function dragWeightEnded() {
     d3.select(this).classed("dragging", false);
 
-    if (config.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
+    if (that.config.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
       that.storage.resortData({column: config.columnBundles.primary.sortedColumn});
       that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
     }
