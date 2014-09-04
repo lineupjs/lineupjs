@@ -128,3 +128,25 @@ LineUp.prototype.updateAll = function (stackTransition) {
   this.updateHeader(this.storage.getColumnLayout());
   this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), stackTransition || false)
 };
+
+/**
+ * sort by a column given by name
+ * @param column
+ * @param asc
+ * @returns {boolean}
+ */
+LineUp.prototype.sortBy = function(column, asc) {
+  column = column || this.storage.primaryKey;
+  asc = asc || false;
+
+  var d = this.storage.getColumnByName(column);
+  if (!d) {
+    return false;
+  }
+  var bundle = this.config.columnBundles[d.columnBundle];
+  bundle.sortingOrderAsc = asc;
+  bundle.sortedColumn = d;
+
+  this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
+  this.updateAll();
+};
