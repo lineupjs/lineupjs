@@ -13,6 +13,7 @@ var LineUp = function (spec, $header, $body, config) {
   this.$body = $body;
 
   this.config = $.extend(true, {}, config, LineUp.defaultConfig, {
+    //TODO internal stuff, should to be extracted
     columnBundles: {
       "primary": {
         sortedColumn: null,
