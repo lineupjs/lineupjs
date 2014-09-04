@@ -13,17 +13,17 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
     -->
-	<link href='//fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
     <link href="bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type='text/css'>
     
     <!--LineUp inclusions-->
     <script src="bower_components/lineupjs/src/lineup_datastructure.js"></script>
     <script src="bower_components/lineupjs/src/lineup_storage.js"></script>
-	
+
     <link href="bower_components/lineupjs/css/style.css" rel="stylesheet" type='text/css'>
 </head>
 <body>
-	<div class="lu" >
+    <div class="lu" >
         <div id="lugui-table-header">
             <svg id="lugui-table-header-svg" width="100%">
                 <g class="main">
@@ -53,9 +53,9 @@
     <script>
         var config = {
         };
-		$("#lugui-table-header-svg").attr("height",LineUp.defaultConfig.htmlLayout.headerHeight);
-		$("#lugui-table-header").css("height",LineUp.defaultConfig.htmlLayout.headerHeight + "px");
-		var $header = d3.select("#lugui-table-header-svg");
+        $("#lugui-table-header-svg").attr("height",LineUp.defaultConfig.htmlLayout.headerHeight);
+        $("#lugui-table-header").css("height",LineUp.defaultConfig.htmlLayout.headerHeight + "px");
+        var $header = d3.select("#lugui-table-header-svg");
         var $body = d3.select("#lugui-table-body-svg");
 
         function createLineUp(desc, data) {
