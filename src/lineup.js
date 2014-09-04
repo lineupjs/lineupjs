@@ -12,6 +12,13 @@ var LineUp = function (spec, $header, $body, config) {
   this.$header = $header;
   this.$body = $body;
 
+  //create basic structure
+  this.$header.append('g').attr('class','main');
+  this.$header.append('g').attr('class','overlay');
+  var $defs = this.$body.append('defs');
+  $defs.append('defs').attr('class','column');
+  $defs.append('defs').attr('class','overlay');
+
   this.config = $.extend(true, {}, config, LineUp.defaultConfig, {
     //TODO internal stuff, should to be extracted
     columnBundles: {
