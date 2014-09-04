@@ -299,8 +299,10 @@
     return $table.html();
   }
 
-  LineUp.prototype.updateBody = function (headers, data, stackTransition, config) {
+  LineUp.prototype.updateBody = function (headers, data, stackTransition) {
     var svg = this.$body;
+    var that = this;
+    var primaryKey = this.storage.primaryKey;
     //console.log("bupdate");
     stackTransition = stackTransition || false;
 
@@ -312,18 +314,18 @@
     var datLength = data.length;
     var rowScale = d3.scale.ordinal()
       .domain(data.map(function (d, i) {
-        return d[config.primaryKey]
+        return d[primaryKey]
       }))
-      .rangeBands([0, (datLength * config.svgLayout.rowHeight)], 0, .2);
+      .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, .2);
     svg.attr({
-      height: datLength * config.svgLayout.rowHeight
+      height: datLength * that.config.svgLayout.rowHeight
     });
 
 
     // -- handle all row groups
 
     var allRowsSuper = svg.selectAll(".row").data(data, function (d) {
-      return d[config.primaryKey]
+      return d[primaryKey]
     });
     allRowsSuper.exit().remove();
 
@@ -334,16 +336,15 @@
     allRowsSuperEnter.append('rect').attr({
       'class' : 'filler',
       width : '100%',
-      height : config.svgLayout.rowHeight
+      height : that.config.svgLayout.rowHeight
     });
 
     //    //--- update ---
     allRowsSuper.transition().duration(1000).attr({
-      "transform": function (d, i) {
-        return  "translate(" + 0 + "," + rowScale(d[config.primaryKey]) + ")"
+      "transform": function (d) {
+        return  "translate(" + 0 + "," + rowScale(d[primaryKey]) + ")"
       }
     });
-    var that = this;
     allRowsSuper.on({
       mouseenter: function(row, i) {
         var $row = d3.select(this);
@@ -353,7 +354,7 @@
         var textOverlays = [];
         headers.forEach(function (col) {
             if (col.column instanceof LineUpNumberColumn) {
-              textOverlays.push({id: col.id, value: col.column.getValue(row), label: config.numberformat(+col.column.getRawValue(row)),
+              textOverlays.push({id: col.id, value: col.column.getValue(row), label: that.config.numberformat(+col.column.getRawValue(row)),
                 x: col.offsetX,
                 w: col.getColumnWidth()})
             } else if (col instanceof  LayoutStackedColumn) {
@@ -364,12 +365,12 @@
 
                 textOverlays.push({
                     id : child.id,
-                    label: config.numberformat(+child.column.getRawValue(row))
+                    label: that.config.numberformat(+child.column.getRawValue(row))
                       + " -> (" + zeroFormat(child.getWidth(row)) + ")",
-                    w: config.renderingOptions.stacked ? allStackW : child.getColumnWidth(),
+                    w: that.config.renderingOptions.stacked ? allStackW : child.getColumnWidth(),
                     x: (allStackOffset + col.offsetX)}
                 );
-                if (config.renderingOptions.stacked) {
+                if (that.config.renderingOptions.stacked) {
                   allStackOffset += allStackW;
                 } else {
                   allStackOffset += child.getColumnWidth();
@@ -379,7 +380,7 @@
           }
         );
         //craete clip paths which clips the overlay text of the bars
-        var shift = rowScale(row[config.primaryKey]);
+        var shift = rowScale(row[primaryKey]);
         //generate clip paths for the text columns to avoid text overflow
         //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
         //there is a bug in webkit which present camelCase selectors
@@ -429,7 +430,7 @@
           return scrollTop + point.y;
         }
 
-        that.tooltip.show(generateTooltip(row, allHeaders, config),{
+        that.tooltip.show(generateTooltip(row, allHeaders, that.config),{
           x : d3.event.x+10,
           y: absoluteRowPos(this)
         });

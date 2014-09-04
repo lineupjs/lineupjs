@@ -196,6 +196,8 @@
     };
     var predictScale = d3.scale.linear().domain([0, d3.max(data, toWeight)]).range([0, 120]);
     var trs = $table.selectAll("tr").data(data);
+    var config = this.config;
+
     trs.enter().append("tr");
 //    trs.append("td").attr("class", "checkmark")
     trs.append("td")
@@ -220,7 +222,7 @@
       },
       height: 20 + "px",
       "background-color": function (d) {
-        return LineUpGlobal.colorMapping.get(d.dataID)
+        return config.colorMapping.get(d.dataID)
       }
     });
 
@@ -372,19 +374,20 @@
    */
   LineUp.prototype.stackedColumnOptionsGui = function (selectedColumn) {
     console.log(selectedColumn);
+    var config = this.config;
     var svgOverlay = this.$header.select(".overlay");
     var that = this;
     // remove when clicked on already selected item
-    var disappear = (LineUpGlobal.modes.stackedColumnModified == selectedColumn);
+    var disappear = (this.stackedColumnModified == selectedColumn);
     if (disappear) {
       svgOverlay.selectAll(".stackedOption").remove();
-      LineUpGlobal.modes.stackedColumnModified = null;
+      this.stackedColumnModified = null;
       return;
     }
 
 
     // else:
-    LineUpGlobal.modes.stackedColumnModified = selectedColumn;
+    this.stackedColumnModified = selectedColumn;
     var options = [
       {name: "\uf014 remove", action: removeStackedColumn},
       {name: "\uf044 rename", action: renameStackedColumn},
@@ -403,14 +406,14 @@
       .attr({
         "class": "stackedOption",
         "transform": function (d) {
-          return "translate(" + (d.d.offsetX + d.d.columnWidth - menuLength) + "," + (LineUpGlobal.htmlLayout.headerHeight / 2 - 2) + ")";
+          return "translate(" + (d.d.offsetX + d.d.columnWidth - menuLength) + "," + (config.htmlLayout.headerHeight / 2 - 2) + ")";
         }
       });
     stackedOptionsEnter.append("rect").attr({
       x: 0,
       y: 0,
       width: menuLength,
-      height: LineUpGlobal.htmlLayout.headerHeight / 2 - 4
+      height: config.htmlLayout.headerHeight / 2 - 4
     });
     stackedOptionsEnter.selectAll("text").data(function (d) {
       return d.o;
@@ -419,7 +422,7 @@
         x: function (d, i) {
           return i * 100 + 5;
         },
-        y: LineUpGlobal.htmlLayout.headerHeight / 4 - 2
+        y: config.htmlLayout.headerHeight / 4 - 2
       })
       .text(function (d) {
         return d.name;
@@ -432,7 +435,7 @@
 
     stackedOptions.transition().attr({
       "transform": function (d) {
-        return "translate(" + (d.d.offsetX + d.d.columnWidth - menuLength) + "," + (LineUpGlobal.htmlLayout.headerHeight / 2 - 2) + ")";
+        return "translate(" + (d.d.offsetX + d.d.columnWidth - menuLength) + "," + (config.htmlLayout.headerHeight / 2 - 2) + ")";
       }
     });
 
@@ -474,7 +477,7 @@
         var newValue = document.getElementById("popupInputText").value;
         if (newValue.length > 0) {
           that.storage.setColumnLabel(col, newValue);
-          that.updateHeader(that.storage.getColumnLayout(), LineUpGlobal);
+          that.updateHeader(that.storage.getColumnLayout());
           popup.remove();
         } else {
           window.alert("non empty string required");

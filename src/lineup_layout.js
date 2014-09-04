@@ -1,8 +1,9 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/15/14.
  */
-LineUp.prototype.layoutHeaders = function (headers, config) {
+LineUp.prototype.layoutHeaders = function (headers) {
   var offset = 0;
+  var config = this.config;
 
   headers.forEach(function (d) {
 //        console.log(d);
@@ -16,24 +17,12 @@ LineUp.prototype.layoutHeaders = function (headers, config) {
 
   //console.log("layout Headers:", headers);
 
-  var addSign = {};
-  if (config.svgLayout.plusSigns.hasOwnProperty("addStackedColumn")) {
-    addSign = config.svgLayout.plusSigns["addStackedColumn"];
-    addSign.x = offset + 4;
-  }
-//    else{
-//        addSign = {
-//            title: "add stacked column",
-//            action:function(){that.addNewStackedColumnDialog(that)},
-//            x:offset+4, y:2,
-//            w:LineUpGlobal.htmlLayout.headerHeight/2-4,h:LineUpGlobal.htmlLayout.headerHeight/2-4
-//        }
-//        LineUpGlobal.svgLayout.plusSigns["addStackedColumn"] = addSign;
-//    }
-
-
-//    console.log( LineUpGlobal.svgLayout.plusSigns["addStackedColumn"]);
-
+  //update all the plusSigns shifts
+  var shift = offset + 4;
+  d3.values(config.svgLayout.plusSigns).forEach(function(addSign) {
+    addSign.x = shift;
+    shift += addSign.w + 4;
+  });
 
   headers.filter(function (d) {
     return (d instanceof LayoutStackedColumn);
@@ -60,11 +49,12 @@ LineUp.prototype.layoutHeaders = function (headers, config) {
 };
 
 LineUp.prototype.assignColors = function (headers) {
-  //Color schemes are in LineUpGlobal (.columnColors / .grayColor)
+  //Color schemes are in config (.columnColors / .grayColor)
 
 
   // clear map
-  LineUpGlobal.colorMapping = d3.map();
+  var config = this.config;
+  config.colorMapping = d3.map();
 
   var colCounter = 0;
 
@@ -73,11 +63,11 @@ LineUp.prototype.assignColors = function (headers) {
     if ((d instanceof LineUpStringColumn)
 //            || (d instanceof LineUpStackedColumn)
       || (d.id == "rank")) {
-      LineUpGlobal.colorMapping.set(d.id, LineUpGlobal.grayColor);
+      config.colorMapping.set(d.id, config.grayColor);
 
     } else {
-//            console.log(LineUpGlobal.columnColors(colCounter), colCounter, d);
-      LineUpGlobal.colorMapping.set(d.id, LineUpGlobal.columnColors(colCounter));
+//            console.log(config.columnColors(colCounter), colCounter, d);
+      config.colorMapping.set(d.id, config.columnColors(colCounter));
 
 
       colCounter++;
@@ -86,5 +76,5 @@ LineUp.prototype.assignColors = function (headers) {
 
   });
 
-  //console.log(LineUpGlobal.colorMapping);
+  //console.log(config.colorMapping);
 };

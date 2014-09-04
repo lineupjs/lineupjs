@@ -6,13 +6,13 @@
  * @param tableId
  * @param data
  * @param columns
- * @param options
+ * @param config
  * @class
  */
-function LineUpLocalStorage(data, columns, layout, options) {
-  options = $.extend({}, options, {});
+function LineUpLocalStorage(data, columns, layout, primaryKey, config) {
+  config = $.extend({}, config);
 
-  var colTypes = $.extend({}, options.colTypes, {
+  var colTypes = $.extend({}, config.colTypes, {
     "number": LineUpNumberColumn,
     "string": LineUpStringColumn,
 //        "max" : LineUpMaxColumn,
@@ -26,9 +26,10 @@ function LineUpLocalStorage(data, columns, layout, options) {
   }
 
   var rawcols = columns.map(toColumn);
-  options.toColumn = toColumn;
+  config.toColumn = toColumn;
 
-  this.options = options;
+  this.primaryKey = primaryKey;
+  this.config = config;
   this.data = data;
   this.rawcols = rawcols;
   this.layout = layout || LineUpLocalStorage.generateDefaultLayout(rawcols);
@@ -84,9 +85,9 @@ LineUpLocalStorage.prototype = $.extend({}, {},
     },
     resortData: function (spec) {
 
-      var asc = spec.asc || this.options.columnBundles.primary.sortingOrderAsc;
+      var asc = spec.asc || this.config.columnBundles.primary.sortingOrderAsc;
       var _key = spec.key || "primary";
-      var column = spec.column || this.options.columnBundles.primary.sortedColumn;
+      var column = spec.column || this.config.columnBundles.primary.sortedColumn;
 
       if (column == null) return;
       //console.log("resort: ", spec);
@@ -94,9 +95,8 @@ LineUpLocalStorage.prototype = $.extend({}, {},
 
       var rankColumn = this.bundles[_key].layoutColumns.filter(function (d) {
         return d.column instanceof LineUpRankColumn;
-      })
+      });
       if (rankColumn.length > 0) {
-
         if (column instanceof LayoutStackedColumn) {
           this.assignRanks(
             this.data,
@@ -138,13 +138,8 @@ LineUpLocalStorage.prototype = $.extend({}, {},
           actualRank = i+1; //we have 1,1,3, not 1,1,2
           actualValue = accessor(row);
         }
-//                console.log(row[LineUpGlobal.primaryKey],actualValue,actualRank);
         rankColumn.setValue(row, actualRank);
-
-      })
-
-
-//            console.log(accessor, rankColumn);
+      });
     },
     generateLayout: function (layout, bundle) {
       var that = this;
@@ -160,7 +155,7 @@ LineUpLocalStorage.prototype = $.extend({}, {},
 
       function toLayoutColumn(desc) {
         var type = desc.type || "single";
-        return new layoutColumnTypes[type](desc, that.rawcols, toLayoutColumn)
+        return new layoutColumnTypes[type](desc, that.rawcols, toLayoutColumn, that)
       }
 
       // create Rank Column
@@ -173,11 +168,11 @@ LineUpLocalStorage.prototype = $.extend({}, {},
       if (b.layoutColumns.filter(function (d) {
         return d instanceof LayoutRankColumn;
       }).length < 1) {
-        b.layoutColumns.unshift(new LayoutRankColumn())
+        b.layoutColumns.unshift(new LayoutRankColumn(null, this))
       }
 
       //if we have row actions and no action column create one
-      if (this.options.svgLayout.rowActions.length > 0 && b.layoutColumns.filter(function (d) {
+      if (this.config.svgLayout.rowActions.length > 0 && b.layoutColumns.filter(function (d) {
         return d instanceof LayoutActionColumn;
       }).length < 1) {
         b.layoutColumns.push(new LayoutActionColumn())

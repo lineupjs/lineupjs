@@ -82,19 +82,20 @@ LineUpStringColumn.prototype = $.extend({}, LineUpColumn.prototype, {
  * @constructor
  * @extends LineUpColumn
  */
-function LineUpRankColumn(desc) {
+function LineUpRankColumn(desc, storage) {
   LineUpColumn.call(this, desc);
   this.label = desc.label || "Rank";
   //maps keys to ranks
   this.values = d3.map();
+  this.storage = storage;
 
 }
 LineUpRankColumn.prototype = $.extend({}, LineUpColumn.prototype, {
   setValue: function (row, d) {
-    this.values.set(row[LineUpGlobal.primaryKey], d)
+    this.values.set(row[this.storage.primaryKey], d)
   },
   getValue: function (row) {
-    return this.values.get(row[LineUpGlobal.primaryKey])
+    return this.values.get(row[this.storage.primaryKey])
   }
 });
 
@@ -200,11 +201,11 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 });
 
 
-function LayoutRankColumn(desc) {
+function LayoutRankColumn(desc, _, __, storage) {
   LayoutColumn.call(this, desc ? desc : {}, []);
   this.columnLink = 'rank';
   this.columnWidth = desc ? (desc.width || 50) : 50;
-  this.column = new LineUpRankColumn({column: "rank"});
+  this.column = new LineUpRankColumn({column: "rank"}, storage);
   this.id = _.uniqueId(this.columnLink + "_");
 }
 
@@ -223,7 +224,7 @@ LayoutRankColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   },
   makeCopy: function () {
     var description = this.description();
-    var res = new LayoutRankColumn(description);
+    var res = new LayoutRankColumn(description, null, null, this.column.storage);
     return res;
   }
 

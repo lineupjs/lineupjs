@@ -8,9 +8,35 @@ var LineUpGlobal = {
   grayColor: "#999999",
   numberformat : d3.format('.3n'),
   htmlLayout: {
+    headerHeight: 50
+  },
+  svgLayout: {
+    rowHeight: 20,
+    plusSigns: {
+      /* addStackedColumn: {
+        title: "add stacked column",
+        action: "addNewEmptyStackedColumn",
+        x: 0, y: 2,
+        w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
+      }*/
+    },
+    rowActions : [
+      /*{
+       name: "explore",
+       icon: "\uf067",
+       action: function(row) {
+       console.log(row);
+       }
+       }*/]
+  },
+  nodragging : false
+};
+
+
+var LineUpInstance = {
+  htmlLayout: {
     menuHeight: 25,
     menuHeightExpanded: 50,
-    headerHeight: 50,
     windowOffsetX: 5,
     windowOffsetY: 5,
     headerOffsetY: function () {
@@ -19,12 +45,6 @@ var LineUpGlobal = {
     bodyOffsetY: function () {
       return (this.menuHeight + this.windowOffsetY + this.headerHeight + 3)
     }
-
-  },
-  renderingOptions: {
-    stacked: false
-//        ,
-//        animated:true
   },
   actionOptions: [
     {name: " new combined", icon: "fa-plus", action: "addNewStackedColumnDialog"},
@@ -32,23 +52,7 @@ var LineUpGlobal = {
     {name: " save layout", icon: "fa-floppy-o", action: "saveLayout"},
     {name: " load layout", icon: "fa-recycle", action: "loadLayout"}
   ],
-//    sortingOrderAsc:false,
-  primaryKey: "",
-
-  headerUpdateRequired: true,
-  columnBundles: {
-    "primary": {
-      sortedColumn: null,
-      sortingOrderAsc: true
-    },
-    "secondary": {
-      sortedColumn: [],
-      sortingOrderAsc: true
-    }
-  },
-
   svgLayout: {
-    rowHeight: 20,
     plusSigns: {
       addStackedColumn: {
         title: "add stacked column",
@@ -56,23 +60,7 @@ var LineUpGlobal = {
         x: 0, y: 2,
         w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
       }
-    }, // description of all plus signs ! -- names: addStackedColumn,...
-    rowActions: [
-      /*{
-        name: "explore",
-        icon: "\uf067",
-        action: function(row) {
-          console.log(row);
-        }
-      }*/
-    ]
-  },
-  modes: {
-    stackedColumnModified: null,
-    columnDragged: null
-  },
-  config: {
-    nodragging : false
+    }
   }
 };
 
@@ -82,12 +70,30 @@ var LineUpGlobal = {
  * @param spec.storage - a LineUp Storage, see {@link LineUpLocalStorage}
  * @constructor
  */
-var LineUp = function (spec, $header, $body) {
+var LineUp = function (spec, $header, $body, config) {
   this.storage = spec.storage;
   this.spec = spec;
 //    this.sortedColumn = [];
   this.$header = $header;
   this.$body = $body;
+
+  this.config = $.extend(true, {}, config, {
+    renderingOptions: {
+      stacked: false
+    },
+    columnBundles: {
+      "primary": {
+        sortedColumn: null,
+        sortingOrderAsc: true
+      },
+      "secondary": {
+        sortedColumn: [],
+        sortingOrderAsc: true
+      }
+    }});
+
+  this.headerUpdateRequired = true;
+  this.stackedColumnModified = null;
 
   var that = this;
 
@@ -104,15 +110,15 @@ var LineUp = function (spec, $header, $body) {
   function draggedWeight() {
     var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
     that.reweightHeader({column: d3.select(this).data()[0], value: newValue});
-    that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false, LineUpGlobal)
+    that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false)
   }
 
   function dragWeightEnded() {
     d3.select(this).classed("dragging", false);
 
-    if (LineUpGlobal.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
-      that.storage.resortData({column: LineUpGlobal.columnBundles.primary.sortedColumn});
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false, LineUpGlobal);
+    if (config.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
+      that.storage.resortData({column: config.columnBundles.primary.sortedColumn});
+      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
     }
 //        that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
 
@@ -134,46 +140,44 @@ LineUp.prototype.changeDataStorage = function (spec) {
   this.storage = spec.storage;
   this.spec = spec;
   this.sortedColumn = [];
-  this.startVis();
 };
-
 
 /**
  * the function to start the LineUp visualization
  */
 LineUp.prototype.startVis = function () {
-
-  this.updateMenu();
   this.assignColors(this.storage.getRawColumns());
   //initial sort
   //this.storage.resortData({});
-
-  this.updateHeader(this.storage.getColumnLayout(), LineUpGlobal);
-  console.log(this.storage.getData());
-  this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), false, LineUpGlobal);
-
+  this.updateHeader(this.storage.getColumnLayout());
+  this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), false);
 };
 
+LineUp.prototype.updateAll = function () {
+  this.updateHeader(this.storage.getColumnLayout());
+  this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), false)
+};
 
 LineUp.prototype.updateMenu = function () {
   var kv = d3.entries(LineUpGlobal.renderingOptions);
 
   var that = this;
+  var config = this.config;
   var kvNodes = d3.select("#lugui-menu-rendering").selectAll("span").data(kv, function (d) {
     return d.key;
   });
   kvNodes.exit().remove();
   kvNodes.enter().append("span").on('click',function (d) {
-      LineUpGlobal.renderingOptions[d.key] = !LineUpGlobal.renderingOptions[d.key];
-      that.updateMenu();
-      that.updateHeader(that.storage.getColumnLayout(), LineUpGlobal);
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), true, LineUpGlobal)
-    });
+    config.renderingOptions[d.key] = !config.renderingOptions[d.key];
+    that.updateMenu();
+    that.updateHeader(that.storage.getColumnLayout());
+    that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), true)
+  });
   kvNodes.html(function (d) {
     return '<a href="#"> <i class="fa ' + (d.value ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d.key + '</a>&nbsp;&nbsp;'
   });
 
-  var actionNodes = d3.select("#lugui-menu-actions").selectAll("span").data(LineUpGlobal.actionOptions)
+  var actionNodes = d3.select("#lugui-menu-actions").selectAll("span").data(config.actionOptions)
     .enter().append("span").html(
     function (d) {
       return '<i class="fa ' + (d.icon) + '" ></i>' + d.name + '&nbsp;&nbsp;'
@@ -244,13 +248,6 @@ var layoutHTML = function () {
 
 };
 
-LineUp.prototype.updateAll = function () {
-  var that = this;
-  that.updateHeader(that.storage.getColumnLayout(), LineUpGlobal);
-  that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false, LineUpGlobal)
-
-};
-
 
 // document ready
 $(
@@ -263,21 +260,20 @@ $(
 
     function loadDataImpl(name, desc, _data) {
       var spec = {};
-      LineUpGlobal.primaryKey = desc.primaryKey;
       spec.name = name;
       spec.dataspec = desc;
       delete spec.dataspec.file;
       delete spec.dataspec.separator;
       spec.dataspec.data = _data;
-      spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, LineUpGlobal);
+      spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey, LineUpGlobal);
 
       if (lineup) {
         lineup.changeDataStorage(spec);
       } else {
-        lineup = new LineUp(spec, $header, $body);
-        lineup.config = LineUpGlobal;
-        lineup.startVis();
+        lineup = new LineUp(spec, $header, $body, $.extend(true, {}, LineUpGlobal));
       }
+      lineup.updateMenu();
+      lineup.startVis();
     }
 
     var loadDataset = function (ds) {
@@ -339,15 +335,16 @@ LineUp.prototype.loadLayout = function () {
   var that = this;
   function loadDataImpl(name, desc, _data) {
     var spec = {};
-    LineUpGlobal.primaryKey = desc.primaryKey;
     spec.name = name;
     spec.dataspec = desc;
     delete spec.dataspec.file;
     delete spec.dataspec.separator;
     spec.dataspec.data = _data;
-    spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, LineUpGlobal);
+    spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey, LineUpGlobal);
 
     that.changeDataStorage(spec);
+    lineup.updateMenu();
+    that.startVis();
   }
 
   function loadDataFile(name, desc, datafile) {
