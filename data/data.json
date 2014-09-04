@@ -1,6 +1,6 @@
 {
   "file": "wur2013.txt",
-  "css": "data.css",
+  "separator" : "\t",
   "primaryKey": "schoolname",
   "columns": [
     {

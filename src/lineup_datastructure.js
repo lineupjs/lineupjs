@@ -82,19 +82,20 @@ LineUpStringColumn.prototype = $.extend({}, LineUpColumn.prototype, {
  * @constructor
  * @extends LineUpColumn
  */
-function LineUpRankColumn(desc) {
+function LineUpRankColumn(desc, storage) {
   LineUpColumn.call(this, desc);
   this.label = desc.label || "Rank";
   //maps keys to ranks
   this.values = d3.map();
+  this.storage = storage;
 
 }
 LineUpRankColumn.prototype = $.extend({}, LineUpColumn.prototype, {
   setValue: function (row, d) {
-    this.values.set(row[LineUpGlobal.primaryKey], d)
+    this.values.set(row[this.storage.primaryKey], d)
   },
   getValue: function (row) {
-    return this.values.get(row[LineUpGlobal.primaryKey])
+    return this.values.get(row[this.storage.primaryKey])
   }
 });
 
@@ -164,8 +165,8 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 
   init: function () {
     /*if (this.column.hasOwnProperty("scale") && this.column.scale != null) {
-      this.scale.domain(this.column.scale.domain());
-    }*/
+     this.scale.domain(this.column.scale.domain());
+     }*/
 
   },
   // ONLY for numerical columns
@@ -181,12 +182,8 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   },
 
   description: function () {
-    var res = {};
-    res.width = this.columnWidth;
-    res.columnBundle = this.columnBundle;
+    var res = LayoutColumn.prototype.description.call(this);
     res.column = this.columnLink;
-
-
     return res;
   },
   makeCopy: function () {
@@ -204,11 +201,11 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 });
 
 
-function LayoutRankColumn(desc) {
+function LayoutRankColumn(desc, _dummy, _dummy2, storage) {
   LayoutColumn.call(this, desc ? desc : {}, []);
   this.columnLink = 'rank';
   this.columnWidth = desc ? (desc.width || 50) : 50;
-  this.column = new LineUpRankColumn({column: "rank"});
+  this.column = new LineUpRankColumn({column: "rank"}, storage);
   this.id = _.uniqueId(this.columnLink + "_");
 }
 
@@ -221,15 +218,13 @@ LayoutRankColumn.prototype = $.extend({}, LayoutColumn.prototype, {
     return this.column.id
   },
   description: function () {
-    var res = {};
+    var res = LayoutColumn.prototype.description.call(this);
     res.type = "rank";
-    res.width = this.columnWidth;
-
     return res;
   },
   makeCopy: function () {
     var description = this.description();
-    var res = new LayoutRankColumn(description);
+    var res = new LayoutRankColumn(description, null, null, this.column.storage);
     return res;
   }
 
@@ -246,8 +241,10 @@ function LayoutCompositeColumn(desc, rawColumns) {
 LayoutCompositeColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   getDataID: function () {
     return this.id
+  },
+  getLabel: function () {
+    return this.label
   }
-
 });
 
 
@@ -435,14 +432,12 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
 
   },
   description: function () {
-    var res = {};
+    var res = LayoutColumn.prototype.description.call(this);
     res.type = "stacked";
-    res.columnBundle = this.columnBundle;
     var that = this;
     res.children = this.children.map(function (d, i) {
       return {column: d.columnLink, weight: that.childrenWeights[i]}
     });
-    res.width = this.columnWidth;
     res.label = this.label;
     return res;
   },
@@ -495,7 +490,8 @@ LayoutEmptyColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 
 
 function LayoutActionColumn(spec) {
-  LayoutColumn.call(this, spec || {}, []);
+  spec = spec || {};
+  LayoutColumn.call(this, spec, []);
   this.columnLink = 'action';
   this.column = {
     getValue: function (a) {
@@ -506,7 +502,7 @@ function LayoutActionColumn(spec) {
     }};
   this.id = _.uniqueId(this.columnLink + "_a");
   this.label = "";
-  this.columnWidth = 50
+  this.columnWidth = spec.width || 50
 }
 LayoutActionColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   getLabel: function () {
@@ -514,6 +510,11 @@ LayoutActionColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   },
   getDataID: function () {
     return this.id
+  },
+  description : function() {
+    var res = LayoutColumn.prototype.description.call(this);
+    res.type = 'actions';
+    return res;
   }
 });
 
