@@ -31,7 +31,7 @@ function LineUpLocalStorage(data, columns, layout, options) {
   this.options = options;
   this.data = data;
   this.rawcols = rawcols;
-  this.layout = layout;
+  this.layout = layout || LineUpLocalStorage.generateDefaultLayout(rawcols);
 
   this.bundles = {
     "primary": {
@@ -39,10 +39,24 @@ function LineUpLocalStorage(data, columns, layout, options) {
       needsLayout: true  // this triggers the layout generation at first access to "getColumnLayout"
     }
   };
-
-
 }
 
+/**
+ * generate a default layout by just showing all columns with 100 px
+ * @param columns
+ * @returns {{primary: (Array|*)}}
+ */
+LineUpLocalStorage.generateDefaultLayout = function(columns) {
+  var layout = columns.map(function(c) {
+    return {
+      column: c.id,
+      width: c instanceof LineUpStringColumn ? 200 : 100
+    }
+  });
+  return {
+    primary : layout
+  };
+}
 
 LineUpLocalStorage.prototype = $.extend({}, {},
   /** @lends LineUpLocalStorage.prototype */
@@ -142,7 +156,7 @@ LineUpLocalStorage.prototype = $.extend({}, {},
         "stacked": LayoutStackedColumn,
         "rank": LayoutRankColumn,
         "actions": LayoutActionColumn
-      }
+      };
 
       function toLayoutColumn(desc) {
         var type = desc.type || "single";

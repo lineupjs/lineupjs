@@ -1,15 +1,19 @@
 {
-    "datasets":
-    [
-        {
-            "baseURL":"data",
-            "descriptionFile":"data_small.json",
-            "name":"University Rankings"
-        },
-        {
-            "baseURL":"data",
-            "descriptionFile":"data.json",
-            "name":"University Ranking bigger"
-        }
-    ]
+  "datasets": [
+    {
+      "baseURL": "data",
+      "descriptionFile": "data_small.json",
+      "name": "University Rankings"
+    },
+    {
+      "baseURL": "data",
+      "descriptionFile": "data.json",
+      "name": "University Ranking bigger"
+    },
+    {
+      "baseURL": "data",
+      "descriptionFile": "data_minimal.json",
+      "name": "University Ranking Minimal Desc"
+    }
+  ]
 }

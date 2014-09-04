@@ -1,0 +1,42 @@
+{
+  "file": "wur2013.txt",
+  "separator" : "\t",
+  "primaryKey": "schoolname",
+  "columns": [
+    {
+      "column": "schoolname",
+      "type": "string"
+    },
+    {
+      "column": "academic",
+      "type": "number",
+      "domain": [0, 100]
+    },
+    {
+      "column": "employer",
+      "type": "number",
+      "domain": [0, 100]
+    },
+    {
+      "column": "faculty",
+      "type": "number",
+      "domain": [0, 100]
+    },
+    {
+      "column": "citations",
+      "type": "number",
+      "domain": [0, 100]
+    },
+    {
+      "column": "international",
+      "type": "number",
+      "domain": [0, 100]
+    },
+    {
+      "column": "internationalstudents",
+      "label": "international students",
+      "type": "number",
+      "domain": [0, 100]
+    }
+  ]
+}
