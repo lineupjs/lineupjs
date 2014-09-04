@@ -185,31 +185,38 @@ LineUpLocalStorage.prototype = $.extend({}, {},
 
       this.bundles[_bundle] = b;
     },
+    addColumn: function(col, bundle) {
+      var _bundle = bundle || "primary";
+      var cols = this.bundles[_bundle].layoutColumns, i, c;
+      //insert the new column after the first non rank, text column
+      for(i = 0; i < cols.length; ++i) {
+        c = cols[i];
+        if (c instanceof LayoutRankColumn || (c instanceof LayoutSingleColumn && c.column instanceof LineUpStringColumn)) {
+          continue;
+        }
+        break;
+      }
+      cols.splice(i,0, col);
+    },
     addStackedColumn: function (spec, bundle) {
       var _spec = spec || {label: "Stacked", children: []}
-      var _bundle = bundle || "primary";
-
       var that = this;
 
       //TODO: make less redundant with generateLayout
       var layoutColumnTypes = {
         "single": LayoutSingleColumn,
         "stacked": LayoutStackedColumn
-      }
+      };
 
       function toLayoutColumn(desc) {
         var type = desc.type || "single";
         return new layoutColumnTypes[type](desc, that.rawcols, toLayoutColumn)
       }
 
-
-      this.bundles[_bundle].layoutColumns.push(new LayoutStackedColumn(_spec, this.rawcols, toLayoutColumn))
-
+      this.addColumn(new LayoutStackedColumn(_spec, this.rawcols, toLayoutColumn), bundle);
     },
     addSingleColumn: function (spec, bundle) {
-      var _bundle = bundle || "primary";
-      this.bundles[_bundle].layoutColumns.push(new LayoutSingleColumn(spec, this.rawcols))
-
+      this.addColumn(new LayoutSingleColumn(spec, this.rawcols), bundle);
     },
 
 
