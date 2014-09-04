@@ -46,8 +46,7 @@
 
     var textRows = allRows.selectAll(".tableData.text")
       .data(function (d) {
-
-        var data = allTextHeaders.map(function (column) {
+        var dd = allTextHeaders.map(function (column) {
           return {
             value: column.column.getValue(d),
             label: column.column.getRawValue(d),
@@ -57,7 +56,7 @@
             clip: 'url(#clip-' + column.id + ')'
           };
         });
-        return data;
+        return dd;
       });
 
     textRows.exit().remove();
@@ -151,12 +150,11 @@
 
     // -- render StackColumnGroups
     var stackRows = allRows.selectAll(".tableData.stacked")
-      .data(function (d, i) {
-
-        var data = allStackedHeaders.map(function (column) {
+      .data(function (d) {
+        var dd = allStackedHeaders.map(function (column) {
           return {key: column.getDataID(), childs: column.children, parent: column, row: d};
         });
-        return data;
+        return dd;
       });
     stackRows.exit().remove();
     stackRows.enter()
@@ -186,9 +184,9 @@
         allStackW = 0;
 
         return d.childs.map(function (child) {
-          allStackW = child.getWidth(d.row)
+          allStackW = child.getWidth(d.row);
 
-          allStackRes = {child: child, width: allStackW, offsetX: allStackOffset}
+          allStackRes = {child: child, width: allStackW, offsetX: allStackOffset};
 
           if (config.renderingOptions.stacked) {
             allStackOffset += allStackW;
@@ -247,12 +245,12 @@
     });
     var actionRows = allRows.selectAll(".tableData.action")
       .data(function (d) {
-        var data = allActionBarHeaders.map(function (column) {
+        var dd = allActionBarHeaders.map(function (column) {
           return {key: column.getDataID(), value: column.getColumnWidth(d),
             data: d,
             offsetX: column.offsetX};
         });
-        return data;
+        return dd;
       });
     actionRows.enter()
       .append("g")
@@ -313,7 +311,7 @@
 
     var datLength = data.length;
     var rowScale = d3.scale.ordinal()
-      .domain(data.map(function (d, i) {
+      .domain(data.map(function (d) {
         return d[primaryKey]
       }))
       .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, .2);
@@ -346,7 +344,7 @@
       }
     });
     allRowsSuper.on({
-      mouseenter: function(row, i) {
+      mouseenter: function(row) {
         var $row = d3.select(this);
         $row.classed('hover',true);
         var zeroFormat = d3.format(".1f");
@@ -379,7 +377,7 @@
             }
           }
         );
-        //craete clip paths which clips the overlay text of the bars
+        //create clip paths which clips the overlay text of the bars
         var shift = rowScale(row[primaryKey]);
         //generate clip paths for the text columns to avoid text overflow
         //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
@@ -411,7 +409,7 @@
             x: function (d) {
               return d.x;
             },
-            y: config.svgLayout.rowHeight / 2,
+            y: that.config.svgLayout.rowHeight / 2,
             'clip-path' : function(d) {
               return 'url(#clip-'+ d.id+')';
             }
@@ -435,12 +433,12 @@
           y: absoluteRowPos(this)
         });
       },
-      mousemove: function(row) {
+      mousemove: function() {
         that.tooltip.move({
           x : d3.event.x
         });
       },
-      mouseleave: function(row) {
+      mouseleave: function() {
         that.tooltip.hide();
         d3.select(this).classed('hover',false).selectAll('text.hoveronly').remove();
       }
@@ -449,9 +447,9 @@
     var allRows = allRowsSuper;
 
 
-    updateText(allHeaders, allRows, svg, config);
-    updateSingleBars(headers, allRows, config);
-    updateStackBars(headers, allRows, stackTransition, config);
-    updateActionBars(headers, allRows, config);
+    updateText(allHeaders, allRows, svg, that.config);
+    updateSingleBars(headers, allRows, that.config);
+    updateStackBars(headers, allRows, stackTransition, that.config);
+    updateActionBars(headers, allRows, that.config);
   }
 }());

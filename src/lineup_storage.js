@@ -9,30 +9,43 @@
  * @param config
  * @class
  */
-function LineUpLocalStorage(data, columns, layout, primaryKey, config) {
-  config = $.extend({}, config);
-
-  var colTypes = $.extend({}, config.colTypes, {
-    "number": LineUpNumberColumn,
-    "string": LineUpStringColumn,
+function LineUpLocalStorage(data, columns, layout, primaryKey, storageConfig) {
+  this.storageConfig = $.extend(true, {}, storageConfig, {
+    colTypes: {
+      "number": LineUpNumberColumn,
+      "string": LineUpStringColumn,
 //        "max" : LineUpMaxColumn,
 //        "stacked" : LineUpStackedColumn,
-    "rank": LineUpRankColumn
+      "rank": LineUpRankColumn
+    },
+    layoutColumnTypes: {
+      "single": LayoutSingleColumn,
+      "stacked": LayoutStackedColumn,
+      "rank": LayoutRankColumn,
+      "actions": LayoutActionColumn
+    }
   });
+  this.config = null ; //will be injected by lineup
 
+  var colTypes = this.storageConfig.colTypes;
+  var layoutColumnTypes = this.storageConfig.layoutColumnTypes;
+  var that = this;
 
   function toColumn(desc) {
     return new colTypes[desc.type](desc, toColumn);
   }
+  this.storageConfig.toColumn = toColumn;
 
-  var rawcols = columns.map(toColumn);
-  config.toColumn = toColumn;
+  function toLayoutColumn(desc) {
+    var type = desc.type || "single";
+    return new layoutColumnTypes[type](desc, that.rawcols, toLayoutColumn, that)
+  }
+  this.storageConfig.toLayoutColumn = toLayoutColumn;
 
   this.primaryKey = primaryKey;
-  this.config = config;
   this.data = data;
-  this.rawcols = rawcols;
-  this.layout = layout || LineUpLocalStorage.generateDefaultLayout(rawcols);
+  this.rawcols = columns.map(toColumn);
+  this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
 
   this.bundles = {
     "primary": {
@@ -57,12 +70,11 @@ LineUpLocalStorage.generateDefaultLayout = function(columns) {
   return {
     primary : layout
   };
-}
+};
 
 LineUpLocalStorage.prototype = $.extend({}, {},
   /** @lends LineUpLocalStorage.prototype */
   {
-
     getRawColumns: function () {
       return this.rawcols;
     },
@@ -114,8 +126,6 @@ LineUpLocalStorage.prototype = $.extend({}, {},
             rankColumn[0].column
           );
         }
-
-
       }
 
       if (asc) this.data.reverse();
@@ -127,7 +137,6 @@ LineUpLocalStorage.prototype = $.extend({}, {},
     assignRanks: function (data, accessor, rankColumn) {
 
       var actualRank = 1;
-      var sameRank = 1;
       var actualValue = -1;
 
       data.forEach(function (row, i) {
@@ -146,29 +155,17 @@ LineUpLocalStorage.prototype = $.extend({}, {},
       console.log(that);
       var _bundle = bundle || "primary";
 
-      var layoutColumnTypes = {
-        "single": LayoutSingleColumn,
-        "stacked": LayoutStackedColumn,
-        "rank": LayoutRankColumn,
-        "actions": LayoutActionColumn
-      };
-
-      function toLayoutColumn(desc) {
-        var type = desc.type || "single";
-        return new layoutColumnTypes[type](desc, that.rawcols, toLayoutColumn, that)
-      }
-
       // create Rank Column
 //            new LayoutRankColumn();
 
       var b  = {};
-      b.layoutColumns = layout[_bundle].map(toLayoutColumn);
+      b.layoutColumns = layout[_bundle].map(this.storageConfig.toLayoutColumn);
       console.log(b.layoutColumns, layout);
       //if there is no rank column create one
       if (b.layoutColumns.filter(function (d) {
         return d instanceof LayoutRankColumn;
       }).length < 1) {
-        b.layoutColumns.unshift(new LayoutRankColumn(null, this))
+        b.layoutColumns.unshift(new LayoutRankColumn(null, null, null, this))
       }
 
       //if we have row actions and no action column create one
@@ -194,21 +191,8 @@ LineUpLocalStorage.prototype = $.extend({}, {},
       cols.splice(i,0, col);
     },
     addStackedColumn: function (spec, bundle) {
-      var _spec = spec || {label: "Stacked", children: []}
-      var that = this;
-
-      //TODO: make less redundant with generateLayout
-      var layoutColumnTypes = {
-        "single": LayoutSingleColumn,
-        "stacked": LayoutStackedColumn
-      };
-
-      function toLayoutColumn(desc) {
-        var type = desc.type || "single";
-        return new layoutColumnTypes[type](desc, that.rawcols, toLayoutColumn)
-      }
-
-      this.addColumn(new LayoutStackedColumn(_spec, this.rawcols, toLayoutColumn), bundle);
+      var _spec = spec || {label: "Stacked", children: []};
+      this.addColumn(new LayoutStackedColumn(_spec, this.rawcols, this.storageConfig.toLayoutColumn), bundle);
     },
     addSingleColumn: function (spec, bundle) {
       this.addColumn(new LayoutSingleColumn(spec, this.rawcols), bundle);

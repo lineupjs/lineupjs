@@ -201,7 +201,7 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
 });
 
 
-function LayoutRankColumn(desc, _, __, storage) {
+function LayoutRankColumn(desc, _dummy, _dummy2, storage) {
   LayoutColumn.call(this, desc ? desc : {}, []);
   this.columnLink = 'rank';
   this.columnWidth = desc ? (desc.width || 50) : 50;
