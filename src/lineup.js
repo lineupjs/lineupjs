@@ -58,11 +58,12 @@ var LineUp = function (spec, $header, $body, config) {
     d3.select(this).classed("dragging", false);
 
     if (that.config.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
-      that.storage.resortData({column: config.columnBundles.primary.sortedColumn});
+      that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
       that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
     }
 //        that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
 
+//      that.updateAll();
     // TODO: integrate columnbundles dynamically !!
   }
 
