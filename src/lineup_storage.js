@@ -10,7 +10,7 @@
  * @class
  */
 function LineUpLocalStorage(data, columns, layout, primaryKey, storageConfig) {
-  this.storageConfig = $.extend(true, {}, storageConfig, {
+  this.storageConfig = $.extend(true, {}, {
     colTypes: {
       "number": LineUpNumberColumn,
       "string": LineUpStringColumn,
@@ -24,7 +24,7 @@ function LineUpLocalStorage(data, columns, layout, primaryKey, storageConfig) {
       "rank": LayoutRankColumn,
       "actions": LayoutActionColumn
     }
-  });
+  }, storageConfig);
   this.config = null ; //will be injected by lineup
 
   var colTypes = this.storageConfig.colTypes;

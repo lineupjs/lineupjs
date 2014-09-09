@@ -19,7 +19,7 @@ var LineUp = function (spec, $header, $body, config) {
   $defs.append('defs').attr('class','column');
   $defs.append('defs').attr('class','overlay');
 
-  this.config = $.extend(true, {}, config, LineUp.defaultConfig, {
+  this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
     //TODO internal stuff, should to be extracted
     columnBundles: {
       "primary": {
