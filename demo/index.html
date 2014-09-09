@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>LineUp alpha</title>
+
+    <!--standard inclusions and require function-->
+    <script src="../libs/jquery-1.10.2.js"></script>
+    <script src="../libs/d3.js"></script>
+    <script src="../libs/underscore-min.js"></script>
+    <!--
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    -->
+    <script src="libs/FileSaver.js"></script>
+
+    <!--LineUp inclusions-->
+    <script src="../src/lineup_datastructure.js"></script>
+    <script src="../src/lineup_storage.js"></script>
+
+    <link href='//fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <!--
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type='text/css'>
+    -->
+    <link href="../css/style.css" rel="stylesheet">
+    <link href="css/style-demo.css" rel="stylesheet">
+</head>
+<body>
+    <div class="lu" >
+        <div id="lugui-menu">
+        <!--<div id="lugui-dataset-selector"></div>-->
+        <!--<div class="text-left">-->
+        <!--LineUp.JS-->
+
+        <div style="display: inline-block; float: left; padding-left:5px; padding-top:2px;">
+            LineUp.js
+            &nbsp;
+            &nbsp;
+            &nbsp;
+
+            <span id="lugui-menu-rendering"> </span>
+            <span id="lugui-menu-actions"> </span>
+        </div>
+
+        <!--<div style="display: inline-block; float: left; padding-left:5px; padding-top:2px;">-->
+        <!--<a href="#">test</a>-->
+        <!--</div>-->
+
+        <!--<div style="display: inline-block; float: left">-->
+        <!--LineUp.js2-->
+        <!--</div>-->
+        <div style="display: inline-block; float: right; padding-right:5px; padding-top:2px;">
+            <select id="lugui-dataset-selector" ></select>
+            <i class="fa fa-info-circle" style="color: #555555;"></i>
+            <!--position: relative;top: 2px;-->
+        </div>
+        <!--</div>-->
+        <!--class="form-control input-sm"-->
+        <!--<div id="lugui-info" class="text-right" > <i class="fa fa-info-circle" style="color: #555555;"></i></div>-->
+    </div>
+        <div id="lugui-table-header">
+            <svg id="lugui-table-header-svg">
+            </svg>
+        </div>
+        <div id="lugui-table-body-wrapper">
+            <div id="lugui-table-body">
+                <svg id="lugui-table-body-svg">
+                </svg>
+            </div>
+        </div>
+    </div>
+    <script src="../src/lineup.js"></script>
+    <script src="../src/lineup_tableheader.js"></script>
+    <script src="../src/lineup_tablebody.js"></script>
+    <script src="../src/lineup_layout.js"></script>
+    <script src="../src/lineup_gui_helper.js"></script>
+    <script src="../src/lineup_mappingeditor.js"></script>
+
+    <script src="lineup_demo.js"></script>
+</body>
+</html>

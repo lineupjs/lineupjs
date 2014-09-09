@@ -12,6 +12,13 @@ var LineUp = function (spec, $header, $body, config) {
   this.$header = $header;
   this.$body = $body;
 
+  //create basic structure
+  this.$header.append('g').attr('class','main');
+  this.$header.append('g').attr('class','overlay');
+  var $defs = this.$body.append('defs');
+  $defs.append('defs').attr('class','column');
+  $defs.append('defs').attr('class','overlay');
+
   this.config = $.extend(true, {}, config, LineUp.defaultConfig, {
     //TODO internal stuff, should to be extracted
     columnBundles: {
@@ -50,12 +57,13 @@ var LineUp = function (spec, $header, $body, config) {
   function dragWeightEnded() {
     d3.select(this).classed("dragging", false);
 
-    if (config.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
-      that.storage.resortData({column: config.columnBundles.primary.sortedColumn});
+    if (that.config.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
+      that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
       that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
     }
 //        that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
 
+//      that.updateAll();
     // TODO: integrate columnbundles dynamically !!
   }
 
@@ -127,4 +135,26 @@ LineUp.prototype.startVis = function () {
 LineUp.prototype.updateAll = function (stackTransition) {
   this.updateHeader(this.storage.getColumnLayout());
   this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), stackTransition || false)
+};
+
+/**
+ * sort by a column given by name
+ * @param column
+ * @param asc
+ * @returns {boolean}
+ */
+LineUp.prototype.sortBy = function(column, asc) {
+  column = column || this.storage.primaryKey;
+  asc = asc || false;
+
+  var d = this.storage.getColumnByName(column);
+  if (!d) {
+    return false;
+  }
+  var bundle = this.config.columnBundles[d.columnBundle];
+  bundle.sortingOrderAsc = asc;
+  bundle.sortedColumn = d;
+
+  this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
+  this.updateAll();
 };

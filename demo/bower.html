@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>LineUp Bower Usage Demo</title>
+
+    <!--standard inclusions and require function-->
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/underscore/underscore-min.js"></script>
+    <!--
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    -->
+    <link href='//fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+    <link href="bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type='text/css'>
+    
+    <!--LineUp inclusions-->
+    <script src="bower_components/lineupjs/src/lineup_datastructure.js"></script>
+    <script src="bower_components/lineupjs/src/lineup_storage.js"></script>
+
+    <link href="bower_components/lineupjs/css/style.css" rel="stylesheet" type='text/css'>
+</head>
+<body>
+    <div class="lu" >
+        <div id="lugui-table-header">
+            <svg id="lugui-table-header-svg" width="100%">
+            </svg>
+        </div>
+        <div id="lugui-table-body">
+            <svg id="lugui-table-body-svg" width="100%">
+            </svg>
+        </div>
+    </div>
+    <script src="bower_components/lineupjs/src/lineup.js"></script>
+    <script src="bower_components/lineupjs/src/lineup_tableheader.js"></script>
+    <script src="bower_components/lineupjs/src/lineup_tablebody.js"></script>
+    <script src="bower_components/lineupjs/src/lineup_layout.js"></script>
+    <script src="bower_components/lineupjs/src/lineup_gui_helper.js"></script>
+    <script src="bower_components/lineupjs/src/lineup_mappingeditor.js"></script>
+
+    <script>
+        var config = {
+        };
+        $("#lugui-table-header-svg").attr("height",LineUp.defaultConfig.htmlLayout.headerHeight);
+        $("#lugui-table-header").css("height",LineUp.defaultConfig.htmlLayout.headerHeight + "px");
+        var $header = d3.select("#lugui-table-header-svg");
+        var $body = d3.select("#lugui-table-body-svg");
+
+        function createLineUp(desc, data) {
+            var spec = {};
+            spec.storage = new LineUpLocalStorage(data, desc.columns, desc.layout, desc.primaryKey);
+            var lineup = new LineUp(spec, $header, $body, config);
+            lineup.startVis();
+            return lineup;
+        }
+        $(function() {
+            var lineup = null;
+            d3.json('data/data_minimal.json', function (desc) {
+                d3.tsv('data/'+desc.file, function (_data) {
+                    lineup = createLineUp(desc, _data);
+                });
+            });
+        })
+    </script>
+</body>
+</html>
