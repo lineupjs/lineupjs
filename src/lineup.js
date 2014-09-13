@@ -159,3 +159,11 @@ LineUp.prototype.sortBy = function(column, asc) {
   this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
   this.updateAll();
 };
+
+/**
+ * toggles the stacked rendering of this table
+ */
+LineUp.prototype.toggleStackedRendering = function() {
+  this.config.renderingOptions.stacked = !this.config.renderingOptions.stacked;
+  this.updateAll(true);
+}

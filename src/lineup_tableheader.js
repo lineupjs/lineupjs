@@ -81,9 +81,9 @@ LineUp.prototype.updateHeader = function (headers) {
       }
 
       that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false, config);
       bundle.sortedColumn = d;
-      that.updateHeader(that.storage.getColumnLayout(), config);
+      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
+      that.updateHeader(that.storage.getColumnLayout());
     });
 
   allHeaders.select(".labelBG").attr({

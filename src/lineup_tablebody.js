@@ -102,6 +102,11 @@
 //    )
   }
 
+  function isSortedByStackChild(config) {
+    var current = config.columnBundles.primary.sortedColumn;
+    return current && current.parent instanceof LayoutStackedColumn;
+  }
+
   function updateSingleBars(headers, allRows, config) {
     // -- handle the Single columns  (!! use unflattened headers for filtering)
     var allSingleBarHeaders = headers.filter(function (d) {
@@ -178,6 +183,8 @@
     var allStackW = 0;
     var allStackRes = {};
 
+    var showStacked = config.renderingOptions.stacked && !isSortedByStackChild(config);
+
     var allStack = stackRows.selectAll("rect").data(function (d) {
 
         allStackOffset = 0;
@@ -188,7 +195,7 @@
 
           allStackRes = {child: child, width: allStackW, offsetX: allStackOffset};
 
-          if (config.renderingOptions.stacked) {
+          if (showStacked) {
             allStackOffset += allStackW;
           } else {
             allStackOffset += child.getColumnWidth();
