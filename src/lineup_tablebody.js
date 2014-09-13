@@ -7,7 +7,7 @@
  * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
  */
 (function() {
-  function updateClipPaths(headers, svg) {
+  LineUp.updateClipPaths = function (headers, svg, prefix, shift) {
     //generate clip paths for the text columns to avoid text overflow
     //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
     //there is a bug in webkit which present camelCase selectors
@@ -16,7 +16,7 @@
     }).data(headers);
     textClipPath.enter().append('clipPath')
       .attr('id', function (d) {
-        return 'clip-' + d.id;
+        return 'clip-' + prefix + d.id;
       })
       .append('rect').attr({
         y: 0,
@@ -26,21 +26,19 @@
     textClipPath.select('rect')
       .attr({
         x: function (d) {
-          return d.offsetX;
+          return shift ? d.offsetX : null;
         },
         width: function (d) {
-          return Math.max(d.getColumnWidth() - 2, 0);
+          return Math.max(d.getColumnWidth() - 5, 0);
         }
       });
-  }
+  };
   function updateText(allHeaders, allRows, svg, config) {
     // -- the text columns
 
     var allTextHeaders = allHeaders.filter(function (d) {
       return (d.hasOwnProperty('column') && (d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn));
     });
-
-    updateClipPaths(allTextHeaders, svg);
 
     const rowCenter = (config.svgLayout.rowHeight / 2);
 
@@ -53,7 +51,7 @@
             offsetX: column.offsetX,
             columnW: column.getColumnWidth(),
             isRank: (column instanceof LayoutRankColumn),
-            clip: 'url(#clip-' + column.id + ')'
+            clip: 'url(#clip-B' + column.id + ')'
           };
         });
         return dd;
@@ -100,6 +98,14 @@
 //            return [{key:"rank",value:d["rank"]}]
 //        }
 //    )
+  }
+
+  function showStacked(config) {
+    if (!config.renderingOptions.stacked || config.renderingOptions.values) {
+      return false;
+    }
+    var current = config.columnBundles.primary.sortedColumn;
+    return !(current && (current.parent instanceof LayoutStackedColumn));
   }
 
   function updateSingleBars(headers, allRows, config) {
@@ -178,6 +184,8 @@
     var allStackW = 0;
     var allStackRes = {};
 
+    var asStacked = showStacked(config);
+
     var allStack = stackRows.selectAll("rect").data(function (d) {
 
         allStackOffset = 0;
@@ -188,7 +196,7 @@
 
           allStackRes = {child: child, width: allStackW, offsetX: allStackOffset};
 
-          if (config.renderingOptions.stacked) {
+          if (asStacked) {
             allStackOffset += allStackW;
           } else {
             allStackOffset += child.getColumnWidth();
@@ -272,7 +280,8 @@
       return col.getValue(row);
     }
     if (col instanceof LayoutSingleColumn && col.column instanceof LineUpNumberColumn) {
-      return +col.column.getRawValue(row);
+      var r = col.column.getRawValue(row);
+      return isNaN(r) || r.toString() === '' ? '' : +r;
     }
     if (col.column) {
       return col.column.getValue(row);
@@ -288,7 +297,7 @@
     headers.forEach(function(header) {
       var r = createRepr(header, row);
       if (typeof r === 'undefined') {
-        r = "";
+        r = '';
       } else if (typeof r === 'number') {
         r = config.numberformat(r);
       }
@@ -301,6 +310,7 @@
     var svg = this.$body;
     var that = this;
     var primaryKey = this.storage.primaryKey;
+    var zeroFormat = d3.format(".1f");
     //console.log("bupdate");
     stackTransition = stackTransition || false;
 
@@ -338,45 +348,73 @@
     });
 
     //    //--- update ---
-    allRowsSuper.transition().duration(1000).attr({
+    (this.config.renderingOptions.animation ? allRowsSuper.transition().duration(1000) : allRowsSuper).attr({
       "transform": function (d) {
         return  "translate(" + 0 + "," + rowScale(d[primaryKey]) + ")"
       }
     });
+    var asStacked = showStacked(this.config);
+
+    function createOverlays(row) {
+      var textOverlays = [];
+      function toValue(v) {
+        if (isNaN(v) || v === '' || typeof v === "undefined") {
+          return '';
+        }
+        return that.config.numberformat(+v);
+      }
+      headers.forEach(function (col) {
+          if (col.column instanceof LineUpNumberColumn) {
+            textOverlays.push({id: col.id, value: col.column.getValue(row), label: that.config.numberformat(+col.column.getRawValue(row)),
+              x: col.offsetX,
+              w: col.getColumnWidth()})
+          } else if (col instanceof  LayoutStackedColumn) {
+            var allStackOffset = 0;
+
+            col.children.forEach(function (child) {
+              var allStackW = child.getWidth(row);
+
+              textOverlays.push({
+                  id : child.id,
+                  label: toValue(child.column.getRawValue(row))
+                    + " -> (" + zeroFormat(child.getWidth(row)) + ")",
+                  w: asStacked ? allStackW : child.getColumnWidth(),
+                  x: (allStackOffset + col.offsetX)}
+              );
+              if (asStacked) {
+                allStackOffset += allStackW;
+              } else {
+                allStackOffset += child.getColumnWidth();
+              }
+            })
+          }
+        }
+      );
+      return textOverlays;
+    }
+
+    function renderOverlays($row, textOverlays, clazz, clipPrefix){
+      $row.selectAll("text."+clazz).data(textOverlays).enter().append("text").
+        attr({
+          'class': "tableData "+clazz,
+          x: function (d) {
+            return d.x;
+          },
+          y: that.config.svgLayout.rowHeight / 2,
+          'clip-path' : function(d) {
+            return 'url(#clip-'+ clipPrefix + d.id+')';
+          }
+        }).text(function (d) {
+          return d.label;
+        });
+    }
+
     allRowsSuper.on({
       mouseenter: function(row) {
         var $row = d3.select(this);
         $row.classed('hover',true);
-        var zeroFormat = d3.format(".1f");
 //            d3.select(this.parent).classed("hovered", true)
-        var textOverlays = [];
-        headers.forEach(function (col) {
-            if (col.column instanceof LineUpNumberColumn) {
-              textOverlays.push({id: col.id, value: col.column.getValue(row), label: that.config.numberformat(+col.column.getRawValue(row)),
-                x: col.offsetX,
-                w: col.getColumnWidth()})
-            } else if (col instanceof  LayoutStackedColumn) {
-              var allStackOffset = 0;
-
-              col.children.forEach(function (child) {
-                var allStackW = child.getWidth(row);
-
-                textOverlays.push({
-                    id : child.id,
-                    label: that.config.numberformat(+child.column.getRawValue(row))
-                      + " -> (" + zeroFormat(child.getWidth(row)) + ")",
-                    w: that.config.renderingOptions.stacked ? allStackW : child.getColumnWidth(),
-                    x: (allStackOffset + col.offsetX)}
-                );
-                if (that.config.renderingOptions.stacked) {
-                  allStackOffset += allStackW;
-                } else {
-                  allStackOffset += child.getColumnWidth();
-                }
-              })
-            }
-          }
-        );
+        var textOverlays = createOverlays(row);
         //create clip paths which clips the overlay text of the bars
         var shift = rowScale(row[primaryKey]);
         //generate clip paths for the text columns to avoid text overflow
@@ -391,7 +429,7 @@
             });
           textClipPath.exit().remove();
           textClipPath.attr('y',shift).attr('id', function (d) {
-            return 'clip-' + d.id;
+            return 'clip-M' + d.id;
           });
         textClipPath.select('rect')
             .attr({
@@ -402,20 +440,7 @@
                 return Math.max(d.w - 2, 0);
               }
             });
-
-        $row.selectAll("text.hoveronly").data(textOverlays).enter().append("text").
-          attr({
-            'class': "tableData hoveronly",
-            x: function (d) {
-              return d.x;
-            },
-            y: that.config.svgLayout.rowHeight / 2,
-            'clip-path' : function(d) {
-              return 'url(#clip-'+ d.id+')';
-            }
-          }).text(function (d) {
-            return d.label;
-          });
+        renderOverlays($row, textOverlays, 'hoveronly','M');
 
         function absoluteRowPos(elem) {
           var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
@@ -423,14 +448,15 @@
               tbbox = elem.getBBox(),
               point = that.$body.node().createSVGPoint();
           point.x = tbbox.x;
-          point.y = tbbox.y + tbbox.height;
+          point.y = tbbox.y;
           point = point.matrixTransform(matrix);
           return scrollTop + point.y;
         }
 
         that.tooltip.show(generateTooltip(row, allHeaders, that.config),{
           x : d3.event.x+10,
-          y: absoluteRowPos(this)
+          y: absoluteRowPos(this),
+          height: that.config.svgLayout.rowHeight
         });
       },
       mousemove: function() {
@@ -440,16 +466,27 @@
       },
       mouseleave: function() {
         that.tooltip.hide();
-        d3.select(this).classed('hover',false).selectAll('text.hoveronly').remove();
+        d3.select(this).classed('hover', false);
+        d3.select(this).selectAll('text.hoveronly').remove();
       }
     });
 
     var allRows = allRowsSuper;
 
-
+    LineUp.updateClipPaths(allHeaders, svg, 'B', true);
     updateText(allHeaders, allRows, svg, that.config);
     updateSingleBars(headers, allRows, that.config);
-    updateStackBars(headers, allRows, stackTransition, that.config);
+    updateStackBars(headers, allRows, this.config.renderingOptions.animation && stackTransition, that.config);
     updateActionBars(headers, allRows, that.config);
+
+    if (that.config.renderingOptions.values) {
+      allRowsSuper.classed('values', true);
+      allRowsSuper.each(function(row) {
+        var $row = d3.select(this);
+        renderOverlays($row, createOverlays(row), 'valueonly','B');
+      })
+    } else {
+      allRowsSuper.classed('values', false).selectAll('text.valueonly').remove();
+    }
   }
 }());

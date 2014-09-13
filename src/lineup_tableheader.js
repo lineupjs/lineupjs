@@ -23,6 +23,7 @@ LineUp.prototype.updateHeader = function (headers) {
     d.flattenMe(allHeaderData, {addEmptyColumns: true});
   });
 
+  LineUp.updateClipPaths(allHeaderData, rootsvg, 'H', false);
   //console.log(allHeaderData);
 
 
@@ -81,9 +82,9 @@ LineUp.prototype.updateHeader = function (headers) {
       }
 
       that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false, config);
       bundle.sortedColumn = d;
-      that.updateHeader(that.storage.getColumnLayout(), config);
+      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
+      that.updateHeader(that.storage.getColumnLayout());
     });
 
   allHeaders.select(".labelBG").attr({
@@ -98,33 +99,34 @@ LineUp.prototype.updateHeader = function (headers) {
 
   // -- handle WeightHandle
 
+  if (this.config.manipulative) {
+    allHeadersEnter.filter(function (d) {
+      return !(d instanceof LayoutEmptyColumn) && !(d instanceof LayoutActionColumn);
+    }).append("rect").attr({
+      "class": "weightHandle",
+      x: function (d) {
+        return d.getColumnWidth() - 5
+      },
+      y: 0,
+      width: 5
+    })
 
-  allHeadersEnter.filter(function (d) {
-    return !(d instanceof LayoutEmptyColumn) && !(d instanceof LayoutActionColumn);
-  }).append("rect").attr({
-    "class": "weightHandle",
-    x: function (d) {
-      return d.getColumnWidth() - 5
-    },
-    y: 0,
-    width: 5
-  })
-
-  allHeaders.select(".weightHandle").attr({
-    x: function (d) {
-      return (d.getColumnWidth() - 5)
-    },
-    height: function (d) {
-      return d.height
-    }
-  }).call(this.dragWeight) // TODO: adopt dragWeight function !
-
+    allHeaders.select(".weightHandle").attr({
+      x: function (d) {
+        return (d.getColumnWidth() - 5)
+      },
+      height: function (d) {
+        return d.height
+      }
+    }).call(this.dragWeight) // TODO: adopt dragWeight function !
+  }
 
   // -- handle Text
   allHeadersEnter.append("text").attr({
     "class": "headerLabel",
     x: 12
-  })
+  });
+  allHeadersEnter.append("title");
 
   allHeaders.select(".headerLabel")
     .classed("sortedColumn", function (d) {
@@ -139,11 +141,16 @@ LineUp.prototype.updateHeader = function (headers) {
       y: function (d) {
         if (d instanceof LayoutStackedColumn || d.parent != null) return d.height / 2;
         else return d.height * 3 / 4;
-      }
+      },
+      'clip-path': function (d) { return 'url(#clip-H' + d.id + ')' }
     }).text(function (d) {
       if (d instanceof LayoutStackedColumn || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) return d.label
       else return d.column.label;
-    })
+    });
+  allHeaders.select('title').text(function (d) {
+    if (d instanceof LayoutStackedColumn || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) return d.label
+    else return d.column.label;
+  });
 
 
   // -- handle the Sort Indicator
@@ -169,93 +176,94 @@ LineUp.prototype.updateHeader = function (headers) {
 
 
   // add info Button to All Stacked Columns
-  allHeadersEnter.filter(function (d) {
-    return d instanceof LayoutStackedColumn;
-  }).append("text").attr({
-    class: "stackedColumnInfo fontawe"
-  })
-    .text("\uf1de")
-    .on("click", function (d) {
-      that.stackedColumnOptionsGui(d)
+  if (this.config.manipulative) {
+    allHeadersEnter.filter(function (d) {
+      return d instanceof LayoutStackedColumn;
+    }).append("text").attr({
+      class: "stackedColumnInfo fontawe"
+    })
+      .text("\uf1de")
+      .on("click", function (d) {
+        that.stackedColumnOptionsGui(d)
+      })
+
+
+    allHeaders.filter(function (d) {
+      return d instanceof LayoutStackedColumn;
+    }).select(".stackedColumnInfo").attr({
+      x: function (d) {
+        return d.getColumnWidth() - 15
+      },
+      y: function (d) {
+        return d.height / 2
+      }
     })
 
 
-  allHeaders.filter(function (d) {
-    return d instanceof LayoutStackedColumn;
-  }).select(".stackedColumnInfo").attr({
-    x: function (d) {
-      return d.getColumnWidth() - 15
-    },
-    y: function (d) {
-      return d.height / 2
-    }
-  })
+    // add delete Button to All Single Columns
 
 
-  // add delete Button to All Single Columns
-
-
-  var deleteButton = allHeaders.selectAll(".singleColumnDelete").data(function (d) {
-    return (!(d instanceof LayoutStackedColumn)) ? [d] : [];
-  });
-  deleteButton.exit().remove();
-
-  // --- adding Element to class weightHandle
-  var deletButtonEnter = deleteButton.enter().append("text").attr({
-    "class": "singleColumnDelete fontawe"
-  }).text("\uf014")
-    .on("click", function (d) {
-      that.storage.removeColumn(d);
-      that.updateAll();
-    })
-
-  // --- changing nodes for weightHandle
-  deleteButton.attr({
-    x: function (d) {
-      return d.getColumnWidth() - 15
-    },
-    y: function (d) {
-      return d.height / 4
-    }
-  })
-/* TODO fix mapping editor to be fully functional
-  var filterButton = allHeaders.selectAll(".singleColumnFilter").data(function (d) {
-    return (d instanceof LayoutSingleColumn && d.column instanceof LineUpNumberColumn) ? [d] : []
-  });
-  filterButton.exit().remove();
-
-  // --- adding Element to class weightHandle
-  filterButton.enter().append("text").attr({
-    "class": "singleColumnFilter fontawe"
-  }).text("\uf0b0")
-    .on("click", function (d) {
-      that.openMappingEditor(d);
-      //that.updateAll();
+    var deleteButton = allHeaders.selectAll(".singleColumnDelete").data(function (d) {
+      return (!(d instanceof LayoutStackedColumn)) ? [d] : [];
     });
-  // --- changing nodes for weightHandle
-  filterButton.attr({
-    x: function (d) {
-      return d.getColumnWidth() - 28
-    },
-    y: function (d) {
-      return d.height / 4
-    }
-  })
-*/
+    deleteButton.exit().remove();
 
-//    allHeadersEnter.filter(function(d){return (!(d instanceof LayoutStackedColumn) && d.parent==null)}).append("text").attr({
-//        class:"singleColumnDelete fontawe"
-//    })
-//        .text("\uf014")
-//        .on("click", function(d){
-//            that.storage.removeSingleColumn(d);
-//            that.updateAll();
-//        })
-//    allHeaders.filter(function(d){return (!(d instanceof LayoutStackedColumn) && d.parent==null);}).select(".singleColumnDelete").attr({
-//        x:function(d){return d.getColumnWidth()-15},
-//        y:function(d){return d.height/4}
-//    })
+    // --- adding Element to class weightHandle
+    var deletButtonEnter = deleteButton.enter().append("text").attr({
+      "class": "singleColumnDelete fontawe"
+    }).text("\uf014")
+      .on("click", function (d) {
+        that.storage.removeColumn(d);
+        that.updateAll();
+      })
 
+    // --- changing nodes for weightHandle
+    deleteButton.attr({
+      x: function (d) {
+        return d.getColumnWidth() - 15
+      },
+      y: function (d) {
+        return d.height / 4
+      }
+    })
+    /* TODO fix mapping editor to be fully functional
+     var filterButton = allHeaders.selectAll(".singleColumnFilter").data(function (d) {
+     return (d instanceof LayoutSingleColumn && d.column instanceof LineUpNumberColumn) ? [d] : []
+     });
+     filterButton.exit().remove();
+
+     // --- adding Element to class weightHandle
+     filterButton.enter().append("text").attr({
+     "class": "singleColumnFilter fontawe"
+     }).text("\uf0b0")
+     .on("click", function (d) {
+     that.openMappingEditor(d);
+     //that.updateAll();
+     });
+     // --- changing nodes for weightHandle
+     filterButton.attr({
+     x: function (d) {
+     return d.getColumnWidth() - 28
+     },
+     y: function (d) {
+     return d.height / 4
+     }
+     })
+     */
+
+    //    allHeadersEnter.filter(function(d){return (!(d instanceof LayoutStackedColumn) && d.parent==null)}).append("text").attr({
+    //        class:"singleColumnDelete fontawe"
+    //    })
+    //        .text("\uf014")
+    //        .on("click", function(d){
+    //            that.storage.removeSingleColumn(d);
+    //            that.updateAll();
+    //        })
+    //    allHeaders.filter(function(d){return (!(d instanceof LayoutStackedColumn) && d.parent==null);}).select(".singleColumnDelete").attr({
+    //        x:function(d){return d.getColumnWidth()-15},
+    //        y:function(d){return d.height/4}
+    //    })
+  }
 
   // ==================
   // -- Render add ons
@@ -318,7 +326,7 @@ LineUp.prototype.updateHeader = function (headers) {
 
 
 LineUp.prototype.addResortDragging = function (xss) {
-  if (this.config.nodragging) {
+  if (!this.config.manipulative) {
     return;
   }
 
@@ -465,7 +473,7 @@ LineUp.prototype.addResortDragging = function (xss) {
 LineUp.prototype.addNewEmptyStackedColumn = function () {
   this.storage.addStackedColumn();
   this.updateHeader(this.storage.getColumnLayout());
-}
+};
 
 
 /**

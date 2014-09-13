@@ -13,13 +13,14 @@ var LineUp = function (spec, $header, $body, config) {
   this.$body = $body;
 
   //create basic structure
+  this.$header.append('defs').attr('class','column');
   this.$header.append('g').attr('class','main');
   this.$header.append('g').attr('class','overlay');
   var $defs = this.$body.append('defs');
   $defs.append('defs').attr('class','column');
   $defs.append('defs').attr('class','overlay');
 
-  this.config = $.extend(true, {}, config, LineUp.defaultConfig, {
+  this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
     //TODO internal stuff, should to be extracted
     columnBundles: {
       "primary": {
@@ -90,7 +91,9 @@ LineUp.defaultConfig = {
     headerHeight: 50
   },
   renderingOptions: {
-    stacked: false
+    stacked: false,
+    values: false,
+    animation: false
   },
   svgLayout: {
     rowHeight: 20,
@@ -111,7 +114,13 @@ LineUp.defaultConfig = {
        }
        }*/]
   },
-  nodragging : false
+  /* enables manipulation features, remove column, reorder,... */
+  manipulative: true,
+  filter: {
+    skip: 0,
+    limit : Number.POSITIVE_INFINITY,
+    filter: undefined
+  }
 };
 
 LineUp.prototype.changeDataStorage = function (spec) {
@@ -157,4 +166,56 @@ LineUp.prototype.sortBy = function(column, asc) {
 
   this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
   this.updateAll();
+};
+
+/**
+ * toggles the stacked rendering of this table
+ */
+LineUp.prototype.toggleStackedRendering = function() {
+  this.config.renderingOptions.stacked = !this.config.renderingOptions.stacked;
+  this.updateAll(true);
+};
+
+/**
+ * toggles whether values are rendered all the time
+ */
+LineUp.prototype.toggleValueRendering = function() {
+  this.config.renderingOptions.values = !this.config.renderingOptions.values;
+  this.updateAll(true);
+};
+
+/**
+ * set the limits to simulate pagination, similar to SQL skip and limit
+ * @param skip start number
+ * @param limit number or rows
+ */
+LineUp.prototype.setLimits = function(skip, limit) {
+  this.config.filter.skip = skip;
+  this.config.filter.limit = limit;
+  //trigger resort to apply skip
+  this.storage.resortData({});
+  this.updateAll();
+}
+
+/**
+ * change the weights of the selected column
+ * @param column
+ * @param weights
+ * @returns {boolean}
+ */
+LineUp.prototype.changeWeights = function(column, weights) {
+  if (typeof column === 'string') {
+    column = this.storage.getColumnByName(column)
+  }
+  column = column || this.config.columnBundles.primary.sortedColumn;
+  if (!(column instanceof LayoutStackedColumn)) {
+    return false;
+  }
+  column.updateWeights(weights);
+  //trigger resort
+  if (column === this.config.columnBundles.primary.sortedColumn) {
+    this.storage.resortData({});
+  }
+  this.updateAll();
+  return true;
 };

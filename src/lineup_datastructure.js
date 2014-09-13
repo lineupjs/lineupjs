@@ -15,16 +15,25 @@ function LineUpColumn(desc) {
   this.column = desc.column;
   this.label = desc.label || desc.column;
   this.id = desc.id || this.column;
+  this.missingValue = desc.missingValue;
   this.layout = {};
 }
 LineUpColumn.prototype = $.extend({}, {}, {
   getValue: function (row) {
-    return row[this.column];
+    var r= row[this.column];
+    if (typeof r === "undefined") {
+      return this.missingValue;
+    }
+    return r;
   },
   getRawValue : function(row) {
-    return this.getValue(row);
+    var r =  this.getValue(row);
+    if (typeof r === 'undefined') {
+      return '';
+    }
+    return r;
   },
-  filterBy: function (row) {
+  filter: function(row, filter) {
     return true;
   }
 });
@@ -41,20 +50,35 @@ function LineUpNumberColumn(desc) {
   this.scale = d3.scale.linear().clamp(true)
     .domain(desc.domain || [0,100]).range(desc.range || [0, 1]);
   this.scaleOri = this.scale.copy();
-  this.filter = desc.filter || this.scale.domain();
+  if (typeof this.missingValue === "undefined") {
+    this.missingValue = NaN;
+  }
 }
 LineUpNumberColumn.prototype = $.extend({}, LineUpColumn.prototype, {
   getValue: function (row) {
-    return this.scale(+LineUpColumn.prototype.getValue.call(this, row));
+    var r = LineUpColumn.prototype.getValue.call(this, row);
+    if (r === '' || r.toString().trim().length === 0) {
+      r = this.missingValue;
+    }
+    return this.scale(+r);
   },
   getRawValue : function(row) {
-    return LineUpColumn.prototype.getValue.call(this, row);
+    var r = LineUpColumn.prototype.getValue.call(this, row);
+    if (isNaN(r)) {
+      return '';
+    }
+    return r;
   },
-  filterBy: function (row) {
-    var n = this.getValue(row);
-    return n >= this.filter[0] && n <= this.filter[1];
+  filter: function(row, filter) {
+    var r = this.getValue(row);
+    if (isNaN(filter)) {
+      return !isNaN(r);
+    } else if (typeof filter === 'number') {
+      return r >= filter;
+    } else if (Array.isArray(filter)) {
+      return filter[0] <= r && r <= filter[1];
+    }
   }
-
 });
 
 /**
@@ -65,14 +89,17 @@ LineUpNumberColumn.prototype = $.extend({}, LineUpColumn.prototype, {
  */
 function LineUpStringColumn(desc) {
   LineUpColumn.call(this, desc);
-  this.filter = desc.filter || undefined;
 }
+
 LineUpStringColumn.prototype = $.extend({}, LineUpColumn.prototype, {
-  filterBy: function (value) {
-    if (!this.filter) {
-      return true;
+  filter: function (row, filter) {
+    var r = this.getValue(row);
+    if (typeof r === 'boolean') {
+      return r && r.trim().length > 0;
+    } else if (typeof filter === 'string') {
+      return r && r.contains(filter);
     }
-    return value.contains(this.filter);
+    return true;
   }
 });
 
@@ -88,7 +115,6 @@ function LineUpRankColumn(desc, storage) {
   //maps keys to ranks
   this.values = d3.map();
   this.storage = storage;
-
 }
 LineUpRankColumn.prototype = $.extend({}, LineUpColumn.prototype, {
   setValue: function (row, d) {
@@ -96,6 +122,16 @@ LineUpRankColumn.prototype = $.extend({}, LineUpColumn.prototype, {
   },
   getValue: function (row) {
     return this.values.get(row[this.storage.primaryKey])
+  },
+  filter: function(row, filter) {
+    var r = this.getValue(row);
+    if (typeof r === 'undefined') {
+      return true;
+    } else if (typeof filter === 'number') {
+      return r >= filter;
+    } else if (Array.isArray(filter)) {
+      return filter[0] <= r && r <= filter[1];
+    }
   }
 });
 
@@ -111,12 +147,15 @@ function LayoutColumn(desc) {
 
   //from normalized value to width value
   this.scale = d3.scale.linear().domain([0,1]).range([0, that.columnWidth]);
+  this.filter = desc.filter;
 
   this.parent = desc.parent; // or null
   this.columnBundle = desc.columnBundle || "primary";
   //define it here to have a dedicated this pointer
   this.sortBy = function (a, b) {
-    return d3.descending(that.column.getValue(a), that.column.getValue(b))
+    var a = that.column.getValue(a);
+    var b = that.column.getValue(b);
+    return that.safeSortBy(a,b);
   }
 }
 
@@ -133,6 +172,20 @@ LayoutColumn.prototype = $.extend({}, {}, {
   getColumnWidth: function () {
     return this.columnWidth;
   },
+  safeSortBy: function(a,b) {
+    var an = typeof a === 'number' && isNaN(a);
+    var bn = typeof b === 'number' && isNaN(b);
+    if (an && bn) {
+      return 0;
+    }
+    if (an) {
+      return 1;
+    }
+    if (bn) {
+      return -1;
+    }
+    return d3.descending(a, b);
+  },
 
   flattenMe: function (array) {
     array.push(this)
@@ -141,11 +194,18 @@ LayoutColumn.prototype = $.extend({}, {}, {
     var res = {};
     res.width = this.columnWidth;
     res.columnBundle = this.columnBundle;
+    res.filter = this.filter;
 
     return res;
   },
   makeCopy: function () {
     return new LayoutColumn(this.description());
+  },
+  isFiltered : function() {
+    return typeof this.filter !== 'undefined';
+  },
+  filterBy : function(row) {
+    return true;
   }
 });
 
@@ -171,7 +231,18 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
   },
   // ONLY for numerical columns
   getWidth: function (row) {
-    return this.scale(this.column.getValue(row));
+    var r = this.column.getValue(row);
+    if (isNaN(r) || typeof r === 'undefined') {
+      return 0;
+    }
+    return this.scale(r);
+  },
+
+  filterBy: function(row) {
+    if (typeof this.filter === 'undefined' || !this.column) {
+      return true;
+    }
+    return this.column.filter(row, this.filter);
   },
 
   getLabel: function () {
@@ -264,7 +335,7 @@ function LayoutStackedColumn(desc, rawColumns, toLayoutColumn) {
       aAll += d.getWidth(a);
       bAll += d.getWidth(b);
     });
-    return d3.descending(aAll, bAll)
+    return that.safeSortBy(aAll, bAll);
   }
 
 }
@@ -276,10 +347,13 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
     var that = this;
     var all = 0;
     this.children.forEach(function (d, i) {
-      all += d.column.getValue(row) * that.childrenWeights[i];
+      var r = d.column.getValue(row);
+      if (isNaN(r) || typeof r === 'undefined') {
+        r = 0;
+      }
+      all += r * that.childrenWeights[i];
     });
     return all;
-
   },
   init: function (desc) {
     var that = this;
@@ -342,6 +416,18 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
         return d.flattenMe(array);
       })
     }
+  },
+  filterBy : function(row) {
+    if (typeof this.filter === 'undefined') {
+      return true;
+    }
+    var val = this.getValue(row);
+    if (typeof this.filter === 'number') {
+      return val <= this.filter;
+    } else if (Array.isArray(this.filter)) {
+      return this.filter[0] <= val && val <= this.filter[1];
+    }
+    return true;
   },
   updateWidthFromChild: function (spec) {
     var that = this;

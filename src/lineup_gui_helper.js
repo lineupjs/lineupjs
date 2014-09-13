@@ -262,13 +262,10 @@
     this.reweightStackedColumnWidget(trData, popup.table);
 
     popup.onOK(function () {
-      col.updateWeights(trData.map(function(d) {
+      popup.remove();
+      that.changeWeights(col, trData.map(function(d) {
         return d.weight;
       }));
-      that.storage.resortData({});
-
-      popup.remove();
-      that.updateAll();
     });
   };
 
@@ -491,8 +488,14 @@
     function showTooltip(content, xy) {
       $tooltip.html(content).css({
         left: xy.x + "px",
-        top: xy.y + "px"
+        top: (xy.y + xy.height) + "px"
       }).fadeIn();
+
+      var stickout = ($(window).height() + $(window).scrollTop()) <= ((xy.y + xy.height) + $tooltip.height() - 20);
+      var stickouttop = $(window).scrollTop() > (xy.y - $tooltip.height());
+      if (stickout && !stickouttop) { //if the bottom is not visible move it on top of the box
+        $tooltip.css('top', (xy.y - $tooltip.height())+"px");
+      }
     }
     function hideTooltip() {
       $tooltip.stop(true).hide();
@@ -509,10 +512,14 @@
         });
       }
     }
+    function sizeOfTooltip() {
+      return [$tooltip.width(), $tooltip.height()];
+    }
     return {
       show: showTooltip,
       hide: hideTooltip,
-      move: moveTooltip
+      move: moveTooltip,
+      size: sizeOfTooltip
     }
   }())
 }());
