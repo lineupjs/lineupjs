@@ -111,7 +111,8 @@ LineUp.defaultConfig = {
        }
        }*/]
   },
-  nodragging : false
+  /* enables manipualation features, remove colum, reorder,... */
+  manipulative: true
 };
 
 LineUp.prototype.changeDataStorage = function (spec) {
