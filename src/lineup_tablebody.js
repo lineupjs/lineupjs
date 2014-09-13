@@ -272,7 +272,8 @@
       return col.getValue(row);
     }
     if (col instanceof LayoutSingleColumn && col.column instanceof LineUpNumberColumn) {
-      return +col.column.getRawValue(row);
+      var r = col.column.getRawValue(row);
+      return isNaN(r) || r.toString() === '' ? '' : +r;
     }
     if (col.column) {
       return col.column.getValue(row);
@@ -288,7 +289,7 @@
     headers.forEach(function(header) {
       var r = createRepr(header, row);
       if (typeof r === 'undefined') {
-        r = "";
+        r = '';
       } else if (typeof r === 'number') {
         r = config.numberformat(r);
       }
@@ -350,6 +351,12 @@
         var zeroFormat = d3.format(".1f");
 //            d3.select(this.parent).classed("hovered", true)
         var textOverlays = [];
+        function toValue(v) {
+          if (isNaN(v) || v === '' || typeof v === "undefined") {
+            return '';
+          }
+          return that.config.numberformat(+v);
+        }
         headers.forEach(function (col) {
             if (col.column instanceof LineUpNumberColumn) {
               textOverlays.push({id: col.id, value: col.column.getValue(row), label: that.config.numberformat(+col.column.getRawValue(row)),
@@ -363,7 +370,7 @@
 
                 textOverlays.push({
                     id : child.id,
-                    label: that.config.numberformat(+child.column.getRawValue(row))
+                    label: toValue(child.column.getRawValue(row))
                       + " -> (" + zeroFormat(child.getWidth(row)) + ")",
                     w: that.config.renderingOptions.stacked ? allStackW : child.getColumnWidth(),
                     x: (allStackOffset + col.offsetX)}
