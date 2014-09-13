@@ -437,14 +437,15 @@
               tbbox = elem.getBBox(),
               point = that.$body.node().createSVGPoint();
           point.x = tbbox.x;
-          point.y = tbbox.y + tbbox.height;
+          point.y = tbbox.y;
           point = point.matrixTransform(matrix);
           return scrollTop + point.y;
         }
 
         that.tooltip.show(generateTooltip(row, allHeaders, that.config),{
           x : d3.event.x+10,
-          y: absoluteRowPos(this)
+          y: absoluteRowPos(this),
+          height: that.config.svgLayout.rowHeight
         });
       },
       mousemove: function() {
