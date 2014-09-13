@@ -7,7 +7,7 @@
  * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
  */
 (function() {
-  function updateClipPaths(headers, svg) {
+  LineUp.updateClipPaths = function (headers, svg, prefix, shift) {
     //generate clip paths for the text columns to avoid text overflow
     //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
     //there is a bug in webkit which present camelCase selectors
@@ -16,7 +16,7 @@
     }).data(headers);
     textClipPath.enter().append('clipPath')
       .attr('id', function (d) {
-        return 'clip-' + d.id;
+        return 'clip-' + prefix + d.id;
       })
       .append('rect').attr({
         y: 0,
@@ -26,13 +26,13 @@
     textClipPath.select('rect')
       .attr({
         x: function (d) {
-          return d.offsetX;
+          return shift ? d.offsetX : null;
         },
         width: function (d) {
-          return Math.max(d.getColumnWidth() - 2, 0);
+          return Math.max(d.getColumnWidth() - 5, 0);
         }
       });
-  }
+  };
   function updateText(allHeaders, allRows, svg, config) {
     // -- the text columns
 
@@ -40,7 +40,7 @@
       return (d.hasOwnProperty('column') && (d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn));
     });
 
-    updateClipPaths(allTextHeaders, svg);
+    LineUp.updateClipPaths(allTextHeaders, svg, 'B', true);
 
     const rowCenter = (config.svgLayout.rowHeight / 2);
 
@@ -53,7 +53,7 @@
             offsetX: column.offsetX,
             columnW: column.getColumnWidth(),
             isRank: (column instanceof LayoutRankColumn),
-            clip: 'url(#clip-' + column.id + ')'
+            clip: 'url(#clip-B' + column.id + ')'
           };
         });
         return dd;

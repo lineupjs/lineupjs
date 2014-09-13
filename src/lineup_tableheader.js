@@ -23,6 +23,7 @@ LineUp.prototype.updateHeader = function (headers) {
     d.flattenMe(allHeaderData, {addEmptyColumns: true});
   });
 
+  LineUp.updateClipPaths(allHeaderData, rootsvg, 'H', false);
   //console.log(allHeaderData);
 
 
@@ -124,7 +125,8 @@ LineUp.prototype.updateHeader = function (headers) {
   allHeadersEnter.append("text").attr({
     "class": "headerLabel",
     x: 12
-  })
+  });
+  allHeadersEnter.append("title");
 
   allHeaders.select(".headerLabel")
     .classed("sortedColumn", function (d) {
@@ -139,11 +141,16 @@ LineUp.prototype.updateHeader = function (headers) {
       y: function (d) {
         if (d instanceof LayoutStackedColumn || d.parent != null) return d.height / 2;
         else return d.height * 3 / 4;
-      }
+      },
+      'clip-path': function (d) { return 'url(#clip-H' + d.id + ')' }
     }).text(function (d) {
       if (d instanceof LayoutStackedColumn || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) return d.label
       else return d.column.label;
-    })
+    });
+  allHeaders.select('title').text(function (d) {
+    if (d instanceof LayoutStackedColumn || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) return d.label
+    else return d.column.label;
+  });
 
 
   // -- handle the Sort Indicator
@@ -466,7 +473,7 @@ LineUp.prototype.addResortDragging = function (xss) {
 LineUp.prototype.addNewEmptyStackedColumn = function () {
   this.storage.addStackedColumn();
   this.updateHeader(this.storage.getColumnLayout());
-}
+};
 
 
 /**

@@ -13,6 +13,7 @@ var LineUp = function (spec, $header, $body, config) {
   this.$body = $body;
 
   //create basic structure
+  this.$header.append('defs').attr('class','column');
   this.$header.append('g').attr('class','main');
   this.$header.append('g').attr('class','overlay');
   var $defs = this.$body.append('defs');
