@@ -43,6 +43,7 @@ function LineUpLocalStorage(data, columns, layout, primaryKey, storageConfig) {
   this.storageConfig.toLayoutColumn = toLayoutColumn;
 
   this.primaryKey = primaryKey;
+  this.rawdata = data;
   this.data = data;
   this.rawcols = columns.map(toColumn);
   this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
@@ -95,17 +96,52 @@ LineUpLocalStorage.prototype = $.extend({}, {},
     getData: function () {
       return this.data;
     },
+    filterData: function(columns) {
+      columns = columns || this.bundles["primary"].layoutColumns;
+
+      var flat = [];
+      columns.forEach(function (d) {
+        d.flattenMe(flat);
+      });
+      flat = flat.filter(function(d) {
+        d.isFiltered();
+      });
+      if ($.isFunction(this.config.filter.filter)) {
+        flat.push(this.config.filter.filter);
+      }
+      if (flat.length === 0) {
+        this.data = this.rawdata;
+      } else {
+        this.data = this.rawdata.filter(function(row) {
+          return flat.every(function(f) {
+            return f.filterBy(row);
+          });
+        });
+      }
+    },
     resortData: function (spec) {
 
-      var asc = spec.asc || this.config.columnBundles.primary.sortingOrderAsc;
       var _key = spec.key || "primary";
+      var bundle =  this.bundles[_key];
+      var asc = spec.asc || this.config.columnBundles.primary.sortingOrderAsc;
       var column = spec.column || this.config.columnBundles.primary.sortedColumn;
 
       if (column == null) return;
       //console.log("resort: ", spec);
+      this.filterData(bundle.layoutColumns);
       this.data.sort(column.sortBy);
+      if (asc) {
+        this.data.reverse();
+      }
 
-      var rankColumn = this.bundles[_key].layoutColumns.filter(function (d) {
+      var start = this.config.filter.skip ? this.config.filter.skip : 0;
+      if ((this.config.filter.limit && isFinite(this.config.filter.limit))) {
+        this.data = this.data.slice(start, start + this.config.filter.limit);
+      } else {
+        this.data = this.data.slice(start);
+      }
+
+      var rankColumn = bundle.layoutColumns.filter(function (d) {
         return d.column instanceof LineUpRankColumn;
       });
       if (rankColumn.length > 0) {
@@ -127,9 +163,6 @@ LineUpLocalStorage.prototype = $.extend({}, {},
           );
         }
       }
-
-      if (asc) this.data.reverse();
-
     },
     /*
      * assigns the ranks to the data which is expected to be sorted in decreasing order

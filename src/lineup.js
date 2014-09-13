@@ -91,7 +91,9 @@ LineUp.defaultConfig = {
     headerHeight: 50
   },
   renderingOptions: {
-    stacked: false
+    stacked: false,
+    //values: false,
+    animation: false
   },
   svgLayout: {
     rowHeight: 20,
@@ -112,8 +114,13 @@ LineUp.defaultConfig = {
        }
        }*/]
   },
-  /* enables manipualation features, remove colum, reorder,... */
-  manipulative: true
+  /* enables manipulation features, remove column, reorder,... */
+  manipulative: true,
+  filter: {
+    skip: 0,
+    limit : Number.POSITIVE_INFINITY,
+    filter: undefined
+  }
 };
 
 LineUp.prototype.changeDataStorage = function (spec) {
@@ -168,6 +175,24 @@ LineUp.prototype.toggleStackedRendering = function() {
   this.config.renderingOptions.stacked = !this.config.renderingOptions.stacked;
   this.updateAll(true);
 };
+
+LineUp.prototype.toggleValueRendering = function() {
+  this.config.renderingOptions.values = !this.config.renderingOptions.values;
+  this.updateAll(true);
+};
+
+/**
+ * set the limits to simulate pagination, similar to SQL skip and limit
+ * @param skip start number
+ * @param limit number or rows
+ */
+LineUp.prototype.setLimits = function(skip, limit) {
+  this.config.filter.skip = skip;
+  this.config.filter.limit = limit;
+  //trigger resort to apply skip
+  this.storage.resortData({});
+  this.updateAll();
+}
 
 /**
  * change the weights of the selected column

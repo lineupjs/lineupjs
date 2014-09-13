@@ -40,8 +40,6 @@
       return (d.hasOwnProperty('column') && (d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn));
     });
 
-    LineUp.updateClipPaths(allTextHeaders, svg, 'B', true);
-
     const rowCenter = (config.svgLayout.rowHeight / 2);
 
     var textRows = allRows.selectAll(".tableData.text")
@@ -346,7 +344,7 @@
     });
 
     //    //--- update ---
-    allRowsSuper.transition().duration(1000).attr({
+    (this.config.renderingOptions.animation ? allRowsSuper.transition().duration(1000) : allRowsSuper).attr({
       "transform": function (d) {
         return  "translate(" + 0 + "," + rowScale(d[primaryKey]) + ")"
       }
@@ -462,6 +460,7 @@
     var allRows = allRowsSuper;
 
 
+    LineUp.updateClipPaths(allHeaders, svg, 'B', true);
     updateText(allHeaders, allRows, svg, that.config);
     updateSingleBars(headers, allRows, that.config);
     updateStackBars(headers, allRows, stackTransition, that.config);

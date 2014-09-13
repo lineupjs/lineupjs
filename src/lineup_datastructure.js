@@ -33,7 +33,7 @@ LineUpColumn.prototype = $.extend({}, {}, {
     }
     return r;
   },
-  filterBy: function (row) {
+  filter: function(row, filter) {
     return true;
   }
 });
@@ -50,7 +50,6 @@ function LineUpNumberColumn(desc) {
   this.scale = d3.scale.linear().clamp(true)
     .domain(desc.domain || [0,100]).range(desc.range || [0, 1]);
   this.scaleOri = this.scale.copy();
-  this.filter = desc.filter || this.scale.domain();
   if (typeof this.missingValue === "undefined") {
     this.missingValue = NaN;
   }
@@ -70,11 +69,16 @@ LineUpNumberColumn.prototype = $.extend({}, LineUpColumn.prototype, {
     }
     return r;
   },
-  filterBy: function (row) {
-    var n = this.getValue(row);
-    return !isNaN(n) && n >= this.filter[0] && n <= this.filter[1];
+  filter: function(row, filter) {
+    var r = this.getValue(row);
+    if (isNaN(filter)) {
+      return !isNaN(r);
+    } else if (typeof filter === 'number') {
+      return r >= filter;
+    } else if (Array.isArray(filter)) {
+      return filter[0] <= r && r <= filter[1];
+    }
   }
-
 });
 
 /**
@@ -85,15 +89,17 @@ LineUpNumberColumn.prototype = $.extend({}, LineUpColumn.prototype, {
  */
 function LineUpStringColumn(desc) {
   LineUpColumn.call(this, desc);
-  this.filter = desc.filter || undefined;
 }
+
 LineUpStringColumn.prototype = $.extend({}, LineUpColumn.prototype, {
-  filterBy: function (row) {
-    if (!this.filter) {
-      return true;
+  filter: function (row, filter) {
+    var r = this.getValue(row);
+    if (typeof r === 'boolean') {
+      return r && r.trim().length > 0;
+    } else if (typeof filter === 'string') {
+      return r && r.contains(filter);
     }
-    var value = this.getValue(row);
-    return value.contains(this.filter);
+    return true;
   }
 });
 
@@ -109,7 +115,6 @@ function LineUpRankColumn(desc, storage) {
   //maps keys to ranks
   this.values = d3.map();
   this.storage = storage;
-
 }
 LineUpRankColumn.prototype = $.extend({}, LineUpColumn.prototype, {
   setValue: function (row, d) {
@@ -117,6 +122,16 @@ LineUpRankColumn.prototype = $.extend({}, LineUpColumn.prototype, {
   },
   getValue: function (row) {
     return this.values.get(row[this.storage.primaryKey])
+  },
+  filter: function(row, filter) {
+    var r = this.getValue(row);
+    if (typeof r === 'undefined') {
+      return true;
+    } else if (typeof filter === 'number') {
+      return r >= filter;
+    } else if (Array.isArray(filter)) {
+      return filter[0] <= r && r <= filter[1];
+    }
   }
 });
 
@@ -132,6 +147,7 @@ function LayoutColumn(desc) {
 
   //from normalized value to width value
   this.scale = d3.scale.linear().domain([0,1]).range([0, that.columnWidth]);
+  this.filter = desc.filter;
 
   this.parent = desc.parent; // or null
   this.columnBundle = desc.columnBundle || "primary";
@@ -157,13 +173,15 @@ LayoutColumn.prototype = $.extend({}, {}, {
     return this.columnWidth;
   },
   safeSortBy: function(a,b) {
-    if (isNaN(a) && isNaN(b)) {
+    var an = typeof a === 'number' && isNaN(a);
+    var bn = typeof b === 'number' && isNaN(b);
+    if (an && bn) {
       return 0;
     }
-    if (isNaN(a)) {
+    if (an) {
       return 1;
     }
-    if (isNaN(b)) {
+    if (bn) {
       return -1;
     }
     return d3.descending(a, b);
@@ -176,11 +194,18 @@ LayoutColumn.prototype = $.extend({}, {}, {
     var res = {};
     res.width = this.columnWidth;
     res.columnBundle = this.columnBundle;
+    res.filter = this.filter;
 
     return res;
   },
   makeCopy: function () {
     return new LayoutColumn(this.description());
+  },
+  isFiltered : function() {
+    return typeof this.filter !== 'undefined';
+  },
+  filterBy : function(row) {
+    return true;
   }
 });
 
@@ -211,6 +236,13 @@ LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
       return 0;
     }
     return this.scale(r);
+  },
+
+  filterBy: function(row) {
+    if (typeof this.filter === 'undefined' || !this.column) {
+      return true;
+    }
+    return this.column.filter(row, this.filter);
   },
 
   getLabel: function () {
@@ -322,7 +354,6 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
       all += r * that.childrenWeights[i];
     });
     return all;
-
   },
   init: function (desc) {
     var that = this;
@@ -385,6 +416,18 @@ LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
         return d.flattenMe(array);
       })
     }
+  },
+  filterBy : function(row) {
+    if (typeof this.filter === 'undefined') {
+      return true;
+    }
+    var val = this.getValue(row);
+    if (typeof this.filter === 'number') {
+      return val <= this.filter;
+    } else if (Array.isArray(this.filter)) {
+      return this.filter[0] <= val && val <= this.filter[1];
+    }
+    return true;
   },
   updateWidthFromChild: function (spec) {
     var that = this;

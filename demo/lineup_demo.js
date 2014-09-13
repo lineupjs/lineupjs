@@ -39,6 +39,9 @@
           w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
         }
       }
+    },
+    filter : {
+      limit : 20
     }
   };
 
