@@ -262,13 +262,10 @@
     this.reweightStackedColumnWidget(trData, popup.table);
 
     popup.onOK(function () {
-      col.updateWeights(trData.map(function(d) {
+      popup.remove();
+      that.changeWeights(col, trData.map(function(d) {
         return d.weight;
       }));
-      that.storage.resortData({});
-
-      popup.remove();
-      that.updateAll();
     });
   };
 

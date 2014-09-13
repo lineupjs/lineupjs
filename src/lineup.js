@@ -166,4 +166,27 @@ LineUp.prototype.sortBy = function(column, asc) {
 LineUp.prototype.toggleStackedRendering = function() {
   this.config.renderingOptions.stacked = !this.config.renderingOptions.stacked;
   this.updateAll(true);
-}
+};
+
+/**
+ * change the weights of the selected column
+ * @param column
+ * @param weights
+ * @returns {boolean}
+ */
+LineUp.prototype.changeWeights = function(column, weights) {
+  if (typeof column === 'string') {
+    column = this.storage.getColumnByName(column)
+  }
+  column = column || this.config.columnBundles.primary.sortedColumn;
+  if (!(column instanceof LayoutStackedColumn)) {
+    return false;
+  }
+  column.updateWeights(weights);
+  //trigger resort
+  if (column === this.config.columnBundles.primary.sortedColumn) {
+    this.storage.resortData({});
+  }
+  this.updateAll();
+  return true;
+};
