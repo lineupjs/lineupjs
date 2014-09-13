@@ -92,7 +92,7 @@ LineUp.defaultConfig = {
   },
   renderingOptions: {
     stacked: false,
-    //values: false,
+    values: false,
     animation: false
   },
   svgLayout: {
@@ -176,6 +176,9 @@ LineUp.prototype.toggleStackedRendering = function() {
   this.updateAll(true);
 };
 
+/**
+ * toggles whether values are rendered all the time
+ */
 LineUp.prototype.toggleValueRendering = function() {
   this.config.renderingOptions.values = !this.config.renderingOptions.values;
   this.updateAll(true);

@@ -132,11 +132,18 @@
     fill: black;
     font-weight: bold;
 }
-.lu .row.hover rect.tableData, .lu .row.hover g.tableData rect {
+.lu .row.values text {
+    fill: black;
+}
+.lu .row.hover rect.tableData, .lu .row.hover g.tableData rect,
+.lu .row.values rect.tableData, .lu .row.values g.tableData rect{
     opacity: 0.5;
 }
 .lu .row .hoveronly {
     pointer-events: none;
+    user-select: none;
+}
+.lu .row .valueonly {
     user-select: none;
 }
 

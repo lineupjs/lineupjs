@@ -100,9 +100,12 @@
 //    )
   }
 
-  function isSortedByStackChild(config) {
+  function showStacked(config) {
+    if (!config.renderingOptions.stacked || config.renderingOptions.values) {
+      return false;
+    }
     var current = config.columnBundles.primary.sortedColumn;
-    return current && current.parent instanceof LayoutStackedColumn;
+    return !(current && (current.parent instanceof LayoutStackedColumn));
   }
 
   function updateSingleBars(headers, allRows, config) {
@@ -181,7 +184,7 @@
     var allStackW = 0;
     var allStackRes = {};
 
-    var showStacked = config.renderingOptions.stacked && !isSortedByStackChild(config);
+    var asStacked = showStacked(config);
 
     var allStack = stackRows.selectAll("rect").data(function (d) {
 
@@ -193,7 +196,7 @@
 
           allStackRes = {child: child, width: allStackW, offsetX: allStackOffset};
 
-          if (showStacked) {
+          if (asStacked) {
             allStackOffset += allStackW;
           } else {
             allStackOffset += child.getColumnWidth();
@@ -307,6 +310,7 @@
     var svg = this.$body;
     var that = this;
     var primaryKey = this.storage.primaryKey;
+    var zeroFormat = d3.format(".1f");
     //console.log("bupdate");
     stackTransition = stackTransition || false;
 
@@ -349,46 +353,68 @@
         return  "translate(" + 0 + "," + rowScale(d[primaryKey]) + ")"
       }
     });
+    var asStacked = showStacked(this.config);
+
+    function createOverlays(row) {
+      var textOverlays = [];
+      function toValue(v) {
+        if (isNaN(v) || v === '' || typeof v === "undefined") {
+          return '';
+        }
+        return that.config.numberformat(+v);
+      }
+      headers.forEach(function (col) {
+          if (col.column instanceof LineUpNumberColumn) {
+            textOverlays.push({id: col.id, value: col.column.getValue(row), label: that.config.numberformat(+col.column.getRawValue(row)),
+              x: col.offsetX,
+              w: col.getColumnWidth()})
+          } else if (col instanceof  LayoutStackedColumn) {
+            var allStackOffset = 0;
+
+            col.children.forEach(function (child) {
+              var allStackW = child.getWidth(row);
+
+              textOverlays.push({
+                  id : child.id,
+                  label: toValue(child.column.getRawValue(row))
+                    + " -> (" + zeroFormat(child.getWidth(row)) + ")",
+                  w: asStacked ? allStackW : child.getColumnWidth(),
+                  x: (allStackOffset + col.offsetX)}
+              );
+              if (asStacked) {
+                allStackOffset += allStackW;
+              } else {
+                allStackOffset += child.getColumnWidth();
+              }
+            })
+          }
+        }
+      );
+      return textOverlays;
+    }
+
+    function renderOverlays($row, textOverlays, clazz, clipPrefix){
+      $row.selectAll("text."+clazz).data(textOverlays).enter().append("text").
+        attr({
+          'class': "tableData "+clazz,
+          x: function (d) {
+            return d.x;
+          },
+          y: that.config.svgLayout.rowHeight / 2,
+          'clip-path' : function(d) {
+            return 'url(#clip-'+ clipPrefix + d.id+')';
+          }
+        }).text(function (d) {
+          return d.label;
+        });
+    }
+
     allRowsSuper.on({
       mouseenter: function(row) {
         var $row = d3.select(this);
         $row.classed('hover',true);
-        var zeroFormat = d3.format(".1f");
 //            d3.select(this.parent).classed("hovered", true)
-        var textOverlays = [];
-        function toValue(v) {
-          if (isNaN(v) || v === '' || typeof v === "undefined") {
-            return '';
-          }
-          return that.config.numberformat(+v);
-        }
-        headers.forEach(function (col) {
-            if (col.column instanceof LineUpNumberColumn) {
-              textOverlays.push({id: col.id, value: col.column.getValue(row), label: that.config.numberformat(+col.column.getRawValue(row)),
-                x: col.offsetX,
-                w: col.getColumnWidth()})
-            } else if (col instanceof  LayoutStackedColumn) {
-              var allStackOffset = 0;
-
-              col.children.forEach(function (child) {
-                var allStackW = child.getWidth(row);
-
-                textOverlays.push({
-                    id : child.id,
-                    label: toValue(child.column.getRawValue(row))
-                      + " -> (" + zeroFormat(child.getWidth(row)) + ")",
-                    w: that.config.renderingOptions.stacked ? allStackW : child.getColumnWidth(),
-                    x: (allStackOffset + col.offsetX)}
-                );
-                if (that.config.renderingOptions.stacked) {
-                  allStackOffset += allStackW;
-                } else {
-                  allStackOffset += child.getColumnWidth();
-                }
-              })
-            }
-          }
-        );
+        var textOverlays = createOverlays(row);
         //create clip paths which clips the overlay text of the bars
         var shift = rowScale(row[primaryKey]);
         //generate clip paths for the text columns to avoid text overflow
@@ -403,7 +429,7 @@
             });
           textClipPath.exit().remove();
           textClipPath.attr('y',shift).attr('id', function (d) {
-            return 'clip-' + d.id;
+            return 'clip-M' + d.id;
           });
         textClipPath.select('rect')
             .attr({
@@ -414,20 +440,7 @@
                 return Math.max(d.w - 2, 0);
               }
             });
-
-        $row.selectAll("text.hoveronly").data(textOverlays).enter().append("text").
-          attr({
-            'class': "tableData hoveronly",
-            x: function (d) {
-              return d.x;
-            },
-            y: that.config.svgLayout.rowHeight / 2,
-            'clip-path' : function(d) {
-              return 'url(#clip-'+ d.id+')';
-            }
-          }).text(function (d) {
-            return d.label;
-          });
+        renderOverlays($row, textOverlays, 'hoveronly','M');
 
         function absoluteRowPos(elem) {
           var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
@@ -453,17 +466,27 @@
       },
       mouseleave: function() {
         that.tooltip.hide();
-        d3.select(this).classed('hover',false).selectAll('text.hoveronly').remove();
+        d3.select(this).classed('hover', false);
+        d3.select(this).selectAll('text.hoveronly').remove();
       }
     });
 
     var allRows = allRowsSuper;
 
-
     LineUp.updateClipPaths(allHeaders, svg, 'B', true);
     updateText(allHeaders, allRows, svg, that.config);
     updateSingleBars(headers, allRows, that.config);
-    updateStackBars(headers, allRows, stackTransition, that.config);
+    updateStackBars(headers, allRows, this.config.renderingOptions.animation && stackTransition, that.config);
     updateActionBars(headers, allRows, that.config);
+
+    if (that.config.renderingOptions.values) {
+      allRowsSuper.classed('values', true);
+      allRowsSuper.each(function(row) {
+        var $row = d3.select(this);
+        renderOverlays($row, createOverlays(row), 'valueonly','B');
+      })
+    } else {
+      allRowsSuper.classed('values', false).selectAll('text.valueonly').remove();
+    }
   }
 }());
