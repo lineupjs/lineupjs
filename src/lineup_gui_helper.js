@@ -481,9 +481,9 @@
         }
       }
     }
-  }
+  };
 
-  LineUp.prototype.tooltip = (function() {
+  LineUp.createTooltip = function() {
     var $tooltip = $('<div class="lu-tooltip"/>').appendTo("body");
     function showTooltip(content, xy) {
       $tooltip.html(content).css({
@@ -515,11 +515,15 @@
     function sizeOfTooltip() {
       return [$tooltip.width(), $tooltip.height()];
     }
+    function destroyTooltip() {
+      $tooltip.remove();
+    }
     return {
       show: showTooltip,
       hide: hideTooltip,
       move: moveTooltip,
-      size: sizeOfTooltip
+      size: sizeOfTooltip,
+      destroy: destroyTooltip
     }
-  }())
+  };
 }());

@@ -11,6 +11,7 @@ var LineUp = function (spec, $header, $body, config) {
 //    this.sortedColumn = [];
   this.$header = $header;
   this.$body = $body;
+  this.tooltip = LineUp.createTooltip();
 
   //create basic structure
   this.$header.append('defs').attr('class','column');
@@ -195,7 +196,7 @@ LineUp.prototype.setLimits = function(skip, limit) {
   //trigger resort to apply skip
   this.storage.resortData({});
   this.updateAll();
-}
+};
 
 /**
  * change the weights of the selected column
@@ -218,4 +219,15 @@ LineUp.prototype.changeWeights = function(column, weights) {
   }
   this.updateAll();
   return true;
+};
+
+/**
+ * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
+ */
+LineUp.prototype.destroy = function() {
+  //clear the svg elements
+  this.$header.selectAll('*').remove();
+  this.$body.selectAll('*').remove();
+  //remove tooltip
+  this.tooltip.destroy();
 };
