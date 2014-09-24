@@ -355,7 +355,6 @@
       "class": "row",
       transform : function(d) { //init with its previous position
         var prev = prevRowScale(d[primaryKey]);
-        console.log(d[primaryKey],prev);
         return "translate(" + 0 + "," + prev + ")"
       }
     });
