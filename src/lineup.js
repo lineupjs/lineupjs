@@ -98,6 +98,10 @@ LineUp.defaultConfig = {
   },
   svgLayout: {
     rowHeight: 20,
+    /**
+     * number of backup rows to keep to avoid updating on every small scroll thing
+     */
+    backupScrollRows: 2,
     plusSigns: {
       /* addStackedColumn: {
        title: "add stacked column",

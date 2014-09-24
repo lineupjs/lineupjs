@@ -137,6 +137,8 @@
       lineup.changeDataStorage(spec);
     } else {
       lineup = new LineUp(spec, $header, $body, $.extend(true, {}, lineUpDemoConfig));
+      //set the scroll container to enable optimized row rendering
+      //lineup.scrollContainer = $('#lugui-table-body-wrapper');
     }
     updateMenu();
     lineup.startVis();
@@ -260,5 +262,5 @@
         //and start with 0:
         loadDataset(datasets[0]);
       });
-    })
+  })
 }(LineUp));

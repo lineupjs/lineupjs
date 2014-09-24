@@ -526,4 +526,67 @@
       destroy: destroyTooltip
     }
   };
+
+  /**
+   * setter for a scroll container, which is used for determining visibility
+   */
+  Object.defineProperty(LineUp.prototype,'scrollContainer',{
+    enumerable: true,
+    set : function($container) {
+      $container = $($container);
+      var that = this,
+          container = $container[0],
+          rowHeight = this.config.svgLayout.rowHeight,
+          prevScrollTop = container.scrollTop,
+          jbody = $(this.$body.node()),
+          backupRows = this.config.svgLayout.backupScrollRows,
+          shift;
+      $container.on('scroll',function(event) {
+        var act = container.scrollTop;
+        //at least one row changed
+        if (Math.abs(prevScrollTop - act) >= rowHeight*backupRows) {
+          prevScrollTop = act;
+          that.updateBody();
+        }
+      });
+      //the shift between the scroll container our svg body
+      shift = jbody.offset().top - $container.offset().top;
+      //use a resize sensor of a utility lib to also detect resize changes
+      //new ResizeSensor($container, function() {
+      //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), "resized");
+      //  that.updateBody();
+      //});
+      this.removeHidden = function(data, rowScale) {
+        var top = container.scrollTop-shift,
+            bottom = top + $container.innerHeight(),
+            height = jbody[0].scrollHeight,
+            i = 0, j = data.length;
+        if (top > 0) {
+          i = Math.round(top / rowHeight);
+          //count up till really even partial rows are visible
+          while(i >= 0 && rowScale(data[i+1]) > top) {
+            i--;
+          }
+          i-=backupRows; //one more row as backup for scrolling
+        }
+        if (height > bottom) { //some parts from the bottom aren't visible
+          j = Math.round(bottom / rowHeight);
+          //count down till really even partial rows are visible
+          while(j <= data.length && rowScale(data[j-1]) < bottom) {
+            j++;
+          }
+          j+=backupRows; //one more row as backup for scrolling
+        }
+
+        if (i > 0 || j < data.length) {
+          return data.slice(Math.max(i,0),Math.min(j,data.length));
+        }
+        return data;
+      }
+    }
+  });
+  LineUp.prototype.removeHidden = function(data, rowScale) {
+    //by default nothing
+    return data;
+  }
 }());

@@ -307,6 +307,12 @@
   }
 
   LineUp.prototype.updateBody = function (headers, data, stackTransition) {
+    //default values
+    headers = headers || this.storage.getColumnLayout();
+    data = data || this.storage.getData();
+    stackTransition = stackTransition || false;
+
+
     var svg = this.$body;
     var that = this;
     var primaryKey = this.storage.primaryKey;
@@ -329,6 +335,7 @@
       height: datLength * that.config.svgLayout.rowHeight
     });
 
+    data = this.removeHidden(data, rowScale);
 
     // -- handle all row groups
 
