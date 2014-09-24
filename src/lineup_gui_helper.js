@@ -541,14 +541,15 @@
           jbody = $(this.$body.node()),
           backupRows = this.config.svgLayout.backupScrollRows,
           shift;
-      $container.on('scroll',function(event) {
+      function l(event) {
         var act = container.scrollTop;
         //at least one row changed
         if (Math.abs(prevScrollTop - act) >= rowHeight*backupRows) {
           prevScrollTop = act;
           that.updateBody();
         }
-      });
+      }
+      $container.on('scroll',l);
       //the shift between the scroll container our svg body
       shift = jbody.offset().top - $container.offset().top;
       //use a resize sensor of a utility lib to also detect resize changes
@@ -578,6 +579,19 @@
           j+=backupRows; //one more row as backup for scrolling
         }
         return [Math.max(i,0),Math.min(j,data.length)];
+      };
+      this._scrollContainer = {
+        destroy: function() {
+          $container.off('scroll', l);
+        },
+        container: $container
+      };
+    },
+    get : function() {
+      return this._scrollContainer || {
+        destroy: function() {
+
+        }
       }
     }
   });

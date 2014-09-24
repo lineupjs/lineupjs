@@ -365,7 +365,7 @@
     });
 
     //    //--- update ---
-    (this.config.renderingOptions.animation ? allRowsSuper.transition().duration(1000) : allRowsSuper).attr({
+    (this.config.renderingOptions.animation ? allRowsSuper.transition().duration(this.config.svgLayout.animationDuration) : allRowsSuper).attr({
       "transform": function (d) {
         return  "translate(" + 0 + "," + rowScale(d[primaryKey]) + ")"
       }

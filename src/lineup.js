@@ -102,6 +102,7 @@ LineUp.defaultConfig = {
      * number of backup rows to keep to avoid updating on every small scroll thing
      */
     backupScrollRows: 2,
+    animationDuration: 1000,
     plusSigns: {
       /* addStackedColumn: {
        title: "add stacked column",
@@ -234,4 +235,5 @@ LineUp.prototype.destroy = function() {
   this.$body.selectAll('*').remove();
   //remove tooltip
   this.tooltip.destroy();
+  this.scrollContainer.destroy();
 };
