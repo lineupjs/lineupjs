@@ -135,6 +135,7 @@ LineUp.prototype.changeDataStorage = function (spec) {
   this.storage.config = this.config;
   this.spec = spec;
   this.config.columnBundles.primary.sortedColumn = null;
+  delete this.prevRowScale;
 };
 
 /**
