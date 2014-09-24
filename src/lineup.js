@@ -94,7 +94,7 @@ LineUp.defaultConfig = {
   renderingOptions: {
     stacked: false,
     values: false,
-    animation: false
+    animation: true
   },
   svgLayout: {
     rowHeight: 20,

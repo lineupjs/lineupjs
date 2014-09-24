@@ -556,7 +556,7 @@
       //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), "resized");
       //  that.updateBody();
       //});
-      this.removeHidden = function(data, rowScale) {
+      this.selectVisible = function(data, rowScale) {
         var top = container.scrollTop-shift,
             bottom = top + $container.innerHeight(),
             height = jbody[0].scrollHeight,
@@ -577,16 +577,12 @@
           }
           j+=backupRows; //one more row as backup for scrolling
         }
-
-        if (i > 0 || j < data.length) {
-          return data.slice(Math.max(i,0),Math.min(j,data.length));
-        }
-        return data;
+        return [Math.max(i,0),Math.min(j,data.length)];
       }
     }
   });
-  LineUp.prototype.removeHidden = function(data, rowScale) {
-    //by default nothing
-    return data;
+  LineUp.prototype.selectVisible = function(data, rowScale) {
+    //by default select all
+    return [0, data.length];
   }
 }());

@@ -330,13 +330,19 @@
       .domain(data.map(function (d) {
         return d[primaryKey]
       }))
-      .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, .2);
+      .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, .2),
+      prevRowScale = this.prevRowScale || rowScale;
+    //backup the rowscale from the previous call to have a previous "old" position
+    this.prevRowScale = rowScale;
+
     svg.attr({
       height: datLength * that.config.svgLayout.rowHeight
     });
 
-    data = this.removeHidden(data, rowScale);
-
+    var visibleRange = this.selectVisible(data, rowScale);
+    if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
+      data = data.slice(visibleRange[0],visibleRange[1]);
+    }
     // -- handle all row groups
 
     var allRowsSuper = svg.selectAll(".row").data(data, function (d) {
@@ -346,7 +352,12 @@
 
     // --- append ---
     var allRowsSuperEnter = allRowsSuper.enter().append("g").attr({
-      "class": "row"
+      "class": "row",
+      transform : function(d) { //init with its previous position
+        var prev = prevRowScale(d[primaryKey]);
+        console.log(d[primaryKey],prev);
+        return "translate(" + 0 + "," + prev + ")"
+      }
     });
     allRowsSuperEnter.append('rect').attr({
       'class' : 'filler',
