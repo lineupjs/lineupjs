@@ -144,7 +144,7 @@ LineUp.prototype.changeDataStorage = function (spec) {
 LineUp.prototype.startVis = function () {
   this.assignColors(this.storage.getRawColumns());
   //initial sort
-  //this.storage.resortData({});
+  this.storage.resortData({});
   this.updateAll();
 };
 
