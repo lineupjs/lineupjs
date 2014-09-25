@@ -92,6 +92,10 @@
     cursor: pointer;
 }
 
+.lu .singleColumnFilter.filtered {
+    fill: steelblue;
+}
+
 .lu .stackedColumnInfo:hover, .singleColumnDelete:hover, .singleColumnFilter:hover {
     fill: white;
 }
@@ -159,7 +163,7 @@
 
 .lu-popup {
     background: white;
-    position: fixed;
+    position: absolute;
 
     border-radius: 10px;
     padding: 10px;
@@ -198,6 +202,24 @@
 }
 .lu-popup .drop_zone.dragging {
     border-color: red;
+}
+
+.lu-popup2 {
+    background-color: rgba(255,255,255,0.5);
+    position: absolute;
+    padding: 2px;
+
+    font-family: 'Lato', Helvetica, Arial;
+    font-size: 10pt;
+
+    clear: right;
+}
+
+.lu-popup2 * {
+    margin: 0;
+}
+.lu-popup2 .ok {
+     float: right;
 }
 
 .lu-tooltip {

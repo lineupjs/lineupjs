@@ -104,7 +104,7 @@ LineUpLocalStorage.prototype = $.extend({}, {},
         d.flattenMe(flat);
       });
       flat = flat.filter(function(d) {
-        d.isFiltered();
+        return d.isFiltered();
       });
       if ($.isFunction(this.config.filter.filter)) {
         flat.push(this.config.filter.filter);
@@ -126,12 +126,13 @@ LineUpLocalStorage.prototype = $.extend({}, {},
       var asc = spec.asc || this.config.columnBundles.primary.sortingOrderAsc;
       var column = spec.column || this.config.columnBundles.primary.sortedColumn;
 
-      if (column == null) return;
       //console.log("resort: ", spec);
       this.filterData(bundle.layoutColumns);
-      this.data.sort(column.sortBy);
-      if (asc) {
-        this.data.reverse();
+      if (column) {
+        this.data.sort(column.sortBy);
+        if (asc) {
+          this.data.reverse();
+        }
       }
 
       var start = this.config.filter.skip ? this.config.filter.skip : 0;
@@ -145,23 +146,13 @@ LineUpLocalStorage.prototype = $.extend({}, {},
         return d.column instanceof LineUpRankColumn;
       });
       if (rankColumn.length > 0) {
+        var accessor = function(d, i) { return i};
         if (column instanceof LayoutStackedColumn) {
-          this.assignRanks(
-            this.data,
-            function (d) {
-              return column.getValue(d)
-            },
-            rankColumn[0].column
-          );
-        } else {
-          this.assignRanks(
-            this.data,
-            function (d) {
-              return column.column.getValue(d)
-            },
-            rankColumn[0].column
-          );
+          accessor = function (d) { return column.getValue(d) };
+        } else if (column) {
+          accessor = function (d) { return column.column.getValue(d) };
         }
+        this.assignRanks(this.data, accessor, rankColumn[0].column);
       }
     },
     /*
@@ -173,12 +164,12 @@ LineUpLocalStorage.prototype = $.extend({}, {},
       var actualValue = -1;
 
       data.forEach(function (row, i) {
-        if (actualValue == -1) actualValue = accessor(row);
+        if (actualValue == -1) actualValue = accessor(row, i);
 
 //                console.log(row, accessor(row));
-        if (actualValue != accessor(row)) {
+        if (actualValue != accessor(row, i)) {
           actualRank = i+1; //we have 1,1,3, not 1,1,2
-          actualValue = accessor(row);
+          actualValue = accessor(row, i);
         }
         rankColumn.setValue(row, actualRank);
       });

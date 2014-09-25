@@ -251,6 +251,28 @@ LineUp.prototype.updateHeader = function (headers) {
      })
      */
 
+    var filterButton = allHeaders.selectAll(".singleColumnFilter").data(function (d) {
+      return (d instanceof LayoutSingleColumn && d.column instanceof LineUpStringColumn) ? [d] : []
+    });
+    filterButton.exit().remove();
+
+    // --- adding Element to class weightHandle
+    filterButton.enter().append("text").attr({
+      "class": "singleColumnFilter fontawe"
+    }).text("\uf0b0")
+      .on("click", function (d) {
+        that.openFilterPopup(d, d3.select(this));
+      });
+    // --- changing nodes for weightHandle
+    filterButton.attr({
+      x: function (d) {
+        return d.getColumnWidth() - 28
+      },
+      y: function (d) {
+        return d.height / 4
+      }
+    });
+
     //    allHeadersEnter.filter(function(d){return (!(d instanceof LayoutStackedColumn) && d.parent==null)}).append("text").attr({
     //        class:"singleColumnDelete fontawe"
     //    })
