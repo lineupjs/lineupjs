@@ -9,10 +9,13 @@
    * @param label optional if an input field is required
    * @returns {{popup: *, table: *, remove: remove, onOK: onOK}}
    */
-  function createPopup(title, label) {
-    var x = +(window.innerWidth) / 2 - 100;
-    var y = +100;
-
+  function createPopup(title, label, options) {
+    options = $.extend({}, options, {
+      x : +(window.innerWidth) / 2 - 100,
+      y : 100,
+      width: 400,
+      height: 200
+    });
     var popupBG = d3.select("body")
       .append("div").attr("class","lu-popupBG");
 
@@ -20,22 +23,22 @@
       .attr({
         "class": "lu-popup"
       }).style({
-        left: x + "px",
-        top: y + "px",
-        width: "400px",
-        height: "200px"
+        left: options.x + "px",
+        top: options.y + "px",
+        width: options.width+"px",
+        height: options.height+"200px"
       })
       .html(
         '<span style="font-weight: bold">' + title + '</span>' +
-        (label ? '<input type="text" id="popupInputText"  size="35" value="' + label + '"><br>' : '') +
+        (label ? '<input type="text" id="popupInputText" size="35" value="' + label + '"><br>' : '') +
         '<div class="selectionTable"></div>' +
         '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
         '<button class="ok"><i class="fa fa-check"></i> ok</button>'
     );
 
     var theTable = popup.select(".selectionTable").style({
-      width: "390px",
-      height: "160px"
+      width: (options.width-10)+"px",
+      height: (options.height-40)+"px"
     }).append("table");
 
     popup.select(".cancel").on("click", function () {
@@ -318,51 +321,6 @@
       popup.selectAll('.mappingArea *').remove();
       popup.select('.mappingArea').call(editor);
     });
-  };
-
-  LineUp.prototype.uploadUI = function(dropCallback) {
-    var popup = d3.select("body").append("div")
-      .attr({
-        "class": "lu-popup"
-      }).style({
-        left: +(window.innerWidth) / 2 - 100 + "px",
-        top: 100 + "px",
-        width: "200px",
-        height: "100px"
-      })
-      .html(
-        '<div class="drop_zone">Drop files here</div>'+
-        '<button class="cancel"><i class="fa fa-times"></i> cancel</button>'
-    );
-    popup.select(".cancel").on("click", function () {
-      popup.remove();
-    });
-
-
-    function handleFileSelect(evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      console.log('drop',evt.dataTransfer.files);
-      var files = Array.prototype.slice.call(evt.dataTransfer.files); // FileList object.
-      dropCallback(files);
-      popup.remove();
-    };
-
-    function handleDragOver(evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
-    }
-    var $drop = popup.select('.drop_zone');
-    var drop = $drop.node();
-    drop.addEventListener('dragenter', function() {
-      $drop.classed('dragging',true);
-    }, false);
-    drop.addEventListener('dragleave', function() {
-      $drop.classed('dragging',false);
-    }, false);
-    drop.addEventListener('dragover', handleDragOver, false);
-    drop.addEventListener('drop', handleFileSelect, false);
   };
 
   /**
