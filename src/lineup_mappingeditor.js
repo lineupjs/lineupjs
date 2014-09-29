@@ -68,51 +68,54 @@ var LineUp;
 
       var normalizedAxisScale = d3.scale.linear()
         .clamp(true)
-        .domain(dataDomain)
+        .domain(scale.domain())
         .range([lowerNormalized, upperNormalized]);
-      var rawAxisScale = d3.scale.linear()
-        .clamp(true)
-        .domain(dataDomain)
-        .range([lowerRaw, upperRaw]);
-
+      var $base = $svg.append('g');
       //upper axis for scored values
-      addLine($svg, lowerLimitX,scoreAxisY, upperLimitX, scoreAxisY, 'axis');
+      addLine($base, lowerLimitX,scoreAxisY, upperLimitX, scoreAxisY, 'axis');
       //label for minimum scored value
-      addText($svg, lowerLimitX, scoreAxisY - 25, 0, ".75em");
+      addText($base, lowerLimitX, scoreAxisY - 25, 0, ".75em");
       //label for maximum scored value
-      addText($svg, upperLimitX, scoreAxisY - 25, 1, ".75em");
-      addText($svg, 175, 25, "Score");
+      addText($base, upperLimitX, scoreAxisY - 25, 1, ".75em");
+      addText($base, width/2, scoreAxisY -25, "Score", ".75em",'centered');
 
       //lower axis for raw values
-      addLine($svg, lowerLimitX,rawAxisY, upperLimitX, rawAxisY, 'axis');
+      addLine($base, lowerLimitX,rawAxisY, upperLimitX, rawAxisY, 'axis');
       //label for minimum raw value
-      addText($svg, lowerLimitX, rawAxisY + 20, d3.min(dataDomain), ".75em");
+      addText($base, lowerLimitX, rawAxisY + 20, dataDomain[0], ".75em");
       //label for maximum raw value
-      addText($svg, upperLimitX, rawAxisY + 20, d3.max(dataDomain), ".75em");
-      addText($svg, 180, 385, "Raw");
+      addText($base, upperLimitX, rawAxisY + 20, dataDomain[1], ".75em");
+      addText($base, width/2, rawAxisY + 20, "Raw", ".75em",'centered');
       
       //lines that show mapping of individual data items
-      var datalines = $svg.selectAll("line.data").data(data);
+      var datalines = $svg.append('g').classed('data',true).selectAll("line").data(data);
       datalines.enter().append("line")
         .attr({
           x1: function (d) { return normalizedAxisScale(data_accessor(d)); },
           y1: scoreAxisY,
-          x2: function (d) { return rawAxisScale(data_accessor(d)); },
-          y2: rawAxisY,
-          'class' : 'data'
+          x2: function (d) { return originalRawAxisScale(data_accessor(d)); },
+          y2: rawAxisY
+        }).style('visibility', function(d) {
+          var a;
+          if (lowerRaw < upperRaw) {
+            a = (originalRawAxisScale(data_accessor(d)) < lowerRaw || originalRawAxisScale(data_accessor(d)) > upperRaw);
+          } else {
+            a = (originalRawAxisScale(data_accessor(d)) > lowerRaw || originalRawAxisScale(data_accessor(d)) < upperRaw);
+          }
+          return a ? 'hidden' : null;
         });
       //line that defines lower bounds for the scale
       var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, rawAxisY, 'bound');
       //line that defines upper bounds for the scale
       var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, rawAxisY, 'bound');
       //label for lower bound of normalized values
-      var lowerBoundNormalizedLabel = addText($svg, lowerNormalized + 5, scoreAxisY - 15, d3.round(getNormalized_min(), 2), ".25em", 'drag');
+      var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(getNormalized_min(), 2), ".25em", 'drag').attr('transform','translate('+(lowerNormalized-lowerLimitX)+',0)');
       //label for lower bound of raw values
-      var lowerBoundRawLabel = addText($svg, lowerRaw + 5, rawAxisY - 15, d3.round(getRaw_min(), 2), ".25em", 'drag');
+      var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, rawAxisY - 15, d3.round(getRaw_min(), 2), ".25em", 'drag').attr('transform','translate('+(lowerRaw-lowerLimitX)+',0)');
       //label for upper bound of normalized values
-      var upperBoundNormalizedLabel = addText($svg, upperNormalized + 5, scoreAxisY - 15, d3.round(getNormalized_max(), 2), ".25em", 'drag');
+      var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(getNormalized_max(), 2), ".25em", 'drag').attr('transform','translate('+(upperNormalized-upperLimitX)+',0)');
       //label for upper bound of raw values
-      var upperBoundRawLabel = addText($svg, upperRaw + 5, rawAxisY - 15, d3.round(getRaw_max(), 2), ".25em", 'drag');
+      var upperBoundRawLabel = addText($svg, upperLimitX + 5, rawAxisY - 15, d3.round(getRaw_max(), 2), ".25em", 'drag').attr('transform','translate('+(upperRaw-upperLimitX)+',0)');
 
       function createDrag(label, move) {
         return d3.behavior.drag()
@@ -144,25 +147,27 @@ var LineUp;
       }
 
       function updateRaw() {
-        rawAxisScale.range([lowerRaw, upperRaw]);
+        var hiddenDatalines, shownDatalines;
         if (lowerRaw < upperRaw) {
-          var hiddenDatalines = datalines.select(function (d) {
-            return (originalRawAxisScale(data_accessor(d)) < lowerRaw || originalRawAxisScale(data_accessor(d)) > upperRaw) ? this : null;
+          hiddenDatalines = datalines.filter(function (d) {
+            return (originalRawAxisScale(data_accessor(d)) < lowerRaw || originalRawAxisScale(data_accessor(d)) > upperRaw);
           });
-          var shownDatalines = datalines.select(function (d) {
-            return (originalRawAxisScale(data_accessor(d)) < lowerRaw || originalRawAxisScale(data_accessor(d)) > upperRaw) ? null : this;
+          shownDatalines = datalines.filter(function (d) {
+            return !(originalRawAxisScale(data_accessor(d)) < lowerRaw || originalRawAxisScale(data_accessor(d)) > upperRaw);
           });
         }
         else {
-          var hiddenDatalines = datalines.select(function (d) {
-            return (originalRawAxisScale(data_accessor(d)) > lowerRaw || originalRawAxisScale(data_accessor(d)) < upperRaw) ? this : null;
+          hiddenDatalines = datalines.filter(function (d) {
+            return (originalRawAxisScale(data_accessor(d)) > lowerRaw || originalRawAxisScale(data_accessor(d)) < upperRaw);
           });
-          var shownDatalines = datalines.select(function (d) {
-            return (originalRawAxisScale(data_accessor(d)) > lowerRaw || originalRawAxisScale(data_accessor(d)) < upperRaw) ? null : this;
+          shownDatalines = datalines.filter(function (d) {
+            return !(originalRawAxisScale(data_accessor(d)) > lowerRaw || originalRawAxisScale(data_accessor(d)) < upperRaw);
           });
         }
         hiddenDatalines.style("visibility", "hidden");
         normalizedAxisScale.domain([getRaw_min(), getRaw_max()]);
+        console.log('normalizedAxisScale',normalizedAxisScale.domain().toString(),normalizedAxisScale.range().toString(),d3.min(data,data_accessor));
+        console.log(normalizedAxisScale(0),normalizedAxisScale(10),normalizedAxisScale(50),normalizedAxisScale(100));
         shownDatalines
           .style("visibility", null)
           .attr("x1", function (d) {
@@ -174,6 +179,7 @@ var LineUp;
       //draggable circle that defines the lower bound of normalized values
       addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, radius)
         .call(createDrag(lowerBoundNormalizedLabel, function () {
+          console.log(d3.event.x);
           if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
             mapperLineLowerBounds.attr("x1", lowerLimitX + d3.event.x);
             d3.select(this)
@@ -208,6 +214,7 @@ var LineUp;
             mapperLineLowerBounds.attr("x2", lowerLimitX + d3.event.x);
             d3.select(this)
               .attr("transform", "translate(" + d3.event.x + ", 0)");
+            console.log('from',lowerRaw,d3.event.x + lowerLimitX);
             lowerRaw = d3.event.x + lowerLimitX;
             lowerBoundRawLabel
               .text(d3.round(getRaw_min(), 2))
@@ -239,16 +246,16 @@ var LineUp;
       }
       
       function getRaw_min() {
-        return (lowerRaw-lowerLimitX) / (upperLimitX-lowerLimitX) * d3.max(dataDomain);
+        return originalRawAxisScale.invert(lowerRaw);
       }
       function getRaw_max() {
-        return (upperRaw-lowerLimitX) / (upperLimitX-lowerLimitX) * d3.max(dataDomain);
+        return originalRawAxisScale.invert(upperRaw);
       }
       function getNormalized_min() {
-        return (lowerNormalized-lowerLimitX) / (upperLimitX-lowerLimitX) * d3.max(scale.range());
+        return originalNormalized.invert(lowerNormalized);
       }
       function getNormalized_max() {
-        return (upperNormalized-lowerLimitX) / (upperLimitX-lowerLimitX) * d3.max(scale.range());
+        return originalNormalized.invert(upperNormalized);
       }
       
     };

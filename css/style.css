@@ -151,7 +151,7 @@
     user-select: none;
 }
 
-.lugui-me line.axis, .lugui-me line.data {
+.lugui-me line.axis, .lugui-me g.data line {
     stroke: gray;
 }
 .lugui-me line.bound {
@@ -167,6 +167,9 @@
 }
 .lugui-me text.drag {
     visibility: hidden;
+}
+.lugui-me text.centered {
+    text-anchor: middle;
 }
 
 .lu-popupBG {
