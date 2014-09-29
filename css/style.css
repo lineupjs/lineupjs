@@ -151,6 +151,24 @@
     user-select: none;
 }
 
+.lugui-me line.axis, .lugui-me line.data {
+    stroke: gray;
+}
+.lugui-me line.bound {
+    stroke: black;
+    stroke-width: 2
+}
+.lugui-me circle.handle {
+    fill: steelblue;
+    cursor: pointer;
+}
+.lugui-me circle.handle.dragging {
+    fill: black;
+}
+.lugui-me text.drag {
+    visibility: hidden;
+}
+
 .lu-popupBG {
     position: fixed;
     left: 0;
