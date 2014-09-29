@@ -9,10 +9,13 @@
    * @param label optional if an input field is required
    * @returns {{popup: *, table: *, remove: remove, onOK: onOK}}
    */
-  function createPopup(title, label) {
-    var x = +(window.innerWidth) / 2 - 100;
-    var y = +100;
-
+  function createPopup(title, label, options) {
+    options = $.extend({}, options, {
+      x : +(window.innerWidth) / 2 - 100,
+      y : 100,
+      width: 400,
+      height: 200
+    });
     var popupBG = d3.select("body")
       .append("div").attr("class","lu-popupBG");
 
@@ -20,22 +23,22 @@
       .attr({
         "class": "lu-popup"
       }).style({
-        left: x + "px",
-        top: y + "px",
-        width: "400px",
-        height: "200px"
+        left: options.x + "px",
+        top: options.y + "px",
+        width: options.width+"px",
+        height: options.height+"200px"
       })
       .html(
         '<span style="font-weight: bold">' + title + '</span>' +
-        (label ? '<input type="text" id="popupInputText"  size="35" value="' + label + '"><br>' : '') +
+        (label ? '<input type="text" id="popupInputText" size="35" value="' + label + '"><br>' : '') +
         '<div class="selectionTable"></div>' +
         '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
         '<button class="ok"><i class="fa fa-check"></i> ok</button>'
     );
 
     var theTable = popup.select(".selectionTable").style({
-      width: "390px",
-      height: "160px"
+      width: (options.width-10)+"px",
+      height: (options.height-40)+"px"
     }).append("table");
 
     popup.select(".cancel").on("click", function () {
@@ -269,14 +272,13 @@
     });
   };
 
-  LineUp.prototype.openMappingEditor = function(selectedColumn) {
+  LineUp.prototype.openMappingEditor = function(selectedColumn, $button) {
     var col = selectedColumn.column;
     var bak = col.scale;
     var that = this;
     var act = bak;
     var callback = function(newscale) {
       //scale = newscale;
-      console.log("scale: "+newscale.domain()+ " "+newscale.range());
       act = newscale.clamp(true);
     };
 
@@ -288,7 +290,6 @@
         top: 100 + "px",
         width: "420px",
         height: "450px"
-
       })
       .html(
         '<div style="font-weight: bold"> change mapping: </div>' +
@@ -303,66 +304,29 @@
     var editor = LineUp.mappingEditor(bak, col.scaleOri.domain(),this.storage.data, access, callback);
     popup.select('.mappingArea').call(editor);
 
+    function isSame (a, b) {
+      return $(a).not(b).length == 0 && $(b).not(a).length == 0;
+    }
     popup.select(".ok").on("click", function () {
-      selectedColumn.column.scale = act;
-      that.updateAll();
+      col.scale = act;
+      console.log(act.domain().toString(),act.range().toString());
+      $button.classed('filtered', !isSame(act.range(),col.scaleOri.range()) || !isSame(act.domain(), col.scaleOri.domain()));
+      that.storage.resortData({});
+      that.updateAll(true);
       popup.remove()
     });
     popup.select(".cancel").on("click", function () {
-      selectedColumn.column.scale = bak;
+      col.scale = bak;
+      $button.classed('filtered', !isSame(bak.range(),col.scaleOri.range()) || !isSame(bak.domain(), col.scaleOri.domain()));
       popup.remove()
     });
     popup.select(".reset").on("click", function () {
       act = bak = col.scale = col.scaleOri;
+      $button.classed('filtered', false);
       editor = LineUp.mappingEditor(bak, col.scaleOri.domain(), that.storage.data, access, callback);
       popup.selectAll('.mappingArea *').remove();
       popup.select('.mappingArea').call(editor);
     });
-  };
-
-  LineUp.prototype.uploadUI = function(dropCallback) {
-    var popup = d3.select("body").append("div")
-      .attr({
-        "class": "lu-popup"
-      }).style({
-        left: +(window.innerWidth) / 2 - 100 + "px",
-        top: 100 + "px",
-        width: "200px",
-        height: "100px"
-      })
-      .html(
-        '<div class="drop_zone">Drop files here</div>'+
-        '<button class="cancel"><i class="fa fa-times"></i> cancel</button>'
-    );
-    popup.select(".cancel").on("click", function () {
-      popup.remove();
-    });
-
-
-    function handleFileSelect(evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      console.log('drop',evt.dataTransfer.files);
-      var files = Array.prototype.slice.call(evt.dataTransfer.files); // FileList object.
-      dropCallback(files);
-      popup.remove();
-    };
-
-    function handleDragOver(evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
-    }
-    var $drop = popup.select('.drop_zone');
-    var drop = $drop.node();
-    drop.addEventListener('dragenter', function() {
-      $drop.classed('dragging',true);
-    }, false);
-    drop.addEventListener('dragleave', function() {
-      $drop.classed('dragging',false);
-    }, false);
-    drop.addEventListener('dragover', handleDragOver, false);
-    drop.addEventListener('drop', handleFileSelect, false);
   };
 
   /**
@@ -458,7 +422,7 @@
         })
         .html(
           '<div style="font-weight: bold"> rename column: </div>' +
-          '<input type="text" id="popupInputText"  size="35" value="' + col.label + '"><br>' +
+          '<input type="text" id="popupInputText" size="20" value="' + col.label + '"><br>' +
           '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
           '<button class="ok"><i class="fa fa-check"></i> ok</button>'
       );
@@ -481,9 +445,56 @@
         }
       }
     }
-  }
+  };
 
-  LineUp.prototype.tooltip = (function() {
+  LineUp.prototype.openFilterPopup = function(column, $button) {
+    if (!(column instanceof LayoutSingleColumn && column.column instanceof LineUpStringColumn)) {
+      //can't filter other than string columns
+      return;
+    }
+    var pos = $(this.$header.node()).offset();
+    pos.left += column.offsetX;
+    pos.top += column.offsetY;
+    var bak = column.filter || '';
+
+    var popup = d3.select("body").append("div")
+      .attr({
+        "class": "lu-popup2"
+      }).style({
+        left: pos.left + "px",
+        top: pos.top + "px"
+      })
+      .html(
+        '<form onsubmit="return false"><input type="text" id="popupInputText" placeholder="containing..." autofocus="true" size="18" value="' + bak + '"><br>' +
+          '<button class="ok"><i class="fa fa-check" title="ok"></i></button>' +
+          '<button class="cancel"><i class="fa fa-times" title="cancel"></i></button>' +
+          '<button class="reset"><i class="fa fa-undo" title="reset"></i></button></form>'
+    );
+
+    var that = this;
+    function updateData(filter) {
+      column.filter = filter;
+      $button.classed('filtered', (filter && filter.length > 0));
+      that.storage.resortData({});
+      that.updateBody();
+    }
+
+    popup.select(".cancel").on("click", function () {
+      document.getElementById("popupInputText").value = bak;
+      updateData(bak);
+      popup.remove();
+    });
+    popup.select(".reset").on("click", function () {
+      document.getElementById("popupInputText").value = '';
+      updateData(null);
+    });
+    popup.select(".ok").on("click", function () {
+      updateData(document.getElementById("popupInputText").value);
+      popup.remove();
+    });
+  };
+
+  LineUp.createTooltip = function() {
     var $tooltip = $('<div class="lu-tooltip"/>').appendTo("body");
     function showTooltip(content, xy) {
       $tooltip.html(content).css({
@@ -515,11 +526,88 @@
     function sizeOfTooltip() {
       return [$tooltip.width(), $tooltip.height()];
     }
+    function destroyTooltip() {
+      $tooltip.remove();
+    }
     return {
       show: showTooltip,
       hide: hideTooltip,
       move: moveTooltip,
-      size: sizeOfTooltip
+      size: sizeOfTooltip,
+      destroy: destroyTooltip
     }
-  }())
+  };
+
+  /**
+   * setter for a scroll container, which is used for determining visibility
+   */
+  Object.defineProperty(LineUp.prototype,'scrollContainer',{
+    enumerable: true,
+    set : function($container) {
+      $container = $($container);
+      var that = this,
+          container = $container[0],
+          rowHeight = this.config.svgLayout.rowHeight,
+          prevScrollTop = container.scrollTop,
+          jbody = $(this.$body.node()),
+          backupRows = this.config.svgLayout.backupScrollRows,
+          shift;
+      function l(event) {
+        var act = container.scrollTop;
+        //at least one row changed
+        if (Math.abs(prevScrollTop - act) >= rowHeight*backupRows) {
+          prevScrollTop = act;
+          that.updateBody();
+        }
+      }
+      $container.on('scroll',l);
+      //the shift between the scroll container our svg body
+      shift = jbody.offset().top - $container.offset().top;
+      //use a resize sensor of a utility lib to also detect resize changes
+      //new ResizeSensor($container, function() {
+      //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), "resized");
+      //  that.updateBody();
+      //});
+      this.selectVisible = function(data, rowScale) {
+        var top = container.scrollTop-shift,
+            bottom = top + $container.innerHeight(),
+            height = jbody[0].scrollHeight,
+            i = 0, j = data.length;
+        if (top > 0) {
+          i = Math.round(top / rowHeight);
+          //count up till really even partial rows are visible
+          while(i >= 0 && rowScale(data[i+1]) > top) {
+            i--;
+          }
+          i-=backupRows; //one more row as backup for scrolling
+        }
+        if (height > bottom) { //some parts from the bottom aren't visible
+          j = Math.round(bottom / rowHeight);
+          //count down till really even partial rows are visible
+          while(j <= data.length && rowScale(data[j-1]) < bottom) {
+            j++;
+          }
+          j+=backupRows; //one more row as backup for scrolling
+        }
+        return [Math.max(i,0),Math.min(j,data.length)];
+      };
+      this._scrollContainer = {
+        destroy: function() {
+          $container.off('scroll', l);
+        },
+        container: $container
+      };
+    },
+    get : function() {
+      return this._scrollContainer || {
+        destroy: function() {
+
+        }
+      }
+    }
+  });
+  LineUp.prototype.selectVisible = function(data, rowScale) {
+    //by default select all
+    return [0, data.length];
+  }
 }());

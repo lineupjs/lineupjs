@@ -11,6 +11,7 @@ var LineUp = function (spec, $header, $body, config) {
 //    this.sortedColumn = [];
   this.$header = $header;
   this.$body = $body;
+  this.tooltip = LineUp.createTooltip();
 
   //create basic structure
   this.$header.append('defs').attr('class','column');
@@ -93,10 +94,15 @@ LineUp.defaultConfig = {
   renderingOptions: {
     stacked: false,
     values: false,
-    animation: false
+    animation: true
   },
   svgLayout: {
     rowHeight: 20,
+    /**
+     * number of backup rows to keep to avoid updating on every small scroll thing
+     */
+    backupScrollRows: 2,
+    animationDuration: 1000,
     plusSigns: {
       /* addStackedColumn: {
        title: "add stacked column",
@@ -129,6 +135,7 @@ LineUp.prototype.changeDataStorage = function (spec) {
   this.storage.config = this.config;
   this.spec = spec;
   this.config.columnBundles.primary.sortedColumn = null;
+  delete this.prevRowScale;
 };
 
 /**
@@ -137,7 +144,7 @@ LineUp.prototype.changeDataStorage = function (spec) {
 LineUp.prototype.startVis = function () {
   this.assignColors(this.storage.getRawColumns());
   //initial sort
-  //this.storage.resortData({});
+  this.storage.resortData({});
   this.updateAll();
 };
 
@@ -195,7 +202,7 @@ LineUp.prototype.setLimits = function(skip, limit) {
   //trigger resort to apply skip
   this.storage.resortData({});
   this.updateAll();
-}
+};
 
 /**
  * change the weights of the selected column
@@ -218,4 +225,16 @@ LineUp.prototype.changeWeights = function(column, weights) {
   }
   this.updateAll();
   return true;
+};
+
+/**
+ * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
+ */
+LineUp.prototype.destroy = function() {
+  //clear the svg elements
+  this.$header.selectAll('*').remove();
+  this.$body.selectAll('*').remove();
+  //remove tooltip
+  this.tooltip.destroy();
+  this.scrollContainer.destroy();
 };

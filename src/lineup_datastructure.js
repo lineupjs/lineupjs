@@ -96,8 +96,10 @@ LineUpStringColumn.prototype = $.extend({}, LineUpColumn.prototype, {
     var r = this.getValue(row);
     if (typeof r === 'boolean') {
       return r && r.trim().length > 0;
-    } else if (typeof filter === 'string') {
-      return r && r.contains(filter);
+    } else if (typeof filter === 'string' && filter.length > 0) {
+      return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+    } else if (typeof filter === 'RegExp') {
+      return r && r.match(filter);
     }
     return true;
   }

@@ -37,7 +37,7 @@
     // -- the text columns
 
     var allTextHeaders = allHeaders.filter(function (d) {
-      return (d.hasOwnProperty('column') && (d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn));
+      return d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn;
     });
 
     const rowCenter = (config.svgLayout.rowHeight / 2);
@@ -56,38 +56,29 @@
         });
         return dd;
       });
-
-    textRows.exit().remove();
-
-
     textRows.enter()
       .append("text")
       .attr({
         'class': function (d) {
           return "tableData text" + (d.isRank ? ' rank' : '');
         },
-        x: function (d) {
-          return d.offsetX
-        },
         y: rowCenter,
         'clip-path': function (d) {
           return d.clip;
         }
       });
+    textRows.exit().remove();
 
     textRows
-      .attr({
-        x: function (d) {
-//                console.log("u", d.offsetX);
+      .attr('x',function (d) {
           return d.offsetX
-        }
       })
       .text(function (d) {
         return d.label;
       });
 
     allRows.selectAll(".tableData.text.rank").text(function (d) {
-      return d.value;
+      return d.label;
     });// only changed texts:
     ///// TODO ---- IMPORTANT  ----- DO NOT DELETE
 
@@ -101,9 +92,11 @@
   }
 
   function showStacked(config) {
+    //if not enabled or values are shown
     if (!config.renderingOptions.stacked || config.renderingOptions.values) {
       return false;
     }
+    //primary is a stacked one
     var current = config.columnBundles.primary.sortedColumn;
     return !(current && (current.parent instanceof LayoutStackedColumn));
   }
@@ -111,19 +104,20 @@
   function updateSingleBars(headers, allRows, config) {
     // -- handle the Single columns  (!! use unflattened headers for filtering)
     var allSingleBarHeaders = headers.filter(function (d) {
-      return (d.hasOwnProperty('column') && (d.column instanceof LineUpNumberColumn));
+      return d.column instanceof LineUpNumberColumn;
     });
     var barRows = allRows.selectAll(".tableData.bar")
       .data(function (d) {
         var data = allSingleBarHeaders.map(function (column) {
-          return {key: column.getDataID(), value: column.getWidth(d),
+          return {
+            key: column.getDataID(),
+            value: column.getWidth(d),
             label: column.column.getRawValue(d),
-            offsetX: column.offsetX};
+            offsetX: column.offsetX
+          };
         });
         return data;
       });
-
-    barRows.exit().remove();
 
     barRows.enter()
       .append("rect")
@@ -132,6 +126,7 @@
         y: 2,
         height: config.svgLayout.rowHeight - 4
       });
+    barRows.exit().remove();
 
     barRows
       .attr({
@@ -165,19 +160,12 @@
     stackRows.exit().remove();
     stackRows.enter()
       .append("g")
-      .attr({
-        "class": "tableData stacked"
-//            y:2,
-//            height:20-4
-      });
+      .attr("class","tableData stacked");
 
     stackRows
-      .attr({
-        "transform": function (d) {
-          return "translate(" + d.parent.offsetX + "," + 0 + ")";
-        }
+      .attr("transform", function (d) {
+        return "translate(" + d.parent.offsetX + "," + 0 + ")";
       });
-
 
     // -- render all Bars in the Group
     var allStackOffset = 0;
@@ -195,18 +183,13 @@
           allStackW = child.getWidth(d.row);
 
           allStackRes = {child: child, width: allStackW, offsetX: allStackOffset};
-
           if (asStacked) {
             allStackOffset += allStackW;
           } else {
             allStackOffset += child.getColumnWidth();
           }
-
-          return allStackRes
-
+          return allStackRes;
         })
-
-
       }
     );
     allStack.exit().remove();
@@ -215,7 +198,7 @@
       height: config.svgLayout.rowHeight - 4
     });
 
-    (_stackTransition ? allStack.transition() : allStack)
+    (_stackTransition ? allStack.transition(config.svgLayout.animationDuration) : allStack)
       .attr({
         x: function (d) {
           return d.offsetX;
@@ -228,22 +211,21 @@
           return config.colorMapping.get(d.child.getDataID())
         }
       });
-
   }
 
   function createActions($elem, item, config) {
     var $r = $elem.selectAll('text').data(config.svgLayout.rowActions);
     $r.enter().append('text').append('title');
     $r.exit().remove();
-    $r.attr({
-      x : function(d,i) {
+    $r.attr('x', function(d,i) {
         return i*config.svgLayout.rowHeight;
-      }
     }).text(function(d) {
       return d.icon;
     }).on('click', function(d) {
       d.action.call(this, item.data, d);
-    }).select('title').text(function(d) { return d.name;});
+    }).select('title').text(function(d) {
+      return d.name;
+    });
   }
 
   function updateActionBars(headers, allRows, config) {
@@ -307,6 +289,12 @@
   }
 
   LineUp.prototype.updateBody = function (headers, data, stackTransition) {
+    //default values
+    headers = headers || this.storage.getColumnLayout();
+    data = data || this.storage.getData();
+    stackTransition = stackTransition || false;
+
+
     var svg = this.$body;
     var that = this;
     var primaryKey = this.storage.primaryKey;
@@ -324,12 +312,17 @@
       .domain(data.map(function (d) {
         return d[primaryKey]
       }))
-      .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, .2);
-    svg.attr({
-      height: datLength * that.config.svgLayout.rowHeight
-    });
+      .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, .2),
+      prevRowScale = this.prevRowScale || rowScale;
+    //backup the rowscale from the previous call to have a previous "old" position
+    this.prevRowScale = rowScale;
 
+    svg.attr("height", datLength * that.config.svgLayout.rowHeight);
 
+    var visibleRange = this.selectVisible(data, rowScale);
+    if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
+      data = data.slice(visibleRange[0],visibleRange[1]);
+    }
     // -- handle all row groups
 
     var allRowsSuper = svg.selectAll(".row").data(data, function (d) {
@@ -339,7 +332,14 @@
 
     // --- append ---
     var allRowsSuperEnter = allRowsSuper.enter().append("g").attr({
-      "class": "row"
+      "class": "row",
+      transform : function(d) { //init with its previous position
+        var prev = prevRowScale(d[primaryKey]);
+        if (typeof prev === 'undefined') { //if not defined from the bottom
+          prev = rowScale.range()[1]
+        }
+        return "translate(" + 0 + "," + prev + ")"
+      }
     });
     allRowsSuperEnter.append('rect').attr({
       'class' : 'filler',
@@ -348,7 +348,7 @@
     });
 
     //    //--- update ---
-    (this.config.renderingOptions.animation ? allRowsSuper.transition().duration(1000) : allRowsSuper).attr({
+    (this.config.renderingOptions.animation ? allRowsSuper.transition().duration(this.config.svgLayout.animationDuration) : allRowsSuper).attr({
       "transform": function (d) {
         return  "translate(" + 0 + "," + rowScale(d[primaryKey]) + ")"
       }
