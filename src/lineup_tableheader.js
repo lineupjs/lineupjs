@@ -6,16 +6,17 @@
  * @param headers - the array of headers, see {@link LineUpColumn}
  */
 LineUp.prototype.updateHeader = function (headers) {
+  headers = headers || this.storage.getColumnLayout();
 //    console.log("update Header");
   var rootsvg = this.$header;
   var svg = rootsvg.select('g.main');
-  var svgOverlay = rootsvg.select('g.overlay');
 
   var that = this;
   var config = this.config;
 
   if (this.headerUpdateRequired) {
-    this.layoutHeaders(headers)
+    this.layoutHeaders(headers);
+    this.headerUpdateRequired = false;
   }
 
   var allHeaderData = [];
@@ -39,7 +40,7 @@ LineUp.prototype.updateHeader = function (headers) {
     .classed("emptyHeader", function (d) {
       return d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn;
     })
-    .call(function (d) {
+    .call(function () {
       that.addResortDragging(this, config)
     });
 
@@ -53,14 +54,8 @@ LineUp.prototype.updateHeader = function (headers) {
 
   allHeadersEnter.append("rect").attr({
     "class": "labelBG",
-    y: 0,
-    width: function (d) {
-      return d.getColumnWidth()
-    },
-    height: function (d) {
-      return d.height;
-    }
-  }).style("fill",function (d, i) {
+    y: 0
+  }).style("fill",function (d) {
       if (d instanceof LayoutEmptyColumn) {
         return "lightgray"
       } else if (d instanceof LayoutStackedColumn || !config.colorMapping.has(d.column.id) || d instanceof LayoutActionColumn) {
@@ -69,22 +64,26 @@ LineUp.prototype.updateHeader = function (headers) {
         return config.colorMapping.get(d.column.id);
       }})
     .on("click",function (d) {
-      if (d3.event.defaultPrevented || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) return;
+      if (d3.event.defaultPrevented || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) {
+        return;
+      }
       // no sorting for empty stacked columns !!!
-      if (d instanceof LayoutStackedColumn && d.children.length < 1) return;
+      if (d instanceof LayoutStackedColumn && d.children.length < 1) {
+        return;
+      }
 
       var bundle = config.columnBundles[d.columnBundle];
       // TODO: adapt to comparison mode !!
+      //same sorting swap order
       if (bundle.sortedColumn != null && (d.getDataID() == bundle.sortedColumn.getDataID())) {
-        bundle.sortingOrderAsc = bundle.sortingOrderAsc ? false : true;
+        bundle.sortingOrderAsc = !bundle.sortingOrderAsc;
       } else {
         bundle.sortingOrderAsc = false;
       }
 
       that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
       bundle.sortedColumn = d;
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
-      that.updateHeader(that.storage.getColumnLayout());
+      that.updateAll(false);
     });
 
   allHeaders.select(".labelBG").attr({
@@ -95,7 +94,6 @@ LineUp.prototype.updateHeader = function (headers) {
       return d.height
     }
   });
-
 
   // -- handle WeightHandle
 
@@ -172,119 +170,63 @@ LineUp.prototype.updateHeader = function (headers) {
       y: function (d) {
         return d.height / 2
       }
-    })
+    });
 
 
   // add info Button to All Stacked Columns
   if (this.config.manipulative) {
-    allHeadersEnter.filter(function (d) {
-      return d instanceof LayoutStackedColumn;
-    }).append("text").attr({
-      class: "stackedColumnInfo fontawe"
-    })
-      .text("\uf1de")
-      .on("click", function (d) {
+    var buttons = [{
+      'class' : 'stackedColumnInfo',
+      text : "\uf1de",
+      filter: function(d) {
+        return d instanceof LayoutStackedColumn ? [d] : [];
+      },
+      action : function(d) {
         that.stackedColumnOptionsGui(d)
-      })
-
-
-    allHeaders.filter(function (d) {
-      return d instanceof LayoutStackedColumn;
-    }).select(".stackedColumnInfo").attr({
-      x: function (d) {
-        return d.getColumnWidth() - 15
       },
-      y: function (d) {
-        return d.height / 2
-      }
-    })
-
-
-    // add delete Button to All Single Columns
-
-
-    var deleteButton = allHeaders.selectAll(".singleColumnDelete").data(function (d) {
-      return (!(d instanceof LayoutStackedColumn)) ? [d] : [];
-    });
-    deleteButton.exit().remove();
-
-    // --- adding Element to class weightHandle
-    var deletButtonEnter = deleteButton.enter().append("text").attr({
-      "class": "singleColumnDelete fontawe"
-    }).text("\uf014")
-      .on("click", function (d) {
+      shift: 15
+    },{
+      'class' : 'singleColumnDelete',
+      text : "\uf014",
+      filter: function(d) {
+        return (d instanceof LayoutStackedColumn || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) ? [] : [d];
+      },
+      action : function(d) {
         that.storage.removeColumn(d);
+        that.headerUpdateRequired = true;
         that.updateAll();
-      })
-
-    // --- changing nodes for weightHandle
-    deleteButton.attr({
-      x: function (d) {
-        return d.getColumnWidth() - 15
       },
-      y: function (d) {
-        return d.height / 4
-      }
-    })
-    /* TODO fix mapping editor to be fully functional
-     var filterButton = allHeaders.selectAll(".singleColumnFilter").data(function (d) {
-     return (d instanceof LayoutSingleColumn && d.column instanceof LineUpNumberColumn) ? [d] : []
-     });
-     filterButton.exit().remove();
+      shift: 15
+    },{
+      'class' : 'singleColumnFilter',
+      text : "\uf0b0",
+      filter: function(d) {
+        return (d instanceof LayoutSingleColumn && (d.column instanceof LineUpNumberColumn || d.column instanceof LineUpStringColumn)) ? [d] : [];
+      },
+      action : function(d) {
+        if (d.column instanceof LineUpStringColumn) {
+          that.openFilterPopup(d, d3.select(this));
+        } else {
+          that.openMappingEditor(d);
+        }
+      },
+      shift: 28
+    },];
 
-     // --- adding Element to class weightHandle
-     filterButton.enter().append("text").attr({
-     "class": "singleColumnFilter fontawe"
-     }).text("\uf0b0")
-     .on("click", function (d) {
-     that.openMappingEditor(d);
-     //that.updateAll();
-     });
-     // --- changing nodes for weightHandle
-     filterButton.attr({
-     x: function (d) {
-     return d.getColumnWidth() - 28
-     },
-     y: function (d) {
-     return d.height / 4
-     }
-     })
-     */
-
-    var filterButton = allHeaders.selectAll(".singleColumnFilter").data(function (d) {
-      return (d instanceof LayoutSingleColumn && d.column instanceof LineUpStringColumn) ? [d] : []
-    });
-    filterButton.exit().remove();
-
-    // --- adding Element to class weightHandle
-    filterButton.enter().append("text").attr({
-      "class": "singleColumnFilter fontawe"
-    }).text("\uf0b0")
-      .on("click", function (d) {
-        that.openFilterPopup(d, d3.select(this));
+    buttons.forEach(function (button) {
+      var $button = allHeaders.selectAll('.'+button.class).data(button.filter);
+      $button.exit().remove();
+      $button.enter().append("text")
+        .attr("class","fontawe "+button.class)
+        .text(button.text)
+        .on("click", button.action);
+      $button.attr({
+        x: function (d) {
+          return d.getColumnWidth() - button.shift;
+        },
+        y: 10
       });
-    // --- changing nodes for weightHandle
-    filterButton.attr({
-      x: function (d) {
-        return d.getColumnWidth() - 28
-      },
-      y: function (d) {
-        return d.height / 4
-      }
     });
-
-    //    allHeadersEnter.filter(function(d){return (!(d instanceof LayoutStackedColumn) && d.parent==null)}).append("text").attr({
-    //        class:"singleColumnDelete fontawe"
-    //    })
-    //        .text("\uf014")
-    //        .on("click", function(d){
-    //            that.storage.removeSingleColumn(d);
-    //            that.updateAll();
-    //        })
-    //    allHeaders.filter(function(d){return (!(d instanceof LayoutStackedColumn) && d.parent==null);}).select(".singleColumnDelete").attr({
-    //        x:function(d){return d.getColumnWidth()-15},
-    //        y:function(d){return d.height/4}
-    //    })
   }
 
   // ==================
@@ -361,12 +303,9 @@ LineUp.prototype.addResortDragging = function (xss) {
   var that = this;
   var rootsvg = this.$header;
   var svgOverlay = rootsvg.select('g.overlay');
-  x.call(xss)
-
-
+  x.call(xss);
   var hitted = null;
   var moved = false;
-
 
   function dragstart(d) {
     if (d instanceof LayoutEmptyColumn) return;
@@ -379,7 +318,6 @@ LineUp.prototype.addResortDragging = function (xss) {
     moved = false;
   }
 
-
   function dragmove(d) {
     if (d instanceof LayoutEmptyColumn) return;
 
@@ -387,7 +325,7 @@ LineUp.prototype.addResortDragging = function (xss) {
     var dragHeader = svgOverlay.selectAll(".dragHeader").data([d])
     var dragHeaderEnter = dragHeader.enter().append("g").attr({
       class: "dragHeader"
-    })
+    });
 
     dragHeaderEnter.append("rect").attr({
       class: "labelBG",
@@ -398,30 +336,29 @@ LineUp.prototype.addResortDragging = function (xss) {
         return d.height
       }
 
-    })
+    });
 
     var x = d3.event.x;
     var y = d3.event.y;
-    dragHeader.attr({
-      "transform": function () {
-        return "translate(" + (d3.event.x + 3) + "," + (d3.event.y - 10) + ")";
-      }
-    })
+    dragHeader.attr("transform",function () {
+      return "translate(" + (d3.event.x + 3) + "," + (d3.event.y - 10) + ")";
+    });
 
 
     var allHeaderData = [];
     that.storage.getColumnLayout().forEach(function (d) {
       d.flattenMe(allHeaderData, {addEmptyColumns: true});
-    })
+    });
 
     function contains(header, x, y) {
       //TODO check if types match
       if (x > header.offsetX && (x - header.offsetX) < header.getColumnWidth()) {
         if (y > header.offsetY && (y - header.offsetY) < header.height) {
-          if ((x - header.offsetX < header.getColumnWidth() / 2))
-            return {column: header, insert: "l", tickX: (header.offsetX), tickY: (header.offsetY), tickH: header.height}
-          else
-            return {column: header, insert: "r", tickX: (header.offsetX + header.getColumnWidth()), tickY: (header.offsetY), tickH: header.height}
+          if ((x - header.offsetX < header.getColumnWidth() / 2)) {
+            return {column: header, insert: "l", tickX: (header.offsetX), tickY: (header.offsetY), tickH: header.height};
+          } else {
+            return {column: header, insert: "r", tickX: (header.offsetX + header.getColumnWidth()), tickY: (header.offsetY), tickH: header.height};
+          }
         }
       }
 
@@ -437,12 +374,12 @@ LineUp.prototype.addResortDragging = function (xss) {
 
 //        console.log(hitted);
 
-    var columnTick = svgOverlay.selectAll(".columnTick").data(hitted ? [hitted] : [])
+    var columnTick = svgOverlay.selectAll(".columnTick").data(hitted ? [hitted] : []);
     columnTick.exit().remove();
     columnTick.enter().append("rect").attr({
       class: "columnTick",
       width: 10
-    })
+    });
 
     columnTick.attr({
       x: function (d) {
@@ -486,15 +423,13 @@ LineUp.prototype.addResortDragging = function (xss) {
       that.storage.removeColumn(this.__data__);
       that.updateAll();
     }
-
-
   }
-}
+};
 
 
 LineUp.prototype.addNewEmptyStackedColumn = function () {
   this.storage.addStackedColumn();
-  this.updateHeader(this.storage.getColumnLayout());
+  this.updateHeader();
 };
 
 
@@ -505,12 +440,9 @@ LineUp.prototype.addNewEmptyStackedColumn = function () {
  * @param change.value - the new column width
  */
 LineUp.prototype.reweightHeader = function (change) {
-
 //    console.log(change);
   change.column.setColumnWidth(change.value);
-  this.updateHeader(this.storage.getColumnLayout());
-
-
+  this.updateHeader();
 };
 
 
