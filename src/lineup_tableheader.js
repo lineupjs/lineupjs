@@ -207,7 +207,7 @@ LineUp.prototype.updateHeader = function (headers) {
         if (d.column instanceof LineUpStringColumn) {
           that.openFilterPopup(d, d3.select(this));
         } else {
-          that.openMappingEditor(d);
+          that.openMappingEditor(d, d3.select(this));
         }
       },
       shift: 28
