@@ -415,11 +415,13 @@ LineUp.prototype.addResortDragging = function (xss) {
       }
 
 //            that.layoutHeaders(that.storage.getColumnLayout());
+      that.headerUpdateRequired = true;
       that.updateAll();
 
     }
 
     if (hitted == null && moved) {
+      that.headerUpdateRequired = true;
       that.storage.removeColumn(this.__data__);
       that.updateAll();
     }
@@ -429,6 +431,7 @@ LineUp.prototype.addResortDragging = function (xss) {
 
 LineUp.prototype.addNewEmptyStackedColumn = function () {
   this.storage.addStackedColumn();
+  this.headerUpdateRequired = true;
   this.updateHeader();
 };
 
@@ -442,6 +445,7 @@ LineUp.prototype.addNewEmptyStackedColumn = function () {
 LineUp.prototype.reweightHeader = function (change) {
 //    console.log(change);
   change.column.setColumnWidth(change.value);
+  this.headerUpdateRequired = true;
   this.updateHeader();
 };
 
