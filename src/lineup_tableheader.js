@@ -211,7 +211,7 @@ LineUp.prototype.updateHeader = function (headers) {
         }
       },
       shift: 28
-    },];
+    }];
 
     buttons.forEach(function (button) {
       var $button = allHeaders.selectAll('.'+button.class).data(button.filter);

@@ -135,6 +135,7 @@ LineUp.prototype.changeDataStorage = function (spec) {
   this.storage.config = this.config;
   this.spec = spec;
   this.config.columnBundles.primary.sortedColumn = null;
+  this.headerUpdateRequired = true;
   delete this.prevRowScale;
 };
 
@@ -143,6 +144,7 @@ LineUp.prototype.changeDataStorage = function (spec) {
  */
 LineUp.prototype.startVis = function () {
   this.assignColors(this.storage.getRawColumns());
+  this.headerUpdateRequired = true;
   //initial sort
   this.storage.resortData({});
   this.updateAll();
