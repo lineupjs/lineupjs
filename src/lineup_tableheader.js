@@ -24,6 +24,8 @@ LineUp.prototype.updateHeader = function (headers) {
   headers.forEach(function (d) {
     d.flattenMe(allHeaderData, {addEmptyColumns: true});
   });
+  //reverse order to render from right to left
+  allHeaderData.reverse();
 
   LineUp.updateClipPaths(allHeaderData, this.$table, 'H', false, 'columnheader');
   //console.log(allHeaderData);

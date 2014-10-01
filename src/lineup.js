@@ -52,8 +52,8 @@ var LineUp = function (spec, $container, config) {
   this.dragWeight = this.initDragging();
 };
 
-LineUp.prototype.shiftHeader = function(shift) {
-  this.$header.attr('transform','translate(0,'+shift+')');
+LineUp.prototype.scrolled = function(top, left) {
+  this.$header.attr('transform','translate(0,'+top+')');
 };
 
 /**
@@ -78,7 +78,7 @@ LineUp.defaultConfig = {
     /**
      * number of backup rows to keep to avoid updating on every small scroll thing
      */
-    backupScrollRows: 10,
+    backupScrollRows: 4,
     animationDuration: 1000,
     plusSigns: {
       /* addStackedColumn: {

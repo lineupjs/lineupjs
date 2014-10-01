@@ -474,12 +474,12 @@
 
     var allRows = allRowsSuper;
 
-    LineUp.updateClipPaths(allHeaders, this.$table, 'B', true);
-    updateText(allHeaders, allRows, svg, that.config);
     updateSingleBars(headers, allRows, that.config);
     updateStackBars(headers, allRows, this.config.renderingOptions.animation && stackTransition, that.config);
     updateActionBars(headers, allRows, that.config);
 
+    LineUp.updateClipPaths(allHeaders, this.$table, 'B', true);
+    updateText(allHeaders, allRows, svg, that.config);
     if (that.config.renderingOptions.values) {
       allRowsSuper.classed('values', true);
       allRowsSuper.each(function(row) {

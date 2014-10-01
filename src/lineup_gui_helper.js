@@ -549,10 +549,10 @@
       shift;
     function onScroll() {
       var act = container.scrollTop;
+      var left = container.scrollLeft;
       //at least one row changed
-      that.shiftHeader(act);
+      that.scrolled(act, left);
       if (Math.abs(prevScrollTop - act) >= rowHeight*backupRows) {
-        console.log('update',prevScrollTop, act, rowHeight*backupRows);
         prevScrollTop = act;
         that.updateBody();
       }
@@ -565,7 +565,7 @@
     //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), "resized");
     //  that.updateBody();
     //});
-    function selectVisible(data, rowScale) {
+    function selectVisibleRows(data, rowScale) {
       var top = container.scrollTop-shift,
         bottom = top + $container.innerHeight(),
         height = jbody[0].scrollHeight,
@@ -589,7 +589,7 @@
       return [Math.max(i,0),Math.min(j,data.length)];
     }
     return {
-      selectVisible: selectVisible,
+      selectVisible: selectVisibleRows,
       onScroll : onScroll
     }
   };

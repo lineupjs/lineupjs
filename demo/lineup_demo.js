@@ -34,6 +34,11 @@
   var lineup = null;
   var datasets = [];
 
+  $(window).resize(function() {
+    if (lineup) {
+      lineup.updateBody()
+    };
+  });
   function updateMenu() {
     var config = lineup.config;
     var kv = d3.entries(lineup.config.renderingOptions);

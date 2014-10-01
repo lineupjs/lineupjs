@@ -70,7 +70,3 @@ html, body {
     overflow-x: visible;
     overflow-y: auto;
 }
-
-#lugui-table-svg {
-    min-width: 100%;
-}
