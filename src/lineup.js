@@ -5,21 +5,13 @@
  * @param spec.storage - a LineUp Storage, see {@link LineUpLocalStorage}
  * @constructor
  */
-var LineUp = function (spec, $header, $body, config) {
+var LineUp = function (spec, $container, config) {
   this.storage = spec.storage;
   this.spec = spec;
 //    this.sortedColumn = [];
-  this.$header = $header;
-  this.$body = $body;
-  this.tooltip = LineUp.createTooltip();
-
-  //create basic structure
-  this.$header.append('defs').attr('class','column');
-  this.$header.append('g').attr('class','main');
-  this.$header.append('g').attr('class','overlay');
-  var $defs = this.$body.append('defs');
-  $defs.append('defs').attr('class','column');
-  $defs.append('defs').attr('class','overlay');
+  this.$container = $container;
+  this.$table = $container.append('svg').attr('class','lu');
+  this.tooltip = LineUp.createTooltip($container.node());
 
   this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
     //TODO internal stuff, should to be extracted
@@ -35,48 +27,33 @@ var LineUp = function (spec, $header, $body, config) {
     }});
   this.storage.config = this.config;
 
+  //create basic structure
+  var $defs = this.$table.append('defs');
+  $defs.append('defs').attr('class','columnheader');
+  $defs.append('defs').attr('class','column');
+  $defs.append('defs').attr('class','overlay');
+  this.$body = this.$table.append('g').attr('transform','translate(0,'+this.config.htmlLayout.headerHeight+')');
+  this.$header = this.$table.append('g').attr('class','header');
+  this.$header.append('rect').attr({
+    width: '100%',
+    height: this.config.htmlLayout.headerHeight,
+    fill: 'lightgray'
+  });
+  this.$header.append('g').attr('class','main');
+  this.$header.append('g').attr('class','overlay');
+
   this.headerUpdateRequired = true;
   this.stackedColumnModified = null;
 
-  var that = this;
+  var r = this.initScrolling($($container.node()));
+  this.selectVisible = r.selectVisible;
+  this.onScroll = r.onScroll;
 
-  /*
-   * define dragging behaviour for header weights
-   * */
+  this.dragWeight = this.initDragging();
+};
 
-  function dragWeightStarted() {
-    d3.event.sourceEvent.stopPropagation();
-    d3.select(this).classed("dragging", true);
-  }
-
-
-  function draggedWeight() {
-    var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
-    that.reweightHeader({column: d3.select(this).data()[0], value: newValue});
-    that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false)
-  }
-
-  function dragWeightEnded() {
-    d3.select(this).classed("dragging", false);
-
-    if (that.config.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
-      that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
-    }
-//        that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
-
-//      that.updateAll();
-    // TODO: integrate columnbundles dynamically !!
-  }
-
-
-  this.dragWeight = d3.behavior.drag()
-    .origin(function (d) {
-      return d;
-    })
-    .on("dragstart", dragWeightStarted)
-    .on("drag", draggedWeight)
-    .on("dragend", dragWeightEnded);
+LineUp.prototype.shiftHeader = function(shift) {
+  this.$header.attr('transform','translate(0,'+shift+')');
 };
 
 /**
@@ -101,7 +78,7 @@ LineUp.defaultConfig = {
     /**
      * number of backup rows to keep to avoid updating on every small scroll thing
      */
-    backupScrollRows: 2,
+    backupScrollRows: 10,
     animationDuration: 1000,
     plusSigns: {
       /* addStackedColumn: {
@@ -238,5 +215,5 @@ LineUp.prototype.destroy = function() {
   this.$body.selectAll('*').remove();
   //remove tooltip
   this.tooltip.destroy();
-  this.scrollContainer.destroy();
+  this.$container.off('scroll', this.onScroll);
 };

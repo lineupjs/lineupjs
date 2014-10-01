@@ -246,7 +246,7 @@
 .lu-tooltip {
     background-color: white;
     min-width: 200px;
-    position: absolute;
+    position: fixed;
 }
 .lu-tooltip table {
     width: 100%;

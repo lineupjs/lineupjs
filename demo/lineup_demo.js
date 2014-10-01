@@ -4,17 +4,6 @@
 
 (function (LineUp) {
   var htmlLayout = {
-    menuHeight: 25,
-    menuHeightExpanded: 50,
-    windowOffsetX: 5,
-    windowOffsetY: 5,
-    headerHeight: 50,
-    headerOffsetY: function () {
-      return (this.menuHeight + this.windowOffsetY + 3)
-    },
-    bodyOffsetY: function () {
-      return (this.menuHeight + this.windowOffsetY + this.headerHeight + 3)
-    }
   };
   var menuActions = [
     {name: " new combined", icon: "fa-plus", action: function () {
@@ -44,8 +33,6 @@
 
   var lineup = null;
   var datasets = [];
-  var $header = d3.select("#lugui-table-header-svg");
-  var $body = d3.select("#lugui-table-body-svg");
 
   function updateMenu() {
     var config = lineup.config;
@@ -74,54 +61,7 @@
   }
 
   function layoutHTML() {
-    //add svgs:
-    var header = d3.select("#lugui-table-header-svg").attr({
-      width: ($(window).width()),
-      height: htmlLayout.headerHeight
-    });
 
-    var body = d3.select("#lugui-table-body-svg").attr({
-      width: ($(window).width())
-    });
-
-    // constant layout attributes:
-    $("#lugui-menu").css({
-      "top": htmlLayout.windowOffsetY + "px",
-      "left": htmlLayout.windowOffsetX + "px",
-      "height": htmlLayout.menuHeight + "px"
-    });
-    $("#lugui-table-header").css({
-      "top": htmlLayout.headerOffsetY() + "px",
-      "left": htmlLayout.windowOffsetX + "px",
-      "height": htmlLayout.headerHeight + "px"
-    });
-
-    $("#lugui-table-body-wrapper").css({
-      "top": htmlLayout.bodyOffsetY() + "px",
-      "left": htmlLayout.windowOffsetX + "px"
-    });
-
-
-    // ----- Adjust UI elements...
-    var resizeGUI = function () {
-      d3.selectAll("#lugui-menu, #lugui-table-header, #lugui-table-body-wrapper").style({
-        "width": ($(window).width() - 2 * htmlLayout.windowOffsetX) + "px"
-      });
-      d3.selectAll("#lugui-table-header-svg, #lugui-table-body-svg").attr({
-        "width": ($(window).width() - 2 * htmlLayout.windowOffsetX)
-      });
-      d3.select("#lugui-table-body-wrapper").style({
-        "height": ($(window).height() - htmlLayout.bodyOffsetY()) + "px"
-      });
-    };
-
-    // .. on window changes...
-    $(window).resize(function () {
-      resizeGUI();
-    });
-
-    // .. and initially once.
-    resizeGUI();
   }
 
   function loadDataImpl(name, desc, _data) {
@@ -136,9 +76,7 @@
     if (lineup) {
       lineup.changeDataStorage(spec);
     } else {
-      lineup = new LineUp(spec, $header, $body, $.extend(true, {}, lineUpDemoConfig));
-      //set the scroll container to enable optimized row rendering
-      lineup.scrollContainer = $('#lugui-table-body-wrapper');
+      lineup = new LineUp(spec, d3.select('#lugui-table-wrapper'), $.extend(true, {}, lineUpDemoConfig));
     }
     updateMenu();
     lineup.startVis();

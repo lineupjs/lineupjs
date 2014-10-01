@@ -16,7 +16,7 @@ LineUp.prototype.updateHeader = function (headers) {
 
   if (this.headerUpdateRequired) {
     this.layoutHeaders(headers);
-    rootsvg.attr('width',this.totalWidth);
+    this.$table.attr('width',this.totalWidth);
     this.headerUpdateRequired = false;
   }
 
@@ -25,7 +25,7 @@ LineUp.prototype.updateHeader = function (headers) {
     d.flattenMe(allHeaderData, {addEmptyColumns: true});
   });
 
-  LineUp.updateClipPaths(allHeaderData, rootsvg, 'H', false);
+  LineUp.updateClipPaths(allHeaderData, this.$table, 'H', false, 'columnheader');
   //console.log(allHeaderData);
 
 

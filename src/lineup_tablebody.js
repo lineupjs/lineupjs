@@ -7,11 +7,12 @@
  * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
  */
 (function() {
-  LineUp.updateClipPaths = function (headers, svg, prefix, shift) {
+  LineUp.updateClipPaths = function (headers, svg, prefix, shift, defclass) {
+    defclass = defclass || 'column';
     //generate clip paths for the text columns to avoid text overflow
     //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
     //there is a bug in webkit which present camelCase selectors
-    var textClipPath = svg.select('defs.column').selectAll(function () {
+    var textClipPath = svg.select('defs.'+defclass).selectAll(function () {
       return this.getElementsByTagName("clipPath");
     }).data(headers, function(d) { return d.id; });
     textClipPath.enter().append('clipPath')
@@ -317,8 +318,7 @@
     //backup the rowscale from the previous call to have a previous "old" position
     this.prevRowScale = rowScale;
 
-    svg.attr("height", datLength * that.config.svgLayout.rowHeight);
-    svg.attr('width',this.totalWidth);
+    this.$table.attr("height", datLength * that.config.svgLayout.rowHeight + that.config.htmlLayout.headerHeight);
 
     var visibleRange = this.selectVisible(data, rowScale);
     if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
@@ -421,7 +421,7 @@
         //generate clip paths for the text columns to avoid text overflow
         //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
         //there is a bug in webkit which present camelCase selectors
-        var textClipPath = svg.select('defs.overlay').selectAll(function () {
+        var textClipPath = that.$table.select('defs.overlay').selectAll(function () {
           return this.getElementsByTagName("clipPath");
         }).data(textOverlays);
           textClipPath.enter().append('clipPath')
@@ -447,7 +447,7 @@
           var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
           var matrix = elem.getScreenCTM(),
               tbbox = elem.getBBox(),
-              point = that.$body.node().createSVGPoint();
+              point = that.$table.node().createSVGPoint();
           point.x = tbbox.x;
           point.y = tbbox.y;
           point = point.matrixTransform(matrix);
@@ -474,7 +474,7 @@
 
     var allRows = allRowsSuper;
 
-    LineUp.updateClipPaths(allHeaders, svg, 'B', true);
+    LineUp.updateClipPaths(allHeaders, this.$table, 'B', true);
     updateText(allHeaders, allRows, svg, that.config);
     updateSingleBars(headers, allRows, that.config);
     updateStackBars(headers, allRows, this.config.renderingOptions.animation && stackTransition, that.config);

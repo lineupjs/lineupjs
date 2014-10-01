@@ -495,11 +495,11 @@
     });
   };
 
-  LineUp.createTooltip = function() {
-    var $tooltip = $('<div class="lu-tooltip"/>').appendTo("body");
+  LineUp.createTooltip = function(container) {
+    var $container = $(container), $tooltip = $('<div class="lu-tooltip"/>').appendTo($container);
     function showTooltip(content, xy) {
       $tooltip.html(content).css({
-        left: xy.x + "px",
+        left: xy.x  + "px",
         top: (xy.y + xy.height) + "px"
       }).fadeIn();
 
@@ -539,76 +539,99 @@
     }
   };
 
-  /**
-   * setter for a scroll container, which is used for determining visibility
-   */
-  Object.defineProperty(LineUp.prototype,'scrollContainer',{
-    enumerable: true,
-    set : function($container) {
-      $container = $($container);
-      var that = this,
-          container = $container[0],
-          rowHeight = this.config.svgLayout.rowHeight,
-          prevScrollTop = container.scrollTop,
-          jbody = $(this.$body.node()),
-          backupRows = this.config.svgLayout.backupScrollRows,
-          shift;
-      function l(event) {
-        var act = container.scrollTop;
-        //at least one row changed
-        if (Math.abs(prevScrollTop - act) >= rowHeight*backupRows) {
-          prevScrollTop = act;
-          that.updateBody();
-        }
-      }
-      $container.on('scroll',l);
-      //the shift between the scroll container our svg body
-      shift = jbody.offset().top - $container.offset().top;
-      //use a resize sensor of a utility lib to also detect resize changes
-      //new ResizeSensor($container, function() {
-      //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), "resized");
-      //  that.updateBody();
-      //});
-      this.selectVisible = function(data, rowScale) {
-        var top = container.scrollTop-shift,
-            bottom = top + $container.innerHeight(),
-            height = jbody[0].scrollHeight,
-            i = 0, j = data.length;
-        if (top > 0) {
-          i = Math.round(top / rowHeight);
-          //count up till really even partial rows are visible
-          while(i >= 0 && rowScale(data[i+1]) > top) {
-            i--;
-          }
-          i-=backupRows; //one more row as backup for scrolling
-        }
-        if (height > bottom) { //some parts from the bottom aren't visible
-          j = Math.round(bottom / rowHeight);
-          //count down till really even partial rows are visible
-          while(j <= data.length && rowScale(data[j-1]) < bottom) {
-            j++;
-          }
-          j+=backupRows; //one more row as backup for scrolling
-        }
-        return [Math.max(i,0),Math.min(j,data.length)];
-      };
-      this._scrollContainer = {
-        destroy: function() {
-          $container.off('scroll', l);
-        },
-        container: $container
-      };
-    },
-    get : function() {
-      return this._scrollContainer || {
-        destroy: function() {
-
-        }
+  LineUp.prototype.initScrolling = function($container) {
+    var that = this,
+      container = $container[0],
+      rowHeight = this.config.svgLayout.rowHeight,
+      prevScrollTop = container.scrollTop,
+      jbody = $(this.$table.node()),
+      backupRows = this.config.svgLayout.backupScrollRows,
+      shift;
+    function onScroll() {
+      var act = container.scrollTop;
+      //at least one row changed
+      that.shiftHeader(act);
+      if (Math.abs(prevScrollTop - act) >= rowHeight*backupRows) {
+        console.log('update',prevScrollTop, act, rowHeight*backupRows);
+        prevScrollTop = act;
+        that.updateBody();
       }
     }
-  });
-  LineUp.prototype.selectVisible = function(data, rowScale) {
-    //by default select all
-    return [0, data.length];
-  }
+    $container.on('scroll', onScroll);
+    //the shift between the scroll container our svg body
+    shift = jbody.offset().top - $container.offset().top + this.config.htmlLayout.headerHeight;
+    //use a resize sensor of a utility lib to also detect resize changes
+    //new ResizeSensor($container, function() {
+    //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), "resized");
+    //  that.updateBody();
+    //});
+    function selectVisible(data, rowScale) {
+      var top = container.scrollTop-shift,
+        bottom = top + $container.innerHeight(),
+        height = jbody[0].scrollHeight,
+        i = 0, j = data.length;
+      if (top > 0) {
+        i = Math.round(top / rowHeight);
+        //count up till really even partial rows are visible
+        while(i >= 0 && rowScale(data[i+1]) > top) {
+          i--;
+        }
+        i-=backupRows; //one more row as backup for scrolling
+      }
+      if (height > bottom) { //some parts from the bottom aren't visible
+        j = Math.round(bottom / rowHeight);
+        //count down till really even partial rows are visible
+        while(j <= data.length && rowScale(data[j-1]) < bottom) {
+          j++;
+        }
+        j+=backupRows; //one more row as backup for scrolling
+      }
+      return [Math.max(i,0),Math.min(j,data.length)];
+    }
+    return {
+      selectVisible: selectVisible,
+      onScroll : onScroll
+    }
+  };
+
+  LineUp.prototype.initDragging = function() {
+    var that = this;
+    /*
+     * define dragging behaviour for header weights
+     * */
+
+    function dragWeightStarted() {
+      d3.event.sourceEvent.stopPropagation();
+      d3.select(this).classed("dragging", true);
+    }
+
+
+    function draggedWeight() {
+      var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
+      that.reweightHeader({column: d3.select(this).data()[0], value: newValue});
+      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false)
+    }
+
+    function dragWeightEnded() {
+      d3.select(this).classed("dragging", false);
+
+      if (that.config.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
+        that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
+        that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
+      }
+//        that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
+
+//      that.updateAll();
+      // TODO: integrate columnbundles dynamically !!
+    }
+
+
+    return d3.behavior.drag()
+      .origin(function (d) {
+        return d;
+      })
+      .on("dragstart", dragWeightStarted)
+      .on("drag", draggedWeight)
+      .on("dragend", dragWeightEnded);
+  };
 }());
