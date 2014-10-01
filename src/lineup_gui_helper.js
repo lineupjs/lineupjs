@@ -403,6 +403,7 @@
 
     function removeStackedColumn(col) {
       that.storage.removeColumn(col);
+      that.headerUpdateRequired = true;
       that.updateAll();
     }
 

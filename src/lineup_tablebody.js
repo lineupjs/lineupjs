@@ -13,7 +13,7 @@
     //there is a bug in webkit which present camelCase selectors
     var textClipPath = svg.select('defs.column').selectAll(function () {
       return this.getElementsByTagName("clipPath");
-    }).data(headers);
+    }).data(headers, function(d) { return d.id; });
     textClipPath.enter().append('clipPath')
       .attr('id', function (d) {
         return 'clip-' + prefix + d.id;
@@ -318,6 +318,7 @@
     this.prevRowScale = rowScale;
 
     svg.attr("height", datLength * that.config.svgLayout.rowHeight);
+    svg.attr('width',this.totalWidth);
 
     var visibleRange = this.selectVisible(data, rowScale);
     if (visibleRange[0] > 0 || visibleRange[1] < data.length) {

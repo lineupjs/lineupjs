@@ -45,6 +45,7 @@ LineUp.prototype.layoutHeaders = function (headers) {
 
     })
 
+  this.totalWidth = shift;
 
 };
 

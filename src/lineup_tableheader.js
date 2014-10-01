@@ -16,6 +16,7 @@ LineUp.prototype.updateHeader = function (headers) {
 
   if (this.headerUpdateRequired) {
     this.layoutHeaders(headers);
+    rootsvg.attr('width',this.totalWidth);
     this.headerUpdateRequired = false;
   }
 
@@ -107,7 +108,7 @@ LineUp.prototype.updateHeader = function (headers) {
       },
       y: 0,
       width: 5
-    })
+    });
 
     allHeaders.select(".weightHandle").attr({
       x: function (d) {
@@ -116,7 +117,7 @@ LineUp.prototype.updateHeader = function (headers) {
       height: function (d) {
         return d.height
       }
-    }).call(this.dragWeight) // TODO: adopt dragWeight function !
+    }).call(this.dragWeight); // TODO: adopt dragWeight function !
   }
 
   // -- handle Text
