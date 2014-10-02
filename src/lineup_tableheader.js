@@ -1,6 +1,8 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/15/14.
  */
+var LineUp;
+(function(LineUp, d3, $, undefined) {
 /**
  * Render the given headers
  * @param headers - the array of headers, see {@link LineUpColumn}
@@ -41,7 +43,7 @@ LineUp.prototype.updateHeader = function (headers) {
   // --- adding Element to class allHeaders
   var allHeadersEnter = allHeaders.enter().append("g").attr("class","header")
     .classed("emptyHeader", function (d) {
-      return d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn;
+      return d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn;
     })
     .call(function () {
       that.addResortDragging(this, config)
@@ -59,19 +61,19 @@ LineUp.prototype.updateHeader = function (headers) {
     "class": "labelBG",
     y: 0
   }).style("fill",function (d) {
-      if (d instanceof LayoutEmptyColumn) {
+      if (d instanceof LineUp.LayoutEmptyColumn) {
         return "lightgray"
-      } else if (d instanceof LayoutStackedColumn || !config.colorMapping.has(d.column.id) || d instanceof LayoutActionColumn) {
+      } else if (d instanceof LineUp.LayoutStackedColumn || !config.colorMapping.has(d.column.id) || d instanceof LineUp.LayoutActionColumn) {
         return config.grayColor;
       } else {
         return config.colorMapping.get(d.column.id);
       }})
     .on("click",function (d) {
-      if (d3.event.defaultPrevented || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) {
+      if (d3.event.defaultPrevented || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
         return;
       }
       // no sorting for empty stacked columns !!!
-      if (d instanceof LayoutStackedColumn && d.children.length < 1) {
+      if (d instanceof LineUp.LayoutStackedColumn && d.children.length < 1) {
         return;
       }
 
@@ -102,7 +104,7 @@ LineUp.prototype.updateHeader = function (headers) {
 
   if (this.config.manipulative) {
     allHeadersEnter.filter(function (d) {
-      return !(d instanceof LayoutEmptyColumn) && !(d instanceof LayoutActionColumn);
+      return !(d instanceof LineUp.LayoutEmptyColumn) && !(d instanceof LineUp.LayoutActionColumn);
     }).append("rect").attr({
       "class": "weightHandle",
       x: function (d) {
@@ -140,16 +142,16 @@ LineUp.prototype.updateHeader = function (headers) {
     })
     .attr({
       y: function (d) {
-        if (d instanceof LayoutStackedColumn || d.parent != null) return d.height / 2;
+        if (d instanceof LineUp.LayoutStackedColumn || d.parent != null) return d.height / 2;
         else return d.height * 3 / 4;
       },
       'clip-path': function (d) { return 'url(#clip-H' + d.id + ')' }
     }).text(function (d) {
-      if (d instanceof LayoutStackedColumn || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) return d.label
+      if (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) return d.label
       else return d.column.label;
     });
   allHeaders.select('title').text(function (d) {
-    if (d instanceof LayoutStackedColumn || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) return d.label
+    if (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) return d.label
     else return d.column.label;
   });
 
@@ -164,7 +166,7 @@ LineUp.prototype.updateHeader = function (headers) {
   });
 
   allHeaders.select(".headerSort").text(function (d) {
-    var sc = config.columnBundles[d.columnBundle].sortedColumn
+    var sc = config.columnBundles[d.columnBundle].sortedColumn;
     return ((sc && d.getDataID() == sc.getDataID()) ?
       ((config.columnBundles[d.columnBundle].sortingOrderAsc) ? '\uf0de' : '\uf0dd')
       : "");
@@ -182,7 +184,7 @@ LineUp.prototype.updateHeader = function (headers) {
       'class' : 'stackedColumnInfo',
       text : "\uf1de",
       filter: function(d) {
-        return d instanceof LayoutStackedColumn ? [d] : [];
+        return d instanceof LineUp.LayoutStackedColumn ? [d] : [];
       },
       action : function(d) {
         that.stackedColumnOptionsGui(d)
@@ -192,7 +194,7 @@ LineUp.prototype.updateHeader = function (headers) {
       'class' : 'singleColumnDelete',
       text : "\uf014",
       filter: function(d) {
-        return (d instanceof LayoutStackedColumn || d instanceof LayoutEmptyColumn || d instanceof LayoutActionColumn) ? [] : [d];
+        return (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) ? [] : [d];
       },
       action : function(d) {
         that.storage.removeColumn(d);
@@ -204,10 +206,10 @@ LineUp.prototype.updateHeader = function (headers) {
       'class' : 'singleColumnFilter',
       text : "\uf0b0",
       filter: function(d) {
-        return (d instanceof LayoutSingleColumn && (d.column instanceof LineUpNumberColumn || d.column instanceof LineUpStringColumn)) ? [d] : [];
+        return (d instanceof LineUp.LayoutSingleColumn && (d.column instanceof LineUp.LineUpNumberColumn || d.column instanceof LineUp.LineUpStringColumn)) ? [d] : [];
       },
       action : function(d) {
-        if (d.column instanceof LineUpStringColumn) {
+        if (d.column instanceof LineUp.LineUpStringColumn) {
           that.openFilterPopup(d, d3.select(this));
         } else {
           that.openMappingEditor(d, d3.select(this));
@@ -265,8 +267,6 @@ LineUp.prototype.updateHeader = function (headers) {
       return d.h;
     }
   }).on("click", function (d) {
-    console.log(d.action);
-    console.log(that);
     if ($.isFunction(d.action)) {
       d.action.call(that, d);
     } else {
@@ -311,7 +311,7 @@ LineUp.prototype.addResortDragging = function (xss) {
   var moved = false;
 
   function dragstart(d) {
-    if (d instanceof LayoutEmptyColumn) return;
+    if (d instanceof LineUp.LayoutEmptyColumn) return;
 
     d3.event.sourceEvent.stopPropagation(); // silence other listeners
 
@@ -322,7 +322,7 @@ LineUp.prototype.addResortDragging = function (xss) {
   }
 
   function dragmove(d) {
-    if (d instanceof LayoutEmptyColumn) return;
+    if (d instanceof LineUp.LayoutEmptyColumn) return;
 
     moved = true;
     var dragHeader = svgOverlay.selectAll(".dragHeader").data([d])
@@ -401,7 +401,7 @@ LineUp.prototype.addResortDragging = function (xss) {
 
   function dragend(d) {
     if (d3.event.defaultPrevented) return;
-    if (d instanceof LayoutEmptyColumn) return;
+    if (d instanceof LineUp.LayoutEmptyColumn) return;
 
     d3.select(this).classed("dragObject", false);
     svgOverlay.selectAll(".dragHeader").remove();
@@ -451,5 +451,4 @@ LineUp.prototype.reweightHeader = function (change) {
   this.headerUpdateRequired = true;
   this.updateHeader();
 };
-
-
+}(LineUp || (LineUp = {}), d3, jQuery));

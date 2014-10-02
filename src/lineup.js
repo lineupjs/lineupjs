@@ -5,7 +5,10 @@
  * @param spec.storage - a LineUp Storage, see {@link LineUpLocalStorage}
  * @constructor
  */
-var LineUp = function (spec, $container, config) {
+var LineUp;
+(function(LineUp, d3, $, undefined) {
+
+function LineUpClass(spec, $container, config) {
   this.storage = spec.storage;
   this.spec = spec;
 //    this.sortedColumn = [];
@@ -50,7 +53,18 @@ var LineUp = function (spec, $container, config) {
   this.onScroll = r.onScroll;
 
   this.dragWeight = this.initDragging();
-};
+
+  return this;
+}
+  LineUp.prototype = LineUpClass.prototype = $.extend(LineUpClass.prototype, LineUp.prototype);
+  LineUp.create = function (storage, $container, options) {
+    if (!$.isPlainObject(storage)) {
+      storage = { storage: storage };
+    }
+    var r = new LineUpClass(storage, $container, options);
+    r.startVis();
+    return r;
+  };
 
 LineUp.prototype.scrolled = function(top, left) {
   this.$header.attr('transform','translate(0,'+top+')');
@@ -106,7 +120,7 @@ LineUp.defaultConfig = {
   }
 };
 
-LineUp.prototype.changeDataStorage = function (spec) {
+  LineUp.prototype.changeDataStorage = function (spec) {
 //    d3.select("#lugui-table-header-svg").selectAll().remove();
   this.storage = spec.storage;
   this.storage.config = this.config;
@@ -127,7 +141,7 @@ LineUp.prototype.startVis = function () {
   this.updateAll();
 };
 
-LineUp.prototype.updateAll = function (stackTransition) {
+  LineUp.prototype.updateAll = function (stackTransition) {
   this.updateHeader(this.storage.getColumnLayout());
   this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), stackTransition || false)
 };
@@ -194,7 +208,7 @@ LineUp.prototype.changeWeights = function(column, weights) {
     column = this.storage.getColumnByName(column)
   }
   column = column || this.config.columnBundles.primary.sortedColumn;
-  if (!(column instanceof LayoutStackedColumn)) {
+  if (!(column instanceof LineUp.LayoutStackedColumn)) {
     return false;
   }
   column.updateWeights(weights);
@@ -217,3 +231,4 @@ LineUp.prototype.destroy = function() {
   this.tooltip.destroy();
   this.$container.off('scroll', this.onScroll);
 };
+}(LineUp || (LineUp = {}), d3, jQuery));

@@ -76,15 +76,14 @@
     delete spec.dataspec.file;
     delete spec.dataspec.separator;
     spec.dataspec.data = _data;
-    spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
+    spec.storage = LineUp.createLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
 
     if (lineup) {
       lineup.changeDataStorage(spec);
     } else {
-      lineup = new LineUp(spec, d3.select('#lugui-table-wrapper'), $.extend(true, {}, lineUpDemoConfig));
+      lineup = LineUp.create(spec, d3.select('#lugui-table-wrapper'), lineUpDemoConfig);
     }
     updateMenu();
-    lineup.startVis();
   }
 
   function loadDataset(ds) {

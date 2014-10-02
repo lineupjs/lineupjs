@@ -2,7 +2,8 @@
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/17/14.
  */
 
-(function () {
+var LineUp;
+(function(LineUp, d3, $, undefined) {
   /**
    * creates a simple popup window with a table
    * @param title
@@ -65,7 +66,7 @@
     var popup = createPopup('add stacked column:', 'Stacked');
     // list all data rows !
     var trData = that.storage.getRawColumns().filter(function (d) {
-      return (d instanceof LineUpNumberColumn);
+      return (d instanceof LineUp.LineUpNumberColumn);
     }).map(function (d) {
       return {d: d, isChecked: false, weight: 1.0};
     });
@@ -449,7 +450,7 @@
   };
 
   LineUp.prototype.openFilterPopup = function(column, $button) {
-    if (!(column instanceof LayoutSingleColumn && column.column instanceof LineUpStringColumn)) {
+    if (!(column instanceof LineUp.LayoutSingleColumn && column.column instanceof LineUp.LineUpStringColumn)) {
       //can't filter other than string columns
       return;
     }
@@ -615,7 +616,7 @@
     function dragWeightEnded() {
       d3.select(this).classed("dragging", false);
 
-      if (that.config.columnBundles.primary.sortedColumn instanceof LayoutStackedColumn) {
+      if (that.config.columnBundles.primary.sortedColumn instanceof LineUp.LayoutStackedColumn) {
         that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
         that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
       }
@@ -634,4 +635,4 @@
       .on("drag", draggedWeight)
       .on("dragend", dragWeightEnded);
   };
-}());
+}(LineUp || (LineUp = {}), d3, jQuery));

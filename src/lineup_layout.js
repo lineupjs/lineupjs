@@ -1,6 +1,8 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/15/14.
  */
+var LineUp;
+(function(LineUp, d3, $, undefined) {
 LineUp.prototype.layoutHeaders = function (headers) {
   var offset = 0;
   var config = this.config;
@@ -25,7 +27,7 @@ LineUp.prototype.layoutHeaders = function (headers) {
   });
 
   headers.filter(function (d) {
-    return (d instanceof LayoutStackedColumn);
+    return (d instanceof LineUp.LayoutStackedColumn);
   })
     .forEach(function (d) {
 
@@ -61,7 +63,7 @@ LineUp.prototype.assignColors = function (headers) {
 
   headers.forEach(function (d) {
     // gray columns are:
-    if ((d instanceof LineUpStringColumn)
+    if ((d instanceof LineUp.LineUpStringColumn)
 //            || (d instanceof LineUpStackedColumn)
       || (d.id == "rank")) {
       config.colorMapping.set(d.id, config.grayColor);
@@ -79,3 +81,4 @@ LineUp.prototype.assignColors = function (headers) {
 
   //console.log(config.colorMapping);
 };
+}(LineUp || (LineUp = {}), d3, jQuery));

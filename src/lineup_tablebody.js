@@ -6,7 +6,8 @@
  * @param headers - the headers as in {@link updateHeader}
  * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
  */
-(function() {
+var LineUp;
+(function(LineUp, d3, $, undefined) {
   LineUp.updateClipPaths = function (headers, svg, prefix, shift, defclass) {
     defclass = defclass || 'column';
     //generate clip paths for the text columns to avoid text overflow
@@ -38,7 +39,7 @@
     // -- the text columns
 
     var allTextHeaders = allHeaders.filter(function (d) {
-      return d.column instanceof LineUpStringColumn || d instanceof LayoutRankColumn;
+      return d.column instanceof LineUp.LineUpStringColumn || d instanceof LineUp.LayoutRankColumn;
     });
 
     const rowCenter = (config.svgLayout.rowHeight / 2);
@@ -51,7 +52,7 @@
             label: column.column.getRawValue(d),
             offsetX: column.offsetX,
             columnW: column.getColumnWidth(),
-            isRank: (column instanceof LayoutRankColumn),
+            isRank: (column instanceof LineUp.LayoutRankColumn),
             clip: 'url(#clip-B' + column.id + ')'
           };
         });
@@ -99,13 +100,13 @@
     }
     //primary is a stacked one
     var current = config.columnBundles.primary.sortedColumn;
-    return !(current && (current.parent instanceof LayoutStackedColumn));
+    return !(current && (current.parent instanceof LineUp.LayoutStackedColumn));
   }
 
   function updateSingleBars(headers, allRows, config) {
     // -- handle the Single columns  (!! use unflattened headers for filtering)
     var allSingleBarHeaders = headers.filter(function (d) {
-      return d.column instanceof LineUpNumberColumn;
+      return d.column instanceof LineUp.LineUpNumberColumn;
     });
     var barRows = allRows.selectAll(".tableData.bar")
       .data(function (d) {
@@ -147,7 +148,7 @@
   function updateStackBars(headers, allRows, _stackTransition, config) {
     // -- RENDER the stacked columns (update, exit, enter)
     var allStackedHeaders = headers.filter(function (d) {
-      return (d instanceof LayoutStackedColumn);
+      return (d instanceof LineUp.LayoutStackedColumn);
     });
 
     // -- render StackColumnGroups
@@ -219,7 +220,7 @@
     $r.enter().append('text').append('title');
     $r.exit().remove();
     $r.attr('x', function(d,i) {
-        return i*config.svgLayout.rowHeight;
+      return i * config.svgLayout.rowHeight;
     }).text(function(d) {
       return d.icon;
     }).on('click', function(d) {
@@ -232,7 +233,7 @@
   function updateActionBars(headers, allRows, config) {
     // -- handle the Single columns  (!! use unflattened headers for filtering)
     var allActionBarHeaders = headers.filter(function (d) {
-      return (d instanceof LayoutActionColumn);
+      return (d instanceof LineUp.LayoutActionColumn);
     });
     var actionRows = allRows.selectAll(".tableData.action")
       .data(function (d) {
@@ -259,10 +260,10 @@
   }
 
   function createRepr(col,row) {
-    if (col instanceof LayoutStackedColumn) {
+    if (col instanceof LineUp.LayoutStackedColumn) {
       return col.getValue(row);
     }
-    if (col instanceof LayoutSingleColumn && col.column instanceof LineUpNumberColumn) {
+    if (col instanceof LineUp.LayoutSingleColumn && col.column instanceof LineUp.LineUpNumberColumn) {
       var r = col.column.getRawValue(row);
       return isNaN(r) || r.toString() === '' ? '' : +r;
     }
@@ -365,11 +366,11 @@
         return that.config.numberformat(+v);
       }
       headers.forEach(function (col) {
-          if (col.column instanceof LineUpNumberColumn) {
+          if (col.column instanceof LineUp.LineUpNumberColumn) {
             textOverlays.push({id: col.id, value: col.column.getValue(row), label: that.config.numberformat(+col.column.getRawValue(row)),
               x: col.offsetX,
               w: col.getColumnWidth()})
-          } else if (col instanceof  LayoutStackedColumn) {
+          } else if (col instanceof  LineUp.LayoutStackedColumn) {
             var allStackOffset = 0;
 
             col.children.forEach(function (child) {
@@ -490,4 +491,4 @@
       allRowsSuper.classed('values', false).selectAll('text.valueonly').remove();
     }
   }
-}());
+}(LineUp || (LineUp = {}), d3, jQuery));

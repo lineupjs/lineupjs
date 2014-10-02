@@ -2,7 +2,6 @@
  * lineup mapping editor
  */
 var LineUp;
-
 (function (LineUp, d3, $) {
 
   function addLine($svg, x1, y1, x2, y2, clazz) {
@@ -240,4 +239,3 @@ var LineUp;
     return editor;
   }
 }(LineUp || (LineUp = {}), d3, $));
- 
