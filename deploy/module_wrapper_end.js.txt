@@ -4,8 +4,8 @@
 
   return LineUp;
   }
-  if (typeof require === "function" && require.amd) {
-    require(['jquery','d3','underscore'], LineUpLoader);
+  if (typeof define === "function" && define.amd) {
+    define(['jquery','d3','underscore'], LineUpLoader);
   } else if (typeof module === "object" && module.exports) {
     module.exports = LineUpLoader(require('jquery'), require('d3'), require('underscore'));
   } else {
