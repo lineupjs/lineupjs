@@ -1,16 +1,17 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/18/14.
  */
-/**
- * An implementation of data storage for reading locally
- * @param tableId
- * @param data
- * @param columns
- * @param config
- * @class
- */
+/* global d3, jQuery, _, console */
 var LineUp;
 (function (LineUp, d3, $, _, undefined) {
+  /**
+   * An implementation of data storage for reading locally
+   * @param tableId
+   * @param data
+   * @param columns
+   * @param config
+   * @class
+   */
   function LineUpLocalStorage(data, columns, layout, primaryKey, storageConfig) {
     this.storageConfig = $.extend(true, {}, {
       colTypes: {
@@ -41,7 +42,7 @@ var LineUp;
 
     function toLayoutColumn(desc) {
       var type = desc.type || "single";
-      return new layoutColumnTypes[type](desc, that.rawcols, toLayoutColumn, that)
+      return new layoutColumnTypes[type](desc, that.rawcols, toLayoutColumn, that);
     }
 
     this.storageConfig.toLayoutColumn = toLayoutColumn;
@@ -63,7 +64,7 @@ var LineUp;
   LineUp.LineUpLocalStorage = LineUpLocalStorage;
   LineUp.createLocalStorage = function (data, columns, layout, primaryKey, storageConfig) {
     return new LineUpLocalStorage(data, columns, layout, primaryKey, storageConfig);
-  }
+  };
 
   /**
    * generate a default layout by just showing all columns with 100 px
@@ -75,7 +76,7 @@ var LineUp;
       return {
         column: c.id,
         width: c instanceof LineUp.LineUpStringColumn ? 200 : 100
-      }
+      };
     });
     return {
       primary: layout
@@ -156,15 +157,15 @@ var LineUp;
         });
         if (rankColumn.length > 0) {
           var accessor = function (d, i) {
-            return i
+            return i;
           };
           if (column instanceof LineUp.LayoutStackedColumn) {
             accessor = function (d) {
-              return column.getValue(d)
+              return column.getValue(d);
             };
           } else if (column) {
             accessor = function (d) {
-              return column.column.getValue(d)
+              return column.column.getValue(d);
             };
           }
           this.assignRanks(this.data, accessor, rankColumn[0].column);
@@ -179,10 +180,10 @@ var LineUp;
         var actualValue = -1;
 
         data.forEach(function (row, i) {
-          if (actualValue == -1) actualValue = accessor(row, i);
-
-//                console.log(row, accessor(row));
-          if (actualValue != accessor(row, i)) {
+          if (actualValue === -1) {
+            actualValue = accessor(row, i);
+          }
+          if (actualValue !== accessor(row, i)) {
             actualRank = i + 1; //we have 1,1,3, not 1,1,2
             actualValue = accessor(row, i);
           }
@@ -204,14 +205,14 @@ var LineUp;
         if (b.layoutColumns.filter(function (d) {
           return d instanceof LineUp.LayoutRankColumn;
         }).length < 1) {
-          b.layoutColumns.unshift(new LineUp.LayoutRankColumn(null, null, null, this))
+          b.layoutColumns.unshift(new LineUp.LayoutRankColumn(null, null, null, this));
         }
 
         //if we have row actions and no action column create one
         if (this.config.svgLayout.rowActions.length > 0 && b.layoutColumns.filter(function (d) {
           return d instanceof LineUp.LayoutActionColumn;
         }).length < 1) {
-          b.layoutColumns.push(new LineUp.LayoutActionColumn())
+          b.layoutColumns.push(new LineUp.LayoutActionColumn());
         }
 
         this.bundles[_bundle] = b;
@@ -245,7 +246,7 @@ var LineUp;
 
         if (col instanceof LineUp.LayoutStackedColumn) {
           var indexOfElement = _.indexOf(headerColumns, col);//function(c){ return (c.id == d.id)});
-          if (indexOfElement != undefined) {
+          if (indexOfElement !== undefined) {
             var addColumns = [];
 //                d.children.forEach(function(ch){
 //
@@ -259,17 +260,17 @@ var LineUp;
 
 //                headerColumns.splice(indexOfElement,1,addColumns)
 
-            Array.prototype.splice.apply(headerColumns, [indexOfElement, 1].concat(addColumns))
+            Array.prototype.splice.apply(headerColumns, [indexOfElement, 1].concat(addColumns));
 
           }
 
 
         } else if (col instanceof LineUp.LayoutSingleColumn) {
-          if (col.parent == null || col.parent == undefined) {
+          if (col.parent === null || col.parent === undefined) {
             headerColumns.splice(headerColumns.indexOf(col), 1);
           } else {
             col.parent.removeChild(col);
-            this.resortData({})
+            this.resortData({});
           }
         }
 
@@ -281,52 +282,50 @@ var LineUp;
         //TODO: could be done for all Column header
         var headerColumns = this.bundles[_bundle].layoutColumns;
         headerColumns.filter(function (d) {
-          return d.id == col.id;
+          return d.id === col.id;
         })[0].label = newValue;
       },
       moveColumn: function (column, targetColumn, position, bundle) {
-        var _bundle = bundle || "primary";
-
-        var headerColumns = this.bundles[_bundle].layoutColumns;
-        var that = this;
+        var _bundle = bundle || "primary",
+          headerColumns = this.bundles[_bundle].layoutColumns,
+          targetIndex;
 
         // different cases:
         if (column.parent == null && targetColumn.parent == null) {
           // simple L1 Column movement:
 
-          headerColumns.splice(headerColumns.indexOf(column), 1)
+          headerColumns.splice(headerColumns.indexOf(column), 1);
 
-          var targetIndex = headerColumns.indexOf(targetColumn);
-          if (position == "r") {
+          targetIndex = headerColumns.indexOf(targetColumn);
+          if (position === "r") {
             targetIndex++;
           }
-          headerColumns.splice(targetIndex, 0, column)
+          headerColumns.splice(targetIndex, 0, column);
         }
-        else if (!(column.parent == null) && targetColumn.parent == null) {
+        else if ((column.parent !== null) && targetColumn.parent === null) {
           // move from stacked Column
           column.parent.removeChild(column);
 
-          var targetIndex = headerColumns.indexOf(targetColumn);
-          if (position == "r") {
+          targetIndex = headerColumns.indexOf(targetColumn);
+          if (position === "r") {
             targetIndex++;
           }
-          headerColumns.splice(targetIndex, 0, column)
+          headerColumns.splice(targetIndex, 0, column);
 
-        } else if (column.parent == null && !(targetColumn.parent == null)) {
+        } else if (column.parent === null && (targetColumn.parent !== null)) {
 
           // move into stacked Column
           if (targetColumn.parent.addChild(column, targetColumn, position)) {
-            headerColumns.splice(headerColumns.indexOf(column), 1)
+            headerColumns.splice(headerColumns.indexOf(column), 1);
           }
 
-        } else if (!(column.parent == null) && !(targetColumn.parent == null)) {
+        } else if ((column.parent !== null) && (targetColumn.parent !== null)) {
 
           // move from Stacked into stacked Column
           column.parent.removeChild(column);
-          targetColumn.parent.addChild(column, targetColumn, position)
-
+          targetColumn.parent.addChild(column, targetColumn, position);
         }
-        this.resortData({})
+        this.resortData({});
       },
       copyColumn: function (column, targetColumn, position, bundle) {
         var _bundle = bundle || "primary";
@@ -339,16 +338,16 @@ var LineUp;
         if (targetColumn.parent == null) {
 
           var targetIndex = headerColumns.indexOf(targetColumn);
-          if (position == "r") {
+          if (position === "r") {
             targetIndex++;
           }
-          headerColumns.splice(targetIndex, 0, newColumn)
+          headerColumns.splice(targetIndex, 0, newColumn);
         }
-        else if (!(targetColumn.parent == null)) {
+        else if ((targetColumn.parent !== null)) {
           // copy into stacked Column
           targetColumn.parent.addChild(newColumn, targetColumn, position);
         }
-        this.resortData({})
+        this.resortData({});
       },
 
       /**

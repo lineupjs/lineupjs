@@ -1,8 +1,9 @@
 /**
  * lineup mapping editor
  */
+/* global d3 */
 var LineUp;
-(function (LineUp, d3, $) {
+(function (LineUp, d3) {
 
   function addLine($svg, x1, y1, x2, y2, clazz) {
     return $svg.append("line").attr({
@@ -31,7 +32,6 @@ var LineUp;
       });
   }
 
-  'use strict';
   LineUp.mappingEditor = function (scale, dataDomain, data, data_accessor, callback) {
     var editor = function ($root) {
 
@@ -39,7 +39,6 @@ var LineUp;
         height = 400,
       //radius for mapper circles
         radius = 10;
-      ;
 
       var $svg = $root.append("svg").attr({
         "class": "lugui-me",
@@ -140,7 +139,7 @@ var LineUp;
           .origin(function () {
             var t = d3.transform(d3.select(this).attr("transform"));
             return {x: t.translate[0], y: t.translate[1]};
-          })
+          });
       }
 
       function updateNormalized() {
@@ -244,5 +243,5 @@ var LineUp;
       }
     };
     return editor;
-  }
-}(LineUp || (LineUp = {}), d3, $));
+  };
+}(LineUp || (LineUp = {}), d3));

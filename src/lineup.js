@@ -1,3 +1,4 @@
+/*global d3, jQuery */
 /**
  * Constructor to Create a LineUp Visualization
  * @param spec - the specifications object
@@ -66,8 +67,9 @@ var LineUp;
     return r;
   };
 
-  LineUp.prototype.scrolled = function (top, left) {
+  LineUp.prototype.scrolled = function (top) {
     this.$header.attr('transform', 'translate(0,' + top + ')');
+    //TODO use second argument left
   };
 
   /**
@@ -143,7 +145,7 @@ var LineUp;
 
   LineUp.prototype.updateAll = function (stackTransition) {
     this.updateHeader(this.storage.getColumnLayout());
-    this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), stackTransition || false)
+    this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), stackTransition || false);
   };
 
   /**
@@ -205,7 +207,7 @@ var LineUp;
    */
   LineUp.prototype.changeWeights = function (column, weights) {
     if (typeof column === 'string') {
-      column = this.storage.getColumnByName(column)
+      column = this.storage.getColumnByName(column);
     }
     column = column || this.config.columnBundles.primary.sortedColumn;
     if (!(column instanceof LineUp.LayoutStackedColumn)) {

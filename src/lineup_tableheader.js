@@ -1,6 +1,7 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/15/14.
  */
+/* global d3, jQuery */
 var LineUp;
 (function (LineUp, d3, $, undefined) {
   LineUp.prototype = LineUp.prototype || {};
@@ -47,7 +48,7 @@ var LineUp;
         return d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn;
       })
       .call(function () {
-        that.addResortDragging(this, config)
+        that.addResortDragging(this, config);
       });
 
     // --- changing nodes for allHeaders
@@ -63,7 +64,7 @@ var LineUp;
       y: 0
     }).style("fill", function (d) {
       if (d instanceof LineUp.LayoutEmptyColumn) {
-        return "lightgray"
+        return "lightgray";
       } else if (d instanceof LineUp.LayoutStackedColumn || !config.colorMapping.has(d.column.id) || d instanceof LineUp.LayoutActionColumn) {
         return config.grayColor;
       } else {
@@ -82,7 +83,7 @@ var LineUp;
         var bundle = config.columnBundles[d.columnBundle];
         // TODO: adapt to comparison mode !!
         //same sorting swap order
-        if (bundle.sortedColumn != null && (d.getDataID() == bundle.sortedColumn.getDataID())) {
+        if (bundle.sortedColumn !== null && (d.getDataID() === bundle.sortedColumn.getDataID())) {
           bundle.sortingOrderAsc = !bundle.sortingOrderAsc;
         } else {
           bundle.sortingOrderAsc = false;
@@ -95,10 +96,10 @@ var LineUp;
 
     allHeaders.select(".labelBG").attr({
       width: function (d) {
-        return d.getColumnWidth() - 5
+        return d.getColumnWidth() - 5;
       },
       height: function (d) {
-        return d.height
+        return d.height;
       }
     });
 
@@ -110,7 +111,7 @@ var LineUp;
       }).append("rect").attr({
         "class": "weightHandle",
         x: function (d) {
-          return d.getColumnWidth() - 5
+          return d.getColumnWidth() - 5;
         },
         y: 0,
         width: 5
@@ -118,10 +119,10 @@ var LineUp;
 
       allHeaders.select(".weightHandle").attr({
         x: function (d) {
-          return (d.getColumnWidth() - 5)
+          return (d.getColumnWidth() - 5);
         },
         height: function (d) {
-          return d.height
+          return d.height;
         }
       }).call(this.dragWeight); // TODO: adopt dragWeight function !
     }
@@ -137,26 +138,32 @@ var LineUp;
       .classed("sortedColumn", function (d) {
         var sc = config.columnBundles[d.columnBundle].sortedColumn;
         if (sc) {
-          return d.getDataID() == sc.getDataID()
+          return d.getDataID() === sc.getDataID();
         } else {
           return false;
         }
       })
       .attr({
         y: function (d) {
-          if (d instanceof LineUp.LayoutStackedColumn || d.parent != null) return d.height / 2;
-          else return d.height * 3 / 4;
+          if (d instanceof LineUp.LayoutStackedColumn || d.parent != null) {
+            return d.height / 2;
+          }
+          return d.height * 3 / 4;
         },
         'clip-path': function (d) {
-          return 'url(#clip-H' + d.id + ')'
+          return 'url(#clip-H' + d.id + ')';
         }
       }).text(function (d) {
-        if (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) return d.label
-        else return d.column.label;
+        if (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
+          return d.label;
+        }
+        return d.column.label;
       });
     allHeaders.select('title').text(function (d) {
-      if (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) return d.label
-      else return d.column.label;
+      if (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
+        return d.label;
+      }
+      return d.column.label;
     });
 
 
@@ -164,20 +171,20 @@ var LineUp;
     allHeadersEnter.append("text").attr({
       'class': 'headerSort',
       y: function (d) {
-        return d.height / 2
+        return d.height / 2;
       },
       x: 2
     });
 
     allHeaders.select(".headerSort").text(function (d) {
       var sc = config.columnBundles[d.columnBundle].sortedColumn;
-      return ((sc && d.getDataID() == sc.getDataID()) ?
+      return ((sc && d.getDataID() === sc.getDataID()) ?
         ((config.columnBundles[d.columnBundle].sortingOrderAsc) ? '\uf0de' : '\uf0dd')
         : "");
     })
       .attr({
         y: function (d) {
-          return d.height / 2
+          return d.height / 2;
         }
       });
 
@@ -192,7 +199,7 @@ var LineUp;
             return d instanceof LineUp.LayoutStackedColumn ? [d] : [];
           },
           action: function (d) {
-            that.stackedColumnOptionsGui(d)
+            that.stackedColumnOptionsGui(d);
           },
           shift: 15
         },
@@ -289,7 +296,7 @@ var LineUp;
       y: function (d) {
         return d.h / 2;
       }
-    }).text('\uf067')
+    }).text('\uf067');
 
 
   };
@@ -305,21 +312,18 @@ var LineUp;
       return;
     }
 
-    var x = d3.behavior.drag()
-//                .origin(function(d) { return d; })
-      .on("dragstart", dragstart)
-      .on("drag", dragmove)
-      .on("dragend", dragend);
-
-    var that = this;
-    var rootsvg = this.$header;
-    var svgOverlay = rootsvg.select('g.overlay');
+    var x = d3.behavior.drag(),
+      that = this,
+      rootsvg = this.$header,
+      svgOverlay = rootsvg.select('g.overlay'),
+      hitted = null,
+      moved = false;
     x.call(xss);
-    var hitted = null;
-    var moved = false;
 
     function dragstart(d) {
-      if (d instanceof LineUp.LayoutEmptyColumn) return;
+      if (d instanceof LineUp.LayoutEmptyColumn) {
+        return;
+      }
 
       d3.event.sourceEvent.stopPropagation(); // silence other listeners
 
@@ -330,10 +334,12 @@ var LineUp;
     }
 
     function dragmove(d) {
-      if (d instanceof LineUp.LayoutEmptyColumn) return;
+      if (d instanceof LineUp.LayoutEmptyColumn) {
+        return;
+      }
 
       moved = true;
-      var dragHeader = svgOverlay.selectAll(".dragHeader").data([d])
+      var dragHeader = svgOverlay.selectAll(".dragHeader").data([d]);
       var dragHeaderEnter = dragHeader.enter().append("g").attr({
         class: "dragHeader"
       });
@@ -344,9 +350,8 @@ var LineUp;
           return d.getColumnWidth();
         },
         height: function (d) {
-          return d.height
+          return d.height;
         }
-
       });
 
       var x = d3.event.x;
@@ -402,27 +407,29 @@ var LineUp;
         height: function (d) {
           return d.tickH;
         }
-      })
-
+      });
     }
 
 
     function dragend(d) {
-      if (d3.event.defaultPrevented) return;
-      if (d instanceof LineUp.LayoutEmptyColumn) return;
+      if (d3.event.defaultPrevented || d instanceof LineUp.LayoutEmptyColumn) {
+        return;
+      }
 
       d3.select(this).classed("dragObject", false);
       svgOverlay.selectAll(".dragHeader").remove();
       svgOverlay.selectAll(".columnTick").remove();
 
-      if (hitted && hitted.column == this.__data__) return;
+      if (hitted && hitted.column === this.__data__) {
+        return;
+      }
 
       if (hitted) {
 //            console.log("EVENT: ", d3.event);
         if (d3.event.sourceEvent.altKey) {
-          that.storage.copyColumn(this.__data__, hitted.column, hitted.insert)
+          that.storage.copyColumn(this.__data__, hitted.column, hitted.insert);
         } else {
-          that.storage.moveColumn(this.__data__, hitted.column, hitted.insert)
+          that.storage.moveColumn(this.__data__, hitted.column, hitted.insert);
         }
 
 //            that.layoutHeaders(that.storage.getColumnLayout());
@@ -437,6 +444,11 @@ var LineUp;
         that.updateAll();
       }
     }
+
+
+    x.on("dragstart", dragstart)
+      .on("drag", dragmove)
+      .on("dragend", dragend);
   };
 
 

@@ -1,7 +1,7 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/17/14.
  */
-
+/* global d3, jQuery, window, document, console */
 var LineUp;
 (function (LineUp, d3, $, undefined) {
   LineUp.prototype = LineUp.prototype || {};
@@ -58,7 +58,7 @@ var LineUp;
       onOK: function (handler) {
         return popup.select(".ok").on("click", handler);
       }
-    }
+    };
   }
 
   LineUp.prototype.addNewStackedColumnDialog = function () {
@@ -75,7 +75,7 @@ var LineUp;
     var trs = popup.table.selectAll("tr").data(trData);
     trs.enter().append("tr");
     trs.append("td").attr("class", "checkmark");
-    trs.append("td").attr("class", "datalabel").style("opacity", .8).text(function (d) {
+    trs.append("td").attr("class", "datalabel").style("opacity", 0.8).text(function (d) {
       return d.d.label;
     });
     trs.append("td").append("input").attr({
@@ -94,7 +94,7 @@ var LineUp;
     function redraw() {
       var trs = popup.table.selectAll("tr").data(trData);
       trs.select(".checkmark").html(function (d) {
-        return (d.isChecked) ? '<i class="fa fa-check-square-o"></i>' : '<i class="fa fa-square-o"></i>'
+        return (d.isChecked) ? '<i class="fa fa-check-square-o"></i>' : '<i class="fa fa-square-o"></i>';
       })
         .on("click", function (d) {
           d.isChecked = !d.isChecked;
@@ -105,7 +105,7 @@ var LineUp;
       });
       trs.select(".weightInput").attr('disabled', function (d) {
         return d.isChecked ? null : true;
-      })
+      });
     }
 
     redraw();
@@ -152,7 +152,7 @@ var LineUp;
     var trs = popup.table.selectAll("tr").data(trData);
     trs.enter().append("tr");
     trs.append("td").attr("class", "checkmark");
-    trs.append("td").attr("class", "datalabel").style("opacity", .8).text(function (d) {
+    trs.append("td").attr("class", "datalabel").style("opacity", 0.8).text(function (d) {
       return d.d.label;
     });
 
@@ -160,7 +160,7 @@ var LineUp;
     function redraw() {
       var trs = popup.table.selectAll("tr").data(trData);
       trs.select(".checkmark").html(function (d) {
-        return '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>'
+        return '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>';
       })
         .on("click", function (d) {
           d.isChecked = !d.isChecked;
@@ -168,7 +168,7 @@ var LineUp;
         });
       trs.select(".datalabel").style("opacity", function (d) {
         return d.isChecked ? "1.0" : ".8";
-      })
+      });
     }
 
     redraw();
@@ -187,7 +187,7 @@ var LineUp;
 //        }
 
       allChecked.forEach(function (d) {
-        that.storage.addSingleColumn({column: d.d.id})
+        that.storage.addSingleColumn({column: d.d.id});
       });
 
       popup.remove();
@@ -227,7 +227,7 @@ var LineUp;
       },
       height: 20 + "px",
       "background-color": function (d) {
-        return config.colorMapping.get(d.dataID)
+        return config.colorMapping.get(d.dataID);
       }
     });
 
@@ -242,7 +242,7 @@ var LineUp;
         width: function (d) {
           return predictScale(d.weight) + "px";
         }
-      })
+      });
     }
 
     redraw();
@@ -307,7 +307,7 @@ var LineUp;
     popup.select('.mappingArea').call(editor);
 
     function isSame(a, b) {
-      return $(a).not(b).length == 0 && $(b).not(a).length == 0;
+      return $(a).not(b).length === 0 && $(b).not(a).length === 0;
     }
 
     popup.select(".ok").on("click", function () {
@@ -316,12 +316,12 @@ var LineUp;
       $button.classed('filtered', !isSame(act.range(), col.scaleOri.range()) || !isSame(act.domain(), col.scaleOri.domain()));
       that.storage.resortData({});
       that.updateAll(true);
-      popup.remove()
+      popup.remove();
     });
     popup.select(".cancel").on("click", function () {
       col.scale = bak;
       $button.classed('filtered', !isSame(bak.range(), col.scaleOri.range()) || !isSame(bak.domain(), col.scaleOri.domain()));
-      popup.remove()
+      popup.remove();
     });
     popup.select(".reset").on("click", function () {
       act = bak = col.scale = col.scaleOri;
@@ -342,13 +342,57 @@ var LineUp;
     var svgOverlay = this.$header.select(".overlay");
     var that = this;
     // remove when clicked on already selected item
-    var disappear = (this.stackedColumnModified == selectedColumn);
+    var disappear = (this.stackedColumnModified === selectedColumn);
     if (disappear) {
       svgOverlay.selectAll(".stackedOption").remove();
       this.stackedColumnModified = null;
       return;
     }
 
+
+
+    function removeStackedColumn(col) {
+      that.storage.removeColumn(col);
+      that.headerUpdateRequired = true;
+      that.updateAll();
+    }
+
+    function renameStackedColumn(col) {
+      var x = +(window.innerWidth) / 2 - 100;
+      var y = +100;
+
+      var popup = d3.select("body").append("div")
+        .attr({
+          "class": "lu-popup"
+        }).style({
+          left: x + "px",
+          top: y + "px",
+          width: "200px",
+          height: "70px"
+
+        })
+        .html(
+          '<div style="font-weight: bold"> rename column: </div>' +
+          '<input type="text" id="popupInputText" size="20" value="' + col.label + '"><br>' +
+          '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
+          '<button class="ok"><i class="fa fa-check"></i> ok</button>'
+      );
+
+      popup.select(".ok").on("click", function() {
+        var newValue = document.getElementById("popupInputText").value;
+        if (newValue.length > 0) {
+          that.storage.setColumnLabel(col, newValue);
+          that.updateHeader(that.storage.getColumnLayout());
+          popup.remove();
+        } else {
+          window.alert("non empty string required");
+        }
+      });
+
+      popup.select(".cancel").on("click", function () {
+        popup.remove();
+      });
+    }
 
     // else:
     this.stackedColumnModified = selectedColumn;
@@ -402,53 +446,6 @@ var LineUp;
         return "translate(" + (d.d.offsetX + d.d.columnWidth - menuLength) + "," + (config.htmlLayout.headerHeight / 2 - 2) + ")";
       }
     });
-
-
-    function removeStackedColumn(col) {
-      that.storage.removeColumn(col);
-      that.headerUpdateRequired = true;
-      that.updateAll();
-    }
-
-    function renameStackedColumn(col) {
-      var x = +(window.innerWidth) / 2 - 100;
-      var y = +100;
-
-      var popup = d3.select("body").append("div")
-        .attr({
-          "class": "lu-popup"
-        }).style({
-          left: x + "px",
-          top: y + "px",
-          width: "200px",
-          height: "70px"
-
-        })
-        .html(
-          '<div style="font-weight: bold"> rename column: </div>' +
-          '<input type="text" id="popupInputText" size="20" value="' + col.label + '"><br>' +
-          '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
-          '<button class="ok"><i class="fa fa-check"></i> ok</button>'
-      );
-
-      popup.select(".ok").on("click", renameIt);
-
-      popup.select(".cancel").on("click", function () {
-        popup.remove()
-      });
-
-
-      function renameIt() {
-        var newValue = document.getElementById("popupInputText").value;
-        if (newValue.length > 0) {
-          that.storage.setColumnLabel(col, newValue);
-          that.updateHeader(that.storage.getColumnLayout());
-          popup.remove();
-        } else {
-          window.alert("non empty string required");
-        }
-      }
-    }
   };
 
   LineUp.prototype.openFilterPopup = function (column, $button) {
@@ -546,7 +543,7 @@ var LineUp;
       move: moveTooltip,
       size: sizeOfTooltip,
       destroy: destroyTooltip
-    }
+    };
   };
 
   LineUp.prototype.initScrolling = function ($container) {
@@ -604,7 +601,7 @@ var LineUp;
     return {
       selectVisible: selectVisibleRows,
       onScroll: onScroll
-    }
+    };
   };
 
   LineUp.prototype.initDragging = function () {
@@ -622,7 +619,7 @@ var LineUp;
     function draggedWeight() {
       var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
       that.reweightHeader({column: d3.select(this).data()[0], value: newValue});
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false)
+      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
     }
 
     function dragWeightEnded() {

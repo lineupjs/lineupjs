@@ -1,8 +1,9 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/15/14.
  */
+/* global d3 */
 var LineUp;
-(function (LineUp, d3, $, undefined) {
+(function (LineUp, d3) {
   LineUp.prototype = LineUp.prototype || {};
   LineUp.prototype.layoutHeaders = function (headers) {
     var offset = 0;
@@ -44,12 +45,9 @@ var LineUp;
 
           child.offsetY = config.htmlLayout.headerHeight / 2 + 2;
           child.height = config.htmlLayout.headerHeight / 2 - 4;
-        })
-
-      })
-
+        });
+      });
     this.totalWidth = shift;
-
   };
 
   LineUp.prototype.assignColors = function (headers) {
@@ -64,22 +62,14 @@ var LineUp;
 
     headers.forEach(function (d) {
       // gray columns are:
-      if ((d instanceof LineUp.LineUpStringColumn)
-//            || (d instanceof LineUpStackedColumn)
-        || (d.id == "rank")) {
+      if ((d instanceof LineUp.LineUpStringColumn) || (d.id === "rank")) {
         config.colorMapping.set(d.id, config.grayColor);
-
       } else {
 //            console.log(config.columnColors(colCounter), colCounter, d);
         config.colorMapping.set(d.id, config.columnColors(colCounter));
-
-
         colCounter++;
       }
-
-
     });
-
     //console.log(config.colorMapping);
   };
-}(LineUp || (LineUp = {}), d3, jQuery));
+}(LineUp || (LineUp = {}), d3));

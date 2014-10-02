@@ -1,11 +1,7 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/15/14.
  */
-/**
- * updates the table body
- * @param headers - the headers as in {@link updateHeader}
- * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
- */
+/* global d3, jQuery, document */
 var LineUp;
 (function (LineUp, d3, $, undefined) {
   LineUp.prototype = LineUp.prototype || {};
@@ -45,7 +41,7 @@ var LineUp;
       return d.column instanceof LineUp.LineUpStringColumn || d instanceof LineUp.LayoutRankColumn;
     });
 
-    const rowCenter = (config.svgLayout.rowHeight / 2);
+    var rowCenter = (config.svgLayout.rowHeight / 2);
 
     var textRows = allRows.selectAll(".tableData.text")
       .data(function (d) {
@@ -76,7 +72,7 @@ var LineUp;
 
     textRows
       .attr('x', function (d) {
-        return d.offsetX
+        return d.offsetX;
       })
       .text(function (d) {
         return d.label;
@@ -136,14 +132,14 @@ var LineUp;
     barRows
       .attr({
         x: function (d) {
-          return d.offsetX
+          return d.offsetX;
         },
         width: function (d) {
-          return Math.max(+d.value - 2, 0)
+          return Math.max(+d.value - 2, 0);
         }
       }).style({
         fill: function (d) {
-          return config.colorMapping.get(d.key)
+          return config.colorMapping.get(d.key);
         }
       });
   }
@@ -194,7 +190,7 @@ var LineUp;
             allStackOffset += child.getColumnWidth();
           }
           return allStackRes;
-        })
+        });
       }
     );
     allStack.exit().remove();
@@ -209,11 +205,11 @@ var LineUp;
           return d.offsetX;
         },
         width: function (d) {
-          return (d.width > 2) ? d.width - 2 : d.width
+          return (d.width > 2) ? d.width - 2 : d.width;
         }
       }).style({
         fill: function (d) {
-          return config.colorMapping.get(d.child.getDataID())
+          return config.colorMapping.get(d.child.getDataID());
         }
       });
   }
@@ -293,6 +289,11 @@ var LineUp;
     return $table.html();
   }
 
+  /**
+   * updates the table body
+   * @param headers - the headers as in {@link updateHeader}
+   * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
+   */
   LineUp.prototype.updateBody = function (headers, data, stackTransition) {
     //default values
     headers = headers || this.storage.getColumnLayout();
@@ -309,15 +310,15 @@ var LineUp;
 
     var allHeaders = [];
     headers.forEach(function (d) {
-      d.flattenMe(allHeaders)
+      d.flattenMe(allHeaders);
     });
 
     var datLength = data.length;
     var rowScale = d3.scale.ordinal()
         .domain(data.map(function (d) {
-          return d[primaryKey]
+          return d[primaryKey];
         }))
-        .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, .2),
+        .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, 0.2),
       prevRowScale = this.prevRowScale || rowScale;
     //backup the rowscale from the previous call to have a previous "old" position
     this.prevRowScale = rowScale;
@@ -331,7 +332,7 @@ var LineUp;
     // -- handle all row groups
 
     var allRowsSuper = svg.selectAll(".row").data(data, function (d) {
-      return d[primaryKey]
+      return d[primaryKey];
     });
     allRowsSuper.exit().remove();
 
@@ -341,9 +342,9 @@ var LineUp;
       transform: function (d) { //init with its previous position
         var prev = prevRowScale(d[primaryKey]);
         if (typeof prev === 'undefined') { //if not defined from the bottom
-          prev = rowScale.range()[1]
+          prev = rowScale.range()[1];
         }
-        return "translate(" + 0 + "," + prev + ")"
+        return "translate(" + 0 + "," + prev + ")";
       }
     });
     allRowsSuperEnter.append('rect').attr({
@@ -355,7 +356,7 @@ var LineUp;
     //    //--- update ---
     (this.config.renderingOptions.animation ? allRowsSuper.transition().duration(this.config.svgLayout.animationDuration) : allRowsSuper).attr({
       "transform": function (d) {
-        return  "translate(" + 0 + "," + rowScale(d[primaryKey]) + ")"
+        return  "translate(" + 0 + "," + rowScale(d[primaryKey]) + ")";
       }
     });
     var asStacked = showStacked(this.config);
@@ -374,7 +375,7 @@ var LineUp;
           if (col.column instanceof LineUp.LineUpNumberColumn) {
             textOverlays.push({id: col.id, value: col.column.getValue(row), label: that.config.numberformat(+col.column.getRawValue(row)),
               x: col.offsetX,
-              w: col.getColumnWidth()})
+              w: col.getColumnWidth()});
           } else if (col instanceof  LineUp.LayoutStackedColumn) {
             var allStackOffset = 0;
 
@@ -383,8 +384,7 @@ var LineUp;
 
               textOverlays.push({
                   id: child.id,
-                  label: toValue(child.column.getRawValue(row))
-                    + " -> (" + zeroFormat(child.getWidth(row)) + ")",
+                  label: toValue(child.column.getRawValue(row)) + " -> (" + zeroFormat(child.getWidth(row)) + ")",
                   w: asStacked ? allStackW : child.getColumnWidth(),
                   x: (allStackOffset + col.offsetX)}
               );
@@ -393,7 +393,7 @@ var LineUp;
               } else {
                 allStackOffset += child.getColumnWidth();
               }
-            })
+            });
           }
         }
       );
@@ -491,9 +491,9 @@ var LineUp;
       allRowsSuper.each(function (row) {
         var $row = d3.select(this);
         renderOverlays($row, createOverlays(row), 'valueonly', 'B');
-      })
+      });
     } else {
       allRowsSuper.classed('values', false).selectAll('text.valueonly').remove();
     }
-  }
+  };
 }(LineUp || (LineUp = {}), d3, jQuery));

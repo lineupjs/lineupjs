@@ -5,7 +5,7 @@
  * contains the main  LineUp data structure
  * and a loader for client side storage of whole table
  * */
-
+/*global d3, jQuery, _ */
 var LineUp;
 (function (LineUp, d3, $, _, undefined) {
   /**
@@ -38,7 +38,7 @@ var LineUp;
       }
       return r;
     },
-    filter: function (row, filter) {
+    filter: function (/*row, filter*/) {
       return true;
     }
   });
@@ -108,7 +108,7 @@ var LineUp;
         return r && r.trim().length > 0;
       } else if (typeof filter === 'string' && filter.length > 0) {
         return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-      } else if (typeof filter === 'RegExp') {
+      } else if (filter instanceof RegExp) {
         return r && r.match(filter);
       }
       return true;
@@ -133,10 +133,10 @@ var LineUp;
 
   LineUpRankColumn.prototype = $.extend({}, LineUpColumn.prototype, {
     setValue: function (row, d) {
-      this.values.set(row[this.storage.primaryKey], d)
+      this.values.set(row[this.storage.primaryKey], d);
     },
     getValue: function (row) {
-      return this.values.get(row[this.storage.primaryKey])
+      return this.values.get(row[this.storage.primaryKey]);
     },
     filter: function (row, filter) {
       var r = this.getValue(row);
@@ -168,18 +168,16 @@ var LineUp;
     this.columnBundle = desc.columnBundle || "primary";
     //define it here to have a dedicated this pointer
     this.sortBy = function (a, b) {
-      var a = that.column.getValue(a);
-      var b = that.column.getValue(b);
+      a = that.column.getValue(a);
+      b = that.column.getValue(b);
       return that.safeSortBy(a, b);
-    }
+    };
   }
 
   LineUp.LayoutColumn = LayoutColumn;
 
   LayoutColumn.prototype = $.extend({}, {}, {
     setColumnWidth: function (newWidth, ignoreParent) {
-      var _ignoreParent = ignoreParent || false;
-//        console.log("UPdate", newWidth, _ignoreParent);
       this.columnWidth = newWidth;
       this.scale.range([0, newWidth]);
       if (!ignoreParent && this.parent) {
@@ -205,7 +203,7 @@ var LineUp;
     },
 
     flattenMe: function (array) {
-      array.push(this)
+      array.push(this);
     },
     description: function () {
       var res = {};
@@ -221,7 +219,7 @@ var LineUp;
     isFiltered: function () {
       return typeof this.filter !== 'undefined';
     },
-    filterBy: function (row) {
+    filterBy: function (/*row*/) {
       return true;
     }
   });
@@ -230,11 +228,13 @@ var LineUp;
     LayoutColumn.call(this, desc);
     this.columnLink = desc.column;
     var that = this;
-    this.column = (desc.column == "") ? null : rawColumns.filter(function (d) {
-      return d.id == that.columnLink;
+    this.column = (desc.column === "") ? null : rawColumns.filter(function (d) {
+      return d.id === that.columnLink;
     })[0];
     this.id = _.uniqueId(this.columnLink + "_");
-    if (this.column) this.init();
+    if (this.column) {
+      this.init();
+    }
   }
 
   LineUp.LayoutSingleColumn = LayoutSingleColumn;
@@ -264,10 +264,10 @@ var LineUp;
     },
 
     getLabel: function () {
-      return this.column.label
+      return this.column.label;
     },
     getDataID: function () {
-      return this.column.id
+      return this.column.id;
     },
 
     description: function () {
@@ -303,10 +303,10 @@ var LineUp;
 
   LayoutRankColumn.prototype = $.extend({}, LayoutColumn.prototype, {
     getLabel: function () {
-      return this.column.label
+      return this.column.label;
     },
     getDataID: function () {
-      return this.column.id
+      return this.column.id;
     },
     description: function () {
       var res = LayoutColumn.prototype.description.call(this);
@@ -333,10 +333,10 @@ var LineUp;
 
   LayoutCompositeColumn.prototype = $.extend({}, LayoutColumn.prototype, {
     getDataID: function () {
-      return this.id
+      return this.id;
     },
     getLabel: function () {
-      return this.label
+      return this.label;
     }
   });
 
@@ -353,13 +353,12 @@ var LineUp;
     this.sortBy = function (a, b) {
       var aAll = 0;
       var bAll = 0;
-      that.children.forEach(function (d, i) {
+      that.children.forEach(function (d) {
         aAll += d.getWidth(a);
         bAll += d.getWidth(b);
       });
       return that.safeSortBy(aAll, bAll);
-    }
-
+    };
   }
 
   LineUp.LayoutStackedColumn = LayoutStackedColumn;
@@ -387,7 +386,7 @@ var LineUp;
         // check if weights or width are given
         if (this.childrenLinks[0].hasOwnProperty("weight")) {
           this.childrenWeights = this.childrenLinks.map(function (d) {
-            return +(d.weight || 1)
+            return +(d.weight || 1);
           });
 
           this.scale.domain([0, d3.sum(this.childrenWeights)]);
@@ -396,34 +395,27 @@ var LineUp;
             // if the stacked column has a width -- normalize to width
             this.childrenWidths = this.childrenWeights.map(function (d) {
               return that.scale(d);
-            })
+            });
           } else {
             // if width was artificial set, approximate a total width of x*100
             this.columnWidth = this.children.length * 100;
-            this.scale.range([0, that.columnWidth])
-
+            this.scale.range([0, that.columnWidth]);
           }
-
         } else {
           // accumulate weights and map 100px to  weight 1.0
           this.childrenWidths = this.childrenLinks.map(function (d) {
-            return +(d.width || 100)
+            return +(d.width || 100);
           });
           this.childrenWeights = this.childrenWidths.map(function (d) {
-            return d / 100.0
+            return d / 100.0;
           });
           this.columnWidth = d3.sum(this.childrenWidths);
           this.scale.domain([0, d3.sum(this.childrenWeights)]).range([0, this.columnWidth]);
         }
-
         this.children = this.childrenLinks.map(function (d, i) {
-//            console.log(that);
-          return that.toLayoutColumn({column: d.column, width: that.childrenWidths[i], parent: that })
-        })
-
+          return that.toLayoutColumn({column: d.column, width: that.childrenWidths[i], parent: that });
+        });
       }
-
-
     },
     flattenMe: function (array, spec) {
       var addEmptyColumns = false;
@@ -438,7 +430,7 @@ var LineUp;
       if (addEmptyColumns) {
         this.emptyColumns.forEach(function (d) {
           return d.flattenMe(array);
-        })
+        });
       }
     },
     filterBy: function (row) {
@@ -453,31 +445,31 @@ var LineUp;
       }
       return true;
     },
-    updateWidthFromChild: function (spec) {
+    updateWidthFromChild: function () {
       var that = this;
 
       // adopt weight and global size
       this.childrenWidths = this.children.map(function (d) {
-        return d.getColumnWidth()
+        return d.getColumnWidth();
       });
       this.childrenWeights = this.childrenWidths.map(function (d) {
-        return that.scale.invert(d)
+        return that.scale.invert(d);
       });
 
       this.columnWidth = d3.sum(this.childrenWidths);
       this.scale.range([0, this.columnWidth]);
-      this.scale.domain([0, d3.sum(this.childrenWeights)])
+      this.scale.domain([0, d3.sum(this.childrenWeights)]);
     },
     setColumnWidth: function (newWidth) {
       var that = this;
       this.columnWidth = newWidth;
       that.scale.range([0, this.columnWidth]);
       this.childrenWidths = this.childrenWeights.map(function (d) {
-        return that.scale(d)
+        return that.scale(d);
       });
 //        console.log(this.childrenWidths, this.childrenWeights);
       this.children.forEach(function (d, i) {
-        return d.setColumnWidth(that.childrenWidths[i], true)
+        return d.setColumnWidth(that.childrenWidths[i], true);
       });
     },
     updateWeights: function (weights) {
@@ -486,11 +478,11 @@ var LineUp;
 
       var that = this;
       this.childrenWidths = this.childrenWeights.map(function (d) {
-        return that.scale(d)
+        return that.scale(d);
       });
       this.columnWidth = d3.sum(this.childrenWidths);
       this.children.forEach(function (d, i) {
-        return d.setColumnWidth(that.childrenWidths[i], true)
+        return d.setColumnWidth(that.childrenWidths[i], true);
       });
 
       //console.log(this.childrenWeights);
@@ -516,14 +508,18 @@ var LineUp;
 
     },
     addChild: function (child, targetChild, position) {
-      if (!(child instanceof LineUp.LayoutSingleColumn && child.column instanceof LineUp.LineUpNumberColumn)) return false;
+      if (!(child instanceof LineUp.LayoutSingleColumn && child.column instanceof LineUp.LineUpNumberColumn)) {
+        return false;
+      }
 
       var targetIndex = 0;
       if (targetChild instanceof LineUp.LayoutEmptyColumn) {
         this.emptyColumns = [];
       } else {
         targetIndex = this.children.indexOf(targetChild);
-        if (position == "r") targetIndex++;
+        if (position === "r") {
+          targetIndex++;
+        }
       }
 
       this.childrenWeights.splice(targetIndex, 0, this.scale.invert(child.getColumnWidth()));
@@ -546,7 +542,7 @@ var LineUp;
       res.type = "stacked";
       var that = this;
       res.children = this.children.map(function (d, i) {
-        return {column: d.columnLink, weight: that.childrenWeights[i]}
+        return {column: d.columnLink, weight: that.childrenWeights[i]};
       });
       res.label = this.label;
       return res;
@@ -561,7 +557,7 @@ var LineUp;
         return d.makeCopy();
       });
       res.children.forEach(function (d) {
-        d.parent = res
+        d.parent = res;
       });
       res.childrenWeights = this.childrenWeights.slice(0);
       res.scale.domain([0, d3.sum(this.childrenWeights)]);
@@ -578,25 +574,25 @@ var LineUp;
     LayoutColumn.call(this, spec, []);
     this.columnLink = 'empty';
     this.column = {
-      getValue: function (a) {
-        return ""
+      getValue: function () {
+        return "";
       },
-      getRawValue: function (a) {
+      getRawValue: function () {
         return "";
       }};
     this.id = _.uniqueId(this.columnLink + "_");
     this.label = "{empty}";
-    this.columnWidth = 50
+    this.columnWidth = 50;
   }
 
   LineUp.LayoutEmptyColumn = LayoutEmptyColumn;
 
   LayoutEmptyColumn.prototype = $.extend({}, LayoutColumn.prototype, {
     getLabel: function () {
-      return this.label
+      return this.label;
     },
     getDataID: function () {
-      return this.id
+      return this.id;
     }
   });
 
@@ -606,25 +602,25 @@ var LineUp;
     LayoutColumn.call(this, spec, []);
     this.columnLink = 'action';
     this.column = {
-      getValue: function (a) {
-        return ""
+      getValue: function () {
+        return "";
       },
-      getRawValue: function (a) {
+      getRawValue: function () {
         return "";
       }};
     this.id = _.uniqueId(this.columnLink + "_a");
     this.label = "";
-    this.columnWidth = spec.width || 50
+    this.columnWidth = spec.width || 50;
   }
 
   LineUp.LayoutActionColumn = LayoutActionColumn;
 
   LayoutActionColumn.prototype = $.extend({}, LayoutColumn.prototype, {
     getLabel: function () {
-      return this.label
+      return this.label;
     },
     getDataID: function () {
-      return this.id
+      return this.id;
     },
     description: function () {
       var res = LayoutColumn.prototype.description.call(this);
