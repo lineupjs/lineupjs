@@ -6,35 +6,38 @@ var LineUp;
 
   function addLine($svg, x1, y1, x2, y2, clazz) {
     return $svg.append("line").attr({
-      x1 : x1, y1 : y1, x2 : x2, y2: y2, 'class' : clazz
+      x1: x1, y1: y1, x2: x2, y2: y2, 'class': clazz
     });
   }
+
   function addText($svg, x, y, text, dy, clazz) {
     dy = dy || null;
     clazz = clazz || null;
     return $svg.append("text").attr({
-      x : x, y : y, dy : dy, 'class' : clazz
+      x: x, y: y, dy: dy, 'class': clazz
     }).text(text);
   }
+
   function addCircle($svg, x, shift, y, radius) {
     shift -= x;
     return $svg
       .append("circle")
       .attr({
-        'class' : 'handle',
-        r : radius,
+        'class': 'handle',
+        r: radius,
         cx: x,
-        cy : y,
-        transform : 'translate('+shift+',0)'
+        cy: y,
+        transform: 'translate(' + shift + ',0)'
       });
   }
+
   'use strict';
   LineUp.mappingEditor = function (scale, dataDomain, data, data_accessor, callback) {
     var editor = function ($root) {
 
       var width = 400,
         height = 400,
-        //radius for mapper circles
+      //radius for mapper circles
         radius = 10;
       ;
 
@@ -53,7 +56,7 @@ var LineUp;
       var raw2pixelAxisY = 350;
       //this is needed for filtering the shown datalines
       var raw2pixel = d3.scale.linear().domain(dataDomain).range([lowerLimitX, upperLimitX]);
-      var normal2pixel = d3.scale.linear().domain([0,1]).range([lowerLimitX,upperLimitX]);
+      var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
 
       //x coordinate for the score axis lower bound
       var lowerNormalized = normal2pixel(scale.range()[0]);
@@ -70,30 +73,34 @@ var LineUp;
         .range([lowerNormalized, upperNormalized]);
       var $base = $svg.append('g');
       //upper axis for scored values
-      addLine($base, lowerLimitX,scoreAxisY, upperLimitX, scoreAxisY, 'axis');
+      addLine($base, lowerLimitX, scoreAxisY, upperLimitX, scoreAxisY, 'axis');
       //label for minimum scored value
       addText($base, lowerLimitX, scoreAxisY - 25, 0, ".75em");
       //label for maximum scored value
       addText($base, upperLimitX, scoreAxisY - 25, 1, ".75em");
-      addText($base, width/2, scoreAxisY -25, "Score", ".75em",'centered');
+      addText($base, width / 2, scoreAxisY - 25, "Score", ".75em", 'centered');
 
       //lower axis for raw2pixel values
-      addLine($base, lowerLimitX,raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
+      addLine($base, lowerLimitX, raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
       //label for minimum raw2pixel value
       addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], ".75em");
       //label for maximum raw2pixel value
       addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], ".75em");
-      addText($base, width/2, raw2pixelAxisY + 20, "Raw", ".75em",'centered');
-      
+      addText($base, width / 2, raw2pixelAxisY + 20, "Raw", ".75em", 'centered');
+
       //lines that show mapping of individual data items
-      var datalines = $svg.append('g').classed('data',true).selectAll("line").data(data);
+      var datalines = $svg.append('g').classed('data', true).selectAll("line").data(data);
       datalines.enter().append("line")
         .attr({
-          x1: function (d) { return scale(data_accessor(d)); },
+          x1: function (d) {
+            return scale(data_accessor(d));
+          },
           y1: scoreAxisY,
-          x2: function (d) { return raw2pixel(data_accessor(d)); },
+          x2: function (d) {
+            return raw2pixel(data_accessor(d));
+          },
           y2: raw2pixelAxisY
-        }).style('visibility', function(d) {
+        }).style('visibility', function (d) {
           var a;
           if (lowerRaw < upperRaw) {
             a = (raw2pixel(data_accessor(d)) < lowerRaw || raw2pixel(data_accessor(d)) > upperRaw);
@@ -107,13 +114,13 @@ var LineUp;
       //line that defines upper bounds for the scale
       var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
       //label for lower bound of normalized values
-      var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), ".25em", 'drag').attr('transform','translate('+(lowerNormalized-lowerLimitX)+',0)');
+      var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), ".25em", 'drag').attr('transform', 'translate(' + (lowerNormalized - lowerLimitX) + ',0)');
       //label for lower bound of raw2pixel values
-      var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), ".25em", 'drag').attr('transform','translate('+(lowerRaw-lowerLimitX)+',0)');
+      var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), ".25em", 'drag').attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
       //label for upper bound of normalized values
-      var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), ".25em", 'drag').attr('transform','translate('+(upperNormalized-upperLimitX)+',0)');
+      var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), ".25em", 'drag').attr('transform', 'translate(' + (upperNormalized - upperLimitX) + ',0)');
       //label for upper bound of raw2pixel values
-      var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), ".25em", 'drag').attr('transform','translate('+(upperRaw-upperLimitX)+',0)');
+      var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), ".25em", 'drag').attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
 
       function createDrag(label, move) {
         return d3.behavior.drag()

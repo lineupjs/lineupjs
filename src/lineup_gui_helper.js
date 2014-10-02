@@ -3,7 +3,7 @@
  */
 
 var LineUp;
-(function(LineUp, d3, $, undefined) {
+(function (LineUp, d3, $, undefined) {
   /**
    * creates a simple popup window with a table
    * @param title
@@ -12,13 +12,13 @@ var LineUp;
    */
   function createPopup(title, label, options) {
     options = $.extend({}, options, {
-      x : +(window.innerWidth) / 2 - 100,
-      y : 100,
+      x: +(window.innerWidth) / 2 - 100,
+      y: 100,
       width: 400,
       height: 200
     });
     var popupBG = d3.select("body")
-      .append("div").attr("class","lu-popupBG");
+      .append("div").attr("class", "lu-popupBG");
 
     var popup = d3.select("body").append("div")
       .attr({
@@ -26,8 +26,8 @@ var LineUp;
       }).style({
         left: options.x + "px",
         top: options.y + "px",
-        width: options.width+"px",
-        height: options.height+"200px"
+        width: options.width + "px",
+        height: options.height + "200px"
       })
       .html(
         '<span style="font-weight: bold">' + title + '</span>' +
@@ -38,8 +38,8 @@ var LineUp;
     );
 
     var theTable = popup.select(".selectionTable").style({
-      width: (options.width-10)+"px",
-      height: (options.height-40)+"px"
+      width: (options.width - 10) + "px",
+      height: (options.height - 40) + "px"
     }).append("table");
 
     popup.select(".cancel").on("click", function () {
@@ -159,7 +159,7 @@ var LineUp;
     function redraw() {
       var trs = popup.table.selectAll("tr").data(trData);
       trs.select(".checkmark").html(function (d) {
-        return '<i class="fa fa-'+((d.isChecked) ? 'check-':'')+'square-o"></i>'
+        return '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>'
       })
         .on("click", function (d) {
           d.isChecked = !d.isChecked;
@@ -194,8 +194,8 @@ var LineUp;
     });
   };
 
-  LineUp.prototype.reweightStackedColumnWidget = function(data, $table) {
-    var toWeight = function(d) {
+  LineUp.prototype.reweightStackedColumnWidget = function (data, $table) {
+    var toWeight = function (d) {
       return d.weight;
     };
     var predictScale = d3.scale.linear().domain([0, d3.max(data, toWeight)]).range([0, 120]);
@@ -236,7 +236,7 @@ var LineUp;
 
     function redraw() {
       var trs = $table.selectAll("tr").data(data);
-      predictScale.domain([0, d3.max(data,toWeight)]);
+      predictScale.domain([0, d3.max(data, toWeight)]);
       trs.select(".predictBar").transition().style({
         width: function (d) {
           return predictScale(d.weight) + "px";
@@ -267,18 +267,18 @@ var LineUp;
 
     popup.onOK(function () {
       popup.remove();
-      that.changeWeights(col, trData.map(function(d) {
+      that.changeWeights(col, trData.map(function (d) {
         return d.weight;
       }));
     });
   };
 
-  LineUp.prototype.openMappingEditor = function(selectedColumn, $button) {
+  LineUp.prototype.openMappingEditor = function (selectedColumn, $button) {
     var col = selectedColumn.column;
     var bak = col.scale;
     var that = this;
     var act = bak;
-    var callback = function(newscale) {
+    var callback = function (newscale) {
       //scale = newscale;
       act = newscale.clamp(true);
     };
@@ -294,31 +294,32 @@ var LineUp;
       })
       .html(
         '<div style="font-weight: bold"> change mapping: </div>' +
-        '<div class="mappingArea"></div>'+
+        '<div class="mappingArea"></div>' +
         '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
         '<button class="reset"><i class="fa fa-undo"></i> revert</button>' +
         '<button class="ok"><i class="fa fa-check"></i> ok</button>'
     );
-    var access = function(row) {
+    var access = function (row) {
       return +col.getRawValue(row);
     };
-    var editor = LineUp.mappingEditor(bak, col.scaleOri.domain(),this.storage.data, access, callback);
+    var editor = LineUp.mappingEditor(bak, col.scaleOri.domain(), this.storage.data, access, callback);
     popup.select('.mappingArea').call(editor);
 
-    function isSame (a, b) {
+    function isSame(a, b) {
       return $(a).not(b).length == 0 && $(b).not(a).length == 0;
     }
+
     popup.select(".ok").on("click", function () {
       col.scale = act;
-      console.log(act.domain().toString(),act.range().toString());
-      $button.classed('filtered', !isSame(act.range(),col.scaleOri.range()) || !isSame(act.domain(), col.scaleOri.domain()));
+      console.log(act.domain().toString(), act.range().toString());
+      $button.classed('filtered', !isSame(act.range(), col.scaleOri.range()) || !isSame(act.domain(), col.scaleOri.domain()));
       that.storage.resortData({});
       that.updateAll(true);
       popup.remove()
     });
     popup.select(".cancel").on("click", function () {
       col.scale = bak;
-      $button.classed('filtered', !isSame(bak.range(),col.scaleOri.range()) || !isSame(bak.domain(), col.scaleOri.domain()));
+      $button.classed('filtered', !isSame(bak.range(), col.scaleOri.range()) || !isSame(bak.domain(), col.scaleOri.domain()));
       popup.remove()
     });
     popup.select(".reset").on("click", function () {
@@ -449,7 +450,7 @@ var LineUp;
     }
   };
 
-  LineUp.prototype.openFilterPopup = function(column, $button) {
+  LineUp.prototype.openFilterPopup = function (column, $button) {
     if (!(column instanceof LineUp.LayoutSingleColumn && column.column instanceof LineUp.LineUpStringColumn)) {
       //can't filter other than string columns
       return;
@@ -468,12 +469,13 @@ var LineUp;
       })
       .html(
         '<form onsubmit="return false"><input type="text" id="popupInputText" placeholder="containing..." autofocus="true" size="18" value="' + bak + '"><br>' +
-          '<button class="ok"><i class="fa fa-check" title="ok"></i></button>' +
-          '<button class="cancel"><i class="fa fa-times" title="cancel"></i></button>' +
-          '<button class="reset"><i class="fa fa-undo" title="reset"></i></button></form>'
+        '<button class="ok"><i class="fa fa-check" title="ok"></i></button>' +
+        '<button class="cancel"><i class="fa fa-times" title="cancel"></i></button>' +
+        '<button class="reset"><i class="fa fa-undo" title="reset"></i></button></form>'
     );
 
     var that = this;
+
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0));
@@ -496,23 +498,26 @@ var LineUp;
     });
   };
 
-  LineUp.createTooltip = function(container) {
+  LineUp.createTooltip = function (container) {
     var $container = $(container), $tooltip = $('<div class="lu-tooltip"/>').appendTo($container);
+
     function showTooltip(content, xy) {
       $tooltip.html(content).css({
-        left: xy.x  + "px",
+        left: xy.x + "px",
         top: (xy.y + xy.height) + "px"
       }).fadeIn();
 
       var stickout = ($(window).height() + $(window).scrollTop()) <= ((xy.y + xy.height) + $tooltip.height() - 20);
       var stickouttop = $(window).scrollTop() > (xy.y - $tooltip.height());
       if (stickout && !stickouttop) { //if the bottom is not visible move it on top of the box
-        $tooltip.css('top', (xy.y - $tooltip.height())+"px");
+        $tooltip.css('top', (xy.y - $tooltip.height()) + "px");
       }
     }
+
     function hideTooltip() {
       $tooltip.stop(true).hide();
     }
+
     function moveTooltip(xy) {
       if (xy.x) {
         $tooltip.css({
@@ -525,12 +530,15 @@ var LineUp;
         });
       }
     }
+
     function sizeOfTooltip() {
       return [$tooltip.width(), $tooltip.height()];
     }
+
     function destroyTooltip() {
       $tooltip.remove();
     }
+
     return {
       show: showTooltip,
       hide: hideTooltip,
@@ -540,7 +548,7 @@ var LineUp;
     }
   };
 
-  LineUp.prototype.initScrolling = function($container) {
+  LineUp.prototype.initScrolling = function ($container) {
     var that = this,
       container = $container[0],
       rowHeight = this.config.svgLayout.rowHeight,
@@ -548,16 +556,18 @@ var LineUp;
       jbody = $(this.$table.node()),
       backupRows = this.config.svgLayout.backupScrollRows,
       shift;
+
     function onScroll() {
       var act = container.scrollTop;
       var left = container.scrollLeft;
       //at least one row changed
       that.scrolled(act, left);
-      if (Math.abs(prevScrollTop - act) >= rowHeight*backupRows) {
+      if (Math.abs(prevScrollTop - act) >= rowHeight * backupRows) {
         prevScrollTop = act;
         that.updateBody();
       }
     }
+
     $container.on('scroll', onScroll);
     //the shift between the scroll container our svg body
     shift = jbody.offset().top - $container.offset().top + this.config.htmlLayout.headerHeight;
@@ -567,35 +577,36 @@ var LineUp;
     //  that.updateBody();
     //});
     function selectVisibleRows(data, rowScale) {
-      var top = container.scrollTop-shift,
+      var top = container.scrollTop - shift,
         bottom = top + $container.innerHeight(),
         height = jbody[0].scrollHeight,
         i = 0, j = data.length;
       if (top > 0) {
         i = Math.round(top / rowHeight);
         //count up till really even partial rows are visible
-        while(i >= 0 && rowScale(data[i+1]) > top) {
+        while (i >= 0 && rowScale(data[i + 1]) > top) {
           i--;
         }
-        i-=backupRows; //one more row as backup for scrolling
+        i -= backupRows; //one more row as backup for scrolling
       }
       if (height > bottom) { //some parts from the bottom aren't visible
         j = Math.round(bottom / rowHeight);
         //count down till really even partial rows are visible
-        while(j <= data.length && rowScale(data[j-1]) < bottom) {
+        while (j <= data.length && rowScale(data[j - 1]) < bottom) {
           j++;
         }
-        j+=backupRows; //one more row as backup for scrolling
+        j += backupRows; //one more row as backup for scrolling
       }
-      return [Math.max(i,0),Math.min(j,data.length)];
+      return [Math.max(i, 0), Math.min(j, data.length)];
     }
+
     return {
       selectVisible: selectVisibleRows,
-      onScroll : onScroll
+      onScroll: onScroll
     }
   };
 
-  LineUp.prototype.initDragging = function() {
+  LineUp.prototype.initDragging = function () {
     var that = this;
     /*
      * define dragging behaviour for header weights

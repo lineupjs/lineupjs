@@ -7,15 +7,17 @@
  * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
  */
 var LineUp;
-(function(LineUp, d3, $, undefined) {
+(function (LineUp, d3, $, undefined) {
   LineUp.updateClipPaths = function (headers, svg, prefix, shift, defclass) {
     defclass = defclass || 'column';
     //generate clip paths for the text columns to avoid text overflow
     //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
     //there is a bug in webkit which present camelCase selectors
-    var textClipPath = svg.select('defs.'+defclass).selectAll(function () {
+    var textClipPath = svg.select('defs.' + defclass).selectAll(function () {
       return this.getElementsByTagName("clipPath");
-    }).data(headers, function(d) { return d.id; });
+    }).data(headers, function (d) {
+      return d.id;
+    });
     textClipPath.enter().append('clipPath')
       .attr('id', function (d) {
         return 'clip-' + prefix + d.id;
@@ -72,8 +74,8 @@ var LineUp;
     textRows.exit().remove();
 
     textRows
-      .attr('x',function (d) {
-          return d.offsetX
+      .attr('x', function (d) {
+        return d.offsetX
       })
       .text(function (d) {
         return d.label;
@@ -162,7 +164,7 @@ var LineUp;
     stackRows.exit().remove();
     stackRows.enter()
       .append("g")
-      .attr("class","tableData stacked");
+      .attr("class", "tableData stacked");
 
     stackRows
       .attr("transform", function (d) {
@@ -219,13 +221,13 @@ var LineUp;
     var $r = $elem.selectAll('text').data(config.svgLayout.rowActions);
     $r.enter().append('text').append('title');
     $r.exit().remove();
-    $r.attr('x', function(d,i) {
+    $r.attr('x', function (d, i) {
       return i * config.svgLayout.rowHeight;
-    }).text(function(d) {
+    }).text(function (d) {
       return d.icon;
-    }).on('click', function(d) {
+    }).on('click', function (d) {
       d.action.call(this, item.data, d);
-    }).select('title').text(function(d) {
+    }).select('title').text(function (d) {
       return d.name;
     });
   }
@@ -246,20 +248,20 @@ var LineUp;
       });
     actionRows.enter()
       .append("g")
-      .attr('class',"tableData action")
-      .each(function(item) {
+      .attr('class', "tableData action")
+      .each(function (item) {
         createActions(d3.select(this), item, config);
       });
 
     actionRows.exit().remove();
 
     actionRows
-      .attr('transform',function (d) {
-        return 'translate(' + (d.offsetX+10) + ','+(config.svgLayout.rowHeight*0.5+1)+')';
+      .attr('transform', function (d) {
+        return 'translate(' + (d.offsetX + 10) + ',' + (config.svgLayout.rowHeight * 0.5 + 1) + ')';
       });
   }
 
-  function createRepr(col,row) {
+  function createRepr(col, row) {
     if (col instanceof LineUp.LayoutStackedColumn) {
       return col.getValue(row);
     }
@@ -278,14 +280,14 @@ var LineUp;
   function generateTooltip(row, headers, config) {
     var $table = $('<div><table><thead><tr><th>Column</th><th>Value</th></tr></thead><tbody></tbody></table></div>');
     var $body = $table.find('tbody');
-    headers.forEach(function(header) {
+    headers.forEach(function (header) {
       var r = createRepr(header, row);
       if (typeof r === 'undefined') {
         r = '';
       } else if (typeof r === 'number') {
         r = config.numberformat(r);
       }
-      $('<tr><th>'+header.getLabel()+'</th><td>'+r+'</td></tr>').appendTo($body);
+      $('<tr><th>' + header.getLabel() + '</th><td>' + r + '</td></tr>').appendTo($body);
     });
     return $table.html();
   }
@@ -311,10 +313,10 @@ var LineUp;
 
     var datLength = data.length;
     var rowScale = d3.scale.ordinal()
-      .domain(data.map(function (d) {
-        return d[primaryKey]
-      }))
-      .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, .2),
+        .domain(data.map(function (d) {
+          return d[primaryKey]
+        }))
+        .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, .2),
       prevRowScale = this.prevRowScale || rowScale;
     //backup the rowscale from the previous call to have a previous "old" position
     this.prevRowScale = rowScale;
@@ -323,7 +325,7 @@ var LineUp;
 
     var visibleRange = this.selectVisible(data, rowScale);
     if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
-      data = data.slice(visibleRange[0],visibleRange[1]);
+      data = data.slice(visibleRange[0], visibleRange[1]);
     }
     // -- handle all row groups
 
@@ -335,7 +337,7 @@ var LineUp;
     // --- append ---
     var allRowsSuperEnter = allRowsSuper.enter().append("g").attr({
       "class": "row",
-      transform : function(d) { //init with its previous position
+      transform: function (d) { //init with its previous position
         var prev = prevRowScale(d[primaryKey]);
         if (typeof prev === 'undefined') { //if not defined from the bottom
           prev = rowScale.range()[1]
@@ -344,9 +346,9 @@ var LineUp;
       }
     });
     allRowsSuperEnter.append('rect').attr({
-      'class' : 'filler',
-      width : '100%',
-      height : that.config.svgLayout.rowHeight
+      'class': 'filler',
+      width: '100%',
+      height: that.config.svgLayout.rowHeight
     });
 
     //    //--- update ---
@@ -359,12 +361,14 @@ var LineUp;
 
     function createOverlays(row) {
       var textOverlays = [];
+
       function toValue(v) {
         if (isNaN(v) || v === '' || typeof v === "undefined") {
           return '';
         }
         return that.config.numberformat(+v);
       }
+
       headers.forEach(function (col) {
           if (col.column instanceof LineUp.LineUpNumberColumn) {
             textOverlays.push({id: col.id, value: col.column.getValue(row), label: that.config.numberformat(+col.column.getRawValue(row)),
@@ -377,7 +381,7 @@ var LineUp;
               var allStackW = child.getWidth(row);
 
               textOverlays.push({
-                  id : child.id,
+                  id: child.id,
                   label: toValue(child.column.getRawValue(row))
                     + " -> (" + zeroFormat(child.getWidth(row)) + ")",
                   w: asStacked ? allStackW : child.getColumnWidth(),
@@ -395,16 +399,16 @@ var LineUp;
       return textOverlays;
     }
 
-    function renderOverlays($row, textOverlays, clazz, clipPrefix){
-      $row.selectAll("text."+clazz).data(textOverlays).enter().append("text").
+    function renderOverlays($row, textOverlays, clazz, clipPrefix) {
+      $row.selectAll("text." + clazz).data(textOverlays).enter().append("text").
         attr({
-          'class': "tableData "+clazz,
+          'class': "tableData " + clazz,
           x: function (d) {
             return d.x;
           },
           y: that.config.svgLayout.rowHeight / 2,
-          'clip-path' : function(d) {
-            return 'url(#clip-'+ clipPrefix + d.id+')';
+          'clip-path': function (d) {
+            return 'url(#clip-' + clipPrefix + d.id + ')';
           }
         }).text(function (d) {
           return d.label;
@@ -412,9 +416,9 @@ var LineUp;
     }
 
     allRowsSuper.on({
-      mouseenter: function(row) {
+      mouseenter: function (row) {
         var $row = d3.select(this);
-        $row.classed('hover',true);
+        $row.classed('hover', true);
 //            d3.select(this.parent).classed("hovered", true)
         var textOverlays = createOverlays(row);
         //create clip paths which clips the overlay text of the bars
@@ -425,48 +429,48 @@ var LineUp;
         var textClipPath = that.$table.select('defs.overlay').selectAll(function () {
           return this.getElementsByTagName("clipPath");
         }).data(textOverlays);
-          textClipPath.enter().append('clipPath')
-            .append('rect').attr({
-              height: '1000'
-            });
-          textClipPath.exit().remove();
-          textClipPath.attr('y',shift).attr('id', function (d) {
-            return 'clip-M' + d.id;
+        textClipPath.enter().append('clipPath')
+          .append('rect').attr({
+            height: '1000'
           });
+        textClipPath.exit().remove();
+        textClipPath.attr('y', shift).attr('id', function (d) {
+          return 'clip-M' + d.id;
+        });
         textClipPath.select('rect')
-            .attr({
-              x: function (d) {
-                return d.x;
-              },
-              width: function (d) {
-                return Math.max(d.w - 2, 0);
-              }
-            });
-        renderOverlays($row, textOverlays, 'hoveronly','M');
+          .attr({
+            x: function (d) {
+              return d.x;
+            },
+            width: function (d) {
+              return Math.max(d.w - 2, 0);
+            }
+          });
+        renderOverlays($row, textOverlays, 'hoveronly', 'M');
 
         function absoluteRowPos(elem) {
           var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
           var matrix = elem.getScreenCTM(),
-              tbbox = elem.getBBox(),
-              point = that.$table.node().createSVGPoint();
+            tbbox = elem.getBBox(),
+            point = that.$table.node().createSVGPoint();
           point.x = tbbox.x;
           point.y = tbbox.y;
           point = point.matrixTransform(matrix);
           return scrollTop + point.y;
         }
 
-        that.tooltip.show(generateTooltip(row, allHeaders, that.config),{
-          x : d3.event.x+10,
+        that.tooltip.show(generateTooltip(row, allHeaders, that.config), {
+          x: d3.event.x + 10,
           y: absoluteRowPos(this),
           height: that.config.svgLayout.rowHeight
         });
       },
-      mousemove: function() {
+      mousemove: function () {
         that.tooltip.move({
-          x : d3.event.x
+          x: d3.event.x
         });
       },
-      mouseleave: function() {
+      mouseleave: function () {
         that.tooltip.hide();
         d3.select(this).classed('hover', false);
         d3.select(this).selectAll('text.hoveronly').remove();
@@ -483,9 +487,9 @@ var LineUp;
     updateText(allHeaders, allRows, svg, that.config);
     if (that.config.renderingOptions.values) {
       allRowsSuper.classed('values', true);
-      allRowsSuper.each(function(row) {
+      allRowsSuper.each(function (row) {
         var $row = d3.select(this);
-        renderOverlays($row, createOverlays(row), 'valueonly','B');
+        renderOverlays($row, createOverlays(row), 'valueonly', 'B');
       })
     } else {
       allRowsSuper.classed('values', false).selectAll('text.valueonly').remove();

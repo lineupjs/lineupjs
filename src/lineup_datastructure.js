@@ -7,7 +7,7 @@
  * */
 
 var LineUp;
-(function(LineUp, d3, $, _,undefined) {
+(function (LineUp, d3, $, _, undefined) {
   /**
    * The mother of all Columns
    * @param desc The descriptor object
@@ -173,6 +173,7 @@ var LineUp;
       return that.safeSortBy(a, b);
     }
   }
+
   LineUp.LayoutColumn = LayoutColumn;
 
   LayoutColumn.prototype = $.extend({}, {}, {
