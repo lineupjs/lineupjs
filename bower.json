@@ -34,8 +34,7 @@
     "jquery": ">=1.10",
     "d3": ">=3.4",
     "underscore": ">=1.6",
-    "font-awesome": ">=4.2.0",
-    "css-element-queries": ">=0.0.2"
+    "font-awesome": ">=4.2.0"
   },
   "license": "BSD",
   "private": true,
