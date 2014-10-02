@@ -3,6 +3,7 @@
  */
 var LineUp;
 (function (LineUp, d3, $, undefined) {
+  LineUp.prototype = LineUp.prototype || {};
   LineUp.prototype.layoutHeaders = function (headers) {
     var offset = 0;
     var config = this.config;

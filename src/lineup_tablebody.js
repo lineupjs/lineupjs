@@ -8,6 +8,7 @@
  */
 var LineUp;
 (function (LineUp, d3, $, undefined) {
+  LineUp.prototype = LineUp.prototype || {};
   LineUp.updateClipPaths = function (headers, svg, prefix, shift, defclass) {
     defclass = defclass || 'column';
     //generate clip paths for the text columns to avoid text overflow

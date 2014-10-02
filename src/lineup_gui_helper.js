@@ -4,6 +4,7 @@
 
 var LineUp;
 (function (LineUp, d3, $, undefined) {
+  LineUp.prototype = LineUp.prototype || {};
   /**
    * creates a simple popup window with a table
    * @param title

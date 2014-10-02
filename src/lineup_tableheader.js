@@ -3,6 +3,7 @@
  */
 var LineUp;
 (function (LineUp, d3, $, undefined) {
+  LineUp.prototype = LineUp.prototype || {};
   /**
    * Render the given headers
    * @param headers - the array of headers, see {@link LineUpColumn}
