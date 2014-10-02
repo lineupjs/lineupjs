@@ -1,6 +1,6 @@
 {
   "name": "lineupjs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/Caleydo/lineup.js",
   "authors": [
     "Hendrik Strobelt",
@@ -12,17 +12,10 @@
     "url": "git://github.com/Caleydo/lineup.js.git"
   },
   "main": [
-    "src/lineup.js",
-    "src/lineup_datastructure.js",
-    "src/lineup_gui_helper.js",
-    "src/lineup_layout.js",
-    "src/lineup_mappingeditor.js",
-    "src/lineup_storage.js",
-    "src/lineup_tablebody.js",
-    "src/lineup_tableheader.js"
+    "dist/LineUpJS.js"
   ],
   "moduleType": [
-    "globals"
+    "amd"
   ],
   "keywords": [
     "lineup",
