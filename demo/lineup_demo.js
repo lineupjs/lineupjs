@@ -112,7 +112,7 @@
       evt.stopPropagation();
       evt.preventDefault();
       var files = evt.target.files || evt.dataTransfer.files;
-      console.log('drop',files);
+      //console.log('drop',files);
       files = Array.prototype.slice.call(files); // FileList object.
       dropCallback(files);
     }
@@ -267,7 +267,7 @@
       layoutHTML();
 
       d3.json("datasets.json", function (error, data) {
-        console.log("datasets:", data, error);
+        //console.log("datasets:", data, error);
 
         datasets = data.datasets;
         var $s = d3.select("#lugui-dataset-selector");

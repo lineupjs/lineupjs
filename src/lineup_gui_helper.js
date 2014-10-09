@@ -117,13 +117,13 @@ var LineUp;
         window.alert("name must not be empty");
         return;
       }
-      console.log(name, trData);
+      //console.log(name, trData);
 
       var allChecked = trData.filter(function (d) {
         return d.isChecked;
       });
 
-      console.log(allChecked);
+      //console.log(allChecked);
       var desc = {
         label: name,
         width: (Math.max(allChecked.length * 100, 100)),
@@ -314,7 +314,7 @@ var LineUp;
 
     popup.select(".ok").on("click", function () {
       col.scale = act;
-      console.log(act.domain().toString(), act.range().toString());
+      //console.log(act.domain().toString(), act.range().toString());
       $button.classed('filtered', !isSame(act.range(), col.scaleOri.range()) || !isSame(act.domain(), col.scaleOri.domain()));
       that.storage.resortData({});
       that.updateAll(true);
@@ -339,7 +339,7 @@ var LineUp;
    * @param selectedColumn -- the stacked column
    */
   LineUp.prototype.stackedColumnOptionsGui = function (selectedColumn) {
-    console.log(selectedColumn);
+    //console.log(selectedColumn);
     var config = this.config;
     var svgOverlay = this.$header.select(".overlay");
     var that = this;

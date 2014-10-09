@@ -192,7 +192,6 @@ var LineUp;
       },
       generateLayout: function (layout, bundle) {
         var that = this;
-        console.log(that);
         var _bundle = bundle || "primary";
 
         // create Rank Column
@@ -200,7 +199,7 @@ var LineUp;
 
         var b = {};
         b.layoutColumns = layout[_bundle].map(this.storageConfig.toLayoutColumn);
-        console.log(b.layoutColumns, layout);
+        //console.log(b.layoutColumns, layout);
         //if there is no rank column create one
         if (b.layoutColumns.filter(function (d) {
           return d instanceof LineUp.LayoutRankColumn;
