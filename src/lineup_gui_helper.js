@@ -134,6 +134,7 @@ var LineUp;
 
       that.storage.addStackedColumn(desc);
       popup.remove();
+      that.headerUpdateRequired = true;
       that.updateAll();
     });
 
@@ -191,6 +192,7 @@ var LineUp;
       });
 
       popup.remove();
+      that.headerUpdateRequired = true;
       that.updateAll();
     });
   };
