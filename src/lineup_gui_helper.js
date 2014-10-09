@@ -132,6 +132,7 @@
 
       that.storage.addStackedColumn(desc);
       popup.remove();
+      that.headerUpdateRequired = true;
       that.updateAll();
     });
 
@@ -189,6 +190,9 @@
       });
 
       popup.remove();
+
+
+      that.headerUpdateRequired = true;
       that.updateAll();
     });
   };
@@ -403,6 +407,7 @@
 
     function removeStackedColumn(col) {
       that.storage.removeColumn(col);
+      that.headerUpdateRequired = true;
       that.updateAll();
     }
 
