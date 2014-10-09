@@ -225,6 +225,7 @@ LineUp.prototype.changeWeights = function(column, weights) {
   if (column === this.config.columnBundles.primary.sortedColumn) {
     this.storage.resortData({});
   }
+  this.headerUpdateRequired = true;
   this.updateAll();
   return true;
 };
