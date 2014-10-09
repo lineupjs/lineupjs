@@ -29,7 +29,7 @@
     font-weight: bold;
 }
 
-#lugui-menu-actions span {
+#lugui-menu-actions span, form span {
     font-size: 10pt;
     font-weight: normal;
     font-style: normal;
@@ -69,4 +69,16 @@ html, body {
     height: calc(100% - 35px);
     overflow-x: visible;
     overflow-y: auto;
+}
+
+form {
+    display: inline;
+}
+
+#drop_zone {
+    border: 2px dashed #BBB;
+    border-radius: 5px;
+    padding: 1px 2em;
+    text-align: center;
+    color: #BBB;
 }

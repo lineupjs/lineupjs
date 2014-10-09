@@ -214,17 +214,6 @@
     background-color: lightblue;
 }
 
-.lu-popup .drop_zone {
-    border: 2px dashed #BBB;
-    border-radius: 5px;
-    padding: 25px;
-    text-align: center;
-    color: #BBB;
-}
-.lu-popup .drop_zone.dragging {
-    border-color: red;
-}
-
 .lu-popup2 {
     background-color: rgba(255,255,255,0.5);
     position: absolute;

@@ -12,8 +12,7 @@
     {name: " add single columns", icon: "fa-plus", action: function () {
       lineup.addNewSingleColumnDialog();
     }},
-    {name: " save layout", icon: "fa-floppy-o", action: saveLayout},
-    {name: " load layout", icon: "fa-recycle", action: loadLayout}
+    {name: " save layout", icon: "fa-floppy-o", action: saveLayout}
   ];
   var lineUpDemoConfig = {
     htmlLayout: {
@@ -37,7 +36,7 @@
   $(window).resize(function() {
     if (lineup) {
       lineup.updateBody()
-    };
+    }
   });
   function updateMenu() {
     var config = lineup.config;
@@ -61,8 +60,10 @@
         return '<i class="fa ' + (d.icon) + '" ></i>' + d.name + '&nbsp;&nbsp;'
       }
     ).on("click", function (d) {
-        d.action.call(d);
-      })
+      d.action.call(d);
+    })
+
+
   }
 
   function layoutHTML() {
@@ -87,43 +88,33 @@
   }
 
   function loadDataset(ds) {
-    var name = ds.descriptionFile.substring(0, ds.descriptionFile.length - 5);
-    d3.json(ds.baseURL + "/" + ds.descriptionFile, function (desc) {
+    function loadDesc(desc, baseUrl) {
       if (desc.data) {
         loadDataImpl(name, desc, desc.data);
       } else if (desc.file) {
-        d3.dsv(desc.separator || '\t', 'text/plain')(ds.baseURL + "/" + desc.file, function (_data) {
+        d3.dsv(desc.separator || '\t', 'text/plain')(baseUrl + "/" + desc.file, function (_data) {
           loadDataImpl(name, desc, _data);
         });
       }
-    })
+    }
+    if (ds.descriptionFile) {
+      var name = ds.descriptionFile.substring(0, ds.descriptionFile.length - 5);
+      d3.json(ds.baseURL + "/" + ds.descriptionFile, function (desc) {
+        loadDesc(desc, ds.baseURL);
+      })
+    } else {
+      loadDesc(ds, '');
+    }
   }
 
   function uploadUI(dropCallback) {
-    var popup = d3.select("body").append("div")
-      .attr({
-        "class": "lu-popup"
-      }).style({
-        left: +(window.innerWidth) / 2 - 100 + "px",
-        top: 100 + "px",
-        width: "200px",
-        height: "100px"
-      })
-      .html(
-        '<div class="drop_zone">Drop files here</div>'+
-        '<button class="cancel"><i class="fa fa-times"></i> cancel</button>'
-    );
-    popup.select(".cancel").on("click", function () {
-      popup.remove();
-    });
-
     function handleFileSelect(evt) {
       evt.stopPropagation();
       evt.preventDefault();
-      console.log('drop',evt.dataTransfer.files);
-      var files = Array.prototype.slice.call(evt.dataTransfer.files); // FileList object.
+      var files = evt.target.files || evt.dataTransfer.files;
+      console.log('drop',files);
+      files = Array.prototype.slice.call(files); // FileList object.
       dropCallback(files);
-      popup.remove();
     }
 
     function handleDragOver(evt) {
@@ -131,7 +122,9 @@
       evt.preventDefault();
       evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
     }
-    var $drop = popup.select('.drop_zone');
+    var $file = d3.select('input[type="file"]');
+    $file.node().addEventListener('change', handleFileSelect, false);
+    var $drop = d3.select('#drop_zone');
     var drop = $drop.node();
     drop.addEventListener('dragenter', function() {
       $drop.classed('dragging',true);
@@ -163,8 +156,6 @@
   }
 
   function loadLayout() {
-    var that = lineup;
-
     function loadDataImpl(name, desc, _data) {
       var spec = {};
       spec.name = name;
@@ -172,10 +163,10 @@
       delete spec.dataspec.file;
       delete spec.dataspec.separator;
       spec.dataspec.data = _data;
-      spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
-      that.changeDataStorage(spec);
+      spec.storage = LineUp.createLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
+      lineup.changeDataStorage(spec);
       updateMenu();
-      that.startVis();
+      lineup.startVis();
     }
 
     function loadDataFile(name, desc, datafile) {
@@ -189,14 +180,41 @@
       reader.readAsText(datafile);
     }
 
+    function countOccurences(text, char) {
+      return (text.match(new RegExp(char,'g'))||[]).length;
+    }
+
+    function isNumeric(obj) {
+      return (obj - parseFloat(obj) + 1) >= 0;
+    }
+
+    function deriveDesc(columns, data, separator) {
+      var cols = columns.map(function(col, i) {
+        col = col.trim();
+        var r = {
+          column: col,
+          type: 'string'
+        };
+        if (isNumeric(data[0][col])) {
+          r.type = 'number';
+          r.domain = d3.extent(data, function (row) { return +row[col]});
+        }
+        return r;
+      });
+      return {
+        separator: separator,
+        primaryKey : columns[0],
+        columns: cols
+      };
+    }
+
     uploadUI(function (files) {
       var descs = files.filter(function (f) {
         return f.name.match(/.*\.json/i) || f.type === 'application/json';
       });
 
+      var reader = new FileReader();
       if (descs.length > 0) {
-        var reader = new FileReader();
-
         // Closure to capture the file information.
         reader.onload = function (e) {
           var desc = e.target.result;
@@ -219,6 +237,27 @@
         };
         // Read in the image file as a data URL.
         reader.readAsText(descs[0]);
+      } else if (files.length === 1 && files[0].name.match(/.*\.(tsv|csv|txt)/)) {
+        //just a data file
+        var f = files[0];
+        reader.onload = function (e) {
+          var data_s = e.target.result;
+          var header = data_s.slice(0,data_s.indexOf('\n'));
+          //guess the separator,
+          var separator = [',','\t',';'].reduce(function(prev, current) {
+            var c = countOccurences(header, current);
+            if (c > prev.c) {
+              prev.c = c;
+              prev.s = current;
+            }
+            return prev;
+          },{ s: ',', c : 0});
+          var _data = d3.dsv(separator.s, 'text/plain').parse(data_s);
+          //derive a description file
+          var desc = deriveDesc(header.split(separator.s), _data);
+          loadDataImpl(name, desc, _data);
+        };
+        reader.readAsText(f);
       }
     });
   }
@@ -247,6 +286,8 @@
 
         //and start with 0:
         loadDataset(datasets[0]);
+
+        loadLayout();
       });
   })
 }(LineUp));
