@@ -256,6 +256,7 @@
           var _data = d3.dsv(separator.s, 'text/plain').parse(data_s);
           //derive a description file
           var desc = deriveDesc(header.split(separator.s), _data);
+          var name = f.name.substring(0, f.name.lastIndexOf('.'));
           loadDataImpl(name, desc, _data);
         };
         reader.readAsText(f);
