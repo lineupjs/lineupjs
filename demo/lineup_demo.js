@@ -85,6 +85,7 @@
       lineup = LineUp.create(spec, d3.select('#lugui-table-wrapper'), lineUpDemoConfig);
     }
     updateMenu();
+    lineup.startVis();
   }
 
   function loadDataset(ds) {
