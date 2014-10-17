@@ -8,7 +8,8 @@ var LineUp;
   /**
    * creates a simple popup window with a table
    * @param title
-   * @param label optional if an input field is required
+   * @param label optional if an input field is
+   * @param options optional options like the dimension of the popup
    * @returns {{popup: *, table: *, remove: remove, onOK: onOK}}
    */
   function createPopup(title, label, options) {
@@ -579,8 +580,7 @@ var LineUp;
     function selectVisibleRows(data, rowScale) {
       var top = container.scrollTop - shift,
         bottom = top + $container.innerHeight(),
-        height = jbody[0].scrollHeight,
-        i = 0, j = data.length;
+        i = 0, j;
       if (top > 0) {
         i = Math.round(top / rowHeight);
         //count up till really even partial rows are visible
@@ -589,7 +589,7 @@ var LineUp;
         }
         i -= backupRows; //one more row as backup for scrolling
       }
-      if (height > bottom) { //some parts from the bottom aren't visible
+      { //some parts from the bottom aren't visible
         j = Math.round(bottom / rowHeight);
         //count down till really even partial rows are visible
         while (j <= data.length && rowScale(data[j - 1]) < bottom) {
