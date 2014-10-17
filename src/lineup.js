@@ -115,6 +115,10 @@ var LineUp;
     },
     /* enables manipulation features, remove column, reorder,... */
     manipulative: true,
+    interaction: {
+      //enable the table tooltips
+      tooltips: true
+    },
     filter: {
       skip: 0,
       limit: Number.POSITIVE_INFINITY,

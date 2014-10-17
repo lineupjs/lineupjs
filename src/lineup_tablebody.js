@@ -459,20 +459,25 @@ var LineUp;
           point = point.matrixTransform(matrix);
           return scrollTop + point.y;
         }
-
-        that.tooltip.show(generateTooltip(row, allHeaders, that.config), {
-          x: d3.event.x + 10,
-          y: absoluteRowPos(this),
-          height: that.config.svgLayout.rowHeight
-        });
+        if (that.config.interaction.tooltips) {
+          that.tooltip.show(generateTooltip(row, allHeaders, that.config), {
+            x: d3.event.x + 10,
+            y: absoluteRowPos(this),
+            height: that.config.svgLayout.rowHeight
+          });
+        }
       },
       mousemove: function () {
-        that.tooltip.move({
-          x: d3.event.x
-        });
+        if (that.config.interaction.tooltips) {
+          that.tooltip.move({
+            x: d3.event.x
+          });
+        }
       },
       mouseleave: function () {
-        that.tooltip.hide();
+        if (that.config.interaction.tooltips) {
+          that.tooltip.hide();
+        }
         d3.select(this).classed('hover', false);
         d3.select(this).selectAll('text.hoveronly').remove();
       }
