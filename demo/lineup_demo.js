@@ -198,7 +198,7 @@
         };
         if (isNumeric(data[0][col])) {
           r.type = 'number';
-          r.domain = d3.extent(data, function (row) { return +row[col]});
+          r.domain = d3.extent(data, function (row) { return row[col].trim().length === 0 ? undefined : +row[col]});
         }
         return r;
       });
