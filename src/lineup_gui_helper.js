@@ -1,7 +1,7 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/17/14.
  */
-/* global d3, jQuery, window, document, console */
+/* global d3, jQuery, window, document */
 var LineUp;
 (function (LineUp, d3, $, undefined) {
   LineUp.prototype = LineUp.prototype || {};

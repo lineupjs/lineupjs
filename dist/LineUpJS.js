@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2014-10-02
+/*! LineUpJS - v0.1.0 - 2014-10-17
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2014 ; Licensed BSD */
 (function() {
@@ -864,14 +864,15 @@ var LineUp;
     }
   });
 }(LineUp || (LineUp = {}), d3, jQuery, _));
-/* global d3, jQuery, window, document, console */
+/* global d3, jQuery, window, document */
 var LineUp;
 (function (LineUp, d3, $, undefined) {
   LineUp.prototype = LineUp.prototype || {};
   /**
    * creates a simple popup window with a table
    * @param title
-   * @param label optional if an input field is required
+   * @param label optional if an input field is
+   * @param options optional options like the dimension of the popup
    * @returns {{popup: *, table: *, remove: remove, onOK: onOK}}
    */
   function createPopup(title, label, options) {
@@ -980,13 +981,13 @@ var LineUp;
         window.alert("name must not be empty");
         return;
       }
-      console.log(name, trData);
+      //console.log(name, trData);
 
       var allChecked = trData.filter(function (d) {
         return d.isChecked;
       });
 
-      console.log(allChecked);
+      //console.log(allChecked);
       var desc = {
         label: name,
         width: (Math.max(allChecked.length * 100, 100)),
@@ -997,6 +998,7 @@ var LineUp;
 
       that.storage.addStackedColumn(desc);
       popup.remove();
+      that.headerUpdateRequired = true;
       that.updateAll();
     });
 
@@ -1054,6 +1056,7 @@ var LineUp;
       });
 
       popup.remove();
+      that.headerUpdateRequired = true;
       that.updateAll();
     });
   };
@@ -1175,7 +1178,7 @@ var LineUp;
 
     popup.select(".ok").on("click", function () {
       col.scale = act;
-      console.log(act.domain().toString(), act.range().toString());
+      //console.log(act.domain().toString(), act.range().toString());
       $button.classed('filtered', !isSame(act.range(), col.scaleOri.range()) || !isSame(act.domain(), col.scaleOri.domain()));
       that.storage.resortData({});
       that.updateAll(true);
@@ -1200,7 +1203,7 @@ var LineUp;
    * @param selectedColumn -- the stacked column
    */
   LineUp.prototype.stackedColumnOptionsGui = function (selectedColumn) {
-    console.log(selectedColumn);
+    //console.log(selectedColumn);
     var config = this.config;
     var svgOverlay = this.$header.select(".overlay");
     var that = this;
@@ -1440,8 +1443,7 @@ var LineUp;
     function selectVisibleRows(data, rowScale) {
       var top = container.scrollTop - shift,
         bottom = top + $container.innerHeight(),
-        height = jbody[0].scrollHeight,
-        i = 0, j = data.length;
+        i = 0, j;
       if (top > 0) {
         i = Math.round(top / rowHeight);
         //count up till really even partial rows are visible
@@ -1450,7 +1452,7 @@ var LineUp;
         }
         i -= backupRows; //one more row as backup for scrolling
       }
-      if (height > bottom) { //some parts from the bottom aren't visible
+      { //some parts from the bottom aren't visible
         j = Math.round(bottom / rowHeight);
         //count down till really even partial rows are visible
         while (j <= data.length && rowScale(data[j - 1]) < bottom) {
@@ -1824,7 +1826,7 @@ var LineUp;
     return editor;
   };
 }(LineUp || (LineUp = {}), d3));
-/* global d3, jQuery, _, console */
+/* global d3, jQuery, _ */
 var LineUp;
 (function (LineUp, d3, $, _, undefined) {
   /**
@@ -2014,8 +2016,6 @@ var LineUp;
         });
       },
       generateLayout: function (layout, bundle) {
-        var that = this;
-        console.log(that);
         var _bundle = bundle || "primary";
 
         // create Rank Column
@@ -2023,7 +2023,7 @@ var LineUp;
 
         var b = {};
         b.layoutColumns = layout[_bundle].map(this.storageConfig.toLayoutColumn);
-        console.log(b.layoutColumns, layout);
+        //console.log(b.layoutColumns, layout);
         //if there is no rank column create one
         if (b.layoutColumns.filter(function (d) {
           return d instanceof LineUp.LayoutRankColumn;

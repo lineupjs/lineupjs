@@ -1,7 +1,7 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 8/18/14.
  */
-/* global d3, jQuery, _, console */
+/* global d3, jQuery, _ */
 var LineUp;
 (function (LineUp, d3, $, _, undefined) {
   /**
@@ -191,7 +191,6 @@ var LineUp;
         });
       },
       generateLayout: function (layout, bundle) {
-        var that = this;
         var _bundle = bundle || "primary";
 
         // create Rank Column
