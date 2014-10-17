@@ -22,7 +22,6 @@ module.exports = function(grunt) {
           'src/lineup.js',
           'src/lineup_datastructure.js',
           'src/lineup_gui_helper.js',
-          'src/lineup_layout.js',
           'src/lineup_mappingeditor.js',
           'src/lineup_storage.js',
           'src/lineup_tablebody.js',

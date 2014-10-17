@@ -147,6 +147,29 @@ var LineUp;
     this.updateAll();
   };
 
+  LineUp.prototype.assignColors = function (headers) {
+    //Color schemes are in config (.columnColors / .grayColor)
+
+    // clear map
+    var config = this.config;
+    config.colorMapping = d3.map();
+
+    var colCounter = 0;
+
+    headers.forEach(function (d) {
+      if (d.color) {
+        config.colorMapping.set(d.id, d.color);
+      } else if ((d instanceof LineUp.LineUpStringColumn) || (d.id === "rank")) {
+        // gray columns are:
+        config.colorMapping.set(d.id, config.grayColor);
+      } else {
+        config.colorMapping.set(d.id, config.columnColors(colCounter));
+        colCounter++;
+      }
+    });
+    //console.log(config.colorMapping);
+  };
+
   LineUp.prototype.updateAll = function (stackTransition) {
     this.updateHeader(this.storage.getColumnLayout());
     this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), stackTransition || false);

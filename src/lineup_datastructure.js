@@ -16,6 +16,7 @@ var LineUp;
   function LineUpColumn(desc) {
     this.column = desc.column;
     this.label = desc.label || desc.column;
+    this.color = desc.color;
     this.id = desc.id || this.column;
     this.missingValue = desc.missingValue;
     this.layout = {};
