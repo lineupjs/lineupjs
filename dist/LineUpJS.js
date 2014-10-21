@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2014-10-17
+/*! LineUpJS - v0.1.0 - 2014-10-21
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2014 ; Licensed BSD */
 (function() {
@@ -14,11 +14,11 @@ var LineUp;
 (function (LineUp, d3, $, undefined) {
 
   function LineUpClass(spec, $container, config) {
+    var $defs, scroller;
     this.storage = spec.storage;
     this.spec = spec;
 //    this.sortedColumn = [];
     this.$container = $container;
-    this.$table = $container.append('svg').attr('class', 'lu');
     this.tooltip = LineUp.createTooltip($container.node());
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
@@ -36,12 +36,37 @@ var LineUp;
     this.storage.config = this.config;
 
     //create basic structure
-    var $defs = this.$table.append('defs');
-    $defs.append('defs').attr('class', 'columnheader');
-    $defs.append('defs').attr('class', 'column');
-    $defs.append('defs').attr('class', 'overlay');
-    this.$body = this.$table.append('g').attr('transform', 'translate(0,' + this.config.htmlLayout.headerHeight + ')');
-    this.$header = this.$table.append('g').attr('class', 'header');
+    if (this.config.svgLayout.mode === 'combined') {
+      //within a single svg with "fixed" header
+      $container.classed('lu-mode-combined', true);
+      this.$table = $container.append('svg').attr('class', 'lu');
+      $defs = this.$table.append('defs');
+      $defs.append('defs').attr('class', 'columnheader');
+      $defs.append('defs').attr('class', 'column');
+      $defs.append('defs').attr('class', 'overlay');
+      this.$body = this.$table.append('g').attr('class','body').attr('transform', 'translate(0,' + this.config.htmlLayout.headerHeight + ')');
+      this.$header = this.$table.append('g').attr('class', 'header');
+      this.$bodySVG = this.$headerSVG = this.$table;
+
+      scroller = this.initScrolling($($container.node()), this.config.htmlLayout.headerHeight);
+    } else {
+      //within two svgs with a dedicated header
+      $container.classed('lu-mode-separate', true);
+      this.$table = $container;
+      this.$header = this.$table.append('svg').attr('class', 'lu lu-header');
+      this.$header.attr('height',this.config.htmlLayout.headerHeight);
+      this.$header.append('defs').attr('class', 'columnheader');
+      this.$headerSVG = this.$header;
+      this.$body = this.$table.append('div').attr('class','lu-wrapper').append('svg').attr('class','lu lu-body');
+      $defs = this.$body.append('defs');
+      $defs.append('defs').attr('class', 'column');
+      $defs.append('defs').attr('class', 'overlay');
+      this.$bodySVG = this.$body;
+      scroller = this.initScrolling($($container.node()).find('div.lu-wrapper'), 0);
+    }
+    this.selectVisible = scroller.selectVisible;
+    this.onScroll = scroller.onScroll;
+
     this.$header.append('rect').attr({
       width: '100%',
       height: this.config.htmlLayout.headerHeight,
@@ -52,10 +77,6 @@ var LineUp;
 
     this.headerUpdateRequired = true;
     this.stackedColumnModified = null;
-
-    var r = this.initScrolling($($container.node()));
-    this.selectVisible = r.selectVisible;
-    this.onScroll = r.onScroll;
 
     this.dragWeight = this.initDragging();
 
@@ -73,7 +94,9 @@ var LineUp;
   };
 
   LineUp.prototype.scrolled = function (top) {
-    this.$header.attr('transform', 'translate(0,' + top + ')');
+    if (this.config.svgLayout.mode === 'combined') {
+      this.$header.attr('transform', 'translate(0,' + top + ')');
+    }
     //TODO use second argument left
   };
 
@@ -95,6 +118,10 @@ var LineUp;
       animation: true
     },
     svgLayout: {
+      /**
+       * mode of this lineup instance, either combined = a single svg with header and body combined or separate ... separate header and body
+       */
+      mode: 'combined', //modes: combined vs separate
       rowHeight: 20,
       /**
        * number of backup rows to keep to avoid updating on every small scroll thing
@@ -258,12 +285,12 @@ var LineUp;
    * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
    */
   LineUp.prototype.destroy = function () {
-    //clear the svg elements
-    this.$header.selectAll('*').remove();
-    this.$body.selectAll('*').remove();
     //remove tooltip
     this.tooltip.destroy();
-    this.$container.off('scroll', this.onScroll);
+    this.$container.selectAll('*').remove();
+    if (this.config.svgLayout.mode === 'combined') {
+      this.$container.off('scroll', this.onScroll);
+    }
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
 
@@ -1440,7 +1467,7 @@ var LineUp;
     };
   };
 
-  LineUp.prototype.initScrolling = function ($container) {
+  LineUp.prototype.initScrolling = function ($container, topShift) {
     var that = this,
       container = $container[0],
       rowHeight = this.config.svgLayout.rowHeight,
@@ -1462,7 +1489,7 @@ var LineUp;
 
     $container.on('scroll', onScroll);
     //the shift between the scroll container our svg body
-    shift = jbody.offset().top - $container.offset().top + this.config.htmlLayout.headerHeight;
+    shift = jbody.offset().top - $container.offset().top + topShift;
     //use a resize sensor of a utility lib to also detect resize changes
     //new ResizeSensor($container, function() {
     //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), "resized");
@@ -2472,7 +2499,7 @@ var LineUp;
     //backup the rowscale from the previous call to have a previous "old" position
     this.prevRowScale = rowScale;
 
-    this.$table.attr("height", datLength * that.config.svgLayout.rowHeight + that.config.htmlLayout.headerHeight);
+    this.$bodySVG.attr("height", datLength * that.config.svgLayout.rowHeight + that.config.htmlLayout.headerHeight);
 
     var visibleRange = this.selectVisible(data, rowScale);
     if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
@@ -2576,7 +2603,7 @@ var LineUp;
         //generate clip paths for the text columns to avoid text overflow
         //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
         //there is a bug in webkit which present camelCase selectors
-        var textClipPath = that.$table.select('defs.overlay').selectAll(function () {
+        var textClipPath = that.$bodySVG.select('defs.overlay').selectAll(function () {
           return this.getElementsByTagName("clipPath");
         }).data(textOverlays);
         textClipPath.enter().append('clipPath')
@@ -2602,7 +2629,7 @@ var LineUp;
           var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
           var matrix = elem.getScreenCTM(),
             tbbox = elem.getBBox(),
-            point = that.$table.node().createSVGPoint();
+            point = that.$bodySVG.node().createSVGPoint();
           point.x = tbbox.x;
           point.y = tbbox.y;
           point = point.matrixTransform(matrix);
@@ -2638,7 +2665,7 @@ var LineUp;
     updateStackBars(headers, allRows, this.config.renderingOptions.animation && stackTransition, that.config);
     updateActionBars(headers, allRows, that.config);
 
-    LineUp.updateClipPaths(allHeaders, this.$table, 'B', true);
+    LineUp.updateClipPaths(allHeaders, this.$bodySVG, 'B', true);
     updateText(allHeaders, allRows, svg, that.config);
     if (that.config.renderingOptions.values) {
       allRowsSuper.classed('values', true);
@@ -2716,7 +2743,8 @@ var LineUp;
 
     if (this.headerUpdateRequired) {
       this.layoutHeaders(headers);
-      this.$table.attr('width', this.totalWidth);
+      this.$headerSVG.attr('width', this.totalWidth);
+      this.$bodySVG.attr('width', this.totalWidth);
       this.headerUpdateRequired = false;
     }
 
@@ -2727,7 +2755,7 @@ var LineUp;
     //reverse order to render from right to left
     allHeaderData.reverse();
 
-    LineUp.updateClipPaths(allHeaderData, this.$table, 'H', false, 'columnheader');
+    LineUp.updateClipPaths(allHeaderData, this.$headerSVG, 'H', false, 'columnheader');
     //console.log(allHeaderData);
 
 
