@@ -17,7 +17,16 @@ module.exports = function(grunt) {
         stripBanners: true
       },
       dist: {
-        src: ['src/<%= pkg.name %>.js'],
+        src: [
+          'deploy/module_wrapper_begin.js.txt',
+          'src/lineup.js',
+          'src/lineup_datastructure.js',
+          'src/lineup_gui_helper.js',
+          'src/lineup_mappingeditor.js',
+          'src/lineup_storage.js',
+          'src/lineup_tablebody.js',
+          'src/lineup_tableheader.js',
+          'deploy/module_wrapper_end.js.txt'],
         dest: 'dist/<%= pkg.name %>.js'
       }
     },
@@ -51,7 +60,7 @@ module.exports = function(grunt) {
         src: 'Gruntfile.js'
       },
       lib_test: {
-        src: ['lib/**/*.js', 'test/**/*.js']
+        src: ['src/**/*.js']
       }
     },
     nodeunit: {
@@ -90,6 +99,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'nodeunit', 'concat', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
   grunt.registerTask('doc', ['jsdoc']);
 };

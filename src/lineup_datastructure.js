@@ -14,7 +14,8 @@
 function LineUpColumn(desc) {
   this.column = desc.column;
   this.label = desc.label || desc.column;
-  this.id = desc.id || this.column;
+    this.color = desc.color;
+    this.id = (desc.id || this.column).replace(/[\s!\'#$%&'\(\)\*\+,\.\/:;<=>\?\@\[\\\]\^`\{\|\}~]/g, '_'); //replace non css stuff to _
   this.missingValue = desc.missingValue;
   this.layout = {};
 }

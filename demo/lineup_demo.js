@@ -3,19 +3,6 @@
  */
 
 (function (LineUp) {
-  var htmlLayout = {
-    menuHeight: 25,
-    menuHeightExpanded: 50,
-    windowOffsetX: 5,
-    windowOffsetY: 5,
-    headerHeight: 50,
-    headerOffsetY: function () {
-      return (this.menuHeight + this.windowOffsetY + 3)
-    },
-    bodyOffsetY: function () {
-      return (this.menuHeight + this.windowOffsetY + this.headerHeight + 3)
-    }
-  };
   var menuActions = [
     {name: " new combined", icon: "fa-plus", action: function () {
       lineup.addNewStackedColumnDialog();
@@ -26,10 +13,8 @@
     {name: " save layout", icon: "fa-floppy-o", action: saveLayout}
   ];
   var lineUpDemoConfig = {
-    htmlLayout: {
-      headerHeight: htmlLayout.headerHeight
-    },
     svgLayout: {
+      mode: 'separate',
       plusSigns: {
         addStackedColumn: {
           title: "add stacked column",
@@ -43,9 +28,12 @@
 
   var lineup = null;
   var datasets = [];
-  var $header = d3.select("#lugui-table-header-svg");
-  var $body = d3.select("#lugui-table-body-svg");
 
+  $(window).resize(function() {
+    if (lineup) {
+      lineup.updateBody()
+    }
+  });
   function updateMenu() {
     var config = lineup.config;
     var kv = d3.entries(lineup.config.renderingOptions);
@@ -68,59 +56,14 @@
         return '<i class="fa ' + (d.icon) + '" ></i>' + d.name + '&nbsp;&nbsp;'
       }
     ).on("click", function (d) {
-        d.action.call(d);
-      })
+      d.action.call(d);
+    })
+
+
   }
 
   function layoutHTML() {
-    //add svgs:
-    var header = d3.select("#lugui-table-header-svg").attr({
-      width: ($(window).width()),
-      height: htmlLayout.headerHeight
-    });
 
-    var body = d3.select("#lugui-table-body-svg").attr({
-      width: ($(window).width())
-    });
-
-    // constant layout attributes:
-    $("#lugui-menu").css({
-      "top": htmlLayout.windowOffsetY + "px",
-      "left": htmlLayout.windowOffsetX + "px",
-      "height": htmlLayout.menuHeight + "px"
-    });
-    $("#lugui-table-header").css({
-      "top": htmlLayout.headerOffsetY() + "px",
-      "left": htmlLayout.windowOffsetX + "px",
-      "height": htmlLayout.headerHeight + "px"
-    });
-
-    $("#lugui-table-body-wrapper").css({
-      "top": htmlLayout.bodyOffsetY() + "px",
-      "left": htmlLayout.windowOffsetX + "px"
-    });
-
-
-    // ----- Adjust UI elements...
-    var resizeGUI = function () {
-      d3.selectAll("#lugui-menu, #lugui-table-header, #lugui-table-body-wrapper").style({
-        "width": ($(window).width() - 2 * htmlLayout.windowOffsetX) + "px"
-      });
-      d3.selectAll("#lugui-table-header-svg, #lugui-table-body-svg").attr({
-        "width": ($(window).width() - 2 * htmlLayout.windowOffsetX)
-      });
-      d3.select("#lugui-table-body-wrapper").style({
-        "height": ($(window).height() - htmlLayout.bodyOffsetY()) + "px"
-      });
-    };
-
-    // .. on window changes...
-    $(window).resize(function () {
-      resizeGUI();
-    });
-
-    // .. and initially once.
-    resizeGUI();
   }
 
   function loadDataImpl(name, desc, _data) {
@@ -130,14 +73,12 @@
     delete spec.dataspec.file;
     delete spec.dataspec.separator;
     spec.dataspec.data = _data;
-    spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
+    spec.storage = LineUp.createLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
 
     if (lineup) {
       lineup.changeDataStorage(spec);
     } else {
-      lineup = new LineUp(spec, $header, $body, $.extend(true, {}, lineUpDemoConfig));
-      //set the scroll container to enable optimized row rendering
-      lineup.scrollContainer = $('#lugui-table-body-wrapper');
+      lineup = LineUp.create(spec, d3.select('#lugui-wrapper'), lineUpDemoConfig);
     }
     updateMenu();
     lineup.startVis();
@@ -168,7 +109,7 @@
       evt.stopPropagation();
       evt.preventDefault();
       var files = evt.target.files || evt.dataTransfer.files;
-      console.log('drop',files);
+      //console.log('drop',files);
       files = Array.prototype.slice.call(files); // FileList object.
       dropCallback(files);
     }
@@ -219,7 +160,7 @@
       delete spec.dataspec.file;
       delete spec.dataspec.separator;
       spec.dataspec.data = _data;
-      spec.storage = new LineUpLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
+      spec.storage = LineUp.createLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
       lineup.changeDataStorage(spec);
       updateMenu();
       lineup.startVis();
@@ -235,6 +176,7 @@
       // Read in the image file as a data URL.
       reader.readAsText(datafile);
     }
+
     function countOccurences(text, char) {
       return (text.match(new RegExp(char,'g'))||[]).length;
     }
@@ -252,7 +194,7 @@
         };
         if (isNumeric(data[0][col])) {
           r.type = 'number';
-          r.domain = d3.extent(data, function (row) { return +row[col]});
+          r.domain = d3.extent(data, function (row) { return row[col].trim().length === 0 ? undefined : +row[col]});
         }
         return r;
       });
@@ -262,6 +204,7 @@
         columns: cols
       };
     }
+
     uploadUI(function (files) {
       var descs = files.filter(function (f) {
         return f.name.match(/.*\.json/i) || f.type === 'application/json';
@@ -269,7 +212,6 @@
 
       var reader = new FileReader();
       if (descs.length > 0) {
-
         // Closure to capture the file information.
         reader.onload = function (e) {
           var desc = e.target.result;
@@ -310,6 +252,7 @@
           var _data = d3.dsv(separator.s, 'text/plain').parse(data_s);
           //derive a description file
           var desc = deriveDesc(header.split(separator.s), _data);
+          var name = f.name.substring(0, f.name.lastIndexOf('.'));
           loadDataImpl(name, desc, _data);
         };
         reader.readAsText(f);
@@ -322,7 +265,7 @@
       layoutHTML();
 
       d3.json("datasets.json", function (error, data) {
-        console.log("datasets:", data, error);
+        //console.log("datasets:", data, error);
 
         datasets = data.datasets;
         var $s = d3.select("#lugui-dataset-selector");
