@@ -19,13 +19,13 @@
     <link href="bower_components/lineupjs/css/style.css" rel="stylesheet" type='text/css'>
 </head>
 <body>
-    <div id="lu-container"></div>
+    <div id="lugui-wrapper"></div>
     <script src="bower_components/lineupjs/dist/LineUpJS.js"></script>
 
     <script>
         var config = {
         };
-        var $container = d3.select("#lu-container");
+        var $container = d3.select("#lugui-wrapper");
         function createLineUp(desc, data) {
             return LineUp.create(LineUp.createLocalStorage(data, desc.columns, desc.layout, desc.primaryKey), $container, config);
         }

@@ -3,8 +3,6 @@
  */
 
 (function (LineUp) {
-  var htmlLayout = {
-  };
   var menuActions = [
     {name: " new combined", icon: "fa-plus", action: function () {
       lineup.addNewStackedColumnDialog();
@@ -15,10 +13,8 @@
     {name: " save layout", icon: "fa-floppy-o", action: saveLayout}
   ];
   var lineUpDemoConfig = {
-    htmlLayout: {
-      headerHeight: htmlLayout.headerHeight
-    },
     svgLayout: {
+      mode: 'separate',
       plusSigns: {
         addStackedColumn: {
           title: "add stacked column",
@@ -82,7 +78,7 @@
     if (lineup) {
       lineup.changeDataStorage(spec);
     } else {
-      lineup = LineUp.create(spec, d3.select('#lugui-table-wrapper'), lineUpDemoConfig);
+      lineup = LineUp.create(spec, d3.select('#lugui-wrapper'), lineUpDemoConfig);
     }
     updateMenu();
     lineup.startVis();

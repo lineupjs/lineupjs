@@ -323,7 +323,7 @@ var LineUp;
     //backup the rowscale from the previous call to have a previous "old" position
     this.prevRowScale = rowScale;
 
-    this.$table.attr("height", datLength * that.config.svgLayout.rowHeight + that.config.htmlLayout.headerHeight);
+    this.$bodySVG.attr("height", datLength * that.config.svgLayout.rowHeight + that.config.htmlLayout.headerHeight);
 
     var visibleRange = this.selectVisible(data, rowScale);
     if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
@@ -427,7 +427,7 @@ var LineUp;
         //generate clip paths for the text columns to avoid text overflow
         //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
         //there is a bug in webkit which present camelCase selectors
-        var textClipPath = that.$table.select('defs.overlay').selectAll(function () {
+        var textClipPath = that.$bodySVG.select('defs.overlay').selectAll(function () {
           return this.getElementsByTagName("clipPath");
         }).data(textOverlays);
         textClipPath.enter().append('clipPath')
@@ -453,7 +453,7 @@ var LineUp;
           var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
           var matrix = elem.getScreenCTM(),
             tbbox = elem.getBBox(),
-            point = that.$table.node().createSVGPoint();
+            point = that.$bodySVG.node().createSVGPoint();
           point.x = tbbox.x;
           point.y = tbbox.y;
           point = point.matrixTransform(matrix);
@@ -489,7 +489,7 @@ var LineUp;
     updateStackBars(headers, allRows, this.config.renderingOptions.animation && stackTransition, that.config);
     updateActionBars(headers, allRows, that.config);
 
-    LineUp.updateClipPaths(allHeaders, this.$table, 'B', true);
+    LineUp.updateClipPaths(allHeaders, this.$bodySVG, 'B', true);
     updateText(allHeaders, allRows, svg, that.config);
     if (that.config.renderingOptions.values) {
       allRowsSuper.classed('values', true);

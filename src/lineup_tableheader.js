@@ -66,7 +66,8 @@ var LineUp;
 
     if (this.headerUpdateRequired) {
       this.layoutHeaders(headers);
-      this.$table.attr('width', this.totalWidth);
+      this.$headerSVG.attr('width', this.totalWidth);
+      this.$bodySVG.attr('width', this.totalWidth);
       this.headerUpdateRequired = false;
     }
 
@@ -77,7 +78,7 @@ var LineUp;
     //reverse order to render from right to left
     allHeaderData.reverse();
 
-    LineUp.updateClipPaths(allHeaderData, this.$table, 'H', false, 'columnheader');
+    LineUp.updateClipPaths(allHeaderData, this.$headerSVG, 'H', false, 'columnheader');
     //console.log(allHeaderData);
 
 

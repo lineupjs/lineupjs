@@ -549,7 +549,7 @@ var LineUp;
     };
   };
 
-  LineUp.prototype.initScrolling = function ($container) {
+  LineUp.prototype.initScrolling = function ($container, topShift) {
     var that = this,
       container = $container[0],
       rowHeight = this.config.svgLayout.rowHeight,
@@ -571,7 +571,7 @@ var LineUp;
 
     $container.on('scroll', onScroll);
     //the shift between the scroll container our svg body
-    shift = jbody.offset().top - $container.offset().top + this.config.htmlLayout.headerHeight;
+    shift = jbody.offset().top - $container.offset().top + topShift;
     //use a resize sensor of a utility lib to also detect resize changes
     //new ResizeSensor($container, function() {
     //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), "resized");

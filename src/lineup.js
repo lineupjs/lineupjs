@@ -9,11 +9,11 @@ var LineUp;
 (function (LineUp, d3, $, undefined) {
 
   function LineUpClass(spec, $container, config) {
+    var $defs, scroller;
     this.storage = spec.storage;
     this.spec = spec;
 //    this.sortedColumn = [];
     this.$container = $container;
-    this.$table = $container.append('svg').attr('class', 'lu');
     this.tooltip = LineUp.createTooltip($container.node());
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
@@ -31,12 +31,37 @@ var LineUp;
     this.storage.config = this.config;
 
     //create basic structure
-    var $defs = this.$table.append('defs');
-    $defs.append('defs').attr('class', 'columnheader');
-    $defs.append('defs').attr('class', 'column');
-    $defs.append('defs').attr('class', 'overlay');
-    this.$body = this.$table.append('g').attr('transform', 'translate(0,' + this.config.htmlLayout.headerHeight + ')');
-    this.$header = this.$table.append('g').attr('class', 'header');
+    if (this.config.svgLayout.mode === 'combined') {
+      //within a single svg with "fixed" header
+      $container.classed('lu-mode-combined', true);
+      this.$table = $container.append('svg').attr('class', 'lu');
+      $defs = this.$table.append('defs');
+      $defs.append('defs').attr('class', 'columnheader');
+      $defs.append('defs').attr('class', 'column');
+      $defs.append('defs').attr('class', 'overlay');
+      this.$body = this.$table.append('g').attr('class','body').attr('transform', 'translate(0,' + this.config.htmlLayout.headerHeight + ')');
+      this.$header = this.$table.append('g').attr('class', 'header');
+      this.$bodySVG = this.$headerSVG = this.$table;
+
+      scroller = this.initScrolling($($container.node()), this.config.htmlLayout.headerHeight);
+    } else {
+      //within two svgs with a dedicated header
+      $container.classed('lu-mode-separate', true);
+      this.$table = $container;
+      this.$header = this.$table.append('svg').attr('class', 'lu lu-header');
+      this.$header.attr('height',this.config.htmlLayout.headerHeight);
+      this.$header.append('defs').attr('class', 'columnheader');
+      this.$headerSVG = this.$header;
+      this.$body = this.$table.append('div').attr('class','lu-wrapper').append('svg').attr('class','lu lu-body');
+      $defs = this.$body.append('defs');
+      $defs.append('defs').attr('class', 'column');
+      $defs.append('defs').attr('class', 'overlay');
+      this.$bodySVG = this.$body;
+      scroller = this.initScrolling($($container.node()).find('div.lu-wrapper'), 0);
+    }
+    this.selectVisible = scroller.selectVisible;
+    this.onScroll = scroller.onScroll;
+
     this.$header.append('rect').attr({
       width: '100%',
       height: this.config.htmlLayout.headerHeight,
@@ -47,10 +72,6 @@ var LineUp;
 
     this.headerUpdateRequired = true;
     this.stackedColumnModified = null;
-
-    var r = this.initScrolling($($container.node()));
-    this.selectVisible = r.selectVisible;
-    this.onScroll = r.onScroll;
 
     this.dragWeight = this.initDragging();
 
@@ -68,7 +89,9 @@ var LineUp;
   };
 
   LineUp.prototype.scrolled = function (top) {
-    this.$header.attr('transform', 'translate(0,' + top + ')');
+    if (this.config.svgLayout.mode === 'combined') {
+      this.$header.attr('transform', 'translate(0,' + top + ')');
+    }
     //TODO use second argument left
   };
 
@@ -90,6 +113,10 @@ var LineUp;
       animation: true
     },
     svgLayout: {
+      /**
+       * mode of this lineup instance, either combined = a single svg with header and body combined or separate ... separate header and body
+       */
+      mode: 'combined', //modes: combined vs separate
       rowHeight: 20,
       /**
        * number of backup rows to keep to avoid updating on every small scroll thing
@@ -253,11 +280,11 @@ var LineUp;
    * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
    */
   LineUp.prototype.destroy = function () {
-    //clear the svg elements
-    this.$header.selectAll('*').remove();
-    this.$body.selectAll('*').remove();
     //remove tooltip
     this.tooltip.destroy();
-    this.$container.off('scroll', this.onScroll);
+    this.$container.selectAll('*').remove();
+    if (this.config.svgLayout.mode === 'combined') {
+      this.$container.off('scroll', this.onScroll);
+    }
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
