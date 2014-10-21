@@ -15,45 +15,19 @@
     -->
     <link href='//fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
     <link href="bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type='text/css'>
-    
-    <!--LineUp inclusions-->
-    <script src="bower_components/lineupjs/src/lineup_datastructure.js"></script>
-    <script src="bower_components/lineupjs/src/lineup_storage.js"></script>
 
     <link href="bower_components/lineupjs/css/style.css" rel="stylesheet" type='text/css'>
 </head>
 <body>
-    <div class="lu" >
-        <div id="lugui-table-header">
-            <svg id="lugui-table-header-svg" width="100%">
-            </svg>
-        </div>
-        <div id="lugui-table-body">
-            <svg id="lugui-table-body-svg" width="100%">
-            </svg>
-        </div>
-    </div>
-    <script src="bower_components/lineupjs/src/lineup.js"></script>
-    <script src="bower_components/lineupjs/src/lineup_tableheader.js"></script>
-    <script src="bower_components/lineupjs/src/lineup_tablebody.js"></script>
-    <script src="bower_components/lineupjs/src/lineup_layout.js"></script>
-    <script src="bower_components/lineupjs/src/lineup_gui_helper.js"></script>
-    <script src="bower_components/lineupjs/src/lineup_mappingeditor.js"></script>
+    <div id="lugui-wrapper"></div>
+    <script src="bower_components/lineupjs/dist/LineUpJS.js"></script>
 
     <script>
         var config = {
         };
-        $("#lugui-table-header-svg").attr("height",LineUp.defaultConfig.htmlLayout.headerHeight);
-        $("#lugui-table-header").css("height",LineUp.defaultConfig.htmlLayout.headerHeight + "px");
-        var $header = d3.select("#lugui-table-header-svg");
-        var $body = d3.select("#lugui-table-body-svg");
-
+        var $container = d3.select("#lugui-wrapper");
         function createLineUp(desc, data) {
-            var spec = {};
-            spec.storage = new LineUpLocalStorage(data, desc.columns, desc.layout, desc.primaryKey);
-            var lineup = new LineUp(spec, $header, $body, config);
-            lineup.startVis();
-            return lineup;
+            return LineUp.create(LineUp.createLocalStorage(data, desc.columns, desc.layout, desc.primaryKey), $container, config);
         }
         $(function() {
             var lineup = null;

@@ -1,6 +1,5 @@
 
-.lu #lugui-menu {
-    position: fixed;
+#lugui-menu {
     background-color: lightgray;
     /*padding-left: 5px;*/
     /*padding-right: 5px;*/
@@ -12,9 +11,11 @@
     font-weight: normal;
     font-size: 11pt;
     white-space: nowrap;
+    padding: 5;
+    width: 100%;
 }
 
-.lu a {
+#lugui-menu a {
     font-size: 10pt;
     font-weight: normal;
     font-style: normal;
@@ -23,23 +24,12 @@
 
 }
 
-.lu a:hover {
+#lugui-menu a:hover {
     /*font-size: 11pt;*/
     font-weight: bold;
 }
 
-.lu #lugui-table-header {
-    position: fixed;
-    background-color: lightgray;
-}
-
-.lu #lugui-table-body-wrapper {
-    position: fixed;
-    overflow-x: auto;
-    overflow-y: scroll;
-}
-
-.lu #lugui-menu-actions span, form span {
+#lugui-menu-actions span, form span {
     font-size: 10pt;
     font-weight: normal;
     font-style: normal;
@@ -54,9 +44,67 @@
     cursor: pointer;
 }
 
-.lu #lugui-menu-actions span:hover {
+#lugui-menu-actions span:hover {
     background-color: darkgrey;
 }
+
+#lugui-menu {
+}
+
+html, body {
+    padding: 0;
+    margin: 0;
+    /*width: 100%;
+    height: 100%;*/
+}
+
+/**
+ * basic wrapper of LineUp
+ */
+#lugui-wrapper {
+    clear: both;
+    position: absolute;
+    top: 35px;
+    padding: 0;
+    width: 100%;
+    height: -moz-calc(100% - 35px);
+    height: -webkit-calc(100% - 35px);
+    height: calc(100% - 35px);
+}
+/**
+ * in the combined mode just a single svg is used and the container is the scrolling container
+ */
+#lugui-wrapper.lu-mode-combined {
+    overflow-x: visible;
+    overflow-y: auto;
+}
+
+/*
+ * in the separate mode a dedicated header and body svg are used
+ */
+#lugui-wrapper.lu-mode-separate .lu-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+}
+
+/*
+ * in the separate mode a dedicated header and body svg are used, with an additional wrapper div for the body as scrolling container
+ */
+#lugui-wrapper.lu-mode-separate .lu-wrapper {
+    position: relative;
+    top: 50px;
+    left: 0;
+    width: 100%;
+    height: -moz-calc(100% - 50px);
+    height: -webkit-calc(100% - 50px);
+    height: calc(100% - 50px);
+    overflow-x: visible;
+    overflow-y: auto;
+}
+
 
 form {
     display: inline;
