@@ -323,7 +323,11 @@ var LineUp;
     //backup the rowscale from the previous call to have a previous "old" position
     this.prevRowScale = rowScale;
 
-    this.$bodySVG.attr("height", datLength * that.config.svgLayout.rowHeight + that.config.htmlLayout.headerHeight);
+    var headerShift = 0;
+    if (that.config.svgLayout.mode === 'combined') {
+      headerShift = that.config.htmlLayout.headerHeight;
+    }
+    this.$bodySVG.attr("height", datLength * that.config.svgLayout.rowHeight + headerShift);
 
     var visibleRange = this.selectVisible(data, rowScale);
     if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
