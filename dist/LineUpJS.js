@@ -1,9 +1,6 @@
-/*! LineUpJS - v0.1.0 - 2014-10-21
+/*! LineUpJS - v0.1.0 - 2014-10-23
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2014 ; Licensed BSD */
-(function() {
-  function LineUpLoader(jQuery, d3, _) {
-
 /**
  * Constructor to Create a LineUp Visualization
  * @param spec - the specifications object
@@ -297,6 +294,9 @@ var LineUp;
 /*global d3, jQuery, _ */
 var LineUp;
 (function (LineUp, d3, $, _, undefined) {
+  function fixCSS(id) {
+    return  id.replace(/[\s!\'#$%&'\(\)\*\+,\.\/:;<=>\?\@\[\\\]\^`\{\|\}~]/g, '_'); //replace non css stuff to _
+  }
   /**
    * The mother of all Columns
    * @param desc The descriptor object
@@ -306,7 +306,7 @@ var LineUp;
     this.column = desc.column;
     this.label = desc.label || desc.column;
     this.color = desc.color;
-    this.id = (desc.id || this.column).replace(/[\s!\'#$%&'\(\)\*\+,\.\/:;<=>\?\@\[\\\]\^`\{\|\}~]/g, '_'); //replace non css stuff to _
+    this.id = fixCSS(desc.id || this.column);
     this.missingValue = desc.missingValue;
     this.layout = {};
   }
@@ -519,9 +519,9 @@ var LineUp;
     this.columnLink = desc.column;
     var that = this;
     this.column = (desc.column === "") ? null : rawColumns.filter(function (d) {
-      return d.id === that.columnLink;
+      return d.column === that.columnLink;
     })[0];
-    this.id = _.uniqueId(this.columnLink + "_");
+    this.id = fixCSS(_.uniqueId(this.columnLink + "_"));
     if (this.column) {
       this.init();
     }
@@ -571,7 +571,7 @@ var LineUp;
       var res = new LayoutSingleColumn(description);
       res.columnLink = this.columnLink.slice(0);
       res.column = this.column;
-      res.id = _.uniqueId(this.columnLink + "_");
+      res.id = fixCSS(_.uniqueId(this.columnLink + "_"));
 
       res.init();
       return res;
@@ -585,7 +585,7 @@ var LineUp;
     this.columnLink = 'rank';
     this.columnWidth = desc ? (desc.width || 50) : 50;
     this.column = new LineUpRankColumn({column: "rank"}, storage);
-    this.id = _.uniqueId(this.columnLink + "_");
+    this.id = fixCSS(_.uniqueId(this.columnLink + "_"));
   }
 
   LineUp.LayoutRankColumn = LayoutRankColumn;
@@ -1565,43 +1565,42 @@ var LineUp;
       .on("dragend", dragWeightEnded);
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
+
 /* global d3 */
 var LineUp;
-(function (LineUp, d3) {
 
+(function (LineUp, d3) {
+  'use strict';
   function addLine($svg, x1, y1, x2, y2, clazz) {
     return $svg.append("line").attr({
-      x1: x1, y1: y1, x2: x2, y2: y2, 'class': clazz
+      x1 : x1, y1 : y1, x2 : x2, y2: y2, 'class' : clazz
     });
   }
-
   function addText($svg, x, y, text, dy, clazz) {
     dy = dy || null;
     clazz = clazz || null;
     return $svg.append("text").attr({
-      x: x, y: y, dy: dy, 'class': clazz
+      x : x, y : y, dy : dy, 'class' : clazz
     }).text(text);
   }
-
   function addCircle($svg, x, shift, y, radius) {
     shift -= x;
     return $svg
       .append("circle")
       .attr({
-        'class': 'handle',
-        r: radius,
+        'class' : 'handle',
+        r : radius,
         cx: x,
-        cy: y,
-        transform: 'translate(' + shift + ',0)'
+        cy : y,
+        transform : 'translate('+shift+',0)'
       });
   }
-
   LineUp.mappingEditor = function (scale, dataDomain, data, data_accessor, callback) {
     var editor = function ($root) {
 
       var width = 400,
         height = 400,
-      //radius for mapper circles
+        //radius for mapper circles
         radius = 10;
 
       var $svg = $root.append("svg").attr({
@@ -1619,7 +1618,7 @@ var LineUp;
       var raw2pixelAxisY = 350;
       //this is needed for filtering the shown datalines
       var raw2pixel = d3.scale.linear().domain(dataDomain).range([lowerLimitX, upperLimitX]);
-      var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
+      var normal2pixel = d3.scale.linear().domain([0,1]).range([lowerLimitX,upperLimitX]);
 
       //x coordinate for the score axis lower bound
       var lowerNormalized = normal2pixel(scale.range()[0]);
@@ -1636,34 +1635,30 @@ var LineUp;
         .range([lowerNormalized, upperNormalized]);
       var $base = $svg.append('g');
       //upper axis for scored values
-      addLine($base, lowerLimitX, scoreAxisY, upperLimitX, scoreAxisY, 'axis');
+      addLine($base, lowerLimitX,scoreAxisY, upperLimitX, scoreAxisY, 'axis');
       //label for minimum scored value
       addText($base, lowerLimitX, scoreAxisY - 25, 0, ".75em");
       //label for maximum scored value
       addText($base, upperLimitX, scoreAxisY - 25, 1, ".75em");
-      addText($base, width / 2, scoreAxisY - 25, "Score", ".75em", 'centered');
+      addText($base, width/2, scoreAxisY -25, "Score", ".75em",'centered');
 
       //lower axis for raw2pixel values
-      addLine($base, lowerLimitX, raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
+      addLine($base, lowerLimitX,raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
       //label for minimum raw2pixel value
       addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], ".75em");
       //label for maximum raw2pixel value
       addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], ".75em");
-      addText($base, width / 2, raw2pixelAxisY + 20, "Raw", ".75em", 'centered');
-
+      addText($base, width/2, raw2pixelAxisY + 20, "Raw", ".75em",'centered');
+      
       //lines that show mapping of individual data items
-      var datalines = $svg.append('g').classed('data', true).selectAll("line").data(data);
+      var datalines = $svg.append('g').classed('data',true).selectAll("line").data(data);
       datalines.enter().append("line")
         .attr({
-          x1: function (d) {
-            return scale(data_accessor(d));
-          },
+          x1: function (d) { return scale(data_accessor(d)); },
           y1: scoreAxisY,
-          x2: function (d) {
-            return raw2pixel(data_accessor(d));
-          },
+          x2: function (d) { return raw2pixel(data_accessor(d)); },
           y2: raw2pixelAxisY
-        }).style('visibility', function (d) {
+        }).style('visibility', function(d) {
           var a;
           if (lowerRaw < upperRaw) {
             a = (raw2pixel(data_accessor(d)) < lowerRaw || raw2pixel(data_accessor(d)) > upperRaw);
@@ -1677,13 +1672,13 @@ var LineUp;
       //line that defines upper bounds for the scale
       var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
       //label for lower bound of normalized values
-      var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), ".25em", 'drag').attr('transform', 'translate(' + (lowerNormalized - lowerLimitX) + ',0)');
+      var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), ".25em", 'drag').attr('transform','translate('+(lowerNormalized-lowerLimitX)+',0)');
       //label for lower bound of raw2pixel values
-      var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), ".25em", 'drag').attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
+      var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), ".25em", 'drag').attr('transform','translate('+(lowerRaw-lowerLimitX)+',0)');
       //label for upper bound of normalized values
-      var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), ".25em", 'drag').attr('transform', 'translate(' + (upperNormalized - upperLimitX) + ',0)');
+      var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), ".25em", 'drag').attr('transform','translate('+(upperNormalized-upperLimitX)+',0)');
       //label for upper bound of raw2pixel values
-      var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), ".25em", 'drag').attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
+      var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), ".25em", 'drag').attr('transform','translate('+(upperRaw-upperLimitX)+',0)');
 
       function createDrag(label, move) {
         return d3.behavior.drag()
@@ -1809,6 +1804,8 @@ var LineUp;
     return editor;
   };
 }(LineUp || (LineUp = {}), d3));
+ 
+
 /* global d3, jQuery, _ */
 var LineUp;
 (function (LineUp, d3, $, _, undefined) {
@@ -2499,7 +2496,11 @@ var LineUp;
     //backup the rowscale from the previous call to have a previous "old" position
     this.prevRowScale = rowScale;
 
-    this.$bodySVG.attr("height", datLength * that.config.svgLayout.rowHeight + that.config.htmlLayout.headerHeight);
+    var headerShift = 0;
+    if (that.config.svgLayout.mode === 'combined') {
+      headerShift = that.config.htmlLayout.headerHeight;
+    }
+    this.$bodySVG.attr("height", datLength * that.config.svgLayout.rowHeight + headerShift);
 
     var visibleRange = this.selectVisible(data, rowScale);
     if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
@@ -2678,6 +2679,7 @@ var LineUp;
     }
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
+
 /* global d3, jQuery */
 var LineUp;
 (function (LineUp, d3, $, undefined) {
@@ -3196,13 +3198,3 @@ var LineUp;
     this.updateHeader();
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
-return LineUp;
-  }
-  if (typeof define === "function" && define.amd) {
-    define(['jquery','d3','underscore'], LineUpLoader);
-  } else if (typeof module === "object" && module.exports) {
-    module.exports = LineUpLoader(require('jquery'), require('d3'), require('underscore'));
-  } else {
-    this.LineUp = LineUpLoader(jQuery, d3, _);
-  }
-}.call(this));
