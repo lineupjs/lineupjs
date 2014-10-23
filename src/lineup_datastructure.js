@@ -232,7 +232,7 @@ var LineUp;
     this.histgenerator = d3.layout.histogram();
     var that = this;
     this.histgenerator.range(this.scale.range());
-    this.histgenerator.value(function (row) { return that.getValue(row) ;});
+    this.histgenerator.value(function (row) { return that.getValue(row) ;}).frequency(false);
     this.hist = [];
   }
   LineUp.LayoutNumberColumn = LayoutNumberColumn;
@@ -248,7 +248,11 @@ var LineUp;
     originalMapping: function() {
       return  d3.scale.linear().clamp(true).domain(this.column.domain).range(this.column.range);
     },
-    prepare: function(data) {
+    prepare: function(data, showHistograms) {
+      if (!showHistograms) {
+        this.hist = [];
+        return;
+      }
       //remove all the direct values to save space
       this.hist = this.histgenerator(data).map(function (bin) {
         return {
@@ -260,9 +264,9 @@ var LineUp;
     },
     binOf : function (row) {
       var v = this.getValue(row), i;
-      for(i = this.hist.length; i>= 0; --i) {
+      for(i = this.hist.length -1 ; i>= 0; --i) {
         var bin = this.hist[i];
-        if (bin.x >= v && v < (bin.x+bin.dx)) {
+        if (bin.x <= v && v < (bin.x+bin.dx)) {
           return i;
         }
       }

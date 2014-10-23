@@ -42,9 +42,8 @@
     });
     kvNodes.exit().remove();
     kvNodes.enter().append("span").on('click', function (d) {
-      config.renderingOptions[d.key] = !config.renderingOptions[d.key];
+      lineup.changeRenderingOption(d.key, !config.renderingOptions[d.key]);
       updateMenu();
-      lineup.updateAll(true);
     });
     kvNodes.html(function (d) {
       return '<a href="#"> <i class="fa ' + (d.value ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d.key + '</a>&nbsp;&nbsp;'
@@ -81,7 +80,6 @@
       lineup = LineUp.create(spec, d3.select('#lugui-wrapper'), lineUpDemoConfig);
     }
     updateMenu();
-    lineup.startVis();
   }
 
   function loadDataset(ds) {

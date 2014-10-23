@@ -105,7 +105,6 @@ var LineUp;
 
 
     // -- handle BackgroundRectangles
-
     allHeadersEnter.append("rect").attr({
       "class": "labelBG",
       y: 0
@@ -141,6 +140,7 @@ var LineUp;
         that.updateAll(false);
       });
 
+
     allHeaders.select(".labelBG").attr({
       width: function (d) {
         return d.getColumnWidth() - 5;
@@ -149,6 +149,39 @@ var LineUp;
         return d.height;
       }
     });
+
+    allHeadersEnter.append('g').attr('class', 'hist');
+    var allNumberHeaders = allHeaders.filter(function (d) {
+      return d instanceof LineUp.LayoutNumberColumn;
+    });
+    if (this.config.renderingOptions.histograms) {
+      allNumberHeaders.selectAll('g.hist').each(function (d) {
+        var $this = d3.select(this).attr('transform','scale(1,'+ (d.height)+')');
+        var h = d.hist;
+        if (!h) {
+          return;
+        }
+        var s = d.value2pixel.copy().range([0, d.value2pixel.range()[1]-5]);
+        var $hist = $this.selectAll('rect').data(h);
+        $hist.enter().append('rect');
+        $hist.attr({
+          x : function(bin) {
+            return s(bin.x);
+          },
+          width: function(bin) {
+            return s(bin.dx);
+          },
+          y: function(bin) {
+            return 1-bin.y;
+          },
+          height: function(bin) {
+            return bin.y;
+          }
+        });
+      })
+    } else {
+      allNumberHeaders.selectAll('g.hist').selectAll('*').remove();
+    }
 
     // -- handle WeightHandle
 
@@ -340,7 +373,23 @@ var LineUp;
 
   };
 
-
+  LineUp.prototype.hoverHistogramBin = function (row) {
+    if (!this.config.renderingOptions.histograms) {
+      return;
+    }
+    var $hists = this.$header.selectAll('g.hist');
+    $hists.selectAll('rect').classed('hover',false)
+    if (row) {
+      this.$header.selectAll('g.hist').each(function(d) {
+        if (d instanceof LineUp.LayoutNumberColumn && d.hist) {
+          var bin = d.binOf(row);
+          if (bin >= 0) {
+            d3.select(this).select('rect:nth-child('+(bin+1)+')').classed('hover',true);
+          }
+        }
+      });
+    }
+  };
 // ===============
 // Helperfunctions
 // ===============

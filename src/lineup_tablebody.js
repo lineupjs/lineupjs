@@ -462,6 +462,7 @@ var LineUp;
             height: that.config.svgLayout.rowHeight
           });
         }
+        that.hoverHistogramBin(row);
         that.listeners['hover'](row, shift);
       },
       mousemove: function () {
@@ -475,6 +476,7 @@ var LineUp;
         if (that.config.interaction.tooltips) {
           that.tooltip.hide();
         }
+        that.hoverHistogramBin(null);
         that.listeners['hover'](null);
         d3.select(this).classed('hover', false);
         d3.select(this).selectAll('text.hoveronly').remove();

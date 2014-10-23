@@ -154,8 +154,12 @@ var LineUp;
         this.filterData(bundle.layoutColumns);
         if (spec.filteredChanged || this.initialSort) {
           //trigger column updates
-          bundle.layoutColumns.forEach(function (col) {
-            col.prepare(that.data);
+          var flat = [];
+          bundle.layoutColumns.forEach(function (d) {
+            d.flattenMe(flat);
+          });
+          flat.forEach(function (col) {
+            col.prepare(that.data, that.config.renderingOptions.histograms);
           });
           this.initialSort = false;
         }

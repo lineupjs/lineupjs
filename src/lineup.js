@@ -80,6 +80,7 @@ var LineUp;
     return this;
   }
 
+
   LineUp.prototype = LineUpClass.prototype = $.extend(LineUpClass.prototype, LineUp.prototype);
   LineUp.create = function (storage, $container, options) {
     if (!$.isPlainObject(storage)) {
@@ -115,7 +116,8 @@ var LineUp;
     renderingOptions: {
       stacked: false,
       values: false,
-      animation: true
+      animation: true,
+      histograms: false
     },
     svgLayout: {
       /**
@@ -173,6 +175,26 @@ var LineUp;
     this.config.columnBundles.primary.sortedColumn = null;
     this.headerUpdateRequired = true;
     delete this.prevRowScale;
+    this.startVis();
+  };
+
+  /**
+   * change a rendering option
+   * @param option
+   * @param value
+   */
+  LineUp.prototype.changeRenderingOption = function (option, value) {
+    var v = this.config.renderingOptions[option];
+    if (v === value) {
+      return;
+    }
+    this.config.renderingOptions[option] = value;
+    if (option === 'histograms') {
+      if (value) {
+        this.storage.resortData({ filteredChanged: true});
+      }
+    }
+    this.updateAll(true);
   };
 
   /**
