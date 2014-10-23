@@ -8,6 +8,9 @@
 /*global d3, jQuery, _ */
 var LineUp;
 (function (LineUp, d3, $, _, undefined) {
+  function fixCSS(id) {
+    return  id.replace(/[\s!\'#$%&'\(\)\*\+,\.\/:;<=>\?\@\[\\\]\^`\{\|\}~]/g, '_'); //replace non css stuff to _
+  }
   /**
    * The mother of all Columns
    * @param desc The descriptor object
@@ -17,7 +20,7 @@ var LineUp;
     this.column = desc.column;
     this.label = desc.label || desc.column;
     this.color = desc.color;
-    this.id = (desc.id || this.column).replace(/[\s!\'#$%&'\(\)\*\+,\.\/:;<=>\?\@\[\\\]\^`\{\|\}~]/g, '_'); //replace non css stuff to _
+    this.id = fixCSS(desc.id || this.column);
     this.missingValue = desc.missingValue;
     this.layout = {};
   }
@@ -230,9 +233,9 @@ var LineUp;
     this.columnLink = desc.column;
     var that = this;
     this.column = (desc.column === "") ? null : rawColumns.filter(function (d) {
-      return d.id === that.columnLink;
+      return d.column === that.columnLink;
     })[0];
-    this.id = _.uniqueId(this.columnLink + "_");
+    this.id = fixCSS(_.uniqueId(this.columnLink + "_"));
     if (this.column) {
       this.init();
     }
@@ -282,7 +285,7 @@ var LineUp;
       var res = new LayoutSingleColumn(description);
       res.columnLink = this.columnLink.slice(0);
       res.column = this.column;
-      res.id = _.uniqueId(this.columnLink + "_");
+      res.id = fixCSS(_.uniqueId(this.columnLink + "_"));
 
       res.init();
       return res;
@@ -296,7 +299,7 @@ var LineUp;
     this.columnLink = 'rank';
     this.columnWidth = desc ? (desc.width || 50) : 50;
     this.column = new LineUpRankColumn({column: "rank"}, storage);
-    this.id = _.uniqueId(this.columnLink + "_");
+    this.id = fixCSS(_.uniqueId(this.columnLink + "_"));
   }
 
   LineUp.LayoutRankColumn = LayoutRankColumn;
