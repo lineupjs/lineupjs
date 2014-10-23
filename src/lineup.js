@@ -15,6 +15,8 @@ var LineUp;
 //    this.sortedColumn = [];
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
+    //trigger hover event
+    this.listeners = d3.dispatch('hover');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
@@ -48,15 +50,15 @@ var LineUp;
       //within two svgs with a dedicated header
       $container.classed('lu-mode-separate', true);
       this.$table = $container;
-      this.$header = this.$table.append('svg').attr('class', 'lu lu-header');
-      this.$header.attr('height',this.config.htmlLayout.headerHeight);
-      this.$header.append('defs').attr('class', 'columnheader');
-      this.$headerSVG = this.$header;
-      this.$body = this.$table.append('div').attr('class','lu-wrapper').append('svg').attr('class','lu lu-body');
-      $defs = this.$body.append('defs');
+      this.$headerSVG = this.$table.append('svg').attr('class', 'lu lu-header');
+      this.$headerSVG.attr('height',this.config.htmlLayout.headerHeight);
+      this.$headerSVG.append('defs').attr('class', 'columnheader');
+      this.$header = this.$headerSVG.append('g');
+      this.$bodySVG = this.$table.append('div').attr('class','lu-wrapper').append('svg').attr('class','lu lu-body');
+      $defs = this.$bodySVG.append('defs');
       $defs.append('defs').attr('class', 'column');
       $defs.append('defs').attr('class', 'overlay');
-      this.$bodySVG = this.$body;
+      this.$body = this.$bodySVG;
       scroller = this.initScrolling($($container.node()).find('div.lu-wrapper'), 0);
     }
     this.selectVisible = scroller.selectVisible;
@@ -78,6 +80,7 @@ var LineUp;
     return this;
   }
 
+
   LineUp.prototype = LineUpClass.prototype = $.extend(LineUpClass.prototype, LineUp.prototype);
   LineUp.create = function (storage, $container, options) {
     if (!$.isPlainObject(storage)) {
@@ -88,11 +91,14 @@ var LineUp;
     return r;
   };
 
-  LineUp.prototype.scrolled = function (top) {
+  LineUp.prototype.scrolled = function (top, left) {
     if (this.config.svgLayout.mode === 'combined') {
+      //in single svg mode propagate vertical shift
       this.$header.attr('transform', 'translate(0,' + top + ')');
+    } else {
+      //in two svg mode propagate horizontal shift
+      this.$header.attr('transform', 'translate('+-left+',0)');
     }
-    //TODO use second argument left
   };
 
   /**
@@ -110,7 +116,8 @@ var LineUp;
     renderingOptions: {
       stacked: false,
       values: false,
-      animation: true
+      animation: true,
+      histograms: false
     },
     svgLayout: {
       /**
@@ -153,6 +160,14 @@ var LineUp;
     }
   };
 
+  LineUp.prototype.on = function(type, listener) {
+    if (arguments.length < 2) {
+      return this.listeners.on(type);
+    }
+    this.listeners.on(type, listener);
+    return this;
+  };
+
   LineUp.prototype.changeDataStorage = function (spec) {
 //    d3.select("#lugui-table-header-svg").selectAll().remove();
     this.storage = spec.storage;
@@ -161,6 +176,26 @@ var LineUp;
     this.config.columnBundles.primary.sortedColumn = null;
     this.headerUpdateRequired = true;
     delete this.prevRowScale;
+    this.startVis();
+  };
+
+  /**
+   * change a rendering option
+   * @param option
+   * @param value
+   */
+  LineUp.prototype.changeRenderingOption = function (option, value) {
+    var v = this.config.renderingOptions[option];
+    if (v === value) {
+      return;
+    }
+    this.config.renderingOptions[option] = value;
+    if (option === 'histograms') {
+      if (value) {
+        this.storage.resortData({ filteredChanged: true});
+      }
+    }
+    this.updateAll(true);
   };
 
   /**

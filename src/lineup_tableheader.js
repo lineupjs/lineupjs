@@ -105,17 +105,16 @@ var LineUp;
 
 
     // -- handle BackgroundRectangles
-
     allHeadersEnter.append("rect").attr({
       "class": "labelBG",
       y: 0
     }).style("fill", function (d) {
       if (d instanceof LineUp.LayoutEmptyColumn) {
         return "lightgray";
-      } else if (d instanceof LineUp.LayoutStackedColumn || !config.colorMapping.has(d.column.id) || d instanceof LineUp.LayoutActionColumn) {
-        return config.grayColor;
-      } else {
+      } else if (d.column && config.colorMapping.has(d.column.id)) {
         return config.colorMapping.get(d.column.id);
+      } else {
+        return config.grayColor;
       }
     })
       .on("click", function (d) {
@@ -130,16 +129,17 @@ var LineUp;
         var bundle = config.columnBundles[d.columnBundle];
         // TODO: adapt to comparison mode !!
         //same sorting swap order
-        if (bundle.sortedColumn !== null && (d.getDataID() === bundle.sortedColumn.getDataID())) {
+        if (bundle.sortedColumn !== null && (d === bundle.sortedColumn)) {
           bundle.sortingOrderAsc = !bundle.sortingOrderAsc;
         } else {
-          bundle.sortingOrderAsc = false;
+          bundle.sortingOrderAsc = d instanceof LineUp.LayoutStringColumn || d instanceof LineUp.LayoutCategoricalColumn || d instanceof LineUp.LayoutRankColumn;
         }
 
         that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
         bundle.sortedColumn = d;
         that.updateAll(false);
       });
+
 
     allHeaders.select(".labelBG").attr({
       width: function (d) {
@@ -149,6 +149,39 @@ var LineUp;
         return d.height;
       }
     });
+
+    allHeadersEnter.append('g').attr('class', 'hist');
+    var allNumberHeaders = allHeaders.filter(function (d) {
+      return d instanceof LineUp.LayoutNumberColumn;
+    });
+    if (this.config.renderingOptions.histograms) {
+      allNumberHeaders.selectAll('g.hist').each(function (d) {
+        var $this = d3.select(this).attr('transform','scale(1,'+ (d.height)+')');
+        var h = d.hist;
+        if (!h) {
+          return;
+        }
+        var s = d.value2pixel.copy().range([0, d.value2pixel.range()[1]-5]);
+        var $hist = $this.selectAll('rect').data(h);
+        $hist.enter().append('rect');
+        $hist.attr({
+          x : function(bin) {
+            return s(bin.x);
+          },
+          width: function(bin) {
+            return s(bin.dx);
+          },
+          y: function(bin) {
+            return 1-bin.y;
+          },
+          height: function(bin) {
+            return bin.y;
+          }
+        });
+      });
+    } else {
+      allNumberHeaders.selectAll('g.hist').selectAll('*').remove();
+    }
 
     // -- handle WeightHandle
 
@@ -184,11 +217,7 @@ var LineUp;
     allHeaders.select(".headerLabel")
       .classed("sortedColumn", function (d) {
         var sc = config.columnBundles[d.columnBundle].sortedColumn;
-        if (sc) {
-          return d.getDataID() === sc.getDataID();
-        } else {
-          return false;
-        }
+        return sc === d;
       })
       .attr({
         y: function (d) {
@@ -201,16 +230,10 @@ var LineUp;
           return 'url(#clip-H' + d.id + ')';
         }
       }).text(function (d) {
-        if (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
-          return d.label;
-        }
-        return d.column.label;
+        return d.getLabel();
       });
     allHeaders.select('title').text(function (d) {
-      if (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
-        return d.label;
-      }
-      return d.column.label;
+      return d.getLabel();
     });
 
 
@@ -225,7 +248,7 @@ var LineUp;
 
     allHeaders.select(".headerSort").text(function (d) {
       var sc = config.columnBundles[d.columnBundle].sortedColumn;
-      return ((sc && d.getDataID() === sc.getDataID()) ?
+      return ((sc === d) ?
         ((config.columnBundles[d.columnBundle].sortingOrderAsc) ? '\uf0de' : '\uf0dd')
         : "");
     })
@@ -267,12 +290,14 @@ var LineUp;
           'class': 'singleColumnFilter',
           text: "\uf0b0",
           filter: function (d) {
-            return (d instanceof LineUp.LayoutSingleColumn && (d.column instanceof LineUp.LineUpNumberColumn || d.column instanceof LineUp.LineUpStringColumn)) ? [d] : [];
+            return (d.column) ? [d] : [];
           },
           action: function (d) {
-            if (d.column instanceof LineUp.LineUpStringColumn) {
+            if (d instanceof LineUp.LayoutStringColumn) {
               that.openFilterPopup(d, d3.select(this));
-            } else {
+            } else if (d instanceof LineUp.LayoutCategoricalColumn) {
+              that.openCategoricalFilterPopup(d, d3.select(this));
+            } else if (d instanceof LineUp.LayoutNumberColumn) {
               that.openMappingEditor(d, d3.select(this));
             }
           },
@@ -348,7 +373,23 @@ var LineUp;
 
   };
 
-
+  LineUp.prototype.hoverHistogramBin = function (row) {
+    if (!this.config.renderingOptions.histograms) {
+      return;
+    }
+    var $hists = this.$header.selectAll('g.hist');
+    $hists.selectAll('rect').classed('hover',false);
+    if (row) {
+      this.$header.selectAll('g.hist').each(function(d) {
+        if (d instanceof LineUp.LayoutNumberColumn && d.hist) {
+          var bin = d.binOf(row);
+          if (bin >= 0) {
+            d3.select(this).select('rect:nth-child('+(bin+1)+')').classed('hover',true);
+          }
+        }
+      });
+    }
+  };
 // ===============
 // Helperfunctions
 // ===============

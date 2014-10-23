@@ -29,7 +29,7 @@ var LineUp;
         left: options.x + "px",
         top: options.y + "px",
         width: options.width + "px",
-        height: options.height + "200px"
+        height: options.height + "px"
       })
       .html(
         '<span style="font-weight: bold">' + title + '</span>' +
@@ -129,7 +129,7 @@ var LineUp;
         label: name,
         width: (Math.max(allChecked.length * 100, 100)),
         children: allChecked.map(function (d) {
-          return {column: d.d.id, weight: d.weight};
+          return {column: d.d.column, type: 'number', weight: d.weight};
         })
       };
 
@@ -189,7 +189,7 @@ var LineUp;
 //        }
 
       allChecked.forEach(function (d) {
-        that.storage.addSingleColumn({column: d.d.id});
+        that.storage.addSingleColumn({column: d.d.column});
       });
 
       popup.remove();
@@ -278,13 +278,13 @@ var LineUp;
   };
 
   LineUp.prototype.openMappingEditor = function (selectedColumn, $button) {
-    var col = selectedColumn.column;
-    var bak = col.scale;
+    var bak = selectedColumn.mapping(),
+      original = selectedColumn.originalMapping();
     var that = this;
     var act = bak;
     var callback = function (newscale) {
       //scale = newscale;
-      act = newscale.clamp(true);
+      act = newscale;
     };
 
     var popup = d3.select("body").append("div")
@@ -304,9 +304,9 @@ var LineUp;
         '<button class="ok"><i class="fa fa-check"></i> ok</button>'
     );
     var access = function (row) {
-      return +col.getRawValue(row);
+      return +selectedColumn.getValue(row, 'raw');
     };
-    var editor = LineUp.mappingEditor(bak, col.scaleOri.domain(), this.storage.data, access, callback);
+    var editor = LineUp.mappingEditor(bak, original.domain(), this.storage.data, access, callback);
     popup.select('.mappingArea').call(editor);
 
     function isSame(a, b) {
@@ -314,22 +314,23 @@ var LineUp;
     }
 
     popup.select(".ok").on("click", function () {
-      col.scale = act;
+      selectedColumn.mapping(act);
       //console.log(act.domain().toString(), act.range().toString());
-      $button.classed('filtered', !isSame(act.range(), col.scaleOri.range()) || !isSame(act.domain(), col.scaleOri.domain()));
-      that.storage.resortData({});
+      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
+      that.storage.resortData({ filteredChanged: true});
       that.updateAll(true);
       popup.remove();
     });
     popup.select(".cancel").on("click", function () {
-      col.scale = bak;
-      $button.classed('filtered', !isSame(bak.range(), col.scaleOri.range()) || !isSame(bak.domain(), col.scaleOri.domain()));
+      selectedColumn.mapping(bak);
+      $button.classed('filtered', !isSame(bak.range(), original.range()) || !isSame(bak.domain(), original.domain()));
       popup.remove();
     });
     popup.select(".reset").on("click", function () {
-      act = bak = col.scale = col.scaleOri;
+      act = bak = original;
+      selectedColumn.mapping(original);
       $button.classed('filtered', false);
-      editor = LineUp.mappingEditor(bak, col.scaleOri.domain(), that.storage.data, access, callback);
+      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.data, access, callback);
       popup.selectAll('.mappingArea *').remove();
       popup.select('.mappingArea').call(editor);
     });
@@ -451,8 +452,99 @@ var LineUp;
     });
   };
 
+  LineUp.prototype.openCategoricalFilterPopup = function (column, $button) {
+    if (!(column instanceof LineUp.LayoutCategoricalColumn)) {
+      //can't filter other than string columns
+      return;
+    }
+    var bak = column.filter || [];
+    var popup = d3.select("body").append("div")
+      .attr({
+        "class": "lu-popup"
+      }).style({
+        left: +(window.innerWidth) / 2 - 100 + "px",
+        top: 100 + "px",
+        width: (400) + "px",
+        height: (300) + "px"
+      })
+      .html(
+      '<span style="font-weight: bold">Edit Filter</span>' +
+      '<form onsubmit="return false">' +
+      '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>' +
+      '<button class="ok"><i class="fa fa-check" title="ok"></i></button>' +
+      '<button class="cancel"><i class="fa fa-times" title="cancel"></i></button>' +
+      '<button class="reset"><i class="fa fa-undo" title="reset"></i></button></form>'
+    );
+
+    popup.select(".selectionTable").style({
+      width: (400 - 10) + "px",
+      height: (300 - 40) + "px"
+    });
+
+    var that = this;
+
+
+    // list all data rows !
+    var trData = column.column.categories.map(function (d) {
+      return {d: d, isChecked: bak.length === 0 || bak.indexOf(d) >= 0};
+    });
+
+    var trs = popup.select('tbody').selectAll("tr").data(trData);
+    trs.enter().append("tr");
+    trs.append("td").attr("class", "checkmark");
+    trs.append("td").attr("class", "datalabel").text(function (d) {
+      return d.d;
+    });
+
+    function redraw() {
+      var trs = popup.select('tbody').selectAll("tr").data(trData);
+      trs.select(".checkmark").html(function (d) {
+        return '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>';
+      })
+      .on("click", function (d) {
+        d.isChecked = !d.isChecked;
+        redraw();
+      });
+      trs.select(".datalabel").style("opacity", function (d) {
+        return d.isChecked ? "1.0" : ".8";
+      });
+    }
+    redraw();
+
+    function updateData(filter) {
+      column.filter = filter;
+      $button.classed('filtered', (filter && filter.length > 0 && filter.length < column.column.categories.length));
+      that.storage.resortData({filteredChanged: true});
+      that.updateBody();
+    }
+
+    popup.select(".cancel").on("click", function () {
+      updateData(bak);
+      popup.remove();
+    });
+    popup.select(".reset").on("click", function () {
+      trData.forEach(function (d) {
+        d.isChecked = true;
+      });
+      redraw();
+      updateData(null);
+    });
+    popup.select(".ok").on("click", function () {
+      var f = trData.filter(function (d) {
+        return d.isChecked;
+      }).map( function (d) {
+        return d.d;
+      });
+      if (f.length === column.column.categories.length) {
+        f = [];
+      }
+      updateData(f);
+      popup.remove();
+    });
+  };
+
   LineUp.prototype.openFilterPopup = function (column, $button) {
-    if (!(column instanceof LineUp.LayoutSingleColumn && column.column instanceof LineUp.LineUpStringColumn)) {
+    if (!(column instanceof LineUp.LayoutStringColumn)) {
       //can't filter other than string columns
       return;
     }
@@ -480,7 +572,7 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0));
-      that.storage.resortData({});
+      that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
 
@@ -505,13 +597,13 @@ var LineUp;
     function showTooltip(content, xy) {
       $tooltip.html(content).css({
         left: xy.x + "px",
-        top: (xy.y + xy.height) + "px"
+        top: (xy.y + xy.height - $container.offset().top) + "px"
       }).fadeIn();
 
       var stickout = ($(window).height() + $(window).scrollTop()) <= ((xy.y + xy.height) + $tooltip.height() - 20);
       var stickouttop = $(window).scrollTop() > (xy.y - $tooltip.height());
       if (stickout && !stickouttop) { //if the bottom is not visible move it on top of the box
-        $tooltip.css('top', (xy.y - $tooltip.height()) + "px");
+        $tooltip.css('top', (xy.y - $tooltip.height() - $container.offset().top) + "px");
       }
     }
 
@@ -527,7 +619,7 @@ var LineUp;
       }
       if (xy.y) {
         $tooltip.css({
-          top: xy.y + "px"
+          top: xy.y  - $container.offset().top + "px"
         });
       }
     }

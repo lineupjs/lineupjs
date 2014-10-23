@@ -15,17 +15,18 @@ var LineUp;
   function LineUpLocalStorage(data, columns, layout, primaryKey, storageConfig) {
     this.storageConfig = $.extend(true, {}, {
       colTypes: {
-        "number": LineUp.LineUpNumberColumn,
-        "string": LineUp.LineUpStringColumn,
-//        "max" : LineUp.LineUpMaxColumn,
-//        "stacked" : LineUp.LineUpStackedColumn,
-        "rank": LineUp.LineUpRankColumn
+        'number': LineUp.LineUpNumberColumn,
+        'string': LineUp.LineUpStringColumn,
+        'categorical': LineUp.LineUpCategoricalColumn
       },
       layoutColumnTypes: {
-        "single": LineUp.LayoutSingleColumn,
-        "stacked": LineUp.LayoutStackedColumn,
-        "rank": LineUp.LayoutRankColumn,
-        "actions": LineUp.LayoutActionColumn
+        'number': LineUp.LayoutNumberColumn,
+        'single': LineUp.LayoutStringColumn,
+        'string': LineUp.LayoutStringColumn,
+        'categorical': LineUp.LayoutCategoricalColumn,
+        'stacked': LineUp.LayoutStackedColumn,
+        'rank': LineUp.LayoutRankColumn,
+        'actions': LineUp.LayoutActionColumn
       }
     }, storageConfig);
     this.config = null; //will be injected by lineup
@@ -40,18 +41,31 @@ var LineUp;
 
     this.storageConfig.toColumn = toColumn;
 
-    function toLayoutColumn(desc) {
-      var type = desc.type || "single";
-      return new layoutColumnTypes[type](desc, that.rawcols, toLayoutColumn, that);
-    }
-
-    this.storageConfig.toLayoutColumn = toLayoutColumn;
-
     this.primaryKey = primaryKey;
     this.rawdata = data;
     this.data = data;
+    this.initialSort = true;
     this.rawcols = columns.map(toColumn);
     this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
+
+    var colLookup = d3.map();
+    this.rawcols.forEach(function (col) {
+      colLookup.set(col.column, col);
+    });
+    function toLayoutColumn(desc) {
+      var type = desc.type || 'single';
+      if (type === 'single') {
+        var col = colLookup.get(desc.column);
+        if (col instanceof LineUp.LineUpNumberColumn) {
+          type = 'number';
+        } else if (col instanceof LineUp.LineUpCategoricalColumn) {
+          type = 'categorical';
+        }
+      }
+      return new layoutColumnTypes[type](desc, colLookup, toLayoutColumn, that);
+    }
+
+    this.storageConfig.toLayoutColumn = toLayoutColumn;
 
     this.bundles = {
       "primary": {
@@ -74,7 +88,7 @@ var LineUp;
   LineUpLocalStorage.generateDefaultLayout = function (columns) {
     var layout = columns.map(function (c) {
       return {
-        column: c.id,
+        column: c.column,
         width: c instanceof LineUp.LineUpStringColumn ? 200 : 100
       };
     });
@@ -131,18 +145,31 @@ var LineUp;
       },
       resortData: function (spec) {
 
-        var _key = spec.key || "primary";
+        var _key = spec.key || "primary", that = this;
         var bundle = this.bundles[_key];
         var asc = spec.asc || this.config.columnBundles.primary.sortingOrderAsc;
         var column = spec.column || this.config.columnBundles.primary.sortedColumn;
 
         //console.log("resort: ", spec);
         this.filterData(bundle.layoutColumns);
+        if (spec.filteredChanged || this.initialSort) {
+          //trigger column updates
+          var flat = [];
+          bundle.layoutColumns.forEach(function (d) {
+            d.flattenMe(flat);
+          });
+          flat.forEach(function (col) {
+            col.prepare(that.data, that.config.renderingOptions.histograms);
+          });
+          this.initialSort = false;
+        }
+
+        function sort(a,b) {
+          var r = column.sortBy(a,b);
+          return asc ? -r : r;
+        }
         if (column) {
-          this.data.sort(column.sortBy);
-          if (asc) {
-            this.data.reverse();
-          }
+          this.data.sort(sort);
         }
 
         var start = this.config.filter.skip ? this.config.filter.skip : 0;
@@ -153,28 +180,24 @@ var LineUp;
         }
 
         var rankColumn = bundle.layoutColumns.filter(function (d) {
-          return d.column instanceof LineUp.LineUpRankColumn;
+          return d instanceof LineUp.LayoutRankColumn;
         });
         if (rankColumn.length > 0) {
           var accessor = function (d, i) {
             return i;
           };
-          if (column instanceof LineUp.LayoutStackedColumn) {
+          if (column) {
             accessor = function (d) {
               return column.getValue(d);
             };
-          } else if (column) {
-            accessor = function (d) {
-              return column.column.getValue(d);
-            };
           }
-          this.assignRanks(this.data, accessor, rankColumn[0].column);
+          this.assignRanks(this.data, accessor, rankColumn);
         }
       },
       /*
        * assigns the ranks to the data which is expected to be sorted in decreasing order
        * */
-      assignRanks: function (data, accessor, rankColumn) {
+      assignRanks: function (data, accessor, rankColumns) {
 
         var actualRank = 1;
         var actualValue = -1;
@@ -187,7 +210,9 @@ var LineUp;
             actualRank = i + 1; //we have 1,1,3, not 1,1,2
             actualValue = accessor(row, i);
           }
-          rankColumn.setValue(row, actualRank);
+          rankColumns.forEach(function (r) {
+            r.setValue(row, actualRank);
+          });
         });
       },
       generateLayout: function (layout, bundle) {
@@ -221,19 +246,19 @@ var LineUp;
         //insert the new column after the first non rank, text column
         for (i = 0; i < cols.length; ++i) {
           c = cols[i];
-          if (c instanceof LineUp.LayoutRankColumn || (c instanceof LineUp.LayoutSingleColumn && c.column instanceof LineUp.LineUpStringColumn)) {
+          if (c instanceof LineUp.LayoutRankColumn || (c instanceof LineUp.LayoutStringColumn)) {
             continue;
           }
           break;
         }
         cols.splice(i, 0, col);
       },
-      addStackedColumn: function (spec, bundle) {
-        var _spec = spec || {label: "Stacked", children: []};
-        this.addColumn(new LineUp.LayoutStackedColumn(_spec, this.rawcols, this.storageConfig.toLayoutColumn), bundle);
+      addStackedColumn: function (spec) {
+        var _spec = $.extend({ type: 'stacked', label: 'Stacked', children: []}, spec);
+        this.addColumn(this.storageConfig.toLayoutColumn(_spec));
       },
-      addSingleColumn: function (spec, bundle) {
-        this.addColumn(new LineUp.LayoutSingleColumn(spec, this.rawcols), bundle);
+      addSingleColumn: function (spec) {
+        this.addColumn(this.storageConfig.toLayoutColumn(spec));
       },
 
 
@@ -263,7 +288,7 @@ var LineUp;
           }
 
 
-        } else if (col instanceof LineUp.LayoutSingleColumn) {
+        } else if (col.column) {
           if (col.parent === null || col.parent === undefined) {
             headerColumns.splice(headerColumns.indexOf(col), 1);
           } else {
