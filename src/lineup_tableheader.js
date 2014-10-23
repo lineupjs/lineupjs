@@ -178,7 +178,7 @@ var LineUp;
             return bin.y;
           }
         });
-      })
+      });
     } else {
       allNumberHeaders.selectAll('g.hist').selectAll('*').remove();
     }
@@ -378,7 +378,7 @@ var LineUp;
       return;
     }
     var $hists = this.$header.selectAll('g.hist');
-    $hists.selectAll('rect').classed('hover',false)
+    $hists.selectAll('rect').classed('hover',false);
     if (row) {
       this.$header.selectAll('g.hist').each(function(d) {
         if (d instanceof LineUp.LayoutNumberColumn && d.hist) {

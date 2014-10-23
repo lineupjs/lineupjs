@@ -161,8 +161,9 @@ var LineUp;
   };
 
   LineUp.prototype.on = function(type, listener) {
-    if (arguments.length < 2)
+    if (arguments.length < 2) {
       return this.listeners.on(type);
+    }
     this.listeners.on(type, listener);
     return this;
   };

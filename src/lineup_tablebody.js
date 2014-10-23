@@ -472,7 +472,7 @@ var LineUp;
           });
         }
       },
-      mouseleave: function (d) {
+      mouseleave: function () {
         if (that.config.interaction.tooltips) {
           that.tooltip.hide();
         }

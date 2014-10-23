@@ -17,6 +17,8 @@ var LineUp;
 //    this.sortedColumn = [];
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
+    //trigger hover event
+    this.listeners = d3.dispatch('hover');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
@@ -50,15 +52,15 @@ var LineUp;
       //within two svgs with a dedicated header
       $container.classed('lu-mode-separate', true);
       this.$table = $container;
-      this.$header = this.$table.append('svg').attr('class', 'lu lu-header');
-      this.$header.attr('height',this.config.htmlLayout.headerHeight);
-      this.$header.append('defs').attr('class', 'columnheader');
-      this.$headerSVG = this.$header;
-      this.$body = this.$table.append('div').attr('class','lu-wrapper').append('svg').attr('class','lu lu-body');
-      $defs = this.$body.append('defs');
+      this.$headerSVG = this.$table.append('svg').attr('class', 'lu lu-header');
+      this.$headerSVG.attr('height',this.config.htmlLayout.headerHeight);
+      this.$headerSVG.append('defs').attr('class', 'columnheader');
+      this.$header = this.$headerSVG.append('g');
+      this.$bodySVG = this.$table.append('div').attr('class','lu-wrapper').append('svg').attr('class','lu lu-body');
+      $defs = this.$bodySVG.append('defs');
       $defs.append('defs').attr('class', 'column');
       $defs.append('defs').attr('class', 'overlay');
-      this.$bodySVG = this.$body;
+      this.$body = this.$bodySVG;
       scroller = this.initScrolling($($container.node()).find('div.lu-wrapper'), 0);
     }
     this.selectVisible = scroller.selectVisible;
@@ -80,6 +82,7 @@ var LineUp;
     return this;
   }
 
+
   LineUp.prototype = LineUpClass.prototype = $.extend(LineUpClass.prototype, LineUp.prototype);
   LineUp.create = function (storage, $container, options) {
     if (!$.isPlainObject(storage)) {
@@ -90,11 +93,14 @@ var LineUp;
     return r;
   };
 
-  LineUp.prototype.scrolled = function (top) {
+  LineUp.prototype.scrolled = function (top, left) {
     if (this.config.svgLayout.mode === 'combined') {
+      //in single svg mode propagate vertical shift
       this.$header.attr('transform', 'translate(0,' + top + ')');
+    } else {
+      //in two svg mode propagate horizontal shift
+      this.$header.attr('transform', 'translate('+-left+',0)');
     }
-    //TODO use second argument left
   };
 
   /**
@@ -112,7 +118,8 @@ var LineUp;
     renderingOptions: {
       stacked: false,
       values: false,
-      animation: true
+      animation: true,
+      histograms: false
     },
     svgLayout: {
       /**
@@ -155,6 +162,14 @@ var LineUp;
     }
   };
 
+  LineUp.prototype.on = function(type, listener) {
+    if (arguments.length < 2) {
+      return this.listeners.on(type);
+    }
+    this.listeners.on(type, listener);
+    return this;
+  };
+
   LineUp.prototype.changeDataStorage = function (spec) {
 //    d3.select("#lugui-table-header-svg").selectAll().remove();
     this.storage = spec.storage;
@@ -163,6 +178,26 @@ var LineUp;
     this.config.columnBundles.primary.sortedColumn = null;
     this.headerUpdateRequired = true;
     delete this.prevRowScale;
+    this.startVis();
+  };
+
+  /**
+   * change a rendering option
+   * @param option
+   * @param value
+   */
+  LineUp.prototype.changeRenderingOption = function (option, value) {
+    var v = this.config.renderingOptions[option];
+    if (v === value) {
+      return;
+    }
+    this.config.renderingOptions[option] = value;
+    if (option === 'histograms') {
+      if (value) {
+        this.storage.resortData({ filteredChanged: true});
+      }
+    }
+    this.updateAll(true);
   };
 
   /**
@@ -408,7 +443,7 @@ var LineUp;
     this.id = _.uniqueId("Column_");
     this.filter = desc.filter;
 
-    this.parent = desc.parent; // or null
+    this.parent = desc.parent || null; // or null
     this.columnBundle = desc.columnBundle || "primary";
     //define it here to have a dedicated this pointer
     this.sortBy = function (a, b) {
@@ -429,6 +464,9 @@ var LineUp;
     },
     getColumnWidth: function () {
       return this.columnWidth;
+    },
+    prepare: function(/*data*/) {
+
     },
     safeSortBy: function (a, b) {
       var an = typeof a === 'number' && isNaN(a);
@@ -512,10 +550,53 @@ var LineUp;
     //from normalized value to width value
     this.value2pixel = d3.scale.linear().domain([0, 1]).range([0, this.columnWidth]);
     this.scale = d3.scale.linear().clamp(true).domain(desc.domain || this.column.domain).range(desc.range || this.column.range);
+    this.histgenerator = d3.layout.histogram();
+    var that = this;
+    this.histgenerator.range(this.scale.range());
+    this.histgenerator.value(function (row) { return that.getValue(row) ;});
+    this.hist = [];
   }
   LineUp.LayoutNumberColumn = LayoutNumberColumn;
 
   LayoutNumberColumn.prototype = $.extend({}, LayoutSingleColumn.prototype, {
+    mapping : function(newscale) {
+      if (arguments.length < 1) {
+        return this.scale;
+      }
+      this.scale = newscale.clamp(true);
+      this.histgenerator.range(newscale.range());
+    },
+    originalMapping: function() {
+      return  d3.scale.linear().clamp(true).domain(this.column.domain).range(this.column.range);
+    },
+    prepare: function(data, showHistograms) {
+      if (!showHistograms) {
+        this.hist = [];
+        return;
+      }
+      //remove all the direct values to save space
+      this.hist = this.histgenerator(data).map(function (bin) {
+        return {
+          x : bin.x,
+          dx : bin.dx,
+          y: bin.y
+        };
+      });
+      var max = d3.max(this.hist, function(d) { return d.y; });
+      this.hist.forEach(function (d) {
+        d.y /= max;
+      });
+    },
+    binOf : function (row) {
+      var v = this.getValue(row), i;
+      for(i = this.hist.length -1 ; i>= 0; --i) {
+        var bin = this.hist[i];
+        if (bin.x <= v && v < (bin.x+bin.dx)) {
+          return i;
+        }
+      }
+      return -1;
+    },
     setColumnWidth: function (newWidth, ignoreParent) {
       this.value2pixel.range([0, newWidth]);
       LayoutSingleColumn.prototype.setColumnWidth.call(this, newWidth, ignoreParent);
@@ -868,7 +949,7 @@ var LineUp;
 
     },
     addChild: function (child, targetChild, position) {
-      if (!(child instanceof LineUp.LineUpNumberColumn)) {
+      if (!(child instanceof LineUp.LayoutNumberColumn)) {
         return false;
       }
 
@@ -1009,7 +1090,7 @@ var LineUp;
         left: options.x + "px",
         top: options.y + "px",
         width: options.width + "px",
-        height: options.height + "200px"
+        height: options.height + "px"
       })
       .html(
         '<span style="font-weight: bold">' + title + '</span>' +
@@ -1109,7 +1190,7 @@ var LineUp;
         label: name,
         width: (Math.max(allChecked.length * 100, 100)),
         children: allChecked.map(function (d) {
-          return {column: d.d.id, weight: d.weight};
+          return {column: d.d.column, type: 'number', weight: d.weight};
         })
       };
 
@@ -1258,12 +1339,13 @@ var LineUp;
   };
 
   LineUp.prototype.openMappingEditor = function (selectedColumn, $button) {
-    var bak = selectedColumn.scale;
+    var bak = selectedColumn.mapping(),
+      original = selectedColumn.originalMapping();
     var that = this;
     var act = bak;
     var callback = function (newscale) {
       //scale = newscale;
-      act = newscale.clamp(true);
+      act = newscale;
     };
 
     var popup = d3.select("body").append("div")
@@ -1285,7 +1367,7 @@ var LineUp;
     var access = function (row) {
       return +selectedColumn.getValue(row, 'raw');
     };
-    var editor = LineUp.mappingEditor(bak, selectedColumn.column.domain, this.storage.data, access, callback);
+    var editor = LineUp.mappingEditor(bak, original.domain(), this.storage.data, access, callback);
     popup.select('.mappingArea').call(editor);
 
     function isSame(a, b) {
@@ -1293,22 +1375,23 @@ var LineUp;
     }
 
     popup.select(".ok").on("click", function () {
-      selectedColumn.scale = act;
+      selectedColumn.mapping(act);
       //console.log(act.domain().toString(), act.range().toString());
-      $button.classed('filtered', !isSame(act.range(), selectedColumn.column.range) || !isSame(act.domain(), selectedColumn.column.domain));
-      that.storage.resortData({});
+      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
+      that.storage.resortData({ filteredChanged: true});
       that.updateAll(true);
       popup.remove();
     });
     popup.select(".cancel").on("click", function () {
-      selectedColumn.scale = bak;
-      $button.classed('filtered', !isSame(bak.range(), selectedColumn.column.range) || !isSame(bak.domain(), selectedColumn.column.domain));
+      selectedColumn.mapping(bak);
+      $button.classed('filtered', !isSame(bak.range(), original.range()) || !isSame(bak.domain(), original.domain()));
       popup.remove();
     });
     popup.select(".reset").on("click", function () {
-      act = bak = selectedColumn.scale = d3.scale.linear().clamp(true).domain(selectedColumn.column.domain).range(selectedColumn.column.range);
+      act = bak = original;
+      selectedColumn.mapping(original);
       $button.classed('filtered', false);
-      editor = LineUp.mappingEditor(bak, selectedColumn.column.domain, that.storage.data, access, callback);
+      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.data, access, callback);
       popup.selectAll('.mappingArea *').remove();
       popup.select('.mappingArea').call(editor);
     });
@@ -1492,7 +1575,7 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0 && filter.length < column.column.categories.length));
-      that.storage.resortData({});
+      that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
 
@@ -1550,7 +1633,7 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0));
-      that.storage.resortData({});
+      that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
 
@@ -1575,13 +1658,13 @@ var LineUp;
     function showTooltip(content, xy) {
       $tooltip.html(content).css({
         left: xy.x + "px",
-        top: (xy.y + xy.height) + "px"
+        top: (xy.y + xy.height - $container.offset().top) + "px"
       }).fadeIn();
 
       var stickout = ($(window).height() + $(window).scrollTop()) <= ((xy.y + xy.height) + $tooltip.height() - 20);
       var stickouttop = $(window).scrollTop() > (xy.y - $tooltip.height());
       if (stickout && !stickouttop) { //if the bottom is not visible move it on top of the box
-        $tooltip.css('top', (xy.y - $tooltip.height()) + "px");
+        $tooltip.css('top', (xy.y - $tooltip.height() - $container.offset().top) + "px");
       }
     }
 
@@ -1597,7 +1680,7 @@ var LineUp;
       }
       if (xy.y) {
         $tooltip.css({
-          top: xy.y + "px"
+          top: xy.y  - $container.offset().top + "px"
         });
       }
     }
@@ -2001,10 +2084,11 @@ var LineUp;
     this.primaryKey = primaryKey;
     this.rawdata = data;
     this.data = data;
+    this.initialSort = true;
     this.rawcols = columns.map(toColumn);
     this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
 
-    var colLookup = this.rawColumnLookup =d3.map();
+    var colLookup = d3.map();
     this.rawcols.forEach(function (col) {
       colLookup.set(col.column, col);
     });
@@ -2101,18 +2185,31 @@ var LineUp;
       },
       resortData: function (spec) {
 
-        var _key = spec.key || "primary";
+        var _key = spec.key || "primary", that = this;
         var bundle = this.bundles[_key];
         var asc = spec.asc || this.config.columnBundles.primary.sortingOrderAsc;
         var column = spec.column || this.config.columnBundles.primary.sortedColumn;
 
         //console.log("resort: ", spec);
         this.filterData(bundle.layoutColumns);
+        if (spec.filteredChanged || this.initialSort) {
+          //trigger column updates
+          var flat = [];
+          bundle.layoutColumns.forEach(function (d) {
+            d.flattenMe(flat);
+          });
+          flat.forEach(function (col) {
+            col.prepare(that.data, that.config.renderingOptions.histograms);
+          });
+          this.initialSort = false;
+        }
+
+        function sort(a,b) {
+          var r = column.sortBy(a,b);
+          return asc ? -r : r;
+        }
         if (column) {
-          this.data.sort(column.sortBy);
-          if (asc) {
-            this.data.reverse();
-          }
+          this.data.sort(sort);
         }
 
         var start = this.config.filter.skip ? this.config.filter.skip : 0;
@@ -2197,7 +2294,7 @@ var LineUp;
         cols.splice(i, 0, col);
       },
       addStackedColumn: function (spec) {
-        var _spec = spec || {label: "Stacked", children: []};
+        var _spec = $.extend({ type: 'stacked', label: 'Stacked', children: []}, spec);
         this.addColumn(this.storageConfig.toLayoutColumn(_spec));
       },
       addSingleColumn: function (spec) {
@@ -2798,6 +2895,8 @@ var LineUp;
             height: that.config.svgLayout.rowHeight
           });
         }
+        that.hoverHistogramBin(row);
+        that.listeners['hover'](row, shift);
       },
       mousemove: function () {
         if (that.config.interaction.tooltips) {
@@ -2810,6 +2909,8 @@ var LineUp;
         if (that.config.interaction.tooltips) {
           that.tooltip.hide();
         }
+        that.hoverHistogramBin(null);
+        that.listeners['hover'](null);
         d3.select(this).classed('hover', false);
         d3.select(this).selectAll('text.hoveronly').remove();
       }
@@ -2939,7 +3040,6 @@ var LineUp;
 
 
     // -- handle BackgroundRectangles
-
     allHeadersEnter.append("rect").attr({
       "class": "labelBG",
       y: 0
@@ -2964,16 +3064,17 @@ var LineUp;
         var bundle = config.columnBundles[d.columnBundle];
         // TODO: adapt to comparison mode !!
         //same sorting swap order
-        if (bundle.sortedColumn !== null && (d.getDataID() === bundle.sortedColumn.getDataID())) {
+        if (bundle.sortedColumn !== null && (d === bundle.sortedColumn)) {
           bundle.sortingOrderAsc = !bundle.sortingOrderAsc;
         } else {
-          bundle.sortingOrderAsc = false;
+          bundle.sortingOrderAsc = d instanceof LineUp.LayoutStringColumn || d instanceof LineUp.LayoutCategoricalColumn || d instanceof LineUp.LayoutRankColumn;
         }
 
         that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
         bundle.sortedColumn = d;
         that.updateAll(false);
       });
+
 
     allHeaders.select(".labelBG").attr({
       width: function (d) {
@@ -2983,6 +3084,39 @@ var LineUp;
         return d.height;
       }
     });
+
+    allHeadersEnter.append('g').attr('class', 'hist');
+    var allNumberHeaders = allHeaders.filter(function (d) {
+      return d instanceof LineUp.LayoutNumberColumn;
+    });
+    if (this.config.renderingOptions.histograms) {
+      allNumberHeaders.selectAll('g.hist').each(function (d) {
+        var $this = d3.select(this).attr('transform','scale(1,'+ (d.height)+')');
+        var h = d.hist;
+        if (!h) {
+          return;
+        }
+        var s = d.value2pixel.copy().range([0, d.value2pixel.range()[1]-5]);
+        var $hist = $this.selectAll('rect').data(h);
+        $hist.enter().append('rect');
+        $hist.attr({
+          x : function(bin) {
+            return s(bin.x);
+          },
+          width: function(bin) {
+            return s(bin.dx);
+          },
+          y: function(bin) {
+            return 1-bin.y;
+          },
+          height: function(bin) {
+            return bin.y;
+          }
+        });
+      });
+    } else {
+      allNumberHeaders.selectAll('g.hist').selectAll('*').remove();
+    }
 
     // -- handle WeightHandle
 
@@ -3174,7 +3308,23 @@ var LineUp;
 
   };
 
-
+  LineUp.prototype.hoverHistogramBin = function (row) {
+    if (!this.config.renderingOptions.histograms) {
+      return;
+    }
+    var $hists = this.$header.selectAll('g.hist');
+    $hists.selectAll('rect').classed('hover',false);
+    if (row) {
+      this.$header.selectAll('g.hist').each(function(d) {
+        if (d instanceof LineUp.LayoutNumberColumn && d.hist) {
+          var bin = d.binOf(row);
+          if (bin >= 0) {
+            d3.select(this).select('rect:nth-child('+(bin+1)+')').classed('hover',true);
+          }
+        }
+      });
+    }
+  };
 // ===============
 // Helperfunctions
 // ===============

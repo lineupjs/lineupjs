@@ -232,7 +232,7 @@ var LineUp;
     this.histgenerator = d3.layout.histogram();
     var that = this;
     this.histgenerator.range(this.scale.range());
-    this.histgenerator.value(function (row) { return that.getValue(row) ;}).frequency(false);
+    this.histgenerator.value(function (row) { return that.getValue(row) ;});
     this.hist = [];
   }
   LineUp.LayoutNumberColumn = LayoutNumberColumn;
@@ -259,7 +259,11 @@ var LineUp;
           x : bin.x,
           dx : bin.dx,
           y: bin.y
-        }
+        };
+      });
+      var max = d3.max(this.hist, function(d) { return d.y; });
+      this.hist.forEach(function (d) {
+        d.y /= max;
       });
     },
     binOf : function (row) {
