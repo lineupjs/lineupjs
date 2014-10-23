@@ -595,13 +595,13 @@ var LineUp;
     function showTooltip(content, xy) {
       $tooltip.html(content).css({
         left: xy.x + "px",
-        top: (xy.y + xy.height) + "px"
+        top: (xy.y + xy.height - $container.offset().top) + "px"
       }).fadeIn();
 
       var stickout = ($(window).height() + $(window).scrollTop()) <= ((xy.y + xy.height) + $tooltip.height() - 20);
       var stickouttop = $(window).scrollTop() > (xy.y - $tooltip.height());
       if (stickout && !stickouttop) { //if the bottom is not visible move it on top of the box
-        $tooltip.css('top', (xy.y - $tooltip.height()) + "px");
+        $tooltip.css('top', (xy.y - $tooltip.height() - $container.offset().top) + "px");
       }
     }
 
@@ -617,7 +617,7 @@ var LineUp;
       }
       if (xy.y) {
         $tooltip.css({
-          top: xy.y + "px"
+          top: xy.y  - $container.offset().top + "px"
         });
       }
     }
