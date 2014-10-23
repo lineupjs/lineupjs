@@ -38,7 +38,7 @@ var LineUp;
     // -- the text columns
 
     var allTextHeaders = allHeaders.filter(function (d) {
-      return d.column instanceof LineUp.LineUpStringColumn || d instanceof LineUp.LayoutRankColumn;
+      return d instanceof LineUp.LayoutCategoricalColumn || d instanceof LineUp.LayoutStringColumn|| d instanceof LineUp.LayoutRankColumn;
     });
 
     var rowCenter = (config.svgLayout.rowHeight / 2);

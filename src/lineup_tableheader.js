@@ -262,7 +262,9 @@ var LineUp;
           action: function (d) {
             if (d instanceof LineUp.LayoutStringColumn) {
               that.openFilterPopup(d, d3.select(this));
-            } else {
+            } else if (d instanceof LineUp.LayoutCategoricalColumn) {
+              that.openCategoricalFilterPopup(d, d3.select(this));
+            } else if (d instanceof LineUp.LayoutNumberColumn) {
               that.openMappingEditor(d, d3.select(this));
             }
           },

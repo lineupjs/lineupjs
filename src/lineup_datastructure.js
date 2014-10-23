@@ -326,7 +326,7 @@ var LineUp;
         return true;
       }
       var r = this.getValue(row);
-      if (Array.isArray(filter)) {
+      if (Array.isArray(filter) && filter.length > 0) {
         return filter.indexOf(r) >= 0;
       } else if (typeof filter === 'string' && filter.length > 0) {
         return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;

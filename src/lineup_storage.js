@@ -87,7 +87,7 @@ var LineUp;
   LineUpLocalStorage.generateDefaultLayout = function (columns) {
     var layout = columns.map(function (c) {
       return {
-        column: c.id,
+        column: c.column,
         width: c instanceof LineUp.LineUpStringColumn ? 200 : 100
       };
     });
