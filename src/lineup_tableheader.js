@@ -130,10 +130,10 @@ var LineUp;
         var bundle = config.columnBundles[d.columnBundle];
         // TODO: adapt to comparison mode !!
         //same sorting swap order
-        if (bundle.sortedColumn !== null && (d.getDataID() === bundle.sortedColumn.getDataID())) {
+        if (bundle.sortedColumn !== null && (d === bundle.sortedColumn)) {
           bundle.sortingOrderAsc = !bundle.sortingOrderAsc;
         } else {
-          bundle.sortingOrderAsc = false;
+          bundle.sortingOrderAsc = d instanceof LineUp.LayoutStringColumn || d instanceof LineUp.LayoutCategoricalColumn || d instanceof LineUp.LayoutRankColumn;
         }
 
         that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});

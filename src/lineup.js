@@ -94,7 +94,7 @@ var LineUp;
       this.$header.attr('transform', 'translate(0,' + top + ')');
     } else {
       //in two svg mode propagate horizontal shift
-      this.$header.attr('transform', 'translate('+left+',0)');
+      this.$header.attr('transform', 'translate('+-left+',0)');
     }
   };
 
