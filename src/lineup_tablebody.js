@@ -47,8 +47,8 @@ var LineUp;
       .data(function (d) {
         var dd = allTextHeaders.map(function (column) {
           return {
-            value: column.column.getValue(d),
-            label: column.column.getRawValue(d),
+            value: column.getValue(d),
+            label: column.getValue(d, 'raw'),
             offsetX: column.offsetX,
             columnW: column.getColumnWidth(),
             isRank: (column instanceof LineUp.LayoutRankColumn),
@@ -259,19 +259,11 @@ var LineUp;
   }
 
   function createRepr(col, row) {
-    if (col instanceof LineUp.LayoutStackedColumn) {
-      return col.getValue(row);
+    var r =col.getValue(row, 'raw');
+    if (col instanceof LineUp.LayoutNumberColumn || col instanceof LineUp.LayoutStackedColumn) {
+      r = isNaN(r) || r.toString() === '' ? '' : +r;
     }
-    if (col instanceof LineUp.LayoutSingleColumn && col.column instanceof LineUp.LineUpNumberColumn) {
-      var r = col.column.getRawValue(row);
-      return isNaN(r) || r.toString() === '' ? '' : +r;
-    }
-    if (col.column) {
-      return col.column.getValue(row);
-    }
-    return "";
-    //}
-    //if (col instanceof LineUpRankColumn || header instanceof )
+    return r;
   }
 
   function generateTooltip(row, headers, config) {
@@ -377,7 +369,7 @@ var LineUp;
 
       headers.forEach(function (col) {
           if (col.column instanceof LineUp.LineUpNumberColumn) {
-            textOverlays.push({id: col.id, value: col.column.getValue(row), label: that.config.numberformat(+col.column.getRawValue(row)),
+            textOverlays.push({id: col.id, value: col.getValue(row), label: that.config.numberformat(+col.getValue(row,'raw')),
               x: col.offsetX,
               w: col.getColumnWidth()});
           } else if (col instanceof  LineUp.LayoutStackedColumn) {
@@ -388,7 +380,7 @@ var LineUp;
 
               textOverlays.push({
                   id: child.id,
-                  label: toValue(child.column.getRawValue(row)) + " -> (" + zeroFormat(child.getWidth(row)) + ")",
+                  label: toValue(child.getValue(row,'raw')) + " -> (" + zeroFormat(child.getWidth(row)) + ")",
                   w: asStacked ? allStackW : child.getColumnWidth(),
                   x: (allStackOffset + col.offsetX)}
               );

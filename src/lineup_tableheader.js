@@ -112,10 +112,10 @@ var LineUp;
     }).style("fill", function (d) {
       if (d instanceof LineUp.LayoutEmptyColumn) {
         return "lightgray";
-      } else if (d instanceof LineUp.LayoutStackedColumn || !config.colorMapping.has(d.column.id) || d instanceof LineUp.LayoutActionColumn) {
-        return config.grayColor;
-      } else {
+      } else if (d.column && config.colorMapping.has(d.column.id)) {
         return config.colorMapping.get(d.column.id);
+      } else {
+        return config.grayColor;
       }
     })
       .on("click", function (d) {
@@ -184,11 +184,7 @@ var LineUp;
     allHeaders.select(".headerLabel")
       .classed("sortedColumn", function (d) {
         var sc = config.columnBundles[d.columnBundle].sortedColumn;
-        if (sc) {
-          return d.getDataID() === sc.getDataID();
-        } else {
-          return false;
-        }
+        return sc === d;
       })
       .attr({
         y: function (d) {
@@ -201,16 +197,10 @@ var LineUp;
           return 'url(#clip-H' + d.id + ')';
         }
       }).text(function (d) {
-        if (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
-          return d.label;
-        }
-        return d.column.label;
+        return d.getLabel();
       });
     allHeaders.select('title').text(function (d) {
-      if (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
-        return d.label;
-      }
-      return d.column.label;
+      return d.getLabel();
     });
 
 
@@ -225,7 +215,7 @@ var LineUp;
 
     allHeaders.select(".headerSort").text(function (d) {
       var sc = config.columnBundles[d.columnBundle].sortedColumn;
-      return ((sc && d.getDataID() === sc.getDataID()) ?
+      return ((sc === d) ?
         ((config.columnBundles[d.columnBundle].sortingOrderAsc) ? '\uf0de' : '\uf0dd')
         : "");
     })
@@ -267,10 +257,10 @@ var LineUp;
           'class': 'singleColumnFilter',
           text: "\uf0b0",
           filter: function (d) {
-            return (d instanceof LineUp.LayoutSingleColumn && (d.column instanceof LineUp.LineUpNumberColumn || d.column instanceof LineUp.LineUpStringColumn)) ? [d] : [];
+            return (d.column) ? [d] : [];
           },
           action: function (d) {
-            if (d.column instanceof LineUp.LineUpStringColumn) {
+            if (d instanceof LineUp.LayoutStringColumn) {
               that.openFilterPopup(d, d3.select(this));
             } else {
               that.openMappingEditor(d, d3.select(this));

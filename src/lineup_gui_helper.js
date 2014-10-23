@@ -278,8 +278,7 @@ var LineUp;
   };
 
   LineUp.prototype.openMappingEditor = function (selectedColumn, $button) {
-    var col = selectedColumn.column;
-    var bak = col.scale;
+    var bak = selectedColumn.scale;
     var that = this;
     var act = bak;
     var callback = function (newscale) {
@@ -304,9 +303,9 @@ var LineUp;
         '<button class="ok"><i class="fa fa-check"></i> ok</button>'
     );
     var access = function (row) {
-      return +col.getRawValue(row);
+      return +selectedColumn.getValue(row, 'raw');
     };
-    var editor = LineUp.mappingEditor(bak, col.scaleOri.domain(), this.storage.data, access, callback);
+    var editor = LineUp.mappingEditor(bak, selectedColumn.column.domain, this.storage.data, access, callback);
     popup.select('.mappingArea').call(editor);
 
     function isSame(a, b) {
@@ -314,22 +313,22 @@ var LineUp;
     }
 
     popup.select(".ok").on("click", function () {
-      col.scale = act;
+      selectedColumn.scale = act;
       //console.log(act.domain().toString(), act.range().toString());
-      $button.classed('filtered', !isSame(act.range(), col.scaleOri.range()) || !isSame(act.domain(), col.scaleOri.domain()));
+      $button.classed('filtered', !isSame(act.range(), selectedColumn.column.range) || !isSame(act.domain(), selectedColumn.column.domain));
       that.storage.resortData({});
       that.updateAll(true);
       popup.remove();
     });
     popup.select(".cancel").on("click", function () {
-      col.scale = bak;
-      $button.classed('filtered', !isSame(bak.range(), col.scaleOri.range()) || !isSame(bak.domain(), col.scaleOri.domain()));
+      selectedColumn.scale = bak;
+      $button.classed('filtered', !isSame(bak.range(), selectedColumn.column.range) || !isSame(bak.domain(), selectedColumn.column.domain));
       popup.remove();
     });
     popup.select(".reset").on("click", function () {
-      act = bak = col.scale = col.scaleOri;
+      act = bak = selectedColumn.scale = d3.scale.linear().clamp(true).domain(selectedColumn.column.domain).range(selectedColumn.column.range);
       $button.classed('filtered', false);
-      editor = LineUp.mappingEditor(bak, col.scaleOri.domain(), that.storage.data, access, callback);
+      editor = LineUp.mappingEditor(bak, selectedColumn.column.domain, that.storage.data, access, callback);
       popup.selectAll('.mappingArea *').remove();
       popup.select('.mappingArea').call(editor);
     });
@@ -452,7 +451,7 @@ var LineUp;
   };
 
   LineUp.prototype.openFilterPopup = function (column, $button) {
-    if (!(column instanceof LineUp.LayoutSingleColumn && column.column instanceof LineUp.LineUpStringColumn)) {
+    if (!(column instanceof LineUp.LayoutStringColumn)) {
       //can't filter other than string columns
       return;
     }

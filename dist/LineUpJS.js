@@ -798,7 +798,7 @@ var LineUp;
 
     },
     addChild: function (child, targetChild, position) {
-      if (!(child instanceof LineUp.LayoutSingleColumn && child.column instanceof LineUp.LineUpNumberColumn)) {
+      if (!(child instanceof LineUp.LayoutNumberColumn)) {
         return false;
       }
 
