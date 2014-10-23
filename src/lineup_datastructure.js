@@ -122,7 +122,7 @@ var LineUp;
     this.id = _.uniqueId("Column_");
     this.filter = desc.filter;
 
-    this.parent = desc.parent; // or null
+    this.parent = desc.parent || null; // or null
     this.columnBundle = desc.columnBundle || "primary";
     //define it here to have a dedicated this pointer
     this.sortBy = function (a, b) {
@@ -582,7 +582,7 @@ var LineUp;
 
     },
     addChild: function (child, targetChild, position) {
-      if (!(child instanceof LineUp.LineUpNumberColumn)) {
+      if (!(child instanceof LineUp.LayoutNumberColumn)) {
         return false;
       }
 

@@ -29,7 +29,7 @@ var LineUp;
         left: options.x + "px",
         top: options.y + "px",
         width: options.width + "px",
-        height: options.height + "200px"
+        height: options.height + "px"
       })
       .html(
         '<span style="font-weight: bold">' + title + '</span>' +
@@ -129,7 +129,7 @@ var LineUp;
         label: name,
         width: (Math.max(allChecked.length * 100, 100)),
         children: allChecked.map(function (d) {
-          return {column: d.d.id, weight: d.weight};
+          return {column: d.d.column, type: 'number', weight: d.weight};
         })
       };
 

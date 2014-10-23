@@ -240,7 +240,7 @@ var LineUp;
         cols.splice(i, 0, col);
       },
       addStackedColumn: function (spec) {
-        var _spec = spec || {label: "Stacked", children: []};
+        var _spec = $.extend({ type: 'stacked', label: 'Stacked', children: []}, spec);
         this.addColumn(this.storageConfig.toLayoutColumn(_spec));
       },
       addSingleColumn: function (spec) {
