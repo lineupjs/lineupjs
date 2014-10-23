@@ -15,6 +15,8 @@ var LineUp;
 //    this.sortedColumn = [];
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
+    //trigger hover event
+    this.listeners = d3.dispatch('hover');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
@@ -154,6 +156,13 @@ var LineUp;
       limit: Number.POSITIVE_INFINITY,
       filter: undefined
     }
+  };
+
+  LineUp.prototype.on = function(type, listener) {
+    if (arguments.length < 2)
+      return this.listeners.on(type);
+    this.listeners.on(type, listener);
+    return this;
   };
 
   LineUp.prototype.changeDataStorage = function (spec) {

@@ -144,6 +144,9 @@ var LineUp;
     getColumnWidth: function () {
       return this.columnWidth;
     },
+    prepare: function(/*data*/) {
+
+    },
     safeSortBy: function (a, b) {
       var an = typeof a === 'number' && isNaN(a);
       var bn = typeof b === 'number' && isNaN(b);
@@ -226,10 +229,45 @@ var LineUp;
     //from normalized value to width value
     this.value2pixel = d3.scale.linear().domain([0, 1]).range([0, this.columnWidth]);
     this.scale = d3.scale.linear().clamp(true).domain(desc.domain || this.column.domain).range(desc.range || this.column.range);
+    this.histgenerator = d3.layout.histogram();
+    var that = this;
+    this.histgenerator.range(this.scale.range());
+    this.histgenerator.value(function (row) { return that.getValue(row) ;});
+    this.hist = [];
   }
   LineUp.LayoutNumberColumn = LayoutNumberColumn;
 
   LayoutNumberColumn.prototype = $.extend({}, LayoutSingleColumn.prototype, {
+    mapping : function(newscale) {
+      if (arguments.length < 1) {
+        return this.scale;
+      }
+      this.scale = newscale.clamp(true);
+      this.histgenerator.range(newscale.range());
+    },
+    originalMapping: function() {
+      return  d3.scale.linear().clamp(true).domain(this.column.domain).range(this.column.range);
+    },
+    prepare: function(data) {
+      //remove all the direct values to save space
+      this.hist = this.histgenerator(data).map(function (bin) {
+        return {
+          x : bin.x,
+          dx : bin.dx,
+          y: bin.y
+        }
+      });
+    },
+    binOf : function (row) {
+      var v = this.getValue(row), i;
+      for(i = this.hist.length; i>= 0; --i) {
+        var bin = this.hist[i];
+        if (bin.x >= v && v < (bin.x+bin.dx)) {
+          return i;
+        }
+      }
+      return -1;
+    },
     setColumnWidth: function (newWidth, ignoreParent) {
       this.value2pixel.range([0, newWidth]);
       LayoutSingleColumn.prototype.setColumnWidth.call(this, newWidth, ignoreParent);

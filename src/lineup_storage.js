@@ -44,10 +44,11 @@ var LineUp;
     this.primaryKey = primaryKey;
     this.rawdata = data;
     this.data = data;
+    this.initialSort = true;
     this.rawcols = columns.map(toColumn);
     this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
 
-    var colLookup = this.rawColumnLookup =d3.map();
+    var colLookup = d3.map();
     this.rawcols.forEach(function (col) {
       colLookup.set(col.column, col);
     });
@@ -144,18 +145,27 @@ var LineUp;
       },
       resortData: function (spec) {
 
-        var _key = spec.key || "primary";
+        var _key = spec.key || "primary", that = this;
         var bundle = this.bundles[_key];
         var asc = spec.asc || this.config.columnBundles.primary.sortingOrderAsc;
         var column = spec.column || this.config.columnBundles.primary.sortedColumn;
 
         //console.log("resort: ", spec);
         this.filterData(bundle.layoutColumns);
+        if (spec.filteredChanged || this.initialSort) {
+          //trigger column updates
+          bundle.layoutColumns.forEach(function (col) {
+            col.prepare(that.data);
+          });
+          this.initialSort = false;
+        }
+
+        function sort(a,b) {
+          var r = column.sortBy(a,b);
+          return asc ? -r : r;
+        }
         if (column) {
-          this.data.sort(column.sortBy);
-          if (asc) {
-            this.data.reverse();
-          }
+          this.data.sort(sort);
         }
 
         var start = this.config.filter.skip ? this.config.filter.skip : 0;
