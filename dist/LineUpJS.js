@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2014-10-23
+/*! LineUpJS - v0.1.0 - 2014-10-24
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2014 ; Licensed BSD */
 /**
@@ -2280,25 +2280,32 @@ var LineUp;
 
         this.bundles[_bundle] = b;
       },
-      addColumn: function (col, bundle) {
+      addColumn: function (col, bundle, position) {
         var _bundle = bundle || "primary";
         var cols = this.bundles[_bundle].layoutColumns, i, c;
         //insert the new column after the first non rank, text column
-        for (i = 0; i < cols.length; ++i) {
-          c = cols[i];
-          if (c instanceof LineUp.LayoutRankColumn || (c instanceof LineUp.LayoutStringColumn)) {
-            continue;
+        if (typeof position === 'undefined' || position === null) {
+          for (i = 0; i < cols.length; ++i) {
+            c = cols[i];
+            if (c instanceof LineUp.LayoutRankColumn || (c instanceof LineUp.LayoutStringColumn)) {
+              continue;
+            }
+            break;
           }
-          break;
+        } else {
+          if (position < 0) {
+            position = cols.length + 1 + position;
+          }
+          i =  Math.max(0, Math.min(cols.length, position));
         }
         cols.splice(i, 0, col);
       },
-      addStackedColumn: function (spec) {
+      addStackedColumn: function (spec, position) {
         var _spec = $.extend({ type: 'stacked', label: 'Stacked', children: []}, spec);
-        this.addColumn(this.storageConfig.toLayoutColumn(_spec));
+        this.addColumn(this.storageConfig.toLayoutColumn(_spec), null, position);
       },
-      addSingleColumn: function (spec) {
-        this.addColumn(this.storageConfig.toLayoutColumn(spec));
+      addSingleColumn: function (spec, position) {
+        this.addColumn(this.storageConfig.toLayoutColumn(spec), null, position);
       },
 
 
@@ -3476,9 +3483,9 @@ var LineUp;
 
 
   LineUp.prototype.addNewEmptyStackedColumn = function () {
-    this.storage.addStackedColumn();
+    this.storage.addStackedColumn(null, -1);
     this.headerUpdateRequired = true;
-    this.updateHeader();
+    this.updateAll();
   };
 
 
@@ -3492,6 +3499,6 @@ var LineUp;
 //    console.log(change);
     change.column.setColumnWidth(change.value);
     this.headerUpdateRequired = true;
-    this.updateHeader();
+    this.updateAll();
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
