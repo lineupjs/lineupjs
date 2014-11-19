@@ -113,9 +113,14 @@ var LineUp;
    * @constructor
    * @extends LineUpColumn
    */
-  function LineUpCategoricalColumn(desc) {
+  function LineUpCategoricalColumn(desc, _, data) {
     LineUpColumn.call(this, desc);
     this.categories = desc.categories || [];
+    if (this.categories.length === 0) {
+      var that = this;
+      this.categories = d3.set(data.map(function(row) { return that.getValue(row); })).values();
+      this.categories.sort();
+    }
   }
 
   LineUp.LineUpCategoricalColumn = LineUpCategoricalColumn;

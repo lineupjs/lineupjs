@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2014-10-24
+/*! LineUpJS - v0.1.0 - 2014-11-19
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2014 ; Licensed BSD */
 /**
@@ -371,13 +371,25 @@ var LineUp;
    * @constructor
    * @extends LineUpColumn
    */
-  function LineUpNumberColumn(desc) {
+  function LineUpNumberColumn(desc, _, data) {
     LineUpColumn.call(this, desc);
 
-    this.domain = desc.domain || [0, 100];
+    this.domain = desc.domain || [NaN, NaN];
     this.range = desc.range || [0, 1];
     if (typeof this.missingValue === "undefined") {
       this.missingValue = NaN;
+    }
+
+    //infer the min max
+    var that = this;
+    if (isNaN(this.domain[0]) || isNaN(this.domain[1])) {
+      var minmax = d3.extent(data, function(row) { return that.getValue(row); });
+      if (isNaN(this.domain[0])) {
+        this.domain[0] = minmax[0];
+      }
+      if (isNaN(this.domain[1])) {
+        this.domain[1] = minmax[1];
+      }
     }
   }
 
@@ -422,9 +434,14 @@ var LineUp;
    * @constructor
    * @extends LineUpColumn
    */
-  function LineUpCategoricalColumn(desc) {
+  function LineUpCategoricalColumn(desc, _, data) {
     LineUpColumn.call(this, desc);
     this.categories = desc.categories || [];
+    if (this.categories.length === 0) {
+      var that = this;
+      this.categories = d3.set(data.map(function(row) { return that.getValue(row); })).values();
+      this.categories.sort();
+    }
   }
 
   LineUp.LineUpCategoricalColumn = LineUpCategoricalColumn;
@@ -1734,6 +1751,11 @@ var LineUp;
       var top = container.scrollTop - shift,
         bottom = top + $container.innerHeight(),
         i = 0, j;
+      /*onsole.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
+      if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
+        console.log('show all');
+        return [0, data.length];
+      }*/
       if (top > 0) {
         i = Math.round(top / rowHeight);
         //count up till really even partial rows are visible
@@ -2076,7 +2098,7 @@ var LineUp;
     var that = this;
 
     function toColumn(desc) {
-      return new colTypes[desc.type](desc, toColumn);
+      return new colTypes[desc.type](desc, toColumn, data);
     }
 
     this.storageConfig.toColumn = toColumn;
