@@ -50,13 +50,25 @@ var LineUp;
    * @constructor
    * @extends LineUpColumn
    */
-  function LineUpNumberColumn(desc) {
+  function LineUpNumberColumn(desc, _, data) {
     LineUpColumn.call(this, desc);
 
-    this.domain = desc.domain || [0, 100];
+    this.domain = desc.domain || [NaN, NaN];
     this.range = desc.range || [0, 1];
     if (typeof this.missingValue === "undefined") {
       this.missingValue = NaN;
+    }
+
+    //infer the min max
+    var that = this;
+    if (isNaN(this.domain[0]) || isNaN(this.domain[1])) {
+      var minmax = d3.extent(data, function(row) { return that.getValue(row); });
+      if (isNaN(this.domain[0])) {
+        this.domain[0] = minmax[0];
+      }
+      if (isNaN(this.domain[1])) {
+        this.domain[1] = minmax[1];
+      }
     }
   }
 

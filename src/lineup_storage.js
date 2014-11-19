@@ -36,7 +36,7 @@ var LineUp;
     var that = this;
 
     function toColumn(desc) {
-      return new colTypes[desc.type](desc, toColumn);
+      return new colTypes[desc.type](desc, toColumn, data);
     }
 
     this.storageConfig.toColumn = toColumn;
