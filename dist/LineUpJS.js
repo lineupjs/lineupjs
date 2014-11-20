@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2014-11-19
+/*! LineUpJS - v0.1.0 - 2014-11-20
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2014 ; Licensed BSD */
 /**
@@ -382,12 +382,15 @@ var LineUp;
 
     //infer the min max
     var that = this;
-    if (isNaN(this.domain[0]) || isNaN(this.domain[1])) {
+    function isWildCard(v) {
+      return typeof v !== 'number' || isNaN(v);
+    }
+    if (isWildCard(this.domain[0]) || isWildCard(this.domain[1])) {
       var minmax = d3.extent(data, function(row) { return that.getValue(row); });
-      if (isNaN(this.domain[0])) {
+      if (isWildCard(this.domain[0])) {
         this.domain[0] = minmax[0];
       }
-      if (isNaN(this.domain[1])) {
+      if (isWildCard(this.domain[1])) {
         this.domain[1] = minmax[1];
       }
     }
