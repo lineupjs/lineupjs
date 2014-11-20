@@ -365,6 +365,10 @@ var LineUp;
     }
   });
 
+
+  function isWildCard(v) {
+    return typeof v !== 'number' || isNaN(v);
+  }
   /**
    * A {@link LineUpColumn} implementation for Numbers
    * @param desc The descriptor object
@@ -382,9 +386,6 @@ var LineUp;
 
     //infer the min max
     var that = this;
-    function isWildCard(v) {
-      return typeof v !== 'number' || isNaN(v);
-    }
     if (isWildCard(this.domain[0]) || isWildCard(this.domain[1])) {
       var minmax = d3.extent(data, function(row) { return that.getValue(row); });
       if (isWildCard(this.domain[0])) {
@@ -569,7 +570,14 @@ var LineUp;
 
     //from normalized value to width value
     this.value2pixel = d3.scale.linear().domain([0, 1]).range([0, this.columnWidth]);
-    this.scale = d3.scale.linear().clamp(true).domain(desc.domain || this.column.domain).range(desc.range || this.column.range);
+    var d = desc.domain || this.column.domain;
+    if (isWildCard(d[0])) {
+      d[0] = this.column.domain[0];
+    }
+    if (isWildCard(d[1])) {
+      d[1] = this.column.domain[1];
+    }
+    this.scale = d3.scale.linear().clamp(true).domain(d).range(desc.range || this.column.range);
     this.histgenerator = d3.layout.histogram();
     var that = this;
     this.histgenerator.range(this.scale.range());
