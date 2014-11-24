@@ -44,19 +44,35 @@ var LineUp;
     }
   });
 
+
+  function isWildCard(v) {
+    return typeof v !== 'number' || isNaN(v);
+  }
   /**
    * A {@link LineUpColumn} implementation for Numbers
    * @param desc The descriptor object
    * @constructor
    * @extends LineUpColumn
    */
-  function LineUpNumberColumn(desc) {
+  function LineUpNumberColumn(desc, _, data) {
     LineUpColumn.call(this, desc);
 
-    this.domain = desc.domain || [0, 100];
+    this.domain = desc.domain || [NaN, NaN];
     this.range = desc.range || [0, 1];
     if (typeof this.missingValue === "undefined") {
       this.missingValue = NaN;
+    }
+
+    //infer the min max
+    var that = this;
+    if (isWildCard(this.domain[0]) || isWildCard(this.domain[1])) {
+      var minmax = d3.extent(data, function(row) { return that.getValue(row); });
+      if (isWildCard(this.domain[0])) {
+        this.domain[0] = minmax[0];
+      }
+      if (isWildCard(this.domain[1])) {
+        this.domain[1] = minmax[1];
+      }
     }
   }
 
@@ -101,9 +117,14 @@ var LineUp;
    * @constructor
    * @extends LineUpColumn
    */
-  function LineUpCategoricalColumn(desc) {
+  function LineUpCategoricalColumn(desc, _, data) {
     LineUpColumn.call(this, desc);
     this.categories = desc.categories || [];
+    if (this.categories.length === 0) {
+      var that = this;
+      this.categories = d3.set(data.map(function(row) { return that.getValue(row); })).values();
+      this.categories.sort();
+    }
   }
 
   LineUp.LineUpCategoricalColumn = LineUpCategoricalColumn;
@@ -228,7 +249,14 @@ var LineUp;
 
     //from normalized value to width value
     this.value2pixel = d3.scale.linear().domain([0, 1]).range([0, this.columnWidth]);
-    this.scale = d3.scale.linear().clamp(true).domain(desc.domain || this.column.domain).range(desc.range || this.column.range);
+    var d = desc.domain || this.column.domain;
+    if (isWildCard(d[0])) {
+      d[0] = this.column.domain[0];
+    }
+    if (isWildCard(d[1])) {
+      d[1] = this.column.domain[1];
+    }
+    this.scale = d3.scale.linear().clamp(true).domain(d).range(desc.range || this.column.range);
     this.histgenerator = d3.layout.histogram();
     var that = this;
     this.histgenerator.range(this.scale.range());

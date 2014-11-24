@@ -541,9 +541,9 @@ var LineUp;
 
 
   LineUp.prototype.addNewEmptyStackedColumn = function () {
-    this.storage.addStackedColumn();
+    this.storage.addStackedColumn(null, -1);
     this.headerUpdateRequired = true;
-    this.updateHeader();
+    this.updateAll();
   };
 
 
@@ -557,6 +557,6 @@ var LineUp;
 //    console.log(change);
     change.column.setColumnWidth(change.value);
     this.headerUpdateRequired = true;
-    this.updateHeader();
+    this.updateAll();
   };
 }(LineUp || (LineUp = {}), d3, jQuery));

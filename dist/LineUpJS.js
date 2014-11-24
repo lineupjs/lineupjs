@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2014-10-23
+/*! LineUpJS - v0.1.0 - 2014-11-20
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2014 ; Licensed BSD */
 /**
@@ -365,19 +365,35 @@ var LineUp;
     }
   });
 
+
+  function isWildCard(v) {
+    return typeof v !== 'number' || isNaN(v);
+  }
   /**
    * A {@link LineUpColumn} implementation for Numbers
    * @param desc The descriptor object
    * @constructor
    * @extends LineUpColumn
    */
-  function LineUpNumberColumn(desc) {
+  function LineUpNumberColumn(desc, _, data) {
     LineUpColumn.call(this, desc);
 
-    this.domain = desc.domain || [0, 100];
+    this.domain = desc.domain || [NaN, NaN];
     this.range = desc.range || [0, 1];
     if (typeof this.missingValue === "undefined") {
       this.missingValue = NaN;
+    }
+
+    //infer the min max
+    var that = this;
+    if (isWildCard(this.domain[0]) || isWildCard(this.domain[1])) {
+      var minmax = d3.extent(data, function(row) { return that.getValue(row); });
+      if (isWildCard(this.domain[0])) {
+        this.domain[0] = minmax[0];
+      }
+      if (isWildCard(this.domain[1])) {
+        this.domain[1] = minmax[1];
+      }
     }
   }
 
@@ -422,9 +438,14 @@ var LineUp;
    * @constructor
    * @extends LineUpColumn
    */
-  function LineUpCategoricalColumn(desc) {
+  function LineUpCategoricalColumn(desc, _, data) {
     LineUpColumn.call(this, desc);
     this.categories = desc.categories || [];
+    if (this.categories.length === 0) {
+      var that = this;
+      this.categories = d3.set(data.map(function(row) { return that.getValue(row); })).values();
+      this.categories.sort();
+    }
   }
 
   LineUp.LineUpCategoricalColumn = LineUpCategoricalColumn;
@@ -549,7 +570,14 @@ var LineUp;
 
     //from normalized value to width value
     this.value2pixel = d3.scale.linear().domain([0, 1]).range([0, this.columnWidth]);
-    this.scale = d3.scale.linear().clamp(true).domain(desc.domain || this.column.domain).range(desc.range || this.column.range);
+    var d = desc.domain || this.column.domain;
+    if (isWildCard(d[0])) {
+      d[0] = this.column.domain[0];
+    }
+    if (isWildCard(d[1])) {
+      d[1] = this.column.domain[1];
+    }
+    this.scale = d3.scale.linear().clamp(true).domain(d).range(desc.range || this.column.range);
     this.histgenerator = d3.layout.histogram();
     var that = this;
     this.histgenerator.range(this.scale.range());
@@ -1734,6 +1762,11 @@ var LineUp;
       var top = container.scrollTop - shift,
         bottom = top + $container.innerHeight(),
         i = 0, j;
+      /*onsole.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
+      if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
+        console.log('show all');
+        return [0, data.length];
+      }*/
       if (top > 0) {
         i = Math.round(top / rowHeight);
         //count up till really even partial rows are visible
@@ -2076,7 +2109,7 @@ var LineUp;
     var that = this;
 
     function toColumn(desc) {
-      return new colTypes[desc.type](desc, toColumn);
+      return new colTypes[desc.type](desc, toColumn, data);
     }
 
     this.storageConfig.toColumn = toColumn;
@@ -2280,25 +2313,32 @@ var LineUp;
 
         this.bundles[_bundle] = b;
       },
-      addColumn: function (col, bundle) {
+      addColumn: function (col, bundle, position) {
         var _bundle = bundle || "primary";
         var cols = this.bundles[_bundle].layoutColumns, i, c;
         //insert the new column after the first non rank, text column
-        for (i = 0; i < cols.length; ++i) {
-          c = cols[i];
-          if (c instanceof LineUp.LayoutRankColumn || (c instanceof LineUp.LayoutStringColumn)) {
-            continue;
+        if (typeof position === 'undefined' || position === null) {
+          for (i = 0; i < cols.length; ++i) {
+            c = cols[i];
+            if (c instanceof LineUp.LayoutRankColumn || (c instanceof LineUp.LayoutStringColumn)) {
+              continue;
+            }
+            break;
           }
-          break;
+        } else {
+          if (position < 0) {
+            position = cols.length + 1 + position;
+          }
+          i =  Math.max(0, Math.min(cols.length, position));
         }
         cols.splice(i, 0, col);
       },
-      addStackedColumn: function (spec) {
+      addStackedColumn: function (spec, position) {
         var _spec = $.extend({ type: 'stacked', label: 'Stacked', children: []}, spec);
-        this.addColumn(this.storageConfig.toLayoutColumn(_spec));
+        this.addColumn(this.storageConfig.toLayoutColumn(_spec), null, position);
       },
-      addSingleColumn: function (spec) {
-        this.addColumn(this.storageConfig.toLayoutColumn(spec));
+      addSingleColumn: function (spec, position) {
+        this.addColumn(this.storageConfig.toLayoutColumn(spec), null, position);
       },
 
 
@@ -3476,9 +3516,9 @@ var LineUp;
 
 
   LineUp.prototype.addNewEmptyStackedColumn = function () {
-    this.storage.addStackedColumn();
+    this.storage.addStackedColumn(null, -1);
     this.headerUpdateRequired = true;
-    this.updateHeader();
+    this.updateAll();
   };
 
 
@@ -3492,6 +3532,6 @@ var LineUp;
 //    console.log(change);
     change.column.setColumnWidth(change.value);
     this.headerUpdateRequired = true;
-    this.updateHeader();
+    this.updateAll();
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
