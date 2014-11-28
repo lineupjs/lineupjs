@@ -144,7 +144,7 @@ var LineUp;
     this.filter = desc.filter;
 
     this.parent = desc.parent || null; // or null
-    this.columnBundle = desc.columnBundle || "primary";
+    this.columnBundle = "primary";
     //define it here to have a dedicated this pointer
     this.sortBy = function (a, b) {
       a = that.getValue(a);
@@ -189,7 +189,6 @@ var LineUp;
     description: function () {
       var res = {};
       res.width = this.columnWidth;
-      res.columnBundle = this.columnBundle;
       res.filter = this.filter;
 
       return res;
@@ -326,8 +325,8 @@ var LineUp;
       if (typeof filter === 'undefined' || !this.column) {
         return true;
       }
-      var r = this.getValue(row);
-      if (isNaN(filter)) {
+      var r = this.getValue(row, 'raw');
+      if (typeof filter === 'number' && isNaN(filter)) {
         return !isNaN(r);
       } else if (typeof filter === 'number') {
         return r >= filter;

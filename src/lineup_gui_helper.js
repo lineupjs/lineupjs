@@ -283,14 +283,6 @@ var LineUp;
     var that = this;
     var act = bak;
 
-    function applyMapping(newscale) {
-      act = newscale;
-      selectedColumn.mapping(act);
-      //console.log(act.domain().toString(), act.range().toString());
-      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
-      that.storage.resortData({ filteredChanged: true});
-      that.updateAll(true);
-    }
 
     var popup = d3.select("body").append("div")
       .attr({
@@ -299,18 +291,39 @@ var LineUp;
         left: +(window.innerWidth) / 2 - 100 + "px",
         top: 100 + "px",
         width: "420px",
-        height: "450px"
+        height: "470px"
       })
       .html(
         '<div style="font-weight: bold"> change mapping: </div>' +
         '<div class="mappingArea"></div>' +
+        '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'+
         '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
         '<button class="reset"><i class="fa fa-undo"></i> revert</button>' +
         '<button class="ok"><i class="fa fa-check"></i> ok</button>'
     );
+    var $filterIt = popup.select('input').on('change', function() {
+      applyMapping(act);
+    });
+    $filterIt.node().checked = Array.isArray(selectedColumn.filter);
     var access = function (row) {
       return +selectedColumn.getValue(row, 'raw');
     };
+
+    function applyMapping(newscale) {
+      act = newscale;
+      selectedColumn.mapping(act);
+      var val = $filterIt.node().checked;
+      if (val) {
+        selectedColumn.filter = newscale.domain();
+      } else {
+        selectedColumn.filter = undefined;
+      }
+      //console.log(act.domain().toString(), act.range().toString());
+      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
+      that.storage.resortData({filteredChanged: true});
+      that.updateAll(true);
+    }
+
     var editorOptions = {
       callback: applyMapping,
       triggerCallback : 'dragend'
