@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2014-11-20
+/*! LineUpJS - v0.1.0 - 2014-11-28
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2014 ; Licensed BSD */
 /**
@@ -1371,10 +1371,15 @@ var LineUp;
       original = selectedColumn.originalMapping();
     var that = this;
     var act = bak;
-    var callback = function (newscale) {
-      //scale = newscale;
+
+    function applyMapping(newscale) {
       act = newscale;
-    };
+      selectedColumn.mapping(act);
+      //console.log(act.domain().toString(), act.range().toString());
+      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
+      that.storage.resortData({ filteredChanged: true});
+      that.updateAll(true);
+    }
 
     var popup = d3.select("body").append("div")
       .attr({
@@ -1395,7 +1400,11 @@ var LineUp;
     var access = function (row) {
       return +selectedColumn.getValue(row, 'raw');
     };
-    var editor = LineUp.mappingEditor(bak, original.domain(), this.storage.data, access, callback);
+    var editorOptions = {
+      callback: applyMapping,
+      triggerCallback : 'dragend'
+    };
+    var editor = LineUp.mappingEditor(bak, original.domain(), this.storage.data, access, editorOptions);
     popup.select('.mappingArea').call(editor);
 
     function isSame(a, b) {
@@ -1403,11 +1412,7 @@ var LineUp;
     }
 
     popup.select(".ok").on("click", function () {
-      selectedColumn.mapping(act);
-      //console.log(act.domain().toString(), act.range().toString());
-      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
-      that.storage.resortData({ filteredChanged: true});
-      that.updateAll(true);
+      applyMapping(act);
       popup.remove();
     });
     popup.select(".cancel").on("click", function () {
@@ -1417,9 +1422,8 @@ var LineUp;
     });
     popup.select(".reset").on("click", function () {
       act = bak = original;
-      selectedColumn.mapping(original);
-      $button.classed('filtered', false);
-      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.data, access, callback);
+      applyMapping(original);
+      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.data, access, editorOptions);
       popup.selectAll('.mappingArea *').remove();
       popup.select('.mappingArea').call(editor);
     });
@@ -1762,7 +1766,7 @@ var LineUp;
       var top = container.scrollTop - shift,
         bottom = top + $container.innerHeight(),
         i = 0, j;
-      /*onsole.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
+      /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
       if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
         console.log('show all');
         return [0, data.length];
@@ -1834,10 +1838,10 @@ var LineUp;
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
 
-/* global d3 */
+/* global d3, jQuery */
 var LineUp;
 
-(function (LineUp, d3) {
+(function (LineUp, d3, $) {
   'use strict';
   function addLine($svg, x1, y1, x2, y2, clazz) {
     return $svg.append("line").attr({
@@ -1863,27 +1867,31 @@ var LineUp;
         transform : 'translate('+shift+',0)'
       });
   }
-  LineUp.mappingEditor = function (scale, dataDomain, data, data_accessor, callback) {
+  LineUp.mappingEditor = function (scale, dataDomain, data, data_accessor, options) {
+    options = $.extend({
+      width: 400,
+      height: 400,
+      padding: 50,
+      radius: 10,
+      callback: $.noop,
+      callbackThisArg : null,
+      triggerCallback: 'change' //change, dragend
+    }, options);
+
     var editor = function ($root) {
-
-      var width = 400,
-        height = 400,
-        //radius for mapper circles
-        radius = 10;
-
       var $svg = $root.append("svg").attr({
         "class": "lugui-me",
-        width: width,
-        height: height
+        width: options.width,
+        height: options.height
       });
       //left limit for the axes
-      var lowerLimitX = 50;
+      var lowerLimitX = options.padding;
       //right limit for the axes
-      var upperLimitX = 350;
+      var upperLimitX = options.width-options.padding;
       //location for the score axis
-      var scoreAxisY = 50;
+      var scoreAxisY = options.padding;
       //location for the raw2pixel value axis
-      var raw2pixelAxisY = 350;
+      var raw2pixelAxisY = options.height-options.padding;
       //this is needed for filtering the shown datalines
       var raw2pixel = d3.scale.linear().domain(dataDomain).range([lowerLimitX, upperLimitX]);
       var normal2pixel = d3.scale.linear().domain([0,1]).range([lowerLimitX,upperLimitX]);
@@ -1908,7 +1916,7 @@ var LineUp;
       addText($base, lowerLimitX, scoreAxisY - 25, 0, ".75em");
       //label for maximum scored value
       addText($base, upperLimitX, scoreAxisY - 25, 1, ".75em");
-      addText($base, width/2, scoreAxisY -25, "Score", ".75em",'centered');
+      addText($base, options.width/2, scoreAxisY -25, "Score", ".75em",'centered');
 
       //lower axis for raw2pixel values
       addLine($base, lowerLimitX,raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
@@ -1916,7 +1924,7 @@ var LineUp;
       addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], ".75em");
       //label for maximum raw2pixel value
       addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], ".75em");
-      addText($base, width/2, raw2pixelAxisY + 20, "Raw", ".75em",'centered');
+      addText($base, options.width/2, raw2pixelAxisY + 20, "Raw", ".75em",'centered');
       
       //lines that show mapping of individual data items
       var datalines = $svg.append('g').classed('data',true).selectAll("line").data(data);
@@ -1953,15 +1961,16 @@ var LineUp;
           .on("dragstart", function () {
             d3.select(this)
               .classed("dragging", true)
-              .attr("r", radius * 1.1);
+              .attr("r", options.radius * 1.1);
             label.style("visibility", "visible");
           })
           .on("drag", move)
           .on("dragend", function () {
             d3.select(this)
               .classed("dragging", false)
-              .attr("r", radius);
+              .attr("r", options.radius);
             label.style("visibility", null);
+            updateScale(true);
           })
           .origin(function () {
             var t = d3.transform(d3.select(this).attr("transform"));
@@ -2006,7 +2015,7 @@ var LineUp;
       }
 
       //draggable circle that defines the lower bound of normalized values
-      addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, radius)
+      addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
         .call(createDrag(lowerBoundNormalizedLabel, function () {
           if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
             mapperLineLowerBounds.attr("x1", lowerLimitX + d3.event.x);
@@ -2020,7 +2029,7 @@ var LineUp;
           }
         }));
       //draggable circle that defines the upper bound of normalized values
-      addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, radius)
+      addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
         .call(createDrag(upperBoundNormalizedLabel, function () {
           if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
             mapperLineUpperBounds.attr("x1", upperLimitX + d3.event.x);
@@ -2034,7 +2043,7 @@ var LineUp;
           }
         }));
       //draggable circle that defines the lower bound of raw2pixel values
-      addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, radius)
+      addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
         .call(createDrag(lowerBoundRawLabel, function () {
           if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
             mapperLineLowerBounds.attr("x2", lowerLimitX + d3.event.x);
@@ -2048,7 +2057,7 @@ var LineUp;
           }
         }));
       //draggable circle that defines the upper bound of raw2pixel values
-      addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, radius)
+      addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
         .call(createDrag(upperBoundRawLabel, function () {
           if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
             mapperLineUpperBounds.attr("x2", upperLimitX + d3.event.x);
@@ -2062,16 +2071,19 @@ var LineUp;
           }
         }));
 
-      function updateScale() {
+      function updateScale(isDragEnd) {
+        if (isDragEnd !== (options.triggerCallback === 'dragend')) {
+          return;
+        }
         var newScale = d3.scale.linear()
           .domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)])
           .range([normal2pixel.invert(lowerNormalized), normal2pixel.invert(upperNormalized)]);
-        callback(newScale);
+        options.callback.call(options.callbackThisArg, newScale);
       }
     };
     return editor;
   };
-}(LineUp || (LineUp = {}), d3));
+}(LineUp || (LineUp = {}), d3, jQuery));
  
 
 /* global d3, jQuery, _ */
@@ -2220,8 +2232,8 @@ var LineUp;
 
         var _key = spec.key || "primary", that = this;
         var bundle = this.bundles[_key];
-        var asc = spec.asc || this.config.columnBundles.primary.sortingOrderAsc;
-        var column = spec.column || this.config.columnBundles.primary.sortedColumn;
+        var asc = spec.asc || this.config.columnBundles[_key].sortingOrderAsc;
+        var column = spec.column || this.config.columnBundles[_key].sortedColumn;
 
         //console.log("resort: ", spec);
         this.filterData(bundle.layoutColumns);
@@ -2333,12 +2345,12 @@ var LineUp;
         }
         cols.splice(i, 0, col);
       },
-      addStackedColumn: function (spec, position) {
+      addStackedColumn: function (spec, position, bundle) {
         var _spec = $.extend({ type: 'stacked', label: 'Stacked', children: []}, spec);
-        this.addColumn(this.storageConfig.toLayoutColumn(_spec), null, position);
+        this.addColumn(this.storageConfig.toLayoutColumn(_spec), bundle, position);
       },
-      addSingleColumn: function (spec, position) {
-        this.addColumn(this.storageConfig.toLayoutColumn(spec), null, position);
+      addSingleColumn: function (spec, position, bundle) {
+        this.addColumn(this.storageConfig.toLayoutColumn(spec), bundle, position);
       },
 
 

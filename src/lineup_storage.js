@@ -147,8 +147,8 @@ var LineUp;
 
         var _key = spec.key || "primary", that = this;
         var bundle = this.bundles[_key];
-        var asc = spec.asc || this.config.columnBundles.primary.sortingOrderAsc;
-        var column = spec.column || this.config.columnBundles.primary.sortedColumn;
+        var asc = spec.asc || this.config.columnBundles[_key].sortingOrderAsc;
+        var column = spec.column || this.config.columnBundles[_key].sortedColumn;
 
         //console.log("resort: ", spec);
         this.filterData(bundle.layoutColumns);
@@ -260,12 +260,12 @@ var LineUp;
         }
         cols.splice(i, 0, col);
       },
-      addStackedColumn: function (spec, position) {
+      addStackedColumn: function (spec, position, bundle) {
         var _spec = $.extend({ type: 'stacked', label: 'Stacked', children: []}, spec);
-        this.addColumn(this.storageConfig.toLayoutColumn(_spec), null, position);
+        this.addColumn(this.storageConfig.toLayoutColumn(_spec), bundle, position);
       },
-      addSingleColumn: function (spec, position) {
-        this.addColumn(this.storageConfig.toLayoutColumn(spec), null, position);
+      addSingleColumn: function (spec, position, bundle) {
+        this.addColumn(this.storageConfig.toLayoutColumn(spec), bundle, position);
       },
 
 

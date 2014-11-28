@@ -282,10 +282,15 @@ var LineUp;
       original = selectedColumn.originalMapping();
     var that = this;
     var act = bak;
-    var callback = function (newscale) {
-      //scale = newscale;
+
+    function applyMapping(newscale) {
       act = newscale;
-    };
+      selectedColumn.mapping(act);
+      //console.log(act.domain().toString(), act.range().toString());
+      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
+      that.storage.resortData({ filteredChanged: true});
+      that.updateAll(true);
+    }
 
     var popup = d3.select("body").append("div")
       .attr({
@@ -306,7 +311,11 @@ var LineUp;
     var access = function (row) {
       return +selectedColumn.getValue(row, 'raw');
     };
-    var editor = LineUp.mappingEditor(bak, original.domain(), this.storage.data, access, callback);
+    var editorOptions = {
+      callback: applyMapping,
+      triggerCallback : 'dragend'
+    };
+    var editor = LineUp.mappingEditor(bak, original.domain(), this.storage.data, access, editorOptions);
     popup.select('.mappingArea').call(editor);
 
     function isSame(a, b) {
@@ -314,11 +323,7 @@ var LineUp;
     }
 
     popup.select(".ok").on("click", function () {
-      selectedColumn.mapping(act);
-      //console.log(act.domain().toString(), act.range().toString());
-      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
-      that.storage.resortData({ filteredChanged: true});
-      that.updateAll(true);
+      applyMapping(act);
       popup.remove();
     });
     popup.select(".cancel").on("click", function () {
@@ -328,9 +333,8 @@ var LineUp;
     });
     popup.select(".reset").on("click", function () {
       act = bak = original;
-      selectedColumn.mapping(original);
-      $button.classed('filtered', false);
-      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.data, access, callback);
+      applyMapping(original);
+      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.data, access, editorOptions);
       popup.selectAll('.mappingArea *').remove();
       popup.select('.mappingArea').call(editor);
     });
@@ -673,6 +677,11 @@ var LineUp;
       var top = container.scrollTop - shift,
         bottom = top + $container.innerHeight(),
         i = 0, j;
+      /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
+      if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
+        console.log('show all');
+        return [0, data.length];
+      }*/
       if (top > 0) {
         i = Math.round(top / rowHeight);
         //count up till really even partial rows are visible

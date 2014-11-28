@@ -1,10 +1,10 @@
 /**
  * lineup mapping editor
  */
-/* global d3 */
+/* global d3, jQuery */
 var LineUp;
 
-(function (LineUp, d3) {
+(function (LineUp, d3, $) {
   'use strict';
   function addLine($svg, x1, y1, x2, y2, clazz) {
     return $svg.append("line").attr({
@@ -30,27 +30,31 @@ var LineUp;
         transform : 'translate('+shift+',0)'
       });
   }
-  LineUp.mappingEditor = function (scale, dataDomain, data, data_accessor, callback) {
+  LineUp.mappingEditor = function (scale, dataDomain, data, data_accessor, options) {
+    options = $.extend({
+      width: 400,
+      height: 400,
+      padding: 50,
+      radius: 10,
+      callback: $.noop,
+      callbackThisArg : null,
+      triggerCallback: 'change' //change, dragend
+    }, options);
+
     var editor = function ($root) {
-
-      var width = 400,
-        height = 400,
-        //radius for mapper circles
-        radius = 10;
-
       var $svg = $root.append("svg").attr({
         "class": "lugui-me",
-        width: width,
-        height: height
+        width: options.width,
+        height: options.height
       });
       //left limit for the axes
-      var lowerLimitX = 50;
+      var lowerLimitX = options.padding;
       //right limit for the axes
-      var upperLimitX = 350;
+      var upperLimitX = options.width-options.padding;
       //location for the score axis
-      var scoreAxisY = 50;
+      var scoreAxisY = options.padding;
       //location for the raw2pixel value axis
-      var raw2pixelAxisY = 350;
+      var raw2pixelAxisY = options.height-options.padding;
       //this is needed for filtering the shown datalines
       var raw2pixel = d3.scale.linear().domain(dataDomain).range([lowerLimitX, upperLimitX]);
       var normal2pixel = d3.scale.linear().domain([0,1]).range([lowerLimitX,upperLimitX]);
@@ -75,7 +79,7 @@ var LineUp;
       addText($base, lowerLimitX, scoreAxisY - 25, 0, ".75em");
       //label for maximum scored value
       addText($base, upperLimitX, scoreAxisY - 25, 1, ".75em");
-      addText($base, width/2, scoreAxisY -25, "Score", ".75em",'centered');
+      addText($base, options.width/2, scoreAxisY -25, "Score", ".75em",'centered');
 
       //lower axis for raw2pixel values
       addLine($base, lowerLimitX,raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
@@ -83,7 +87,7 @@ var LineUp;
       addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], ".75em");
       //label for maximum raw2pixel value
       addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], ".75em");
-      addText($base, width/2, raw2pixelAxisY + 20, "Raw", ".75em",'centered');
+      addText($base, options.width/2, raw2pixelAxisY + 20, "Raw", ".75em",'centered');
       
       //lines that show mapping of individual data items
       var datalines = $svg.append('g').classed('data',true).selectAll("line").data(data);
@@ -120,15 +124,16 @@ var LineUp;
           .on("dragstart", function () {
             d3.select(this)
               .classed("dragging", true)
-              .attr("r", radius * 1.1);
+              .attr("r", options.radius * 1.1);
             label.style("visibility", "visible");
           })
           .on("drag", move)
           .on("dragend", function () {
             d3.select(this)
               .classed("dragging", false)
-              .attr("r", radius);
+              .attr("r", options.radius);
             label.style("visibility", null);
+            updateScale(true);
           })
           .origin(function () {
             var t = d3.transform(d3.select(this).attr("transform"));
@@ -173,7 +178,7 @@ var LineUp;
       }
 
       //draggable circle that defines the lower bound of normalized values
-      addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, radius)
+      addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
         .call(createDrag(lowerBoundNormalizedLabel, function () {
           if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
             mapperLineLowerBounds.attr("x1", lowerLimitX + d3.event.x);
@@ -187,7 +192,7 @@ var LineUp;
           }
         }));
       //draggable circle that defines the upper bound of normalized values
-      addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, radius)
+      addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
         .call(createDrag(upperBoundNormalizedLabel, function () {
           if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
             mapperLineUpperBounds.attr("x1", upperLimitX + d3.event.x);
@@ -201,7 +206,7 @@ var LineUp;
           }
         }));
       //draggable circle that defines the lower bound of raw2pixel values
-      addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, radius)
+      addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
         .call(createDrag(lowerBoundRawLabel, function () {
           if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
             mapperLineLowerBounds.attr("x2", lowerLimitX + d3.event.x);
@@ -215,7 +220,7 @@ var LineUp;
           }
         }));
       //draggable circle that defines the upper bound of raw2pixel values
-      addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, radius)
+      addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
         .call(createDrag(upperBoundRawLabel, function () {
           if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
             mapperLineUpperBounds.attr("x2", upperLimitX + d3.event.x);
@@ -229,14 +234,17 @@ var LineUp;
           }
         }));
 
-      function updateScale() {
+      function updateScale(isDragEnd) {
+        if (isDragEnd !== (options.triggerCallback === 'dragend')) {
+          return;
+        }
         var newScale = d3.scale.linear()
           .domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)])
           .range([normal2pixel.invert(lowerNormalized), normal2pixel.invert(upperNormalized)]);
-        callback(newScale);
+        options.callback.call(options.callbackThisArg, newScale);
       }
     };
     return editor;
   };
-}(LineUp || (LineUp = {}), d3));
+}(LineUp || (LineUp = {}), d3, jQuery));
  
