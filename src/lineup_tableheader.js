@@ -56,6 +56,9 @@ var LineUp;
    * @param headers - the array of headers, see {@link LineUpColumn}
    */
   LineUp.prototype.updateHeader = function (headers) {
+    if (Array.isArray(headers) && headers.length === 0) {
+      return;
+    }
     headers = headers || this.storage.getColumnLayout();
 //    console.log("update Header");
     var rootsvg = this.$header;

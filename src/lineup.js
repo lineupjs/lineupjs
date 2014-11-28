@@ -21,20 +21,17 @@ var LineUp;
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
       columnBundles: {
-        "primary": {
+        primary: {
           sortedColumn: null,
-          sortingOrderAsc: true
-        },
-        "secondary": {
-          sortedColumn: [],
-          sortingOrderAsc: true
+          sortingOrderAsc: true,
+          prevRowScale : null
         }
       }});
     this.storage.config = this.config;
 
     //create basic structure
     if (this.config.svgLayout.mode === 'combined') {
-      //within a single svg with "fixed" header
+      //within a single svg with 'fixed' header
       $container.classed('lu-mode-combined', true);
       this.$table = $container.append('svg').attr('class', 'lu');
       $defs = this.$table.append('defs');
@@ -108,7 +105,7 @@ var LineUp;
   LineUp.defaultConfig = {
     colorMapping: d3.map(),
     columnColors: d3.scale.category20(),
-    grayColor: "#999999",
+    grayColor: '#999999',
     numberformat: d3.format('.3n'),
     htmlLayout: {
       headerHeight: 50
@@ -132,16 +129,16 @@ var LineUp;
       animationDuration: 1000,
       plusSigns: {
         /* addStackedColumn: {
-         title: "add stacked column",
-         action: "addNewEmptyStackedColumn",
+         title: 'add stacked column',
+         action: 'addNewEmptyStackedColumn',
          x: 0, y: 2,
          w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
          }*/
       },
       rowActions: [
         /*{
-         name: "explore",
-         icon: "\uf067",
+         name: 'explore',
+         icon: '\uf067',
          action: function(row) {
          console.log(row);
          }
@@ -169,7 +166,7 @@ var LineUp;
   };
 
   LineUp.prototype.changeDataStorage = function (spec) {
-//    d3.select("#lugui-table-header-svg").selectAll().remove();
+//    d3.select('#lugui-table-header-svg').selectAll().remove();
     this.storage = spec.storage;
     this.storage.config = this.config;
     this.spec = spec;
@@ -221,7 +218,7 @@ var LineUp;
     headers.forEach(function (d) {
       if (d.color) {
         config.colorMapping.set(d.id, d.color);
-      } else if ((d instanceof LineUp.LineUpStringColumn) || (d.id === "rank")) {
+      } else if ((d instanceof LineUp.LineUpStringColumn) || (d.id === 'rank')) {
         // gray columns are:
         config.colorMapping.set(d.id, config.grayColor);
       } else {
@@ -232,9 +229,18 @@ var LineUp;
     //console.log(config.colorMapping);
   };
 
-  LineUp.prototype.updateAll = function (stackTransition) {
-    this.updateHeader(this.storage.getColumnLayout());
-    this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), stackTransition || false);
+  LineUp.prototype.updateAll = function (stackTransition, bundle) {
+    var that = this;
+    function updateBundle(b) {
+      var cols = that.storage.getColumnLayout(b);
+      that.updateHeader(cols);
+      that.updateBody(cols, that.storage.getData(b), stackTransition || false);
+    }
+    if (bundle) {
+      updateBundle(bundle);
+    } else {
+      Object.keys(this.storage.bundles).forEach(updateBundle);
+    }
   };
 
   /**
@@ -256,7 +262,7 @@ var LineUp;
     bundle.sortedColumn = d;
 
     this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
-    this.updateAll();
+    this.updateAll(false, d.columnBundle);
   };
 
   /**
@@ -299,15 +305,16 @@ var LineUp;
       column = this.storage.getColumnByName(column);
     }
     column = column || this.config.columnBundles.primary.sortedColumn;
+    var bundle = column.columnBundle;
     if (!(column instanceof LineUp.LayoutStackedColumn)) {
       return false;
     }
     column.updateWeights(weights);
     //trigger resort
-    if (column === this.config.columnBundles.primary.sortedColumn) {
-      this.storage.resortData({});
+    if (column === this.config.columnBundles[bundle].sortedColumn) {
+      this.storage.resortData({ key: bundle });
     }
-    this.updateAll();
+    this.updateAll(false, bundle);
     return true;
   };
 

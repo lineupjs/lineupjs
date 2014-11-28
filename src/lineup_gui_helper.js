@@ -328,7 +328,7 @@ var LineUp;
       callback: applyMapping,
       triggerCallback : 'dragend'
     };
-    var editor = LineUp.mappingEditor(bak, original.domain(), this.storage.data, access, editorOptions);
+    var editor = LineUp.mappingEditor(bak, original.domain(), that.storage.rawdata, access, editorOptions);
     popup.select('.mappingArea').call(editor);
 
     function isSame(a, b) {
@@ -347,7 +347,7 @@ var LineUp;
     popup.select(".reset").on("click", function () {
       act = bak = original;
       applyMapping(original);
-      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.data, access, editorOptions);
+      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.rawdata, access, editorOptions);
       popup.selectAll('.mappingArea *').remove();
       popup.select('.mappingArea').call(editor);
     });

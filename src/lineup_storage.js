@@ -52,8 +52,6 @@ var LineUp;
 
     this.primaryKey = primaryKey;
     this.rawdata = data;
-    this.data = data;
-    this.initialSort = true;
     this.rawcols = columns.map(toColumn);
     this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
 
@@ -76,12 +74,15 @@ var LineUp;
 
     this.storageConfig.toLayoutColumn = toLayoutColumn;
 
-    this.bundles = {
-      "primary": {
+    var bundles = this.bundles = {};
+    Object.keys(this.layout).forEach(function(l) {
+      bundles[l] = {
         layoutColumns: [],
-        needsLayout: true  // this triggers the layout generation at first access to "getColumnLayout"
-      }
-    };
+        needsLayout: true,  // this triggers the layout generation at first access to "getColumnLayout"
+        data: data,
+        initialSort :true
+      };
+    });
   }
 
   LineUp.LineUpLocalStorage = LineUpLocalStorage;
@@ -126,12 +127,11 @@ var LineUp;
        *  get the data
        *  @returns data
        */
-      getData: function () {
-        return this.data;
+      getData: function (bundle) {
+        bundle = bundle || "primary";
+        return this.bundles[bundle].data;
       },
       filterData: function (columns) {
-        columns = columns || this.bundles["primary"].layoutColumns;
-
         var flat = [];
         columns.forEach(function (d) {
           d.flattenMe(flat);
@@ -143,9 +143,9 @@ var LineUp;
           flat.push(this.config.filter.filter);
         }
         if (flat.length === 0) {
-          this.data = this.rawdata;
+          return this.rawdata;
         } else {
-          this.data = this.rawdata.filter(function (row) {
+          return this.rawdata.filter(function (row) {
             return flat.every(function (f) {
               return f.filterBy(row);
             });
@@ -160,8 +160,8 @@ var LineUp;
         var column = spec.column || this.config.columnBundles[_key].sortedColumn;
 
         //console.log("resort: ", spec);
-        this.filterData(bundle.layoutColumns);
-        if (spec.filteredChanged || this.initialSort) {
+        bundle.data = this.filterData(bundle.layoutColumns);
+        if (spec.filteredChanged || bundle.initialSort) {
           //trigger column updates
           var flat = [];
           bundle.layoutColumns.forEach(function (d) {
@@ -170,7 +170,7 @@ var LineUp;
           flat.forEach(function (col) {
             col.prepare(that.data, that.config.renderingOptions.histograms);
           });
-          this.initialSort = false;
+          bundle.initialSort = false;
         }
         var primary = this.primaryKey;
         function sort(a,b) {
@@ -181,14 +181,14 @@ var LineUp;
           return asc ? -r : r;
         }
         if (column) {
-          this.data.sort(sort);
+          bundle.data.sort(sort);
         }
 
         var start = this.config.filter.skip ? this.config.filter.skip : 0;
         if ((this.config.filter.limit && isFinite(this.config.filter.limit))) {
-          this.data = this.data.slice(start, start + this.config.filter.limit);
+          bundle.data = bundle.data.slice(start, start + this.config.filter.limit);
         } else {
-          this.data = this.data.slice(start);
+          bundle.data = bundle.data.slice(start);
         }
 
         var rankColumn = bundle.layoutColumns.filter(function (d) {
@@ -203,7 +203,7 @@ var LineUp;
               return column.getValue(d);
             };
           }
-          this.assignRanks(this.data, accessor, rankColumn);
+          this.assignRanks(bundle.data, accessor, rankColumn);
         }
       },
       /*
@@ -233,7 +233,7 @@ var LineUp;
         // create Rank Column
 //            new LayoutRankColumn();
 
-        var b = {};
+        var b = this.bundles[_bundle];
         b.layoutColumns = layout[_bundle].map(this.storageConfig.toLayoutColumn);
 
         //console.log(b.layoutColumns, layout);
@@ -251,11 +251,8 @@ var LineUp;
           b.layoutColumns.push(new LineUp.LayoutActionColumn());
         }
 
-
         //set layout bundle reference
         b.layoutColumns.forEach(bundleSetter(_bundle));
-
-        this.bundles[_bundle] = b;
       },
       addColumn: function (col, bundle, position) {
         var _bundle = bundle || "primary";

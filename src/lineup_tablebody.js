@@ -287,16 +287,19 @@ var LineUp;
    * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
    */
   LineUp.prototype.updateBody = function (headers, data, stackTransition) {
+    if (Array.isArray(headers) && headers.length === 0) {
+      return;
+    }
     //default values
     headers = headers || this.storage.getColumnLayout();
-    data = data || this.storage.getData();
+    data = data || this.storage.getData(headers[0].columnBundle);
     stackTransition = stackTransition || false;
-
 
     var svg = this.$body;
     var that = this;
     var primaryKey = this.storage.primaryKey;
     var zeroFormat = d3.format(".1f");
+    var bundle = this.config.columnBundles[headers[0].columnBundle];
     //console.log("bupdate");
     stackTransition = stackTransition || false;
 
@@ -311,9 +314,9 @@ var LineUp;
           return d[primaryKey];
         }))
         .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, 0.2),
-      prevRowScale = this.prevRowScale || rowScale;
+      prevRowScale = bundle.prevRowScale || rowScale;
     //backup the rowscale from the previous call to have a previous "old" position
-    this.prevRowScale = rowScale;
+    bundle.prevRowScale = rowScale;
 
     var headerShift = 0;
     if (that.config.svgLayout.mode === 'combined') {
