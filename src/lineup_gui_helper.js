@@ -389,8 +389,8 @@ var LineUp;
       popup.select(".ok").on("click", function() {
         var newValue = document.getElementById("popupInputText").value;
         if (newValue.length > 0) {
-          that.storage.setColumnLabel(col, newValue);
-          that.updateHeader(that.storage.getColumnLayout());
+          col.label = newValue;
+          that.updateHeader(that.storage.getColumnLayout(col.columnBundle));
           popup.remove();
         } else {
           window.alert("non empty string required");
