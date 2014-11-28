@@ -172,9 +172,12 @@ var LineUp;
           });
           this.initialSort = false;
         }
-
+        var primary = this.primaryKey;
         function sort(a,b) {
           var r = column.sortBy(a,b);
+          if (r === 0 || isNaN(r)) { //by default sort by primary key
+            return d3.ascending(a[primary], b[primary]);
+          }
           return asc ? -r : r;
         }
         if (column) {
