@@ -206,7 +206,7 @@ var LineUp;
     this.updateAll();
   };
 
-  LineUp.prototype.assignColors = function (headers) {
+  LineUp.prototype.assignColors = function (columns) {
     //Color schemes are in config (.columnColors / .grayColor)
 
     // clear map
@@ -215,7 +215,7 @@ var LineUp;
 
     var colCounter = 0;
 
-    headers.forEach(function (d) {
+    columns.forEach(function (d) {
       if (d.color) {
         config.colorMapping.set(d.id, d.color);
       } else if ((d instanceof LineUp.LineUpStringColumn) || (d.id === 'rank')) {

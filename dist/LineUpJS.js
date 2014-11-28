@@ -23,20 +23,17 @@ var LineUp;
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
       columnBundles: {
-        "primary": {
+        primary: {
           sortedColumn: null,
-          sortingOrderAsc: true
-        },
-        "secondary": {
-          sortedColumn: [],
-          sortingOrderAsc: true
+          sortingOrderAsc: true,
+          prevRowScale : null
         }
       }});
     this.storage.config = this.config;
 
     //create basic structure
     if (this.config.svgLayout.mode === 'combined') {
-      //within a single svg with "fixed" header
+      //within a single svg with 'fixed' header
       $container.classed('lu-mode-combined', true);
       this.$table = $container.append('svg').attr('class', 'lu');
       $defs = this.$table.append('defs');
@@ -110,7 +107,7 @@ var LineUp;
   LineUp.defaultConfig = {
     colorMapping: d3.map(),
     columnColors: d3.scale.category20(),
-    grayColor: "#999999",
+    grayColor: '#999999',
     numberformat: d3.format('.3n'),
     htmlLayout: {
       headerHeight: 50
@@ -134,16 +131,16 @@ var LineUp;
       animationDuration: 1000,
       plusSigns: {
         /* addStackedColumn: {
-         title: "add stacked column",
-         action: "addNewEmptyStackedColumn",
+         title: 'add stacked column',
+         action: 'addNewEmptyStackedColumn',
          x: 0, y: 2,
          w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
          }*/
       },
       rowActions: [
         /*{
-         name: "explore",
-         icon: "\uf067",
+         name: 'explore',
+         icon: '\uf067',
          action: function(row) {
          console.log(row);
          }
@@ -171,7 +168,7 @@ var LineUp;
   };
 
   LineUp.prototype.changeDataStorage = function (spec) {
-//    d3.select("#lugui-table-header-svg").selectAll().remove();
+//    d3.select('#lugui-table-header-svg').selectAll().remove();
     this.storage = spec.storage;
     this.storage.config = this.config;
     this.spec = spec;
@@ -211,7 +208,7 @@ var LineUp;
     this.updateAll();
   };
 
-  LineUp.prototype.assignColors = function (headers) {
+  LineUp.prototype.assignColors = function (columns) {
     //Color schemes are in config (.columnColors / .grayColor)
 
     // clear map
@@ -220,10 +217,10 @@ var LineUp;
 
     var colCounter = 0;
 
-    headers.forEach(function (d) {
+    columns.forEach(function (d) {
       if (d.color) {
         config.colorMapping.set(d.id, d.color);
-      } else if ((d instanceof LineUp.LineUpStringColumn) || (d.id === "rank")) {
+      } else if ((d instanceof LineUp.LineUpStringColumn) || (d.id === 'rank')) {
         // gray columns are:
         config.colorMapping.set(d.id, config.grayColor);
       } else {
@@ -234,9 +231,18 @@ var LineUp;
     //console.log(config.colorMapping);
   };
 
-  LineUp.prototype.updateAll = function (stackTransition) {
-    this.updateHeader(this.storage.getColumnLayout());
-    this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), stackTransition || false);
+  LineUp.prototype.updateAll = function (stackTransition, bundle) {
+    var that = this;
+    function updateBundle(b) {
+      var cols = that.storage.getColumnLayout(b);
+      that.updateHeader(cols);
+      that.updateBody(cols, that.storage.getData(b), stackTransition || false);
+    }
+    if (bundle) {
+      updateBundle(bundle);
+    } else {
+      Object.keys(this.storage.bundles).forEach(updateBundle);
+    }
   };
 
   /**
@@ -258,7 +264,7 @@ var LineUp;
     bundle.sortedColumn = d;
 
     this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
-    this.updateAll();
+    this.updateAll(false, d.columnBundle);
   };
 
   /**
@@ -301,15 +307,16 @@ var LineUp;
       column = this.storage.getColumnByName(column);
     }
     column = column || this.config.columnBundles.primary.sortedColumn;
+    var bundle = column.columnBundle;
     if (!(column instanceof LineUp.LayoutStackedColumn)) {
       return false;
     }
     column.updateWeights(weights);
     //trigger resort
-    if (column === this.config.columnBundles.primary.sortedColumn) {
-      this.storage.resortData({});
+    if (column === this.config.columnBundles[bundle].sortedColumn) {
+      this.storage.resortData({ key: bundle });
     }
-    this.updateAll();
+    this.updateAll(false, bundle);
     return true;
   };
 
@@ -985,7 +992,7 @@ var LineUp;
         this.emptyColumns = [];
       } else {
         targetIndex = this.children.indexOf(targetChild);
-        if (position === "r") {
+        if (position === 'r') {
           targetIndex++;
         }
       }
@@ -1000,7 +1007,7 @@ var LineUp;
       child.parent = this;
       this.children.splice(targetIndex, 0, child);
 
-//        console.log("added Child:",this.children[targetIndex]);
+//        console.log('added Child:',this.children[targetIndex]);
 
       return true;
 
@@ -1416,7 +1423,7 @@ var LineUp;
       callback: applyMapping,
       triggerCallback : 'dragend'
     };
-    var editor = LineUp.mappingEditor(bak, original.domain(), this.storage.data, access, editorOptions);
+    var editor = LineUp.mappingEditor(bak, original.domain(), that.storage.rawdata, access, editorOptions);
     popup.select('.mappingArea').call(editor);
 
     function isSame(a, b) {
@@ -1427,15 +1434,15 @@ var LineUp;
       applyMapping(act);
       popup.remove();
     });
-    popup.select(".cancel").on("click", function () {
+    popup.select('.cancel').on('click', function () {
       selectedColumn.mapping(bak);
       $button.classed('filtered', !isSame(bak.range(), original.range()) || !isSame(bak.domain(), original.domain()));
       popup.remove();
     });
-    popup.select(".reset").on("click", function () {
+    popup.select('.reset').on('click', function () {
       act = bak = original;
       applyMapping(original);
-      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.data, access, editorOptions);
+      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.rawdata, access, editorOptions);
       popup.selectAll('.mappingArea *').remove();
       popup.select('.mappingArea').call(editor);
     });
@@ -1448,12 +1455,12 @@ var LineUp;
   LineUp.prototype.stackedColumnOptionsGui = function (selectedColumn) {
     //console.log(selectedColumn);
     var config = this.config;
-    var svgOverlay = this.$header.select(".overlay");
+    var svgOverlay = this.$header.select('.overlay');
     var that = this;
     // remove when clicked on already selected item
     var disappear = (this.stackedColumnModified === selectedColumn);
     if (disappear) {
-      svgOverlay.selectAll(".stackedOption").remove();
+      svgOverlay.selectAll('.stackedOption').remove();
       this.stackedColumnModified = null;
       return;
     }
@@ -1470,14 +1477,14 @@ var LineUp;
       var x = +(window.innerWidth) / 2 - 100;
       var y = +100;
 
-      var popup = d3.select("body").append("div")
+      var popup = d3.select('body').append('div')
         .attr({
-          "class": "lu-popup"
+          'class': 'lu-popup'
         }).style({
-          left: x + "px",
-          top: y + "px",
-          width: "200px",
-          height: "70px"
+          left: x + 'px',
+          top: y + 'px',
+          width: '200px',
+          height: '70px'
 
         })
         .html(
@@ -1487,18 +1494,18 @@ var LineUp;
           '<button class="ok"><i class="fa fa-check"></i> ok</button>'
       );
 
-      popup.select(".ok").on("click", function() {
-        var newValue = document.getElementById("popupInputText").value;
+      popup.select('.ok').on('click', function() {
+        var newValue = document.getElementById('popupInputText').value;
         if (newValue.length > 0) {
           col.label = newValue;
           that.updateHeader(that.storage.getColumnLayout(col.columnBundle));
           popup.remove();
         } else {
-          window.alert("non empty string required");
+          window.alert('non empty string required');
         }
       });
 
-      popup.select(".cancel").on("click", function () {
+      popup.select('.cancel').on('click', function () {
         popup.remove();
       });
     }
@@ -1506,35 +1513,35 @@ var LineUp;
     // else:
     this.stackedColumnModified = selectedColumn;
     var options = [
-      {name: "\uf014 remove", action: removeStackedColumn},
-      {name: "\uf044 rename", action: renameStackedColumn},
-      {name: "\uf0ae re-weight", action: that.reweightStackedColumnDialog}
+      {name: '\uf014 remove', action: removeStackedColumn},
+      {name: '\uf044 rename', action: renameStackedColumn},
+      {name: '\uf0ae re-weight', action: that.reweightStackedColumnDialog}
     ];
 
     var menuLength = options.length * 100;
 
-    var stackedOptions = svgOverlay.selectAll(".stackedOption").data([
+    var stackedOptions = svgOverlay.selectAll('.stackedOption').data([
       {d: selectedColumn, o: options}
     ]);
     stackedOptions.exit().remove();
 
 
-    var stackedOptionsEnter = stackedOptions.enter().append("g")
+    var stackedOptionsEnter = stackedOptions.enter().append('g')
       .attr({
-        "class": "stackedOption",
-        "transform": function (d) {
-          return "translate(" + (d.d.offsetX + d.d.columnWidth - menuLength) + "," + (config.htmlLayout.headerHeight / 2 - 2) + ")";
+        'class': 'stackedOption',
+        'transform': function (d) {
+          return 'translate(' + (d.d.offsetX + d.d.columnWidth - menuLength) + ',' + (config.htmlLayout.headerHeight / 2 - 2) + ')';
         }
       });
-    stackedOptionsEnter.append("rect").attr({
+    stackedOptionsEnter.append('rect').attr({
       x: 0,
       y: 0,
       width: menuLength,
       height: config.htmlLayout.headerHeight / 2 - 4
     });
-    stackedOptionsEnter.selectAll("text").data(function (d) {
+    stackedOptionsEnter.selectAll('text').data(function (d) {
       return d.o;
-    }).enter().append("text")
+    }).enter().append('text')
       .attr({
         x: function (d, i) {
           return i * 100 + 5;
@@ -1545,14 +1552,14 @@ var LineUp;
         return d.name;
       });
 
-    stackedOptions.selectAll("text").on("click", function (d) {
-      svgOverlay.selectAll(".stackedOption").remove();
+    stackedOptions.selectAll('text').on('click', function (d) {
+      svgOverlay.selectAll('.stackedOption').remove();
       d.action.call(that, selectedColumn);
     });
 
     stackedOptions.transition().attr({
-      "transform": function (d) {
-        return "translate(" + (d.d.offsetX + d.d.columnWidth - menuLength) + "," + (config.htmlLayout.headerHeight / 2 - 2) + ")";
+      'transform': function (d) {
+        return 'translate(' + (d.d.offsetX + d.d.columnWidth - menuLength) + ',' + (config.htmlLayout.headerHeight / 2 - 2) + ')';
       }
     });
   };
@@ -1563,14 +1570,14 @@ var LineUp;
       return;
     }
     var bak = column.filter || [];
-    var popup = d3.select("body").append("div")
+    var popup = d3.select('body').append('div')
       .attr({
-        "class": "lu-popup"
+        'class': 'lu-popup'
       }).style({
-        left: +(window.innerWidth) / 2 - 100 + "px",
-        top: 100 + "px",
-        width: (400) + "px",
-        height: (300) + "px"
+        left: +(window.innerWidth) / 2 - 100 + 'px',
+        top: 100 + 'px',
+        width: (400) + 'px',
+        height: (300) + 'px'
       })
       .html(
       '<span style="font-weight: bold">Edit Filter</span>' +
@@ -1581,9 +1588,9 @@ var LineUp;
       '<button class="reset"><i class="fa fa-undo" title="reset"></i></button></form>'
     );
 
-    popup.select(".selectionTable").style({
-      width: (400 - 10) + "px",
-      height: (300 - 40) + "px"
+    popup.select('.selectionTable').style({
+      width: (400 - 10) + 'px',
+      height: (300 - 40) + 'px'
     });
 
     var that = this;
@@ -1594,24 +1601,24 @@ var LineUp;
       return {d: d, isChecked: bak.length === 0 || bak.indexOf(d) >= 0};
     });
 
-    var trs = popup.select('tbody').selectAll("tr").data(trData);
-    trs.enter().append("tr");
-    trs.append("td").attr("class", "checkmark");
-    trs.append("td").attr("class", "datalabel").text(function (d) {
+    var trs = popup.select('tbody').selectAll('tr').data(trData);
+    trs.enter().append('tr');
+    trs.append('td').attr('class', 'checkmark');
+    trs.append('td').attr('class', 'datalabel').text(function (d) {
       return d.d;
     });
 
     function redraw() {
-      var trs = popup.select('tbody').selectAll("tr").data(trData);
-      trs.select(".checkmark").html(function (d) {
+      var trs = popup.select('tbody').selectAll('tr').data(trData);
+      trs.select('.checkmark').html(function (d) {
         return '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>';
       })
-      .on("click", function (d) {
+      .on('click', function (d) {
         d.isChecked = !d.isChecked;
         redraw();
       });
-      trs.select(".datalabel").style("opacity", function (d) {
-        return d.isChecked ? "1.0" : ".8";
+      trs.select('.datalabel').style('opacity', function (d) {
+        return d.isChecked ? '1.0' : '.8';
       });
     }
     redraw();
@@ -1623,18 +1630,18 @@ var LineUp;
       that.updateBody();
     }
 
-    popup.select(".cancel").on("click", function () {
+    popup.select('.cancel').on('click', function () {
       updateData(bak);
       popup.remove();
     });
-    popup.select(".reset").on("click", function () {
+    popup.select('.reset').on('click', function () {
       trData.forEach(function (d) {
         d.isChecked = true;
       });
       redraw();
       updateData(null);
     });
-    popup.select(".ok").on("click", function () {
+    popup.select('.ok').on('click', function () {
       var f = trData.filter(function (d) {
         return d.isChecked;
       }).map( function (d) {
@@ -1658,12 +1665,12 @@ var LineUp;
     pos.top += column.offsetY;
     var bak = column.filter || '';
 
-    var popup = d3.select("body").append("div")
+    var popup = d3.select('body').append('div')
       .attr({
-        "class": "lu-popup2"
+        'class': 'lu-popup2'
       }).style({
-        left: pos.left + "px",
-        top: pos.top + "px"
+        left: pos.left + 'px',
+        top: pos.top + 'px'
       })
       .html(
         '<form onsubmit="return false"><input type="text" id="popupInputText" placeholder="containing..." autofocus="true" size="18" value="' + bak + '"><br>' +
@@ -1681,17 +1688,17 @@ var LineUp;
       that.updateBody();
     }
 
-    popup.select(".cancel").on("click", function () {
-      document.getElementById("popupInputText").value = bak;
+    popup.select('.cancel').on('click', function () {
+      document.getElementById('popupInputText').value = bak;
       updateData(bak);
       popup.remove();
     });
-    popup.select(".reset").on("click", function () {
-      document.getElementById("popupInputText").value = '';
+    popup.select('.reset').on('click', function () {
+      document.getElementById('popupInputText').value = '';
       updateData(null);
     });
-    popup.select(".ok").on("click", function () {
-      updateData(document.getElementById("popupInputText").value);
+    popup.select('.ok').on('click', function () {
+      updateData(document.getElementById('popupInputText').value);
       popup.remove();
     });
   };
@@ -1701,14 +1708,14 @@ var LineUp;
 
     function showTooltip(content, xy) {
       $tooltip.html(content).css({
-        left: xy.x + "px",
-        top: (xy.y + xy.height - $container.offset().top) + "px"
+        left: xy.x + 'px',
+        top: (xy.y + xy.height - $container.offset().top) + 'px'
       }).fadeIn();
 
       var stickout = ($(window).height() + $(window).scrollTop()) <= ((xy.y + xy.height) + $tooltip.height() - 20);
       var stickouttop = $(window).scrollTop() > (xy.y - $tooltip.height());
       if (stickout && !stickouttop) { //if the bottom is not visible move it on top of the box
-        $tooltip.css('top', (xy.y - $tooltip.height() - $container.offset().top) + "px");
+        $tooltip.css('top', (xy.y - $tooltip.height() - $container.offset().top) + 'px');
       }
     }
 
@@ -1719,12 +1726,12 @@ var LineUp;
     function moveTooltip(xy) {
       if (xy.x) {
         $tooltip.css({
-          left: xy.x + "px"
+          left: xy.x + 'px'
         });
       }
       if (xy.y) {
         $tooltip.css({
-          top: xy.y  - $container.offset().top + "px"
+          top: xy.y  - $container.offset().top + 'px'
         });
       }
     }
@@ -1771,7 +1778,7 @@ var LineUp;
     shift = jbody.offset().top - $container.offset().top + topShift;
     //use a resize sensor of a utility lib to also detect resize changes
     //new ResizeSensor($container, function() {
-    //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), "resized");
+    //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), 'resized');
     //  that.updateBody();
     //});
     function selectVisibleRows(data, rowScale) {
@@ -1816,7 +1823,7 @@ var LineUp;
 
     function dragWeightStarted() {
       d3.event.sourceEvent.stopPropagation();
-      d3.select(this).classed("dragging", true);
+      d3.select(this).classed('dragging', true);
     }
 
 
@@ -1827,7 +1834,7 @@ var LineUp;
     }
 
     function dragWeightEnded() {
-      d3.select(this).classed("dragging", false);
+      d3.select(this).classed('dragging', false);
 
       if (that.config.columnBundles.primary.sortedColumn instanceof LineUp.LayoutStackedColumn) {
         that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
@@ -1844,9 +1851,9 @@ var LineUp;
       .origin(function (d) {
         return d;
       })
-      .on("dragstart", dragWeightStarted)
-      .on("drag", draggedWeight)
-      .on("dragend", dragWeightEnded);
+      .on('dragstart', dragWeightStarted)
+      .on('drag', draggedWeight)
+      .on('dragend', dragWeightEnded);
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
 
@@ -1891,8 +1898,8 @@ var LineUp;
     }, options);
 
     var editor = function ($root) {
-      var $svg = $root.append("svg").attr({
-        "class": "lugui-me",
+      var $svg = $root.append('svg').attr({
+        'class': 'lugui-me',
         width: options.width,
         height: options.height
       });
@@ -1925,22 +1932,22 @@ var LineUp;
       //upper axis for scored values
       addLine($base, lowerLimitX,scoreAxisY, upperLimitX, scoreAxisY, 'axis');
       //label for minimum scored value
-      addText($base, lowerLimitX, scoreAxisY - 25, 0, ".75em");
+      addText($base, lowerLimitX, scoreAxisY - 25, 0, '.75em');
       //label for maximum scored value
-      addText($base, upperLimitX, scoreAxisY - 25, 1, ".75em");
-      addText($base, options.width/2, scoreAxisY -25, "Score", ".75em",'centered');
+      addText($base, upperLimitX, scoreAxisY - 25, 1, '.75em');
+      addText($base, options.width/2, scoreAxisY -25, 'Score', '.75em','centered');
 
       //lower axis for raw2pixel values
       addLine($base, lowerLimitX,raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
       //label for minimum raw2pixel value
-      addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], ".75em");
+      addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], '.75em');
       //label for maximum raw2pixel value
-      addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], ".75em");
-      addText($base, options.width/2, raw2pixelAxisY + 20, "Raw", ".75em",'centered');
+      addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], '.75em');
+      addText($base, options.width/2, raw2pixelAxisY + 20, 'Raw', '.75em','centered');
       
       //lines that show mapping of individual data items
-      var datalines = $svg.append('g').classed('data',true).selectAll("line").data(data);
-      datalines.enter().append("line")
+      var datalines = $svg.append('g').classed('data',true).selectAll('line').data(data);
+      datalines.enter().append('line')
         .attr({
           x1: function (d) { return scale(data_accessor(d)); },
           y1: scoreAxisY,
@@ -1960,39 +1967,39 @@ var LineUp;
       //line that defines upper bounds for the scale
       var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
       //label for lower bound of normalized values
-      var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), ".25em", 'drag').attr('transform','translate('+(lowerNormalized-lowerLimitX)+',0)');
+      var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), '.25em', 'drag').attr('transform','translate('+(lowerNormalized-lowerLimitX)+',0)');
       //label for lower bound of raw2pixel values
-      var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), ".25em", 'drag').attr('transform','translate('+(lowerRaw-lowerLimitX)+',0)');
+      var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), '.25em', 'drag').attr('transform','translate('+(lowerRaw-lowerLimitX)+',0)');
       //label for upper bound of normalized values
-      var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), ".25em", 'drag').attr('transform','translate('+(upperNormalized-upperLimitX)+',0)');
+      var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), '.25em', 'drag').attr('transform','translate('+(upperNormalized-upperLimitX)+',0)');
       //label for upper bound of raw2pixel values
-      var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), ".25em", 'drag').attr('transform','translate('+(upperRaw-upperLimitX)+',0)');
+      var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), '.25em', 'drag').attr('transform','translate('+(upperRaw-upperLimitX)+',0)');
 
       function createDrag(label, move) {
         return d3.behavior.drag()
-          .on("dragstart", function () {
+          .on('dragstart', function () {
             d3.select(this)
-              .classed("dragging", true)
-              .attr("r", options.radius * 1.1);
-            label.style("visibility", "visible");
+              .classed('dragging', true)
+              .attr('r', options.radius * 1.1);
+            label.style('visibility', 'visible');
           })
-          .on("drag", move)
-          .on("dragend", function () {
+          .on('drag', move)
+          .on('dragend', function () {
             d3.select(this)
-              .classed("dragging", false)
-              .attr("r", options.radius);
-            label.style("visibility", null);
+              .classed('dragging', false)
+              .attr('r', options.radius);
+            label.style('visibility', null);
             updateScale(true);
           })
           .origin(function () {
-            var t = d3.transform(d3.select(this).attr("transform"));
+            var t = d3.transform(d3.select(this).attr('transform'));
             return {x: t.translate[0], y: t.translate[1]};
           });
       }
 
       function updateNormalized() {
         scale.range([lowerNormalized, upperNormalized]);
-        datalines.attr("x1", function (d) {
+        datalines.attr('x1', function (d) {
           return scale(data_accessor(d));
         });
         updateScale();
@@ -2016,11 +2023,11 @@ var LineUp;
             return !(raw2pixel(data_accessor(d)) > lowerRaw || raw2pixel(data_accessor(d)) < upperRaw);
           });
         }
-        hiddenDatalines.style("visibility", "hidden");
+        hiddenDatalines.style('visibility', 'hidden');
         scale.domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)]);
         shownDatalines
-          .style("visibility", null)
-          .attr("x1", function (d) {
+          .style('visibility', null)
+          .attr('x1', function (d) {
             return scale(data_accessor(d));
           });
         updateScale();
@@ -2030,13 +2037,13 @@ var LineUp;
       addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
         .call(createDrag(lowerBoundNormalizedLabel, function () {
           if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-            mapperLineLowerBounds.attr("x1", lowerLimitX + d3.event.x);
+            mapperLineLowerBounds.attr('x1', lowerLimitX + d3.event.x);
             d3.select(this)
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             lowerNormalized = d3.event.x + lowerLimitX;
             lowerBoundNormalizedLabel
               .text(d3.round(normal2pixel.invert(lowerNormalized), 2))
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             updateNormalized();
           }
         }));
@@ -2044,13 +2051,13 @@ var LineUp;
       addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
         .call(createDrag(upperBoundNormalizedLabel, function () {
           if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-            mapperLineUpperBounds.attr("x1", upperLimitX + d3.event.x);
+            mapperLineUpperBounds.attr('x1', upperLimitX + d3.event.x);
             d3.select(this)
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             upperNormalized = d3.event.x + upperLimitX;
             upperBoundNormalizedLabel
               .text(d3.round(normal2pixel.invert(upperNormalized), 2))
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             updateNormalized();
           }
         }));
@@ -2058,13 +2065,13 @@ var LineUp;
       addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
         .call(createDrag(lowerBoundRawLabel, function () {
           if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-            mapperLineLowerBounds.attr("x2", lowerLimitX + d3.event.x);
+            mapperLineLowerBounds.attr('x2', lowerLimitX + d3.event.x);
             d3.select(this)
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             lowerRaw = d3.event.x + lowerLimitX;
             lowerBoundRawLabel
               .text(d3.round(raw2pixel.invert(lowerRaw), 2))
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             updateRaw();
           }
         }));
@@ -2072,13 +2079,13 @@ var LineUp;
       addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
         .call(createDrag(upperBoundRawLabel, function () {
           if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-            mapperLineUpperBounds.attr("x2", upperLimitX + d3.event.x);
+            mapperLineUpperBounds.attr('x2', upperLimitX + d3.event.x);
             d3.select(this)
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             upperRaw = d3.event.x + upperLimitX;
             upperBoundRawLabel
               .text(d3.round(raw2pixel.invert(upperRaw), 2))
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             updateRaw();
           }
         }));
@@ -2149,8 +2156,6 @@ var LineUp;
 
     this.primaryKey = primaryKey;
     this.rawdata = data;
-    this.data = data;
-    this.initialSort = true;
     this.rawcols = columns.map(toColumn);
     this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
 
@@ -2173,12 +2178,15 @@ var LineUp;
 
     this.storageConfig.toLayoutColumn = toLayoutColumn;
 
-    this.bundles = {
-      "primary": {
+    var bundles = this.bundles = {};
+    Object.keys(this.layout).forEach(function(l) {
+      bundles[l] = {
         layoutColumns: [],
-        needsLayout: true  // this triggers the layout generation at first access to "getColumnLayout"
-      }
-    };
+        needsLayout: true,  // this triggers the layout generation at first access to "getColumnLayout"
+        data: data,
+        initialSort :true
+      };
+    });
   }
 
   LineUp.LineUpLocalStorage = LineUpLocalStorage;
@@ -2223,12 +2231,11 @@ var LineUp;
        *  get the data
        *  @returns data
        */
-      getData: function () {
-        return this.data;
+      getData: function (bundle) {
+        bundle = bundle || "primary";
+        return this.bundles[bundle].data;
       },
       filterData: function (columns) {
-        columns = columns || this.bundles["primary"].layoutColumns;
-
         var flat = [];
         columns.forEach(function (d) {
           d.flattenMe(flat);
@@ -2240,9 +2247,9 @@ var LineUp;
           flat.push(this.config.filter.filter);
         }
         if (flat.length === 0) {
-          this.data = this.rawdata;
+          return this.rawdata;
         } else {
-          this.data = this.rawdata.filter(function (row) {
+          return this.rawdata.filter(function (row) {
             return flat.every(function (f) {
               return f.filterBy(row);
             });
@@ -2251,14 +2258,14 @@ var LineUp;
       },
       resortData: function (spec) {
 
-        var _key = spec.key || "primary", that = this;
+        var _key = spec.key || 'primary', that = this;
         var bundle = this.bundles[_key];
         var asc = spec.asc || this.config.columnBundles[_key].sortingOrderAsc;
         var column = spec.column || this.config.columnBundles[_key].sortedColumn;
 
-        //console.log("resort: ", spec);
-        this.filterData(bundle.layoutColumns);
-        if (spec.filteredChanged || this.initialSort) {
+        //console.log('resort: ', spec);
+        bundle.data = this.filterData(bundle.layoutColumns);
+        if (spec.filteredChanged || bundle.initialSort) {
           //trigger column updates
           var flat = [];
           bundle.layoutColumns.forEach(function (d) {
@@ -2267,7 +2274,7 @@ var LineUp;
           flat.forEach(function (col) {
             col.prepare(that.data, that.config.renderingOptions.histograms);
           });
-          this.initialSort = false;
+          bundle.initialSort = false;
         }
         var primary = this.primaryKey;
         function sort(a,b) {
@@ -2278,14 +2285,14 @@ var LineUp;
           return asc ? -r : r;
         }
         if (column) {
-          this.data.sort(sort);
+          bundle.data.sort(sort);
         }
 
         var start = this.config.filter.skip ? this.config.filter.skip : 0;
         if ((this.config.filter.limit && isFinite(this.config.filter.limit))) {
-          this.data = this.data.slice(start, start + this.config.filter.limit);
+          bundle.data = bundle.data.slice(start, start + this.config.filter.limit);
         } else {
-          this.data = this.data.slice(start);
+          bundle.data = bundle.data.slice(start);
         }
 
         var rankColumn = bundle.layoutColumns.filter(function (d) {
@@ -2300,7 +2307,7 @@ var LineUp;
               return column.getValue(d);
             };
           }
-          this.assignRanks(this.data, accessor, rankColumn);
+          this.assignRanks(bundle.data, accessor, rankColumn);
         }
       },
       /*
@@ -2325,12 +2332,12 @@ var LineUp;
         });
       },
       generateLayout: function (layout, bundle) {
-        var _bundle = bundle || "primary";
+        var _bundle = bundle || 'primary';
 
         // create Rank Column
 //            new LayoutRankColumn();
 
-        var b = {};
+        var b = this.bundles[_bundle];
         b.layoutColumns = layout[_bundle].map(this.storageConfig.toLayoutColumn);
 
         //console.log(b.layoutColumns, layout);
@@ -2348,14 +2355,11 @@ var LineUp;
           b.layoutColumns.push(new LineUp.LayoutActionColumn());
         }
 
-
         //set layout bundle reference
         b.layoutColumns.forEach(bundleSetter(_bundle));
-
-        this.bundles[_bundle] = b;
       },
       addColumn: function (col, bundle, position) {
-        var _bundle = bundle || "primary";
+        var _bundle = bundle || 'primary';
         var cols = this.bundles[_bundle].layoutColumns, i, c;
         //insert the new column after the first non rank, text column
         if (typeof position === 'undefined' || position === null) {
@@ -2430,7 +2434,7 @@ var LineUp;
           sourceColumns.splice(sourceColumns.indexOf(column), 1);
 
           targetIndex = targetColumns.indexOf(targetColumn);
-          if (position === "r") {
+          if (position === 'r') {
             targetIndex++;
           }
           targetColumns.splice(targetIndex, 0, column);
@@ -2440,7 +2444,7 @@ var LineUp;
           column.parent.removeChild(column);
 
           targetIndex = targetColumns.indexOf(targetColumn);
-          if (position === "r") {
+          if (position === 'r') {
             targetIndex++;
           }
           targetColumns.splice(targetIndex, 0, column);
@@ -2471,7 +2475,7 @@ var LineUp;
         if (targetColumn.parent == null) {
 
           var targetIndex = targetColumns.indexOf(targetColumn);
-          if (position === "r") {
+          if (position === 'r') {
             targetIndex++;
           }
           targetColumns.splice(targetIndex, 0, newColumn);
@@ -2511,7 +2515,7 @@ var LineUp;
     //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
     //there is a bug in webkit which present camelCase selectors
     var textClipPath = svg.select('defs.' + defclass).selectAll(function () {
-      return this.getElementsByTagName("clipPath");
+      return this.getElementsByTagName('clipPath');
     }).data(headers, function (d) {
       return d.id;
     });
@@ -2543,7 +2547,7 @@ var LineUp;
 
     var rowCenter = (config.svgLayout.rowHeight / 2);
 
-    var textRows = allRows.selectAll(".tableData.text")
+    var textRows = allRows.selectAll('.tableData.text')
       .data(function (d) {
         var dd = allTextHeaders.map(function (column) {
           return {
@@ -2558,10 +2562,10 @@ var LineUp;
         return dd;
       });
     textRows.enter()
-      .append("text")
+      .append('text')
       .attr({
         'class': function (d) {
-          return "tableData text" + (d.isRank ? ' rank' : '');
+          return 'tableData text' + (d.isRank ? ' rank' : '');
         },
         y: rowCenter,
         'clip-path': function (d) {
@@ -2578,16 +2582,16 @@ var LineUp;
         return d.label;
       });
 
-    allRows.selectAll(".tableData.text.rank").text(function (d) {
+    allRows.selectAll('.tableData.text.rank').text(function (d) {
       return d.label;
     });// only changed texts:
     ///// TODO ---- IMPORTANT  ----- DO NOT DELETE
 
-    //            data.push({key:"rank",value:d["rank"]});// TODO: use Rank column
-    //    allRows.selectAll(".tableData.text.rank")
+    //            data.push({key:'rank',value:d['rank']});// TODO: use Rank column
+    //    allRows.selectAll('.tableData.text.rank')
 //        .data(function(d){
 ////            console.log(d);
-//            return [{key:"rank",value:d["rank"]}]
+//            return [{key:'rank',value:d['rank']}]
 //        }
 //    )
   }
@@ -2607,7 +2611,7 @@ var LineUp;
     var allSingleBarHeaders = headers.filter(function (d) {
       return d.column instanceof LineUp.LineUpNumberColumn;
     });
-    var barRows = allRows.selectAll(".tableData.bar")
+    var barRows = allRows.selectAll('.tableData.bar')
       .data(function (d) {
         var data = allSingleBarHeaders.map(function (column) {
           return {
@@ -2621,9 +2625,9 @@ var LineUp;
       });
 
     barRows.enter()
-      .append("rect")
+      .append('rect')
       .attr({
-        "class": "tableData bar",
+        'class': 'tableData bar',
         y: 2,
         height: config.svgLayout.rowHeight - 4
       });
@@ -2651,7 +2655,7 @@ var LineUp;
     });
 
     // -- render StackColumnGroups
-    var stackRows = allRows.selectAll(".tableData.stacked")
+    var stackRows = allRows.selectAll('.tableData.stacked')
       .data(function (d) {
         var dd = allStackedHeaders.map(function (column) {
           return {key: column.getDataID(), childs: column.children, parent: column, row: d};
@@ -2660,12 +2664,12 @@ var LineUp;
       });
     stackRows.exit().remove();
     stackRows.enter()
-      .append("g")
-      .attr("class", "tableData stacked");
+      .append('g')
+      .attr('class', 'tableData stacked');
 
     stackRows
-      .attr("transform", function (d) {
-        return "translate(" + d.parent.offsetX + "," + 0 + ")";
+      .attr('transform', function (d) {
+        return 'translate(' + d.parent.offsetX + ',' + 0 + ')';
       });
 
     // -- render all Bars in the Group
@@ -2675,7 +2679,7 @@ var LineUp;
 
     var asStacked = showStacked(config);
 
-    var allStack = stackRows.selectAll("rect").data(function (d) {
+    var allStack = stackRows.selectAll('rect').data(function (d) {
 
         allStackOffset = 0;
         allStackW = 0;
@@ -2694,7 +2698,7 @@ var LineUp;
       }
     );
     allStack.exit().remove();
-    allStack.enter().append("rect").attr({
+    allStack.enter().append('rect').attr({
       y: 2,
       height: config.svgLayout.rowHeight - 4
     });
@@ -2734,7 +2738,7 @@ var LineUp;
     var allActionBarHeaders = headers.filter(function (d) {
       return (d instanceof LineUp.LayoutActionColumn);
     });
-    var actionRows = allRows.selectAll(".tableData.action")
+    var actionRows = allRows.selectAll('.tableData.action')
       .data(function (d) {
         var dd = allActionBarHeaders.map(function (column) {
           return {key: column.getDataID(), value: column.getColumnWidth(d),
@@ -2744,8 +2748,8 @@ var LineUp;
         return dd;
       });
     actionRows.enter()
-      .append("g")
-      .attr('class', "tableData action")
+      .append('g')
+      .attr('class', 'tableData action')
       .each(function (item) {
         createActions(d3.select(this), item, config);
       });
@@ -2787,17 +2791,20 @@ var LineUp;
    * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
    */
   LineUp.prototype.updateBody = function (headers, data, stackTransition) {
+    if (Array.isArray(headers) && headers.length === 0) {
+      return;
+    }
     //default values
     headers = headers || this.storage.getColumnLayout();
-    data = data || this.storage.getData();
+    data = data || this.storage.getData(headers[0].columnBundle);
     stackTransition = stackTransition || false;
-
 
     var svg = this.$body;
     var that = this;
     var primaryKey = this.storage.primaryKey;
-    var zeroFormat = d3.format(".1f");
-    //console.log("bupdate");
+    var zeroFormat = d3.format('.1f');
+    var bundle = this.config.columnBundles[headers[0].columnBundle];
+    //console.log('bupdate');
     stackTransition = stackTransition || false;
 
     var allHeaders = [];
@@ -2811,15 +2818,15 @@ var LineUp;
           return d[primaryKey];
         }))
         .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, 0.2),
-      prevRowScale = this.prevRowScale || rowScale;
-    //backup the rowscale from the previous call to have a previous "old" position
-    this.prevRowScale = rowScale;
+      prevRowScale = bundle.prevRowScale || rowScale;
+    //backup the rowscale from the previous call to have a previous 'old' position
+    bundle.prevRowScale = rowScale;
 
     var headerShift = 0;
     if (that.config.svgLayout.mode === 'combined') {
       headerShift = that.config.htmlLayout.headerHeight;
     }
-    this.$bodySVG.attr("height", datLength * that.config.svgLayout.rowHeight + headerShift);
+    this.$bodySVG.attr('height', datLength * that.config.svgLayout.rowHeight + headerShift);
 
     var visibleRange = this.selectVisible(data, rowScale);
     if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
@@ -2827,20 +2834,20 @@ var LineUp;
     }
     // -- handle all row groups
 
-    var allRowsSuper = svg.selectAll(".row").data(data, function (d) {
+    var allRowsSuper = svg.selectAll('.row').data(data, function (d) {
       return d[primaryKey];
     });
     allRowsSuper.exit().remove();
 
     // --- append ---
-    var allRowsSuperEnter = allRowsSuper.enter().append("g").attr({
-      "class": "row",
+    var allRowsSuperEnter = allRowsSuper.enter().append('g').attr({
+      'class': 'row',
       transform: function (d) { //init with its previous position
         var prev = prevRowScale(d[primaryKey]);
         if (typeof prev === 'undefined') { //if not defined from the bottom
           prev = rowScale.range()[1];
         }
-        return "translate(" + 0 + "," + prev + ")";
+        return 'translate(' + 0 + ',' + prev + ')';
       }
     });
     allRowsSuperEnter.append('rect').attr({
@@ -2851,8 +2858,8 @@ var LineUp;
 
     //    //--- update ---
     (this.config.renderingOptions.animation ? allRowsSuper.transition().duration(this.config.svgLayout.animationDuration) : allRowsSuper).attr({
-      "transform": function (d) {
-        return  "translate(" + 0 + "," + rowScale(d[primaryKey]) + ")";
+      'transform': function (d) {
+        return  'translate(' + 0 + ',' + rowScale(d[primaryKey]) + ')';
       }
     });
     var asStacked = showStacked(this.config);
@@ -2861,7 +2868,7 @@ var LineUp;
       var textOverlays = [];
 
       function toValue(v) {
-        if (isNaN(v) || v === '' || typeof v === "undefined") {
+        if (isNaN(v) || v === '' || typeof v === 'undefined') {
           return '';
         }
         return that.config.numberformat(+v);
@@ -2880,7 +2887,7 @@ var LineUp;
 
               textOverlays.push({
                   id: child.id,
-                  label: toValue(child.getValue(row,'raw')) + " -> (" + zeroFormat(child.getWidth(row)) + ")",
+                  label: toValue(child.getValue(row,'raw')) + ' -> (' + zeroFormat(child.getWidth(row)) + ')',
                   w: asStacked ? allStackW : child.getColumnWidth(),
                   x: (allStackOffset + col.offsetX)}
               );
@@ -2897,9 +2904,9 @@ var LineUp;
     }
 
     function renderOverlays($row, textOverlays, clazz, clipPrefix) {
-      $row.selectAll("text." + clazz).data(textOverlays).enter().append("text").
+      $row.selectAll('text.' + clazz).data(textOverlays).enter().append('text').
         attr({
-          'class': "tableData " + clazz,
+          'class': 'tableData ' + clazz,
           x: function (d) {
             return d.x;
           },
@@ -2916,7 +2923,7 @@ var LineUp;
       mouseenter: function (row) {
         var $row = d3.select(this);
         $row.classed('hover', true);
-//            d3.select(this.parent).classed("hovered", true)
+//            d3.select(this.parent).classed('hovered', true)
         var textOverlays = createOverlays(row);
         //create clip paths which clips the overlay text of the bars
         var shift = rowScale(row[primaryKey]);
@@ -2924,7 +2931,7 @@ var LineUp;
         //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
         //there is a bug in webkit which present camelCase selectors
         var textClipPath = that.$bodySVG.select('defs.overlay').selectAll(function () {
-          return this.getElementsByTagName("clipPath");
+          return this.getElementsByTagName('clipPath');
         }).data(textOverlays);
         textClipPath.enter().append('clipPath')
           .append('rect').attr({
@@ -3058,8 +3065,11 @@ var LineUp;
    * @param headers - the array of headers, see {@link LineUpColumn}
    */
   LineUp.prototype.updateHeader = function (headers) {
+    if (Array.isArray(headers) && headers.length === 0) {
+      return;
+    }
     headers = headers || this.storage.getColumnLayout();
-//    console.log("update Header");
+//    console.log('update Header');
     var rootsvg = this.$header;
     var svg = rootsvg.select('g.main');
 
@@ -3086,14 +3096,14 @@ var LineUp;
 
     // -- Handle the header groups (exit,enter, update)
 
-    var allHeaders = svg.selectAll(".header").data(allHeaderData, function (d) {
+    var allHeaders = svg.selectAll('.header').data(allHeaderData, function (d) {
       return d.id;
     });
     allHeaders.exit().remove();
 
     // --- adding Element to class allHeaders
-    var allHeadersEnter = allHeaders.enter().append("g").attr("class", "header")
-      .classed("emptyHeader", function (d) {
+    var allHeadersEnter = allHeaders.enter().append('g').attr('class', 'header')
+      .classed('emptyHeader', function (d) {
         return d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn;
       })
       .call(function () {
@@ -3101,25 +3111,25 @@ var LineUp;
       });
 
     // --- changing nodes for allHeaders
-    allHeaders.attr("transform", function (d) {
-      return "translate(" + d.offsetX + "," + d.offsetY + ")";
+    allHeaders.attr('transform', function (d) {
+      return 'translate(' + d.offsetX + ',' + d.offsetY + ')';
     });
 
 
     // -- handle BackgroundRectangles
-    allHeadersEnter.append("rect").attr({
-      "class": "labelBG",
+    allHeadersEnter.append('rect').attr({
+      'class': 'labelBG',
       y: 0
-    }).style("fill", function (d) {
+    }).style('fill', function (d) {
       if (d instanceof LineUp.LayoutEmptyColumn) {
-        return "lightgray";
+        return 'lightgray';
       } else if (d.column && config.colorMapping.has(d.column.id)) {
         return config.colorMapping.get(d.column.id);
       } else {
         return config.grayColor;
       }
     })
-      .on("click", function (d) {
+      .on('click', function (d) {
         if (d3.event.defaultPrevented || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
           return;
         }
@@ -3143,7 +3153,7 @@ var LineUp;
       });
 
 
-    allHeaders.select(".labelBG").attr({
+    allHeaders.select('.labelBG').attr({
       width: function (d) {
         return d.getColumnWidth() - 5;
       },
@@ -3190,8 +3200,8 @@ var LineUp;
     if (this.config.manipulative) {
       allHeadersEnter.filter(function (d) {
         return !(d instanceof LineUp.LayoutEmptyColumn) && !(d instanceof LineUp.LayoutActionColumn);
-      }).append("rect").attr({
-        "class": "weightHandle",
+      }).append('rect').attr({
+        'class': 'weightHandle',
         x: function (d) {
           return d.getColumnWidth() - 5;
         },
@@ -3199,7 +3209,7 @@ var LineUp;
         width: 5
       });
 
-      allHeaders.select(".weightHandle").attr({
+      allHeaders.select('.weightHandle').attr({
         x: function (d) {
           return (d.getColumnWidth() - 5);
         },
@@ -3210,14 +3220,14 @@ var LineUp;
     }
 
     // -- handle Text
-    allHeadersEnter.append("text").attr({
-      "class": "headerLabel",
+    allHeadersEnter.append('text').attr({
+      'class': 'headerLabel',
       x: 12
     });
-    allHeadersEnter.append("title");
+    allHeadersEnter.append('title');
 
-    allHeaders.select(".headerLabel")
-      .classed("sortedColumn", function (d) {
+    allHeaders.select('.headerLabel')
+      .classed('sortedColumn', function (d) {
         var sc = config.columnBundles[d.columnBundle].sortedColumn;
         return sc === d;
       })
@@ -3240,7 +3250,7 @@ var LineUp;
 
 
     // -- handle the Sort Indicator
-    allHeadersEnter.append("text").attr({
+    allHeadersEnter.append('text').attr({
       'class': 'headerSort',
       y: function (d) {
         return d.height / 2;
@@ -3248,11 +3258,11 @@ var LineUp;
       x: 2
     });
 
-    allHeaders.select(".headerSort").text(function (d) {
+    allHeaders.select('.headerSort').text(function (d) {
       var sc = config.columnBundles[d.columnBundle].sortedColumn;
       return ((sc === d) ?
         ((config.columnBundles[d.columnBundle].sortingOrderAsc) ? '\uf0de' : '\uf0dd')
-        : "");
+        : '');
     })
       .attr({
         y: function (d) {
@@ -3266,7 +3276,7 @@ var LineUp;
       var buttons = [
         {
           'class': 'stackedColumnInfo',
-          text: "\uf1de",
+          text: '\uf1de',
           filter: function (d) {
             return d instanceof LineUp.LayoutStackedColumn ? [d] : [];
           },
@@ -3277,7 +3287,7 @@ var LineUp;
         },
         {
           'class': 'singleColumnDelete',
-          text: "\uf014",
+          text: '\uf014',
           filter: function (d) {
             return (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) ? [] : [d];
           },
@@ -3290,7 +3300,7 @@ var LineUp;
         },
         {
           'class': 'singleColumnFilter',
-          text: "\uf0b0",
+          text: '\uf0b0',
           filter: function (d) {
             return (d.column) ? [d] : [];
           },
@@ -3310,10 +3320,10 @@ var LineUp;
       buttons.forEach(function (button) {
         var $button = allHeaders.selectAll('.' + button.class).data(button.filter);
         $button.exit().remove();
-        $button.enter().append("text")
-          .attr("class", "fontawe " + button.class)
+        $button.enter().append('text')
+          .attr('class', 'fontawe ' + button.class)
           .text(button.text)
-          .on("click", button.action);
+          .on('click', button.action);
         $button.attr({
           x: function (d) {
             return d.getColumnWidth() - button.shift;
@@ -3330,21 +3340,21 @@ var LineUp;
 
     // add column signs:
     var plusButton = d3.values(config.svgLayout.plusSigns);
-    var addColumnButton = svg.selectAll(".addColumnButton").data(plusButton);
+    var addColumnButton = svg.selectAll('.addColumnButton').data(plusButton);
     addColumnButton.exit().remove();
 
 
-    var addColumnButtonEnter = addColumnButton.enter().append("g").attr({
-      class: "addColumnButton"
+    var addColumnButtonEnter = addColumnButton.enter().append('g').attr({
+      class: 'addColumnButton'
     });
 
     addColumnButton.attr({
-      "transform": function (d) {
-        return "translate(" + d.x + "," + d.y + ")";
+      'transform': function (d) {
+        return 'translate(' + d.x + ',' + d.y + ')';
       }
     });
 
-    addColumnButtonEnter.append("rect").attr({
+    addColumnButtonEnter.append('rect').attr({
       x: 0,
       y: 0,
       rx: 5,
@@ -3355,7 +3365,7 @@ var LineUp;
       height: function (d) {
         return d.h;
       }
-    }).on("click", function (d) {
+    }).on('click', function (d) {
       if ($.isFunction(d.action)) {
         d.action.call(that, d);
       } else {
@@ -3363,7 +3373,7 @@ var LineUp;
       }
     });
 
-    addColumnButtonEnter.append("text").attr({
+    addColumnButtonEnter.append('text').attr({
       x: function (d) {
         return d.w / 2;
       },
@@ -3417,7 +3427,7 @@ var LineUp;
 
       d3.event.sourceEvent.stopPropagation(); // silence other listeners
 
-      d3.select(this).classed("dragObject", true);
+      d3.select(this).classed('dragObject', true);
 
       hitted = null;
       moved = false;
@@ -3429,13 +3439,13 @@ var LineUp;
       }
 
       moved = true;
-      var dragHeader = svgOverlay.selectAll(".dragHeader").data([d]);
-      var dragHeaderEnter = dragHeader.enter().append("g").attr({
-        class: "dragHeader"
+      var dragHeader = svgOverlay.selectAll('.dragHeader').data([d]);
+      var dragHeaderEnter = dragHeader.enter().append('g').attr({
+        class: 'dragHeader'
       });
 
-      dragHeaderEnter.append("rect").attr({
-        class: "labelBG",
+      dragHeaderEnter.append('rect').attr({
+        class: 'labelBG',
         width: function (d) {
           return d.getColumnWidth();
         },
@@ -3446,8 +3456,8 @@ var LineUp;
 
       var x = d3.event.x;
       var y = d3.event.y;
-      dragHeader.attr("transform", function () {
-        return "translate(" + (d3.event.x + 3) + "," + (d3.event.y - 10) + ")";
+      dragHeader.attr('transform', function () {
+        return 'translate(' + (d3.event.x + 3) + ',' + (d3.event.y - 10) + ')';
       });
 
 
@@ -3461,9 +3471,9 @@ var LineUp;
         if (x > header.offsetX && (x - header.offsetX) < header.getColumnWidth()) {
           if (y > header.offsetY && (y - header.offsetY) < header.height) {
             if ((x - header.offsetX < header.getColumnWidth() / 2)) {
-              return {column: header, insert: "l", tickX: (header.offsetX), tickY: (header.offsetY), tickH: header.height};
+              return {column: header, insert: 'l', tickX: (header.offsetX), tickY: (header.offsetY), tickH: header.height};
             } else {
-              return {column: header, insert: "r", tickX: (header.offsetX + header.getColumnWidth()), tickY: (header.offsetY), tickH: header.height};
+              return {column: header, insert: 'r', tickX: (header.offsetX + header.getColumnWidth()), tickY: (header.offsetY), tickH: header.height};
             }
           }
         }
@@ -3480,10 +3490,10 @@ var LineUp;
 
 //        console.log(hitted);
 
-      var columnTick = svgOverlay.selectAll(".columnTick").data(hitted ? [hitted] : []);
+      var columnTick = svgOverlay.selectAll('.columnTick').data(hitted ? [hitted] : []);
       columnTick.exit().remove();
-      columnTick.enter().append("rect").attr({
-        class: "columnTick",
+      columnTick.enter().append('rect').attr({
+        class: 'columnTick',
         width: 10
       });
 
@@ -3506,16 +3516,16 @@ var LineUp;
         return;
       }
 
-      d3.select(this).classed("dragObject", false);
-      svgOverlay.selectAll(".dragHeader").remove();
-      svgOverlay.selectAll(".columnTick").remove();
+      d3.select(this).classed('dragObject', false);
+      svgOverlay.selectAll('.dragHeader').remove();
+      svgOverlay.selectAll('.columnTick').remove();
 
       if (hitted && hitted.column === this.__data__) {
         return;
       }
 
       if (hitted) {
-//            console.log("EVENT: ", d3.event);
+//            console.log('EVENT: ', d3.event);
         if (d3.event.sourceEvent.altKey) {
           that.storage.copyColumn(this.__data__, hitted.column, hitted.insert);
         } else {
@@ -3536,9 +3546,9 @@ var LineUp;
     }
 
 
-    x.on("dragstart", dragstart)
-      .on("drag", dragmove)
-      .on("dragend", dragend);
+    x.on('dragstart', dragstart)
+      .on('drag', dragmove)
+      .on('dragend', dragend);
   };
 
 
