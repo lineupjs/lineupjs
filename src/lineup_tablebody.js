@@ -11,7 +11,7 @@ var LineUp;
     //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
     //there is a bug in webkit which present camelCase selectors
     var textClipPath = svg.select('defs.' + defclass).selectAll(function () {
-      return this.getElementsByTagName("clipPath");
+      return this.getElementsByTagName('clipPath');
     }).data(headers, function (d) {
       return d.id;
     });
@@ -43,7 +43,7 @@ var LineUp;
 
     var rowCenter = (config.svgLayout.rowHeight / 2);
 
-    var textRows = allRows.selectAll(".tableData.text")
+    var textRows = allRows.selectAll('.tableData.text')
       .data(function (d) {
         var dd = allTextHeaders.map(function (column) {
           return {
@@ -58,10 +58,10 @@ var LineUp;
         return dd;
       });
     textRows.enter()
-      .append("text")
+      .append('text')
       .attr({
         'class': function (d) {
-          return "tableData text" + (d.isRank ? ' rank' : '');
+          return 'tableData text' + (d.isRank ? ' rank' : '');
         },
         y: rowCenter,
         'clip-path': function (d) {
@@ -78,16 +78,16 @@ var LineUp;
         return d.label;
       });
 
-    allRows.selectAll(".tableData.text.rank").text(function (d) {
+    allRows.selectAll('.tableData.text.rank').text(function (d) {
       return d.label;
     });// only changed texts:
     ///// TODO ---- IMPORTANT  ----- DO NOT DELETE
 
-    //            data.push({key:"rank",value:d["rank"]});// TODO: use Rank column
-    //    allRows.selectAll(".tableData.text.rank")
+    //            data.push({key:'rank',value:d['rank']});// TODO: use Rank column
+    //    allRows.selectAll('.tableData.text.rank')
 //        .data(function(d){
 ////            console.log(d);
-//            return [{key:"rank",value:d["rank"]}]
+//            return [{key:'rank',value:d['rank']}]
 //        }
 //    )
   }
@@ -107,7 +107,7 @@ var LineUp;
     var allSingleBarHeaders = headers.filter(function (d) {
       return d.column instanceof LineUp.LineUpNumberColumn;
     });
-    var barRows = allRows.selectAll(".tableData.bar")
+    var barRows = allRows.selectAll('.tableData.bar')
       .data(function (d) {
         var data = allSingleBarHeaders.map(function (column) {
           return {
@@ -121,9 +121,9 @@ var LineUp;
       });
 
     barRows.enter()
-      .append("rect")
+      .append('rect')
       .attr({
-        "class": "tableData bar",
+        'class': 'tableData bar',
         y: 2,
         height: config.svgLayout.rowHeight - 4
       });
@@ -151,7 +151,7 @@ var LineUp;
     });
 
     // -- render StackColumnGroups
-    var stackRows = allRows.selectAll(".tableData.stacked")
+    var stackRows = allRows.selectAll('.tableData.stacked')
       .data(function (d) {
         var dd = allStackedHeaders.map(function (column) {
           return {key: column.getDataID(), childs: column.children, parent: column, row: d};
@@ -160,12 +160,12 @@ var LineUp;
       });
     stackRows.exit().remove();
     stackRows.enter()
-      .append("g")
-      .attr("class", "tableData stacked");
+      .append('g')
+      .attr('class', 'tableData stacked');
 
     stackRows
-      .attr("transform", function (d) {
-        return "translate(" + d.parent.offsetX + "," + 0 + ")";
+      .attr('transform', function (d) {
+        return 'translate(' + d.parent.offsetX + ',' + 0 + ')';
       });
 
     // -- render all Bars in the Group
@@ -175,7 +175,7 @@ var LineUp;
 
     var asStacked = showStacked(config);
 
-    var allStack = stackRows.selectAll("rect").data(function (d) {
+    var allStack = stackRows.selectAll('rect').data(function (d) {
 
         allStackOffset = 0;
         allStackW = 0;
@@ -194,7 +194,7 @@ var LineUp;
       }
     );
     allStack.exit().remove();
-    allStack.enter().append("rect").attr({
+    allStack.enter().append('rect').attr({
       y: 2,
       height: config.svgLayout.rowHeight - 4
     });
@@ -234,7 +234,7 @@ var LineUp;
     var allActionBarHeaders = headers.filter(function (d) {
       return (d instanceof LineUp.LayoutActionColumn);
     });
-    var actionRows = allRows.selectAll(".tableData.action")
+    var actionRows = allRows.selectAll('.tableData.action')
       .data(function (d) {
         var dd = allActionBarHeaders.map(function (column) {
           return {key: column.getDataID(), value: column.getColumnWidth(d),
@@ -244,8 +244,8 @@ var LineUp;
         return dd;
       });
     actionRows.enter()
-      .append("g")
-      .attr('class', "tableData action")
+      .append('g')
+      .attr('class', 'tableData action')
       .each(function (item) {
         createActions(d3.select(this), item, config);
       });
@@ -298,9 +298,9 @@ var LineUp;
     var svg = this.$body;
     var that = this;
     var primaryKey = this.storage.primaryKey;
-    var zeroFormat = d3.format(".1f");
+    var zeroFormat = d3.format('.1f');
     var bundle = this.config.columnBundles[headers[0].columnBundle];
-    //console.log("bupdate");
+    //console.log('bupdate');
     stackTransition = stackTransition || false;
 
     var allHeaders = [];
@@ -315,14 +315,14 @@ var LineUp;
         }))
         .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, 0.2),
       prevRowScale = bundle.prevRowScale || rowScale;
-    //backup the rowscale from the previous call to have a previous "old" position
+    //backup the rowscale from the previous call to have a previous 'old' position
     bundle.prevRowScale = rowScale;
 
     var headerShift = 0;
     if (that.config.svgLayout.mode === 'combined') {
       headerShift = that.config.htmlLayout.headerHeight;
     }
-    this.$bodySVG.attr("height", datLength * that.config.svgLayout.rowHeight + headerShift);
+    this.$bodySVG.attr('height', datLength * that.config.svgLayout.rowHeight + headerShift);
 
     var visibleRange = this.selectVisible(data, rowScale);
     if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
@@ -330,20 +330,20 @@ var LineUp;
     }
     // -- handle all row groups
 
-    var allRowsSuper = svg.selectAll(".row").data(data, function (d) {
+    var allRowsSuper = svg.selectAll('.row').data(data, function (d) {
       return d[primaryKey];
     });
     allRowsSuper.exit().remove();
 
     // --- append ---
-    var allRowsSuperEnter = allRowsSuper.enter().append("g").attr({
-      "class": "row",
+    var allRowsSuperEnter = allRowsSuper.enter().append('g').attr({
+      'class': 'row',
       transform: function (d) { //init with its previous position
         var prev = prevRowScale(d[primaryKey]);
         if (typeof prev === 'undefined') { //if not defined from the bottom
           prev = rowScale.range()[1];
         }
-        return "translate(" + 0 + "," + prev + ")";
+        return 'translate(' + 0 + ',' + prev + ')';
       }
     });
     allRowsSuperEnter.append('rect').attr({
@@ -354,8 +354,8 @@ var LineUp;
 
     //    //--- update ---
     (this.config.renderingOptions.animation ? allRowsSuper.transition().duration(this.config.svgLayout.animationDuration) : allRowsSuper).attr({
-      "transform": function (d) {
-        return  "translate(" + 0 + "," + rowScale(d[primaryKey]) + ")";
+      'transform': function (d) {
+        return  'translate(' + 0 + ',' + rowScale(d[primaryKey]) + ')';
       }
     });
     var asStacked = showStacked(this.config);
@@ -364,7 +364,7 @@ var LineUp;
       var textOverlays = [];
 
       function toValue(v) {
-        if (isNaN(v) || v === '' || typeof v === "undefined") {
+        if (isNaN(v) || v === '' || typeof v === 'undefined') {
           return '';
         }
         return that.config.numberformat(+v);
@@ -383,7 +383,7 @@ var LineUp;
 
               textOverlays.push({
                   id: child.id,
-                  label: toValue(child.getValue(row,'raw')) + " -> (" + zeroFormat(child.getWidth(row)) + ")",
+                  label: toValue(child.getValue(row,'raw')) + ' -> (' + zeroFormat(child.getWidth(row)) + ')',
                   w: asStacked ? allStackW : child.getColumnWidth(),
                   x: (allStackOffset + col.offsetX)}
               );
@@ -400,9 +400,9 @@ var LineUp;
     }
 
     function renderOverlays($row, textOverlays, clazz, clipPrefix) {
-      $row.selectAll("text." + clazz).data(textOverlays).enter().append("text").
+      $row.selectAll('text.' + clazz).data(textOverlays).enter().append('text').
         attr({
-          'class': "tableData " + clazz,
+          'class': 'tableData ' + clazz,
           x: function (d) {
             return d.x;
           },
@@ -419,7 +419,7 @@ var LineUp;
       mouseenter: function (row) {
         var $row = d3.select(this);
         $row.classed('hover', true);
-//            d3.select(this.parent).classed("hovered", true)
+//            d3.select(this.parent).classed('hovered', true)
         var textOverlays = createOverlays(row);
         //create clip paths which clips the overlay text of the bars
         var shift = rowScale(row[primaryKey]);
@@ -427,7 +427,7 @@ var LineUp;
         //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
         //there is a bug in webkit which present camelCase selectors
         var textClipPath = that.$bodySVG.select('defs.overlay').selectAll(function () {
-          return this.getElementsByTagName("clipPath");
+          return this.getElementsByTagName('clipPath');
         }).data(textOverlays);
         textClipPath.enter().append('clipPath')
           .append('rect').attr({

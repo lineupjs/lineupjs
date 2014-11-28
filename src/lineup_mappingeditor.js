@@ -42,8 +42,8 @@ var LineUp;
     }, options);
 
     var editor = function ($root) {
-      var $svg = $root.append("svg").attr({
-        "class": "lugui-me",
+      var $svg = $root.append('svg').attr({
+        'class': 'lugui-me',
         width: options.width,
         height: options.height
       });
@@ -76,22 +76,22 @@ var LineUp;
       //upper axis for scored values
       addLine($base, lowerLimitX,scoreAxisY, upperLimitX, scoreAxisY, 'axis');
       //label for minimum scored value
-      addText($base, lowerLimitX, scoreAxisY - 25, 0, ".75em");
+      addText($base, lowerLimitX, scoreAxisY - 25, 0, '.75em');
       //label for maximum scored value
-      addText($base, upperLimitX, scoreAxisY - 25, 1, ".75em");
-      addText($base, options.width/2, scoreAxisY -25, "Score", ".75em",'centered');
+      addText($base, upperLimitX, scoreAxisY - 25, 1, '.75em');
+      addText($base, options.width/2, scoreAxisY -25, 'Score', '.75em','centered');
 
       //lower axis for raw2pixel values
       addLine($base, lowerLimitX,raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
       //label for minimum raw2pixel value
-      addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], ".75em");
+      addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], '.75em');
       //label for maximum raw2pixel value
-      addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], ".75em");
-      addText($base, options.width/2, raw2pixelAxisY + 20, "Raw", ".75em",'centered');
+      addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], '.75em');
+      addText($base, options.width/2, raw2pixelAxisY + 20, 'Raw', '.75em','centered');
       
       //lines that show mapping of individual data items
-      var datalines = $svg.append('g').classed('data',true).selectAll("line").data(data);
-      datalines.enter().append("line")
+      var datalines = $svg.append('g').classed('data',true).selectAll('line').data(data);
+      datalines.enter().append('line')
         .attr({
           x1: function (d) { return scale(data_accessor(d)); },
           y1: scoreAxisY,
@@ -111,39 +111,39 @@ var LineUp;
       //line that defines upper bounds for the scale
       var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
       //label for lower bound of normalized values
-      var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), ".25em", 'drag').attr('transform','translate('+(lowerNormalized-lowerLimitX)+',0)');
+      var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), '.25em', 'drag').attr('transform','translate('+(lowerNormalized-lowerLimitX)+',0)');
       //label for lower bound of raw2pixel values
-      var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), ".25em", 'drag').attr('transform','translate('+(lowerRaw-lowerLimitX)+',0)');
+      var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), '.25em', 'drag').attr('transform','translate('+(lowerRaw-lowerLimitX)+',0)');
       //label for upper bound of normalized values
-      var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), ".25em", 'drag').attr('transform','translate('+(upperNormalized-upperLimitX)+',0)');
+      var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), '.25em', 'drag').attr('transform','translate('+(upperNormalized-upperLimitX)+',0)');
       //label for upper bound of raw2pixel values
-      var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), ".25em", 'drag').attr('transform','translate('+(upperRaw-upperLimitX)+',0)');
+      var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), '.25em', 'drag').attr('transform','translate('+(upperRaw-upperLimitX)+',0)');
 
       function createDrag(label, move) {
         return d3.behavior.drag()
-          .on("dragstart", function () {
+          .on('dragstart', function () {
             d3.select(this)
-              .classed("dragging", true)
-              .attr("r", options.radius * 1.1);
-            label.style("visibility", "visible");
+              .classed('dragging', true)
+              .attr('r', options.radius * 1.1);
+            label.style('visibility', 'visible');
           })
-          .on("drag", move)
-          .on("dragend", function () {
+          .on('drag', move)
+          .on('dragend', function () {
             d3.select(this)
-              .classed("dragging", false)
-              .attr("r", options.radius);
-            label.style("visibility", null);
+              .classed('dragging', false)
+              .attr('r', options.radius);
+            label.style('visibility', null);
             updateScale(true);
           })
           .origin(function () {
-            var t = d3.transform(d3.select(this).attr("transform"));
+            var t = d3.transform(d3.select(this).attr('transform'));
             return {x: t.translate[0], y: t.translate[1]};
           });
       }
 
       function updateNormalized() {
         scale.range([lowerNormalized, upperNormalized]);
-        datalines.attr("x1", function (d) {
+        datalines.attr('x1', function (d) {
           return scale(data_accessor(d));
         });
         updateScale();
@@ -167,11 +167,11 @@ var LineUp;
             return !(raw2pixel(data_accessor(d)) > lowerRaw || raw2pixel(data_accessor(d)) < upperRaw);
           });
         }
-        hiddenDatalines.style("visibility", "hidden");
+        hiddenDatalines.style('visibility', 'hidden');
         scale.domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)]);
         shownDatalines
-          .style("visibility", null)
-          .attr("x1", function (d) {
+          .style('visibility', null)
+          .attr('x1', function (d) {
             return scale(data_accessor(d));
           });
         updateScale();
@@ -181,13 +181,13 @@ var LineUp;
       addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
         .call(createDrag(lowerBoundNormalizedLabel, function () {
           if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-            mapperLineLowerBounds.attr("x1", lowerLimitX + d3.event.x);
+            mapperLineLowerBounds.attr('x1', lowerLimitX + d3.event.x);
             d3.select(this)
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             lowerNormalized = d3.event.x + lowerLimitX;
             lowerBoundNormalizedLabel
               .text(d3.round(normal2pixel.invert(lowerNormalized), 2))
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             updateNormalized();
           }
         }));
@@ -195,13 +195,13 @@ var LineUp;
       addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
         .call(createDrag(upperBoundNormalizedLabel, function () {
           if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-            mapperLineUpperBounds.attr("x1", upperLimitX + d3.event.x);
+            mapperLineUpperBounds.attr('x1', upperLimitX + d3.event.x);
             d3.select(this)
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             upperNormalized = d3.event.x + upperLimitX;
             upperBoundNormalizedLabel
               .text(d3.round(normal2pixel.invert(upperNormalized), 2))
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             updateNormalized();
           }
         }));
@@ -209,13 +209,13 @@ var LineUp;
       addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
         .call(createDrag(lowerBoundRawLabel, function () {
           if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-            mapperLineLowerBounds.attr("x2", lowerLimitX + d3.event.x);
+            mapperLineLowerBounds.attr('x2', lowerLimitX + d3.event.x);
             d3.select(this)
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             lowerRaw = d3.event.x + lowerLimitX;
             lowerBoundRawLabel
               .text(d3.round(raw2pixel.invert(lowerRaw), 2))
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             updateRaw();
           }
         }));
@@ -223,13 +223,13 @@ var LineUp;
       addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
         .call(createDrag(upperBoundRawLabel, function () {
           if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-            mapperLineUpperBounds.attr("x2", upperLimitX + d3.event.x);
+            mapperLineUpperBounds.attr('x2', upperLimitX + d3.event.x);
             d3.select(this)
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             upperRaw = d3.event.x + upperLimitX;
             upperBoundRawLabel
               .text(d3.round(raw2pixel.invert(upperRaw), 2))
-              .attr("transform", "translate(" + d3.event.x + ", 0)");
+              .attr('transform', 'translate(' + d3.event.x + ', 0)');
             updateRaw();
           }
         }));

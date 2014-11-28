@@ -154,12 +154,12 @@ var LineUp;
       },
       resortData: function (spec) {
 
-        var _key = spec.key || "primary", that = this;
+        var _key = spec.key || 'primary', that = this;
         var bundle = this.bundles[_key];
         var asc = spec.asc || this.config.columnBundles[_key].sortingOrderAsc;
         var column = spec.column || this.config.columnBundles[_key].sortedColumn;
 
-        //console.log("resort: ", spec);
+        //console.log('resort: ', spec);
         bundle.data = this.filterData(bundle.layoutColumns);
         if (spec.filteredChanged || bundle.initialSort) {
           //trigger column updates
@@ -228,7 +228,7 @@ var LineUp;
         });
       },
       generateLayout: function (layout, bundle) {
-        var _bundle = bundle || "primary";
+        var _bundle = bundle || 'primary';
 
         // create Rank Column
 //            new LayoutRankColumn();
@@ -255,7 +255,7 @@ var LineUp;
         b.layoutColumns.forEach(bundleSetter(_bundle));
       },
       addColumn: function (col, bundle, position) {
-        var _bundle = bundle || "primary";
+        var _bundle = bundle || 'primary';
         var cols = this.bundles[_bundle].layoutColumns, i, c;
         //insert the new column after the first non rank, text column
         if (typeof position === 'undefined' || position === null) {
@@ -330,7 +330,7 @@ var LineUp;
           sourceColumns.splice(sourceColumns.indexOf(column), 1);
 
           targetIndex = targetColumns.indexOf(targetColumn);
-          if (position === "r") {
+          if (position === 'r') {
             targetIndex++;
           }
           targetColumns.splice(targetIndex, 0, column);
@@ -340,7 +340,7 @@ var LineUp;
           column.parent.removeChild(column);
 
           targetIndex = targetColumns.indexOf(targetColumn);
-          if (position === "r") {
+          if (position === 'r') {
             targetIndex++;
           }
           targetColumns.splice(targetIndex, 0, column);
@@ -371,7 +371,7 @@ var LineUp;
         if (targetColumn.parent == null) {
 
           var targetIndex = targetColumns.indexOf(targetColumn);
-          if (position === "r") {
+          if (position === 'r') {
             targetIndex++;
           }
           targetColumns.splice(targetIndex, 0, newColumn);

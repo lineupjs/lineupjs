@@ -60,7 +60,7 @@ var LineUp;
       return;
     }
     headers = headers || this.storage.getColumnLayout();
-//    console.log("update Header");
+//    console.log('update Header');
     var rootsvg = this.$header;
     var svg = rootsvg.select('g.main');
 
@@ -87,14 +87,14 @@ var LineUp;
 
     // -- Handle the header groups (exit,enter, update)
 
-    var allHeaders = svg.selectAll(".header").data(allHeaderData, function (d) {
+    var allHeaders = svg.selectAll('.header').data(allHeaderData, function (d) {
       return d.id;
     });
     allHeaders.exit().remove();
 
     // --- adding Element to class allHeaders
-    var allHeadersEnter = allHeaders.enter().append("g").attr("class", "header")
-      .classed("emptyHeader", function (d) {
+    var allHeadersEnter = allHeaders.enter().append('g').attr('class', 'header')
+      .classed('emptyHeader', function (d) {
         return d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn;
       })
       .call(function () {
@@ -102,25 +102,25 @@ var LineUp;
       });
 
     // --- changing nodes for allHeaders
-    allHeaders.attr("transform", function (d) {
-      return "translate(" + d.offsetX + "," + d.offsetY + ")";
+    allHeaders.attr('transform', function (d) {
+      return 'translate(' + d.offsetX + ',' + d.offsetY + ')';
     });
 
 
     // -- handle BackgroundRectangles
-    allHeadersEnter.append("rect").attr({
-      "class": "labelBG",
+    allHeadersEnter.append('rect').attr({
+      'class': 'labelBG',
       y: 0
-    }).style("fill", function (d) {
+    }).style('fill', function (d) {
       if (d instanceof LineUp.LayoutEmptyColumn) {
-        return "lightgray";
+        return 'lightgray';
       } else if (d.column && config.colorMapping.has(d.column.id)) {
         return config.colorMapping.get(d.column.id);
       } else {
         return config.grayColor;
       }
     })
-      .on("click", function (d) {
+      .on('click', function (d) {
         if (d3.event.defaultPrevented || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
           return;
         }
@@ -144,7 +144,7 @@ var LineUp;
       });
 
 
-    allHeaders.select(".labelBG").attr({
+    allHeaders.select('.labelBG').attr({
       width: function (d) {
         return d.getColumnWidth() - 5;
       },
@@ -191,8 +191,8 @@ var LineUp;
     if (this.config.manipulative) {
       allHeadersEnter.filter(function (d) {
         return !(d instanceof LineUp.LayoutEmptyColumn) && !(d instanceof LineUp.LayoutActionColumn);
-      }).append("rect").attr({
-        "class": "weightHandle",
+      }).append('rect').attr({
+        'class': 'weightHandle',
         x: function (d) {
           return d.getColumnWidth() - 5;
         },
@@ -200,7 +200,7 @@ var LineUp;
         width: 5
       });
 
-      allHeaders.select(".weightHandle").attr({
+      allHeaders.select('.weightHandle').attr({
         x: function (d) {
           return (d.getColumnWidth() - 5);
         },
@@ -211,14 +211,14 @@ var LineUp;
     }
 
     // -- handle Text
-    allHeadersEnter.append("text").attr({
-      "class": "headerLabel",
+    allHeadersEnter.append('text').attr({
+      'class': 'headerLabel',
       x: 12
     });
-    allHeadersEnter.append("title");
+    allHeadersEnter.append('title');
 
-    allHeaders.select(".headerLabel")
-      .classed("sortedColumn", function (d) {
+    allHeaders.select('.headerLabel')
+      .classed('sortedColumn', function (d) {
         var sc = config.columnBundles[d.columnBundle].sortedColumn;
         return sc === d;
       })
@@ -241,7 +241,7 @@ var LineUp;
 
 
     // -- handle the Sort Indicator
-    allHeadersEnter.append("text").attr({
+    allHeadersEnter.append('text').attr({
       'class': 'headerSort',
       y: function (d) {
         return d.height / 2;
@@ -249,11 +249,11 @@ var LineUp;
       x: 2
     });
 
-    allHeaders.select(".headerSort").text(function (d) {
+    allHeaders.select('.headerSort').text(function (d) {
       var sc = config.columnBundles[d.columnBundle].sortedColumn;
       return ((sc === d) ?
         ((config.columnBundles[d.columnBundle].sortingOrderAsc) ? '\uf0de' : '\uf0dd')
-        : "");
+        : '');
     })
       .attr({
         y: function (d) {
@@ -267,7 +267,7 @@ var LineUp;
       var buttons = [
         {
           'class': 'stackedColumnInfo',
-          text: "\uf1de",
+          text: '\uf1de',
           filter: function (d) {
             return d instanceof LineUp.LayoutStackedColumn ? [d] : [];
           },
@@ -278,7 +278,7 @@ var LineUp;
         },
         {
           'class': 'singleColumnDelete',
-          text: "\uf014",
+          text: '\uf014',
           filter: function (d) {
             return (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) ? [] : [d];
           },
@@ -291,7 +291,7 @@ var LineUp;
         },
         {
           'class': 'singleColumnFilter',
-          text: "\uf0b0",
+          text: '\uf0b0',
           filter: function (d) {
             return (d.column) ? [d] : [];
           },
@@ -311,10 +311,10 @@ var LineUp;
       buttons.forEach(function (button) {
         var $button = allHeaders.selectAll('.' + button.class).data(button.filter);
         $button.exit().remove();
-        $button.enter().append("text")
-          .attr("class", "fontawe " + button.class)
+        $button.enter().append('text')
+          .attr('class', 'fontawe ' + button.class)
           .text(button.text)
-          .on("click", button.action);
+          .on('click', button.action);
         $button.attr({
           x: function (d) {
             return d.getColumnWidth() - button.shift;
@@ -331,21 +331,21 @@ var LineUp;
 
     // add column signs:
     var plusButton = d3.values(config.svgLayout.plusSigns);
-    var addColumnButton = svg.selectAll(".addColumnButton").data(plusButton);
+    var addColumnButton = svg.selectAll('.addColumnButton').data(plusButton);
     addColumnButton.exit().remove();
 
 
-    var addColumnButtonEnter = addColumnButton.enter().append("g").attr({
-      class: "addColumnButton"
+    var addColumnButtonEnter = addColumnButton.enter().append('g').attr({
+      class: 'addColumnButton'
     });
 
     addColumnButton.attr({
-      "transform": function (d) {
-        return "translate(" + d.x + "," + d.y + ")";
+      'transform': function (d) {
+        return 'translate(' + d.x + ',' + d.y + ')';
       }
     });
 
-    addColumnButtonEnter.append("rect").attr({
+    addColumnButtonEnter.append('rect').attr({
       x: 0,
       y: 0,
       rx: 5,
@@ -356,7 +356,7 @@ var LineUp;
       height: function (d) {
         return d.h;
       }
-    }).on("click", function (d) {
+    }).on('click', function (d) {
       if ($.isFunction(d.action)) {
         d.action.call(that, d);
       } else {
@@ -364,7 +364,7 @@ var LineUp;
       }
     });
 
-    addColumnButtonEnter.append("text").attr({
+    addColumnButtonEnter.append('text').attr({
       x: function (d) {
         return d.w / 2;
       },
@@ -418,7 +418,7 @@ var LineUp;
 
       d3.event.sourceEvent.stopPropagation(); // silence other listeners
 
-      d3.select(this).classed("dragObject", true);
+      d3.select(this).classed('dragObject', true);
 
       hitted = null;
       moved = false;
@@ -430,13 +430,13 @@ var LineUp;
       }
 
       moved = true;
-      var dragHeader = svgOverlay.selectAll(".dragHeader").data([d]);
-      var dragHeaderEnter = dragHeader.enter().append("g").attr({
-        class: "dragHeader"
+      var dragHeader = svgOverlay.selectAll('.dragHeader').data([d]);
+      var dragHeaderEnter = dragHeader.enter().append('g').attr({
+        class: 'dragHeader'
       });
 
-      dragHeaderEnter.append("rect").attr({
-        class: "labelBG",
+      dragHeaderEnter.append('rect').attr({
+        class: 'labelBG',
         width: function (d) {
           return d.getColumnWidth();
         },
@@ -447,8 +447,8 @@ var LineUp;
 
       var x = d3.event.x;
       var y = d3.event.y;
-      dragHeader.attr("transform", function () {
-        return "translate(" + (d3.event.x + 3) + "," + (d3.event.y - 10) + ")";
+      dragHeader.attr('transform', function () {
+        return 'translate(' + (d3.event.x + 3) + ',' + (d3.event.y - 10) + ')';
       });
 
 
@@ -462,9 +462,9 @@ var LineUp;
         if (x > header.offsetX && (x - header.offsetX) < header.getColumnWidth()) {
           if (y > header.offsetY && (y - header.offsetY) < header.height) {
             if ((x - header.offsetX < header.getColumnWidth() / 2)) {
-              return {column: header, insert: "l", tickX: (header.offsetX), tickY: (header.offsetY), tickH: header.height};
+              return {column: header, insert: 'l', tickX: (header.offsetX), tickY: (header.offsetY), tickH: header.height};
             } else {
-              return {column: header, insert: "r", tickX: (header.offsetX + header.getColumnWidth()), tickY: (header.offsetY), tickH: header.height};
+              return {column: header, insert: 'r', tickX: (header.offsetX + header.getColumnWidth()), tickY: (header.offsetY), tickH: header.height};
             }
           }
         }
@@ -481,10 +481,10 @@ var LineUp;
 
 //        console.log(hitted);
 
-      var columnTick = svgOverlay.selectAll(".columnTick").data(hitted ? [hitted] : []);
+      var columnTick = svgOverlay.selectAll('.columnTick').data(hitted ? [hitted] : []);
       columnTick.exit().remove();
-      columnTick.enter().append("rect").attr({
-        class: "columnTick",
+      columnTick.enter().append('rect').attr({
+        class: 'columnTick',
         width: 10
       });
 
@@ -507,16 +507,16 @@ var LineUp;
         return;
       }
 
-      d3.select(this).classed("dragObject", false);
-      svgOverlay.selectAll(".dragHeader").remove();
-      svgOverlay.selectAll(".columnTick").remove();
+      d3.select(this).classed('dragObject', false);
+      svgOverlay.selectAll('.dragHeader').remove();
+      svgOverlay.selectAll('.columnTick').remove();
 
       if (hitted && hitted.column === this.__data__) {
         return;
       }
 
       if (hitted) {
-//            console.log("EVENT: ", d3.event);
+//            console.log('EVENT: ', d3.event);
         if (d3.event.sourceEvent.altKey) {
           that.storage.copyColumn(this.__data__, hitted.column, hitted.insert);
         } else {
@@ -537,9 +537,9 @@ var LineUp;
     }
 
 
-    x.on("dragstart", dragstart)
-      .on("drag", dragmove)
-      .on("dragend", dragend);
+    x.on('dragstart', dragstart)
+      .on('drag', dragmove)
+      .on('dragend', dragend);
   };
 
 

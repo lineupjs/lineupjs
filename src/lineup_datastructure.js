@@ -664,7 +664,7 @@ var LineUp;
         this.emptyColumns = [];
       } else {
         targetIndex = this.children.indexOf(targetChild);
-        if (position === "r") {
+        if (position === 'r') {
           targetIndex++;
         }
       }
@@ -679,7 +679,7 @@ var LineUp;
       child.parent = this;
       this.children.splice(targetIndex, 0, child);
 
-//        console.log("added Child:",this.children[targetIndex]);
+//        console.log('added Child:',this.children[targetIndex]);
 
       return true;
 
