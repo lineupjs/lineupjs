@@ -11,7 +11,7 @@ var LineUp;
       if (col instanceof LineUp.LayoutStackedColumn) {
         col.children.forEach(setBundle);
       }
-    }
+    };
   }
   /**
    * An implementation of data storage for reading locally

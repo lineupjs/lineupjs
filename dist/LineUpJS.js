@@ -465,7 +465,7 @@ var LineUp;
     this.filter = desc.filter;
 
     this.parent = desc.parent || null; // or null
-    this.columnBundle = desc.columnBundle || "primary";
+    this.columnBundle = "primary";
     //define it here to have a dedicated this pointer
     this.sortBy = function (a, b) {
       a = that.getValue(a);
@@ -510,7 +510,6 @@ var LineUp;
     description: function () {
       var res = {};
       res.width = this.columnWidth;
-      res.columnBundle = this.columnBundle;
       res.filter = this.filter;
 
       return res;
@@ -647,8 +646,8 @@ var LineUp;
       if (typeof filter === 'undefined' || !this.column) {
         return true;
       }
-      var r = this.getValue(row);
-      if (isNaN(filter)) {
+      var r = this.getValue(row, 'raw');
+      if (typeof filter === 'number' && isNaN(filter)) {
         return !isNaN(r);
       } else if (typeof filter === 'number') {
         return r >= filter;
@@ -1372,14 +1371,6 @@ var LineUp;
     var that = this;
     var act = bak;
 
-    function applyMapping(newscale) {
-      act = newscale;
-      selectedColumn.mapping(act);
-      //console.log(act.domain().toString(), act.range().toString());
-      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
-      that.storage.resortData({ filteredChanged: true});
-      that.updateAll(true);
-    }
 
     var popup = d3.select("body").append("div")
       .attr({
@@ -1388,18 +1379,39 @@ var LineUp;
         left: +(window.innerWidth) / 2 - 100 + "px",
         top: 100 + "px",
         width: "420px",
-        height: "450px"
+        height: "470px"
       })
       .html(
         '<div style="font-weight: bold"> change mapping: </div>' +
         '<div class="mappingArea"></div>' +
+        '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'+
         '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
         '<button class="reset"><i class="fa fa-undo"></i> revert</button>' +
         '<button class="ok"><i class="fa fa-check"></i> ok</button>'
     );
+    var $filterIt = popup.select('input').on('change', function() {
+      applyMapping(act);
+    });
+    $filterIt.node().checked = Array.isArray(selectedColumn.filter);
     var access = function (row) {
       return +selectedColumn.getValue(row, 'raw');
     };
+
+    function applyMapping(newscale) {
+      act = newscale;
+      selectedColumn.mapping(act);
+      var val = $filterIt.node().checked;
+      if (val) {
+        selectedColumn.filter = newscale.domain();
+      } else {
+        selectedColumn.filter = undefined;
+      }
+      //console.log(act.domain().toString(), act.range().toString());
+      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
+      that.storage.resortData({filteredChanged: true});
+      that.updateAll(true);
+    }
+
     var editorOptions = {
       callback: applyMapping,
       triggerCallback : 'dragend'
@@ -1478,8 +1490,8 @@ var LineUp;
       popup.select(".ok").on("click", function() {
         var newValue = document.getElementById("popupInputText").value;
         if (newValue.length > 0) {
-          that.storage.setColumnLabel(col, newValue);
-          that.updateHeader(that.storage.getColumnLayout());
+          col.label = newValue;
+          that.updateHeader(that.storage.getColumnLayout(col.columnBundle));
           popup.remove();
         } else {
           window.alert("non empty string required");
@@ -2089,6 +2101,15 @@ var LineUp;
 /* global d3, jQuery, _ */
 var LineUp;
 (function (LineUp, d3, $, _, undefined) {
+
+  function bundleSetter(bundle) {
+    return function setBundle(col) {
+      col.columnBundle = bundle;
+      if (col instanceof LineUp.LayoutStackedColumn) {
+        col.children.forEach(setBundle);
+      }
+    };
+  }
   /**
    * An implementation of data storage for reading locally
    * @param tableId
@@ -2248,9 +2269,12 @@ var LineUp;
           });
           this.initialSort = false;
         }
-
+        var primary = this.primaryKey;
         function sort(a,b) {
           var r = column.sortBy(a,b);
+          if (r === 0 || isNaN(r)) { //by default sort by primary key
+            return d3.ascending(a[primary], b[primary]);
+          }
           return asc ? -r : r;
         }
         if (column) {
@@ -2308,6 +2332,7 @@ var LineUp;
 
         var b = {};
         b.layoutColumns = layout[_bundle].map(this.storageConfig.toLayoutColumn);
+
         //console.log(b.layoutColumns, layout);
         //if there is no rank column create one
         if (b.layoutColumns.filter(function (d) {
@@ -2322,6 +2347,10 @@ var LineUp;
         }).length < 1) {
           b.layoutColumns.push(new LineUp.LayoutActionColumn());
         }
+
+
+        //set layout bundle reference
+        b.layoutColumns.forEach(bundleSetter(_bundle));
 
         this.bundles[_bundle] = b;
       },
@@ -2343,6 +2372,7 @@ var LineUp;
           }
           i =  Math.max(0, Math.min(cols.length, position));
         }
+        col.columnBundle = _bundle;
         cols.splice(i, 0, col);
       },
       addStackedColumn: function (spec, position, bundle) {
@@ -2353,11 +2383,8 @@ var LineUp;
         this.addColumn(this.storageConfig.toLayoutColumn(spec), bundle, position);
       },
 
-
-      removeColumn: function (col, bundle) {
-        var _bundle = bundle || "primary";
-
-        var headerColumns = this.bundles[_bundle].layoutColumns;
+      removeColumn: function (col) {
+        var headerColumns = this.bundles[col.columnBundle].layoutColumns;
 
         if (col instanceof LineUp.LayoutStackedColumn) {
           var indexOfElement = _.indexOf(headerColumns, col);//function(c){ return (c.id == d.id)});
@@ -2391,47 +2418,38 @@ var LineUp;
 
 
       },
-      setColumnLabel: function (col, newValue, bundle) {
-        var _bundle = bundle || "primary";
-
-        //TODO: could be done for all Column header
-        var headerColumns = this.bundles[_bundle].layoutColumns;
-        headerColumns.filter(function (d) {
-          return d.id === col.id;
-        })[0].label = newValue;
-      },
-      moveColumn: function (column, targetColumn, position, bundle) {
-        var _bundle = bundle || "primary",
-          headerColumns = this.bundles[_bundle].layoutColumns,
+      moveColumn: function (column, targetColumn, position) {
+        var sourceColumns = this.bundles[column.columnBundle].layoutColumns,
+          targetColumns = this.bundles[targetColumn.columnBundle].layoutColumns,
           targetIndex;
 
         // different cases:
         if (column.parent == null && targetColumn.parent == null) {
           // simple L1 Column movement:
 
-          headerColumns.splice(headerColumns.indexOf(column), 1);
+          sourceColumns.splice(sourceColumns.indexOf(column), 1);
 
-          targetIndex = headerColumns.indexOf(targetColumn);
+          targetIndex = targetColumns.indexOf(targetColumn);
           if (position === "r") {
             targetIndex++;
           }
-          headerColumns.splice(targetIndex, 0, column);
+          targetColumns.splice(targetIndex, 0, column);
         }
         else if ((column.parent !== null) && targetColumn.parent === null) {
           // move from stacked Column
           column.parent.removeChild(column);
 
-          targetIndex = headerColumns.indexOf(targetColumn);
+          targetIndex = targetColumns.indexOf(targetColumn);
           if (position === "r") {
             targetIndex++;
           }
-          headerColumns.splice(targetIndex, 0, column);
+          targetColumns.splice(targetIndex, 0, column);
 
         } else if (column.parent === null && (targetColumn.parent !== null)) {
 
           // move into stacked Column
           if (targetColumn.parent.addChild(column, targetColumn, position)) {
-            headerColumns.splice(headerColumns.indexOf(column), 1);
+            sourceColumns.splice(sourceColumns.indexOf(column), 1);
           }
 
         } else if ((column.parent !== null) && (targetColumn.parent !== null)) {
@@ -2440,23 +2458,23 @@ var LineUp;
           column.parent.removeChild(column);
           targetColumn.parent.addChild(column, targetColumn, position);
         }
+        bundleSetter(targetColumn.columnBundle)(column);
         this.resortData({});
       },
-      copyColumn: function (column, targetColumn, position, bundle) {
-        var _bundle = bundle || "primary";
-
-        var headerColumns = this.bundles[_bundle].layoutColumns;
+      copyColumn: function (column, targetColumn, position) {
+        var targetColumns = this.bundles[targetColumn.columnBundle].layoutColumns;
 
         var newColumn = column.makeCopy();
+        bundleSetter(targetColumn.columnBundle)(newColumn);
 
         // different cases:
         if (targetColumn.parent == null) {
 
-          var targetIndex = headerColumns.indexOf(targetColumn);
+          var targetIndex = targetColumns.indexOf(targetColumn);
           if (position === "r") {
             targetIndex++;
           }
-          headerColumns.splice(targetIndex, 0, newColumn);
+          targetColumns.splice(targetIndex, 0, newColumn);
         }
         else if ((targetColumn.parent !== null)) {
           // copy into stacked Column
@@ -2480,9 +2498,6 @@ var LineUp;
         }
         return null;
       }
-
-
-
     });
 }(LineUp || (LineUp = {}), d3, jQuery, _));
 
