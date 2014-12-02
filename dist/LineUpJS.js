@@ -1,6 +1,9 @@
-/*! LineUpJS - v0.1.0 - 2014-11-28
+/*! LineUpJS - v0.1.0 - 2014-12-02
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2014 ; Licensed BSD */
+(function() {
+  function LineUpLoader(jQuery, d3, _) {
+
 /**
  * Constructor to Create a LineUp Visualization
  * @param spec - the specifications object
@@ -3572,3 +3575,14 @@ var LineUp;
     this.updateAll();
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
+
+return LineUp;
+  }
+  if (typeof define === "function" && define.amd) {
+    define(['jquery','d3','underscore'], LineUpLoader);
+  } else if (typeof module === "object" && module.exports) {
+    module.exports = LineUpLoader(require('jquery'), require('d3'), require('underscore'));
+  } else {
+    this.LineUp = LineUpLoader(jQuery, d3, _);
+  }
+}.call(this));
