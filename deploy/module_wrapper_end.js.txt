@@ -1,0 +1,14 @@
+/**
+ * Created by Samuel Gratzl on 02.10.2014.
+ */
+
+  return LineUp;
+  }
+  if (typeof define === "function" && define.amd) {
+    define(['jquery','d3','underscore'], LineUpLoader);
+  } else if (typeof module === "object" && module.exports) {
+    module.exports = LineUpLoader(require('jquery'), require('d3'), require('underscore'));
+  } else {
+    this.LineUp = LineUpLoader(jQuery, d3, _);
+  }
+}.call(this));
