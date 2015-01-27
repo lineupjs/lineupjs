@@ -3156,8 +3156,9 @@ var LineUp;
           bundle.sortingOrderAsc = d instanceof LineUp.LayoutStringColumn || d instanceof LineUp.LayoutCategoricalColumn || d instanceof LineUp.LayoutRankColumn;
         }
 
-        that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
         bundle.sortedColumn = d;
+        that.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
+		that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
         that.updateAll(false);
       });
 
