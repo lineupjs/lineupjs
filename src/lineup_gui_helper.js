@@ -320,6 +320,7 @@ var LineUp;
       }
       //console.log(act.domain().toString(), act.range().toString());
       $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
+      that.listeners['change-filter'](that, selectedColumn);
       that.storage.resortData({filteredChanged: true});
       that.updateAll(true);
     }
@@ -531,6 +532,7 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0 && filter.length < column.column.categories.length));
+      that.listeners['change-filter'](that, column);
       that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
@@ -589,6 +591,7 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0));
+      that.listeners['change-filter'](that, column);
       that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
@@ -742,6 +745,7 @@ var LineUp;
       d3.select(this).classed('dragging', false);
 
       if (that.config.columnBundles.primary.sortedColumn instanceof LineUp.LayoutStackedColumn) {
+        that.listeners['change-sortcriteria'](that, that.config.columnBundles.primary.sortedColumn);
         that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
         that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
       }

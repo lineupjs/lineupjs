@@ -16,7 +16,7 @@ var LineUp;
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
     //trigger hover event
-    this.listeners = d3.dispatch('hover');
+    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
@@ -261,6 +261,7 @@ var LineUp;
     bundle.sortingOrderAsc = asc;
     bundle.sortedColumn = d;
 
+    this.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
     this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
     this.updateAll(false, d.columnBundle);
   };
@@ -312,6 +313,7 @@ var LineUp;
     column.updateWeights(weights);
     //trigger resort
     if (column === this.config.columnBundles[bundle].sortedColumn) {
+      this.listeners['change-sortcriteria'](this, column, this.config.columnBundles[bundle]);
       this.storage.resortData({ key: bundle });
     }
     this.updateAll(false, bundle);
