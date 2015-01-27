@@ -630,7 +630,7 @@ var LineUp;
       var v = this.getValue(row), i;
       for(i = this.hist.length -1 ; i>= 0; --i) {
         var bin = this.hist[i];
-        if (bin.x <= v && v < (bin.x+bin.dx)) {
+        if (bin.x <= v && v <= (bin.x+bin.dx)) {
           return i;
         }
       }
@@ -2273,15 +2273,16 @@ var LineUp;
         var column = spec.column || this.config.columnBundles[_key].sortedColumn;
 
         //console.log('resort: ', spec);
-        bundle.data = this.filterData(bundle.layoutColumns);
+        var cols = this.getColumnLayout(_key);
+        bundle.data = this.filterData(cols);
         if (spec.filteredChanged || bundle.initialSort) {
           //trigger column updates
           var flat = [];
-          bundle.layoutColumns.forEach(function (d) {
+          cols.forEach(function (d) {
             d.flattenMe(flat);
           });
           flat.forEach(function (col) {
-            col.prepare(that.data, that.config.renderingOptions.histograms);
+            col.prepare(bundle.data, that.config.renderingOptions.histograms);
           });
           bundle.initialSort = false;
         }

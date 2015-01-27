@@ -297,7 +297,7 @@ var LineUp;
       var v = this.getValue(row), i;
       for(i = this.hist.length -1 ; i>= 0; --i) {
         var bin = this.hist[i];
-        if (bin.x <= v && v < (bin.x+bin.dx)) {
+        if (bin.x <= v && v <= (bin.x+bin.dx)) {
           return i;
         }
       }
