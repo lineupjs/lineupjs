@@ -1,6 +1,6 @@
-/*! LineUpJS - v0.1.0 - 2014-12-02
+/*! LineUpJS - v0.1.0 - 2015-01-26
 * https://github.com/Caleydo/lineup.js
-* Copyright (c) 2014 ; Licensed BSD */
+* Copyright (c) 2015 ; Licensed BSD */
 (function() {
   function LineUpLoader(jQuery, d3, _) {
 
@@ -21,7 +21,7 @@ var LineUp;
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
     //trigger hover event
-    this.listeners = d3.dispatch('hover');
+    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
@@ -266,6 +266,7 @@ var LineUp;
     bundle.sortingOrderAsc = asc;
     bundle.sortedColumn = d;
 
+    this.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
     this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
     this.updateAll(false, d.columnBundle);
   };
@@ -317,6 +318,7 @@ var LineUp;
     column.updateWeights(weights);
     //trigger resort
     if (column === this.config.columnBundles[bundle].sortedColumn) {
+      this.listeners['change-sortcriteria'](this, column, this.config.columnBundles[bundle]);
       this.storage.resortData({ key: bundle });
     }
     this.updateAll(false, bundle);
@@ -1418,6 +1420,7 @@ var LineUp;
       }
       //console.log(act.domain().toString(), act.range().toString());
       $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
+      that.listeners['change-filter'](that, selectedColumn);
       that.storage.resortData({filteredChanged: true});
       that.updateAll(true);
     }
@@ -1629,6 +1632,7 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0 && filter.length < column.column.categories.length));
+      that.listeners['change-filter'](that, column);
       that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
@@ -1687,6 +1691,7 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0));
+      that.listeners['change-filter'](that, column);
       that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
@@ -1840,6 +1845,7 @@ var LineUp;
       d3.select(this).classed('dragging', false);
 
       if (that.config.columnBundles.primary.sortedColumn instanceof LineUp.LayoutStackedColumn) {
+        that.listeners['change-sortcriteria'](that, that.config.columnBundles.primary.sortedColumn);
         that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
         that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
       }
