@@ -483,6 +483,19 @@ var LineUp;
         that.listeners['hover'](null);
         d3.select(this).classed('hover', false);
         d3.select(this).selectAll('text.hoveronly').remove();
+      },
+      click: function(row) {
+        var $row = d3.select(this),
+            selected = $row.classed('selected');
+        if (selected) {
+          $row.classed('selected', false);
+          that.listeners['selected'](null);
+        } else {
+          var prev = allRowsSuper.filter('.selected').classed('selected', false);
+          prev = prev.empty ? null : prev.datum();
+          $row.classed('selected', true);
+          that.listeners['selected'](row, prev);
+        }
       }
     });
 

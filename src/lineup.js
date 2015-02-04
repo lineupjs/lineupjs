@@ -16,7 +16,7 @@ var LineUp;
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
     //trigger hover event
-    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter');
+    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter', 'selected');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted

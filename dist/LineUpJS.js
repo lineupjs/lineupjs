@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-01-26
+/*! LineUpJS - v0.1.0 - 2015-02-04
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 (function() {
@@ -21,7 +21,7 @@ var LineUp;
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
     //trigger hover event
-    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter');
+    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter', 'selected');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
@@ -2997,6 +2997,19 @@ var LineUp;
         that.listeners['hover'](null);
         d3.select(this).classed('hover', false);
         d3.select(this).selectAll('text.hoveronly').remove();
+      },
+      click: function(row) {
+        var $row = d3.select(this),
+            selected = $row.classed('selected');
+        if (selected) {
+          $row.classed('selected', false);
+          that.listeners['selected'](null);
+        } else {
+          var prev = allRowsSuper.filter('.selected').classed('selected', false);
+          prev = prev.empty ? null : prev.datum();
+          $row.classed('selected', true);
+          that.listeners['selected'](row, prev);
+        }
       }
     });
 
