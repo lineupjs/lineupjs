@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-02-04
+/*! LineUpJS - v0.1.0 - 2015-02-18
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 (function() {
@@ -414,7 +414,7 @@ var LineUp;
   LineUpNumberColumn.prototype = $.extend({}, LineUpColumn.prototype, {
     getValue: function (row) {
       var r = LineUpColumn.prototype.getValue.call(this, row);
-      if (r === '' || r.toString().trim().length === 0) {
+      if (r === null || typeof r === 'undefined' || r === '' || r.toString().trim().length === 0) {
         r = this.missingValue;
       }
       return +r;

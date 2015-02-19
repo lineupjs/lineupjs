@@ -81,7 +81,7 @@ var LineUp;
   LineUpNumberColumn.prototype = $.extend({}, LineUpColumn.prototype, {
     getValue: function (row) {
       var r = LineUpColumn.prototype.getValue.call(this, row);
-      if (r === '' || r.toString().trim().length === 0) {
+      if (r === null || typeof r === 'undefined' || r === '' || r.toString().trim().length === 0) {
         r = this.missingValue;
       }
       return +r;
