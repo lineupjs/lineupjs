@@ -320,6 +320,21 @@ var LineUp;
     return true;
   };
 
+    /**
+     * manually change/set the filter of a column
+     * @param column
+     * @param filter
+     */
+  LineUp.prototype.changeFilter = function (column, filter) {
+    if (typeof column === 'string') {
+      column = this.storage.getColumnByName(column);
+    }
+    column.filter = filter;
+    this.listeners['change-filter'](this, column);
+    this.storage.resortData({filteredChanged: true});
+    this.updateBody();
+  };
+
   /**
    * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
    */
