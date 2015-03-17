@@ -16,7 +16,7 @@ var LineUp;
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
     //trigger hover event
-    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter', 'selected');
+    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter', 'selected','multiselected');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
@@ -148,7 +148,8 @@ var LineUp;
     manipulative: true,
     interaction: {
       //enable the table tooltips
-      tooltips: true
+      tooltips: true,
+      multiselect: function() { return false; }
     },
     filter: {
       skip: 0,

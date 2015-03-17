@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-02-25
+/*! LineUpJS - v0.1.0 - 2015-03-17
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 (function() {
@@ -21,7 +21,7 @@ var LineUp;
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
     //trigger hover event
-    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter', 'selected');
+    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter', 'selected','multiselected');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
@@ -153,7 +153,8 @@ var LineUp;
     manipulative: true,
     interaction: {
       //enable the table tooltips
-      tooltips: true
+      tooltips: true,
+      multiselect: function() { return false; }
     },
     filter: {
       skip: 0,
@@ -2810,6 +2811,22 @@ var LineUp;
     return $table.html();
   }
 
+/**
+  * select one or more rows
+  * @param row
+ */
+  LineUp.prototype.select = function(row) {
+    var primaryKey = this.storage.primaryKey,
+        $rows = this.$body.selectAll('.row');
+    if (Array.isArray(row)) {
+        row = row.map(function(d) { return d[primaryKey]; });
+        $rows.classed('selected', function(d) { return row.indexOf(d[primaryKey]) > 0; });
+    } else if (row) {
+        $rows.classed('selected',function(d) { return d[primaryKey] === row[primaryKey]; });
+    } else {
+        $rows.classed('selected',false);
+    }
+  };
   /**
    * updates the table body
    * @param headers - the headers as in {@link updateHeader}
@@ -3016,14 +3033,34 @@ var LineUp;
       click: function(row) {
         var $row = d3.select(this),
             selected = $row.classed('selected');
-        if (selected) {
-          $row.classed('selected', false);
-          that.listeners['selected'](null);
+        if (that.config.interaction.multiselect(d3.event)) {
+            var allselected = allRowsSuper.filter('.selected').data();
+            if (selected) {
+                $row.classed('selected', false);
+                if (allselected.length === 1) {
+                    //remove the last one
+                    that.listeners['selected'](null);
+                }
+                allselected.splice(allselected.indexOf(row),1);
+            } else {
+                $row.classed('selected', true);
+                allselected.push(row);
+                if (allselected.length === 1) {
+                    //remove the last one
+                    that.listeners['selected'](row, null);
+                }
+            }
+            that.listeners['multiselected'](allselected);
         } else {
-          var prev = allRowsSuper.filter('.selected').classed('selected', false);
-          prev = prev.empty ? null : prev.datum();
-          $row.classed('selected', true);
-          that.listeners['selected'](row, prev);
+            if (selected) {
+                $row.classed('selected', false);
+                that.listeners['selected'](null);
+            } else {
+                var prev = allRowsSuper.filter('.selected').classed('selected', false);
+                prev = prev.empty ? null : prev.datum();
+                $row.classed('selected', true);
+                that.listeners['selected'](row, prev);
+            }
         }
       }
     });
