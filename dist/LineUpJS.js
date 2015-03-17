@@ -3055,11 +3055,13 @@ var LineUp;
             if (selected) {
                 $row.classed('selected', false);
                 that.listeners['selected'](null);
+                that.listeners['multiselected']([]);
             } else {
                 var prev = allRowsSuper.filter('.selected').classed('selected', false);
                 prev = prev.empty ? null : prev.datum();
                 $row.classed('selected', true);
                 that.listeners['selected'](row, prev);
+                that.listeners['multiselected']([row]);
             }
         }
       }
