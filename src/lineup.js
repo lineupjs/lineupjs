@@ -149,7 +149,8 @@ var LineUp;
     interaction: {
       //enable the table tooltips
       tooltips: true,
-      multiselect: function() { return false; }
+      multiselect: function() { return false; },
+      rangeselect: function() { return false; }
     },
     filter: {
       skip: 0,

@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-03-17
+/*! LineUpJS - v0.1.0 - 2015-03-21
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 (function() {
@@ -154,7 +154,8 @@ var LineUp;
     interaction: {
       //enable the table tooltips
       tooltips: true,
-      multiselect: function() { return false; }
+      multiselect: function() { return false; },
+      rangeselect: function() { return false; }
     },
     filter: {
       skip: 0,
@@ -2854,7 +2855,7 @@ var LineUp;
       d.flattenMe(allHeaders);
     });
 
-    var datLength = data.length;
+    var datLength = data.length, rawData = data;
     var rowScale = d3.scale.ordinal()
         .domain(data.map(function (d) {
           return d[primaryKey];
@@ -3044,7 +3045,17 @@ var LineUp;
                 allselected.splice(allselected.indexOf(row),1);
             } else {
                 $row.classed('selected', true);
-                allselected.push(row);
+                if (that.config.interaction.rangeselect(d3.event) && allselected.length === 1) {
+                 //select a range
+                 var i = rawData.indexOf(row), j = rawData.indexOf(allselected[0]);
+                 if (i < j) {
+                     allselected.push.apply(allselected,rawData.slice(i,j));
+                 } else {
+                     allselected.push.apply(allselected, rawData.slice(j+1,i+1));
+                 }
+                } else {
+                    allselected.push(row);
+                }
                 if (allselected.length === 1) {
                     //remove the last one
                     that.listeners['selected'](row, null);
