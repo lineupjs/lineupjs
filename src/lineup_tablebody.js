@@ -518,10 +518,11 @@ var LineUp;
                  //select a range
                  var i = rawData.indexOf(row), j = rawData.indexOf(allselected[0]);
                  if (i < j) {
-                     allselected.push.apply(allselected,rawData.slice(i,j));
+                     allselected = rawData.slice(i,j+1);
                  } else {
-                     allselected.push.apply(allselected, rawData.slice(j+1,i+1));
+                     allselected = rawData.slice(j, i + 1);
                  }
+                 allRowsSuper.filter(function(d) { return allselected.indexOf(d) >= 0; }).classed('selected',true);
                 } else {
                     allselected.push(row);
                 }
