@@ -108,7 +108,12 @@ var LineUp;
     grayColor: '#999999',
     numberformat: d3.format('.3n'),
     htmlLayout: {
-      headerHeight: 50
+      headerHeight: 50,
+      headerOffset: 2,
+      buttonTopPadding: 10,
+      labelLeftPadding: 12,
+      buttonRightPadding: 15,
+      buttonWidth: 13
     },
     renderingOptions: {
       stacked: false,
@@ -122,6 +127,8 @@ var LineUp;
        */
       mode: 'combined', //modes: combined vs separate
       rowHeight: 20,
+      rowPadding : 0.2, //padding for scale.rangeBands
+      rowBarPadding: 2,
       /**
        * number of backup rows to keep to avoid updating on every small scroll thing
        */

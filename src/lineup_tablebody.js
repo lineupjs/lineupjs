@@ -124,8 +124,8 @@ var LineUp;
       .append('rect')
       .attr({
         'class': 'tableData bar',
-        y: 2,
-        height: config.svgLayout.rowHeight - 4
+        y: config.svgLayout.rowBarPadding,
+        height: config.svgLayout.rowHeight - config.svgLayout.rowBarPadding*2
       });
     barRows.exit().remove();
 
@@ -195,8 +195,8 @@ var LineUp;
     );
     allStack.exit().remove();
     allStack.enter().append('rect').attr({
-      y: 2,
-      height: config.svgLayout.rowHeight - 4
+      y: config.svgLayout.rowBarPadding,
+      height: config.svgLayout.rowHeight - config.svgLayout.rowBarPadding*2
     });
 
     (_stackTransition ? allStack.transition(config.svgLayout.animationDuration) : allStack)
@@ -329,7 +329,7 @@ var LineUp;
         .domain(data.map(function (d) {
           return d[primaryKey];
         }))
-        .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, 0.2),
+        .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, that.config.svgLayout.rowPadding),
       prevRowScale = bundle.prevRowScale || rowScale;
     //backup the rowscale from the previous call to have a previous 'old' position
     bundle.prevRowScale = rowScale;
