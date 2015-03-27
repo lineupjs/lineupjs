@@ -92,6 +92,47 @@ var LineUp;
 //    )
   }
 
+    function updateCategorical(allHeaders, allRows, svg, config) {
+        // -- the text columns
+
+        var allTextHeaders = allHeaders.filter(function (d) {
+            return d instanceof LineUp.LayoutCategoricalColorColumn;
+        });
+
+        var icon = (config.svgLayout.rowHeight-config.svgLayout.rowBarPadding*2);
+        var textRows = allRows.selectAll('.tableData.cat')
+            .data(function (d) {
+                var dd = allTextHeaders.map(function (column) {
+                    return {
+                        value: column.getValue(d),
+                        label: column.getValue(d, 'raw'),
+                        offsetX: column.offsetX,
+                        columnW: column.getColumnWidth(),
+                        color: column.getColor(d),
+                        clip: 'url(#clip-B' + column.id + ')'
+                    };
+                });
+                return dd;
+            });
+        textRows.enter()
+            .append('rect')
+            .attr({
+                'class': 'tableData cat',
+                y: config.svgLayout.rowBarPadding,
+                height: config.svgLayout.rowHeight - config.svgLayout.rowBarPadding*2,
+                width: icon
+            }).append('title');
+        textRows.exit().remove();
+
+        textRows
+            .attr('x', function (d) {
+                return d.offsetX + 2;
+            })
+            .style('fill',function (d) {
+                return d.color;
+            }).select('title').text(function(d) { return d.label; });
+    }
+
   function showStacked(config) {
     //if not enabled or values are shown
     if (!config.renderingOptions.stacked || config.renderingOptions.values) {
@@ -556,6 +597,7 @@ var LineUp;
 
     LineUp.updateClipPaths(allHeaders, this.$bodySVG, 'B', true);
     updateText(allHeaders, allRows, svg, that.config);
+    updateCategorical(allHeaders, allRows, svg, that.config);
     if (that.config.renderingOptions.values) {
       allRowsSuper.classed('values', true);
       allRowsSuper.each(function (row) {

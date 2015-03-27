@@ -33,6 +33,7 @@ var LineUp;
         'single': LineUp.LayoutStringColumn,
         'string': LineUp.LayoutStringColumn,
         'categorical': LineUp.LayoutCategoricalColumn,
+        'categoricalcolor': LineUp.LayoutCategoricalColorColumn,
         'stacked': LineUp.LayoutStackedColumn,
         'rank': LineUp.LayoutRankColumn,
         'actions': LineUp.LayoutActionColumn

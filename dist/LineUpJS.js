@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-03-25
+/*! LineUpJS - v0.1.0 - 2015-03-27
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 (function() {
@@ -476,9 +476,20 @@ var LineUp;
    */
   function LineUpCategoricalColumn(desc, _, data) {
     LineUpColumn.call(this, desc);
-    this.categories = desc.categories || [];
+    this.categories = [];
+    this.categoryColors = d3.scale.category10().range();
+    var that = this;
+    if (desc.categories) {
+        desc.categories.forEach(function(cat,i) {
+            if (typeof cat === 'string') {
+                that.categories.push(cat);
+            } else {
+                that.categories.push(cat.name);
+                that.categoryColors[i] = cat.color;
+            }
+        });
+    }
     if (this.categories.length === 0) {
-      var that = this;
       this.categories = d3.set(data.map(function(row) { return that.getValue(row); })).values();
       this.categories.sort();
     }
@@ -772,6 +783,33 @@ var LineUp;
       return res;
     }
   });
+    function LayoutCategoricalColorColumn(desc, rawColumns) {
+        LayoutSingleColumn.call(this, desc, rawColumns);
+    }
+    LineUp.LayoutCategoricalColorColumn = LayoutCategoricalColorColumn;
+
+    LayoutCategoricalColorColumn.prototype = $.extend({}, LayoutSingleColumn.prototype, {
+        getColor: function(row) {
+            var cat = this.getValue(row, 'raw');
+            if (cat === null || cat === '') {
+                return null;
+            }
+            var index = this.column.categories.indexOf(cat);
+            if (index < 0) {
+                return null;
+            }
+            return this.column.categoryColors[index];
+        },
+        filterBy : function (row) {
+            return LayoutCategoricalColumn.prototype.filterBy.call(this, row);
+        },
+        makeCopy: function () {
+            var lookup = d3.map();
+            lookup.set(this.columnLink, this.column);
+            var res = new LayoutCategoricalColorColumn(this.description(), lookup);
+            return res;
+        }
+    });
 
   function LayoutRankColumn(desc, _dummy, _dummy2, storage) {
     LayoutColumn.call(this, desc ? desc : {}, []);
@@ -2170,6 +2208,7 @@ var LineUp;
         'single': LineUp.LayoutStringColumn,
         'string': LineUp.LayoutStringColumn,
         'categorical': LineUp.LayoutCategoricalColumn,
+        'categoricalcolor': LineUp.LayoutCategoricalColorColumn,
         'stacked': LineUp.LayoutStackedColumn,
         'rank': LineUp.LayoutRankColumn,
         'actions': LineUp.LayoutActionColumn
@@ -2629,6 +2668,47 @@ var LineUp;
 //        }
 //    )
   }
+
+    function updateCategorical(allHeaders, allRows, svg, config) {
+        // -- the text columns
+
+        var allTextHeaders = allHeaders.filter(function (d) {
+            return d instanceof LineUp.LayoutCategoricalColorColumn;
+        });
+
+        var icon = (config.svgLayout.rowHeight-config.svgLayout.rowBarPadding*2);
+        var textRows = allRows.selectAll('.tableData.cat')
+            .data(function (d) {
+                var dd = allTextHeaders.map(function (column) {
+                    return {
+                        value: column.getValue(d),
+                        label: column.getValue(d, 'raw'),
+                        offsetX: column.offsetX,
+                        columnW: column.getColumnWidth(),
+                        color: column.getColor(d),
+                        clip: 'url(#clip-B' + column.id + ')'
+                    };
+                });
+                return dd;
+            });
+        textRows.enter()
+            .append('rect')
+            .attr({
+                'class': 'tableData cat',
+                y: config.svgLayout.rowBarPadding,
+                height: config.svgLayout.rowHeight - config.svgLayout.rowBarPadding*2,
+                width: icon
+            }).append('title');
+        textRows.exit().remove();
+
+        textRows
+            .attr('x', function (d) {
+                return d.offsetX + 2;
+            })
+            .style('fill',function (d) {
+                return d.color;
+            }).select('title').text(function(d) { return d.label; });
+    }
 
   function showStacked(config) {
     //if not enabled or values are shown
@@ -3094,6 +3174,7 @@ var LineUp;
 
     LineUp.updateClipPaths(allHeaders, this.$bodySVG, 'B', true);
     updateText(allHeaders, allRows, svg, that.config);
+    updateCategorical(allHeaders, allRows, svg, that.config);
     if (that.config.renderingOptions.values) {
       allRowsSuper.classed('values', true);
       allRowsSuper.each(function (row) {
