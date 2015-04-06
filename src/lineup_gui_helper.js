@@ -282,10 +282,7 @@ var LineUp;
       original = selectedColumn.originalMapping();
     var that = this;
     var act = bak;
-    var callback = function (newscale) {
-      //scale = newscale;
-      act = newscale;
-    };
+
 
     var popup = d3.select("body").append("div")
       .attr({
@@ -294,19 +291,45 @@ var LineUp;
         left: +(window.innerWidth) / 2 - 100 + "px",
         top: 100 + "px",
         width: "420px",
-        height: "450px"
+        height: "470px"
       })
       .html(
         '<div style="font-weight: bold"> change mapping: </div>' +
         '<div class="mappingArea"></div>' +
+        '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'+
         '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
         '<button class="reset"><i class="fa fa-undo"></i> revert</button>' +
         '<button class="ok"><i class="fa fa-check"></i> ok</button>'
     );
+    var $filterIt = popup.select('input').on('change', function() {
+      applyMapping(act);
+    });
+    $filterIt.node().checked = Array.isArray(selectedColumn.filter);
     var access = function (row) {
       return +selectedColumn.getValue(row, 'raw');
     };
-    var editor = LineUp.mappingEditor(bak, original.domain(), this.storage.data, access, callback);
+
+    function applyMapping(newscale) {
+      act = newscale;
+      selectedColumn.mapping(act);
+      var val = $filterIt.node().checked;
+      if (val) {
+        selectedColumn.filter = newscale.domain();
+      } else {
+        selectedColumn.filter = undefined;
+      }
+      //console.log(act.domain().toString(), act.range().toString());
+      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
+      that.listeners['change-filter'](that, selectedColumn);
+      that.storage.resortData({filteredChanged: true});
+      that.updateAll(true);
+    }
+
+    var editorOptions = {
+      callback: applyMapping,
+      triggerCallback : 'dragend'
+    };
+    var editor = LineUp.mappingEditor(bak, original.domain(), that.storage.rawdata, access, editorOptions);
     popup.select('.mappingArea').call(editor);
 
     function isSame(a, b) {
@@ -314,23 +337,18 @@ var LineUp;
     }
 
     popup.select(".ok").on("click", function () {
-      selectedColumn.mapping(act);
-      //console.log(act.domain().toString(), act.range().toString());
-      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
-      that.storage.resortData({ filteredChanged: true});
-      that.updateAll(true);
+      applyMapping(act);
       popup.remove();
     });
-    popup.select(".cancel").on("click", function () {
+    popup.select('.cancel').on('click', function () {
       selectedColumn.mapping(bak);
       $button.classed('filtered', !isSame(bak.range(), original.range()) || !isSame(bak.domain(), original.domain()));
       popup.remove();
     });
-    popup.select(".reset").on("click", function () {
+    popup.select('.reset').on('click', function () {
       act = bak = original;
-      selectedColumn.mapping(original);
-      $button.classed('filtered', false);
-      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.data, access, callback);
+      applyMapping(original);
+      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.rawdata, access, editorOptions);
       popup.selectAll('.mappingArea *').remove();
       popup.select('.mappingArea').call(editor);
     });
@@ -343,12 +361,12 @@ var LineUp;
   LineUp.prototype.stackedColumnOptionsGui = function (selectedColumn) {
     //console.log(selectedColumn);
     var config = this.config;
-    var svgOverlay = this.$header.select(".overlay");
+    var svgOverlay = this.$header.select('.overlay');
     var that = this;
     // remove when clicked on already selected item
     var disappear = (this.stackedColumnModified === selectedColumn);
     if (disappear) {
-      svgOverlay.selectAll(".stackedOption").remove();
+      svgOverlay.selectAll('.stackedOption').remove();
       this.stackedColumnModified = null;
       return;
     }
@@ -365,14 +383,14 @@ var LineUp;
       var x = +(window.innerWidth) / 2 - 100;
       var y = +100;
 
-      var popup = d3.select("body").append("div")
+      var popup = d3.select('body').append('div')
         .attr({
-          "class": "lu-popup"
+          'class': 'lu-popup'
         }).style({
-          left: x + "px",
-          top: y + "px",
-          width: "200px",
-          height: "70px"
+          left: x + 'px',
+          top: y + 'px',
+          width: '200px',
+          height: '70px'
 
         })
         .html(
@@ -382,18 +400,18 @@ var LineUp;
           '<button class="ok"><i class="fa fa-check"></i> ok</button>'
       );
 
-      popup.select(".ok").on("click", function() {
-        var newValue = document.getElementById("popupInputText").value;
+      popup.select('.ok').on('click', function() {
+        var newValue = document.getElementById('popupInputText').value;
         if (newValue.length > 0) {
-          that.storage.setColumnLabel(col, newValue);
-          that.updateHeader(that.storage.getColumnLayout());
+          col.label = newValue;
+          that.updateHeader(that.storage.getColumnLayout(col.columnBundle));
           popup.remove();
         } else {
-          window.alert("non empty string required");
+          window.alert('non empty string required');
         }
       });
 
-      popup.select(".cancel").on("click", function () {
+      popup.select('.cancel').on('click', function () {
         popup.remove();
       });
     }
@@ -401,35 +419,35 @@ var LineUp;
     // else:
     this.stackedColumnModified = selectedColumn;
     var options = [
-      {name: "\uf014 remove", action: removeStackedColumn},
-      {name: "\uf044 rename", action: renameStackedColumn},
-      {name: "\uf0ae re-weight", action: that.reweightStackedColumnDialog}
+      {name: '\uf014 remove', action: removeStackedColumn},
+      {name: '\uf044 rename', action: renameStackedColumn},
+      {name: '\uf0ae re-weight', action: that.reweightStackedColumnDialog}
     ];
 
     var menuLength = options.length * 100;
 
-    var stackedOptions = svgOverlay.selectAll(".stackedOption").data([
+    var stackedOptions = svgOverlay.selectAll('.stackedOption').data([
       {d: selectedColumn, o: options}
     ]);
     stackedOptions.exit().remove();
 
 
-    var stackedOptionsEnter = stackedOptions.enter().append("g")
+    var stackedOptionsEnter = stackedOptions.enter().append('g')
       .attr({
-        "class": "stackedOption",
-        "transform": function (d) {
-          return "translate(" + (d.d.offsetX + d.d.columnWidth - menuLength) + "," + (config.htmlLayout.headerHeight / 2 - 2) + ")";
+        'class': 'stackedOption',
+        'transform': function (d) {
+          return 'translate(' + (d.d.offsetX + d.d.columnWidth - menuLength) + ',' + (config.htmlLayout.headerHeight / 2 - 2) + ')';
         }
       });
-    stackedOptionsEnter.append("rect").attr({
+    stackedOptionsEnter.append('rect').attr({
       x: 0,
       y: 0,
       width: menuLength,
       height: config.htmlLayout.headerHeight / 2 - 4
     });
-    stackedOptionsEnter.selectAll("text").data(function (d) {
+    stackedOptionsEnter.selectAll('text').data(function (d) {
       return d.o;
-    }).enter().append("text")
+    }).enter().append('text')
       .attr({
         x: function (d, i) {
           return i * 100 + 5;
@@ -440,14 +458,14 @@ var LineUp;
         return d.name;
       });
 
-    stackedOptions.selectAll("text").on("click", function (d) {
-      svgOverlay.selectAll(".stackedOption").remove();
+    stackedOptions.selectAll('text').on('click', function (d) {
+      svgOverlay.selectAll('.stackedOption').remove();
       d.action.call(that, selectedColumn);
     });
 
     stackedOptions.transition().attr({
-      "transform": function (d) {
-        return "translate(" + (d.d.offsetX + d.d.columnWidth - menuLength) + "," + (config.htmlLayout.headerHeight / 2 - 2) + ")";
+      'transform': function (d) {
+        return 'translate(' + (d.d.offsetX + d.d.columnWidth - menuLength) + ',' + (config.htmlLayout.headerHeight / 2 - 2) + ')';
       }
     });
   };
@@ -458,14 +476,14 @@ var LineUp;
       return;
     }
     var bak = column.filter || [];
-    var popup = d3.select("body").append("div")
+    var popup = d3.select('body').append('div')
       .attr({
-        "class": "lu-popup"
+        'class': 'lu-popup'
       }).style({
-        left: +(window.innerWidth) / 2 - 100 + "px",
-        top: 100 + "px",
-        width: (400) + "px",
-        height: (300) + "px"
+        left: +(window.innerWidth) / 2 - 100 + 'px',
+        top: 100 + 'px',
+        width: (400) + 'px',
+        height: (300) + 'px'
       })
       .html(
       '<span style="font-weight: bold">Edit Filter</span>' +
@@ -476,9 +494,9 @@ var LineUp;
       '<button class="reset"><i class="fa fa-undo" title="reset"></i></button></form>'
     );
 
-    popup.select(".selectionTable").style({
-      width: (400 - 10) + "px",
-      height: (300 - 40) + "px"
+    popup.select('.selectionTable').style({
+      width: (400 - 10) + 'px',
+      height: (300 - 40) + 'px'
     });
 
     var that = this;
@@ -489,24 +507,24 @@ var LineUp;
       return {d: d, isChecked: bak.length === 0 || bak.indexOf(d) >= 0};
     });
 
-    var trs = popup.select('tbody').selectAll("tr").data(trData);
-    trs.enter().append("tr");
-    trs.append("td").attr("class", "checkmark");
-    trs.append("td").attr("class", "datalabel").text(function (d) {
+    var trs = popup.select('tbody').selectAll('tr').data(trData);
+    trs.enter().append('tr');
+    trs.append('td').attr('class', 'checkmark');
+    trs.append('td').attr('class', 'datalabel').text(function (d) {
       return d.d;
     });
 
     function redraw() {
-      var trs = popup.select('tbody').selectAll("tr").data(trData);
-      trs.select(".checkmark").html(function (d) {
+      var trs = popup.select('tbody').selectAll('tr').data(trData);
+      trs.select('.checkmark').html(function (d) {
         return '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>';
       })
-      .on("click", function (d) {
+      .on('click', function (d) {
         d.isChecked = !d.isChecked;
         redraw();
       });
-      trs.select(".datalabel").style("opacity", function (d) {
-        return d.isChecked ? "1.0" : ".8";
+      trs.select('.datalabel').style('opacity', function (d) {
+        return d.isChecked ? '1.0' : '.8';
       });
     }
     redraw();
@@ -514,22 +532,23 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0 && filter.length < column.column.categories.length));
+      that.listeners['change-filter'](that, column);
       that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
 
-    popup.select(".cancel").on("click", function () {
+    popup.select('.cancel').on('click', function () {
       updateData(bak);
       popup.remove();
     });
-    popup.select(".reset").on("click", function () {
+    popup.select('.reset').on('click', function () {
       trData.forEach(function (d) {
         d.isChecked = true;
       });
       redraw();
       updateData(null);
     });
-    popup.select(".ok").on("click", function () {
+    popup.select('.ok').on('click', function () {
       var f = trData.filter(function (d) {
         return d.isChecked;
       }).map( function (d) {
@@ -553,12 +572,12 @@ var LineUp;
     pos.top += column.offsetY;
     var bak = column.filter || '';
 
-    var popup = d3.select("body").append("div")
+    var popup = d3.select('body').append('div')
       .attr({
-        "class": "lu-popup2"
+        'class': 'lu-popup2'
       }).style({
-        left: pos.left + "px",
-        top: pos.top + "px"
+        left: pos.left + 'px',
+        top: pos.top + 'px'
       })
       .html(
         '<form onsubmit="return false"><input type="text" id="popupInputText" placeholder="containing..." autofocus="true" size="18" value="' + bak + '"><br>' +
@@ -572,21 +591,22 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0));
+      that.listeners['change-filter'](that, column);
       that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
 
-    popup.select(".cancel").on("click", function () {
-      document.getElementById("popupInputText").value = bak;
+    popup.select('.cancel').on('click', function () {
+      document.getElementById('popupInputText').value = bak;
       updateData(bak);
       popup.remove();
     });
-    popup.select(".reset").on("click", function () {
-      document.getElementById("popupInputText").value = '';
+    popup.select('.reset').on('click', function () {
+      document.getElementById('popupInputText').value = '';
       updateData(null);
     });
-    popup.select(".ok").on("click", function () {
-      updateData(document.getElementById("popupInputText").value);
+    popup.select('.ok').on('click', function () {
+      updateData(document.getElementById('popupInputText').value);
       popup.remove();
     });
   };
@@ -596,14 +616,14 @@ var LineUp;
 
     function showTooltip(content, xy) {
       $tooltip.html(content).css({
-        left: xy.x + "px",
-        top: (xy.y + xy.height - $container.offset().top) + "px"
+        left: xy.x + 'px',
+        top: (xy.y + xy.height - $container.offset().top) + 'px'
       }).fadeIn();
 
       var stickout = ($(window).height() + $(window).scrollTop()) <= ((xy.y + xy.height) + $tooltip.height() - 20);
       var stickouttop = $(window).scrollTop() > (xy.y - $tooltip.height());
       if (stickout && !stickouttop) { //if the bottom is not visible move it on top of the box
-        $tooltip.css('top', (xy.y - $tooltip.height() - $container.offset().top) + "px");
+        $tooltip.css('top', (xy.y - $tooltip.height() - $container.offset().top) + 'px');
       }
     }
 
@@ -614,12 +634,12 @@ var LineUp;
     function moveTooltip(xy) {
       if (xy.x) {
         $tooltip.css({
-          left: xy.x + "px"
+          left: xy.x + 'px'
         });
       }
       if (xy.y) {
         $tooltip.css({
-          top: xy.y  - $container.offset().top + "px"
+          top: xy.y  - $container.offset().top + 'px'
         });
       }
     }
@@ -666,13 +686,18 @@ var LineUp;
     shift = jbody.offset().top - $container.offset().top + topShift;
     //use a resize sensor of a utility lib to also detect resize changes
     //new ResizeSensor($container, function() {
-    //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), "resized");
+    //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), 'resized');
     //  that.updateBody();
     //});
     function selectVisibleRows(data, rowScale) {
       var top = container.scrollTop - shift,
         bottom = top + $container.innerHeight(),
         i = 0, j;
+      /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
+      if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
+        console.log('show all');
+        return [0, data.length];
+      }*/
       if (top > 0) {
         i = Math.round(top / rowHeight);
         //count up till really even partial rows are visible
@@ -706,7 +731,7 @@ var LineUp;
 
     function dragWeightStarted() {
       d3.event.sourceEvent.stopPropagation();
-      d3.select(this).classed("dragging", true);
+      d3.select(this).classed('dragging', true);
     }
 
 
@@ -717,9 +742,10 @@ var LineUp;
     }
 
     function dragWeightEnded() {
-      d3.select(this).classed("dragging", false);
+      d3.select(this).classed('dragging', false);
 
       if (that.config.columnBundles.primary.sortedColumn instanceof LineUp.LayoutStackedColumn) {
+        that.listeners['change-sortcriteria'](that, that.config.columnBundles.primary.sortedColumn);
         that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
         that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
       }
@@ -734,8 +760,8 @@ var LineUp;
       .origin(function (d) {
         return d;
       })
-      .on("dragstart", dragWeightStarted)
-      .on("drag", draggedWeight)
-      .on("dragend", dragWeightEnded);
+      .on('dragstart', dragWeightStarted)
+      .on('drag', draggedWeight)
+      .on('dragend', dragWeightEnded);
   };
 }(LineUp || (LineUp = {}), d3, jQuery));

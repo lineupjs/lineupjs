@@ -146,6 +146,10 @@
     fill: black;
     font-weight: bold;
 }
+.lu .row.selected rect.filler {
+    stroke: orange;
+    stroke-width: 1;
+}
 .lu .row.values text {
     fill: black;
 }

@@ -16,25 +16,22 @@ var LineUp;
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
     //trigger hover event
-    this.listeners = d3.dispatch('hover');
+    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter', 'selected','multiselected');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
       columnBundles: {
-        "primary": {
+        primary: {
           sortedColumn: null,
-          sortingOrderAsc: true
-        },
-        "secondary": {
-          sortedColumn: [],
-          sortingOrderAsc: true
+          sortingOrderAsc: true,
+          prevRowScale : null
         }
       }});
     this.storage.config = this.config;
 
     //create basic structure
     if (this.config.svgLayout.mode === 'combined') {
-      //within a single svg with "fixed" header
+      //within a single svg with 'fixed' header
       $container.classed('lu-mode-combined', true);
       this.$table = $container.append('svg').attr('class', 'lu');
       $defs = this.$table.append('defs');
@@ -108,10 +105,15 @@ var LineUp;
   LineUp.defaultConfig = {
     colorMapping: d3.map(),
     columnColors: d3.scale.category20(),
-    grayColor: "#999999",
+    grayColor: '#999999',
     numberformat: d3.format('.3n'),
     htmlLayout: {
-      headerHeight: 50
+      headerHeight: 50,
+      headerOffset: 2,
+      buttonTopPadding: 10,
+      labelLeftPadding: 12,
+      buttonRightPadding: 15,
+      buttonWidth: 13
     },
     renderingOptions: {
       stacked: false,
@@ -125,6 +127,8 @@ var LineUp;
        */
       mode: 'combined', //modes: combined vs separate
       rowHeight: 20,
+      rowPadding : 0.2, //padding for scale.rangeBands
+      rowBarPadding: 2,
       /**
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
@@ -132,16 +136,16 @@ var LineUp;
       animationDuration: 1000,
       plusSigns: {
         /* addStackedColumn: {
-         title: "add stacked column",
-         action: "addNewEmptyStackedColumn",
+         title: 'add stacked column',
+         action: 'addNewEmptyStackedColumn',
          x: 0, y: 2,
          w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
          }*/
       },
       rowActions: [
         /*{
-         name: "explore",
-         icon: "\uf067",
+         name: 'explore',
+         icon: '\uf067',
          action: function(row) {
          console.log(row);
          }
@@ -151,7 +155,9 @@ var LineUp;
     manipulative: true,
     interaction: {
       //enable the table tooltips
-      tooltips: true
+      tooltips: true,
+      multiselect: function() { return false; },
+      rangeselect: function() { return false; }
     },
     filter: {
       skip: 0,
@@ -169,7 +175,7 @@ var LineUp;
   };
 
   LineUp.prototype.changeDataStorage = function (spec) {
-//    d3.select("#lugui-table-header-svg").selectAll().remove();
+//    d3.select('#lugui-table-header-svg').selectAll().remove();
     this.storage = spec.storage;
     this.storage.config = this.config;
     this.spec = spec;
@@ -209,7 +215,7 @@ var LineUp;
     this.updateAll();
   };
 
-  LineUp.prototype.assignColors = function (headers) {
+  LineUp.prototype.assignColors = function (columns) {
     //Color schemes are in config (.columnColors / .grayColor)
 
     // clear map
@@ -218,10 +224,10 @@ var LineUp;
 
     var colCounter = 0;
 
-    headers.forEach(function (d) {
+    columns.forEach(function (d) {
       if (d.color) {
         config.colorMapping.set(d.id, d.color);
-      } else if ((d instanceof LineUp.LineUpStringColumn) || (d.id === "rank")) {
+      } else if ((d instanceof LineUp.LineUpStringColumn) || (d.id === 'rank')) {
         // gray columns are:
         config.colorMapping.set(d.id, config.grayColor);
       } else {
@@ -232,9 +238,18 @@ var LineUp;
     //console.log(config.colorMapping);
   };
 
-  LineUp.prototype.updateAll = function (stackTransition) {
-    this.updateHeader(this.storage.getColumnLayout());
-    this.updateBody(this.storage.getColumnLayout(), this.storage.getData(), stackTransition || false);
+  LineUp.prototype.updateAll = function (stackTransition, bundle) {
+    var that = this;
+    function updateBundle(b) {
+      var cols = that.storage.getColumnLayout(b);
+      that.updateHeader(cols);
+      that.updateBody(cols, that.storage.getData(b), stackTransition || false);
+    }
+    if (bundle) {
+      updateBundle(bundle);
+    } else {
+      Object.keys(this.storage.bundles).forEach(updateBundle);
+    }
   };
 
   /**
@@ -255,8 +270,9 @@ var LineUp;
     bundle.sortingOrderAsc = asc;
     bundle.sortedColumn = d;
 
+    this.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
     this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
-    this.updateAll();
+    this.updateAll(false, d.columnBundle);
   };
 
   /**
@@ -299,16 +315,33 @@ var LineUp;
       column = this.storage.getColumnByName(column);
     }
     column = column || this.config.columnBundles.primary.sortedColumn;
+    var bundle = column.columnBundle;
     if (!(column instanceof LineUp.LayoutStackedColumn)) {
       return false;
     }
     column.updateWeights(weights);
     //trigger resort
-    if (column === this.config.columnBundles.primary.sortedColumn) {
-      this.storage.resortData({});
+    if (column === this.config.columnBundles[bundle].sortedColumn) {
+      this.listeners['change-sortcriteria'](this, column, this.config.columnBundles[bundle]);
+      this.storage.resortData({ key: bundle });
     }
-    this.updateAll();
+    this.updateAll(false, bundle);
     return true;
+  };
+
+    /**
+     * manually change/set the filter of a column
+     * @param column
+     * @param filter
+     */
+  LineUp.prototype.changeFilter = function (column, filter) {
+    if (typeof column === 'string') {
+      column = this.storage.getColumnByName(column);
+    }
+    column.filter = filter;
+    this.listeners['change-filter'](this, column);
+    this.storage.resortData({filteredChanged: true});
+    this.updateBody();
   };
 
   /**

@@ -4,6 +4,15 @@
 /* global d3, jQuery, _ */
 var LineUp;
 (function (LineUp, d3, $, _, undefined) {
+
+  function bundleSetter(bundle) {
+    return function setBundle(col) {
+      col.columnBundle = bundle;
+      if (col instanceof LineUp.LayoutStackedColumn) {
+        col.children.forEach(setBundle);
+      }
+    };
+  }
   /**
    * An implementation of data storage for reading locally
    * @param tableId
@@ -24,6 +33,7 @@ var LineUp;
         'single': LineUp.LayoutStringColumn,
         'string': LineUp.LayoutStringColumn,
         'categorical': LineUp.LayoutCategoricalColumn,
+        'categoricalcolor': LineUp.LayoutCategoricalColorColumn,
         'stacked': LineUp.LayoutStackedColumn,
         'rank': LineUp.LayoutRankColumn,
         'actions': LineUp.LayoutActionColumn
@@ -43,8 +53,7 @@ var LineUp;
 
     this.primaryKey = primaryKey;
     this.rawdata = data;
-    this.data = data;
-    this.initialSort = true;
+    this.selected = d3.set();
     this.rawcols = columns.map(toColumn);
     this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
 
@@ -67,12 +76,15 @@ var LineUp;
 
     this.storageConfig.toLayoutColumn = toLayoutColumn;
 
-    this.bundles = {
-      "primary": {
+    var bundles = this.bundles = {};
+    Object.keys(this.layout).forEach(function(l) {
+      bundles[l] = {
         layoutColumns: [],
-        needsLayout: true  // this triggers the layout generation at first access to "getColumnLayout"
-      }
-    };
+        needsLayout: true,  // this triggers the layout generation at first access to "getColumnLayout"
+        data: data,
+        initialSort :true
+      };
+    });
   }
 
   LineUp.LineUpLocalStorage = LineUpLocalStorage;
@@ -113,16 +125,41 @@ var LineUp;
         return this.bundles[_key].layoutColumns;
       },
 
+      isSelected : function(row) {
+        return this.selected.has(row[this.primaryKey]);
+      },
+      select : function(row) {
+        this.selected.add(row[this.primaryKey]);
+      },
+      selectAll : function(rows) {
+        var that = this;
+        rows.forEach(function(row) {
+          that.selected.add(row[that.primaryKey]);
+        });
+      },
+      setSelection: function(rows) {
+        this.clearSelection();
+        this.selectAll(rows);
+      },
+      deselect: function(row) {
+        this.selected.remove(row[this.primaryKey]);
+      },
+      selectedRows: function() {
+        return this.rawdata.filter(this.isSelected.bind(this));
+      },
+      clearSelection : function() {
+        this.selected = d3.set();
+      },
+
       /**
        *  get the data
        *  @returns data
        */
-      getData: function () {
-        return this.data;
+      getData: function (bundle) {
+        bundle = bundle || "primary";
+        return this.bundles[bundle].data;
       },
       filterData: function (columns) {
-        columns = columns || this.bundles["primary"].layoutColumns;
-
         var flat = [];
         columns.forEach(function (d) {
           d.flattenMe(flat);
@@ -134,9 +171,9 @@ var LineUp;
           flat.push(this.config.filter.filter);
         }
         if (flat.length === 0) {
-          this.data = this.rawdata;
+          return this.rawdata;
         } else {
-          this.data = this.rawdata.filter(function (row) {
+          return this.rawdata.filter(function (row) {
             return flat.every(function (f) {
               return f.filterBy(row);
             });
@@ -145,38 +182,42 @@ var LineUp;
       },
       resortData: function (spec) {
 
-        var _key = spec.key || "primary", that = this;
+        var _key = spec.key || 'primary', that = this;
         var bundle = this.bundles[_key];
-        var asc = spec.asc || this.config.columnBundles.primary.sortingOrderAsc;
-        var column = spec.column || this.config.columnBundles.primary.sortedColumn;
+        var asc = spec.asc || this.config.columnBundles[_key].sortingOrderAsc;
+        var column = spec.column || this.config.columnBundles[_key].sortedColumn;
 
-        //console.log("resort: ", spec);
-        this.filterData(bundle.layoutColumns);
-        if (spec.filteredChanged || this.initialSort) {
+        //console.log('resort: ', spec);
+        var cols = this.getColumnLayout(_key);
+        bundle.data = this.filterData(cols);
+        if (spec.filteredChanged || bundle.initialSort) {
           //trigger column updates
           var flat = [];
-          bundle.layoutColumns.forEach(function (d) {
+          cols.forEach(function (d) {
             d.flattenMe(flat);
           });
           flat.forEach(function (col) {
-            col.prepare(that.data, that.config.renderingOptions.histograms);
+            col.prepare(bundle.data, that.config.renderingOptions.histograms);
           });
-          this.initialSort = false;
+          bundle.initialSort = false;
         }
-
+        var primary = this.primaryKey;
         function sort(a,b) {
           var r = column.sortBy(a,b);
+          if (r === 0 || isNaN(r)) { //by default sort by primary key
+            return d3.ascending(a[primary], b[primary]);
+          }
           return asc ? -r : r;
         }
         if (column) {
-          this.data.sort(sort);
+          bundle.data.sort(sort);
         }
 
         var start = this.config.filter.skip ? this.config.filter.skip : 0;
         if ((this.config.filter.limit && isFinite(this.config.filter.limit))) {
-          this.data = this.data.slice(start, start + this.config.filter.limit);
+          bundle.data = bundle.data.slice(start, start + this.config.filter.limit);
         } else {
-          this.data = this.data.slice(start);
+          bundle.data = bundle.data.slice(start);
         }
 
         var rankColumn = bundle.layoutColumns.filter(function (d) {
@@ -191,7 +232,7 @@ var LineUp;
               return column.getValue(d);
             };
           }
-          this.assignRanks(this.data, accessor, rankColumn);
+          this.assignRanks(bundle.data, accessor, rankColumn);
         }
       },
       /*
@@ -216,13 +257,14 @@ var LineUp;
         });
       },
       generateLayout: function (layout, bundle) {
-        var _bundle = bundle || "primary";
+        var _bundle = bundle || 'primary';
 
         // create Rank Column
 //            new LayoutRankColumn();
 
-        var b = {};
+        var b = this.bundles[_bundle];
         b.layoutColumns = layout[_bundle].map(this.storageConfig.toLayoutColumn);
+
         //console.log(b.layoutColumns, layout);
         //if there is no rank column create one
         if (b.layoutColumns.filter(function (d) {
@@ -238,10 +280,11 @@ var LineUp;
           b.layoutColumns.push(new LineUp.LayoutActionColumn());
         }
 
-        this.bundles[_bundle] = b;
+        //set layout bundle reference
+        b.layoutColumns.forEach(bundleSetter(_bundle));
       },
       addColumn: function (col, bundle, position) {
-        var _bundle = bundle || "primary";
+        var _bundle = bundle || 'primary';
         var cols = this.bundles[_bundle].layoutColumns, i, c;
         //insert the new column after the first non rank, text column
         if (typeof position === 'undefined' || position === null) {
@@ -258,21 +301,19 @@ var LineUp;
           }
           i =  Math.max(0, Math.min(cols.length, position));
         }
+        col.columnBundle = _bundle;
         cols.splice(i, 0, col);
       },
-      addStackedColumn: function (spec, position) {
+      addStackedColumn: function (spec, position, bundle) {
         var _spec = $.extend({ type: 'stacked', label: 'Stacked', children: []}, spec);
-        this.addColumn(this.storageConfig.toLayoutColumn(_spec), null, position);
+        this.addColumn(this.storageConfig.toLayoutColumn(_spec), bundle, position);
       },
-      addSingleColumn: function (spec, position) {
-        this.addColumn(this.storageConfig.toLayoutColumn(spec), null, position);
+      addSingleColumn: function (spec, position, bundle) {
+        this.addColumn(this.storageConfig.toLayoutColumn(spec), bundle, position);
       },
 
-
-      removeColumn: function (col, bundle) {
-        var _bundle = bundle || "primary";
-
-        var headerColumns = this.bundles[_bundle].layoutColumns;
+      removeColumn: function (col) {
+        var headerColumns = this.bundles[col.columnBundle].layoutColumns;
 
         if (col instanceof LineUp.LayoutStackedColumn) {
           var indexOfElement = _.indexOf(headerColumns, col);//function(c){ return (c.id == d.id)});
@@ -306,47 +347,38 @@ var LineUp;
 
 
       },
-      setColumnLabel: function (col, newValue, bundle) {
-        var _bundle = bundle || "primary";
-
-        //TODO: could be done for all Column header
-        var headerColumns = this.bundles[_bundle].layoutColumns;
-        headerColumns.filter(function (d) {
-          return d.id === col.id;
-        })[0].label = newValue;
-      },
-      moveColumn: function (column, targetColumn, position, bundle) {
-        var _bundle = bundle || "primary",
-          headerColumns = this.bundles[_bundle].layoutColumns,
+      moveColumn: function (column, targetColumn, position) {
+        var sourceColumns = this.bundles[column.columnBundle].layoutColumns,
+          targetColumns = this.bundles[targetColumn.columnBundle].layoutColumns,
           targetIndex;
 
         // different cases:
         if (column.parent == null && targetColumn.parent == null) {
           // simple L1 Column movement:
 
-          headerColumns.splice(headerColumns.indexOf(column), 1);
+          sourceColumns.splice(sourceColumns.indexOf(column), 1);
 
-          targetIndex = headerColumns.indexOf(targetColumn);
-          if (position === "r") {
+          targetIndex = targetColumns.indexOf(targetColumn);
+          if (position === 'r') {
             targetIndex++;
           }
-          headerColumns.splice(targetIndex, 0, column);
+          targetColumns.splice(targetIndex, 0, column);
         }
         else if ((column.parent !== null) && targetColumn.parent === null) {
           // move from stacked Column
           column.parent.removeChild(column);
 
-          targetIndex = headerColumns.indexOf(targetColumn);
-          if (position === "r") {
+          targetIndex = targetColumns.indexOf(targetColumn);
+          if (position === 'r') {
             targetIndex++;
           }
-          headerColumns.splice(targetIndex, 0, column);
+          targetColumns.splice(targetIndex, 0, column);
 
         } else if (column.parent === null && (targetColumn.parent !== null)) {
 
           // move into stacked Column
           if (targetColumn.parent.addChild(column, targetColumn, position)) {
-            headerColumns.splice(headerColumns.indexOf(column), 1);
+            sourceColumns.splice(sourceColumns.indexOf(column), 1);
           }
 
         } else if ((column.parent !== null) && (targetColumn.parent !== null)) {
@@ -355,23 +387,23 @@ var LineUp;
           column.parent.removeChild(column);
           targetColumn.parent.addChild(column, targetColumn, position);
         }
+        bundleSetter(targetColumn.columnBundle)(column);
         this.resortData({});
       },
-      copyColumn: function (column, targetColumn, position, bundle) {
-        var _bundle = bundle || "primary";
-
-        var headerColumns = this.bundles[_bundle].layoutColumns;
+      copyColumn: function (column, targetColumn, position) {
+        var targetColumns = this.bundles[targetColumn.columnBundle].layoutColumns;
 
         var newColumn = column.makeCopy();
+        bundleSetter(targetColumn.columnBundle)(newColumn);
 
         // different cases:
         if (targetColumn.parent == null) {
 
-          var targetIndex = headerColumns.indexOf(targetColumn);
-          if (position === "r") {
+          var targetIndex = targetColumns.indexOf(targetColumn);
+          if (position === 'r') {
             targetIndex++;
           }
-          headerColumns.splice(targetIndex, 0, newColumn);
+          targetColumns.splice(targetIndex, 0, newColumn);
         }
         else if ((targetColumn.parent !== null)) {
           // copy into stacked Column
@@ -395,8 +427,5 @@ var LineUp;
         }
         return null;
       }
-
-
-
     });
 }(LineUp || (LineUp = {}), d3, jQuery, _));

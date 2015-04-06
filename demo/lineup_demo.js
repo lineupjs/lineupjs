@@ -175,7 +175,7 @@
       reader.readAsText(datafile);
     }
 
-    function countOccurences(text, char) {
+    function countOccurrences(text, char) {
       return (text.match(new RegExp(char,'g'))||[]).length;
     }
 
@@ -184,15 +184,14 @@
     }
 
     function deriveDesc(columns, data, separator) {
-      var cols = columns.map(function(col, i) {
-        col = col.trim();
+      var cols = columns.map(function(col) {
         var r = {
           column: col,
           type: 'string'
         };
         if (isNumeric(data[0][col])) {
           r.type = 'number';
-          r.domain = d3.extent(data, function (row) { return row[col].trim().length === 0 ? undefined : +row[col]});
+          r.domain = d3.extent(data, function (row) { return row[col].length === 0 ? undefined : +(row[col])});
         } else {
           var sset = d3.set(data.map(function (row) { return row[col];}));
           if (sset.size() <= Math.max(20, data.length * 0.2)) { //at most 20 percent unique values
@@ -207,6 +206,28 @@
         primaryKey : columns[0],
         columns: cols
       };
+    }
+
+    function normalizeValue(val) {
+      if (typeof val === 'string') {
+        val = val.trim();
+        if (val.length >= 2 && val.charAt(0) === '"' && val.charAt(val.length-1) === '"') {
+          val = val.slice(1, val.length-1);
+        }
+      }
+      return val;
+    }
+    /**
+     * trims the given object
+     * @param row
+     * @return {{}}
+     */
+    function normalizeRow(row) {
+      var r = {};
+      Object.keys(row).forEach(function (key) {
+        r[normalizeValue(key)] = normalizeValue(row[key]);
+      });
+      return r;
     }
 
     uploadUI(function (files) {
@@ -224,7 +245,7 @@
           if (desc.data) {
             loadDataImpl(name, desc, desc.data);
           } else if (desc.url) {
-            d3.dsv(desc.separator || '\t', 'text/plain')(desc.url, function (_data) {
+            d3.dsv(desc.separator || '\t', 'text/plain')(desc.url, normalizeRow, function (_data) {
               loadDataImpl(name, desc, _data);
             });
           } else if (desc.file) {
@@ -246,16 +267,16 @@
           var header = data_s.slice(0,data_s.indexOf('\n'));
           //guess the separator,
           var separator = [',','\t',';'].reduce(function(prev, current) {
-            var c = countOccurences(header, current);
+            var c = countOccurrences(header, current);
             if (c > prev.c) {
               prev.c = c;
               prev.s = current;
             }
             return prev;
           },{ s: ',', c : 0});
-          var _data = d3.dsv(separator.s, 'text/plain').parse(data_s);
+          var _data = d3.dsv(separator.s, 'text/plain').parse(data_s, normalizeRow);
           //derive a description file
-          var desc = deriveDesc(header.split(separator.s), _data);
+          var desc = deriveDesc(header.split(separator.s).map(normalizeValue), _data);
           var name = f.name.substring(0, f.name.lastIndexOf('.'));
           loadDataImpl(name, desc, _data);
         };
