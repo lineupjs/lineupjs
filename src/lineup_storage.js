@@ -53,6 +53,7 @@ var LineUp;
 
     this.primaryKey = primaryKey;
     this.rawdata = data;
+    this.selected = d3.set();
     this.rawcols = columns.map(toColumn);
     this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
 
@@ -122,6 +123,32 @@ var LineUp;
         }
 
         return this.bundles[_key].layoutColumns;
+      },
+
+      isSelected : function(row) {
+        return this.selected.has(row[this.primaryKey]);
+      },
+      select : function(row) {
+        this.selected.add(row[this.primaryKey]);
+      },
+      selectAll : function(rows) {
+        var that = this;
+        rows.forEach(function(row) {
+          that.selected.add(row[that.primaryKey]);
+        });
+      },
+      setSelection: function(rows) {
+        this.clearSelection();
+        this.selectAll(rows);
+      },
+      deselect: function(row) {
+        this.selected.remove(row[this.primaryKey]);
+      },
+      selectedRows: function() {
+        return this.rawdata.filter(this.isSelected.bind(this));
+      },
+      clearSelection : function() {
+        this.selected = d3.set();
       },
 
       /**

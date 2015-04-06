@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-03-27
+/*! LineUpJS - v0.1.0 - 2015-04-06
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 (function() {
@@ -2228,6 +2228,7 @@ var LineUp;
 
     this.primaryKey = primaryKey;
     this.rawdata = data;
+    this.selected = d3.set();
     this.rawcols = columns.map(toColumn);
     this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
 
@@ -2297,6 +2298,32 @@ var LineUp;
         }
 
         return this.bundles[_key].layoutColumns;
+      },
+
+      isSelected : function(row) {
+        return this.selected.has(row[this.primaryKey]);
+      },
+      select : function(row) {
+        this.selected.add(row[this.primaryKey]);
+      },
+      selectAll : function(rows) {
+        var that = this;
+        rows.forEach(function(row) {
+          that.selected.add(row[that.primaryKey]);
+        });
+      },
+      setSelection: function(rows) {
+        this.clearSelection();
+        this.selectAll(rows);
+      },
+      deselect: function(row) {
+        this.selected.remove(row[this.primaryKey]);
+      },
+      selectedRows: function() {
+        return this.rawdata.filter(this.isSelected.bind(this));
+      },
+      clearSelection : function() {
+        this.selected = d3.set();
       },
 
       /**
@@ -2907,12 +2934,15 @@ var LineUp;
     var primaryKey = this.storage.primaryKey,
         $rows = this.$body.selectAll('.row');
     if (Array.isArray(row)) {
-        row = row.map(function(d) { return d[primaryKey]; });
-        $rows.classed('selected', function(d) { return row.indexOf(d[primaryKey]) > 0; });
+      this.storage.setSelection(row);
+      row = row.map(function(d) { return d[primaryKey]; });
+      $rows.classed('selected', function(d) { return row.indexOf(d[primaryKey]) > 0; });
     } else if (row) {
-        $rows.classed('selected',function(d) { return d[primaryKey] === row[primaryKey]; });
+      this.storage.setSelection([row]);
+      $rows.classed('selected',function(d) { return d[primaryKey] === row[primaryKey]; });
     } else {
-        $rows.classed('selected',false);
+      this.storage.clearSelection();
+      $rows.classed('selected',false);
     }
   };
   /**
@@ -3118,50 +3148,56 @@ var LineUp;
         d3.select(this).classed('hover', false);
         d3.select(this).selectAll('text.hoveronly').remove();
       },
-      click: function(row) {
+      click: function (row) {
         var $row = d3.select(this),
-            selected = $row.classed('selected');
+            selected = that.storage.isSelected(row);
         if (that.config.interaction.multiselect(d3.event)) {
-            var allselected = allRowsSuper.filter('.selected').data();
-            if (selected) {
-                $row.classed('selected', false);
-                if (allselected.length === 1) {
-                    //remove the last one
-                    that.listeners['selected'](null);
-                }
-                allselected.splice(allselected.indexOf(row),1);
-            } else {
-                $row.classed('selected', true);
-                if (that.config.interaction.rangeselect(d3.event) && allselected.length === 1) {
-                 //select a range
-                 var i = rawData.indexOf(row), j = rawData.indexOf(allselected[0]);
-                 if (i < j) {
-                     allselected = rawData.slice(i,j+1);
-                 } else {
-                     allselected = rawData.slice(j, i + 1);
-                 }
-                 allRowsSuper.filter(function(d) { return allselected.indexOf(d) >= 0; }).classed('selected',true);
-                } else {
-                    allselected.push(row);
-                }
-                if (allselected.length === 1) {
-                    //remove the last one
-                    that.listeners['selected'](row, null);
-                }
+          var allselected = that.storage.selectedRows();
+          if (selected) {
+            $row.classed('selected', false);
+            that.storage.deselect(row);
+            if (allselected.length === 1) {
+              //remove the last one
+              that.listeners['selected'](null);
             }
-            that.listeners['multiselected'](allselected);
+          } else {
+            $row.classed('selected', true);
+            that.storage.select(row);
+            if (that.config.interaction.rangeselect(d3.event) && allselected.length === 1) {
+              //select a range
+              var i = rawData.indexOf(row), j = rawData.indexOf(allselected[0]);
+              if (i < j) {
+                allselected = rawData.slice(i, j + 1);
+              } else {
+                allselected = rawData.slice(j, i + 1);
+              }
+              var toSelect = allRowsSuper.filter(function (d) {
+                return allselected.indexOf(d) >= 0;
+              }).classed('selected', true).data();
+              that.storage.selectAll(toSelect);
+            } else {
+              allselected.push(row);
+            }
+            if (allselected.length === 1) {
+              //remove the last one
+              that.listeners['selected'](row, null);
+            }
+          }
+          that.listeners['multiselected'](allselected);
         } else {
-            if (selected) {
-                $row.classed('selected', false);
-                that.listeners['selected'](null);
-                that.listeners['multiselected']([]);
-            } else {
-                var prev = allRowsSuper.filter('.selected').classed('selected', false);
-                prev = prev.empty ? null : prev.datum();
-                $row.classed('selected', true);
-                that.listeners['selected'](row, prev);
-                that.listeners['multiselected']([row]);
-            }
+          if (selected) {
+            $row.classed('selected', false);
+            that.storage.deselect(row);
+            that.listeners['selected'](null);
+            that.listeners['multiselected']([]);
+          } else {
+            var prev = allRowsSuper.filter('.selected').classed('selected', false);
+            prev = prev.empty ? null : prev.datum();
+            $row.classed('selected', true);
+            that.storage.setSelection([row]);
+            that.listeners['selected'](row, prev);
+            that.listeners['multiselected']([row]);
+          }
         }
       }
     });
@@ -3184,6 +3220,10 @@ var LineUp;
     } else {
       allRowsSuper.classed('values', false).selectAll('text.valueonly').remove();
     }
+    //update selections state
+    allRowsSuper.classed('selected', function(d) {
+      return that.storage.isSelected(d);
+    });
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
 
