@@ -23,6 +23,9 @@
           w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
         }
       }
+    },
+    renderingOptions: {
+      stacked: true
     }
   };
 
