@@ -89,6 +89,10 @@
       } else if (desc.file) {
         d3.dsv(desc.separator || '\t', 'text/plain')(baseUrl + "/" + desc.file, function (_data) {
           loadDataImpl(name, desc, _data);
+
+          if (desc.sortBy) {
+            lineup.sortBy(desc.sortBy);
+          }
         });
       }
     }
@@ -304,16 +308,18 @@
           }).text(function (d) {
             return d.name;
           });
-        $s.on('change', function(d) {
-          loadDataset(d);
+        $s.on('change', function() {
+          loadDataset(datasets[this.value]);
         });
 
         var old = history.state;
         if (old) {
+          $s.property('value', datasets.indexOf(old));
           loadDataset(old);
         } else if (window.location.hash) {
           var choose = datasets.filter(function(d) { return d.id === window.location.hash.substr(1); });
           if (choose.length > 0) {
+            $s.property('value', datasets.indexOf(choose[0]));
             loadDataset(choose[0]);
           } else {
             loadDataset(datasets[0]);
