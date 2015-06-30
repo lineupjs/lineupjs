@@ -1,0 +1,499 @@
+No.;Ticker;Company;Sector;Industry;Country;Market Cap;P/E;P/B;P/Free Cash Flow;EPS growth this year;EPS growth past 5 years;EPS growth quarter over quarter;Sales growth quarter over quarter;Shares Float;Insider Ownership;Return on Equity;Total Debt/Equity;Gross Margin;Profit Margin
+1;A;Agilent Technologies Inc.;Healthcare;Medical Laboratories & Research;USA;34130;37.43;3.22;325.47;-29.00;79.30;116.70;-2.50;332.09;0.20;6.70;0.40;50.40;5.80
+2;AA;Alcoa Inc.;Basic Materials;Aluminum;USA;14140;22.25;1.23;23.15;109.80;17.10;200.00;6.70;2210;0.30;3.70;0.77;21.40;1.80
+3;AAPL;Apple Inc.;Consumer Goods;Electronic Equipment;USA;537340;15.76;5.73;13.85;13.60;37.80;40.40;27.10;7650;0.05;39.40;0.34;39.70;22.50
+4;ABBV;AbbVie Inc.;Healthcare;Drug Manufacturers - Major;USA;231110;62.34;81.19;102.61;-57.20;-17.80;4.90;10.50;5710;0.10;56.00;11.09;79.40;8.90
+5;ABC;AmerisourceBergen Corporation;Services;Drugs Wholesale;USA;64230;-;12.37;9.42;-42.40;-6.50;-406.60;14.80;207.71;0.30;-34.50;2.09;2.50;-0.50
+6;ABT;Abbott Laboratories;Healthcare;Medical Appliances & Equipment;USA;44730;37.09;3.40;79.74;-10.30;-21.10;150.00;3.00;4910;0.30;20.40;0.39;55.80;22.40
+7;ACE;ACE Limited;Financial;Property & Casualty Insurance;Switzerland;56330;12.35;1.14;9.70;-22.90;2.40;-4.70;-0.70;324.35;0.80;9.40;0.24;-;14.60
+8;ACN;Accenture plc;Technology;Information Technology Services;Ireland;85650;21.77;10.43;25.69;-8.30;13.10;11.30;4.80;464.40;0.20;53.30;0.00;29.80;9.30
+9;ADBE;Adobe Systems Incorporated;Technology;Application Software;USA;99410;116.58;6.34;36.21;-5.40;-6.20;70.60;8.80;498.58;0.10;5.50;0.29;84.60;8.40
+10;ADI;Analog Devices, Inc.;Technology;Semiconductor - Integrated Circuits;USA;88200;31.26;4.19;58.43;-7.50;18.40;10.20;18.20;311.21;0.20;13.80;0.18;64.10;21.50
+11;ADM;Archer-Daniels-Midland Company;Consumer Goods;Farm Products;USA;45310;13.34;1.72;8.34;69.80;2.70;92.50;-15.40;606.52;0.30;12.60;0.34;6.70;3.20
+12;ADP;Automatic Data Processing, Inc.;Technology;Business Software & Services;USA;13390;28.25;7.57;51.56;11.50;3.50;15.60;7.30;467.18;0.10;25.40;0.00;41.10;13.00
+13;ADS;Alliance Data Systems Corporation;Services;Business Services;USA;86180;35.39;10.03;18.34;9.30;21.50;23.10;29.90;60.61;2.30;33.60;5.06;39.40;9.40
+14;ADSK;Autodesk, Inc.;Technology;Technical & System Software;USA;13120;171.94;5.44;24.15;-65.00;7.00;-33.30;9.10;226.98;0.40;3.20;0.34;86.20;2.80
+15;ADT;The ADT Corporation;Services;Security & Protection Services;USA;8350;19.55;1.93;9.86;-11.70;9.40;17.60;6.30;170.80;0.40;9.80;1.75;58.10;8.70
+16;AEE;Ameren Corporation;Utilities;Electric Utilities;USA;1090;15.25;1.36;-;14.80;-2.90;12.50;-2.40;241.97;0.30;8.90;1.07;82.90;9.90
+17;AEP;American Electric Power Co., Inc.;Utilities;Electric Utilities;USA;76250;15.12;1.49;-;9.90;2.40;11.30;1.30;489.24;0.06;10.10;1.16;87.30;10.00
+18;AES;The AES Corporation;Utilities;Electric Utilities;USA;5090;10.10;2.37;-;186.80;0.20;433.30;-6.50;701.06;0.20;22.90;5.07;17.90;5.70
+19;AET;Aetna Inc.;Healthcare;Health Care Plans;USA;30460;21.92;3.08;16.90;6.60;14.90;20.90;7.90;347.82;0.40;14.60;0.54;-;3.60
+20;AFL;AFLAC Inc.;Financial;Accident & Health Insurance;USA;48270;9.88;1.49;4.79;-3.80;15.30;-5.60;-7.30;423.15;0.30;15.90;0.34;-;12.90
+21;AGN;Allergan plc;Healthcare;Drugs - Generic;USA;321210;-;1.82;-;27.90;42.18;-;59.50;391.02;9.90;-;-;-;-
+22;AIG;American International Group, Inc.;Financial;Property & Casualty Insurance;USA;24830;10.65;0.79;20.72;-13.80;15.50;58.90;-0.90;3310;0.06;7.80;0.30;-;13.00
+23;AIV;Apartment Investment and Management Company;Financial;REIT - Residential;USA;8050;265.21;3.92;-;-72.40;15.30;150.00;-1.80;154.83;0.60;34.70;2.67;62.30;39.80
+24;AIZ;Assurant Inc.;Financial;Accident & Health Insurance;USA;6240;12.91;0.93;-;2.20;12.00;-61.80;6.20;67.02;1.00;7.30;0.23;-;3.60
+25;AKAM;Akamai Technologies, Inc.;Technology;Internet Information Providers;USA;74120;38.17;4.27;42.91;14.30;18.70;7.50;16.10;173.50;0.30;11.70;0.20;68.60;16.60
+26;ALL;The Allstate Corporation;Financial;Property & Casualty Insurance;USA;60260;9.97;1.32;9.51;30.40;31.70;17.70;2.70;407.92;0.20;13.60;0.25;-;7.90
+27;ALLE;Allegion plc Ordinary Shares;Technology;Scientific & Technical Instruments;USA;9150;30.56;-;33.33;418.90;0.00;23.70;-1.70;95.53;0.30;-759.00;-;40.50;8.80
+28;ALTR;Altera Corp.;Technology;Semiconductor - Specialized;USA;44150;35.12;4.68;39.31;11.80;12.60;-16.20;-5.60;299.98;0.30;13.60;0.45;65.80;23.70
+29;ALXN;Alexion Pharmaceuticals, Inc.;Healthcare;Biotechnology;USA;11370;63.66;10.54;71.63;156.70;14.90;-43.00;5.90;198.77;0.80;18.40;0.01;90.70;26.00
+30;AMAT;Applied Materials, Inc.;Technology;Semiconductor Equipment & Materials;USA;71240;19.48;2.95;39.85;314.30;42.00;38.10;3.80;2310;0.30;15.90;0.23;42.10;13.60
+31;AME;Ametek Inc.;Industrial Goods;Diversified Machinery;USA;99120;22.61;3.97;24.60;12.90;22.80;3.50;0.90;238.04;1.20;17.50;0.51;35.30;14.50
+32;AMG;Affiliated Managers Group Inc.;Financial;Asset Management;USA;36120;27.25;4.84;10.35;21.70;41.20;57.90;7.10;54.40;0.40;22.50;0.75;-;22.70
+33;AMGN;Amgen Inc.;Healthcare;Biotechnology;USA;711200;21.43;4.56;20.80;0.90;8.20;50.70;11.30;759.13;0.10;22.40;1.14;80.70;27.70
+34;AMP;Ameriprise Financial, Inc.;Financial;Asset Management;USA;19230;15.26;2.91;9.98;28.60;23.00;3.50;1.90;180.92;0.30;19.50;2.19;50.90;13.00
+35;AMT;American Tower Corporation;Financial;REIT - Diversified;USA;08400;48.84;5.22;57.92;44.90;27.70;-11.80;9.70;422.61;0.20;15.70;2.14;73.80;18.60
+36;AMZN;Amazon.com Inc.;Services;Catalog & Mail Order Houses;USA;952040;-;18.82;64.84;-188.10;-17.70;-152.20;15.10;381.31;18.10;-3.00;0.76;30.30;-0.30
+37;AN;AutoNation, Inc.;Services;Auto Dealerships;USA;3470;17.30;3.31;30.22;15.70;21.90;22.80;13.30;100.06;0.20;20.70;1.37;15.60;2.20
+38;ANTM;Anthem, Inc.;Healthcare;Health Care Plans;USA;06450;17.62;1.87;18.46;3.20;-2.00;30.90;6.70;263.77;0.30;11.20;0.65;-;3.60
+39;AON;Aon plc;Financial;Insurance Brokers;United Kingdom;04290;21.65;4.60;23.52;32.00;16.40;7.50;-3.40;278.81;0.80;20.10;0.92;-;11.70
+40;APA;Apache Corp.;Basic Materials;Independent Oil & Gas;USA;80210;-;1.03;-;-317.10;-12.48;-749.50;-50.50;375.34;0.20;-36.30;0.58;79.80;-83.80
+41;APC;Anadarko Petroleum Corporation;Basic Materials;Independent Oil & Gas;USA;01410;-;2.51;-;-321.00;-65.40;-21.70;-60.30;506.92;0.10;-26.40;1.03;83.70;-33.60
+42;APD;Air Products & Chemicals Inc.;Basic Materials;Chemicals - Major Diversified;USA;67300;29.94;4.19;-;-3.00;8.90;0.80;-6.50;214.22;0.10;13.90;0.81;28.20;10.00
+43;APH;Amphenol Corporation;Technology;Diversified Electronics;USA;36170;24.53;5.91;35.25;12.80;19.40;16.30;6.50;307.81;0.40;24.70;0.94;31.90;13.50
+44;ARG;Airgas, Inc.;Basic Materials;Chemicals - Major Diversified;USA;0980;22.05;3.75;95.32;3.60;15.70;-1.70;2.70;67.94;9.20;18.00;1.11;55.60;6.90
+45;ATI;Allegheny Technologies Inc.;Industrial Goods;Metal Fabrication;USA;4330;130.96;1.30;-;97.80;-15.60;152.90;14.00;107.99;1.20;1.00;0.59;9.30;0.60
+46;AVB;Avalonbay Communities Inc.;Financial;REIT - Residential;USA;35210;28.58;2.34;-;991.10;36.40;95.00;10.60;131.59;0.30;9.90;0.72;64.90;51.50
+47;AVGO;Avago Technologies Limited;Technology;Semiconductor - Broad Line;Singapore;16360;57.06;8.85;41.38;-47.00;50.80;95.10;130.20;259.54;0.30;19.00;0.98;47.00;10.90
+48;AVP;Avon Products Inc.;Consumer Goods;Personal Products;USA;9420;-;-;68.88;-57.30;-21.30;13.20;-17.80;434.60;0.10;-99.90;-;61.60;-6.30
+49;AVY;Avery Dennison Corporation;Consumer Goods;Business Equipment;USA;5950;23.00;5.42;26.96;7.40;18.40;5.50;-1.40;90.60;0.40;20.70;1.18;26.50;4.00
+50;AXP;American Express Company;Financial;Credit Services;USA;14810;14.01;3.73;10.76;14.50;29.40;11.30;-2.90;0110;0.20;28.60;4.67;73.30;16.60
+51;AZO;AutoZone, Inc.;Services;Auto Parts Stores;USA;00210;19.59;-;23.68;13.60;21.90;13.10;6.50;30.23;0.50;-70.80;-;52.20;11.40
+52;BA;The Boeing Company;Industrial Goods;Aerospace/Defense Products & Services;USA;51980;17.83;12.70;29.79;23.60;31.60;46.10;8.20;691.07;0.20;51.50;1.14;15.70;6.30
+53;BAC;Bank of America Corporation;Financial;Money Center Banks;USA;421820;25.93;0.80;-;-60.00;26.50;640.00;-7.50;49100;0.04;3.30;1.04;-;14.70
+54;BAX;Baxter International Inc.;Healthcare;Medical Instruments & Supplies;USA;37390;21.28;5.41;-;-2.70;-0.20;-17.20;-2.20;543.24;0.20;36.10;1.38;49.00;17.60
+55;BBBY;Bed Bath & Beyond Inc.;Services;Home Furnishing Stores;USA;86110;13.52;4.43;13.87;5.80;17.10;12.50;4.20;162.94;1.50;30.00;0.55;38.90;8.10
+56;BBT;BB&T Corporation;Financial;Regional - Southeast Banks;USA;66290;15.19;1.34;21.81;24.20;18.80;-1.50;-3.40;720.35;0.40;9.10;1.06;-;32.40
+57;BBY;Best Buy Co., Inc.;Services;Electronics Stores;USA;93110;14.90;2.45;20.23;76.00;1.40;-92.50;-0.90;301.13;0.90;31.80;0.33;22.60;3.70
+58;BCR;CR Bard Inc.;Healthcare;Medical Instruments & Supplies;USA;83120;47.49;7.35;28.73;-55.20;-4.00;-2.20;2.60;73.84;0.60;15.80;0.93;62.30;8.40
+59;BDX;Becton, Dickinson and Company;Healthcare;Medical Instruments & Supplies;USA;71290;25.99;3.89;79.66;28.50;4.80;-25.50;-1.00;208.78;0.20;19.00;1.93;50.90;12.80
+60;BEN;Franklin Resources, Inc.;Financial;Asset Management;USA;12310;13.14;2.63;16.09;12.50;24.20;10.10;-4.10;386.94;15.80;20.60;0.21;-;28.40
+61;BF-B;Brown-Forman Corporation;Consumer Goods;Beverages - Wineries & Distillers;USA;34210;30.98;11.02;93.58;4.90;9.80;6.50;7.40;159.99;0.90;59.00;0.62;69.70;38.00
+62;BHI;Baker Hughes Incorporated;Basic Materials;Oil & Gas Equipment & Services;USA;98260;33.91;1.52;28.37;58.70;23.80;-282.40;-19.80;433.74;0.20;4.40;0.23;17.30;3.40
+63;BIIB;Biogen Inc.;Healthcare;Biotechnology;USA;75960;29.70;8.28;29.87;58.40;29.90;72.80;20.00;234.99;0.10;30.90;0.05;88.10;32.40
+64;BK;The Bank of New York Mellon Corporation;Financial;Asset Management;USA;06480;18.96;1.34;12.18;24.30;33.90;17.50;-0.60;0810;0.30;7.00;0.57;-;79.20
+65;BLK;BlackRock, Inc.;Financial;Asset Management;USA;80570;17.81;2.14;44.91;14.10;25.80;10.00;2.00;156.78;2.30;12.40;0.33;89.30;30.20
+66;BLL;Ball Corporation;Consumer Goods;Packaging & Containers;USA;00100;25.91;10.58;21.70;21.30;10.00;-76.90;-4.20;135.81;0.90;36.10;3.72;19.30;4.70
+67;BMY;Bristol-Myers Squibb Company;Healthcare;Drug Manufacturers - Major;USA;421110;49.51;7.15;565.59;-22.10;-5.90;26.80;6.00;6710;0.10;14.80;0.48;77.20;14.00
+68;BRCM;Broadcom Corp.;Technology;Semiconductor - Integrated Circuits;USA;64310;46.41;3.53;49.28;47.90;52.70;21.40;3.70;546.90;1.00;7.90;0.18;52.20;8.20
+69;BRK-B;Berkshire Hathaway Inc.;Financial;Property & Casualty Insurance;USA;663250;16.90;0.00;-;-;-;9.80;9.60;0910;-;-;-;-;-
+70;BSX;Boston Scientific Corporation;Healthcare;Medical Appliances & Equipment;USA;44240;-;3.74;40.00;0.00;33.30;-100.00;-0.30;3310;0.50;-3.90;0.66;70.70;-3.40
+71;BWA;BorgWarner Inc.;Consumer Goods;Auto Parts;USA;45130;20.08;3.83;142.77;5.90;88.60;14.50;-4.80;225.24;0.50;18.40;0.52;21.20;8.20
+72;BXP;Boston Properties Inc.;Financial;REIT - Office;USA;91180;34.43;3.27;-;-30.10;10.10;217.10;7.60;152.44;0.20;9.80;1.74;63.90;22.50
+73;C;Citigroup Inc.;Financial;Money Center Banks;USA;491700;22.57;0.84;12.15;-48.40;18.00;23.80;-4.90;0330;0.10;3.70;1.04;-;12.30
+74;CA;CA, Inc.;Technology;Business Software & Services;USA;37130;16.58;2.34;27.56;-7.10;4.70;50.00;-5.60;316.54;0.10;18.50;0.22;85.10;24.70
+75;CAG;ConAgra Foods, Inc.;Consumer Goods;Processed & Packaged Goods;USA;73180;-;4.20;39.42;-62.20;-12.30;-528.80;-1.80;424.93;0.30;-15.00;1.88;20.30;-4.90
+76;CAH;Cardinal Health, Inc.;Services;Drugs Wholesale;USA;67280;25.34;4.49;16.98;247.40;9.90;19.80;18.40;330.33;0.20;18.40;0.63;5.60;1.20
+77;CAM;Cameron International Corporation;Basic Materials;Oil & Gas Equipment & Services;USA;33100;37.76;2.48;12.84;47.30;12.70;-502.00;-2.40;189.02;1.10;18.50;0.68;28.10;8.30
+78;CAT;Caterpillar Inc.;Industrial Goods;Farm & Construction Machinery;USA;35520;13.90;3.09;22.73;2.30;32.70;25.70;-4.10;602.24;0.10;21.20;2.29;27.20;7.10
+79;CB;The Chubb Corporation;Financial;Property & Casualty Insurance;USA;99210;11.34;1.38;12.41;-4.60;6.90;-11.10;-0.80;229.00;0.30;12.40;0.20;-;14.40
+80;CBG;CBRE Group, Inc.;Financial;Property Management;USA;39120;24.48;5.46;21.52;66.70;64.60;40.00;10.30;328.80;0.50;23.20;1.31;37.90;5.50
+81;CBS;CBS Corporation;Services;Entertainment - Diversified;USA;23280;23.80;4.45;40.38;-13.60;48.80;1.30;-2.00;449.01;0.40;38.60;1.21;41.00;21.00
+82;CCE;Coca-Cola Enterprises Inc.;Consumer Goods;Beverages - Soft Drinks;USA;36100;17.17;10.29;21.45;7.80;9.10;-9.10;-12.80;213.61;0.80;42.30;4.13;36.00;8.00
+83;CCI;Crown Castle International Corp.;Technology;Diversified Communication Services;USA;34270;74.47;4.17;193.23;300.00;33.30;25.90;7.40;331.34;0.80;5.50;1.85;63.30;9.80
+84;CCL;Carnival Corporation;Services;Resorts & Casinos;USA;17390;29.96;1.67;-;14.40;-6.60;300.00;-1.50;616.02;14.60;5.40;0.39;35.90;8.20
+85;CELG;Celgene Corporation;Healthcare;Biotechnology;USA;23940;40.55;14.03;32.34;42.30;23.60;160.60;20.30;789.13;0.20;40.80;1.01;95.00;30.40
+86;CERN;Cerner Corporation;Technology;Healthcare Information Services;USA;81230;46.75;6.40;58.57;32.70;20.90;-5.90;26.90;306.07;2.10;14.80;0.17;82.20;14.30
+87;CF;CF Industries Holdings, Inc.;Basic Materials;Agricultural Chemicals;USA;05150;17.43;3.77;-;-78.10;29.50;-62.90;-15.80;235.17;0.10;21.20;1.13;38.40;20.00
+88;CHK;Chesapeake Energy Corporation;Basic Materials;Independent Oil & Gas;USA;3970;-;0.73;-;126.00;16.80;-;-45.30;659.05;1.10;-22.90;1.15;91.10;-15.40
+89;CHRW;CH Robinson Worldwide Inc.;Services;Air Delivery & Freight Services;USA;1190;19.83;8.63;25.60;15.10;7.40;15.90;5.00;143.80;1.20;44.80;1.13;15.20;3.40
+90;CI;Cigna Corp.;Healthcare;Health Care Plans;USA;69430;21.60;3.98;26.23;51.20;10.70;3.00;11.40;250.31;0.40;19.20;0.55;-;5.90
+91;CINF;Cincinnati Financial Corp.;Financial;Property & Casualty Insurance;USA;3080;14.84;1.25;12.38;1.60;3.70;40.00;8.10;141.73;3.80;8.70;0.13;-;11.10
+92;CL;Colgate-Palmolive Co.;Consumer Goods;Personal Products;USA;12600;26.27;130.31;58.08;-0.80;1.60;40.50;-5.90;901.67;0.40;194.30;13.32;58.70;13.70
+93;CLX;The Clorox Company;Consumer Goods;Housewares & Accessories;USA;93130;23.98;46.38;43.68;-1.20;5.10;-7.00;2.60;130.92;0.20;246.80;7.17;42.70;10.00
+94;CMA;Comerica Incorporated;Financial;Money Center Banks;USA;3390;16.59;1.23;17.21;11.20;42.90;0.00;0.00;176.72;0.90;7.80;0.36;-;33.20
+95;CMCSA;Comcast Corporation;Services;Entertainment - Diversified;USA;001530;18.45;2.94;23.50;25.00;20.50;14.10;2.60;4920;0.10;16.30;0.90;70.40;12.40
+96;CME;CME Group Inc.;Financial;Investment Brokerage - National;USA;73310;26.55;1.50;-;14.70;6.20;24.10;8.40;320.64;0.20;5.60;0.14;-;37.50
+97;CMG;Chipotle Mexican Grill, Inc.;Services;Restaurants;USA;86180;39.49;8.83;39.27;35.00;29.00;47.00;20.40;30.54;1.20;24.90;0.00;27.50;11.30
+98;CMI;Cummins Inc.;Industrial Goods;Diversified Machinery;USA;31240;14.37;3.14;28.47;14.00;33.10;16.90;6.90;180.95;0.20;21.90;0.22;25.50;8.70
+99;CMS;CMS Energy Corp.;Utilities;Electric Utilities;USA;6980;18.14;2.27;-;4.80;16.00;-2.70;-16.30;274.27;0.90;12.80;2.32;58.80;7.00
+100;CNP;CenterPoint Energy, Inc.;Utilities;Gas Utilities;USA;2480;14.85;1.80;-;95.80;6.90;-30.20;-23.10;428.47;0.30;12.40;1.95;26.40;6.60
+101;CNX;CONSOL Energy Inc.;Basic Materials;Independent Oil & Gas;USA;2150;42.19;0.99;-;108.60;-24.40;-35.80;-13.30;226.45;0.80;2.40;0.64;41.40;3.80
+102;COF;Capital One Financial Corporation;Financial;Credit Services;USA;55480;11.63;1.07;7.00;3.00;50.60;3.10;4.60;543.54;0.70;9.70;0.73;-;22.00
+103;COG;Cabot Oil & Gas Corporation;Basic Materials;Independent Oil & Gas;USA;20130;398.87;6.07;-;-62.10;-6.50;-61.50;-8.80;406.69;1.50;6.40;0.86;73.70;6.80
+104;COH;Coach, Inc.;Consumer Goods;Textile - Apparel Footwear & Accessories;USA;8790;21.26;3.88;19.84;-22.70;7.90;-52.90;-15.50;273.59;0.10;18.80;0.35;69.60;10.80
+105;COL;Rockwell Collins Inc.;Industrial Goods;Aerospace/Defense Products & Services;USA;55120;19.20;6.44;36.80;-1.10;4.10;13.00;6.50;131.65;0.30;34.00;1.27;30.30;12.40
+106;COP;ConocoPhillips;Basic Materials;Independent Oil & Gas;USA;71760;19.82;1.59;-;-28.30;9.30;-87.00;-48.80;2310;0.02;9.50;0.46;41.50;11.10
+107;COST;Costco Wholesale Corporation;Services;Discount, Variety Stores;USA;41600;26.38;5.71;-;0.40;13.50;8.40;1.20;435.86;0.50;20.30;0.57;12.90;2.00
+108;CPB;Campbell Soup Company;Consumer Goods;Processed & Packaged Goods;USA;81140;19.71;9.32;46.14;7.40;2.80;0.00;-3.60;173.75;0.30;47.80;2.37;34.30;9.20
+109;CRM;salesforce.com, inc.;Technology;Application Software;USA;29480;-;11.36;83.53;-7.70;-35.80;106.30;23.20;614.07;5.80;-4.20;0.48;75.60;-2.90
+110;CSC;Computer Sciences Corporation;Technology;Information Technology Services;USA;1490;1327.00;3.20;13.90;-97.50;-51.60;-98.90;-77.60;136.05;0.30;-0.20;0.91;21.70;-0.10
+111;CSCO;Cisco Systems, Inc.;Technology;Networking & Communication Devices;USA;441440;16.42;2.46;21.23;-19.90;7.30;11.90;5.10;0850;0.10;15.50;0.36;60.30;18.30
+112;CSX;CSX Corp.;Services;Railroads;USA;29330;17.02;2.95;147.32;4.90;15.10;15.40;0.50;984.51;0.30;21.30;0.86;69.10;18.70
+113;CTAS;Cintas Corporation;Services;Business Services;USA;8290;23.78;4.87;48.40;21.00;15.70;14.50;-0.20;94.59;0.30;26.20;0.63;42.90;12.70
+114;CTL;CenturyLink, Inc.;Technology;Telecom Services - Domestic;USA;87160;22.33;1.14;18.18;440.00;-11.80;-2.90;-1.90;560.90;0.40;4.80;1.39;56.50;4.20
+115;CTSH;Cognizant Technology Solutions Corporation;Technology;Business Software & Services;USA;89380;26.54;4.75;30.43;16.30;21.40;8.80;20.20;607.69;0.20;19.50;0.13;42.00;13.70
+116;CTXS;Citrix Systems, Inc.;Technology;Business Software & Services;USA;48110;52.65;5.47;17.50;-18.30;7.40;-40.00;1.30;159.11;0.70;10.60;0.66;80.40;7.10
+117;CVC;Cablevision Systems Corporation;Services;CATV Systems;USA;6860;23.99;-;25.07;137.50;21.00;-41.20;2.50;213.22;1.70;-5.20;-;51.40;4.10
+118;CVS;CVS Health Corporation;Healthcare;Health Care Plans;USA;491180;25.61;3.20;26.81;5.90;9.30;12.60;11.10;1310;0.10;12.50;0.35;17.90;3.30
+119;CVX;Chevron Corporation;Basic Materials;Major Integrated Oil & Gas;USA;931840;10.76;1.18;-;-8.60;14.10;-41.90;-36.30;8810;0.02;11.10;0.22;37.10;9.50
+120;D;Dominion Resources, Inc.;Utilities;Electric Utilities;USA;60390;26.71;3.28;-;-27.50;1.10;41.50;-6.10;588.31;0.30;12.60;2.20;92.80;12.00
+121;DAL;Delta Air Lines, Inc.;Services;Major Airlines;USA;77340;30.43;3.85;11.09;-93.60;20.30;260.00;5.30;813.92;0.20;11.30;1.06;41.60;2.90
+122;DD;E. I. du Pont de Nemours and Company;Basic Materials;Agricultural Chemicals;USA;88590;19.01;4.77;1497.04;28.60;15.30;-26.60;-9.40;904.14;0.20;22.10;0.83;37.30;9.40
+123;DE;Deere & Company;Industrial Goods;Farm & Construction Machinery;USA;38310;13.11;3.88;51.11;-5.10;33.20;-23.40;-17.90;333.61;0.10;28.40;4.57;30.90;7.80
+124;DFS;Discover Financial Services;Financial;Credit Services;USA;13260;12.15;2.48;8.33;-1.20;32.10;-2.30;5.20;438.55;1.20;20.80;2.15;-;28.90
+125;DG;Dollar General Corporation;Services;Discount, Variety Stores;USA;39230;21.80;4.40;24.58;10.10;27.40;16.70;8.80;296.75;0.10;20.40;0.50;30.80;5.70
+126;DGX;Quest Diagnostics Inc.;Healthcare;Medical Laboratories & Research;USA;46100;20.99;2.47;25.03;-28.50;-0.50;-40.80;5.30;142.76;0.40;12.20;1.12;37.90;6.80
+127;DHI;DR Horton Inc.;Industrial Goods;Residential Construction;USA;21100;17.97;1.88;-;15.00;23.20;5.30;38.20;327.60;10.68;11.00;0.73;20.80;6.10
+128;DHR;Danaher Corp.;Industrial Goods;Diversified Machinery;USA;44600;23.66;2.59;20.81;-4.20;17.40;-2.50;4.50;619.96;1.50;11.00;0.14;52.60;12.90
+129;DIS;The Walt Disney Company;Services;Entertainment - Diversified;USA;191940;24.61;4.22;38.77;26.00;19.30;13.90;7.00;5610;0.10;17.80;0.32;34.30;15.80
+130;DISCA;Discovery Communications, Inc.;Services;CATV Systems;USA;91130;19.53;2.79;13.72;11.40;5.20;12.10;8.90;405.42;1.20;16.20;1.42;65.50;14.50
+131;DISCK;Discovery Communications, Inc.;Services;CATV Systems;USA;9980;18.62;3.92;-;4.80;0.00;8.70;8.90;-;10.22;-;-;-;-
+132;DLPH;Delphi Automotive PLC;Consumer Goods;Auto Parts;United Kingdom;62250;20.08;11.98;24.61;15.20;-30.90;-2.00;-2.60;287.35;0.80;46.40;1.26;19.00;7.50
+133;DLTR;Dollar Tree, Inc.;Services;Discount, Variety Stores;USA;59160;31.31;8.87;30.85;6.30;19.40;-49.30;8.80;197.98;2.10;31.70;4.18;35.20;6.00
+134;DNB;Dun & Bradstreet Corp.;Technology;Information & Delivery Services;USA;5740;18.55;-;23.58;22.00;5.90;-50.00;-1.50;35.94;0.40;-21.80;-;66.40;14.90
+135;DNR;Denbury Resources Inc.;Basic Materials;Independent Oil & Gas;USA;3420;4.90;0.41;93.66;63.10;51.70;-282.40;-52.10;350.24;0.80;8.60;0.65;99.00;22.30
+136;DO;Diamond Offshore Drilling, Inc.;Basic Materials;Oil & Gas Drilling & Exploration;USA;6030;-;0.86;-;-28.90;-22.20;-277.10;-12.60;137.09;53.20;-0.30;0.54;41.70;-0.50
+137;DOV;Dover Corporation;Industrial Goods;Diversified Machinery;USA;38110;16.20;3.21;16.43;0.20;18.20;-27.30;-4.80;159.02;0.40;31.50;0.79;38.10;15.50
+138;DOW;The Dow Chemical Company;Basic Materials;Chemicals - Major Diversified;USA;36610;16.74;3.31;48.50;-16.10;68.70;40.50;-14.50;1510;0.20;18.90;1.09;19.30;6.80
+139;DPS;Dr Pepper Snapple Group, Inc.;Consumer Goods;Beverages - Soft Drinks;USA;32140;20.81;6.49;27.59;16.70;10.40;3.80;3.80;191.10;0.30;30.80;1.18;58.90;11.40
+140;DRI;Darden Restaurants, Inc.;Services;Restaurants;USA;9680;71.95;3.97;-;-23.30;-12.20;55.40;6.90;124.77;0.10;41.30;0.68;20.30;13.60
+141;DTE;DTE Energy Company;Utilities;Electric Utilities;USA;25130;15.39;1.52;-;35.20;9.50;-16.80;-24.10;177.56;0.30;10.30;1.04;25.90;7.50
+142;DTV;DIRECTV;Services;CATV Systems;USA;28470;16.28;-;14.85;4.40;41.60;32.10;3.70;501.63;0.10;-52.40;-;46.60;8.70
+143;DUK;Duke Energy Corporation;Utilities;Electric Utilities;USA;88480;20.14;1.22;-;-4.70;7.20;2.80;-3.20;674.59;0.10;6.70;1.07;66.80;11.60
+144;DVA;DaVita HealthCare Partners Inc.;Healthcare;Specialized Health Services;USA;40170;41.07;3.47;21.36;15.20;10.40;-161.20;8.10;209.40;0.20;8.60;1.71;28.70;3.30
+145;DVN;Devon Energy Corporation;Basic Materials;Independent Oil & Gas;USA;82240;-;1.36;-;-61.10;21.30;-;-12.30;387.08;0.60;-9.70;0.65;87.80;-10.50
+146;EA;Electronic Arts Inc.;Technology;Multimedia & Graphics Software;USA;22210;25.17;6.89;21.83;12.70;26.90;11.20;5.50;312.01;0.60;31.50;0.21;68.30;19.40
+147;EBAY;eBay Inc.;Services;Specialty Retail, Other;USA;83740;25.88;3.83;17.54;-98.20;-53.40;128.00;4.40;1210;8.10;15.30;0.39;67.80;16.60
+148;ECL;Ecolab Inc.;Consumer Goods;Cleaning Products;USA;53340;28.42;5.03;64.08;0.00;17.70;24.20;-1.20;296.45;0.40;17.00;1.05;46.60;8.70
+149;ED;Consolidated Edison, Inc.;Utilities;Electric Utilities;USA;84160;15.37;1.32;-;2.80;3.40;2.40;-4.60;292.28;0.20;8.70;1.00;68.50;8.60
+150;EFX;Equifax Inc.;Financial;Credit Services;USA;86110;32.88;5.54;27.41;10.00;11.80;9.00;11.50;118.03;0.80;16.40;0.71;65.90;14.90
+151;EIX;Edison International;Utilities;Electric Utilities;USA;25180;12.04;1.65;-;62.50;10.80;51.70;-14.10;325.08;0.19;16.10;1.14;59.20;13.30
+152;EL;The Estee Lauder Companies Inc.;Consumer Goods;Personal Products;USA;83320;28.17;8.51;33.94;18.60;41.00;31.50;1.20;226.99;1.00;31.20;0.38;80.50;10.90
+153;EMC;EMC Corporation;Technology;Data Storage Devices;USA;51520;21.46;2.61;13.35;-1.50;20.00;-31.60;2.40;9310;0.50;13.60;0.27;62.00;12.10
+154;EMN;Eastman Chemical Co.;Basic Materials;Chemicals - Major Diversified;USA;36120;18.23;3.59;17.31;-33.30;36.40;-25.00;6.00;147.68;0.40;18.70;2.22;23.60;7.10
+155;EMR;Emerson Electric Co.;Industrial Goods;Industrial Electrical Equipment;USA;84370;14.90;4.32;27.52;10.10;6.20;82.10;-7.10;663.68;0.30;26.80;0.74;41.30;10.90
+156;ENDP;Endo International plc;Healthcare;Drug Manufacturers - Other;Ireland;82160;-;3.37;40.72;-4.70;-33.10;322.50;51.70;200.92;0.50;-12.20;1.34;48.80;-12.00
+157;EOG;EOG Resources, Inc.;Basic Materials;Independent Oil & Gas;USA;11480;23.13;2.73;-;32.30;37.30;-125.60;-43.10;545.69;0.40;12.00;0.39;59.90;13.20
+158;EQR;Equity Residential;Financial;REIT - Residential;USA;72250;35.68;2.49;-;466.00;54.80;123.80;5.20;357.59;0.70;7.10;1.06;66.50;27.50
+159;EQT;EQT Corporation;Basic Materials;Independent Oil & Gas;USA;65120;34.46;2.62;-;28.40;16.30;-9.50;7.10;151.38;0.50;8.10;0.68;86.10;14.60
+160;ES;Eversource Energy;Utilities;Diversified Utilities;USA;46140;17.30;1.43;-;3.60;6.20;8.10;9.70;314.97;0.40;10.80;0.97;25.40;13.50
+161;ESRX;Express Scripts Holding Company;Healthcare;Health Care Plans;USA;50660;32.11;3.22;16.59;14.30;11.20;42.90;5.10;727.56;0.20;10.40;0.60;8.20;2.10
+162;ESS;Essex Property Trust Inc.;Financial;REIT - Residential;USA;94130;96.08;2.24;-;-35.60;-3.10;58.60;75.70;64.55;0.10;3.00;0.89;68.30;16.20
+163;ESV;Ensco plc;Basic Materials;Oil & Gas Drilling & Exploration;United Kingdom;1050;-;0.59;-;-292.30;-33.40;10.30;9.10;233.15;0.50;-44.50;0.72;55.50;-95.90
+164;ETFC;E*TRADE Financial Corporation;Financial;Investment Brokerage - National;USA;9280;38.44;1.63;40.89;244.80;15.80;-57.60;-4.00;289.36;0.50;4.40;5.25;95.00;13.10
+165;ETN;Eaton Corporation plc;Industrial Goods;Diversified Machinery;Ireland;02320;17.85;2.11;87.71;-3.60;27.00;7.60;-4.90;464.90;0.20;11.30;0.61;31.00;8.20
+166;ETR;Entergy Corporation;Utilities;Electric Utilities;USA;47120;14.97;1.23;26.20;30.80;-3.70;-26.30;-9.00;179.23;0.20;8.30;1.39;84.00;6.90
+167;EW;Edwards Lifesciences Corp.;Healthcare;Medical Appliances & Equipment;USA;55150;17.90;7.04;18.16;118.70;30.80;100.00;13.00;106.72;0.70;41.80;0.27;74.20;36.60
+168;EXC;Exelon Corporation;Utilities;Diversified Utilities;USA;59270;12.41;1.20;-;-6.00;-14.40;700.00;22.00;860.56;0.10;10.10;0.99;54.70;8.00
+169;EXPD;Expeditors International of Washington Inc.;Services;Air Delivery & Freight Services;USA;9680;22.75;4.67;46.49;14.30;11.60;31.00;12.50;189.39;0.80;21.10;0.00;30.30;5.90
+170;EXPE;Expedia Inc.;Services;Lodging;USA;94130;31.67;8.38;13.91;79.00;15.40;409.10;14.40;98.08;5.00;25.30;1.05;79.70;7.70
+171;F;Ford Motor Co.;Consumer Goods;Auto Manufacturers - Major;USA;38610;19.79;2.45;12.52;-54.80;-1.40;-4.20;-5.50;8930;0.10;12.20;4.92;12.80;2.20
+172;FAST;Fastenal Company;Services;Industrial Equipment Wholesale;USA;56120;24.85;6.77;416.02;9.90;21.80;13.20;8.80;280.32;0.10;27.00;0.07;50.70;13.40
+173;FB;Facebook, Inc.;Technology;Internet Information Providers;USA;072470;87.98;5.26;63.32;83.30;78.90;-28.00;41.60;1120;0.40;14.90;0.00;82.60;31.30
+174;FCX;Freeport-McMoRan Inc.;Basic Materials;Copper;USA;53200;-;1.30;-;-147.70;-19.40;-585.70;-16.70;0210;0.90;-22.30;1.29;6.10;-20.80
+175;FDO;Family Dollar Stores Inc.;Services;Discount, Variety Stores;USA;0890;38.67;5.12;-;-35.00;3.80;-16.30;3.00;108.83;0.70;13.80;0.33;33.60;2.20
+176;FDX;FedEx Corporation;Services;Air Delivery & Freight Services;USA;03490;19.82;3.05;49.28;37.20;85.20;64.20;3.70;263.43;5.60;16.30;0.45;63.30;5.40
+177;FE;FirstEnergy Corp.;Utilities;Electric Utilities;USA;87130;44.41;1.12;-;-42.70;-29.10;79.30;-6.80;421.06;0.20;2.50;1.82;70.40;2.10
+178;FFIV;F5 Networks, Inc.;Technology;Business Software & Services;USA;1090;26.93;6.92;15.23;16.90;29.10;29.70;12.40;71.73;0.30;25.60;0.00;82.40;18.90
+179;FIS;Fidelity National Information Services, Inc.;Technology;Information Technology Services;USA;89170;28.06;2.81;34.98;43.10;40.90;-25.90;2.30;280.57;0.50;9.80;0.82;32.50;9.90
+180;FISV;Fiserv, Inc.;Services;Business Services;USA;10200;27.65;6.30;19.18;22.10;14.40;12.30;3.30;232.21;0.40;22.70;1.20;43.50;15.00
+181;FITB;Fifth Third Bancorp;Financial;Regional - Midwest Banks;USA;34170;12.30;1.19;10.76;-16.80;21.70;16.70;-2.30;802.13;0.30;12.30;0.97;-;43.60
+182;FLIR;FLIR Systems, Inc.;Technology;Scientific & Technical Instruments;USA;3840;20.42;2.75;36.89;13.90;-0.80;61.90;-2.00;138.70;1.10;13.50;0.23;50.80;14.30
+183;FLR;Fluor Corporation;Industrial Goods;Heavy Construction;USA;0180;12.04;2.63;261.81;10.30;3.60;4.30;-15.50;146.12;0.50;15.10;0.33;6.70;2.40
+184;FLS;Flowserve Corp.;Industrial Goods;Diversified Machinery;USA;0870;16.45;4.06;24.39;10.30;8.20;-74.40;-5.00;133.91;0.40;29.00;0.96;34.60;11.30
+185;FMC;FMC Corp.;Basic Materials;Chemicals - Major Diversified;USA;1170;29.56;4.95;-;-11.10;11.90;-168.10;-12.90;132.78;0.60;16.20;1.43;33.80;6.60
+186;FOSL;Fossil Group, Inc.;Consumer Goods;Textile - Apparel Footwear & Accessories;USA;5330;10.81;4.18;12.37;8.20;28.00;-39.00;-6.60;42.05;0.40;36.60;0.74;56.60;10.10
+187;FOXA;Twenty-First Century Fox, Inc.;Services;Entertainment - Diversified;USA;66670;7.72;3.87;26.42;-42.60;26.90;0.00;-16.80;6810;0.80;51.60;1.06;34.60;29.50
+188;FSLR;First Solar, Inc.;Technology;Semiconductor - Specialized;USA;1450;23.27;1.03;16.09;5.70;-12.30;-156.40;-50.60;73.92;0.20;4.60;0.05;21.60;7.60
+189;FTI;FMC Technologies, Inc.;Basic Materials;Oil & Gas Equipment & Services;USA;7590;13.98;4.00;15.80;40.50;15.40;10.50;-7.10;228.81;1.20;27.90;0.54;24.20;9.10
+190;FTR;Frontier Communications Corporation;Technology;Telecom Services - Domestic;USA;8650;127.00;1.44;75.21;18.20;-19.30;-225.00;18.80;1510;0.40;1.10;2.75;60.80;0.80
+191;GAS;AGL Resources Inc.;Utilities;Gas Utilities;USA;6250;13.32;1.42;-;92.20;10.30;-42.70;-30.10;119.24;0.50;17.60;1.05;50.50;14.50
+192;GCI;Gannett Co., Inc.;Services;Publishing - Newspapers;USA;3780;7.66;2.54;17.75;175.90;25.20;96.00;4.90;226.15;0.10;36.20;1.32;50.90;18.40
+193;GD;General Dynamics Corporation;Industrial Goods;Aerospace/Defense Products & Services;USA;38470;17.43;4.12;17.42;11.40;4.70;24.40;7.10;323.62;0.70;21.10;0.30;19.20;8.30
+194;GE;General Electric Company;Industrial Goods;Diversified Machinery;USA;452720;245.82;2.51;41.82;2.70;8.80;-518.50;-12.50;07100;0.03;1.30;3.24;38.30;1.10
+195;GGP;General Growth Properties, Inc;Financial;REIT - Retail;USA;09230;26.05;2.94;-;21.90;17.50;395.70;-4.60;885.18;1.40;17.20;1.78;69.30;51.10
+196;GILD;Gilead Sciences Inc.;Healthcare;Biotechnology;USA;691760;13.66;10.41;10.75;306.10;39.10;107.50;51.90;4610;0.50;91.30;0.72;86.00;51.70
+197;GIS;General Mills, Inc.;Consumer Goods;Processed & Packaged Goods;USA;67330;24.45;6.21;53.03;1.40;8.30;-12.50;-0.60;594.16;0.30;24.10;1.89;34.40;8.20
+198;GLW;Corning Inc.;Technology;Diversified Electronics;USA;86250;11.54;1.37;14.55;29.10;6.20;45.00;-1.00;2510;0.10;14.30;0.17;41.80;28.50
+199;GM;General Motors Company;Consumer Goods;Auto Manufacturers - Major;USA;77550;16.14;1.54;-;-30.30;-57.00;700.00;-4.50;3910;0.10;9.60;1.33;9.90;2.30
+200;GMCR;Keurig Green Mountain, Inc.;Consumer Goods;Processed & Packaged Goods;USA;06120;21.81;4.62;-;18.40;52.70;-5.80;2.20;114.94;0.10;18.00;0.20;38.40;12.40
+201;GME;GameStop Corp.;Services;Electronics Stores;USA;6640;12.06;2.27;14.70;16.10;9.10;15.30;3.20;104.61;1.70;19.20;0.17;29.80;4.30
+202;GNW;Genworth Financial, Inc.;Financial;Life Insurance;USA;8730;-;0.25;1.29;-318.30;-17.50;-16.20;0.60;496.73;0.14;-8.30;0.44;-;-13.30
+203;GOOG;Google Inc.;Technology;Internet Information Providers;USA;453640;25.29;3.37;-;10.80;0.00;3.90;11.90;579.50;0.19;-;-;-;-
+204;GOOGL;Google Inc.;Technology;Internet Information Providers;USA;133740;27.69;3.50;28.30;2.90;14.70;-2.40;11.90;630.44;0.10;14.30;0.05;62.10;21.50
+205;GPC;Genuine Parts Company;Services;Specialty Retail, Other;USA;94130;19.74;4.40;35.33;4.80;13.00;2.90;3.10;148.06;0.60;21.20;0.28;29.90;4.60
+206;GPS;The Gap, Inc.;Services;Apparel Stores;USA;18160;13.55;5.67;21.77;4.70;12.70;-3.40;-3.10;236.06;2.30;42.60;0.47;38.00;7.60
+207;GRMN;Garmin Ltd.;Technology;Scientific & Technical Instruments;Switzerland;5290;28.40;2.52;107.28;-39.70;-11.70;-42.60;0.40;138.87;4.50;9.20;0.00;56.30;10.90
+208;GS;The Goldman Sachs Group, Inc.;Financial;Investment Brokerage - National;USA;94910;11.21;1.27;89.96;10.40;-5.10;47.80;8.30;424.63;0.90;12.00;5.10;79.00;21.70
+209;GT;The Goodyear Tire & Rubber Company;Consumer Goods;Rubber & Plastics;USA;4380;3.16;2.22;12.79;287.20;50.30;456.50;-10.00;268.96;0.40;98.40;1.64;24.00;15.40
+210;GWW;W.W. Grainger, Inc.;Services;Industrial Equipment Wholesale;USA;03160;20.88;5.14;70.55;2.90;15.30;0.00;2.30;58.69;1.70;30.60;0.20;43.20;10.00
+211;HAL;Halliburton Company;Basic Materials;Oil & Gas Equipment & Services;USA;01370;17.06;2.37;2177.23;73.00;25.80;-202.70;-4.10;848.63;0.20;14.40;0.50;15.10;6.90
+212;HAR;Harman International Industries, Incorporated;Consumer Goods;Electronic Equipment;USA;8480;27.93;4.02;28.61;64.70;19.80;-5.70;4.30;70.75;0.40;16.10;0.28;29.00;5.30
+213;HAS;Hasbro Inc.;Consumer Goods;Toys & Games;USA;7690;24.51;6.77;52.09;47.50;5.20;-12.50;5.00;111.86;0.70;28.00;1.24;59.60;9.50
+214;HBAN;Huntington Bancshares Incorporated;Financial;Regional - Midwest Banks;USA;2490;15.45;1.52;19.31;0.00;16.20;11.80;6.30;800.67;1.00;10.40;0.85;-;30.80
+215;HCA;HCA Holdings, Inc.;Healthcare;Hospitals;USA;59370;19.02;-;13.45;23.40;11.30;78.90;9.60;327.38;20.70;-27.40;-;83.10;5.60
+216;HCBK;Hudson City Bancorp, Inc.;Financial;Savings & Loans;USA;3450;42.04;1.06;344.71;-13.50;-21.40;-88.90;-19.70;479.59;1.00;2.50;0.00;-;10.90
+217;HCN;Health Care REIT, Inc.;Financial;REIT - Healthcare Facilities;USA;13230;56.88;1.64;-;850.00;1.10;135.30;11.50;349.53;0.20;5.20;0.81;-;18.60
+218;HCP;HCP, Inc.;Financial;REIT - Healthcare Facilities;USA;78160;39.93;1.63;-;-1.00;51.90;-204.00;15.20;460.70;0.30;6.40;0.97;81.20;28.90
+219;HD;The Home Depot, Inc.;Services;Home Improvement Stores;USA;801450;22.77;15.83;29.47;25.30;24.90;21.00;6.10;3010;0.10;65.30;1.83;34.70;7.80
+220;HES;Hess Corporation;Basic Materials;Independent Oil & Gas;USA;55190;21.73;0.89;-;-53.20;18.50;-230.40;-40.20;251.39;0.80;12.40;0.28;79.20;29.90
+221;HIG;The Hartford Financial Services Group, Inc.;Financial;Property & Casualty Insurance;USA;57170;13.76;0.93;11.37;18.10;24.60;11.30;-0.10;419.15;0.10;4.00;0.31;-;4.10
+222;HOG;Harley-Davidson, Inc.;Consumer Goods;Recreational Vehicles;USA;95110;14.61;4.12;18.97;18.30;66.90;5.00;-3.10;207.11;0.20;27.20;2.02;40.90;13.70
+223;HON;Honeywell International Inc.;Industrial Goods;Diversified Machinery;USA;80800;18.93;4.62;37.97;8.30;22.00;10.20;-4.80;780.33;0.10;23.80;0.55;28.80;10.90
+224;HOT;Starwood Hotels & Resorts Worldwide Inc.;Services;Lodging;USA;05140;24.47;10.43;-;18.10;222.30;-18.30;-2.90;170.17;0.50;29.20;2.06;71.80;10.00
+225;HP;Helmerich & Payne, Inc.;Basic Materials;Oil & Gas Drilling & Exploration;USA;6270;10.88;1.52;-;-3.00;12.70;-56.80;-50.50;104.60;0.10;14.40;0.11;46.40;18.30
+226;HPQ;Hewlett-Packard Company;Technology;Diversified Computer Systems;USA;38560;12.48;2.11;15.61;0.00;-3.60;-16.70;-6.80;8010;0.10;17.30;0.79;24.00;4.30
+227;HRB;H&R Block, Inc.;Services;Personal Services;USA;4180;18.18;4.59;29.67;-3.30;5.20;-21.30;-10.20;274.52;0.10;33.70;0.28;66.20;15.40
+228;HRL;Hormel Foods Corporation;Consumer Goods;Meat Products;USA;32150;23.66;3.98;27.55;14.40;11.90;28.80;1.50;134.44;0.30;17.90;0.07;17.80;7.00
+229;HRS;Harris Corporation;Technology;Communication Equipment;USA;6990;15.74;4.42;22.80;20.20;16.50;-5.50;-6.40;123.34;0.10;28.50;0.87;33.90;10.60
+230;HSP;Hospira Inc.;Healthcare;Drugs - Generic;USA;32150;44.79;4.42;166.93;15.40;-4.60;7.50;11.80;171.68;0.80;10.20;0.51;39.00;7.40
+231;HST;Host Hotels & Resorts, Inc.;Financial;REIT - Hotel/Motel;USA;38150;24.17;2.11;279.65;255.60;37.00;-45.80;0.60;744.68;0.30;8.90;0.54;95.70;12.10
+232;HSY;The Hershey Company;Consumer Goods;Confectioners;USA;92130;21.69;15.31;159.45;4.40;14.70;26.10;3.50;-;8.50;57.80;1.94;44.90;11.20
+233;HUM;Humana Inc.;Healthcare;Health Care Plans;USA;56290;25.27;2.96;87.72;-4.80;3.70;20.00;18.10;149.11;0.20;12.10;0.41;-;2.40
+234;IBM;International Business Machines Corporation;Technology;Information Technology Services;USA;541630;10.54;13.51;19.02;2.00;9.30;0.00;-11.90;984.17;0.10;103.20;3.20;50.20;15.90
+235;ICE;Intercontinental Exchange, Inc.;Financial;Diversified Investments;USA;35250;25.05;2.07;28.23;119.00;14.60;31.30;6.60;109.53;0.40;8.20;0.34;-;32.90
+236;IFF;International Flavors & Fragrances Inc.;Basic Materials;Specialty Chemicals;USA;1190;21.13;5.80;36.94;17.90;15.50;20.80;0.60;79.60;0.40;34.10;0.60;44.20;17.40
+237;INTC;Intel Corporation;Technology;Semiconductor - Broad Line;USA;761510;13.61;2.76;20.59;22.20;24.60;7.90;0.10;7440;0.07;20.80;0.24;63.90;21.10
+238;INTU;Intuit Inc.;Technology;Application Software;USA;56280;87.80;12.36;25.55;8.80;17.00;-46.60;-8.10;261.98;0.20;12.10;0.21;82.20;7.30
+239;IP;International Paper Company;Consumer Goods;Packaging & Containers;USA;36200;21.31;4.22;16.97;-65.30;-3.20;470.00;-3.60;418.03;0.70;14.30;1.88;31.30;3.70
+240;IPG;The Interpublic Group of Companies, Inc.;Services;Advertising Agencies;USA;1780;16.91;4.26;28.39;83.60;42.60;100.00;2.40;410.59;0.60;23.90;0.92;-;6.60
+241;IR;Ingersoll-Rand Plc;Industrial Goods;Diversified Machinery;Ireland;05180;20.98;3.16;39.35;57.20;17.20;-18.50;6.10;263.85;0.50;16.10;0.79;30.20;7.50
+242;IRM;Iron Mountain Incorporated;Technology;Business Software & Services;USA;6260;19.18;8.91;-;237.00;8.30;-13.60;-2.70;200.69;1.30;43.90;6.36;57.10;11.90
+243;ISRG;Intuitive Surgical, Inc.;Healthcare;Medical Appliances & Equipment;USA;24180;39.18;5.07;35.19;-33.60;13.40;127.40;14.50;36.45;0.90;14.70;0.00;65.30;21.40
+244;ITW;Illinois Tool Works Inc.;Industrial Goods;Diversified Machinery;USA;16340;19.04;7.03;52.40;28.70;19.30;19.80;-6.40;348.84;0.20;41.80;1.52;40.50;20.60
+245;IVZ;Invesco Ltd.;Financial;Asset Management;USA;60160;15.80;2.06;20.90;16.90;24.60;39.50;1.70;425.06;0.80;12.70;0.20;68.60;20.50
+246;JCI;Johnson Controls Inc.;Consumer Goods;Auto Parts;USA;44330;22.90;3.16;86.40;35.90;41.70;11.50;-2.80;653.44;0.10;13.70;0.56;16.50;3.70
+247;JEC;Jacobs Engineering Group Inc.;Services;Technical Services;USA;3450;16.60;1.23;10.55;-23.20;-5.00;1.60;-8.60;122.69;1.60;7.50;0.17;16.90;2.70
+248;JNJ;Johnson & Johnson;Healthcare;Drug Manufacturers - Major;USA;862740;17.73;4.06;46.23;18.50;5.30;-6.70;-4.10;7720;0.01;28.30;0.28;69.30;28.10
+249;JNPR;Juniper Networks, Inc.;Technology;Networking & Communication Devices;USA;64100;-;2.38;19.30;-184.90;-39.70;-13.60;-8.80;382.65;0.70;-6.50;0.42;61.80;-8.10
+250;JOY;Joy Global, Inc.;Industrial Goods;Farm & Construction Machinery;USA;6530;13.70;1.33;82.29;-34.30;-5.70;-45.20;-12.80;97.05;0.60;9.80;0.47;28.90;7.70
+251;JPM;JPMorgan Chase & Co.;Financial;Money Center Banks;USA;772540;12.57;1.19;8.61;21.60;18.80;13.30;-1.80;6930;0.20;9.80;1.31;-;40.20
+252;JWN;Nordstrom Inc.;Services;Apparel Stores;USA;37140;20.67;5.62;2395.28;0.30;13.10;-9.60;9.70;140.81;8.10;30.20;1.23;37.80;5.10
+253;K;Kellogg Company;Consumer Goods;Processed & Packaged Goods;USA;19220;50.30;8.77;60.95;-64.40;-11.00;-42.90;-4.90;351.84;20.20;14.50;3.04;34.30;3.10
+254;KEY;KeyCorp.;Financial;Regional - Midwest Banks;USA;04130;14.92;1.27;-;11.80;19.70;0.00;1.00;846.86;0.20;8.50;0.84;-;33.90
+255;KIM;Kimco Realty Corporation;Financial;REIT - Retail;USA;5490;18.20;1.89;-;38.20;47.90;384.60;24.20;401.58;2.60;13.80;1.14;73.90;62.80
+256;KLAC;KLA-Tencor Corporation;Technology;Semiconductor Equipment & Materials;USA;1790;27.05;18.99;-;8.10;25.60;-33.90;-11.20;159.59;0.20;17.00;6.55;56.30;12.60
+257;KMB;Kimberly-Clark Corporation;Consumer Goods;Personal Products;USA;14390;28.67;202.85;369.29;-22.00;-2.90;0.80;-4.00;362.84;0.10;59.40;40.43;34.10;7.60
+258;KMI;Kinder Morgan, Inc.;Basic Materials;Oil & Gas Pipelines;USA;51840;44.30;2.38;-;-22.40;20.80;-28.60;-11.10;8710;12.50;5.00;1.29;49.90;7.40
+259;KMX;CarMax Inc.;Services;Auto Dealerships;USA;24140;24.05;4.34;-;26.40;17.10;13.20;7.10;208.63;0.40;18.80;2.90;13.30;4.20
+260;KO;The Coca-Cola Company;Consumer Goods;Beverages - Soft Drinks;USA;441740;25.33;6.05;93.83;-15.80;1.70;-2.80;1.30;3340;0.30;22.20;1.47;61.20;15.30
+261;KORS;Michael Kors Holdings Limited;Consumer Goods;Textile - Apparel Clothing;United Kingdom;0290;10.60;4.05;19.10;32.90;93.00;15.40;17.80;192.27;3.10;40.70;0.00;60.60;20.20
+262;KR;The Kroger Co.;Services;Grocery Stores;USA;76350;19.45;6.28;35.98;20.00;99.50;29.60;8.50;485.39;0.50;33.30;2.15;21.50;1.60
+263;KRFT;Kraft Foods Group, Inc.;Consumer Goods;Food - Major Diversified;USA;93510;54.83;11.42;227.77;-61.40;-12.00;-15.10;-0.20;590.91;0.10;19.20;2.22;25.90;5.20
+264;KSS;Kohl's Corp.;Services;Department Stores;USA;54120;14.70;2.11;13.37;5.20;6.00;5.00;1.30;191.96;0.50;16.80;0.79;36.40;5.20
+265;KSU;Kansas City Southern;Services;Railroads;USA;22100;20.05;2.67;-;43.10;50.00;7.10;-0.70;109.08;1.20;13.80;0.55;70.50;19.80
+266;L;Loews Corporation;Financial;Property & Casualty Insurance;USA;39140;18.28;0.75;177.71;-14.90;13.90;-58.00;-5.40;311.88;5.40;3.30;0.55;-;4.50
+267;LB;L Brands, Inc.;Services;Apparel Stores;USA;42250;22.85;-;-;14.80;20.60;58.50;5.10;247.10;0.30;-297.30;-;42.20;9.80
+268;LEG;Leggett & Platt, Incorporated;Consumer Goods;Home Furnishings & Fixtures;USA;7860;29.47;6.31;41.14;24.00;15.90;28.20;10.40;134.78;2.30;14.40;0.90;21.50;4.40
+269;LEN;Lennar Corp.;Industrial Goods;Residential Construction;USA;27100;17.44;2.11;-;30.20;25.70;42.90;20.60;179.39;0.20;15.90;1.31;13.20;9.20
+270;LH;Laboratory Corp. of America Holdings;Healthcare;Medical Laboratories & Research;USA;15120;26.18;2.46;36.92;-5.30;3.50;-99.20;25.30;100.09;0.20;12.50;1.54;35.80;6.30
+271;LLL;L-3 Communications Holdings Inc.;Industrial Goods;Aerospace/Defense Products & Services;USA;4190;16.49;1.80;11.63;-8.30;-0.10;-34.20;-8.30;81.77;0.90;10.70;0.75;8.60;5.00
+272;LLTC;Linear Technology Corporation;Technology;Semiconductor - Specialized;USA;06110;21.79;7.46;37.47;11.10;8.20;14.60;6.90;237.16;0.90;36.60;0.00;75.90;35.50
+273;LLY;Eli Lilly and Company;Healthcare;Drug Manufacturers - Major;USA;11940;41.37;6.05;249.29;-48.40;-10.80;-26.50;-0.80;1110;11.80;13.30;0.55;75.00;11.20
+274;LM;Legg Mason Inc.;Financial;Asset Management;USA;7450;25.03;1.16;21.46;-12.40;9.10;29.30;3.10;108.61;0.60;5.00;0.24;78.90;8.20
+275;LMT;Lockheed Martin Corporation;Industrial Goods;Aerospace/Defense Products & Services;USA;80590;17.15;17.02;1220.43;24.00;8.00;-4.50;-5.10;314.65;0.10;90.00;2.39;11.70;7.90
+276;LNC;Lincoln National Corporation;Financial;Life Insurance;USA;27150;10.80;0.95;6.42;25.00;40.70;-5.00;-1.60;252.28;0.50;9.50;0.36;-;11.00
+277;LOW;Lowe's Companies Inc.;Services;Home Improvement Stores;USA;97640;24.88;6.98;17.86;26.60;17.50;14.80;5.40;917.16;0.10;26.40;1.20;34.80;4.80
+278;LRCX;Lam Research Corporation;Technology;Semiconductor Equipment & Materials;USA;26130;19.84;2.61;27.91;448.50;28.50;20.80;13.50;157.91;0.20;15.10;0.50;43.80;15.10
+279;LUK;Leucadia National Corporation;Financial;Investment Brokerage - National;USA;8280;18.51;0.84;-;-50.80;-23.30;266.70;8.20;317.81;5.00;5.50;0.94;31.80;4.90
+280;LUV;Southwest Airlines Co.;Services;Regional Airlines;USA;05230;16.50;3.37;19.92;56.20;66.00;214.30;6.00;667.68;0.30;20.10;0.42;66.80;7.60
+281;LVLT;Level 3 Communications, Inc.;Technology;Diversified Communication Services;USA;25190;48.50;2.81;59.43;346.90;17.20;-25.50;27.60;352.69;0.50;7.90;1.71;49.50;4.50
+282;LYB;LyondellBasell Industries N.V.;Basic Materials;Specialty Chemicals;Netherlands;97490;12.20;6.80;13.00;18.30;29.00;40.70;-26.50;384.26;0.50;48.20;1.11;16.20;10.30
+283;M;Macy's, Inc.;Services;Department Stores;USA;27230;16.39;4.53;22.33;9.30;40.20;-6.70;-0.70;335.44;0.10;27.50;1.41;40.00;5.30
+284;MA;MasterCard Incorporated;Financial;Credit Services;USA;711070;29.06;17.21;37.93;20.70;22.50;21.90;2.40;996.07;10.50;58.30;0.24;-;39.50
+285;MAC;The Macerich Company;Financial;REIT - Retail;USA;03120;7.58;2.16;-;8.80;39.80;23.10;20.30;151.51;0.50;34.50;1.16;59.40;-
+286;MAR;Marriott International, Inc.;Services;Lodging;USA;94200;28.32;-;32.22;27.00;35.80;28.10;6.70;204.90;6.80;-38.00;-;14.60;5.60
+287;MAS;Masco Corporation;Industrial Goods;General Building Materials;USA;5390;11.61;12.24;21.75;189.20;52.70;-14.30;2.70;337.82;0.80;94.00;5.10;28.10;9.70
+288;MAT;Mattel, Inc.;Consumer Goods;Toys & Games;USA;0190;20.17;3.38;1608.32;-43.80;0.00;-466.70;-2.50;337.48;0.20;15.00;0.79;49.50;7.30
+289;MCD;McDonald's Corp.;Services;Restaurants;USA;82910;21.53;8.07;103.79;-13.20;3.20;-30.60;-11.10;957.97;0.04;32.30;1.25;38.00;16.30
+290;MCHP;Microchip Technology Inc.;Technology;Semiconductor - Specialized;USA;9890;29.90;4.87;34.99;-9.30;7.30;-10.00;10.10;197.07;2.61;17.00;0.89;57.30;17.20
+291;MCK;McKesson Corporation;Services;Drugs Wholesale;USA;28530;30.42;6.65;22.77;24.00;10.30;-1.20;14.30;231.58;0.29;16.90;1.23;6.40;0.80
+292;MCO;Moody's Corporation;Services;Business Services;USA;09220;23.14;-;28.18;28.10;22.20;11.00;12.80;201.41;0.50;-;-;72.10;29.20
+293;MDLZ;Mondelez International, Inc.;Consumer Goods;Confectioners;USA;82660;29.77;2.76;59.29;-0.80;-7.50;111.10;-10.20;6210;0.20;8.10;0.76;37.00;7.00
+294;MDT;Medtronic plc;Healthcare;Medical Appliances & Equipment;USA;561070;24.19;3.68;39.57;-10.40;10.40;30.70;3.70;4210;0.10;16.00;1.43;74.10;17.80
+295;MET;MetLife, Inc.;Financial;Life Insurance;USA;45630;9.23;0.87;4.82;86.30;30.00;64.00;9.60;938.08;0.10;9.80;0.79;-;9.40
+296;MHFI;McGraw Hill Financial, Inc.;Services;Business Services;USA;28280;-;52.45;-;-138.60;-19.70;26.40;6.40;265.57;0.70;18.80;2.16;68.10;3.70
+297;MHK;Mohawk Industries Inc.;Consumer Goods;Home Furnishings & Fixtures;USA;03140;29.75;3.32;101.56;43.00;147.40;-72.10;3.80;61.91;1.00;10.60;0.58;28.50;6.00
+298;MJN;Mead Johnson Nutrition Company;Consumer Goods;Processed & Packaged Goods;USA;44180;25.50;27.59;46.47;5.40;12.20;2.00;-1.70;202.10;0.20;132.40;2.27;61.50;16.50
+299;MKC;McCormick & Company, Incorporated;Consumer Goods;Processed & Packaged Goods;USA;41100;24.94;6.21;52.58;14.80;8.00;-11.30;1.70;123.54;0.10;23.10;0.79;40.60;10.00
+300;MLM;Martin Marietta Inc.;Industrial Goods;General Building Materials;USA;8090;50.08;2.26;169.54;3.00;8.20;114.90;61.30;63.30;0.60;4.40;0.36;17.70;5.00
+301;MMC;Marsh & McLennan Companies, Inc.;Financial;Insurance Brokers;USA;35310;21.65;4.64;31.16;7.40;22.10;11.30;-1.50;537.28;0.20;20.20;0.57;42.60;11.70
+302;MMM;3M Company;Industrial Goods;Diversified Machinery;USA;91980;20.71;7.13;35.06;11.50;10.60;3.40;-3.20;633.85;0.10;32.70;0.47;48.60;15.70
+303;MNK;Mallinckrodt public limited company;Healthcare;Drugs - Generic;Ireland;07140;-;2.68;30.22;-591.00;0.00;225.00;63.10;116.26;0.50;-4.50;0.77;50.10;-5.70
+304;MNST;Monster Beverage Corporation;Consumer Goods;Beverages - Soft Drinks;USA;27230;60.79;15.83;67.54;42.10;20.30;-94.50;16.90;139.40;1.30;27.90;0.00;55.60;15.40
+305;MO;Altria Group Inc.;Consumer Goods;Cigarettes;USA;68960;19.82;38.11;108.50;13.30;10.70;-11.90;5.20;9610;0.20;137.70;5.49;41.80;19.80
+306;MON;Monsanto Company;Basic Materials;Agricultural Chemicals;USA;09510;22.93;6.77;72.56;12.30;6.80;-7.30;-10.90;474.74;0.20;25.40;1.08;53.60;15.90
+307;MOS;The Mosaic Company;Basic Materials;Agricultural Chemicals;USA;87160;15.66;1.66;15.85;235.00;7.70;48.10;7.70;329.78;0.10;12.10;0.38;21.00;14.10
+308;MPC;Marathon Petroleum Corporation;Basic Materials;Oil & Gas Refining & Marketing;USA;95270;8.98;2.48;20.03;-34.00;47.40;376.50;-26.20;538.57;0.30;31.30;0.59;9.00;3.70
+309;MRK;Merck & Co. Inc.;Healthcare;Drug Manufacturers - Major;USA;581630;15.04;3.44;125.06;176.90;-6.30;-42.10;-8.20;8220;0.04;23.50;0.63;61.40;27.00
+310;MRO;Marathon Oil Corporation;Basic Materials;Independent Oil & Gas;USA;10180;62.35;0.88;-;8.40;7.10;-170.70;-46.20;673.71;0.20;7.90;0.31;61.00;16.20
+311;MS;Morgan Stanley;Financial;Investment Brokerage - National;USA;26770;19.32;1.13;-;16.70;32.90;59.50;7.60;5310;0.20;8.30;4.60;86.20;14.10
+312;MSFT;Microsoft Corporation;Technology;Business Software & Services;USA;293690;18.94;4.13;22.26;1.90;10.20;-10.30;6.50;5270;2.90;22.10;0.35;65.00;21.10
+313;MSI;Motorola Solutions, Inc.;Technology;Communication Equipment;USA;31120;-;6.02;-;-182.30;-33.40;21.20;-0.40;210.08;0.20;40.90;1.63;47.70;21.20
+314;MTB;M&T Bank Corporation;Financial;Regional - Northeast Banks;USA;93160;17.11;1.49;30.35;-9.50;20.80;2.50;2.10;122.23;2.40;10.80;0.93;-;40.30
+315;MU;Micron Technology, Inc.;Technology;Semiconductor- Memory Chips;USA;98250;7.37;2.08;9.63;124.80;25.20;27.90;1.40;0810;0.30;34.70;0.54;34.20;23.00
+316;MUR;Murphy Oil Corporation;Basic Materials;Independent Oil & Gas;USA;5170;8.75;0.91;-;21.10;8.90;-97.80;-39.80;167.51;1.40;10.60;0.32;77.90;18.60
+317;MWV;MeadWestvaco Corporation;Consumer Goods;Packaging & Containers;USA;0980;31.50;2.59;-;-14.00;1.90;0.00;-3.00;167.28;0.40;7.90;0.60;21.20;4.70
+318;MYL;Mylan N.V.;Healthcare;Drugs - Generic;USA;48340;32.42;3.24;48.38;57.60;52.70;-55.20;9.10;393.08;0.80;18.30;0.94;46.50;11.00
+319;NAVI;Navient Corporation;Financial;Credit Services;USA;5270;6.31;1.81;5.54;-5.90;0.00;46.90;-15.40;401.09;0.40;34.80;33.38;54.80;31.60
+320;NBL;Noble Energy, Inc.;Basic Materials;Independent Oil & Gas;USA;39170;16.64;1.46;-;32.40;60.70;-110.90;-45.00;376.98;1.80;9.60;0.54;95.80;22.10
+321;NBR;Nabors Industries Ltd.;Basic Materials;Oil & Gas Drilling & Exploration;Bermuda;6340;-;0.81;-;-560.80;-48.00;168.80;-11.00;317.69;1.10;-11.20;0.77;34.30;-9.20
+322;NDAQ;The Nasdaq OMX Group, Inc.;Financial;Diversified Investments;USA;4280;27.01;1.52;16.81;6.70;13.90;-91.50;-4.50;137.39;1.10;5.40;0.42;59.10;9.20
+323;NE;Noble Corporation plc;Basic Materials;Oil & Gas Drilling & Exploration;United Kingdom;6030;-;0.55;-;-132.40;-15.90;22.00;1.10;240.13;0.80;2.50;0.74;52.70;5.60
+324;NEE;NextEra Energy, Inc.;Utilities;Electric Utilities;USA;52430;16.14;2.14;40.63;42.50;7.10;48.00;11.70;443.15;0.30;13.90;1.46;50.20;15.40
+325;NEM;Newmont Mining Corporation;Basic Materials;Gold;USA;67120;19.62;1.14;18.76;121.70;-16.40;52.20;11.80;528.26;0.20;6.70;0.62;41.40;9.20
+326;NFLX;Netflix, Inc.;Services;CATV Systems;USA;27400;172.98;21.05;-;133.50;16.90;-55.80;23.90;59.51;0.10;13.40;1.26;32.30;4.10
+327;NFX;Newfield Exploration Co.;Basic Materials;Independent Oil & Gas;USA;1360;30.84;1.29;-;-60.60;25.60;-;-38.90;161.64;0.50;3.70;0.74;81.60;6.50
+328;NI;NiSource Inc.;Utilities;Diversified Utilities;USA;77140;27.70;2.26;-;7.00;14.90;0.00;-7.40;315.82;0.60;8.60;1.34;68.70;8.40
+329;NKE;NIKE, Inc.;Consumer Goods;Textile - Apparel Footwear & Accessories;USA;46900;30.06;7.33;31.71;11.20;14.50;20.00;7.00;680.89;0.20;26.90;0.10;45.80;10.20
+330;NLSN;Nielsen N.V.;Technology;Information & Delivery Services;USA;77160;44.68;3.55;62.35;-12.30;21.40;13.30;-2.10;328.43;10.50;7.30;1.54;58.40;6.20
+331;NOC;Northrop Grumman Corporation;Industrial Goods;Aerospace/Defense - Major Diversified;USA;42310;17.01;4.75;27.66;16.80;17.00;-8.40;1.90;192.69;0.40;23.10;0.95;23.40;8.20
+332;NOV;National Oilwell Varco, Inc.;Basic Materials;Oil & Gas Equipment & Services;USA;99180;9.45;1.05;25.03;12.00;10.10;-40.60;-1.40;387.32;0.10;10.80;0.22;26.70;10.40
+333;NRG;NRG Energy, Inc.;Utilities;Diversified Utilities;USA;1280;1218.00;0.86;17.86;118.90;-41.80;-105.60;9.80;331.43;0.70;0.10;2.15;25.30;0.10
+334;NSC;Norfolk Southern Corporation;Services;Railroads;USA;06270;14.25;2.24;693.81;5.60;18.20;-15.30;-4.50;303.75;0.30;15.80;0.73;38.90;16.80
+335;NTAP;NetApp, Inc.;Technology;Data Storage Devices;USA;9690;18.55;2.95;11.25;-4.40;9.10;-25.40;-6.60;301.49;0.73;15.70;0.44;62.60;9.10
+336;NTRS;Northern Trust Corporation;Financial;Asset Management;USA;13180;22.13;2.21;107.66;11.00;1.00;25.30;7.60;232.25;0.40;10.20;11.29;96.30;18.10
+337;NUE;Nucor Corporation;Basic Materials;Steel & Iron;USA;09150;22.63;1.99;19.02;46.10;34.30;-40.00;-13.90;317.68;0.50;8.70;0.58;8.90;3.30
+338;NVDA;NVIDIA Corporation;Technology;Semiconductor - Specialized;USA;39110;18.90;2.55;16.47;51.40;62.50;0.00;4.40;509.65;0.70;14.40;0.31;56.00;13.30
+339;NWL;Newell Rubbermaid Inc.;Consumer Goods;Housewares & Accessories;USA;11110;30.18;6.59;56.06;-6.30;6.70;16.70;4.10;267.09;0.50;22.50;1.67;38.70;7.50
+340;NWSA;News Corporation;Services;Broadcasting - TV;USA;5380;35.12;0.69;26.64;-52.90;-37.83;-50.00;-0.80;499.65;0.77;1.90;0.00;-;2.80
+341;OI;Owens-Illinois, Inc.;Consumer Goods;Packaging & Containers;USA;8230;64.11;4.25;16.42;-51.60;1.00;-29.50;-13.30;159.98;0.80;3.20;4.00;18.30;0.70
+342;OKE;ONEOK Inc.;Utilities;Gas Utilities;USA;2180;28.69;15.54;-;14.30;1.70;-34.10;-42.90;206.93;0.70;46.90;16.65;19.00;2.60
+343;OMC;Omnicom Group Inc.;Services;Advertising Agencies;USA;25170;15.94;7.28;17.75;16.40;11.30;6.40;-0.90;242.65;0.60;44.70;1.93;25.80;8.60
+344;ORCL;Oracle Corporation;Technology;Application Software;USA;311790;18.58;3.65;16.77;-7.10;12.80;-22.50;-5.40;2530;25.05;25.20;0.85;80.30;31.70
+345;ORLY;O'Reilly Automotive Inc.;Services;Auto Parts Stores;USA;41230;29.75;11.16;28.79;21.70;26.90;28.00;10.10;98.26;1.00;39.60;0.65;51.70;11.10
+346;OXY;Occidental Petroleum Corporation;Basic Materials;Independent Oil & Gas;USA;32600;-;1.77;-;-102.90;-15.40;-119.60;-37.60;765.08;0.30;1.00;0.20;61.50;2.30
+347;PAYX;Paychex, Inc.;Services;Staffing & Outsourcing Services;USA;52170;26.65;9.37;75.19;9.60;2.90;4.50;8.30;324.52;10.40;36.30;0.00;69.50;24.30
+348;PBCT;People's United Financial Inc.;Financial;Savings & Loans;USA;0750;19.06;1.05;-;13.50;22.90;11.10;1.90;306.41;0.80;5.50;0.22;-;24.80
+349;PBI;Pitney Bowes Inc.;Consumer Goods;Business Equipment;USA;3240;12.91;79.37;14.03;3.50;-6.70;90.50;-5.00;201.11;0.30;214.20;56.53;56.00;9.80
+350;PCAR;PACCAR Inc.;Consumer Goods;Trucks & Other Vehicles;USA;82220;15.65;3.39;-;15.80;65.20;37.70;10.30;346.26;0.60;21.00;1.21;18.00;7.50
+351;PCG;PG&E Corporation;Utilities;Electric Utilities;USA;81230;18.93;1.51;-;67.20;-0.90;-87.80;0.20;479.57;0.20;8.00;1.01;63.30;7.30
+352;PCL;Plum Creek Timber Co. Inc.;Industrial Goods;Lumber, Wood Production;USA;1870;31.92;4.44;46.90;-6.90;-3.40;41.20;28.10;174.94;0.50;13.40;2.01;30.70;14.40
+353;PCLN;The Priceline Group Inc.;Services;Business Services;USA;57590;25.09;6.91;21.18;26.50;35.80;1.80;12.10;51.63;0.60;28.70;0.61;90.80;28.10
+354;PCP;Precision Castparts Corp.;Industrial Goods;Metal Fabrication;USA;23280;19.03;2.61;22.95;-9.90;10.60;-67.10;-0.50;137.88;0.24;13.30;0.42;32.50;15.30
+355;PDCO;Patterson Companies, Inc.;Services;Medical Equipment Wholesale;USA;0250;22.64;3.31;72.86;-3.00;3.10;-1.80;-1.80;86.52;0.40;14.60;0.50;28.20;5.00
+356;PEG;Public Service Enterprise Group Inc.;Utilities;Diversified Utilities;USA;82190;11.58;1.58;2831.28;22.00;-1.00;51.30;-2.70;506.13;0.20;14.10;0.72;39.10;15.90
+357;PEP;Pepsico, Inc.;Consumer Goods;Beverages - Soft Drinks;USA;971390;22.10;8.87;34.98;-1.20;2.50;2.50;-3.20;4710;0.20;32.60;1.91;53.90;9.80
+358;PFE;Pfizer Inc.;Healthcare;Drug Manufacturers - Major;USA;482090;23.46;3.14;32.75;-14.50;3.10;8.60;-4.30;1560;0.10;15.70;0.53;81.00;23.40
+359;PFG;Principal Financial Group Inc.;Financial;Life Insurance;USA;33150;12.61;1.47;5.84;26.10;13.60;41.80;6.70;293.22;0.50;11.90;0.24;-;11.50
+360;PG;The Procter & Gamble Company;Consumer Goods;Personal Products;USA;392150;23.56;3.49;51.37;4.00;2.80;-1.20;-7.60;7120;0.10;13.70;0.53;49.40;11.30
+361;PGR;Progressive Corp.;Financial;Property & Casualty Insurance;USA;51160;13.29;2.30;12.53;11.40;6.50;-7.40;4.00;571.40;0.60;18.00;0.36;-;6.40
+362;PH;Parker-Hannifin Corporation;Industrial Goods;Industrial Equipment & Components;USA;40160;15.42;3.19;19.74;9.70;17.00;26.30;-5.80;137.27;0.40;18.80;0.66;24.50;8.70
+363;PHM;PulteGroup, Inc.;Industrial Goods;Residential Construction;USA;4570;16.47;1.58;122.46;-81.30;18.30;-21.10;1.30;330.83;0.90;11.10;0.41;23.30;9.00
+364;PKI;PerkinElmer Inc.;Healthcare;Medical Laboratories & Research;USA;1160;36.99;2.95;31.77;-7.80;17.60;16.10;-0.70;112.12;1.00;7.90;0.49;45.00;7.30
+365;PLD;Prologis, Inc.;Financial;REIT - Industrial;USA;97190;20.49;1.35;-;207.50;20.90;5000.40;6.50;519.21;0.20;7.00;0.59;69.80;54.10
+366;PLL;Pall Corporation;Industrial Goods;Diversified Machinery;USA;29130;34.95;8.16;39.94;12.50;14.70;11.30;-0.20;106.66;0.10;23.30;0.72;51.40;13.60
+367;PM;Philip Morris International, Inc.;Consumer Goods;Cigarettes;USA;951250;17.08;-;-;-9.50;8.00;-1.70;-4.40;5510;0.30;-81.00;-;65.10;31.40
+368;PNC;The PNC Financial Services Group, Inc.;Financial;Money Center Banks;USA;45500;13.42;1.13;17.62;-0.80;11.40;-3.80;-3.80;516.44;0.20;8.70;0.64;-;41.50
+369;PNR;Pentair plc;Industrial Goods;Industrial Equipment & Components;United Kingdom;44110;20.03;2.59;22.18;25.20;21.80;3.20;-10.30;178.68;0.30;6.70;0.77;35.10;4.80
+370;PNW;Pinnacle West Capital Corporation;Utilities;Electric Utilities;USA;2460;15.73;1.42;-;-2.20;7.60;0.00;-2.20;110.21;0.40;9.10;0.84;40.60;11.40
+371;POM;Pepco Holdings, Inc.;Utilities;Electric Utilities;USA;7760;30.76;1.57;-;113.30;-1.00;-30.00;3.10;252.10;0.60;5.10;1.41;95.80;4.50
+372;PPG;PPG Industries, Inc.;Basic Materials;Specialty Chemicals;USA;12320;27.90;6.33;2470.73;34.10;31.00;33.30;0.70;272.70;0.40;20.60;0.91;43.00;7.60
+373;PPL;PPL Corporation;Utilities;Electric Utilities;USA;80190;10.44;1.41;-;39.20;16.90;92.00;165.10;667.86;0.03;17.10;1.56;66.80;17.60
+374;PRGO;Perrigo Company Public Limited Company;Healthcare;Drug Related Products;Ireland;67270;126.14;2.78;33.09;-62.00;3.10;-286.10;4.50;145.59;0.05;3.30;0.49;35.60;7.10
+375;PRU;Prudential Financial, Inc.;Financial;Life Insurance;USA;65400;19.59;0.90;1.86;297.30;-15.90;68.50;20.90;451.69;0.20;5.10;0.66;-;3.80
+376;PSA;Public Storage;Financial;REIT - Industrial;USA;75310;33.57;6.21;-;7.40;1.10;21.80;9.60;146.74;9.80;18.40;0.04;72.50;42.20
+377;PSX;Phillips 66;Basic Materials;Oil & Gas Refining & Marketing;USA;73420;10.62;1.99;-;19.80;61.70;21.10;-43.50;540.63;0.05;19.30;0.41;17.80;2.90
+378;PVH;PVH Corp.;Consumer Goods;Textile - Apparel Clothing;USA;6190;18.72;2.16;15.22;202.90;11.30;226.20;-4.30;82.45;0.40;11.60;0.79;52.50;6.30
+379;PWR;Quanta Services, Inc.;Industrial Goods;General Contractors;USA;0760;21.62;1.46;22.97;-27.80;10.80;0.00;7.10;206.51;0.50;6.70;0.03;15.20;3.70
+380;PX;Praxair Inc.;Basic Materials;Chemicals - Major Diversified;USA;23350;21.63;7.04;94.72;-2.40;7.40;-5.30;-8.90;287.90;0.10;27.60;1.87;43.60;13.80
+381;PXD;Pioneer Natural Resources Co.;Basic Materials;Independent Oil & Gas;USA;24210;25.26;2.50;-;343.50;49.20;-149.50;-39.90;147.79;1.00;10.90;0.31;59.40;21.60
+382;QCOM;QUALCOMM Incorporated;Technology;Communication Equipment;USA;351060;15.46;2.84;44.89;12.50;32.70;-44.70;8.30;6310;0.17;18.50;0.03;60.30;26.00
+383;QEP;QEP Resources, Inc.;Basic Materials;Oil & Gas Pipelines;USA;2930;-;0.82;-;-886.20;-31.20;-557.10;-39.90;175.28;0.80;19.50;0.56;59.50;23.60
+384;R;Ryder System, Inc.;Services;Rental & Leasing Services;USA;7840;21.20;2.60;-;-10.60;20.60;8.70;-2.70;52.80;0.60;14.30;2.60;21.40;4.10
+385;RAI;Reynolds American Inc.;Consumer Goods;Cigarettes;USA;60480;27.26;8.98;258.51;-14.00;10.50;15.90;6.30;517.53;0.10;31.60;1.12;53.70;17.40
+386;RCL;Royal Caribbean Cruises Ltd.;Services;Resorts & Casinos;USA;58170;22.78;2.20;-;60.30;37.00;66.70;-3.80;172.34;1.30;9.20;1.06;34.70;9.80
+387;REGN;Regeneron Pharmaceuticals, Inc.;Healthcare;Biotechnology;USA;63530;164.84;17.86;243.98;-19.40;41.20;8.20;39.00;76.01;0.30;13.70;0.16;92.00;11.70
+388;RF;Regions Financial Corporation;Financial;Regional - Southeast Banks;USA;17140;14.48;0.88;9.98;1.30;21.00;-23.80;-1.30;3410;0.30;6.30;0.20;-;28.20
+389;RHI;Robert Half International Inc.;Services;Staffing & Outsourcing Services;USA;5770;23.44;7.57;37.52;23.50;56.60;28.90;11.20;130.52;3.30;32.90;0.00;41.10;6.70
+390;RHT;Red Hat, Inc.;Technology;Application Software;USA;50140;78.34;10.74;23.79;2.20;16.10;30.00;13.50;181.87;0.60;14.10;0.53;84.80;10.30
+391;RIG;Transocean Ltd.;Basic Materials;Oil & Gas Drilling & Exploration;Switzerland;9150;-;0.44;20.61;-235.80;-20.40;-203.10;-12.70;363.04;0.06;-16.50;0.76;44.50;-27.00
+392;RL;Ralph Lauren Corporation;Consumer Goods;Textile - Apparel Clothing;USA;75110;17.28;3.06;34.05;-6.50;10.70;-15.60;1.00;85.77;1.00;17.60;0.20;57.50;9.20
+393;ROK;Rockwell Automation Inc.;Industrial Goods;Diversified Machinery;USA;69160;19.72;6.52;27.72;10.30;31.00;18.00;-3.10;133.82;0.60;33.00;0.59;42.60;13.20
+394;ROP;Roper Technologies, Inc.;Industrial Goods;Diversified Machinery;USA;60170;27.02;3.66;22.98;19.20;19.90;5.50;3.70;98.90;1.60;14.00;0.55;59.50;18.30
+395;ROST;Ross Stores Inc.;Services;Apparel Stores;USA;48200;21.46;8.70;40.73;13.90;20.00;19.00;9.60;402.07;0.70;43.00;0.17;28.30;8.50
+396;RRC;Range Resources Corporation;Basic Materials;Independent Oil & Gas;USA;6380;13.72;2.43;-;441.40;72.20;-20.00;-43.80;164.95;2.50;19.80;0.93;82.70;36.60
+397;RSG;Republic Services, Inc.;Industrial Goods;Waste Management;USA;93130;24.03;1.80;42.54;-5.60;3.30;32.40;4.40;350.92;31.10;7.50;0.97;36.80;6.60
+398;RTN;Raytheon Company;Industrial Goods;Aerospace/Defense Products & Services;USA;98290;14.26;3.12;70.53;16.90;7.30;-4.30;-4.00;303.95;0.30;20.60;0.55;24.90;9.70
+399;SBUX;Starbucks Corporation;Services;Specialty Eateries;USA;13810;31.81;13.52;55.65;18.00;39.20;17.90;17.80;4610;2.20;46.60;0.34;30.80;14.60
+400;SCG;SCANA Corp.;Utilities;Electric Utilities;USA;1870;9.60;1.35;-;11.80;5.90;104.40;-12.60;129.66;0.10;14.80;1.16;65.20;15.70
+401;SCHW;The Charles Schwab Corporation;Financial;Investment Brokerage - National;USA;67430;35.37;3.87;219.47;23.10;7.10;-8.30;3.10;1510;0.10;11.40;9.96;98.30;19.90
+402;SE;Spectra Energy Corp.;Basic Materials;Oil & Gas Pipelines;USA;85210;23.59;2.83;-;3.90;4.20;-35.50;-11.90;670.25;0.10;11.30;1.85;80.20;16.40
+403;SEE;Sealed Air Corporation;Consumer Goods;Packaging & Containers;USA;90100;38.98;9.43;13.73;172.70;-2.30;39.40;-4.40;208.85;0.60;27.90;3.78;35.20;4.60
+404;SHW;The Sherwin-Williams Company;Basic Materials;Specialty Chemicals;USA;34260;31.23;55.85;39.13;18.50;18.40;21.10;3.50;79.84;1.00;80.90;5.39;46.70;7.80
+405;SIAL;Sigma-Aldrich Corporation;Basic Materials;Specialty Chemicals;USA;67160;33.50;5.28;42.21;2.70;8.30;-1.00;-1.90;118.94;0.30;16.00;0.09;51.40;18.00
+406;SJM;The J. M. Smucker Company;Consumer Goods;Processed & Packaged Goods;USA;27130;32.15;1.72;57.34;-38.60;-4.30;-170.10;17.20;115.19;1.60;6.10;0.87;34.60;6.00
+407;SLB;Schlumberger Limited;Basic Materials;Oil & Gas Equipment & Services;USA;051100;22.51;2.94;20.52;-15.50;10.60;-37.20;-8.80;2710;0.10;12.30;0.34;23.00;10.10
+408;SNA;Snap-on Incorporated;Industrial Goods;Small Tools & Accessories;USA;3290;21.74;4.30;47.95;20.40;25.20;15.40;5.10;57.62;0.80;19.60;0.43;48.80;13.20
+409;SNDK;SanDisk Corp.;Technology;Data Storage Devices;USA;17130;19.43;2.29;12.18;-2.50;18.80;-85.10;-11.90;207.48;0.10;11.80;0.38;44.40;12.10
+410;SNI;Scripps Networks Interactive, Inc.;Services;Broadcasting - TV;USA;5680;17.09;7.43;12.84;12.60;18.20;8.00;2.30;74.06;13.10;35.60;1.57;70.30;20.20
+411;SO;Southern Company;Utilities;Electric Utilities;USA;79370;17.78;1.89;-;16.60;1.10;43.60;-9.90;907.53;0.03;10.70;1.30;96.50;11.80
+412;SPG;Simon Property Group Inc.;Financial;REIT - Retail;USA;65530;37.23;10.96;27.86;21.40;33.40;19.60;5.10;309.04;0.30;28.40;4.43;83.80;28.90
+413;SPLS;Staples, Inc.;Services;Specialty Retail, Other;USA;14100;105.53;1.90;33.33;-80.40;-27.10;-40.00;-6.90;635.95;0.20;1.70;0.21;26.00;0.40
+414;SRCL;Stericycle, Inc.;Industrial Goods;Waste Management;USA;48110;36.00;5.94;33.26;6.50;13.30;-4.40;16.40;84.01;0.90;17.20;0.82;42.30;12.20
+415;SRE;Sempra Energy;Utilities;Diversified Utilities;USA;61240;18.48;2.14;-;15.50;0.50;75.80;-4.30;234.38;0.10;11.90;1.24;98.50;12.40
+416;STI;SunTrust Banks, Inc.;Financial;Money Center Banks;USA;62220;13.36;1.04;-;34.00;23.00;6.80;-4.80;515.32;0.20;8.00;0.59;-;32.70
+417;STJ;St. Jude Medical Inc.;Healthcare;Medical Appliances & Equipment;USA;99200;21.27;5.50;26.91;39.00;8.90;5.80;-1.30;274.29;2.40;25.20;0.91;71.30;18.10
+418;STT;State Street Corporation;Financial;Asset Management;USA;38320;16.88;1.72;-;-1.10;5.70;11.10;-3.00;409.12;1.10;10.10;0.49;-;75.60
+419;STX;Seagate Technology Public Limited Company;Technology;Data Storage Devices;Ireland;09160;8.82;5.13;9.54;-6.00;22.00;-24.80;-2.20;302.04;0.20;60.70;1.23;28.10;13.60
+420;STZ;Constellation Brands Inc.;Consumer Goods;Beverages - Wineries & Distillers;USA;99220;30.72;3.95;63.57;-57.50;55.60;35.70;5.00;166.22;1.00;15.10;1.27;43.80;13.90
+421;SWK;Stanley Black & Decker, Inc.;Industrial Goods;Machine Tools & Accessories;USA;25160;19.65;2.86;25.08;63.70;13.80;0.00;0.50;152.77;0.90;11.70;0.79;36.30;6.70
+422;SWN;Southwestern Energy Co.;Basic Materials;Independent Oil & Gas;USA;9980;10.67;1.24;-;31.00;95.00;-78.20;-16.20;380.05;0.30;15.50;0.73;75.90;20.10
+423;SYK;Stryker Corporation;Healthcare;Medical Appliances & Equipment;USA;50360;55.11;4.39;28.76;-48.70;-13.40;222.20;3.20;347.57;0.30;8.60;0.42;66.00;7.60
+424;SYMC;Symantec Corporation;Technology;Security Software & Services;USA;45160;19.17;2.79;31.75;-1.60;7.70;-19.40;-6.60;674.92;0.40;14.90;0.35;82.30;13.50
+425;SYY;Sysco Corporation;Services;Food Wholesale;USA;74220;26.23;4.28;92.29;-5.40;-2.20;-3.20;4.20;592.38;0.20;16.30;1.44;17.50;1.80
+426;T;AT&T, Inc.;Technology;Telecom Services - Domestic;USA;881870;32.59;2.18;524.81;-64.90;-19.30;-12.90;0.30;1950;0.05;6.50;1.12;53.30;4.40
+427;TAP;Molson Coors Brewing Company;Consumer Goods;Beverages - Brewers;USA;37130;31.52;1.85;36.06;-10.10;-6.80;-52.80;-14.20;141.99;0.50;5.30;0.45;39.80;10.70
+428;TDC;Teradata Corporation;Technology;Data Storage Devices;USA;3350;17.70;3.77;12.36;2.60;9.80;-59.50;-7.30;140.99;0.90;19.30;0.42;53.00;12.30
+429;TE;TECO Energy, Inc.;Utilities;Electric Utilities;USA;1740;18.46;1.59;-;5.70;-1.70;22.70;19.90;232.30;1.10;7.40;1.48;87.50;7.00
+430;TEG;Integrys Energy Group, Inc.;Utilities;Gas Utilities;USA;6150;21.33;1.67;-;3.30;41.30;-6.90;-29.00;79.21;0.10;14.90;0.96;52.70;13.50
+431;TEL;TE Connectivity Ltd.;Technology;Diversified Electronics;Switzerland;05270;14.85;3.01;34.46;42.10;21.40;-6.10;4.00;405.69;0.10;23.70;0.46;33.70;15.60
+432;TGT;Target Corp.;Services;Discount, Variety Stores;USA;95530;21.56;3.82;21.27;-8.80;3.00;13.50;2.80;637.71;0.10;-2.30;0.90;29.60;-0.50
+433;THC;Tenet Healthcare Corp.;Healthcare;Hospitals;USA;5850;55.11;6.61;-;128.10;-27.70;264.30;12.80;97.82;1.40;11.10;14.70;84.30;0.50
+434;TIF;Tiffany & Co.;Services;Jewelry Stores;USA;08120;26.20;4.21;51.22;164.50;12.00;-16.50;-4.90;128.30;0.50;16.10;0.38;59.90;11.00
+435;TJX;The TJX Companies, Inc.;Services;Department Stores;USA;78450;21.03;10.68;29.17;7.10;17.30;7.80;5.80;676.74;0.50;52.00;0.38;28.60;7.60
+436;TMK;Torchmark Corporation;Financial;Life Insurance;USA;4070;14.46;1.53;9.45;7.90;14.60;-3.10;-0.20;123.62;1.40;11.40;0.26;-;13.40
+437;TMO;Thermo Fisher Scientific, Inc.;Healthcare;Medical Laboratories & Research;USA;36520;30.52;2.63;27.02;34.60;19.30;-29.40;0.40;397.31;0.30;8.50;0.75;45.50;10.30
+438;TRIP;TripAdvisor Inc.;Technology;Internet Information Providers;USA;65120;58.38;10.70;44.39;9.90;15.00;-8.50;29.20;112.17;14.55;20.00;0.28;96.60;16.60
+439;TROW;T. Rowe Price Group, Inc.;Financial;Asset Management;USA;34200;17.50;4.04;28.09;16.70;22.50;0.90;7.60;252.07;2.20;23.30;0.00;-;30.00
+440;TRV;The Travelers Companies, Inc.;Financial;Property & Casualty Insurance;USA;17310;9.49;1.26;12.68;9.90;11.10;-13.60;-1.20;317.23;0.40;13.70;0.26;-;12.70
+441;TSCO;Tractor Supply Company;Services;Specialty Retail, Other;USA;65120;33.83;9.62;55.42;14.70;26.50;20.00;12.50;135.75;0.30;29.80;0.05;34.10;6.50
+442;TSN;Tyson Foods, Inc.;Consumer Goods;Meat Products;USA;12180;17.37;1.93;22.15;2.60;29.30;25.00;10.50;330.77;0.40;11.90;0.82;8.10;2.50
+443;TSO;Tesoro Corporation;Basic Materials;Oil & Gas Refining & Marketing;USA;78100;11.81;2.36;29.37;133.20;53.80;93.20;-34.90;124.83;0.70;20.30;0.91;12.90;2.40
+444;TSS;Total System Services, Inc.;Financial;Credit Services;USA;8370;26.07;4.55;29.73;14.10;5.40;68.00;11.70;179.91;0.90;20.80;0.84;32.60;13.80
+445;TWC;Time Warner Cable Inc.;Services;CATV Systems;USA;08500;25.24;6.13;43.36;6.80;18.40;-4.70;3.50;282.65;0.10;31.30;2.86;69.70;10.70
+446;TWX;Time Warner Inc.;Services;Entertainment - Diversified;USA;73720;21.78;3.02;54.44;24.30;20.20;-26.70;4.80;823.69;0.10;19.20;0.93;41.80;17.30
+447;TXN;Texas Instruments Inc.;Technology;Semiconductor - Broad Line;USA;97550;19.49;5.43;24.83;34.60;17.40;38.60;5.60;0410;0.30;32.80;0.45;57.80;25.90
+448;TXT;Textron Inc.;Industrial Goods;Aerospace/Defense - Major Diversified;USA;68120;19.86;2.89;17.04;22.90;57.50;48.40;7.90;277.37;0.30;14.40;0.88;17.90;4.60
+449;TYC;Tyco International Ltd.;Services;Security & Protection Services;Ireland;51160;24.97;3.94;138.73;81.90;19.50;4.90;-2.00;419.05;0.50;35.50;0.48;36.60;16.40
+450;UA;Under Armour, Inc.;Consumer Goods;Textile - Apparel Clothing;USA;36180;91.56;13.20;1008.84;26.70;32.80;-16.70;25.50;178.69;0.70;16.10;0.49;48.90;6.30
+451;UHS;Universal Health Services Inc.;Healthcare;Hospitals;USA;95130;24.36;3.56;20.44;5.40;15.50;25.40;14.80;90.32;0.70;15.70;0.80;-;6.90
+452;UNH;UnitedHealth Group Incorporated;Healthcare;Health Care Plans;USA;451160;20.39;3.66;19.66;3.60;12.00;30.40;12.80;936.40;0.80;18.30;0.58;-;4.40
+453;UNM;Unum Group;Financial;Accident & Health Insurance;USA;0890;24.26;1.05;9.38;-50.80;-9.20;-3.40;1.40;248.22;0.50;4.30;0.32;-;3.70
+454;UNP;Union Pacific Corporation;Services;Railroads;USA;22850;16.52;4.05;90.94;22.10;25.20;9.20;-0.40;877.42;0.20;24.60;0.58;75.90;21.90
+455;UPS;United Parcel Service, Inc.;Services;Air Delivery & Freight Services;USA;17890;28.85;48.98;62.23;-28.90;10.80;14.30;1.40;701.08;0.03;83.00;7.16;77.10;5.40
+456;URBN;Urban Outfitters Inc.;Services;Apparel Stores;USA;5340;20.93;3.34;54.80;-11.10;5.60;-3.80;7.70;95.33;20.50;16.80;0.00;35.00;6.70
+457;URI;United Rentals, Inc.;Services;Rental & Leasing Services;USA;6980;15.53;5.81;56.77;41.50;48.20;107.10;11.60;96.22;0.80;34.40;5.40;43.10;10.20
+458;USB;U.S. Bancorp;Financial;Regional - Midwest Banks;USA;01790;14.28;2.01;30.78;2.70;26.00;4.10;1.30;7710;0.10;14.50;0.89;-;45.80
+459;UTX;United Technologies Corporation;Industrial Goods;Aerospace/Defense Products & Services;USA;861000;16.03;3.52;34.60;9.80;10.60;19.70;-1.40;888.98;0.10;20.20;0.77;27.30;9.90
+460;V;Visa Inc.;Financial;Credit Services;USA;911670;29.97;5.42;34.65;13.20;25.20;-42.90;-46.00;3120;0.10;20.00;0.00;-;42.00
+461;VAR;Varian Medical Systems, Inc.;Healthcare;Medical Appliances & Equipment;USA;5180;21.28;5.10;25.83;-3.80;7.60;19.30;-2.50;99.56;0.20;24.90;0.31;43.00;13.50
+462;VFC;V.F. Corporation;Consumer Goods;Textile - Apparel Clothing;USA;97290;29.63;6.13;55.95;-12.20;18.20;0.00;2.00;422.19;0.50;18.80;0.51;48.70;8.40
+463;VIAB;Viacom, Inc.;Services;Entertainment - Diversified;USA;42260;15.86;11.62;14.82;11.70;14.50;-111.50;-3.00;354.40;0.70;52.90;5.74;47.90;12.90
+464;VLO;Valero Energy Corporation;Basic Materials;Oil & Gas Refining & Marketing;USA;67300;8.26;1.49;11.89;40.80;73.40;21.40;-36.60;506.42;0.20;18.30;0.36;11.50;3.20
+465;VMC;Vulcan Materials Company;Industrial Goods;General Building Materials;USA;49110;99.52;2.76;560.28;875.00;57.70;-168.30;9.90;132.27;0.20;2.60;0.55;20.70;3.60
+466;VNO;Vornado Realty Trust;Financial;REIT - Diversified;USA;09180;64.04;3.61;-;589.70;50.30;24.10;7.90;171.08;2.80;16.60;1.91;59.60;32.40
+467;VRSN;VeriSign, Inc.;Technology;Internet Information Providers;USA;3770;24.91;-;13.37;-27.80;40.50;3.10;3.90;115.47;0.70;-43.50;-;81.50;34.20
+468;VRTX;Vertex Pharmaceuticals Incorporated;Healthcare;Biotechnology;USA;29310;-;31.46;-;-39.70;3.30;17.00;16.90;242.37;0.50;-85.60;0.85;93.30;-
+469;VTR;Ventas, Inc.;Financial;REIT - Healthcare Facilities;USA;46200;41.49;1.78;108.46;-7.20;4.30;-12.50;19.20;329.29;0.40;5.00;1.03;60.60;14.80
+470;VZ;Verizon Communications Inc.;Technology;Telecom Services - Domestic;USA;481930;19.85;20.90;-;-39.50;7.10;-11.30;3.80;0840;0.01;74.50;12.14;60.40;7.70
+471;WAT;Waters Corporation;Healthcare;Medical Instruments & Supplies;USA;77100;24.11;5.81;24.25;-2.50;8.70;40.20;6.90;79.13;3.00;24.60;0.80;59.10;22.70
+472;WBA;Walgreens Boots Alliance, Inc.;Services;Drug Stores;USA;20940;26.01;2.92;36.36;-21.90;-0.20;162.20;35.50;871.43;13.10;14.50;0.55;27.10;4.00
+473;WDC;Western Digital Corporation;Technology;Data Storage Devices;USA;85190;13.14;2.15;13.24;67.80;26.30;5.20;-4.10;224.24;0.10;17.30;0.25;29.00;10.40
+474;WEC;Wisconsin Energy Corp.;Utilities;Electric Utilities;USA;33100;18.03;2.29;386.73;3.20;10.30;-5.50;-18.10;225.12;0.20;13.00;1.14;83.80;12.30
+475;WFC;Wells Fargo & Company;Financial;Money Center Banks;USA;382940;13.98;1.77;29.21;5.40;18.60;-1.00;3.00;1450;0.08;13.20;1.10;-;45.20
+476;WFM;Whole Foods Market, Inc.;Services;Grocery Stores;USA;58140;24.52;3.64;76.35;6.10;30.00;13.20;9.80;355.32;0.30;15.50;0.02;35.50;4.00
+477;WHR;Whirlpool Corp.;Consumer Goods;Appliances;USA;02140;20.87;2.91;48.34;-20.20;13.50;18.30;11.10;78.06;0.20;13.50;0.96;17.20;3.30
+478;WIN;Windstream Holdings, Inc.;Technology;Telecom Services - Domestic;USA;0.70675B;-;7.38;-;-119.10;-15.80;-66.70;-3.20;99.96;0.70;-16.00;92.85;49.80;-0.90
+479;WM;Waste Management, Inc.;Industrial Goods;Waste Management;USA;48210;23.24;3.88;49.61;0.40;6.80;-157.10;-10.50;456.09;0.20;16.60;1.66;44.30;6.90
+480;WMB;Williams Companies, Inc.;Basic Materials;Oil & Gas Pipelines;USA;38410;20.31;5.03;-;356.30;52.80;-55.00;-1.90;747.66;0.20;24.10;2.74;64.40;26.90
+481;WMT;Wal-Mart Stores Inc.;Services;Discount, Variety Stores;USA;432310;14.70;3.03;26.80;2.50;5.90;-6.40;-0.10;5710;44.70;25.00;0.66;24.90;4.10
+482;WU;The Western Union Company;Financial;Credit Services;USA;78100;12.96;8.06;15.88;11.20;5.60;5.40;-2.20;514.79;0.20;69.70;2.76;41.30;15.30
+483;WY;Weyerhaeuser Co.;Industrial Goods;Lumber, Wood Production;USA;50160;25.09;3.33;323.44;70.70;28.50;-41.40;-0.90;510.45;0.10;29.10;1.08;21.70;22.90
+484;WYN;Wyndham Worldwide Corporation;Services;Lodging;USA;9890;18.35;9.30;20.28;30.30;21.00;44.90;5.80;118.73;1.80;68.30;4.82;52.70;16.70
+485;WYNN;Wynn Resorts Ltd.;Services;Resorts & Casinos;USA;9590;21.73;-;-;0.10;111.40;-119.80;-27.80;81.26;19.90;-;-;39.00;9.20
+486;XEC;Cimarex Energy Co.;Basic Materials;Independent Oil & Gas;USA;84100;-;2.43;-;-10.50;28.20;-404.40;-39.80;92.29;0.70;1.90;0.37;73.70;3.80
+487;XEL;Xcel Energy Inc.;Utilities;Electric Utilities;USA;18160;17.73;1.58;-;6.30;6.40;-42.30;-7.50;506.13;0.20;9.00;1.25;89.00;8.00
+488;XL;XL Group plc;Financial;Property & Casualty Insurance;Ireland;53110;-;0.94;18.25;-81.00;2.50;-84.60;-20.00;304.39;0.70;-0.30;0.26;-;-0.50
+489;XLNX;Xilinx Inc.;Technology;Semiconductor - Integrated Circuits;USA;82110;19.44;4.56;25.97;7.30;12.70;-5.70;-8.20;257.99;0.10;23.80;0.60;70.20;27.30
+490;XOM;Exxon Mobil Corporation;Basic Materials;Major Integrated Oil & Gas;USA;923500;12.60;2.06;-;3.00;13.80;-44.30;-36.40;1840;0.10;16.00;0.19;25.10;7.90
+491;XRAY;DENTSPLY International Inc.;Healthcare;Medical Instruments & Supplies;USA;3270;24.00;3.38;17.10;3.70;4.10;-10.00;-10.10;139.33;0.20;13.10;0.61;55.40;11.00
+492;XRX;Xerox Corporation;Technology;Information Technology Services;USA;13120;12.80;1.20;10.51;0.00;10.40;-27.30;-6.30;0310;0.10;10.40;0.74;32.60;6.10
+493;XYL;Xylem Inc.;Industrial Goods;Diversified Machinery;USA;7060;19.25;3.38;32.54;48.80;5.20;29.60;-7.60;180.59;0.40;16.50;0.64;38.60;9.20
+494;YHOO;Yahoo! Inc.;Technology;Internet Information Providers;USA;54380;5.72;1.14;-;494.40;77.90;-96.40;8.20;864.67;0.40;23.70;0.04;69.40;-
+495;YUM;Yum! Brands, Inc.;Services;Restaurants;USA;51390;40.79;23.43;176.40;-2.10;0.90;-8.00;-3.70;431.21;0.10;50.60;1.98;26.90;7.70
+496;ZION;Zions Bancorporation;Financial;Regional - Pacific Banks;USA;5560;19.40;1.01;35.44;5.10;16.70;-9.80;-4.10;199.21;1.10;5.20;0.17;-;17.80
+497;ZMH;Zimmer Holdings, Inc.;Healthcare;Medical Appliances & Equipment;USA;30190;28.82;2.93;29.30;-5.40;4.80;-20.90;-2.30;170.02;0.20;10.40;1.38;73.70;14.50
+498;ZTS;Zoetis Inc.;Healthcare;Drugs - Generic;USA;69270;46.93;21.72;73.44;14.90;50.80;6.50;0.50;499.26;0.01;45.50;2.85;63.80;12.40
