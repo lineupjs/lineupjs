@@ -92,6 +92,9 @@
         });
       }
     }
+    document.title = 'LineUp - '+ (ds.name || 'Custom');
+    history.pushState(ds, 'LineUp - '+ (ds.name || 'Custom'), '#'+ (ds.id || 'custom'));
+
     if (ds.descriptionFile) {
       var name = ds.descriptionFile.substring(0, ds.descriptionFile.length - 5);
       d3.json(ds.baseURL + "/" + ds.descriptionFile, function (desc) {
@@ -301,15 +304,24 @@
           }).text(function (d) {
             return d.name;
           });
-
-        var s = $s.node();
-        s.addEventListener('change', function () {
-          loadDataset(datasets[s.value]);
+        $s.on('change', function(d) {
+          loadDataset(d);
         });
 
-        //and start with 0:
-        loadDataset(datasets[0]);
-
+        var old = history.state;
+        if (old) {
+          loadDataset(old);
+        } else if (window.location.hash) {
+          var choose = datasets.filter(function(d) { return d.id === window.location.hash.substr(1); });
+          if (choose.length > 0) {
+            loadDataset(choose[0]);
+          } else {
+            loadDataset(datasets[0]);
+          }
+        } else {
+          //and start with 0:
+          loadDataset(datasets[0]);
+        }
         loadLayout();
       });
   })
