@@ -1,0 +1,140 @@
+{
+  "file": "sp500_2015-06-26.csv",
+  "separator": ";",
+  "primaryKey": "Ticker",
+  "columns": [
+    {
+      "column": "Ticker",
+      "type": "string"
+    },
+    {
+      "column": "Company",
+      "type": "string"
+    },
+    {
+      "column": "Sector",
+      "type": "categorical"
+    },
+    {
+      "column": "Industry",
+      "type": "categorical"
+    },
+    {
+      "column": "Country",
+      "type": "categorical"
+    },
+    {
+      "column": "P/E",
+      "type": "number",
+      "domain": [0.6899999976158142, 36.051130432667925],
+      "range" : [1, 0]
+    },
+    {
+      "column": "P/B",
+      "type": "number",
+      "domain": [0.33, 2],
+      "range" : [1, 0]
+    },
+    {
+      "column": "P/Free Cash Flow",
+      "type": "number",
+      "domain": [0.18, 227.72],
+      "range" : [1, 0]
+    },
+    {
+      "column": "EPS growth this year",
+      "type": "number"
+    },
+    {
+      "column": "EPS growth past 5 years",
+      "type": "number"
+    },
+    {
+      "column": "Return on Equity",
+      "type": "number"
+    },
+    {
+      "column": "Total Debt/Equity",
+      "type": "number",
+      "domain": [0, 4.737391264542298],
+      "range" : [1, 0]
+    },
+    {
+      "column": "Profit Margin",
+      "type": "number"
+    }
+  ],
+  "sortBy": "Muhlenkamp",
+  "layout": {
+    "primary": [
+      {
+        "type": "rank",
+        "width": 45
+      },
+      {
+        "column": "Ticker",
+        "width": 65
+      },
+      {
+        "column": "Company",
+        "width": 200
+      },
+      {
+        "column": "Sector",
+        "width": 120
+      },
+      {
+        "column": "Industry",
+        "width": 200
+      },
+      {
+        "column": "Country",
+        "width": 80
+      },
+      {
+        "type": "stacked",
+        "label": "Muhlenkamp",
+        "children": [
+          {
+            "column": "Return on Equity",
+            "width": 210
+          },
+          {
+            "column": "EPS growth past 5 years",
+            "width": 210
+          },
+          {
+            "column": "P/B",
+            "width": 120
+          },
+          {
+            "column": "P/Free Cash Flow",
+            "width": 60
+          }
+        ]
+      },
+      {
+        "type": "stacked",
+        "label": "Rest",
+        "children": [
+          {
+            "column": "EPS growth this year",
+            "width": 100
+          },
+          {
+            "column": "P/E",
+            "width": 100
+          },
+          {
+            "column": "Profit Margin",
+            "width": 100
+          },
+          {
+            "column": "Total Debt/Equity",
+            "width": 100
+          }
+        ]
+      }
+    ]
+  }
+}
