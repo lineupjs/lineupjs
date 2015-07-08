@@ -90,9 +90,9 @@ var LineUp;
 
   LineUp.prototype = LineUpClass.prototype = $.extend(LineUpClass.prototype, LineUp.prototype);
   LineUp.create = function (storage, $container, options) {
-    if (!$.isPlainObject(storage)) {
+    //if (!$.isPlainObject(storage)) {
       storage = { storage: storage };
-    }
+    //}
     var r = new LineUpClass(storage, $container, options);
     r.startVis();
     return r;
