@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-04-06
+/*! LineUpJS - v0.1.0 - 2015-07-08
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 (function() {
@@ -33,7 +33,12 @@ var LineUp;
         }
       }});
     this.storage.config = this.config;
+    if (!this.config.svgLayout.addPlusSigns) {
+      this.config.svgLayout.plusSigns={}; // empty plusSign if no plus signs needed
+    }
 
+
+    
     //create basic structure
     if (this.config.svgLayout.mode === 'combined') {
       //within a single svg with 'fixed' header
@@ -85,8 +90,9 @@ var LineUp;
 
   LineUp.prototype = LineUpClass.prototype = $.extend(LineUpClass.prototype, LineUp.prototype);
   LineUp.create = function (storage, $container, options) {
-    if (!$.isPlainObject(storage)) {
+    if (!('storage' in storage)) { // TODO: was '!$.isPlainObject(storage)'
       storage = { storage: storage };
+
     }
     var r = new LineUpClass(storage, $container, options);
     r.startVis();
@@ -139,13 +145,14 @@ var LineUp;
        */
       backupScrollRows: 4,
       animationDuration: 1000,
+      addPlusSigns:false,
       plusSigns: {
-        /* addStackedColumn: {
+        addStackedColumn: {
          title: 'add stacked column',
          action: 'addNewEmptyStackedColumn',
          x: 0, y: 2,
          w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
-         }*/
+         }
       },
       rowActions: [
         /*{
