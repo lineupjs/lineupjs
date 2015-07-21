@@ -443,7 +443,7 @@ var LineUp;
 
               textOverlays.push({
                   id: child.id,
-                  label: toValue(child.getValue(row,'raw')),// + ' -> (' + zeroFormat(child.getWidth(row)) + ')',
+                  label: toValue(child.getValue(row,'raw')) + ' (' + child.getColumnWidth() + ')',
                   w: asStacked ? allStackW : child.getColumnWidth(),
                   x: (allStackOffset + col.offsetX)}
               );

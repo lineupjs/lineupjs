@@ -4,20 +4,20 @@
 
 (function (LineUp) {
   var menuActions = [
-    {name: " new combined", icon: "fa-plus", action: function () {
+    {name: " Add combined column", icon: "fa-plus", action: function () {
       lineup.addNewStackedColumnDialog();
     }},
-    {name: " add single columns", icon: "fa-plus", action: function () {
+    {name: " Add columns", icon: "fa-plus", action: function () {
       lineup.addNewSingleColumnDialog();
     }},
-    {name: " save layout", icon: "fa-floppy-o", action: saveLayout}
+    {name: " Save layout", icon: "fa-floppy-o", action: saveLayout}
   ];
   var lineUpDemoConfig = {
     svgLayout: {
       mode: 'separate',
       plusSigns: {
         addStackedColumn: {
-          title: "add stacked column",
+          title: "Add combined column",
           action: "addNewEmptyStackedColumn",
           x: 0, y: 2,
           w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
@@ -49,7 +49,7 @@
       updateMenu();
     });
     kvNodes.html(function (d) {
-      return '<a href="#"> <i class="fa ' + (d.value ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d.key + '</a>&nbsp;&nbsp;'
+      return '<a href="#"> <i class="fa ' + (d.value ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d.key.upperCaseFirstChar() + '</a>&nbsp;&nbsp;'
     });
 
     d3.select("#lugui-menu-actions").selectAll("span").data(menuActions)
@@ -60,8 +60,11 @@
     ).on("click", function (d) {
       d.action.call(d);
     })
+  }
 
-
+  String.prototype.upperCaseFirstChar = function()
+  {
+    return this.charAt(0).toUpperCase() + this.substr(1);
   }
 
   function layoutHTML() {

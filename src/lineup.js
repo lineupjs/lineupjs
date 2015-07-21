@@ -122,10 +122,10 @@ var LineUp;
       buttonWidth: 13
     },
     renderingOptions: {
-      stacked: false,
+      stacked: true,
       values: false,
       animation: true,
-      histograms: false
+      histograms: true
     },
     svgLayout: {
       /**
@@ -143,7 +143,7 @@ var LineUp;
       addPlusSigns:false,
       plusSigns: {
         addStackedColumn: {
-         title: 'add stacked column',
+         title: 'Add combined column',
          action: 'addNewEmptyStackedColumn',
          x: 0, y: 2,
          w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
@@ -162,7 +162,7 @@ var LineUp;
     manipulative: true,
     interaction: {
       //enable the table tooltips
-      tooltips: true,
+      tooltips: false,
       multiselect: function() { return false; },
       rangeselect: function() { return false; }
     },

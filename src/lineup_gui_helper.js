@@ -294,12 +294,12 @@ var LineUp;
         height: "470px"
       })
       .html(
-        '<div style="font-weight: bold"> change mapping: </div>' +
+        '<div style="font-weight: bold"> Change mapping</div>' +
         '<div class="mappingArea"></div>' +
-        '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'+
-        '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
-        '<button class="reset"><i class="fa fa-undo"></i> revert</button>' +
-        '<button class="ok"><i class="fa fa-check"></i> ok</button>'
+        '<label><input type="checkbox" id="filterIt" value="filterIt">Filter outliers</label><br>'+
+        '<button class="cancel"><i class="fa fa-times"></i> Cancel</button>' +
+        '<button class="reset"><i class="fa fa-undo"></i> Revert</button>' +
+        '<button class="ok"><i class="fa fa-check"></i> OK</button>'
     );
     var $filterIt = popup.select('input').on('change', function() {
       applyMapping(act);
