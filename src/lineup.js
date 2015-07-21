@@ -115,9 +115,9 @@ var LineUp;
     numberformat: d3.format('.3n'),
     htmlLayout: {
       headerHeight: 50,
-      headerOffset: 2,
+      headerOffset: 1,
       buttonTopPadding: 10,
-      labelLeftPadding: 12,
+      labelLeftPadding: 5,
       buttonRightPadding: 15,
       buttonWidth: 13
     },
@@ -132,9 +132,9 @@ var LineUp;
        * mode of this lineup instance, either combined = a single svg with header and body combined or separate ... separate header and body
        */
       mode: 'combined', //modes: combined vs separate
-      rowHeight: 20,
+      rowHeight: 17,
       rowPadding : 0.2, //padding for scale.rangeBands
-      rowBarPadding: 2,
+      rowBarPadding: 1,
       /**
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
