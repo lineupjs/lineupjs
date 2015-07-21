@@ -443,9 +443,9 @@ var LineUp;
 
               textOverlays.push({
                   id: child.id,
-                  label: toValue(child.getValue(row,'raw')) + ' (' + child.getColumnWidth() + ')',
+                  label: toValue(child.getValue(row,'raw')) + ' (' + d3.round(child.getValue(row),2) + ')',
                   w: asStacked ? allStackW : child.getColumnWidth(),
-                  x: (allStackOffset + col.offsetX)}
+                  x: (allStackOffset + col.offsetX) + 3}
               );
               if (asStacked) {
                 allStackOffset += allStackW;

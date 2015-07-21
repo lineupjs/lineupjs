@@ -16,13 +16,21 @@
     /*stroke:white;*/
 }
 
+.lu .headerBG {
+    fill: #e7e7e7
+}
+
+.lu .labelBG {
+    fill: transparent;
+}
+
 .lu g.hist rect {
     fill: black;
     opacity: 0.3;
 }
 
 .lu g.hist rect.hover {
-    fill: red;
+    fill: darkgray;
     opacity: 0.8;
 }
 
@@ -37,7 +45,7 @@
     font-weight: normal;
     font-size: 9pt;
     dominant-baseline: middle;
-    fill: darkgrey;
+    fill: black;
 }
 
 .lu .tableData.action text {
@@ -143,11 +151,15 @@
 }
 .lu .row.hover text {
     fill: black;
+}
+.lu .row.selected text {
+    fill: black;
     font-weight: bold;
 }
-.lu .row.selected rect.filler {
-    stroke: orange;
-    stroke-width: 1;
+.lu .row.selected rect.filler, .lu .row.hover rect.filler {
+    /*stroke: orange;
+    stroke-width: 1;*/
+    fill: lightgray;
 }
 .lu .row.values text {
     fill: black;

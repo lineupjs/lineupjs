@@ -5,40 +5,45 @@
   "columns": [
     {
       "column": "schoolname",
-      "type": "string"
+      "label": "School name",
+      "type": "string",
+      "color": "gray",
+      "bg_color": "lightgray"
+
     },
     {
       "column": "academic",
-      "type": "number",
-      "domain": [0, 100]
-    },
-    {
-      "column": "academic",
+      "label": "Academic reputation",
       "type": "number",
       "domain": [0, 100]
     },
     {
       "column": "employer",
+      "label": "Employer reputation",
       "type": "number",
       "domain": [0, 100]
     },
     {
       "column": "faculty",
+      "label": "Faculty student ratio",
       "type": "number",
       "domain": [0, 100]
     },
     {
       "column": "citations",
+      "label": "Citations",
       "type": "number",
       "domain": [0, 100]
     },
     {
       "column": "international",
+      "label": "Internat. faculty ratio",
       "type": "number",
       "domain": [0, 100]
     },
     {
       "column": "internationalstudents",
+      "label": "Internat. student ratio",
       "type": "number",
       "domain": [0, 100]
     }

@@ -116,7 +116,7 @@ var LineUp;
     allHeadersEnter.append('rect').attr({
       'class': 'labelBG',
       y: 0
-    }).style('fill', function (d) {
+    })/*.style('fill', function (d) {
       if (d instanceof LineUp.LayoutEmptyColumn) {
         return 'lightgray';
       } else if (d.column && config.colorMapping.has(d.column.id)) {
@@ -124,7 +124,7 @@ var LineUp;
       } else {
         return config.grayColor;
       }
-    })
+    })*/
       .on('click', function (d) {
         if (d3.event.defaultPrevented || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
           return;

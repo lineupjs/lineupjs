@@ -10,7 +10,10 @@
     {name: " Add columns", icon: "fa-plus", action: function () {
       lineup.addNewSingleColumnDialog();
     }},
-    {name: " Save layout", icon: "fa-floppy-o", action: saveLayout}
+    {name: " Save layout", icon: "fa-floppy-o", action: saveLayout},
+    {name: " Upload file", icon: "fa-file-o", action: function () {
+      $('#fileselect').click();
+    }}
   ];
   var lineUpDemoConfig = {
     svgLayout: {
@@ -49,7 +52,7 @@
       updateMenu();
     });
     kvNodes.html(function (d) {
-      return '<a href="#"> <i class="fa ' + (d.value ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d.key.upperCaseFirstChar() + '</a>&nbsp;&nbsp;'
+      return '<a href="#"> <i class="fa ' + (d.value ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + upperCaseFirstChar(d.key) + '</a>&nbsp;&nbsp;'
     });
 
     d3.select("#lugui-menu-actions").selectAll("span").data(menuActions)
@@ -62,9 +65,9 @@
     })
   }
 
-  String.prototype.upperCaseFirstChar = function()
+  function upperCaseFirstChar (text)
   {
-    return this.charAt(0).toUpperCase() + this.substr(1);
+    return text.charAt(0).toUpperCase() + text.substr(1);
   }
 
   function layoutHTML() {

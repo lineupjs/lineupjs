@@ -69,7 +69,7 @@ var LineUp;
     this.$header.append('rect').attr({
       width: '100%',
       height: this.config.htmlLayout.headerHeight,
-      fill: 'lightgray'
+      class: 'headerBG'
     });
     this.$header.append('g').attr('class', 'main');
     this.$header.append('g').attr('class', 'overlay');
@@ -110,7 +110,7 @@ var LineUp;
    */
   LineUp.defaultConfig = {
     colorMapping: d3.map(),
-    columnColors: d3.scale.category20(),
+    columnColors: d3.scale.category10(),
     grayColor: '#999999',
     numberformat: d3.format('.3n'),
     htmlLayout: {
