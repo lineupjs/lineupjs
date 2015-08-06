@@ -358,7 +358,7 @@ var LineUp;
     var svg = this.$body;
     var that = this;
     var primaryKey = this.storage.primaryKey;
-    var zeroFormat = d3.format('.1f');
+    //var zeroFormat = d3.format('.1f');
     var bundle = this.config.columnBundles[headers[0].columnBundle];
     //console.log('bupdate');
     stackTransition = stackTransition || false;

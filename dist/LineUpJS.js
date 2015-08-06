@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-07-08
+/*! LineUpJS - v0.1.0 - 2015-08-06
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 (function() {
@@ -120,9 +120,9 @@ var LineUp;
     numberformat: d3.format('.3n'),
     htmlLayout: {
       headerHeight: 50,
-      headerOffset: 2,
+      headerOffset: 1,
       buttonTopPadding: 10,
-      labelLeftPadding: 12,
+      labelLeftPadding: 5,
       buttonRightPadding: 15,
       buttonWidth: 13
     },
@@ -137,9 +137,9 @@ var LineUp;
        * mode of this lineup instance, either combined = a single svg with header and body combined or separate ... separate header and body
        */
       mode: 'combined', //modes: combined vs separate
-      rowHeight: 20,
+      rowHeight: 17,
       rowPadding : 0.2, //padding for scale.rangeBands
-      rowBarPadding: 2,
+      rowBarPadding: 1,
       /**
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
@@ -2969,7 +2969,7 @@ var LineUp;
     var svg = this.$body;
     var that = this;
     var primaryKey = this.storage.primaryKey;
-    var zeroFormat = d3.format('.1f');
+    //var zeroFormat = d3.format('.1f');
     var bundle = this.config.columnBundles[headers[0].columnBundle];
     //console.log('bupdate');
     stackTransition = stackTransition || false;
@@ -3054,7 +3054,7 @@ var LineUp;
 
               textOverlays.push({
                   id: child.id,
-                  label: toValue(child.getValue(row,'raw')) + ' -> (' + zeroFormat(child.getWidth(row)) + ')',
+                  label: toValue(child.getValue(row,'raw')),// + ' -> (' + zeroFormat(child.getWidth(row)) + ')',
                   w: asStacked ? allStackW : child.getColumnWidth(),
                   x: (allStackOffset + col.offsetX)}
               );
