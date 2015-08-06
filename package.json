@@ -28,5 +28,8 @@
   "bugs": {
     "url": "https://github.com/Caleydo/lineup.js/issues"
   },
-  "homepage": "https://github.com/Caleydo/lineup.js"
+  "homepage": "https://github.com/Caleydo/lineup.js",
+  "dependencies": {
+    "grunt-ts": "^4.2.0"
+  }
 }

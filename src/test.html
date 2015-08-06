@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>LineUp alpha</title>
+
+    <style>
+        line.slope {
+            stroke: black;
+            shape-rendering: geometricPrecision;
+        }
+        line.slope:hover {
+            stroke: #e5e5e5;
+        }
+        g.cols {
+            pointer-events:none;
+        }
+        rect.row {
+            fill: transparent;
+        }
+        rect.row:hover {
+            fill: #e5e5e5;
+        }
+    </style>
+</head>
+<body>
+<script src="../libs/d3.js"></script>
+<script src="DataStructure.js"></script>
+
+
+<script>
+
+    function dummyTest() {
+        var arr = [
+            {a: 10, b: 20, c: 30, d: 'Row1'},
+            {a: 5, b: 14, c: 2, d: 'Row2'},
+            {a: 2, b: 7, c: 100, d: 'Row3'},
+            {a: 7, b: 1, c: 60, d: 'Row4'}];
+        var desc = [
+            {label: 'D', type: 'string', column: 'd'},
+            {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
+            {label: 'B', type: 'number', column: 'b', 'domain': [0, 30]},
+            {label: 'C', type: 'number', column: 'c', 'domain': [0, 120]}];
+        var server = {
+            sort : function(desc) {
+                return Promise.resolve(d3.shuffle(d3.range(arr.length)));
+            },
+            view: function(indices) {
+                var p = new Promise(function(resolve) {
+                     setTimeout(function(bak) {
+                        resolve(indices.map(function(index) { return arr[index]; }));
+                    }, 2000*Math.random());
+                });
+                return p;
+            }
+        };
+        var provider = new RemoteDataProvider(server, desc);
+        var r = provider.pushRanking();
+
+        var root = d3.select('body').append('svg').attr('width', '2000').attr('height', '300');
+        var body = new LineUpBody(root, provider, function(rank) {
+            return rank.extra.argsort;
+        });
+
+        provider.push(r, desc[0]);
+        provider.push(r, desc[1]);
+        provider.push(r, desc[2]);
+        provider.push(r, desc[3]);
+        provider.push(r, desc[2]);
+
+        var r2 = provider.pushRanking();
+        provider.push(r2, desc[1]);
+        provider.push(r2, desc[0]);
+        Promise.all([provider.sort(r), provider.sort(r2)])
+                .then(function (argsorts) {
+                    r.extra.argsort = argsorts[0];
+                    r2.extra.argsort = argsorts[1];
+                    body.render();
+                });
+    }
+    dummyTest();
+</script>
+</body>
+</html>
