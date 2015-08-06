@@ -1,6 +1,6 @@
-/*! LineUpJS - v0.1.0 - 2014-12-02
+/*! LineUpJS - v0.1.0 - 2015-08-06
 * https://github.com/Caleydo/lineup.js
-* Copyright (c) 2014 ; Licensed BSD */
+* Copyright (c) 2015 ; Licensed BSD */
 (function() {
   function LineUpLoader(jQuery, d3, _) {
 
@@ -21,7 +21,7 @@ var LineUp;
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
     //trigger hover event
-    this.listeners = d3.dispatch('hover');
+    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter', 'selected','multiselected');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
@@ -33,7 +33,12 @@ var LineUp;
         }
       }});
     this.storage.config = this.config;
+    if (!this.config.svgLayout.addPlusSigns) {
+      this.config.svgLayout.plusSigns={}; // empty plusSign if no plus signs needed
+    }
 
+
+    
     //create basic structure
     if (this.config.svgLayout.mode === 'combined') {
       //within a single svg with 'fixed' header
@@ -85,8 +90,9 @@ var LineUp;
 
   LineUp.prototype = LineUpClass.prototype = $.extend(LineUpClass.prototype, LineUp.prototype);
   LineUp.create = function (storage, $container, options) {
-    if (!$.isPlainObject(storage)) {
+    if (!('storage' in storage)) { // TODO: was '!$.isPlainObject(storage)'
       storage = { storage: storage };
+
     }
     var r = new LineUpClass(storage, $container, options);
     r.startVis();
@@ -113,7 +119,12 @@ var LineUp;
     grayColor: '#999999',
     numberformat: d3.format('.3n'),
     htmlLayout: {
-      headerHeight: 50
+      headerHeight: 50,
+      headerOffset: 1,
+      buttonTopPadding: 10,
+      labelLeftPadding: 5,
+      buttonRightPadding: 15,
+      buttonWidth: 13
     },
     renderingOptions: {
       stacked: false,
@@ -126,19 +137,22 @@ var LineUp;
        * mode of this lineup instance, either combined = a single svg with header and body combined or separate ... separate header and body
        */
       mode: 'combined', //modes: combined vs separate
-      rowHeight: 20,
+      rowHeight: 17,
+      rowPadding : 0.2, //padding for scale.rangeBands
+      rowBarPadding: 1,
       /**
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
       backupScrollRows: 4,
       animationDuration: 1000,
+      addPlusSigns:false,
       plusSigns: {
-        /* addStackedColumn: {
+        addStackedColumn: {
          title: 'add stacked column',
          action: 'addNewEmptyStackedColumn',
          x: 0, y: 2,
          w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
-         }*/
+         }
       },
       rowActions: [
         /*{
@@ -153,7 +167,9 @@ var LineUp;
     manipulative: true,
     interaction: {
       //enable the table tooltips
-      tooltips: true
+      tooltips: true,
+      multiselect: function() { return false; },
+      rangeselect: function() { return false; }
     },
     filter: {
       skip: 0,
@@ -266,6 +282,7 @@ var LineUp;
     bundle.sortingOrderAsc = asc;
     bundle.sortedColumn = d;
 
+    this.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
     this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
     this.updateAll(false, d.columnBundle);
   };
@@ -317,10 +334,26 @@ var LineUp;
     column.updateWeights(weights);
     //trigger resort
     if (column === this.config.columnBundles[bundle].sortedColumn) {
+      this.listeners['change-sortcriteria'](this, column, this.config.columnBundles[bundle]);
       this.storage.resortData({ key: bundle });
     }
     this.updateAll(false, bundle);
     return true;
+  };
+
+    /**
+     * manually change/set the filter of a column
+     * @param column
+     * @param filter
+     */
+  LineUp.prototype.changeFilter = function (column, filter) {
+    if (typeof column === 'string') {
+      column = this.storage.getColumnByName(column);
+    }
+    column.filter = filter;
+    this.listeners['change-filter'](this, column);
+    this.storage.resortData({filteredChanged: true});
+    this.updateBody();
   };
 
   /**
@@ -412,7 +445,7 @@ var LineUp;
   LineUpNumberColumn.prototype = $.extend({}, LineUpColumn.prototype, {
     getValue: function (row) {
       var r = LineUpColumn.prototype.getValue.call(this, row);
-      if (r === '' || r.toString().trim().length === 0) {
+      if (r === null || typeof r === 'undefined' || r === '' || r.toString().trim().length === 0) {
         r = this.missingValue;
       }
       return +r;
@@ -450,9 +483,20 @@ var LineUp;
    */
   function LineUpCategoricalColumn(desc, _, data) {
     LineUpColumn.call(this, desc);
-    this.categories = desc.categories || [];
+    this.categories = [];
+    this.categoryColors = d3.scale.category10().range();
+    var that = this;
+    if (desc.categories) {
+        desc.categories.forEach(function(cat,i) {
+            if (typeof cat === 'string') {
+                that.categories.push(cat);
+            } else {
+                that.categories.push(cat.name);
+                that.categoryColors[i] = cat.color;
+            }
+        });
+    }
     if (this.categories.length === 0) {
-      var that = this;
       this.categories = d3.set(data.map(function(row) { return that.getValue(row); })).values();
       this.categories.sort();
     }
@@ -628,7 +672,7 @@ var LineUp;
       var v = this.getValue(row), i;
       for(i = this.hist.length -1 ; i>= 0; --i) {
         var bin = this.hist[i];
-        if (bin.x <= v && v < (bin.x+bin.dx)) {
+        if (bin.x <= v && v <= (bin.x+bin.dx)) {
           return i;
         }
       }
@@ -746,6 +790,33 @@ var LineUp;
       return res;
     }
   });
+    function LayoutCategoricalColorColumn(desc, rawColumns) {
+        LayoutSingleColumn.call(this, desc, rawColumns);
+    }
+    LineUp.LayoutCategoricalColorColumn = LayoutCategoricalColorColumn;
+
+    LayoutCategoricalColorColumn.prototype = $.extend({}, LayoutSingleColumn.prototype, {
+        getColor: function(row) {
+            var cat = this.getValue(row, 'raw');
+            if (cat === null || cat === '') {
+                return null;
+            }
+            var index = this.column.categories.indexOf(cat);
+            if (index < 0) {
+                return null;
+            }
+            return this.column.categoryColors[index];
+        },
+        filterBy : function (row) {
+            return LayoutCategoricalColumn.prototype.filterBy.call(this, row);
+        },
+        makeCopy: function () {
+            var lookup = d3.map();
+            lookup.set(this.columnLink, this.column);
+            var res = new LayoutCategoricalColorColumn(this.description(), lookup);
+            return res;
+        }
+    });
 
   function LayoutRankColumn(desc, _dummy, _dummy2, storage) {
     LayoutColumn.call(this, desc ? desc : {}, []);
@@ -1418,6 +1489,7 @@ var LineUp;
       }
       //console.log(act.domain().toString(), act.range().toString());
       $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
+      that.listeners['change-filter'](that, selectedColumn);
       that.storage.resortData({filteredChanged: true});
       that.updateAll(true);
     }
@@ -1629,6 +1701,7 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0 && filter.length < column.column.categories.length));
+      that.listeners['change-filter'](that, column);
       that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
@@ -1687,6 +1760,7 @@ var LineUp;
     function updateData(filter) {
       column.filter = filter;
       $button.classed('filtered', (filter && filter.length > 0));
+      that.listeners['change-filter'](that, column);
       that.storage.resortData({filteredChanged: true});
       that.updateBody();
     }
@@ -1840,6 +1914,7 @@ var LineUp;
       d3.select(this).classed('dragging', false);
 
       if (that.config.columnBundles.primary.sortedColumn instanceof LineUp.LayoutStackedColumn) {
+        that.listeners['change-sortcriteria'](that, that.config.columnBundles.primary.sortedColumn);
         that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
         that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
       }
@@ -2140,6 +2215,7 @@ var LineUp;
         'single': LineUp.LayoutStringColumn,
         'string': LineUp.LayoutStringColumn,
         'categorical': LineUp.LayoutCategoricalColumn,
+        'categoricalcolor': LineUp.LayoutCategoricalColorColumn,
         'stacked': LineUp.LayoutStackedColumn,
         'rank': LineUp.LayoutRankColumn,
         'actions': LineUp.LayoutActionColumn
@@ -2159,6 +2235,7 @@ var LineUp;
 
     this.primaryKey = primaryKey;
     this.rawdata = data;
+    this.selected = d3.set();
     this.rawcols = columns.map(toColumn);
     this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
 
@@ -2230,6 +2307,32 @@ var LineUp;
         return this.bundles[_key].layoutColumns;
       },
 
+      isSelected : function(row) {
+        return this.selected.has(row[this.primaryKey]);
+      },
+      select : function(row) {
+        this.selected.add(row[this.primaryKey]);
+      },
+      selectAll : function(rows) {
+        var that = this;
+        rows.forEach(function(row) {
+          that.selected.add(row[that.primaryKey]);
+        });
+      },
+      setSelection: function(rows) {
+        this.clearSelection();
+        this.selectAll(rows);
+      },
+      deselect: function(row) {
+        this.selected.remove(row[this.primaryKey]);
+      },
+      selectedRows: function() {
+        return this.rawdata.filter(this.isSelected.bind(this));
+      },
+      clearSelection : function() {
+        this.selected = d3.set();
+      },
+
       /**
        *  get the data
        *  @returns data
@@ -2267,15 +2370,16 @@ var LineUp;
         var column = spec.column || this.config.columnBundles[_key].sortedColumn;
 
         //console.log('resort: ', spec);
-        bundle.data = this.filterData(bundle.layoutColumns);
+        var cols = this.getColumnLayout(_key);
+        bundle.data = this.filterData(cols);
         if (spec.filteredChanged || bundle.initialSort) {
           //trigger column updates
           var flat = [];
-          bundle.layoutColumns.forEach(function (d) {
+          cols.forEach(function (d) {
             d.flattenMe(flat);
           });
           flat.forEach(function (col) {
-            col.prepare(that.data, that.config.renderingOptions.histograms);
+            col.prepare(bundle.data, that.config.renderingOptions.histograms);
           });
           bundle.initialSort = false;
         }
@@ -2599,6 +2703,47 @@ var LineUp;
 //    )
   }
 
+    function updateCategorical(allHeaders, allRows, svg, config) {
+        // -- the text columns
+
+        var allTextHeaders = allHeaders.filter(function (d) {
+            return d instanceof LineUp.LayoutCategoricalColorColumn;
+        });
+
+        var icon = (config.svgLayout.rowHeight-config.svgLayout.rowBarPadding*2);
+        var textRows = allRows.selectAll('.tableData.cat')
+            .data(function (d) {
+                var dd = allTextHeaders.map(function (column) {
+                    return {
+                        value: column.getValue(d),
+                        label: column.getValue(d, 'raw'),
+                        offsetX: column.offsetX,
+                        columnW: column.getColumnWidth(),
+                        color: column.getColor(d),
+                        clip: 'url(#clip-B' + column.id + ')'
+                    };
+                });
+                return dd;
+            });
+        textRows.enter()
+            .append('rect')
+            .attr({
+                'class': 'tableData cat',
+                y: config.svgLayout.rowBarPadding,
+                height: config.svgLayout.rowHeight - config.svgLayout.rowBarPadding*2,
+                width: icon
+            }).append('title');
+        textRows.exit().remove();
+
+        textRows
+            .attr('x', function (d) {
+                return d.offsetX + 2;
+            })
+            .style('fill',function (d) {
+                return d.color;
+            }).select('title').text(function(d) { return d.label; });
+    }
+
   function showStacked(config) {
     //if not enabled or values are shown
     if (!config.renderingOptions.stacked || config.renderingOptions.values) {
@@ -2631,8 +2776,8 @@ var LineUp;
       .append('rect')
       .attr({
         'class': 'tableData bar',
-        y: 2,
-        height: config.svgLayout.rowHeight - 4
+        y: config.svgLayout.rowBarPadding,
+        height: config.svgLayout.rowHeight - config.svgLayout.rowBarPadding*2
       });
     barRows.exit().remove();
 
@@ -2702,8 +2847,8 @@ var LineUp;
     );
     allStack.exit().remove();
     allStack.enter().append('rect').attr({
-      y: 2,
-      height: config.svgLayout.rowHeight - 4
+      y: config.svgLayout.rowBarPadding,
+      height: config.svgLayout.rowHeight - config.svgLayout.rowBarPadding*2
     });
 
     (_stackTransition ? allStack.transition(config.svgLayout.animationDuration) : allStack)
@@ -2788,6 +2933,25 @@ var LineUp;
     return $table.html();
   }
 
+/**
+  * select one or more rows
+  * @param row
+ */
+  LineUp.prototype.select = function(row) {
+    var primaryKey = this.storage.primaryKey,
+        $rows = this.$body.selectAll('.row');
+    if (Array.isArray(row)) {
+      this.storage.setSelection(row);
+      row = row.map(function(d) { return d[primaryKey]; });
+      $rows.classed('selected', function(d) { return row.indexOf(d[primaryKey]) > 0; });
+    } else if (row) {
+      this.storage.setSelection([row]);
+      $rows.classed('selected',function(d) { return d[primaryKey] === row[primaryKey]; });
+    } else {
+      this.storage.clearSelection();
+      $rows.classed('selected',false);
+    }
+  };
   /**
    * updates the table body
    * @param headers - the headers as in {@link updateHeader}
@@ -2805,7 +2969,7 @@ var LineUp;
     var svg = this.$body;
     var that = this;
     var primaryKey = this.storage.primaryKey;
-    var zeroFormat = d3.format('.1f');
+    //var zeroFormat = d3.format('.1f');
     var bundle = this.config.columnBundles[headers[0].columnBundle];
     //console.log('bupdate');
     stackTransition = stackTransition || false;
@@ -2815,12 +2979,12 @@ var LineUp;
       d.flattenMe(allHeaders);
     });
 
-    var datLength = data.length;
+    var datLength = data.length, rawData = data;
     var rowScale = d3.scale.ordinal()
         .domain(data.map(function (d) {
           return d[primaryKey];
         }))
-        .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, 0.2),
+        .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, that.config.svgLayout.rowPadding),
       prevRowScale = bundle.prevRowScale || rowScale;
     //backup the rowscale from the previous call to have a previous 'old' position
     bundle.prevRowScale = rowScale;
@@ -2890,7 +3054,7 @@ var LineUp;
 
               textOverlays.push({
                   id: child.id,
-                  label: toValue(child.getValue(row,'raw')) + ' -> (' + zeroFormat(child.getWidth(row)) + ')',
+                  label: toValue(child.getValue(row,'raw')),// + ' -> (' + zeroFormat(child.getWidth(row)) + ')',
                   w: asStacked ? allStackW : child.getColumnWidth(),
                   x: (allStackOffset + col.offsetX)}
               );
@@ -2990,6 +3154,58 @@ var LineUp;
         that.listeners['hover'](null);
         d3.select(this).classed('hover', false);
         d3.select(this).selectAll('text.hoveronly').remove();
+      },
+      click: function (row) {
+        var $row = d3.select(this),
+            selected = that.storage.isSelected(row);
+        if (that.config.interaction.multiselect(d3.event)) {
+          var allselected = that.storage.selectedRows();
+          if (selected) {
+            $row.classed('selected', false);
+            that.storage.deselect(row);
+            if (allselected.length === 1) {
+              //remove the last one
+              that.listeners['selected'](null);
+            }
+          } else {
+            $row.classed('selected', true);
+            that.storage.select(row);
+            if (that.config.interaction.rangeselect(d3.event) && allselected.length === 1) {
+              //select a range
+              var i = rawData.indexOf(row), j = rawData.indexOf(allselected[0]);
+              if (i < j) {
+                allselected = rawData.slice(i, j + 1);
+              } else {
+                allselected = rawData.slice(j, i + 1);
+              }
+              var toSelect = allRowsSuper.filter(function (d) {
+                return allselected.indexOf(d) >= 0;
+              }).classed('selected', true).data();
+              that.storage.selectAll(toSelect);
+            } else {
+              allselected.push(row);
+            }
+            if (allselected.length === 1) {
+              //remove the last one
+              that.listeners['selected'](row, null);
+            }
+          }
+          that.listeners['multiselected'](allselected);
+        } else {
+          if (selected) {
+            $row.classed('selected', false);
+            that.storage.deselect(row);
+            that.listeners['selected'](null);
+            that.listeners['multiselected']([]);
+          } else {
+            var prev = allRowsSuper.filter('.selected').classed('selected', false);
+            prev = prev.empty ? null : prev.datum();
+            $row.classed('selected', true);
+            that.storage.setSelection([row]);
+            that.listeners['selected'](row, prev);
+            that.listeners['multiselected']([row]);
+          }
+        }
       }
     });
 
@@ -3001,6 +3217,7 @@ var LineUp;
 
     LineUp.updateClipPaths(allHeaders, this.$bodySVG, 'B', true);
     updateText(allHeaders, allRows, svg, that.config);
+    updateCategorical(allHeaders, allRows, svg, that.config);
     if (that.config.renderingOptions.values) {
       allRowsSuper.classed('values', true);
       allRowsSuper.each(function (row) {
@@ -3010,6 +3227,10 @@ var LineUp;
     } else {
       allRowsSuper.classed('values', false).selectAll('text.valueonly').remove();
     }
+    //update selections state
+    allRowsSuper.classed('selected', function(d) {
+      return that.storage.isSelected(d);
+    });
   };
 }(LineUp || (LineUp = {}), d3, jQuery));
 
@@ -3020,13 +3241,15 @@ var LineUp;
 
   LineUp.prototype.layoutHeaders = function (headers) {
     var offset = 0;
-    var config = this.config;
+    var config = this.config,
+        headerHeight = config.htmlLayout.headerHeight,
+        headerOffset = config.htmlLayout.headerOffset;
 
     headers.forEach(function (d) {
 //        console.log(d);
       d.offsetX = offset;
-      d.offsetY = 2;
-      d.height = config.htmlLayout.headerHeight - 4;
+      d.offsetY = headerOffset;
+      d.height = headerHeight - headerOffset*2;
       offset += d.getColumnWidth();
 
 //        console.log(d.getColumnWidth());
@@ -3046,7 +3269,7 @@ var LineUp;
     })
       .forEach(function (d) {
 
-        d.height = config.htmlLayout.headerHeight / 2 - 4;
+        d.height = headerHeight / 2 - headerOffset*2;
 
         var localOffset = 0;
         var parentOffset = d.offsetX;
@@ -3056,8 +3279,8 @@ var LineUp;
           child.localOffsetX = localOffset;
           localOffset += child.getColumnWidth();
 
-          child.offsetY = config.htmlLayout.headerHeight / 2 + 2;
-          child.height = config.htmlLayout.headerHeight / 2 - 4;
+          child.offsetY = headerHeight / 2 + headerOffset;
+          child.height = headerHeight / 2 - headerOffset*2;
         });
       });
     this.totalWidth = shift;
@@ -3109,6 +3332,9 @@ var LineUp;
       .classed('emptyHeader', function (d) {
         return d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn;
       })
+      .classed('nestedHeader', function (d) {
+          return d && d.parent instanceof LineUp.LayoutStackedColumn;
+      })
       .call(function () {
         that.addResortDragging(this, config);
       });
@@ -3150,8 +3376,9 @@ var LineUp;
           bundle.sortingOrderAsc = d instanceof LineUp.LayoutStringColumn || d instanceof LineUp.LayoutCategoricalColumn || d instanceof LineUp.LayoutRankColumn;
         }
 
-        that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
         bundle.sortedColumn = d;
+        that.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
+		that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
         that.updateAll(false);
       });
 
@@ -3225,7 +3452,7 @@ var LineUp;
     // -- handle Text
     allHeadersEnter.append('text').attr({
       'class': 'headerLabel',
-      x: 12
+      x: config.htmlLayout.labelLeftPadding
     });
     allHeadersEnter.append('title');
 
@@ -3285,8 +3512,7 @@ var LineUp;
           },
           action: function (d) {
             that.stackedColumnOptionsGui(d);
-          },
-          shift: 15
+          }
         },
         {
           'class': 'singleColumnDelete',
@@ -3298,8 +3524,7 @@ var LineUp;
             that.storage.removeColumn(d);
             that.headerUpdateRequired = true;
             that.updateAll();
-          },
-          shift: 15
+          }
         },
         {
           'class': 'singleColumnFilter',
@@ -3307,6 +3532,7 @@ var LineUp;
           filter: function (d) {
             return (d.column) ? [d] : [];
           },
+          offset: config.htmlLayout.buttonWidth,
           action: function (d) {
             if (d instanceof LineUp.LayoutStringColumn) {
               that.openFilterPopup(d, d3.select(this));
@@ -3315,8 +3541,7 @@ var LineUp;
             } else if (d instanceof LineUp.LayoutNumberColumn) {
               that.openMappingEditor(d, d3.select(this));
             }
-          },
-          shift: 28
+          }
         }
       ];
 
@@ -3329,9 +3554,9 @@ var LineUp;
           .on('click', button.action);
         $button.attr({
           x: function (d) {
-            return d.getColumnWidth() - button.shift;
+            return d.getColumnWidth() - config.htmlLayout.buttonRightPadding - (button.offset || 0);
           },
-          y: 10
+          y: config.htmlLayout.buttonTopPadding
         });
       });
     }

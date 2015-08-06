@@ -16,7 +16,7 @@ var LineUp;
     this.$container = $container;
     this.tooltip = LineUp.createTooltip($container.node());
     //trigger hover event
-    this.listeners = d3.dispatch('hover');
+    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter', 'selected','multiselected');
 
     this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
       //TODO internal stuff, should to be extracted
@@ -28,7 +28,12 @@ var LineUp;
         }
       }});
     this.storage.config = this.config;
+    if (!this.config.svgLayout.addPlusSigns) {
+      this.config.svgLayout.plusSigns={}; // empty plusSign if no plus signs needed
+    }
 
+
+    
     //create basic structure
     if (this.config.svgLayout.mode === 'combined') {
       //within a single svg with 'fixed' header
@@ -80,8 +85,9 @@ var LineUp;
 
   LineUp.prototype = LineUpClass.prototype = $.extend(LineUpClass.prototype, LineUp.prototype);
   LineUp.create = function (storage, $container, options) {
-    if (!$.isPlainObject(storage)) {
+    if (!('storage' in storage)) { // TODO: was '!$.isPlainObject(storage)'
       storage = { storage: storage };
+
     }
     var r = new LineUpClass(storage, $container, options);
     r.startVis();
@@ -108,7 +114,12 @@ var LineUp;
     grayColor: '#999999',
     numberformat: d3.format('.3n'),
     htmlLayout: {
-      headerHeight: 50
+      headerHeight: 50,
+      headerOffset: 1,
+      buttonTopPadding: 10,
+      labelLeftPadding: 5,
+      buttonRightPadding: 15,
+      buttonWidth: 13
     },
     renderingOptions: {
       stacked: false,
@@ -121,19 +132,22 @@ var LineUp;
        * mode of this lineup instance, either combined = a single svg with header and body combined or separate ... separate header and body
        */
       mode: 'combined', //modes: combined vs separate
-      rowHeight: 20,
+      rowHeight: 17,
+      rowPadding : 0.2, //padding for scale.rangeBands
+      rowBarPadding: 1,
       /**
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
       backupScrollRows: 4,
       animationDuration: 1000,
+      addPlusSigns:false,
       plusSigns: {
-        /* addStackedColumn: {
+        addStackedColumn: {
          title: 'add stacked column',
          action: 'addNewEmptyStackedColumn',
          x: 0, y: 2,
          w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
-         }*/
+         }
       },
       rowActions: [
         /*{
@@ -148,7 +162,9 @@ var LineUp;
     manipulative: true,
     interaction: {
       //enable the table tooltips
-      tooltips: true
+      tooltips: true,
+      multiselect: function() { return false; },
+      rangeselect: function() { return false; }
     },
     filter: {
       skip: 0,
@@ -261,6 +277,7 @@ var LineUp;
     bundle.sortingOrderAsc = asc;
     bundle.sortedColumn = d;
 
+    this.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
     this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
     this.updateAll(false, d.columnBundle);
   };
@@ -312,10 +329,26 @@ var LineUp;
     column.updateWeights(weights);
     //trigger resort
     if (column === this.config.columnBundles[bundle].sortedColumn) {
+      this.listeners['change-sortcriteria'](this, column, this.config.columnBundles[bundle]);
       this.storage.resortData({ key: bundle });
     }
     this.updateAll(false, bundle);
     return true;
+  };
+
+    /**
+     * manually change/set the filter of a column
+     * @param column
+     * @param filter
+     */
+  LineUp.prototype.changeFilter = function (column, filter) {
+    if (typeof column === 'string') {
+      column = this.storage.getColumnByName(column);
+    }
+    column.filter = filter;
+    this.listeners['change-filter'](this, column);
+    this.storage.resortData({filteredChanged: true});
+    this.updateBody();
   };
 
   /**

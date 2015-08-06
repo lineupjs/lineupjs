@@ -8,13 +8,15 @@ var LineUp;
 
   LineUp.prototype.layoutHeaders = function (headers) {
     var offset = 0;
-    var config = this.config;
+    var config = this.config,
+        headerHeight = config.htmlLayout.headerHeight,
+        headerOffset = config.htmlLayout.headerOffset;
 
     headers.forEach(function (d) {
 //        console.log(d);
       d.offsetX = offset;
-      d.offsetY = 2;
-      d.height = config.htmlLayout.headerHeight - 4;
+      d.offsetY = headerOffset;
+      d.height = headerHeight - headerOffset*2;
       offset += d.getColumnWidth();
 
 //        console.log(d.getColumnWidth());
@@ -34,7 +36,7 @@ var LineUp;
     })
       .forEach(function (d) {
 
-        d.height = config.htmlLayout.headerHeight / 2 - 4;
+        d.height = headerHeight / 2 - headerOffset*2;
 
         var localOffset = 0;
         var parentOffset = d.offsetX;
@@ -44,8 +46,8 @@ var LineUp;
           child.localOffsetX = localOffset;
           localOffset += child.getColumnWidth();
 
-          child.offsetY = config.htmlLayout.headerHeight / 2 + 2;
-          child.height = config.htmlLayout.headerHeight / 2 - 4;
+          child.offsetY = headerHeight / 2 + headerOffset;
+          child.height = headerHeight / 2 - headerOffset*2;
         });
       });
     this.totalWidth = shift;
@@ -97,6 +99,9 @@ var LineUp;
       .classed('emptyHeader', function (d) {
         return d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn;
       })
+      .classed('nestedHeader', function (d) {
+          return d && d.parent instanceof LineUp.LayoutStackedColumn;
+      })
       .call(function () {
         that.addResortDragging(this, config);
       });
@@ -138,8 +143,9 @@ var LineUp;
           bundle.sortingOrderAsc = d instanceof LineUp.LayoutStringColumn || d instanceof LineUp.LayoutCategoricalColumn || d instanceof LineUp.LayoutRankColumn;
         }
 
-        that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
         bundle.sortedColumn = d;
+        that.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
+		that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
         that.updateAll(false);
       });
 
@@ -213,7 +219,7 @@ var LineUp;
     // -- handle Text
     allHeadersEnter.append('text').attr({
       'class': 'headerLabel',
-      x: 12
+      x: config.htmlLayout.labelLeftPadding
     });
     allHeadersEnter.append('title');
 
@@ -273,8 +279,7 @@ var LineUp;
           },
           action: function (d) {
             that.stackedColumnOptionsGui(d);
-          },
-          shift: 15
+          }
         },
         {
           'class': 'singleColumnDelete',
@@ -286,8 +291,7 @@ var LineUp;
             that.storage.removeColumn(d);
             that.headerUpdateRequired = true;
             that.updateAll();
-          },
-          shift: 15
+          }
         },
         {
           'class': 'singleColumnFilter',
@@ -295,6 +299,7 @@ var LineUp;
           filter: function (d) {
             return (d.column) ? [d] : [];
           },
+          offset: config.htmlLayout.buttonWidth,
           action: function (d) {
             if (d instanceof LineUp.LayoutStringColumn) {
               that.openFilterPopup(d, d3.select(this));
@@ -303,8 +308,7 @@ var LineUp;
             } else if (d instanceof LineUp.LayoutNumberColumn) {
               that.openMappingEditor(d, d3.select(this));
             }
-          },
-          shift: 28
+          }
         }
       ];
 
@@ -317,9 +321,9 @@ var LineUp;
           .on('click', button.action);
         $button.attr({
           x: function (d) {
-            return d.getColumnWidth() - button.shift;
+            return d.getColumnWidth() - config.htmlLayout.buttonRightPadding - (button.offset || 0);
           },
-          y: 10
+          y: config.htmlLayout.buttonTopPadding
         });
       });
     }
