@@ -14,13 +14,40 @@ function numberCompare(a: number, b: number) {
   return a - b;
 }
 
-class Column {
+class AEventDispatcher {
+  private listeners = d3.dispatch.apply(d3, this.createEventList());
+
+  on(type: string): (...args: any[]) => void;
+  on(type: string, listener: (...args: any[]) => any): Column;
+  on(type: string, listener?: (...args: any[]) => any) : any {
+    if (listener) {
+      this.listeners.on(type, listener);
+      return this;
+    }
+    return this.listeners.on(type);
+  }
+
+  createEventList(): string[] {
+    return [];
+  }
+
+  fire(type: string, ...args: any[]) {
+    this.listeners[type].apply(this.listeners, args);
+  }
+}
+
+class Column extends AEventDispatcher {
   public parent: Column = null;
   public id: string;
   private width_: number = 100;
 
   constructor(id: string, public desc: any) {
+    super();
     this.id = fixCSS(id);
+  }
+
+  createEventList() {
+    return super.createEventList().concat(['widthChanged','dirtySorting','dirtyFilter']);
   }
 
   getWidth() {
@@ -28,7 +55,10 @@ class Column {
   }
 
   setWidth(value: number) {
-    this.width_ = value;
+    if (this.width_ === value) {
+      return
+    }
+    this.fire('widthChanged',this, this.width_, this.width_ = value);
   }
 
   get label() {
@@ -54,12 +84,6 @@ class Column {
 
   filter(row: any) {
     return row !== null;
-  }
-
-  triggerResort(triggeredBy : Column = this) {
-    if (this.parent !== null) {
-      this.parent.triggerResort(triggeredBy);
-    }
   }
 
   findRanker(): RankColumn {
@@ -142,17 +166,20 @@ class NumberColumn extends ValueColumn<number> {
     return this.filter_;
   }
   set filterMin(min: number) {
+    var bak = { min: this.filter_.min, max: this.filter_.max };
     this.filter_.min = isNaN(min) ? -Infinity : min;
-    this.triggerResort();
+    this.fire('dirtyFilter', this, bak, this.filter_);
   }
   set filterMax(max: number) {
+    var bak = { min: this.filter_.min, max: this.filter_.max };
     this.filter_.max = isNaN(max) ? Infinity : max;
-    this.triggerResort();
+    this.fire('dirtyFilter', this, bak, this.filter_);
   }
   setFilter(min: number = -Infinity, max: number = +Infinity) {
+    var bak = { min: this.filter_.min, max: this.filter_.max };
     this.filter_.min = isNaN(min) ? -Infinity : min;
     this.filter_.max = isNaN(max) ? Infinity : max;
-    this.triggerResort();
+    this.fire('dirtyFilter', this, bak, this.filter_);
   }
 
   filter(row: any) {
@@ -200,6 +227,9 @@ class StackColumn extends Column {
   public missingValue = NaN;
   private children_ : StackChild[] = [];
 
+  private triggerResort = () => this.fire('dirtySorting', this);
+  private forwardFilter = (source, old, new_) => this.fire('dirtyFilter', source, old, new_);
+
   constructor(id: string, desc: any) {
     super(id, desc);
   }
@@ -215,7 +245,11 @@ class StackColumn extends Column {
   push(col: Column, weight: number) {
     this.children_.push({ col: col, weight: weight});
     col.parent = this;
-    this.triggerResort(this);
+    col.on('dirtyFilter.stack', this.forwardFilter);
+    col.on('dirtySorting.stack', this.triggerResort);
+    col.on('widthChanged.stack', this.triggerResort);
+    this.setWidth(this.getWidth() + col.getWidth()); //increase my width
+    this.fire('dirtySorting', this);
   }
 
   changeWeight(child: Column, weight: number, autoNormalize = false) {
@@ -229,7 +263,7 @@ class StackColumn extends Column {
     if (changed && autoNormalize) {
       this.normalizeWeights();
     } else if (changed) {
-      this.triggerResort();
+      this.fire('dirtySorting', this);
     }
     return changed;
   }
@@ -239,7 +273,10 @@ class StackColumn extends Column {
       if (c.col === child) {
         arr.splice(i, 1);
         child.parent = null;
-        this.triggerResort();
+        child.on('dirtyFilter.stack', null);
+        child.on('dirtySorting.stack', null);
+        child.on('widthChanged.stack', null);
+        this.fire('dirtySorting', this);
         return true;
       }
       return false;
@@ -250,16 +287,21 @@ class StackColumn extends Column {
     var sum = this.children_.reduce((acc, child) => acc += child.weight, 0);
     this.children_.forEach((child) => {
       child.weight = child.weight / sum;
+      child.col.on('widthChanged.stack', null);
       child.col.setWidth(this.getWidth() * child.weight);
+      child.col.on('widthChanged.stack', this.triggerResort);
     });
-    this.triggerResort();
+    this.fire('dirtySorting', this);
   }
 
   setWidth(value: number) {
-    super.setWidth(value);
     this.children_.forEach((child) => {
+      //disable since we change it
+      child.col.on('widthChanged.stack', null);
       child.col.setWidth(value * child.weight);
+      child.col.on('widthChanged.stack', this.triggerResort);
     });
+    super.setWidth(value);
   }
 
   getValue(row: any) {
@@ -273,10 +315,6 @@ class StackColumn extends Column {
   compare(a: any[], b: any[]) {
     return numberCompare(this.getValue(a), this.getValue(b));
   }
-
-  triggerResort(triggeredBy: Column = this) {
-    super.triggerResort(this); //override it if called by children call with me
-  }
 }
 
 class RankColumn extends ValueColumn<number> {
@@ -284,6 +322,9 @@ class RankColumn extends ValueColumn<number> {
   private ascending = false;
   private columns_ : Column[] = [];
   extra : any = {};
+
+  private triggerResort = () => this.fire('dirtySorting', this);
+  private forwardFilter = (source, old, new_) => this.fire('dirtyFilter', source, old, new_);
 
   comparator = (a: any[], b: any[]) => {
     if (this.sortBy_ === null) {
@@ -293,8 +334,12 @@ class RankColumn extends ValueColumn<number> {
     return this.ascending ? r : -r;
   };
 
-  constructor(id: string, desc: any, private resortMe: (rank: RankColumn) => void) {
+  constructor(id: string, desc: any) {
     super(id, desc);
+  }
+
+  createEventList() {
+    return super.createEventList().concat(['sortCriteriaChanged']);
   }
 
   sortCriteria() {
@@ -304,22 +349,24 @@ class RankColumn extends ValueColumn<number> {
     };
   }
 
-  triggerResort(triggeredBy: Column) {
-    if (triggeredBy === this.sortBy_) {
-      this.resortMe(this);
-    }
-  }
-
-  sortBy(col: Column, ascending = true) {
+  sortBy(col: Column, ascending = false) {
     if (col.findRanker() !== this) {
       return false; //not one of mine
     }
     if (this.sortBy_ === col && this.ascending === ascending) {
       return true; //already in this order
     }
+    if (this.sortBy_) {
+      this.sortBy_.on('dirtySorting.ranking', null);
+    }
+    var bak = this.sortCriteria();
     this.sortBy_ = col;
+    if (this.sortBy_) {
+      this.sortBy_.on('dirtySorting.ranking', this.triggerResort);
+    }
     this.ascending = ascending;
-    this.triggerResort(col);
+    this.fire('sortCriteriaChanged', this, bak, this.sortCriteria());
+    this.triggerResort();
     return true;
   }
 
@@ -329,19 +376,21 @@ class RankColumn extends ValueColumn<number> {
 
   push(col: Column) {
     this.columns_.push(col);
+    col.on('dirtyFilter.ranking', this.forwardFilter);
 
     if(this.sortBy_ === null) {
       this.sortBy_ = col;
-      this.triggerResort(col);
+      this.sortBy_.on('dirtySorting.ranking', this.triggerResort);
+      this.triggerResort();
     }
   }
   remove(col: Column) {
     return this.columns_.some((c, i, arr) => {
       if (c === col) {
+        col.on('dirtyFilter.ranking', null);
         arr.splice(i, 1);
         if (this.sortBy_ === c) {
-          this.sortBy_ = arr.length > 0 ? arr[0] : null;
-          this.triggerResort(this.sortBy_);
+          this.sortBy(arr.length > 0 ? arr[0] : null);
         }
         return true;
       }
@@ -354,6 +403,7 @@ class RankColumn extends ValueColumn<number> {
   }
 
   toSortingDesc(toId : (desc:any) => string) {
+    //TODO describe also all the filter settings
     var resolve = (s: Column): any => {
       if (s === null) {
         return null;
@@ -385,7 +435,7 @@ class IColumnDesc {
   type: string;
 }
 
-class DataProvider {
+class DataProvider extends AEventDispatcher {
   private rankings_ : RankColumn[] = [];
   private uid = 0;
 
@@ -405,7 +455,7 @@ class DataProvider {
   };
 
   pushRanking(existing?: RankColumn) {
-    var r = this.cloneRanking(existing)
+    var r = this.cloneRanking(existing);
     this.rankings_.push(r);
     return r;
   }
@@ -456,9 +506,6 @@ class DataProvider {
 
 class LocalDataProvider extends DataProvider {
   private rankingIndex = 0;
-  private sortHelper = (ranking: RankColumn) => {
-    this.sort(ranking);
-  };
   private rowGetter = (row: any, id: string, desc: any) => row[desc.column];
 
   constructor(private data: any[], private columns : IColumnDesc[] = []) {
@@ -486,7 +533,7 @@ class LocalDataProvider extends DataProvider {
         r[id] = r[existing.id];
       });
     }
-    return new RankColumn(id, rankDesc, this.sortHelper);
+    return new RankColumn(id, rankDesc);
   }
 
   cleanUpRanking(ranking: RankColumn) {
@@ -521,9 +568,6 @@ interface IServerData {
 
 class RemoteDataProvider extends DataProvider {
   private rankingIndex = 0;
-  private sortHelper = (ranking: RankColumn) => {
-    this.sort(ranking);
-  };
   private rowGetter = (row: any, id: string, desc: any) => row[desc.column];
 
   private ranks : any = {};
@@ -545,7 +589,7 @@ class RemoteDataProvider extends DataProvider {
       //copy the ranking
       this.ranks[id] = this.ranks[existing.id];
     }
-    return new RankColumn(id, rankDesc, this.sortHelper);
+    return new RankColumn(id, rankDesc);
   }
 
   cleanUpRanking(ranking: RankColumn) {
@@ -747,7 +791,7 @@ class LineUpBody {
     });
     $rows.exit().remove();
 
-    var $cols = $rankings.select('g.cols').selectAll('g.child').data((d) => [d].concat(d.children), (d) => d.id);
+    var $cols = $rankings.select('g.cols').selectAll('g.child').data((d) => [<Column>d].concat(d.children), (d) => d.id);
     $cols.enter().append('g').attr({
       'class': 'child'
     });
@@ -807,7 +851,7 @@ class LineUpBody {
         var r = offset;
         offset += 200; //TODO separator width
         var o2 = 0,
-          shift2 = [d].concat(d.children).map((o) => {
+          shift2 = [<Column>d].concat(d.children).map((o) => {
             var r = o2;
             o2 += o.getWidth();
             return r;
