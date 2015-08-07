@@ -37,7 +37,6 @@ class AEventDispatcher {
 }
 
 class Column extends AEventDispatcher {
-  public parent: Column = null;
   public id: string;
   private width_: number = 100;
 
@@ -85,14 +84,90 @@ class Column extends AEventDispatcher {
   filter(row: any) {
     return row !== null;
   }
+}
 
-  findRanker(): RankColumn {
-    if (this.parent !== null) {
-      return this.parent.findRanker();
-    }
-    return null;
+interface IRenderContext {
+  rowScale(index: number) : number;
+  rowX(index: number): number;
+  rowHeight(index: number) : number;
+  rowKey(d: any, i: number): string;
+
+  renderer(col: Column): ICellRenderer;
+
+  showStacked(col: StackColumn): boolean;
+
+  idPrefix: string;
+}
+
+interface ICellRenderer {
+  render($col: d3.Selection<any>, col: Column, rows: any[], context: IRenderContext);
+  mouseEnter($col: d3.Selection<any>, $row: d3.Selection<any>, col: Column, row: any, index: number, context: IRenderContext);
+  mouseLeave($col: d3.Selection<any>, $row: d3.Selection<any>, col: Column, row: any, index: number, context: IRenderContext);
+}
+
+/**
+ * default renderer instance rendering the value as a text
+ */
+class DefaultCellRenderer implements ICellRenderer {
+  textClass = 'text';
+  render($col: d3.Selection<any>, col: StringColumn, rows: any[], context: IRenderContext) {
+    var $rows = $col.datum(col).selectAll('text.'+this.textClass).data(rows, context.rowKey);
+    $rows.enter().append('text').attr({
+      'class': this.textClass,
+      'clip-path': 'url(#'+context.idPrefix+'clipCol'+col.id+')'
+    });
+    $rows.attr({
+      x: (d, i) => context.rowX(i),
+      y : (d, i) => context.rowScale(i)
+    }).text((d) => col.getLabel(d));
+    $rows.exit().remove();
   }
+  findRow($col: d3.Selection<any>, row: any) {
+    return $col.selectAll('text.'+this.textClass).filter((d) => d === row);
+  }
+  mouseEnter($col: d3.Selection<any>, $row: d3.Selection<any>, col: Column, row: any, index: number, context: IRenderContext) {
+    var rowNode = <Node>$row.node();
+    //find the right one and
+    var n = <Node>this.findRow($col, row).node();
+    if (n) {
+      rowNode.appendChild(n);
+    }
+  }
+  mouseLeave($col: d3.Selection<any>, $row: d3.Selection<any>, col: Column, row: any, index: number, context: IRenderContext) {
+    var colNode = <Node>$col.node();
+    var rowNode = <Node>$row.node();
+    //move back
+    if (rowNode.hasChildNodes()) {
+      colNode.appendChild(rowNode.firstChild);
+    }
+    $row.selectAll('*').remove();
+  }
+}
 
+/**
+ * simple derived one where individual elements can be overriden
+ */
+class DerivedCellRenderer extends DefaultCellRenderer {
+  constructor(extraFuncs: any) {
+    super();
+    Object.keys(extraFuncs).forEach((key) => {
+      this[key] = extraFuncs[key];
+    });
+  }
+}
+
+var defaultRendererInstance = new DefaultCellRenderer();
+
+/**
+ * creates a new instance with optional overidden methods
+ * @param extraFuncs
+ * @return {DefaultCellRenderer}
+ */
+function defaultRenderer(extraFuncs?: any) {
+  if (!extraFuncs) {
+    return defaultRendererInstance;
+  }
+  return new DerivedCellRenderer(extraFuncs);
 }
 
 class ValueColumn<T> extends Column {
@@ -117,6 +192,38 @@ class NumberColumn extends ValueColumn<number> {
   public missingValue = NaN;
   public scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]);
   private filter_ = { min: -Infinity, max: Infinity };
+
+  static renderer = defaultRenderer({
+    render: ($col: d3.Selection<any>, col: NumberColumn, rows: any[], context: IRenderContext) => {
+      var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
+      $rows.enter().append('rect').attr({
+        'class': 'bar',
+        fill : col.color
+      });
+      $rows.attr({
+        x: (d, i) => context.rowX(i),
+        y : (d, i) => context.rowScale(i)+1,
+        height: (d, i) => context.rowHeight(i)-2,
+        width: (d) => col.getWidth() * col.getValue(d)
+      });
+      $rows.exit().remove();
+    },
+    findRow: ($col: d3.Selection<any>, row: any) => {
+      return $col.selectAll('rect.bar').filter((d) => d === row);
+    },
+    mouseEnter: function($col: d3.Selection<any>, $row: d3.Selection<any>, col: Column, row: any, index: number, context: IRenderContext) {
+      var rowNode = this.findRow($col, row);
+      if (!rowNode.empty()) {
+        (<Node>$row.node()).appendChild(rowNode.node());
+        $row.append('text').datum(row).attr({
+          'class': 'number',
+          'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+          x: context.rowX(index),
+          y: context.rowScale(index)
+        }).text((d) => col.getLabel(d));
+      }
+    }
+  });
 
   constructor(id: string, desc: any) {
     super(id, desc);
@@ -201,6 +308,8 @@ class NumberColumn extends ValueColumn<number> {
 }
 
 class StringColumn extends ValueColumn<string> {
+  static renderer = defaultRenderer();
+
   constructor(id: string, desc: any) {
     super(id, desc);
   }
@@ -218,12 +327,116 @@ class StringColumn extends ValueColumn<string> {
   }
 }
 
+class LinkColumn extends StringColumn {
+  static renderer = defaultRenderer({
+    render: ($col: d3.Selection<any>, col: StringColumn, rows: any[], context: IRenderContext) => {
+      var $rows = $col.datum(col).selectAll('a.link').data(rows, context.rowKey);
+      $rows.enter().append('a').attr({
+        'class': 'link',
+        'target': '_blank'
+      }).append('text').attr({
+        'class': 'text',
+        'clip-path': 'url(#clipCol'+col.id+')'
+      });
+      $rows.attr({
+        'xlink:href': (d) => col.getValue(d),
+      }).select('text').attr({
+        x: (d, i) => context.rowX(i),
+        y : (d, i) => context.rowScale(i)
+      }).text((d) => col.getLabel(d));
+      $rows.exit().remove();
+    },
+    findRow: ($col: d3.Selection<any>, row: any) => {
+      return $col.selectAll('a.link').filter((d) => d === row);
+    }
+  });
+
+  constructor(id: string, desc: any) {
+    super(id, desc);
+  }
+
+  getLabel(row: any){
+    var v : any = super.getValue(row);
+    if (v.alt) {
+      return v.alt;
+    }
+    return ''+v;
+  }
+  getValue(row: any) {
+    var v : any= super.getValue(row);
+    if (v.href) {
+      return v.href;
+    }
+    return v;
+  }
+}
+
 interface StackChild {
   col: Column;
   weight: number;
 }
 
 class StackColumn extends Column {
+  static renderer = defaultRenderer({
+    renderImpl: function($col: d3.Selection<any>, col: StackColumn, context: IRenderContext, perChild: ($child: d3.Selection<Column>, col: Column, context: IRenderContext) => void, rowGetter: (index: number) => any) {
+      var $group = $col.datum(col),
+        children = col.children,
+        offset = 0,
+        shifts = children.map((d) => {
+          var r = offset;
+          offset += d.getWidth();
+          return r;
+        });
+
+      var bak = context.rowX;
+      if (!context.showStacked(col)) {
+        context.rowX = () => 0;
+      }
+
+      var $children = $group.selectAll('g.child').data(children);
+      $children.enter().append('g').attr({
+        'class': 'child'
+      });
+      $children.attr({
+        transform: (d,i) => 'translate('+shifts[i]+',0)',
+        'class': (d) => 'child '+d.desc.type
+      }).each(function (d, i) {
+        if (context.showStacked(col)) {
+          var preChildren = children.slice(0,i);
+          context.rowX = (index) => {
+            //shift by all the empty space left from the previous columns
+            return -preChildren.reduce((prev, child) => prev + child.getWidth() * (1-child.getValue(rowGetter(index))), 0);
+          };
+        }
+        perChild(d3.select(this), d, context);
+      });
+      $children.exit().remove();
+
+      context.rowX = bak;
+    },
+    render: function($col: d3.Selection<any>, col: StackColumn, rows: any[], context: IRenderContext) {
+      this.renderImpl($col, col, context, ($child, d, ccontext) => {
+        ccontext.renderer(d).render($child, d, rows, ccontext);
+      }, (index) => rows[index]);
+    },
+    mouseEnter: function($col: d3.Selection<any>, $row: d3.Selection<any>, col: Column, row: any, index: number, context: IRenderContext) {
+      var d = $col.datum();
+      if (d.rows) { //we have the data
+        this.renderImpl($row, col, context, ($child, d, ccontext) => {
+          ccontext.renderer(d).mouseEnter($child, d, row, index, ccontext);
+        }, (index) => d.rows[index]);
+      } else {
+        //not yet there
+      }
+    },
+    mouseLeave: function($col: d3.Selection<any>, $row: d3.Selection<any>, col: Column, row: any, index: number, context: IRenderContext) {
+      this.renderImpl($row, col, context, ($child, d, ccontext) => {
+        ccontext.renderer(d).mouseLeave($child, d, row, index, ccontext);
+      }, (index) => row);
+      $row.selectAll('*').remove();
+    }
+  });
+
   public missingValue = NaN;
   private children_ : StackChild[] = [];
 
@@ -244,7 +457,6 @@ class StackColumn extends Column {
 
   push(col: Column, weight: number) {
     this.children_.push({ col: col, weight: weight});
-    col.parent = this;
     col.on('dirtyFilter.stack', this.forwardFilter);
     col.on('dirtySorting.stack', this.triggerResort);
     col.on('widthChanged.stack', this.triggerResort);
@@ -272,7 +484,6 @@ class StackColumn extends Column {
     return this.children_.some((c, i, arr) => {
       if (c.col === child) {
         arr.splice(i, 1);
-        child.parent = null;
         child.on('dirtyFilter.stack', null);
         child.on('dirtySorting.stack', null);
         child.on('widthChanged.stack', null);
@@ -318,6 +529,10 @@ class StackColumn extends Column {
 }
 
 class RankColumn extends ValueColumn<number> {
+  static renderer = defaultRenderer({
+    textClass : 'rank'
+  });
+
   private sortBy_ : Column = null;
   private ascending = false;
   private columns_ : Column[] = [];
@@ -350,7 +565,7 @@ class RankColumn extends ValueColumn<number> {
   }
 
   sortBy(col: Column, ascending = false) {
-    if (col.findRanker() !== this) {
+    if (col.on('dirtyFilter.ranking') !== this.forwardFilter) {
       return false; //not one of mine
     }
     if (this.sortBy_ === col && this.ascending === ascending) {
@@ -398,10 +613,6 @@ class RankColumn extends ValueColumn<number> {
     });
   }
 
-  findRanker() {
-    return this;
-  }
-
   toSortingDesc(toId : (desc:any) => string) {
     //TODO describe also all the filter settings
     var resolve = (s: Column): any => {
@@ -442,16 +653,9 @@ class DataProvider extends AEventDispatcher {
   columnTypes : any = {
     number: NumberColumn,
     string: StringColumn,
-    link: StringColumn,
-    stack: StackColumn
-  };
-
-  renderers = {
-    rank: new RankCellRenderer(),
-    string: new StringCellRenderer(),
-    number: new NumberCellRenderer(),
-    stack : new StackedCellRenderer(),
-    link: new LinkCellRenderer()
+    link: LinkColumn,
+    stack: StackColumn,
+    rank: RankColumn
   };
 
   pushRanking(existing?: RankColumn) {
@@ -615,127 +819,9 @@ class RemoteDataProvider extends DataProvider {
   }
 }
 
-interface ICellRenderer {
-  render($col: d3.Selection<any>, col: Column, rows: any[], context: IRenderContext);
-}
-
-interface IRenderContext {
-  rowScale(index: number) : number;
-  rowX(index: number): number;
-  rowHeight(index: number) : number;
-  showValue(index: number): boolean;
-  rowKey(d: any, i: number): string;
-
-  renderer(col: Column): ICellRenderer;
-
-  showStacked(col: StackColumn): boolean;
-}
-
-class StringCellRenderer implements ICellRenderer {
-  render($col: d3.Selection<any>, col: StringColumn, rows: any[], context: IRenderContext) {
-    var $rows = $col.datum(col).selectAll('text.text').data(rows, context.rowKey);
-    $rows.enter().append('text').attr({
-      'class': 'text',
-      'clip-path': 'url(#clipCol'+col.id+')'
-    });
-    $rows.attr({
-      x: (d, i) => context.rowX(i),
-      y : (d, i) => context.rowScale(i)
-    }).text((d) => col.getLabel(d));
-    $rows.exit().remove();
-  }
-}
-class RankCellRenderer implements ICellRenderer {
-  render($col: d3.Selection<any>, col: StringColumn, rows: any[], context: IRenderContext) {
-    var $rows = $col.datum(col).selectAll('text.rank').data(rows, context.rowKey);
-    $rows.enter().append('text').attr({
-      'class': 'rank'
-    });
-    $rows.attr({
-      x: (d, i) => context.rowX(i),
-      y : (d, i) => context.rowScale(i)
-    }).text((d) => col.getLabel(d));
-    $rows.exit().remove();
-  }
-}
-
-class LinkCellRenderer extends StringCellRenderer {
-  render($col: d3.Selection<any>, col: StringColumn, rows: any[], context: IRenderContext) {
-    var $rows = $col.datum(col).selectAll('a.link').data(rows, context.rowKey);
-    $rows.enter().append('a').attr({
-      'class': 'link',
-      'target': '_blank'
-    }).append('text').attr({
-      'class': 'text',
-      'clip-path': 'url(#clipCol'+col.id+')'
-    });
-    $rows.attr({
-      'xlink:href': (d) => d.desc.link,
-    }).select('text').attr({
-      x: (d, i) => context.rowX(i),
-      y : (d, i) => context.rowScale(i)
-    }).text((d) => col.getLabel(d));
-    $rows.exit().remove();
-  }
-}
-
-class NumberCellRenderer implements ICellRenderer {
-  render($col: d3.Selection<any>, col: NumberColumn, rows: any[], context: IRenderContext) {
-    var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
-    $rows.enter().append('rect').attr({
-      'class': 'bar',
-      fill : col.color
-    }).append('title');
-    $rows.attr({
-      x: (d, i) => context.rowX(i),
-      y : (d, i) => context.rowScale(i),
-      height: (d, i) => context.rowHeight(i),
-      width: (d) => col.getWidth() * col.getValue(d)
-    }).select('title').text((d) => col.getLabel(d));
-    $rows.exit().remove();
-  }
-}
-
-class StackedCellRenderer implements ICellRenderer {
-  render($col: d3.Selection<any>, col: StackColumn, rows: any[], context: IRenderContext) {
-    var $group = $col.datum(col),
-      children = col.children,
-      offset = 0,
-      shifts = children.map((d) => {
-        var r = offset;
-        offset += d.getWidth();
-        return r;
-      });
-
-    var bak = context.rowX;
-    if (!context.showStacked(col)) {
-      context.rowX = () => 0;
-    }
-
-    var $children = $group.selectAll('g.child').data(col.children);
-    $children.enter().append('g').attr({
-      'class': 'child'
-    });
-    $children.attr({
-      transform: (d,i) => 'translate('+shifts[i]+',0)',
-      'class': (d) => 'child '+d.desc.type
-    }).each(function (d, i) {
-      if (context.showStacked(col)) {
-        var preChildren = children.slice(0,i);
-        context.rowX = (index) => {
-          //shift by all the empty space left from the previous columns
-          return -preChildren.reduce((prev, child) => prev + child.getWidth() * (1-child.getValue(rows[index])), 0);
-        };
-      }
-      context.renderer(d).render(d3.select(this), d, rows, context);
-    });
-    $children.exit().remove();
-
-    context.rowX = bak;
-  }
-}
-
 class LineUpBody {
+  private mouseOverItem : (dataIndex: number, hover : boolean) => void;
+
   constructor(private $root: d3.Selection<any>, private data: DataProvider, private argsortGetter : (ranking: RankColumn) => number[]) {
 
   }
@@ -745,27 +831,29 @@ class LineUpBody {
     return {
       rowKey : this.data.rowKey,
       rowScale(index: number) {
-        return index * 20
+        return index * 21
       },
       rowX(index: number) {
         return 0;
       },
       rowHeight(index: number) {
-        return 20
+        return 20;
       },
       showValue(index: number) {
         return false;
       },
       renderer(col: Column) {
-        return data.renderers[col.desc.type];
+        return data.columnTypes[col.desc.type].renderer;
       },
       showStacked(col: StackColumn) {
         return false;
-      }
+      },
+      idPrefix: ''
     }
   }
 
   renderRankings(r: RankColumn[], shifts: any[], context: IRenderContext) {
+    var data = this.data;
     var dataPromises = r.map((ranking) => this.data.view(this.argsortGetter(ranking)));
 
     var $rankings = this.$root.selectAll('g.ranking').data(r, (d) => d.id);
@@ -780,22 +868,12 @@ class LineUpBody {
       transform: (d, i) => 'translate('+shifts[i].shift+',0)'
     });
 
-    var $rows = $rankings.select('g.rows').selectAll('rect.row').data((d) => this.argsortGetter(d));
-    $rows.enter().append('rect').attr({
-      'class' : 'row',
-      width: (d, i, j?) => shifts[j].width
-    });
-    $rows.attr({
-      y : (data_index, i) => context.rowScale(i),
-      height: (data_index, i) => context.rowHeight(i)
-    });
-    $rows.exit().remove();
-
     var $cols = $rankings.select('g.cols').selectAll('g.child').data((d) => [<Column>d].concat(d.children), (d) => d.id);
     $cols.enter().append('g').attr({
       'class': 'child'
     });
     $cols.attr({
+      'data-index': (d, i) => i,
       transform: (d, i, j?) => {
         return 'translate('+shifts[j].shifts[i]+',0)'
       }
@@ -806,8 +884,83 @@ class LineUpBody {
     });
     $cols.exit().remove();
 
+    function mouseOverRow($row: d3.Selection<number>, $cols: d3.Selection<RankColumn>, index: number, ranking: RankColumn, rankingIndex: number) {
+      $row.classed('hover', true);
+      var $value_cols = $row.select('g.values').selectAll('g.child').data([<Column>ranking].concat(ranking.children));
+      $value_cols.enter().append('g').attr({
+        'class': 'child'
+      });
+      $value_cols.attr({
+        transform: (d, i) => {
+          return 'translate('+shifts[rankingIndex].shifts[i]+',0)'
+        }
+      }).each(function(d: Column, i) {
+        dataPromises[rankingIndex].then((data) => {
+          context.renderer(d).mouseEnter($cols.selectAll('g.child[data-index="'+i+'"]'), d3.select(this), d, data[index], index, context);
+        });
+      });
+      $value_cols.exit().remove();
+      //data.mouseOver(d, i);
+    }
+
+    function mouseLeaveRow($row: d3.Selection<number>, $cols: d3.Selection<RankColumn>, index: number, ranking: RankColumn, rankingIndex: number) {
+      $row.classed('hover', false);
+      $row.select('g.values').selectAll('g.child').each(function(d: Column, i) {
+        dataPromises[rankingIndex].then((data) => {
+          context.renderer(d).mouseLeave($cols.selectAll('g.child[data-index="'+i+'"]'), d3.select(this), d, data[index], index, context);
+        });
+      }).remove();
+      //data.mouseLeave(d, i);
+    }
+
+    this.mouseOverItem = function(data_index: number, hover = true) {
+      $rankings.each(function(ranking, rankingIndex) {
+        var $ranking = d3.select(this);
+        var $row = $ranking.selectAll('g.row[data-index="'+data_index+'"]');
+        var $cols = $ranking.select('g.cols');
+        if (!$row.empty()) {
+          var index = $row.datum().i;
+          if (hover) {
+            mouseOverRow($row, $cols, index, ranking, rankingIndex);
+          } else {
+            mouseLeaveRow($row, $cols, index, ranking, rankingIndex);
+          }
+        }
+      });
+    };
+
+    var $rows = $rankings.select('g.rows').selectAll('g.row').data((d) => this.argsortGetter(d).map((d,i) => ({ d: d, i: i}) ));
+    var $rows_enter = $rows.enter().append('g').attr({
+      'class' : 'row'
+    });
+    $rows_enter.append('rect').attr({
+      'class': 'bg',
+      width: (d, i, j?) => shifts[j].width
+    });
+    $rows_enter.append('g').attr({ 'class' : 'values' });
+    $rows_enter.on('mouseenter', (data_index) => {
+      console.log(data_index);
+      this.mouseOver(data_index.d, true);
+    }).on('mouseleave', (data_index) => {
+      console.log(data_index);
+      this.mouseOver(data_index.d, false);
+    });
+    $rows.attr({
+      'data-index': (d) => d.d,
+    });
+    $rows.select('rect').attr({
+      y : (data_index) => context.rowScale(data_index.i),
+      height: (data_index) => context.rowHeight(data_index.i)
+    });
+    $rows.exit().remove();
 
     $rankings.exit().remove();
+  }
+
+  mouseOver(dataIndex: number, hover = true) {
+    this.mouseOverItem(dataIndex, hover);
+    //update the slope graph
+    this.$root.selectAll('line.slope[data-index="'+dataIndex+'"').classed('hover',hover);
   }
 
   renderSlopeGraphs(rankings: RankColumn[], shifts: any[], context: IRenderContext) {
@@ -834,8 +987,13 @@ class LineUpBody {
     $lines.enter().append('line').attr({
       'class': 'slope',
       x2: 200
+    }).on('mouseenter', (d) => {
+      this.mouseOver(d.data_index, true);
+    }).on('mouseleave', (d) => {
+      this.mouseOver(d.data_index, false);
     });
     $lines.attr({
+      'data-index': (d) => d.data_index,
       y1: (d: any) => context.rowHeight(d.lpos)*0.5 + context.rowScale(d.lpos),
       y2: (d: any) => context.rowHeight(d.rpos)*0.5 + context.rowScale(d.rpos),
     });

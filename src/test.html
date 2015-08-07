@@ -5,21 +5,27 @@
     <title>LineUp alpha</title>
 
     <style>
+        text {
+            dominant-baseline: text-before-edge;
+        }
         line.slope {
             stroke: black;
             shape-rendering: geometricPrecision;
         }
-        line.slope:hover {
+        line.slope.hover {
             stroke: #e5e5e5;
         }
         g.cols {
             pointer-events:none;
         }
-        rect.row {
+        rect.bg {
             fill: transparent;
         }
-        rect.row:hover {
+        g.row.hover rect.bg {
             fill: #e5e5e5;
+        }
+        g.row.hover rect.bar {
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -32,15 +38,18 @@
 
     function dummyTest() {
         var arr = [
-            {a: 10, b: 20, c: 30, d: 'Row1'},
-            {a: 5, b: 14, c: 2, d: 'Row2'},
-            {a: 2, b: 7, c: 100, d: 'Row3'},
-            {a: 7, b: 1, c: 60, d: 'Row4'}];
+            {a: 10, b: 20, c: 30, d: 'Row1', l: { alt: 'Google', href: 'https://google.com'}},
+            {a: 5, b: 14, c: 2, d: 'Row2', l: { alt: 'ORF', href: 'https://orf.at'}},
+            {a: 2, b: 7, c: 100, d: 'Row3', l: { alt: 'heise.de', href: 'https://heise.de'}},
+            {a: 7, b: 1, c: 60, d: 'Row4', l: { alt: 'Google', href: 'https://google.com'}}];
         var desc = [
             {label: 'D', type: 'string', column: 'd'},
             {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
             {label: 'B', type: 'number', column: 'b', 'domain': [0, 30]},
-            {label: 'C', type: 'number', column: 'c', 'domain': [0, 120]}];
+            {label: 'C', type: 'number', column: 'c', 'domain': [0, 120]},
+            {label: 'L', type: 'link', column: 'l'}];
+        var colors = d3.scale.category10();
+        desc.forEach(function(d, i) {d.color = colors(i)});
         var server = {
             sort : function(desc) {
                 return Promise.resolve(d3.shuffle(d3.range(arr.length)));
@@ -67,6 +76,7 @@
         provider.push(r, desc[2]);
         provider.push(r, desc[3]);
         provider.push(r, desc[2]);
+        provider.push(r, desc[4]);
 
         var r2 = provider.pushRanking();
         provider.push(r2, desc[1]);
