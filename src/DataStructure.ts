@@ -1498,7 +1498,7 @@ class LineUpBody {
     }
   }
 
-  updateClipPathsImpl(r:Column[], offsets: any[], context:IRenderContext) {
+  updateClipPathsImpl(r:Column[],context:IRenderContext) {
     var $base = this.$root.select('defs.body');
     if ($base.empty()) {
       $base = this.$root.append('defs').classed('body',true);
@@ -1519,7 +1519,7 @@ class LineUpBody {
     textClipPath.exit().remove();
     textClipPath.select('rect')
       .attr({
-        x: (d,i) => offsets[i],
+        x: 0, //(d,i) => offsets[i],
         width: (d) => Math.max(d.getWidth() - 5, 0)
       });
   }
@@ -1530,7 +1530,7 @@ class LineUpBody {
       var w = r.flatten(shifts, offset, 1);
       offset += w + this.options.slopeWidth;
     });
-    this.updateClipPathsImpl(shifts.map(s => s.col), shifts.map(s => s.offset), context);
+    this.updateClipPathsImpl(shifts.map(s => s.col), context);
   }
 
   renderRankings(r:RankColumn[], shifts:any[], context:IRenderContext) {
@@ -1689,6 +1689,8 @@ class LineUpBody {
     var r = this.data.getRankings();
     var context = this.createContext(r);
 
+    this.updateClipPaths(r, context);
+
     //compute offsets and shifts for individual rankings and columns inside the rankings
     var offset = 0,
       shifts = r.map((d, i) => {
@@ -1707,7 +1709,6 @@ class LineUpBody {
           width: o2
         };
       });
-
     this.renderRankings(r, shifts, context);
     this.renderSlopeGraphs(r, shifts, context);
   }
