@@ -104,6 +104,9 @@ var LineUp;
     }
   };
 
+  LineUp.prototype.extend = $.extend;
+  LineUp.prototype.isFunction = $.isFunction;
+
   /**
    * default config of LineUp with all available options
    *

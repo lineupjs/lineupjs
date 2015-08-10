@@ -4,7 +4,7 @@
 /* global d3, jQuery */
 var LineUp;
 
-(function (LineUp, d3, $) {
+(function (LineUp, d3) {
   'use strict';
   function addLine($svg, x1, y1, x2, y2, clazz) {
     return $svg.append("line").attr({
@@ -30,13 +30,20 @@ var LineUp;
         transform : 'translate('+shift+',0)'
       });
   }
+
+  function merge(result, values) {
+    Object.keys(values).forEach(function(k) {
+      result[k] = values[k];
+    });
+  }
+
   LineUp.mappingEditor = function (scale, dataDomain, data, data_accessor, options) {
-    options = $.extend({
+    options = merge({
       width: 400,
       height: 400,
       padding: 50,
       radius: 10,
-      callback: $.noop,
+      callback: function(d) { },
       callbackThisArg : null,
       triggerCallback: 'change' //change, dragend
     }, options);
@@ -246,5 +253,5 @@ var LineUp;
     };
     return editor;
   };
-}(LineUp || (LineUp = {}), d3, jQuery));
+}(LineUp || (LineUp = {}), d3));
  

@@ -3,7 +3,7 @@
  */
 /* global d3, jQuery */
 var LineUp;
-(function (LineUp, d3, $, undefined) {
+(function (LineUp, d3) {
   LineUp.prototype = LineUp.prototype || {};
 
   LineUp.prototype.layoutHeaders = function (headers) {
@@ -361,7 +361,7 @@ var LineUp;
         return d.h;
       }
     }).on('click', function (d) {
-      if ($.isFunction(d.action)) {
+      if (LineUp.isFunction(d.action)) {
         d.action.call(that, d);
       } else {
         that[d.action](d);
@@ -566,4 +566,4 @@ var LineUp;
     this.headerUpdateRequired = true;
     this.updateAll();
   };
-}(LineUp || (LineUp = {}), d3, jQuery));
+}(LineUp || (LineUp = {}), d3));
