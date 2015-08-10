@@ -94,6 +94,18 @@ class Column extends AEventDispatcher {
     return this.desc.color || 'gray';
   }
 
+  dump(toDescRef: (desc: any) => any) : any {
+    return {
+      id: this.id,
+      desc: toDescRef(this.desc),
+      width: this.width_
+    };
+  }
+
+  restore(dump: any, factory : (dump: any) => Column) {
+    this.width_ = dump.width;
+  }
+
   /**
    * return the label of a given row for the current column
    * @param row
@@ -374,6 +386,23 @@ class NumberColumn extends ValueColumn<number> {
     }
   }
 
+  dump(toDescRef: (desc: any) => any) {
+    var r = super.dump(toDescRef);
+    r.domain = this.scale.domain();
+    r.range = this.scale.range();
+    r.filter = this.filter;
+    r.missingValue = this.missingValue;
+    return r;
+  }
+
+  restore(dump: any, factory : (dump: any) => Column) {
+    super.restore(dump, factory);
+    this.scale.domain(dump.domain);
+    this.scale.range(dump.range);
+    this.filter_ = dump.filter;
+    this.missingValue = dump.missingValue;
+  }
+
   getLabel(row:any) {
     return '' + super.getValue(row);
   }
@@ -467,7 +496,7 @@ class StringColumn extends ValueColumn<string> {
 
 class LinkColumn extends StringColumn {
   static renderer = defaultRenderer({
-    render: ($col:d3.Selection<any>, col:StringColumn, rows:any[], context:IRenderContext) => {
+    render: ($col:d3.Selection<any>, col:LinkColumn, rows:any[], context:IRenderContext) => {
       //wrap the text elements with an a element
       var $rows = $col.datum(col).selectAll('a.link').data(rows, context.rowKey);
       $rows.enter().append('a').attr({
@@ -598,6 +627,21 @@ class StackColumn extends Column {
     return this.children_.map((d) => d.weight);
   }
 
+  dump(toDescRef: (desc: any) => any) {
+    var r = super.dump(toDescRef);
+    r.children = this.children_.map((d) => ({ col: d.col.dump(toDescRef), weight: d.weight}));
+    r.missingValue = this.missingValue;
+    return r;
+  }
+
+  restore(dump: any, factory : (dump: any) => Column) {
+    this.missingValue = dump.missingValue;
+    dump.children.map((child) => {
+      this.push(factory(child.col), child.weight);
+    });
+    super.restore(dump, factory);
+  }
+
   push(col:Column, weight:number) {
     this.children_.push({col: col, weight: weight});
     //listen and propagate events
@@ -680,11 +724,11 @@ class StackColumn extends Column {
   }
 
   isFiltered() {
-    return this.columns_.some((d) => d.isFiltered());
+    return this.children_.some((d) => d.col.isFiltered());
   }
 
   filter(row: any) {
-    return this.columns_.every((d) => d.filter(row));
+    return this.children_.every((d) => d.col.filter(row));
   }
 }
 
@@ -738,6 +782,27 @@ class RankColumn extends ValueColumn<number> {
 
   createEventList() {
     return super.createEventList().concat(['sortCriteriaChanged']);
+  }
+
+  dump(toDescRef: (desc: any) => any) {
+    var r = super.dump(toDescRef);
+    r.columns = this.columns_.map((d) => d.dump(toDescRef));
+    r.sortCriteria = this.sortCriteria();
+    if (this.sortBy_) {
+      r.sortCriteria.sortBy = this.sortBy_.id; //store the index not the object
+    }
+    return r;
+  }
+
+  restore(dump: any, factory : (dump: any) => Column) {
+    super.restore(dump, factory);
+    dump.columns.map((child) => {
+      this.push(factory(child.col));
+    });
+    this.ascending = dump.sortCriteria.asc;
+    if (dump.sortCriteria.sortBy) {
+      this.sortBy(this.columns_.filter((d) => d.id === dump.sortCriteria.sortBy)[0], dump.sortCriteria.asc);
+    }
   }
 
   sortCriteria() {
@@ -910,10 +975,41 @@ class DataProvider extends AEventDispatcher {
   push(ranking:RankColumn, desc:IColumnDesc) {
     var type = this.columnTypes[desc.type];
     if (type) {
-      ranking.push(new type('col' + (this.uid++), desc));
+      ranking.push(new type(this.nextId(), desc));
       return true;
     }
     return false;
+  }
+
+  private nextId() {
+    return 'col' + (this.uid++);
+  }
+
+  dump() : any {
+    return {
+      uid: this.uid,
+      rankings: this.rankings_.map((r) => r.dump(this.toDescRef))
+    };
+  }
+
+  toDescRef(desc: any) : any {
+    return desc;
+  }
+
+  fromDescRef(descRef: any) : any {
+    return descRef;
+  }
+
+  restore(dump: any) {
+    var create = (d: any) => {
+      var desc = this.fromDescRef(d.desc);
+      var type = this.columnTypes[desc.type];
+      var c  = new type(d.id, desc);
+      c.restore(d, create);
+      return c;
+    };
+    this.uid = dump.uid;
+    this.rankings_ = dump.rankings.map(create);
   }
 
   /**
@@ -945,28 +1041,55 @@ class DataProvider extends AEventDispatcher {
   }
 }
 
-/**
- * a data provider based on an local array
- */
-class LocalDataProvider extends DataProvider {
+class CommonDataProvider extends DataProvider {
   private rankingIndex = 0;
   //generic accessor of the data item
   private rowGetter = (row:any, id:string, desc:any) => row[desc.column];
 
-  constructor(private data:any[], private columns:IColumnDesc[] = []) {
+  constructor(private columns:IColumnDesc[] = []) {
     super();
-    //enhance with a magic attribute storing ranking information
-    data.forEach((d, i) => {
-      d._rankings = {};
-      d._index = i
-    });
 
     //generate the accessor
     columns.forEach((d:any) => d.accessor = this.rowGetter);
   }
 
+
+  toDescRef(desc: any) : any {
+    return desc.column ? desc.column : desc;
+  }
+
+  fromDescRef(descRef: any) : any {
+    if (typeof(descRef) === 'string') {
+      return this.columns.filter((d: any) => d.column === descRef) [0];
+    }
+    return descRef;
+  }
+
+  restore(dump: any) {
+    super.restore(dump);
+    this.rankingIndex = 1 + d3.max(this.getRankings(), (r) => + r.id.substring(4));
+  }
+
+  nextRankingId() {
+    return 'rank' + (this.rankingIndex++);
+  }
+}
+/**
+ * a data provider based on an local array
+ */
+class LocalDataProvider extends CommonDataProvider {
+
+  constructor(private data:any[], columns:IColumnDesc[] = []) {
+    super(columns);
+    //enhance with a magic attribute storing ranking information
+    data.forEach((d, i) => {
+      d._rankings = {};
+      d._index = i
+    });
+  }
+
   cloneRanking(existing?:RankColumn) {
-    var id = 'rank' + (this.rankingIndex++);
+    var id = this.nextRankingId();
     var rankDesc = {
       label: 'Rank',
       type: 'rank',
@@ -1029,21 +1152,16 @@ interface IServerData {
 /**
  * a remote implementation of the data provider
  */
-class RemoteDataProvider extends DataProvider {
-  private rankingIndex = 0;
-
-  private rowGetter = (row:any, id:string, desc:any) => row[desc.column];
+class RemoteDataProvider extends CommonDataProvider {
 
   private ranks:any = {};
 
-  constructor(private server:IServerData, private columns:IColumnDesc[] = []) {
-    super();
-    //generate the accessor
-    columns.forEach((d:any) => d.accessor = this.rowGetter);
+  constructor(private server:IServerData, columns:IColumnDesc[] = []) {
+    super(columns);
   }
 
   cloneRanking(existing?:RankColumn) {
-    var id = 'rank' + (this.rankingIndex++);
+    var id = this.nextRankingId();
     var rankDesc = {
       label: 'Rank',
       type: 'rank',
