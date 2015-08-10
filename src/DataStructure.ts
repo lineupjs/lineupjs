@@ -58,6 +58,11 @@ class AEventDispatcher {
   }
 }
 
+interface IFlatColumn {
+  col: Column;
+  offset: number;
+}
+
 /**
  * a column in LineUp
  */
@@ -77,6 +82,11 @@ class Column extends AEventDispatcher {
 
   getWidth() {
     return this.width_;
+  }
+
+  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0): number {
+    r.push({ col: this, offset: offset });
+    return this.getWidth();
   }
 
   setWidth(value:number) {
@@ -240,7 +250,7 @@ class DefaultCellRenderer implements ICellRenderer {
    */
   textClass = 'text';
 
-  render($col:d3.Selection<any>, col:StringColumn, rows:any[], context:IRenderContext) {
+  render($col:d3.Selection<any>, col:Column, rows:any[], context:IRenderContext) {
     var $rows = $col.datum(col).selectAll('text.' + this.textClass).data(rows, context.rowKey);
 
     $rows.enter().append('text').attr({
@@ -384,6 +394,7 @@ class NumberColumn extends ValueColumn<number> {
     if (desc.range) {
       this.scale.range(desc.range);
     }
+    //TODO infer scales from data
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -477,6 +488,8 @@ class NumberColumn extends ValueColumn<number> {
 class StringColumn extends ValueColumn<string> {
   static renderer = defaultRenderer();
 
+  private filter_ : string = null;
+
   constructor(id:string, desc:any) {
     super(id, desc);
   }
@@ -487,6 +500,41 @@ class StringColumn extends ValueColumn<string> {
       return '';
     }
     return v;
+  }
+
+  dump(toDescRef: (desc: any) => any) : any {
+    var r = super.dump(toDescRef);
+    r.filter = this.filter_;
+    return r;
+  }
+
+  restore(dump: any, factory : (dump: any) => Column) {
+    super.restore(dump, factory);
+    this.filter_ = dump.filter || null;
+  }
+
+  isFiltered() {
+    return this.filter_ != null;
+  }
+
+  filter(row: any) {
+    if (!this.isFiltered()) {
+      return true;
+    }
+    var r = this.getLabel(row),
+      filter = this.filter_;
+    if (typeof filter === 'string' && filter.length > 0) {
+      return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+    }
+    return true;
+  }
+
+  getFilter() {
+    return this.filter_;
+  }
+
+  setFilter(filter: string) {
+    this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
   }
 
   compare(a:any[], b:any[]) {
@@ -537,6 +585,115 @@ class LinkColumn extends StringColumn {
       return v.href;
     }
     return v;
+  }
+}
+
+class CategoricalColumn extends ValueColumn<string> {
+  static renderer = defaultRenderer({
+    render: ($col:d3.Selection<any>, col:LinkColumn, rows:any[], context:IRenderContext) => {
+      //wrap the text elements with an a element
+      var $rows = $col.datum(col).selectAll('a.link').data(rows, context.rowKey);
+      $rows.enter().append('a').attr({
+        'class': 'link',
+        'target': '_blank'
+      }).append('text').attr({
+        'class': 'text',
+        'clip-path': 'url(#'+context.idPrefix+'clipCol' + col.id + ')'
+      });
+      $rows.attr({
+        'xlink:href': (d) => col.getValue(d),
+      }).select('text').attr({
+        x: (d, i) => context.cellX(i),
+        y: (d, i) => context.cellY(i)
+      }).text((d) => col.getLabel(d));
+      $rows.exit().remove();
+    },
+    findRow: ($col:d3.Selection<any>, index:number) => {
+      return $col.selectAll('a.link[data-index="'+index+'"]');
+    }
+  });
+
+  private categories : string[] = [];
+  private categoryColors : string[] = d3.scale.category10().range();
+
+  private filter_ : string = null;
+
+  constructor(id:string, desc:any) {
+    super(id, desc);
+    if (desc.categories) {
+      desc.categories.forEach((cat,i) => {
+        if (typeof cat === 'string') {
+          this.categories.push(cat);
+        } else {
+          this.categories.push(cat.name);
+          this.categoryColors[i] = cat.color;
+        }
+      });
+    }
+    //TODO infer categories from data
+  }
+
+  getValue(row:any) {
+    var v:any = super.getValue(row);
+    if (typeof(v) === 'undefined' || v == null) {
+      return '';
+    }
+    return v;
+  }
+
+  getColor(row) {
+    var cat = this.getValue(row);
+    if (cat === null || cat === '') {
+      return null;
+    }
+    var index = this.categories.indexOf(cat);
+    if (index < 0) {
+      return null;
+    }
+    return this.categoryColors[index];
+  }
+
+  dump(toDescRef: (desc: any) => any) : any {
+    var r = super.dump(toDescRef);
+    r.filter = this.filter_;
+    return r;
+  }
+
+  restore(dump: any, factory : (dump: any) => Column) {
+    super.restore(dump, factory);
+    this.filter_ = dump.filter || null;
+  }
+
+  isFiltered() {
+    return this.filter_ != null;
+  }
+
+  filter(row: any) : boolean {
+    if (!this.isFiltered()) {
+      return true;
+    }
+    var r = this.getLabel(row),
+      filter: any = this.filter_;
+    if (Array.isArray(filter) && filter.length > 0) {
+      return filter.indexOf(r) >= 0;
+    } else if (typeof filter === 'string' && filter.length > 0) {
+      return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+    } else if (filter instanceof RegExp) {
+      return r != null && r.match(filter).length > 0;
+    }
+    return true;
+  }
+
+  getFilter() {
+    return this.filter_;
+  }
+
+  setFilter(filter: string) {
+    this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
+  }
+
+  compare(a:any[], b:any[]) {
+    return d3.ascending(this.getValue(a), this.getValue(b));
   }
 }
 
@@ -627,6 +784,18 @@ class StackColumn extends Column {
     return this.children_.map((d) => d.weight);
   }
 
+  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0) {
+    if (levelsToGo === 0) {
+      r.push({col: this, offset: offset});
+    } else {
+      var acc = offset;
+      this.children_.forEach((c) => {
+        acc += c.col.flatten(r, acc, levelsToGo - 1);
+      });
+    }
+    return this.getWidth();
+  }
+
   dump(toDescRef: (desc: any) => any) {
     var r = super.dump(toDescRef);
     r.children = this.children_.map((d) => ({ col: d.col.dump(toDescRef), weight: d.weight}));
@@ -678,6 +847,8 @@ class StackColumn extends Column {
         child.on('dirtyFilter.stack', null);
         child.on('dirtySorting.stack', null);
         child.on('widthChanged.stack', null);
+        //reduce width to keep the percentages
+        this.setWidth(this.getWidth()-child.getWidth());
         this.fire('dirtySorting', this);
         return true;
       }
@@ -805,6 +976,15 @@ class RankColumn extends ValueColumn<number> {
     }
   }
 
+  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0) {
+    r.push({col: this, offset: offset});
+    var acc = offset + this.getWidth();
+    this.columns_.forEach((c) => {
+      acc += c.flatten(r, acc, levelsToGo - 1);
+    });
+    return acc - offset;
+  }
+
   sortCriteria() {
     return {
       col: this.sortBy_,
@@ -837,8 +1017,8 @@ class RankColumn extends ValueColumn<number> {
     return this.columns_.slice();
   }
 
-  push(col:Column) {
-    this.columns_.push(col);
+  insert(col: Column, index: number = this.columns_.length) {
+    this.columns_.splice(index, 0, col);
     col.on('dirtyFilter.ranking', this.forwardFilter);
 
     if (this.sortBy_ === null) {
@@ -847,6 +1027,10 @@ class RankColumn extends ValueColumn<number> {
       this.sortBy_.on('dirtySorting.ranking', this.triggerResort);
       this.triggerResort();
     }
+  }
+
+  push(col:Column) {
+    this.insert(col);
   }
 
   remove(col:Column) {
@@ -919,6 +1103,7 @@ class DataProvider extends AEventDispatcher {
    * @private
    */
   private rankings_:RankColumn[] = [];
+  private selection = d3.set();
 
   private uid = 0;
 
@@ -981,6 +1166,15 @@ class DataProvider extends AEventDispatcher {
     return false;
   }
 
+  insert(ranking: RankColumn, index: number, desc: IColumnDesc) {
+    var type = this.columnTypes[desc.type];
+    if (type) {
+      ranking.insert(new type(this.nextId(), desc), index);
+      return true;
+    }
+    return false;
+  }
+
   private nextId() {
     return 'col' + (this.uid++);
   }
@@ -1037,7 +1231,73 @@ class DataProvider extends AEventDispatcher {
    * @return {string}
    */
   rowKey(row:any, i:number) {
-    return String(row._index);
+    return typeof(row) === 'number' ? String(row) : String(row._index);
+  }
+
+
+  /**
+   * is the given row selected
+   * @param row
+   * @return {boolean}
+   */
+  isSelected(row: any) {
+    return this.selection.has(this.rowKey(row, -1));
+  }
+
+  /**
+   * also select the given row
+   * @param row
+   */
+  select(row) {
+    this.selection.add(this.rowKey(row, -1));
+  }
+
+  /**
+   * also select all the given rows
+   * @param rows
+   */
+  selectAll(rows: any[]) {
+    rows.forEach((row) => {
+      this.selection.add(this.rowKey(row, -1));
+    });
+  }
+
+  /**
+   * set the selection to the given rows
+   * @param rows
+   */
+  setSelection(rows: any[]) {
+    this.clearSelection();
+    this.selectAll(rows);
+  }
+
+  /**
+   * delelect the given row
+   * @param row
+   */
+  deselect(row: any) {
+    this.selection.remove(this.rowKey(row, -1));
+  }
+
+  /**
+   * returns a promise containing the selected rows
+   * @return {Promise<any[]>}
+   */
+  selectedRows() {
+    if (this.selection.empty()) {
+      return Promise.resolve([]);
+    }
+    var indices = [];
+    this.selection.forEach((s) => indices.push(+s));
+    indices.sort();
+    return this.view(indices);
+  }
+
+  /**
+   * clears the selection
+   */
+  clearSelection() {
+    this.selection = d3.set();
   }
 }
 
@@ -1238,6 +1498,41 @@ class LineUpBody {
     }
   }
 
+  updateClipPathsImpl(r:Column[], offsets: any[], context:IRenderContext) {
+    var $base = this.$root.select('defs.body');
+    if ($base.empty()) {
+      $base = this.$root.append('defs').classed('body',true);
+    }
+
+    //generate clip paths for the text columns to avoid text overflow
+    //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
+    //there is a bug in webkit which present camelCase selectors
+    var textClipPath = $base.selectAll(function () {
+      return this.getElementsByTagName('clipPath');
+    }).data(r, (d) => d.id);
+    textClipPath.enter().append('clipPath')
+      .attr('id', (d) => context.idPrefix+'clipCol'+d.id)
+      .append('rect').attr({
+        y: 0,
+        height: 1000
+      });
+    textClipPath.exit().remove();
+    textClipPath.select('rect')
+      .attr({
+        x: (d,i) => offsets[i],
+        width: (d) => Math.max(d.getWidth() - 5, 0)
+      });
+  }
+
+  updateClipPaths(rankings:RankColumn[], context:IRenderContext) {
+    var shifts = [], offset = 0;
+    rankings.forEach((r) => {
+      var w = r.flatten(shifts, offset, 1);
+      offset += w + this.options.slopeWidth;
+    });
+    this.updateClipPathsImpl(shifts.map(s => s.col), shifts.map(s => s.offset), context);
+  }
+
   renderRankings(r:RankColumn[], shifts:any[], context:IRenderContext) {
     var data = this.data;
     var dataPromises = r.map((ranking) => this.data.view(this.argsortGetter(ranking)));
@@ -1248,7 +1543,6 @@ class LineUpBody {
     });
     $rankings_enter.append('g').attr('class', 'rows');
     $rankings_enter.append('g').attr('class', 'cols');
-
 
     $rankings.attr({
       transform: (d, i) => 'translate(' + shifts[i].shift + ',0)'
