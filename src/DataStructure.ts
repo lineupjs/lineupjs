@@ -1855,8 +1855,7 @@ class LineUpBody {
       'class': 'row'
     });
     $rows_enter.append('rect').attr({
-      'class': 'bg',
-      width: (d, i, j?) => shifts[j].width
+      'class': 'bg'
     });
     $rows_enter.append('g').attr({'class': 'values'});
     $rows_enter.on('mouseenter', (data_index) => {
@@ -1869,7 +1868,8 @@ class LineUpBody {
     });
     context.animated($rows).select('rect').attr({
       y: (data_index) => context.cellY(data_index.i),
-      height: (data_index) => context.rowHeight(data_index.i)
+      height: (data_index) => context.rowHeight(data_index.i),
+      width: (d, i, j?) => shifts[j].width
     });
     $rows.exit().remove();
 
@@ -1981,6 +1981,11 @@ class LineUpBody {
     $headers_enter.append('text').classed('label',true).attr({
       y: 3
     });
+    $headers_enter.append('title');
+    $headers_enter.append('text').classed('sort_indicator', true).attr({
+      y: 3,
+      x: 2
+    })
     $headers_enter.append('rect').classed('handle',true).attr({
       width: 5,
       height: this.options.headerHeight
@@ -1994,11 +1999,19 @@ class LineUpBody {
       .attr({
         width: (d) => d.col.getWidth()
       });
-    $headers_update.select('text')
+    $headers_update.select('text.label')
       .text((d) => d.col.label)
       .attr({
         x: (d) => d.col.getWidth()/2
       });
+    $headers_update.select('title').text((d) => d.col.label);
+    $headers_update.select('text.sort_indicator').text((d) => {
+      var r = d.col.findMyRanker();
+      if (r && r.sortCriteria().col === d.col) {
+        return r.sortCriteria().asc ? '\uf0de' : '\uf0dd';
+      }
+      return ''
+    });
     $headers_update.select('rect.handle').attr({
       x: (d) => d.col.getWidth() - 5
     });
