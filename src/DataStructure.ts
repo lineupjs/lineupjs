@@ -71,13 +71,19 @@ class Column extends AEventDispatcher {
 
   private width_:number = 100;
 
+  parent: Column = null;
+
   constructor(id:string, public desc:any) {
     super();
     this.id = fixCSS(id);
   }
 
+  get fqid() {
+    return this.parent ? this.parent.fqid +'_'+this.id : this.id;
+  }
+
   createEventList() {
-    return super.createEventList().concat(['widthChanged', 'dirtySorting', 'dirtyFilter']);
+    return super.createEventList().concat(['widthChanged', 'dirtySorting', 'dirtyFilter', 'dirtyValues']);
   }
 
   getWidth() {
@@ -102,6 +108,21 @@ class Column extends AEventDispatcher {
 
   get color() {
     return this.desc.color || 'gray';
+  }
+
+  sortByMe(ascending = false) {
+    var r = this.findMyRanker();
+    if (r) {
+      return r.sortBy(this, ascending);
+    }
+    return false;
+  }
+
+  findMyRanker() {
+    if (this.parent) {
+      return this.parent.findMyRanker();
+    }
+    return null;
   }
 
   dump(toDescRef: (desc: any) => any) : any {
@@ -204,6 +225,8 @@ interface IRenderContext {
    * prefix used for all generated id names
    */
   idPrefix: string;
+
+  animated<T>($sel: d3.Selection<T>) : any;
 }
 
 /**
@@ -258,7 +281,7 @@ class DefaultCellRenderer implements ICellRenderer {
       'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
     });
 
-    $rows.attr({
+    context.animated($rows).attr({
       x: (d, i) => context.cellX(i),
       y: (d, i) => context.cellY(i),
       'data-index': (d, i) => i
@@ -295,6 +318,7 @@ class DefaultCellRenderer implements ICellRenderer {
     }
     $row.selectAll('*').remove();
   }
+
 }
 
 /**
@@ -309,7 +333,57 @@ class DerivedCellRenderer extends DefaultCellRenderer {
   }
 }
 
+class BarCellRenderer extends DefaultCellRenderer {
+  render($col:d3.Selection<any>, col:NumberColumn, rows:any[], context:IRenderContext) {
+    var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
+    $rows.enter().append('rect').attr({
+      'class': 'bar',
+      fill: col.color
+    });
+    context.animated($rows).attr({
+      x: (d, i) => context.cellX(i),
+      y: (d, i) => context.cellY(i) + 1,
+      height: (d, i) => context.rowHeight(i) - 2,
+      width: (d) => col.getWidth() * col.getValue(d),
+      fill: (d,i) => this.colorOf(d, i, col),
+      'data-index': (d, i) => i,
+    });
+    $rows.exit().remove();
+  }
+
+  colorOf(d: any, i: number, col: Column) {
+    return col.color;
+  }
+
+  findRow($col:d3.Selection<any>, index:number) {
+    return $col.selectAll('rect.bar[data-index="' + index + '"]');
+  }
+
+  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:Column, row:any, index:number, context:IRenderContext) {
+    var rowNode = this.findRow($col, index);
+    if (!rowNode.empty()) {
+      (<Node>$row.node()).appendChild(<Node>(rowNode.node()));
+      $row.append('text').datum(rowNode.datum()).attr({
+        'class': 'number',
+        'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+        x: context.cellX(index),
+        y: context.cellY(index)
+      }).text((d) => col.getLabel(d));
+    }
+  }
+}
+
+class DerivedBarCellRenderer extends BarCellRenderer {
+  constructor(extraFuncs:any) {
+    super();
+    Object.keys(extraFuncs).forEach((key) => {
+      this[key] = extraFuncs[key];
+    });
+  }
+}
+
 var defaultRendererInstance = new DefaultCellRenderer();
+var barRendererInstance = new BarCellRenderer();
 
 /**
  * creates a new instance with optional overridden methods
@@ -321,6 +395,13 @@ function defaultRenderer(extraFuncs?:any) {
     return defaultRendererInstance;
   }
   return new DerivedCellRenderer(extraFuncs);
+}
+
+function barRenderer(extraFuncs?: any) {
+  if (!extraFuncs) {
+    return barRendererInstance;
+  }
+  return new DerivedBarCellRenderer(extraFuncs);
 }
 
 /**
@@ -349,42 +430,11 @@ class ValueColumn<T> extends Column {
 
 class NumberColumn extends ValueColumn<number> {
   missingValue = NaN;
-  scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]);
+  private scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
 
   private filter_ = {min: -Infinity, max: Infinity};
 
-  static renderer = defaultRenderer({
-    render: ($col:d3.Selection<any>, col:NumberColumn, rows:any[], context:IRenderContext) => {
-      var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
-      $rows.enter().append('rect').attr({
-        'class': 'bar',
-        fill: col.color
-      });
-      $rows.attr({
-        x: (d, i) => context.cellX(i),
-        y: (d, i) => context.cellY(i) + 1,
-        height: (d, i) => context.rowHeight(i) - 2,
-        width: (d) => col.getWidth() * col.getValue(d),
-        'data-index': (d,i) => i
-      });
-      $rows.exit().remove();
-    },
-    findRow: ($col:d3.Selection<any>, index:number) => {
-      return $col.selectAll('rect.bar[data-index="'+index+'"]');
-    },
-    mouseEnter: function ($col:d3.Selection<any>, $row:d3.Selection<any>, col:Column, row:any, index:number, context:IRenderContext) {
-      var rowNode = this.findRow($col, index);
-      if (!rowNode.empty()) {
-        (<Node>$row.node()).appendChild(rowNode.node());
-        $row.append('text').datum(rowNode.datum()).attr({
-          'class': 'number',
-          'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
-          x: context.cellX(index),
-          y: context.cellY(index)
-        }).text((d) => col.getLabel(d));
-      }
-    }
-  });
+  static renderer = barRenderer();
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -436,6 +486,19 @@ class NumberColumn extends ValueColumn<number> {
 
   compare(a:any[], b:any[]) {
     return numberCompare(this.getValue(a), this.getValue(b));
+  }
+
+  getScale() {
+    return {
+      domain: this.scale.domain(),
+      range: this.scale.range()
+    }
+  }
+
+  setScale(domain: [number, number], range: [number, number]) {
+    var bak = this.getScale();
+    this.scale.domain(domain).range(range);
+    this.fire('dirtyValues', this, bak, this.getScale());
   }
 
   isFiltered() {
@@ -554,7 +617,7 @@ class LinkColumn extends StringColumn {
         'class': 'text',
         'clip-path': 'url(#'+context.idPrefix+'clipCol' + col.id + ')'
       });
-      $rows.attr({
+      context.animated($rows).attr({
         'xlink:href': (d) => col.getValue(d),
       }).select('text').attr({
         x: (d, i) => context.cellX(i),
@@ -590,78 +653,65 @@ class LinkColumn extends StringColumn {
 
 class CategoricalColumn extends ValueColumn<string> {
   static renderer = defaultRenderer({
-    render: ($col:d3.Selection<any>, col:LinkColumn, rows:any[], context:IRenderContext) => {
-      //wrap the text elements with an a element
-      var $rows = $col.datum(col).selectAll('a.link').data(rows, context.rowKey);
-      $rows.enter().append('a').attr({
-        'class': 'link',
-        'target': '_blank'
-      }).append('text').attr({
-        'class': 'text',
-        'clip-path': 'url(#'+context.idPrefix+'clipCol' + col.id + ')'
-      });
-      $rows.attr({
-        'xlink:href': (d) => col.getValue(d),
-      }).select('text').attr({
-        x: (d, i) => context.cellX(i),
-        y: (d, i) => context.cellY(i)
-      }).text((d) => col.getLabel(d));
-      $rows.exit().remove();
-    },
-    findRow: ($col:d3.Selection<any>, index:number) => {
-      return $col.selectAll('a.link[data-index="'+index+'"]');
-    }
+    //TODO render with color
   });
 
-  private categories : string[] = [];
-  private categoryColors : string[] = d3.scale.category10().range();
+  private colors = d3.scale.category10();
 
   private filter_ : string = null;
 
   constructor(id:string, desc:any) {
     super(id, desc);
-    if (desc.categories) {
-      desc.categories.forEach((cat,i) => {
-        if (typeof cat === 'string') {
-          this.categories.push(cat);
-        } else {
-          this.categories.push(cat.name);
-          this.categoryColors[i] = cat.color;
-        }
-      });
-    }
+    this.init(desc);
     //TODO infer categories from data
   }
 
-  getValue(row:any) {
-    var v:any = super.getValue(row);
-    if (typeof(v) === 'undefined' || v == null) {
-      return '';
+  init(desc: any) {
+    if (desc.categories) {
+      var cats = [],
+        cols = this.colors.range();
+      desc.categories.forEach((cat,i) => {
+        if (typeof cat === 'string') {
+          cats.push(cat);
+        } else {
+          cats.push(cat.name);
+          cols[i] = cat.color;
+        }
+      });
+      this.colors.domain(cats).range(cols);
     }
-    return v;
+  }
+
+  get categories() {
+    return this.colors.domain();
+  }
+
+  getValue(row:any) {
+    return StringColumn.prototype.getValue.call(this, row);
   }
 
   getColor(row) {
-    var cat = this.getValue(row);
+    var cat = this.getLabel(row);
     if (cat === null || cat === '') {
       return null;
     }
-    var index = this.categories.indexOf(cat);
-    if (index < 0) {
-      return null;
-    }
-    return this.categoryColors[index];
+    return this.colors(cat);
   }
 
   dump(toDescRef: (desc: any) => any) : any {
     var r = super.dump(toDescRef);
     r.filter = this.filter_;
+    r.colors = {
+      domain: this.colors.domain(),
+      range: this.colors.range()
+    }
     return r;
   }
 
   restore(dump: any, factory : (dump: any) => Column) {
     super.restore(dump, factory);
     this.filter_ = dump.filter || null;
+    this.colors.domain(dump.colors.domain).range(dump.colors.range);
   }
 
   isFiltered() {
@@ -693,7 +743,105 @@ class CategoricalColumn extends ValueColumn<string> {
   }
 
   compare(a:any[], b:any[]) {
-    return d3.ascending(this.getValue(a), this.getValue(b));
+    return StringColumn.prototype.compare.call(this, a, b);
+  }
+}
+
+class CategoricalNumberColumn extends ValueColumn<number> {
+  static renderer = barRenderer({
+    colorOf : (d, i, col) => col.getColor(d)
+  });
+
+  private missingValue = NaN;
+  private colors = d3.scale.category10();
+  private scale = d3.scale.ordinal().rangeRoundPoints([0,1]);
+
+  private filter_ : string = null;
+
+  constructor(id:string, desc:any) {
+    super(id, desc);
+    CategoricalColumn.prototype.init.call(this, desc);
+
+    this.scale.domain(this.colors.domain());
+    if (desc.categories) {
+      var values = [];
+      desc.categories.forEach((d) => {
+        if (typeof d !== 'string' && typeof (d.value) === 'number') {
+          values.push(d.value);
+        } else {
+          values.push(0.5);
+        }
+      });
+      this.scale.range(values);
+    }
+  }
+
+  get categories() {
+    return this.colors.domain();
+  }
+
+  getLabel(row:any) {
+    var v:any = super.getValue(row);
+    if (typeof(v) === 'undefined' || v == null) {
+      return '';
+    }
+    return v;
+  }
+
+  getValue(row:any) {
+    var v = this.getLabel(row);
+    return this.scale(v);
+  }
+
+  getColor(row) {
+    return CategoricalColumn.prototype.getColor.call(this, row);
+  }
+
+  dump(toDescRef: (desc: any) => any) : any {
+    var r = CategoricalColumn.prototype.dump.call(this, toDescRef);
+    r.scale = {
+      domain: this.scale.domain(),
+      range: this.scale.range()
+    }
+    return r;
+  }
+
+  restore(dump: any, factory : (dump: any) => Column) {
+    CategoricalColumn.prototype.restore.call(this, dump, factory);
+    this.scale.domain(dump.scale.domain).range(dump.scale.range);
+  }
+
+  getScale() {
+    return {
+      domain: this.scale.domain(),
+      range: this.scale.range()
+    }
+  }
+
+  setRange(range: number[]) {
+    var bak = this.getScale();
+    this.scale.range(range);
+    this.fire('dirtyValues', this, bak, this.getScale());
+  }
+
+  isFiltered() {
+    return this.filter_ != null;
+  }
+
+  filter(row: any) : boolean {
+    return CategoricalColumn.prototype.filter.call(this, row);
+  }
+
+  getFilter() {
+    return this.filter_;
+  }
+
+  setFilter(filter: string) {
+    this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
+  }
+
+  compare(a:any[], b:any[]) {
+    return NumberColumn.prototype.compare.call(this, a, b);
   }
 }
 
@@ -727,7 +875,6 @@ class StackColumn extends Column {
         'class': 'child'
       });
       $children.attr({
-        transform: (d, i) => 'translate(' + shifts[i] + ',0)',
         'class': (d) => 'child ' + d.desc.type
       }).each(function (d, i) {
         if (context.showStacked(col)) {
@@ -738,6 +885,9 @@ class StackColumn extends Column {
           };
         }
         perChild(d3.select(this), d, context);
+      });
+      context.animated($children).attr({
+        transform: (d, i) => 'translate(' + shifts[i] + ',0)'
       });
       $children.exit().remove();
 
@@ -771,6 +921,7 @@ class StackColumn extends Column {
 
   private triggerResort = () => this.fire('dirtySorting', this);
   private forwardFilter = (source, old, new_) => this.fire('dirtyFilter', source, old, new_);
+  private forwardValues = (source, old, new_) => this.fire('dirtyValues', source, old, new_);
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -812,9 +963,12 @@ class StackColumn extends Column {
   }
 
   push(col:Column, weight:number) {
+
     this.children_.push({col: col, weight: weight});
     //listen and propagate events
+    col.parent = this;
     col.on('dirtyFilter.stack', this.forwardFilter);
+    col.on('dirtyValues.stack', this.forwardValues);
     col.on('dirtySorting.stack', this.triggerResort);
     col.on('widthChanged.stack', this.triggerResort);
 
@@ -844,7 +998,9 @@ class StackColumn extends Column {
     return this.children_.some((c, i, arr) => {
       if (c.col === child) { //found it
         arr.splice(i, 1); //remove and deregister listeners
+        child.parent = null;
         child.on('dirtyFilter.stack', null);
+        child.on('dirtyValues.stack', null);
         child.on('dirtySorting.stack', null);
         child.on('widthChanged.stack', null);
         //reduce width to keep the percentages
@@ -938,6 +1094,7 @@ class RankColumn extends ValueColumn<number> {
 
   private triggerResort = () => this.fire('dirtySorting', this);
   private forwardFilter = (source, old, new_) => this.fire('dirtyFilter', source, old, new_);
+  private forwardValues = (source, old, new_) => this.fire('dirtyValues', source, old, new_);
 
   comparator = (a:any[], b:any[]) => {
     if (this.sortBy_ === null) {
@@ -992,6 +1149,10 @@ class RankColumn extends ValueColumn<number> {
     };
   }
 
+  findMyRanker() {
+    return this;
+  }
+
   sortBy(col:Column, ascending = false) {
     if (col.on('dirtyFilter.ranking') !== this.forwardFilter) {
       return false; //not one of mine
@@ -1019,7 +1180,9 @@ class RankColumn extends ValueColumn<number> {
 
   insert(col: Column, index: number = this.columns_.length) {
     this.columns_.splice(index, 0, col);
+    col.parent = this;
     col.on('dirtyFilter.ranking', this.forwardFilter);
+    col.on('dirtyValues.ranking', this.forwardValues);
 
     if (this.sortBy_ === null) {
       //use the first columns as sorting criteria
@@ -1037,6 +1200,8 @@ class RankColumn extends ValueColumn<number> {
     return this.columns_.some((c, i, arr) => {
       if (c === col) {
         col.on('dirtyFilter.ranking', null);
+        col.on('dirtyValues.ranking', null);
+        col.parent = null;
         arr.splice(i, 1);
         if (this.sortBy_ === c) { //was my sorting one
           this.sortBy(arr.length > 0 ? arr[0] : null);
@@ -1115,7 +1280,9 @@ class DataProvider extends AEventDispatcher {
     string: StringColumn,
     link: LinkColumn,
     stack: StackColumn,
-    rank: RankColumn
+    rank: RankColumn,
+    categorical: CategoricalColumn,
+    ordinal: CategoricalNumberColumn
   };
 
   /**
@@ -1466,7 +1633,8 @@ class LineUpBody {
     rowSep: 1,
     idPrefix: '',
     slopeWidth: 200,
-    showStacked: false
+    showStacked: false,
+    animated: 200
   };
 
   constructor(private $root:d3.Selection<any>, private data:DataProvider, private argsortGetter:(ranking:RankColumn) => number[], options = {}) {
@@ -1494,7 +1662,9 @@ class LineUpBody {
       showStacked(col:StackColumn) {
         return options.showStacked;
       },
-      idPrefix: options.idPrefix
+      idPrefix: options.idPrefix,
+
+      animated: ($sel: d3.Selection<any>) => options.animated > 0 ? $sel.transition().duration(options.animated) : $sel
     }
   }
 
@@ -1544,7 +1714,7 @@ class LineUpBody {
     $rankings_enter.append('g').attr('class', 'rows');
     $rankings_enter.append('g').attr('class', 'cols');
 
-    $rankings.attr({
+    context.animated($rankings).attr({
       transform: (d, i) => 'translate(' + shifts[i].shift + ',0)'
     });
 
@@ -1552,8 +1722,10 @@ class LineUpBody {
     $cols.enter().append('g').attr({
       'class': 'child'
     });
-    $cols.attr({
+    context.animated($cols).attr({
       'data-index': (d, i) => i,
+    });
+    context.animated($cols).attr({
       transform: (d, i, j?) => {
         return 'translate(' + shifts[j].shifts[i] + ',0)'
       }
@@ -1629,7 +1801,7 @@ class LineUpBody {
     $rows.attr({
       'data-index': (d) => d.d,
     });
-    $rows.select('rect').attr({
+    context.animated($rows).select('rect').attr({
       y: (data_index) => context.cellY(data_index.i),
       height: (data_index) => context.rowHeight(data_index.i)
     });
@@ -1652,7 +1824,7 @@ class LineUpBody {
       'class': 'slopegraph'
     });
     $slopes.attr({
-      transform: (d, i) => 'translate(' + (shifts[i + 1].shift - 200) + ',0)'
+      transform: (d, i) => 'translate(' + (shifts[i + 1].shift - this.options.slopeWidth) + ',0)'
     });
     var $lines = $slopes.selectAll('line.slope').data((d) => {
       var cache = {};
@@ -1674,7 +1846,9 @@ class LineUpBody {
       this.mouseOver(d.data_index, false);
     });
     $lines.attr({
-      'data-index': (d) => d.data_index,
+      'data-index': (d) => d.data_index
+    });
+    context.animated($lines).attr({
       y1: (d:any) => context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos),
       y2: (d:any) => context.rowHeight(d.rpos) * 0.5 + context.cellY(d.rpos),
     });
@@ -1711,5 +1885,16 @@ class LineUpBody {
       });
     this.renderRankings(r, shifts, context);
     this.renderSlopeGraphs(r, shifts, context);
+  }
+
+  renderHeader(rankings: RankColumn[], context: IRenderContext) {
+    var shifts =[], offset = 0;
+    rankings.forEach((ranking) => {
+      offset += ranking.flatten(shifts, offset, 2) + this.options.slopeWidth;
+    });
+    //real width
+    offset -= this.options.slopeWidth;
+    var $headers = this.$root.selectAll('g.header').data(shifts);
+
   }
 }
