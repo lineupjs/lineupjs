@@ -27,6 +27,13 @@
         g.row.hover rect.bar {
             opacity: 0.5;
         }
+        g.header text.label {
+            text-anchor: middle;
+        }
+        g.header rect.handle {
+            fill: white;
+            cursor: col-resize;
+        }
     </style>
 </head>
 <body>
@@ -41,7 +48,7 @@
             {a: 10, b: 20, c: 30, d: 'Row1', l: { alt: 'Google', href: 'https://google.com'}},
             {a: 5, b: 14, c: 2, d: 'Row2', l: { alt: 'ORF', href: 'https://orf.at'}},
             {a: 2, b: 7, c: 100, d: 'Row3', l: { alt: 'heise.de', href: 'https://heise.de'}},
-            {a: 7, b: 1, c: 60, d: 'Row4', l: { alt: 'Google', href: 'https://google.com'}}];
+            {a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', l: { alt: 'Google', href: 'https://google.com'}}];
         var desc = [
             {label: 'D', type: 'string', column: 'd'},
             {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
@@ -63,7 +70,7 @@
                 return p;
             }
         };
-        var provider = new RemoteDataProvider(server, desc);
+        var provider = new LocalDataProvider(arr, desc);
         var r = provider.pushRanking();
 
         var root = d3.select('body').append('svg').attr('width', '2000').attr('height', '300');
@@ -81,12 +88,21 @@
         var r2 = provider.pushRanking();
         provider.push(r2, desc[1]);
         provider.push(r2, desc[0]);
-        Promise.all([provider.sort(r), provider.sort(r2)])
-                .then(function (argsorts) {
-                    r.extra.argsort = argsorts[0];
-                    r2.extra.argsort = argsorts[1];
-                    body.render();
-                });
+        function update() {
+            console.log('call', arguments);
+            Promise.all([provider.sort(r), provider.sort(r2)])
+                    .then(function (argsorts) {
+                        r.extra.argsort = argsorts[0];
+                        r2.extra.argsort = argsorts[1];
+                        body.render();
+                    });
+        }
+        var call = delayedCall(update, 2);
+        r2.on('dirtySorting',call);
+        r2.on('widthChanged', call);
+        r.on('dirtySorting', call);
+        r.on('widthChanged', call);
+        update();
     }
     dummyTest();
 </script>

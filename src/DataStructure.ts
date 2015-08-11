@@ -25,6 +25,25 @@ function numberCompare(a:number, b:number) {
   return a - b;
 }
 
+
+/**
+ * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
+ * @param callback
+ * @param thisCallback
+ * @param timeToDelay
+ * @return {function(...[any]): undefined}
+ */
+function delayedCall(callback: () => void, thisCallback = this, timeToDelay = 100) {
+  var tm = -1;
+  return (...args:any[]) => {
+    if (tm >= 0) {
+      clearTimeout(tm);
+      tm = -1;
+    }
+    args.unshift(thisCallback);
+    tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
+  };
+}
 /**
  * base class for event dispatching using d3 event mechanism
  */
@@ -90,7 +109,7 @@ class Column extends AEventDispatcher {
     return this.width_;
   }
 
-  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0): number {
+  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0): number {
     r.push({ col: this, offset: offset });
     return this.getWidth();
   }
@@ -114,6 +133,13 @@ class Column extends AEventDispatcher {
     var r = this.findMyRanker();
     if (r) {
       return r.sortBy(this, ascending);
+    }
+    return false;
+  }
+  toggleMySorting() {
+    var r = this.findMyRanker();
+    if (r) {
+      return r.toggleSorting(this);
     }
     return false;
   }
@@ -336,17 +362,15 @@ class DerivedCellRenderer extends DefaultCellRenderer {
 class BarCellRenderer extends DefaultCellRenderer {
   render($col:d3.Selection<any>, col:NumberColumn, rows:any[], context:IRenderContext) {
     var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
-    $rows.enter().append('rect').attr({
-      'class': 'bar',
-      fill: col.color
-    });
+    $rows.enter().append('rect').attr('class', 'bar').style('fill', col.color)
     context.animated($rows).attr({
       x: (d, i) => context.cellX(i),
       y: (d, i) => context.cellY(i) + 1,
       height: (d, i) => context.rowHeight(i) - 2,
       width: (d) => col.getWidth() * col.getValue(d),
-      fill: (d,i) => this.colorOf(d, i, col),
       'data-index': (d, i) => i,
+    }).style({
+      fill: (d,i) => this.colorOf(d, i, col),
     });
     $rows.exit().remove();
   }
@@ -619,6 +643,7 @@ class LinkColumn extends StringColumn {
       });
       context.animated($rows).attr({
         'xlink:href': (d) => col.getValue(d),
+        'data-index': (d, i) => i
       }).select('text').attr({
         x: (d, i) => context.cellX(i),
         y: (d, i) => context.cellY(i)
@@ -935,16 +960,17 @@ class StackColumn extends Column {
     return this.children_.map((d) => d.weight);
   }
 
-  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0) {
+  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     if (levelsToGo === 0) {
       r.push({col: this, offset: offset});
+      return this.getWidth();
     } else {
       var acc = offset;
       this.children_.forEach((c) => {
-        acc += c.col.flatten(r, acc, levelsToGo - 1);
+        acc += c.col.flatten(r, acc, levelsToGo - 1, padding) + padding;
       });
+      return acc - offset;
     }
-    return this.getWidth();
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -1095,6 +1121,7 @@ class RankColumn extends ValueColumn<number> {
   private triggerResort = () => this.fire('dirtySorting', this);
   private forwardFilter = (source, old, new_) => this.fire('dirtyFilter', source, old, new_);
   private forwardValues = (source, old, new_) => this.fire('dirtyValues', source, old, new_);
+  private forwardWidthChanged = (source, old, new_) => this.fire('widthChanged', source, old, new_);
 
   comparator = (a:any[], b:any[]) => {
     if (this.sortBy_ === null) {
@@ -1133,11 +1160,11 @@ class RankColumn extends ValueColumn<number> {
     }
   }
 
-  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0) {
+  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     r.push({col: this, offset: offset});
     var acc = offset + this.getWidth();
     this.columns_.forEach((c) => {
-      acc += c.flatten(r, acc, levelsToGo - 1);
+      acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
     });
     return acc - offset;
   }
@@ -1149,8 +1176,22 @@ class RankColumn extends ValueColumn<number> {
     };
   }
 
+  sortByMe(ascending = false) {
+    //noop
+  }
+  toggleMySorting() {
+    //noop
+  }
+
   findMyRanker() {
     return this;
+  }
+
+  toggleSorting(col: Column) {
+    if (this.sortBy_ === col) {
+      return this.sortBy(col, !this.ascending);
+    }
+    return this.sortBy(col);
   }
 
   sortBy(col:Column, ascending = false) {
@@ -1183,6 +1224,7 @@ class RankColumn extends ValueColumn<number> {
     col.parent = this;
     col.on('dirtyFilter.ranking', this.forwardFilter);
     col.on('dirtyValues.ranking', this.forwardValues);
+    col.on('widthChanged.ranking', this.forwardWidthChanged);
 
     if (this.sortBy_ === null) {
       //use the first columns as sorting criteria
@@ -1201,6 +1243,7 @@ class RankColumn extends ValueColumn<number> {
       if (c === col) {
         col.on('dirtyFilter.ranking', null);
         col.on('dirtyValues.ranking', null);
+        col.on('widthChanged.ranking', null);
         col.parent = null;
         arr.splice(i, 1);
         if (this.sortBy_ === c) { //was my sorting one
@@ -1633,13 +1676,36 @@ class LineUpBody {
     rowSep: 1,
     idPrefix: '',
     slopeWidth: 200,
+    columnPadding : 1,
     showStacked: false,
-    animated: 200
+    animated: 0, //200
+    headerHeight: 50
   };
+
+  private dragHandler : d3.behavior.Drag<{ col: Column; offset: number }>;
 
   constructor(private $root:d3.Selection<any>, private data:DataProvider, private argsortGetter:(ranking:RankColumn) => number[], options = {}) {
     //merge options
     Object.keys(options).forEach((key) => this.options[key] = options[key]);
+
+    this.dragHandler = this.initDragging();
+  }
+
+  private initDragging() {
+    return d3.behavior.drag<{ col: Column; offset: number }>()
+      //.origin((d) => d)
+      .on('dragstart', function () {
+        (<any>d3.event).sourceEvent.stopPropagation();
+        d3.select(this).classed('dragging', true);
+      })
+      .on('drag', function (d) {
+        //the new width
+        var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
+        d.col.setWidth(newValue);
+      })
+      .on('dragend', function () {
+        d3.select(this).classed('dragging', false);
+      });
   }
 
   createContext(rankings:RankColumn[]):IRenderContext {
@@ -1697,17 +1763,17 @@ class LineUpBody {
   updateClipPaths(rankings:RankColumn[], context:IRenderContext) {
     var shifts = [], offset = 0;
     rankings.forEach((r) => {
-      var w = r.flatten(shifts, offset, 1);
+      var w = r.flatten(shifts, offset, 1, this.options.columnPadding);
       offset += w + this.options.slopeWidth;
     });
     this.updateClipPathsImpl(shifts.map(s => s.col), context);
   }
 
-  renderRankings(r:RankColumn[], shifts:any[], context:IRenderContext) {
+  renderRankings($body: d3.Selection<any>, r:RankColumn[], shifts:any[], context:IRenderContext) {
     var data = this.data;
     var dataPromises = r.map((ranking) => this.data.view(this.argsortGetter(ranking)));
 
-    var $rankings = this.$root.selectAll('g.ranking').data(r, (d) => d.id);
+    var $rankings = $body.selectAll('g.ranking').data(r, (d) => d.id);
     var $rankings_enter = $rankings.enter().append('g').attr({
       'class': 'ranking'
     });
@@ -1816,14 +1882,14 @@ class LineUpBody {
     this.$root.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
   }
 
-  renderSlopeGraphs(rankings:RankColumn[], shifts:any[], context:IRenderContext) {
+  renderSlopeGraphs($body: d3.Selection<any>, rankings:RankColumn[], shifts:any[], context:IRenderContext) {
 
     var slopes = rankings.slice(1).map((d, i) => ({left: rankings[i], right: d}));
-    var $slopes = this.$root.selectAll('g.slopegraph').data(slopes);
+    var $slopes = $body.selectAll('g.slopegraph').data(slopes);
     $slopes.enter().append('g').attr({
       'class': 'slopegraph'
     });
-    $slopes.attr({
+    context.animated($slopes).attr({
       transform: (d, i) => 'translate(' + (shifts[i + 1].shift - this.options.slopeWidth) + ',0)'
     });
     var $lines = $slopes.selectAll('line.slope').data((d) => {
@@ -1865,6 +1931,8 @@ class LineUpBody {
 
     this.updateClipPaths(r, context);
 
+    this.renderHeader(r, context);
+
     //compute offsets and shifts for individual rankings and columns inside the rankings
     var offset = 0,
       shifts = r.map((d, i) => {
@@ -1873,7 +1941,7 @@ class LineUpBody {
         var o2 = 0,
           shift2 = [<Column>d].concat(d.children).map((o) => {
             var r = o2;
-            o2 += o.getWidth();
+            o2 += o.getWidth() + this.options.columnPadding;
             return r;
           });
         offset += o2;
@@ -1883,18 +1951,57 @@ class LineUpBody {
           width: o2
         };
       });
-    this.renderRankings(r, shifts, context);
-    this.renderSlopeGraphs(r, shifts, context);
+
+    var $body = this.$root.select('g.body');
+    if ($body.empty()) {
+      $body = this.$root.append('g').classed('body',true);
+    }
+    $body.attr('transform','translate(0,'+this.options.headerHeight+')');
+    this.renderRankings($body, r, shifts, context);
+    this.renderSlopeGraphs($body, r, shifts, context);
   }
 
   renderHeader(rankings: RankColumn[], context: IRenderContext) {
     var shifts =[], offset = 0;
     rankings.forEach((ranking) => {
-      offset += ranking.flatten(shifts, offset, 2) + this.options.slopeWidth;
+      offset += ranking.flatten(shifts, offset, 2, this.options.columnPadding) + this.options.slopeWidth;
     });
     //real width
     offset -= this.options.slopeWidth;
-    var $headers = this.$root.selectAll('g.header').data(shifts);
+    var $headers = this.$root.selectAll('g.header').data(shifts, (d) => d.col.id);
+    var $headers_enter = $headers.enter().append('g').attr({
+      'class': 'header'
+    });
+    $headers_enter.append('rect').attr({
+      'class': 'header_bg',
+      height: this.options.headerHeight
+    }).on('click', (d) => {
+      d.col.toggleMySorting();
+    });
+    $headers_enter.append('text').classed('label',true).attr({
+      y: 3
+    });
+    $headers_enter.append('rect').classed('handle',true).attr({
+      width: 5,
+      height: this.options.headerHeight
+    }).call(this.dragHandler);
 
+    var $headers_update = context.animated($headers).attr({
+      transform: (d) => 'translate(' + d.offset + ',0)'
+    });
+    $headers_update.select('rect.header_bg')
+      .style('fill', (d) => d.col.color)
+      .attr({
+        width: (d) => d.col.getWidth()
+      });
+    $headers_update.select('text')
+      .text((d) => d.col.label)
+      .attr({
+        x: (d) => d.col.getWidth()/2
+      });
+    $headers_update.select('rect.handle').attr({
+      x: (d) => d.col.getWidth() - 5
+    });
+    $headers.exit().remove();
   }
 }
