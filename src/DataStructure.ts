@@ -57,7 +57,7 @@ class AEventDispatcher {
   on(type:string):(...args:any[]) => void;
   on(type:string, listener:(...args:any[]) => any):Column;
   on(type:string, listener?:(...args:any[]) => any):any {
-    if (listener) {
+    if (arguments.length > 1) {
       this.listeners.on(type, listener);
       return this;
     }
@@ -880,7 +880,7 @@ interface StackChild {
  */
 class StackColumn extends Column {
   static renderer = defaultRenderer({
-    renderImpl: function ($col:d3.Selection<any>, col:StackColumn, context:IRenderContext, perChild:($child:d3.Selection<Column>, col:Column, context:IRenderContext) => void, rowGetter:(index:number) => any) {
+    renderImpl: function ($col:d3.Selection<any>, col:StackColumn, context:IRenderContext, perChild:($child:d3.Selection<Column>, col:Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any) {
       var $group = $col.datum(col),
         children = col.children,
         offset = 0,
@@ -895,12 +895,13 @@ class StackColumn extends Column {
         context.cellX = () => 0;
       }
 
-      var $children = $group.selectAll('g.child').data(children);
+      var $children = $group.selectAll('g.component').data(children);
       $children.enter().append('g').attr({
-        'class': 'child'
+        'class': 'component'
       });
       $children.attr({
-        'class': (d) => 'child ' + d.desc.type
+        'class': (d) => 'component ' + d.desc.type,
+        'data-index': (d,i) => i,
       }).each(function (d, i) {
         if (context.showStacked(col)) {
           var preChildren = children.slice(0, i);
@@ -909,7 +910,7 @@ class StackColumn extends Column {
             return -preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rowGetter(index))), 0);
           };
         }
-        perChild(d3.select(this), d, context);
+        perChild(d3.select(this), d, i, context);
       });
       context.animated($children).attr({
         transform: (d, i) => 'translate(' + shifts[i] + ',0)'
@@ -919,27 +920,28 @@ class StackColumn extends Column {
       context.cellX = bak;
     },
     render: function ($col:d3.Selection<any>, col:StackColumn, rows:any[], context:IRenderContext) {
-      this.renderImpl($col, col, context, ($child, d, ccontext) => {
-        ccontext.renderer(d).render($child, d, rows, ccontext);
+      this.renderImpl($col, col, context, ($child, col, i, ccontext) => {
+        ccontext.renderer(col).render($child, col, rows, ccontext);
       }, (index) => rows[index]);
     },
     mouseEnter: function ($col:d3.Selection<any>, $row:d3.Selection<any>, col:Column, row:any, index:number, context:IRenderContext) {
-      var d = $col.datum();
-      if (d.rows) { //we have the data
-        this.renderImpl($row, col, context, ($child, d, ccontext) => {
-          ccontext.renderer(d).mouseEnter($child, d, row, index, ccontext);
-        }, (index) => d.rows[index]);
-      } else {
-        //not yet there
-      }
+      this.renderImpl($row, col, context, ($row_i, col, i, ccontext) => {
+        var $col_i = $col.selectAll('g.component[data-index="'+i+'"]');
+        ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
+      }, (index) => row);
     },
     mouseLeave: function ($col:d3.Selection<any>, $row:d3.Selection<any>, col:Column, row:any, index:number, context:IRenderContext) {
-      this.renderImpl($row, col, context, ($child, d, ccontext) => {
-        ccontext.renderer(d).mouseLeave($child, d, row, index, ccontext);
+      this.renderImpl($row, col, context, ($row_i, d, i, ccontext) => {
+        var $col_i = $col.selectAll('g.component[data-index="'+i+'"]');
+        ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
       }, (index) => row);
       $row.selectAll('*').remove();
     }
   });
+
+  static desc(label: string) {
+    return { type: 'stack', label : label };
+  }
 
   public missingValue = NaN;
   private children_:StackChild[] = [];
@@ -947,6 +949,7 @@ class StackColumn extends Column {
   private triggerResort = () => this.fire('dirtySorting', this);
   private forwardFilter = (source, old, new_) => this.fire('dirtyFilter', source, old, new_);
   private forwardValues = (source, old, new_) => this.fire('dirtyValues', source, old, new_);
+  private adaptChange = this.adaptWidthChange.bind(this);
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -996,12 +999,35 @@ class StackColumn extends Column {
     col.on('dirtyFilter.stack', this.forwardFilter);
     col.on('dirtyValues.stack', this.forwardValues);
     col.on('dirtySorting.stack', this.triggerResort);
-    col.on('widthChanged.stack', this.triggerResort);
+    col.on('widthChanged.stack', this.adaptChange);
 
     //increase my width
     this.setWidth(this.getWidth() + col.getWidth());
 
     this.fire('dirtySorting', this);
+  }
+
+  private adaptWidthChange(col: Column, old, new_) {
+    if (old === new_) {
+      return;
+    }
+    var full = this.getWidth(),
+      change = (new_ - old) / full;
+    var oldWeight = this.children_.filter((c) => c.col === col)[0].weight;
+    var factor = (1-oldWeight-change)/(1-oldWeight);
+    this.children_.forEach((c) => {
+      if (c.col === col) {
+        c.weight += change;
+      } else {
+        c.weight *= factor;
+        c.col.on('widthChanged.stack', null);
+        c.col.setWidth(full * c.weight);
+        c.col.on('widthChanged.stack', this.adaptChange);
+      }
+    });
+    this.fire('dirtyValues', this);
+    this.fire('dirtySorting', this);
+    this.fire('widthChanged', this, full, full);
   }
 
   changeWeight(child:Column, weight:number, autoNormalize = false) {
@@ -1048,7 +1074,7 @@ class StackColumn extends Column {
       child.col.on('widthChanged.stack', null);
       //change the width accordingly
       child.col.setWidth(this.getWidth() * child.weight);
-      child.col.on('widthChanged.stack', this.triggerResort);
+      child.col.on('widthChanged.stack', this.adaptChange);
     });
     this.fire('dirtySorting', this);
   }
@@ -1058,7 +1084,7 @@ class StackColumn extends Column {
       //disable since we change it
       child.col.on('widthChanged.stack', null);
       child.col.setWidth(value * child.weight);
-      child.col.on('widthChanged.stack', this.triggerResort);
+      child.col.on('widthChanged.stack', this.adaptChange);
     });
     super.setWidth(value);
   }
@@ -1163,9 +1189,11 @@ class RankColumn extends ValueColumn<number> {
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     r.push({col: this, offset: offset});
     var acc = offset + this.getWidth();
-    this.columns_.forEach((c) => {
-      acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
-    });
+    if (levelsToGo > 0) {
+      this.columns_.forEach((c) => {
+        acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+      });
+    }
     return acc - offset;
   }
 
@@ -1368,21 +1396,29 @@ class DataProvider extends AEventDispatcher {
    * @return {boolean}
    */
   push(ranking:RankColumn, desc:IColumnDesc) {
+    var r = this.create(desc);
+    if (r) {
+      ranking.push(r);
+      return r;
+    }
+    return null;
+  }
+
+  create(desc: IColumnDesc) {
     var type = this.columnTypes[desc.type];
     if (type) {
-      ranking.push(new type(this.nextId(), desc));
-      return true;
+      return new type(this.nextId(), desc);
     }
-    return false;
+    return null;
   }
 
   insert(ranking: RankColumn, index: number, desc: IColumnDesc) {
-    var type = this.columnTypes[desc.type];
-    if (type) {
-      ranking.insert(new type(this.nextId(), desc), index);
-      return true;
+    var r = this.create(desc);
+    if (r) {
+      ranking.insert(r, index);
+      return r;
     }
-    return false;
+    return null;
   }
 
   private nextId() {
@@ -1677,7 +1713,7 @@ class LineUpBody {
     idPrefix: '',
     slopeWidth: 200,
     columnPadding : 1,
-    showStacked: false,
+    showStacked: true,
     animated: 0, //200
     headerHeight: 50
   };
@@ -1763,7 +1799,7 @@ class LineUpBody {
   updateClipPaths(rankings:RankColumn[], context:IRenderContext) {
     var shifts = [], offset = 0;
     rankings.forEach((r) => {
-      var w = r.flatten(shifts, offset, 1, this.options.columnPadding);
+      var w = r.flatten(shifts, offset, 2, this.options.columnPadding);
       offset += w + this.options.slopeWidth;
     });
     this.updateClipPathsImpl(shifts.map(s => s.col), context);
@@ -1968,6 +2004,10 @@ class LineUpBody {
     });
     //real width
     offset -= this.options.slopeWidth;
+
+    //check if we have any stacked
+    var hasStacked = shifts.some((d) => !(d.col.parent instanceof RankColumn));
+
     var $headers = this.$root.selectAll('g.header').data(shifts, (d) => d.col.id);
     var $headers_enter = $headers.enter().append('g').attr({
       'class': 'header'
@@ -1985,7 +2025,7 @@ class LineUpBody {
     $headers_enter.append('text').classed('sort_indicator', true).attr({
       y: 3,
       x: 2
-    })
+    });
     $headers_enter.append('rect').classed('handle',true).attr({
       width: 5,
       height: this.options.headerHeight

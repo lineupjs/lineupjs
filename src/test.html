@@ -84,16 +84,20 @@
             return rank.extra.argsort;
         });
 
-        provider.push(r, desc[0]);
-        provider.push(r, desc[1]);
-        provider.push(r, desc[2]);
-        provider.push(r, desc[3]);
-        provider.push(r, desc[2]);
-        provider.push(r, desc[4]);
+        r.push(provider.create(desc[0]));
+        r.push(provider.create(desc[1]));
+        var rstack = provider.create(StackColumn.desc('Stack'));
+        r.push(rstack);
+        rstack.push(provider.create(desc[1]), 0.2);
+        rstack.push(provider.create(desc[2]), 0.4);
+        rstack.push(provider.create(desc[3]), 0.2);
+        rstack.normalizeWeights();
+        r.push(provider.create(desc[4]));
 
         var r2 = provider.pushRanking();
-        provider.push(r2, desc[1]);
-        provider.push(r2, desc[0]);
+        r2.push(provider.create(desc[1]));
+        r2.push(provider.create(desc[0]));
+
         function update() {
             console.log('call', arguments);
             Promise.all([provider.sort(r), provider.sort(r2)])
