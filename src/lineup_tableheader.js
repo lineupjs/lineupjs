@@ -12,25 +12,6 @@ var LineUp;
         headerHeight = config.htmlLayout.headerHeight,
         headerOffset = config.htmlLayout.headerOffset;
 
-    headers.forEach(function (d) {
-//        console.log(d);
-      d.offsetX = offset;
-      d.offsetY = headerOffset;
-      d.height = headerHeight - headerOffset*2;
-      offset += d.getColumnWidth();
-
-//        console.log(d.getColumnWidth());
-    });
-
-    //console.log("layout Headers:", headers);
-
-    //update all the plusSigns shifts
-    var shift = offset + 4;
-    d3.values(config.svgLayout.plusSigns).forEach(function (addSign) {
-      addSign.x = shift;
-      shift += addSign.w + 4;
-    });
-
     headers.filter(function (d) {
       return (d instanceof LineUp.LayoutStackedColumn);
     })
@@ -112,52 +93,6 @@ var LineUp;
     });
 
 
-    // -- handle BackgroundRectangles
-    allHeadersEnter.append('rect').attr({
-      'class': 'labelBG',
-      y: 0
-    }).style('fill', function (d) {
-      if (d instanceof LineUp.LayoutEmptyColumn) {
-        return 'lightgray';
-      } else if (d.column && config.colorMapping.has(d.column.id)) {
-        return config.colorMapping.get(d.column.id);
-      } else {
-        return config.grayColor;
-      }
-    })
-      .on('click', function (d) {
-        if (d3.event.defaultPrevented || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
-          return;
-        }
-        // no sorting for empty stacked columns !!!
-        if (d instanceof LineUp.LayoutStackedColumn && d.children.length < 1) {
-          return;
-        }
-
-        var bundle = config.columnBundles[d.columnBundle];
-        // TODO: adapt to comparison mode !!
-        //same sorting swap order
-        if (bundle.sortedColumn !== null && (d === bundle.sortedColumn)) {
-          bundle.sortingOrderAsc = !bundle.sortingOrderAsc;
-        } else {
-          bundle.sortingOrderAsc = d instanceof LineUp.LayoutStringColumn || d instanceof LineUp.LayoutCategoricalColumn || d instanceof LineUp.LayoutRankColumn;
-        }
-
-        bundle.sortedColumn = d;
-        that.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
-		that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
-        that.updateAll(false);
-      });
-
-
-    allHeaders.select('.labelBG').attr({
-      width: function (d) {
-        return d.getColumnWidth() - 5;
-      },
-      height: function (d) {
-        return d.height;
-      }
-    });
 
     allHeadersEnter.append('g').attr('class', 'hist');
     var allNumberHeaders = allHeaders.filter(function (d) {
@@ -191,82 +126,6 @@ var LineUp;
     } else {
       allNumberHeaders.selectAll('g.hist').selectAll('*').remove();
     }
-
-    // -- handle WeightHandle
-
-    if (this.config.manipulative) {
-      allHeadersEnter.filter(function (d) {
-        return !(d instanceof LineUp.LayoutEmptyColumn) && !(d instanceof LineUp.LayoutActionColumn);
-      }).append('rect').attr({
-        'class': 'weightHandle',
-        x: function (d) {
-          return d.getColumnWidth() - 5;
-        },
-        y: 0,
-        width: 5
-      });
-
-      allHeaders.select('.weightHandle').attr({
-        x: function (d) {
-          return (d.getColumnWidth() - 5);
-        },
-        height: function (d) {
-          return d.height;
-        }
-      }).call(this.dragWeight); // TODO: adopt dragWeight function !
-    }
-
-    // -- handle Text
-    allHeadersEnter.append('text').attr({
-      'class': 'headerLabel',
-      x: config.htmlLayout.labelLeftPadding
-    });
-    allHeadersEnter.append('title');
-
-    allHeaders.select('.headerLabel')
-      .classed('sortedColumn', function (d) {
-        var sc = config.columnBundles[d.columnBundle].sortedColumn;
-        return sc === d;
-      })
-      .attr({
-        y: function (d) {
-          if (d instanceof LineUp.LayoutStackedColumn || d.parent != null) {
-            return d.height / 2;
-          }
-          return d.height * 3 / 4;
-        },
-        'clip-path': function (d) {
-          return 'url(#clip-H' + d.id + ')';
-        }
-      }).text(function (d) {
-        return d.getLabel();
-      });
-    allHeaders.select('title').text(function (d) {
-      return d.getLabel();
-    });
-
-
-    // -- handle the Sort Indicator
-    allHeadersEnter.append('text').attr({
-      'class': 'headerSort',
-      y: function (d) {
-        return d.height / 2;
-      },
-      x: 2
-    });
-
-    allHeaders.select('.headerSort').text(function (d) {
-      var sc = config.columnBundles[d.columnBundle].sortedColumn;
-      return ((sc === d) ?
-        ((config.columnBundles[d.columnBundle].sortingOrderAsc) ? '\uf0de' : '\uf0dd')
-        : '');
-    })
-      .attr({
-        y: function (d) {
-          return d.height / 2;
-        }
-      });
-
 
     // add info Button to All Stacked Columns
     if (this.config.manipulative) {
@@ -332,53 +191,6 @@ var LineUp;
     // -- Render add ons
     //===================
 
-
-    // add column signs:
-    var plusButton = d3.values(config.svgLayout.plusSigns);
-    var addColumnButton = svg.selectAll('.addColumnButton').data(plusButton);
-    addColumnButton.exit().remove();
-
-
-    var addColumnButtonEnter = addColumnButton.enter().append('g').attr({
-      class: 'addColumnButton'
-    });
-
-    addColumnButton.attr({
-      'transform': function (d) {
-        return 'translate(' + d.x + ',' + d.y + ')';
-      }
-    });
-
-    addColumnButtonEnter.append('rect').attr({
-      x: 0,
-      y: 0,
-      rx: 5,
-      ry: 5,
-      width: function (d) {
-        return d.w;
-      },
-      height: function (d) {
-        return d.h;
-      }
-    }).on('click', function (d) {
-      if (LineUp.isFunction(d.action)) {
-        d.action.call(that, d);
-      } else {
-        that[d.action](d);
-      }
-    });
-
-    addColumnButtonEnter.append('text').attr({
-      x: function (d) {
-        return d.w / 2;
-      },
-      y: function (d) {
-        return d.h / 2;
-      }
-    }).text('\uf067');
-
-
-  };
 
   LineUp.prototype.hoverHistogramBin = function (row) {
     if (!this.config.renderingOptions.histograms) {
@@ -544,26 +356,5 @@ var LineUp;
     x.on('dragstart', dragstart)
       .on('drag', dragmove)
       .on('dragend', dragend);
-  };
-
-
-  LineUp.prototype.addNewEmptyStackedColumn = function () {
-    this.storage.addStackedColumn(null, -1);
-    this.headerUpdateRequired = true;
-    this.updateAll();
-  };
-
-
-  /**
-   * called when a Header width changed, calls {@link updateHeader}
-   * @param change - the change information
-   * @param change.column - the changed column, see {@link LineUpColumn}
-   * @param change.value - the new column width
-   */
-  LineUp.prototype.reweightHeader = function (change) {
-//    console.log(change);
-    change.column.setColumnWidth(change.value);
-    this.headerUpdateRequired = true;
-    this.updateAll();
   };
 }(LineUp || (LineUp = {}), d3));
