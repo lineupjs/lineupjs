@@ -9,7 +9,7 @@ import d3 = require('d3');
 import provider = require('./provider');
 import model = require('./model');
 import utils = require('./utils');
-import renderer = require('./renderer');
+import ui = require('./ui');
 
 window.onload = function () {
   var arr = [
@@ -42,35 +42,32 @@ window.onload = function () {
       return p;
     }
   };
-  var provider = new provider.LocalDataProvider(arr, desc);
-  var r = provider.pushRanking();
+  var p = new provider.LocalDataProvider(arr, desc);
+  var r = p.pushRanking();
 
-  var root = d3.select('body').append('svg').attr('width', '2000').attr('height', '300');
-  var body = new renderer.LineUpBody(root, provider, function (rank) {
-    return rank.extra.argsort;
-  });
+  var root = d3.select('body');
 
-  r.push(provider.create(desc[0]));
-  r.push(provider.create(desc[1]));
-  var rstack = provider.create(model.StackColumn.desc('Stack'));
+  r.push(p.create(desc[0]));
+  r.push(p.create(desc[1]));
+  var rstack = p.create(model.StackColumn.desc('Stack'));
   r.push(rstack);
-  rstack.push(provider.create(desc[1]), 0.2);
-  rstack.push(provider.create(desc[2]), 0.4);
-  rstack.push(provider.create(desc[3]), 0.2);
+  rstack.push(p.create(desc[1]), 0.2);
+  rstack.push(p.create(desc[2]), 0.4);
+  rstack.push(p.create(desc[3]), 0.2);
   rstack.normalizeWeights();
-  r.push(provider.create(desc[4]));
+  r.push(p.create(desc[4]));
 
-  var r2 = provider.pushRanking();
-  r2.push(provider.create(desc[1]));
-  r2.push(provider.create(desc[0]));
+  var r2 = p.pushRanking();
+  r2.push(p.create(desc[1]));
+  r2.push(p.create(desc[0]));
 
   function update() {
     console.log('call', arguments);
-    Promise.all([provider.sort(r), provider.sort(r2)])
+    Promise.all([p.sort(r), p.sort(r2)])
       .then(function (argsorts) {
         r.extra.argsort = argsorts[0];
         r2.extra.argsort = argsorts[1];
-        body.render();
+        body.update();
       });
   }
 
@@ -79,5 +76,9 @@ window.onload = function () {
   r2.on('widthChanged', call);
   r.on('dirtySorting', call);
   r.on('widthChanged', call);
+
+  var body = new ui.LineUpRenderer(<Element>root.node(), p, desc, function (rank) {
+    return rank.extra.argsort;
+  });
   update();
-}
+};

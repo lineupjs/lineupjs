@@ -30,6 +30,7 @@ function numberCompare(a:number, b:number) {
 interface IFlatColumn {
   col: Column;
   offset: number;
+  width: number;
 }
 
 export interface IColumnParent extends Column {
@@ -65,7 +66,7 @@ export class Column extends utils.AEventDispatcher {
   }
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0): number {
-    r.push({ col: this, offset: offset });
+    r.push({ col: this, offset: offset, width: this.getWidth() });
     return this.getWidth();
   }
 
@@ -633,14 +634,14 @@ export class StackColumn extends Column implements IColumnParent {
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     if (levelsToGo === 0) {
-      r.push({col: this, offset: offset});
+      r.push({col: this, offset: offset, width: this.getWidth()});
       return this.getWidth();
     } else {
       var acc = offset;
       this.children_.forEach((c) => {
         acc += c.col.flatten(r, acc, levelsToGo - 1, padding) + padding;
       });
-      return acc - offset;
+      return acc - offset - padding;
     }
   }
 
@@ -705,7 +706,7 @@ export class StackColumn extends Column implements IColumnParent {
     if (i < 0) {
       return false;
     }
-    return this.insert(col, i);
+    return this.insert(col, i+1);
   }
 
   private adaptWidthChange(col: Column, old, new_) {
@@ -899,8 +900,8 @@ export class RankColumn extends ValueColumn<number> {
   }
 
   flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0) {
-    r.push({col: this, offset: offset});
-    var acc = offset + this.getWidth();
+    r.push({col: this, offset: offset, width: this.getWidth()});
+    var acc = offset + this.getWidth() + padding;
     if (levelsToGo > 0) {
       this.columns_.forEach((c) => {
         acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
@@ -985,11 +986,14 @@ export class RankColumn extends ValueColumn<number> {
   }
 
   insertAfter(col: Column, ref: Column) {
+    if (ref === this ) {
+      return this.insert(col, 0) != null;
+    }
     var i = this.columns_.indexOf(ref);
     if (i < 0) {
       return false;
     }
-    return this.insert(col, i) != null;
+    return this.insert(col, i+1) != null;
   }
 
   push(col:Column) {

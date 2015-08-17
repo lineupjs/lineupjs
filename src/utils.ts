@@ -236,9 +236,12 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
     if (hasDnDType(e, mimeTypes)) {
       var data : any = {};
       mimeTypes.forEach((mime) => {
-        data[mime] = e.dataTransfer.getData(mime);
+        var value = e.dataTransfer.getData(mime);
+        if (value !== '') {
+          data[mime] = value;
+        }
       });
-      return onDrop(data, d, e.dataTransfer.dropEffect.match(/.*copy.*/i).length > 0);
+      return onDrop(data, d, e.dataTransfer.dropEffect.match(/.*copy.*/i) != null);
     }
   })};
 }

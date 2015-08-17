@@ -22,7 +22,7 @@ export class PoolRenderer {
 
   private $node:d3.Selection<any>;
 
-  constructor(private columns:provider.IColumnDesc[], parent:Element, options:any = {}) {
+  constructor(private data: provider.DataProvider, private columns:provider.IColumnDesc[], parent:Element, options:any = {}) {
     utils.merge(this.options, options);
 
     this.$node = d3.select(parent).append('div').classed('lu-pool',true);
@@ -39,6 +39,7 @@ export class PoolRenderer {
   }
 
   update() {
+    var data = this.data;
     var $headers = this.$node.selectAll('div.header').data(this.columns, (d) => d.label);
     var $headers_enter = $headers.enter().append('div').attr({
       'class': 'header',
@@ -47,14 +48,18 @@ export class PoolRenderer {
       var e = <DragEvent>(<any>d3.event);
       e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
       e.dataTransfer.setData('text/plain', d.label);
-      e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(d));
+      e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(data.toDescRef(d)));
+    }).style({
+      'background-color': (d) => (<any>d).color,
+      width: this.options.elemWidth+'px',
+      height: this.options.elemHeight+'px'
     });
-    $headers_enter.append('span').classed('label',true);
-    $headers.attr('transform', (d, i) => {
+    $headers_enter.append('span').classed('label',true).text((d) => d.label);
+    $headers.style('transform', (d, i) => {
       var pos = this.layout(i);
-      return 'translate(' + pos.x + ',' + pos.y + ')';
+      return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
     });
-    $headers.select('span').text((d) => d.label);
+    $headers.select('span');
     $headers.exit().remove();
   }
 
@@ -76,7 +81,8 @@ export class PoolRenderer {
 export class HeaderRenderer {
   private options = {
     slopeWidth: 200,
-    columnPadding : 1
+    columnPadding : 3,
+    headerHeight: 20
   };
 
   private $node:d3.Selection<any>;
@@ -91,16 +97,18 @@ export class HeaderRenderer {
       //the new width
       var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
       d.setWidth(newValue);
+      (<any>d3.event).sourceEvent.stopPropagation();
     })
     .on('dragend', function () {
       d3.select(this).classed('dragging', false);
+      (<any>d3.event).sourceEvent.stopPropagation();
     });
 
 
   constructor(private data:provider.DataProvider,parent:Element, options:any = {}) {
     utils.merge(this.options, options);
 
-    this.$node = d3.select(parent).append('div').classed('lu-header',true);
+    this.$node = d3.select(parent).append('div').classed('lu-header',true).style('height', this.options.headerHeight+'px');
 
     data.on('dirty.header', this.update.bind(this));
     this.update();
@@ -127,7 +135,7 @@ export class HeaderRenderer {
       e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
-      e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(d.desc));
+      e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
     }).on('click', (d) => {
       d.toggleMySorting();
     }).style({
@@ -148,15 +156,15 @@ export class HeaderRenderer {
             col.removeMe();
           }
         } else {
-          var desc = data['application/caleydo-lineup-column'];
-          col = provider.create(desc);
+          var desc = JSON.parse(data['application/caleydo-lineup-column']);
+          col = provider.create(provider.fromDescRef(desc));
         }
         return d.insertAfterMe(col);
       }));
 
-    $headers.attr('transform', (d, i) => {
-      var pos = shifts[i].offset;
-      return 'translate(' + pos + ',' + 0 + ')';
+    $headers.style({
+      width: (d, i) => shifts[i].width+'px',
+      left: (d, i) => shifts[i].offset+'px'
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {
       var r = d.findMyRanker();
@@ -178,10 +186,9 @@ export class BodyRenderer {
     rowSep: 1,
     idPrefix: '',
     slopeWidth: 200,
-    columnPadding : 1,
+    columnPadding : 3,
     showStacked: true,
     animated: 0, //200
-    headerHeight: 50,
 
     renderers: renderer.renderers()
 
@@ -194,6 +201,9 @@ export class BodyRenderer {
     utils.merge(this.options, options);
 
     this.$node = d3.select(parent).append('svg').classed('lu-body',true);
+
+    data.on('dirty.body', this.update.bind(this));
+    //data.on('removeColumn.body', this.update.bind(this));
   }
 
   createContext(rankings:model.RankColumn[]):renderer.IRenderContext {
@@ -297,7 +307,8 @@ export class BodyRenderer {
 
     function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.RankColumn>, index:number, ranking:model.RankColumn, rankingIndex:number) {
       $row.classed('hover', true);
-      var $value_cols = $row.select('g.values').selectAll('g.child').data([<model.Column>ranking].concat(ranking.children));
+      var children = $cols.selectAll('g.child').data();
+      var $value_cols = $row.select('g.values').selectAll('g.child').data(children);
       $value_cols.enter().append('g').attr({
         'class': 'child'
       });
@@ -443,11 +454,15 @@ export class BodyRenderer {
         };
       });
 
+    this.$node.attr({
+      width: offset
+    });
+
+
     var $body = this.$node.select('g.body');
     if ($body.empty()) {
       $body = this.$node.append('g').classed('body',true);
     }
-    $body.attr('transform','translate(0,'+this.options.headerHeight+')');
     this.renderRankings($body, r, shifts, context);
     this.renderSlopeGraphs($body, r, shifts, context);
   }
@@ -464,10 +479,10 @@ export class LineUpRenderer {
 
   constructor(root: Element, data: provider.DataProvider, columns: provider.IColumnDesc[], argsortGetter:(ranking:model.RankColumn) => number[], options : any = {}) {
     utils.merge(this.options, options);
-    this.body = new BodyRenderer(data, root, argsortGetter, options);
     this.header = new HeaderRenderer(data,  root, options);
-    if(options.pool) {
-      this.pool = new PoolRenderer(columns, root, options);
+    this.body = new BodyRenderer(data, root, argsortGetter, options);
+    if(this.options.pool) {
+      this.pool = new PoolRenderer(data, columns, root, options);
     }
   }
 

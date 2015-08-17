@@ -40,6 +40,36 @@
             font-size: 9pt;
             fill: white;
         }
+
+        div.lu-header, div.lu-pool {
+            position: relative;
+        }
+        div.header {
+            position: absolute;
+            display: inline-block;
+            overflow: hidden;
+            color: white;
+            text-align: center;
+        }
+        div.header i.sort_indicator {
+            position: absolute;
+            left: 1px;
+            top: 1px;
+            font-size: 9pt;
+        }
+        div.lu-header div.header div.handle {
+            position: absolute;
+            right: -3px;
+            height: 100%;
+            top: 0;
+            width: 5px;
+            background-color: white;
+            display: inline-block;
+            cursor: col-resize;
+        }
+        div.lu-header div.header div.handle:hover {
+            background-color: black;
+        }
     </style>
 </head>
 <body>
