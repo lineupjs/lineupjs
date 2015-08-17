@@ -27,23 +27,16 @@ export class DataProvider extends utils.AEventDispatcher {
   /**
    * lookup map of a column type to its column implementation
    */
-  columnTypes:any = {
-    number: model.NumberColumn,
-    string: model.StringColumn,
-    link: model.LinkColumn,
-    stack: model.StackColumn,
-    rank: model.RankColumn,
-    categorical: model.CategoricalColumn,
-    ordinal: model.CategoricalNumberColumn
-  };
+  columnTypes:any = model.models();
 
   private forwards ={
     addColumn : utils.forwardEvent(this, 'addColumn'),
     removeColumn : utils.forwardEvent(this, 'removeColumn'),
+    dirty: utils.forwardEvent(this, 'dirty')
   };
 
   createEventList() {
-    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking']);
+    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty']);
   }
 
   /**
@@ -56,7 +49,9 @@ export class DataProvider extends utils.AEventDispatcher {
     this.rankings_.push(r);
     r.on('addColumn.provider', this.forwards.addColumn);
     r.on('removeColumn.provider', this.forwards.removeColumn);
+    r.on('dirty.provider', this.forwards.dirty);
     this.fire('addRanking', r);
+    this.fire('dirty', this);
     return r;
   }
 
@@ -67,9 +62,11 @@ export class DataProvider extends utils.AEventDispatcher {
     }
     ranking.on('addColumn.provider', null);
     ranking.on('removeColumn.provider', null);
+    ranking.on('dirty.provider', null);
     this.rankings_.splice(i, 1);
     this.fire('removeRanking', ranking);
     this.cleanUpRanking(ranking);
+    this.fire('dirty', this);
     return true;
   }
 
@@ -106,6 +103,17 @@ export class DataProvider extends utils.AEventDispatcher {
       return new type(this.nextId(), desc);
     }
     return null;
+  }
+
+  clone(col: model.Column) {
+    var dump = col.dump((d) => d);
+    var create = (d: any) => {
+      var type = this.columnTypes[d.desc.type];
+      var c  = new type(this.nextId(), d.desc);
+      c.restore(d, create);
+      return c;
+    };
+    return create(dump);
   }
 
   find(id_or_filter: (col: model.Column) => boolean | string) {

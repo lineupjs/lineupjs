@@ -170,7 +170,7 @@ export class LineUp extends utils.AEventDispatcher {
     }
   }
 
-  sortBy(column : string | (col: model.Column) => boolean, ascending = false) {
+  sortBy(column : (col: model.Column) => boolean | string, ascending = false) {
     var col = this.data.find(column);
     if (col) {
       col.sortByMe(ascending);

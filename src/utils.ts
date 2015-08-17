@@ -182,3 +182,63 @@ export class ContentScroller extends AEventDispatcher {
     d3.select(this.container).on('scroll.scroller', null);
   }
 }
+
+
+export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
+  var types : any = e.dataTransfer.types;
+  if (typeof types.indexOf === 'function') {
+    return typesToCheck.some((type) => types.indexOf(type) >= 0);
+  }
+  if (typeof types.includes === 'function') {
+    return typesToCheck.some((type) => types.includes(type));
+  }
+  if (typeof types.contains === 'function') {
+    return typesToCheck.some((type) => types.contains(type));
+  }
+  return false;
+}
+
+export function copyDnD(e: DragEvent) {
+  var dT = e.dataTransfer;
+  return (e.ctrlKey && dT.effectAllowed.match(/copy/gi)) || (!dT.effectAllowed.match(/move/gi));
+}
+
+export function updateDropEffect(e: DragEvent) {
+  var dT = e.dataTransfer;
+  if (copyDnD(e)) {
+    dT.dropEffect = 'copy';
+  } else {
+    dT.dropEffect = 'move';
+  }
+}
+
+export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy: boolean) => boolean) {
+  return ($node) => {
+  $node.on('dragenter', () => {
+    var e = <DragEvent>(<any>d3.event);
+    var xy = d3.mouse($node.node());
+    if (hasDnDType(e, mimeTypes)) {
+      return false;
+    }
+  }).on('dragover', () => {
+    var e = <DragEvent>(<any>d3.event);
+    if (hasDnDType(e, mimeTypes)) {
+      e.preventDefault();
+      updateDropEffect(e);
+      return false;
+    }
+  }).on('dragleave', () => {
+    //
+  }).on('drop', (d: T) => {
+    var e = <DragEvent>(<any>d3.event);
+    e.preventDefault();
+    var xy = d3.mouse($node.node());
+    if (hasDnDType(e, mimeTypes)) {
+      var data : any = {};
+      mimeTypes.forEach((mime) => {
+        data[mime] = e.dataTransfer.getData(mime);
+      });
+      return onDrop(data, d, e.dataTransfer.dropEffect.match(/.*copy.*/i).length > 0);
+    }
+  })};
+}
