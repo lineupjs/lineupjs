@@ -186,6 +186,15 @@ export class DataProvider extends utils.AEventDispatcher {
   }
 
   /**
+   * returns a data sample used for the mapping editor
+   * @param col
+   * @return {Promise<any>}
+   */
+  mappingSample(col: model.Column) : Promise<number[]> {
+    return Promise.reject('not implemented');
+  }
+
+  /**
    * method for computing the unique key of a row
    * @param row
    * @param i
@@ -273,9 +282,6 @@ export class CommonDataProvider extends DataProvider {
     //generate the accessor
     columns.forEach((d:any) => d.accessor = this.rowGetter);
   }
-
-
-
 
   toDescRef(desc: any) : any {
     return desc.column ? desc.column : desc;
@@ -365,11 +371,16 @@ export class LocalDataProvider extends CommonDataProvider {
 
     return Promise.resolve(slice);
   }
+
+  mappingSample(col: model.NumberColumn) : Promise<number[]> {
+    return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
+  }
 }
 
 export interface IServerData {
   sort(desc:any) : Promise<number[]>;
   view(indices:number[]): Promise<any[]>;
+  mappingSample(column: any) : Promise<number[]>;
 }
 
 /**
@@ -419,5 +430,9 @@ export class RemoteDataProvider extends CommonDataProvider {
       view.forEach((d, i) => d._index = argsort[i]);
       return view;
     });
+  }
+
+  mappingSample(col: model.Column) : Promise<number[]> {
+    return this.server.mappingSample((<any>col.desc).column);
   }
 }

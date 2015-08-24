@@ -5,6 +5,7 @@
 import model = require('./model');
 import utils = require('./utils');
 import mappingeditor = require('./mappingeditor');
+import provider = require('./provider');
 
 function dialogForm(title, body, buttonsWithLabel = false) {
   return '<span style="font-weight: bold">' + title + '</span>' +
@@ -192,7 +193,7 @@ function openStringFilter(column: model.StringColumn, $header: d3.Selection<mode
   });
 }
 
-function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any>) {
+function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any>, data: provider.DataProvider) {
   var pos = utils.offset($header.node()),
     bak = column.getMapping(),
     original = column.getOriginalMapping();
@@ -214,9 +215,6 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
     applyMapping(act);
   });
   $filterIt.property('checked', column.isFiltered());
-  var access = function (row) {
-    return +column.getRawValue(row);
-  };
 
   function applyMapping(newscale) {
     act = newscale;
@@ -235,7 +233,8 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
     callback: applyMapping,
     triggerCallback : 'dragend'
   };
-  var editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, [], access, editorOptions);
+  var data_sample = data.mappingSample(column);
+  var editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, data_sample, editorOptions);
   popup.select('.mappingArea').call(editor);
 
   function isSame(a, b) {
@@ -255,18 +254,21 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
     bak = original;
     act =  d3.scale.linear().domain(bak.domain).range(bak.range);
     applyMapping(act);
-    editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, [], access, editorOptions);
+    editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, data_sample, editorOptions);
     popup.selectAll('.mappingArea *').remove();
     popup.select('.mappingArea').call(editor);
   });
 }
 
-export function openFilter(column: model.Column, $header: d3.Selection<any>) {
-  if (column instanceof model.StringColumn) {
-    return openStringFilter(<model.StringColumn>column, $header);
-  } else if (column instanceof model.CategoricalColumn) {
-    return openCategoricalFilter(<model.CategoricalColumn>column, $header);
-  } else if (column instanceof model.NumberColumn) {
-    return openMappingEditor(<model.NumberColumn>column, $header);
+function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $header: d3.Selection<any>) {
+
+}
+
+export function filterDialogs() {
+  return {
+    string : openStringFilter,
+    categorical: openCategoricalFilter,
+    number: openMappingEditor,
+    categoricalnumber: openCategoricalMappingEditor
   }
 }

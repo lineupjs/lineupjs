@@ -84,7 +84,9 @@ export class HeaderRenderer {
   private options = {
     slopeWidth: 200,
     columnPadding : 5,
-    headerHeight: 20
+    headerHeight: 20,
+
+    filterDialogs : dialogs.filterDialogs()
   };
 
   private $node:d3.Selection<any>;
@@ -137,8 +139,10 @@ export class HeaderRenderer {
   }
 
   private createToolbar($node: d3.Selection<model.Column>) {
-    var $regular = $node.filter(d=> !(d instanceof model.RankColumn));
-    var $stacked = $node.filter(d=> d instanceof model.StackColumn);
+    var filterDialogs = this.options.filterDialogs,
+      provider = this.data;
+    var $regular = $node.filter(d=> !(d instanceof model.RankColumn)),
+      $stacked = $node.filter(d=> d instanceof model.StackColumn);
 
     $stacked.append('i').attr('class', 'fa fa-tasks').on('click', function(d) {
       dialogs.openEditWeightsDialog(<model.StackColumn>d, d3.select(this.parentNode.parentNode));
@@ -148,8 +152,8 @@ export class HeaderRenderer {
       dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
-    $node.filter((d: any) => d.setFilter != null).append('i').attr('class', 'fa fa-filter').on('click', function(d) {
-      dialogs.openFilter(d, d3.select(this.parentNode.parentNode));
+    $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').on('click', function(d) {
+      filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
     $regular.append('i').attr('class', 'fa fa-times').on('click', (d) => {

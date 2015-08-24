@@ -31,7 +31,7 @@ function addCircle($svg, x, shift, y, radius) {
 }
 
 
-export function open(scale, dataDomain, data, data_accessor, options) {
+export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[], dataPromise: Promise<number[]>, options: any) {
   options = utils.merge({
     width: 400,
     height: 400,
@@ -92,26 +92,25 @@ export function open(scale, dataDomain, data, data_accessor, options) {
     addText($base, options.width / 2, raw2pixelAxisY + 20, 'Raw', '.75em', 'centered');
 
     //lines that show mapping of individual data items
-    var datalines = $svg.append('g').classed('data', true).selectAll('line').data(data);
-    datalines.enter().append('line')
-      .attr({
-        x1: function (d) {
-          return scale(data_accessor(d));
-        },
-        y1: scoreAxisY,
-        x2: function (d) {
-          return raw2pixel(data_accessor(d));
-        },
-        y2: raw2pixelAxisY
-      }).style('visibility', function (d) {
-        var a;
-        if (lowerRaw < upperRaw) {
-          a = (raw2pixel(data_accessor(d)) < lowerRaw || raw2pixel(data_accessor(d)) > upperRaw);
-        } else {
-          a = (raw2pixel(data_accessor(d)) > lowerRaw || raw2pixel(data_accessor(d)) < upperRaw);
-        }
-        return a ? 'hidden' : null;
-      });
+    var datalines = $svg.append('g').classed('data', true).selectAll('line').data([]);
+    dataPromise.then((data) => {
+      datalines = datalines.data(data);
+      datalines.enter().append('line')
+        .attr({
+          x1: scale,
+          y1: scoreAxisY,
+          x2: raw2pixel,
+          y2: raw2pixelAxisY
+        }).style('visibility', function (d) {
+          var a;
+          if (lowerRaw < upperRaw) {
+            a = (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
+          } else {
+            a = (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
+          }
+          return a ? 'hidden' : null;
+        });
+    });
     //line that defines lower bounds for the scale
     var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, raw2pixelAxisY, 'bound');
     //line that defines upper bounds for the scale
@@ -149,9 +148,7 @@ export function open(scale, dataDomain, data, data_accessor, options) {
 
     function updateNormalized() {
       scale.range([lowerNormalized, upperNormalized]);
-      datalines.attr('x1', function (d) {
-        return scale(data_accessor(d));
-      });
+      datalines.attr('x1', scale);
       updateScale();
     }
 
@@ -159,27 +156,25 @@ export function open(scale, dataDomain, data, data_accessor, options) {
       var hiddenDatalines, shownDatalines;
       if (lowerRaw < upperRaw) {
         hiddenDatalines = datalines.filter(function (d) {
-          return (raw2pixel(data_accessor(d)) < lowerRaw || raw2pixel(data_accessor(d)) > upperRaw);
+          return (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
         });
         shownDatalines = datalines.filter(function (d) {
-          return !(raw2pixel(data_accessor(d)) < lowerRaw || raw2pixel(data_accessor(d)) > upperRaw);
+          return !(raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
         });
       }
       else {
         hiddenDatalines = datalines.filter(function (d) {
-          return (raw2pixel(data_accessor(d)) > lowerRaw || raw2pixel(data_accessor(d)) < upperRaw);
+          return (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
         });
         shownDatalines = datalines.filter(function (d) {
-          return !(raw2pixel(data_accessor(d)) > lowerRaw || raw2pixel(data_accessor(d)) < upperRaw);
+          return !(raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
         });
       }
       hiddenDatalines.style('visibility', 'hidden');
       scale.domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)]);
       shownDatalines
         .style('visibility', null)
-        .attr('x1', function (d) {
-          return scale(data_accessor(d));
-        });
+        .attr('x1', scale);
       updateScale();
     }
 
