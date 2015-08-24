@@ -18,12 +18,11 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
   var pos = utils.offset($header.node());
   var popup = d3.select('body').append('div')
     .attr({
-      'class': 'lu-popup'
+      'class': 'lu-popup2'
     }).style({
       left: pos.left + 'px',
       top: pos.top + 'px',
-      width: '200px',
-      height: '70px'
+      width: '200px'
 
     }).html(dialogForm('Rename Column', '<input type="text" size="20" value="' + column.label + '" required="required"><br>'));
 
@@ -35,6 +34,63 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
 
   popup.select('.cancel').on('click', function () {
     popup.remove();
+  });
+}
+
+export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Selection<model.Column>) {
+  var weights = column.weights,
+    children = column.children.map((d, i) => ({ col: d, weight: weights[i] * 100} ));
+
+  var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
+  var pos = utils.offset($header.node());
+
+  var $popup = d3.select('body').append('div')
+    .attr({
+      'class': 'lu-popup2'
+    }).style({
+      left: pos.left + 'px',
+      top: pos.top + 'px'
+    })
+    .html(dialogForm('Edit Weights', '<table></table>'));
+
+  var $rows = $popup.select('table').selectAll('tr').data(children);
+  var $rows_enter = $rows.enter().append('tr');
+  $rows_enter.append('td')
+    .append('input').attr({
+      type: 'number',
+      value: (d) => d.weight,
+      size: 5
+    }).on('input', function(d) {
+      d.weight = +this.value;
+      redraw();
+    });
+
+  $rows_enter.append('td').append('div')
+    .attr('class', 'bar')
+    .style('background-color', (d) => d.col.color);
+
+  $rows_enter.append('td').text((d) => d.col.label);
+
+  function redraw() {
+    $rows.select(".bar").transition().style({
+      width: function (d) {
+        return scale(d.weight) + "px";
+      }
+    });
+  }
+
+  redraw();
+
+  $popup.select('.cancel').on('click', function () {
+    column.setWeights(weights);
+    $popup.remove();
+  });
+  $popup.select('.reset').on('click', function () {
+
+  });
+  $popup.select('.ok').on('click', function () {
+    column.setWeights(children.map((d) => d.weight));
+    $popup.remove();
   });
 }
 

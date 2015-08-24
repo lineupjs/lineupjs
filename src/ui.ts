@@ -137,13 +137,19 @@ export class HeaderRenderer {
   }
 
   private createToolbar($node: d3.Selection<model.Column>) {
-    $node.filter((d: any) => d.setFilter != null).append('i').attr('class', 'fa fa-filter').on('click', function(d) {
-      dialogs.openFilter(d, d3.select(this.parentNode.parentNode));
+    var $regular = $node.filter(d=> !(d instanceof model.RankColumn));
+    var $stacked = $node.filter(d=> d instanceof model.StackColumn);
+
+    $stacked.append('i').attr('class', 'fa fa-tasks').on('click', function(d) {
+      dialogs.openEditWeightsDialog(<model.StackColumn>d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
-    var $regular = $node.filter(d=> !(d instanceof model.RankColumn));
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').on('click', function(d) {
       dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
+      d3.event.stopPropagation();
+    });
+    $node.filter((d: any) => d.setFilter != null).append('i').attr('class', 'fa fa-filter').on('click', function(d) {
+      dialogs.openFilter(d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
     $regular.append('i').attr('class', 'fa fa-times').on('click', (d) => {

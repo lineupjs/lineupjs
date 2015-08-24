@@ -240,42 +240,7 @@ var LineUp;
 
 
 
-    function renameStackedColumn(col) {
-      var x = +(window.innerWidth) / 2 - 100;
-      var y = +100;
 
-      var popup = d3.select('body').append('div')
-        .attr({
-          'class': 'lu-popup'
-        }).style({
-          left: x + 'px',
-          top: y + 'px',
-          width: '200px',
-          height: '70px'
-
-        })
-        .html(
-          '<div style="font-weight: bold"> rename column: </div>' +
-          '<input type="text" id="popupInputText" size="20" value="' + col.label + '"><br>' +
-          '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
-          '<button class="ok"><i class="fa fa-check"></i> ok</button>'
-      );
-
-      popup.select('.ok').on('click', function() {
-        var newValue = document.getElementById('popupInputText').value;
-        if (newValue.length > 0) {
-          col.label = newValue;
-          that.updateHeader(that.storage.getColumnLayout(col.columnBundle));
-          popup.remove();
-        } else {
-          window.alert('non empty string required');
-        }
-      });
-
-      popup.select('.cancel').on('click', function () {
-        popup.remove();
-      });
-    }
 
     // else:
     this.stackedColumnModified = selectedColumn;
