@@ -9,9 +9,33 @@ import mappingeditor = require('./mappingeditor');
 function dialogForm(title, body, buttonsWithLabel = false) {
   return '<span style="font-weight: bold">' + title + '</span>' +
     '<form onsubmit="return false">' +
-    body + '<button class="ok fa fa-check" title="ok"></button>' +
-    '<button class="cancel fa fa-times" title="cancel"></button>' +
-    '<button class="reset fa fa-undo" title="reset"></button></form>';
+    body + '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
+    '<button type = "reset" class="cancel fa fa-times" title="cancel"></button>' +
+    '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
+}
+
+export function openRenameDialog(column:model.Column, $header:d3.Selection<model.Column>) {
+  var pos = utils.offset($header.node());
+  var popup = d3.select('body').append('div')
+    .attr({
+      'class': 'lu-popup'
+    }).style({
+      left: pos.left + 'px',
+      top: pos.top + 'px',
+      width: '200px',
+      height: '70px'
+
+    }).html(dialogForm('Rename Column', '<input type="text" size="20" value="' + column.label + '" required="required"><br>'));
+
+  popup.select('.ok').on('click', function () {
+    var newValue = popup.select('input').property('value');
+    column.setLabel(newValue);
+    popup.remove();
+  });
+
+  popup.select('.cancel').on('click', function () {
+    popup.remove();
+  });
 }
 
 function openCategoricalFilter(column: model.CategoricalColumn, $header: d3.Selection<model.Column>) {

@@ -141,63 +141,6 @@ var LineUp;
 
   };
 
-  LineUp.prototype.addNewSingleColumnDialog = function () {
-    var that = this;
-    var popup = createPopup('add single columns', undefined);
-    // list all data rows !
-    var trData = that.storage.getRawColumns()
-//        .filter(function(d){return (d instanceof LineUpNumberColumn);})
-      .map(function (d) {
-        return {d: d, isChecked: false, weight: 1.0};
-      });
-
-    var trs = popup.table.selectAll("tr").data(trData);
-    trs.enter().append("tr");
-    trs.append("td").attr("class", "checkmark");
-    trs.append("td").attr("class", "datalabel").style("opacity", 0.8).text(function (d) {
-      return d.d.label;
-    });
-
-
-    function redraw() {
-      var trs = popup.table.selectAll("tr").data(trData);
-      trs.select(".checkmark").html(function (d) {
-        return '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>';
-      })
-        .on("click", function (d) {
-          d.isChecked = !d.isChecked;
-          redraw();
-        });
-      trs.select(".datalabel").style("opacity", function (d) {
-        return d.isChecked ? "1.0" : ".8";
-      });
-    }
-
-    redraw();
-
-
-    popup.onOK(function () {
-      var allChecked = trData.filter(function (d) {
-        return d.isChecked;
-      });
-
-//        console.log(allChecked);
-//        var desc = {
-//            label:name,
-//            width:(Math.max(allChecked.length*100,100)),
-//            children:allChecked.map(function(d){return {column: d.d.id, weight: d.weight};})
-//        }
-
-      allChecked.forEach(function (d) {
-        that.storage.addSingleColumn({column: d.d.column});
-      });
-
-      popup.remove();
-      that.headerUpdateRequired = true;
-      that.updateAll();
-    });
-  };
-
   LineUp.prototype.reweightStackedColumnWidget = function (data, $table) {
     var toWeight = function (d) {
       return d.weight;
@@ -277,82 +220,6 @@ var LineUp;
     });
   };
 
-  LineUp.prototype.openMappingEditor = function (selectedColumn, $button) {
-    var bak = selectedColumn.mapping(),
-      original = selectedColumn.originalMapping();
-    var that = this;
-    var act = bak;
-
-
-    var popup = d3.select("body").append("div")
-      .attr({
-        "class": "lu-popup"
-      }).style({
-        left: +(window.innerWidth) / 2 - 100 + "px",
-        top: 100 + "px",
-        width: "420px",
-        height: "470px"
-      })
-      .html(
-        '<div style="font-weight: bold"> change mapping: </div>' +
-        '<div class="mappingArea"></div>' +
-        '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'+
-        '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
-        '<button class="reset"><i class="fa fa-undo"></i> revert</button>' +
-        '<button class="ok"><i class="fa fa-check"></i> ok</button>'
-    );
-    var $filterIt = popup.select('input').on('change', function() {
-      applyMapping(act);
-    });
-    $filterIt.node().checked = Array.isArray(selectedColumn.filter);
-    var access = function (row) {
-      return +selectedColumn.getValue(row, 'raw');
-    };
-
-    function applyMapping(newscale) {
-      act = newscale;
-      selectedColumn.mapping(act);
-      var val = $filterIt.node().checked;
-      if (val) {
-        selectedColumn.filter = newscale.domain();
-      } else {
-        selectedColumn.filter = undefined;
-      }
-      //console.log(act.domain().toString(), act.range().toString());
-      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
-      that.listeners['change-filter'](that, selectedColumn);
-      that.storage.resortData({filteredChanged: true});
-      that.updateAll(true);
-    }
-
-    var editorOptions = {
-      callback: applyMapping,
-      triggerCallback : 'dragend'
-    };
-    var editor = LineUp.mappingEditor(bak, original.domain(), that.storage.rawdata, access, editorOptions);
-    popup.select('.mappingArea').call(editor);
-
-    function isSame(a, b) {
-      return $(a).not(b).length === 0 && $(b).not(a).length === 0;
-    }
-
-    popup.select(".ok").on("click", function () {
-      applyMapping(act);
-      popup.remove();
-    });
-    popup.select('.cancel').on('click', function () {
-      selectedColumn.mapping(bak);
-      $button.classed('filtered', !isSame(bak.range(), original.range()) || !isSame(bak.domain(), original.domain()));
-      popup.remove();
-    });
-    popup.select('.reset').on('click', function () {
-      act = bak = original;
-      applyMapping(original);
-      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.rawdata, access, editorOptions);
-      popup.selectAll('.mappingArea *').remove();
-      popup.select('.mappingArea').call(editor);
-    });
-  };
 
   /**
    * handles the rendering and action of StackedColumn options menu
@@ -372,12 +239,6 @@ var LineUp;
     }
 
 
-
-    function removeStackedColumn(col) {
-      that.storage.removeColumn(col);
-      that.headerUpdateRequired = true;
-      that.updateAll();
-    }
 
     function renameStackedColumn(col) {
       var x = +(window.innerWidth) / 2 - 100;

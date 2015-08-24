@@ -140,7 +140,12 @@ export class HeaderRenderer {
       dialogs.openFilter(d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
-    $node.filter(d=> !(d instanceof model.RankColumn)).append('i').attr('class', 'fa fa-times').on('click', (d) => {
+    var $regular = $node.filter(d=> !(d instanceof model.RankColumn));
+    $regular.append('i').attr('class', 'fa fa-pencil-square-o').on('click', function(d) {
+      dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
+      d3.event.stopPropagation();
+    });
+    $regular.append('i').attr('class', 'fa fa-times').on('click', (d) => {
       d.removeMe();
       d3.event.stopPropagation();
     });
@@ -165,7 +170,7 @@ export class HeaderRenderer {
       'background-color': (d) => d.color
     });
     $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
-    $headers_enter.append('span').classed('label',true).text((d) => d.label);
+    $headers_enter.append('span').classed('label',true);
     $headers_enter.append('div').classed('handle',true)
       .call(this.dragHandler)
       .style('width',this.options.columnPadding+'px')
@@ -198,6 +203,7 @@ export class HeaderRenderer {
       }
       return 'sort_indicator fa'
     });
+    $headers.select('span.label').text((d) => d.label);
 
     var that = this;
     $headers.filter((d) => d instanceof model.StackColumn && !d.collapsed).each(function (col : model.StackColumn) {

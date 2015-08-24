@@ -48,9 +48,12 @@ export class Column extends utils.AEventDispatcher {
 
   parent: IColumnParent = null;
 
+  label: string;
+
   constructor(id:string, public desc:any) {
     super();
     this.id = fixCSS(id);
+    this.label = this.desc.label || this.id;
   }
 
   get fqid() {
@@ -58,7 +61,7 @@ export class Column extends utils.AEventDispatcher {
   }
 
   createEventList() {
-    return super.createEventList().concat(['widthChanged', 'dirtySorting', 'dirtyFilter', 'dirtyValues', 'addColumn', 'removeColumn', 'dirty']);
+    return super.createEventList().concat(['widthChanged', 'dirtySorting', 'dirtyFilter', 'dirtyValues', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader']);
   }
 
   getWidth() {
@@ -78,8 +81,12 @@ export class Column extends utils.AEventDispatcher {
     this.fire('dirty', this);
   }
 
-  get label() {
-    return this.desc.label || this.id;
+  setLabel(value: string) {
+    if (value === this.label) {
+      return;
+    }
+    this.fire('dirtyHeader', this, this.label, this.label = value);
+    this.fire('dirty', this);
   }
 
   get color() {
