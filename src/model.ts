@@ -630,6 +630,10 @@ export class StackColumn extends Column implements IColumnParent {
     return this.children_.map((d) => d.col);
   }
 
+  get length() {
+    return this.children_.length;
+  }
+
   get weights() {
     return this.children_.map((d) => d.weight);
   }
@@ -950,6 +954,10 @@ export class RankColumn extends ValueColumn<number> {
     return this;
   }
 
+  insertAfterMe(col: Column) {
+    return this.insert(col, 0);
+  }
+
   toggleSorting(col:Column) {
     if (this.sortBy_ === col) {
       return this.sortBy(col, !this.ascending);
@@ -981,6 +989,10 @@ export class RankColumn extends ValueColumn<number> {
 
   get children() {
     return this.columns_.slice();
+  }
+
+  get length() {
+    return this.columns_.length;
   }
 
   insert(col:Column, index:number = this.columns_.length) {

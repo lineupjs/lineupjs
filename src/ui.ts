@@ -181,7 +181,7 @@ export class HeaderRenderer {
     $headers.select('i.sort_indicator').attr('class', (d) => {
       var r = d.findMyRanker();
       if (r && r.sortCriteria().col === d) {
-        return 'sort_indicator fa fa-sort-'+r.sortCriteria().asc ? 'asc' : 'desc';
+        return 'sort_indicator fa fa-sort-'+(r.sortCriteria().asc ? 'asc' : 'desc');
       }
       return 'sort_indicator fa'
     });
@@ -464,6 +464,9 @@ export class BodyRenderer {
           shift2 = [<model.Column>d].concat(d.children).map((o) => {
             var r = o2;
             o2 += o.getWidth() + this.options.columnPadding;
+            if (o instanceof model.StackColumn && !o.collapsed) {
+              o2 += this.options.columnPadding * (o.length -1);
+            }
             return r;
           });
         offset += o2;
