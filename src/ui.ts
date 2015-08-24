@@ -18,13 +18,14 @@ export class PoolRenderer {
     elemHeight: 40,
     width: 100,
     height: 500,
-    hideUsed: true
+    additionalDesc : [],
   };
 
   private $node:d3.Selection<any>;
 
   constructor(private data: provider.DataProvider, private columns:provider.IColumnDesc[], parent:Element, options:any = {}) {
     utils.merge(this.options, options);
+    this.columns = this.columns.concat(this.options.additionalDesc);
 
     this.$node = d3.select(parent).append('div').classed('lu-pool',true);
 
@@ -51,7 +52,7 @@ export class PoolRenderer {
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(data.toDescRef(d)));
     }).style({
-      'background-color': (d) => (<any>d).color,
+      'background-color': (d) => (<any>d).color || model.Column.DEFAULT_COLOR,
       width: this.options.elemWidth+'px',
       height: this.options.elemHeight+'px'
     });
@@ -170,7 +171,8 @@ export class HeaderRenderer {
       'background-color': (d) => d.color
     });
     $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
-    $headers_enter.append('span').classed('label',true);
+    $headers_enter.append('span').classed('label',true)
+
     $headers_enter.append('div').classed('handle',true)
       .call(this.dragHandler)
       .style('width',this.options.columnPadding+'px')
@@ -212,7 +214,22 @@ export class HeaderRenderer {
 
       var s_columns = s_shifts.map((d) => d.col);
       that.renderColumns(s_columns, s_shifts, d3.select(this), clazz+'_i');
-    });
+    }).select('span.label').call(utils.dropAble(['application/caleydo-lineup-column-ref','application/caleydo-lineup-column'], (data, d: model.StackColumn, copy) => {
+      var col: model.Column = null;
+      if ('application/caleydo-lineup-column-ref' in data) {
+        var id = data['application/caleydo-lineup-column-ref'];
+        col = provider.find(id);
+        if (copy) {
+          col = provider.clone(col);
+        } else {
+          col.removeMe();
+        }
+      } else {
+        var desc = JSON.parse(data['application/caleydo-lineup-column']);
+        col = provider.create(provider.fromDescRef(desc));
+      }
+      return d.push(col);
+    }));
 
     $headers.exit().remove();
   }

@@ -42,6 +42,7 @@ export interface IColumnParent extends Column {
  * a column in LineUp
  */
 export class Column extends utils.AEventDispatcher {
+  static DEFAULT_COLOR = 'gray';
   public id:string;
 
   private width_:number = 100;
@@ -90,7 +91,7 @@ export class Column extends utils.AEventDispatcher {
   }
 
   get color() {
-    return this.desc.color || 'gray';
+    return this.desc.color || Column.DEFAULT_COLOR;
   }
 
   sortByMe(ascending = false) {
@@ -264,6 +265,10 @@ export class NumberColumn extends ValueColumn<number> {
       return v;
     }
     return this.scale(v);
+  }
+
+  getNumber(row: any) {
+    return this.getValue(row);
   }
 
   compare(a:any[], b:any[]) {
@@ -561,6 +566,10 @@ export class CategoricalNumberColumn extends ValueColumn<number> {
     return this.scale(v);
   }
 
+  getNumber(row: any) {
+    return this.getValue(row);
+  }
+
   getColor(row) {
     return CategoricalColumn.prototype.getColor.call(this, row);
   }
@@ -702,6 +711,9 @@ export class StackColumn extends Column implements IColumnParent {
   }
 
   insert(col: Column, index: number, weight = NaN) {
+    if (typeof col['getNumber'] !== 'function') { //indicator it is a number type
+      return null;
+    }
     if (col instanceof StackColumn) {
       col.collapsed = true;
     }
@@ -721,7 +733,7 @@ export class StackColumn extends Column implements IColumnParent {
     col.on('dirty.stack', this.forwards.dirty);
 
     //increase my width
-    super.setWidth(this.getWidth() + col.getWidth());
+    super.setWidth(this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
     this.fire('pushChild', this, col, col.getWidth() / this.getWidth());
     this.fire('addColumn', this, col);
     this.fire('dirtySorting', this);
@@ -823,7 +835,7 @@ export class StackColumn extends Column implements IColumnParent {
     child.on('widthChanged.stack', null);
     child.on('dirty.stack', null);
     //reduce width to keep the percentages
-    super.setWidth(this.getWidth() - child.getWidth());
+    super.setWidth(this.length === 0 ? 100 : this.getWidth() - child.getWidth());
     this.fire('removeChild', this, child);
     this.fire('removeColumn', this, child);
     this.fire('dirtySorting', this);
@@ -852,6 +864,10 @@ export class StackColumn extends Column implements IColumnParent {
     return v;
   }
 
+  getNumber(row: any) {
+    return this.getValue(row);
+  }
+
   compare(a:any[], b:any[]) {
     return numberCompare(this.getValue(a), this.getValue(b));
   }
@@ -863,6 +879,20 @@ export class StackColumn extends Column implements IColumnParent {
   filter(row: any) {
     return this.children_.every((d) => d.filter(row));
   }
+
+  /*static merge(a: Column, b: Column) {
+    if ((typeof a['getNumber'] !== 'function') || (typeof b['getNumber'] !== 'function')) {
+      return false;
+    }
+    if (a instanceof StackColumn) {
+      return (<StackColumn>a).push(b);
+    } else if (b instanceof StackColumn) {
+      a.parent.replace(a, b);
+      return (<StackColumn>b).push(a);
+    } else {
+      return false; //not yet possible
+    }
+  }*/
 }
 
 /**
@@ -1052,25 +1082,25 @@ export class RankColumn extends ValueColumn<number> {
   }
 
   remove(col:Column) {
-    return this.columns_.some((c, i, arr) => {
-      if (c === col) {
-        col.on('dirtyFilter.ranking', null);
-        col.on('dirtyValues.ranking', null);
-        col.on('widthChanged.ranking', null);
-        col.on('addColumn.ranking', null);
-        col.on('removeColumn.ranking', null);
-        col.on('dirty.ranking', null);
-        col.parent = null;
-        arr.splice(i, 1);
-        if (this.sortBy_ === c) { //was my sorting one
-          this.sortBy(arr.length > 0 ? arr[0] : null);
-        }
-        this.fire('removeChild', this, col);
-        this.fire('dirty', this);
-        return true;
-      }
+    var i = this.columns_.indexOf(col);
+    if (i < 0) {
       return false;
-    });
+    }
+
+    col.on('dirtyFilter.ranking', null);
+    col.on('dirtyValues.ranking', null);
+    col.on('widthChanged.ranking', null);
+    col.on('addColumn.ranking', null);
+    col.on('removeColumn.ranking', null);
+    col.on('dirty.ranking', null);
+    col.parent = null;
+    this.columns_.splice(i, 1);
+    if (this.sortBy_ === col) { //was my sorting one
+      this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
+    }
+    this.fire('removeChild', this, col);
+    this.fire('dirty', this);
+    return true;
   }
 
   find(id_or_filter:(col:Column) => boolean | string) {

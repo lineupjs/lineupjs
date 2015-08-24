@@ -79,6 +79,10 @@ window.onload = function () {
 
   var body = new ui.LineUpRenderer(<Element>root.node(), p, desc, function (rank) {
     return rank.extra.argsort;
+  }, {
+    additionalDesc : [
+      model.StackColumn.desc('+ Stack')
+    ]
   });
   update();
 };
