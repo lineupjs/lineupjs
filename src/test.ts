@@ -51,10 +51,10 @@ window.onload = function () {
   r.push(p.create(desc[1]));
   var rstack = p.create(model.StackColumn.desc('Stack'));
   r.push(rstack);
-  rstack.push(p.create(desc[1]), 0.2);
-  rstack.push(p.create(desc[2]), 0.4);
-  rstack.push(p.create(desc[3]), 0.2);
-  rstack.normalizeWeights();
+  rstack.push(p.create(desc[1]));
+  rstack.push(p.create(desc[2]));
+  rstack.push(p.create(desc[3]));
+  rstack.setWeights([0.2, 0.4]);
   r.push(p.create(desc[4]));
 
   var r2 = p.pushRanking();

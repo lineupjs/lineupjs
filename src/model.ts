@@ -590,11 +590,6 @@ export class CategoricalNumberColumn extends ValueColumn<number> {
   }
 }
 
-interface StackChild {
-  col: Column;
-  weight: number;
-}
-
 /**
  * implementation of the stacked colum
  */
@@ -604,7 +599,7 @@ export class StackColumn extends Column implements IColumnParent {
   }
 
   public missingValue = NaN;
-  private children_:StackChild[] = [];
+  private children_:Column[] = [];
 
   private triggerResort = () => this.fire('dirtySorting', this);
   private forwards = {
@@ -627,7 +622,7 @@ export class StackColumn extends Column implements IColumnParent {
   }
 
   get children() {
-    return this.children_.map((d) => d.col);
+    return this.children_.slice();
   }
 
   get length() {
@@ -635,7 +630,8 @@ export class StackColumn extends Column implements IColumnParent {
   }
 
   get weights() {
-    return this.children_.map((d) => d.weight);
+    var w = this.getWidth();
+    return this.children_.map((d) => d.getWidth() / w);
   }
 
   set collapsed(value: boolean) {
@@ -660,7 +656,7 @@ export class StackColumn extends Column implements IColumnParent {
     } else {
       var acc = offset;
       this.children_.forEach((c) => {
-        acc += c.col.flatten(r, acc, levelsToGo - 1, padding) + padding;
+        acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
       });
       return acc - offset - padding;
     }
@@ -668,7 +664,7 @@ export class StackColumn extends Column implements IColumnParent {
 
   dump(toDescRef: (desc: any) => any) {
     var r = super.dump(toDescRef);
-    r.children = this.children_.map((d) => ({ col: d.col.dump(toDescRef), weight: d.weight}));
+    r.children = this.children_.map((d) => d.dump(toDescRef));
     r.missingValue = this.missingValue;
     return r;
   }
@@ -676,21 +672,20 @@ export class StackColumn extends Column implements IColumnParent {
   restore(dump: any, factory : (dump: any) => Column) {
     this.missingValue = dump.missingValue;
     dump.children.map((child) => {
-      this.push(factory(child.col), child.weight);
+      this.push(factory(child));
     });
     super.restore(dump, factory);
   }
 
-  insert(col: Column, index: number, weight: number = NaN) {
-    if(isNaN(weight)) {
-      weight = col.getWidth()/(this.getWidth() + col.getWidth())
-    }
-
+  insert(col: Column, index: number, weight = NaN) {
     if (col instanceof StackColumn) {
       col.collapsed = true;
     }
+    if (!isNaN(weight)) {
+      col.setWidth((weight/(1-weight)*this.getWidth()));
+    }
 
-    this.children_.splice(index, 0, {col: col, weight: weight});
+    this.children_.splice(index, 0, col);
     //listen and propagate events
     col.parent = this;
     col.on('dirtyFilter.stack', this.forwards.dirtyFilter);
@@ -702,22 +697,22 @@ export class StackColumn extends Column implements IColumnParent {
     col.on('dirty.stack', this.forwards.dirty);
 
     //increase my width
-    this.setWidth(this.getWidth() + col.getWidth());
-    this.fire('pushChild', this, col, weight);
+    super.setWidth(this.getWidth() + col.getWidth());
+    this.fire('pushChild', this, col, col.getWidth() / this.getWidth());
     this.fire('addColumn', this, col);
     this.fire('dirtySorting', this);
     this.fire('dirty', this);
     return true;
   }
 
-  push(col:Column, weight:number) {
+  push(col:Column, weight = NaN) {
     return this.insert(col, this.children_.length, weight);
   }
 
   indexOf(col: Column) {
     var j = -1;
     this.children_.some((d,i) => {
-        if (d.col === col) {
+        if (d === col) {
           j = i;
           return true;
         }
@@ -731,7 +726,7 @@ export class StackColumn extends Column implements IColumnParent {
     if (i < 0) {
       return false;
     }
-    return this.insert(col, i+1);
+    return this.insert(col, i+1, weight);
   }
 
   private adaptWidthChange(col: Column, old, new_) {
@@ -740,16 +735,15 @@ export class StackColumn extends Column implements IColumnParent {
     }
     var full = this.getWidth(),
       change = (new_ - old) / full;
-    var oldWeight = this.children_.filter((c) => c.col === col)[0].weight;
+    var oldWeight = old/full;
     var factor = (1-oldWeight-change)/(1-oldWeight);
     this.children_.forEach((c) => {
-      if (c.col === col) {
-        c.weight += change;
+      if (c === col) {
+        //c.weight += change;
       } else {
-        c.weight *= factor;
-        c.col.on('widthChanged.stack', null);
-        c.col.setWidth(full * c.weight);
-        c.col.on('widthChanged.stack', this.adaptChange);
+        c.on('widthChanged.stack', null);
+        c.setWidth(c.getWidth()*factor);
+        c.on('widthChanged.stack', this.adaptChange);
       }
     });
     this.fire('dirtyValues', this);
@@ -758,76 +752,76 @@ export class StackColumn extends Column implements IColumnParent {
     this.fire('dirty', this);
   }
 
-  changeWeight(child:Column, weight:number, autoNormalize = false) {
-    var changed = this.children_.some((c) => {
-      if (c.col === child) { //found it
-        c.weight = weight;
-        return true;
+  setWeights(weights: number[]) {
+    var s,
+      delta = weights.length -this.length;
+    if (delta < 0) {
+      s = d3.sum(weights);
+      if (s <= 1) {
+        for(var i = 0; i < -delta; ++i) {
+          weights.push((1-s)*(1/-delta));
+        }
+      } else if (s <= 100) {
+        for(var i = 0; i < -delta; ++i) {
+          weights.push((100-s)*(1/-delta));
+        }
       }
-      return false;
-    });
-    if (changed && autoNormalize) {
-      this.normalizeWeights();
-    } else if (changed) {
-      this.fire('dirtySorting', this);
     }
-    return changed;
+    weights = weights.slice(0, this.length);
+    s = d3.sum(weights) / this.getWidth();
+    weights = weights.map(d => d/s);
+
+    this.children_.forEach((c, i) => {
+      c.on('widthChanged.stack', null);
+      c.setWidth(weights[i]);
+      c.on('widthChanged.stack', this.adaptChange);
+    });
+    this.fire('dirtyValues', this);
+    this.fire('dirtySorting', this);
+    this.fire('widthChanged', this, this.getWidth(), this.getWidth());
+    this.fire('dirty', this);
+
   }
 
   remove(child:Column) {
-    return this.children_.some((c, i, arr) => {
-      if (c.col === child) { //found it
-        arr.splice(i, 1); //remove and deregister listeners
-        child.parent = null;
-        child.on('dirtyFilter.stack', null);
-        child.on('dirtyValues.stack', null);
-        child.on('addColumn.stack', null);
-        child.on('removeColumn.stack', null);
-        child.on('dirtySorting.stack', null);
-        child.on('widthChanged.stack', null);
-        child.on('dirty.stack', null);
-        //reduce width to keep the percentages
-        this.setWidth(this.getWidth()-child.getWidth());
-        this.fire('removeChild', this, child);
-        this.fire('removeColumn', this, child);
-        this.fire('dirtySorting', this);
-        this.fire('dirty', this);
-        return true;
-      }
+    var i = this.children_.indexOf(child);
+    if (i < 0) {
       return false;
-    });
-  }
-
-
-  normalizeWeights() {
-    //sum of all weights
-    var sum = this.children_.reduce((acc, child) => acc + child.weight, 0);
-
-    this.children_.forEach((child) => {
-      //normalize to sum
-      child.weight = child.weight / sum;
-      child.col.on('widthChanged.stack', null);
-      //change the width accordingly
-      child.col.setWidth(this.getWidth() * child.weight);
-      child.col.on('widthChanged.stack', this.adaptChange);
-    });
+    }
+    var c = this.children_[i];
+    this.children_.splice(i, 1); //remove and deregister listeners
+    child.parent = null;
+    child.on('dirtyFilter.stack', null);
+    child.on('dirtyValues.stack', null);
+    child.on('addColumn.stack', null);
+    child.on('removeColumn.stack', null);
+    child.on('dirtySorting.stack', null);
+    child.on('widthChanged.stack', null);
+    child.on('dirty.stack', null);
+    //reduce width to keep the percentages
+    super.setWidth(this.getWidth() - child.getWidth());
+    this.fire('removeChild', this, child);
+    this.fire('removeColumn', this, child);
     this.fire('dirtySorting', this);
     this.fire('dirty', this);
+    return true;
   }
 
   setWidth(value:number) {
+    var factor = value / this.getWidth();
     this.children_.forEach((child) => {
       //disable since we change it
-      child.col.on('widthChanged.stack', null);
-      child.col.setWidth(value * child.weight);
-      child.col.on('widthChanged.stack', this.adaptChange);
+      child.on('widthChanged.stack', null);
+      child.setWidth(child.getWidth() * factor);
+      child.on('widthChanged.stack', this.adaptChange);
     });
     super.setWidth(value);
   }
 
   getValue(row:any) {
     //weighted sum
-    var v = this.children_.reduce((acc, d) => acc + d.col.getValue(row) * d.weight, 0);
+    var w = this.getWidth();
+    var v = this.children_.reduce((acc, d) => acc + d.getValue(row) * (d.getWidth()/w), 0);
     if (typeof(v) === 'undefined' || v == null || isNaN(v)) {
       return this.missingValue;
     }
@@ -839,11 +833,11 @@ export class StackColumn extends Column implements IColumnParent {
   }
 
   isFiltered() {
-    return this.children_.some((d) => d.col.isFiltered());
+    return this.children_.some((d) => d.isFiltered());
   }
 
   filter(row: any) {
-    return this.children_.every((d) => d.col.filter(row));
+    return this.children_.every((d) => d.filter(row));
   }
 }
 
@@ -955,7 +949,7 @@ export class RankColumn extends ValueColumn<number> {
   }
 
   insertAfterMe(col: Column) {
-    return this.insert(col, 0);
+    return this.insert(col, 0) !== null;
   }
 
   toggleSorting(col:Column) {
