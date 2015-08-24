@@ -134,6 +134,12 @@ export class HeaderRenderer {
     this.renderColumns(columns, shifts);
   }
 
+  private createToolbar($node: d3.Selection<model.Column>) {
+    $node.append('i').attr('class', 'fa fa-times').on('click', (d) => {
+      d.removeMe();
+    });
+  }
+
   private renderColumns(columns: model.Column[], shifts, $base: d3.Selection<any> = this.$node, clazz: string = 'header') {
 
     var provider = this.data;
@@ -173,6 +179,7 @@ export class HeaderRenderer {
         }
         return d.insertAfterMe(col);
       }));
+    $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
 
     $headers.style({
       width: (d, i) => (shifts[i].width+this.options.columnPadding)+'px',
