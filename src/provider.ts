@@ -284,12 +284,12 @@ export class CommonDataProvider extends DataProvider {
   }
 
   toDescRef(desc: any) : any {
-    return desc.column ? desc.column : desc;
+    return desc.column ? desc.type+'@'+desc.column : desc;
   }
 
   fromDescRef(descRef: any) : any {
     if (typeof(descRef) === 'string') {
-      return this.columns.filter((d: any) => d.column === descRef) [0];
+      return this.columns.filter((d: any) => d.type+'@'+d.column === descRef) [0];
     }
     return descRef;
   }

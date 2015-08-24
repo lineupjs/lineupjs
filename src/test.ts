@@ -13,16 +13,19 @@ import ui = require('./ui');
 
 window.onload = function () {
   var arr = [
-    {a: 10, b: 20, c: 30, d: 'Row1', l: {alt: 'Google', href: 'https://google.com'}},
-    {a: 5, b: 14, c: 2, d: 'Row2', l: {alt: 'ORF', href: 'https://orf.at'}},
-    {a: 2, b: 7, c: 100, d: 'Row3', l: {alt: 'heise.de', href: 'https://heise.de'}},
-    {a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', l: {alt: 'Google', href: 'https://google.com'}}];
+    {a: 10, b: 20, c: 30, d: 'Row1', l: {alt: 'Google', href: 'https://google.com'}, cat: 'c2'},
+    {a: 5, b: 14, c: 2, d: 'Row2', l: {alt: 'ORF', href: 'https://orf.at'}, cat: 'c3'},
+    {a: 2, b: 7, c: 100, d: 'Row3', l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
+    {a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', l: {alt: 'Google', href: 'https://google.com'}, cat: 'c1'}];
   var desc = [
     {label: 'D', type: 'string', column: 'd'},
     {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
     {label: 'B', type: 'number', column: 'b', 'domain': [0, 30]},
     {label: 'C', type: 'number', column: 'c', 'domain': [0, 120]},
-    {label: 'L', type: 'link', column: 'l'}];
+    {label: 'L', type: 'link', column: 'l'},
+    {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
+    {label: 'Cat', type: 'categorical', column: 'cat', categories : ['c1','c2','c3']},
+    {label: 'Ord', type: 'ordinal', column: 'cat', categories : ['c1','c2','c3']}];
   var colors = d3.scale.category10();
   desc.forEach(function (d, i) {
     (<any>d).color = colors(''+i);
@@ -60,6 +63,9 @@ window.onload = function () {
   var r2 = p.pushRanking();
   r2.push(p.create(desc[1]));
   r2.push(p.create(desc[0]));
+  r2.push(p.create(desc[5]));
+  r2.push(p.create(desc[6]));
+  r2.push(p.create(desc[7]));
 
   function update() {
     console.log('call', arguments);

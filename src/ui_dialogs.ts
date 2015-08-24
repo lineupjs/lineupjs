@@ -261,7 +261,63 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
 }
 
 function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $header: d3.Selection<any>) {
+  var range = column.getScale().range,
+    colors = column.categoryColors,
+    children = column.categories.map((d, i) => ({ cat: d, range: range[i] * 100, color: colors[i] }));
 
+  var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
+  var pos = utils.offset($header.node());
+
+  var $popup = d3.select('body').append('div')
+    .attr({
+      'class': 'lu-popup2'
+    }).style({
+      left: pos.left + 'px',
+      top: pos.top + 'px'
+    })
+    .html(dialogForm('Edit Categorical Mapping', '<table></table>'));
+
+  var $rows = $popup.select('table').selectAll('tr').data(children);
+  var $rows_enter = $rows.enter().append('tr');
+  $rows_enter.append('td')
+    .append('input').attr({
+      type: 'number',
+      value: (d) => d.range,
+      min: 0,
+      max: 100,
+      size: 5
+    }).on('input', function(d) {
+      d.range = +this.value;
+      redraw();
+    });
+
+  $rows_enter.append('td').append('div')
+    .attr('class', 'bar')
+    .style('background-color', (d) => d.color);
+
+  $rows_enter.append('td').text((d) => d.cat);
+
+  function redraw() {
+    $rows.select(".bar").transition().style({
+      width: function (d) {
+        return scale(d.range) + "px";
+      }
+    });
+  }
+
+  redraw();
+
+  $popup.select('.cancel').on('click', function () {
+    column.setRange(range);
+    $popup.remove();
+  });
+  $popup.select('.reset').on('click', function () {
+
+  });
+  $popup.select('.ok').on('click', function () {
+    column.setRange(children.map((d) => d.range / 100));
+    $popup.remove();
+  });
 }
 
 export function filterDialogs() {
@@ -269,6 +325,6 @@ export function filterDialogs() {
     string : openStringFilter,
     categorical: openCategoricalFilter,
     number: openMappingEditor,
-    categoricalnumber: openCategoricalMappingEditor
+    ordinal: openCategoricalMappingEditor
   }
 }

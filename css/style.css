@@ -147,16 +147,17 @@ div.header_i {
 div.lu-header div.toolbar {
     display: none;
     position: absolute;
-    right: 20px;
+    right: 6px;
     text-align: right;
     top: 0;
 }
-div.lu-header div.header:hover div.toolbar, div.lu-header div.header_i:hover div.toolbar{
+div.lu-header div.header:hover > div.toolbar, div.lu-header div.header_i:hover > div.toolbar{
     display: block;
 }
 
 div.lu-header div.toolbar i {
     font-size: 9pt;
+    padding: 1px;
 }
 div.lu-header div.toolbar i:hover {
     color: darkblue;

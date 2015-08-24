@@ -425,7 +425,7 @@ export class LinkColumn extends StringColumn {
     if (v.href) {
       return v.href;
     } else if (this.link) {
-      return this.link.replace(/$1/g , v);
+      return this.link.replace(/\$1/g , v);
     }
     return v;
   }
@@ -460,6 +460,10 @@ export class CategoricalColumn extends ValueColumn<string> {
 
   get categories() {
     return this.colors.domain();
+  }
+
+  get categoryColors() {
+    return this.colors.range();
   }
 
   getValue(row:any) {
@@ -551,6 +555,10 @@ export class CategoricalNumberColumn extends ValueColumn<number> {
 
   get categories() {
     return this.colors.domain();
+  }
+
+  get categoryColors() {
+    return this.colors.range();
   }
 
   getLabel(row:any) {
