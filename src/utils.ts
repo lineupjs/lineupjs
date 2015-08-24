@@ -68,7 +68,7 @@ var TYPE_OBJECT = '[object Object]';
 var TYPE_ARRAY  = '[object Array]';
 
 //credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
-export function merge(target, ...args: any[]) {
+export function merge(...args: any[]) {
   var result = null;
 
   for (var i = 0; i < args.length; i++) {
@@ -106,8 +106,8 @@ export function merge(target, ...args: any[]) {
 export function offset(element) {
   var obj = element.getBoundingClientRect();
   return {
-    left: obj.left + document.body.scrollLeft,
-    top: obj.top + document.body.scrollTop,
+    left: obj.left + window.pageXOffset ,
+    top: obj.top + window.pageYOffset,
     width: obj.width,
     height: obj.height
   };

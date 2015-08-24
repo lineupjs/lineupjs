@@ -140,18 +140,7 @@ var LineUp;
             that.stackedColumnOptionsGui(d);
           }
         },
-        {
-          'class': 'singleColumnDelete',
-          text: '\uf014',
-          filter: function (d) {
-            return (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) ? [] : [d];
-          },
-          action: function (d) {
-            that.storage.removeColumn(d);
-            that.headerUpdateRequired = true;
-            that.updateAll();
-          }
-        },
+
         {
           'class': 'singleColumnFilter',
           text: '\uf0b0',

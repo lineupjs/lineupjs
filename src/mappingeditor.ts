@@ -4,7 +4,7 @@
 
 ///<reference path='../typings/tsd.d.ts' />
 import d3 = require('d3');
-import utils = require('utils');
+import utils = require('./utils');
 
 'use strict';
 function addLine($svg, x1, y1, x2, y2, clazz) {
@@ -31,7 +31,7 @@ function addCircle($svg, x, shift, y, radius) {
 }
 
 
-export function mappingEditor(scale, dataDomain, data, data_accessor, options) {
+export function open(scale, dataDomain, data, data_accessor, options) {
   options = utils.merge({
     width: 400,
     height: 400,

@@ -204,6 +204,7 @@ export class ValueColumn<T> extends Column {
 export class NumberColumn extends ValueColumn<number> {
   missingValue = NaN;
   private scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+  private mapping = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
 
   private filter_ = {min: -Infinity, max: Infinity};
 
@@ -216,12 +217,14 @@ export class NumberColumn extends ValueColumn<number> {
       this.scale.range(desc.range);
     }
     //TODO infer scales from data
+    this.mapping.domain(this.scale.domain()).range(this.scale.range());
   }
 
   dump(toDescRef: (desc: any) => any) {
     var r = super.dump(toDescRef);
     r.domain = this.scale.domain();
     r.range = this.scale.range();
+    r.mapping = this.getMapping();
     r.filter = this.filter;
     r.missingValue = this.missingValue;
     return r;
@@ -231,6 +234,7 @@ export class NumberColumn extends ValueColumn<number> {
     super.restore(dump, factory);
     this.scale.domain(dump.domain);
     this.scale.range(dump.range);
+    this.mapping.domain(dump.mapping.scale).range(dump.mapping.range);
     this.filter_ = dump.filter;
     this.missingValue = dump.missingValue;
   }
@@ -259,17 +263,24 @@ export class NumberColumn extends ValueColumn<number> {
     return numberCompare(this.getValue(a), this.getValue(b));
   }
 
-  getScale() {
+  getMapping() {
     return {
-      domain: this.scale.domain(),
-      range: this.scale.range()
+      domain: <[number, number]>this.mapping.domain(),
+      range: <[number, number]>this.mapping.range()
     }
   }
 
-  setScale(domain: [number, number], range: [number, number]) {
-    var bak = this.getScale();
-    this.scale.domain(domain).range(range);
-    this.fire('dirtyValues', this, bak, this.getScale());
+  getOriginalMapping() {
+    return {
+      domain: <[number, number]>this.mapping.domain(),
+      range: <[number, number]>this.mapping.range()
+    }
+  }
+
+  setMapping(domain: [number, number], range: [number, number]) {
+    var bak = this.getMapping();
+    this.mapping.domain(domain).range(range);
+    this.fire('dirtyValues', this, bak, this.getMapping());
     this.fire('dirty', this);
   }
 
@@ -370,6 +381,9 @@ export class StringColumn extends ValueColumn<string> {
   }
 
   setFilter(filter: string) {
+    if (filter === '') {
+      filter = null;
+    }
     this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
     this.fire('dirty', this);
   }
@@ -380,9 +394,10 @@ export class StringColumn extends ValueColumn<string> {
 }
 
 export class LinkColumn extends StringColumn {
-
+  private link = null;
   constructor(id:string, desc:any) {
     super(id, desc);
+    this.link = desc.link;
   }
 
   getLabel(row:any) {
@@ -397,6 +412,8 @@ export class LinkColumn extends StringColumn {
     var v:any = super.getValue(row);
     if (v.href) {
       return v.href;
+    } else if (this.link) {
+      return this.link.replace(/$1/g , v);
     }
     return v;
   }
@@ -405,7 +422,7 @@ export class LinkColumn extends StringColumn {
 export class CategoricalColumn extends ValueColumn<string> {
   private colors = d3.scale.category10();
 
-  private filter_ : string = null;
+  private filter_ : string[] = null;
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -485,7 +502,7 @@ export class CategoricalColumn extends ValueColumn<string> {
     return this.filter_;
   }
 
-  setFilter(filter: string) {
+  setFilter(filter: string[]) {
     this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
     this.fire('dirty', this);
   }

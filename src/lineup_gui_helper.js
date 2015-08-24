@@ -562,54 +562,7 @@ var LineUp;
     });
   };
 
-  LineUp.prototype.openFilterPopup = function (column, $button) {
-    if (!(column instanceof LineUp.LayoutStringColumn)) {
-      //can't filter other than string columns
-      return;
-    }
-    var pos = $(this.$header.node()).offset();
-    pos.left += column.offsetX;
-    pos.top += column.offsetY;
-    var bak = column.filter || '';
 
-    var popup = d3.select('body').append('div')
-      .attr({
-        'class': 'lu-popup2'
-      }).style({
-        left: pos.left + 'px',
-        top: pos.top + 'px'
-      })
-      .html(
-        '<form onsubmit="return false"><input type="text" id="popupInputText" placeholder="containing..." autofocus="true" size="18" value="' + bak + '"><br>' +
-        '<button class="ok"><i class="fa fa-check" title="ok"></i></button>' +
-        '<button class="cancel"><i class="fa fa-times" title="cancel"></i></button>' +
-        '<button class="reset"><i class="fa fa-undo" title="reset"></i></button></form>'
-    );
-
-    var that = this;
-
-    function updateData(filter) {
-      column.filter = filter;
-      $button.classed('filtered', (filter && filter.length > 0));
-      that.listeners['change-filter'](that, column);
-      that.storage.resortData({filteredChanged: true});
-      that.updateBody();
-    }
-
-    popup.select('.cancel').on('click', function () {
-      document.getElementById('popupInputText').value = bak;
-      updateData(bak);
-      popup.remove();
-    });
-    popup.select('.reset').on('click', function () {
-      document.getElementById('popupInputText').value = '';
-      updateData(null);
-    });
-    popup.select('.ok').on('click', function () {
-      updateData(document.getElementById('popupInputText').value);
-      popup.remove();
-    });
-  };
 
   LineUp.createTooltip = function (container) {
     var $container = $(container), $tooltip = $('<div class="lu-tooltip"/>').appendTo($container);

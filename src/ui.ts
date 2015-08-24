@@ -9,6 +9,7 @@ import utils = require('./utils');
 import model = require('./model');
 import renderer = require('./renderer');
 import provider = require('./provider');
+import dialogs = require('./ui_dialogs');
 
 export class PoolRenderer {
   private options = {
@@ -135,8 +136,13 @@ export class HeaderRenderer {
   }
 
   private createToolbar($node: d3.Selection<model.Column>) {
+    $node.append('i').attr('class', 'fa fa-filter').on('click', function(d) {
+      dialogs.openFilter(d, d3.select(this.parentNode.parentNode));
+      d3.event.stopPropagation();
+    });
     $node.append('i').attr('class', 'fa fa-times').on('click', (d) => {
       d.removeMe();
+      d3.event.stopPropagation();
     });
   }
 
@@ -235,8 +241,7 @@ export class BodyRenderer {
   }
 
   createContext(rankings:model.RankColumn[]):renderer.IRenderContext {
-    var data = this.data,
-      options = this.options;
+    var options = this.options;
     return {
       rowKey: this.data.rowKey,
       cellY(index:number) {
