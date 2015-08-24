@@ -214,12 +214,13 @@ export function updateDropEffect(e: DragEvent) {
 
 export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy: boolean) => boolean) {
   return ($node) => {
-  $node.on('dragenter', () => {
+  $node.on('dragenter', function() {
     var e = <DragEvent>(<any>d3.event);
     var xy = d3.mouse($node.node());
     if (hasDnDType(e, mimeTypes)) {
       return false;
     }
+    d3.select(this).classed('drag_over', true);
   }).on('dragover', () => {
     var e = <DragEvent>(<any>d3.event);
     if (hasDnDType(e, mimeTypes)) {
@@ -227,8 +228,9 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
       updateDropEffect(e);
       return false;
     }
-  }).on('dragleave', () => {
+  }).on('dragleave', function() {
     //
+    d3.select(this).classed('drag_over', false);
   }).on('drop', (d: T) => {
     var e = <DragEvent>(<any>d3.event);
     e.preventDefault();

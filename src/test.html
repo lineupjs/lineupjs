@@ -44,12 +44,16 @@
         div.lu-header, div.lu-pool {
             position: relative;
         }
-        div.header {
+        div.header, div.header_i {
             position: absolute;
             display: inline-block;
             overflow: hidden;
             color: white;
             text-align: center;
+            height: 100%;
+        }
+        div.header_i {
+            top: 20px;
         }
         div.header i.sort_indicator {
             position: absolute;
@@ -59,15 +63,14 @@
         }
         div.lu-header div.header div.handle {
             position: absolute;
-            right: -3px;
+            right: 0px;
             height: 100%;
             top: 0;
-            width: 5px;
             background-color: white;
             display: inline-block;
             cursor: col-resize;
         }
-        div.lu-header div.header div.handle:hover {
+        div.lu-header div.header div.handle.drag_over {
             background-color: black;
         }
     </style>

@@ -616,12 +616,14 @@ export class StackColumn extends Column implements IColumnParent {
   };
   private adaptChange = this.adaptWidthChange.bind(this);
 
+  private _collapsed = false;
+
   constructor(id:string, desc:any) {
     super(id, desc);
   }
 
   createEventList() {
-    return super.createEventList().concat(['pushChild','removeChild']);
+    return super.createEventList().concat(['pushChild','removeChild', 'changeCollapse']);
   }
 
   get children() {
@@ -632,10 +634,25 @@ export class StackColumn extends Column implements IColumnParent {
     return this.children_.map((d) => d.weight);
   }
 
+  set collapsed(value: boolean) {
+    if (this._collapsed === value) {
+      return;
+    }
+    this.fire('changeCollapse', this, this._collapsed, this._collapsed = value);
+  }
+
+  get collapsed() {
+    return this._collapsed;
+  }
+
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     if (levelsToGo === 0) {
-      r.push({col: this, offset: offset, width: this.getWidth()});
-      return this.getWidth();
+      var w = this.getWidth();
+      if (!this.collapsed) {
+        w += (this.children_.length-1)*padding;
+      }
+      r.push({col: this, offset: offset, width: w});
+      return w;
     } else {
       var acc = offset;
       this.children_.forEach((c) => {
@@ -663,6 +680,10 @@ export class StackColumn extends Column implements IColumnParent {
   insert(col: Column, index: number, weight: number = NaN) {
     if(isNaN(weight)) {
       weight = col.getWidth()/(this.getWidth() + col.getWidth())
+    }
+
+    if (col instanceof StackColumn) {
+      col.collapsed = true;
     }
 
     this.children_.splice(index, 0, {col: col, weight: weight});

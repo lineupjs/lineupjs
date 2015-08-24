@@ -81,7 +81,7 @@ export class PoolRenderer {
 export class HeaderRenderer {
   private options = {
     slopeWidth: 200,
-    columnPadding : 3,
+    columnPadding : 5,
     headerHeight: 20
   };
 
@@ -108,27 +108,38 @@ export class HeaderRenderer {
   constructor(private data:provider.DataProvider,parent:Element, options:any = {}) {
     utils.merge(this.options, options);
 
-    this.$node = d3.select(parent).append('div').classed('lu-header',true).style('height', this.options.headerHeight+'px');
+    this.$node = d3.select(parent).append('div').classed('lu-header',true);
 
     data.on('dirty.header', this.update.bind(this));
     this.update();
   }
 
   update() {
+
     var rankings = this.data.getRankings();
     var shifts =[], offset = 0;
     rankings.forEach((ranking) => {
-      offset += ranking.flatten(shifts, offset, 2, this.options.columnPadding) + this.options.slopeWidth;
+      offset += ranking.flatten(shifts, offset, 1, this.options.columnPadding) + this.options.slopeWidth;
     });
     //real width
     offset -= this.options.slopeWidth;
 
     var columns = shifts.map((d) => d.col);
+    if (columns.some((c) => c instanceof model.StackColumn && !c.collapsed)) {
+      //we have a second level
+      this.$node.style('height', this.options.headerHeight*2 + 'px');
+    } else {
+      this.$node.style('height', this.options.headerHeight + 'px');
+    }
+    this.renderColumns(columns, shifts);
+  }
+
+  private renderColumns(columns: model.Column[], shifts, $base: d3.Selection<any> = this.$node, clazz: string = 'header') {
 
     var provider = this.data;
-    var $headers = this.$node.selectAll('div.header').data(columns, (d) => d.id);
+    var $headers = $base.selectAll('div.'+clazz).data(columns, (d) => d.id);
     var $headers_enter = $headers.enter().append('div').attr({
-      'class': 'header',
+      'class': clazz,
       'draggable': true,
     }).on('dragstart', (d) => {
       var e = <DragEvent>(<any>d3.event);
@@ -145,6 +156,7 @@ export class HeaderRenderer {
     $headers_enter.append('span').classed('label',true).text((d) => d.label);
     $headers_enter.append('div').classed('handle',true)
       .call(this.dragHandler)
+      .style('width',this.options.columnPadding+'px')
       .call(utils.dropAble(['application/caleydo-lineup-column-ref','application/caleydo-lineup-column'], (data, d: model.Column, copy) => {
         var col: model.Column = null;
         if ('application/caleydo-lineup-column-ref' in data) {
@@ -163,7 +175,7 @@ export class HeaderRenderer {
       }));
 
     $headers.style({
-      width: (d, i) => shifts[i].width+'px',
+      width: (d, i) => (shifts[i].width+this.options.columnPadding)+'px',
       left: (d, i) => shifts[i].offset+'px'
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {
@@ -172,6 +184,15 @@ export class HeaderRenderer {
         return 'sort_indicator fa fa-sort-'+r.sortCriteria().asc ? 'asc' : 'desc';
       }
       return 'sort_indicator fa'
+    });
+
+    var that = this;
+    $headers.filter((d) => d instanceof model.StackColumn && !d.collapsed).each(function (col : model.StackColumn) {
+      var s_shifts = [];
+      col.flatten(s_shifts, 0, 1, that.options.columnPadding);
+
+      var s_columns = s_shifts.map((d) => d.col);
+      that.renderColumns(s_columns, s_shifts, d3.select(this), clazz+'_i');
     });
 
     $headers.exit().remove();
@@ -186,7 +207,7 @@ export class BodyRenderer {
     rowSep: 1,
     idPrefix: '',
     slopeWidth: 200,
-    columnPadding : 3,
+    columnPadding : 5,
     showStacked: true,
     animated: 0, //200
 
@@ -221,9 +242,8 @@ export class BodyRenderer {
         return options.rowHeight;
       },
       renderer(col:model.Column) {
-        //if a child of a stackcolumn is another stackcolumn render as bar
-        if (col instanceof model.StackColumn && col.parent instanceof model.StackColumn) {
-          return options.renderers.number
+        if (col instanceof model.StackColumn && col.collapsed) {
+          return options.renderers.number;
         }
         var l = options.renderers[col.desc.type];
         return l || renderer.defaultRenderer();
