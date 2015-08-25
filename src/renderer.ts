@@ -249,6 +249,41 @@ class LinkCellRenderer extends DefaultCellRenderer {
   }
 }
 
+class CategoricalRenderer extends DefaultCellRenderer {
+  textClass = 'cat';
+
+  render($col:d3.Selection<any>, col:model.CategoricalColumn, rows:any[], context:IRenderContext) {
+    var $rows = $col.datum(col).selectAll('g.' + this.textClass).data(rows, context.rowKey);
+
+    var $rows_enter = $rows.enter().append('g').attr({
+      'class': this.textClass
+    });
+    $rows_enter.append('text').attr({
+      x: 7,
+      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+    });
+    $rows_enter.append('rect').attr({
+      x: 5,
+      width: 5,
+      height: 5
+    });
+    var $update = context.animated($rows).attr({
+      'data-index': (d, i) => i,
+      transform: (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'
+    });
+    $update.select('text').text((d) => col.getLabel(d));
+    $update.select('rect').style({
+      fill: (d) => col.getColor(d)
+    });
+
+    $rows.exit().remove();
+  }
+
+  findRow($col:d3.Selection<any>, index:number) {
+    return $col.selectAll('g.' + this.textClass + '[data-index="' + index + '"]');
+  }
+}
+
 class StackCellRenderer extends DefaultCellRenderer {
   renderImpl($col:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any) {
     var $group = $col.datum(col),
@@ -309,6 +344,10 @@ class StackCellRenderer extends DefaultCellRenderer {
   }
 }
 
+/**
+ * returns a map of all known renderers by type
+ * @return
+ */
 export function renderers() {
   return {
     string: defaultRenderer(),
@@ -318,9 +357,7 @@ export function renderers() {
       textClass: 'rank'
     }),
     stack: new StackCellRenderer(),
-    categorical: defaultRenderer({
-      //TODO colors
-    }),
+    categorical: new CategoricalRenderer(),
     ordinal: barRenderer({
       colorOf: (d, i, col) => col.getColor(d)
     })
