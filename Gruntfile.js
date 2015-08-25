@@ -1,6 +1,11 @@
 /*global module:false*/
 module.exports = function (grunt) {
 
+  var template = grunt.file.read('src/myumd.js');
+  template = template.replace('DEPENDENCIES','\'d3\'');
+  template = template.replace('NAMESPACE','LineUpJS');
+  var templateparts = template.split('SOURCECODE');
+
   // Project configuration.
   grunt.initConfig({
     // Metadata.
@@ -9,8 +14,10 @@ module.exports = function (grunt) {
     '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
     '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
     '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
-    ' Licensed <%= pkg.license %> */\n',
+    ' Licensed <%= pkg.license %> */\n' +
+    templateparts[0],
     // Task configuration.
+    endbanner: templateparts[1],
 
     watch: {
       ts: {
@@ -59,19 +66,31 @@ module.exports = function (grunt) {
 
     browserify: {
       dist: {
-        src: ['src/*.js'],
-        dest: 'dist/<%= pkg.name %>.js',
+        src: 'src/main.js',
+        dest: 'tmp/<%= pkg.name %>.js',
 
         options: {
-          banner: '<%=banner%>',
-          external: ['d3'],
+          //banner: '<%=banner%>',
+          exclude: ['d3'],
           browserifyOptions: {
-            //standalone: true
+            //standalone: 'LineUp'
           }
         }
         // Note: The entire `browserify-shim` config is inside `package.json`.
       }
     },
+
+    wrap: {
+      dist: {
+        src: ['tmp/<%= pkg.name %>.js'],
+        dest: 'dist/<%= pkg.name %>.js',
+        options: {
+          wrapper: ['<%=banner%>', '<%=endbanner%>'],
+          separator: ' '
+        }
+      }
+    },
+
     uglify: {
       options: {
         banner: '<%= banner %>'
@@ -81,7 +100,7 @@ module.exports = function (grunt) {
         dest: 'dist/<%= pkg.name %>.min.js'
       }
     },
-    clean: ['doc', 'dist'],
+    clean: ['doc', 'dist', 'tmp'],
     tslint: {
       options: {
         configuration: grunt.file.readJSON('tslint.json')
@@ -153,7 +172,7 @@ module.exports = function (grunt) {
 
   // Default task.
   grunt.registerTask('watch', ['ts:dev', 'sass:dev', 'watch']);
-  grunt.registerTask('compile', ['ts:dev', 'browserify']);
-  grunt.registerTask('default', ['clean', 'tsd:reinstall', 'ts:dist', 'sass:dist', 'tslint', 'browserify', 'uglify']);
+  grunt.registerTask('compile', ['ts:dev', 'browserify', 'wrap']);
+  grunt.registerTask('default', ['clean', 'tsd:reinstall', 'ts:dist', 'sass:dist', 'tslint', 'browserify', 'wrap', 'uglify']);
 
 };

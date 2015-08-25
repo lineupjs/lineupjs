@@ -2,7 +2,39 @@
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+//based on https://github.com/ForbesLindesay/umd but with d3 dependency
+;(function (f) {
+  // CommonJS
+  if (typeof exports === "object" && typeof module !== "undefined") {
+    module.exports = f(require)(1);
+
+    // RequireJS
+  } else if (typeof define === "function" && define.amd) {
+    var deps = ['d3'];
+    define(deps, function () {
+      var resolved_deps = arguments;
+      return f(function(name) { return resolved_deps[deps.indexOf(name)]; })(1);
+    });
+    // <script>
+  } else {
+    var g;
+    if (typeof window !== "undefined") {
+      g = window;
+    } else if (typeof global !== "undefined") {
+      g = global;
+    } else if (typeof self !== "undefined") {
+      g = self;
+    } else {
+      // works providing we're not in "use strict";
+      // needed for Java 8 Nashorn
+      // seee https://github.com/facebook/react/issues/3037
+      g = this;
+    }
+    g.LineUpJS = f(function(name) { return g[name]; })(1);
+  }
+
+})(function (require) {
+  return  (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -12,8 +44,20 @@ var __extends = (this && this.__extends) || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-var utils = require('./utils');
+///<reference path='../typings/tsd.d.ts' />
+var model_ = require('./model');
+var provider_ = require('./provider');
+var renderer_ = require('./renderer');
+var ui_ = require('./ui');
+var utils_ = require('./utils');
+var ui_dialogs_ = require('./ui_dialogs');
 var d3 = require('d3');
+exports.model = model_;
+exports.provider = provider_;
+exports.renderer = renderer_;
+exports.ui = ui_;
+exports.utils = utils_;
+exports.ui_dialogs = ui_dialogs_;
 var LineUp = (function (_super) {
     __extends(LineUp, _super);
     function LineUp(container, data, config) {
@@ -69,7 +113,7 @@ var LineUp = (function (_super) {
             }
         };
         this.$container = container instanceof d3.selection ? container : d3.select(container);
-        utils.merge(this.config, config);
+        exports.utils.merge(this.config, config);
         if (this.config.svgLayout.mode === 'combined') {
             this.$container.classed('lu-mode-combined', true);
             this.$table = this.$container.append('svg').attr('class', 'lu');
@@ -80,7 +124,7 @@ var LineUp = (function (_super) {
             this.$body = this.$table.append('g').attr('class', 'body').attr('transform', 'translate(0,' + this.config.htmlLayout.headerHeight + ')');
             this.$header = this.$table.append('g').attr('class', 'header');
             this.$bodySVG = this.$headerSVG = this.$table;
-            this.scroller = new utils.ContentScroller(this.$container.node(), this.$table.node(), {
+            this.scroller = new exports.utils.ContentScroller(this.$container.node(), this.$table.node(), {
                 topShift: this.config.htmlLayout.headerHeight,
                 backupRows: this.config.svgLayout.backupScrollRows,
                 rowHeight: this.config.svgLayout.rowHeight
@@ -98,7 +142,7 @@ var LineUp = (function (_super) {
             $defs.append('defs').attr('class', 'column');
             $defs.append('defs').attr('class', 'overlay');
             this.$body = this.$bodySVG;
-            this.scroller = new utils.ContentScroller(this.$container.select('div.lu-wrapper').node(), this.$table.node(), {
+            this.scroller = new exports.utils.ContentScroller(this.$container.select('div.lu-wrapper').node(), this.$table.node(), {
                 topShift: 0,
                 backupRows: this.config.svgLayout.backupScrollRows,
                 rowHeight: this.config.svgLayout.rowHeight
@@ -144,10 +188,10 @@ var LineUp = (function (_super) {
         return col !== null;
     };
     return LineUp;
-})(utils.AEventDispatcher);
+})(utils_.AEventDispatcher);
 exports.LineUp = LineUp;
 
-},{"./utils":9,"d3":"d3"}],2:[function(require,module,exports){
+},{"./model":3,"./provider":4,"./renderer":5,"./ui":6,"./ui_dialogs":7,"./utils":8,"d3":undefined}],2:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -360,7 +404,7 @@ function open(scale, dataDomain, dataPromise, options) {
 }
 exports.open = open;
 
-},{"./utils":9,"d3":"d3"}],3:[function(require,module,exports){
+},{"./utils":8,"d3":undefined}],3:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 06.08.2015.
  */
@@ -1383,7 +1427,7 @@ function models() {
 }
 exports.models = models;
 
-},{"./utils":9,"d3":"d3"}],4:[function(require,module,exports){
+},{"./utils":8,"d3":undefined}],4:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -1700,7 +1744,7 @@ var RemoteDataProvider = (function (_super) {
 })(CommonDataProvider);
 exports.RemoteDataProvider = RemoteDataProvider;
 
-},{"./model":3,"./utils":9}],5:[function(require,module,exports){
+},{"./model":3,"./utils":8}],5:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -1930,76 +1974,6 @@ function renderers() {
 exports.renderers = renderers;
 
 },{}],6:[function(require,module,exports){
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-///<reference path='../typings/tsd.d.ts' />
-var d3 = require('d3');
-var provider = require('./provider');
-var model = require('./model');
-var utils = require('./utils');
-var ui = require('./ui');
-window.onload = function () {
-    var arr = [
-        { a: 10, b: 20, c: 30, d: 'Row1', l: { alt: 'Google', href: 'https://google.com' }, cat: 'c2' },
-        { a: 5, b: 14, c: 2, d: 'Row2', l: { alt: 'ORF', href: 'https://orf.at' }, cat: 'c3' },
-        { a: 2, b: 7, c: 100, d: 'Row3', l: { alt: 'heise.de', href: 'https://heise.de' }, cat: 'c2' },
-        { a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', l: { alt: 'Google', href: 'https://google.com' }, cat: 'c1' }];
-    var desc = [
-        { label: 'D', type: 'string', column: 'd' },
-        { label: 'A', type: 'number', column: 'a', 'domain': [0, 10] },
-        { label: 'B', type: 'number', column: 'b', 'domain': [0, 30] },
-        { label: 'C', type: 'number', column: 'c', 'domain': [0, 120] },
-        { label: 'L', type: 'link', column: 'l' },
-        { label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1' },
-        { label: 'Cat', type: 'categorical', column: 'cat', categories: ['c1', 'c2', 'c3'] },
-        { label: 'Ord', type: 'ordinal', column: 'cat', categories: ['c1', 'c2', 'c3'] }];
-    var colors = d3.scale.category10();
-    desc.forEach(function (d, i) {
-        d.color = colors('' + i);
-    });
-    var p = new provider.LocalDataProvider(arr, desc);
-    var r = p.pushRanking();
-    var root = d3.select('body');
-    r.push(p.create(desc[0]));
-    r.push(p.create(desc[1]));
-    var rstack = p.create(model.StackColumn.desc('Stack'));
-    r.push(rstack);
-    rstack.push(p.create(desc[1]));
-    rstack.push(p.create(desc[2]));
-    rstack.push(p.create(desc[3]));
-    rstack.setWeights([0.2, 0.4]);
-    r.push(p.create(desc[4]));
-    var r2 = p.pushRanking();
-    r2.push(p.create(desc[1]));
-    r2.push(p.create(desc[0]));
-    r2.push(p.create(desc[5]));
-    r2.push(p.create(desc[6]));
-    r2.push(p.create(desc[7]));
-    var call = utils.delayedCall(update, 2);
-    r2.on('dirtySorting', call);
-    r2.on('widthChanged', call);
-    r.on('dirtySorting', call);
-    r.on('widthChanged', call);
-    var body = new ui.LineUpRenderer(root.node(), p, desc, function (rank) {
-        return rank.extra.argsort;
-    }, {
-        additionalDesc: [
-            model.StackColumn.desc('+ Stack')
-        ]
-    });
-    update();
-    function update() {
-        console.log('call', arguments);
-        Promise.all(p.getRankings().map(function (r) { return p.sort(r); }))
-            .then(function (argsorts) {
-            p.getRankings().forEach(function (r, i) { return r.extra.argsort = argsorts[i]; });
-            body.update();
-        });
-    }
-};
-
-},{"./model":3,"./provider":4,"./ui":7,"./utils":9,"d3":"d3"}],7:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -2513,7 +2487,7 @@ var LineUpRenderer = (function () {
 })();
 exports.LineUpRenderer = LineUpRenderer;
 
-},{"./model":3,"./renderer":5,"./ui_dialogs":8,"./utils":9,"d3":"d3"}],8:[function(require,module,exports){
+},{"./model":3,"./renderer":5,"./ui_dialogs":7,"./utils":8,"d3":undefined}],7:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 24.08.2015.
  */
@@ -2789,7 +2763,7 @@ function filterDialogs() {
 }
 exports.filterDialogs = filterDialogs;
 
-},{"./mappingeditor":2,"./utils":9}],9:[function(require,module,exports){
+},{"./mappingeditor":2,"./utils":8}],8:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -3024,4 +2998,6 @@ function dropAble(mimeTypes, onDrop) {
 }
 exports.dropAble = dropAble;
 
-},{"d3":"d3"}]},{},[1,2,3,4,5,6,7,8,9]);
+},{"d3":undefined}]},{},[1]);
+ 
+});

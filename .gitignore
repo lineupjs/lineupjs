@@ -1,5 +1,8 @@
-doc
+/doc
+/.tscache
 node_modules
 /.idea
 /bower_components
 /tsd.gen.d.ts
+/typings
+/tmp

@@ -3,12 +3,22 @@
  */
 
 ///<reference path='../typings/tsd.d.ts' />
-import model = require('./model');
-import provider = require('./provider');
-import utils = require('./utils');
+import model_ = require('./model');
+import provider_ = require('./provider');
+import renderer_ = require('./renderer');
+import ui_ = require('./ui');
+import utils_ = require('./utils');
+import ui_dialogs_ = require('./ui_dialogs');
 import d3 = require('d3');
 
-export class LineUp extends utils.AEventDispatcher {
+export var model = model_;
+export var provider = provider_;
+export var renderer = renderer_;
+export var ui = ui_;
+export var utils = utils_;
+export var ui_dialogs = ui_dialogs_;
+
+export class LineUp extends utils_.AEventDispatcher {
   /**
    * default config of LineUp with all available options
    *
@@ -83,9 +93,9 @@ export class LineUp extends utils.AEventDispatcher {
   private $bodySVG: d3.Selection<any>;
   private $headerSVG: d3.Selection<any>;
 
-  private scroller: utils.ContentScroller;
+  private scroller: utils_.ContentScroller;
 
-  constructor(container : d3.Selection<any> | Element, public data: provider.DataProvider, config: any = {}) {
+  constructor(container : d3.Selection<any> | Element, public data: provider_.DataProvider, config: any = {}) {
     super();
     this.$container = container instanceof d3.selection ? <d3.Selection<any>>container : d3.select(<Element>container);
     //TODO merge the incoming config this.config
@@ -171,7 +181,7 @@ export class LineUp extends utils.AEventDispatcher {
     }
   }
 
-  sortBy(column : (col: model.Column) => boolean | string, ascending = false) {
+  sortBy(column : (col: model_.Column) => boolean | string, ascending = false) {
     var col = this.data.find(column);
     if (col) {
       col.sortByMe(ascending);
