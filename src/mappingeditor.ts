@@ -8,19 +8,19 @@ import utils = require('./utils');
 
 'use strict';
 function addLine($svg, x1, y1, x2, y2, clazz) {
-  return $svg.append("line").attr({
+  return $svg.append('line').attr({
     x1: x1, y1: y1, x2: x2, y2: y2, 'class': clazz
   });
 }
 function addText($svg, x, y, text, dy?, clazz?) {
-  return $svg.append("text").attr({
+  return $svg.append('text').attr({
     x: x, y: y, dy: dy, 'class': clazz
   }).text(text);
 }
 function addCircle($svg, x, shift, y, radius) {
   shift -= x;
   return $svg
-    .append("circle")
+    .append('circle')
     .attr({
       'class': 'handle',
       r: radius,
@@ -37,8 +37,7 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
     height: 400,
     padding: 50,
     radius: 10,
-    callback: function (d) {
-    },
+    callback: (d)=>d,
     callbackThisArg: null,
     triggerCallback: 'change' //change, dragend
   }, options);
@@ -161,8 +160,7 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
         shownDatalines = datalines.filter(function (d) {
           return !(raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
         });
-      }
-      else {
+      } else {
         hiddenDatalines = datalines.filter(function (d) {
           return (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
         });

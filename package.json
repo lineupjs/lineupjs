@@ -23,8 +23,7 @@
     "url": "https://github.com/Caleydo/lineup.js.git"
   },
   "devDependencies": {
-    "browserify-shim": "^3.8.10",
-    "browserify-typescript": "0.0.1",
+    "browserify": "^11.0.1",
     "grunt": "~0.4.2",
     "grunt-browserify": "^4.0.0",
     "grunt-contrib-clean": "^0.5.0",
@@ -40,18 +39,7 @@
     "grunt-tslint": "^2.4.0",
     "load-grunt-tasks": "^3.2.0",
     "time-grunt": "^1.2.1",
+    "grunt-ts": "^4.2.0",
     "tslint": "^2.4.3"
-  },
-  "browserify": {
-    "transform": [
-      "browserify-shim",
-      "browserify-typescript"
-    ]
-  },
-  "browser": {
-    "d3": "./bower_components/d3/d3.js"
-  },
-  "browserify-shim": {
-    "d3": "d3"
   }
 }

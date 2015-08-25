@@ -4,5 +4,12 @@
   "ref": "master",
   "path": "typings",
   "bundle": "typings/tsd.d.ts",
-  "installed": {}
+  "installed": {
+    "d3/d3.d.ts": {
+      "commit": "a1226afe5c4ab96610e088d970eb4f8537b1d116"
+    },
+    "es6-promise/es6-promise.d.ts": {
+      "commit": "a1226afe5c4ab96610e088d970eb4f8537b1d116"
+    }
+  }
 }

@@ -75,7 +75,7 @@ export class DataProvider extends utils.AEventDispatcher {
   }
 
   cleanUpRanking(ranking:model.RankColumn) {
-
+    //nothing to do
   }
 
   cloneRanking(existing?:model.RankColumn) {
@@ -313,7 +313,7 @@ export class LocalDataProvider extends CommonDataProvider {
     //enhance with a magic attribute storing ranking information
     data.forEach((d, i) => {
       d._rankings = {};
-      d._index = i
+      d._index = i;
     });
   }
 
@@ -335,9 +335,9 @@ export class LocalDataProvider extends CommonDataProvider {
       //TODO better cloning
       existing.children.forEach((child) => {
         this.push(new_, child.desc);
-      })
+      });
     }
-    return new_
+    return new_;
   }
 
   cleanUpRanking(ranking:model.RankColumn) {

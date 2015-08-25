@@ -1,3813 +1,3027 @@
-/*! LineUpJS - v0.1.0 - 2015-08-06
+/*! LineUpJS - v0.1.0 - 2015-08-25
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
-(function() {
-  function LineUpLoader(jQuery, d3, _) {
 
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
- * Constructor to Create a LineUp Visualization
- * @param spec - the specifications object
- * @param spec.storage - a LineUp Storage, see {@link LineUpLocalStorage}
- * @constructor
+ * Created by Samuel Gratzl on 14.08.2015.
  */
-var LineUp;
-(function (LineUp, d3, $, undefined) {
-
-  function LineUpClass(spec, $container, config) {
-    var $defs, scroller;
-    this.storage = spec.storage;
-    this.spec = spec;
-//    this.sortedColumn = [];
-    this.$container = $container;
-    this.tooltip = LineUp.createTooltip($container.node());
-    //trigger hover event
-    this.listeners = d3.dispatch('hover','change-sortcriteria','change-filter', 'selected','multiselected');
-
-    this.config = $.extend(true, {}, LineUp.defaultConfig, config, {
-      //TODO internal stuff, should to be extracted
-      columnBundles: {
-        primary: {
-          sortedColumn: null,
-          sortingOrderAsc: true,
-          prevRowScale : null
-        }
-      }});
-    this.storage.config = this.config;
-    if (!this.config.svgLayout.addPlusSigns) {
-      this.config.svgLayout.plusSigns={}; // empty plusSign if no plus signs needed
-    }
-
-
-    
-    //create basic structure
-    if (this.config.svgLayout.mode === 'combined') {
-      //within a single svg with 'fixed' header
-      $container.classed('lu-mode-combined', true);
-      this.$table = $container.append('svg').attr('class', 'lu');
-      $defs = this.$table.append('defs');
-      $defs.append('defs').attr('class', 'columnheader');
-      $defs.append('defs').attr('class', 'column');
-      $defs.append('defs').attr('class', 'overlay');
-      this.$body = this.$table.append('g').attr('class','body').attr('transform', 'translate(0,' + this.config.htmlLayout.headerHeight + ')');
-      this.$header = this.$table.append('g').attr('class', 'header');
-      this.$bodySVG = this.$headerSVG = this.$table;
-
-      scroller = this.initScrolling($($container.node()), this.config.htmlLayout.headerHeight);
-    } else {
-      //within two svgs with a dedicated header
-      $container.classed('lu-mode-separate', true);
-      this.$table = $container;
-      this.$headerSVG = this.$table.append('svg').attr('class', 'lu lu-header');
-      this.$headerSVG.attr('height',this.config.htmlLayout.headerHeight);
-      this.$headerSVG.append('defs').attr('class', 'columnheader');
-      this.$header = this.$headerSVG.append('g');
-      this.$bodySVG = this.$table.append('div').attr('class','lu-wrapper').append('svg').attr('class','lu lu-body');
-      $defs = this.$bodySVG.append('defs');
-      $defs.append('defs').attr('class', 'column');
-      $defs.append('defs').attr('class', 'overlay');
-      this.$body = this.$bodySVG;
-      scroller = this.initScrolling($($container.node()).find('div.lu-wrapper'), 0);
-    }
-    this.selectVisible = scroller.selectVisible;
-    this.onScroll = scroller.onScroll;
-
-    this.$header.append('rect').attr({
-      width: '100%',
-      height: this.config.htmlLayout.headerHeight,
-      fill: 'lightgray'
-    });
-    this.$header.append('g').attr('class', 'main');
-    this.$header.append('g').attr('class', 'overlay');
-
-    this.headerUpdateRequired = true;
-    this.stackedColumnModified = null;
-
-    this.dragWeight = this.initDragging();
-
-    return this;
-  }
-
-
-  LineUp.prototype = LineUpClass.prototype = $.extend(LineUpClass.prototype, LineUp.prototype);
-  LineUp.create = function (storage, $container, options) {
-    if (!('storage' in storage)) { // TODO: was '!$.isPlainObject(storage)'
-      storage = { storage: storage };
-
-    }
-    var r = new LineUpClass(storage, $container, options);
-    r.startVis();
-    return r;
-  };
-
-  LineUp.prototype.scrolled = function (top, left) {
-    if (this.config.svgLayout.mode === 'combined') {
-      //in single svg mode propagate vertical shift
-      this.$header.attr('transform', 'translate(0,' + top + ')');
-    } else {
-      //in two svg mode propagate horizontal shift
-      this.$header.attr('transform', 'translate('+-left+',0)');
-    }
-  };
-
-  /**
-   * default config of LineUp with all available options
-   *
-   */
-  LineUp.defaultConfig = {
-    colorMapping: d3.map(),
-    columnColors: d3.scale.category20(),
-    grayColor: '#999999',
-    numberformat: d3.format('.3n'),
-    htmlLayout: {
-      headerHeight: 50,
-      headerOffset: 1,
-      buttonTopPadding: 10,
-      labelLeftPadding: 5,
-      buttonRightPadding: 15,
-      buttonWidth: 13
-    },
-    renderingOptions: {
-      stacked: false,
-      values: false,
-      animation: true,
-      histograms: false
-    },
-    svgLayout: {
-      /**
-       * mode of this lineup instance, either combined = a single svg with header and body combined or separate ... separate header and body
-       */
-      mode: 'combined', //modes: combined vs separate
-      rowHeight: 17,
-      rowPadding : 0.2, //padding for scale.rangeBands
-      rowBarPadding: 1,
-      /**
-       * number of backup rows to keep to avoid updating on every small scroll thing
-       */
-      backupScrollRows: 4,
-      animationDuration: 1000,
-      addPlusSigns:false,
-      plusSigns: {
-        addStackedColumn: {
-         title: 'add stacked column',
-         action: 'addNewEmptyStackedColumn',
-         x: 0, y: 2,
-         w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
-         }
-      },
-      rowActions: [
-        /*{
-         name: 'explore',
-         icon: '\uf067',
-         action: function(row) {
-         console.log(row);
-         }
-         }*/]
-    },
-    /* enables manipulation features, remove column, reorder,... */
-    manipulative: true,
-    interaction: {
-      //enable the table tooltips
-      tooltips: true,
-      multiselect: function() { return false; },
-      rangeselect: function() { return false; }
-    },
-    filter: {
-      skip: 0,
-      limit: Number.POSITIVE_INFINITY,
-      filter: undefined
-    }
-  };
-
-  LineUp.prototype.on = function(type, listener) {
-    if (arguments.length < 2) {
-      return this.listeners.on(type);
-    }
-    this.listeners.on(type, listener);
-    return this;
-  };
-
-  LineUp.prototype.changeDataStorage = function (spec) {
-//    d3.select('#lugui-table-header-svg').selectAll().remove();
-    this.storage = spec.storage;
-    this.storage.config = this.config;
-    this.spec = spec;
-    this.config.columnBundles.primary.sortedColumn = null;
-    this.headerUpdateRequired = true;
-    delete this.prevRowScale;
-    this.startVis();
-  };
-
-  /**
-   * change a rendering option
-   * @param option
-   * @param value
-   */
-  LineUp.prototype.changeRenderingOption = function (option, value) {
-    var v = this.config.renderingOptions[option];
-    if (v === value) {
-      return;
-    }
-    this.config.renderingOptions[option] = value;
-    if (option === 'histograms') {
-      if (value) {
-        this.storage.resortData({ filteredChanged: true});
-      }
-    }
-    this.updateAll(true);
-  };
-
-  /**
-   * the function to start the LineUp visualization
-   */
-  LineUp.prototype.startVis = function () {
-    this.assignColors(this.storage.getRawColumns());
-    this.headerUpdateRequired = true;
-    //initial sort
-    this.storage.resortData({});
-    this.updateAll();
-  };
-
-  LineUp.prototype.assignColors = function (columns) {
-    //Color schemes are in config (.columnColors / .grayColor)
-
-    // clear map
-    var config = this.config;
-    config.colorMapping = d3.map();
-
-    var colCounter = 0;
-
-    columns.forEach(function (d) {
-      if (d.color) {
-        config.colorMapping.set(d.id, d.color);
-      } else if ((d instanceof LineUp.LineUpStringColumn) || (d.id === 'rank')) {
-        // gray columns are:
-        config.colorMapping.set(d.id, config.grayColor);
-      } else {
-        config.colorMapping.set(d.id, config.columnColors(colCounter));
-        colCounter++;
-      }
-    });
-    //console.log(config.colorMapping);
-  };
-
-  LineUp.prototype.updateAll = function (stackTransition, bundle) {
-    var that = this;
-    function updateBundle(b) {
-      var cols = that.storage.getColumnLayout(b);
-      that.updateHeader(cols);
-      that.updateBody(cols, that.storage.getData(b), stackTransition || false);
-    }
-    if (bundle) {
-      updateBundle(bundle);
-    } else {
-      Object.keys(this.storage.bundles).forEach(updateBundle);
-    }
-  };
-
-  /**
-   * sort by a column given by name
-   * @param column
-   * @param asc
-   * @returns {boolean}
-   */
-  LineUp.prototype.sortBy = function (column, asc) {
-    column = column || this.storage.primaryKey;
-    asc = asc || false;
-
-    var d = this.storage.getColumnByName(column);
-    if (!d) {
-      return false;
-    }
-    var bundle = this.config.columnBundles[d.columnBundle];
-    bundle.sortingOrderAsc = asc;
-    bundle.sortedColumn = d;
-
-    this.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
-    this.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
-    this.updateAll(false, d.columnBundle);
-  };
-
-  /**
-   * toggles the stacked rendering of this table
-   */
-  LineUp.prototype.toggleStackedRendering = function () {
-    this.config.renderingOptions.stacked = !this.config.renderingOptions.stacked;
-    this.updateAll(true);
-  };
-
-  /**
-   * toggles whether values are rendered all the time
-   */
-  LineUp.prototype.toggleValueRendering = function () {
-    this.config.renderingOptions.values = !this.config.renderingOptions.values;
-    this.updateAll(true);
-  };
-
-  /**
-   * set the limits to simulate pagination, similar to SQL skip and limit
-   * @param skip start number
-   * @param limit number or rows
-   */
-  LineUp.prototype.setLimits = function (skip, limit) {
-    this.config.filter.skip = skip;
-    this.config.filter.limit = limit;
-    //trigger resort to apply skip
-    this.storage.resortData({});
-    this.updateAll();
-  };
-
-  /**
-   * change the weights of the selected column
-   * @param column
-   * @param weights
-   * @returns {boolean}
-   */
-  LineUp.prototype.changeWeights = function (column, weights) {
-    if (typeof column === 'string') {
-      column = this.storage.getColumnByName(column);
-    }
-    column = column || this.config.columnBundles.primary.sortedColumn;
-    var bundle = column.columnBundle;
-    if (!(column instanceof LineUp.LayoutStackedColumn)) {
-      return false;
-    }
-    column.updateWeights(weights);
-    //trigger resort
-    if (column === this.config.columnBundles[bundle].sortedColumn) {
-      this.listeners['change-sortcriteria'](this, column, this.config.columnBundles[bundle]);
-      this.storage.resortData({ key: bundle });
-    }
-    this.updateAll(false, bundle);
-    return true;
-  };
-
-    /**
-     * manually change/set the filter of a column
-     * @param column
-     * @param filter
-     */
-  LineUp.prototype.changeFilter = function (column, filter) {
-    if (typeof column === 'string') {
-      column = this.storage.getColumnByName(column);
-    }
-    column.filter = filter;
-    this.listeners['change-filter'](this, column);
-    this.storage.resortData({filteredChanged: true});
-    this.updateBody();
-  };
-
-  /**
-   * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
-   */
-  LineUp.prototype.destroy = function () {
-    //remove tooltip
-    this.tooltip.destroy();
-    this.$container.selectAll('*').remove();
-    if (this.config.svgLayout.mode === 'combined') {
-      this.$container.off('scroll', this.onScroll);
-    }
-  };
-}(LineUp || (LineUp = {}), d3, jQuery));
-
-/*global d3, jQuery, _ */
-var LineUp;
-(function (LineUp, d3, $, _, undefined) {
-  function fixCSS(id) {
-    return  id.replace(/[\s!\'#$%&'\(\)\*\+,\.\/:;<=>\?\@\[\\\]\^`\{\|\}~]/g, '_'); //replace non css stuff to _
-  }
-  /**
-   * The mother of all Columns
-   * @param desc The descriptor object
-   * @class
-   */
-  function LineUpColumn(desc) {
-    this.column = desc.column;
-    this.label = desc.label || desc.column;
-    this.color = desc.color;
-    this.id = fixCSS(desc.id || this.column);
-    this.missingValue = desc.missingValue;
-    this.layout = {};
-  }
-
-  LineUp.LineUpColumn = LineUpColumn;
-
-  LineUpColumn.prototype = $.extend({}, {}, {
-    getValue: function (row) {
-      var r = row[this.column];
-      if (typeof r === "undefined") {
-        return this.missingValue;
-      }
-      return r;
-    },
-    getRawValue: function (row) {
-      var r = this.getValue(row);
-      if (typeof r === 'undefined') {
-        return '';
-      }
-      return r;
-    }
-  });
-
-
-  function isWildCard(v) {
-    return typeof v !== 'number' || isNaN(v);
-  }
-  /**
-   * A {@link LineUpColumn} implementation for Numbers
-   * @param desc The descriptor object
-   * @constructor
-   * @extends LineUpColumn
-   */
-  function LineUpNumberColumn(desc, _, data) {
-    LineUpColumn.call(this, desc);
-
-    this.domain = desc.domain || [NaN, NaN];
-    this.range = desc.range || [0, 1];
-    if (typeof this.missingValue === "undefined") {
-      this.missingValue = NaN;
-    }
-
-    //infer the min max
-    var that = this;
-    if (isWildCard(this.domain[0]) || isWildCard(this.domain[1])) {
-      var minmax = d3.extent(data, function(row) { return that.getValue(row); });
-      if (isWildCard(this.domain[0])) {
-        this.domain[0] = minmax[0];
-      }
-      if (isWildCard(this.domain[1])) {
-        this.domain[1] = minmax[1];
-      }
-    }
-  }
-
-  LineUp.LineUpNumberColumn = LineUpNumberColumn;
-
-  LineUpNumberColumn.prototype = $.extend({}, LineUpColumn.prototype, {
-    getValue: function (row) {
-      var r = LineUpColumn.prototype.getValue.call(this, row);
-      if (r === null || typeof r === 'undefined' || r === '' || r.toString().trim().length === 0) {
-        r = this.missingValue;
-      }
-      return +r;
-    },
-    getRawValue: function (row) {
-      var r = LineUpColumn.prototype.getValue.call(this, row);
-      if (isNaN(r)) {
-        return '';
-      }
-      return r;
-    }
-  });
-
-  /**
-   *A {@link LineUpColumn} implementation for Strings
-   * @param desc The description object
-   * @constructor
-   * @extends LineUpColumn
-   */
-  function LineUpStringColumn(desc) {
-    LineUpColumn.call(this, desc);
-  }
-
-  LineUp.LineUpStringColumn = LineUpStringColumn;
-
-  LineUpStringColumn.prototype = $.extend({}, LineUpColumn.prototype, {
-
-  });
-
-  /**
-   *A {@link LineUpColumn} implementation for Strings
-   * @param desc The description object
-   * @constructor
-   * @extends LineUpColumn
-   */
-  function LineUpCategoricalColumn(desc, _, data) {
-    LineUpColumn.call(this, desc);
-    this.categories = [];
-    this.categoryColors = d3.scale.category10().range();
-    var that = this;
-    if (desc.categories) {
-        desc.categories.forEach(function(cat,i) {
-            if (typeof cat === 'string') {
-                that.categories.push(cat);
-            } else {
-                that.categories.push(cat.name);
-                that.categoryColors[i] = cat.color;
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var utils = require('./utils');
+var d3 = require('d3');
+var LineUp = (function (_super) {
+    __extends(LineUp, _super);
+    function LineUp(container, data, config) {
+        var _this = this;
+        if (config === void 0) { config = {}; }
+        _super.call(this);
+        this.data = data;
+        this.config = {
+            grayColor: '#999999',
+            numberformat: d3.format('.3n'),
+            htmlLayout: {
+                headerHeight: 50,
+                headerOffset: 1,
+                buttonTopPadding: 10,
+                labelLeftPadding: 5,
+                buttonRightPadding: 15,
+                buttonWidth: 13
+            },
+            renderingOptions: {
+                stacked: false,
+                values: false,
+                animation: true,
+                histograms: false
+            },
+            svgLayout: {
+                mode: 'combined',
+                rowHeight: 17,
+                rowPadding: 0.2,
+                rowBarPadding: 1,
+                backupScrollRows: 4,
+                animationDuration: 1000,
+                addPlusSigns: false,
+                plusSigns: {
+                    addStackedColumn: {
+                        title: 'add stacked column',
+                        action: 'addNewEmptyStackedColumn',
+                        x: 0, y: 2,
+                        w: 21, h: 21
+                    }
+                },
+                rowActions: new Array()
+            },
+            manipulative: true,
+            interaction: {
+                tooltips: true,
+                multiselect: function () { return false; },
+                rangeselect: function () { return false; }
+            },
+            filter: {
+                skip: 0,
+                limit: Number.POSITIVE_INFINITY,
+                filter: undefined
             }
-        });
-    }
-    if (this.categories.length === 0) {
-      this.categories = d3.set(data.map(function(row) { return that.getValue(row); })).values();
-      this.categories.sort();
-    }
-  }
-
-  LineUp.LineUpCategoricalColumn = LineUpCategoricalColumn;
-
-  LineUpCategoricalColumn.prototype = $.extend({}, LineUpColumn.prototype, {
-
-  });
-
-  /**
-   *  --- FROM HERE ON ONLY Layout Columns ---
-   */
-
-  function LayoutColumn(desc) {
-    var that = this;
-    this.columnWidth = desc.width || 100;
-    this.id = _.uniqueId("Column_");
-    this.filter = desc.filter;
-
-    this.parent = desc.parent || null; // or null
-    this.columnBundle = "primary";
-    //define it here to have a dedicated this pointer
-    this.sortBy = function (a, b) {
-      a = that.getValue(a);
-      b = that.getValue(b);
-      return that.safeSortBy(a, b);
-    };
-  }
-
-  LineUp.LayoutColumn = LayoutColumn;
-
-  LayoutColumn.prototype = $.extend({}, {}, {
-    setColumnWidth: function (newWidth, ignoreParent) {
-      this.columnWidth = newWidth;
-      if (!ignoreParent && this.parent) {
-        this.parent.updateWidthFromChild({id: this.id, newWidth: newWidth});
-      }
-    },
-    getColumnWidth: function () {
-      return this.columnWidth;
-    },
-    prepare: function(/*data*/) {
-
-    },
-    safeSortBy: function (a, b) {
-      var an = typeof a === 'number' && isNaN(a);
-      var bn = typeof b === 'number' && isNaN(b);
-      if (an && bn) {
-        return 0;
-      }
-      if (an) {
-        return 1;
-      }
-      if (bn) {
-        return -1;
-      }
-      return d3.descending(a, b);
-    },
-
-    flattenMe: function (array) {
-      array.push(this);
-    },
-    description: function () {
-      var res = {};
-      res.width = this.columnWidth;
-      res.filter = this.filter;
-
-      return res;
-    },
-    makeCopy: function () {
-      return new LayoutColumn(this.description());
-    },
-    isFiltered: function () {
-      return typeof this.filter !== 'undefined';
-    },
-    filterBy: function (/*row*/) {
-      return true;
-    }
-  });
-
-  function LayoutSingleColumn(desc, rawColumns) {
-    LayoutColumn.call(this, desc);
-    this.columnLink = desc.column;
-    this.column = rawColumns.get(desc.column);
-    this.id = fixCSS(_.uniqueId(this.columnLink + "_"));
-  }
-
-  LineUp.LayoutSingleColumn = LayoutSingleColumn;
-
-  LayoutSingleColumn.prototype = $.extend({}, LayoutColumn.prototype, {
-    getValue: function (row, mode) {
-      if (mode === 'raw') {
-        return this.column.getRawValue(row);
-      }
-      return this.column.getValue(row);
-    },
-
-    getLabel: function () {
-      return this.column.label;
-    },
-    getDataID: function () {
-      return this.column.id;
-    },
-
-    description: function () {
-      var res = LayoutColumn.prototype.description.call(this);
-      res.column = this.columnLink;
-      return res;
-    },
-    makeCopy: function () {
-      var description = this.description();
-      var lookup = d3.map();
-      lookup.set(this.columnLink, this.column);
-      var res = new LayoutSingleColumn(description, lookup);
-      return res;
-    }
-
-  });
-
-  function LayoutNumberColumn(desc, rawColumns) {
-    LayoutSingleColumn.call(this, desc, rawColumns);
-
-    //from normalized value to width value
-    this.value2pixel = d3.scale.linear().domain([0, 1]).range([0, this.columnWidth]);
-    var d = desc.domain || this.column.domain;
-    if (isWildCard(d[0])) {
-      d[0] = this.column.domain[0];
-    }
-    if (isWildCard(d[1])) {
-      d[1] = this.column.domain[1];
-    }
-    this.scale = d3.scale.linear().clamp(true).domain(d).range(desc.range || this.column.range);
-    this.histgenerator = d3.layout.histogram();
-    var that = this;
-    this.histgenerator.range(this.scale.range());
-    this.histgenerator.value(function (row) { return that.getValue(row) ;});
-    this.hist = [];
-  }
-  LineUp.LayoutNumberColumn = LayoutNumberColumn;
-
-  LayoutNumberColumn.prototype = $.extend({}, LayoutSingleColumn.prototype, {
-    mapping : function(newscale) {
-      if (arguments.length < 1) {
-        return this.scale;
-      }
-      this.scale = newscale.clamp(true);
-      this.histgenerator.range(newscale.range());
-    },
-    originalMapping: function() {
-      return  d3.scale.linear().clamp(true).domain(this.column.domain).range(this.column.range);
-    },
-    prepare: function(data, showHistograms) {
-      if (!showHistograms) {
-        this.hist = [];
-        return;
-      }
-      //remove all the direct values to save space
-      this.hist = this.histgenerator(data).map(function (bin) {
-        return {
-          x : bin.x,
-          dx : bin.dx,
-          y: bin.y
         };
-      });
-      var max = d3.max(this.hist, function(d) { return d.y; });
-      this.hist.forEach(function (d) {
-        d.y /= max;
-      });
-    },
-    binOf : function (row) {
-      var v = this.getValue(row), i;
-      for(i = this.hist.length -1 ; i>= 0; --i) {
-        var bin = this.hist[i];
-        if (bin.x <= v && v <= (bin.x+bin.dx)) {
-          return i;
-        }
-      }
-      return -1;
-    },
-    setColumnWidth: function (newWidth, ignoreParent) {
-      this.value2pixel.range([0, newWidth]);
-      LayoutSingleColumn.prototype.setColumnWidth.call(this, newWidth, ignoreParent);
-    },
-    getValue: function (row, mode) {
-      if (mode === 'raw') {
-        return this.column.getRawValue(row);
-      }
-      return this.scale(this.column.getValue(row));
-    },
-    getWidth: function (row) {
-      var r = this.getValue(row);
-      if (isNaN(r) || typeof r === 'undefined') {
-        return 0;
-      }
-      return this.value2pixel(r);
-    },
-    filterBy : function (row) {
-      var filter = this.filter;
-      if (typeof filter === 'undefined' || !this.column) {
-        return true;
-      }
-      var r = this.getValue(row, 'raw');
-      if (typeof filter === 'number' && isNaN(filter)) {
-        return !isNaN(r);
-      } else if (typeof filter === 'number') {
-        return r >= filter;
-      } else if (Array.isArray(filter)) {
-        return filter[0] <= r && r <= filter[1];
-      }
-      return true;
-    },
-
-    description: function () {
-      var res = LayoutColumn.prototype.description.call(this);
-      res.column = this.columnLink;
-      res.type = 'number';
-      var a = this.scale.domain();
-      var b = this.column.domain;
-      if (a[0] !== b[0] || a[1] !== b[1]) {
-        res.domain = a;
-      }
-      a = this.scale.range();
-      b = this.column.range;
-      if (a[0] !== b[0] || a[1] !== b[1]) {
-        res.range = a;
-      }
-      return res;
-    },
-    makeCopy: function () {
-      var lookup = d3.map();
-      lookup.set(this.columnLink, this.column);
-      var res = new LayoutNumberColumn(this.description(), lookup);
-      return res;
-    }
-  });
-  function LayoutStringColumn(desc, rawColumns) {
-    LayoutSingleColumn.call(this, desc, rawColumns);
-  }
-  LineUp.LayoutStringColumn = LayoutStringColumn;
-
-  LayoutStringColumn.prototype = $.extend({}, LayoutSingleColumn.prototype, {
-    filterBy : function (row) {
-      var filter = this.filter;
-      if (typeof filter === 'undefined' || !this.column) {
-        return true;
-      }
-      var r = this.getValue(row);
-      if (typeof r === 'boolean') {
-        return r && r.trim().length > 0;
-      } else if (typeof filter === 'string' && filter.length > 0) {
-        return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-      } else if (filter instanceof RegExp) {
-        return r && r.match(filter);
-      }
-      return true;
-    },
-    makeCopy: function () {
-      var lookup = d3.map();
-      lookup.set(this.columnLink, this.column);
-      var res = new LayoutStringColumn(this.description(), lookup);
-      return res;
-    }
-  });
-  function LayoutCategoricalColumn(desc, rawColumns) {
-    LayoutSingleColumn.call(this, desc, rawColumns);
-  }
-  LineUp.LayoutCategoricalColumn = LayoutCategoricalColumn;
-
-  LayoutCategoricalColumn.prototype = $.extend({}, LayoutSingleColumn.prototype, {
-    filterBy : function (row) {
-      var filter = this.filter;
-      if (typeof filter === 'undefined' || !this.column) {
-        return true;
-      }
-      var r = this.getValue(row);
-      if (Array.isArray(filter) && filter.length > 0) {
-        return filter.indexOf(r) >= 0;
-      } else if (typeof filter === 'string' && filter.length > 0) {
-        return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-      } else if (filter instanceof RegExp) {
-        return r && r.match(filter);
-      }
-      return true;
-    },
-    makeCopy: function () {
-      var lookup = d3.map();
-      lookup.set(this.columnLink, this.column);
-      var res = new LayoutCategoricalColumn(this.description(), lookup);
-      return res;
-    }
-  });
-    function LayoutCategoricalColorColumn(desc, rawColumns) {
-        LayoutSingleColumn.call(this, desc, rawColumns);
-    }
-    LineUp.LayoutCategoricalColorColumn = LayoutCategoricalColorColumn;
-
-    LayoutCategoricalColorColumn.prototype = $.extend({}, LayoutSingleColumn.prototype, {
-        getColor: function(row) {
-            var cat = this.getValue(row, 'raw');
-            if (cat === null || cat === '') {
-                return null;
-            }
-            var index = this.column.categories.indexOf(cat);
-            if (index < 0) {
-                return null;
-            }
-            return this.column.categoryColors[index];
-        },
-        filterBy : function (row) {
-            return LayoutCategoricalColumn.prototype.filterBy.call(this, row);
-        },
-        makeCopy: function () {
-            var lookup = d3.map();
-            lookup.set(this.columnLink, this.column);
-            var res = new LayoutCategoricalColorColumn(this.description(), lookup);
-            return res;
-        }
-    });
-
-  function LayoutRankColumn(desc, _dummy, _dummy2, storage) {
-    LayoutColumn.call(this, desc ? desc : {}, []);
-    this.columnWidth = desc ? (desc.width || 50) : 50;
-    this.id = fixCSS(_.uniqueId('rank_'));
-    //maps keys to ranks
-    this.values = d3.map();
-    this.storage = storage;
-  }
-
-  LineUp.LayoutRankColumn = LayoutRankColumn;
-
-
-  LayoutRankColumn.prototype = $.extend({}, LayoutColumn.prototype, {
-    setValue: function (row, d) {
-      this.values.set(row[this.storage.primaryKey], d);
-    },
-    getValue: function (row) {
-      return this.values.get(row[this.storage.primaryKey]);
-    },
-    filter: function (row) {
-      var r = this.getValue(row);
-      if (typeof r === 'undefined') {
-        return true;
-      } else if (typeof this.filter === 'number') {
-        return r >= this.filter;
-      } else if (Array.isArray(this.filter)) {
-        return this.filter[0] <= r && r <= this.filter[1];
-      }
-      return true;
-    },
-    getLabel: function () {
-      return 'Rank';
-    },
-    getDataID: function () {
-      return this.id;
-    },
-    description: function () {
-      var res = LayoutColumn.prototype.description.call(this);
-      res.type = 'rank';
-      return res;
-    },
-    makeCopy: function () {
-      var description = this.description();
-      var res = new LayoutRankColumn(description, null, null, this.column.storage);
-      return res;
-    }
-
-  });
-
-
-// TODO: maybe remove??
-  function LayoutCompositeColumn(desc, rawColumns) {
-    LayoutColumn.call(this, desc, rawColumns);
-    this.childrenLinks = desc.children || [];
-    this.label = desc.label || this.id;
-  }
-
-  LineUp.LayoutCompositeColumn = LayoutCompositeColumn;
-
-  LayoutCompositeColumn.prototype = $.extend({}, LayoutColumn.prototype, {
-    getDataID: function () {
-      return this.id;
-    },
-    getLabel: function () {
-      return this.label;
-    }
-  });
-
-
-  function LayoutStackedColumn(desc, rawColumns, toLayoutColumn) {
-    LayoutCompositeColumn.call(this, desc, rawColumns);
-    this.childrenWeights = [];
-    this.childrenWidths = [];
-    this.toLayoutColumn = toLayoutColumn;
-    this.children = [];
-    this.emptyColumns = [];
-    this.scale = d3.scale.linear().domain([0,1]).range([0, this.columnWidth]);
-    this.init(desc);
-    var that = this;
-    this.sortBy = function (a, b) {
-      var aAll = 0;
-      var bAll = 0;
-      that.children.forEach(function (d) {
-        aAll += d.getWidth(a);
-        bAll += d.getWidth(b);
-      });
-      return that.safeSortBy(aAll, bAll);
-    };
-  }
-
-  LineUp.LayoutStackedColumn = LayoutStackedColumn;
-
-  LayoutStackedColumn.prototype = $.extend({}, LayoutCompositeColumn.prototype, {
-
-    getValue: function (row) {
-      // TODO: a caching strategy might work here
-      var that = this;
-      var all = 0;
-      this.children.forEach(function (d, i) {
-        var r = d.getValue(row);
-        if (isNaN(r) || typeof r === 'undefined') {
-          r = 0;
-        }
-        all += r * that.childrenWeights[i];
-      });
-      return all;
-    },
-    init: function (desc) {
-      var that = this;
-      if (this.childrenLinks.length < 1) {
-        this.emptyColumns.push(new LayoutEmptyColumn({parent: that}));
-      } else {
-        // check if weights or width are given
-        if (this.childrenLinks[0].hasOwnProperty("weight")) {
-          this.childrenWeights = this.childrenLinks.map(function (d) {
-            return +(d.weight || 1);
-          });
-
-          this.scale.domain([0, d3.sum(this.childrenWeights)]);
-
-          if (desc.hasOwnProperty('width')) {
-            // if the stacked column has a width -- normalize to width
-            this.childrenWidths = this.childrenWeights.map(function (d) {
-              return that.scale(d);
+        this.$container = container instanceof d3.selection ? container : d3.select(container);
+        utils.merge(this.config, config);
+        if (this.config.svgLayout.mode === 'combined') {
+            this.$container.classed('lu-mode-combined', true);
+            this.$table = this.$container.append('svg').attr('class', 'lu');
+            var $defs = this.$table.append('defs');
+            $defs.append('defs').attr('class', 'columnheader');
+            $defs.append('defs').attr('class', 'column');
+            $defs.append('defs').attr('class', 'overlay');
+            this.$body = this.$table.append('g').attr('class', 'body').attr('transform', 'translate(0,' + this.config.htmlLayout.headerHeight + ')');
+            this.$header = this.$table.append('g').attr('class', 'header');
+            this.$bodySVG = this.$headerSVG = this.$table;
+            this.scroller = new utils.ContentScroller(this.$container.node(), this.$table.node(), {
+                topShift: this.config.htmlLayout.headerHeight,
+                backupRows: this.config.svgLayout.backupScrollRows,
+                rowHeight: this.config.svgLayout.rowHeight
             });
-          } else {
-            // if width was artificial set, approximate a total width of x*100
-            this.columnWidth = this.children.length * 100;
-            this.scale.range([0, that.columnWidth]);
-          }
-        } else {
-          // accumulate weights and map 100px to  weight 1.0
-          this.childrenWidths = this.childrenLinks.map(function (d) {
-            return +(d.width || 100);
-          });
-          this.childrenWeights = this.childrenWidths.map(function (d) {
-            return d / 100.0;
-          });
-          this.columnWidth = d3.sum(this.childrenWidths);
-          this.scale.domain([0, d3.sum(this.childrenWeights)]).range([0, this.columnWidth]);
         }
-        this.children = this.childrenLinks.map(function (d, i) {
-          d.width = that.childrenWidths[i];
-          d.parent = that;
-          return that.toLayoutColumn(d);
-        });
-      }
-    },
-    flattenMe: function (array, spec) {
-      var addEmptyColumns = false;
-      if (spec) {
-        addEmptyColumns = spec.addEmptyColumns || false;
-      }
-      array.push(this);
-      this.children.forEach(function (d) {
-        d.flattenMe(array);
-      });
-
-      if (addEmptyColumns) {
-        this.emptyColumns.forEach(function (d) {
-          return d.flattenMe(array);
-        });
-      }
-    },
-    filterBy: function (row) {
-      if (typeof this.filter === 'undefined') {
-        return true;
-      }
-      var val = this.getValue(row);
-      if (typeof this.filter === 'number') {
-        return val <= this.filter;
-      } else if (Array.isArray(this.filter)) {
-        return this.filter[0] <= val && val <= this.filter[1];
-      }
-      return true;
-    },
-    updateWidthFromChild: function () {
-      var that = this;
-
-      // adopt weight and global size
-      this.childrenWidths = this.children.map(function (d) {
-        return d.getColumnWidth();
-      });
-      this.childrenWeights = this.childrenWidths.map(function (d) {
-        return that.scale.invert(d);
-      });
-
-      this.columnWidth = d3.sum(this.childrenWidths);
-      this.scale.range([0, this.columnWidth]);
-      this.scale.domain([0, d3.sum(this.childrenWeights)]);
-    },
-    setColumnWidth: function (newWidth) {
-      var that = this;
-      this.columnWidth = newWidth;
-      that.scale.range([0, this.columnWidth]);
-      this.childrenWidths = this.childrenWeights.map(function (d) {
-        return that.scale(d);
-      });
-//        console.log(this.childrenWidths, this.childrenWeights);
-      this.children.forEach(function (d, i) {
-        return d.setColumnWidth(that.childrenWidths[i], true);
-      });
-    },
-    updateWeights: function (weights) {
-      this.childrenWeights = weights;
-      this.scale.domain([0, d3.sum(this.childrenWeights)]);
-
-      var that = this;
-      this.childrenWidths = this.childrenWeights.map(function (d) {
-        return that.scale(d);
-      });
-      this.columnWidth = d3.sum(this.childrenWidths);
-      this.children.forEach(function (d, i) {
-        return d.setColumnWidth(that.childrenWidths[i], true);
-      });
-
-      //console.log(this.childrenWeights);
-      //console.log(this.childrenWidths);
-    },
-    removeChild: function (child) {
-      var indexOfChild = this.children.indexOf(child);
-      var that = this;
-      this.childrenWeights.splice(indexOfChild, 1);
-      this.childrenWidths.splice(indexOfChild, 1);
-
-      this.columnWidth = d3.sum(this.childrenWidths);
-      this.scale.range([0, this.columnWidth]);
-      this.scale.domain([0, d3.sum(this.childrenWeights)]);
-
-
-      this.children.splice(indexOfChild, 1);
-      child.parent = null;
-      if (this.children.length < 1) {
-        this.emptyColumns = [new LineUp.LayoutEmptyColumn({parent: that})];
-        this.columnWidth = 100;
-      }
-
-    },
-    addChild: function (child, targetChild, position) {
-      if (!(child instanceof LineUp.LayoutNumberColumn)) {
-        return false;
-      }
-
-      var targetIndex = 0;
-      if (targetChild instanceof LineUp.LayoutEmptyColumn) {
-        this.emptyColumns = [];
-      } else {
-        targetIndex = this.children.indexOf(targetChild);
-        if (position === 'r') {
-          targetIndex++;
+        else {
+            this.$container.classed('lu-mode-separate', true);
+            this.$table = this.$container;
+            this.$headerSVG = this.$table.append('svg').attr('class', 'lu lu-header');
+            this.$headerSVG.attr('height', this.config.htmlLayout.headerHeight);
+            this.$headerSVG.append('defs').attr('class', 'columnheader');
+            this.$header = this.$headerSVG.append('g');
+            this.$bodySVG = this.$table.append('div').attr('class', 'lu-wrapper').append('svg').attr('class', 'lu lu-body');
+            var $defs = this.$bodySVG.append('defs');
+            $defs.append('defs').attr('class', 'column');
+            $defs.append('defs').attr('class', 'overlay');
+            this.$body = this.$bodySVG;
+            this.scroller = new utils.ContentScroller(this.$container.select('div.lu-wrapper').node(), this.$table.node(), {
+                topShift: 0,
+                backupRows: this.config.svgLayout.backupScrollRows,
+                rowHeight: this.config.svgLayout.rowHeight
+            });
         }
-      }
-
-      this.childrenWeights.splice(targetIndex, 0, this.scale.invert(child.getColumnWidth()));
-      this.childrenWidths.splice(targetIndex, 0, child.getColumnWidth());
-
-      this.columnWidth = d3.sum(this.childrenWidths);
-      this.scale.range([0, this.columnWidth]);
-      this.scale.domain([0, d3.sum(this.childrenWeights)]);
-
-      child.parent = this;
-      this.children.splice(targetIndex, 0, child);
-
-//        console.log('added Child:',this.children[targetIndex]);
-
-      return true;
-
-    },
-    description: function () {
-      var res = LayoutColumn.prototype.description.call(this);
-      res.type = 'stacked';
-      var that = this;
-      res.children = this.children.map(function (d, i) {
-        var r = d.description();
-        r.weight = that.childrenWeights[i];
-        return r;
-      });
-      res.label = this.label;
-      return res;
-    },
-    makeCopy: function () {
-      var that = this;
-      var description = that.description();
-      description.childrenLinks = [];
-      var res = new LayoutStackedColumn(description, {}, that.toLayoutColumn);
-
-      res.children = that.children.map(function (d) {
-        return d.makeCopy();
-      });
-      res.children.forEach(function (d) {
-        d.parent = res;
-      });
-      res.childrenWeights = this.childrenWeights.slice(0);
-      res.scale.domain([0, d3.sum(this.childrenWeights)]);
-      res.childrenWidths = this.childrenWeights.map(function (d) {
-        return that.scale(d);
-      });
-
-      return res;
-    }
-  });
-
-
-  function LayoutEmptyColumn(spec) {
-    LayoutColumn.call(this, spec, []);
-    this.id = _.uniqueId('empty_');
-    this.label = '{empty}';
-    this.columnWidth = 50;
-  }
-
-  LineUp.LayoutEmptyColumn = LayoutEmptyColumn;
-
-  LayoutEmptyColumn.prototype = $.extend({}, LayoutColumn.prototype, {
-    getLabel: function () {
-      return this.label;
-    },
-    getDataID: function () {
-      return this.id;
-    },
-    getValue : function() {
-      return '';
-    }
-  });
-
-
-  function LayoutActionColumn(spec) {
-    spec = spec || {};
-    LayoutColumn.call(this, spec, []);
-    this.id = _.uniqueId('action_');
-    this.label = '';
-    this.columnWidth = spec.width || 50;
-  }
-
-  LineUp.LayoutActionColumn = LayoutActionColumn;
-
-  LayoutActionColumn.prototype = $.extend({}, LayoutColumn.prototype, {
-    getLabel: function () {
-      return this.label;
-    },
-    getDataID: function () {
-      return this.id;
-    },
-    description: function () {
-      var res = LayoutColumn.prototype.description.call(this);
-      res.type = 'actions';
-      return res;
-    },
-    getValue : function() {
-      return '';
-    }
-  });
-}(LineUp || (LineUp = {}), d3, jQuery, _));
-/* global d3, jQuery, window, document */
-var LineUp;
-(function (LineUp, d3, $, undefined) {
-  LineUp.prototype = LineUp.prototype || {};
-  /**
-   * creates a simple popup window with a table
-   * @param title
-   * @param label optional if an input field is
-   * @param options optional options like the dimension of the popup
-   * @returns {{popup: *, table: *, remove: remove, onOK: onOK}}
-   */
-  function createPopup(title, label, options) {
-    options = $.extend({}, options, {
-      x: +(window.innerWidth) / 2 - 100,
-      y: 100,
-      width: 400,
-      height: 200
-    });
-    var popupBG = d3.select("body")
-      .append("div").attr("class", "lu-popupBG");
-
-    var popup = d3.select("body").append("div")
-      .attr({
-        "class": "lu-popup"
-      }).style({
-        left: options.x + "px",
-        top: options.y + "px",
-        width: options.width + "px",
-        height: options.height + "px"
-      })
-      .html(
-        '<span style="font-weight: bold">' + title + '</span>' +
-        (label ? '<input type="text" id="popupInputText" size="35" value="' + label + '"><br>' : '') +
-        '<div class="selectionTable"></div>' +
-        '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
-        '<button class="ok"><i class="fa fa-check"></i> ok</button>'
-    );
-
-    var theTable = popup.select(".selectionTable").style({
-      width: (options.width - 10) + "px",
-      height: (options.height - 40) + "px"
-    }).append("table");
-
-    popup.select(".cancel").on("click", function () {
-      popupBG.remove();
-      popup.remove();
-    });
-
-    return {
-      popup: popup,
-      table: theTable,
-      remove: function () {
-        popup.remove();
-        popupBG.remove();
-      },
-      onOK: function (handler) {
-        return popup.select(".ok").on("click", handler);
-      }
-    };
-  }
-
-  LineUp.prototype.addNewStackedColumnDialog = function () {
-    var that = this;
-
-    var popup = createPopup('add stacked column:', 'Stacked');
-    // list all data rows !
-    var trData = that.storage.getRawColumns().filter(function (d) {
-      return (d instanceof LineUp.LineUpNumberColumn);
-    }).map(function (d) {
-      return {d: d, isChecked: false, weight: 1.0};
-    });
-
-    var trs = popup.table.selectAll("tr").data(trData);
-    trs.enter().append("tr");
-    trs.append("td").attr("class", "checkmark");
-    trs.append("td").attr("class", "datalabel").style("opacity", 0.8).text(function (d) {
-      return d.d.label;
-    });
-    trs.append("td").append("input").attr({
-      class: "weightInput",
-      type: "text",
-      value: function (d) {
-        return d.weight;
-      },
-      'disabled': true,
-      size: 5
-    }).on("input", function (d) {
-      d.weight = +this.value;
-      redraw();
-    });
-
-    function redraw() {
-      var trs = popup.table.selectAll("tr").data(trData);
-      trs.select(".checkmark").html(function (d) {
-        return (d.isChecked) ? '<i class="fa fa-check-square-o"></i>' : '<i class="fa fa-square-o"></i>';
-      })
-        .on("click", function (d) {
-          d.isChecked = !d.isChecked;
-          redraw();
+        this.$header.append('rect').attr({
+            width: '100%',
+            height: this.config.htmlLayout.headerHeight,
+            'class': 'headerbg'
         });
-      trs.select(".datalabel").style("opacity", function (d) {
-        return d.isChecked ? "1.0" : ".8";
-      });
-      trs.select(".weightInput").attr('disabled', function (d) {
-        return d.isChecked ? null : true;
-      });
+        this.$header.append('g').attr('class', 'main');
+        this.$header.append('g').attr('class', 'overlay');
+        this.scroller.on('scroll', function (top, left) { return _this.scrolled(top, left); });
+        this.scroller.on('redraw', function () { return _this.renderBody(); });
     }
-
-    redraw();
-
-
-    popup.onOK(function () {
-      var name = document.getElementById("popupInputText").value;
-      if (name.length < 1) {
-        window.alert("name must not be empty");
-        return;
-      }
-      //console.log(name, trData);
-
-      var allChecked = trData.filter(function (d) {
-        return d.isChecked;
-      });
-
-      //console.log(allChecked);
-      var desc = {
-        label: name,
-        width: (Math.max(allChecked.length * 100, 100)),
-        children: allChecked.map(function (d) {
-          return {column: d.d.column, type: 'number', weight: d.weight};
-        })
-      };
-
-      that.storage.addStackedColumn(desc);
-      popup.remove();
-      that.headerUpdateRequired = true;
-      that.updateAll();
-    });
-
-  };
-
-  LineUp.prototype.addNewSingleColumnDialog = function () {
-    var that = this;
-    var popup = createPopup('add single columns', undefined);
-    // list all data rows !
-    var trData = that.storage.getRawColumns()
-//        .filter(function(d){return (d instanceof LineUpNumberColumn);})
-      .map(function (d) {
-        return {d: d, isChecked: false, weight: 1.0};
-      });
-
-    var trs = popup.table.selectAll("tr").data(trData);
-    trs.enter().append("tr");
-    trs.append("td").attr("class", "checkmark");
-    trs.append("td").attr("class", "datalabel").style("opacity", 0.8).text(function (d) {
-      return d.d.label;
-    });
-
-
-    function redraw() {
-      var trs = popup.table.selectAll("tr").data(trData);
-      trs.select(".checkmark").html(function (d) {
-        return '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>';
-      })
-        .on("click", function (d) {
-          d.isChecked = !d.isChecked;
-          redraw();
-        });
-      trs.select(".datalabel").style("opacity", function (d) {
-        return d.isChecked ? "1.0" : ".8";
-      });
-    }
-
-    redraw();
-
-
-    popup.onOK(function () {
-      var allChecked = trData.filter(function (d) {
-        return d.isChecked;
-      });
-
-//        console.log(allChecked);
-//        var desc = {
-//            label:name,
-//            width:(Math.max(allChecked.length*100,100)),
-//            children:allChecked.map(function(d){return {column: d.d.id, weight: d.weight};})
-//        }
-
-      allChecked.forEach(function (d) {
-        that.storage.addSingleColumn({column: d.d.column});
-      });
-
-      popup.remove();
-      that.headerUpdateRequired = true;
-      that.updateAll();
-    });
-  };
-
-  LineUp.prototype.reweightStackedColumnWidget = function (data, $table) {
-    var toWeight = function (d) {
-      return d.weight;
+    LineUp.prototype.renderBody = function () {
+        console.log('TODO');
     };
-    var predictScale = d3.scale.linear().domain([0, d3.max(data, toWeight)]).range([0, 120]);
-    var trs = $table.selectAll("tr").data(data);
-    var config = this.config;
+    LineUp.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['hover', 'change-sortcriteria', 'change-filter', 'selected', 'multiselected']);
+    };
+    LineUp.prototype.scrolled = function (top, left) {
+        if (this.config.svgLayout.mode === 'combined') {
+            this.$header.attr('transform', 'translate(0,' + top + ')');
+        }
+        else {
+            this.$header.attr('transform', 'translate(' + -left + ',0)');
+        }
+    };
+    LineUp.prototype.destroy = function () {
+        this.scroller.destroy();
+        this.$container.selectAll('*').remove();
+        if (this.config.svgLayout.mode === 'combined') {
+            this.$container.on('scroll.lineup', null);
+        }
+    };
+    LineUp.prototype.sortBy = function (column, ascending) {
+        if (ascending === void 0) { ascending = false; }
+        var col = this.data.find(column);
+        if (col) {
+            col.sortByMe(ascending);
+        }
+        return col !== null;
+    };
+    return LineUp;
+})(utils.AEventDispatcher);
+exports.LineUp = LineUp;
 
-    trs.enter().append("tr");
-//    trs.append("td").attr("class", "checkmark")
-    trs.append("td")
-      .style({
-        width: "20px"
-      })
-      .append("input").attr({
-        class: "weightInput",
-        type: "text",
-        value: function (d) {
-          return d.weight;
+},{"./utils":9,"d3":"d3"}],2:[function(require,module,exports){
+/**
+ * Created by Samuel Gratzl on 14.08.2015.
+ */
+///<reference path='../typings/tsd.d.ts' />
+var d3 = require('d3');
+var utils = require('./utils');
+'use strict';
+function addLine($svg, x1, y1, x2, y2, clazz) {
+    return $svg.append('line').attr({
+        x1: x1, y1: y1, x2: x2, y2: y2, 'class': clazz
+    });
+}
+function addText($svg, x, y, text, dy, clazz) {
+    return $svg.append('text').attr({
+        x: x, y: y, dy: dy, 'class': clazz
+    }).text(text);
+}
+function addCircle($svg, x, shift, y, radius) {
+    shift -= x;
+    return $svg
+        .append('circle')
+        .attr({
+        'class': 'handle',
+        r: radius,
+        cx: x,
+        cy: y,
+        transform: 'translate(' + shift + ',0)'
+    });
+}
+function open(scale, dataDomain, dataPromise, options) {
+    options = utils.merge({
+        width: 400,
+        height: 400,
+        padding: 50,
+        radius: 10,
+        callback: function (d) { return d; },
+        callbackThisArg: null,
+        triggerCallback: 'change'
+    }, options);
+    var editor = function ($root) {
+        var $svg = $root.append('svg').attr({
+            'class': 'lugui-me',
+            width: options.width,
+            height: options.height
+        });
+        var lowerLimitX = options.padding;
+        var upperLimitX = options.width - options.padding;
+        var scoreAxisY = options.padding;
+        var raw2pixelAxisY = options.height - options.padding;
+        var raw2pixel = d3.scale.linear().domain(dataDomain).range([lowerLimitX, upperLimitX]);
+        var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
+        var lowerNormalized = normal2pixel(scale.range()[0]);
+        var upperNormalized = normal2pixel(scale.range()[1]);
+        var lowerRaw = raw2pixel(scale.domain()[0]);
+        var upperRaw = raw2pixel(scale.domain()[1]);
+        scale = d3.scale.linear()
+            .clamp(true)
+            .domain(scale.domain())
+            .range([lowerNormalized, upperNormalized]);
+        var $base = $svg.append('g');
+        addLine($base, lowerLimitX, scoreAxisY, upperLimitX, scoreAxisY, 'axis');
+        addText($base, lowerLimitX, scoreAxisY - 25, 0, '.75em');
+        addText($base, upperLimitX, scoreAxisY - 25, 1, '.75em');
+        addText($base, options.width / 2, scoreAxisY - 25, 'Score', '.75em', 'centered');
+        addLine($base, lowerLimitX, raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
+        addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], '.75em');
+        addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], '.75em');
+        addText($base, options.width / 2, raw2pixelAxisY + 20, 'Raw', '.75em', 'centered');
+        var datalines = $svg.append('g').classed('data', true).selectAll('line').data([]);
+        dataPromise.then(function (data) {
+            datalines = datalines.data(data);
+            datalines.enter().append('line')
+                .attr({
+                x1: scale,
+                y1: scoreAxisY,
+                x2: raw2pixel,
+                y2: raw2pixelAxisY
+            }).style('visibility', function (d) {
+                var a;
+                if (lowerRaw < upperRaw) {
+                    a = (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
+                }
+                else {
+                    a = (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
+                }
+                return a ? 'hidden' : null;
+            });
+        });
+        var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, raw2pixelAxisY, 'bound');
+        var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
+        var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerNormalized - lowerLimitX) + ',0)');
+        var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
+        var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperNormalized - upperLimitX) + ',0)');
+        var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
+        function createDrag(label, move) {
+            return d3.behavior.drag()
+                .on('dragstart', function () {
+                d3.select(this)
+                    .classed('dragging', true)
+                    .attr('r', options.radius * 1.1);
+                label.style('visibility', 'visible');
+            })
+                .on('drag', move)
+                .on('dragend', function () {
+                d3.select(this)
+                    .classed('dragging', false)
+                    .attr('r', options.radius);
+                label.style('visibility', null);
+                updateScale(true);
+            })
+                .origin(function () {
+                var t = d3.transform(d3.select(this).attr('transform'));
+                return { x: t.translate[0], y: t.translate[1] };
+            });
+        }
+        function updateNormalized() {
+            scale.range([lowerNormalized, upperNormalized]);
+            datalines.attr('x1', scale);
+            updateScale();
+        }
+        function updateRaw() {
+            var hiddenDatalines, shownDatalines;
+            if (lowerRaw < upperRaw) {
+                hiddenDatalines = datalines.filter(function (d) {
+                    return (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
+                });
+                shownDatalines = datalines.filter(function (d) {
+                    return !(raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
+                });
+            }
+            else {
+                hiddenDatalines = datalines.filter(function (d) {
+                    return (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
+                });
+                shownDatalines = datalines.filter(function (d) {
+                    return !(raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
+                });
+            }
+            hiddenDatalines.style('visibility', 'hidden');
+            scale.domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)]);
+            shownDatalines
+                .style('visibility', null)
+                .attr('x1', scale);
+            updateScale();
+        }
+        addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
+            .call(createDrag(lowerBoundNormalizedLabel, function () {
+            if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
+                mapperLineLowerBounds.attr('x1', lowerLimitX + d3.event.x);
+                d3.select(this)
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                lowerNormalized = d3.event.x + lowerLimitX;
+                lowerBoundNormalizedLabel
+                    .text(d3.round(normal2pixel.invert(lowerNormalized), 2))
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                updateNormalized();
+            }
+        }));
+        addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
+            .call(createDrag(upperBoundNormalizedLabel, function () {
+            if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
+                mapperLineUpperBounds.attr('x1', upperLimitX + d3.event.x);
+                d3.select(this)
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                upperNormalized = d3.event.x + upperLimitX;
+                upperBoundNormalizedLabel
+                    .text(d3.round(normal2pixel.invert(upperNormalized), 2))
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                updateNormalized();
+            }
+        }));
+        addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
+            .call(createDrag(lowerBoundRawLabel, function () {
+            if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
+                mapperLineLowerBounds.attr('x2', lowerLimitX + d3.event.x);
+                d3.select(this)
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                lowerRaw = d3.event.x + lowerLimitX;
+                lowerBoundRawLabel
+                    .text(d3.round(raw2pixel.invert(lowerRaw), 2))
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                updateRaw();
+            }
+        }));
+        addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
+            .call(createDrag(upperBoundRawLabel, function () {
+            if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
+                mapperLineUpperBounds.attr('x2', upperLimitX + d3.event.x);
+                d3.select(this)
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                upperRaw = d3.event.x + upperLimitX;
+                upperBoundRawLabel
+                    .text(d3.round(raw2pixel.invert(upperRaw), 2))
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                updateRaw();
+            }
+        }));
+        function updateScale(isDragEnd) {
+            if (isDragEnd === void 0) { isDragEnd = false; }
+            if (isDragEnd !== (options.triggerCallback === 'dragend')) {
+                return;
+            }
+            var newScale = d3.scale.linear()
+                .domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)])
+                .range([normal2pixel.invert(lowerNormalized), normal2pixel.invert(upperNormalized)]);
+            options.callback.call(options.callbackThisArg, newScale);
+        }
+    };
+    return editor;
+}
+exports.open = open;
+
+},{"./utils":9,"d3":"d3"}],3:[function(require,module,exports){
+/**
+ * Created by Samuel Gratzl on 06.08.2015.
+ */
+///<reference path='../typings/tsd.d.ts' />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var d3 = require('d3');
+var utils = require('./utils');
+function fixCSS(id) {
+    return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_');
+}
+function numberCompare(a, b) {
+    if (a === b || (isNaN(a) && isNaN(b))) {
+        return 0;
+    }
+    return a - b;
+}
+var Column = (function (_super) {
+    __extends(Column, _super);
+    function Column(id, desc) {
+        _super.call(this);
+        this.desc = desc;
+        this.width_ = 100;
+        this.parent = null;
+        this.id = fixCSS(id);
+        this.label = this.desc.label || this.id;
+    }
+    Object.defineProperty(Column.prototype, "fqid", {
+        get: function () {
+            return this.parent ? this.parent.fqid + '_' + this.id : this.id;
         },
-        size: 5
-      }).on("input", function (d) {
-        data[d.index].weight = +this.value;
-        redraw();
-      });
-
-    trs.append("td").append("div").attr("class", "predictBar").style({
-      width: function (d) {
-        return predictScale(d.weight) + "px";
-      },
-      height: 20 + "px",
-      "background-color": function (d) {
-        return config.colorMapping.get(d.dataID);
-      }
+        enumerable: true,
+        configurable: true
     });
-
-    trs.append("td").attr("class", "datalabel").text(function (d) {
-      return d.d;
-    });
-
-    function redraw() {
-      var trs = $table.selectAll("tr").data(data);
-      predictScale.domain([0, d3.max(data, toWeight)]);
-      trs.select(".predictBar").transition().style({
-        width: function (d) {
-          return predictScale(d.weight) + "px";
+    Column.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['widthChanged', 'dirtySorting', 'dirtyFilter', 'dirtyValues', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader']);
+    };
+    Column.prototype.getWidth = function () {
+        return this.width_;
+    };
+    Column.prototype.flatten = function (r, offset, levelsToGo, padding) {
+        if (levelsToGo === void 0) { levelsToGo = 0; }
+        if (padding === void 0) { padding = 0; }
+        r.push({ col: this, offset: offset, width: this.getWidth() });
+        return this.getWidth();
+    };
+    Column.prototype.setWidth = function (value) {
+        if (this.width_ === value) {
+            return;
         }
-      });
-    }
-
-    redraw();
-  };
-
-  LineUp.prototype.reweightStackedColumnDialog = function (col) {
-    var that = this;
-    var popup = createPopup('re-weight column "' + col.label + '"', undefined);
-
-    //console.log(col.childrenWeights);
-    // list all data rows !
-    var trData = col.children
-      .map(function (d, i) {
+        this.fire('widthChanged', this, this.width_, this.width_ = value);
+        this.fire('dirty', this);
+    };
+    Column.prototype.setLabel = function (value) {
+        if (value === this.label) {
+            return;
+        }
+        this.fire('dirtyHeader', this, this.label, this.label = value);
+        this.fire('dirty', this);
+    };
+    Object.defineProperty(Column.prototype, "color", {
+        get: function () {
+            return this.desc.color || Column.DEFAULT_COLOR;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Column.prototype.sortByMe = function (ascending) {
+        if (ascending === void 0) { ascending = false; }
+        var r = this.findMyRanker();
+        if (r) {
+            return r.sortBy(this, ascending);
+        }
+        return false;
+    };
+    Column.prototype.toggleMySorting = function () {
+        var r = this.findMyRanker();
+        if (r) {
+            return r.toggleSorting(this);
+        }
+        return false;
+    };
+    Column.prototype.removeMe = function () {
+        if (this.parent) {
+            return this.parent.remove(this);
+        }
+        return false;
+    };
+    Column.prototype.insertAfterMe = function (col) {
+        if (this.parent) {
+            return this.parent.insertAfter(col, this);
+        }
+        return false;
+    };
+    Column.prototype.findMyRanker = function () {
+        if (this.parent) {
+            return this.parent.findMyRanker();
+        }
+        return null;
+    };
+    Column.prototype.dump = function (toDescRef) {
         return {
-          d: d.column.label,
-          dataID: d.getDataID(),
-          weight: +col.childrenWeights[i],
-          index: i
+            id: this.id,
+            desc: toDescRef(this.desc),
+            width: this.width_
         };
-      });
-
-    this.reweightStackedColumnWidget(trData, popup.table);
-
-    popup.onOK(function () {
-      popup.remove();
-      that.changeWeights(col, trData.map(function (d) {
-        return d.weight;
-      }));
-    });
-  };
-
-  LineUp.prototype.openMappingEditor = function (selectedColumn, $button) {
-    var bak = selectedColumn.mapping(),
-      original = selectedColumn.originalMapping();
-    var that = this;
-    var act = bak;
-
-
-    var popup = d3.select("body").append("div")
-      .attr({
-        "class": "lu-popup"
-      }).style({
-        left: +(window.innerWidth) / 2 - 100 + "px",
-        top: 100 + "px",
-        width: "420px",
-        height: "470px"
-      })
-      .html(
-        '<div style="font-weight: bold"> change mapping: </div>' +
-        '<div class="mappingArea"></div>' +
-        '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'+
-        '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
-        '<button class="reset"><i class="fa fa-undo"></i> revert</button>' +
-        '<button class="ok"><i class="fa fa-check"></i> ok</button>'
-    );
-    var $filterIt = popup.select('input').on('change', function() {
-      applyMapping(act);
-    });
-    $filterIt.node().checked = Array.isArray(selectedColumn.filter);
-    var access = function (row) {
-      return +selectedColumn.getValue(row, 'raw');
     };
-
-    function applyMapping(newscale) {
-      act = newscale;
-      selectedColumn.mapping(act);
-      var val = $filterIt.node().checked;
-      if (val) {
-        selectedColumn.filter = newscale.domain();
-      } else {
-        selectedColumn.filter = undefined;
-      }
-      //console.log(act.domain().toString(), act.range().toString());
-      $button.classed('filtered', !isSame(act.range(), original.range()) || !isSame(act.domain(), original.domain()));
-      that.listeners['change-filter'](that, selectedColumn);
-      that.storage.resortData({filteredChanged: true});
-      that.updateAll(true);
-    }
-
-    var editorOptions = {
-      callback: applyMapping,
-      triggerCallback : 'dragend'
+    Column.prototype.restore = function (dump, factory) {
+        this.width_ = dump.width;
     };
-    var editor = LineUp.mappingEditor(bak, original.domain(), that.storage.rawdata, access, editorOptions);
-    popup.select('.mappingArea').call(editor);
-
-    function isSame(a, b) {
-      return $(a).not(b).length === 0 && $(b).not(a).length === 0;
+    Column.prototype.getLabel = function (row) {
+        return '' + this.getValue(row);
+    };
+    Column.prototype.getValue = function (row) {
+        return '';
+    };
+    Column.prototype.compare = function (a, b) {
+        return 0;
+    };
+    Column.prototype.isFiltered = function () {
+        return false;
+    };
+    Column.prototype.filter = function (row) {
+        return row !== null;
+    };
+    Column.DEFAULT_COLOR = 'gray';
+    return Column;
+})(utils.AEventDispatcher);
+exports.Column = Column;
+var ValueColumn = (function (_super) {
+    __extends(ValueColumn, _super);
+    function ValueColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.accessor = desc.accessor || (function (row, id, desc) { return null; });
     }
+    ValueColumn.prototype.getLabel = function (row) {
+        return '' + this.getValue(row);
+    };
+    ValueColumn.prototype.getValue = function (row) {
+        return this.accessor(row, this.id, this.desc);
+    };
+    ValueColumn.prototype.compare = function (a, b) {
+        return 0;
+    };
+    return ValueColumn;
+})(Column);
+exports.ValueColumn = ValueColumn;
+var NumberColumn = (function (_super) {
+    __extends(NumberColumn, _super);
+    function NumberColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.missingValue = NaN;
+        this.scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+        this.mapping = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+        this.filter_ = { min: -Infinity, max: Infinity };
+        if (desc.domain) {
+            this.scale.domain(desc.domain);
+        }
+        if (desc.range) {
+            this.scale.range(desc.range);
+        }
+        this.mapping.domain(this.scale.domain()).range(this.scale.range());
+    }
+    NumberColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.domain = this.scale.domain();
+        r.range = this.scale.range();
+        r.mapping = this.getMapping();
+        r.filter = this.filter;
+        r.missingValue = this.missingValue;
+        return r;
+    };
+    NumberColumn.prototype.restore = function (dump, factory) {
+        _super.prototype.restore.call(this, dump, factory);
+        this.scale.domain(dump.domain);
+        this.scale.range(dump.range);
+        this.mapping.domain(dump.mapping.scale).range(dump.mapping.range);
+        this.filter_ = dump.filter;
+        this.missingValue = dump.missingValue;
+    };
+    NumberColumn.prototype.getLabel = function (row) {
+        return '' + _super.prototype.getValue.call(this, row);
+    };
+    NumberColumn.prototype.getRawValue = function (row) {
+        var v = _super.prototype.getValue.call(this, row);
+        if (typeof (v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof (v) === 'string' && (v.toLowerCase() === 'na'))) {
+            return this.missingValue;
+        }
+        return +v;
+    };
+    NumberColumn.prototype.getValue = function (row) {
+        var v = this.getRawValue(row);
+        if (isNaN(v)) {
+            return v;
+        }
+        return this.scale(v);
+    };
+    NumberColumn.prototype.getNumber = function (row) {
+        return this.getValue(row);
+    };
+    NumberColumn.prototype.compare = function (a, b) {
+        return numberCompare(this.getValue(a), this.getValue(b));
+    };
+    NumberColumn.prototype.getMapping = function () {
+        return {
+            domain: this.mapping.domain(),
+            range: this.mapping.range()
+        };
+    };
+    NumberColumn.prototype.getOriginalMapping = function () {
+        return {
+            domain: this.mapping.domain(),
+            range: this.mapping.range()
+        };
+    };
+    NumberColumn.prototype.setMapping = function (domain, range) {
+        var bak = this.getMapping();
+        this.mapping.domain(domain).range(range);
+        this.fire('dirtyValues', this, bak, this.getMapping());
+        this.fire('dirty', this);
+    };
+    NumberColumn.prototype.isFiltered = function () {
+        return isFinite(this.filter_.min) || isFinite(this.filter_.max);
+    };
+    Object.defineProperty(NumberColumn.prototype, "filterMin", {
+        get: function () {
+            return this.filter_.min;
+        },
+        set: function (min) {
+            var bak = { min: this.filter_.min, max: this.filter_.max };
+            this.filter_.min = isNaN(min) ? -Infinity : min;
+            this.fire('dirtyFilter', this, bak, this.filter_);
+            this.fire('dirty', this);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NumberColumn.prototype, "filterMax", {
+        get: function () {
+            return this.filter_.max;
+        },
+        set: function (max) {
+            var bak = { min: this.filter_.min, max: this.filter_.max };
+            this.filter_.max = isNaN(max) ? Infinity : max;
+            this.fire('dirtyFilter', this, bak, this.filter_);
+            this.fire('dirty', this);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    NumberColumn.prototype.getFilter = function () {
+        return this.filter_;
+    };
+    NumberColumn.prototype.setFilter = function (min, max) {
+        if (min === void 0) { min = -Infinity; }
+        if (max === void 0) { max = +Infinity; }
+        var bak = { min: this.filter_.min, max: this.filter_.max };
+        this.filter_.min = isNaN(min) ? -Infinity : min;
+        this.filter_.max = isNaN(max) ? Infinity : max;
+        this.fire('dirtyFilter', this, bak, this.filter_);
+        this.fire('dirty', this);
+    };
+    NumberColumn.prototype.filter = function (row) {
+        if (!this.isFiltered()) {
+            return true;
+        }
+        var v = this.getRawValue(row);
+        if (isNaN(v)) {
+            return true;
+        }
+        return !((isFinite(this.filter_.min) && v < this.filter_.min) || (isFinite(this.filter_.max) && v < this.filter_.max));
+    };
+    return NumberColumn;
+})(ValueColumn);
+exports.NumberColumn = NumberColumn;
+var StringColumn = (function (_super) {
+    __extends(StringColumn, _super);
+    function StringColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.filter_ = null;
+    }
+    StringColumn.prototype.getValue = function (row) {
+        var v = _super.prototype.getValue.call(this, row);
+        if (typeof (v) === 'undefined' || v == null) {
+            return '';
+        }
+        return v;
+    };
+    StringColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.filter = this.filter_;
+        return r;
+    };
+    StringColumn.prototype.restore = function (dump, factory) {
+        _super.prototype.restore.call(this, dump, factory);
+        this.filter_ = dump.filter || null;
+    };
+    StringColumn.prototype.isFiltered = function () {
+        return this.filter_ != null;
+    };
+    StringColumn.prototype.filter = function (row) {
+        if (!this.isFiltered()) {
+            return true;
+        }
+        var r = this.getLabel(row), filter = this.filter_;
+        if (typeof filter === 'string' && filter.length > 0) {
+            return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+        }
+        return true;
+    };
+    StringColumn.prototype.getFilter = function () {
+        return this.filter_;
+    };
+    StringColumn.prototype.setFilter = function (filter) {
+        if (filter === '') {
+            filter = null;
+        }
+        this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
+        this.fire('dirty', this);
+    };
+    StringColumn.prototype.compare = function (a, b) {
+        return d3.ascending(this.getValue(a), this.getValue(b));
+    };
+    return StringColumn;
+})(ValueColumn);
+exports.StringColumn = StringColumn;
+var LinkColumn = (function (_super) {
+    __extends(LinkColumn, _super);
+    function LinkColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.link = null;
+        this.link = desc.link;
+    }
+    LinkColumn.prototype.getLabel = function (row) {
+        var v = _super.prototype.getValue.call(this, row);
+        if (v.alt) {
+            return v.alt;
+        }
+        return '' + v;
+    };
+    LinkColumn.prototype.getValue = function (row) {
+        var v = _super.prototype.getValue.call(this, row);
+        if (v.href) {
+            return v.href;
+        }
+        else if (this.link) {
+            return this.link.replace(/\$1/g, v);
+        }
+        return v;
+    };
+    return LinkColumn;
+})(StringColumn);
+exports.LinkColumn = LinkColumn;
+var CategoricalColumn = (function (_super) {
+    __extends(CategoricalColumn, _super);
+    function CategoricalColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.colors = d3.scale.category10();
+        this.filter_ = null;
+        this.init(desc);
+    }
+    CategoricalColumn.prototype.init = function (desc) {
+        if (desc.categories) {
+            var cats = [], cols = this.colors.range();
+            desc.categories.forEach(function (cat, i) {
+                if (typeof cat === 'string') {
+                    cats.push(cat);
+                }
+                else {
+                    cats.push(cat.name);
+                    cols[i] = cat.color;
+                }
+            });
+            this.colors.domain(cats).range(cols);
+        }
+    };
+    Object.defineProperty(CategoricalColumn.prototype, "categories", {
+        get: function () {
+            return this.colors.domain();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CategoricalColumn.prototype, "categoryColors", {
+        get: function () {
+            return this.colors.range();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    CategoricalColumn.prototype.getValue = function (row) {
+        return StringColumn.prototype.getValue.call(this, row);
+    };
+    CategoricalColumn.prototype.getColor = function (row) {
+        var cat = this.getLabel(row);
+        if (cat === null || cat === '') {
+            return null;
+        }
+        return this.colors(cat);
+    };
+    CategoricalColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.filter = this.filter_;
+        r.colors = {
+            domain: this.colors.domain(),
+            range: this.colors.range()
+        };
+        return r;
+    };
+    CategoricalColumn.prototype.restore = function (dump, factory) {
+        _super.prototype.restore.call(this, dump, factory);
+        this.filter_ = dump.filter || null;
+        this.colors.domain(dump.colors.domain).range(dump.colors.range);
+    };
+    CategoricalColumn.prototype.isFiltered = function () {
+        return this.filter_ != null;
+    };
+    CategoricalColumn.prototype.filter = function (row) {
+        if (!this.isFiltered()) {
+            return true;
+        }
+        var r = this.getLabel(row), filter = this.filter_;
+        if (Array.isArray(filter) && filter.length > 0) {
+            return filter.indexOf(r) >= 0;
+        }
+        else if (typeof filter === 'string' && filter.length > 0) {
+            return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+        }
+        else if (filter instanceof RegExp) {
+            return r != null && r.match(filter).length > 0;
+        }
+        return true;
+    };
+    CategoricalColumn.prototype.getFilter = function () {
+        return this.filter_;
+    };
+    CategoricalColumn.prototype.setFilter = function (filter) {
+        this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
+        this.fire('dirty', this);
+    };
+    CategoricalColumn.prototype.compare = function (a, b) {
+        return StringColumn.prototype.compare.call(this, a, b);
+    };
+    return CategoricalColumn;
+})(ValueColumn);
+exports.CategoricalColumn = CategoricalColumn;
+var CategoricalNumberColumn = (function (_super) {
+    __extends(CategoricalNumberColumn, _super);
+    function CategoricalNumberColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.colors = d3.scale.category10();
+        this.scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
+        this.filter_ = null;
+        CategoricalColumn.prototype.init.call(this, desc);
+        this.scale.domain(this.colors.domain());
+        if (desc.categories) {
+            var values = [];
+            desc.categories.forEach(function (d) {
+                if (typeof d !== 'string' && typeof (d.value) === 'number') {
+                    values.push(d.value);
+                }
+                else {
+                    values.push(0.5);
+                }
+            });
+            this.scale.range(values);
+        }
+    }
+    Object.defineProperty(CategoricalNumberColumn.prototype, "categories", {
+        get: function () {
+            return this.colors.domain();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CategoricalNumberColumn.prototype, "categoryColors", {
+        get: function () {
+            return this.colors.range();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    CategoricalNumberColumn.prototype.getLabel = function (row) {
+        var v = _super.prototype.getValue.call(this, row);
+        if (typeof (v) === 'undefined' || v == null) {
+            return '';
+        }
+        return v;
+    };
+    CategoricalNumberColumn.prototype.getValue = function (row) {
+        var v = this.getLabel(row);
+        return this.scale(v);
+    };
+    CategoricalNumberColumn.prototype.getNumber = function (row) {
+        return this.getValue(row);
+    };
+    CategoricalNumberColumn.prototype.getColor = function (row) {
+        return CategoricalColumn.prototype.getColor.call(this, row);
+    };
+    CategoricalNumberColumn.prototype.dump = function (toDescRef) {
+        var r = CategoricalColumn.prototype.dump.call(this, toDescRef);
+        r.scale = {
+            domain: this.scale.domain(),
+            range: this.scale.range()
+        };
+        return r;
+    };
+    CategoricalNumberColumn.prototype.restore = function (dump, factory) {
+        CategoricalColumn.prototype.restore.call(this, dump, factory);
+        this.scale.domain(dump.scale.domain).range(dump.scale.range);
+    };
+    CategoricalNumberColumn.prototype.getScale = function () {
+        return {
+            domain: this.scale.domain(),
+            range: this.scale.range()
+        };
+    };
+    CategoricalNumberColumn.prototype.setRange = function (range) {
+        var bak = this.getScale();
+        this.scale.range(range);
+        this.fire('dirtyValues', this, bak, this.getScale());
+    };
+    CategoricalNumberColumn.prototype.isFiltered = function () {
+        return this.filter_ != null;
+    };
+    CategoricalNumberColumn.prototype.filter = function (row) {
+        return CategoricalColumn.prototype.filter.call(this, row);
+    };
+    CategoricalNumberColumn.prototype.getFilter = function () {
+        return this.filter_;
+    };
+    CategoricalNumberColumn.prototype.setFilter = function (filter) {
+        this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
+        this.fire('dirty', this);
+    };
+    CategoricalNumberColumn.prototype.compare = function (a, b) {
+        return NumberColumn.prototype.compare.call(this, a, b);
+    };
+    return CategoricalNumberColumn;
+})(ValueColumn);
+exports.CategoricalNumberColumn = CategoricalNumberColumn;
+var StackColumn = (function (_super) {
+    __extends(StackColumn, _super);
+    function StackColumn(id, desc) {
+        var _this = this;
+        _super.call(this, id, desc);
+        this.missingValue = NaN;
+        this.children_ = [];
+        this.triggerResort = function () { return _this.fire('dirtySorting', _this); };
+        this.forwards = {
+            dirtyFilter: utils.forwardEvent(this, 'dirtyFilter'),
+            dirtyValues: utils.forwardEvent(this, 'dirtyValues'),
+            addColumn: utils.forwardEvent(this, 'addColumn'),
+            removeColumn: utils.forwardEvent(this, 'removeColumn'),
+            dirty: utils.forwardEvent(this, 'dirty')
+        };
+        this.adaptChange = this.adaptWidthChange.bind(this);
+        this._collapsed = false;
+    }
+    StackColumn.desc = function (label) {
+        return { type: 'stack', label: label };
+    };
+    StackColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['pushChild', 'removeChild', 'changeCollapse']);
+    };
+    Object.defineProperty(StackColumn.prototype, "children", {
+        get: function () {
+            return this.children_.slice();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StackColumn.prototype, "length", {
+        get: function () {
+            return this.children_.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StackColumn.prototype, "weights", {
+        get: function () {
+            var w = this.getWidth();
+            return this.children_.map(function (d) { return d.getWidth() / w; });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StackColumn.prototype, "collapsed", {
+        get: function () {
+            return this._collapsed;
+        },
+        set: function (value) {
+            if (this._collapsed === value) {
+                return;
+            }
+            this.fire('changeCollapse', this, this._collapsed, this._collapsed = value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    StackColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
+        if (levelsToGo === void 0) { levelsToGo = 0; }
+        if (padding === void 0) { padding = 0; }
+        if (levelsToGo === 0) {
+            var w = this.getWidth();
+            if (!this.collapsed) {
+                w += (this.children_.length - 1) * padding;
+            }
+            r.push({ col: this, offset: offset, width: w });
+            return w;
+        }
+        else {
+            var acc = offset;
+            this.children_.forEach(function (c) {
+                acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+            });
+            return acc - offset - padding;
+        }
+    };
+    StackColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.children = this.children_.map(function (d) { return d.dump(toDescRef); });
+        r.missingValue = this.missingValue;
+        return r;
+    };
+    StackColumn.prototype.restore = function (dump, factory) {
+        var _this = this;
+        this.missingValue = dump.missingValue;
+        dump.children.map(function (child) {
+            _this.push(factory(child));
+        });
+        _super.prototype.restore.call(this, dump, factory);
+    };
+    StackColumn.prototype.insert = function (col, index, weight) {
+        if (weight === void 0) { weight = NaN; }
+        if (typeof col.getNumber !== 'function') {
+            return null;
+        }
+        if (col instanceof StackColumn) {
+            col.collapsed = true;
+        }
+        if (!isNaN(weight)) {
+            col.setWidth((weight / (1 - weight) * this.getWidth()));
+        }
+        this.children_.splice(index, 0, col);
+        col.parent = this;
+        col.on('dirtyFilter.stack', this.forwards.dirtyFilter);
+        col.on('dirtyValues.stack', this.forwards.dirtyValues);
+        col.on('addColumn.stack', this.forwards.addColumn);
+        col.on('removeColumn.stack', this.forwards.removeColumn);
+        col.on('dirtySorting.stack', this.triggerResort);
+        col.on('widthChanged.stack', this.adaptChange);
+        col.on('dirty.stack', this.forwards.dirty);
+        _super.prototype.setWidth.call(this, this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
+        this.fire('pushChild', this, col, col.getWidth() / this.getWidth());
+        this.fire('addColumn', this, col);
+        this.fire('dirtySorting', this);
+        this.fire('dirty', this);
+        return true;
+    };
+    StackColumn.prototype.push = function (col, weight) {
+        if (weight === void 0) { weight = NaN; }
+        return this.insert(col, this.children_.length, weight);
+    };
+    StackColumn.prototype.indexOf = function (col) {
+        var j = -1;
+        this.children_.some(function (d, i) {
+            if (d === col) {
+                j = i;
+                return true;
+            }
+            return false;
+        });
+        return j;
+    };
+    StackColumn.prototype.insertAfter = function (col, ref, weight) {
+        if (weight === void 0) { weight = NaN; }
+        var i = this.indexOf(ref);
+        if (i < 0) {
+            return false;
+        }
+        return this.insert(col, i + 1, weight);
+    };
+    StackColumn.prototype.adaptWidthChange = function (col, old, new_) {
+        var _this = this;
+        if (old === new_) {
+            return;
+        }
+        var full = this.getWidth(), change = (new_ - old) / full;
+        var oldWeight = old / full;
+        var factor = (1 - oldWeight - change) / (1 - oldWeight);
+        this.children_.forEach(function (c) {
+            if (c === col) {
+            }
+            else {
+                c.on('widthChanged.stack', null);
+                c.setWidth(c.getWidth() * factor);
+                c.on('widthChanged.stack', _this.adaptChange);
+            }
+        });
+        this.fire('dirtyValues', this);
+        this.fire('dirtySorting', this);
+        this.fire('widthChanged', this, full, full);
+        this.fire('dirty', this);
+    };
+    StackColumn.prototype.setWeights = function (weights) {
+        var _this = this;
+        var s, delta = weights.length - this.length;
+        if (delta < 0) {
+            s = d3.sum(weights);
+            if (s <= 1) {
+                for (var i = 0; i < -delta; ++i) {
+                    weights.push((1 - s) * (1 / -delta));
+                }
+            }
+            else if (s <= 100) {
+                for (var i = 0; i < -delta; ++i) {
+                    weights.push((100 - s) * (1 / -delta));
+                }
+            }
+        }
+        weights = weights.slice(0, this.length);
+        s = d3.sum(weights) / this.getWidth();
+        weights = weights.map(function (d) { return d / s; });
+        this.children_.forEach(function (c, i) {
+            c.on('widthChanged.stack', null);
+            c.setWidth(weights[i]);
+            c.on('widthChanged.stack', _this.adaptChange);
+        });
+        this.fire('dirtyValues', this);
+        this.fire('dirtySorting', this);
+        this.fire('widthChanged', this, this.getWidth(), this.getWidth());
+        this.fire('dirty', this);
+    };
+    StackColumn.prototype.remove = function (child) {
+        var i = this.children_.indexOf(child);
+        if (i < 0) {
+            return false;
+        }
+        this.children_.splice(i, 1);
+        child.parent = null;
+        child.on('dirtyFilter.stack', null);
+        child.on('dirtyValues.stack', null);
+        child.on('addColumn.stack', null);
+        child.on('removeColumn.stack', null);
+        child.on('dirtySorting.stack', null);
+        child.on('widthChanged.stack', null);
+        child.on('dirty.stack', null);
+        _super.prototype.setWidth.call(this, this.length === 0 ? 100 : this.getWidth() - child.getWidth());
+        this.fire('removeChild', this, child);
+        this.fire('removeColumn', this, child);
+        this.fire('dirtySorting', this);
+        this.fire('dirty', this);
+        return true;
+    };
+    StackColumn.prototype.setWidth = function (value) {
+        var _this = this;
+        var factor = value / this.getWidth();
+        this.children_.forEach(function (child) {
+            child.on('widthChanged.stack', null);
+            child.setWidth(child.getWidth() * factor);
+            child.on('widthChanged.stack', _this.adaptChange);
+        });
+        _super.prototype.setWidth.call(this, value);
+    };
+    StackColumn.prototype.getValue = function (row) {
+        var w = this.getWidth();
+        var v = this.children_.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
+        if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
+            return this.missingValue;
+        }
+        return v;
+    };
+    StackColumn.prototype.getNumber = function (row) {
+        return this.getValue(row);
+    };
+    StackColumn.prototype.compare = function (a, b) {
+        return numberCompare(this.getValue(a), this.getValue(b));
+    };
+    StackColumn.prototype.isFiltered = function () {
+        return this.children_.some(function (d) { return d.isFiltered(); });
+    };
+    StackColumn.prototype.filter = function (row) {
+        return this.children_.every(function (d) { return d.filter(row); });
+    };
+    return StackColumn;
+})(Column);
+exports.StackColumn = StackColumn;
+var RankColumn = (function (_super) {
+    __extends(RankColumn, _super);
+    function RankColumn(id, desc) {
+        var _this = this;
+        _super.call(this, id, desc);
+        this.sortBy_ = null;
+        this.ascending = false;
+        this.columns_ = [];
+        this.extra = {};
+        this.triggerResort = function () { return _this.fire('dirtySorting', _this); };
+        this.forwards = {
+            dirtyFilter: utils.forwardEvent(this, 'dirtyFilter'),
+            dirtyValues: utils.forwardEvent(this, 'dirtyValues'),
+            widthChanged: utils.forwardEvent(this, 'widthChanged'),
+            addColumn: utils.forwardEvent(this, 'addColumn'),
+            removeColumn: utils.forwardEvent(this, 'removeColumn'),
+            dirty: utils.forwardEvent(this, 'dirty')
+        };
+        this.comparator = function (a, b) {
+            if (_this.sortBy_ === null) {
+                return 0;
+            }
+            var r = _this.sortBy_.compare(a, b);
+            return _this.ascending ? r : -r;
+        };
+    }
+    RankColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['sortCriteriaChanged', 'pushChild', 'removeChild']);
+    };
+    RankColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.columns = this.columns_.map(function (d) { return d.dump(toDescRef); });
+        r.sortCriteria = this.sortCriteria();
+        if (this.sortBy_) {
+            r.sortCriteria.sortBy = this.sortBy_.id;
+        }
+        return r;
+    };
+    RankColumn.prototype.restore = function (dump, factory) {
+        var _this = this;
+        _super.prototype.restore.call(this, dump, factory);
+        dump.columns.map(function (child) {
+            _this.push(factory(child.col));
+        });
+        this.ascending = dump.sortCriteria.asc;
+        if (dump.sortCriteria.sortBy) {
+            this.sortBy(this.columns_.filter(function (d) { return d.id === dump.sortCriteria.sortBy; })[0], dump.sortCriteria.asc);
+        }
+    };
+    RankColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
+        if (levelsToGo === void 0) { levelsToGo = 0; }
+        if (padding === void 0) { padding = 0; }
+        r.push({ col: this, offset: offset, width: this.getWidth() });
+        var acc = offset + this.getWidth() + padding;
+        if (levelsToGo > 0) {
+            this.columns_.forEach(function (c) {
+                acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+            });
+        }
+        return acc - offset;
+    };
+    RankColumn.prototype.sortCriteria = function () {
+        return {
+            col: this.sortBy_,
+            asc: this.ascending
+        };
+    };
+    RankColumn.prototype.sortByMe = function (ascending) {
+        if (ascending === void 0) { ascending = false; }
+    };
+    RankColumn.prototype.toggleMySorting = function () {
+    };
+    RankColumn.prototype.findMyRanker = function () {
+        return this;
+    };
+    RankColumn.prototype.insertAfterMe = function (col) {
+        return this.insert(col, 0) !== null;
+    };
+    RankColumn.prototype.toggleSorting = function (col) {
+        if (this.sortBy_ === col) {
+            return this.sortBy(col, !this.ascending);
+        }
+        return this.sortBy(col);
+    };
+    RankColumn.prototype.sortBy = function (col, ascending) {
+        if (ascending === void 0) { ascending = false; }
+        if (col.on('dirtyFilter.ranking') !== this.forwards.dirtyFilter) {
+            return false;
+        }
+        if (this.sortBy_ === col && this.ascending === ascending) {
+            return true;
+        }
+        if (this.sortBy_) {
+            this.sortBy_.on('dirtySorting.ranking', null);
+        }
+        var bak = this.sortCriteria();
+        this.sortBy_ = col;
+        if (this.sortBy_) {
+            this.sortBy_.on('dirtySorting.ranking', this.triggerResort);
+        }
+        this.ascending = ascending;
+        this.fire('sortCriteriaChanged', this, bak, this.sortCriteria());
+        this.fire('dirty', this);
+        this.triggerResort();
+        return true;
+    };
+    Object.defineProperty(RankColumn.prototype, "children", {
+        get: function () {
+            return this.columns_.slice();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RankColumn.prototype, "length", {
+        get: function () {
+            return this.columns_.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    RankColumn.prototype.insert = function (col, index) {
+        if (index === void 0) { index = this.columns_.length; }
+        this.columns_.splice(index, 0, col);
+        col.parent = this;
+        col.on('dirtyFilter.ranking', this.forwards.dirtyFilter);
+        col.on('dirtyValues.ranking', this.forwards.dirtyValues);
+        col.on('addColumn.ranking', this.forwards.addColumn);
+        col.on('removeColumn.ranking', this.forwards.removeColumn);
+        col.on('widthChanged.ranking', this.forwards.widthChanged);
+        col.on('dirty.ranking', this.forwards.dirty);
+        if (this.sortBy_ === null) {
+            this.sortBy_ = col;
+            this.sortBy_.on('dirtySorting.ranking', this.triggerResort);
+            this.triggerResort();
+        }
+        this.fire('pushChild', this, col, index);
+        this.fire('dirty', this);
+        return col;
+    };
+    RankColumn.prototype.insertAfter = function (col, ref) {
+        if (ref === this) {
+            return this.insert(col, 0) != null;
+        }
+        var i = this.columns_.indexOf(ref);
+        if (i < 0) {
+            return false;
+        }
+        return this.insert(col, i + 1) != null;
+    };
+    RankColumn.prototype.push = function (col) {
+        return this.insert(col);
+    };
+    RankColumn.prototype.remove = function (col) {
+        var i = this.columns_.indexOf(col);
+        if (i < 0) {
+            return false;
+        }
+        col.on('dirtyFilter.ranking', null);
+        col.on('dirtyValues.ranking', null);
+        col.on('widthChanged.ranking', null);
+        col.on('addColumn.ranking', null);
+        col.on('removeColumn.ranking', null);
+        col.on('dirty.ranking', null);
+        col.parent = null;
+        this.columns_.splice(i, 1);
+        if (this.sortBy_ === col) {
+            this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
+        }
+        this.fire('removeChild', this, col);
+        this.fire('dirty', this);
+        return true;
+    };
+    RankColumn.prototype.find = function (id_or_filter) {
+        var filter = typeof (id_or_filter) === 'string' ? function (col) { return col.id === id_or_filter; } : id_or_filter;
+        var r = [];
+        this.flatten(r, 0, Number.POSITIVE_INFINITY);
+        for (var i = 0; i < r.length; ++i) {
+            if (filter(r[i].col)) {
+                return r[i].col;
+            }
+        }
+        return null;
+    };
+    RankColumn.prototype.toSortingDesc = function (toId) {
+        var resolve = function (s) {
+            if (s === null) {
+                return null;
+            }
+            if (s instanceof StackColumn) {
+                var w = s.weights;
+                return s.children.map(function (child, i) {
+                    return {
+                        weight: w[i],
+                        id: resolve(child)
+                    };
+                });
+            }
+            return toId(s.desc);
+        };
+        var id = resolve(this.sortBy_);
+        if (id === null) {
+            return null;
+        }
+        return {
+            id: id,
+            asc: this.ascending
+        };
+    };
+    RankColumn.prototype.isFiltered = function () {
+        return this.columns_.some(function (d) { return d.isFiltered(); });
+    };
+    RankColumn.prototype.filter = function (row) {
+        return this.columns_.every(function (d) { return d.filter(row); });
+    };
+    return RankColumn;
+})(ValueColumn);
+exports.RankColumn = RankColumn;
+function models() {
+    return {
+        number: NumberColumn,
+        string: StringColumn,
+        link: LinkColumn,
+        stack: StackColumn,
+        rank: RankColumn,
+        categorical: CategoricalColumn,
+        ordinal: CategoricalNumberColumn
+    };
+}
+exports.models = models;
 
-    popup.select(".ok").on("click", function () {
-      applyMapping(act);
-      popup.remove();
+},{"./utils":9,"d3":"d3"}],4:[function(require,module,exports){
+/**
+ * Created by Samuel Gratzl on 14.08.2015.
+ */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var model = require('./model');
+var utils = require('./utils');
+var IColumnDesc = (function () {
+    function IColumnDesc() {
+    }
+    return IColumnDesc;
+})();
+exports.IColumnDesc = IColumnDesc;
+var DataProvider = (function (_super) {
+    __extends(DataProvider, _super);
+    function DataProvider() {
+        _super.apply(this, arguments);
+        this.rankings_ = [];
+        this.selection = d3.set();
+        this.uid = 0;
+        this.columnTypes = model.models();
+        this.forwards = {
+            addColumn: utils.forwardEvent(this, 'addColumn'),
+            removeColumn: utils.forwardEvent(this, 'removeColumn'),
+            dirty: utils.forwardEvent(this, 'dirty')
+        };
+    }
+    DataProvider.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty']);
+    };
+    DataProvider.prototype.pushRanking = function (existing) {
+        var r = this.cloneRanking(existing);
+        this.rankings_.push(r);
+        r.on('addColumn.provider', this.forwards.addColumn);
+        r.on('removeColumn.provider', this.forwards.removeColumn);
+        r.on('dirty.provider', this.forwards.dirty);
+        this.fire('addRanking', r);
+        this.fire('dirty', this);
+        return r;
+    };
+    DataProvider.prototype.removeRanking = function (ranking) {
+        var i = this.rankings_.indexOf(ranking);
+        if (i < 0) {
+            return false;
+        }
+        ranking.on('addColumn.provider', null);
+        ranking.on('removeColumn.provider', null);
+        ranking.on('dirty.provider', null);
+        this.rankings_.splice(i, 1);
+        this.fire('removeRanking', ranking);
+        this.cleanUpRanking(ranking);
+        this.fire('dirty', this);
+        return true;
+    };
+    DataProvider.prototype.getRankings = function () {
+        return this.rankings_.slice();
+    };
+    DataProvider.prototype.cleanUpRanking = function (ranking) {
+    };
+    DataProvider.prototype.cloneRanking = function (existing) {
+        return null;
+    };
+    DataProvider.prototype.push = function (ranking, desc) {
+        var r = this.create(desc);
+        if (r) {
+            ranking.push(r);
+            return r;
+        }
+        return null;
+    };
+    DataProvider.prototype.create = function (desc) {
+        var type = this.columnTypes[desc.type];
+        if (type) {
+            return new type(this.nextId(), desc);
+        }
+        return null;
+    };
+    DataProvider.prototype.clone = function (col) {
+        var _this = this;
+        var dump = col.dump(function (d) { return d; });
+        var create = function (d) {
+            var type = _this.columnTypes[d.desc.type];
+            var c = new type(_this.nextId(), d.desc);
+            c.restore(d, create);
+            return c;
+        };
+        return create(dump);
+    };
+    DataProvider.prototype.find = function (id_or_filter) {
+        var filter = typeof (id_or_filter) === 'string' ? function (col) { return col.id === id_or_filter; } : id_or_filter;
+        for (var i = 0; i < this.rankings_.length; ++i) {
+            var r = this.rankings_[i].find(filter);
+            if (r) {
+                return r;
+            }
+        }
+        return null;
+    };
+    DataProvider.prototype.insert = function (ranking, index, desc) {
+        var r = this.create(desc);
+        if (r) {
+            ranking.insert(r, index);
+            return r;
+        }
+        return null;
+    };
+    DataProvider.prototype.nextId = function () {
+        return 'col' + (this.uid++);
+    };
+    DataProvider.prototype.dump = function () {
+        var _this = this;
+        return {
+            uid: this.uid,
+            rankings: this.rankings_.map(function (r) { return r.dump(_this.toDescRef); })
+        };
+    };
+    DataProvider.prototype.toDescRef = function (desc) {
+        return desc;
+    };
+    DataProvider.prototype.fromDescRef = function (descRef) {
+        return descRef;
+    };
+    DataProvider.prototype.restore = function (dump) {
+        var _this = this;
+        var create = function (d) {
+            var desc = _this.fromDescRef(d.desc);
+            var type = _this.columnTypes[desc.type];
+            var c = new type(d.id, desc);
+            c.restore(d, create);
+            return c;
+        };
+        this.uid = dump.uid;
+        this.rankings_ = dump.rankings.map(create);
+    };
+    DataProvider.prototype.sort = function (ranking) {
+        return Promise.reject('not implemented');
+    };
+    DataProvider.prototype.view = function (indices) {
+        return Promise.reject('not implemented');
+    };
+    DataProvider.prototype.mappingSample = function (col) {
+        return Promise.reject('not implemented');
+    };
+    DataProvider.prototype.rowKey = function (row, i) {
+        return typeof (row) === 'number' ? String(row) : String(row._index);
+    };
+    DataProvider.prototype.isSelected = function (row) {
+        return this.selection.has(this.rowKey(row, -1));
+    };
+    DataProvider.prototype.select = function (row) {
+        this.selection.add(this.rowKey(row, -1));
+    };
+    DataProvider.prototype.selectAll = function (rows) {
+        var _this = this;
+        rows.forEach(function (row) {
+            _this.selection.add(_this.rowKey(row, -1));
+        });
+    };
+    DataProvider.prototype.setSelection = function (rows) {
+        this.clearSelection();
+        this.selectAll(rows);
+    };
+    DataProvider.prototype.deselect = function (row) {
+        this.selection.remove(this.rowKey(row, -1));
+    };
+    DataProvider.prototype.selectedRows = function () {
+        if (this.selection.empty()) {
+            return Promise.resolve([]);
+        }
+        var indices = [];
+        this.selection.forEach(function (s) { return indices.push(+s); });
+        indices.sort();
+        return this.view(indices);
+    };
+    DataProvider.prototype.clearSelection = function () {
+        this.selection = d3.set();
+    };
+    return DataProvider;
+})(utils.AEventDispatcher);
+exports.DataProvider = DataProvider;
+var CommonDataProvider = (function (_super) {
+    __extends(CommonDataProvider, _super);
+    function CommonDataProvider(columns) {
+        var _this = this;
+        if (columns === void 0) { columns = []; }
+        _super.call(this);
+        this.columns = columns;
+        this.rankingIndex = 0;
+        this.rowGetter = function (row, id, desc) { return row[desc.column]; };
+        columns.forEach(function (d) { return d.accessor = _this.rowGetter; });
+    }
+    CommonDataProvider.prototype.toDescRef = function (desc) {
+        return desc.column ? desc.type + '@' + desc.column : desc;
+    };
+    CommonDataProvider.prototype.fromDescRef = function (descRef) {
+        if (typeof (descRef) === 'string') {
+            return this.columns.filter(function (d) { return d.type + '@' + d.column === descRef; })[0];
+        }
+        return descRef;
+    };
+    CommonDataProvider.prototype.restore = function (dump) {
+        _super.prototype.restore.call(this, dump);
+        this.rankingIndex = 1 + d3.max(this.getRankings(), function (r) { return +r.id.substring(4); });
+    };
+    CommonDataProvider.prototype.nextRankingId = function () {
+        return 'rank' + (this.rankingIndex++);
+    };
+    return CommonDataProvider;
+})(DataProvider);
+exports.CommonDataProvider = CommonDataProvider;
+var LocalDataProvider = (function (_super) {
+    __extends(LocalDataProvider, _super);
+    function LocalDataProvider(data, columns) {
+        if (columns === void 0) { columns = []; }
+        _super.call(this, columns);
+        this.data = data;
+        data.forEach(function (d, i) {
+            d._rankings = {};
+            d._index = i;
+        });
+    }
+    LocalDataProvider.prototype.cloneRanking = function (existing) {
+        var _this = this;
+        var id = this.nextRankingId();
+        var rankDesc = {
+            label: 'Rank',
+            type: 'rank',
+            accessor: function (row, id) { return row._rankings[id] || 0; }
+        };
+        var new_ = new model.RankColumn(id, rankDesc);
+        if (existing) {
+            this.data.forEach(function (row) {
+                var r = row._rankings;
+                r[id] = r[existing.id];
+            });
+            existing.children.forEach(function (child) {
+                _this.push(new_, child.desc);
+            });
+        }
+        return new_;
+    };
+    LocalDataProvider.prototype.cleanUpRanking = function (ranking) {
+        this.data.forEach(function (d) { return delete d._rankings[ranking.id]; });
+    };
+    LocalDataProvider.prototype.sort = function (ranking) {
+        var helper = this.data.map(function (r, i) { return ({ row: r, i: i, prev: r._rankings[ranking.id] || 0 }); });
+        if (ranking.isFiltered()) {
+            helper = helper.filter(function (d) { return ranking.filter(d.row); });
+        }
+        helper.sort(function (a, b) { return ranking.comparator(a.row, b.row); });
+        var argsort = helper.map(function (r, i) {
+            r.row._rankings[ranking.id] = i;
+            return r.i;
+        });
+        return Promise.resolve(argsort);
+    };
+    LocalDataProvider.prototype.view = function (indices) {
+        var _this = this;
+        var slice = indices.map(function (index) { return _this.data[index]; });
+        return Promise.resolve(slice);
+    };
+    LocalDataProvider.prototype.mappingSample = function (col) {
+        return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
+    };
+    return LocalDataProvider;
+})(CommonDataProvider);
+exports.LocalDataProvider = LocalDataProvider;
+var RemoteDataProvider = (function (_super) {
+    __extends(RemoteDataProvider, _super);
+    function RemoteDataProvider(server, columns) {
+        if (columns === void 0) { columns = []; }
+        _super.call(this, columns);
+        this.server = server;
+        this.ranks = {};
+    }
+    RemoteDataProvider.prototype.cloneRanking = function (existing) {
+        var _this = this;
+        var id = this.nextRankingId();
+        var rankDesc = {
+            label: 'Rank',
+            type: 'rank',
+            accessor: function (row, id) { return _this.ranks[id][row._index] || 0; }
+        };
+        if (existing) {
+            this.ranks[id] = this.ranks[existing.id];
+        }
+        return new model.RankColumn(id, rankDesc);
+    };
+    RemoteDataProvider.prototype.cleanUpRanking = function (ranking) {
+        delete this.ranks[ranking.id];
+    };
+    RemoteDataProvider.prototype.sort = function (ranking) {
+        var _this = this;
+        var desc = ranking.toSortingDesc(function (desc) { return desc.column; });
+        return this.server.sort(desc).then(function (argsort) {
+            _this.ranks[ranking.id] = argsort;
+            return argsort;
+        });
+    };
+    RemoteDataProvider.prototype.view = function (argsort) {
+        return this.server.view(argsort).then(function (view) {
+            view.forEach(function (d, i) { return d._index = argsort[i]; });
+            return view;
+        });
+    };
+    RemoteDataProvider.prototype.mappingSample = function (col) {
+        return this.server.mappingSample(col.desc.column);
+    };
+    return RemoteDataProvider;
+})(CommonDataProvider);
+exports.RemoteDataProvider = RemoteDataProvider;
+
+},{"./model":3,"./utils":9}],5:[function(require,module,exports){
+/**
+ * Created by Samuel Gratzl on 14.08.2015.
+ */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var DefaultCellRenderer = (function () {
+    function DefaultCellRenderer() {
+        this.textClass = 'text';
+    }
+    DefaultCellRenderer.prototype.render = function ($col, col, rows, context) {
+        var $rows = $col.datum(col).selectAll('text.' + this.textClass).data(rows, context.rowKey);
+        $rows.enter().append('text').attr({
+            'class': this.textClass,
+            'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+        });
+        context.animated($rows).attr({
+            x: function (d, i) { return context.cellX(i); },
+            y: function (d, i) { return context.cellY(i); },
+            'data-index': function (d, i) { return i; }
+        }).text(function (d) { return col.getLabel(d); });
+        $rows.exit().remove();
+    };
+    DefaultCellRenderer.prototype.findRow = function ($col, index) {
+        return $col.selectAll('text.' + this.textClass + '[data-index="' + index + '"]');
+    };
+    DefaultCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
+        var rowNode = $row.node();
+        var n = this.findRow($col, index).node();
+        if (n) {
+            rowNode.appendChild(n);
+        }
+    };
+    DefaultCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
+        var colNode = $col.node();
+        var rowNode = $row.node();
+        if (rowNode.hasChildNodes()) {
+            colNode.appendChild(rowNode.firstChild);
+        }
+        $row.selectAll('*').remove();
+    };
+    return DefaultCellRenderer;
+})();
+exports.DefaultCellRenderer = DefaultCellRenderer;
+var DerivedCellRenderer = (function (_super) {
+    __extends(DerivedCellRenderer, _super);
+    function DerivedCellRenderer(extraFuncs) {
+        var _this = this;
+        _super.call(this);
+        Object.keys(extraFuncs).forEach(function (key) {
+            _this[key] = extraFuncs[key];
+        });
+    }
+    return DerivedCellRenderer;
+})(DefaultCellRenderer);
+var BarCellRenderer = (function (_super) {
+    __extends(BarCellRenderer, _super);
+    function BarCellRenderer() {
+        _super.apply(this, arguments);
+    }
+    BarCellRenderer.prototype.render = function ($col, col, rows, context) {
+        var _this = this;
+        var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
+        $rows.enter().append('rect').attr('class', 'bar').style('fill', col.color);
+        context.animated($rows).attr({
+            x: function (d, i) { return context.cellX(i); },
+            y: function (d, i) { return context.cellY(i) + 1; },
+            height: function (d, i) { return context.rowHeight(i) - 2; },
+            width: function (d) { return col.getWidth() * col.getValue(d); },
+            'data-index': function (d, i) { return i; }
+        }).style({
+            fill: function (d, i) { return _this.colorOf(d, i, col); }
+        });
+        $rows.exit().remove();
+    };
+    BarCellRenderer.prototype.colorOf = function (d, i, col) {
+        return col.color;
+    };
+    BarCellRenderer.prototype.findRow = function ($col, index) {
+        return $col.selectAll('rect.bar[data-index="' + index + '"]');
+    };
+    BarCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
+        var rowNode = this.findRow($col, index);
+        if (!rowNode.empty()) {
+            $row.node().appendChild((rowNode.node()));
+            $row.append('text').datum(rowNode.datum()).attr({
+                'class': 'number',
+                'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+                x: context.cellX(index),
+                y: context.cellY(index)
+            }).text(function (d) { return col.getLabel(d); });
+        }
+    };
+    return BarCellRenderer;
+})(DefaultCellRenderer);
+exports.BarCellRenderer = BarCellRenderer;
+var DerivedBarCellRenderer = (function (_super) {
+    __extends(DerivedBarCellRenderer, _super);
+    function DerivedBarCellRenderer(extraFuncs) {
+        var _this = this;
+        _super.call(this);
+        Object.keys(extraFuncs).forEach(function (key) {
+            _this[key] = extraFuncs[key];
+        });
+    }
+    return DerivedBarCellRenderer;
+})(BarCellRenderer);
+var defaultRendererInstance = new DefaultCellRenderer();
+var barRendererInstance = new BarCellRenderer();
+function defaultRenderer(extraFuncs) {
+    if (!extraFuncs) {
+        return defaultRendererInstance;
+    }
+    return new DerivedCellRenderer(extraFuncs);
+}
+exports.defaultRenderer = defaultRenderer;
+function barRenderer(extraFuncs) {
+    if (!extraFuncs) {
+        return barRendererInstance;
+    }
+    return new DerivedBarCellRenderer(extraFuncs);
+}
+exports.barRenderer = barRenderer;
+var LinkCellRenderer = (function (_super) {
+    __extends(LinkCellRenderer, _super);
+    function LinkCellRenderer() {
+        _super.apply(this, arguments);
+    }
+    LinkCellRenderer.prototype.render = function ($col, col, rows, context) {
+        var $rows = $col.datum(col).selectAll('a.link').data(rows, context.rowKey);
+        $rows.enter().append('a').attr({
+            'class': 'link',
+            'target': '_blank'
+        }).append('text').attr({
+            'class': 'text',
+            'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+        });
+        context.animated($rows).attr({
+            'xlink:href': function (d) { return col.getValue(d); },
+            'data-index': function (d, i) { return i; }
+        }).select('text').attr({
+            x: function (d, i) { return context.cellX(i); },
+            y: function (d, i) { return context.cellY(i); }
+        }).text(function (d) { return col.getLabel(d); });
+        $rows.exit().remove();
+    };
+    LinkCellRenderer.prototype.findRow = function ($col, index) {
+        return $col.selectAll('a.link[data-index="' + index + '"]');
+    };
+    return LinkCellRenderer;
+})(DefaultCellRenderer);
+var StackCellRenderer = (function (_super) {
+    __extends(StackCellRenderer, _super);
+    function StackCellRenderer() {
+        _super.apply(this, arguments);
+    }
+    StackCellRenderer.prototype.renderImpl = function ($col, col, context, perChild, rowGetter) {
+        var $group = $col.datum(col), children = col.children, offset = 0, shifts = children.map(function (d) {
+            var r = offset;
+            offset += d.getWidth();
+            return r;
+        });
+        var bak = context.cellX;
+        if (!context.showStacked(col)) {
+            context.cellX = function () { return 0; };
+        }
+        var $children = $group.selectAll('g.component').data(children);
+        $children.enter().append('g').attr({
+            'class': 'component'
+        });
+        $children.attr({
+            'class': function (d) { return 'component ' + d.desc.type; },
+            'data-index': function (d, i) { return i; }
+        }).each(function (d, i) {
+            if (context.showStacked(col)) {
+                var preChildren = children.slice(0, i);
+                context.cellX = function (index) {
+                    return -preChildren.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rowGetter(index))); }, 0);
+                };
+            }
+            perChild(d3.select(this), d, i, context);
+        });
+        context.animated($children).attr({
+            transform: function (d, i) { return 'translate(' + shifts[i] + ',0)'; }
+        });
+        $children.exit().remove();
+        context.cellX = bak;
+    };
+    StackCellRenderer.prototype.render = function ($col, col, rows, context) {
+        this.renderImpl($col, col, context, function ($child, col, i, ccontext) {
+            ccontext.renderer(col).render($child, col, rows, ccontext);
+        }, function (index) { return rows[index]; });
+    };
+    StackCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
+        this.renderImpl($row, col, context, function ($row_i, col, i, ccontext) {
+            var $col_i = $col.selectAll('g.component[data-index="' + i + '"]');
+            ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
+        }, function (index) { return row; });
+    };
+    StackCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
+        this.renderImpl($row, col, context, function ($row_i, d, i, ccontext) {
+            var $col_i = $col.selectAll('g.component[data-index="' + i + '"]');
+            ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
+        }, function (index) { return row; });
+        $row.selectAll('*').remove();
+    };
+    return StackCellRenderer;
+})(DefaultCellRenderer);
+function renderers() {
+    return {
+        string: defaultRenderer(),
+        link: new LinkCellRenderer(),
+        number: barRenderer(),
+        rank: defaultRenderer({
+            textClass: 'rank'
+        }),
+        stack: new StackCellRenderer(),
+        categorical: defaultRenderer({}),
+        ordinal: barRenderer({
+            colorOf: function (d, i, col) { return col.getColor(d); }
+        })
+    };
+}
+exports.renderers = renderers;
+
+},{}],6:[function(require,module,exports){
+/**
+ * Created by Samuel Gratzl on 14.08.2015.
+ */
+///<reference path='../typings/tsd.d.ts' />
+var d3 = require('d3');
+var provider = require('./provider');
+var model = require('./model');
+var utils = require('./utils');
+var ui = require('./ui');
+window.onload = function () {
+    var arr = [
+        { a: 10, b: 20, c: 30, d: 'Row1', l: { alt: 'Google', href: 'https://google.com' }, cat: 'c2' },
+        { a: 5, b: 14, c: 2, d: 'Row2', l: { alt: 'ORF', href: 'https://orf.at' }, cat: 'c3' },
+        { a: 2, b: 7, c: 100, d: 'Row3', l: { alt: 'heise.de', href: 'https://heise.de' }, cat: 'c2' },
+        { a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', l: { alt: 'Google', href: 'https://google.com' }, cat: 'c1' }];
+    var desc = [
+        { label: 'D', type: 'string', column: 'd' },
+        { label: 'A', type: 'number', column: 'a', 'domain': [0, 10] },
+        { label: 'B', type: 'number', column: 'b', 'domain': [0, 30] },
+        { label: 'C', type: 'number', column: 'c', 'domain': [0, 120] },
+        { label: 'L', type: 'link', column: 'l' },
+        { label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1' },
+        { label: 'Cat', type: 'categorical', column: 'cat', categories: ['c1', 'c2', 'c3'] },
+        { label: 'Ord', type: 'ordinal', column: 'cat', categories: ['c1', 'c2', 'c3'] }];
+    var colors = d3.scale.category10();
+    desc.forEach(function (d, i) {
+        d.color = colors('' + i);
+    });
+    var p = new provider.LocalDataProvider(arr, desc);
+    var r = p.pushRanking();
+    var root = d3.select('body');
+    r.push(p.create(desc[0]));
+    r.push(p.create(desc[1]));
+    var rstack = p.create(model.StackColumn.desc('Stack'));
+    r.push(rstack);
+    rstack.push(p.create(desc[1]));
+    rstack.push(p.create(desc[2]));
+    rstack.push(p.create(desc[3]));
+    rstack.setWeights([0.2, 0.4]);
+    r.push(p.create(desc[4]));
+    var r2 = p.pushRanking();
+    r2.push(p.create(desc[1]));
+    r2.push(p.create(desc[0]));
+    r2.push(p.create(desc[5]));
+    r2.push(p.create(desc[6]));
+    r2.push(p.create(desc[7]));
+    var call = utils.delayedCall(update, 2);
+    r2.on('dirtySorting', call);
+    r2.on('widthChanged', call);
+    r.on('dirtySorting', call);
+    r.on('widthChanged', call);
+    var body = new ui.LineUpRenderer(root.node(), p, desc, function (rank) {
+        return rank.extra.argsort;
+    }, {
+        additionalDesc: [
+            model.StackColumn.desc('+ Stack')
+        ]
+    });
+    update();
+    function update() {
+        console.log('call', arguments);
+        Promise.all(p.getRankings().map(function (r) { return p.sort(r); }))
+            .then(function (argsorts) {
+            p.getRankings().forEach(function (r, i) { return r.extra.argsort = argsorts[i]; });
+            body.update();
+        });
+    }
+};
+
+},{"./model":3,"./provider":4,"./ui":7,"./utils":9,"d3":"d3"}],7:[function(require,module,exports){
+/**
+ * Created by Samuel Gratzl on 14.08.2015.
+ */
+///<reference path='../typings/tsd.d.ts' />
+var d3 = require('d3');
+var utils = require('./utils');
+var model = require('./model');
+var renderer = require('./renderer');
+var dialogs = require('./ui_dialogs');
+var PoolRenderer = (function () {
+    function PoolRenderer(data, columns, parent, options) {
+        if (options === void 0) { options = {}; }
+        this.data = data;
+        this.columns = columns;
+        this.options = {
+            layout: 'vertical',
+            elemWidth: 100,
+            elemHeight: 40,
+            width: 100,
+            height: 500,
+            additionalDesc: []
+        };
+        utils.merge(this.options, options);
+        this.columns = this.columns.concat(this.options.additionalDesc);
+        this.$node = d3.select(parent).append('div').classed('lu-pool', true);
+        this.update();
+    }
+    PoolRenderer.prototype.update = function () {
+        var _this = this;
+        var data = this.data;
+        var $headers = this.$node.selectAll('div.header').data(this.columns, function (d) { return d.label; });
+        var $headers_enter = $headers.enter().append('div').attr({
+            'class': 'header',
+            'draggable': true
+        }).on('dragstart', function (d) {
+            var e = d3.event;
+            e.dataTransfer.effectAllowed = 'copyMove';
+            e.dataTransfer.setData('text/plain', d.label);
+            e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(data.toDescRef(d)));
+        }).style({
+            'background-color': function (d) { return d.color || model.Column.DEFAULT_COLOR; },
+            width: this.options.elemWidth + 'px',
+            height: this.options.elemHeight + 'px'
+        });
+        $headers_enter.append('span').classed('label', true).text(function (d) { return d.label; });
+        $headers.style('transform', function (d, i) {
+            var pos = _this.layout(i);
+            return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
+        });
+        $headers.select('span');
+        $headers.exit().remove();
+    };
+    PoolRenderer.prototype.layout = function (i) {
+        switch (this.options.layout) {
+            case 'horizontal':
+                return { x: i * this.options.elemWidth, y: 0 };
+            case 'grid':
+                var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
+                return { x: (i % perRow) * this.options.elemWidth, y: d3.round(i / perRow, 0) * this.options.elemHeight };
+            default:
+                return { x: 0, y: i * this.options.elemHeight };
+        }
+    };
+    return PoolRenderer;
+})();
+exports.PoolRenderer = PoolRenderer;
+var HeaderRenderer = (function () {
+    function HeaderRenderer(data, parent, options) {
+        if (options === void 0) { options = {}; }
+        this.data = data;
+        this.options = {
+            slopeWidth: 200,
+            columnPadding: 5,
+            headerHeight: 20,
+            filterDialogs: dialogs.filterDialogs()
+        };
+        this.dragHandler = d3.behavior.drag()
+            .on('dragstart', function () {
+            d3.event.sourceEvent.stopPropagation();
+            d3.select(this).classed('dragging', true);
+        })
+            .on('drag', function (d) {
+            var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
+            d.setWidth(newValue);
+            d3.event.sourceEvent.stopPropagation();
+        })
+            .on('dragend', function () {
+            d3.select(this).classed('dragging', false);
+            d3.event.sourceEvent.stopPropagation();
+        });
+        utils.merge(this.options, options);
+        this.$node = d3.select(parent).append('div').classed('lu-header', true);
+        data.on('dirty.header', this.update.bind(this));
+        this.update();
+    }
+    HeaderRenderer.prototype.update = function () {
+        var _this = this;
+        var rankings = this.data.getRankings();
+        var shifts = [], offset = 0;
+        rankings.forEach(function (ranking) {
+            offset += ranking.flatten(shifts, offset, 1, _this.options.columnPadding) + _this.options.slopeWidth;
+        });
+        offset -= this.options.slopeWidth;
+        var columns = shifts.map(function (d) { return d.col; });
+        if (columns.some(function (c) { return c instanceof model.StackColumn && !c.collapsed; })) {
+            this.$node.style('height', this.options.headerHeight * 2 + 'px');
+        }
+        else {
+            this.$node.style('height', this.options.headerHeight + 'px');
+        }
+        this.renderColumns(columns, shifts);
+    };
+    HeaderRenderer.prototype.createToolbar = function ($node) {
+        var filterDialogs = this.options.filterDialogs, provider = this.data;
+        var $regular = $node.filter(function (d) { return !(d instanceof model.RankColumn); }), $stacked = $node.filter(function (d) { return d instanceof model.StackColumn; });
+        $stacked.append('i').attr('class', 'fa fa-tasks').on('click', function (d) {
+            dialogs.openEditWeightsDialog(d, d3.select(this.parentNode.parentNode));
+            d3.event.stopPropagation();
+        });
+        $regular.append('i').attr('class', 'fa fa-pencil-square-o').on('click', function (d) {
+            dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
+            d3.event.stopPropagation();
+        });
+        $regular.append('i').attr('class', 'fa fa-code-fork').on('click', function (d) {
+            var r = provider.pushRanking();
+            r.push(provider.clone(d));
+            d3.event.stopPropagation();
+        });
+        $node.filter(function (d) { return filterDialogs.hasOwnProperty(d.desc.type); }).append('i').attr('class', 'fa fa-filter').on('click', function (d) {
+            filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
+            d3.event.stopPropagation();
+        });
+        $regular.append('i').attr('class', 'fa fa-times').on('click', function (d) {
+            d.removeMe();
+            d3.event.stopPropagation();
+        });
+    };
+    HeaderRenderer.prototype.renderColumns = function (columns, shifts, $base, clazz) {
+        var _this = this;
+        if ($base === void 0) { $base = this.$node; }
+        if (clazz === void 0) { clazz = 'header'; }
+        var provider = this.data;
+        var $headers = $base.selectAll('div.' + clazz).data(columns, function (d) { return d.id; });
+        var $headers_enter = $headers.enter().append('div').attr({
+            'class': clazz,
+            'draggable': true
+        }).on('dragstart', function (d) {
+            var e = d3.event;
+            e.dataTransfer.effectAllowed = 'copyMove';
+            e.dataTransfer.setData('text/plain', d.label);
+            e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
+            e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
+        }).on('click', function (d) {
+            d.toggleMySorting();
+        }).style({
+            'background-color': function (d) { return d.color; }
+        });
+        $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
+        $headers_enter.append('span').classed('label', true);
+        $headers_enter.append('div').classed('handle', true)
+            .call(this.dragHandler)
+            .style('width', this.options.columnPadding + 'px')
+            .call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], function (data, d, copy) {
+            var col = null;
+            if ('application/caleydo-lineup-column-ref' in data) {
+                var id = data['application/caleydo-lineup-column-ref'];
+                col = provider.find(id);
+                if (copy) {
+                    col = provider.clone(col);
+                }
+                else {
+                    col.removeMe();
+                }
+            }
+            else {
+                var desc = JSON.parse(data['application/caleydo-lineup-column']);
+                col = provider.create(provider.fromDescRef(desc));
+            }
+            return d.insertAfterMe(col);
+        }));
+        $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
+        $headers.style({
+            width: function (d, i) { return (shifts[i].width + _this.options.columnPadding) + 'px'; },
+            left: function (d, i) { return shifts[i].offset + 'px'; }
+        });
+        $headers.select('i.sort_indicator').attr('class', function (d) {
+            var r = d.findMyRanker();
+            if (r && r.sortCriteria().col === d) {
+                return 'sort_indicator fa fa-sort-' + (r.sortCriteria().asc ? 'asc' : 'desc');
+            }
+            return 'sort_indicator fa';
+        });
+        $headers.select('span.label').text(function (d) { return d.label; });
+        var that = this;
+        $headers.filter(function (d) { return d instanceof model.StackColumn && !d.collapsed; }).each(function (col) {
+            var s_shifts = [];
+            col.flatten(s_shifts, 0, 1, that.options.columnPadding);
+            var s_columns = s_shifts.map(function (d) { return d.col; });
+            that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + '_i');
+        }).select('span.label').call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], function (data, d, copy) {
+            var col = null;
+            if ('application/caleydo-lineup-column-ref' in data) {
+                var id = data['application/caleydo-lineup-column-ref'];
+                col = provider.find(id);
+                if (copy) {
+                    col = provider.clone(col);
+                }
+                else {
+                    col.removeMe();
+                }
+            }
+            else {
+                var desc = JSON.parse(data['application/caleydo-lineup-column']);
+                col = provider.create(provider.fromDescRef(desc));
+            }
+            return d.push(col);
+        }));
+        $headers.exit().remove();
+    };
+    return HeaderRenderer;
+})();
+exports.HeaderRenderer = HeaderRenderer;
+var BodyRenderer = (function () {
+    function BodyRenderer(data, parent, argsortGetter, options) {
+        if (options === void 0) { options = {}; }
+        this.data = data;
+        this.argsortGetter = argsortGetter;
+        this.options = {
+            rowHeight: 20,
+            rowSep: 1,
+            idPrefix: '',
+            slopeWidth: 200,
+            columnPadding: 5,
+            showStacked: true,
+            animated: 0,
+            renderers: renderer.renderers()
+        };
+        utils.merge(this.options, options);
+        this.$node = d3.select(parent).append('svg').classed('lu-body', true);
+        data.on('dirty.body', this.update.bind(this));
+    }
+    BodyRenderer.prototype.createContext = function (rankings) {
+        var options = this.options;
+        return {
+            rowKey: this.data.rowKey,
+            cellY: function (index) {
+                return index * (options.rowHeight + options.rowSep);
+            },
+            cellX: function (index) {
+                return 0;
+            },
+            rowHeight: function (index) {
+                return options.rowHeight;
+            },
+            renderer: function (col) {
+                if (col instanceof model.StackColumn && col.collapsed) {
+                    return options.renderers.number;
+                }
+                var l = options.renderers[col.desc.type];
+                return l || renderer.defaultRenderer();
+            },
+            showStacked: function (col) {
+                return options.showStacked;
+            },
+            idPrefix: options.idPrefix,
+            animated: function ($sel) { return options.animated > 0 ? $sel.transition().duration(options.animated) : $sel; }
+        };
+    };
+    BodyRenderer.prototype.updateClipPathsImpl = function (r, context) {
+        var $base = this.$node.select('defs.body');
+        if ($base.empty()) {
+            $base = this.$node.append('defs').classed('body', true);
+        }
+        var textClipPath = $base.selectAll(function () {
+            return this.getElementsByTagName('clipPath');
+        }).data(r, function (d) { return d.id; });
+        textClipPath.enter().append('clipPath')
+            .attr('id', function (d) { return context.idPrefix + 'clipCol' + d.id; })
+            .append('rect').attr({
+            y: 0,
+            height: 1000
+        });
+        textClipPath.exit().remove();
+        textClipPath.select('rect')
+            .attr({
+            x: 0,
+            width: function (d) { return Math.max(d.getWidth() - 5, 0); }
+        });
+    };
+    BodyRenderer.prototype.updateClipPaths = function (rankings, context) {
+        var _this = this;
+        var shifts = [], offset = 0;
+        rankings.forEach(function (r) {
+            var w = r.flatten(shifts, offset, 2, _this.options.columnPadding);
+            offset += w + _this.options.slopeWidth;
+        });
+        this.updateClipPathsImpl(shifts.map(function (s) { return s.col; }), context);
+    };
+    BodyRenderer.prototype.renderRankings = function ($body, r, shifts, context, argSortPromises) {
+        var _this = this;
+        var dataPromises = argSortPromises.map(function (r) { return r.then(function (argsort) { return _this.data.view(argsort); }); });
+        var $rankings = $body.selectAll('g.ranking').data(r, function (d) { return d.id; });
+        var $rankings_enter = $rankings.enter().append('g').attr({
+            'class': 'ranking'
+        });
+        $rankings_enter.append('g').attr('class', 'rows');
+        $rankings_enter.append('g').attr('class', 'cols');
+        context.animated($rankings).attr({
+            transform: function (d, i) { return 'translate(' + shifts[i].shift + ',0)'; }
+        });
+        var $cols = $rankings.select('g.cols').selectAll('g.child').data(function (d) { return [d].concat(d.children); }, function (d) { return d.id; });
+        $cols.enter().append('g').attr({
+            'class': 'child'
+        });
+        context.animated($cols).attr({
+            'data-index': function (d, i) { return i; }
+        });
+        context.animated($cols).attr({
+            transform: function (d, i, j) {
+                return 'translate(' + shifts[j].shifts[i] + ',0)';
+            }
+        }).each(function (d, i, j) {
+            var _this = this;
+            dataPromises[j].then(function (data) {
+                context.renderer(d).render(d3.select(_this), d, data, context);
+            });
+        });
+        $cols.exit().remove();
+        function mouseOverRow($row, $cols, index, ranking, rankingIndex) {
+            $row.classed('hover', true);
+            var children = $cols.selectAll('g.child').data();
+            var $value_cols = $row.select('g.values').selectAll('g.child').data(children);
+            $value_cols.enter().append('g').attr({
+                'class': 'child'
+            });
+            $value_cols.attr({
+                transform: function (d, i) {
+                    return 'translate(' + shifts[rankingIndex].shifts[i] + ',0)';
+                }
+            }).each(function (d, i) {
+                var _this = this;
+                dataPromises[rankingIndex].then(function (data) {
+                    context.renderer(d).mouseEnter($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(_this), d, data[index], index, context);
+                });
+            });
+            $value_cols.exit().remove();
+        }
+        function mouseLeaveRow($row, $cols, index, ranking, rankingIndex) {
+            $row.classed('hover', false);
+            $row.select('g.values').selectAll('g.child').each(function (d, i) {
+                var _this = this;
+                dataPromises[rankingIndex].then(function (data) {
+                    context.renderer(d).mouseLeave($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(_this), d, data[index], index, context);
+                });
+            }).remove();
+        }
+        this.mouseOverItem = function (data_index, hover) {
+            if (hover === void 0) { hover = true; }
+            $rankings.each(function (ranking, rankingIndex) {
+                var $ranking = d3.select(this);
+                var $row = $ranking.selectAll('g.row[data-index="' + data_index + '"]');
+                var $cols = $ranking.select('g.cols');
+                if (!$row.empty()) {
+                    var index = $row.datum().i;
+                    if (hover) {
+                        mouseOverRow($row, $cols, index, ranking, rankingIndex);
+                    }
+                    else {
+                        mouseLeaveRow($row, $cols, index, ranking, rankingIndex);
+                    }
+                }
+            });
+        };
+        Promise.all(argSortPromises).then(function (sorts) {
+            var _this = this;
+            var $rows = $rankings.select('g.rows').selectAll('g.row').data(function (d, i) { return sorts[i].map(function (d, i) { return ({
+                d: d,
+                i: i
+            }); }); });
+            var $rows_enter = $rows.enter().append('g').attr({
+                'class': 'row'
+            });
+            $rows_enter.append('rect').attr({
+                'class': 'bg'
+            });
+            $rows_enter.append('g').attr({ 'class': 'values' });
+            $rows_enter.on('mouseenter', function (data_index) {
+                _this.mouseOver(data_index.d, true);
+            }).on('mouseleave', function (data_index) {
+                _this.mouseOver(data_index.d, false);
+            });
+            $rows.attr({
+                'data-index': function (d) { return d.d; }
+            });
+            context.animated($rows).select('rect').attr({
+                y: function (data_index) { return context.cellY(data_index.i); },
+                height: function (data_index) { return context.rowHeight(data_index.i); },
+                width: function (d, i, j) { return shifts[j].width; }
+            });
+            $rows.exit().remove();
+        });
+        $rankings.exit().remove();
+    };
+    BodyRenderer.prototype.mouseOver = function (dataIndex, hover) {
+        if (hover === void 0) { hover = true; }
+        this.mouseOverItem(dataIndex, hover);
+        this.$node.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
+    };
+    BodyRenderer.prototype.renderSlopeGraphs = function ($body, rankings, shifts, context, argSortPromises) {
+        var _this = this;
+        var slopes = rankings.slice(1).map(function (d, i) { return ({ left: rankings[i], left_i: i, right: d, right_i: i + 1 }); });
+        var $slopes = $body.selectAll('g.slopegraph').data(slopes);
+        $slopes.enter().append('g').attr({
+            'class': 'slopegraph'
+        });
+        context.animated($slopes).attr({
+            transform: function (d, i) { return 'translate(' + (shifts[i + 1].shift - _this.options.slopeWidth) + ',0)'; }
+        });
+        Promise.all(argSortPromises).then(function (argsortSorts) {
+            var $lines = $slopes.selectAll('line.slope').data(function (d, i) {
+                var cache = {};
+                argsortSorts[d.right_i].forEach(function (data_index, pos) {
+                    cache[data_index] = pos;
+                });
+                return argsortSorts[d.left_i].map(function (data_index, pos) { return ({
+                    data_index: data_index,
+                    lpos: pos,
+                    rpos: cache[data_index]
+                }); });
+            });
+            $lines.enter().append('line').attr({
+                'class': 'slope',
+                x2: _this.options.slopeWidth
+            }).on('mouseenter', function (d) {
+                _this.mouseOver(d.data_index, true);
+            }).on('mouseleave', function (d) {
+                _this.mouseOver(d.data_index, false);
+            });
+            $lines.attr({
+                'data-index': function (d) { return d.data_index; }
+            });
+            context.animated($lines).attr({
+                y1: function (d) { return context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos); },
+                y2: function (d) { return context.rowHeight(d.rpos) * 0.5 + context.cellY(d.rpos); }
+            });
+            $lines.exit().remove();
+        });
+        $slopes.exit().remove();
+    };
+    BodyRenderer.prototype.update = function () {
+        var _this = this;
+        var r = this.data.getRankings();
+        var context = this.createContext(r);
+        this.updateClipPaths(r, context);
+        var offset = 0, shifts = r.map(function (d, i) {
+            var r = offset;
+            offset += _this.options.slopeWidth;
+            var o2 = 0, shift2 = [d].concat(d.children).map(function (o) {
+                var r = o2;
+                o2 += o.getWidth() + _this.options.columnPadding;
+                if (o instanceof model.StackColumn && !o.collapsed) {
+                    o2 += _this.options.columnPadding * (o.length - 1);
+                }
+                return r;
+            });
+            offset += o2;
+            return {
+                shift: r,
+                shifts: shift2,
+                width: o2
+            };
+        });
+        this.$node.attr({
+            width: offset
+        });
+        var $body = this.$node.select('g.body');
+        if ($body.empty()) {
+            $body = this.$node.append('g').classed('body', true);
+        }
+        var argsortPromises = r.map(function (ranking) { return _this.argsortGetter(ranking); });
+        this.renderRankings($body, r, shifts, context, argsortPromises);
+        this.renderSlopeGraphs($body, r, shifts, context, argsortPromises);
+    };
+    return BodyRenderer;
+})();
+exports.BodyRenderer = BodyRenderer;
+var LineUpRenderer = (function () {
+    function LineUpRenderer(root, data, columns, argsortGetter, options) {
+        if (options === void 0) { options = {}; }
+        this.body = null;
+        this.header = null;
+        this.pool = null;
+        this.options = {
+            pool: true
+        };
+        utils.merge(this.options, options);
+        this.header = new HeaderRenderer(data, root, options);
+        this.body = new BodyRenderer(data, root, argsortGetter, options);
+        if (this.options.pool) {
+            this.pool = new PoolRenderer(data, columns, root, options);
+        }
+    }
+    LineUpRenderer.prototype.update = function () {
+        this.header.update();
+        this.body.update();
+        if (this.pool) {
+            this.pool.update();
+        }
+    };
+    return LineUpRenderer;
+})();
+exports.LineUpRenderer = LineUpRenderer;
+
+},{"./model":3,"./renderer":5,"./ui_dialogs":8,"./utils":9,"d3":"d3"}],8:[function(require,module,exports){
+/**
+ * Created by Samuel Gratzl on 24.08.2015.
+ */
+var utils = require('./utils');
+var mappingeditor = require('./mappingeditor');
+function dialogForm(title, body, buttonsWithLabel) {
+    if (buttonsWithLabel === void 0) { buttonsWithLabel = false; }
+    return '<span style="font-weight: bold">' + title + '</span>' +
+        '<form onsubmit="return false">' +
+        body + '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
+        '<button type = "reset" class="cancel fa fa-times" title="cancel"></button>' +
+        '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
+}
+function openRenameDialog(column, $header) {
+    var pos = utils.offset($header.node());
+    var popup = d3.select('body').append('div')
+        .attr({
+        'class': 'lu-popup2'
+    }).style({
+        left: pos.left + 'px',
+        top: pos.top + 'px',
+        width: '200px'
+    }).html(dialogForm('Rename Column', '<input type="text" size="20" value="' + column.label + '" required="required"><br>'));
+    popup.select('.ok').on('click', function () {
+        var newValue = popup.select('input').property('value');
+        column.setLabel(newValue);
+        popup.remove();
     });
     popup.select('.cancel').on('click', function () {
-      selectedColumn.mapping(bak);
-      $button.classed('filtered', !isSame(bak.range(), original.range()) || !isSame(bak.domain(), original.domain()));
-      popup.remove();
-    });
-    popup.select('.reset').on('click', function () {
-      act = bak = original;
-      applyMapping(original);
-      editor = LineUp.mappingEditor(bak, original.domain(), that.storage.rawdata, access, editorOptions);
-      popup.selectAll('.mappingArea *').remove();
-      popup.select('.mappingArea').call(editor);
-    });
-  };
-
-  /**
-   * handles the rendering and action of StackedColumn options menu
-   * @param selectedColumn -- the stacked column
-   */
-  LineUp.prototype.stackedColumnOptionsGui = function (selectedColumn) {
-    //console.log(selectedColumn);
-    var config = this.config;
-    var svgOverlay = this.$header.select('.overlay');
-    var that = this;
-    // remove when clicked on already selected item
-    var disappear = (this.stackedColumnModified === selectedColumn);
-    if (disappear) {
-      svgOverlay.selectAll('.stackedOption').remove();
-      this.stackedColumnModified = null;
-      return;
-    }
-
-
-
-    function removeStackedColumn(col) {
-      that.storage.removeColumn(col);
-      that.headerUpdateRequired = true;
-      that.updateAll();
-    }
-
-    function renameStackedColumn(col) {
-      var x = +(window.innerWidth) / 2 - 100;
-      var y = +100;
-
-      var popup = d3.select('body').append('div')
-        .attr({
-          'class': 'lu-popup'
-        }).style({
-          left: x + 'px',
-          top: y + 'px',
-          width: '200px',
-          height: '70px'
-
-        })
-        .html(
-          '<div style="font-weight: bold"> rename column: </div>' +
-          '<input type="text" id="popupInputText" size="20" value="' + col.label + '"><br>' +
-          '<button class="cancel"><i class="fa fa-times"></i> cancel</button>' +
-          '<button class="ok"><i class="fa fa-check"></i> ok</button>'
-      );
-
-      popup.select('.ok').on('click', function() {
-        var newValue = document.getElementById('popupInputText').value;
-        if (newValue.length > 0) {
-          col.label = newValue;
-          that.updateHeader(that.storage.getColumnLayout(col.columnBundle));
-          popup.remove();
-        } else {
-          window.alert('non empty string required');
-        }
-      });
-
-      popup.select('.cancel').on('click', function () {
         popup.remove();
-      });
+    });
+}
+exports.openRenameDialog = openRenameDialog;
+function openEditWeightsDialog(column, $header) {
+    var weights = column.weights, children = column.children.map(function (d, i) { return ({ col: d, weight: weights[i] * 100 }); });
+    var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
+    var pos = utils.offset($header.node());
+    var $popup = d3.select('body').append('div')
+        .attr({
+        'class': 'lu-popup2'
+    }).style({
+        left: pos.left + 'px',
+        top: pos.top + 'px'
+    })
+        .html(dialogForm('Edit Weights', '<table></table>'));
+    var $rows = $popup.select('table').selectAll('tr').data(children);
+    var $rows_enter = $rows.enter().append('tr');
+    $rows_enter.append('td')
+        .append('input').attr({
+        type: 'number',
+        value: function (d) { return d.weight; },
+        size: 5
+    }).on('input', function (d) {
+        d.weight = +this.value;
+        redraw();
+    });
+    $rows_enter.append('td').append('div')
+        .attr('class', 'bar')
+        .style('background-color', function (d) { return d.col.color; });
+    $rows_enter.append('td').text(function (d) { return d.col.label; });
+    function redraw() {
+        $rows.select('.bar').transition().style({
+            width: function (d) {
+                return scale(d.weight) + 'px';
+            }
+        });
     }
-
-    // else:
-    this.stackedColumnModified = selectedColumn;
-    var options = [
-      {name: '\uf014 remove', action: removeStackedColumn},
-      {name: '\uf044 rename', action: renameStackedColumn},
-      {name: '\uf0ae re-weight', action: that.reweightStackedColumnDialog}
-    ];
-
-    var menuLength = options.length * 100;
-
-    var stackedOptions = svgOverlay.selectAll('.stackedOption').data([
-      {d: selectedColumn, o: options}
-    ]);
-    stackedOptions.exit().remove();
-
-
-    var stackedOptionsEnter = stackedOptions.enter().append('g')
-      .attr({
-        'class': 'stackedOption',
-        'transform': function (d) {
-          return 'translate(' + (d.d.offsetX + d.d.columnWidth - menuLength) + ',' + (config.htmlLayout.headerHeight / 2 - 2) + ')';
-        }
-      });
-    stackedOptionsEnter.append('rect').attr({
-      x: 0,
-      y: 0,
-      width: menuLength,
-      height: config.htmlLayout.headerHeight / 2 - 4
+    redraw();
+    $popup.select('.cancel').on('click', function () {
+        column.setWeights(weights);
+        $popup.remove();
     });
-    stackedOptionsEnter.selectAll('text').data(function (d) {
-      return d.o;
-    }).enter().append('text')
-      .attr({
-        x: function (d, i) {
-          return i * 100 + 5;
-        },
-        y: config.htmlLayout.headerHeight / 4 - 2
-      })
-      .text(function (d) {
-        return d.name;
-      });
-
-    stackedOptions.selectAll('text').on('click', function (d) {
-      svgOverlay.selectAll('.stackedOption').remove();
-      d.action.call(that, selectedColumn);
+    $popup.select('.ok').on('click', function () {
+        column.setWeights(children.map(function (d) { return d.weight; }));
+        $popup.remove();
     });
-
-    stackedOptions.transition().attr({
-      'transform': function (d) {
-        return 'translate(' + (d.d.offsetX + d.d.columnWidth - menuLength) + ',' + (config.htmlLayout.headerHeight / 2 - 2) + ')';
-      }
-    });
-  };
-
-  LineUp.prototype.openCategoricalFilterPopup = function (column, $button) {
-    if (!(column instanceof LineUp.LayoutCategoricalColumn)) {
-      //can't filter other than string columns
-      return;
-    }
-    var bak = column.filter || [];
+}
+exports.openEditWeightsDialog = openEditWeightsDialog;
+function openCategoricalFilter(column, $header) {
+    var pos = utils.offset($header.node()), bak = column.getFilter() || [];
     var popup = d3.select('body').append('div')
-      .attr({
+        .attr({
         'class': 'lu-popup'
-      }).style({
-        left: +(window.innerWidth) / 2 - 100 + 'px',
-        top: 100 + 'px',
-        width: (400) + 'px',
-        height: (300) + 'px'
-      })
-      .html(
-      '<span style="font-weight: bold">Edit Filter</span>' +
-      '<form onsubmit="return false">' +
-      '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>' +
-      '<button class="ok"><i class="fa fa-check" title="ok"></i></button>' +
-      '<button class="cancel"><i class="fa fa-times" title="cancel"></i></button>' +
-      '<button class="reset"><i class="fa fa-undo" title="reset"></i></button></form>'
-    );
-
+    }).style({
+        left: pos.left + 'px',
+        top: pos.top + 'px'
+    })
+        .html(dialogForm('Edit Filter', '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>'));
     popup.select('.selectionTable').style({
-      width: (400 - 10) + 'px',
-      height: (300 - 40) + 'px'
+        width: (400 - 10) + 'px',
+        height: (300 - 40) + 'px'
     });
-
-    var that = this;
-
-
-    // list all data rows !
-    var trData = column.column.categories.map(function (d) {
-      return {d: d, isChecked: bak.length === 0 || bak.indexOf(d) >= 0};
+    var trData = column.categories.map(function (d) {
+        return { d: d, isChecked: bak.length === 0 || bak.indexOf(d) >= 0 };
     });
-
     var trs = popup.select('tbody').selectAll('tr').data(trData);
     trs.enter().append('tr');
     trs.append('td').attr('class', 'checkmark');
     trs.append('td').attr('class', 'datalabel').text(function (d) {
-      return d.d;
+        return d.d;
     });
-
     function redraw() {
-      var trs = popup.select('tbody').selectAll('tr').data(trData);
-      trs.select('.checkmark').html(function (d) {
-        return '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>';
-      })
-      .on('click', function (d) {
-        d.isChecked = !d.isChecked;
-        redraw();
-      });
-      trs.select('.datalabel').style('opacity', function (d) {
-        return d.isChecked ? '1.0' : '.8';
-      });
+        var trs = popup.select('tbody').selectAll('tr').data(trData);
+        trs.select('.checkmark').html(function (d) { return '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>'; })
+            .on('click', function (d) {
+            d.isChecked = !d.isChecked;
+            redraw();
+        });
+        trs.select('.datalabel').style('opacity', function (d) { return d.isChecked ? '1.0' : '.8'; });
     }
     redraw();
-
     function updateData(filter) {
-      column.filter = filter;
-      $button.classed('filtered', (filter && filter.length > 0 && filter.length < column.column.categories.length));
-      that.listeners['change-filter'](that, column);
-      that.storage.resortData({filteredChanged: true});
-      that.updateBody();
+        $header.select('i.fa-filter').classed('filtered', (filter && filter.length > 0 && filter.length < column.categories.length));
+        column.setFilter(filter);
     }
-
     popup.select('.cancel').on('click', function () {
-      updateData(bak);
-      popup.remove();
+        updateData(bak);
+        popup.remove();
     });
     popup.select('.reset').on('click', function () {
-      trData.forEach(function (d) {
-        d.isChecked = true;
-      });
-      redraw();
-      updateData(null);
+        trData.forEach(function (d) { return d.isChecked = true; });
+        redraw();
+        updateData(null);
     });
     popup.select('.ok').on('click', function () {
-      var f = trData.filter(function (d) {
-        return d.isChecked;
-      }).map( function (d) {
-        return d.d;
-      });
-      if (f.length === column.column.categories.length) {
-        f = [];
-      }
-      updateData(f);
-      popup.remove();
+        var f = trData.filter(function (d) { return d.isChecked; }).map(function (d) { return d.d; });
+        if (f.length === column.categories.length) {
+            f = [];
+        }
+        updateData(f);
+        popup.remove();
     });
-  };
-
-  LineUp.prototype.openFilterPopup = function (column, $button) {
-    if (!(column instanceof LineUp.LayoutStringColumn)) {
-      //can't filter other than string columns
-      return;
-    }
-    var pos = $(this.$header.node()).offset();
-    pos.left += column.offsetX;
-    pos.top += column.offsetY;
-    var bak = column.filter || '';
-
-    var popup = d3.select('body').append('div')
-      .attr({
+}
+function openStringFilter(column, $header) {
+    var pos = utils.offset($header.node()), bak = column.getFilter() || '';
+    var $popup = d3.select('body').append('div')
+        .attr({
         'class': 'lu-popup2'
-      }).style({
+    }).style({
         left: pos.left + 'px',
         top: pos.top + 'px'
-      })
-      .html(
-        '<form onsubmit="return false"><input type="text" id="popupInputText" placeholder="containing..." autofocus="true" size="18" value="' + bak + '"><br>' +
-        '<button class="ok"><i class="fa fa-check" title="ok"></i></button>' +
-        '<button class="cancel"><i class="fa fa-times" title="cancel"></i></button>' +
-        '<button class="reset"><i class="fa fa-undo" title="reset"></i></button></form>'
-    );
-
-    var that = this;
-
+    })
+        .html(dialogForm('Filter', '<input type="text" placeholder="containing..." autofocus="true" size="18" value="' + bak + '"><br>'));
     function updateData(filter) {
-      column.filter = filter;
-      $button.classed('filtered', (filter && filter.length > 0));
-      that.listeners['change-filter'](that, column);
-      that.storage.resortData({filteredChanged: true});
-      that.updateBody();
+        $header.select('i.fa-filter').classed('filtered', (filter && filter.length > 0));
+        column.setFilter(filter);
     }
-
-    popup.select('.cancel').on('click', function () {
-      document.getElementById('popupInputText').value = bak;
-      updateData(bak);
-      popup.remove();
+    $popup.select('.cancel').on('click', function () {
+        $popup.select('input').property('value', bak);
+        updateData(bak);
+        $popup.remove();
     });
-    popup.select('.reset').on('click', function () {
-      document.getElementById('popupInputText').value = '';
-      updateData(null);
+    $popup.select('.reset').on('click', function () {
+        $popup.select('input').property('value', '');
+        updateData(null);
     });
-    popup.select('.ok').on('click', function () {
-      updateData(document.getElementById('popupInputText').value);
-      popup.remove();
+    $popup.select('.ok').on('click', function () {
+        updateData($popup.select('input').property('value'));
+        $popup.remove();
     });
-  };
-
-  LineUp.createTooltip = function (container) {
-    var $container = $(container), $tooltip = $('<div class="lu-tooltip"/>').appendTo($container);
-
-    function showTooltip(content, xy) {
-      $tooltip.html(content).css({
-        left: xy.x + 'px',
-        top: (xy.y + xy.height - $container.offset().top) + 'px'
-      }).fadeIn();
-
-      var stickout = ($(window).height() + $(window).scrollTop()) <= ((xy.y + xy.height) + $tooltip.height() - 20);
-      var stickouttop = $(window).scrollTop() > (xy.y - $tooltip.height());
-      if (stickout && !stickouttop) { //if the bottom is not visible move it on top of the box
-        $tooltip.css('top', (xy.y - $tooltip.height() - $container.offset().top) + 'px');
-      }
-    }
-
-    function hideTooltip() {
-      $tooltip.stop(true).hide();
-    }
-
-    function moveTooltip(xy) {
-      if (xy.x) {
-        $tooltip.css({
-          left: xy.x + 'px'
-        });
-      }
-      if (xy.y) {
-        $tooltip.css({
-          top: xy.y  - $container.offset().top + 'px'
-        });
-      }
-    }
-
-    function sizeOfTooltip() {
-      return [$tooltip.width(), $tooltip.height()];
-    }
-
-    function destroyTooltip() {
-      $tooltip.remove();
-    }
-
-    return {
-      show: showTooltip,
-      hide: hideTooltip,
-      move: moveTooltip,
-      size: sizeOfTooltip,
-      destroy: destroyTooltip
-    };
-  };
-
-  LineUp.prototype.initScrolling = function ($container, topShift) {
-    var that = this,
-      container = $container[0],
-      rowHeight = this.config.svgLayout.rowHeight,
-      prevScrollTop = container.scrollTop,
-      jbody = $(this.$table.node()),
-      backupRows = this.config.svgLayout.backupScrollRows,
-      shift;
-
-    function onScroll() {
-      var act = container.scrollTop;
-      var left = container.scrollLeft;
-      //at least one row changed
-      that.scrolled(act, left);
-      if (Math.abs(prevScrollTop - act) >= rowHeight * backupRows) {
-        prevScrollTop = act;
-        that.updateBody();
-      }
-    }
-
-    $container.on('scroll', onScroll);
-    //the shift between the scroll container our svg body
-    shift = jbody.offset().top - $container.offset().top + topShift;
-    //use a resize sensor of a utility lib to also detect resize changes
-    //new ResizeSensor($container, function() {
-    //  console.log(container.scrollHeight, container.scrollTop, $container.innerHeight(), $container.height(), 'resized');
-    //  that.updateBody();
-    //});
-    function selectVisibleRows(data, rowScale) {
-      var top = container.scrollTop - shift,
-        bottom = top + $container.innerHeight(),
-        i = 0, j;
-      /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
-      if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
-        console.log('show all');
-        return [0, data.length];
-      }*/
-      if (top > 0) {
-        i = Math.round(top / rowHeight);
-        //count up till really even partial rows are visible
-        while (i >= 0 && rowScale(data[i + 1]) > top) {
-          i--;
-        }
-        i -= backupRows; //one more row as backup for scrolling
-      }
-      { //some parts from the bottom aren't visible
-        j = Math.round(bottom / rowHeight);
-        //count down till really even partial rows are visible
-        while (j <= data.length && rowScale(data[j - 1]) < bottom) {
-          j++;
-        }
-        j += backupRows; //one more row as backup for scrolling
-      }
-      return [Math.max(i, 0), Math.min(j, data.length)];
-    }
-
-    return {
-      selectVisible: selectVisibleRows,
-      onScroll: onScroll
-    };
-  };
-
-  LineUp.prototype.initDragging = function () {
-    var that = this;
-    /*
-     * define dragging behaviour for header weights
-     * */
-
-    function dragWeightStarted() {
-      d3.event.sourceEvent.stopPropagation();
-      d3.select(this).classed('dragging', true);
-    }
-
-
-    function draggedWeight() {
-      var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
-      that.reweightHeader({column: d3.select(this).data()[0], value: newValue});
-      that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
-    }
-
-    function dragWeightEnded() {
-      d3.select(this).classed('dragging', false);
-
-      if (that.config.columnBundles.primary.sortedColumn instanceof LineUp.LayoutStackedColumn) {
-        that.listeners['change-sortcriteria'](that, that.config.columnBundles.primary.sortedColumn);
-        that.storage.resortData({column: that.config.columnBundles.primary.sortedColumn});
-        that.updateBody(that.storage.getColumnLayout(), that.storage.getData(), false);
-      }
-//        that.updateBody(that.storage.getColumnLayout(), that.storage.getData())
-
-//      that.updateAll();
-      // TODO: integrate columnbundles dynamically !!
-    }
-
-
-    return d3.behavior.drag()
-      .origin(function (d) {
-        return d;
-      })
-      .on('dragstart', dragWeightStarted)
-      .on('drag', draggedWeight)
-      .on('dragend', dragWeightEnded);
-  };
-}(LineUp || (LineUp = {}), d3, jQuery));
-
-/* global d3, jQuery */
-var LineUp;
-
-(function (LineUp, d3, $) {
-  'use strict';
-  function addLine($svg, x1, y1, x2, y2, clazz) {
-    return $svg.append("line").attr({
-      x1 : x1, y1 : y1, x2 : x2, y2: y2, 'class' : clazz
-    });
-  }
-  function addText($svg, x, y, text, dy, clazz) {
-    dy = dy || null;
-    clazz = clazz || null;
-    return $svg.append("text").attr({
-      x : x, y : y, dy : dy, 'class' : clazz
-    }).text(text);
-  }
-  function addCircle($svg, x, shift, y, radius) {
-    shift -= x;
-    return $svg
-      .append("circle")
-      .attr({
-        'class' : 'handle',
-        r : radius,
-        cx: x,
-        cy : y,
-        transform : 'translate('+shift+',0)'
-      });
-  }
-  LineUp.mappingEditor = function (scale, dataDomain, data, data_accessor, options) {
-    options = $.extend({
-      width: 400,
-      height: 400,
-      padding: 50,
-      radius: 10,
-      callback: $.noop,
-      callbackThisArg : null,
-      triggerCallback: 'change' //change, dragend
-    }, options);
-
-    var editor = function ($root) {
-      var $svg = $root.append('svg').attr({
-        'class': 'lugui-me',
-        width: options.width,
-        height: options.height
-      });
-      //left limit for the axes
-      var lowerLimitX = options.padding;
-      //right limit for the axes
-      var upperLimitX = options.width-options.padding;
-      //location for the score axis
-      var scoreAxisY = options.padding;
-      //location for the raw2pixel value axis
-      var raw2pixelAxisY = options.height-options.padding;
-      //this is needed for filtering the shown datalines
-      var raw2pixel = d3.scale.linear().domain(dataDomain).range([lowerLimitX, upperLimitX]);
-      var normal2pixel = d3.scale.linear().domain([0,1]).range([lowerLimitX,upperLimitX]);
-
-      //x coordinate for the score axis lower bound
-      var lowerNormalized = normal2pixel(scale.range()[0]);
-      //x coordinate for the score axis upper bound
-      var upperNormalized = normal2pixel(scale.range()[1]);
-      //x coordinate for the raw2pixel axis lower bound
-      var lowerRaw = raw2pixel(scale.domain()[0]);
-      //x coordinate for the raw2pixel axis upper bound
-      var upperRaw = raw2pixel(scale.domain()[1]);
-
-      scale = d3.scale.linear()
-        .clamp(true)
-        .domain(scale.domain())
-        .range([lowerNormalized, upperNormalized]);
-      var $base = $svg.append('g');
-      //upper axis for scored values
-      addLine($base, lowerLimitX,scoreAxisY, upperLimitX, scoreAxisY, 'axis');
-      //label for minimum scored value
-      addText($base, lowerLimitX, scoreAxisY - 25, 0, '.75em');
-      //label for maximum scored value
-      addText($base, upperLimitX, scoreAxisY - 25, 1, '.75em');
-      addText($base, options.width/2, scoreAxisY -25, 'Score', '.75em','centered');
-
-      //lower axis for raw2pixel values
-      addLine($base, lowerLimitX,raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
-      //label for minimum raw2pixel value
-      addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], '.75em');
-      //label for maximum raw2pixel value
-      addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], '.75em');
-      addText($base, options.width/2, raw2pixelAxisY + 20, 'Raw', '.75em','centered');
-      
-      //lines that show mapping of individual data items
-      var datalines = $svg.append('g').classed('data',true).selectAll('line').data(data);
-      datalines.enter().append('line')
+}
+function openMappingEditor(column, $header, data) {
+    var pos = utils.offset($header.node()), bak = column.getMapping(), original = column.getOriginalMapping();
+    var act = d3.scale.linear().domain(bak.domain).range(bak.range);
+    var popup = d3.select('body').append('div')
         .attr({
-          x1: function (d) { return scale(data_accessor(d)); },
-          y1: scoreAxisY,
-          x2: function (d) { return raw2pixel(data_accessor(d)); },
-          y2: raw2pixelAxisY
-        }).style('visibility', function(d) {
-          var a;
-          if (lowerRaw < upperRaw) {
-            a = (raw2pixel(data_accessor(d)) < lowerRaw || raw2pixel(data_accessor(d)) > upperRaw);
-          } else {
-            a = (raw2pixel(data_accessor(d)) > lowerRaw || raw2pixel(data_accessor(d)) < upperRaw);
-          }
-          return a ? 'hidden' : null;
-        });
-      //line that defines lower bounds for the scale
-      var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, raw2pixelAxisY, 'bound');
-      //line that defines upper bounds for the scale
-      var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
-      //label for lower bound of normalized values
-      var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), '.25em', 'drag').attr('transform','translate('+(lowerNormalized-lowerLimitX)+',0)');
-      //label for lower bound of raw2pixel values
-      var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), '.25em', 'drag').attr('transform','translate('+(lowerRaw-lowerLimitX)+',0)');
-      //label for upper bound of normalized values
-      var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), '.25em', 'drag').attr('transform','translate('+(upperNormalized-upperLimitX)+',0)');
-      //label for upper bound of raw2pixel values
-      var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), '.25em', 'drag').attr('transform','translate('+(upperRaw-upperLimitX)+',0)');
-
-      function createDrag(label, move) {
-        return d3.behavior.drag()
-          .on('dragstart', function () {
-            d3.select(this)
-              .classed('dragging', true)
-              .attr('r', options.radius * 1.1);
-            label.style('visibility', 'visible');
-          })
-          .on('drag', move)
-          .on('dragend', function () {
-            d3.select(this)
-              .classed('dragging', false)
-              .attr('r', options.radius);
-            label.style('visibility', null);
-            updateScale(true);
-          })
-          .origin(function () {
-            var t = d3.transform(d3.select(this).attr('transform'));
-            return {x: t.translate[0], y: t.translate[1]};
-          });
-      }
-
-      function updateNormalized() {
-        scale.range([lowerNormalized, upperNormalized]);
-        datalines.attr('x1', function (d) {
-          return scale(data_accessor(d));
-        });
-        updateScale();
-      }
-
-      function updateRaw() {
-        var hiddenDatalines, shownDatalines;
-        if (lowerRaw < upperRaw) {
-          hiddenDatalines = datalines.filter(function (d) {
-            return (raw2pixel(data_accessor(d)) < lowerRaw || raw2pixel(data_accessor(d)) > upperRaw);
-          });
-          shownDatalines = datalines.filter(function (d) {
-            return !(raw2pixel(data_accessor(d)) < lowerRaw || raw2pixel(data_accessor(d)) > upperRaw);
-          });
+        'class': 'lu-popup'
+    }).style({
+        left: pos.left + 'px',
+        top: pos.top + 'px',
+        width: '420px',
+        height: '470px'
+    })
+        .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>' +
+        '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'));
+    var $filterIt = popup.select('input').on('change', function () {
+        applyMapping(act);
+    });
+    $filterIt.property('checked', column.isFiltered());
+    function applyMapping(newscale) {
+        act = newscale;
+        $header.select('i.fa-filter').classed('filtered', !isSame(act.range(), original.range) || !isSame(act.domain(), original.domain));
+        column.setMapping(act.domain(), act.range());
+        var val = $filterIt.property('checked');
+        if (val) {
+            column.setFilter(newscale.domain()[0], newscale.domain()[1]);
         }
         else {
-          hiddenDatalines = datalines.filter(function (d) {
-            return (raw2pixel(data_accessor(d)) > lowerRaw || raw2pixel(data_accessor(d)) < upperRaw);
-          });
-          shownDatalines = datalines.filter(function (d) {
-            return !(raw2pixel(data_accessor(d)) > lowerRaw || raw2pixel(data_accessor(d)) < upperRaw);
-          });
+            column.setFilter();
         }
-        hiddenDatalines.style('visibility', 'hidden');
-        scale.domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)]);
-        shownDatalines
-          .style('visibility', null)
-          .attr('x1', function (d) {
-            return scale(data_accessor(d));
-          });
-        updateScale();
-      }
-
-      //draggable circle that defines the lower bound of normalized values
-      addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
-        .call(createDrag(lowerBoundNormalizedLabel, function () {
-          if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-            mapperLineLowerBounds.attr('x1', lowerLimitX + d3.event.x);
-            d3.select(this)
-              .attr('transform', 'translate(' + d3.event.x + ', 0)');
-            lowerNormalized = d3.event.x + lowerLimitX;
-            lowerBoundNormalizedLabel
-              .text(d3.round(normal2pixel.invert(lowerNormalized), 2))
-              .attr('transform', 'translate(' + d3.event.x + ', 0)');
-            updateNormalized();
-          }
-        }));
-      //draggable circle that defines the upper bound of normalized values
-      addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
-        .call(createDrag(upperBoundNormalizedLabel, function () {
-          if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-            mapperLineUpperBounds.attr('x1', upperLimitX + d3.event.x);
-            d3.select(this)
-              .attr('transform', 'translate(' + d3.event.x + ', 0)');
-            upperNormalized = d3.event.x + upperLimitX;
-            upperBoundNormalizedLabel
-              .text(d3.round(normal2pixel.invert(upperNormalized), 2))
-              .attr('transform', 'translate(' + d3.event.x + ', 0)');
-            updateNormalized();
-          }
-        }));
-      //draggable circle that defines the lower bound of raw2pixel values
-      addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
-        .call(createDrag(lowerBoundRawLabel, function () {
-          if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-            mapperLineLowerBounds.attr('x2', lowerLimitX + d3.event.x);
-            d3.select(this)
-              .attr('transform', 'translate(' + d3.event.x + ', 0)');
-            lowerRaw = d3.event.x + lowerLimitX;
-            lowerBoundRawLabel
-              .text(d3.round(raw2pixel.invert(lowerRaw), 2))
-              .attr('transform', 'translate(' + d3.event.x + ', 0)');
-            updateRaw();
-          }
-        }));
-      //draggable circle that defines the upper bound of raw2pixel values
-      addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
-        .call(createDrag(upperBoundRawLabel, function () {
-          if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-            mapperLineUpperBounds.attr('x2', upperLimitX + d3.event.x);
-            d3.select(this)
-              .attr('transform', 'translate(' + d3.event.x + ', 0)');
-            upperRaw = d3.event.x + upperLimitX;
-            upperBoundRawLabel
-              .text(d3.round(raw2pixel.invert(upperRaw), 2))
-              .attr('transform', 'translate(' + d3.event.x + ', 0)');
-            updateRaw();
-          }
-        }));
-
-      function updateScale(isDragEnd) {
-        if (isDragEnd !== (options.triggerCallback === 'dragend')) {
-          return;
-        }
-        var newScale = d3.scale.linear()
-          .domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)])
-          .range([normal2pixel.invert(lowerNormalized), normal2pixel.invert(upperNormalized)]);
-        options.callback.call(options.callbackThisArg, newScale);
-      }
+    }
+    var editorOptions = {
+        callback: applyMapping,
+        triggerCallback: 'dragend'
     };
-    return editor;
-  };
-}(LineUp || (LineUp = {}), d3, jQuery));
- 
-
-/* global d3, jQuery, _ */
-var LineUp;
-(function (LineUp, d3, $, _, undefined) {
-
-  function bundleSetter(bundle) {
-    return function setBundle(col) {
-      col.columnBundle = bundle;
-      if (col instanceof LineUp.LayoutStackedColumn) {
-        col.children.forEach(setBundle);
-      }
-    };
-  }
-  /**
-   * An implementation of data storage for reading locally
-   * @param tableId
-   * @param data
-   * @param columns
-   * @param config
-   * @class
-   */
-  function LineUpLocalStorage(data, columns, layout, primaryKey, storageConfig) {
-    this.storageConfig = $.extend(true, {}, {
-      colTypes: {
-        'number': LineUp.LineUpNumberColumn,
-        'string': LineUp.LineUpStringColumn,
-        'categorical': LineUp.LineUpCategoricalColumn
-      },
-      layoutColumnTypes: {
-        'number': LineUp.LayoutNumberColumn,
-        'single': LineUp.LayoutStringColumn,
-        'string': LineUp.LayoutStringColumn,
-        'categorical': LineUp.LayoutCategoricalColumn,
-        'categoricalcolor': LineUp.LayoutCategoricalColorColumn,
-        'stacked': LineUp.LayoutStackedColumn,
-        'rank': LineUp.LayoutRankColumn,
-        'actions': LineUp.LayoutActionColumn
-      }
-    }, storageConfig);
-    this.config = null; //will be injected by lineup
-
-    var colTypes = this.storageConfig.colTypes;
-    var layoutColumnTypes = this.storageConfig.layoutColumnTypes;
-    var that = this;
-
-    function toColumn(desc) {
-      return new colTypes[desc.type](desc, toColumn, data);
+    var data_sample = data.mappingSample(column);
+    var editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, data_sample, editorOptions);
+    popup.select('.mappingArea').call(editor);
+    function isSame(a, b) {
+        return a[0] === b[0] && a[1] === b[1];
     }
-
-    this.storageConfig.toColumn = toColumn;
-
-    this.primaryKey = primaryKey;
-    this.rawdata = data;
-    this.selected = d3.set();
-    this.rawcols = columns.map(toColumn);
-    this.layout = layout || LineUpLocalStorage.generateDefaultLayout(this.rawcols);
-
-    var colLookup = d3.map();
-    this.rawcols.forEach(function (col) {
-      colLookup.set(col.column, col);
+    popup.select('.ok').on('click', function () {
+        applyMapping(act);
+        popup.remove();
     });
-    function toLayoutColumn(desc) {
-      var type = desc.type || 'single';
-      if (type === 'single') {
-        var col = colLookup.get(desc.column);
-        if (col instanceof LineUp.LineUpNumberColumn) {
-          type = 'number';
-        } else if (col instanceof LineUp.LineUpCategoricalColumn) {
-          type = 'categorical';
-        }
-      }
-      return new layoutColumnTypes[type](desc, colLookup, toLayoutColumn, that);
-    }
-
-    this.storageConfig.toLayoutColumn = toLayoutColumn;
-
-    var bundles = this.bundles = {};
-    Object.keys(this.layout).forEach(function(l) {
-      bundles[l] = {
-        layoutColumns: [],
-        needsLayout: true,  // this triggers the layout generation at first access to "getColumnLayout"
-        data: data,
-        initialSort :true
-      };
+    popup.select('.cancel').on('click', function () {
+        column.setMapping(bak.domain, bak.range);
+        $header.classed('filtered', !isSame(bak.range, original.range) || !isSame(bak.domain, original.domain));
+        popup.remove();
     });
-  }
-
-  LineUp.LineUpLocalStorage = LineUpLocalStorage;
-  LineUp.createLocalStorage = function (data, columns, layout, primaryKey, storageConfig) {
-    return new LineUpLocalStorage(data, columns, layout, primaryKey, storageConfig);
-  };
-
-  /**
-   * generate a default layout by just showing all columns with 100 px
-   * @param columns
-   * @returns {{primary: (Array|*)}}
-   */
-  LineUpLocalStorage.generateDefaultLayout = function (columns) {
-    var layout = columns.map(function (c) {
-      return {
-        column: c.column,
-        width: c instanceof LineUp.LineUpStringColumn ? 200 : 100
-      };
+    popup.select('.reset').on('click', function () {
+        bak = original;
+        act = d3.scale.linear().domain(bak.domain).range(bak.range);
+        applyMapping(act);
+        editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, data_sample, editorOptions);
+        popup.selectAll('.mappingArea *').remove();
+        popup.select('.mappingArea').call(editor);
     });
-    return {
-      primary: layout
-    };
-  };
-
-  LineUpLocalStorage.prototype = $.extend({}, {},
-    /** @lends LineUpLocalStorage.prototype */
-    {
-      getRawColumns: function () {
-        return this.rawcols;
-      },
-      getColumnLayout: function (key) {
-        var _key = key || "primary";
-        if (this.bundles[_key].needsLayout) {
-          this.generateLayout(this.layout, _key);
-          this.bundles[_key].needsLayout = false;
-        }
-
-        return this.bundles[_key].layoutColumns;
-      },
-
-      isSelected : function(row) {
-        return this.selected.has(row[this.primaryKey]);
-      },
-      select : function(row) {
-        this.selected.add(row[this.primaryKey]);
-      },
-      selectAll : function(rows) {
-        var that = this;
-        rows.forEach(function(row) {
-          that.selected.add(row[that.primaryKey]);
-        });
-      },
-      setSelection: function(rows) {
-        this.clearSelection();
-        this.selectAll(rows);
-      },
-      deselect: function(row) {
-        this.selected.remove(row[this.primaryKey]);
-      },
-      selectedRows: function() {
-        return this.rawdata.filter(this.isSelected.bind(this));
-      },
-      clearSelection : function() {
-        this.selected = d3.set();
-      },
-
-      /**
-       *  get the data
-       *  @returns data
-       */
-      getData: function (bundle) {
-        bundle = bundle || "primary";
-        return this.bundles[bundle].data;
-      },
-      filterData: function (columns) {
-        var flat = [];
-        columns.forEach(function (d) {
-          d.flattenMe(flat);
-        });
-        flat = flat.filter(function (d) {
-          return d.isFiltered();
-        });
-        if ($.isFunction(this.config.filter.filter)) {
-          flat.push(this.config.filter.filter);
-        }
-        if (flat.length === 0) {
-          return this.rawdata;
-        } else {
-          return this.rawdata.filter(function (row) {
-            return flat.every(function (f) {
-              return f.filterBy(row);
-            });
-          });
-        }
-      },
-      resortData: function (spec) {
-
-        var _key = spec.key || 'primary', that = this;
-        var bundle = this.bundles[_key];
-        var asc = spec.asc || this.config.columnBundles[_key].sortingOrderAsc;
-        var column = spec.column || this.config.columnBundles[_key].sortedColumn;
-
-        //console.log('resort: ', spec);
-        var cols = this.getColumnLayout(_key);
-        bundle.data = this.filterData(cols);
-        if (spec.filteredChanged || bundle.initialSort) {
-          //trigger column updates
-          var flat = [];
-          cols.forEach(function (d) {
-            d.flattenMe(flat);
-          });
-          flat.forEach(function (col) {
-            col.prepare(bundle.data, that.config.renderingOptions.histograms);
-          });
-          bundle.initialSort = false;
-        }
-        var primary = this.primaryKey;
-        function sort(a,b) {
-          var r = column.sortBy(a,b);
-          if (r === 0 || isNaN(r)) { //by default sort by primary key
-            return d3.ascending(a[primary], b[primary]);
-          }
-          return asc ? -r : r;
-        }
-        if (column) {
-          bundle.data.sort(sort);
-        }
-
-        var start = this.config.filter.skip ? this.config.filter.skip : 0;
-        if ((this.config.filter.limit && isFinite(this.config.filter.limit))) {
-          bundle.data = bundle.data.slice(start, start + this.config.filter.limit);
-        } else {
-          bundle.data = bundle.data.slice(start);
-        }
-
-        var rankColumn = bundle.layoutColumns.filter(function (d) {
-          return d instanceof LineUp.LayoutRankColumn;
-        });
-        if (rankColumn.length > 0) {
-          var accessor = function (d, i) {
-            return i;
-          };
-          if (column) {
-            accessor = function (d) {
-              return column.getValue(d);
-            };
-          }
-          this.assignRanks(bundle.data, accessor, rankColumn);
-        }
-      },
-      /*
-       * assigns the ranks to the data which is expected to be sorted in decreasing order
-       * */
-      assignRanks: function (data, accessor, rankColumns) {
-
-        var actualRank = 1;
-        var actualValue = -1;
-
-        data.forEach(function (row, i) {
-          if (actualValue === -1) {
-            actualValue = accessor(row, i);
-          }
-          if (actualValue !== accessor(row, i)) {
-            actualRank = i + 1; //we have 1,1,3, not 1,1,2
-            actualValue = accessor(row, i);
-          }
-          rankColumns.forEach(function (r) {
-            r.setValue(row, actualRank);
-          });
-        });
-      },
-      generateLayout: function (layout, bundle) {
-        var _bundle = bundle || 'primary';
-
-        // create Rank Column
-//            new LayoutRankColumn();
-
-        var b = this.bundles[_bundle];
-        b.layoutColumns = layout[_bundle].map(this.storageConfig.toLayoutColumn);
-
-        //console.log(b.layoutColumns, layout);
-        //if there is no rank column create one
-        if (b.layoutColumns.filter(function (d) {
-          return d instanceof LineUp.LayoutRankColumn;
-        }).length < 1) {
-          b.layoutColumns.unshift(new LineUp.LayoutRankColumn(null, null, null, this));
-        }
-
-        //if we have row actions and no action column create one
-        if (this.config.svgLayout.rowActions.length > 0 && b.layoutColumns.filter(function (d) {
-          return d instanceof LineUp.LayoutActionColumn;
-        }).length < 1) {
-          b.layoutColumns.push(new LineUp.LayoutActionColumn());
-        }
-
-        //set layout bundle reference
-        b.layoutColumns.forEach(bundleSetter(_bundle));
-      },
-      addColumn: function (col, bundle, position) {
-        var _bundle = bundle || 'primary';
-        var cols = this.bundles[_bundle].layoutColumns, i, c;
-        //insert the new column after the first non rank, text column
-        if (typeof position === 'undefined' || position === null) {
-          for (i = 0; i < cols.length; ++i) {
-            c = cols[i];
-            if (c instanceof LineUp.LayoutRankColumn || (c instanceof LineUp.LayoutStringColumn)) {
-              continue;
-            }
-            break;
-          }
-        } else {
-          if (position < 0) {
-            position = cols.length + 1 + position;
-          }
-          i =  Math.max(0, Math.min(cols.length, position));
-        }
-        col.columnBundle = _bundle;
-        cols.splice(i, 0, col);
-      },
-      addStackedColumn: function (spec, position, bundle) {
-        var _spec = $.extend({ type: 'stacked', label: 'Stacked', children: []}, spec);
-        this.addColumn(this.storageConfig.toLayoutColumn(_spec), bundle, position);
-      },
-      addSingleColumn: function (spec, position, bundle) {
-        this.addColumn(this.storageConfig.toLayoutColumn(spec), bundle, position);
-      },
-
-      removeColumn: function (col) {
-        var headerColumns = this.bundles[col.columnBundle].layoutColumns;
-
-        if (col instanceof LineUp.LayoutStackedColumn) {
-          var indexOfElement = _.indexOf(headerColumns, col);//function(c){ return (c.id == d.id)});
-          if (indexOfElement !== undefined) {
-            var addColumns = [];
-//                d.children.forEach(function(ch){
-//
-//                    // if there is NO column of same data type
-//                   if (headerColumns.filter(function (hc) {return hc.getDataID() == ch.getDataID()}).length ==0){
-//                       ch.parent=null;
-//                       addColumns.push(ch);
-//                   }
-//
-//                })
-
-//                headerColumns.splice(indexOfElement,1,addColumns)
-
-            Array.prototype.splice.apply(headerColumns, [indexOfElement, 1].concat(addColumns));
-
-          }
-
-
-        } else if (col.column) {
-          if (col.parent === null || col.parent === undefined) {
-            headerColumns.splice(headerColumns.indexOf(col), 1);
-          } else {
-            col.parent.removeChild(col);
-            this.resortData({});
-          }
-        }
-
-
-      },
-      moveColumn: function (column, targetColumn, position) {
-        var sourceColumns = this.bundles[column.columnBundle].layoutColumns,
-          targetColumns = this.bundles[targetColumn.columnBundle].layoutColumns,
-          targetIndex;
-
-        // different cases:
-        if (column.parent == null && targetColumn.parent == null) {
-          // simple L1 Column movement:
-
-          sourceColumns.splice(sourceColumns.indexOf(column), 1);
-
-          targetIndex = targetColumns.indexOf(targetColumn);
-          if (position === 'r') {
-            targetIndex++;
-          }
-          targetColumns.splice(targetIndex, 0, column);
-        }
-        else if ((column.parent !== null) && targetColumn.parent === null) {
-          // move from stacked Column
-          column.parent.removeChild(column);
-
-          targetIndex = targetColumns.indexOf(targetColumn);
-          if (position === 'r') {
-            targetIndex++;
-          }
-          targetColumns.splice(targetIndex, 0, column);
-
-        } else if (column.parent === null && (targetColumn.parent !== null)) {
-
-          // move into stacked Column
-          if (targetColumn.parent.addChild(column, targetColumn, position)) {
-            sourceColumns.splice(sourceColumns.indexOf(column), 1);
-          }
-
-        } else if ((column.parent !== null) && (targetColumn.parent !== null)) {
-
-          // move from Stacked into stacked Column
-          column.parent.removeChild(column);
-          targetColumn.parent.addChild(column, targetColumn, position);
-        }
-        bundleSetter(targetColumn.columnBundle)(column);
-        this.resortData({});
-      },
-      copyColumn: function (column, targetColumn, position) {
-        var targetColumns = this.bundles[targetColumn.columnBundle].layoutColumns;
-
-        var newColumn = column.makeCopy();
-        bundleSetter(targetColumn.columnBundle)(newColumn);
-
-        // different cases:
-        if (targetColumn.parent == null) {
-
-          var targetIndex = targetColumns.indexOf(targetColumn);
-          if (position === 'r') {
-            targetIndex++;
-          }
-          targetColumns.splice(targetIndex, 0, newColumn);
-        }
-        else if ((targetColumn.parent !== null)) {
-          // copy into stacked Column
-          targetColumn.parent.addChild(newColumn, targetColumn, position);
-        }
-        this.resortData({});
-      },
-
-      /**
-       * returns a column by name
-       * @param name
-       * @returns {*}
-       */
-      getColumnByName: function (name) {
-        var cols = this.getColumnLayout();
-        for (var i = cols.length - 1; i >= 0; --i) {
-          var col = cols[i];
-          if (col.getLabel() === name || (col.column && col.column.column === name)) {
-            return col;
-          }
-        }
-        return null;
-      }
+}
+function openCategoricalMappingEditor(column, $header) {
+    var range = column.getScale().range, colors = column.categoryColors, children = column.categories.map(function (d, i) { return ({ cat: d, range: range[i] * 100, color: colors[i] }); });
+    var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
+    var pos = utils.offset($header.node());
+    var $popup = d3.select('body').append('div')
+        .attr({
+        'class': 'lu-popup2'
+    }).style({
+        left: pos.left + 'px',
+        top: pos.top + 'px'
+    })
+        .html(dialogForm('Edit Categorical Mapping', '<table></table>'));
+    var $rows = $popup.select('table').selectAll('tr').data(children);
+    var $rows_enter = $rows.enter().append('tr');
+    $rows_enter.append('td')
+        .append('input').attr({
+        type: 'number',
+        value: function (d) { return d.range; },
+        min: 0,
+        max: 100,
+        size: 5
+    }).on('input', function (d) {
+        d.range = +this.value;
+        redraw();
     });
-}(LineUp || (LineUp = {}), d3, jQuery, _));
-
-/* global d3, jQuery, document */
-var LineUp;
-(function (LineUp, d3, $, undefined) {
-  LineUp.prototype = LineUp.prototype || {};
-  LineUp.updateClipPaths = function (headers, svg, prefix, shift, defclass) {
-    defclass = defclass || 'column';
-    //generate clip paths for the text columns to avoid text overflow
-    //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
-    //there is a bug in webkit which present camelCase selectors
-    var textClipPath = svg.select('defs.' + defclass).selectAll(function () {
-      return this.getElementsByTagName('clipPath');
-    }).data(headers, function (d) {
-      return d.id;
-    });
-    textClipPath.enter().append('clipPath')
-      .attr('id', function (d) {
-        return 'clip-' + prefix + d.id;
-      })
-      .append('rect').attr({
-        y: 0,
-        height: '1000'
-      });
-    textClipPath.exit().remove();
-    textClipPath.select('rect')
-      .attr({
-        x: function (d) {
-          return shift ? d.offsetX : null;
-        },
-        width: function (d) {
-          return Math.max(d.getColumnWidth() - 5, 0);
-        }
-      });
-  };
-  function updateText(allHeaders, allRows, svg, config) {
-    // -- the text columns
-
-    var allTextHeaders = allHeaders.filter(function (d) {
-      return d instanceof LineUp.LayoutCategoricalColumn || d instanceof LineUp.LayoutStringColumn|| d instanceof LineUp.LayoutRankColumn;
-    });
-
-    var rowCenter = (config.svgLayout.rowHeight / 2);
-
-    var textRows = allRows.selectAll('.tableData.text')
-      .data(function (d) {
-        var dd = allTextHeaders.map(function (column) {
-          return {
-            value: column.getValue(d),
-            label: column.getValue(d, 'raw'),
-            offsetX: column.offsetX,
-            columnW: column.getColumnWidth(),
-            isRank: (column instanceof LineUp.LayoutRankColumn),
-            clip: 'url(#clip-B' + column.id + ')'
-          };
-        });
-        return dd;
-      });
-    textRows.enter()
-      .append('text')
-      .attr({
-        'class': function (d) {
-          return 'tableData text' + (d.isRank ? ' rank' : '');
-        },
-        y: rowCenter,
-        'clip-path': function (d) {
-          return d.clip;
-        }
-      });
-    textRows.exit().remove();
-
-    textRows
-      .attr('x', function (d) {
-        return d.offsetX;
-      })
-      .text(function (d) {
-        return d.label;
-      });
-
-    allRows.selectAll('.tableData.text.rank').text(function (d) {
-      return d.label;
-    });// only changed texts:
-    ///// TODO ---- IMPORTANT  ----- DO NOT DELETE
-
-    //            data.push({key:'rank',value:d['rank']});// TODO: use Rank column
-    //    allRows.selectAll('.tableData.text.rank')
-//        .data(function(d){
-////            console.log(d);
-//            return [{key:'rank',value:d['rank']}]
-//        }
-//    )
-  }
-
-    function updateCategorical(allHeaders, allRows, svg, config) {
-        // -- the text columns
-
-        var allTextHeaders = allHeaders.filter(function (d) {
-            return d instanceof LineUp.LayoutCategoricalColorColumn;
-        });
-
-        var icon = (config.svgLayout.rowHeight-config.svgLayout.rowBarPadding*2);
-        var textRows = allRows.selectAll('.tableData.cat')
-            .data(function (d) {
-                var dd = allTextHeaders.map(function (column) {
-                    return {
-                        value: column.getValue(d),
-                        label: column.getValue(d, 'raw'),
-                        offsetX: column.offsetX,
-                        columnW: column.getColumnWidth(),
-                        color: column.getColor(d),
-                        clip: 'url(#clip-B' + column.id + ')'
-                    };
-                });
-                return dd;
-            });
-        textRows.enter()
-            .append('rect')
-            .attr({
-                'class': 'tableData cat',
-                y: config.svgLayout.rowBarPadding,
-                height: config.svgLayout.rowHeight - config.svgLayout.rowBarPadding*2,
-                width: icon
-            }).append('title');
-        textRows.exit().remove();
-
-        textRows
-            .attr('x', function (d) {
-                return d.offsetX + 2;
-            })
-            .style('fill',function (d) {
-                return d.color;
-            }).select('title').text(function(d) { return d.label; });
-    }
-
-  function showStacked(config) {
-    //if not enabled or values are shown
-    if (!config.renderingOptions.stacked || config.renderingOptions.values) {
-      return false;
-    }
-    //primary is a stacked one
-    var current = config.columnBundles.primary.sortedColumn;
-    return !(current && (current.parent instanceof LineUp.LayoutStackedColumn));
-  }
-
-  function updateSingleBars(headers, allRows, config) {
-    // -- handle the Single columns  (!! use unflattened headers for filtering)
-    var allSingleBarHeaders = headers.filter(function (d) {
-      return d.column instanceof LineUp.LineUpNumberColumn;
-    });
-    var barRows = allRows.selectAll('.tableData.bar')
-      .data(function (d) {
-        var data = allSingleBarHeaders.map(function (column) {
-          return {
-            key: column.getDataID(),
-            value: column.getWidth(d),
-            label: column.column.getRawValue(d),
-            offsetX: column.offsetX
-          };
-        });
-        return data;
-      });
-
-    barRows.enter()
-      .append('rect')
-      .attr({
-        'class': 'tableData bar',
-        y: config.svgLayout.rowBarPadding,
-        height: config.svgLayout.rowHeight - config.svgLayout.rowBarPadding*2
-      });
-    barRows.exit().remove();
-
-    barRows
-      .attr({
-        x: function (d) {
-          return d.offsetX;
-        },
-        width: function (d) {
-          return Math.max(+d.value - 2, 0);
-        }
-      }).style({
-        fill: function (d) {
-          return config.colorMapping.get(d.key);
-        }
-      });
-  }
-
-  function updateStackBars(headers, allRows, _stackTransition, config) {
-    // -- RENDER the stacked columns (update, exit, enter)
-    var allStackedHeaders = headers.filter(function (d) {
-      return (d instanceof LineUp.LayoutStackedColumn);
-    });
-
-    // -- render StackColumnGroups
-    var stackRows = allRows.selectAll('.tableData.stacked')
-      .data(function (d) {
-        var dd = allStackedHeaders.map(function (column) {
-          return {key: column.getDataID(), childs: column.children, parent: column, row: d};
-        });
-        return dd;
-      });
-    stackRows.exit().remove();
-    stackRows.enter()
-      .append('g')
-      .attr('class', 'tableData stacked');
-
-    stackRows
-      .attr('transform', function (d) {
-        return 'translate(' + d.parent.offsetX + ',' + 0 + ')';
-      });
-
-    // -- render all Bars in the Group
-    var allStackOffset = 0;
-    var allStackW = 0;
-    var allStackRes = {};
-
-    var asStacked = showStacked(config);
-
-    var allStack = stackRows.selectAll('rect').data(function (d) {
-
-        allStackOffset = 0;
-        allStackW = 0;
-
-        return d.childs.map(function (child) {
-          allStackW = child.getWidth(d.row);
-
-          allStackRes = {child: child, width: allStackW, offsetX: allStackOffset};
-          if (asStacked) {
-            allStackOffset += allStackW;
-          } else {
-            allStackOffset += child.getColumnWidth();
-          }
-          return allStackRes;
-        });
-      }
-    );
-    allStack.exit().remove();
-    allStack.enter().append('rect').attr({
-      y: config.svgLayout.rowBarPadding,
-      height: config.svgLayout.rowHeight - config.svgLayout.rowBarPadding*2
-    });
-
-    (_stackTransition ? allStack.transition(config.svgLayout.animationDuration) : allStack)
-      .attr({
-        x: function (d) {
-          return d.offsetX;
-        },
-        width: function (d) {
-          return (d.width > 2) ? d.width - 2 : d.width;
-        }
-      }).style({
-        fill: function (d) {
-          return config.colorMapping.get(d.child.getDataID());
-        }
-      });
-  }
-
-  function createActions($elem, item, config) {
-    var $r = $elem.selectAll('text').data(config.svgLayout.rowActions);
-    $r.enter().append('text').append('title');
-    $r.exit().remove();
-    $r.attr('x', function (d, i) {
-      return i * config.svgLayout.rowHeight;
-    }).text(function (d) {
-      return d.icon;
-    }).on('click', function (d) {
-      d.action.call(this, item.data, d);
-    }).select('title').text(function (d) {
-      return d.name;
-    });
-  }
-
-  function updateActionBars(headers, allRows, config) {
-    // -- handle the Single columns  (!! use unflattened headers for filtering)
-    var allActionBarHeaders = headers.filter(function (d) {
-      return (d instanceof LineUp.LayoutActionColumn);
-    });
-    var actionRows = allRows.selectAll('.tableData.action')
-      .data(function (d) {
-        var dd = allActionBarHeaders.map(function (column) {
-          return {key: column.getDataID(), value: column.getColumnWidth(d),
-            data: d,
-            offsetX: column.offsetX};
-        });
-        return dd;
-      });
-    actionRows.enter()
-      .append('g')
-      .attr('class', 'tableData action')
-      .each(function (item) {
-        createActions(d3.select(this), item, config);
-      });
-
-    actionRows.exit().remove();
-
-    actionRows
-      .attr('transform', function (d) {
-        return 'translate(' + (d.offsetX + 10) + ',' + (config.svgLayout.rowHeight * 0.5 + 1) + ')';
-      });
-  }
-
-  function createRepr(col, row) {
-    var r =col.getValue(row, 'raw');
-    if (col instanceof LineUp.LayoutNumberColumn || col instanceof LineUp.LayoutStackedColumn) {
-      r = isNaN(r) || r.toString() === '' ? '' : +r;
-    }
-    return r;
-  }
-
-  function generateTooltip(row, headers, config) {
-    var $table = $('<div><table><thead><tr><th>Column</th><th>Value</th></tr></thead><tbody></tbody></table></div>');
-    var $body = $table.find('tbody');
-    headers.forEach(function (header) {
-      var r = createRepr(header, row);
-      if (typeof r === 'undefined') {
-        r = '';
-      } else if (typeof r === 'number') {
-        r = config.numberformat(r);
-      }
-      $('<tr><th>' + header.getLabel() + '</th><td>' + r + '</td></tr>').appendTo($body);
-    });
-    return $table.html();
-  }
-
-/**
-  * select one or more rows
-  * @param row
- */
-  LineUp.prototype.select = function(row) {
-    var primaryKey = this.storage.primaryKey,
-        $rows = this.$body.selectAll('.row');
-    if (Array.isArray(row)) {
-      this.storage.setSelection(row);
-      row = row.map(function(d) { return d[primaryKey]; });
-      $rows.classed('selected', function(d) { return row.indexOf(d[primaryKey]) > 0; });
-    } else if (row) {
-      this.storage.setSelection([row]);
-      $rows.classed('selected',function(d) { return d[primaryKey] === row[primaryKey]; });
-    } else {
-      this.storage.clearSelection();
-      $rows.classed('selected',false);
-    }
-  };
-  /**
-   * updates the table body
-   * @param headers - the headers as in {@link updateHeader}
-   * @param data - the data array from {@link LineUpLocalStorage.prototype#getData()}
-   */
-  LineUp.prototype.updateBody = function (headers, data, stackTransition) {
-    if (Array.isArray(headers) && headers.length === 0) {
-      return;
-    }
-    //default values
-    headers = headers || this.storage.getColumnLayout();
-    data = data || this.storage.getData(headers[0].columnBundle);
-    stackTransition = stackTransition || false;
-
-    var svg = this.$body;
-    var that = this;
-    var primaryKey = this.storage.primaryKey;
-    //var zeroFormat = d3.format('.1f');
-    var bundle = this.config.columnBundles[headers[0].columnBundle];
-    //console.log('bupdate');
-    stackTransition = stackTransition || false;
-
-    var allHeaders = [];
-    headers.forEach(function (d) {
-      d.flattenMe(allHeaders);
-    });
-
-    var datLength = data.length, rawData = data;
-    var rowScale = d3.scale.ordinal()
-        .domain(data.map(function (d) {
-          return d[primaryKey];
-        }))
-        .rangeBands([0, (datLength * that.config.svgLayout.rowHeight)], 0, that.config.svgLayout.rowPadding),
-      prevRowScale = bundle.prevRowScale || rowScale;
-    //backup the rowscale from the previous call to have a previous 'old' position
-    bundle.prevRowScale = rowScale;
-
-    var headerShift = 0;
-    if (that.config.svgLayout.mode === 'combined') {
-      headerShift = that.config.htmlLayout.headerHeight;
-    }
-    this.$bodySVG.attr('height', datLength * that.config.svgLayout.rowHeight + headerShift);
-
-    var visibleRange = this.selectVisible(data, rowScale);
-    if (visibleRange[0] > 0 || visibleRange[1] < data.length) {
-      data = data.slice(visibleRange[0], visibleRange[1]);
-    }
-    // -- handle all row groups
-
-    var allRowsSuper = svg.selectAll('.row').data(data, function (d) {
-      return d[primaryKey];
-    });
-    allRowsSuper.exit().remove();
-
-    // --- append ---
-    var allRowsSuperEnter = allRowsSuper.enter().append('g').attr({
-      'class': 'row',
-      transform: function (d) { //init with its previous position
-        var prev = prevRowScale(d[primaryKey]);
-        if (typeof prev === 'undefined') { //if not defined from the bottom
-          prev = rowScale.range()[1];
-        }
-        return 'translate(' + 0 + ',' + prev + ')';
-      }
-    });
-    allRowsSuperEnter.append('rect').attr({
-      'class': 'filler',
-      width: '100%',
-      height: that.config.svgLayout.rowHeight
-    });
-
-    //    //--- update ---
-    (this.config.renderingOptions.animation ? allRowsSuper.transition().duration(this.config.svgLayout.animationDuration) : allRowsSuper).attr({
-      'transform': function (d) {
-        return  'translate(' + 0 + ',' + rowScale(d[primaryKey]) + ')';
-      }
-    });
-    var asStacked = showStacked(this.config);
-
-    function createOverlays(row) {
-      var textOverlays = [];
-
-      function toValue(v) {
-        if (isNaN(v) || v === '' || typeof v === 'undefined') {
-          return '';
-        }
-        return that.config.numberformat(+v);
-      }
-
-      headers.forEach(function (col) {
-          if (col.column instanceof LineUp.LineUpNumberColumn) {
-            textOverlays.push({id: col.id, value: col.getValue(row), label: that.config.numberformat(+col.getValue(row,'raw')),
-              x: col.offsetX,
-              w: col.getColumnWidth()});
-          } else if (col instanceof  LineUp.LayoutStackedColumn) {
-            var allStackOffset = 0;
-
-            col.children.forEach(function (child) {
-              var allStackW = child.getWidth(row);
-
-              textOverlays.push({
-                  id: child.id,
-                  label: toValue(child.getValue(row,'raw')),// + ' -> (' + zeroFormat(child.getWidth(row)) + ')',
-                  w: asStacked ? allStackW : child.getColumnWidth(),
-                  x: (allStackOffset + col.offsetX)}
-              );
-              if (asStacked) {
-                allStackOffset += allStackW;
-              } else {
-                allStackOffset += child.getColumnWidth();
-              }
-            });
-          }
-        }
-      );
-      return textOverlays;
-    }
-
-    function renderOverlays($row, textOverlays, clazz, clipPrefix) {
-      $row.selectAll('text.' + clazz).data(textOverlays).enter().append('text').
-        attr({
-          'class': 'tableData ' + clazz,
-          x: function (d) {
-            return d.x;
-          },
-          y: that.config.svgLayout.rowHeight / 2,
-          'clip-path': function (d) {
-            return 'url(#clip-' + clipPrefix + d.id + ')';
-          }
-        }).text(function (d) {
-          return d.label;
-        });
-    }
-
-    allRowsSuper.on({
-      mouseenter: function (row) {
-        var $row = d3.select(this);
-        $row.classed('hover', true);
-//            d3.select(this.parent).classed('hovered', true)
-        var textOverlays = createOverlays(row);
-        //create clip paths which clips the overlay text of the bars
-        var shift = rowScale(row[primaryKey]);
-        //generate clip paths for the text columns to avoid text overflow
-        //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
-        //there is a bug in webkit which present camelCase selectors
-        var textClipPath = that.$bodySVG.select('defs.overlay').selectAll(function () {
-          return this.getElementsByTagName('clipPath');
-        }).data(textOverlays);
-        textClipPath.enter().append('clipPath')
-          .append('rect').attr({
-            height: '1000'
-          });
-        textClipPath.exit().remove();
-        textClipPath.attr('y', shift).attr('id', function (d) {
-          return 'clip-M' + d.id;
-        });
-        textClipPath.select('rect')
-          .attr({
-            x: function (d) {
-              return d.x;
-            },
+    $rows_enter.append('td').append('div')
+        .attr('class', 'bar')
+        .style('background-color', function (d) { return d.color; });
+    $rows_enter.append('td').text(function (d) { return d.cat; });
+    function redraw() {
+        $rows.select('.bar').transition().style({
             width: function (d) {
-              return Math.max(d.w - 2, 0);
+                return scale(d.range) + 'px';
             }
-          });
-        renderOverlays($row, textOverlays, 'hoveronly', 'M');
-
-        function absoluteRowPos(elem) {
-          var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-          var matrix = elem.getScreenCTM(),
-            tbbox = elem.getBBox(),
-            point = that.$bodySVG.node().createSVGPoint();
-          point.x = tbbox.x;
-          point.y = tbbox.y;
-          point = point.matrixTransform(matrix);
-          return scrollTop + point.y;
-        }
-        if (that.config.interaction.tooltips) {
-          that.tooltip.show(generateTooltip(row, allHeaders, that.config), {
-            x: d3.event.x + 10,
-            y: absoluteRowPos(this),
-            height: that.config.svgLayout.rowHeight
-          });
-        }
-        that.hoverHistogramBin(row);
-        that.listeners['hover'](row, shift);
-      },
-      mousemove: function () {
-        if (that.config.interaction.tooltips) {
-          that.tooltip.move({
-            x: d3.event.x
-          });
-        }
-      },
-      mouseleave: function () {
-        if (that.config.interaction.tooltips) {
-          that.tooltip.hide();
-        }
-        that.hoverHistogramBin(null);
-        that.listeners['hover'](null);
-        d3.select(this).classed('hover', false);
-        d3.select(this).selectAll('text.hoveronly').remove();
-      },
-      click: function (row) {
-        var $row = d3.select(this),
-            selected = that.storage.isSelected(row);
-        if (that.config.interaction.multiselect(d3.event)) {
-          var allselected = that.storage.selectedRows();
-          if (selected) {
-            $row.classed('selected', false);
-            that.storage.deselect(row);
-            if (allselected.length === 1) {
-              //remove the last one
-              that.listeners['selected'](null);
-            }
-          } else {
-            $row.classed('selected', true);
-            that.storage.select(row);
-            if (that.config.interaction.rangeselect(d3.event) && allselected.length === 1) {
-              //select a range
-              var i = rawData.indexOf(row), j = rawData.indexOf(allselected[0]);
-              if (i < j) {
-                allselected = rawData.slice(i, j + 1);
-              } else {
-                allselected = rawData.slice(j, i + 1);
-              }
-              var toSelect = allRowsSuper.filter(function (d) {
-                return allselected.indexOf(d) >= 0;
-              }).classed('selected', true).data();
-              that.storage.selectAll(toSelect);
-            } else {
-              allselected.push(row);
-            }
-            if (allselected.length === 1) {
-              //remove the last one
-              that.listeners['selected'](row, null);
-            }
-          }
-          that.listeners['multiselected'](allselected);
-        } else {
-          if (selected) {
-            $row.classed('selected', false);
-            that.storage.deselect(row);
-            that.listeners['selected'](null);
-            that.listeners['multiselected']([]);
-          } else {
-            var prev = allRowsSuper.filter('.selected').classed('selected', false);
-            prev = prev.empty ? null : prev.datum();
-            $row.classed('selected', true);
-            that.storage.setSelection([row]);
-            that.listeners['selected'](row, prev);
-            that.listeners['multiselected']([row]);
-          }
-        }
-      }
-    });
-
-    var allRows = allRowsSuper;
-
-    updateSingleBars(headers, allRows, that.config);
-    updateStackBars(headers, allRows, this.config.renderingOptions.animation && stackTransition, that.config);
-    updateActionBars(headers, allRows, that.config);
-
-    LineUp.updateClipPaths(allHeaders, this.$bodySVG, 'B', true);
-    updateText(allHeaders, allRows, svg, that.config);
-    updateCategorical(allHeaders, allRows, svg, that.config);
-    if (that.config.renderingOptions.values) {
-      allRowsSuper.classed('values', true);
-      allRowsSuper.each(function (row) {
-        var $row = d3.select(this);
-        renderOverlays($row, createOverlays(row), 'valueonly', 'B');
-      });
-    } else {
-      allRowsSuper.classed('values', false).selectAll('text.valueonly').remove();
-    }
-    //update selections state
-    allRowsSuper.classed('selected', function(d) {
-      return that.storage.isSelected(d);
-    });
-  };
-}(LineUp || (LineUp = {}), d3, jQuery));
-
-/* global d3, jQuery */
-var LineUp;
-(function (LineUp, d3, $, undefined) {
-  LineUp.prototype = LineUp.prototype || {};
-
-  LineUp.prototype.layoutHeaders = function (headers) {
-    var offset = 0;
-    var config = this.config,
-        headerHeight = config.htmlLayout.headerHeight,
-        headerOffset = config.htmlLayout.headerOffset;
-
-    headers.forEach(function (d) {
-//        console.log(d);
-      d.offsetX = offset;
-      d.offsetY = headerOffset;
-      d.height = headerHeight - headerOffset*2;
-      offset += d.getColumnWidth();
-
-//        console.log(d.getColumnWidth());
-    });
-
-    //console.log("layout Headers:", headers);
-
-    //update all the plusSigns shifts
-    var shift = offset + 4;
-    d3.values(config.svgLayout.plusSigns).forEach(function (addSign) {
-      addSign.x = shift;
-      shift += addSign.w + 4;
-    });
-
-    headers.filter(function (d) {
-      return (d instanceof LineUp.LayoutStackedColumn);
-    })
-      .forEach(function (d) {
-
-        d.height = headerHeight / 2 - headerOffset*2;
-
-        var localOffset = 0;
-        var parentOffset = d.offsetX;
-        var allChilds = d.children.concat(d.emptyColumns);
-        allChilds.map(function (child) {
-          child.offsetX = parentOffset + localOffset;
-          child.localOffsetX = localOffset;
-          localOffset += child.getColumnWidth();
-
-          child.offsetY = headerHeight / 2 + headerOffset;
-          child.height = headerHeight / 2 - headerOffset*2;
         });
-      });
-    this.totalWidth = shift;
-  };
-
-  /**
-   * Render the given headers
-   * @param headers - the array of headers, see {@link LineUpColumn}
-   */
-  LineUp.prototype.updateHeader = function (headers) {
-    if (Array.isArray(headers) && headers.length === 0) {
-      return;
     }
-    headers = headers || this.storage.getColumnLayout();
-//    console.log('update Header');
-    var rootsvg = this.$header;
-    var svg = rootsvg.select('g.main');
+    redraw();
+    $popup.select('.cancel').on('click', function () {
+        column.setRange(range);
+        $popup.remove();
+    });
+    $popup.select('.ok').on('click', function () {
+        column.setRange(children.map(function (d) { return d.range / 100; }));
+        $popup.remove();
+    });
+}
+function filterDialogs() {
+    return {
+        string: openStringFilter,
+        categorical: openCategoricalFilter,
+        number: openMappingEditor,
+        ordinal: openCategoricalMappingEditor
+    };
+}
+exports.filterDialogs = filterDialogs;
 
-    var that = this;
-    var config = this.config;
-
-    if (this.headerUpdateRequired) {
-      this.layoutHeaders(headers);
-      this.$headerSVG.attr('width', this.totalWidth);
-      this.$bodySVG.attr('width', this.totalWidth);
-      this.headerUpdateRequired = false;
+},{"./mappingeditor":2,"./utils":9}],9:[function(require,module,exports){
+/**
+ * Created by Samuel Gratzl on 14.08.2015.
+ */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+///<reference path='../typings/tsd.d.ts' />
+var d3 = require('d3');
+function delayedCall(callback, thisCallback, timeToDelay) {
+    if (thisCallback === void 0) { thisCallback = this; }
+    if (timeToDelay === void 0) { timeToDelay = 100; }
+    var tm = -1;
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+        if (tm >= 0) {
+            clearTimeout(tm);
+            tm = -1;
+        }
+        args.unshift(thisCallback);
+        tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
+    };
+}
+exports.delayedCall = delayedCall;
+function forwardEvent(to, event) {
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+        args.unshift(event);
+        to.fire.apply(to, args);
+    };
+}
+exports.forwardEvent = forwardEvent;
+var AEventDispatcher = (function () {
+    function AEventDispatcher() {
+        this.listeners = d3.dispatch.apply(d3, this.createEventList());
     }
-
-    var allHeaderData = [];
-    headers.forEach(function (d) {
-      d.flattenMe(allHeaderData, {addEmptyColumns: true});
-    });
-    //reverse order to render from right to left
-    allHeaderData.reverse();
-
-    LineUp.updateClipPaths(allHeaderData, this.$headerSVG, 'H', false, 'columnheader');
-    //console.log(allHeaderData);
-
-
-    // -- Handle the header groups (exit,enter, update)
-
-    var allHeaders = svg.selectAll('.header').data(allHeaderData, function (d) {
-      return d.id;
-    });
-    allHeaders.exit().remove();
-
-    // --- adding Element to class allHeaders
-    var allHeadersEnter = allHeaders.enter().append('g').attr('class', 'header')
-      .classed('emptyHeader', function (d) {
-        return d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn;
-      })
-      .classed('nestedHeader', function (d) {
-          return d && d.parent instanceof LineUp.LayoutStackedColumn;
-      })
-      .call(function () {
-        that.addResortDragging(this, config);
-      });
-
-    // --- changing nodes for allHeaders
-    allHeaders.attr('transform', function (d) {
-      return 'translate(' + d.offsetX + ',' + d.offsetY + ')';
-    });
-
-
-    // -- handle BackgroundRectangles
-    allHeadersEnter.append('rect').attr({
-      'class': 'labelBG',
-      y: 0
-    }).style('fill', function (d) {
-      if (d instanceof LineUp.LayoutEmptyColumn) {
-        return 'lightgray';
-      } else if (d.column && config.colorMapping.has(d.column.id)) {
-        return config.colorMapping.get(d.column.id);
-      } else {
-        return config.grayColor;
-      }
-    })
-      .on('click', function (d) {
-        if (d3.event.defaultPrevented || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) {
-          return;
+    AEventDispatcher.prototype.on = function (type, listener) {
+        if (arguments.length > 1) {
+            this.listeners.on(type, listener);
+            return this;
         }
-        // no sorting for empty stacked columns !!!
-        if (d instanceof LineUp.LayoutStackedColumn && d.children.length < 1) {
-          return;
+        return this.listeners.on(type);
+    };
+    AEventDispatcher.prototype.createEventList = function () {
+        return [];
+    };
+    AEventDispatcher.prototype.fire = function (type) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
         }
-
-        var bundle = config.columnBundles[d.columnBundle];
-        // TODO: adapt to comparison mode !!
-        //same sorting swap order
-        if (bundle.sortedColumn !== null && (d === bundle.sortedColumn)) {
-          bundle.sortingOrderAsc = !bundle.sortingOrderAsc;
-        } else {
-          bundle.sortingOrderAsc = d instanceof LineUp.LayoutStringColumn || d instanceof LineUp.LayoutCategoricalColumn || d instanceof LineUp.LayoutRankColumn;
-        }
-
-        bundle.sortedColumn = d;
-        that.listeners['change-sortcriteria'](this, d, bundle.sortingOrderAsc);
-		that.storage.resortData({column: d, asc: bundle.sortingOrderAsc});
-        that.updateAll(false);
-      });
-
-
-    allHeaders.select('.labelBG').attr({
-      width: function (d) {
-        return d.getColumnWidth() - 5;
-      },
-      height: function (d) {
-        return d.height;
-      }
-    });
-
-    allHeadersEnter.append('g').attr('class', 'hist');
-    var allNumberHeaders = allHeaders.filter(function (d) {
-      return d instanceof LineUp.LayoutNumberColumn;
-    });
-    if (this.config.renderingOptions.histograms) {
-      allNumberHeaders.selectAll('g.hist').each(function (d) {
-        var $this = d3.select(this).attr('transform','scale(1,'+ (d.height)+')');
-        var h = d.hist;
-        if (!h) {
-          return;
-        }
-        var s = d.value2pixel.copy().range([0, d.value2pixel.range()[1]-5]);
-        var $hist = $this.selectAll('rect').data(h);
-        $hist.enter().append('rect');
-        $hist.attr({
-          x : function(bin) {
-            return s(bin.x);
-          },
-          width: function(bin) {
-            return s(bin.dx);
-          },
-          y: function(bin) {
-            return 1-bin.y;
-          },
-          height: function(bin) {
-            return bin.y;
-          }
-        });
-      });
-    } else {
-      allNumberHeaders.selectAll('g.hist').selectAll('*').remove();
+        this.listeners[type].apply(this.listeners, args);
+    };
+    return AEventDispatcher;
+})();
+exports.AEventDispatcher = AEventDispatcher;
+var TYPE_OBJECT = '[object Object]';
+var TYPE_ARRAY = '[object Array]';
+function merge() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i - 0] = arguments[_i];
     }
-
-    // -- handle WeightHandle
-
-    if (this.config.manipulative) {
-      allHeadersEnter.filter(function (d) {
-        return !(d instanceof LineUp.LayoutEmptyColumn) && !(d instanceof LineUp.LayoutActionColumn);
-      }).append('rect').attr({
-        'class': 'weightHandle',
-        x: function (d) {
-          return d.getColumnWidth() - 5;
-        },
-        y: 0,
-        width: 5
-      });
-
-      allHeaders.select('.weightHandle').attr({
-        x: function (d) {
-          return (d.getColumnWidth() - 5);
-        },
-        height: function (d) {
-          return d.height;
+    var result = null;
+    for (var i = 0; i < args.length; i++) {
+        var toMerge = args[i], keys = Object.keys(toMerge);
+        if (result === null) {
+            result = toMerge;
+            continue;
         }
-      }).call(this.dragWeight); // TODO: adopt dragWeight function !
-    }
-
-    // -- handle Text
-    allHeadersEnter.append('text').attr({
-      'class': 'headerLabel',
-      x: config.htmlLayout.labelLeftPadding
-    });
-    allHeadersEnter.append('title');
-
-    allHeaders.select('.headerLabel')
-      .classed('sortedColumn', function (d) {
-        var sc = config.columnBundles[d.columnBundle].sortedColumn;
-        return sc === d;
-      })
-      .attr({
-        y: function (d) {
-          if (d instanceof LineUp.LayoutStackedColumn || d.parent != null) {
-            return d.height / 2;
-          }
-          return d.height * 3 / 4;
-        },
-        'clip-path': function (d) {
-          return 'url(#clip-H' + d.id + ')';
-        }
-      }).text(function (d) {
-        return d.getLabel();
-      });
-    allHeaders.select('title').text(function (d) {
-      return d.getLabel();
-    });
-
-
-    // -- handle the Sort Indicator
-    allHeadersEnter.append('text').attr({
-      'class': 'headerSort',
-      y: function (d) {
-        return d.height / 2;
-      },
-      x: 2
-    });
-
-    allHeaders.select('.headerSort').text(function (d) {
-      var sc = config.columnBundles[d.columnBundle].sortedColumn;
-      return ((sc === d) ?
-        ((config.columnBundles[d.columnBundle].sortingOrderAsc) ? '\uf0de' : '\uf0dd')
-        : '');
-    })
-      .attr({
-        y: function (d) {
-          return d.height / 2;
-        }
-      });
-
-
-    // add info Button to All Stacked Columns
-    if (this.config.manipulative) {
-      var buttons = [
-        {
-          'class': 'stackedColumnInfo',
-          text: '\uf1de',
-          filter: function (d) {
-            return d instanceof LineUp.LayoutStackedColumn ? [d] : [];
-          },
-          action: function (d) {
-            that.stackedColumnOptionsGui(d);
-          }
-        },
-        {
-          'class': 'singleColumnDelete',
-          text: '\uf014',
-          filter: function (d) {
-            return (d instanceof LineUp.LayoutStackedColumn || d instanceof LineUp.LayoutEmptyColumn || d instanceof LineUp.LayoutActionColumn) ? [] : [d];
-          },
-          action: function (d) {
-            that.storage.removeColumn(d);
-            that.headerUpdateRequired = true;
-            that.updateAll();
-          }
-        },
-        {
-          'class': 'singleColumnFilter',
-          text: '\uf0b0',
-          filter: function (d) {
-            return (d.column) ? [d] : [];
-          },
-          offset: config.htmlLayout.buttonWidth,
-          action: function (d) {
-            if (d instanceof LineUp.LayoutStringColumn) {
-              that.openFilterPopup(d, d3.select(this));
-            } else if (d instanceof LineUp.LayoutCategoricalColumn) {
-              that.openCategoricalFilterPopup(d, d3.select(this));
-            } else if (d instanceof LineUp.LayoutNumberColumn) {
-              that.openMappingEditor(d, d3.select(this));
+        for (var j = 0; j < keys.length; j++) {
+            var keyName = keys[j];
+            var value = toMerge[keyName];
+            if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
+                if (result[keyName] === undefined) {
+                    result[keyName] = {};
+                }
+                result[keyName] = merge(result[keyName], value);
             }
-          }
-        }
-      ];
-
-      buttons.forEach(function (button) {
-        var $button = allHeaders.selectAll('.' + button.class).data(button.filter);
-        $button.exit().remove();
-        $button.enter().append('text')
-          .attr('class', 'fontawe ' + button.class)
-          .text(button.text)
-          .on('click', button.action);
-        $button.attr({
-          x: function (d) {
-            return d.getColumnWidth() - config.htmlLayout.buttonRightPadding - (button.offset || 0);
-          },
-          y: config.htmlLayout.buttonTopPadding
-        });
-      });
-    }
-
-    // ==================
-    // -- Render add ons
-    //===================
-
-
-    // add column signs:
-    var plusButton = d3.values(config.svgLayout.plusSigns);
-    var addColumnButton = svg.selectAll('.addColumnButton').data(plusButton);
-    addColumnButton.exit().remove();
-
-
-    var addColumnButtonEnter = addColumnButton.enter().append('g').attr({
-      class: 'addColumnButton'
-    });
-
-    addColumnButton.attr({
-      'transform': function (d) {
-        return 'translate(' + d.x + ',' + d.y + ')';
-      }
-    });
-
-    addColumnButtonEnter.append('rect').attr({
-      x: 0,
-      y: 0,
-      rx: 5,
-      ry: 5,
-      width: function (d) {
-        return d.w;
-      },
-      height: function (d) {
-        return d.h;
-      }
-    }).on('click', function (d) {
-      if ($.isFunction(d.action)) {
-        d.action.call(that, d);
-      } else {
-        that[d.action](d);
-      }
-    });
-
-    addColumnButtonEnter.append('text').attr({
-      x: function (d) {
-        return d.w / 2;
-      },
-      y: function (d) {
-        return d.h / 2;
-      }
-    }).text('\uf067');
-
-
-  };
-
-  LineUp.prototype.hoverHistogramBin = function (row) {
-    if (!this.config.renderingOptions.histograms) {
-      return;
-    }
-    var $hists = this.$header.selectAll('g.hist');
-    $hists.selectAll('rect').classed('hover',false);
-    if (row) {
-      this.$header.selectAll('g.hist').each(function(d) {
-        if (d instanceof LineUp.LayoutNumberColumn && d.hist) {
-          var bin = d.binOf(row);
-          if (bin >= 0) {
-            d3.select(this).select('rect:nth-child('+(bin+1)+')').classed('hover',true);
-          }
-        }
-      });
-    }
-  };
-// ===============
-// Helperfunctions
-// ===============
-
-
-  LineUp.prototype.addResortDragging = function (xss) {
-    if (!this.config.manipulative) {
-      return;
-    }
-
-    var x = d3.behavior.drag(),
-      that = this,
-      rootsvg = this.$header,
-      svgOverlay = rootsvg.select('g.overlay'),
-      hitted = null,
-      moved = false;
-    x.call(xss);
-
-    function dragstart(d) {
-      if (d instanceof LineUp.LayoutEmptyColumn) {
-        return;
-      }
-
-      d3.event.sourceEvent.stopPropagation(); // silence other listeners
-
-      d3.select(this).classed('dragObject', true);
-
-      hitted = null;
-      moved = false;
-    }
-
-    function dragmove(d) {
-      if (d instanceof LineUp.LayoutEmptyColumn) {
-        return;
-      }
-
-      moved = true;
-      var dragHeader = svgOverlay.selectAll('.dragHeader').data([d]);
-      var dragHeaderEnter = dragHeader.enter().append('g').attr({
-        class: 'dragHeader'
-      });
-
-      dragHeaderEnter.append('rect').attr({
-        class: 'labelBG',
-        width: function (d) {
-          return d.getColumnWidth();
-        },
-        height: function (d) {
-          return d.height;
-        }
-      });
-
-      var x = d3.event.x;
-      var y = d3.event.y;
-      dragHeader.attr('transform', function () {
-        return 'translate(' + (d3.event.x + 3) + ',' + (d3.event.y - 10) + ')';
-      });
-
-
-      var allHeaderData = [];
-      that.storage.getColumnLayout().forEach(function (d) {
-        d.flattenMe(allHeaderData, {addEmptyColumns: true});
-      });
-
-      function contains(header, x, y) {
-        //TODO check if types match
-        if (x > header.offsetX && (x - header.offsetX) < header.getColumnWidth()) {
-          if (y > header.offsetY && (y - header.offsetY) < header.height) {
-            if ((x - header.offsetX < header.getColumnWidth() / 2)) {
-              return {column: header, insert: 'l', tickX: (header.offsetX), tickY: (header.offsetY), tickH: header.height};
-            } else {
-              return {column: header, insert: 'r', tickX: (header.offsetX + header.getColumnWidth()), tickY: (header.offsetY), tickH: header.height};
+            else if (Object.prototype.toString.call(value) === TYPE_ARRAY) {
+                if (result[keyName] === undefined) {
+                    result[keyName] = [];
+                }
+                result[keyName] = value.concat(result[keyName]);
             }
-          }
+            else {
+                result[keyName] = value;
+            }
         }
-
-        return null;
-      }
-
-      var it = 0;
-      hitted = null;
-      while (it < allHeaderData.length && hitted == null) {
-        hitted = contains(allHeaderData[it], x, y);
-        it++;
-      }
-
-//        console.log(hitted);
-
-      var columnTick = svgOverlay.selectAll('.columnTick').data(hitted ? [hitted] : []);
-      columnTick.exit().remove();
-      columnTick.enter().append('rect').attr({
-        class: 'columnTick',
-        width: 10
-      });
-
-      columnTick.attr({
-        x: function (d) {
-          return d.tickX - 5;
-        },
-        y: function (d) {
-          return d.tickY;
-        },
-        height: function (d) {
-          return d.tickH;
-        }
-      });
     }
-
-
-    function dragend(d) {
-      if (d3.event.defaultPrevented || d instanceof LineUp.LayoutEmptyColumn) {
-        return;
-      }
-
-      d3.select(this).classed('dragObject', false);
-      svgOverlay.selectAll('.dragHeader').remove();
-      svgOverlay.selectAll('.columnTick').remove();
-
-      if (hitted && hitted.column === this.__data__) {
-        return;
-      }
-
-      if (hitted) {
-//            console.log('EVENT: ', d3.event);
-        if (d3.event.sourceEvent.altKey) {
-          that.storage.copyColumn(this.__data__, hitted.column, hitted.insert);
-        } else {
-          that.storage.moveColumn(this.__data__, hitted.column, hitted.insert);
-        }
-
-//            that.layoutHeaders(that.storage.getColumnLayout());
-        that.headerUpdateRequired = true;
-        that.updateAll();
-
-      }
-
-      if (hitted == null && moved) {
-        that.headerUpdateRequired = true;
-        that.storage.removeColumn(this.__data__);
-        that.updateAll();
-      }
+    return result;
+}
+exports.merge = merge;
+function offset(element) {
+    var obj = element.getBoundingClientRect();
+    return {
+        left: obj.left + window.pageXOffset,
+        top: obj.top + window.pageYOffset,
+        width: obj.width,
+        height: obj.height
+    };
+}
+exports.offset = offset;
+var ContentScroller = (function (_super) {
+    __extends(ContentScroller, _super);
+    function ContentScroller(container, content, options) {
+        var _this = this;
+        if (options === void 0) { options = {}; }
+        _super.call(this);
+        this.container = container;
+        this.content = content;
+        this.options = {
+            topShift: 0,
+            backupRows: 5,
+            rowHeight: 10
+        };
+        this.prevScrollTop = 0;
+        this.shift = 0;
+        merge(this.options, options);
+        d3.select(container).on('scroll.scroller', function () { return _this.onScroll(); });
+        this.prevScrollTop = container.scrollTop;
+        this.shift = offset(content).top - offset(container).top + this.options.topShift;
     }
+    ContentScroller.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['scroll', 'redraw']);
+    };
+    ContentScroller.prototype.select = function (start, length, row2y) {
+        var top = this.container.scrollTop - this.shift, bottom = top + this.container.clientHeight, i = 0, j;
+        if (top > 0) {
+            i = Math.round(top / this.options.rowHeight);
+            while (i >= start && row2y(i + 1) > top) {
+                i--;
+            }
+            i -= this.options.backupRows;
+        }
+        {
+            j = Math.round(bottom / this.options.rowHeight);
+            while (j <= length && row2y(j - 1) < bottom) {
+                j++;
+            }
+            j += this.options.backupRows;
+        }
+        return {
+            from: Math.max(i, start),
+            to: Math.min(j, length)
+        };
+    };
+    ContentScroller.prototype.onScroll = function () {
+        var top = this.container.scrollTop;
+        var left = this.container.scrollLeft;
+        this.fire('scroll', top, left);
+        if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
+            this.prevScrollTop = top;
+            this.fire('redraw');
+        }
+    };
+    ContentScroller.prototype.destroy = function () {
+        d3.select(this.container).on('scroll.scroller', null);
+    };
+    return ContentScroller;
+})(AEventDispatcher);
+exports.ContentScroller = ContentScroller;
+function hasDnDType(e, typesToCheck) {
+    var types = e.dataTransfer.types;
+    if (typeof types.indexOf === 'function') {
+        return typesToCheck.some(function (type) { return types.indexOf(type) >= 0; });
+    }
+    if (typeof types.includes === 'function') {
+        return typesToCheck.some(function (type) { return types.includes(type); });
+    }
+    if (typeof types.contains === 'function') {
+        return typesToCheck.some(function (type) { return types.contains(type); });
+    }
+    return false;
+}
+exports.hasDnDType = hasDnDType;
+function copyDnD(e) {
+    var dT = e.dataTransfer;
+    return (e.ctrlKey && dT.effectAllowed.match(/copy/gi)) || (!dT.effectAllowed.match(/move/gi));
+}
+exports.copyDnD = copyDnD;
+function updateDropEffect(e) {
+    var dT = e.dataTransfer;
+    if (copyDnD(e)) {
+        dT.dropEffect = 'copy';
+    }
+    else {
+        dT.dropEffect = 'move';
+    }
+}
+exports.updateDropEffect = updateDropEffect;
+function dropAble(mimeTypes, onDrop) {
+    return function ($node) {
+        $node.on('dragenter', function () {
+            var e = d3.event;
+            if (hasDnDType(e, mimeTypes)) {
+                return false;
+            }
+            d3.select(this).classed('drag_over', true);
+        }).on('dragover', function () {
+            var e = d3.event;
+            if (hasDnDType(e, mimeTypes)) {
+                e.preventDefault();
+                updateDropEffect(e);
+                return false;
+            }
+        }).on('dragleave', function () {
+            d3.select(this).classed('drag_over', false);
+        }).on('drop', function (d) {
+            var e = d3.event;
+            e.preventDefault();
+            if (hasDnDType(e, mimeTypes)) {
+                var data = {};
+                mimeTypes.forEach(function (mime) {
+                    var value = e.dataTransfer.getData(mime);
+                    if (value !== '') {
+                        data[mime] = value;
+                    }
+                });
+                return onDrop(data, d, e.dataTransfer.dropEffect.match(/.*copy.*/i) != null);
+            }
+        });
+    };
+}
+exports.dropAble = dropAble;
 
-
-    x.on('dragstart', dragstart)
-      .on('drag', dragmove)
-      .on('dragend', dragend);
-  };
-
-
-  LineUp.prototype.addNewEmptyStackedColumn = function () {
-    this.storage.addStackedColumn(null, -1);
-    this.headerUpdateRequired = true;
-    this.updateAll();
-  };
-
-
-  /**
-   * called when a Header width changed, calls {@link updateHeader}
-   * @param change - the change information
-   * @param change.column - the changed column, see {@link LineUpColumn}
-   * @param change.value - the new column width
-   */
-  LineUp.prototype.reweightHeader = function (change) {
-//    console.log(change);
-    change.column.setColumnWidth(change.value);
-    this.headerUpdateRequired = true;
-    this.updateAll();
-  };
-}(LineUp || (LineUp = {}), d3, jQuery));
-
-return LineUp;
-  }
-  if (typeof define === "function" && define.amd) {
-    define(['jquery','d3','underscore'], LineUpLoader);
-  } else if (typeof module === "object" && module.exports) {
-    module.exports = LineUpLoader(require('jquery'), require('d3'), require('underscore'));
-  } else {
-    this.LineUp = LineUpLoader(jQuery, d3, _);
-  }
-}.call(this));
+},{"d3":"d3"}]},{},[1,2,3,4,5,6,7,8,9]);

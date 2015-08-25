@@ -61,7 +61,14 @@ module.exports = function (grunt) {
       dist: {
         src: ['src/*.js'],
         dest: 'dist/<%= pkg.name %>.js',
-        banner: '<%=banner%>'
+
+        options: {
+          banner: '<%=banner%>',
+          external: ['d3'],
+          browserifyOptions: {
+            //standalone: true
+          }
+        }
         // Note: The entire `browserify-shim` config is inside `package.json`.
       }
     },
@@ -147,6 +154,6 @@ module.exports = function (grunt) {
   // Default task.
   grunt.registerTask('watch', ['ts:dev', 'sass:dev', 'watch']);
   grunt.registerTask('compile', ['ts:dev', 'browserify']);
-  grunt.registerTask('default', ['clean', 'tsd:reinstall', 'ts:dist', 'sass:dist', 'tslint', 'browserify', 'concat', 'uglify']);
+  grunt.registerTask('default', ['clean', 'tsd:reinstall', 'ts:dist', 'sass:dist', 'tslint', 'browserify', 'uglify']);
 
 };

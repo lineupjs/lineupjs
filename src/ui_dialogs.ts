@@ -73,9 +73,9 @@ export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Sel
   $rows_enter.append('td').text((d) => d.col.label);
 
   function redraw() {
-    $rows.select(".bar").transition().style({
+    $rows.select('.bar').transition().style({
       width: function (d) {
-        return scale(d.weight) + "px";
+        return scale(d.weight) + 'px';
       }
     });
   }
@@ -86,9 +86,9 @@ export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Sel
     column.setWeights(weights);
     $popup.remove();
   });
-  $popup.select('.reset').on('click', function () {
+  /*$popup.select('.reset').on('click', function () {
 
-  });
+  });*/
   $popup.select('.ok').on('click', function () {
     column.setWeights(children.map((d) => d.weight));
     $popup.remove();
@@ -205,8 +205,8 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
     }).style({
       left: pos.left + 'px',
       top: pos.top + 'px',
-      width: "420px",
-      height: "470px"
+      width: '420px',
+      height: '470px'
     })
     .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>' +
       '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'));
@@ -241,7 +241,7 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
     return a[0] === b[0] && a[1] === b[1];
   }
 
-  popup.select(".ok").on("click", function () {
+  popup.select('.ok').on('click', function () {
     applyMapping(act);
     popup.remove();
   });
@@ -298,9 +298,9 @@ function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $he
   $rows_enter.append('td').text((d) => d.cat);
 
   function redraw() {
-    $rows.select(".bar").transition().style({
+    $rows.select('.bar').transition().style({
       width: function (d) {
-        return scale(d.range) + "px";
+        return scale(d.range) + 'px';
       }
     });
   }
@@ -311,9 +311,9 @@ function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $he
     column.setRange(range);
     $popup.remove();
   });
-  $popup.select('.reset').on('click', function () {
+  /*$popup.select('.reset').on('click', function () {
 
-  });
+  });*/
   $popup.select('.ok').on('click', function () {
     column.setRange(children.map((d) => d.range / 100));
     $popup.remove();
@@ -326,5 +326,5 @@ export function filterDialogs() {
     categorical: openCategoricalFilter,
     number: openMappingEditor,
     ordinal: openCategoricalMappingEditor
-  }
+  };
 }

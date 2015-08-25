@@ -76,7 +76,7 @@ export class Column extends utils.AEventDispatcher {
 
   setWidth(value:number) {
     if (this.width_ === value) {
-      return
+      return;
     }
     this.fire('widthChanged', this, this.width_, this.width_ = value);
     this.fire('dirty', this);
@@ -279,14 +279,14 @@ export class NumberColumn extends ValueColumn<number> {
     return {
       domain: <[number, number]>this.mapping.domain(),
       range: <[number, number]>this.mapping.range()
-    }
+    };
   }
 
   getOriginalMapping() {
     return {
       domain: <[number, number]>this.mapping.domain(),
       range: <[number, number]>this.mapping.range()
-    }
+    };
   }
 
   setMapping(domain: [number, number], range: [number, number]) {
@@ -529,7 +529,6 @@ export class CategoricalColumn extends ValueColumn<string> {
 }
 
 export class CategoricalNumberColumn extends ValueColumn<number> {
-  private missingValue = NaN;
   private colors = d3.scale.category10();
   private scale = d3.scale.ordinal().rangeRoundPoints([0,1]);
 
@@ -600,7 +599,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> {
     return {
       domain: this.scale.domain(),
       range: this.scale.range()
-    }
+    };
   }
 
   setRange(range: number[]) {
@@ -719,7 +718,7 @@ export class StackColumn extends Column implements IColumnParent {
   }
 
   insert(col: Column, index: number, weight = NaN) {
-    if (typeof col['getNumber'] !== 'function') { //indicator it is a number type
+    if (typeof (<any>col).getNumber !== 'function') { //indicator it is a number type
       return null;
     }
     if (col instanceof StackColumn) {
@@ -832,7 +831,6 @@ export class StackColumn extends Column implements IColumnParent {
     if (i < 0) {
       return false;
     }
-    var c = this.children_[i];
     this.children_.splice(i, 1); //remove and deregister listeners
     child.parent = null;
     child.on('dirtyFilter.stack', null);
@@ -1140,7 +1138,7 @@ export class RankColumn extends ValueColumn<number> {
           return {
             weight: w[i],
             id: resolve(child)
-          }
+          };
         });
       }
       return toId(s.desc);
@@ -1152,7 +1150,7 @@ export class RankColumn extends ValueColumn<number> {
     return {
       id: id,
       asc: this.ascending
-    }
+    };
   }
 
   isFiltered() {

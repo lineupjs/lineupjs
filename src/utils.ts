@@ -28,7 +28,7 @@ export function forwardEvent(to: AEventDispatcher, event: string) {
   return function(...args: any[]) {
     args.unshift(event);
     to.fire.apply(to, args);
-  }
+  };
 }
 
 /**
@@ -84,12 +84,12 @@ export function merge(...args: any[]) {
       var keyName = keys[j];
       var value   = toMerge[keyName];
 
-      if (Object.prototype.toString.call(value) == TYPE_OBJECT) {
+      if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
         if (result[keyName] === undefined) {
           result[keyName] = {};
         }
         result[keyName] = merge(result[keyName], value);
-      } else if (Object.prototype.toString.call(value) == TYPE_ARRAY) {
+      } else if (Object.prototype.toString.call(value) === TYPE_ARRAY) {
         if (result[keyName] === undefined) {
           result[keyName] = [];
         }
@@ -214,36 +214,37 @@ export function updateDropEffect(e: DragEvent) {
 
 export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy: boolean) => boolean) {
   return ($node) => {
-  $node.on('dragenter', function() {
-    var e = <DragEvent>(<any>d3.event);
-    var xy = d3.mouse($node.node());
-    if (hasDnDType(e, mimeTypes)) {
-      return false;
-    }
-    d3.select(this).classed('drag_over', true);
-  }).on('dragover', () => {
-    var e = <DragEvent>(<any>d3.event);
-    if (hasDnDType(e, mimeTypes)) {
+    $node.on('dragenter', function() {
+      var e = <DragEvent>(<any>d3.event);
+      //var xy = d3.mouse($node.node());
+      if (hasDnDType(e, mimeTypes)) {
+        return false;
+      }
+      d3.select(this).classed('drag_over', true);
+    }).on('dragover', () => {
+      var e = <DragEvent>(<any>d3.event);
+      if (hasDnDType(e, mimeTypes)) {
+        e.preventDefault();
+        updateDropEffect(e);
+        return false;
+      }
+    }).on('dragleave', function() {
+      //
+      d3.select(this).classed('drag_over', false);
+    }).on('drop', (d: T) => {
+      var e = <DragEvent>(<any>d3.event);
       e.preventDefault();
-      updateDropEffect(e);
-      return false;
-    }
-  }).on('dragleave', function() {
-    //
-    d3.select(this).classed('drag_over', false);
-  }).on('drop', (d: T) => {
-    var e = <DragEvent>(<any>d3.event);
-    e.preventDefault();
-    var xy = d3.mouse($node.node());
-    if (hasDnDType(e, mimeTypes)) {
-      var data : any = {};
-      mimeTypes.forEach((mime) => {
-        var value = e.dataTransfer.getData(mime);
-        if (value !== '') {
-          data[mime] = value;
-        }
-      });
-      return onDrop(data, d, e.dataTransfer.dropEffect.match(/.*copy.*/i) != null);
-    }
-  })};
+      //var xy = d3.mouse($node.node());
+      if (hasDnDType(e, mimeTypes)) {
+        var data : any = {};
+        mimeTypes.forEach((mime) => {
+          var value = e.dataTransfer.getData(mime);
+          if (value !== '') {
+            data[mime] = value;
+          }
+        });
+        return onDrop(data, d, e.dataTransfer.dropEffect.match(/.*copy.*/i) != null);
+      }
+    });
+  };
 }

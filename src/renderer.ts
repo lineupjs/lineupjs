@@ -3,9 +3,6 @@
  */
 
 import model = require('./model');
-import provider = require('./provider');
-import utils = require('./utils');
-
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
@@ -166,9 +163,9 @@ export class BarCellRenderer extends DefaultCellRenderer {
       y: (d, i) => context.cellY(i) + 1,
       height: (d, i) => context.rowHeight(i) - 2,
       width: (d) => col.getWidth() * col.getValue(d),
-      'data-index': (d, i) => i,
+      'data-index': (d, i) => i
     }).style({
-      fill: (d,i) => this.colorOf(d, i, col),
+      fill: (d,i) => this.colorOf(d, i, col)
     });
     $rows.exit().remove();
   }
@@ -274,7 +271,7 @@ class StackCellRenderer extends DefaultCellRenderer {
     });
     $children.attr({
       'class': (d) => 'component ' + d.desc.type,
-      'data-index': (d,i) => i,
+      'data-index': (d,i) => i
     }).each(function (d, i) {
       if (context.showStacked(col)) {
         var preChildren = children.slice(0, i);

@@ -141,8 +141,12 @@ export class LineUp extends utils.AEventDispatcher {
     this.scroller.on('redraw', () => this.renderBody());
   }
 
+  private renderBody() {
+    console.log('TODO');
+  }
+
   createEventList() {
-    return super.createEventList().concat(['hover','change-sortcriteria','change-filter', 'selected','multiselected'])
+    return super.createEventList().concat(['hover','change-sortcriteria','change-filter', 'selected','multiselected']);
   }
 
   private scrolled(top, left) {
@@ -155,9 +159,6 @@ export class LineUp extends utils.AEventDispatcher {
     }
   }
 
-  private renderBody() {
-
-  }
 
   /**
    * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
