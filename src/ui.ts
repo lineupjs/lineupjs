@@ -556,6 +556,7 @@ export class LineUpRenderer {
 
   constructor(root: Element, data: provider.DataProvider, columns: provider.IColumnDesc[], argsortGetter:(ranking:model.RankColumn) => Promise<number[]>, options : any = {}) {
     utils.merge(this.options, options);
+    root = <Element>d3.select(root).append('div').classed('lu', true).node();
     this.header = new HeaderRenderer(data,  root, options);
     this.body = new BodyRenderer(data, root, argsortGetter, options);
     if(this.options.pool) {

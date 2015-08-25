@@ -10,15 +10,17 @@
   circle.handle {
     fill: steelblue;
     cursor: pointer;
+    &.dragging {
+      fill: black;
+    }
   }
-  circle.handle.dragging {
-    fill: black;
-  }
-  text.drag {
-    visibility: hidden;
-  }
-  text.centered {
-    text-anchor: middle;
+  text {
+    &.drag {
+      visibility: hidden;
+    }
+    &.centered {
+      text-anchor: middle;
+    }
   }
 }
 
@@ -38,6 +40,7 @@
     background: white;
     overflow-x: auto;
     overflow-y: scroll;
+
     table {
       width: 95%;
       border: 0;
@@ -81,7 +84,6 @@
   position: absolute;
   z-index: 3;
 
-  font-family: 'Lato', Helvetica, Arial;
   font-size: 9pt;
   text-align: left;
 
@@ -98,105 +100,108 @@
   }
 }
 
-text {
-  dominant-baseline: text-before-edge;
-}
+$lu_hover_color: #e5e5e5;
+$lu_toolbar_font_size: 9pt;
 
-line.slope {
-  stroke: black;
-  shape-rendering: geometricPrecision;
-}
+.lu {
+  text {
+    dominant-baseline: text-before-edge;
+  }
 
-line.slope.hover {
-  stroke: #e5e5e5;
-}
+  *[draggable] {
+    cursor: pointer;
+    cursor: -webkit-grab; //indicate grab able
+  }
 
-g.cols {
-  pointer-events: none;
-}
+  line.slope {
+    stroke: black;
+    shape-rendering: geometricPrecision;
 
-rect.bg {
-  fill: transparent;
-}
+    &:hover {
+      stroke: $lu_hover_color;
+    }
+  }
 
-g.row.hover rect.bg {
-  fill: #e5e5e5;
-}
+  g.cols {
+    pointer-events: none;
+  }
 
-g.row.hover rect.bar {
-  opacity: 0.5;
-}
+  rect.bg {
+    fill: transparent;
+  }
 
-g.header text.label {
-  text-anchor: middle;
-}
+  g.row.hover {
+    rect.bg {
+      fill: $lu_hover_color;
+    }
+    rect.bar {
+      opacity: 0.5;
+    }
+  }
 
-g.header rect.handle {
-  fill: white;
-  cursor: col-resize;
-}
+  div.lu-header, div.lu-pool {
+    position: relative;
+  }
 
-g.header text.sort_indicator {
-  font-family: 'FontAwesome';
-  font-size: 9pt;
-  fill: white;
-}
+  div.header, div.header_i {
+    position: absolute;
+    display: inline-block;
+    overflow: hidden;
+    color: white;
+    text-align: center;
+    height: 100%;
+  }
 
-div.lu-header, div.lu-pool {
-  position: relative;
-}
+  div.header_i {
+    top: 50%;
+  }
 
-div.header, div.header_i {
-  position: absolute;
-  display: inline-block;
-  overflow: hidden;
-  color: white;
-  text-align: center;
-  height: 100%;
-}
+  div.lu-header div.toolbar {
+    display: none;
+    position: absolute;
+    right: 6px;
+    text-align: right;
+    top: 0;
+    cursor: auto;
+  }
 
-div.header_i {
-  top: 20px;
-}
+  div.lu-header {
+    div.header {
+      &:hover {
+        &> div.toolbar, &> div.toolbar {
+          display: block;
+        }
+      }
 
-div.lu-header div.toolbar {
-  display: none;
-  position: absolute;
-  right: 6px;
-  text-align: right;
-  top: 0;
-}
+      i.sort_indicator {
+        position: absolute;
+        left: 1px;
+        top: 1px;
+        font-size: $lu_toolbar_font_size;
+      }
 
-div.lu-header div.header:hover > div.toolbar, div.lu-header div.header_i:hover > div.toolbar {
-  display: block;
-}
+      div.handle {
+        position: absolute;
+        right: 0;
+        height: 100%;
+        top: 0;
+        background-color: white;
+        display: inline-block;
+        cursor: col-resize;
 
-div.lu-header div.toolbar i {
-  font-size: 9pt;
-  padding: 1px;
-}
+        &.drag_over {
+          background-color: black;
+        }
+      }
+    }
 
-div.lu-header div.toolbar i:hover {
-  color: darkblue;
-}
+    div.toolbar i {
+      font-size: $lu_toolbar_font_size;
+      padding: 1px;
 
-div.header i.sort_indicator {
-  position: absolute;
-  left: 1px;
-  top: 1px;
-  font-size: 9pt;
-}
-
-div.lu-header div.header div.handle {
-  position: absolute;
-  right: 0px;
-  height: 100%;
-  top: 0;
-  background-color: white;
-  display: inline-block;
-  cursor: col-resize;
-}
-
-div.lu-header div.header div.handle.drag_over {
-  background-color: black;
+      &:hover {
+        color: darkblue;
+      }
+    }
+  }
 }
