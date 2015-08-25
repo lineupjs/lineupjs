@@ -62,7 +62,7 @@ export class Column extends utils.AEventDispatcher {
   }
 
   createEventList() {
-    return super.createEventList().concat(['widthChanged', 'dirtySorting', 'dirtyFilter', 'dirtyValues', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader']);
+    return super.createEventList().concat(['widthChanged', 'filterChanged', 'labelChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
   }
 
   getWidth() {
@@ -78,16 +78,18 @@ export class Column extends utils.AEventDispatcher {
     if (this.width_ === value) {
       return;
     }
-    this.fire('widthChanged', this, this.width_, this.width_ = value);
-    this.fire('dirty', this);
+    this.fire(['widthChanged','dirtyHeader','dirty'], this.width_, this.width_ = value);
+  }
+
+  setWidthImpl(value: number) {
+    this.width_ = value;
   }
 
   setLabel(value: string) {
     if (value === this.label) {
       return;
     }
-    this.fire('dirtyHeader', this, this.label, this.label = value);
-    this.fire('dirty', this);
+    this.fire(['labelChanged', 'dirtyHeader','dirty'], this.label, this.label = value);
   }
 
   get color() {
@@ -247,6 +249,10 @@ export class NumberColumn extends ValueColumn<number> {
     this.missingValue = dump.missingValue;
   }
 
+  createEventList() {
+    return super.createEventList().concat(['mappingChanged']);
+  }
+
   getLabel(row:any) {
     return '' + super.getValue(row);
   }
@@ -292,8 +298,7 @@ export class NumberColumn extends ValueColumn<number> {
   setMapping(domain: [number, number], range: [number, number]) {
     var bak = this.getMapping();
     this.mapping.domain(domain).range(range);
-    this.fire('dirtyValues', this, bak, this.getMapping());
-    this.fire('dirty', this);
+    this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
   }
 
   isFiltered() {
@@ -315,23 +320,20 @@ export class NumberColumn extends ValueColumn<number> {
   set filterMin(min:number) {
     var bak = {min: this.filter_.min, max: this.filter_.max};
     this.filter_.min = isNaN(min) ? -Infinity : min;
-    this.fire('dirtyFilter', this, bak, this.filter_);
-    this.fire('dirty', this);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
   }
 
   set filterMax(max:number) {
     var bak = {min: this.filter_.min, max: this.filter_.max};
     this.filter_.max = isNaN(max) ? Infinity : max;
-    this.fire('dirtyFilter', this, bak, this.filter_);
-    this.fire('dirty', this);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
   }
 
   setFilter(min:number = -Infinity, max:number = +Infinity) {
     var bak = {min: this.filter_.min, max: this.filter_.max};
     this.filter_.min = isNaN(min) ? -Infinity : min;
     this.filter_.max = isNaN(max) ? Infinity : max;
-    this.fire('dirtyFilter', this, bak, this.filter_);
-    this.fire('dirty', this);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
   }
 
   filter(row:any) {
@@ -396,8 +398,7 @@ export class StringColumn extends ValueColumn<string> {
     if (filter === '') {
       filter = null;
     }
-    this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
-    this.fire('dirty', this);
+    this.fire(['filterChanged','dirtyValues','dirty'], this.filter_, this.filter_ = filter);
   }
 
   compare(a:any[], b:any[]) {
@@ -519,8 +520,7 @@ export class CategoricalColumn extends ValueColumn<string> {
   }
 
   setFilter(filter: string[]) {
-    this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
-    this.fire('dirty', this);
+    this.fire(['filterChanged','dirtyValues','dirty'], this, this.filter_, this.filter_ = filter);
   }
 
   compare(a:any[], b:any[]) {
@@ -550,6 +550,10 @@ export class CategoricalNumberColumn extends ValueColumn<number> {
       });
       this.scale.range(values);
     }
+  }
+
+  createEventList() {
+    return super.createEventList().concat(['mappingChanged']);
   }
 
   get categories() {
@@ -605,7 +609,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> {
   setRange(range: number[]) {
     var bak = this.getScale();
     this.scale.range(range);
-    this.fire('dirtyValues', this, bak, this.getScale());
+    this.fire(['mappingChanged','dirtyValues','dirty'], bak, this.getScale());
   }
 
   isFiltered() {
@@ -621,8 +625,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> {
   }
 
   setFilter(filter: string) {
-    this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
-    this.fire('dirty', this);
+    this.fire(['filterChanged','dirtyValues','dirty'], this.filter_, this.filter_ = filter);
   }
 
   compare(a:any[], b:any[]) {
@@ -641,14 +644,6 @@ export class StackColumn extends Column implements IColumnParent {
   public missingValue = NaN;
   private children_:Column[] = [];
 
-  private triggerResort = () => this.fire('dirtySorting', this);
-  private forwards = {
-    dirtyFilter: utils.forwardEvent(this, 'dirtyFilter'),
-    dirtyValues: utils.forwardEvent(this, 'dirtyValues'),
-    addColumn: utils.forwardEvent(this, 'addColumn'),
-    removeColumn: utils.forwardEvent(this, 'removeColumn'),
-    dirty: utils.forwardEvent(this, 'dirty')
-  };
   private adaptChange = this.adaptWidthChange.bind(this);
 
   private _collapsed = false;
@@ -658,7 +653,7 @@ export class StackColumn extends Column implements IColumnParent {
   }
 
   createEventList() {
-    return super.createEventList().concat(['pushChild','removeChild', 'changeCollapse']);
+    return super.createEventList().concat(['collapseChanged']);
   }
 
   get children() {
@@ -678,7 +673,7 @@ export class StackColumn extends Column implements IColumnParent {
     if (this._collapsed === value) {
       return;
     }
-    this.fire('changeCollapse', this, this._collapsed, this._collapsed = value);
+    this.fire(['collapseChanged', 'dirtyHeader', 'dirty'], this._collapsed, this._collapsed = value);
   }
 
   get collapsed() {
@@ -731,20 +726,12 @@ export class StackColumn extends Column implements IColumnParent {
     this.children_.splice(index, 0, col);
     //listen and propagate events
     col.parent = this;
-    col.on('dirtyFilter.stack', this.forwards.dirtyFilter);
-    col.on('dirtyValues.stack', this.forwards.dirtyValues);
-    col.on('addColumn.stack', this.forwards.addColumn);
-    col.on('removeColumn.stack', this.forwards.removeColumn);
-    col.on('dirtySorting.stack', this.triggerResort);
+    this.forward(col, 'dirtyHeader.stack','dirtyValues.stack','dirty.stack','filterChanged.stack');
     col.on('widthChanged.stack', this.adaptChange);
-    col.on('dirty.stack', this.forwards.dirty);
 
     //increase my width
     super.setWidth(this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
-    this.fire('pushChild', this, col, col.getWidth() / this.getWidth());
-    this.fire('addColumn', this, col);
-    this.fire('dirtySorting', this);
-    this.fire('dirty', this);
+    this.fire(['addColumn','dirtyHeader','dirtyValues','dirty'], col, col.getWidth() / this.getWidth());
     return true;
   }
 
@@ -784,15 +771,10 @@ export class StackColumn extends Column implements IColumnParent {
       if (c === col) {
         //c.weight += change;
       } else {
-        c.on('widthChanged.stack', null);
-        c.setWidth(c.getWidth()*factor);
-        c.on('widthChanged.stack', this.adaptChange);
+        c.setWidthImpl(c.getWidth()*factor);
       }
     });
-    this.fire('dirtyValues', this);
-    this.fire('dirtySorting', this);
-    this.fire('widthChanged', this, full, full);
-    this.fire('dirty', this);
+    this.fire(['widthChanged','dirtyHeader','dirtyValues','dirty'], full, full);
   }
 
   setWeights(weights: number[]) {
@@ -815,14 +797,9 @@ export class StackColumn extends Column implements IColumnParent {
     weights = weights.map(d => d/s);
 
     this.children_.forEach((c, i) => {
-      c.on('widthChanged.stack', null);
-      c.setWidth(weights[i]);
-      c.on('widthChanged.stack', this.adaptChange);
+      c.setWidthImpl(weights[i]);
     });
-    this.fire('dirtyValues', this);
-    this.fire('dirtySorting', this);
-    this.fire('widthChanged', this, this.getWidth(), this.getWidth());
-    this.fire('dirty', this);
+    this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues','dirty'], this.getWidth(), this.getWidth());
 
   }
 
@@ -833,19 +810,12 @@ export class StackColumn extends Column implements IColumnParent {
     }
     this.children_.splice(i, 1); //remove and deregister listeners
     child.parent = null;
-    child.on('dirtyFilter.stack', null);
-    child.on('dirtyValues.stack', null);
-    child.on('addColumn.stack', null);
-    child.on('removeColumn.stack', null);
-    child.on('dirtySorting.stack', null);
+    this.unforward(child, 'dirtyHeader.stack','dirtyValues.stack','dirty.stack','filterChanged.stack');
     child.on('widthChanged.stack', null);
-    child.on('dirty.stack', null);
+
     //reduce width to keep the percentages
     super.setWidth(this.length === 0 ? 100 : this.getWidth() - child.getWidth());
-    this.fire('removeChild', this, child);
-    this.fire('removeColumn', this, child);
-    this.fire('dirtySorting', this);
-    this.fire('dirty', this);
+    this.fire(['removeColumn','dirtyHeader','dirtyValues','dirty'], child);
     return true;
   }
 
@@ -853,9 +823,7 @@ export class StackColumn extends Column implements IColumnParent {
     var factor = value / this.getWidth();
     this.children_.forEach((child) => {
       //disable since we change it
-      child.on('widthChanged.stack', null);
-      child.setWidth(child.getWidth() * factor);
-      child.on('widthChanged.stack', this.adaptChange);
+      child.setWidthImpl(child.getWidth() * factor);
     });
     super.setWidth(value);
   }
@@ -931,16 +899,6 @@ export class RankColumn extends ValueColumn<number> {
    */
   extra:any = {};
 
-  private triggerResort = () => this.fire('dirtySorting', this);
-  private forwards = {
-    dirtyFilter: utils.forwardEvent(this, 'dirtyFilter'),
-    dirtyValues: utils.forwardEvent(this, 'dirtyValues'),
-    widthChanged: utils.forwardEvent(this, 'widthChanged'),
-    addColumn: utils.forwardEvent(this, 'addColumn'),
-    removeColumn: utils.forwardEvent(this, 'removeColumn'),
-    dirty: utils.forwardEvent(this, 'dirty')
-  };
-
   comparator = (a:any[], b:any[]) => {
     if (this.sortBy_ === null) {
       return 0;
@@ -949,12 +907,16 @@ export class RankColumn extends ValueColumn<number> {
     return this.ascending ? r : -r;
   };
 
+  private dirtyOrder = () => {
+    this.fire(['dirtyOrder','dirtyValues','dirty'],this.sortCriteria());
+  };
+
   constructor(id:string, desc:any) {
     super(id, desc);
   }
 
   createEventList() {
-    return super.createEventList().concat(['sortCriteriaChanged', 'pushChild', 'removeChild']);
+    return super.createEventList().concat(['sortCriteriaChanged', 'dirtyOrder']);
   }
 
   dump(toDescRef:(desc:any) => any) {
@@ -1020,24 +982,22 @@ export class RankColumn extends ValueColumn<number> {
   }
 
   sortBy(col:Column, ascending = false) {
-    if (col.on('dirtyFilter.ranking') !== this.forwards.dirtyFilter) {
+    if (col.findMyRanker() !== this) {
       return false; //not one of mine
     }
     if (this.sortBy_ === col && this.ascending === ascending) {
       return true; //already in this order
     }
-    if (this.sortBy_) { //disable dirty listenening
-      this.sortBy_.on('dirtySorting.ranking', null);
+    if (this.sortBy_) { //disable dirty listening
+      this.sortBy_.on('dirtyValues.order', null);
     }
     var bak = this.sortCriteria();
     this.sortBy_ = col;
-    if (this.sortBy_) { //enable dirty listenering
-      this.sortBy_.on('dirtySorting.ranking', this.triggerResort);
+    if (this.sortBy_) { //enable dirty listening
+      this.sortBy_.on('dirtyValues.order', this.dirtyOrder);
     }
     this.ascending = ascending;
-    this.fire('sortCriteriaChanged', this, bak, this.sortCriteria());
-    this.fire('dirty', this);
-    this.triggerResort();
+    this.fire(['sortCriteriaChanged','dirtyOrder','dirtyHeader','dirtyValues','dirty'], bak, this.sortCriteria());
     return true;
   }
 
@@ -1052,23 +1012,14 @@ export class RankColumn extends ValueColumn<number> {
   insert(col:Column, index:number = this.columns_.length) {
     this.columns_.splice(index, 0, col);
     col.parent = this;
-    col.on('dirtyFilter.ranking', this.forwards.dirtyFilter);
-    col.on('dirtyValues.ranking', this.forwards.dirtyValues);
-    col.on('addColumn.ranking', this.forwards.addColumn);
-    col.on('removeColumn.ranking', this.forwards.removeColumn);
-    col.on('widthChanged.ranking', this.forwards.widthChanged);
-    col.on('dirty.ranking', this.forwards.dirty);
+    this.forward(col, 'dirtyValues.ranking','dirtyHeader.ranking','dirty.ranking');
+
+
+    this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
 
     if (this.sortBy_ === null) {
-      //use the first columns as sorting criteria
-      this.sortBy_ = col;
-      this.sortBy_.on('dirtySorting.ranking', this.triggerResort);
-      this.triggerResort();
+      this.sortBy(col);
     }
-
-    this.fire('pushChild', this, col, index);
-    this.fire('dirty', this);
-
     return col;
   }
 
@@ -1093,19 +1044,14 @@ export class RankColumn extends ValueColumn<number> {
       return false;
     }
 
-    col.on('dirtyFilter.ranking', null);
-    col.on('dirtyValues.ranking', null);
-    col.on('widthChanged.ranking', null);
-    col.on('addColumn.ranking', null);
-    col.on('removeColumn.ranking', null);
-    col.on('dirty.ranking', null);
+    this.unforward(col, 'dirtyValues.ranking','dirtyHeader.ranking','dirty.ranking');
+
     col.parent = null;
     this.columns_.splice(i, 1);
+    this.fire(['removeColumn','dirtyHeader','dirtyValues','dirty'], col);
     if (this.sortBy_ === col) { //was my sorting one
       this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
     }
-    this.fire('removeChild', this, col);
-    this.fire('dirty', this);
     return true;
   }
 

@@ -24,9 +24,15 @@ export function delayedCall(callback:() => void, thisCallback = this, timeToDela
   };
 }
 
-export function forwardEvent(to: AEventDispatcher, event: string) {
+/**
+ * utility for AEventDispatcher to forward an event
+ * @param to
+ * @param event
+ * @return {function(...[any]): undefined}
+ */
+export function forwardEvent(to: AEventDispatcher, event?: string) {
   return function(...args: any[]) {
-    args.unshift(event);
+    args.unshift(event || this.type);
     to.fire.apply(to, args);
   };
 }
@@ -36,19 +42,24 @@ export function forwardEvent(to: AEventDispatcher, event: string) {
  */
 export class AEventDispatcher {
   private listeners:d3.Dispatch;
+  private forwarder = forwardEvent(this);
 
   constructor() {
     this.listeners = d3.dispatch.apply(d3, this.createEventList());
   }
 
   on(type:string):(...args:any[]) => void;
-  on(type:string, listener:(...args:any[]) => any):AEventDispatcher;
-  on(type:string, listener?:(...args:any[]) => any):any {
+  on(type:string|string[], listener:(...args:any[]) => any):AEventDispatcher;
+  on(type:string|string[], listener?:(...args:any[]) => any):any {
     if (arguments.length > 1) {
-      this.listeners.on(type, listener);
+      if (Array.isArray(type)) {
+        (<string[]>type).forEach((d) => this.listeners.on(d, listener));
+      } else {
+        this.listeners.on(<string>type, listener);
+      }
       return this;
     }
-    return this.listeners.on(type);
+    return this.listeners.on(<string>type);
   }
 
   /**
@@ -59,8 +70,27 @@ export class AEventDispatcher {
     return [];
   }
 
-  fire(type:string, ...args:any[]) {
-    this.listeners[type].apply(this.listeners, args);
+  fire(type:string|string[], ...args:any[]) {
+    var fireImpl = (t) => {
+      var context = {
+        source: this,
+        type: t,
+        args: args
+      };
+      this.listeners[<string>t].apply(context, args);
+    };
+    if (Array.isArray(type)) {
+      (<string[]>type).forEach(fireImpl.bind(this));
+    } else {
+      fireImpl(<string>type);
+    }
+  }
+
+  forward(from: AEventDispatcher, ...types: string[]) {
+    from.on(types, this.forwarder);
+  }
+  unforward(from: AEventDispatcher, ...types: string[]) {
+    from.on(types, null);
   }
 }
 
@@ -103,6 +133,11 @@ export function merge(...args: any[]) {
   return result;
 }
 
+/**
+ * computes the absolute offset of the given element
+ * @param element
+ * @return {{left: number, top: number, width: number, height: number}}
+ */
 export function offset(element) {
   var obj = element.getBoundingClientRect();
   return {
@@ -113,6 +148,9 @@ export function offset(element) {
   };
 }
 
+/**
+ * content scroller utility
+ */
 export class ContentScroller extends AEventDispatcher {
   private options = {
     topShift: 0,
@@ -183,7 +221,9 @@ export class ContentScroller extends AEventDispatcher {
   }
 }
 
-
+/**
+ * checks whether the given DragEvent has one of the given types
+ **/
 export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
   var types : any = e.dataTransfer.types;
   if (typeof types.indexOf === 'function') {
@@ -198,6 +238,9 @@ export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
   return false;
 }
 
+/**
+ * should it be a copy dnd operation?
+ */
 export function copyDnD(e: DragEvent) {
   var dT = e.dataTransfer;
   return (e.ctrlKey && dT.effectAllowed.match(/copy/gi)) || (!dT.effectAllowed.match(/move/gi));
@@ -212,6 +255,11 @@ export function updateDropEffect(e: DragEvent) {
   }
 }
 
+/**
+ * returns a d3 callable function to make an element dropable
+ * @param mimeTypes the mime types to be dropable
+ * @param onDrop: handler when an element is dropped
+ */
 export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy: boolean) => boolean) {
   return ($node) => {
     $node.on('dragenter', function() {

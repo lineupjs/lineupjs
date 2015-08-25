@@ -320,6 +320,10 @@ function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $he
   });
 }
 
+/**
+ * returns all known filter dialogs mappings
+ * @return
+ */
 export function filterDialogs() {
   return {
     string : openStringFilter,

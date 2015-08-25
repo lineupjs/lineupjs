@@ -114,7 +114,7 @@ export class HeaderRenderer {
 
     this.$node = d3.select(parent).append('div').classed('lu-header',true);
 
-    data.on('dirty.header', this.update.bind(this));
+    data.on('dirtyHeader', this.update.bind(this));
     this.update();
   }
 

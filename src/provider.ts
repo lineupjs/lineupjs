@@ -29,14 +29,9 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   columnTypes:any = model.models();
 
-  private forwards ={
-    addColumn : utils.forwardEvent(this, 'addColumn'),
-    removeColumn : utils.forwardEvent(this, 'removeColumn'),
-    dirty: utils.forwardEvent(this, 'dirty')
-  };
 
   createEventList() {
-    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty']);
+    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyOrder', 'dirtyValues', 'selectionChanged']);
   }
 
   /**
@@ -47,11 +42,8 @@ export class DataProvider extends utils.AEventDispatcher {
   pushRanking(existing?:model.RankColumn) {
     var r = this.cloneRanking(existing);
     this.rankings_.push(r);
-    r.on('addColumn.provider', this.forwards.addColumn);
-    r.on('removeColumn.provider', this.forwards.removeColumn);
-    r.on('dirty.provider', this.forwards.dirty);
-    this.fire('addRanking', r);
-    this.fire('dirty', this);
+    this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
+    this.fire(['addRanking','dirtyHeader','dirtyValues','dirty'], r);
     return r;
   }
 
@@ -60,13 +52,10 @@ export class DataProvider extends utils.AEventDispatcher {
     if (i < 0) {
       return false;
     }
-    ranking.on('addColumn.provider', null);
-    ranking.on('removeColumn.provider', null);
-    ranking.on('dirty.provider', null);
+    this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
     this.rankings_.splice(i, 1);
-    this.fire('removeRanking', ranking);
     this.cleanUpRanking(ranking);
-    this.fire('dirty', this);
+    this.fire(['removeRanking','dirtyHeader','dirtyValues','dirty'], ranking);
     return true;
   }
 
@@ -220,6 +209,7 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   select(row) {
     this.selection.add(this.rowKey(row, -1));
+    this.fire('selectionChanged', this.selection.values());
   }
 
   /**
@@ -230,6 +220,7 @@ export class DataProvider extends utils.AEventDispatcher {
     rows.forEach((row) => {
       this.selection.add(this.rowKey(row, -1));
     });
+    this.fire('selectionChanged', this.selection.values());
   }
 
   /**
@@ -237,7 +228,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param rows
    */
   setSelection(rows: any[]) {
-    this.clearSelection();
+    this.selection = d3.set();
     this.selectAll(rows);
   }
 
@@ -247,6 +238,7 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   deselect(row: any) {
     this.selection.remove(this.rowKey(row, -1));
+    this.fire('selectionChanged', this.selection.values());
   }
 
   /**
@@ -268,6 +260,7 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   clearSelection() {
     this.selection = d3.set();
+    this.fire('selectionChanged', this.selection.values());
   }
 }
 
