@@ -114,7 +114,7 @@ export class HeaderRenderer {
 
     this.$node = d3.select(parent).append('div').classed('lu-header',true);
 
-    data.on('dirtyHeader', this.update.bind(this));
+    data.on('dirtyHeader', utils.delayedCall(this.update.bind(this),1));
     this.update();
   }
 
@@ -161,8 +161,15 @@ export class HeaderRenderer {
       filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
-    $regular.append('i').attr('class', 'fa fa-times').on('click', (d) => {
-      d.removeMe();
+    $node.append('i').attr('class', 'fa fa-times').on('click', (d) => {
+      if (d instanceof model.RankColumn) {
+        provider.removeRanking(<model.RankColumn>d);
+        if (provider.getRankings().length === 0) { //create at least one
+          provider.pushRanking();
+        }
+      } else {
+        d.removeMe();
+      }
       d3.event.stopPropagation();
     });
   }
@@ -268,14 +275,15 @@ export class BodyRenderer {
 
   private $node: d3.Selection<any>;
 
-  constructor(private data:provider.DataProvider, parent: Element, private argsortGetter:(ranking:model.RankColumn) => Promise<number[]>, options = {}) {
+  constructor(private data:provider.DataProvider, parent: Element, options = {}) {
     //merge options
     utils.merge(this.options, options);
 
     this.$node = d3.select(parent).append('svg').classed('lu-body',true);
 
-    data.on('dirty.body', this.update.bind(this));
+    data.on('dirtyValues.body', utils.delayedCall(this.update.bind(this),1));
     //data.on('removeColumn.body', this.update.bind(this));
+    this.update();
   }
 
   createContext(rankings:model.RankColumn[]):renderer.IRenderContext {
@@ -342,10 +350,10 @@ export class BodyRenderer {
     this.updateClipPathsImpl(shifts.map(s => s.col), context);
   }
 
-  renderRankings($body: d3.Selection<any>, r:model.RankColumn[], shifts:any[], context:renderer.IRenderContext, argSortPromises: Promise<number[]>[]) {
-    var dataPromises = argSortPromises.map((r) => r.then((argsort) => this.data.view(argsort)));
+  renderRankings($body: d3.Selection<any>, rankings:model.RankColumn[], shifts:any[], context:renderer.IRenderContext) {
+    var dataPromises = rankings.map((r) => this.data.view(r.getOrder()));
 
-    var $rankings = $body.selectAll('g.ranking').data(r, (d) => d.id);
+    var $rankings = $body.selectAll('g.ranking').data(rankings, (d) => d.id);
     var $rankings_enter = $rankings.enter().append('g').attr({
       'class': 'ranking'
     });
@@ -419,33 +427,28 @@ export class BodyRenderer {
         }
       });
     };
-    Promise.all(argSortPromises).then(function(sorts) {
-      var $rows = $rankings.select('g.rows').selectAll('g.row').data((d,i) => sorts[i].map((d, i) => ({
-        d: d,
-        i: i
-      })));
-      var $rows_enter = $rows.enter().append('g').attr({
-        'class': 'row'
-      });
-      $rows_enter.append('rect').attr({
-        'class': 'bg'
-      });
-      $rows_enter.append('g').attr({'class': 'values'});
-      $rows_enter.on('mouseenter', (data_index) => {
-        this.mouseOver(data_index.d, true);
-      }).on('mouseleave', (data_index) => {
-        this.mouseOver(data_index.d, false);
-      });
-      $rows.attr({
-        'data-index': (d) => d.d
-      });
-      context.animated($rows).select('rect').attr({
-        y: (data_index) => context.cellY(data_index.i),
-        height: (data_index) => context.rowHeight(data_index.i),
-        width: (d, i, j?) => shifts[j].width
-      });
-      $rows.exit().remove();
+    var $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => d.getOrder().map((d, i) => ({ d: d, i: i })));
+    var $rows_enter = $rows.enter().append('g').attr({
+      'class': 'row'
     });
+    $rows_enter.append('rect').attr({
+      'class': 'bg'
+    });
+    $rows_enter.append('g').attr({'class': 'values'});
+    $rows_enter.on('mouseenter', (data_index) => {
+      this.mouseOver(data_index.d, true);
+    }).on('mouseleave', (data_index) => {
+      this.mouseOver(data_index.d, false);
+    });
+    $rows.attr({
+      'data-index': (d) => d.d
+    });
+    context.animated($rows).select('rect').attr({
+      y: (data_index) => context.cellY(data_index.i),
+      height: (data_index) => context.rowHeight(data_index.i),
+      width: (d, i, j?) => shifts[j].width
+    });
+    $rows.exit().remove();
 
     $rankings.exit().remove();
   }
@@ -456,7 +459,7 @@ export class BodyRenderer {
     this.$node.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
   }
 
-  renderSlopeGraphs($body: d3.Selection<any>, rankings:model.RankColumn[], shifts:any[], context:renderer.IRenderContext, argSortPromises: Promise<number[]>[]) {
+  renderSlopeGraphs($body: d3.Selection<any>, rankings:model.RankColumn[], shifts:any[], context:renderer.IRenderContext) {
 
     var slopes = rankings.slice(1).map((d, i) => ({left: rankings[i], left_i : i, right: d, right_i : i+1}));
     var $slopes = $body.selectAll('g.slopegraph').data(slopes);
@@ -466,35 +469,38 @@ export class BodyRenderer {
     context.animated($slopes).attr({
       transform: (d, i) => 'translate(' + (shifts[i + 1].shift - this.options.slopeWidth) + ',0)'
     });
-    Promise.all(argSortPromises).then((argsortSorts) => {
-      var $lines = $slopes.selectAll('line.slope').data((d, i) => {
-        var cache = {};
-        argsortSorts[d.right_i].forEach((data_index, pos) => {
-          cache[data_index] = pos;
-        });
-        return argsortSorts[d.left_i].map((data_index, pos) => ({
-          data_index: data_index,
-          lpos: pos,
-          rpos: cache[data_index]
-        }));
+    var $lines = $slopes.selectAll('line.slope').data((d, i) => {
+      var cache = {};
+      d.right.getOrder().forEach((data_index, pos) => {
+        cache[data_index] = pos;
       });
-      $lines.enter().append('line').attr({
-        'class': 'slope',
-        x2: this.options.slopeWidth
-      }).on('mouseenter', (d) => {
-        this.mouseOver(d.data_index, true);
-      }).on('mouseleave', (d) => {
-        this.mouseOver(d.data_index, false);
-      });
-      $lines.attr({
-        'data-index': (d) => d.data_index
-      });
-      context.animated($lines).attr({
-        y1: (d:any) => context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos),
-        y2: (d:any) => context.rowHeight(d.rpos) * 0.5 + context.cellY(d.rpos)
-      });
-      $lines.exit().remove();
+      return d.left.getOrder().map((data_index, pos) => ({
+        data_index: data_index,
+        lpos: pos,
+        rpos: cache[data_index]
+      })).filter((d) => d.rpos != null);
     });
+    $lines.enter().append('line').attr({
+      'class': 'slope',
+      x2: this.options.slopeWidth
+    }).on('mouseenter', (d) => {
+      this.mouseOver(d.data_index, true);
+    }).on('mouseleave', (d) => {
+      this.mouseOver(d.data_index, false);
+    });
+    $lines.attr({
+      'data-index': (d) => d.data_index
+    });
+    context.animated($lines).attr({
+      y1: (d:any) => {
+        return context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos);
+      },
+      y2: (d:any) => {
+        return context.rowHeight(d.rpos) * 0.5 + context.cellY(d.rpos);
+      }
+    });
+    $lines.exit().remove();
+
     $slopes.exit().remove();
   }
 
@@ -539,9 +545,8 @@ export class BodyRenderer {
       $body = this.$node.append('g').classed('body',true);
     }
 
-    var argsortPromises = r.map((ranking) => this.argsortGetter(ranking));
-    this.renderRankings($body, r, shifts, context, argsortPromises);
-    this.renderSlopeGraphs($body, r, shifts, context, argsortPromises);
+    this.renderRankings($body, r, shifts, context);
+    this.renderSlopeGraphs($body, r, shifts, context);
   }
 }
 
@@ -554,11 +559,11 @@ export class LineUpRenderer {
     pool: true
   };
 
-  constructor(root: Element, data: provider.DataProvider, columns: provider.IColumnDesc[], argsortGetter:(ranking:model.RankColumn) => Promise<number[]>, options : any = {}) {
+  constructor(root: Element, data: provider.DataProvider, columns: provider.IColumnDesc[], options : any = {}) {
     utils.merge(this.options, options);
     root = <Element>d3.select(root).append('div').classed('lu', true).node();
     this.header = new HeaderRenderer(data,  root, options);
-    this.body = new BodyRenderer(data, root, argsortGetter, options);
+    this.body = new BodyRenderer(data, root, options);
     if(this.options.pool) {
       this.pool = new PoolRenderer(data, columns, root, options);
     }

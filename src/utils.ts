@@ -12,7 +12,7 @@ import d3 = require('d3');
  * @param timeToDelay
  * @return {function(...[any]): undefined}
  */
-export function delayedCall(callback:() => void, thisCallback = this, timeToDelay = 100) {
+export function delayedCall(callback:() => void, timeToDelay = 100, thisCallback = this) {
   var tm = -1;
   return (...args:any[]) => {
     if (tm >= 0) {

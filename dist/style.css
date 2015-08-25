@@ -107,6 +107,8 @@
   color: white;
   text-align: center;
   height: 100%; }
+  .lu div.header:hover > div.toolbar, .lu div.header_i:hover > div.toolbar {
+    display: block; }
 
 .lu div.header_i {
   top: 50%; }
@@ -118,9 +120,6 @@
   text-align: right;
   top: 0;
   cursor: auto; }
-
-.lu div.lu-header div.header:hover > div.toolbar, .lu div.lu-header div.header:hover > div.toolbar {
-  display: block; }
 
 .lu div.lu-header div.header i.sort_indicator {
   position: absolute;

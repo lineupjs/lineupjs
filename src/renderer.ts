@@ -259,21 +259,23 @@ class CategoricalRenderer extends DefaultCellRenderer {
       'class': this.textClass
     });
     $rows_enter.append('text').attr({
-      x: 7,
       'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
     });
     $rows_enter.append('rect').attr({
-      x: 5,
-      width: 5,
-      height: 5
-    });
+      y: 1
+    })
     var $update = context.animated($rows).attr({
       'data-index': (d, i) => i,
       transform: (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'
     });
-    $update.select('text').text((d) => col.getLabel(d));
+    $update.select('text').attr({
+      x: (d,i) => context.rowHeight(i)
+    }).text((d) => col.getLabel(d));
     $update.select('rect').style({
       fill: (d) => col.getColor(d)
+    }).attr({
+      height: (d,i) => Math.max(context.rowHeight(i)-2,0),
+      width: (d,i) => Math.max(context.rowHeight(i)-2,0),
     });
 
     $rows.exit().remove();

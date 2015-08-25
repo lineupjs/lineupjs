@@ -58,12 +58,6 @@ window.onload = function () {
   r2.push(p.create(desc[6]));
   r2.push(p.create(desc[7]));
 
-  var call = LineUpJS.utils.delayedCall(update, 2);
-  r2.on('dirtySorting', call);
-  r2.on('widthChanged', call);
-  r.on('dirtySorting', call);
-  r.on('widthChanged', call);
-
   var body = new LineUpJS.ui.LineUpRenderer(root.node(), p, desc, function (rank) {
     return rank.extra.argsort;
   }, {
@@ -71,14 +65,5 @@ window.onload = function () {
       LineUpJS.model.StackColumn.desc('+ Stack')
     ]
   });
-  update();
-
-  function update() {
-    console.log('call', arguments);
-    Promise.all(p.getRankings().map(function(r) { p.sort(r); }))
-     .then(function (argsorts) {
-      p.getRankings().forEach(function(r,i) { r.extra.argsort = argsorts[i] });
-      body.update();
-    });
-  }
+  body.update();
 };

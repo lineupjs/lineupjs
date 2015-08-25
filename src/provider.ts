@@ -29,9 +29,19 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   columnTypes:any = model.models();
 
+  private reorder;
+
+  constructor() {
+    super();
+    var that = this;
+    this.reorder = function() {
+      var ranking = this.source;
+      that.sort(ranking).then((order) => ranking.setOrder(order));
+    }
+  }
 
   createEventList() {
-    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyOrder', 'dirtyValues', 'selectionChanged']);
+    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'selectionChanged']);
   }
 
   /**
@@ -42,7 +52,8 @@ export class DataProvider extends utils.AEventDispatcher {
   pushRanking(existing?:model.RankColumn) {
     var r = this.cloneRanking(existing);
     this.rankings_.push(r);
-    this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
+    this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyValues.provider');
+    r.on('dirtyOrder.provider',this.reorder);
     this.fire(['addRanking','dirtyHeader','dirtyValues','dirty'], r);
     return r;
   }
@@ -54,6 +65,7 @@ export class DataProvider extends utils.AEventDispatcher {
     }
     this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
     this.rankings_.splice(i, 1);
+    ranking.on('dirtyOrder.provider',null);
     this.cleanUpRanking(ranking);
     this.fire(['removeRanking','dirtyHeader','dirtyValues','dirty'], ranking);
     return true;

@@ -78,7 +78,7 @@ export class Column extends utils.AEventDispatcher {
     if (this.width_ === value) {
       return;
     }
-    this.fire(['widthChanged','dirtyHeader','dirty'], this.width_, this.width_ = value);
+    this.fire(['widthChanged','dirtyHeader','dirtyValues','dirty'], this.width_, this.width_ = value);
   }
 
   setWidthImpl(value: number) {
@@ -644,12 +644,17 @@ export class StackColumn extends Column implements IColumnParent {
   public missingValue = NaN;
   private children_:Column[] = [];
 
-  private adaptChange = this.adaptWidthChange.bind(this);
+  private adaptChange;
 
   private _collapsed = false;
 
   constructor(id:string, desc:any) {
     super(id, desc);
+
+    var that = this;
+    this.adaptChange = function(old, new_) {
+      that.adaptWidthChange(this.source, old, new_);
+    };
   }
 
   createEventList() {
@@ -893,12 +898,6 @@ export class RankColumn extends ValueColumn<number> {
    */
   private columns_:Column[] = [];
 
-  /**
-   * public extra data for layouts
-   * @type {{}}
-   */
-  extra:any = {};
-
   comparator = (a:any[], b:any[]) => {
     if (this.sortBy_ === null) {
       return 0;
@@ -911,12 +910,23 @@ export class RankColumn extends ValueColumn<number> {
     this.fire(['dirtyOrder','dirtyValues','dirty'],this.sortCriteria());
   };
 
+  private order: number[] = [];
+
   constructor(id:string, desc:any) {
     super(id, desc);
+    this.setWidthImpl(50);
   }
 
   createEventList() {
-    return super.createEventList().concat(['sortCriteriaChanged', 'dirtyOrder']);
+    return super.createEventList().concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
+  }
+
+  setOrder(order: number[]) {
+    this.fire(['orderChanged','dirtyValues','dirty'], this.order, this.order = order);
+  }
+
+  getOrder() {
+    return this.order;
   }
 
   dump(toDescRef:(desc:any) => any) {
@@ -982,7 +992,7 @@ export class RankColumn extends ValueColumn<number> {
   }
 
   sortBy(col:Column, ascending = false) {
-    if (col.findMyRanker() !== this) {
+    if (col !== null && col.findMyRanker() !== this) {
       return false; //not one of mine
     }
     if (this.sortBy_ === col && this.ascending === ascending) {

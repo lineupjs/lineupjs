@@ -505,7 +505,7 @@ var Column = (function (_super) {
         configurable: true
     });
     Column.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['widthChanged', 'dirtySorting', 'dirtyFilter', 'dirtyValues', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader']);
+        return _super.prototype.createEventList.call(this).concat(['widthChanged', 'filterChanged', 'labelChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
     };
     Column.prototype.getWidth = function () {
         return this.width_;
@@ -520,15 +520,16 @@ var Column = (function (_super) {
         if (this.width_ === value) {
             return;
         }
-        this.fire('widthChanged', this, this.width_, this.width_ = value);
-        this.fire('dirty', this);
+        this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.width_, this.width_ = value);
+    };
+    Column.prototype.setWidthImpl = function (value) {
+        this.width_ = value;
     };
     Column.prototype.setLabel = function (value) {
         if (value === this.label) {
             return;
         }
-        this.fire('dirtyHeader', this, this.label, this.label = value);
-        this.fire('dirty', this);
+        this.fire(['labelChanged', 'dirtyHeader', 'dirty'], this.label, this.label = value);
     };
     Object.defineProperty(Column.prototype, "color", {
         get: function () {
@@ -679,6 +680,9 @@ var NumberColumn = (function (_super) {
         this.filter_ = dump.filter;
         this.missingValue = dump.missingValue;
     };
+    NumberColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
+    };
     NumberColumn.prototype.getLabel = function (row) {
         return '' + _super.prototype.getValue.call(this, row);
     };
@@ -717,8 +721,7 @@ var NumberColumn = (function (_super) {
     NumberColumn.prototype.setMapping = function (domain, range) {
         var bak = this.getMapping();
         this.mapping.domain(domain).range(range);
-        this.fire('dirtyValues', this, bak, this.getMapping());
-        this.fire('dirty', this);
+        this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
     };
     NumberColumn.prototype.isFiltered = function () {
         return isFinite(this.filter_.min) || isFinite(this.filter_.max);
@@ -730,8 +733,7 @@ var NumberColumn = (function (_super) {
         set: function (min) {
             var bak = { min: this.filter_.min, max: this.filter_.max };
             this.filter_.min = isNaN(min) ? -Infinity : min;
-            this.fire('dirtyFilter', this, bak, this.filter_);
-            this.fire('dirty', this);
+            this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
         },
         enumerable: true,
         configurable: true
@@ -743,8 +745,7 @@ var NumberColumn = (function (_super) {
         set: function (max) {
             var bak = { min: this.filter_.min, max: this.filter_.max };
             this.filter_.max = isNaN(max) ? Infinity : max;
-            this.fire('dirtyFilter', this, bak, this.filter_);
-            this.fire('dirty', this);
+            this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
         },
         enumerable: true,
         configurable: true
@@ -758,8 +759,7 @@ var NumberColumn = (function (_super) {
         var bak = { min: this.filter_.min, max: this.filter_.max };
         this.filter_.min = isNaN(min) ? -Infinity : min;
         this.filter_.max = isNaN(max) ? Infinity : max;
-        this.fire('dirtyFilter', this, bak, this.filter_);
-        this.fire('dirty', this);
+        this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
     };
     NumberColumn.prototype.filter = function (row) {
         if (!this.isFiltered()) {
@@ -816,8 +816,7 @@ var StringColumn = (function (_super) {
         if (filter === '') {
             filter = null;
         }
-        this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
-        this.fire('dirty', this);
+        this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
     };
     StringColumn.prototype.compare = function (a, b) {
         return d3.ascending(this.getValue(a), this.getValue(b));
@@ -937,8 +936,7 @@ var CategoricalColumn = (function (_super) {
         return this.filter_;
     };
     CategoricalColumn.prototype.setFilter = function (filter) {
-        this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
-        this.fire('dirty', this);
+        this.fire(['filterChanged', 'dirtyValues', 'dirty'], this, this.filter_, this.filter_ = filter);
     };
     CategoricalColumn.prototype.compare = function (a, b) {
         return StringColumn.prototype.compare.call(this, a, b);
@@ -968,6 +966,9 @@ var CategoricalNumberColumn = (function (_super) {
             this.scale.range(values);
         }
     }
+    CategoricalNumberColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
+    };
     Object.defineProperty(CategoricalNumberColumn.prototype, "categories", {
         get: function () {
             return this.colors.domain();
@@ -1020,7 +1021,7 @@ var CategoricalNumberColumn = (function (_super) {
     CategoricalNumberColumn.prototype.setRange = function (range) {
         var bak = this.getScale();
         this.scale.range(range);
-        this.fire('dirtyValues', this, bak, this.getScale());
+        this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getScale());
     };
     CategoricalNumberColumn.prototype.isFiltered = function () {
         return this.filter_ != null;
@@ -1032,8 +1033,7 @@ var CategoricalNumberColumn = (function (_super) {
         return this.filter_;
     };
     CategoricalNumberColumn.prototype.setFilter = function (filter) {
-        this.fire('dirtyFilter', this, this.filter_, this.filter_ = filter);
-        this.fire('dirty', this);
+        this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
     };
     CategoricalNumberColumn.prototype.compare = function (a, b) {
         return NumberColumn.prototype.compare.call(this, a, b);
@@ -1047,26 +1047,20 @@ exports.CategoricalNumberColumn = CategoricalNumberColumn;
 var StackColumn = (function (_super) {
     __extends(StackColumn, _super);
     function StackColumn(id, desc) {
-        var _this = this;
         _super.call(this, id, desc);
         this.missingValue = NaN;
         this.children_ = [];
-        this.triggerResort = function () { return _this.fire('dirtySorting', _this); };
-        this.forwards = {
-            dirtyFilter: utils.forwardEvent(this, 'dirtyFilter'),
-            dirtyValues: utils.forwardEvent(this, 'dirtyValues'),
-            addColumn: utils.forwardEvent(this, 'addColumn'),
-            removeColumn: utils.forwardEvent(this, 'removeColumn'),
-            dirty: utils.forwardEvent(this, 'dirty')
-        };
-        this.adaptChange = this.adaptWidthChange.bind(this);
         this._collapsed = false;
+        var that = this;
+        this.adaptChange = function (old, new_) {
+            that.adaptWidthChange(this.source, old, new_);
+        };
     }
     StackColumn.desc = function (label) {
         return { type: 'stack', label: label };
     };
     StackColumn.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['pushChild', 'removeChild', 'changeCollapse']);
+        return _super.prototype.createEventList.call(this).concat(['collapseChanged']);
     };
     Object.defineProperty(StackColumn.prototype, "children", {
         get: function () {
@@ -1098,7 +1092,7 @@ var StackColumn = (function (_super) {
             if (this._collapsed === value) {
                 return;
             }
-            this.fire('changeCollapse', this, this._collapsed, this._collapsed = value);
+            this.fire(['collapseChanged', 'dirtyHeader', 'dirty'], this._collapsed, this._collapsed = value);
         },
         enumerable: true,
         configurable: true
@@ -1150,19 +1144,11 @@ var StackColumn = (function (_super) {
         this.children_.splice(index, 0, col);
         //listen and propagate events
         col.parent = this;
-        col.on('dirtyFilter.stack', this.forwards.dirtyFilter);
-        col.on('dirtyValues.stack', this.forwards.dirtyValues);
-        col.on('addColumn.stack', this.forwards.addColumn);
-        col.on('removeColumn.stack', this.forwards.removeColumn);
-        col.on('dirtySorting.stack', this.triggerResort);
+        this.forward(col, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
         col.on('widthChanged.stack', this.adaptChange);
-        col.on('dirty.stack', this.forwards.dirty);
         //increase my width
         _super.prototype.setWidth.call(this, this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
-        this.fire('pushChild', this, col, col.getWidth() / this.getWidth());
-        this.fire('addColumn', this, col);
-        this.fire('dirtySorting', this);
-        this.fire('dirty', this);
+        this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth());
         return true;
     };
     StackColumn.prototype.push = function (col, weight) {
@@ -1189,7 +1175,6 @@ var StackColumn = (function (_super) {
         return this.insert(col, i + 1, weight);
     };
     StackColumn.prototype.adaptWidthChange = function (col, old, new_) {
-        var _this = this;
         if (old === new_) {
             return;
         }
@@ -1200,18 +1185,12 @@ var StackColumn = (function (_super) {
             if (c === col) {
             }
             else {
-                c.on('widthChanged.stack', null);
-                c.setWidth(c.getWidth() * factor);
-                c.on('widthChanged.stack', _this.adaptChange);
+                c.setWidthImpl(c.getWidth() * factor);
             }
         });
-        this.fire('dirtyValues', this);
-        this.fire('dirtySorting', this);
-        this.fire('widthChanged', this, full, full);
-        this.fire('dirty', this);
+        this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], full, full);
     };
     StackColumn.prototype.setWeights = function (weights) {
-        var _this = this;
         var s, delta = weights.length - this.length;
         if (delta < 0) {
             s = d3.sum(weights);
@@ -1230,14 +1209,9 @@ var StackColumn = (function (_super) {
         s = d3.sum(weights) / this.getWidth();
         weights = weights.map(function (d) { return d / s; });
         this.children_.forEach(function (c, i) {
-            c.on('widthChanged.stack', null);
-            c.setWidth(weights[i]);
-            c.on('widthChanged.stack', _this.adaptChange);
+            c.setWidthImpl(weights[i]);
         });
-        this.fire('dirtyValues', this);
-        this.fire('dirtySorting', this);
-        this.fire('widthChanged', this, this.getWidth(), this.getWidth());
-        this.fire('dirty', this);
+        this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.getWidth(), this.getWidth());
     };
     StackColumn.prototype.remove = function (child) {
         var i = this.children_.indexOf(child);
@@ -1246,29 +1220,18 @@ var StackColumn = (function (_super) {
         }
         this.children_.splice(i, 1); //remove and deregister listeners
         child.parent = null;
-        child.on('dirtyFilter.stack', null);
-        child.on('dirtyValues.stack', null);
-        child.on('addColumn.stack', null);
-        child.on('removeColumn.stack', null);
-        child.on('dirtySorting.stack', null);
+        this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
         child.on('widthChanged.stack', null);
-        child.on('dirty.stack', null);
         //reduce width to keep the percentages
         _super.prototype.setWidth.call(this, this.length === 0 ? 100 : this.getWidth() - child.getWidth());
-        this.fire('removeChild', this, child);
-        this.fire('removeColumn', this, child);
-        this.fire('dirtySorting', this);
-        this.fire('dirty', this);
+        this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
         return true;
     };
     StackColumn.prototype.setWidth = function (value) {
-        var _this = this;
         var factor = value / this.getWidth();
         this.children_.forEach(function (child) {
             //disable since we change it
-            child.on('widthChanged.stack', null);
-            child.setWidth(child.getWidth() * factor);
-            child.on('widthChanged.stack', _this.adaptChange);
+            child.setWidthImpl(child.getWidth() * factor);
         });
         _super.prototype.setWidth.call(this, value);
     };
@@ -1321,20 +1284,6 @@ var RankColumn = (function (_super) {
          * @private
          */
         this.columns_ = [];
-        /**
-         * public extra data for layouts
-         * @type {{}}
-         */
-        this.extra = {};
-        this.triggerResort = function () { return _this.fire('dirtySorting', _this); };
-        this.forwards = {
-            dirtyFilter: utils.forwardEvent(this, 'dirtyFilter'),
-            dirtyValues: utils.forwardEvent(this, 'dirtyValues'),
-            widthChanged: utils.forwardEvent(this, 'widthChanged'),
-            addColumn: utils.forwardEvent(this, 'addColumn'),
-            removeColumn: utils.forwardEvent(this, 'removeColumn'),
-            dirty: utils.forwardEvent(this, 'dirty')
-        };
         this.comparator = function (a, b) {
             if (_this.sortBy_ === null) {
                 return 0;
@@ -1342,9 +1291,20 @@ var RankColumn = (function (_super) {
             var r = _this.sortBy_.compare(a, b);
             return _this.ascending ? r : -r;
         };
+        this.dirtyOrder = function () {
+            _this.fire(['dirtyOrder', 'dirtyValues', 'dirty'], _this.sortCriteria());
+        };
+        this.order = [];
+        this.setWidthImpl(50);
     }
     RankColumn.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['sortCriteriaChanged', 'pushChild', 'removeChild']);
+        return _super.prototype.createEventList.call(this).concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
+    };
+    RankColumn.prototype.setOrder = function (order) {
+        this.fire(['orderChanged', 'dirtyValues', 'dirty'], this.order, this.order = order);
+    };
+    RankColumn.prototype.getOrder = function () {
+        return this.order;
     };
     RankColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
@@ -1405,24 +1365,22 @@ var RankColumn = (function (_super) {
     };
     RankColumn.prototype.sortBy = function (col, ascending) {
         if (ascending === void 0) { ascending = false; }
-        if (col.on('dirtyFilter.ranking') !== this.forwards.dirtyFilter) {
+        if (col !== null && col.findMyRanker() !== this) {
             return false; //not one of mine
         }
         if (this.sortBy_ === col && this.ascending === ascending) {
             return true; //already in this order
         }
         if (this.sortBy_) {
-            this.sortBy_.on('dirtySorting.ranking', null);
+            this.sortBy_.on('dirtyValues.order', null);
         }
         var bak = this.sortCriteria();
         this.sortBy_ = col;
         if (this.sortBy_) {
-            this.sortBy_.on('dirtySorting.ranking', this.triggerResort);
+            this.sortBy_.on('dirtyValues.order', this.dirtyOrder);
         }
         this.ascending = ascending;
-        this.fire('sortCriteriaChanged', this, bak, this.sortCriteria());
-        this.fire('dirty', this);
-        this.triggerResort();
+        this.fire(['sortCriteriaChanged', 'dirtyOrder', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, this.sortCriteria());
         return true;
     };
     Object.defineProperty(RankColumn.prototype, "children", {
@@ -1443,20 +1401,11 @@ var RankColumn = (function (_super) {
         if (index === void 0) { index = this.columns_.length; }
         this.columns_.splice(index, 0, col);
         col.parent = this;
-        col.on('dirtyFilter.ranking', this.forwards.dirtyFilter);
-        col.on('dirtyValues.ranking', this.forwards.dirtyValues);
-        col.on('addColumn.ranking', this.forwards.addColumn);
-        col.on('removeColumn.ranking', this.forwards.removeColumn);
-        col.on('widthChanged.ranking', this.forwards.widthChanged);
-        col.on('dirty.ranking', this.forwards.dirty);
+        this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
+        this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
         if (this.sortBy_ === null) {
-            //use the first columns as sorting criteria
-            this.sortBy_ = col;
-            this.sortBy_.on('dirtySorting.ranking', this.triggerResort);
-            this.triggerResort();
+            this.sortBy(col);
         }
-        this.fire('pushChild', this, col, index);
-        this.fire('dirty', this);
         return col;
     };
     RankColumn.prototype.insertAfter = function (col, ref) {
@@ -1477,19 +1426,13 @@ var RankColumn = (function (_super) {
         if (i < 0) {
             return false;
         }
-        col.on('dirtyFilter.ranking', null);
-        col.on('dirtyValues.ranking', null);
-        col.on('widthChanged.ranking', null);
-        col.on('addColumn.ranking', null);
-        col.on('removeColumn.ranking', null);
-        col.on('dirty.ranking', null);
+        this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
         col.parent = null;
         this.columns_.splice(i, 1);
+        this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col);
         if (this.sortBy_ === col) {
             this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
         }
-        this.fire('removeChild', this, col);
-        this.fire('dirty', this);
         return true;
     };
     RankColumn.prototype.find = function (id_or_filter) {
@@ -1580,7 +1523,7 @@ exports.IColumnDesc = IColumnDesc;
 var DataProvider = (function (_super) {
     __extends(DataProvider, _super);
     function DataProvider() {
-        _super.apply(this, arguments);
+        _super.call(this);
         /**
          * all rankings
          * @type {Array}
@@ -1593,14 +1536,14 @@ var DataProvider = (function (_super) {
          * lookup map of a column type to its column implementation
          */
         this.columnTypes = model.models();
-        this.forwards = {
-            addColumn: utils.forwardEvent(this, 'addColumn'),
-            removeColumn: utils.forwardEvent(this, 'removeColumn'),
-            dirty: utils.forwardEvent(this, 'dirty')
+        var that = this;
+        this.reorder = function () {
+            var ranking = this.source;
+            that.sort(ranking).then(function (order) { return ranking.setOrder(order); });
         };
     }
     DataProvider.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty']);
+        return _super.prototype.createEventList.call(this).concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'selectionChanged']);
     };
     /**
      * adds a new ranking
@@ -1610,11 +1553,9 @@ var DataProvider = (function (_super) {
     DataProvider.prototype.pushRanking = function (existing) {
         var r = this.cloneRanking(existing);
         this.rankings_.push(r);
-        r.on('addColumn.provider', this.forwards.addColumn);
-        r.on('removeColumn.provider', this.forwards.removeColumn);
-        r.on('dirty.provider', this.forwards.dirty);
-        this.fire('addRanking', r);
-        this.fire('dirty', this);
+        this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyValues.provider');
+        r.on('dirtyOrder.provider', this.reorder);
+        this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r);
         return r;
     };
     DataProvider.prototype.removeRanking = function (ranking) {
@@ -1622,13 +1563,11 @@ var DataProvider = (function (_super) {
         if (i < 0) {
             return false;
         }
-        ranking.on('addColumn.provider', null);
-        ranking.on('removeColumn.provider', null);
-        ranking.on('dirty.provider', null);
+        this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
         this.rankings_.splice(i, 1);
-        this.fire('removeRanking', ranking);
+        ranking.on('dirtyOrder.provider', null);
         this.cleanUpRanking(ranking);
-        this.fire('dirty', this);
+        this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], ranking);
         return true;
     };
     DataProvider.prototype.getRankings = function () {
@@ -1765,6 +1704,7 @@ var DataProvider = (function (_super) {
      */
     DataProvider.prototype.select = function (row) {
         this.selection.add(this.rowKey(row, -1));
+        this.fire('selectionChanged', this.selection.values());
     };
     /**
      * also select all the given rows
@@ -1775,13 +1715,14 @@ var DataProvider = (function (_super) {
         rows.forEach(function (row) {
             _this.selection.add(_this.rowKey(row, -1));
         });
+        this.fire('selectionChanged', this.selection.values());
     };
     /**
      * set the selection to the given rows
      * @param rows
      */
     DataProvider.prototype.setSelection = function (rows) {
-        this.clearSelection();
+        this.selection = d3.set();
         this.selectAll(rows);
     };
     /**
@@ -1790,6 +1731,7 @@ var DataProvider = (function (_super) {
      */
     DataProvider.prototype.deselect = function (row) {
         this.selection.remove(this.rowKey(row, -1));
+        this.fire('selectionChanged', this.selection.values());
     };
     /**
      * returns a promise containing the selected rows
@@ -1809,6 +1751,7 @@ var DataProvider = (function (_super) {
      */
     DataProvider.prototype.clearSelection = function () {
         this.selection = d3.set();
+        this.fire('selectionChanged', this.selection.values());
     };
     return DataProvider;
 })(utils.AEventDispatcher);
@@ -2145,6 +2088,43 @@ var LinkCellRenderer = (function (_super) {
     };
     return LinkCellRenderer;
 })(DefaultCellRenderer);
+var CategoricalRenderer = (function (_super) {
+    __extends(CategoricalRenderer, _super);
+    function CategoricalRenderer() {
+        _super.apply(this, arguments);
+        this.textClass = 'cat';
+    }
+    CategoricalRenderer.prototype.render = function ($col, col, rows, context) {
+        var $rows = $col.datum(col).selectAll('g.' + this.textClass).data(rows, context.rowKey);
+        var $rows_enter = $rows.enter().append('g').attr({
+            'class': this.textClass
+        });
+        $rows_enter.append('text').attr({
+            'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+        });
+        $rows_enter.append('rect').attr({
+            y: 1
+        });
+        var $update = context.animated($rows).attr({
+            'data-index': function (d, i) { return i; },
+            transform: function (d, i) { return 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'; }
+        });
+        $update.select('text').attr({
+            x: function (d, i) { return context.rowHeight(i); }
+        }).text(function (d) { return col.getLabel(d); });
+        $update.select('rect').style({
+            fill: function (d) { return col.getColor(d); }
+        }).attr({
+            height: function (d, i) { return Math.max(context.rowHeight(i) - 2, 0); },
+            width: function (d, i) { return Math.max(context.rowHeight(i) - 2, 0); },
+        });
+        $rows.exit().remove();
+    };
+    CategoricalRenderer.prototype.findRow = function ($col, index) {
+        return $col.selectAll('g.' + this.textClass + '[data-index="' + index + '"]');
+    };
+    return CategoricalRenderer;
+})(DefaultCellRenderer);
 var StackCellRenderer = (function (_super) {
     __extends(StackCellRenderer, _super);
     function StackCellRenderer() {
@@ -2203,6 +2183,10 @@ var StackCellRenderer = (function (_super) {
     };
     return StackCellRenderer;
 })(DefaultCellRenderer);
+/**
+ * returns a map of all known renderers by type
+ * @return
+ */
 function renderers() {
     return {
         string: defaultRenderer(),
@@ -2212,7 +2196,7 @@ function renderers() {
             textClass: 'rank'
         }),
         stack: new StackCellRenderer(),
-        categorical: defaultRenderer({}),
+        categorical: new CategoricalRenderer(),
         ordinal: barRenderer({
             colorOf: function (d, i, col) { return col.getColor(d); }
         })
@@ -2322,7 +2306,7 @@ var HeaderRenderer = (function () {
         });
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('div').classed('lu-header', true);
-        data.on('dirty.header', this.update.bind(this));
+        data.on('dirtyHeader', utils.delayedCall(this.update.bind(this), 1));
         this.update();
     }
     HeaderRenderer.prototype.update = function () {
@@ -2364,8 +2348,16 @@ var HeaderRenderer = (function () {
             filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
             d3.event.stopPropagation();
         });
-        $regular.append('i').attr('class', 'fa fa-times').on('click', function (d) {
-            d.removeMe();
+        $node.append('i').attr('class', 'fa fa-times').on('click', function (d) {
+            if (d instanceof model.RankColumn) {
+                provider.removeRanking(d);
+                if (provider.getRankings().length === 0) {
+                    provider.pushRanking();
+                }
+            }
+            else {
+                d.removeMe();
+            }
             d3.event.stopPropagation();
         });
     };
@@ -2455,10 +2447,9 @@ var HeaderRenderer = (function () {
 })();
 exports.HeaderRenderer = HeaderRenderer;
 var BodyRenderer = (function () {
-    function BodyRenderer(data, parent, argsortGetter, options) {
+    function BodyRenderer(data, parent, options) {
         if (options === void 0) { options = {}; }
         this.data = data;
-        this.argsortGetter = argsortGetter;
         this.options = {
             rowHeight: 20,
             rowSep: 1,
@@ -2472,8 +2463,9 @@ var BodyRenderer = (function () {
         //merge options
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('svg').classed('lu-body', true);
-        data.on('dirty.body', this.update.bind(this));
+        data.on('dirtyValues.body', utils.delayedCall(this.update.bind(this), 1));
         //data.on('removeColumn.body', this.update.bind(this));
+        this.update();
     }
     BodyRenderer.prototype.createContext = function (rankings) {
         var options = this.options;
@@ -2535,10 +2527,10 @@ var BodyRenderer = (function () {
         });
         this.updateClipPathsImpl(shifts.map(function (s) { return s.col; }), context);
     };
-    BodyRenderer.prototype.renderRankings = function ($body, r, shifts, context, argSortPromises) {
+    BodyRenderer.prototype.renderRankings = function ($body, rankings, shifts, context) {
         var _this = this;
-        var dataPromises = argSortPromises.map(function (r) { return r.then(function (argsort) { return _this.data.view(argsort); }); });
-        var $rankings = $body.selectAll('g.ranking').data(r, function (d) { return d.id; });
+        var dataPromises = rankings.map(function (r) { return _this.data.view(r.getOrder()); });
+        var $rankings = $body.selectAll('g.ranking').data(rankings, function (d) { return d.id; });
         var $rankings_enter = $rankings.enter().append('g').attr({
             'class': 'ranking'
         });
@@ -2612,34 +2604,28 @@ var BodyRenderer = (function () {
                 }
             });
         };
-        Promise.all(argSortPromises).then(function (sorts) {
-            var _this = this;
-            var $rows = $rankings.select('g.rows').selectAll('g.row').data(function (d, i) { return sorts[i].map(function (d, i) { return ({
-                d: d,
-                i: i
-            }); }); });
-            var $rows_enter = $rows.enter().append('g').attr({
-                'class': 'row'
-            });
-            $rows_enter.append('rect').attr({
-                'class': 'bg'
-            });
-            $rows_enter.append('g').attr({ 'class': 'values' });
-            $rows_enter.on('mouseenter', function (data_index) {
-                _this.mouseOver(data_index.d, true);
-            }).on('mouseleave', function (data_index) {
-                _this.mouseOver(data_index.d, false);
-            });
-            $rows.attr({
-                'data-index': function (d) { return d.d; }
-            });
-            context.animated($rows).select('rect').attr({
-                y: function (data_index) { return context.cellY(data_index.i); },
-                height: function (data_index) { return context.rowHeight(data_index.i); },
-                width: function (d, i, j) { return shifts[j].width; }
-            });
-            $rows.exit().remove();
+        var $rows = $rankings.select('g.rows').selectAll('g.row').data(function (d, i) { return d.getOrder().map(function (d, i) { return ({ d: d, i: i }); }); });
+        var $rows_enter = $rows.enter().append('g').attr({
+            'class': 'row'
         });
+        $rows_enter.append('rect').attr({
+            'class': 'bg'
+        });
+        $rows_enter.append('g').attr({ 'class': 'values' });
+        $rows_enter.on('mouseenter', function (data_index) {
+            _this.mouseOver(data_index.d, true);
+        }).on('mouseleave', function (data_index) {
+            _this.mouseOver(data_index.d, false);
+        });
+        $rows.attr({
+            'data-index': function (d) { return d.d; }
+        });
+        context.animated($rows).select('rect').attr({
+            y: function (data_index) { return context.cellY(data_index.i); },
+            height: function (data_index) { return context.rowHeight(data_index.i); },
+            width: function (d, i, j) { return shifts[j].width; }
+        });
+        $rows.exit().remove();
         $rankings.exit().remove();
     };
     BodyRenderer.prototype.mouseOver = function (dataIndex, hover) {
@@ -2648,7 +2634,7 @@ var BodyRenderer = (function () {
         //update the slope graph
         this.$node.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
     };
-    BodyRenderer.prototype.renderSlopeGraphs = function ($body, rankings, shifts, context, argSortPromises) {
+    BodyRenderer.prototype.renderSlopeGraphs = function ($body, rankings, shifts, context) {
         var _this = this;
         var slopes = rankings.slice(1).map(function (d, i) { return ({ left: rankings[i], left_i: i, right: d, right_i: i + 1 }); });
         var $slopes = $body.selectAll('g.slopegraph').data(slopes);
@@ -2658,35 +2644,37 @@ var BodyRenderer = (function () {
         context.animated($slopes).attr({
             transform: function (d, i) { return 'translate(' + (shifts[i + 1].shift - _this.options.slopeWidth) + ',0)'; }
         });
-        Promise.all(argSortPromises).then(function (argsortSorts) {
-            var $lines = $slopes.selectAll('line.slope').data(function (d, i) {
-                var cache = {};
-                argsortSorts[d.right_i].forEach(function (data_index, pos) {
-                    cache[data_index] = pos;
-                });
-                return argsortSorts[d.left_i].map(function (data_index, pos) { return ({
-                    data_index: data_index,
-                    lpos: pos,
-                    rpos: cache[data_index]
-                }); });
+        var $lines = $slopes.selectAll('line.slope').data(function (d, i) {
+            var cache = {};
+            d.right.getOrder().forEach(function (data_index, pos) {
+                cache[data_index] = pos;
             });
-            $lines.enter().append('line').attr({
-                'class': 'slope',
-                x2: _this.options.slopeWidth
-            }).on('mouseenter', function (d) {
-                _this.mouseOver(d.data_index, true);
-            }).on('mouseleave', function (d) {
-                _this.mouseOver(d.data_index, false);
-            });
-            $lines.attr({
-                'data-index': function (d) { return d.data_index; }
-            });
-            context.animated($lines).attr({
-                y1: function (d) { return context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos); },
-                y2: function (d) { return context.rowHeight(d.rpos) * 0.5 + context.cellY(d.rpos); }
-            });
-            $lines.exit().remove();
+            return d.left.getOrder().map(function (data_index, pos) { return ({
+                data_index: data_index,
+                lpos: pos,
+                rpos: cache[data_index]
+            }); }).filter(function (d) { return d.rpos != null; });
         });
+        $lines.enter().append('line').attr({
+            'class': 'slope',
+            x2: this.options.slopeWidth
+        }).on('mouseenter', function (d) {
+            _this.mouseOver(d.data_index, true);
+        }).on('mouseleave', function (d) {
+            _this.mouseOver(d.data_index, false);
+        });
+        $lines.attr({
+            'data-index': function (d) { return d.data_index; }
+        });
+        context.animated($lines).attr({
+            y1: function (d) {
+                return context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos);
+            },
+            y2: function (d) {
+                return context.rowHeight(d.rpos) * 0.5 + context.cellY(d.rpos);
+            }
+        });
+        $lines.exit().remove();
         $slopes.exit().remove();
     };
     /**
@@ -2723,15 +2711,14 @@ var BodyRenderer = (function () {
         if ($body.empty()) {
             $body = this.$node.append('g').classed('body', true);
         }
-        var argsortPromises = r.map(function (ranking) { return _this.argsortGetter(ranking); });
-        this.renderRankings($body, r, shifts, context, argsortPromises);
-        this.renderSlopeGraphs($body, r, shifts, context, argsortPromises);
+        this.renderRankings($body, r, shifts, context);
+        this.renderSlopeGraphs($body, r, shifts, context);
     };
     return BodyRenderer;
 })();
 exports.BodyRenderer = BodyRenderer;
 var LineUpRenderer = (function () {
-    function LineUpRenderer(root, data, columns, argsortGetter, options) {
+    function LineUpRenderer(root, data, columns, options) {
         if (options === void 0) { options = {}; }
         this.body = null;
         this.header = null;
@@ -2742,7 +2729,7 @@ var LineUpRenderer = (function () {
         utils.merge(this.options, options);
         root = d3.select(root).append('div').classed('lu', true).node();
         this.header = new HeaderRenderer(data, root, options);
-        this.body = new BodyRenderer(data, root, argsortGetter, options);
+        this.body = new BodyRenderer(data, root, options);
         if (this.options.pool) {
             this.pool = new PoolRenderer(data, columns, root, options);
         }
@@ -3031,6 +3018,10 @@ function openCategoricalMappingEditor(column, $header) {
         $popup.remove();
     });
 }
+/**
+ * returns all known filter dialogs mappings
+ * @return
+ */
 function filterDialogs() {
     return {
         string: openStringFilter,
@@ -3060,9 +3051,9 @@ var d3 = require('d3');
  * @param timeToDelay
  * @return {function(...[any]): undefined}
  */
-function delayedCall(callback, thisCallback, timeToDelay) {
-    if (thisCallback === void 0) { thisCallback = this; }
+function delayedCall(callback, timeToDelay, thisCallback) {
     if (timeToDelay === void 0) { timeToDelay = 100; }
+    if (thisCallback === void 0) { thisCallback = this; }
     var tm = -1;
     return function () {
         var args = [];
@@ -3078,13 +3069,19 @@ function delayedCall(callback, thisCallback, timeToDelay) {
     };
 }
 exports.delayedCall = delayedCall;
+/**
+ * utility for AEventDispatcher to forward an event
+ * @param to
+ * @param event
+ * @return {function(...[any]): undefined}
+ */
 function forwardEvent(to, event) {
     return function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        args.unshift(event);
+        args.unshift(event || this.type);
         to.fire.apply(to, args);
     };
 }
@@ -3094,11 +3091,18 @@ exports.forwardEvent = forwardEvent;
  */
 var AEventDispatcher = (function () {
     function AEventDispatcher() {
+        this.forwarder = forwardEvent(this);
         this.listeners = d3.dispatch.apply(d3, this.createEventList());
     }
     AEventDispatcher.prototype.on = function (type, listener) {
+        var _this = this;
         if (arguments.length > 1) {
-            this.listeners.on(type, listener);
+            if (Array.isArray(type)) {
+                type.forEach(function (d) { return _this.listeners.on(d, listener); });
+            }
+            else {
+                this.listeners.on(type, listener);
+            }
             return this;
         }
         return this.listeners.on(type);
@@ -3111,11 +3115,39 @@ var AEventDispatcher = (function () {
         return [];
     };
     AEventDispatcher.prototype.fire = function (type) {
+        var _this = this;
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        this.listeners[type].apply(this.listeners, args);
+        var fireImpl = function (t) {
+            var context = {
+                source: _this,
+                type: t,
+                args: args
+            };
+            _this.listeners[t].apply(context, args);
+        };
+        if (Array.isArray(type)) {
+            type.forEach(fireImpl.bind(this));
+        }
+        else {
+            fireImpl(type);
+        }
+    };
+    AEventDispatcher.prototype.forward = function (from) {
+        var types = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            types[_i - 1] = arguments[_i];
+        }
+        from.on(types, this.forwarder);
+    };
+    AEventDispatcher.prototype.unforward = function (from) {
+        var types = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            types[_i - 1] = arguments[_i];
+        }
+        from.on(types, null);
     };
     return AEventDispatcher;
 })();
@@ -3158,6 +3190,11 @@ function merge() {
     return result;
 }
 exports.merge = merge;
+/**
+ * computes the absolute offset of the given element
+ * @param element
+ * @return {{left: number, top: number, width: number, height: number}}
+ */
 function offset(element) {
     var obj = element.getBoundingClientRect();
     return {
@@ -3168,6 +3205,9 @@ function offset(element) {
     };
 }
 exports.offset = offset;
+/**
+ * content scroller utility
+ */
 var ContentScroller = (function (_super) {
     __extends(ContentScroller, _super);
     function ContentScroller(container, content, options) {
@@ -3235,6 +3275,9 @@ var ContentScroller = (function (_super) {
     return ContentScroller;
 })(AEventDispatcher);
 exports.ContentScroller = ContentScroller;
+/**
+ * checks whether the given DragEvent has one of the given types
+ **/
 function hasDnDType(e, typesToCheck) {
     var types = e.dataTransfer.types;
     if (typeof types.indexOf === 'function') {
@@ -3249,6 +3292,9 @@ function hasDnDType(e, typesToCheck) {
     return false;
 }
 exports.hasDnDType = hasDnDType;
+/**
+ * should it be a copy dnd operation?
+ */
 function copyDnD(e) {
     var dT = e.dataTransfer;
     return (e.ctrlKey && dT.effectAllowed.match(/copy/gi)) || (!dT.effectAllowed.match(/move/gi));
@@ -3264,6 +3310,11 @@ function updateDropEffect(e) {
     }
 }
 exports.updateDropEffect = updateDropEffect;
+/**
+ * returns a d3 callable function to make an element dropable
+ * @param mimeTypes the mime types to be dropable
+ * @param onDrop: handler when an element is dropped
+ */
 function dropAble(mimeTypes, onDrop) {
     return function ($node) {
         $node.on('dragenter', function () {

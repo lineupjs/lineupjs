@@ -150,6 +150,12 @@ $lu_toolbar_font_size: 9pt;
     color: white;
     text-align: center;
     height: 100%;
+
+    &:hover {
+      &> div.toolbar {
+        display: block;
+      }
+    }
   }
 
   div.header_i {
@@ -167,11 +173,6 @@ $lu_toolbar_font_size: 9pt;
 
   div.lu-header {
     div.header {
-      &:hover {
-        &> div.toolbar, &> div.toolbar {
-          display: block;
-        }
-      }
 
       i.sort_indicator {
         position: absolute;
