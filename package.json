@@ -1,28 +1,7 @@
 {
-  "engines": {
-    "node": ">= 0.10.0"
-  },
-  "devDependencies": {
-    "grunt": "~0.4.2",
-    "grunt-contrib-jshint": "~0.7.2",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-contrib-nodeunit": "~0.2.2",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-uglify": "~0.2.7",
-    "grunt-jsdoc": "^0.5.4",
-    "grunt-contrib-clean": "^0.5.0"
-  },
   "name": "LineUpJS",
   "description": "LineUp.js: Visual Analysis of Multi-Attribute Rankings ====== LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. This is a D3-based re-implementation with limited functionality relative to the original stand-alone LineUp, which you can check out at http://lineup.caleydo.org",
   "version": "0.1.0",
-  "main": "src/lineup.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Caleydo/lineup.js.git"
-  },
   "author": "Hendrik Strobelt",
   "license": "BSD",
   "bugs": {
@@ -31,7 +10,48 @@
   "homepage": "https://github.com/Caleydo/lineup.js",
   "dependencies": {
     "grunt-ts": "^4.2.0"
+  },
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "main": "dist/LineUp.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Caleydo/lineup.js.git"
+  },
+  "devDependencies": {
+    "browserify-shim": "^3.8.10",
+    "browserify-typescript": "0.0.1",
+    "grunt": "~0.4.2",
+    "grunt-browserify": "^4.0.0",
+    "grunt-contrib-clean": "^0.5.0",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-jshint": "~0.7.2",
+    "grunt-contrib-nodeunit": "~0.2.2",
+    "grunt-contrib-uglify": "~0.2.7",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-jsdoc": "^0.5.4",
+    "grunt-sass": "^1.0.0",
+    "grunt-ts": "^4.2.0",
+    "grunt-tsd": "^0.1.0",
+    "grunt-tslint": "^2.4.0",
+    "load-grunt-tasks": "^3.2.0",
+    "time-grunt": "^1.2.1",
+    "tslint": "^2.4.3"
+  },
+  "browserify": {
+    "transform": [
+      "browserify-shim",
+      "browserify-typescript"
+    ]
+  },
+  "browser": {
+    "d3": "./bower_components/d3/d3.js"
+  },
+  "browserify-shim": {
+    "d3": "d3"
   }
-
-
 }

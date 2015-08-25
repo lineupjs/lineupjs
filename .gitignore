@@ -1,8 +1,5 @@
-/development-bundle/
-/jquery-ui.html
-/lineup2.js
-out
 doc
 node_modules
-exportToHTML
 /.idea
+/bower_components
+/tsd.gen.d.ts
