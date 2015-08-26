@@ -7,11 +7,10 @@
     /*border: 2px solid darkgrey;*/
     border-radius: 5px;
 
-    font-family: 'Lato', Helvetica, Arial;
     font-weight: normal;
     font-size: 11pt;
     white-space: nowrap;
-    padding: 5;
+    padding: 5px;
     width: 100%;
 }
 

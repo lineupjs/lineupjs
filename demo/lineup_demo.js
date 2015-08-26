@@ -2,28 +2,17 @@
  * Created by Samuel Gratzl on 04.09.2014.
  */
 
-(function (LineUp) {
+(function (LineUpJS) {
   var menuActions = [
     {name: " new combined", icon: "fa-plus", action: function () {
-      lineup.addNewStackedColumnDialog();
+      //lineup.addNewStackedColumnDialog();
     }},
     {name: " add single columns", icon: "fa-plus", action: function () {
-      lineup.addNewSingleColumnDialog();
+      //lineup.addNewSingleColumnDialog();
     }},
     {name: " save layout", icon: "fa-floppy-o", action: saveLayout}
   ];
   var lineUpDemoConfig = {
-    svgLayout: {
-      mode: 'separate',
-      plusSigns: {
-        addStackedColumn: {
-          title: "add stacked column",
-          action: "addNewEmptyStackedColumn",
-          x: 0, y: 2,
-          w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
-        }
-      }
-    },
     renderingOptions: {
       stacked: true
     }
@@ -34,7 +23,7 @@
 
   $(window).resize(function() {
     if (lineup) {
-      lineup.updateBody()
+      lineup.update()
     }
   });
   function updateMenu() {
@@ -69,18 +58,13 @@
   }
 
   function loadDataImpl(name, desc, _data) {
-    var spec = {};
-    spec.name = name;
-    spec.dataspec = desc;
-    delete spec.dataspec.file;
-    delete spec.dataspec.separator;
-    spec.dataspec.data = _data;
-    spec.storage = LineUp.createLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
+    var provider = LineUpJS.createLocalStorage(_data, desc.columns);
 
     if (lineup) {
-      lineup.changeDataStorage(spec);
+      lineup.changeDataStorage(provider, desc);
     } else {
-      lineup = LineUp.create(spec, d3.select('#lugui-wrapper'), lineUpDemoConfig);
+      lineup = LineUpJS.create(d3.select('#lugui-wrapper'), provider, lineUpDemoConfig);
+      lineup.restore(desc);
     }
     updateMenu();
   }
@@ -92,10 +76,6 @@
       } else if (desc.file) {
         d3.dsv(desc.separator || '\t', 'text/plain')(baseUrl + "/" + desc.file, function (_data) {
           loadDataImpl(name, desc, _data);
-
-          if (desc.sortBy) {
-            lineup.sortBy(desc.sortBy);
-          }
         });
       }
     }
@@ -127,7 +107,7 @@
       evt.preventDefault();
       evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
     }
-    var $file = d3.select('input[type="file"]');
+    var $file = d3.select('#lugui-menu input[type="file"]');
     $file.node().addEventListener('change', handleFileSelect, false);
     var $drop = d3.select('#drop_zone');
     var drop = $drop.node();
@@ -144,15 +124,10 @@
 
   function saveLayout() {
     //full spec
-    var s = $.extend({}, {}, lineup.spec.dataspec);
-    //create current layout
-    var descs = lineup.storage.getColumnLayout()
-      .map(function (d) {
-        return d.description();
-      });
-    s.layout = _.groupBy(descs, function (d) {
-      return d.columnBundle;
-    });
+    var s = lineup.dump();
+    s.columns = lineup.data.columns;
+    s.data = lineup.data.data;
+
     //stringify with pretty print
     var str = JSON.stringify(s, null, '\t');
     //create blob and save it
@@ -162,16 +137,9 @@
 
   function loadLayout() {
     function loadDataImpl(name, desc, _data) {
-      var spec = {};
-      spec.name = name;
-      spec.dataspec = desc;
-      delete spec.dataspec.file;
-      delete spec.dataspec.separator;
-      spec.dataspec.data = _data;
-      spec.storage = LineUp.createLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
-      lineup.changeDataStorage(spec);
+      var provider = LineUpJS.createLocalStorage(_data, desc.columns);
+      lineup.changeDataStorage(provider, desc);
       updateMenu();
-      lineup.startVis();
     }
 
     function loadDataFile(name, desc, datafile) {
@@ -196,6 +164,7 @@
     function deriveDesc(columns, data, separator) {
       var cols = columns.map(function(col) {
         var r = {
+          label: col,
           column: col,
           type: 'string'
         };
@@ -334,4 +303,4 @@
         loadLayout();
       });
   })
-}(LineUp));
+}(LineUpJS));

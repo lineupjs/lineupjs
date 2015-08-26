@@ -58,9 +58,7 @@ window.onload = function () {
   r2.push(p.create(desc[6]));
   r2.push(p.create(desc[7]));
 
-  var body = new LineUpJS.ui.LineUpRenderer(root.node(), p, desc, function (rank) {
-    return rank.extra.argsort;
-  }, {
+  var body = new LineUpJS.create(root.node(), p, {
     additionalDesc : [
       LineUpJS.model.StackColumn.desc('+ Stack')
     ]

@@ -34,15 +34,23 @@ export class PoolRenderer {
   private $node:d3.Selection<any>;
   private entries : PoolEntry[];
 
-  constructor(private data: provider.DataProvider, columns:provider.IColumnDesc[], parent:Element, options:any = {}) {
+  constructor(private data: provider.DataProvider, parent:Element, options:any = {}) {
     utils.merge(this.options, options);
-    this.entries = columns.concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
+    this.entries = data.getColumns().concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
 
     this.$node = d3.select(parent).append('div').classed('lu-pool',true);
 
+    this.changeDataStorage(data);
+  }
+
+  changeDataStorage(data: provider.DataProvider) {
+    if (this.data) {
+      this.data.on(['addColumn.pool','removeColumn.pool','addRanking.pool','removeRanking.pool'], null);
+    }
+    this.data = data;
     if (this.options.hideUsed) {
       var that = this;
-      data.on(['addColumn','removeColumn'], function(col) {
+      data.on(['addColumn.pool','removeColumn.pool'], function(col) {
         var desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
         that.entries.some((entry) => {
           if (entry.desc !== desc) {
@@ -53,7 +61,7 @@ export class PoolRenderer {
         });
         that.update();
       });
-      data.on(['addRanking','removeRanking'], function(ranking) {
+      data.on(['addRanking.pool','removeRanking.pool'], function(ranking) {
         var descs = ranking.flatColumns.map((d) => d.desc), change = this.type === 'addRanking' ? 1 : -1;
         that.entries.some((entry) => {
           if (descs.indexOf(entry.desc) < 0) {
@@ -74,7 +82,6 @@ export class PoolRenderer {
         });
       });
     }
-    this.update();
   }
 
   update() {
@@ -153,8 +160,15 @@ export class HeaderRenderer {
 
     this.$node = d3.select(parent).append('div').classed('lu-header',true);
 
-    data.on('dirtyHeader', utils.delayedCall(this.update.bind(this),1));
-    this.update();
+    this.changeDataStorage(data);
+  }
+
+  changeDataStorage(data: provider.DataProvider) {
+    if (this.data) {
+      this.data.on('dirtyHeader.headerRenderer', null);
+    }
+    this.data = data;
+    data.on('dirtyHeader.headerRenderer', utils.delayedCall(this.update.bind(this),1));
   }
 
   update() {
@@ -330,9 +344,15 @@ export class BodyRenderer {
 
     this.$node = d3.select(parent).append('svg').classed('lu-body',true);
 
-    data.on('dirtyValues.body', utils.delayedCall(this.update.bind(this),1));
-    //data.on('removeColumn.body', this.update.bind(this));
-    this.update();
+    this.changeDataStorage(data);
+  }
+
+  changeDataStorage(data: provider.DataProvider) {
+    if (this.data) {
+      this.data.on('dirtyValues.bodyRenderer', null);
+    }
+    this.data = data;
+    data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this),1));
   }
 
   createContext(rankings:model.RankColumn[]):renderer.IRenderContext {
@@ -606,9 +626,7 @@ export class BodyRenderer {
 }
 
 export class LineUpRenderer {
-  private body : BodyRenderer = null;
-  private header : HeaderRenderer = null;
-  private pool: PoolRenderer = null;
+
 
   private options = {
     pool: true
@@ -617,18 +635,6 @@ export class LineUpRenderer {
   constructor(root: Element, data: provider.DataProvider, columns: provider.IColumnDesc[], options : any = {}) {
     utils.merge(this.options, options);
     root = <Element>d3.select(root).append('div').classed('lu', true).node();
-    this.header = new HeaderRenderer(data,  root, options);
-    this.body = new BodyRenderer(data, root, options);
-    if(this.options.pool) {
-      this.pool = new PoolRenderer(data, columns, root, options);
-    }
-  }
 
-  update() {
-    this.header.update();
-    this.body.update();
-    if (this.pool) {
-      this.pool.update();
-    }
   }
 }

@@ -66,6 +66,10 @@ export class DataProvider extends utils.AEventDispatcher {
     return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'selectionChanged']);
   }
 
+  getColumns(): IColumnDesc[] {
+    return [];
+  }
+
   /**
    * adds a new ranking
    * @param existing an optional existing ranking to clone
@@ -166,6 +170,7 @@ export class DataProvider extends utils.AEventDispatcher {
   dump() : any {
     return {
       uid: this.uid,
+      selection: this.selection.values().map(Number),
       rankings: this.rankings_.map((r) => r.dump(this.toDescRef))
     };
   }
@@ -179,15 +184,69 @@ export class DataProvider extends utils.AEventDispatcher {
   }
 
   restore(dump: any) {
-    var create = (d: any) => {
+    var create = (d:any) => {
       var desc = this.fromDescRef(d.desc);
       var type = this.columnTypes[desc.type];
-      var c  = new type(d.id, desc);
+      var c = new type(d.id, desc);
       c.restore(d, create);
       return c;
     };
-    this.uid = dump.uid;
-    this.rankings_ = dump.rankings.map(create);
+    this.uid = dump.uid || 0;
+    this.rankings_ = dump.rankings ? dump.rankings.map(create) : [];
+    if (dump.selection) {
+      dump.selection.forEach((s) => this.selection.add(String(s)));
+    }
+
+
+    if (dump.layout) { //we have the old format try to create it
+      this.rankings_ = Object.keys(dump.layout).map((key) => {
+        return this.deriveRanking(dump.layout[key]);
+      });
+    }
+  }
+
+  findDesc(ref: string) {
+    return null;
+  }
+
+  /**
+   * derives a ranking from an old layout bundle format
+   * @param bundle
+   */
+  private deriveRanking(bundle: any[]) {
+    var toCol = (column) => {
+      if (column.type === 'rank') {
+        return null; //can't handle
+      }
+      if (column.type == 'stacked') {
+        //create a stacked one
+        var r = this.create(model.StackColumn.desc(column.label || 'Combined'));
+        (column.children || []).forEach((col) => {
+          var c = toCol(col);
+          if (c) {
+            r.push(c);
+          }
+        });
+        return r;
+      } else {
+        var desc = this.findDesc(column.column);
+        if (desc) {
+          var r = this.create(desc);
+          column.label = column.label || desc.label || desc.column;
+          r.restore(column);
+          return r;
+        }
+      }
+      return null;
+    };
+    var r = this.cloneRanking();
+    bundle.forEach((column) => {
+      var col = toCol(column);
+      if (col) {
+        r.push(col);
+      }
+    });
+    return r;
   }
 
   /**
@@ -234,7 +293,7 @@ export class DataProvider extends utils.AEventDispatcher {
 
   /**
    * is the given row selected
-   * @param row
+   * @param index
    * @return {boolean}
    */
   isSelected(index: number) {
@@ -243,7 +302,7 @@ export class DataProvider extends utils.AEventDispatcher {
 
   /**
    * also select the given row
-   * @param row
+   * @param index
    */
   select(index: number) {
     this.selection.add(String(index));
@@ -256,7 +315,7 @@ export class DataProvider extends utils.AEventDispatcher {
 
   /**
    * also select all the given rows
-   * @param rows
+   * @param indices
    */
   selectAll(indices: number[]) {
     indices.forEach((index) => {
@@ -267,7 +326,7 @@ export class DataProvider extends utils.AEventDispatcher {
 
   /**
    * set the selection to the given rows
-   * @param rows
+   * @param indices
    */
   setSelection(indices: number[]) {
     this.selection = d3.set();
@@ -276,7 +335,7 @@ export class DataProvider extends utils.AEventDispatcher {
 
   /**
    * deselect the given row
-   * @param row
+   * @param index
    */
   deselect(index: number) {
     this.selection.remove(String(index));
@@ -315,11 +374,18 @@ export class CommonDataProvider extends DataProvider {
   //generic accessor of the data item
   private rowGetter = (row:any, id:string, desc:any) => row[desc.column];
 
-  constructor(public columns:IColumnDesc[] = []) {
+  constructor(private columns:IColumnDesc[] = []) {
     super();
 
     //generate the accessor
     columns.forEach((d:any) => d.accessor = this.rowGetter);
+  }
+
+  getColumns(): IColumnDesc[] {
+    return this.columns.slice();
+  }
+  findDesc(ref: string) {
+    return this.columns.filter((c) => (<any>c).column === ref)[0];
   }
 
   toDescRef(desc: any) : any {
@@ -347,7 +413,7 @@ export class CommonDataProvider extends DataProvider {
  */
 export class LocalDataProvider extends CommonDataProvider {
 
-  constructor(private data:any[], columns:IColumnDesc[] = []) {
+  constructor(public data:any[], columns:IColumnDesc[] = []) {
     super(columns);
     //enhance with a magic attribute storing ranking information
     data.forEach((d, i) => {

@@ -133,15 +133,20 @@ export class Column extends utils.AEventDispatcher {
   }
 
   dump(toDescRef: (desc: any) => any) : any {
-    return {
+    var r: any = {
       id: this.id,
       desc: toDescRef(this.desc),
-      width: this.width_
+      width: this.width_,
     };
+    if (this.label !== (this.desc.label || this.id)) {
+      r.label = this.label;
+    }
+    return r;
   }
 
   restore(dump: any, factory : (dump: any) => Column) {
-    this.width_ = dump.width;
+    this.width_ = dump.width || this.width_;
+    this.label = dump.label || this.label;
   }
 
   /**
@@ -252,11 +257,21 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 
   restore(dump: any, factory : (dump: any) => Column) {
     super.restore(dump, factory);
-    this.scale.domain(dump.domain);
-    this.scale.range(dump.range);
-    this.mapping.domain(dump.mapping.scale).range(dump.mapping.range);
-    this.filter_ = dump.filter;
-    this.missingValue = dump.missingValue;
+    if (dump.domain) {
+      this.scale.domain(dump.domain);
+    }
+    if (dump.range) {
+      this.scale.range(dump.range);
+    }
+    if (dump.mapping) {
+      this.mapping.domain(dump.mapping.scale).range(dump.mapping.range);
+    }
+    if (dump.filter) {
+      this.filter_ = dump.filter;
+    }
+    if (dump.missingValue) {
+      this.missingValue = dump.missingValue;
+    }
   }
 
   createEventList() {
@@ -502,7 +517,9 @@ export class CategoricalColumn extends ValueColumn<string> {
   restore(dump: any, factory : (dump: any) => Column) {
     super.restore(dump, factory);
     this.filter_ = dump.filter || null;
-    this.colors.domain(dump.colors.domain).range(dump.colors.range);
+    if (dump.colors) {
+      this.colors.domain(dump.colors.domain).range(dump.colors.range);
+    }
   }
 
   isFiltered() {
@@ -606,7 +623,9 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
 
   restore(dump: any, factory : (dump: any) => Column) {
     CategoricalColumn.prototype.restore.call(this, dump, factory);
-    this.scale.domain(dump.scale.domain).range(dump.scale.range);
+    if (dump.scale) {
+      this.scale.domain(dump.scale.domain).range(dump.scale.range);
+    }
   }
 
   getScale() {
@@ -647,7 +666,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
  * implementation of the stacked colum
  */
 export class StackColumn extends Column implements IColumnParent, INumberColumn {
-  static desc(label: string) {
+  static desc(label: string = 'Combined') {
     return { type: 'stack', label : label };
   }
 
@@ -722,7 +741,9 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
   }
 
   restore(dump: any, factory : (dump: any) => Column) {
-    this.missingValue = dump.missingValue;
+    if (dump.missingValue) {
+      this.missingValue = dump.missingValue;
+    }
     dump.children.map((child) => {
       this.push(factory(child));
     });
@@ -956,9 +977,11 @@ export class RankColumn extends ValueColumn<number> {
     dump.columns.map((child) => {
       this.push(factory(child.col));
     });
-    this.ascending = dump.sortCriteria.asc;
-    if (dump.sortCriteria.sortBy) {
-      this.sortBy(this.columns_.filter((d) => d.id === dump.sortCriteria.sortBy)[0], dump.sortCriteria.asc);
+    if (dump.sortCriteria) {
+      this.ascending = dump.sortCriteria.asc;
+      if (dump.sortCriteria.sortBy) {
+        this.sortBy(this.columns_.filter((d) => d.id === dump.sortCriteria.sortBy)[0], dump.sortCriteria.asc);
+      }
     }
   }
 

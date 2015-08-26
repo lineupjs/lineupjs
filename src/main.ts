@@ -18,33 +18,25 @@ export var ui = ui_;
 export var utils = utils_;
 export var ui_dialogs = ui_dialogs_;
 
+
 export class LineUp extends utils_.AEventDispatcher {
   /**
    * default config of LineUp with all available options
    *
    */
-  private config = {
-    grayColor: '#999999',
+  config = {
     numberformat: d3.format('.3n'),
     htmlLayout: {
       headerHeight: 50,
       headerOffset: 1,
       buttonTopPadding: 10,
       labelLeftPadding: 5,
-      buttonRightPadding: 15,
-      buttonWidth: 13
     },
     renderingOptions: {
       stacked: false,
-      values: false,
-      animation: true,
-      histograms: false
+      animation: true
     },
     svgLayout: {
-      /**
-       * mode of this lineup instance, either combined = a single svg with header and body combined or separate ... separate header and body
-       */
-      mode: 'combined', //modes: combined vs separate
       rowHeight: 17,
       rowPadding : 0.2, //padding for scale.rangeBands
       rowBarPadding: 1,
@@ -53,7 +45,6 @@ export class LineUp extends utils_.AEventDispatcher {
        */
       backupScrollRows: 4,
       animationDuration: 1000,
-      addPlusSigns:false,
       plusSigns: {
         addStackedColumn: {
           title: 'add stacked column',
@@ -79,106 +70,40 @@ export class LineUp extends utils_.AEventDispatcher {
       multiselect: () => { return false; },
       rangeselect: () => { return false; }
     },
-    filter: {
-      skip: 0,
-      limit: Number.POSITIVE_INFINITY,
-      filter: undefined
-    }
+    pool: false
   };
 
   private $container : d3.Selection<any>;
-  private $header : d3.Selection<any>;
-  private $table: d3.Selection<any>;
-  private $body: d3.Selection<any>;
-  private $bodySVG: d3.Selection<any>;
-  private $headerSVG: d3.Selection<any>;
 
-  private scroller: utils_.ContentScroller;
+  private body : ui_.BodyRenderer = null;
+  private header : ui_.HeaderRenderer = null;
+  private pool: ui_.PoolRenderer = null;
 
   constructor(container : d3.Selection<any> | Element, public data: provider_.DataProvider, config: any = {}) {
     super();
     this.$container = container instanceof d3.selection ? <d3.Selection<any>>container : d3.select(<Element>container);
-    //TODO merge the incoming config this.config
-
+    this.$container = this.$container.append('div').classed('lu', true);
     utils.merge(this.config, config);
 
-    //create basic structure
-    if (this.config.svgLayout.mode === 'combined') {
-      //within a single svg with 'fixed' header
-      this.$container.classed('lu-mode-combined', true);
-      this.$table = this.$container.append('svg').attr('class', 'lu');
-      var $defs = this.$table.append('defs');
-      $defs.append('defs').attr('class', 'columnheader');
-      $defs.append('defs').attr('class', 'column');
-      $defs.append('defs').attr('class', 'overlay');
-      this.$body = this.$table.append('g').attr('class','body').attr('transform', 'translate(0,' + this.config.htmlLayout.headerHeight + ')');
-      this.$header = this.$table.append('g').attr('class', 'header');
-      this.$bodySVG = this.$headerSVG = this.$table;
-
-      this.scroller = new utils.ContentScroller(<Element>this.$container.node(), <Element>this.$table.node(), {
-        topShift: this.config.htmlLayout.headerHeight,
-        backupRows: this.config.svgLayout.backupScrollRows,
-        rowHeight : this.config.svgLayout.rowHeight
-      });
-    } else {
-      //within two svgs with a dedicated header
-      this.$container.classed('lu-mode-separate', true);
-      this.$table = this.$container;
-      this.$headerSVG = this.$table.append('svg').attr('class', 'lu lu-header');
-      this.$headerSVG.attr('height',this.config.htmlLayout.headerHeight);
-      this.$headerSVG.append('defs').attr('class', 'columnheader');
-      this.$header = this.$headerSVG.append('g');
-      this.$bodySVG = this.$table.append('div').attr('class','lu-wrapper').append('svg').attr('class','lu lu-body');
-      var $defs = this.$bodySVG.append('defs');
-      $defs.append('defs').attr('class', 'column');
-      $defs.append('defs').attr('class', 'overlay');
-      this.$body = this.$bodySVG;
-      this.scroller = new utils.ContentScroller(<Element>this.$container.select('div.lu-wrapper').node(), <Element>this.$table.node(), {
-        topShift: 0,
-        backupRows: this.config.svgLayout.backupScrollRows,
-        rowHeight : this.config.svgLayout.rowHeight
-      });
+    this.header = new ui_.HeaderRenderer(data,  this.node, this.config);
+    this.body = new ui_.BodyRenderer(data, this.node, this.config);
+    if(this.config.pool) {
+      this.pool = new ui_.PoolRenderer(data, this.node, this.config);
     }
-    this.$header.append('rect').attr({
-      width: '100%',
-      height: this.config.htmlLayout.headerHeight,
-      'class': 'headerbg'
-    });
-    this.$header.append('g').attr('class', 'main');
-    this.$header.append('g').attr('class', 'overlay');
-
-    this.scroller.on('scroll', (top, left) => this.scrolled(top, left));
-    this.scroller.on('redraw', () => this.renderBody());
   }
-
-  private renderBody() {
-    console.log('TODO');
-  }
-
   createEventList() {
-    return super.createEventList().concat(['hover','change-sortcriteria','change-filter', 'selected','multiselected']);
+    return super.createEventList().concat(['hoverChanged', 'selectionChanged']);
   }
 
-  private scrolled(top, left) {
-    if (this.config.svgLayout.mode === 'combined') {
-      //in single svg mode propagate vertical shift
-      this.$header.attr('transform', 'translate(0,' + top + ')');
-    } else {
-      //in two svg mode propagate horizontal shift
-      this.$header.attr('transform', 'translate('+-left+',0)');
-    }
+  get node() {
+    return <Element>this.$container.node();
   }
-
 
   /**
    * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
    */
   destroy() {
-    this.scroller.destroy();
     this.$container.selectAll('*').remove();
-    if (this.config.svgLayout.mode === 'combined') {
-      this.$container.on('scroll.lineup', null);
-    }
   }
 
   sortBy(column : (col: model_.Column) => boolean | string, ascending = false) {
@@ -188,4 +113,47 @@ export class LineUp extends utils_.AEventDispatcher {
     }
     return col !== null;
   }
+
+  dump() {
+    var s = this.data.dump();
+    return s;
+  }
+
+  changeDataStorage(data: provider_.DataProvider, dump: any) {
+    this.data = data;
+    if (dump) {
+      this.restore(dump);
+    }
+    this.header.changeDataStorage(data);
+    this.body.changeDataStorage(data);
+    if (this.pool) {
+      this.pool.changeDataStorage(data);
+    }
+    this.update();
+  }
+
+  restore(dump: any) {
+    this.data.restore(dump);
+    this.update();
+  }
+
+  update() {
+    this.header.update();
+    this.body.update();
+    if (this.pool) {
+      this.pool.update();
+    }
+  }
+
+  changeRenderingOption(option: string, value: boolean) {
+    //TODO
+  }
+}
+
+export function createLocalStorage(data: any[], columns: provider_.IColumnDesc[]) {
+  return new provider_.LocalDataProvider(data, columns);
+}
+
+export function create(container : d3.Selection<any> | Element, data: provider_.DataProvider, config: any = {}) {
+  return new LineUp(container, data, config);
 }
