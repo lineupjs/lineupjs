@@ -237,46 +237,50 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param row
    * @return {boolean}
    */
-  isSelected(row: any) {
-    return this.selection.has(this.rowKey(row, -1));
+  isSelected(index: number) {
+    return this.selection.has(String(index));
   }
 
   /**
    * also select the given row
    * @param row
    */
-  select(row) {
-    this.selection.add(this.rowKey(row, -1));
-    this.fire('selectionChanged', this.selection.values());
+  select(index: number) {
+    this.selection.add(String(index));
+    this.fire('selectionChanged', this.selection.values().map(Number));
+  }
+
+  searchSelect(search: string|RegExp, col: model.Column) {
+    //TODO
   }
 
   /**
    * also select all the given rows
    * @param rows
    */
-  selectAll(rows: any[]) {
-    rows.forEach((row) => {
-      this.selection.add(this.rowKey(row, -1));
+  selectAll(indices: number[]) {
+    indices.forEach((index) => {
+      this.selection.add(String(index));
     });
-    this.fire('selectionChanged', this.selection.values());
+    this.fire('selectionChanged', this.selection.values().map(Number));
   }
 
   /**
    * set the selection to the given rows
    * @param rows
    */
-  setSelection(rows: any[]) {
+  setSelection(indices: number[]) {
     this.selection = d3.set();
-    this.selectAll(rows);
+    this.selectAll(indices);
   }
 
   /**
-   * delelect the given row
+   * deselect the given row
    * @param row
    */
-  deselect(row: any) {
-    this.selection.remove(this.rowKey(row, -1));
-    this.fire('selectionChanged', this.selection.values());
+  deselect(index: number) {
+    this.selection.remove(String(index));
+    this.fire('selectionChanged',  this.selection.values().map(Number));
   }
 
   /**
@@ -287,10 +291,14 @@ export class DataProvider extends utils.AEventDispatcher {
     if (this.selection.empty()) {
       return Promise.resolve([]);
     }
+    return this.view(this.getSelection());
+  }
+
+  getSelection() {
     var indices = [];
     this.selection.forEach((s) => indices.push(+s));
     indices.sort();
-    return this.view(indices);
+    return indices;
   }
 
   /**
@@ -298,7 +306,7 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   clearSelection() {
     this.selection = d3.set();
-    this.fire('selectionChanged', this.selection.values());
+    this.fire('selectionChanged', []);
   }
 }
 

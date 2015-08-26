@@ -22,14 +22,40 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
       'class': 'lu-popup2'
     }).style({
       left: pos.left + 'px',
-      top: pos.top + 'px',
-      width: '200px'
+      top: pos.top + 'px'
 
-    }).html(dialogForm('Rename Column', '<input type="text" size="20" value="' + column.label + '" required="required"><br>'));
+    }).html(dialogForm('Rename Column', '<input type="text" size="15" value="' + column.label + '" required="required"><br>'));
 
   popup.select('.ok').on('click', function () {
     var newValue = popup.select('input').property('value');
     column.setLabel(newValue);
+    popup.remove();
+  });
+
+  popup.select('.cancel').on('click', function () {
+    popup.remove();
+  });
+}
+
+
+export function openSearchDialog(column:model.Column, $header:d3.Selection<model.Column>, provider: provider.DataProvider) {
+  var pos = utils.offset($header.node());
+  var popup = d3.select('body').append('div')
+    .attr({
+      'class': 'lu-popup2'
+    }).style({
+      left: pos.left + 'px',
+      top: pos.top + 'px'
+
+    }).html(dialogForm('Search', '<input type="text" size="15" value="" required="required"><br><label><input type="checkbox">RegExp</label><br>'));
+
+  popup.select('.ok').on('click', function () {
+    var search = popup.select('input[type="text"]').property('value');
+    var isRegex = popup.select('input[type="text"]').property('checked');
+    if (isRegex) {
+      search = new RegExp(search);
+    }
+    provider.searchSelect(search, column);
     popup.remove();
   });
 

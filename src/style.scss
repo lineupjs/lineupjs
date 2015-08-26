@@ -55,15 +55,18 @@
   }
 }
 
-.lu-popup
-.lu-popup2 {
+.lu-popup, .lu-popup2 {
   background-color: rgba(255, 255, 255, 0.5);
   position: absolute;
   padding: 2px;
 
-  font-size: 9pt;
+  font-size: 8pt;
 
   clear: right;
+
+  input {
+    font-size: 8pt;
+  }
 }
 
 .lu-popup2 {

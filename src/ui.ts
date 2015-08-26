@@ -124,7 +124,8 @@ export class HeaderRenderer {
     columnPadding : 5,
     headerHeight: 20,
 
-    filterDialogs : dialogs.filterDialogs()
+    filterDialogs : dialogs.filterDialogs(),
+    searchAble: (col: model.Column) => col instanceof model.StringColumn
   };
 
   private $node:d3.Selection<any>;
@@ -182,23 +183,33 @@ export class HeaderRenderer {
     var $regular = $node.filter(d=> !(d instanceof model.RankColumn)),
       $stacked = $node.filter(d=> d instanceof model.StackColumn);
 
+    //edit weights
     $stacked.append('i').attr('class', 'fa fa-tasks').on('click', function(d) {
       dialogs.openEditWeightsDialog(<model.StackColumn>d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
+    //rename
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').on('click', function(d) {
       dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
+    //clone
     $regular.append('i').attr('class', 'fa fa-code-fork').on('click', function(d) {
       var r = provider.pushRanking();
       r.push(provider.clone(d));
       d3.event.stopPropagation();
     });
+    //filter
     $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').on('click', function(d) {
       filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
+    //search
+    $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').on('click', function(d) {
+      dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
+      d3.event.stopPropagation();
+    });
+    //remove
     $node.append('i').attr('class', 'fa fa-times').on('click', (d) => {
       if (d instanceof model.RankColumn) {
         provider.removeRanking(<model.RankColumn>d);
@@ -477,6 +488,8 @@ export class BodyRenderer {
       this.mouseOver(data_index.d, true);
     }).on('mouseleave', (data_index) => {
       this.mouseOver(data_index.d, false);
+    }).on('click', (data_index) => {
+      this.select(data_index.d, d3.event.ctrlKey);
     });
     $rows.attr({
       'data-index': (d) => d.d
@@ -489,6 +502,10 @@ export class BodyRenderer {
     $rows.exit().remove();
 
     $rankings.exit().remove();
+  }
+
+  select(data_index: number, additional = false) {
+
   }
 
   mouseOver(dataIndex:number, hover = true) {
