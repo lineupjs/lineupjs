@@ -43,12 +43,13 @@ export class PoolRenderer {
     if (this.options.hideUsed) {
       var that = this;
       data.on(['addColumn','removeColumn'], function(col) {
-        var desc = col.desc.type, change = this.type === 'addColumn' ? 1 : -1;
+        var desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
         that.entries.some((entry) => {
           if (entry.desc !== desc) {
             return false;
           }
           entry.used += change;
+          return true;
         });
         that.update();
       });
@@ -59,6 +60,7 @@ export class PoolRenderer {
             return false;
           }
           entry.used += change;
+          return true;
         });
         that.update();
       });
@@ -300,7 +302,7 @@ export class BodyRenderer {
     rowHeight: 20,
     rowSep: 1,
     idPrefix: '',
-    slopeWidth: 200,
+    slopeWidth: 150,
     columnPadding : 5,
     showStacked: true,
     animated: 0, //200

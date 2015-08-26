@@ -4,10 +4,32 @@
 
 import model = require('./model');
 import utils = require('./utils');
+import d3 = require('d3');
 
-export class IColumnDesc {
+export interface IColumnDesc {
   label:string;
   type:string;
+}
+
+export interface IStatistics {
+  min: number;
+  max: number;
+  count: number;
+  hist: { x : number; dx : number; y : number;}[];
+}
+
+function computeStats(arr: any[], acc: (any) => number, range?: [number, number]) : IStatistics {
+  var hist = d3.layout.histogram().value(acc);
+  if (range) {
+    hist.range(() => range);
+  }
+  var hist_data = hist(arr);
+  return {
+    min : hist_data[0].x,
+    max : hist_data[hist_data.length-1].x + hist_data[hist_data.length-1].dx,
+    count: arr.length,
+    hist : hist_data
+  };
 }
 
 /**
@@ -195,6 +217,10 @@ export class DataProvider extends utils.AEventDispatcher {
     return Promise.reject('not implemented');
   }
 
+  stats(indices: number[], col: model.INumberColumn): Promise<IStatistics> {
+    return Promise.reject('not implemented');
+  }
+
   /**
    * method for computing the unique key of a row
    * @param row
@@ -379,6 +405,10 @@ export class LocalDataProvider extends CommonDataProvider {
 
   mappingSample(col: model.NumberColumn) : Promise<number[]> {
     return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
+  }
+
+  stats(indices: number[], col: model.INumberColumn): Promise<IStatistics> {
+    return Promise.resolve(computeStats(this.data, col.getNumber.bind(col), [0, 1]));
   }
 }
 

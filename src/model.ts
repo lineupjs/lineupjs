@@ -213,7 +213,15 @@ export class ValueColumn<T> extends Column {
   }
 }
 
-export class NumberColumn extends ValueColumn<number> {
+export interface INumberColumn {
+  getNumber(row: any): number;
+}
+
+export function isNumberColumn(col: Column) {
+  return typeof (<any>col).getNumber === 'function';
+}
+
+export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   missingValue = NaN;
   private scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
   private mapping = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
@@ -530,7 +538,7 @@ export class CategoricalColumn extends ValueColumn<string> {
   }
 }
 
-export class CategoricalNumberColumn extends ValueColumn<number> {
+export class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn{
   private colors = d3.scale.category10();
   private scale = d3.scale.ordinal().rangeRoundPoints([0,1]);
 
@@ -638,7 +646,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> {
 /**
  * implementation of the stacked colum
  */
-export class StackColumn extends Column implements IColumnParent {
+export class StackColumn extends Column implements IColumnParent, INumberColumn {
   static desc(label: string) {
     return { type: 'stack', label : label };
   }
@@ -722,7 +730,7 @@ export class StackColumn extends Column implements IColumnParent {
   }
 
   insert(col: Column, index: number, weight = NaN) {
-    if (typeof (<any>col).getNumber !== 'function') { //indicator it is a number type
+    if (!isNumberColumn(col)) { //indicator it is a number type
       return null;
     }
     if (col instanceof StackColumn) {
