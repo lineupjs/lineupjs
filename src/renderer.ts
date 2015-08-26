@@ -93,6 +93,7 @@ export class DefaultCellRenderer implements ICellRenderer {
    * @type {string}
    */
   textClass = 'text';
+  align: string = 'left';
 
   render($col:d3.Selection<any>, col:model.Column, rows:any[], context:IRenderContext) {
     var $rows = $col.datum(col).selectAll('text.' + this.textClass).data(rows, context.rowKey);
@@ -103,7 +104,7 @@ export class DefaultCellRenderer implements ICellRenderer {
     });
 
     context.animated($rows).attr({
-      x: (d, i) => context.cellX(i),
+      x: (d, i) => context.cellX(i) + (this.align === 'right' ? col.getWidth() - 5 : 0),
       y: (d, i) => context.cellY(i),
       'data-index': (d, i) => i
     }).text((d) => col.getLabel(d));
@@ -263,7 +264,7 @@ class CategoricalRenderer extends DefaultCellRenderer {
     });
     $rows_enter.append('rect').attr({
       y: 1
-    })
+    });
     var $update = context.animated($rows).attr({
       'data-index': (d, i) => i,
       transform: (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'
@@ -356,7 +357,8 @@ export function renderers() {
     link: new LinkCellRenderer(),
     number: barRenderer(),
     rank: defaultRenderer({
-      textClass: 'rank'
+      textClass: 'rank',
+      align: 'right'
     }),
     stack: new StackCellRenderer(),
     categorical: new CategoricalRenderer(),

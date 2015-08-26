@@ -108,16 +108,21 @@ $lu_toolbar_font_size: 9pt;
     dominant-baseline: text-before-edge;
   }
 
+  text.rank {
+    text-anchor: end;
+  }
+
   *[draggable] {
     cursor: pointer;
     cursor: -webkit-grab; //indicate grab able
   }
 
   line.slope {
-    stroke: black;
+    stroke: darkgray;
+    stroke-width: 2;
     shape-rendering: geometricPrecision;
 
-    &:hover {
+    &.hover {
       stroke: $lu_hover_color;
     }
   }
