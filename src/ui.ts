@@ -11,6 +11,14 @@ import renderer = require('./renderer');
 import provider = require('./provider');
 import dialogs = require('./ui_dialogs');
 
+class PoolEntry {
+  used : number = 0;
+
+  constructor(public desc : provider.IColumnDesc) {
+
+  }
+}
+
 export class PoolRenderer {
   private options = {
     layout: 'vertical',
@@ -18,31 +26,59 @@ export class PoolRenderer {
     elemHeight: 40,
     width: 100,
     height: 500,
-    additionalDesc : []
+    additionalDesc : [],
+    hideUsed: true
+
   };
 
   private $node:d3.Selection<any>;
+  private entries : PoolEntry[];
 
-  constructor(private data: provider.DataProvider, private columns:provider.IColumnDesc[], parent:Element, options:any = {}) {
+  constructor(private data: provider.DataProvider, columns:provider.IColumnDesc[], parent:Element, options:any = {}) {
     utils.merge(this.options, options);
-    this.columns = this.columns.concat(this.options.additionalDesc);
+    this.entries = columns.concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
 
     this.$node = d3.select(parent).append('div').classed('lu-pool',true);
 
+    if (this.options.hideUsed) {
+      var that = this;
+      data.on(['addColumn','removeColumn'], function(col) {
+        var desc = col.desc.type, change = this.type === 'addColumn' ? 1 : -1;
+        that.entries.some((entry) => {
+          if (entry.desc !== desc) {
+            return false;
+          }
+          entry.used += change;
+        });
+        that.update();
+      });
+      data.on(['addRanking','removeRanking'], function(ranking) {
+        var descs = ranking.flatColumns.map((d) => d.desc), change = this.type === 'addRanking' ? 1 : -1;
+        that.entries.some((entry) => {
+          if (descs.indexOf(entry.desc) < 0) {
+            return false;
+          }
+          entry.used += change;
+        });
+        that.update();
+      });
+      data.getRankings().forEach((ranking) => {
+        var descs = ranking.flatColumns.map((d) => d.desc), change = +1;
+        that.entries.some((entry) => {
+          if (descs.indexOf(entry.desc) < 0) {
+            return false;
+          }
+          entry.used += change;
+        });
+      })
+    }
     this.update();
-
-    /*if (this.options.hideUsed) {
-     data.on('addColumn.pool', (_, col:any) => {
-     var desc:provider.IColumnDesc = col.desc;
-     });
-     } else {
-
-     }*/
   }
 
   update() {
     var data = this.data;
-    var $headers = this.$node.selectAll('div.header').data(this.columns, (d) => d.label);
+    var descToShow = this.entries.filter((e) => e.used === 0).map((d) => d.desc);
+    var $headers = this.$node.selectAll('div.header').data(descToShow);
     var $headers_enter = $headers.enter().append('div').attr({
       'class': 'header',
       'draggable': true
@@ -82,7 +118,7 @@ export class PoolRenderer {
 
 export class HeaderRenderer {
   private options = {
-    slopeWidth: 200,
+    slopeWidth: 150,
     columnPadding : 5,
     headerHeight: 20,
 

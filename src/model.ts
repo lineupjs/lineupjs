@@ -43,6 +43,8 @@ export interface IColumnParent extends Column {
  */
 export class Column extends utils.AEventDispatcher {
   static DEFAULT_COLOR = 'gray';
+  static FLAT_ALL_COLUMNS = -1;
+
   public id:string;
 
   private width_:number = 100;
@@ -686,20 +688,22 @@ export class StackColumn extends Column implements IColumnParent {
   }
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
-    if (levelsToGo === 0) {
+    if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       var w = this.getWidth();
       if (!this.collapsed) {
         w += (this.children_.length-1)*padding;
       }
       r.push({col: this, offset: offset, width: w});
-      return w;
-    } else {
-      var acc = offset;
-      this.children_.forEach((c) => {
-        acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
-      });
-      return acc - offset - padding;
+      if (levelsToGo === 0) {
+        return w;
+      }
     }
+
+    var acc = offset;
+    this.children_.forEach((c) => {
+      acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+    });
+    return acc - offset - padding;
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -953,7 +957,7 @@ export class RankColumn extends ValueColumn<number> {
   flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0) {
     r.push({col: this, offset: offset, width: this.getWidth()});
     var acc = offset + this.getWidth() + padding;
-    if (levelsToGo > 0) {
+    if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       this.columns_.forEach((c) => {
         acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
       });
@@ -1065,13 +1069,18 @@ export class RankColumn extends ValueColumn<number> {
     return true;
   }
 
+  get flatColumns() {
+    var r:IFlatColumn[] = [];
+    this.flatten(r, 0, Column.FLAT_ALL_COLUMNS);
+    return r.map((d) => d.col);
+  }
+
   find(id_or_filter:(col:Column) => boolean | string) {
     var filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
-    var r:IFlatColumn[] = [];
-    this.flatten(r, 0, Number.POSITIVE_INFINITY);
+    var r = this.flatColumns;
     for (var i = 0; i < r.length; ++i) {
-      if (filter(r[i].col)) {
-        return r[i].col;
+      if (filter(r[i])) {
+        return r[i];
       }
     }
     return null;
@@ -1118,6 +1127,9 @@ export class RankColumn extends ValueColumn<number> {
   }
 }
 
+/**
+ * a map of all known column types *
+ */
 export function models() {
   return {
     number: NumberColumn,
