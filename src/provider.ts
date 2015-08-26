@@ -59,7 +59,7 @@ export class DataProvider extends utils.AEventDispatcher {
     this.reorder = function() {
       var ranking = this.source;
       that.sort(ranking).then((order) => ranking.setOrder(order));
-    }
+    };
   }
 
   createEventList() {

@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-08-25
+/*! LineUpJS - v0.1.0 - 2015-08-26
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -65,10 +65,6 @@ var LineUp = (function (_super) {
         if (config === void 0) { config = {}; }
         _super.call(this);
         this.data = data;
-        /**
-         * default config of LineUp with all available options
-         *
-         */
         this.config = {
             grayColor: '#999999',
             numberformat: d3.format('.3n'),
@@ -87,16 +83,10 @@ var LineUp = (function (_super) {
                 histograms: false
             },
             svgLayout: {
-                /**
-                 * mode of this lineup instance, either combined = a single svg with header and body combined or separate ... separate header and body
-                 */
                 mode: 'combined',
                 rowHeight: 17,
                 rowPadding: 0.2,
                 rowBarPadding: 1,
-                /**
-                 * number of backup rows to keep to avoid updating on every small scroll thing
-                 */
                 backupScrollRows: 4,
                 animationDuration: 1000,
                 addPlusSigns: false,
@@ -105,15 +95,13 @@ var LineUp = (function (_super) {
                         title: 'add stacked column',
                         action: 'addNewEmptyStackedColumn',
                         x: 0, y: 2,
-                        w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
+                        w: 21, h: 21
                     }
                 },
                 rowActions: new Array()
             },
-            /* enables manipulation features, remove column, reorder,... */
             manipulative: true,
             interaction: {
-                //enable the table tooltips
                 tooltips: true,
                 multiselect: function () { return false; },
                 rangeselect: function () { return false; }
@@ -125,11 +113,8 @@ var LineUp = (function (_super) {
             }
         };
         this.$container = container instanceof d3.selection ? container : d3.select(container);
-        //TODO merge the incoming config this.config
         exports.utils.merge(this.config, config);
-        //create basic structure
         if (this.config.svgLayout.mode === 'combined') {
-            //within a single svg with 'fixed' header
             this.$container.classed('lu-mode-combined', true);
             this.$table = this.$container.append('svg').attr('class', 'lu');
             var $defs = this.$table.append('defs');
@@ -146,7 +131,6 @@ var LineUp = (function (_super) {
             });
         }
         else {
-            //within two svgs with a dedicated header
             this.$container.classed('lu-mode-separate', true);
             this.$table = this.$container;
             this.$headerSVG = this.$table.append('svg').attr('class', 'lu lu-header');
@@ -182,17 +166,12 @@ var LineUp = (function (_super) {
     };
     LineUp.prototype.scrolled = function (top, left) {
         if (this.config.svgLayout.mode === 'combined') {
-            //in single svg mode propagate vertical shift
             this.$header.attr('transform', 'translate(0,' + top + ')');
         }
         else {
-            //in two svg mode propagate horizontal shift
             this.$header.attr('transform', 'translate(' + -left + ',0)');
         }
     };
-    /**
-     * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
-     */
     LineUp.prototype.destroy = function () {
         this.scroller.destroy();
         this.$container.selectAll('*').remove();
@@ -250,7 +229,7 @@ function open(scale, dataDomain, dataPromise, options) {
         radius: 10,
         callback: function (d) { return d; },
         callbackThisArg: null,
-        triggerCallback: 'change' //change, dragend
+        triggerCallback: 'change'
     }, options);
     var editor = function ($root) {
         var $svg = $root.append('svg').attr({
@@ -258,45 +237,29 @@ function open(scale, dataDomain, dataPromise, options) {
             width: options.width,
             height: options.height
         });
-        //left limit for the axes
         var lowerLimitX = options.padding;
-        //right limit for the axes
         var upperLimitX = options.width - options.padding;
-        //location for the score axis
         var scoreAxisY = options.padding;
-        //location for the raw2pixel value axis
         var raw2pixelAxisY = options.height - options.padding;
-        //this is needed for filtering the shown datalines
         var raw2pixel = d3.scale.linear().domain(dataDomain).range([lowerLimitX, upperLimitX]);
         var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
-        //x coordinate for the score axis lower bound
         var lowerNormalized = normal2pixel(scale.range()[0]);
-        //x coordinate for the score axis upper bound
         var upperNormalized = normal2pixel(scale.range()[1]);
-        //x coordinate for the raw2pixel axis lower bound
         var lowerRaw = raw2pixel(scale.domain()[0]);
-        //x coordinate for the raw2pixel axis upper bound
         var upperRaw = raw2pixel(scale.domain()[1]);
         scale = d3.scale.linear()
             .clamp(true)
             .domain(scale.domain())
             .range([lowerNormalized, upperNormalized]);
         var $base = $svg.append('g');
-        //upper axis for scored values
         addLine($base, lowerLimitX, scoreAxisY, upperLimitX, scoreAxisY, 'axis');
-        //label for minimum scored value
         addText($base, lowerLimitX, scoreAxisY - 25, 0, '.75em');
-        //label for maximum scored value
         addText($base, upperLimitX, scoreAxisY - 25, 1, '.75em');
         addText($base, options.width / 2, scoreAxisY - 25, 'Score', '.75em', 'centered');
-        //lower axis for raw2pixel values
         addLine($base, lowerLimitX, raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
-        //label for minimum raw2pixel value
         addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], '.75em');
-        //label for maximum raw2pixel value
         addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], '.75em');
         addText($base, options.width / 2, raw2pixelAxisY + 20, 'Raw', '.75em', 'centered');
-        //lines that show mapping of individual data items
         var datalines = $svg.append('g').classed('data', true).selectAll('line').data([]);
         dataPromise.then(function (data) {
             datalines = datalines.data(data);
@@ -317,17 +280,11 @@ function open(scale, dataDomain, dataPromise, options) {
                 return a ? 'hidden' : null;
             });
         });
-        //line that defines lower bounds for the scale
         var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, raw2pixelAxisY, 'bound');
-        //line that defines upper bounds for the scale
         var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
-        //label for lower bound of normalized values
         var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerNormalized - lowerLimitX) + ',0)');
-        //label for lower bound of raw2pixel values
         var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
-        //label for upper bound of normalized values
         var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperNormalized - upperLimitX) + ',0)');
-        //label for upper bound of raw2pixel values
         var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
         function createDrag(label, move) {
             return d3.behavior.drag()
@@ -380,7 +337,6 @@ function open(scale, dataDomain, dataPromise, options) {
                 .attr('x1', scale);
             updateScale();
         }
-        //draggable circle that defines the lower bound of normalized values
         addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
             .call(createDrag(lowerBoundNormalizedLabel, function () {
             if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
@@ -394,7 +350,6 @@ function open(scale, dataDomain, dataPromise, options) {
                 updateNormalized();
             }
         }));
-        //draggable circle that defines the upper bound of normalized values
         addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
             .call(createDrag(upperBoundNormalizedLabel, function () {
             if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
@@ -408,7 +363,6 @@ function open(scale, dataDomain, dataPromise, options) {
                 updateNormalized();
             }
         }));
-        //draggable circle that defines the lower bound of raw2pixel values
         addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
             .call(createDrag(lowerBoundRawLabel, function () {
             if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
@@ -422,7 +376,6 @@ function open(scale, dataDomain, dataPromise, options) {
                 updateRaw();
             }
         }));
-        //draggable circle that defines the upper bound of raw2pixel values
         addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
             .call(createDrag(upperBoundRawLabel, function () {
             if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
@@ -464,29 +417,15 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var d3 = require('d3');
 var utils = require('./utils');
-/**
- * converts a given id to css compatible one
- * @param id
- * @return {string|void}
- */
 function fixCSS(id) {
-    return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_'); //replace non css stuff to _
+    return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_');
 }
-/**
- * save number comparison
- * @param a
- * @param b
- * @return {number}
- */
 function numberCompare(a, b) {
     if (a === b || (isNaN(a) && isNaN(b))) {
         return 0;
     }
     return a - b;
 }
-/**
- * a column in LineUp
- */
 var Column = (function (_super) {
     __extends(Column, _super);
     function Column(id, desc) {
@@ -581,53 +520,26 @@ var Column = (function (_super) {
     Column.prototype.restore = function (dump, factory) {
         this.width_ = dump.width;
     };
-    /**
-     * return the label of a given row for the current column
-     * @param row
-     * @return {string}
-     */
     Column.prototype.getLabel = function (row) {
         return '' + this.getValue(row);
     };
-    /**
-     * return the value of a given row for the current column
-     * @param row
-     * @return
-     */
     Column.prototype.getValue = function (row) {
-        return ''; //no value
+        return '';
     };
-    /**
-     * compare function used to determine the order according to the values of the current column
-     * @param a
-     * @param b
-     * @return {number}
-     */
     Column.prototype.compare = function (a, b) {
-        return 0; //can't compare
+        return 0;
     };
-    /**
-     * flag whether any filter is applied
-     * @return {boolean}
-     */
     Column.prototype.isFiltered = function () {
         return false;
     };
-    /**
-     * predicate whether the current row should be included
-     * @param row
-     * @return {boolean}
-     */
     Column.prototype.filter = function (row) {
         return row !== null;
     };
     Column.DEFAULT_COLOR = 'gray';
+    Column.FLAT_ALL_COLUMNS = -1;
     return Column;
 })(utils.AEventDispatcher);
 exports.Column = Column;
-/**
- * a column having an accessor to get the cell value
- */
 var ValueColumn = (function (_super) {
     __extends(ValueColumn, _super);
     function ValueColumn(id, desc) {
@@ -641,11 +553,15 @@ var ValueColumn = (function (_super) {
         return this.accessor(row, this.id, this.desc);
     };
     ValueColumn.prototype.compare = function (a, b) {
-        return 0; //can't compare
+        return 0;
     };
     return ValueColumn;
 })(Column);
 exports.ValueColumn = ValueColumn;
+function isNumberColumn(col) {
+    return typeof col.getNumber === 'function';
+}
+exports.isNumberColumn = isNumberColumn;
 var NumberColumn = (function (_super) {
     __extends(NumberColumn, _super);
     function NumberColumn(id, desc) {
@@ -660,7 +576,6 @@ var NumberColumn = (function (_super) {
         if (desc.range) {
             this.scale.range(desc.range);
         }
-        //TODO infer scales from data
         this.mapping.domain(this.scale.domain()).range(this.scale.range());
     }
     NumberColumn.prototype.dump = function (toDescRef) {
@@ -858,7 +773,6 @@ var CategoricalColumn = (function (_super) {
         this.colors = d3.scale.category10();
         this.filter_ = null;
         this.init(desc);
-        //TODO infer categories from data
     }
     CategoricalColumn.prototype.init = function (desc) {
         if (desc.categories) {
@@ -1041,9 +955,6 @@ var CategoricalNumberColumn = (function (_super) {
     return CategoricalNumberColumn;
 })(ValueColumn);
 exports.CategoricalNumberColumn = CategoricalNumberColumn;
-/**
- * implementation of the stacked colum
- */
 var StackColumn = (function (_super) {
     __extends(StackColumn, _super);
     function StackColumn(id, desc) {
@@ -1100,21 +1011,21 @@ var StackColumn = (function (_super) {
     StackColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
         if (levelsToGo === void 0) { levelsToGo = 0; }
         if (padding === void 0) { padding = 0; }
-        if (levelsToGo === 0) {
+        if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
             var w = this.getWidth();
             if (!this.collapsed) {
                 w += (this.children_.length - 1) * padding;
             }
             r.push({ col: this, offset: offset, width: w });
-            return w;
+            if (levelsToGo === 0) {
+                return w;
+            }
         }
-        else {
-            var acc = offset;
-            this.children_.forEach(function (c) {
-                acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
-            });
-            return acc - offset - padding;
-        }
+        var acc = offset;
+        this.children_.forEach(function (c) {
+            acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+        });
+        return acc - offset - padding;
     };
     StackColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
@@ -1132,7 +1043,7 @@ var StackColumn = (function (_super) {
     };
     StackColumn.prototype.insert = function (col, index, weight) {
         if (weight === void 0) { weight = NaN; }
-        if (typeof col.getNumber !== 'function') {
+        if (!isNumberColumn(col)) {
             return null;
         }
         if (col instanceof StackColumn) {
@@ -1142,11 +1053,9 @@ var StackColumn = (function (_super) {
             col.setWidth((weight / (1 - weight) * this.getWidth()));
         }
         this.children_.splice(index, 0, col);
-        //listen and propagate events
         col.parent = this;
         this.forward(col, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
         col.on('widthChanged.stack', this.adaptChange);
-        //increase my width
         _super.prototype.setWidth.call(this, this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
         this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth());
         return true;
@@ -1218,11 +1127,10 @@ var StackColumn = (function (_super) {
         if (i < 0) {
             return false;
         }
-        this.children_.splice(i, 1); //remove and deregister listeners
+        this.children_.splice(i, 1);
         child.parent = null;
         this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
         child.on('widthChanged.stack', null);
-        //reduce width to keep the percentages
         _super.prototype.setWidth.call(this, this.length === 0 ? 100 : this.getWidth() - child.getWidth());
         this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
         return true;
@@ -1230,13 +1138,11 @@ var StackColumn = (function (_super) {
     StackColumn.prototype.setWidth = function (value) {
         var factor = value / this.getWidth();
         this.children_.forEach(function (child) {
-            //disable since we change it
             child.setWidthImpl(child.getWidth() * factor);
         });
         _super.prototype.setWidth.call(this, value);
     };
     StackColumn.prototype.getValue = function (row) {
-        //weighted sum
         var w = this.getWidth();
         var v = this.children_.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
         if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
@@ -1259,30 +1165,13 @@ var StackColumn = (function (_super) {
     return StackColumn;
 })(Column);
 exports.StackColumn = StackColumn;
-/**
- * a rank column is not just a column but a whole ranking
- */
 var RankColumn = (function (_super) {
     __extends(RankColumn, _super);
     function RankColumn(id, desc) {
         var _this = this;
         _super.call(this, id, desc);
-        /**
-         * the current sort criteria
-         * @type {null}
-         * @private
-         */
         this.sortBy_ = null;
-        /**
-         * ascending or descending order
-         * @type {boolean}
-         */
         this.ascending = false;
-        /**
-         * columns of this ranking
-         * @type {Array}
-         * @private
-         */
         this.columns_ = [];
         this.comparator = function (a, b) {
             if (_this.sortBy_ === null) {
@@ -1311,7 +1200,7 @@ var RankColumn = (function (_super) {
         r.columns = this.columns_.map(function (d) { return d.dump(toDescRef); });
         r.sortCriteria = this.sortCriteria();
         if (this.sortBy_) {
-            r.sortCriteria.sortBy = this.sortBy_.id; //store the index not the object
+            r.sortCriteria.sortBy = this.sortBy_.id;
         }
         return r;
     };
@@ -1331,7 +1220,7 @@ var RankColumn = (function (_super) {
         if (padding === void 0) { padding = 0; }
         r.push({ col: this, offset: offset, width: this.getWidth() });
         var acc = offset + this.getWidth() + padding;
-        if (levelsToGo > 0) {
+        if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
             this.columns_.forEach(function (c) {
                 acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
             });
@@ -1346,10 +1235,8 @@ var RankColumn = (function (_super) {
     };
     RankColumn.prototype.sortByMe = function (ascending) {
         if (ascending === void 0) { ascending = false; }
-        //noop
     };
     RankColumn.prototype.toggleMySorting = function () {
-        //noop
     };
     RankColumn.prototype.findMyRanker = function () {
         return this;
@@ -1366,10 +1253,10 @@ var RankColumn = (function (_super) {
     RankColumn.prototype.sortBy = function (col, ascending) {
         if (ascending === void 0) { ascending = false; }
         if (col !== null && col.findMyRanker() !== this) {
-            return false; //not one of mine
+            return false;
         }
         if (this.sortBy_ === col && this.ascending === ascending) {
-            return true; //already in this order
+            return true;
         }
         if (this.sortBy_) {
             this.sortBy_.on('dirtyValues.order', null);
@@ -1435,24 +1322,26 @@ var RankColumn = (function (_super) {
         }
         return true;
     };
+    Object.defineProperty(RankColumn.prototype, "flatColumns", {
+        get: function () {
+            var r = [];
+            this.flatten(r, 0, Column.FLAT_ALL_COLUMNS);
+            return r.map(function (d) { return d.col; });
+        },
+        enumerable: true,
+        configurable: true
+    });
     RankColumn.prototype.find = function (id_or_filter) {
         var filter = typeof (id_or_filter) === 'string' ? function (col) { return col.id === id_or_filter; } : id_or_filter;
-        var r = [];
-        this.flatten(r, 0, Number.POSITIVE_INFINITY);
+        var r = this.flatColumns;
         for (var i = 0; i < r.length; ++i) {
-            if (filter(r[i].col)) {
-                return r[i].col;
+            if (filter(r[i])) {
+                return r[i];
             }
         }
         return null;
     };
-    /**
-     * converts the sorting criteria to a json compatible notation for transfering it to the server
-     * @param toId
-     * @return {any}
-     */
     RankColumn.prototype.toSortingDesc = function (toId) {
-        //TODO describe also all the filter settings
         var resolve = function (s) {
             if (s === null) {
                 return null;
@@ -1511,30 +1400,27 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var model = require('./model');
 var utils = require('./utils');
-var IColumnDesc = (function () {
-    function IColumnDesc() {
+var d3 = require('d3');
+function computeStats(arr, acc, range) {
+    var hist = d3.layout.histogram().value(acc);
+    if (range) {
+        hist.range(function () { return range; });
     }
-    return IColumnDesc;
-})();
-exports.IColumnDesc = IColumnDesc;
-/**
- * a basic data provider holding the data and rankings
- */
+    var hist_data = hist(arr);
+    return {
+        min: hist_data[0].x,
+        max: hist_data[hist_data.length - 1].x + hist_data[hist_data.length - 1].dx,
+        count: arr.length,
+        hist: hist_data
+    };
+}
 var DataProvider = (function (_super) {
     __extends(DataProvider, _super);
     function DataProvider() {
         _super.call(this);
-        /**
-         * all rankings
-         * @type {Array}
-         * @private
-         */
         this.rankings_ = [];
         this.selection = d3.set();
         this.uid = 0;
-        /**
-         * lookup map of a column type to its column implementation
-         */
         this.columnTypes = model.models();
         var that = this;
         this.reorder = function () {
@@ -1545,11 +1431,6 @@ var DataProvider = (function (_super) {
     DataProvider.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'selectionChanged']);
     };
-    /**
-     * adds a new ranking
-     * @param existing an optional existing ranking to clone
-     * @return the new ranking
-     */
     DataProvider.prototype.pushRanking = function (existing) {
         var r = this.cloneRanking(existing);
         this.rankings_.push(r);
@@ -1574,17 +1455,10 @@ var DataProvider = (function (_super) {
         return this.rankings_.slice();
     };
     DataProvider.prototype.cleanUpRanking = function (ranking) {
-        //nothing to do
     };
     DataProvider.prototype.cloneRanking = function (existing) {
-        return null; //implement me
+        return null;
     };
-    /**
-     * adds a column to a ranking described by its column description
-     * @param ranking
-     * @param desc
-     * @return {boolean}
-     */
     DataProvider.prototype.push = function (ranking, desc) {
         var r = this.create(desc);
         if (r) {
@@ -1657,101 +1531,60 @@ var DataProvider = (function (_super) {
         this.uid = dump.uid;
         this.rankings_ = dump.rankings.map(create);
     };
-    /**
-     * sorts the given ranking and eventually return a ordering of the data items
-     * @param ranking
-     * @return {Promise<any>}
-     */
     DataProvider.prototype.sort = function (ranking) {
         return Promise.reject('not implemented');
     };
-    /**
-     * returns a view in the order of the given indices
-     * @param indices
-     * @return {Promise<any>}
-     */
     DataProvider.prototype.view = function (indices) {
         return Promise.reject('not implemented');
     };
-    /**
-     * returns a data sample used for the mapping editor
-     * @param col
-     * @return {Promise<any>}
-     */
     DataProvider.prototype.mappingSample = function (col) {
         return Promise.reject('not implemented');
     };
-    /**
-     * method for computing the unique key of a row
-     * @param row
-     * @param i
-     * @return {string}
-     */
+    DataProvider.prototype.stats = function (indices, col) {
+        return Promise.reject('not implemented');
+    };
     DataProvider.prototype.rowKey = function (row, i) {
         return typeof (row) === 'number' ? String(row) : String(row._index);
     };
-    /**
-     * is the given row selected
-     * @param row
-     * @return {boolean}
-     */
-    DataProvider.prototype.isSelected = function (row) {
-        return this.selection.has(this.rowKey(row, -1));
+    DataProvider.prototype.isSelected = function (index) {
+        return this.selection.has(String(index));
     };
-    /**
-     * also select the given row
-     * @param row
-     */
-    DataProvider.prototype.select = function (row) {
-        this.selection.add(this.rowKey(row, -1));
-        this.fire('selectionChanged', this.selection.values());
+    DataProvider.prototype.select = function (index) {
+        this.selection.add(String(index));
+        this.fire('selectionChanged', this.selection.values().map(Number));
     };
-    /**
-     * also select all the given rows
-     * @param rows
-     */
-    DataProvider.prototype.selectAll = function (rows) {
+    DataProvider.prototype.searchSelect = function (search, col) {
+    };
+    DataProvider.prototype.selectAll = function (indices) {
         var _this = this;
-        rows.forEach(function (row) {
-            _this.selection.add(_this.rowKey(row, -1));
+        indices.forEach(function (index) {
+            _this.selection.add(String(index));
         });
-        this.fire('selectionChanged', this.selection.values());
+        this.fire('selectionChanged', this.selection.values().map(Number));
     };
-    /**
-     * set the selection to the given rows
-     * @param rows
-     */
-    DataProvider.prototype.setSelection = function (rows) {
+    DataProvider.prototype.setSelection = function (indices) {
         this.selection = d3.set();
-        this.selectAll(rows);
+        this.selectAll(indices);
     };
-    /**
-     * delelect the given row
-     * @param row
-     */
-    DataProvider.prototype.deselect = function (row) {
-        this.selection.remove(this.rowKey(row, -1));
-        this.fire('selectionChanged', this.selection.values());
+    DataProvider.prototype.deselect = function (index) {
+        this.selection.remove(String(index));
+        this.fire('selectionChanged', this.selection.values().map(Number));
     };
-    /**
-     * returns a promise containing the selected rows
-     * @return {Promise<any[]>}
-     */
     DataProvider.prototype.selectedRows = function () {
         if (this.selection.empty()) {
             return Promise.resolve([]);
         }
+        return this.view(this.getSelection());
+    };
+    DataProvider.prototype.getSelection = function () {
         var indices = [];
         this.selection.forEach(function (s) { return indices.push(+s); });
         indices.sort();
-        return this.view(indices);
+        return indices;
     };
-    /**
-     * clears the selection
-     */
     DataProvider.prototype.clearSelection = function () {
         this.selection = d3.set();
-        this.fire('selectionChanged', this.selection.values());
+        this.fire('selectionChanged', []);
     };
     return DataProvider;
 })(utils.AEventDispatcher);
@@ -1764,9 +1597,7 @@ var CommonDataProvider = (function (_super) {
         _super.call(this);
         this.columns = columns;
         this.rankingIndex = 0;
-        //generic accessor of the data item
         this.rowGetter = function (row, id, desc) { return row[desc.column]; };
-        //generate the accessor
         columns.forEach(function (d) { return d.accessor = _this.rowGetter; });
     }
     CommonDataProvider.prototype.toDescRef = function (desc) {
@@ -1788,16 +1619,12 @@ var CommonDataProvider = (function (_super) {
     return CommonDataProvider;
 })(DataProvider);
 exports.CommonDataProvider = CommonDataProvider;
-/**
- * a data provider based on an local array
- */
 var LocalDataProvider = (function (_super) {
     __extends(LocalDataProvider, _super);
     function LocalDataProvider(data, columns) {
         if (columns === void 0) { columns = []; }
         _super.call(this, columns);
         this.data = data;
-        //enhance with a magic attribute storing ranking information
         data.forEach(function (d, i) {
             d._rankings = {};
             d._index = i;
@@ -1817,7 +1644,6 @@ var LocalDataProvider = (function (_super) {
                 var r = row._rankings;
                 r[id] = r[existing.id];
             });
-            //TODO better cloning
             existing.children.forEach(function (child) {
                 _this.push(new_, child.desc);
             });
@@ -1825,19 +1651,14 @@ var LocalDataProvider = (function (_super) {
         return new_;
     };
     LocalDataProvider.prototype.cleanUpRanking = function (ranking) {
-        //delete all stored information
         this.data.forEach(function (d) { return delete d._rankings[ranking.id]; });
     };
     LocalDataProvider.prototype.sort = function (ranking) {
-        //wrap in a helper and store the initial index
         var helper = this.data.map(function (r, i) { return ({ row: r, i: i, prev: r._rankings[ranking.id] || 0 }); });
-        //do the optional filtering step
         if (ranking.isFiltered()) {
             helper = helper.filter(function (d) { return ranking.filter(d.row); });
         }
-        //sort by the ranking column
         helper.sort(function (a, b) { return ranking.comparator(a.row, b.row); });
-        //store the ranking index and create an argsort version, i.e. rank 0 -> index i
         var argsort = helper.map(function (r, i) {
             r.row._rankings[ranking.id] = i;
             return r.i;
@@ -1852,12 +1673,12 @@ var LocalDataProvider = (function (_super) {
     LocalDataProvider.prototype.mappingSample = function (col) {
         return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
     };
+    LocalDataProvider.prototype.stats = function (indices, col) {
+        return Promise.resolve(computeStats(this.data, col.getNumber.bind(col), [0, 1]));
+    };
     return LocalDataProvider;
 })(CommonDataProvider);
 exports.LocalDataProvider = LocalDataProvider;
-/**
- * a remote implementation of the data provider
- */
 var RemoteDataProvider = (function (_super) {
     __extends(RemoteDataProvider, _super);
     function RemoteDataProvider(server, columns) {
@@ -1875,29 +1696,23 @@ var RemoteDataProvider = (function (_super) {
             accessor: function (row, id) { return _this.ranks[id][row._index] || 0; }
         };
         if (existing) {
-            //copy the ranking
             this.ranks[id] = this.ranks[existing.id];
         }
         return new model.RankColumn(id, rankDesc);
     };
     RemoteDataProvider.prototype.cleanUpRanking = function (ranking) {
-        //delete all stored information
         delete this.ranks[ranking.id];
     };
     RemoteDataProvider.prototype.sort = function (ranking) {
         var _this = this;
-        //generate a description of what to sort
         var desc = ranking.toSortingDesc(function (desc) { return desc.column; });
-        //use the server side to sort
         return this.server.sort(desc).then(function (argsort) {
-            //store the result
             _this.ranks[ranking.id] = argsort;
             return argsort;
         });
     };
     RemoteDataProvider.prototype.view = function (argsort) {
         return this.server.view(argsort).then(function (view) {
-            //enhance with the data index
             view.forEach(function (d, i) { return d._index = argsort[i]; });
             return view;
         });
@@ -1909,7 +1724,7 @@ var RemoteDataProvider = (function (_super) {
 })(CommonDataProvider);
 exports.RemoteDataProvider = RemoteDataProvider;
 
-},{"./model":3,"./utils":8}],5:[function(require,module,exports){
+},{"./model":3,"./utils":8,"d3":undefined}],5:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -1919,42 +1734,30 @@ var __extends = (this && this.__extends) || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-/**
- * default renderer instance rendering the value as a text
- */
 var DefaultCellRenderer = (function () {
     function DefaultCellRenderer() {
-        /**
-         * class to append to the text elements
-         * @type {string}
-         */
         this.textClass = 'text';
+        this.align = 'left';
     }
     DefaultCellRenderer.prototype.render = function ($col, col, rows, context) {
+        var _this = this;
         var $rows = $col.datum(col).selectAll('text.' + this.textClass).data(rows, context.rowKey);
         $rows.enter().append('text').attr({
             'class': this.textClass,
             'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
         });
         context.animated($rows).attr({
-            x: function (d, i) { return context.cellX(i); },
+            x: function (d, i) { return context.cellX(i) + (_this.align === 'right' ? col.getWidth() - 5 : 0); },
             y: function (d, i) { return context.cellY(i); },
             'data-index': function (d, i) { return i; }
         }).text(function (d) { return col.getLabel(d); });
         $rows.exit().remove();
     };
-    /**
-     * resolves the cell in the column for a given row
-     * @param $col
-     * @param index
-     * @return {Selection<Datum>}
-     */
     DefaultCellRenderer.prototype.findRow = function ($col, index) {
         return $col.selectAll('text.' + this.textClass + '[data-index="' + index + '"]');
     };
     DefaultCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
         var rowNode = $row.node();
-        //find the right one and
         var n = this.findRow($col, index).node();
         if (n) {
             rowNode.appendChild(n);
@@ -1963,7 +1766,6 @@ var DefaultCellRenderer = (function () {
     DefaultCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
         var colNode = $col.node();
         var rowNode = $row.node();
-        //move back
         if (rowNode.hasChildNodes()) {
             colNode.appendChild(rowNode.firstChild);
         }
@@ -1972,9 +1774,6 @@ var DefaultCellRenderer = (function () {
     return DefaultCellRenderer;
 })();
 exports.DefaultCellRenderer = DefaultCellRenderer;
-/**
- * simple derived one where individual elements can be overridden
- */
 var DerivedCellRenderer = (function (_super) {
     __extends(DerivedCellRenderer, _super);
     function DerivedCellRenderer(extraFuncs) {
@@ -2040,11 +1839,6 @@ var DerivedBarCellRenderer = (function (_super) {
 })(BarCellRenderer);
 var defaultRendererInstance = new DefaultCellRenderer();
 var barRendererInstance = new BarCellRenderer();
-/**
- * creates a new instance with optional overridden methods
- * @param extraFuncs
- * @return {DefaultCellRenderer}
- */
 function defaultRenderer(extraFuncs) {
     if (!extraFuncs) {
         return defaultRendererInstance;
@@ -2065,7 +1859,6 @@ var LinkCellRenderer = (function (_super) {
         _super.apply(this, arguments);
     }
     LinkCellRenderer.prototype.render = function ($col, col, rows, context) {
-        //wrap the text elements with an a element
         var $rows = $col.datum(col).selectAll('a.link').data(rows, context.rowKey);
         $rows.enter().append('a').attr({
             'class': 'link',
@@ -2116,7 +1909,7 @@ var CategoricalRenderer = (function (_super) {
             fill: function (d) { return col.getColor(d); }
         }).attr({
             height: function (d, i) { return Math.max(context.rowHeight(i) - 2, 0); },
-            width: function (d, i) { return Math.max(context.rowHeight(i) - 2, 0); },
+            width: function (d, i) { return Math.max(context.rowHeight(i) - 2, 0); }
         });
         $rows.exit().remove();
     };
@@ -2151,7 +1944,6 @@ var StackCellRenderer = (function (_super) {
             if (context.showStacked(col)) {
                 var preChildren = children.slice(0, i);
                 context.cellX = function (index) {
-                    //shift by all the empty space left from the previous columns
                     return -preChildren.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rowGetter(index))); }, 0);
                 };
             }
@@ -2183,17 +1975,14 @@ var StackCellRenderer = (function (_super) {
     };
     return StackCellRenderer;
 })(DefaultCellRenderer);
-/**
- * returns a map of all known renderers by type
- * @return
- */
 function renderers() {
     return {
         string: defaultRenderer(),
         link: new LinkCellRenderer(),
         number: barRenderer(),
         rank: defaultRenderer({
-            textClass: 'rank'
+            textClass: 'rank',
+            align: 'right'
         }),
         stack: new StackCellRenderer(),
         categorical: new CategoricalRenderer(),
@@ -2214,41 +2003,76 @@ var utils = require('./utils');
 var model = require('./model');
 var renderer = require('./renderer');
 var dialogs = require('./ui_dialogs');
+var PoolEntry = (function () {
+    function PoolEntry(desc) {
+        this.desc = desc;
+        this.used = 0;
+    }
+    return PoolEntry;
+})();
 var PoolRenderer = (function () {
     function PoolRenderer(data, columns, parent, options) {
         if (options === void 0) { options = {}; }
         this.data = data;
-        this.columns = columns;
         this.options = {
             layout: 'vertical',
             elemWidth: 100,
             elemHeight: 40,
             width: 100,
             height: 500,
-            additionalDesc: []
+            additionalDesc: [],
+            hideUsed: true
         };
         utils.merge(this.options, options);
-        this.columns = this.columns.concat(this.options.additionalDesc);
+        this.entries = columns.concat(this.options.additionalDesc).map(function (d) { return new PoolEntry(d); });
         this.$node = d3.select(parent).append('div').classed('lu-pool', true);
+        if (this.options.hideUsed) {
+            var that = this;
+            data.on(['addColumn', 'removeColumn'], function (col) {
+                var desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
+                that.entries.some(function (entry) {
+                    if (entry.desc !== desc) {
+                        return false;
+                    }
+                    entry.used += change;
+                    return true;
+                });
+                that.update();
+            });
+            data.on(['addRanking', 'removeRanking'], function (ranking) {
+                var descs = ranking.flatColumns.map(function (d) { return d.desc; }), change = this.type === 'addRanking' ? 1 : -1;
+                that.entries.some(function (entry) {
+                    if (descs.indexOf(entry.desc) < 0) {
+                        return false;
+                    }
+                    entry.used += change;
+                    return true;
+                });
+                that.update();
+            });
+            data.getRankings().forEach(function (ranking) {
+                var descs = ranking.flatColumns.map(function (d) { return d.desc; }), change = +1;
+                that.entries.some(function (entry) {
+                    if (descs.indexOf(entry.desc) < 0) {
+                        return false;
+                    }
+                    entry.used += change;
+                });
+            });
+        }
         this.update();
-        /*if (this.options.hideUsed) {
-         data.on('addColumn.pool', (_, col:any) => {
-         var desc:provider.IColumnDesc = col.desc;
-         });
-         } else {
-    
-         }*/
     }
     PoolRenderer.prototype.update = function () {
         var _this = this;
         var data = this.data;
-        var $headers = this.$node.selectAll('div.header').data(this.columns, function (d) { return d.label; });
+        var descToShow = this.entries.filter(function (e) { return e.used === 0; }).map(function (d) { return d.desc; });
+        var $headers = this.$node.selectAll('div.header').data(descToShow);
         var $headers_enter = $headers.enter().append('div').attr({
             'class': 'header',
             'draggable': true
         }).on('dragstart', function (d) {
             var e = d3.event;
-            e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
+            e.dataTransfer.effectAllowed = 'copyMove';
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(data.toDescRef(d)));
         }).style({
@@ -2271,7 +2095,6 @@ var PoolRenderer = (function () {
             case 'grid':
                 var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
                 return { x: (i % perRow) * this.options.elemWidth, y: d3.round(i / perRow, 0) * this.options.elemHeight };
-            //case 'vertical':
             default:
                 return { x: 0, y: i * this.options.elemHeight };
         }
@@ -2284,10 +2107,11 @@ var HeaderRenderer = (function () {
         if (options === void 0) { options = {}; }
         this.data = data;
         this.options = {
-            slopeWidth: 200,
+            slopeWidth: 150,
             columnPadding: 5,
             headerHeight: 20,
-            filterDialogs: dialogs.filterDialogs()
+            filterDialogs: dialogs.filterDialogs(),
+            searchAble: function (col) { return col instanceof model.StringColumn; }
         };
         this.dragHandler = d3.behavior.drag()
             .on('dragstart', function () {
@@ -2295,7 +2119,6 @@ var HeaderRenderer = (function () {
             d3.select(this).classed('dragging', true);
         })
             .on('drag', function (d) {
-            //the new width
             var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
             d.setWidth(newValue);
             d3.event.sourceEvent.stopPropagation();
@@ -2316,11 +2139,9 @@ var HeaderRenderer = (function () {
         rankings.forEach(function (ranking) {
             offset += ranking.flatten(shifts, offset, 1, _this.options.columnPadding) + _this.options.slopeWidth;
         });
-        //real width
         offset -= this.options.slopeWidth;
         var columns = shifts.map(function (d) { return d.col; });
         if (columns.some(function (c) { return c instanceof model.StackColumn && !c.collapsed; })) {
-            //we have a second level
             this.$node.style('height', this.options.headerHeight * 2 + 'px');
         }
         else {
@@ -2329,6 +2150,7 @@ var HeaderRenderer = (function () {
         this.renderColumns(columns, shifts);
     };
     HeaderRenderer.prototype.createToolbar = function ($node) {
+        var _this = this;
         var filterDialogs = this.options.filterDialogs, provider = this.data;
         var $regular = $node.filter(function (d) { return !(d instanceof model.RankColumn); }), $stacked = $node.filter(function (d) { return d instanceof model.StackColumn; });
         $stacked.append('i').attr('class', 'fa fa-tasks').on('click', function (d) {
@@ -2346,6 +2168,10 @@ var HeaderRenderer = (function () {
         });
         $node.filter(function (d) { return filterDialogs.hasOwnProperty(d.desc.type); }).append('i').attr('class', 'fa fa-filter').on('click', function (d) {
             filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
+            d3.event.stopPropagation();
+        });
+        $node.filter(function (d) { return _this.options.searchAble(d); }).append('i').attr('class', 'fa fa-search').on('click', function (d) {
+            dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
             d3.event.stopPropagation();
         });
         $node.append('i').attr('class', 'fa fa-times').on('click', function (d) {
@@ -2372,7 +2198,7 @@ var HeaderRenderer = (function () {
             'draggable': true
         }).on('dragstart', function (d) {
             var e = d3.event;
-            e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
+            e.dataTransfer.effectAllowed = 'copyMove';
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
             e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
@@ -2454,17 +2280,15 @@ var BodyRenderer = (function () {
             rowHeight: 20,
             rowSep: 1,
             idPrefix: '',
-            slopeWidth: 200,
+            slopeWidth: 150,
             columnPadding: 5,
             showStacked: true,
             animated: 0,
             renderers: renderer.renderers()
         };
-        //merge options
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('svg').classed('lu-body', true);
         data.on('dirtyValues.body', utils.delayedCall(this.update.bind(this), 1));
-        //data.on('removeColumn.body', this.update.bind(this));
         this.update();
     }
     BodyRenderer.prototype.createContext = function (rankings) {
@@ -2499,9 +2323,6 @@ var BodyRenderer = (function () {
         if ($base.empty()) {
             $base = this.$node.append('defs').classed('body', true);
         }
-        //generate clip paths for the text columns to avoid text overflow
-        //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
-        //there is a bug in webkit which present camelCase selectors
         var textClipPath = $base.selectAll(function () {
             return this.getElementsByTagName('clipPath');
         }).data(r, function (d) { return d.id; });
@@ -2575,7 +2396,6 @@ var BodyRenderer = (function () {
                 });
             });
             $value_cols.exit().remove();
-            //data.mouseOver(d, i);
         }
         function mouseLeaveRow($row, $cols, index, ranking, rankingIndex) {
             $row.classed('hover', false);
@@ -2585,7 +2405,6 @@ var BodyRenderer = (function () {
                     context.renderer(d).mouseLeave($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(_this), d, data[index], index, context);
                 });
             }).remove();
-            //data.mouseLeave(d, i);
         }
         this.mouseOverItem = function (data_index, hover) {
             if (hover === void 0) { hover = true; }
@@ -2616,6 +2435,8 @@ var BodyRenderer = (function () {
             _this.mouseOver(data_index.d, true);
         }).on('mouseleave', function (data_index) {
             _this.mouseOver(data_index.d, false);
+        }).on('click', function (data_index) {
+            _this.select(data_index.d, d3.event.ctrlKey);
         });
         $rows.attr({
             'data-index': function (d) { return d.d; }
@@ -2628,10 +2449,12 @@ var BodyRenderer = (function () {
         $rows.exit().remove();
         $rankings.exit().remove();
     };
+    BodyRenderer.prototype.select = function (data_index, additional) {
+        if (additional === void 0) { additional = false; }
+    };
     BodyRenderer.prototype.mouseOver = function (dataIndex, hover) {
         if (hover === void 0) { hover = true; }
         this.mouseOverItem(dataIndex, hover);
-        //update the slope graph
         this.$node.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
     };
     BodyRenderer.prototype.renderSlopeGraphs = function ($body, rankings, shifts, context) {
@@ -2677,15 +2500,11 @@ var BodyRenderer = (function () {
         $lines.exit().remove();
         $slopes.exit().remove();
     };
-    /**
-     * render the body
-     */
     BodyRenderer.prototype.update = function () {
         var _this = this;
         var r = this.data.getRankings();
         var context = this.createContext(r);
         this.updateClipPaths(r, context);
-        //compute offsets and shifts for individual rankings and columns inside the rankings
         var offset = 0, shifts = r.map(function (d, i) {
             var r = offset;
             offset += _this.options.slopeWidth;
@@ -2766,9 +2585,8 @@ function openRenameDialog(column, $header) {
         'class': 'lu-popup2'
     }).style({
         left: pos.left + 'px',
-        top: pos.top + 'px',
-        width: '200px'
-    }).html(dialogForm('Rename Column', '<input type="text" size="20" value="' + column.label + '" required="required"><br>'));
+        top: pos.top + 'px'
+    }).html(dialogForm('Rename Column', '<input type="text" size="15" value="' + column.label + '" required="required"><br>'));
     popup.select('.ok').on('click', function () {
         var newValue = popup.select('input').property('value');
         column.setLabel(newValue);
@@ -2779,6 +2597,29 @@ function openRenameDialog(column, $header) {
     });
 }
 exports.openRenameDialog = openRenameDialog;
+function openSearchDialog(column, $header, provider) {
+    var pos = utils.offset($header.node());
+    var popup = d3.select('body').append('div')
+        .attr({
+        'class': 'lu-popup2'
+    }).style({
+        left: pos.left + 'px',
+        top: pos.top + 'px'
+    }).html(dialogForm('Search', '<input type="text" size="15" value="" required="required"><br><label><input type="checkbox">RegExp</label><br>'));
+    popup.select('.ok').on('click', function () {
+        var search = popup.select('input[type="text"]').property('value');
+        var isRegex = popup.select('input[type="text"]').property('checked');
+        if (isRegex) {
+            search = new RegExp(search);
+        }
+        provider.searchSelect(search, column);
+        popup.remove();
+    });
+    popup.select('.cancel').on('click', function () {
+        popup.remove();
+    });
+}
+exports.openSearchDialog = openSearchDialog;
 function openEditWeightsDialog(column, $header) {
     var weights = column.weights, children = column.children.map(function (d, i) { return ({ col: d, weight: weights[i] * 100 }); });
     var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
@@ -2818,9 +2659,6 @@ function openEditWeightsDialog(column, $header) {
         column.setWeights(weights);
         $popup.remove();
     });
-    /*$popup.select('.reset').on('click', function () {
-  
-    });*/
     $popup.select('.ok').on('click', function () {
         column.setWeights(children.map(function (d) { return d.weight; }));
         $popup.remove();
@@ -2841,7 +2679,6 @@ function openCategoricalFilter(column, $header) {
         width: (400 - 10) + 'px',
         height: (300 - 40) + 'px'
     });
-    // list all data rows !
     var trData = column.categories.map(function (d) {
         return { d: d, isChecked: bak.length === 0 || bak.indexOf(d) >= 0 };
     });
@@ -3010,18 +2847,11 @@ function openCategoricalMappingEditor(column, $header) {
         column.setRange(range);
         $popup.remove();
     });
-    /*$popup.select('.reset').on('click', function () {
-  
-    });*/
     $popup.select('.ok').on('click', function () {
         column.setRange(children.map(function (d) { return d.range / 100; }));
         $popup.remove();
     });
 }
-/**
- * returns all known filter dialogs mappings
- * @return
- */
 function filterDialogs() {
     return {
         string: openStringFilter,
@@ -3044,13 +2874,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 ///<reference path='../typings/tsd.d.ts' />
 var d3 = require('d3');
-/**
- * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
- * @param callback
- * @param thisCallback
- * @param timeToDelay
- * @return {function(...[any]): undefined}
- */
 function delayedCall(callback, timeToDelay, thisCallback) {
     if (timeToDelay === void 0) { timeToDelay = 100; }
     if (thisCallback === void 0) { thisCallback = this; }
@@ -3069,12 +2892,6 @@ function delayedCall(callback, timeToDelay, thisCallback) {
     };
 }
 exports.delayedCall = delayedCall;
-/**
- * utility for AEventDispatcher to forward an event
- * @param to
- * @param event
- * @return {function(...[any]): undefined}
- */
 function forwardEvent(to, event) {
     return function () {
         var args = [];
@@ -3086,9 +2903,6 @@ function forwardEvent(to, event) {
     };
 }
 exports.forwardEvent = forwardEvent;
-/**
- * base class for event dispatching using d3 event mechanism
- */
 var AEventDispatcher = (function () {
     function AEventDispatcher() {
         this.forwarder = forwardEvent(this);
@@ -3107,10 +2921,6 @@ var AEventDispatcher = (function () {
         }
         return this.listeners.on(type);
     };
-    /**
-     * return the list of events to be able to dispatch
-     * @return {Array}
-     */
     AEventDispatcher.prototype.createEventList = function () {
         return [];
     };
@@ -3154,7 +2964,6 @@ var AEventDispatcher = (function () {
 exports.AEventDispatcher = AEventDispatcher;
 var TYPE_OBJECT = '[object Object]';
 var TYPE_ARRAY = '[object Array]';
-//credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
 function merge() {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -3190,11 +2999,6 @@ function merge() {
     return result;
 }
 exports.merge = merge;
-/**
- * computes the absolute offset of the given element
- * @param element
- * @return {{left: number, top: number, width: number, height: number}}
- */
 function offset(element) {
     var obj = element.getBoundingClientRect();
     return {
@@ -3205,9 +3009,6 @@ function offset(element) {
     };
 }
 exports.offset = offset;
-/**
- * content scroller utility
- */
 var ContentScroller = (function (_super) {
     __extends(ContentScroller, _super);
     function ContentScroller(container, content, options) {
@@ -3233,26 +3034,19 @@ var ContentScroller = (function (_super) {
     };
     ContentScroller.prototype.select = function (start, length, row2y) {
         var top = this.container.scrollTop - this.shift, bottom = top + this.container.clientHeight, i = 0, j;
-        /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
-         if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
-         console.log('show all');
-         return [0, data.length];
-         }*/
         if (top > 0) {
             i = Math.round(top / this.options.rowHeight);
-            //count up till really even partial rows are visible
             while (i >= start && row2y(i + 1) > top) {
                 i--;
             }
-            i -= this.options.backupRows; //one more row as backup for scrolling
+            i -= this.options.backupRows;
         }
         {
             j = Math.round(bottom / this.options.rowHeight);
-            //count down till really even partial rows are visible
             while (j <= length && row2y(j - 1) < bottom) {
                 j++;
             }
-            j += this.options.backupRows; //one more row as backup for scrolling
+            j += this.options.backupRows;
         }
         return {
             from: Math.max(i, start),
@@ -3262,7 +3056,6 @@ var ContentScroller = (function (_super) {
     ContentScroller.prototype.onScroll = function () {
         var top = this.container.scrollTop;
         var left = this.container.scrollLeft;
-        //at least one row changed
         this.fire('scroll', top, left);
         if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
             this.prevScrollTop = top;
@@ -3275,9 +3068,6 @@ var ContentScroller = (function (_super) {
     return ContentScroller;
 })(AEventDispatcher);
 exports.ContentScroller = ContentScroller;
-/**
- * checks whether the given DragEvent has one of the given types
- **/
 function hasDnDType(e, typesToCheck) {
     var types = e.dataTransfer.types;
     if (typeof types.indexOf === 'function') {
@@ -3292,9 +3082,6 @@ function hasDnDType(e, typesToCheck) {
     return false;
 }
 exports.hasDnDType = hasDnDType;
-/**
- * should it be a copy dnd operation?
- */
 function copyDnD(e) {
     var dT = e.dataTransfer;
     return (e.ctrlKey && dT.effectAllowed.match(/copy/gi)) || (!dT.effectAllowed.match(/move/gi));
@@ -3310,16 +3097,10 @@ function updateDropEffect(e) {
     }
 }
 exports.updateDropEffect = updateDropEffect;
-/**
- * returns a d3 callable function to make an element dropable
- * @param mimeTypes the mime types to be dropable
- * @param onDrop: handler when an element is dropped
- */
 function dropAble(mimeTypes, onDrop) {
     return function ($node) {
         $node.on('dragenter', function () {
             var e = d3.event;
-            //var xy = d3.mouse($node.node());
             if (hasDnDType(e, mimeTypes)) {
                 return false;
             }
@@ -3332,12 +3113,10 @@ function dropAble(mimeTypes, onDrop) {
                 return false;
             }
         }).on('dragleave', function () {
-            //
             d3.select(this).classed('drag_over', false);
         }).on('drop', function (d) {
             var e = d3.event;
             e.preventDefault();
-            //var xy = d3.mouse($node.node());
             if (hasDnDType(e, mimeTypes)) {
                 var data = {};
                 mimeTypes.forEach(function (mime) {

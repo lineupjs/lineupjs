@@ -72,7 +72,7 @@ export class PoolRenderer {
           }
           entry.used += change;
         });
-      })
+      });
     }
     this.update();
   }
@@ -505,7 +505,7 @@ export class BodyRenderer {
   }
 
   select(data_index: number, additional = false) {
-
+    //TODO
   }
 
   mouseOver(dataIndex:number, hover = true) {

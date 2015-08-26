@@ -276,7 +276,7 @@ class CategoricalRenderer extends DefaultCellRenderer {
       fill: (d) => col.getColor(d)
     }).attr({
       height: (d,i) => Math.max(context.rowHeight(i)-2,0),
-      width: (d,i) => Math.max(context.rowHeight(i)-2,0),
+      width: (d,i) => Math.max(context.rowHeight(i)-2,0)
     });
 
     $rows.exit().remove();

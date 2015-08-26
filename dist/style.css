@@ -39,13 +39,14 @@
     position: absolute;
     right: 10px; }
 
-.lu-popup
-.lu-popup2 {
+.lu-popup, .lu-popup2 {
   background-color: rgba(255, 255, 255, 0.5);
   position: absolute;
   padding: 2px;
-  font-size: 9pt;
+  font-size: 8pt;
   clear: right; }
+  .lu-popup input, .lu-popup2 input {
+    font-size: 8pt; }
 
 .lu-popup2 * {
   margin: 0; }
@@ -75,14 +76,18 @@
 .lu text {
   dominant-baseline: text-before-edge; }
 
+.lu text.rank {
+  text-anchor: end; }
+
 .lu *[draggable] {
   cursor: pointer;
   cursor: -webkit-grab; }
 
 .lu line.slope {
-  stroke: black;
+  stroke: darkgray;
+  stroke-width: 2;
   shape-rendering: geometricPrecision; }
-  .lu line.slope:hover {
+  .lu line.slope.hover {
     stroke: #e5e5e5; }
 
 .lu g.cols {
@@ -143,5 +148,3 @@
   padding: 1px; }
   .lu div.lu-header div.toolbar i:hover {
     color: darkblue; }
-
-/*# sourceMappingURL=style.css.map */

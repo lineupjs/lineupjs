@@ -223,7 +223,7 @@ export class ContentScroller extends AEventDispatcher {
 
 /**
  * checks whether the given DragEvent has one of the given types
- **/
+ */
 export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
   var types : any = e.dataTransfer.types;
   if (typeof types.indexOf === 'function') {
