@@ -130,6 +130,7 @@ export class HeaderRenderer {
     slopeWidth: 150,
     columnPadding : 5,
     headerHeight: 20,
+    manipulative: true,
 
     filterDialogs : dialogs.filterDialogs(),
     searchAble: (col: model.Column) => col instanceof model.StringColumn
@@ -243,7 +244,7 @@ export class HeaderRenderer {
     var $headers = $base.selectAll('div.'+clazz).data(columns, (d) => d.id);
     var $headers_enter = $headers.enter().append('div').attr({
       'class': clazz,
-      'draggable': true
+      'draggable': this.options.manipulative
     }).on('dragstart', (d) => {
       var e = <DragEvent>(<any>d3.event);
       e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
@@ -251,34 +252,37 @@ export class HeaderRenderer {
       e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
       e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
     }).on('click', (d) => {
-      d.toggleMySorting();
+      if (this.options.manipulative) {
+        d.toggleMySorting();
+      }
     }).style({
       'background-color': (d) => d.color
     });
     $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
     $headers_enter.append('span').classed('label',true);
 
-    $headers_enter.append('div').classed('handle',true)
-      .call(this.dragHandler)
-      .style('width',this.options.columnPadding+'px')
-      .call(utils.dropAble(['application/caleydo-lineup-column-ref','application/caleydo-lineup-column'], (data, d: model.Column, copy) => {
-        var col: model.Column = null;
-        if ('application/caleydo-lineup-column-ref' in data) {
-          var id = data['application/caleydo-lineup-column-ref'];
-          col = provider.find(id);
-          if (copy) {
-            col = provider.clone(col);
+    if (this.options.manipulative) {
+      $headers_enter.append('div').classed('handle', true)
+        .call(this.dragHandler)
+        .style('width', this.options.columnPadding + 'px')
+        .call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d:model.Column, copy) => {
+          var col:model.Column = null;
+          if ('application/caleydo-lineup-column-ref' in data) {
+            var id = data['application/caleydo-lineup-column-ref'];
+            col = provider.find(id);
+            if (copy) {
+              col = provider.clone(col);
+            } else {
+              col.removeMe();
+            }
           } else {
-            col.removeMe();
+            var desc = JSON.parse(data['application/caleydo-lineup-column']);
+            col = provider.create(provider.fromDescRef(desc));
           }
-        } else {
-          var desc = JSON.parse(data['application/caleydo-lineup-column']);
-          col = provider.create(provider.fromDescRef(desc));
-        }
-        return d.insertAfterMe(col);
-      }));
-    $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
-
+          return d.insertAfterMe(col);
+        }));
+      $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
+    }
     $headers.style({
       width: (d, i) => (shifts[i].width+this.options.columnPadding)+'px',
       left: (d, i) => shifts[i].offset+'px'
@@ -325,12 +329,14 @@ export class BodyRenderer {
   private mouseOverItem:(dataIndex:number, hover:boolean) => void;
   private options = {
     rowHeight: 20,
-    rowSep: 1,
+    rowPadding: 1,
+    rowBarPadding : 1,
     idPrefix: '',
     slopeWidth: 150,
     columnPadding : 5,
-    showStacked: true,
-    animated: 0, //200
+    stacked: true,
+    animation: false, //200
+    animationDuration: 1000,
 
     renderers: renderer.renderers()
 
@@ -347,6 +353,10 @@ export class BodyRenderer {
     this.changeDataStorage(data);
   }
 
+  setOption(key: string, value: any) {
+    this.options[key] = value;
+  }
+
   changeDataStorage(data: provider.DataProvider) {
     if (this.data) {
       this.data.on('dirtyValues.bodyRenderer', null);
@@ -360,13 +370,13 @@ export class BodyRenderer {
     return {
       rowKey: this.data.rowKey,
       cellY(index:number) {
-        return index * (options.rowHeight+options.rowSep);
+        return index * (options.rowHeight);
       },
       cellX(index:number) {
         return 0;
       },
       rowHeight(index:number) {
-        return options.rowHeight;
+        return options.rowHeight* (1-options.rowPadding);
       },
       renderer(col:model.Column) {
         if (col instanceof model.StackColumn && col.collapsed) {
@@ -376,11 +386,13 @@ export class BodyRenderer {
         return l || renderer.defaultRenderer();
       },
       showStacked(col:model.StackColumn) {
-        return options.showStacked;
+        return options.stacked;
       },
       idPrefix: options.idPrefix,
 
-      animated: ($sel: d3.Selection<any>) => options.animated > 0 ? $sel.transition().duration(options.animated) : $sel
+      animated: ($sel: d3.Selection<any>) => options.animation ? $sel.transition().duration(options.animationDuration) : $sel,
+
+      option : (key:string, default_: any) => (key in options) ? options[key] : default_
     };
   }
 

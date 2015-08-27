@@ -27,7 +27,7 @@ export class LineUp extends utils_.AEventDispatcher {
   config = {
     numberformat: d3.format('.3n'),
     htmlLayout: {
-      headerHeight: 50,
+      headerHeight: 20,
       headerOffset: 1,
       buttonTopPadding: 10,
       labelLeftPadding: 5,
@@ -44,23 +44,7 @@ export class LineUp extends utils_.AEventDispatcher {
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
       backupScrollRows: 4,
-      animationDuration: 1000,
-      plusSigns: {
-        addStackedColumn: {
-          title: 'add stacked column',
-          action: 'addNewEmptyStackedColumn',
-          x: 0, y: 2,
-          w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
-        }
-      },
-      rowActions: new Array<{name: string; icon: string; action: (row: any) => void; }>()
-        /*{
-         name: 'explore',
-         icon: '\uf067',
-         action: function(row) {
-         console.log(row);
-         }
-         }*/
+      animationDuration: 1000
     },
     /* enables manipulation features, remove column, reorder,... */
     manipulative: true,
@@ -85,8 +69,18 @@ export class LineUp extends utils_.AEventDispatcher {
     this.$container = this.$container.append('div').classed('lu', true);
     utils.merge(this.config, config);
 
-    this.header = new ui_.HeaderRenderer(data,  this.node, this.config);
-    this.body = new ui_.BodyRenderer(data, this.node, this.config);
+    this.header = new ui_.HeaderRenderer(data,  this.node, {
+      manipulative: this.config.manipulative,
+      headerHeight: this.config.htmlLayout.headerHeight
+    });
+    this.body = new ui_.BodyRenderer(data, this.node, {
+      rowHeight: this.config.svgLayout.rowHeight,
+      rowPadding : this.config.svgLayout.rowPadding,
+      rowBarPadding: this.config.svgLayout.rowBarPadding,
+      animationDuration: this.config.svgLayout.animationDuration,
+      animation: this.config.renderingOptions.animation,
+      stacked: this.config.renderingOptions.stacked
+    });
     if(this.config.pool) {
       this.pool = new ui_.PoolRenderer(data, this.node, this.config);
     }
@@ -145,7 +139,11 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 
   changeRenderingOption(option: string, value: boolean) {
-    //TODO
+    this.config.renderingOptions[option] = value;
+    if (option === 'animation' || option === 'stacked') {
+      this.body.setOption(option, value);
+      this.body.update();
+    }
   }
 }
 

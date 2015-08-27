@@ -48,6 +48,8 @@ export interface IRenderContext {
   idPrefix: string;
 
   animated<T>($sel: d3.Selection<T>) : any;
+
+  option<T>(key: string, default_ : T): T;
 }
 
 /**
@@ -161,8 +163,8 @@ export class BarCellRenderer extends DefaultCellRenderer {
     $rows.enter().append('rect').attr('class', 'bar').style('fill', col.color);
     context.animated($rows).attr({
       x: (d, i) => context.cellX(i),
-      y: (d, i) => context.cellY(i) + 1,
-      height: (d, i) => context.rowHeight(i) - 2,
+      y: (d, i) => context.cellY(i) + context.option('rowPadding',1),
+      height: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2,
       width: (d) => col.getWidth() * col.getValue(d),
       'data-index': (d, i) => i
     }).style({
@@ -262,20 +264,20 @@ class CategoricalRenderer extends DefaultCellRenderer {
       'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
     });
     $rows_enter.append('rect').attr({
-      y: 1
+      y: context.option('rowPadding', 1)
     });
     var $update = context.animated($rows).attr({
       'data-index': (d, i) => i,
       transform: (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'
     });
     $update.select('text').attr({
-      x: (d,i) => context.rowHeight(i)
+      x: (d, i) => context.rowHeight(i)
     }).text((d) => col.getLabel(d));
     $update.select('rect').style({
       fill: (d) => col.getColor(d)
     }).attr({
-      height: (d,i) => Math.max(context.rowHeight(i)-2,0),
-      width: (d,i) => Math.max(context.rowHeight(i)-2,0)
+      height: (d, i) => Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0),
+      width: (d, i) => Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0)
     });
 
     $rows.exit().remove();
