@@ -186,8 +186,7 @@ export class BarCellRenderer extends DefaultCellRenderer {
       $row.append('text').datum(rowNode.datum()).attr({
         'class': 'number',
         'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
-        x: context.cellX(index),
-        y: context.cellY(index)
+        transform: 'translate('+context.cellX(index)+','+context.cellY(index)+')'
       }).text((d) => col.getLabel(d));
     }
   }

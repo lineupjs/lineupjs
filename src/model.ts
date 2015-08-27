@@ -264,7 +264,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
       this.scale.range(dump.range);
     }
     if (dump.mapping) {
-      this.mapping.domain(dump.mapping.scale).range(dump.mapping.range);
+      this.mapping.domain(dump.mapping.domain).range(dump.mapping.range);
     }
     if (dump.filter) {
       this.filter_ = dump.filter;
@@ -965,7 +965,9 @@ export class RankColumn extends ValueColumn<number> {
   dump(toDescRef:(desc:any) => any) {
     var r = super.dump(toDescRef);
     r.columns = this.columns_.map((d) => d.dump(toDescRef));
-    r.sortCriteria = this.sortCriteria();
+    r.sortCriteria = {
+      asc: this.ascending
+    };
     if (this.sortBy_) {
       r.sortCriteria.sortBy = this.sortBy_.id; //store the index not the object
     }

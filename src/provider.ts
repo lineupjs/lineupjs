@@ -77,11 +77,15 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   pushRanking(existing?:model.RankColumn) {
     var r = this.cloneRanking(existing);
+    this.pushRankingImpl(r);
+    return r;
+  }
+
+  private pushRankingImpl(r: model.RankColumn) {
     this.rankings_.push(r);
     this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyValues.provider');
     r.on('dirtyOrder.provider',this.reorder);
     this.fire(['addRanking','dirtyHeader','dirtyValues','dirty'], r);
-    return r;
   }
 
   removeRanking(ranking:model.RankColumn) {
@@ -192,15 +196,19 @@ export class DataProvider extends utils.AEventDispatcher {
       return c;
     };
     this.uid = dump.uid || 0;
-    this.rankings_ = dump.rankings ? dump.rankings.map(create) : [];
     if (dump.selection) {
       dump.selection.forEach((s) => this.selection.add(String(s)));
     }
 
-
+    if (dump.rankings) {
+      dump.rankings.forEach((r) => {
+        var ranking = this.pushRanking();
+        ranking.restore(r, create);
+      })
+    }
     if (dump.layout) { //we have the old format try to create it
-      this.rankings_ = Object.keys(dump.layout).map((key) => {
-        return this.deriveRanking(dump.layout[key]);
+      Object.keys(dump.layout).forEach((key) => {
+        this.deriveRanking(dump.layout[key]);
       });
     }
   }
@@ -239,7 +247,7 @@ export class DataProvider extends utils.AEventDispatcher {
       }
       return null;
     };
-    var r = this.cloneRanking();
+    var r = this.pushRanking();
     bundle.forEach((column) => {
       var col = toCol(column);
       if (col) {

@@ -119,10 +119,10 @@ export class LineUp extends utils_.AEventDispatcher {
     return s;
   }
 
-  changeDataStorage(data: provider_.DataProvider, dump: any) {
+  changeDataStorage(data: provider_.DataProvider, dump?: any) {
     this.data = data;
     if (dump) {
-      this.restore(dump);
+      this.data.restore(dump);
     }
     this.header.changeDataStorage(data);
     this.body.changeDataStorage(data);
@@ -133,8 +133,7 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 
   restore(dump: any) {
-    this.data.restore(dump);
-    this.update();
+    this.changeDataStorage(this.data, dump);
   }
 
   update() {

@@ -384,7 +384,7 @@ export class BodyRenderer {
     };
   }
 
-  updateClipPathsImpl(r:model.Column[],context:renderer.IRenderContext) {
+  updateClipPathsImpl(r:model.Column[],context:renderer.IRenderContext, height: number) {
     var $base = this.$node.select('defs.body');
     if ($base.empty()) {
       $base = this.$node.append('defs').classed('body',true);
@@ -399,24 +399,24 @@ export class BodyRenderer {
     textClipPath.enter().append('clipPath')
       .attr('id', (d) => context.idPrefix+'clipCol'+d.id)
       .append('rect').attr({
-        y: 0,
-        height: 1000
+        y: 0
       });
     textClipPath.exit().remove();
     textClipPath.select('rect')
       .attr({
         x: 0, //(d,i) => offsets[i],
-        width: (d) => Math.max(d.getWidth() - 5, 0)
+        width: (d) => Math.max(d.getWidth() - 5, 0),
+        height: height
       });
   }
 
-  updateClipPaths(rankings:model.RankColumn[], context:renderer.IRenderContext) {
+  updateClipPaths(rankings:model.RankColumn[], context:renderer.IRenderContext, height: number) {
     var shifts = [], offset = 0;
     rankings.forEach((r) => {
       var w = r.flatten(shifts, offset, 2, this.options.columnPadding);
       offset += w + this.options.slopeWidth;
     });
-    this.updateClipPathsImpl(shifts.map(s => s.col), context);
+    this.updateClipPathsImpl(shifts.map(s => s.col), context, height);
   }
 
   renderRankings($body: d3.Selection<any>, rankings:model.RankColumn[], shifts:any[], context:renderer.IRenderContext) {
@@ -586,7 +586,6 @@ export class BodyRenderer {
     var r = this.data.getRankings();
     var context = this.createContext(r);
 
-    this.updateClipPaths(r, context);
 
     //compute offsets and shifts for individual rankings and columns inside the rankings
     var offset = 0,
@@ -610,9 +609,12 @@ export class BodyRenderer {
         };
       });
 
+    var height = this.options.rowHeight * d3.max(r, (d) => d.getOrder().length);
     this.$node.attr({
-      width: offset
+      width: offset,
+      height : height
     });
+    this.updateClipPaths(r, context, height);
 
 
     var $body = this.$node.select('g.body');
@@ -622,19 +624,5 @@ export class BodyRenderer {
 
     this.renderRankings($body, r, shifts, context);
     this.renderSlopeGraphs($body, r, shifts, context);
-  }
-}
-
-export class LineUpRenderer {
-
-
-  private options = {
-    pool: true
-  };
-
-  constructor(root: Element, data: provider.DataProvider, columns: provider.IColumnDesc[], options : any = {}) {
-    utils.merge(this.options, options);
-    root = <Element>d3.select(root).append('div').classed('lu', true).node();
-
   }
 }

@@ -57,7 +57,15 @@
 
   }
 
+  function setColors(columns) {
+    var colors = d3.scale.category10().range().slice();
+    columns.forEach(function(col) {
+      col.color = col.color || colors.shift();
+    });
+  }
+
   function loadDataImpl(name, desc, _data) {
+    setColors(desc.columns);
     var provider = LineUpJS.createLocalStorage(_data, desc.columns);
 
     if (lineup) {
@@ -132,11 +140,12 @@
     var str = JSON.stringify(s, null, '\t');
     //create blob and save it
     var blob = new Blob([str], {type: "application/json;charset=utf-8"});
-    saveAs(blob, 'LineUp-' + lineup.spec.name + '.json');
+    saveAs(blob, 'LineUp-'+(new Date())+'.json');
   }
 
   function loadLayout() {
     function loadDataImpl(name, desc, _data) {
+      setColors(desc.columns);
       var provider = LineUpJS.createLocalStorage(_data, desc.columns);
       lineup.changeDataStorage(provider, desc);
       updateMenu();
