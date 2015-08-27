@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-08-26
+/*! LineUpJS - v0.1.0 - 2015-08-27
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -66,39 +66,25 @@ var LineUp = (function (_super) {
         _super.call(this);
         this.data = data;
         this.config = {
-            grayColor: '#999999',
             numberformat: d3.format('.3n'),
             htmlLayout: {
-                headerHeight: 50,
+                headerHeight: 20,
                 headerOffset: 1,
                 buttonTopPadding: 10,
-                labelLeftPadding: 5,
-                buttonRightPadding: 15,
-                buttonWidth: 13
+                labelLeftPadding: 5
             },
             renderingOptions: {
                 stacked: false,
-                values: false,
                 animation: true,
-                histograms: false
+                visibleRowsOnly: true
             },
             svgLayout: {
-                mode: 'combined',
                 rowHeight: 17,
                 rowPadding: 0.2,
                 rowBarPadding: 1,
+                visibleRowsOnly: true,
                 backupScrollRows: 4,
-                animationDuration: 1000,
-                addPlusSigns: false,
-                plusSigns: {
-                    addStackedColumn: {
-                        title: 'add stacked column',
-                        action: 'addNewEmptyStackedColumn',
-                        x: 0, y: 2,
-                        w: 21, h: 21
-                    }
-                },
-                rowActions: new Array()
+                animationDuration: 1000
             },
             manipulative: true,
             interaction: {
@@ -106,77 +92,63 @@ var LineUp = (function (_super) {
                 multiselect: function () { return false; },
                 rangeselect: function () { return false; }
             },
-            filter: {
-                skip: 0,
-                limit: Number.POSITIVE_INFINITY,
-                filter: undefined
-            }
+            pool: false
         };
+        this.body = null;
+        this.header = null;
+        this.pool = null;
+        this.contentScroller = null;
         this.$container = container instanceof d3.selection ? container : d3.select(container);
+        this.$container = this.$container.append('div').classed('lu', true);
         exports.utils.merge(this.config, config);
-        if (this.config.svgLayout.mode === 'combined') {
-            this.$container.classed('lu-mode-combined', true);
-            this.$table = this.$container.append('svg').attr('class', 'lu');
-            var $defs = this.$table.append('defs');
-            $defs.append('defs').attr('class', 'columnheader');
-            $defs.append('defs').attr('class', 'column');
-            $defs.append('defs').attr('class', 'overlay');
-            this.$body = this.$table.append('g').attr('class', 'body').attr('transform', 'translate(0,' + this.config.htmlLayout.headerHeight + ')');
-            this.$header = this.$table.append('g').attr('class', 'header');
-            this.$bodySVG = this.$headerSVG = this.$table;
-            this.scroller = new exports.utils.ContentScroller(this.$container.node(), this.$table.node(), {
-                topShift: this.config.htmlLayout.headerHeight,
-                backupRows: this.config.svgLayout.backupScrollRows,
-                rowHeight: this.config.svgLayout.rowHeight
-            });
-        }
-        else {
-            this.$container.classed('lu-mode-separate', true);
-            this.$table = this.$container;
-            this.$headerSVG = this.$table.append('svg').attr('class', 'lu lu-header');
-            this.$headerSVG.attr('height', this.config.htmlLayout.headerHeight);
-            this.$headerSVG.append('defs').attr('class', 'columnheader');
-            this.$header = this.$headerSVG.append('g');
-            this.$bodySVG = this.$table.append('div').attr('class', 'lu-wrapper').append('svg').attr('class', 'lu lu-body');
-            var $defs = this.$bodySVG.append('defs');
-            $defs.append('defs').attr('class', 'column');
-            $defs.append('defs').attr('class', 'overlay');
-            this.$body = this.$bodySVG;
-            this.scroller = new exports.utils.ContentScroller(this.$container.select('div.lu-wrapper').node(), this.$table.node(), {
-                topShift: 0,
-                backupRows: this.config.svgLayout.backupScrollRows,
-                rowHeight: this.config.svgLayout.rowHeight
-            });
-        }
-        this.$header.append('rect').attr({
-            width: '100%',
-            height: this.config.htmlLayout.headerHeight,
-            'class': 'headerbg'
+        this.header = new ui_.HeaderRenderer(data, this.node, {
+            manipulative: this.config.manipulative,
+            headerHeight: this.config.htmlLayout.headerHeight
         });
-        this.$header.append('g').attr('class', 'main');
-        this.$header.append('g').attr('class', 'overlay');
-        this.scroller.on('scroll', function (top, left) { return _this.scrolled(top, left); });
-        this.scroller.on('redraw', function () { return _this.renderBody(); });
+        this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
+            rowHeight: this.config.svgLayout.rowHeight,
+            rowPadding: this.config.svgLayout.rowPadding,
+            rowBarPadding: this.config.svgLayout.rowBarPadding,
+            animationDuration: this.config.svgLayout.animationDuration,
+            animation: this.config.renderingOptions.animation,
+            stacked: this.config.renderingOptions.stacked
+        });
+        if (this.config.pool && this.config.manipulative) {
+            this.pool = new ui_.PoolRenderer(data, this.node, this.config);
+        }
+        if (this.config.svgLayout.visibleRowsOnly) {
+            this.contentScroller = new utils_.ContentScroller(this.$container.node(), this.body.node, {
+                backupRows: this.config.svgLayout.backupScrollRows,
+                rowHeight: this.config.svgLayout.rowHeight,
+                topShift: this.config.htmlLayout.headerHeight
+            });
+            this.contentScroller.on('scroll', function (top, left) {
+                console.log(top, left, 'ss');
+                _this.header.$node.style('transform', 'translate(' + -left + 'px,' + top + 'px)');
+            });
+            this.contentScroller.on('redraw', this.body.update.bind(this.body));
+        }
     }
-    LineUp.prototype.renderBody = function () {
-        console.log('TODO');
-    };
     LineUp.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['hover', 'change-sortcriteria', 'change-filter', 'selected', 'multiselected']);
+        return _super.prototype.createEventList.call(this).concat(['hoverChanged', 'selectionChanged']);
     };
-    LineUp.prototype.scrolled = function (top, left) {
-        if (this.config.svgLayout.mode === 'combined') {
-            this.$header.attr('transform', 'translate(0,' + top + ')');
+    Object.defineProperty(LineUp.prototype, "node", {
+        get: function () {
+            return this.$container.node();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    LineUp.prototype.slice = function (start, length, row2y) {
+        if (this.contentScroller) {
+            return this.contentScroller.select(start, length, row2y);
         }
-        else {
-            this.$header.attr('transform', 'translate(' + -left + ',0)');
-        }
+        return { from: start, to: length };
     };
     LineUp.prototype.destroy = function () {
-        this.scroller.destroy();
-        this.$container.selectAll('*').remove();
-        if (this.config.svgLayout.mode === 'combined') {
-            this.$container.on('scroll.lineup', null);
+        this.$container.remove();
+        if (this.contentScroller) {
+            this.contentScroller.destroy();
         }
     };
     LineUp.prototype.sortBy = function (column, ascending) {
@@ -187,9 +159,51 @@ var LineUp = (function (_super) {
         }
         return col !== null;
     };
+    LineUp.prototype.dump = function () {
+        var s = this.data.dump();
+        return s;
+    };
+    LineUp.prototype.changeDataStorage = function (data, dump) {
+        this.data = data;
+        if (dump) {
+            this.data.restore(dump);
+        }
+        this.header.changeDataStorage(data);
+        this.body.changeDataStorage(data);
+        if (this.pool) {
+            this.pool.changeDataStorage(data);
+        }
+        this.update();
+    };
+    LineUp.prototype.restore = function (dump) {
+        this.changeDataStorage(this.data, dump);
+    };
+    LineUp.prototype.update = function () {
+        this.header.update();
+        this.body.update();
+        if (this.pool) {
+            this.pool.update();
+        }
+    };
+    LineUp.prototype.changeRenderingOption = function (option, value) {
+        this.config.renderingOptions[option] = value;
+        if (option === 'animation' || option === 'stacked') {
+            this.body.setOption(option, value);
+            this.body.update();
+        }
+    };
     return LineUp;
 })(utils_.AEventDispatcher);
 exports.LineUp = LineUp;
+function createLocalStorage(data, columns) {
+    return new provider_.LocalDataProvider(data, columns);
+}
+exports.createLocalStorage = createLocalStorage;
+function create(container, data, config) {
+    if (config === void 0) { config = {}; }
+    return new LineUp(container, data, config);
+}
+exports.create = create;
 
 },{"./model":3,"./provider":4,"./renderer":5,"./ui":6,"./ui_dialogs":7,"./utils":8,"d3":undefined}],2:[function(require,module,exports){
 /**
@@ -511,14 +525,19 @@ var Column = (function (_super) {
         return null;
     };
     Column.prototype.dump = function (toDescRef) {
-        return {
+        var r = {
             id: this.id,
             desc: toDescRef(this.desc),
             width: this.width_
         };
+        if (this.label !== (this.desc.label || this.id)) {
+            r.label = this.label;
+        }
+        return r;
     };
     Column.prototype.restore = function (dump, factory) {
-        this.width_ = dump.width;
+        this.width_ = dump.width || this.width_;
+        this.label = dump.label || this.label;
     };
     Column.prototype.getLabel = function (row) {
         return '' + this.getValue(row);
@@ -589,11 +608,21 @@ var NumberColumn = (function (_super) {
     };
     NumberColumn.prototype.restore = function (dump, factory) {
         _super.prototype.restore.call(this, dump, factory);
-        this.scale.domain(dump.domain);
-        this.scale.range(dump.range);
-        this.mapping.domain(dump.mapping.scale).range(dump.mapping.range);
-        this.filter_ = dump.filter;
-        this.missingValue = dump.missingValue;
+        if (dump.domain) {
+            this.scale.domain(dump.domain);
+        }
+        if (dump.range) {
+            this.scale.range(dump.range);
+        }
+        if (dump.mapping) {
+            this.mapping.domain(dump.mapping.domain).range(dump.mapping.range);
+        }
+        if (dump.filter) {
+            this.filter_ = dump.filter;
+        }
+        if (dump.missingValue) {
+            this.missingValue = dump.missingValue;
+        }
     };
     NumberColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
@@ -825,7 +854,9 @@ var CategoricalColumn = (function (_super) {
     CategoricalColumn.prototype.restore = function (dump, factory) {
         _super.prototype.restore.call(this, dump, factory);
         this.filter_ = dump.filter || null;
-        this.colors.domain(dump.colors.domain).range(dump.colors.range);
+        if (dump.colors) {
+            this.colors.domain(dump.colors.domain).range(dump.colors.range);
+        }
     };
     CategoricalColumn.prototype.isFiltered = function () {
         return this.filter_ != null;
@@ -924,7 +955,9 @@ var CategoricalNumberColumn = (function (_super) {
     };
     CategoricalNumberColumn.prototype.restore = function (dump, factory) {
         CategoricalColumn.prototype.restore.call(this, dump, factory);
-        this.scale.domain(dump.scale.domain).range(dump.scale.range);
+        if (dump.scale) {
+            this.scale.domain(dump.scale.domain).range(dump.scale.range);
+        }
     };
     CategoricalNumberColumn.prototype.getScale = function () {
         return {
@@ -968,6 +1001,7 @@ var StackColumn = (function (_super) {
         };
     }
     StackColumn.desc = function (label) {
+        if (label === void 0) { label = 'Combined'; }
         return { type: 'stack', label: label };
     };
     StackColumn.prototype.createEventList = function () {
@@ -1035,7 +1069,9 @@ var StackColumn = (function (_super) {
     };
     StackColumn.prototype.restore = function (dump, factory) {
         var _this = this;
-        this.missingValue = dump.missingValue;
+        if (dump.missingValue) {
+            this.missingValue = dump.missingValue;
+        }
         dump.children.map(function (child) {
             _this.push(factory(child));
         });
@@ -1198,7 +1234,9 @@ var RankColumn = (function (_super) {
     RankColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
         r.columns = this.columns_.map(function (d) { return d.dump(toDescRef); });
-        r.sortCriteria = this.sortCriteria();
+        r.sortCriteria = {
+            asc: this.ascending
+        };
         if (this.sortBy_) {
             r.sortCriteria.sortBy = this.sortBy_.id;
         }
@@ -1210,9 +1248,11 @@ var RankColumn = (function (_super) {
         dump.columns.map(function (child) {
             _this.push(factory(child.col));
         });
-        this.ascending = dump.sortCriteria.asc;
-        if (dump.sortCriteria.sortBy) {
-            this.sortBy(this.columns_.filter(function (d) { return d.id === dump.sortCriteria.sortBy; })[0], dump.sortCriteria.asc);
+        if (dump.sortCriteria) {
+            this.ascending = dump.sortCriteria.asc;
+            if (dump.sortCriteria.sortBy) {
+                this.sortBy(this.columns_.filter(function (d) { return d.id === dump.sortCriteria.sortBy; })[0], dump.sortCriteria.asc);
+            }
         }
     };
     RankColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
@@ -1431,13 +1471,19 @@ var DataProvider = (function (_super) {
     DataProvider.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'selectionChanged']);
     };
+    DataProvider.prototype.getColumns = function () {
+        return [];
+    };
     DataProvider.prototype.pushRanking = function (existing) {
         var r = this.cloneRanking(existing);
+        this.pushRankingImpl(r);
+        return r;
+    };
+    DataProvider.prototype.pushRankingImpl = function (r) {
         this.rankings_.push(r);
         this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyValues.provider');
         r.on('dirtyOrder.provider', this.reorder);
         this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r);
-        return r;
     };
     DataProvider.prototype.removeRanking = function (ranking) {
         var i = this.rankings_.indexOf(ranking);
@@ -1510,6 +1556,7 @@ var DataProvider = (function (_super) {
         var _this = this;
         return {
             uid: this.uid,
+            selection: this.selection.values().map(Number),
             rankings: this.rankings_.map(function (r) { return r.dump(_this.toDescRef); })
         };
     };
@@ -1528,8 +1575,60 @@ var DataProvider = (function (_super) {
             c.restore(d, create);
             return c;
         };
-        this.uid = dump.uid;
-        this.rankings_ = dump.rankings.map(create);
+        this.uid = dump.uid || 0;
+        if (dump.selection) {
+            dump.selection.forEach(function (s) { return _this.selection.add(String(s)); });
+        }
+        if (dump.rankings) {
+            dump.rankings.forEach(function (r) {
+                var ranking = _this.pushRanking();
+                ranking.restore(r, create);
+            });
+        }
+        if (dump.layout) {
+            Object.keys(dump.layout).forEach(function (key) {
+                _this.deriveRanking(dump.layout[key]);
+            });
+        }
+    };
+    DataProvider.prototype.findDesc = function (ref) {
+        return null;
+    };
+    DataProvider.prototype.deriveRanking = function (bundle) {
+        var _this = this;
+        var toCol = function (column) {
+            if (column.type === 'rank') {
+                return null;
+            }
+            if (column.type === 'stacked') {
+                var r = _this.create(model.StackColumn.desc(column.label || 'Combined'));
+                (column.children || []).forEach(function (col) {
+                    var c = toCol(col);
+                    if (c) {
+                        r.push(c);
+                    }
+                });
+                return r;
+            }
+            else {
+                var desc = _this.findDesc(column.column);
+                if (desc) {
+                    var r = _this.create(desc);
+                    column.label = column.label || desc.label || desc.column;
+                    r.restore(column);
+                    return r;
+                }
+            }
+            return null;
+        };
+        var r = this.pushRanking();
+        bundle.forEach(function (column) {
+            var col = toCol(column);
+            if (col) {
+                r.push(col);
+            }
+        });
+        return r;
     };
     DataProvider.prototype.sort = function (ranking) {
         return Promise.reject('not implemented');
@@ -1600,6 +1699,12 @@ var CommonDataProvider = (function (_super) {
         this.rowGetter = function (row, id, desc) { return row[desc.column]; };
         columns.forEach(function (d) { return d.accessor = _this.rowGetter; });
     }
+    CommonDataProvider.prototype.getColumns = function () {
+        return this.columns.slice();
+    };
+    CommonDataProvider.prototype.findDesc = function (ref) {
+        return this.columns.filter(function (c) { return c.column === ref; })[0];
+    };
     CommonDataProvider.prototype.toDescRef = function (desc) {
         return desc.column ? desc.type + '@' + desc.column : desc;
     };
@@ -1796,8 +1901,8 @@ var BarCellRenderer = (function (_super) {
         $rows.enter().append('rect').attr('class', 'bar').style('fill', col.color);
         context.animated($rows).attr({
             x: function (d, i) { return context.cellX(i); },
-            y: function (d, i) { return context.cellY(i) + 1; },
-            height: function (d, i) { return context.rowHeight(i) - 2; },
+            y: function (d, i) { return context.cellY(i) + context.option('rowPadding', 1); },
+            height: function (d, i) { return context.rowHeight(i) - context.option('rowPadding', 1) * 2; },
             width: function (d) { return col.getWidth() * col.getValue(d); },
             'data-index': function (d, i) { return i; }
         }).style({
@@ -1818,8 +1923,7 @@ var BarCellRenderer = (function (_super) {
             $row.append('text').datum(rowNode.datum()).attr({
                 'class': 'number',
                 'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
-                x: context.cellX(index),
-                y: context.cellY(index)
+                transform: 'translate(' + context.cellX(index) + ',' + context.cellY(index) + ')'
             }).text(function (d) { return col.getLabel(d); });
         }
     };
@@ -1896,7 +2000,7 @@ var CategoricalRenderer = (function (_super) {
             'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
         });
         $rows_enter.append('rect').attr({
-            y: 1
+            y: context.option('rowPadding', 1)
         });
         var $update = context.animated($rows).attr({
             'data-index': function (d, i) { return i; },
@@ -1908,8 +2012,8 @@ var CategoricalRenderer = (function (_super) {
         $update.select('rect').style({
             fill: function (d) { return col.getColor(d); }
         }).attr({
-            height: function (d, i) { return Math.max(context.rowHeight(i) - 2, 0); },
-            width: function (d, i) { return Math.max(context.rowHeight(i) - 2, 0); }
+            height: function (d, i) { return Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0); },
+            width: function (d, i) { return Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0); }
         });
         $rows.exit().remove();
     };
@@ -1923,7 +2027,8 @@ var StackCellRenderer = (function (_super) {
     function StackCellRenderer() {
         _super.apply(this, arguments);
     }
-    StackCellRenderer.prototype.renderImpl = function ($col, col, context, perChild, rowGetter) {
+    StackCellRenderer.prototype.renderImpl = function ($col, col, context, perChild, rowGetter, animated) {
+        if (animated === void 0) { animated = true; }
         var $group = $col.datum(col), children = col.children, offset = 0, shifts = children.map(function (d) {
             var r = offset;
             offset += d.getWidth();
@@ -1933,7 +2038,7 @@ var StackCellRenderer = (function (_super) {
         if (!context.showStacked(col)) {
             context.cellX = function () { return 0; };
         }
-        var $children = $group.selectAll('g.component').data(children);
+        var $children = $group.selectAll('g.component').data(children, function (d) { return d.id; });
         $children.enter().append('g').attr({
             'class': 'component'
         });
@@ -1949,7 +2054,7 @@ var StackCellRenderer = (function (_super) {
             }
             perChild(d3.select(this), d, i, context);
         });
-        context.animated($children).attr({
+        (animated ? context.animated($children) : $children).attr({
             transform: function (d, i) { return 'translate(' + shifts[i] + ',0)'; }
         });
         $children.exit().remove();
@@ -1964,13 +2069,13 @@ var StackCellRenderer = (function (_super) {
         this.renderImpl($row, col, context, function ($row_i, col, i, ccontext) {
             var $col_i = $col.selectAll('g.component[data-index="' + i + '"]');
             ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
-        }, function (index) { return row; });
+        }, function (index) { return row; }, false);
     };
     StackCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
         this.renderImpl($row, col, context, function ($row_i, d, i, ccontext) {
             var $col_i = $col.selectAll('g.component[data-index="' + i + '"]');
             ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
-        }, function (index) { return row; });
+        }, function (index) { return row; }, false);
         $row.selectAll('*').remove();
     };
     return StackCellRenderer;
@@ -2011,7 +2116,7 @@ var PoolEntry = (function () {
     return PoolEntry;
 })();
 var PoolRenderer = (function () {
-    function PoolRenderer(data, columns, parent, options) {
+    function PoolRenderer(data, parent, options) {
         if (options === void 0) { options = {}; }
         this.data = data;
         this.options = {
@@ -2024,11 +2129,18 @@ var PoolRenderer = (function () {
             hideUsed: true
         };
         utils.merge(this.options, options);
-        this.entries = columns.concat(this.options.additionalDesc).map(function (d) { return new PoolEntry(d); });
+        this.entries = data.getColumns().concat(this.options.additionalDesc).map(function (d) { return new PoolEntry(d); });
         this.$node = d3.select(parent).append('div').classed('lu-pool', true);
+        this.changeDataStorage(data);
+    }
+    PoolRenderer.prototype.changeDataStorage = function (data) {
+        if (this.data) {
+            this.data.on(['addColumn.pool', 'removeColumn.pool', 'addRanking.pool', 'removeRanking.pool'], null);
+        }
+        this.data = data;
         if (this.options.hideUsed) {
             var that = this;
-            data.on(['addColumn', 'removeColumn'], function (col) {
+            data.on(['addColumn.pool', 'removeColumn.pool'], function (col) {
                 var desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
                 that.entries.some(function (entry) {
                     if (entry.desc !== desc) {
@@ -2039,7 +2151,7 @@ var PoolRenderer = (function () {
                 });
                 that.update();
             });
-            data.on(['addRanking', 'removeRanking'], function (ranking) {
+            data.on(['addRanking.pool', 'removeRanking.pool'], function (ranking) {
                 var descs = ranking.flatColumns.map(function (d) { return d.desc; }), change = this.type === 'addRanking' ? 1 : -1;
                 that.entries.some(function (entry) {
                     if (descs.indexOf(entry.desc) < 0) {
@@ -2060,8 +2172,7 @@ var PoolRenderer = (function () {
                 });
             });
         }
-        this.update();
-    }
+    };
     PoolRenderer.prototype.update = function () {
         var _this = this;
         var data = this.data;
@@ -2110,6 +2221,7 @@ var HeaderRenderer = (function () {
             slopeWidth: 150,
             columnPadding: 5,
             headerHeight: 20,
+            manipulative: true,
             filterDialogs: dialogs.filterDialogs(),
             searchAble: function (col) { return col instanceof model.StringColumn; }
         };
@@ -2129,9 +2241,15 @@ var HeaderRenderer = (function () {
         });
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('div').classed('lu-header', true);
-        data.on('dirtyHeader', utils.delayedCall(this.update.bind(this), 1));
-        this.update();
+        this.changeDataStorage(data);
     }
+    HeaderRenderer.prototype.changeDataStorage = function (data) {
+        if (this.data) {
+            this.data.on('dirtyHeader.headerRenderer', null);
+        }
+        this.data = data;
+        data.on('dirtyHeader.headerRenderer', utils.delayedCall(this.update.bind(this), 1));
+    };
     HeaderRenderer.prototype.update = function () {
         var _this = this;
         var rankings = this.data.getRankings();
@@ -2194,43 +2312,48 @@ var HeaderRenderer = (function () {
         var provider = this.data;
         var $headers = $base.selectAll('div.' + clazz).data(columns, function (d) { return d.id; });
         var $headers_enter = $headers.enter().append('div').attr({
-            'class': clazz,
-            'draggable': true
+            'class': clazz
+        }).style({
+            'background-color': function (d) { return d.color; }
+        }).on('click', function (d) {
+            if (_this.options.manipulative) {
+                d.toggleMySorting();
+            }
+        });
+        $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
+        $headers_enter.append('span').classed('label', true).attr({
+            'draggable': this.options.manipulative
         }).on('dragstart', function (d) {
             var e = d3.event;
             e.dataTransfer.effectAllowed = 'copyMove';
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
             e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
-        }).on('click', function (d) {
-            d.toggleMySorting();
-        }).style({
-            'background-color': function (d) { return d.color; }
         });
-        $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
-        $headers_enter.append('span').classed('label', true);
-        $headers_enter.append('div').classed('handle', true)
-            .call(this.dragHandler)
-            .style('width', this.options.columnPadding + 'px')
-            .call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], function (data, d, copy) {
-            var col = null;
-            if ('application/caleydo-lineup-column-ref' in data) {
-                var id = data['application/caleydo-lineup-column-ref'];
-                col = provider.find(id);
-                if (copy) {
-                    col = provider.clone(col);
+        if (this.options.manipulative) {
+            $headers_enter.append('div').classed('handle', true)
+                .call(this.dragHandler)
+                .style('width', this.options.columnPadding + 'px')
+                .call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], function (data, d, copy) {
+                var col = null;
+                if ('application/caleydo-lineup-column-ref' in data) {
+                    var id = data['application/caleydo-lineup-column-ref'];
+                    col = provider.find(id);
+                    if (copy) {
+                        col = provider.clone(col);
+                    }
+                    else {
+                        col.removeMe();
+                    }
                 }
                 else {
-                    col.removeMe();
+                    var desc = JSON.parse(data['application/caleydo-lineup-column']);
+                    col = provider.create(provider.fromDescRef(desc));
                 }
-            }
-            else {
-                var desc = JSON.parse(data['application/caleydo-lineup-column']);
-                col = provider.create(provider.fromDescRef(desc));
-            }
-            return d.insertAfterMe(col);
-        }));
-        $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
+                return d.insertAfterMe(col);
+            }));
+            $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
+        }
         $headers.style({
             width: function (d, i) { return (shifts[i].width + _this.options.columnPadding) + 'px'; },
             left: function (d, i) { return shifts[i].offset + 'px'; }
@@ -2273,36 +2396,55 @@ var HeaderRenderer = (function () {
 })();
 exports.HeaderRenderer = HeaderRenderer;
 var BodyRenderer = (function () {
-    function BodyRenderer(data, parent, options) {
+    function BodyRenderer(data, parent, slicer, options) {
         if (options === void 0) { options = {}; }
         this.data = data;
+        this.slicer = slicer;
         this.options = {
             rowHeight: 20,
-            rowSep: 1,
+            rowPadding: 1,
+            rowBarPadding: 1,
             idPrefix: '',
             slopeWidth: 150,
             columnPadding: 5,
-            showStacked: true,
-            animated: 0,
+            stacked: true,
+            animation: false,
+            animationDuration: 1000,
             renderers: renderer.renderers()
         };
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('svg').classed('lu-body', true);
-        data.on('dirtyValues.body', utils.delayedCall(this.update.bind(this), 1));
-        this.update();
+        this.changeDataStorage(data);
     }
-    BodyRenderer.prototype.createContext = function (rankings) {
+    Object.defineProperty(BodyRenderer.prototype, "node", {
+        get: function () {
+            return this.$node.node();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BodyRenderer.prototype.setOption = function (key, value) {
+        this.options[key] = value;
+    };
+    BodyRenderer.prototype.changeDataStorage = function (data) {
+        if (this.data) {
+            this.data.on('dirtyValues.bodyRenderer', null);
+        }
+        this.data = data;
+        data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this), 1));
+    };
+    BodyRenderer.prototype.createContext = function (index_shift) {
         var options = this.options;
         return {
             rowKey: this.data.rowKey,
             cellY: function (index) {
-                return index * (options.rowHeight + options.rowSep);
+                return (index + index_shift) * (options.rowHeight);
             },
             cellX: function (index) {
                 return 0;
             },
             rowHeight: function (index) {
-                return options.rowHeight;
+                return options.rowHeight * (1 - options.rowPadding);
             },
             renderer: function (col) {
                 if (col instanceof model.StackColumn && col.collapsed) {
@@ -2312,13 +2454,14 @@ var BodyRenderer = (function () {
                 return l || renderer.defaultRenderer();
             },
             showStacked: function (col) {
-                return options.showStacked;
+                return options.stacked;
             },
             idPrefix: options.idPrefix,
-            animated: function ($sel) { return options.animated > 0 ? $sel.transition().duration(options.animated) : $sel; }
+            animated: function ($sel) { return options.animation ? $sel.transition().duration(options.animationDuration) : $sel; },
+            option: function (key, default_) { return (key in options) ? options[key] : default_; }
         };
     };
-    BodyRenderer.prototype.updateClipPathsImpl = function (r, context) {
+    BodyRenderer.prototype.updateClipPathsImpl = function (r, context, height) {
         var $base = this.$node.select('defs.body');
         if ($base.empty()) {
             $base = this.$node.append('defs').classed('body', true);
@@ -2329,28 +2472,28 @@ var BodyRenderer = (function () {
         textClipPath.enter().append('clipPath')
             .attr('id', function (d) { return context.idPrefix + 'clipCol' + d.id; })
             .append('rect').attr({
-            y: 0,
-            height: 1000
+            y: 0
         });
         textClipPath.exit().remove();
         textClipPath.select('rect')
             .attr({
             x: 0,
-            width: function (d) { return Math.max(d.getWidth() - 5, 0); }
+            width: function (d) { return Math.max(d.getWidth() - 5, 0); },
+            height: height
         });
     };
-    BodyRenderer.prototype.updateClipPaths = function (rankings, context) {
+    BodyRenderer.prototype.updateClipPaths = function (rankings, context, height) {
         var _this = this;
         var shifts = [], offset = 0;
         rankings.forEach(function (r) {
             var w = r.flatten(shifts, offset, 2, _this.options.columnPadding);
             offset += w + _this.options.slopeWidth;
         });
-        this.updateClipPathsImpl(shifts.map(function (s) { return s.col; }), context);
+        this.updateClipPathsImpl(shifts.map(function (s) { return s.col; }), context, height);
     };
-    BodyRenderer.prototype.renderRankings = function ($body, rankings, shifts, context) {
+    BodyRenderer.prototype.renderRankings = function ($body, rankings, orders, shifts, context) {
         var _this = this;
-        var dataPromises = rankings.map(function (r) { return _this.data.view(r.getOrder()); });
+        var dataPromises = orders.map(function (r) { return _this.data.view(r); });
         var $rankings = $body.selectAll('g.ranking').data(rankings, function (d) { return d.id; });
         var $rankings_enter = $rankings.enter().append('g').attr({
             'class': 'ranking'
@@ -2364,7 +2507,7 @@ var BodyRenderer = (function () {
         $cols.enter().append('g').attr({
             'class': 'child'
         });
-        context.animated($cols).attr({
+        $cols.attr({
             'data-index': function (d, i) { return i; }
         });
         context.animated($cols).attr({
@@ -2423,7 +2566,7 @@ var BodyRenderer = (function () {
                 }
             });
         };
-        var $rows = $rankings.select('g.rows').selectAll('g.row').data(function (d, i) { return d.getOrder().map(function (d, i) { return ({ d: d, i: i }); }); });
+        var $rows = $rankings.select('g.rows').selectAll('g.row').data(function (d, i) { return orders[i].map(function (d, i) { return ({ d: d, i: i }); }); });
         var $rows_enter = $rows.enter().append('g').attr({
             'class': 'row'
         });
@@ -2457,22 +2600,22 @@ var BodyRenderer = (function () {
         this.mouseOverItem(dataIndex, hover);
         this.$node.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
     };
-    BodyRenderer.prototype.renderSlopeGraphs = function ($body, rankings, shifts, context) {
+    BodyRenderer.prototype.renderSlopeGraphs = function ($body, rankings, orders, shifts, context) {
         var _this = this;
-        var slopes = rankings.slice(1).map(function (d, i) { return ({ left: rankings[i], left_i: i, right: d, right_i: i + 1 }); });
+        var slopes = orders.slice(1).map(function (d, i) { return ({ left: orders[i], left_i: i, right: d, right_i: i + 1 }); });
         var $slopes = $body.selectAll('g.slopegraph').data(slopes);
         $slopes.enter().append('g').attr({
             'class': 'slopegraph'
         });
-        context.animated($slopes).attr({
+        $slopes.attr({
             transform: function (d, i) { return 'translate(' + (shifts[i + 1].shift - _this.options.slopeWidth) + ',0)'; }
         });
         var $lines = $slopes.selectAll('line.slope').data(function (d, i) {
             var cache = {};
-            d.right.getOrder().forEach(function (data_index, pos) {
+            d.right.forEach(function (data_index, pos) {
                 cache[data_index] = pos;
             });
-            return d.left.getOrder().map(function (data_index, pos) { return ({
+            return d.left.map(function (data_index, pos) { return ({
                 data_index: data_index,
                 lpos: pos,
                 rpos: cache[data_index]
@@ -2489,7 +2632,7 @@ var BodyRenderer = (function () {
         $lines.attr({
             'data-index': function (d) { return d.data_index; }
         });
-        context.animated($lines).attr({
+        $lines.attr({
             y1: function (d) {
                 return context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos);
             },
@@ -2502,10 +2645,19 @@ var BodyRenderer = (function () {
     };
     BodyRenderer.prototype.update = function () {
         var _this = this;
-        var r = this.data.getRankings();
-        var context = this.createContext(r);
-        this.updateClipPaths(r, context);
-        var offset = 0, shifts = r.map(function (d, i) {
+        var rankings = this.data.getRankings();
+        var maxElems = d3.max(rankings, function (d) { return d.getOrder().length; });
+        var height = this.options.rowHeight * maxElems;
+        var visibleRange = this.slicer(0, maxElems, function (i) { return i * _this.options.rowHeight; });
+        var orderSlicer = function (order) {
+            if (visibleRange.from === 0 && order.length <= visibleRange.to) {
+                return order;
+            }
+            return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
+        };
+        var orders = rankings.map(function (r) { return orderSlicer(r.getOrder()); });
+        var context = this.createContext(visibleRange.from);
+        var offset = 0, shifts = rankings.map(function (d, i) {
             var r = offset;
             offset += _this.options.slopeWidth;
             var o2 = 0, shift2 = [d].concat(d.children).map(function (o) {
@@ -2524,45 +2676,20 @@ var BodyRenderer = (function () {
             };
         });
         this.$node.attr({
-            width: offset
+            width: offset,
+            height: height
         });
+        this.updateClipPaths(rankings, context, height);
         var $body = this.$node.select('g.body');
         if ($body.empty()) {
             $body = this.$node.append('g').classed('body', true);
         }
-        this.renderRankings($body, r, shifts, context);
-        this.renderSlopeGraphs($body, r, shifts, context);
+        this.renderRankings($body, rankings, orders, shifts, context);
+        this.renderSlopeGraphs($body, rankings, orders, shifts, context);
     };
     return BodyRenderer;
 })();
 exports.BodyRenderer = BodyRenderer;
-var LineUpRenderer = (function () {
-    function LineUpRenderer(root, data, columns, options) {
-        if (options === void 0) { options = {}; }
-        this.body = null;
-        this.header = null;
-        this.pool = null;
-        this.options = {
-            pool: true
-        };
-        utils.merge(this.options, options);
-        root = d3.select(root).append('div').classed('lu', true).node();
-        this.header = new HeaderRenderer(data, root, options);
-        this.body = new BodyRenderer(data, root, options);
-        if (this.options.pool) {
-            this.pool = new PoolRenderer(data, columns, root, options);
-        }
-    }
-    LineUpRenderer.prototype.update = function () {
-        this.header.update();
-        this.body.update();
-        if (this.pool) {
-            this.pool.update();
-        }
-    };
-    return LineUpRenderer;
-})();
-exports.LineUpRenderer = LineUpRenderer;
 
 },{"./model":3,"./renderer":5,"./ui_dialogs":7,"./utils":8,"d3":undefined}],7:[function(require,module,exports){
 /**
@@ -3056,6 +3183,7 @@ var ContentScroller = (function (_super) {
     ContentScroller.prototype.onScroll = function () {
         var top = this.container.scrollTop;
         var left = this.container.scrollLeft;
+        console.log(top, left);
         this.fire('scroll', top, left);
         if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
             this.prevScrollTop = top;

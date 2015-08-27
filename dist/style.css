@@ -73,78 +73,70 @@
   .lu-tooltip td, .lu-tooltip th {
     border: 1px solid black; }
 
-.lu text {
-  dominant-baseline: text-before-edge; }
-
-.lu text.rank {
-  text-anchor: end; }
-
-.lu *[draggable] {
-  cursor: pointer;
-  cursor: -webkit-grab; }
-
-.lu line.slope {
-  stroke: darkgray;
-  stroke-width: 2;
-  shape-rendering: geometricPrecision; }
-  .lu line.slope.hover {
-    stroke: #e5e5e5; }
-
-.lu g.cols {
-  pointer-events: none; }
-
-.lu rect.bg {
-  fill: transparent; }
-
-.lu g.row.hover rect.bg {
-  fill: #e5e5e5; }
-
-.lu g.row.hover rect.bar {
-  opacity: 0.5; }
-
-.lu div.lu-header, .lu div.lu-pool {
+.lu {
   position: relative; }
-
-.lu div.header, .lu div.header_i {
-  position: absolute;
-  display: inline-block;
-  overflow: hidden;
-  color: white;
-  text-align: center;
-  height: 100%; }
-  .lu div.header:hover > div.toolbar, .lu div.header_i:hover > div.toolbar {
-    display: block; }
-
-.lu div.header_i {
-  top: 50%; }
-
-.lu div.lu-header div.toolbar {
-  display: none;
-  position: absolute;
-  right: 6px;
-  text-align: right;
-  top: 0;
-  cursor: auto; }
-
-.lu div.lu-header div.header i.sort_indicator {
-  position: absolute;
-  left: 1px;
-  top: 1px;
-  font-size: 9pt; }
-
-.lu div.lu-header div.header div.handle {
-  position: absolute;
-  right: 0;
-  height: 100%;
-  top: 0;
-  background-color: white;
-  display: inline-block;
-  cursor: col-resize; }
-  .lu div.lu-header div.header div.handle.drag_over {
-    background-color: black; }
-
-.lu div.lu-header div.toolbar i {
-  font-size: 9pt;
-  padding: 1px; }
-  .lu div.lu-header div.toolbar i:hover {
-    color: darkblue; }
+  .lu div.lu-header {
+    position: relative; }
+  .lu text {
+    dominant-baseline: text-before-edge; }
+  .lu text.rank {
+    text-anchor: end; }
+  .lu *[draggable] {
+    cursor: pointer;
+    cursor: -webkit-grab; }
+  .lu line.slope {
+    stroke: darkgray;
+    stroke-width: 2;
+    shape-rendering: geometricPrecision; }
+    .lu line.slope.hover {
+      stroke: #e5e5e5; }
+  .lu g.cols {
+    pointer-events: none; }
+  .lu rect.bg {
+    fill: transparent; }
+  .lu g.row.hover rect.bg {
+    fill: #e5e5e5; }
+  .lu g.row.hover rect.bar {
+    opacity: 0.5; }
+  .lu div.lu-header, .lu div.lu-pool {
+    position: relative; }
+  .lu div.header, .lu div.header_i {
+    position: absolute;
+    display: inline-block;
+    overflow: hidden;
+    color: white;
+    text-align: center;
+    height: 100%; }
+    .lu div.header:hover > div.toolbar, .lu div.header_i:hover > div.toolbar {
+      display: block; }
+  .lu div.header_i {
+    top: 50%; }
+  .lu div.lu-header div.toolbar {
+    display: none;
+    position: absolute;
+    right: 6px;
+    text-align: right;
+    top: 0;
+    cursor: auto; }
+  .lu div.lu-header div.header i.sort_indicator {
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    font-size: 9pt; }
+  .lu div.lu-header div.header div.handle {
+    position: absolute;
+    right: 0;
+    height: 100%;
+    top: 0;
+    background-color: white;
+    display: inline-block;
+    cursor: col-resize; }
+    .lu div.lu-header div.header div.handle.drag_over {
+      background-color: black; }
+  .lu div.lu-header div.toolbar i {
+    font-size: 9pt;
+    padding: 1px; }
+    .lu div.lu-header div.toolbar i:hover {
+      color: darkblue; }
+  .lu svg.lu-body text {
+    font-size: 10pt; }

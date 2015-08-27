@@ -136,7 +136,7 @@ export class HeaderRenderer {
     searchAble: (col: model.Column) => col instanceof model.StringColumn
   };
 
-  private $node:d3.Selection<any>;
+  $node:d3.Selection<any>;
 
   private dragHandler = d3.behavior.drag<model.Column>()
     //.origin((d) => d)
@@ -243,7 +243,16 @@ export class HeaderRenderer {
     var provider = this.data;
     var $headers = $base.selectAll('div.'+clazz).data(columns, (d) => d.id);
     var $headers_enter = $headers.enter().append('div').attr({
-      'class': clazz,
+      'class': clazz
+    }).style({
+      'background-color': (d) => d.color
+    }).on('click', (d) => {
+      if (this.options.manipulative) {
+        d.toggleMySorting();
+      }
+    });
+    $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
+    $headers_enter.append('span').classed('label',true).attr({
       'draggable': this.options.manipulative
     }).on('dragstart', (d) => {
       var e = <DragEvent>(<any>d3.event);
@@ -251,15 +260,7 @@ export class HeaderRenderer {
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
       e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
-    }).on('click', (d) => {
-      if (this.options.manipulative) {
-        d.toggleMySorting();
-      }
-    }).style({
-      'background-color': (d) => d.color
     });
-    $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
-    $headers_enter.append('span').classed('label',true);
 
     if (this.options.manipulative) {
       $headers_enter.append('div').classed('handle', true)
@@ -325,6 +326,10 @@ export class HeaderRenderer {
 }
 
 
+export interface ISlicer {
+  (start:number, length:number, row2y:(i:number) => number) : { from: number; to: number };
+}
+
 export class BodyRenderer {
   private mouseOverItem:(dataIndex:number, hover:boolean) => void;
   private options = {
@@ -344,13 +349,17 @@ export class BodyRenderer {
 
   private $node: d3.Selection<any>;
 
-  constructor(private data:provider.DataProvider, parent: Element, options = {}) {
+  constructor(private data:provider.DataProvider, parent: Element, private slicer: ISlicer, options = {}) {
     //merge options
     utils.merge(this.options, options);
 
     this.$node = d3.select(parent).append('svg').classed('lu-body',true);
 
     this.changeDataStorage(data);
+  }
+
+  get node() {
+    return <Element>this.$node.node();
   }
 
   setOption(key: string, value: any) {
@@ -365,12 +374,12 @@ export class BodyRenderer {
     data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this),1));
   }
 
-  createContext(rankings:model.RankColumn[]):renderer.IRenderContext {
+  createContext(index_shift: number):renderer.IRenderContext {
     var options = this.options;
     return {
       rowKey: this.data.rowKey,
       cellY(index:number) {
-        return index * (options.rowHeight);
+        return (index+index_shift) * (options.rowHeight);
       },
       cellX(index:number) {
         return 0;
@@ -431,8 +440,8 @@ export class BodyRenderer {
     this.updateClipPathsImpl(shifts.map(s => s.col), context, height);
   }
 
-  renderRankings($body: d3.Selection<any>, rankings:model.RankColumn[], shifts:any[], context:renderer.IRenderContext) {
-    var dataPromises = rankings.map((r) => this.data.view(r.getOrder()));
+  renderRankings($body: d3.Selection<any>, rankings:model.RankColumn[], orders: number[][], shifts:any[], context:renderer.IRenderContext) {
+    var dataPromises = orders.map((r) => this.data.view(r));
 
     var $rankings = $body.selectAll('g.ranking').data(rankings, (d) => d.id);
     var $rankings_enter = $rankings.enter().append('g').attr({
@@ -449,7 +458,7 @@ export class BodyRenderer {
     $cols.enter().append('g').attr({
       'class': 'child'
     });
-    context.animated($cols).attr({
+    $cols.attr({
       'data-index': (d, i) => i
     });
     context.animated($cols).attr({
@@ -508,7 +517,7 @@ export class BodyRenderer {
         }
       });
     };
-    var $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => d.getOrder().map((d, i) => ({ d: d, i: i })));
+    var $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => orders[i].map((d, i) => ({ d: d, i: i })));
     var $rows_enter = $rows.enter().append('g').attr({
       'class': 'row'
     });
@@ -546,22 +555,21 @@ export class BodyRenderer {
     this.$node.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
   }
 
-  renderSlopeGraphs($body: d3.Selection<any>, rankings:model.RankColumn[], shifts:any[], context:renderer.IRenderContext) {
-
-    var slopes = rankings.slice(1).map((d, i) => ({left: rankings[i], left_i : i, right: d, right_i : i+1}));
+  renderSlopeGraphs($body: d3.Selection<any>, rankings:model.RankColumn[], orders: number[][], shifts:any[], context:renderer.IRenderContext) {
+    var slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i : i, right: d, right_i : i+1}));
     var $slopes = $body.selectAll('g.slopegraph').data(slopes);
     $slopes.enter().append('g').attr({
       'class': 'slopegraph'
     });
-    context.animated($slopes).attr({
+    $slopes.attr({
       transform: (d, i) => 'translate(' + (shifts[i + 1].shift - this.options.slopeWidth) + ',0)'
     });
     var $lines = $slopes.selectAll('line.slope').data((d, i) => {
       var cache = {};
-      d.right.getOrder().forEach((data_index, pos) => {
+      d.right.forEach((data_index, pos) => {
         cache[data_index] = pos;
       });
-      return d.left.getOrder().map((data_index, pos) => ({
+      return d.left.map((data_index, pos) => ({
         data_index: data_index,
         lpos: pos,
         rpos: cache[data_index]
@@ -578,7 +586,7 @@ export class BodyRenderer {
     $lines.attr({
       'data-index': (d) => d.data_index
     });
-    context.animated($lines).attr({
+    $lines.attr({
       y1: (d:any) => {
         return context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos);
       },
@@ -595,13 +603,23 @@ export class BodyRenderer {
    * render the body
    */
   update() {
-    var r = this.data.getRankings();
-    var context = this.createContext(r);
+    var rankings = this.data.getRankings();
+    var maxElems = d3.max(rankings, (d) => d.getOrder().length);
+    var height = this.options.rowHeight * maxElems;
+    var visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
+    var orderSlicer = (order: number[]) => {
+      if (visibleRange.from === 0 && order.length <= visibleRange.to) {
+        return order;
+      }
+      return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
+    };
+    var orders = rankings.map((r) => orderSlicer(r.getOrder()));
+    var context = this.createContext(visibleRange.from);
 
 
     //compute offsets and shifts for individual rankings and columns inside the rankings
     var offset = 0,
-      shifts = r.map((d, i) => {
+      shifts = rankings.map((d, i) => {
         var r = offset;
         offset += this.options.slopeWidth;
         var o2 = 0,
@@ -621,12 +639,11 @@ export class BodyRenderer {
         };
       });
 
-    var height = this.options.rowHeight * d3.max(r, (d) => d.getOrder().length);
     this.$node.attr({
       width: offset,
       height : height
     });
-    this.updateClipPaths(r, context, height);
+    this.updateClipPaths(rankings, context, height);
 
 
     var $body = this.$node.select('g.body');
@@ -634,7 +651,7 @@ export class BodyRenderer {
       $body = this.$node.append('g').classed('body',true);
     }
 
-    this.renderRankings($body, r, shifts, context);
-    this.renderSlopeGraphs($body, r, shifts, context);
+    this.renderRankings($body, rankings, orders, shifts, context);
+    this.renderSlopeGraphs($body, rankings, orders, shifts, context);
   }
 }

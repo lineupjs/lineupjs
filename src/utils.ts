@@ -209,6 +209,7 @@ export class ContentScroller extends AEventDispatcher {
     var top = this.container.scrollTop;
     var left = this.container.scrollLeft;
     //at least one row changed
+    console.log(top, left);
     this.fire('scroll', top, left);
     if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
       this.prevScrollTop = top;

@@ -7,3 +7,4 @@ node_modules
 /typings
 /tmp
 *.map
+/tscommand*.tmp.txt

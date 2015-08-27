@@ -204,7 +204,7 @@ export class DataProvider extends utils.AEventDispatcher {
       dump.rankings.forEach((r) => {
         var ranking = this.pushRanking();
         ranking.restore(r, create);
-      })
+      });
     }
     if (dump.layout) { //we have the old format try to create it
       Object.keys(dump.layout).forEach((key) => {
@@ -226,7 +226,7 @@ export class DataProvider extends utils.AEventDispatcher {
       if (column.type === 'rank') {
         return null; //can't handle
       }
-      if (column.type == 'stacked') {
+      if (column.type === 'stacked') {
         //create a stacked one
         var r = this.create(model.StackColumn.desc(column.label || 'Combined'));
         (column.children || []).forEach((col) => {

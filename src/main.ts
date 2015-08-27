@@ -30,16 +30,19 @@ export class LineUp extends utils_.AEventDispatcher {
       headerHeight: 20,
       headerOffset: 1,
       buttonTopPadding: 10,
-      labelLeftPadding: 5,
+      labelLeftPadding: 5
     },
     renderingOptions: {
       stacked: false,
-      animation: true
+      animation: true,
+      visibleRowsOnly: true
     },
     svgLayout: {
       rowHeight: 17,
       rowPadding : 0.2, //padding for scale.rangeBands
       rowBarPadding: 1,
+
+      visibleRowsOnly: true,
       /**
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
@@ -62,6 +65,7 @@ export class LineUp extends utils_.AEventDispatcher {
   private body : ui_.BodyRenderer = null;
   private header : ui_.HeaderRenderer = null;
   private pool: ui_.PoolRenderer = null;
+  private contentScroller : utils_.ContentScroller = null;
 
   constructor(container : d3.Selection<any> | Element, public data: provider_.DataProvider, config: any = {}) {
     super();
@@ -69,11 +73,12 @@ export class LineUp extends utils_.AEventDispatcher {
     this.$container = this.$container.append('div').classed('lu', true);
     utils.merge(this.config, config);
 
+
     this.header = new ui_.HeaderRenderer(data,  this.node, {
       manipulative: this.config.manipulative,
       headerHeight: this.config.htmlLayout.headerHeight
     });
-    this.body = new ui_.BodyRenderer(data, this.node, {
+    this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
       rowHeight: this.config.svgLayout.rowHeight,
       rowPadding : this.config.svgLayout.rowPadding,
       rowBarPadding: this.config.svgLayout.rowBarPadding,
@@ -81,8 +86,22 @@ export class LineUp extends utils_.AEventDispatcher {
       animation: this.config.renderingOptions.animation,
       stacked: this.config.renderingOptions.stacked
     });
-    if(this.config.pool) {
+    if(this.config.pool && this.config.manipulative) {
       this.pool = new ui_.PoolRenderer(data, this.node, this.config);
+    }
+
+    if (this.config.svgLayout.visibleRowsOnly) {
+      this.contentScroller = new utils_.ContentScroller(<Element>this.$container.node(), this.body.node, {
+        backupRows: this.config.svgLayout.backupScrollRows,
+        rowHeight: this.config.svgLayout.rowHeight,
+        topShift: this.config.htmlLayout.headerHeight
+      });
+      this.contentScroller.on('scroll', (top, left) => {
+        //in two svg mode propagate horizontal shift
+        console.log(top, left,'ss');
+        this.header.$node.style('transform', 'translate('+-left+'px,'+top+'px)');
+      });
+      this.contentScroller.on('redraw', this.body.update.bind(this.body));
     }
   }
   createEventList() {
@@ -93,11 +112,21 @@ export class LineUp extends utils_.AEventDispatcher {
     return <Element>this.$container.node();
   }
 
+  private slice(start:number, length:number, row2y:(i:number) => number) {
+    if (this.contentScroller) {
+      return this.contentScroller.select(start, length, row2y);
+    }
+    return { from: start, to: length};
+  }
+
   /**
    * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
    */
   destroy() {
-    this.$container.selectAll('*').remove();
+    this.$container.remove();
+    if (this.contentScroller) {
+      this.contentScroller.destroy();
+    }
   }
 
   sortBy(column : (col: model_.Column) => boolean | string, ascending = false) {

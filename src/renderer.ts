@@ -289,7 +289,7 @@ class CategoricalRenderer extends DefaultCellRenderer {
 }
 
 class StackCellRenderer extends DefaultCellRenderer {
-  renderImpl($col:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any) {
+  renderImpl($col:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
     var $group = $col.datum(col),
       children = col.children,
       offset = 0,
@@ -304,7 +304,7 @@ class StackCellRenderer extends DefaultCellRenderer {
       context.cellX = () => 0;
     }
 
-    var $children = $group.selectAll('g.component').data(children);
+    var $children = $group.selectAll('g.component').data(children, (d) => d.id);
     $children.enter().append('g').attr({
       'class': 'component'
     });
@@ -321,7 +321,7 @@ class StackCellRenderer extends DefaultCellRenderer {
       }
       perChild(d3.select(this), d, i, context);
     });
-    context.animated($children).attr({
+    (animated? context.animated($children): $children).attr({
       transform: (d, i) => 'translate(' + shifts[i] + ',0)'
     });
     $children.exit().remove();
@@ -337,13 +337,13 @@ class StackCellRenderer extends DefaultCellRenderer {
     this.renderImpl($row, col, context, ($row_i, col, i, ccontext) => {
       var $col_i = $col.selectAll('g.component[data-index="'+i+'"]');
       ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
-    }, (index) => row);
+    }, (index) => row, false);
   }
   mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.StackColumn, row:any, index:number, context:IRenderContext) {
     this.renderImpl($row, col, context, ($row_i, d, i, ccontext) => {
       var $col_i = $col.selectAll('g.component[data-index="'+i+'"]');
       ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
-    }, (index) => row);
+    }, (index) => row, false);
     $row.selectAll('*').remove();
   }
 }

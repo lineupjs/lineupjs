@@ -107,6 +107,12 @@ $lu_hover_color: #e5e5e5;
 $lu_toolbar_font_size: 9pt;
 
 .lu {
+  position: relative;
+
+  div.lu-header {
+    position: relative;
+  }
+
   text {
     dominant-baseline: text-before-edge;
   }

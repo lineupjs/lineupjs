@@ -136,7 +136,7 @@ export class Column extends utils.AEventDispatcher {
     var r: any = {
       id: this.id,
       desc: toDescRef(this.desc),
-      width: this.width_,
+      width: this.width_
     };
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
