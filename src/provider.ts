@@ -89,6 +89,16 @@ export class DataProvider extends utils.AEventDispatcher {
     return true;
   }
 
+  clearRankings() {
+    this.rankings_.forEach((ranking) => {
+      this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
+      ranking.on('dirtyOrder.provider',null);
+      this.cleanUpRanking(ranking);
+    });
+    this.rankings_ = [];
+    this.fire(['removeRanking','dirtyHeader','dirtyValues','dirty']);
+  }
+
   getRankings() {
     return this.rankings_.slice();
   }
@@ -183,10 +193,14 @@ export class DataProvider extends utils.AEventDispatcher {
       c.restore(d, create);
       return c;
     };
+
+    this.clearRankings();
+
     this.uid = dump.uid || 0;
     if (dump.selection) {
       dump.selection.forEach((s) => this.selection.add(String(s)));
     }
+
 
     if (dump.rankings) {
       dump.rankings.forEach((r) => {

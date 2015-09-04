@@ -1005,7 +1005,7 @@ export class RankColumn extends ValueColumn<number> {
   restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
     dump.columns.map((child) => {
-      this.push(factory(child.col));
+      this.push(factory(child));
     });
     if (dump.sortCriteria) {
       this.ascending = dump.sortCriteria.asc;

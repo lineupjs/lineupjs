@@ -1279,7 +1279,7 @@ var RankColumn = (function (_super) {
         var _this = this;
         _super.prototype.restore.call(this, dump, factory);
         dump.columns.map(function (child) {
-            _this.push(factory(child.col));
+            _this.push(factory(child));
         });
         if (dump.sortCriteria) {
             this.ascending = dump.sortCriteria.asc;
