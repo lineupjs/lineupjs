@@ -244,7 +244,7 @@ export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
  */
 export function copyDnD(e: DragEvent) {
   var dT = e.dataTransfer;
-  return (e.ctrlKey && dT.effectAllowed.match(/copy/gi)) || (!dT.effectAllowed.match(/move/gi));
+  return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
 }
 
 export function updateDropEffect(e: DragEvent) {
@@ -292,7 +292,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
             data[mime] = value;
           }
         });
-        return onDrop(data, d, e.dataTransfer.dropEffect.match(/.*copy.*/i) != null);
+        return onDrop(data, d, copyDnD(e));
       }
     });
   };

@@ -10,7 +10,6 @@
   font-size: 11pt;
   white-space: nowrap;
   padding: 5px;
-  width: 100%;
 }
 
 #lugui-menu a {
@@ -20,6 +19,17 @@
   text-decoration: none;
   color: royalblue;
 
+}
+
+div#pool {
+  position: fixed;
+  z-index: 40;
+  left: 3px;
+  top: 100px;
+  display: none;
+  background: #e9e9e9;
+  border-radius: 5px;
+  padding: 3px;
 }
 
 #lugui-menu a:hover {
@@ -63,13 +73,10 @@ div.lu {
   clear: both;
   position: absolute;
   top: 35px;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 0;
-  height: -moz-calc(100% - 35px);
-  height: -webkit-calc(100% - 35px);
-  height: calc(100% - 35px);
-  width: -moz-calc(100% - 20px);
-  width: -webkit-calc(100% - 20px);
-  width: calc(100% - 20px);
   overflow: auto;
 }
 

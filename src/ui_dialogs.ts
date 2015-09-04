@@ -7,7 +7,7 @@ import utils = require('./utils');
 import mappingeditor = require('./mappingeditor');
 import provider = require('./provider');
 
-function dialogForm(title, body, buttonsWithLabel = false) {
+export function dialogForm(title, body, buttonsWithLabel = false) {
   return '<span style="font-weight: bold">' + title + '</span>' +
     '<form onsubmit="return false">' +
     body + '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +

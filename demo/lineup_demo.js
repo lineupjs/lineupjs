@@ -4,13 +4,18 @@
 
 (function (LineUpJS) {
   var menuActions = [
-    {name: " new combined", icon: "fa-plus", action: function () {
-      //lineup.addNewStackedColumnDialog();
+    {name: ' new combined', icon: 'fa-plus', action: function () {
+      var r = lineup.data.getRankings();
+      r = r[r.length-1];
+      lineup.data.push(r, LineUpJS.model.StackColumn.desc('Combined'));
     }},
-    {name: " add single columns", icon: "fa-plus", action: function () {
-      //lineup.addNewSingleColumnDialog();
+    {name: ' new ranking', icon: 'fa-plus', action: function () {
+      var old = lineup.data.getRankings()[0];
+      var r = lineup.data.pushRanking();
+      r.push(lineup.data.clone(old.children[0]));
     }},
-    {name: " save layout", icon: "fa-floppy-o", action: saveLayout}
+    {name: ' add single columns', icon: 'fa-plus', action: openAddColumnDialog},
+    {name: ' save layout', icon: 'fa-floppy-o', action: saveLayout}
   ];
   var lineUpDemoConfig = {
     renderingOptions: {
@@ -21,57 +26,43 @@
   var lineup = null;
   var datasets = [];
 
-  $(window).resize(function() {
+  d3.select(window).on('resize', function() {
     if (lineup) {
       lineup.update()
     }
   });
   function updateMenu() {
     var config = lineup.config;
-    var kv = d3.entries(lineup.config.renderingOptions);
-    var kvNodes = d3.select("#lugui-menu-rendering").selectAll("span").data(kv, function (d) {
-      return d.key;
-    });
+    var kvNodes = d3.select('#lugui-menu-rendering').selectAll('span').data(['stacked', 'animation']);
     kvNodes.exit().remove();
-    kvNodes.enter().append("span").on('click', function (d) {
-      lineup.changeRenderingOption(d.key, !config.renderingOptions[d.key]);
+    kvNodes.enter().append('span').on('click', function (d) {
+      lineup.changeRenderingOption(d, !config.renderingOptions[d]);
       updateMenu();
     });
     kvNodes.html(function (d) {
-      return '<a href="#"> <i class="fa ' + (d.value ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d.key + '</a>&nbsp;&nbsp;'
+      return '<a href="#"> <i class="fa ' + (config.renderingOptions[d] ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d + '</a>&nbsp;&nbsp;'
     });
 
-    d3.select("#lugui-menu-actions").selectAll("span").data(menuActions)
-      .enter().append("span").html(
+    d3.select('#lugui-menu-actions').selectAll('span').data(menuActions)
+      .enter().append('span').html(
       function (d) {
         return '<i class="fa ' + (d.icon) + '" ></i>' + d.name + '&nbsp;&nbsp;'
       }
-    ).on("click", function (d) {
+    ).on('click', function (d) {
       d.action.call(d);
     })
-
-
-  }
-
-  function layoutHTML() {
-
-  }
-
-  function setColors(columns) {
-    var colors = d3.scale.category10().range().slice();
-    columns.forEach(function(col) {
-      col.color = col.color || colors.shift();
-    });
   }
 
   function loadDataImpl(name, desc, _data) {
-    setColors(desc.columns);
-    var provider = LineUpJS.createLocalStorage(_data, desc.columns);
+    var provider = LineUpJS.createLocalStorage(_data, LineUpJS.deriveColors(desc.columns));
 
     if (lineup) {
       lineup.changeDataStorage(provider, desc);
     } else {
-      lineup = LineUpJS.create(d3.select('#lugui-wrapper'), provider, lineUpDemoConfig);
+      lineup = LineUpJS.create(provider, d3.select('#lugui-wrapper'), lineUpDemoConfig);
+      lineup.addPool(d3.select('#pool').node(), {
+        hideUsed: false
+      }).update();
       lineup.restore(desc);
     }
     updateMenu();
@@ -82,7 +73,7 @@
       if (desc.data) {
         loadDataImpl(name, desc, desc.data);
       } else if (desc.file) {
-        d3.dsv(desc.separator || '\t', 'text/plain')(baseUrl + "/" + desc.file, function (_data) {
+        d3.dsv(desc.separator || '\t', 'text/plain')(baseUrl + '/' + desc.file, function (_data) {
           loadDataImpl(name, desc, _data);
         });
       }
@@ -92,7 +83,7 @@
 
     if (ds.descriptionFile) {
       var name = ds.descriptionFile.substring(0, ds.descriptionFile.length - 5);
-      d3.json(ds.baseURL + "/" + ds.descriptionFile, function (desc) {
+      d3.json(ds.baseURL + '/' + ds.descriptionFile, function (desc) {
         loadDesc(desc, ds.baseURL);
       })
     } else {
@@ -129,6 +120,13 @@
     drop.addEventListener('drop', handleFileSelect, false);
   }
 
+  function openAddColumnDialog() {
+    d3.select('#pool').style('display','block');
+  }
+  d3.select('#pool > div i.fa-close').on('click', function() {
+    d3.select('#pool').style('display','none');
+  });
+
 
   function saveLayout() {
     //full spec
@@ -139,7 +137,7 @@
     //stringify with pretty print
     var str = JSON.stringify(s, null, '\t');
     //create blob and save it
-    var blob = new Blob([str], {type: "application/json;charset=utf-8"});
+    var blob = new Blob([str], {type: 'application/json;charset=utf-8'});
     saveAs(blob, 'LineUp-'+(new Date())+'.json');
   }
 
@@ -274,42 +272,38 @@
   }
 
 // document ready
-  $(function () {
-      layoutHTML();
+  d3.json('datasets.json', function (error, data) {
+    //console.log('datasets:', data, error);
 
-      d3.json("datasets.json", function (error, data) {
-        //console.log("datasets:", data, error);
-
-        datasets = data.datasets;
-        var $s = d3.select("#lugui-dataset-selector");
-        var ds = $s.selectAll("option").data(data.datasets);
-        ds.enter().append("option")
-          .attr('value', function (d, i) {
-            return i;
-          }).text(function (d) {
-            return d.name;
-          });
-        $s.on('change', function() {
-          loadDataset(datasets[this.value]);
-        });
-
-        var old = history.state;
-        if (old) {
-          $s.property('value', datasets.indexOf(old));
-          loadDataset(old);
-        } else if (window.location.hash) {
-          var choose = datasets.filter(function(d) { return d.id === window.location.hash.substr(1); });
-          if (choose.length > 0) {
-            $s.property('value', datasets.indexOf(choose[0]));
-            loadDataset(choose[0]);
-          } else {
-            loadDataset(datasets[0]);
-          }
-        } else {
-          //and start with 0:
-          loadDataset(datasets[0]);
-        }
-        loadLayout();
+    datasets = data.datasets;
+    var $s = d3.select('#lugui-dataset-selector');
+    var ds = $s.selectAll('option').data(data.datasets);
+    ds.enter().append('option')
+      .attr('value', function (d, i) {
+        return i;
+      }).text(function (d) {
+        return d.name;
       });
-  })
+    $s.on('change', function() {
+      loadDataset(datasets[this.value]);
+    });
+
+    var old = history.state;
+    if (old) {
+      $s.property('value', datasets.indexOf(old));
+      loadDataset(old);
+    } else if (window.location.hash) {
+      var choose = datasets.filter(function(d) { return d.id === window.location.hash.substr(1); });
+      if (choose.length > 0) {
+        $s.property('value', datasets.indexOf(choose[0]));
+        loadDataset(choose[0]);
+      } else {
+        loadDataset(datasets[0]);
+      }
+    } else {
+      //and start with 0:
+      loadDataset(datasets[0]);
+    }
+    loadLayout();
+  });
 }(LineUpJS));

@@ -64,7 +64,7 @@ export class LineUp extends utils_.AEventDispatcher {
 
   private body : ui_.BodyRenderer = null;
   private header : ui_.HeaderRenderer = null;
-  private pool: ui_.PoolRenderer = null;
+  private pools: ui_.PoolRenderer[] = [];
   private contentScroller : utils_.ContentScroller = null;
 
   constructor(container : d3.Selection<any> | Element, public data: provider_.DataProvider, config: any = {}) {
@@ -87,7 +87,7 @@ export class LineUp extends utils_.AEventDispatcher {
       stacked: this.config.renderingOptions.stacked
     });
     if(this.config.pool && this.config.manipulative) {
-      this.pool = new ui_.PoolRenderer(data, this.node, this.config);
+      this.addPool(new ui_.PoolRenderer(data, this.node, this.config));
     }
 
     if (this.config.svgLayout.visibleRowsOnly) {
@@ -99,13 +99,24 @@ export class LineUp extends utils_.AEventDispatcher {
       this.contentScroller.on('scroll', (top, left) => {
         //in two svg mode propagate horizontal shift
         //console.log(top, left,'ss');
-        this.header.$node.style('transform', 'translate('+-left+'px,'+top+'px)');
+        this.header.$node.style('transform', 'translate('+0+'px,'+top+'px)');
       });
       this.contentScroller.on('redraw', this.body.update.bind(this.body));
     }
   }
   createEventList() {
     return super.createEventList().concat(['hoverChanged', 'selectionChanged']);
+  }
+
+  addPool(node: Element, config? : any): ui_.PoolRenderer;
+  addPool(pool: ui_.PoolRenderer): ui_.PoolRenderer;
+  addPool(pool_node : Element|ui_.PoolRenderer, config = this.config) {
+    if (pool_node instanceof ui_.PoolRenderer) {
+      this.pools.push(<ui_.PoolRenderer>pool_node);
+    } else {
+      this.pools.push(new ui_.PoolRenderer(this.data, <Element>pool_node, config))
+    }
+    return this.pools[this.pools.length-1];
   }
 
   get node() {
@@ -149,9 +160,7 @@ export class LineUp extends utils_.AEventDispatcher {
     }
     this.header.changeDataStorage(data);
     this.body.changeDataStorage(data);
-    if (this.pool) {
-      this.pool.changeDataStorage(data);
-    }
+    this.pools.forEach((p) => p.changeDataStorage(data));
     this.update();
   }
 
@@ -162,9 +171,7 @@ export class LineUp extends utils_.AEventDispatcher {
   update() {
     this.header.update();
     this.body.update();
-    if (this.pool) {
-      this.pool.update();
-    }
+    this.pools.forEach((p) => p.update());
   }
 
   changeRenderingOption(option: string, value: boolean) {
