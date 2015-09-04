@@ -98,7 +98,7 @@ export class LineUp extends utils_.AEventDispatcher {
       });
       this.contentScroller.on('scroll', (top, left) => {
         //in two svg mode propagate horizontal shift
-        console.log(top, left,'ss');
+        //console.log(top, left,'ss');
         this.header.$node.style('transform', 'translate('+-left+'px,'+top+'px)');
       });
       this.contentScroller.on('redraw', this.body.update.bind(this.body));
@@ -176,10 +176,23 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 }
 
+export function deriveColors(columns: provider_.IColumnDesc[]) {
+  var colors = d3.scale.category10().range();
+  columns.forEach((col: any) => {
+    switch(col.type) {
+    case 'number':
+      col.color = colors.shift();
+      break;
+    }
+  });
+  return columns;
+}
+
 export function createLocalStorage(data: any[], columns: provider_.IColumnDesc[]) {
   return new provider_.LocalDataProvider(data, columns);
 }
 
-export function create(container : d3.Selection<any> | Element, data: provider_.DataProvider, config: any = {}) {
+export function create(data: provider_.DataProvider, container : d3.Selection<any> | Element, config: any = {}) {
   return new LineUp(container, data, config);
 }
+

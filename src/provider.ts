@@ -217,6 +217,17 @@ export class DataProvider extends utils.AEventDispatcher {
     return null;
   }
 
+  deriveDefault() {
+    if (this.rankings_.length > 0) {
+      //no default if we have a ranking
+      return;
+    }
+    var r = this.pushRanking();
+    this.getColumns().forEach((col) => {
+      this.push(r, col);
+    });
+  }
+
   /**
    * derives a ranking from an old layout bundle format
    * @param bundle
@@ -386,7 +397,10 @@ export class CommonDataProvider extends DataProvider {
     super();
 
     //generate the accessor
-    columns.forEach((d:any) => d.accessor = this.rowGetter);
+    columns.forEach((d:any) => {
+      d.accessor = this.rowGetter;
+      d.label = d.label || d.column;
+    });
   }
 
   getColumns(): IColumnDesc[] {
@@ -435,7 +449,7 @@ export class LocalDataProvider extends CommonDataProvider {
     var rankDesc = {
       label: 'Rank',
       type: 'rank',
-      accessor: (row, id) => row._rankings[id] || 0
+      accessor: (row, id) => (row._rankings[id]+1) || 1
     };
 
     var new_ = new model.RankColumn(id, rankDesc);

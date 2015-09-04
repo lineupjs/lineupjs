@@ -378,6 +378,7 @@ export class StringColumn extends ValueColumn<string> {
 
   constructor(id:string, desc:any) {
     super(id, desc);
+    this.setWidthImpl(200); //by default 200
   }
 
   getValue(row:any) {

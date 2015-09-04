@@ -165,7 +165,10 @@ export class BarCellRenderer extends DefaultCellRenderer {
       x: (d, i) => context.cellX(i),
       y: (d, i) => context.cellY(i) + context.option('rowPadding',1),
       height: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2,
-      width: (d) => col.getWidth() * col.getValue(d),
+      width: (d) => {
+        var n = col.getWidth() * col.getValue(d);
+        return isNaN(n) ? 0 : n
+      },
       'data-index': (d, i) => i
     }).style({
       fill: (d,i) => this.colorOf(d, i, col)
