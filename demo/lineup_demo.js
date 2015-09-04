@@ -55,7 +55,7 @@
 
   function loadDataImpl(name, desc, _data) {
     var provider = LineUpJS.createLocalStorage(_data, LineUpJS.deriveColors(desc.columns));
-
+    lineUpDemoConfig.name = name;
     if (lineup) {
       lineup.changeDataStorage(provider, desc);
     } else {
@@ -65,6 +65,7 @@
       }).update();
       lineup.restore(desc);
     }
+    provider.deriveDefault();
     updateMenu();
   }
 
@@ -138,13 +139,14 @@
     var str = JSON.stringify(s, null, '\t');
     //create blob and save it
     var blob = new Blob([str], {type: 'application/json;charset=utf-8'});
-    saveAs(blob, 'LineUp-'+(new Date())+'.json');
+    saveAs(blob, 'LineUp-'+lineUpDemoConfig.name+'.json');
   }
 
   function loadLayout() {
     function loadDataImpl(name, desc, _data) {
       setColors(desc.columns);
       var provider = LineUpJS.createLocalStorage(_data, desc.columns);
+      provider.deriveDefault();
       lineup.changeDataStorage(provider, desc);
       updateMenu();
     }

@@ -167,7 +167,7 @@ export class BarCellRenderer extends DefaultCellRenderer {
       height: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2,
       width: (d) => {
         var n = col.getWidth() * col.getValue(d);
-        return isNaN(n) ? 0 : n
+        return isNaN(n) ? 0 : n;
       },
       'data-index': (d, i) => i
     }).style({

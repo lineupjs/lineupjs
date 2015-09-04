@@ -604,7 +604,7 @@ export class BodyRenderer {
    */
   update() {
     var rankings = this.data.getRankings();
-    var maxElems = d3.max(rankings, (d) => d.getOrder().length);
+    var maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
     var height = this.options.rowHeight * maxElems;
     var visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
     var orderSlicer = (order: number[]) => {

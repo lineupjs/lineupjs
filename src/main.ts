@@ -114,7 +114,7 @@ export class LineUp extends utils_.AEventDispatcher {
     if (pool_node instanceof ui_.PoolRenderer) {
       this.pools.push(<ui_.PoolRenderer>pool_node);
     } else {
-      this.pools.push(new ui_.PoolRenderer(this.data, <Element>pool_node, config))
+      this.pools.push(new ui_.PoolRenderer(this.data, <Element>pool_node, config));
     }
     return this.pools[this.pools.length-1];
   }
@@ -184,7 +184,7 @@ export class LineUp extends utils_.AEventDispatcher {
 }
 
 export function deriveColors(columns: provider_.IColumnDesc[]) {
-  var colors = d3.scale.category10().range();
+  var colors = d3.scale.category10().range().slice();
   columns.forEach((col: any) => {
     switch(col.type) {
     case 'number':
