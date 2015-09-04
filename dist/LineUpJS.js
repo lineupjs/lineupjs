@@ -1530,6 +1530,16 @@ var DataProvider = (function (_super) {
         this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], ranking);
         return true;
     };
+    DataProvider.prototype.clearRankings = function () {
+        var _this = this;
+        this.rankings_.forEach(function (ranking) {
+            _this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
+            ranking.on('dirtyOrder.provider', null);
+            _this.cleanUpRanking(ranking);
+        });
+        this.rankings_ = [];
+        this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty']);
+    };
     DataProvider.prototype.getRankings = function () {
         return this.rankings_.slice();
     };
@@ -1608,6 +1618,7 @@ var DataProvider = (function (_super) {
             c.restore(d, create);
             return c;
         };
+        this.clearRankings();
         this.uid = dump.uid || 0;
         if (dump.selection) {
             dump.selection.forEach(function (s) { return _this.selection.add(String(s)); });
@@ -2269,6 +2280,27 @@ var PoolRenderer = (function () {
         });
         $headers.select('span');
         $headers.exit().remove();
+        switch (this.options.layout) {
+            case 'horizontal':
+                this.$node.style({
+                    width: (this.options.elemWidth * descToShow.length) + 'px',
+                    height: (this.options.elemHeight * 1) + 'px'
+                });
+                break;
+            case 'grid':
+                var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
+                this.$node.style({
+                    width: perRow * this.options.elemWidth + 'px',
+                    height: Math.floor(descToShow.length / perRow) * this.options.elemHeight + 'px'
+                });
+                break;
+            default:
+                this.$node.style({
+                    width: (this.options.elemWidth * 1) + 'px',
+                    height: (this.options.elemHeight * descToShow.length) + 'px'
+                });
+                break;
+        }
     };
     PoolRenderer.prototype.layout = function (i) {
         switch (this.options.layout) {
@@ -2276,7 +2308,7 @@ var PoolRenderer = (function () {
                 return { x: i * this.options.elemWidth, y: 0 };
             case 'grid':
                 var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
-                return { x: (i % perRow) * this.options.elemWidth, y: d3.round(i / perRow, 0) * this.options.elemHeight };
+                return { x: (i % perRow) * this.options.elemWidth, y: Math.floor(i / perRow) * this.options.elemHeight };
             default:
                 return { x: 0, y: i * this.options.elemHeight };
         }

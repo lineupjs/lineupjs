@@ -108,6 +108,30 @@ export class PoolRenderer {
     });
     $headers.select('span');
     $headers.exit().remove();
+
+    //compute the size of this node
+    switch (this.options.layout) {
+      case 'horizontal':
+        this.$node.style({
+          width: (this.options.elemWidth * descToShow.length)+'px',
+          height: (this.options.elemHeight * 1)+'px'
+        });
+        break;
+      case 'grid':
+        var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
+        this.$node.style({
+          width: perRow * this.options.elemWidth+'px',
+          height: Math.floor(descToShow.length / perRow) * this.options.elemHeight+'px'
+        });
+        break;
+      //case 'vertical':
+      default:
+        this.$node.style({
+          width: (this.options.elemWidth * 1)+'px',
+          height: (this.options.elemHeight * descToShow.length)+'px'
+        });
+        break;
+    }
   }
 
   private layout(i:number) {
@@ -116,7 +140,7 @@ export class PoolRenderer {
         return {x: i * this.options.elemWidth, y: 0};
       case 'grid':
         var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
-        return {x: (i % perRow) * this.options.elemWidth, y: d3.round(i / perRow, 0) * this.options.elemHeight};
+        return {x: (i % perRow) * this.options.elemWidth, y: Math.floor(i / perRow) * this.options.elemHeight};
       //case 'vertical':
       default:
         return {x: 0, y: i * this.options.elemHeight};
