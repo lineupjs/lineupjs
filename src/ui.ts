@@ -14,7 +14,7 @@ import dialogs = require('./ui_dialogs');
 class PoolEntry {
   used : number = 0;
 
-  constructor(public desc : provider.IColumnDesc) {
+  constructor(public desc : model.IColumnDesc) {
 
   }
 }
@@ -141,18 +141,21 @@ export class HeaderRenderer {
   private dragHandler = d3.behavior.drag<model.Column>()
     //.origin((d) => d)
     .on('dragstart', function () {
-      (<any>d3.event).sourceEvent.stopPropagation();
       d3.select(this).classed('dragging', true);
+      (<any>d3.event).sourceEvent.stopPropagation();
+      (<any>d3.event).sourceEvent.preventDefault();
     })
     .on('drag', function (d) {
       //the new width
       var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
       d.setWidth(newValue);
       (<any>d3.event).sourceEvent.stopPropagation();
+      (<any>d3.event).sourceEvent.preventDefault();
     })
     .on('dragend', function () {
       d3.select(this).classed('dragging', false);
       (<any>d3.event).sourceEvent.stopPropagation();
+      (<any>d3.event).sourceEvent.preventDefault();
     });
 
 
@@ -246,10 +249,6 @@ export class HeaderRenderer {
       'class': clazz
     }).style({
       'background-color': (d) => d.color
-    }).on('click', (d) => {
-      if (this.options.manipulative) {
-        d.toggleMySorting();
-      }
     });
     $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
     $headers_enter.append('span').classed('label',true).attr({
@@ -260,6 +259,10 @@ export class HeaderRenderer {
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
       e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
+    }).on('click', (d) => {
+      if (this.options.manipulative && !d3.event.defaultPrevented) {
+        d.toggleMySorting();
+      }
     });
 
     if (this.options.manipulative) {
@@ -381,6 +384,9 @@ export class BodyRenderer {
       cellY(index:number) {
         return (index+index_shift) * (options.rowHeight);
       },
+      cellPrevY(index:number) {
+        return (index+index_shift) * (options.rowHeight);
+      },
       cellX(index:number) {
         return 0;
       },
@@ -445,7 +451,8 @@ export class BodyRenderer {
 
     var $rankings = $body.selectAll('g.ranking').data(rankings, (d) => d.id);
     var $rankings_enter = $rankings.enter().append('g').attr({
-      'class': 'ranking'
+      'class': 'ranking',
+      transform: (d, i) => 'translate(' + shifts[i].shift + ',0)'
     });
     $rankings_enter.append('g').attr('class', 'rows');
     $rankings_enter.append('g').attr('class', 'cols');
@@ -456,7 +463,10 @@ export class BodyRenderer {
 
     var $cols = $rankings.select('g.cols').selectAll('g.child').data((d) => [<model.Column>d].concat(d.children), (d) => d.id);
     $cols.enter().append('g').attr({
-      'class': 'child'
+      'class': 'child',
+      transform: (d, i, j?) => {
+        return 'translate(' + shifts[j].shifts[i] + ',0)';
+      }
     });
     $cols.attr({
       'data-index': (d, i) => i

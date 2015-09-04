@@ -38,6 +38,18 @@ export interface IColumnParent extends Column {
   insertAfter(col: Column, reference: Column): boolean;
 }
 
+export interface IColumnDesc {
+  label:string;
+  type:string;
+}
+
+export interface IStatistics {
+  min: number;
+  max: number;
+  count: number;
+  hist: { x : number; dx : number; y : number;}[];
+}
+
 /**
  * a column in LineUp
  */
@@ -53,10 +65,14 @@ export class Column extends utils.AEventDispatcher {
 
   label: string;
 
-  constructor(id:string, public desc:any) {
+  constructor(id:string, public desc:IColumnDesc) {
     super();
     this.id = fixCSS(id);
     this.label = this.desc.label || this.id;
+  }
+
+  init(callback : (desc: IColumnDesc) => Promise<IStatistics>) : Promise<boolean> {
+    return Promise.resolve(true);
   }
 
   get fqid() {
@@ -95,7 +111,7 @@ export class Column extends utils.AEventDispatcher {
   }
 
   get color() {
-    return this.desc.color || Column.DEFAULT_COLOR;
+    return (<any>this.desc).color || Column.DEFAULT_COLOR;
   }
 
   sortByMe(ascending = false) {
@@ -227,7 +243,7 @@ export function isNumberColumn(col: Column) {
 }
 
 export class NumberColumn extends ValueColumn<number> implements INumberColumn {
-  missingValue = NaN;
+  missingValue = 0;
   private scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
   private mapping = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
 
@@ -241,8 +257,19 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     if (desc.range) {
       this.scale.range(desc.range);
     }
-    //TODO infer scales from data
     this.mapping.domain(this.scale.domain()).range(this.scale.range());
+  }
+
+  init(callback : (desc: IColumnDesc) => Promise<IStatistics>) : Promise<boolean> {
+    var d = this.scale.domain();
+    if (isNaN(d[0]) || isNaN(d[1])) {
+      return callback(this.desc).then((stats) => {
+        this.scale.domain([stats.min, stats.max]);
+        this.mapping.domain(this.scale.domain());
+        return true;
+      });
+    }
+    return Promise.resolve(true);
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -465,11 +492,11 @@ export class CategoricalColumn extends ValueColumn<string> {
 
   constructor(id:string, desc:any) {
     super(id, desc);
-    this.init(desc);
+    this.initCategories(desc);
     //TODO infer categories from data
   }
 
-  init(desc: any) {
+  initCategories(desc: any) {
     if (desc.categories) {
       var cats = [],
         cols = this.colors.range();
@@ -671,7 +698,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     return { type: 'stack', label : label };
   }
 
-  public missingValue = NaN;
+  public missingValue = 0;
   private children_:Column[] = [];
 
   private adaptChange;

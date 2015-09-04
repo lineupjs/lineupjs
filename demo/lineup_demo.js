@@ -53,7 +53,24 @@
     })
   }
 
+  function fixMissing(columns, data) {
+    columns.forEach(function(col){
+      if (col.type === 'number' && !col.domain) {
+        var old = col.domain || [NaN, NaN];
+        var minmax = d3.extent(data, function (row) { return row[col.column].length === 0 ? undefined : +(row[col.column])});
+        col.domain = [
+          isNaN(old[0]) ? minmax[0] : old[0],
+          isNaN(old[1]) ? minmax[1] : old[1]
+        ];
+      } else if (col.type === 'categorical' && !col.categories) {
+        var sset = d3.set(data.map(function (row) { return row[col];}));
+        col.categories = sset.values().sort();
+      }
+    });
+  }
+
   function loadDataImpl(name, desc, _data) {
+    fixMissing(desc.columns, _data);
     var provider = LineUpJS.createLocalStorage(_data, LineUpJS.deriveColors(desc.columns));
     lineUpDemoConfig.name = name;
     if (lineup) {
@@ -143,14 +160,6 @@
   }
 
   function loadLayout() {
-    function loadDataImpl(name, desc, _data) {
-      setColors(desc.columns);
-      var provider = LineUpJS.createLocalStorage(_data, desc.columns);
-      provider.deriveDefault();
-      lineup.changeDataStorage(provider, desc);
-      updateMenu();
-    }
-
     function loadDataFile(name, desc, datafile) {
       var reader = new FileReader();
       reader.onload = function (e) {
@@ -292,8 +301,9 @@
 
     var old = history.state;
     if (old) {
-      $s.property('value', datasets.indexOf(old));
-      loadDataset(old);
+      var choose = datasets.filter(function(d) { return d.id === old.id; });
+      $s.property('value', datasets.indexOf(choose[0]));
+      loadDataset(choose[0]);
     } else if (window.location.hash) {
       var choose = datasets.filter(function(d) { return d.id === window.location.hash.substr(1); });
       if (choose.length > 0) {

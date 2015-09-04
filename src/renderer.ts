@@ -13,6 +13,12 @@ export interface IRenderContext {
    * @param index
    */
   cellY(index:number) : number;
+
+  /**
+   * the previous y position of the cell
+   * @param index
+   */
+  cellPrevY(index: number): number;
   /**
    * the x position of the cell
    * @param index
@@ -102,14 +108,18 @@ export class DefaultCellRenderer implements ICellRenderer {
 
     $rows.enter().append('text').attr({
       'class': this.textClass,
-      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+      y: (d, i) => context.cellPrevY(i)
     });
 
-    context.animated($rows).attr({
+    $rows.attr({
       x: (d, i) => context.cellX(i) + (this.align === 'right' ? col.getWidth() - 5 : 0),
-      y: (d, i) => context.cellY(i),
       'data-index': (d, i) => i
     }).text((d) => col.getLabel(d));
+
+    context.animated($rows).attr({
+      y: (d, i) => context.cellY(i)
+    });
 
     $rows.exit().remove();
   }
@@ -160,16 +170,29 @@ class DerivedCellRenderer extends DefaultCellRenderer {
 export class BarCellRenderer extends DefaultCellRenderer {
   render($col:d3.Selection<any>, col:model.NumberColumn, rows:any[], context:IRenderContext) {
     var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
-    $rows.enter().append('rect').attr('class', 'bar').style('fill', col.color);
-    context.animated($rows).attr({
+
+    $rows.enter().append('rect').attr({
+      'class' : 'bar',
       x: (d, i) => context.cellX(i),
-      y: (d, i) => context.cellY(i) + context.option('rowPadding',1),
-      height: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2,
+      y: (d, i) => context.cellPrevY(i) + context.option('rowPadding',1),
       width: (d) => {
         var n = col.getWidth() * col.getValue(d);
         return isNaN(n) ? 0 : n;
-      },
-      'data-index': (d, i) => i
+      }
+    }).style('fill', col.color);
+
+    $rows.attr({
+      'data-index': (d, i) => i,
+      height: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2
+    });
+
+    context.animated($rows).attr({
+      x: (d, i) => context.cellX(i),
+      y: (d, i) => context.cellY(i) + context.option('rowPadding',1),
+      width: (d) => {
+        var n = col.getWidth() * col.getValue(d);
+        return isNaN(n) ? 0 : n;
+      }
     }).style({
       fill: (d,i) => this.colorOf(d, i, col)
     });
@@ -237,15 +260,20 @@ class LinkCellRenderer extends DefaultCellRenderer {
       'target': '_blank'
     }).append('text').attr({
       'class': 'text',
-      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+      y: (d, i) => context.cellPrevY(i)
     });
-    context.animated($rows).attr({
+
+    $rows.attr({
+      x: (d, i) => context.cellX(i),
       'xlink:href': (d) => col.getValue(d),
       'data-index': (d, i) => i
-    }).select('text').attr({
-      x: (d, i) => context.cellX(i),
-      y: (d, i) => context.cellY(i)
     }).text((d) => col.getLabel(d));
+
+    context.animated($rows).select('text').attr({
+      y: (d, i) => context.cellY(i)
+    });
+
     $rows.exit().remove();
   }
 
@@ -261,27 +289,35 @@ class CategoricalRenderer extends DefaultCellRenderer {
     var $rows = $col.datum(col).selectAll('g.' + this.textClass).data(rows, context.rowKey);
 
     var $rows_enter = $rows.enter().append('g').attr({
-      'class': this.textClass
+      'class': this.textClass,
+      'data-index': (d, i) => i,
+      transform: (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellPrevY(i) + ')'
     });
     $rows_enter.append('text').attr({
-      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+      x: (d, i) => context.rowHeight(i)
     });
     $rows_enter.append('rect').attr({
       y: context.option('rowPadding', 1)
     });
-    var $update = context.animated($rows).attr({
+    $rows.attr({
       'data-index': (d, i) => i,
       transform: (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'
     });
-    $update.select('text').attr({
+    $rows.select('text').attr({
       x: (d, i) => context.rowHeight(i)
     }).text((d) => col.getLabel(d));
-    $update.select('rect').style({
+    $rows.select('rect').style({
       fill: (d) => col.getColor(d)
     }).attr({
       height: (d, i) => Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0),
       width: (d, i) => Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0)
     });
+
+    context.animated($rows).attr({
+      transform: (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'
+    });
+
 
     $rows.exit().remove();
   }
@@ -309,7 +345,8 @@ class StackCellRenderer extends DefaultCellRenderer {
 
     var $children = $group.selectAll('g.component').data(children, (d) => d.id);
     $children.enter().append('g').attr({
-      'class': 'component'
+      'class': 'component',
+      transform: (d, i) => 'translate(' + shifts[i] + ',0)'
     });
     $children.attr({
       'class': (d) => 'component ' + d.desc.type,

@@ -183,7 +183,7 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 }
 
-export function deriveColors(columns: provider_.IColumnDesc[]) {
+export function deriveColors(columns: model_.IColumnDesc[]) {
   var colors = d3.scale.category10().range().slice();
   columns.forEach((col: any) => {
     switch(col.type) {
@@ -195,7 +195,7 @@ export function deriveColors(columns: provider_.IColumnDesc[]) {
   return columns;
 }
 
-export function createLocalStorage(data: any[], columns: provider_.IColumnDesc[]) {
+export function createLocalStorage(data: any[], columns: model_.IColumnDesc[]) {
   return new provider_.LocalDataProvider(data, columns);
 }
 

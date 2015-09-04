@@ -467,6 +467,9 @@ var Column = (function (_super) {
         this.id = fixCSS(id);
         this.label = this.desc.label || this.id;
     }
+    Column.prototype.init = function (callback) {
+        return Promise.resolve(true);
+    };
     Object.defineProperty(Column.prototype, "fqid", {
         get: function () {
             return this.parent ? this.parent.fqid + '_' + this.id : this.id;
@@ -602,7 +605,7 @@ var NumberColumn = (function (_super) {
     __extends(NumberColumn, _super);
     function NumberColumn(id, desc) {
         _super.call(this, id, desc);
-        this.missingValue = NaN;
+        this.missingValue = 0;
         this.scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
         this.mapping = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
         this.filter_ = { min: -Infinity, max: Infinity };
@@ -614,6 +617,18 @@ var NumberColumn = (function (_super) {
         }
         this.mapping.domain(this.scale.domain()).range(this.scale.range());
     }
+    NumberColumn.prototype.init = function (callback) {
+        var _this = this;
+        var d = this.scale.domain();
+        if (isNaN(d[0]) || isNaN(d[1])) {
+            return callback(this.desc).then(function (stats) {
+                _this.scale.domain([stats.min, stats.max]);
+                _this.mapping.domain(_this.scale.domain());
+                return true;
+            });
+        }
+        return Promise.resolve(true);
+    };
     NumberColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
         r.domain = this.scale.domain();
@@ -819,9 +834,9 @@ var CategoricalColumn = (function (_super) {
         _super.call(this, id, desc);
         this.colors = d3.scale.category10();
         this.filter_ = null;
-        this.init(desc);
+        this.initCategories(desc);
     }
-    CategoricalColumn.prototype.init = function (desc) {
+    CategoricalColumn.prototype.initCategories = function (desc) {
         if (desc.categories) {
             var cats = [], cols = this.colors.range();
             desc.categories.forEach(function (cat, i) {
@@ -1010,7 +1025,7 @@ var StackColumn = (function (_super) {
     __extends(StackColumn, _super);
     function StackColumn(id, desc) {
         _super.call(this, id, desc);
-        this.missingValue = NaN;
+        this.missingValue = 0;
         this.children_ = [];
         this._collapsed = false;
         var that = this;
@@ -1880,13 +1895,16 @@ var DefaultCellRenderer = (function () {
         var $rows = $col.datum(col).selectAll('text.' + this.textClass).data(rows, context.rowKey);
         $rows.enter().append('text').attr({
             'class': this.textClass,
-            'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+            'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+            y: function (d, i) { return context.cellPrevY(i); }
         });
-        context.animated($rows).attr({
+        $rows.attr({
             x: function (d, i) { return context.cellX(i) + (_this.align === 'right' ? col.getWidth() - 5 : 0); },
-            y: function (d, i) { return context.cellY(i); },
             'data-index': function (d, i) { return i; }
         }).text(function (d) { return col.getLabel(d); });
+        context.animated($rows).attr({
+            y: function (d, i) { return context.cellY(i); }
+        });
         $rows.exit().remove();
     };
     DefaultCellRenderer.prototype.findRow = function ($col, index) {
@@ -1929,16 +1947,26 @@ var BarCellRenderer = (function (_super) {
     BarCellRenderer.prototype.render = function ($col, col, rows, context) {
         var _this = this;
         var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
-        $rows.enter().append('rect').attr('class', 'bar').style('fill', col.color);
-        context.animated($rows).attr({
+        $rows.enter().append('rect').attr({
+            'class': 'bar',
             x: function (d, i) { return context.cellX(i); },
-            y: function (d, i) { return context.cellY(i) + context.option('rowPadding', 1); },
-            height: function (d, i) { return context.rowHeight(i) - context.option('rowPadding', 1) * 2; },
+            y: function (d, i) { return context.cellPrevY(i) + context.option('rowPadding', 1); },
             width: function (d) {
                 var n = col.getWidth() * col.getValue(d);
                 return isNaN(n) ? 0 : n;
-            },
-            'data-index': function (d, i) { return i; }
+            }
+        }).style('fill', col.color);
+        $rows.attr({
+            'data-index': function (d, i) { return i; },
+            height: function (d, i) { return context.rowHeight(i) - context.option('rowPadding', 1) * 2; }
+        });
+        context.animated($rows).attr({
+            x: function (d, i) { return context.cellX(i); },
+            y: function (d, i) { return context.cellY(i) + context.option('rowPadding', 1); },
+            width: function (d) {
+                var n = col.getWidth() * col.getValue(d);
+                return isNaN(n) ? 0 : n;
+            }
         }).style({
             fill: function (d, i) { return _this.colorOf(d, i, col); }
         });
@@ -2003,15 +2031,17 @@ var LinkCellRenderer = (function (_super) {
             'target': '_blank'
         }).append('text').attr({
             'class': 'text',
-            'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+            'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+            y: function (d, i) { return context.cellPrevY(i); }
         });
-        context.animated($rows).attr({
+        $rows.attr({
+            x: function (d, i) { return context.cellX(i); },
             'xlink:href': function (d) { return col.getValue(d); },
             'data-index': function (d, i) { return i; }
-        }).select('text').attr({
-            x: function (d, i) { return context.cellX(i); },
-            y: function (d, i) { return context.cellY(i); }
         }).text(function (d) { return col.getLabel(d); });
+        context.animated($rows).select('text').attr({
+            y: function (d, i) { return context.cellY(i); }
+        });
         $rows.exit().remove();
     };
     LinkCellRenderer.prototype.findRow = function ($col, index) {
@@ -2028,26 +2058,32 @@ var CategoricalRenderer = (function (_super) {
     CategoricalRenderer.prototype.render = function ($col, col, rows, context) {
         var $rows = $col.datum(col).selectAll('g.' + this.textClass).data(rows, context.rowKey);
         var $rows_enter = $rows.enter().append('g').attr({
-            'class': this.textClass
+            'class': this.textClass,
+            'data-index': function (d, i) { return i; },
+            transform: function (d, i) { return 'translate(' + context.cellX(i) + ',' + context.cellPrevY(i) + ')'; }
         });
         $rows_enter.append('text').attr({
-            'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+            'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+            x: function (d, i) { return context.rowHeight(i); }
         });
         $rows_enter.append('rect').attr({
             y: context.option('rowPadding', 1)
         });
-        var $update = context.animated($rows).attr({
+        $rows.attr({
             'data-index': function (d, i) { return i; },
             transform: function (d, i) { return 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'; }
         });
-        $update.select('text').attr({
+        $rows.select('text').attr({
             x: function (d, i) { return context.rowHeight(i); }
         }).text(function (d) { return col.getLabel(d); });
-        $update.select('rect').style({
+        $rows.select('rect').style({
             fill: function (d) { return col.getColor(d); }
         }).attr({
             height: function (d, i) { return Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0); },
             width: function (d, i) { return Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0); }
+        });
+        context.animated($rows).attr({
+            transform: function (d, i) { return 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'; }
         });
         $rows.exit().remove();
     };
@@ -2074,7 +2110,8 @@ var StackCellRenderer = (function (_super) {
         }
         var $children = $group.selectAll('g.component').data(children, function (d) { return d.id; });
         $children.enter().append('g').attr({
-            'class': 'component'
+            'class': 'component',
+            transform: function (d, i) { return 'translate(' + shifts[i] + ',0)'; }
         });
         $children.attr({
             'class': function (d) { return 'component ' + d.desc.type; },
@@ -2261,17 +2298,20 @@ var HeaderRenderer = (function () {
         };
         this.dragHandler = d3.behavior.drag()
             .on('dragstart', function () {
-            d3.event.sourceEvent.stopPropagation();
             d3.select(this).classed('dragging', true);
+            d3.event.sourceEvent.stopPropagation();
+            d3.event.sourceEvent.preventDefault();
         })
             .on('drag', function (d) {
             var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
             d.setWidth(newValue);
             d3.event.sourceEvent.stopPropagation();
+            d3.event.sourceEvent.preventDefault();
         })
             .on('dragend', function () {
             d3.select(this).classed('dragging', false);
             d3.event.sourceEvent.stopPropagation();
+            d3.event.sourceEvent.preventDefault();
         });
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('div').classed('lu-header', true);
@@ -2349,10 +2389,6 @@ var HeaderRenderer = (function () {
             'class': clazz
         }).style({
             'background-color': function (d) { return d.color; }
-        }).on('click', function (d) {
-            if (_this.options.manipulative) {
-                d.toggleMySorting();
-            }
         });
         $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
         $headers_enter.append('span').classed('label', true).attr({
@@ -2363,6 +2399,10 @@ var HeaderRenderer = (function () {
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
             e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
+        }).on('click', function (d) {
+            if (_this.options.manipulative && !d3.event.defaultPrevented) {
+                d.toggleMySorting();
+            }
         });
         if (this.options.manipulative) {
             $headers_enter.append('div').classed('handle', true)
@@ -2474,6 +2514,9 @@ var BodyRenderer = (function () {
             cellY: function (index) {
                 return (index + index_shift) * (options.rowHeight);
             },
+            cellPrevY: function (index) {
+                return (index + index_shift) * (options.rowHeight);
+            },
             cellX: function (index) {
                 return 0;
             },
@@ -2530,7 +2573,8 @@ var BodyRenderer = (function () {
         var dataPromises = orders.map(function (r) { return _this.data.view(r); });
         var $rankings = $body.selectAll('g.ranking').data(rankings, function (d) { return d.id; });
         var $rankings_enter = $rankings.enter().append('g').attr({
-            'class': 'ranking'
+            'class': 'ranking',
+            transform: function (d, i) { return 'translate(' + shifts[i].shift + ',0)'; }
         });
         $rankings_enter.append('g').attr('class', 'rows');
         $rankings_enter.append('g').attr('class', 'cols');
@@ -2539,7 +2583,10 @@ var BodyRenderer = (function () {
         });
         var $cols = $rankings.select('g.cols').selectAll('g.child').data(function (d) { return [d].concat(d.children); }, function (d) { return d.id; });
         $cols.enter().append('g').attr({
-            'class': 'child'
+            'class': 'child',
+            transform: function (d, i, j) {
+                return 'translate(' + shifts[j].shifts[i] + ',0)';
+            }
         });
         $cols.attr({
             'data-index': function (d, i) { return i; }
@@ -2680,7 +2727,7 @@ var BodyRenderer = (function () {
     BodyRenderer.prototype.update = function () {
         var _this = this;
         var rankings = this.data.getRankings();
-        var maxElems = d3.max(rankings, function (d) { return d.getOrder().length; });
+        var maxElems = d3.max(rankings, function (d) { return d.getOrder().length; }) || 0;
         var height = this.options.rowHeight * maxElems;
         var visibleRange = this.slicer(0, maxElems, function (i) { return i * _this.options.rowHeight; });
         var orderSlicer = function (order) {

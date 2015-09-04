@@ -6,19 +6,7 @@ import model = require('./model');
 import utils = require('./utils');
 import d3 = require('d3');
 
-export interface IColumnDesc {
-  label:string;
-  type:string;
-}
-
-export interface IStatistics {
-  min: number;
-  max: number;
-  count: number;
-  hist: { x : number; dx : number; y : number;}[];
-}
-
-function computeStats(arr: any[], acc: (any) => number, range?: [number, number]) : IStatistics {
+function computeStats(arr: any[], acc: (any) => number, range?: [number, number]) : model.IStatistics {
   var hist = d3.layout.histogram().value(acc);
   if (range) {
     hist.range(() => range);
@@ -66,7 +54,7 @@ export class DataProvider extends utils.AEventDispatcher {
     return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'selectionChanged']);
   }
 
-  getColumns(): IColumnDesc[] {
+  getColumns(): model.IColumnDesc[] {
     return [];
   }
 
@@ -119,7 +107,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param desc
    * @return {boolean}
    */
-  push(ranking:model.RankColumn, desc:IColumnDesc) {
+  push(ranking:model.RankColumn, desc:model.IColumnDesc) {
     var r = this.create(desc);
     if (r) {
       ranking.push(r);
@@ -128,7 +116,7 @@ export class DataProvider extends utils.AEventDispatcher {
     return null;
   }
 
-  create(desc: IColumnDesc) {
+  create(desc: model.IColumnDesc) {
     var type = this.columnTypes[desc.type];
     if (type) {
       return new type(this.nextId(), desc);
@@ -158,7 +146,7 @@ export class DataProvider extends utils.AEventDispatcher {
     return null;
   }
 
-  insert(ranking: model.RankColumn, index: number, desc: IColumnDesc) {
+  insert(ranking: model.RankColumn, index: number, desc: model.IColumnDesc) {
     var r = this.create(desc);
     if (r) {
       ranking.insert(r, index);
@@ -295,7 +283,7 @@ export class DataProvider extends utils.AEventDispatcher {
     return Promise.reject('not implemented');
   }
 
-  stats(indices: number[], col: model.INumberColumn): Promise<IStatistics> {
+  stats(indices: number[], col: model.INumberColumn): Promise<model.IStatistics> {
     return Promise.reject('not implemented');
   }
 
@@ -393,7 +381,7 @@ export class CommonDataProvider extends DataProvider {
   //generic accessor of the data item
   private rowGetter = (row:any, id:string, desc:any) => row[desc.column];
 
-  constructor(private columns:IColumnDesc[] = []) {
+  constructor(private columns:model.IColumnDesc[] = []) {
     super();
 
     //generate the accessor
@@ -403,7 +391,7 @@ export class CommonDataProvider extends DataProvider {
     });
   }
 
-  getColumns(): IColumnDesc[] {
+  getColumns(): model.IColumnDesc[] {
     return this.columns.slice();
   }
   findDesc(ref: string) {
@@ -435,7 +423,7 @@ export class CommonDataProvider extends DataProvider {
  */
 export class LocalDataProvider extends CommonDataProvider {
 
-  constructor(public data:any[], columns:IColumnDesc[] = []) {
+  constructor(public data:any[], columns:model.IColumnDesc[] = []) {
     super(columns);
     //enhance with a magic attribute storing ranking information
     data.forEach((d, i) => {
@@ -503,7 +491,7 @@ export class LocalDataProvider extends CommonDataProvider {
     return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
   }
 
-  stats(indices: number[], col: model.INumberColumn): Promise<IStatistics> {
+  stats(indices: number[], col: model.INumberColumn): Promise<model.IStatistics> {
     return Promise.resolve(computeStats(this.data, col.getNumber.bind(col), [0, 1]));
   }
 }
@@ -521,7 +509,7 @@ export class RemoteDataProvider extends CommonDataProvider {
 
   private ranks:any = {};
 
-  constructor(private server:IServerData, columns:IColumnDesc[] = []) {
+  constructor(private server:IServerData, columns:model.IColumnDesc[] = []) {
     super(columns);
   }
 
