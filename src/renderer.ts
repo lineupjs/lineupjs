@@ -220,6 +220,57 @@ export class BarCellRenderer extends DefaultCellRenderer {
   }
 }
 
+export class HeatMapCellRenderer extends DefaultCellRenderer {
+  render($col:d3.Selection<any>, col:model.NumberColumn, rows:any[], context:IRenderContext) {
+    var $rows = $col.datum(col).selectAll('rect.heatmap').data(rows, context.rowKey);
+
+    $rows.enter().append('rect').attr({
+      'class' : 'bar',
+      x: (d, i) => context.cellX(i),
+      y: (d, i) => context.cellPrevY(i) + context.option('rowPadding',1),
+      width: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2
+    }).style('fill', col.color);
+
+    $rows.attr({
+      'data-index': (d, i) => i,
+      width: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2,
+      height: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2
+    });
+
+    context.animated($rows).attr({
+      x: (d, i) => context.cellX(i),
+      y: (d, i) => context.cellY(i) + context.option('rowPadding',1),
+    }).style({
+      fill: (d,i) => this.colorOf(d, i, col)
+    });
+    $rows.exit().remove();
+  }
+
+  colorOf(d: any, i: number, col: model.Column) {
+    var v = col.getValue(d);
+    if (isNaN(v)) v = 0;
+    var color = d3.hsl(col.color);
+    color.h = v;
+    return color.toString();
+  }
+
+  findRow($col:d3.Selection<any>, index:number) {
+    return $col.selectAll('rect.heatmap[data-index="' + index + '"]');
+  }
+
+  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
+    var rowNode = this.findRow($col, index);
+    if (!rowNode.empty()) {
+      (<Node>$row.node()).appendChild(<Node>(rowNode.node()));
+      $row.append('text').datum(rowNode.datum()).attr({
+        'class': 'number',
+        'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+        transform: 'translate('+context.cellX(index)+','+context.cellY(index)+')'
+      }).text((d) => col.getLabel(d));
+    }
+  }
+}
+
 class DerivedBarCellRenderer extends BarCellRenderer {
   constructor(extraFuncs:any) {
     super();
