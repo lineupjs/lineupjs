@@ -231,8 +231,6 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
     }).style({
       left: pos.left + 'px',
       top: pos.top + 'px',
-      width: '420px',
-      height: '470px'
     })
     .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>' +
       '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'));

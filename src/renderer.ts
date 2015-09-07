@@ -239,7 +239,7 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
 
     context.animated($rows).attr({
       x: (d, i) => context.cellX(i),
-      y: (d, i) => context.cellY(i) + context.option('rowPadding',1),
+      y: (d, i) => context.cellY(i) + context.option('rowPadding',1)
     }).style({
       fill: (d,i) => this.colorOf(d, i, col)
     });
@@ -248,7 +248,9 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
 
   colorOf(d: any, i: number, col: model.Column) {
     var v = col.getValue(d);
-    if (isNaN(v)) v = 0;
+    if (isNaN(v)) {
+      v = 0;
+    }
     var color = d3.hsl(col.color);
     color.h = v;
     return color.toString();

@@ -25,14 +25,8 @@
 }
 
 .lu-popup {
-  background: white;
   position: absolute;
 
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 10px 10px 5px #888888;
-
-  font-size: 9pt;
   dominant-baseline: central;
   text-anchor: middle;
 
@@ -56,9 +50,10 @@
 }
 
 .lu-popup, .lu-popup2 {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.9);
   position: absolute;
   padding: 2px;
+  box-shadow: 5px 5px 3px #888888;
 
   font-size: 8pt;
 

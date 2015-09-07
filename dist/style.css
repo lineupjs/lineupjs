@@ -18,12 +18,7 @@
   text-anchor: middle; }
 
 .lu-popup {
-  background: white;
   position: absolute;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 10px 10px 5px #888888;
-  font-size: 9pt;
   dominant-baseline: central;
   text-anchor: middle; }
   .lu-popup .selectionTable {
@@ -40,9 +35,10 @@
     right: 10px; }
 
 .lu-popup, .lu-popup2 {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.9);
   position: absolute;
   padding: 2px;
+  box-shadow: 5px 5px 3px #888888;
   font-size: 8pt;
   clear: right; }
   .lu-popup input, .lu-popup2 input {
@@ -140,3 +136,5 @@
       color: darkblue; }
   .lu svg.lu-body text, .lu-pool svg.lu-body text {
     font-size: 10pt; }
+
+/*# sourceMappingURL=style.css.map */

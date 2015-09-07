@@ -33,10 +33,11 @@ function addCircle($svg, x, shift, y, radius) {
 
 export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[], dataPromise: Promise<number[]>, options: any) {
   options = utils.merge({
-    width: 400,
-    height: 400,
-    padding: 50,
-    radius: 10,
+    width: 320,
+    height: 250,
+    padding_hor: 10,
+    padding_ver: 30,
+    radius: 8,
     callback: (d)=>d,
     callbackThisArg: null,
     triggerCallback: 'change' //change, dragend
@@ -49,13 +50,13 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
       height: options.height
     });
     //left limit for the axes
-    var lowerLimitX = options.padding;
+    var lowerLimitX = options.padding_hor;
     //right limit for the axes
-    var upperLimitX = options.width - options.padding;
+    var upperLimitX = options.width - options.padding_hor;
     //location for the score axis
-    var scoreAxisY = options.padding;
+    var scoreAxisY = options.padding_ver;
     //location for the raw2pixel value axis
-    var raw2pixelAxisY = options.height - options.padding;
+    var raw2pixelAxisY = options.height - options.padding_ver;
     //this is needed for filtering the shown datalines
     var raw2pixel = d3.scale.linear().domain(dataDomain).range([lowerLimitX, upperLimitX]);
     var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
