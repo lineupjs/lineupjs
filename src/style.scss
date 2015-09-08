@@ -143,6 +143,10 @@ $lu_toolbar_font_size: 9pt;
 
   rect.bg {
     fill: transparent;
+
+    &.even {
+      fill: #f7f7f7;
+    }
   }
 
   g.row.hover {
@@ -165,6 +169,11 @@ $lu_toolbar_font_size: 9pt;
     color: white;
     text-align: center;
     height: 100%;
+
+    span {
+      position: relative;
+      top: 1em;
+    }
 
     &:hover {
       &> div.toolbar {

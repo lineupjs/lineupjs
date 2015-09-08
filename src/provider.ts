@@ -406,12 +406,24 @@ export class CommonDataProvider extends DataProvider {
 
   constructor(private columns:model.IColumnDesc[] = []) {
     super();
-
+    this.columns = columns.slice();
     //generate the accessor
     columns.forEach((d:any) => {
       d.accessor = this.rowGetter;
       d.label = d.label || d.column;
     });
+  }
+
+  createEventList() {
+    return super.createEventList().concat(['addDesc']);
+  }
+
+  pushDesc(column: model.IColumnDesc) {
+    var d : any = column;
+    d.accessor = this.rowGetter;
+    d.label = column.label || d.column;
+    this.columns.push(column);
+    this.fire('addDesc', d);
   }
 
   getColumns(): model.IColumnDesc[] {

@@ -72,7 +72,7 @@ var LineUp = (function (_super) {
         this.config = {
             numberformat: d3.format('.3n'),
             htmlLayout: {
-                headerHeight: 20,
+                headerHeight: 30,
                 headerOffset: 1,
                 buttonTopPadding: 10,
                 labelLeftPadding: 5
@@ -1960,12 +1960,23 @@ var CommonDataProvider = (function (_super) {
         this.rankingIndex = 0;
         //generic accessor of the data item
         this.rowGetter = function (row, id, desc) { return row[desc.column]; };
+        this.columns = columns.slice();
         //generate the accessor
         columns.forEach(function (d) {
             d.accessor = _this.rowGetter;
             d.label = d.label || d.column;
         });
     }
+    CommonDataProvider.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['addDesc']);
+    };
+    CommonDataProvider.prototype.pushDesc = function (column) {
+        var d = column;
+        d.accessor = this.rowGetter;
+        d.label = column.label || d.column;
+        this.columns.push(column);
+        this.fire('addDesc', d);
+    };
     CommonDataProvider.prototype.getColumns = function () {
         return this.columns.slice();
     };
@@ -2524,10 +2535,14 @@ var PoolRenderer = (function () {
         this.changeDataStorage(data);
     }
     PoolRenderer.prototype.changeDataStorage = function (data) {
+        var _this = this;
         if (this.data) {
-            this.data.on(['addColumn.pool', 'removeColumn.pool', 'addRanking.pool', 'removeRanking.pool'], null);
+            this.data.on(['addColumn.pool', 'removeColumn.pool', 'addRanking.pool', 'removeRanking.pool', 'addDesc.pool'], null);
         }
         this.data = data;
+        data.on(['addDesc.pool'], function (desc) {
+            _this.entries.push(new PoolEntry(desc));
+        });
         if (this.options.hideUsed) {
             var that = this;
             data.on(['addColumn.pool', 'removeColumn.pool'], function (col) {
@@ -3024,10 +3039,11 @@ var BodyRenderer = (function () {
         $rows.attr({
             'data-index': function (d) { return d.d; }
         });
-        context.animated($rows).select('rect').attr({
+        $rows.select('rect').attr({
             y: function (data_index) { return context.cellY(data_index.i); },
             height: function (data_index) { return context.rowHeight(data_index.i); },
-            width: function (d, i, j) { return shifts[j].width; }
+            width: function (d, i, j) { return shifts[j].width; },
+            'class': function (d, i) { return 'bg ' + (i % 2 == 0 ? 'even' : 'odd'); }
         });
         $rows.exit().remove();
         $rankings.exit().remove();

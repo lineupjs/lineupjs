@@ -27,7 +27,7 @@ export class LineUp extends utils_.AEventDispatcher {
   config = {
     numberformat: d3.format('.3n'),
     htmlLayout: {
-      headerHeight: 20,
+      headerHeight: 30,
       headerOffset: 1,
       buttonTopPadding: 10,
       labelLeftPadding: 5

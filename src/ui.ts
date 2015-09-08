@@ -38,6 +38,7 @@ export class PoolRenderer {
     utils.merge(this.options, options);
     this.entries = data.getColumns().concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
 
+
     this.$node = d3.select(parent).append('div').classed('lu-pool',true);
 
     this.changeDataStorage(data);
@@ -45,9 +46,12 @@ export class PoolRenderer {
 
   changeDataStorage(data: provider.DataProvider) {
     if (this.data) {
-      this.data.on(['addColumn.pool','removeColumn.pool','addRanking.pool','removeRanking.pool'], null);
+      this.data.on(['addColumn.pool','removeColumn.pool','addRanking.pool','removeRanking.pool', 'addDesc.pool'], null);
     }
     this.data = data;
+    data.on(['addDesc.pool'], (desc) => {
+      this.entries.push(new PoolEntry(desc));
+    });
     if (this.options.hideUsed) {
       var that = this;
       data.on(['addColumn.pool','removeColumn.pool'], function(col) {
@@ -571,10 +575,11 @@ export class BodyRenderer {
     $rows.attr({
       'data-index': (d) => d.d
     });
-    context.animated($rows).select('rect').attr({
+    $rows.select('rect').attr({
       y: (data_index) => context.cellY(data_index.i),
       height: (data_index) => context.rowHeight(data_index.i),
-      width: (d, i, j?) => shifts[j].width
+      width: (d, i, j?) => shifts[j].width,
+      'class': (d, i) => 'bg '+(i%2==0?'even':'odd')
     });
     $rows.exit().remove();
 
