@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-09-07
+/*! LineUpJS - v0.1.0 - 2015-09-08
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -1203,7 +1203,6 @@ var StackColumn = (function (_super) {
             return null;
         }
         if (col instanceof StackColumn) {
-            col.collapsed = true;
         }
         if (!isNaN(weight)) {
             col.setWidth((weight / (1 - weight) * this.getWidth()));
@@ -1287,6 +1286,9 @@ var StackColumn = (function (_super) {
         }
         this.children_.splice(i, 1); //remove and deregister listeners
         child.parent = null;
+        if (child instanceof StackColumn) {
+            child.collapsed = false;
+        }
         this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
         child.on('widthChanged.stack', null);
         //reduce width to keep the percentages
@@ -1473,6 +1475,7 @@ var RankColumn = (function (_super) {
         this.columns_.splice(index, 0, col);
         col.parent = this;
         this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
+        col.on('filterChanged.order', this.dirtyOrder);
         this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
         if (this.sortBy_ === null) {
             this.sortBy(col);
@@ -1707,8 +1710,11 @@ var DataProvider = (function (_super) {
         return null;
     };
     DataProvider.prototype.clone = function (col) {
-        var _this = this;
         var dump = col.dump(function (d) { return d; });
+        return this.restoreColumn(dump);
+    };
+    DataProvider.prototype.restoreColumn = function (dump) {
+        var _this = this;
         var create = function (d) {
             var type = _this.columnTypes[d.desc.type];
             var c = new type(_this.nextId(), d.desc);
@@ -1745,6 +1751,9 @@ var DataProvider = (function (_super) {
             selection: this.selection.values().map(Number),
             rankings: this.rankings_.map(function (r) { return r.dump(_this.toDescRef); })
         };
+    };
+    DataProvider.prototype.dumpColumn = function (col) {
+        return col.dump(this.toDescRef);
     };
     DataProvider.prototype.toDescRef = function (desc) {
         return desc;
@@ -2412,10 +2421,7 @@ var StackCellRenderer = (function (_super) {
             offset += d.getWidth();
             return r;
         });
-        var bak = context.cellX;
-        if (!context.showStacked(col)) {
-            context.cellX = function () { return 0; };
-        }
+        var ueber = context.cellX;
         var $children = $group.selectAll('g.component').data(children, function (d) { return d.id; });
         $children.enter().append('g').attr({
             'class': 'component',
@@ -2429,7 +2435,7 @@ var StackCellRenderer = (function (_super) {
                 var preChildren = children.slice(0, i);
                 context.cellX = function (index) {
                     //shift by all the empty space left from the previous columns
-                    return -preChildren.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rowGetter(index))); }, 0);
+                    return ueber(index) - preChildren.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rowGetter(index))); }, 0);
                 };
             }
             perChild(d3.select(this), d, i, context);
@@ -2438,7 +2444,7 @@ var StackCellRenderer = (function (_super) {
             transform: function (d, i) { return 'translate(' + shifts[i] + ',0)'; }
         });
         $children.exit().remove();
-        context.cellX = bak;
+        context.cellX = ueber;
     };
     StackCellRenderer.prototype.render = function ($col, col, rows, context) {
         this.renderImpl($col, col, context, function ($child, col, i, ccontext) {
@@ -2672,13 +2678,14 @@ var HeaderRenderer = (function () {
         //real width
         offset -= this.options.slopeWidth;
         var columns = shifts.map(function (d) { return d.col; });
-        if (columns.some(function (c) { return c instanceof model.StackColumn && !c.collapsed; })) {
-            //we have a second level
-            this.$node.style('height', this.options.headerHeight * 2 + 'px');
+        function countStacked(c) {
+            if (c instanceof model.StackColumn && !c.collapsed) {
+                return 1 + Math.max.apply(Math, c.children.map(countStacked));
+            }
+            return 1;
         }
-        else {
-            this.$node.style('height', this.options.headerHeight + 'px');
-        }
+        var levels = Math.max.apply(Math, columns.map(countStacked));
+        this.$node.style('height', this.options.headerHeight * levels + 'px');
         this.renderColumns(columns, shifts);
     };
     HeaderRenderer.prototype.createToolbar = function ($node) {
@@ -3245,10 +3252,6 @@ function openCategoricalFilter(column, $header) {
         top: pos.top + 'px'
     })
         .html(dialogForm('Edit Filter', '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>'));
-    popup.select('.selectionTable').style({
-        width: (400 - 10) + 'px',
-        height: (300 - 40) + 'px'
-    });
     // list all data rows !
     var trData = column.categories.map(function (d) {
         return { d: d, isChecked: bak.length === 0 || bak.indexOf(d) >= 0 };

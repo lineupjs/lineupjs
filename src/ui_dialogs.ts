@@ -133,11 +133,6 @@ function openCategoricalFilter(column: model.CategoricalColumn, $header: d3.Sele
     })
     .html(dialogForm('Edit Filter', '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>'));
 
-  popup.select('.selectionTable').style({
-    width: (400 - 10) + 'px',
-    height: (300 - 40) + 'px'
-  });
-
   // list all data rows !
   var trData = column.categories.map(function (d) {
     return {d: d, isChecked: bak.length === 0 || bak.indexOf(d) >= 0};

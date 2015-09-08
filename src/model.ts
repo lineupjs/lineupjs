@@ -783,7 +783,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
       return null;
     }
     if (col instanceof StackColumn) {
-      col.collapsed = true;
+      //col.collapsed = true;
     }
     if (!isNaN(weight)) {
       col.setWidth((weight/(1-weight)*this.getWidth()));
@@ -876,6 +876,9 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     }
     this.children_.splice(i, 1); //remove and deregister listeners
     child.parent = null;
+    if (child instanceof StackColumn) {
+      (<StackColumn>child).collapsed = false;
+    }
     this.unforward(child, 'dirtyHeader.stack','dirtyValues.stack','dirty.stack','filterChanged.stack');
     child.on('widthChanged.stack', null);
 
@@ -1088,6 +1091,7 @@ export class RankColumn extends ValueColumn<number> {
     this.columns_.splice(index, 0, col);
     col.parent = this;
     this.forward(col, 'dirtyValues.ranking','dirtyHeader.ranking','dirty.ranking');
+    col.on('filterChanged.order', this.dirtyOrder);
 
 
     this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);

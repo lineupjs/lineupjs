@@ -30,19 +30,7 @@
   dominant-baseline: central;
   text-anchor: middle;
 
-  .selectionTable {
-    background: white;
-    overflow-x: auto;
-    overflow-y: scroll;
 
-    table {
-      width: 95%;
-      border: 0;
-    }
-    tr:hover {
-      background-color: lightblue;
-    }
-  }
   .ok {
     position: absolute;
     right: 10px;
@@ -61,6 +49,24 @@
 
   input {
     font-size: 8pt;
+  }
+
+  .selectionTable {
+    background: white;
+    overflow-x: auto;
+    overflow-y: scroll;
+
+    td {
+      white-space: nowrap;
+    }
+
+    table {
+      width: 95%;
+      border: 0;
+    }
+    tr:hover {
+      background-color: lightblue;
+    }
   }
 }
 

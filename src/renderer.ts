@@ -391,10 +391,7 @@ class StackCellRenderer extends DefaultCellRenderer {
         return r;
       });
 
-    var bak = context.cellX;
-    if (!context.showStacked(col)) {
-      context.cellX = () => 0;
-    }
+    var ueber = context.cellX;
 
     var $children = $group.selectAll('g.component').data(children, (d) => d.id);
     $children.enter().append('g').attr({
@@ -409,7 +406,7 @@ class StackCellRenderer extends DefaultCellRenderer {
         var preChildren = children.slice(0, i);
         context.cellX = (index) => {
           //shift by all the empty space left from the previous columns
-          return -preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rowGetter(index))), 0);
+          return ueber(index) -preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rowGetter(index))), 0);
         };
       }
       perChild(d3.select(this), d, i, context);
@@ -419,7 +416,7 @@ class StackCellRenderer extends DefaultCellRenderer {
     });
     $children.exit().remove();
 
-    context.cellX = bak;
+    context.cellX = ueber;
   }
   render($col:d3.Selection<any>, col:model.StackColumn, rows:any[], context:IRenderContext) {
     this.renderImpl($col, col, context, ($child, col, i, ccontext) => {

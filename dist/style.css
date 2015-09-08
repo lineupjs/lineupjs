@@ -21,15 +21,6 @@
   position: absolute;
   dominant-baseline: central;
   text-anchor: middle; }
-  .lu-popup .selectionTable {
-    background: white;
-    overflow-x: auto;
-    overflow-y: scroll; }
-    .lu-popup .selectionTable table {
-      width: 95%;
-      border: 0; }
-    .lu-popup .selectionTable tr:hover {
-      background-color: lightblue; }
   .lu-popup .ok {
     position: absolute;
     right: 10px; }
@@ -43,6 +34,17 @@
   clear: right; }
   .lu-popup input, .lu-popup2 input {
     font-size: 8pt; }
+  .lu-popup .selectionTable, .lu-popup2 .selectionTable {
+    background: white;
+    overflow-x: auto;
+    overflow-y: scroll; }
+    .lu-popup .selectionTable td, .lu-popup2 .selectionTable td {
+      white-space: nowrap; }
+    .lu-popup .selectionTable table, .lu-popup2 .selectionTable table {
+      width: 95%;
+      border: 0; }
+    .lu-popup .selectionTable tr:hover, .lu-popup2 .selectionTable tr:hover {
+      background-color: lightblue; }
 
 .lu-popup2 * {
   margin: 0; }

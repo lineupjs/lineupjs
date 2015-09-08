@@ -136,6 +136,10 @@ export class DataProvider extends utils.AEventDispatcher {
 
   clone(col: model.Column) {
     var dump = col.dump((d) => d);
+    return this.restoreColumn(dump);
+  }
+
+  restoreColumn(dump: any) {
     var create = (d: any) => {
       var type = this.columnTypes[d.desc.type];
       var c  = new type(this.nextId(), d.desc);
@@ -144,6 +148,7 @@ export class DataProvider extends utils.AEventDispatcher {
     };
     return create(dump);
   }
+
 
   find(id_or_filter: (col: model.Column) => boolean | string) {
     var filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
@@ -175,6 +180,10 @@ export class DataProvider extends utils.AEventDispatcher {
       selection: this.selection.values().map(Number),
       rankings: this.rankings_.map((r) => r.dump(this.toDescRef))
     };
+  }
+
+  dumpColumn(col: model.Column) {
+    return col.dump(this.toDescRef);
   }
 
   toDescRef(desc: any) : any {

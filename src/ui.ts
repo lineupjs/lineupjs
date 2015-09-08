@@ -210,12 +210,14 @@ export class HeaderRenderer {
     offset -= this.options.slopeWidth;
 
     var columns = shifts.map((d) => d.col);
-    if (columns.some((c) => c instanceof model.StackColumn && !c.collapsed)) {
-      //we have a second level
-      this.$node.style('height', this.options.headerHeight*2 + 'px');
-    } else {
-      this.$node.style('height', this.options.headerHeight + 'px');
+    function countStacked(c: model.Column) : number {
+      if (c instanceof model.StackColumn && !(<model.StackColumn>c).collapsed) {
+        return 1 + Math.max.apply(Math, (<model.StackColumn>c).children.map(countStacked));
+      }
+      return 1;
     }
+    var levels = Math.max.apply(Math,columns.map(countStacked));
+    this.$node.style('height', this.options.headerHeight*levels + 'px');
     this.renderColumns(columns, shifts);
   }
 
