@@ -225,7 +225,7 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
       'class': 'lu-popup'
     }).style({
       left: pos.left + 'px',
-      top: pos.top + 'px',
+      top: pos.top + 'px'
     })
     .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>' +
       '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'));

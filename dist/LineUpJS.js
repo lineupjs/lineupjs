@@ -65,10 +65,6 @@ var LineUp = (function (_super) {
         if (config === void 0) { config = {}; }
         _super.call(this);
         this.data = data;
-        /**
-         * default config of LineUp with all available options
-         *
-         */
         this.config = {
             numberformat: d3.format('.3n'),
             htmlLayout: {
@@ -87,16 +83,11 @@ var LineUp = (function (_super) {
                 rowPadding: 0.2,
                 rowBarPadding: 1,
                 visibleRowsOnly: true,
-                /**
-                 * number of backup rows to keep to avoid updating on every small scroll thing
-                 */
                 backupScrollRows: 4,
                 animationDuration: 1000
             },
-            /* enables manipulation features, remove column, reorder,... */
             manipulative: true,
             interaction: {
-                //enable the table tooltips
                 tooltips: true,
                 multiselect: function () { return false; },
                 rangeselect: function () { return false; }
@@ -132,8 +123,6 @@ var LineUp = (function (_super) {
                 topShift: this.config.htmlLayout.headerHeight
             });
             this.contentScroller.on('scroll', function (top, left) {
-                //in two svg mode propagate horizontal shift
-                //console.log(top, left,'ss');
                 _this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
             });
             this.contentScroller.on('redraw', this.body.update.bind(this.body));
@@ -165,9 +154,6 @@ var LineUp = (function (_super) {
         }
         return { from: start, to: length };
     };
-    /**
-     * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
-     */
     LineUp.prototype.destroy = function () {
         this.$container.remove();
         if (this.contentScroller) {
@@ -275,7 +261,7 @@ function open(scale, dataDomain, dataPromise, options) {
         radius: 8,
         callback: function (d) { return d; },
         callbackThisArg: null,
-        triggerCallback: 'change' //change, dragend
+        triggerCallback: 'change'
     }, options);
     var editor = function ($root) {
         var $svg = $root.append('svg').attr({
@@ -283,45 +269,29 @@ function open(scale, dataDomain, dataPromise, options) {
             width: options.width,
             height: options.height
         });
-        //left limit for the axes
         var lowerLimitX = options.padding_hor;
-        //right limit for the axes
         var upperLimitX = options.width - options.padding_hor;
-        //location for the score axis
         var scoreAxisY = options.padding_ver;
-        //location for the raw2pixel value axis
         var raw2pixelAxisY = options.height - options.padding_ver;
-        //this is needed for filtering the shown datalines
         var raw2pixel = d3.scale.linear().domain(dataDomain).range([lowerLimitX, upperLimitX]);
         var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
-        //x coordinate for the score axis lower bound
         var lowerNormalized = normal2pixel(scale.range()[0]);
-        //x coordinate for the score axis upper bound
         var upperNormalized = normal2pixel(scale.range()[1]);
-        //x coordinate for the raw2pixel axis lower bound
         var lowerRaw = raw2pixel(scale.domain()[0]);
-        //x coordinate for the raw2pixel axis upper bound
         var upperRaw = raw2pixel(scale.domain()[1]);
         scale = d3.scale.linear()
             .clamp(true)
             .domain(scale.domain())
             .range([lowerNormalized, upperNormalized]);
         var $base = $svg.append('g');
-        //upper axis for scored values
         addLine($base, lowerLimitX, scoreAxisY, upperLimitX, scoreAxisY, 'axis');
-        //label for minimum scored value
         addText($base, lowerLimitX, scoreAxisY - 25, 0, '.75em');
-        //label for maximum scored value
         addText($base, upperLimitX, scoreAxisY - 25, 1, '.75em');
         addText($base, options.width / 2, scoreAxisY - 25, 'Score', '.75em', 'centered');
-        //lower axis for raw2pixel values
         addLine($base, lowerLimitX, raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
-        //label for minimum raw2pixel value
         addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], '.75em');
-        //label for maximum raw2pixel value
         addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], '.75em');
         addText($base, options.width / 2, raw2pixelAxisY + 20, 'Raw', '.75em', 'centered');
-        //lines that show mapping of individual data items
         var datalines = $svg.append('g').classed('data', true).selectAll('line').data([]);
         dataPromise.then(function (data) {
             datalines = datalines.data(data);
@@ -342,17 +312,11 @@ function open(scale, dataDomain, dataPromise, options) {
                 return a ? 'hidden' : null;
             });
         });
-        //line that defines lower bounds for the scale
         var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, raw2pixelAxisY, 'bound');
-        //line that defines upper bounds for the scale
         var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
-        //label for lower bound of normalized values
         var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerNormalized - lowerLimitX) + ',0)');
-        //label for lower bound of raw2pixel values
         var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
-        //label for upper bound of normalized values
         var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperNormalized - upperLimitX) + ',0)');
-        //label for upper bound of raw2pixel values
         var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
         function createDrag(label, move) {
             return d3.behavior.drag()
@@ -405,7 +369,6 @@ function open(scale, dataDomain, dataPromise, options) {
                 .attr('x1', scale);
             updateScale();
         }
-        //draggable circle that defines the lower bound of normalized values
         addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
             .call(createDrag(lowerBoundNormalizedLabel, function () {
             if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
@@ -419,7 +382,6 @@ function open(scale, dataDomain, dataPromise, options) {
                 updateNormalized();
             }
         }));
-        //draggable circle that defines the upper bound of normalized values
         addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
             .call(createDrag(upperBoundNormalizedLabel, function () {
             if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
@@ -433,7 +395,6 @@ function open(scale, dataDomain, dataPromise, options) {
                 updateNormalized();
             }
         }));
-        //draggable circle that defines the lower bound of raw2pixel values
         addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
             .call(createDrag(lowerBoundRawLabel, function () {
             if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
@@ -447,7 +408,6 @@ function open(scale, dataDomain, dataPromise, options) {
                 updateRaw();
             }
         }));
-        //draggable circle that defines the upper bound of raw2pixel values
         addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
             .call(createDrag(upperBoundRawLabel, function () {
             if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
@@ -489,29 +449,15 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var d3 = require('d3');
 var utils = require('./utils');
-/**
- * converts a given id to css compatible one
- * @param id
- * @return {string|void}
- */
 function fixCSS(id) {
-    return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_'); //replace non css stuff to _
+    return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_');
 }
-/**
- * save number comparison
- * @param a
- * @param b
- * @return {number}
- */
 function numberCompare(a, b) {
     if (a === b || (isNaN(a) && isNaN(b))) {
         return 0;
     }
     return a - b;
 }
-/**
- * a column in LineUp
- */
 var Column = (function (_super) {
     __extends(Column, _super);
     function Column(id, desc) {
@@ -614,43 +560,18 @@ var Column = (function (_super) {
         this.width_ = dump.width || this.width_;
         this.label = dump.label || this.label;
     };
-    /**
-     * return the label of a given row for the current column
-     * @param row
-     * @return {string}
-     */
     Column.prototype.getLabel = function (row) {
         return '' + this.getValue(row);
     };
-    /**
-     * return the value of a given row for the current column
-     * @param row
-     * @return
-     */
     Column.prototype.getValue = function (row) {
-        return ''; //no value
+        return '';
     };
-    /**
-     * compare function used to determine the order according to the values of the current column
-     * @param a
-     * @param b
-     * @return {number}
-     */
     Column.prototype.compare = function (a, b) {
-        return 0; //can't compare
+        return 0;
     };
-    /**
-     * flag whether any filter is applied
-     * @return {boolean}
-     */
     Column.prototype.isFiltered = function () {
         return false;
     };
-    /**
-     * predicate whether the current row should be included
-     * @param row
-     * @return {boolean}
-     */
     Column.prototype.filter = function (row) {
         return row !== null;
     };
@@ -659,9 +580,6 @@ var Column = (function (_super) {
     return Column;
 })(utils.AEventDispatcher);
 exports.Column = Column;
-/**
- * a column having an accessor to get the cell value
- */
 var ValueColumn = (function (_super) {
     __extends(ValueColumn, _super);
     function ValueColumn(id, desc) {
@@ -675,7 +593,7 @@ var ValueColumn = (function (_super) {
         return this.accessor(row, this.id, this.desc);
     };
     ValueColumn.prototype.compare = function (a, b) {
-        return 0; //can't compare
+        return 0;
     };
     return ValueColumn;
 })(Column);
@@ -838,7 +756,7 @@ var StringColumn = (function (_super) {
     function StringColumn(id, desc) {
         _super.call(this, id, desc);
         this.filter_ = null;
-        this.setWidthImpl(200); //by default 200
+        this.setWidthImpl(200);
     }
     StringColumn.prototype.getValue = function (row) {
         var v = _super.prototype.getValue.call(this, row);
@@ -918,7 +836,6 @@ var CategoricalColumn = (function (_super) {
         this.colors = d3.scale.category10();
         this.filter_ = null;
         this.initCategories(desc);
-        //TODO infer categories from data
     }
     CategoricalColumn.prototype.initCategories = function (desc) {
         if (desc.categories) {
@@ -1105,9 +1022,6 @@ var CategoricalNumberColumn = (function (_super) {
     return CategoricalNumberColumn;
 })(ValueColumn);
 exports.CategoricalNumberColumn = CategoricalNumberColumn;
-/**
- * implementation of the stacked colum
- */
 var StackColumn = (function (_super) {
     __extends(StackColumn, _super);
     function StackColumn(id, desc) {
@@ -1208,11 +1122,9 @@ var StackColumn = (function (_super) {
             col.setWidth((weight / (1 - weight) * this.getWidth()));
         }
         this.children_.splice(index, 0, col);
-        //listen and propagate events
         col.parent = this;
         this.forward(col, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
         col.on('widthChanged.stack', this.adaptChange);
-        //increase my width
         _super.prototype.setWidth.call(this, this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
         this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth());
         return true;
@@ -1284,14 +1196,13 @@ var StackColumn = (function (_super) {
         if (i < 0) {
             return false;
         }
-        this.children_.splice(i, 1); //remove and deregister listeners
+        this.children_.splice(i, 1);
         child.parent = null;
         if (child instanceof StackColumn) {
             child.collapsed = false;
         }
         this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
         child.on('widthChanged.stack', null);
-        //reduce width to keep the percentages
         _super.prototype.setWidth.call(this, this.length === 0 ? 100 : this.getWidth() - child.getWidth());
         this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
         return true;
@@ -1299,13 +1210,11 @@ var StackColumn = (function (_super) {
     StackColumn.prototype.setWidth = function (value) {
         var factor = value / this.getWidth();
         this.children_.forEach(function (child) {
-            //disable since we change it
             child.setWidthImpl(child.getWidth() * factor);
         });
         _super.prototype.setWidth.call(this, value);
     };
     StackColumn.prototype.getValue = function (row) {
-        //weighted sum
         var w = this.getWidth();
         var v = this.children_.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
         if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
@@ -1328,30 +1237,13 @@ var StackColumn = (function (_super) {
     return StackColumn;
 })(Column);
 exports.StackColumn = StackColumn;
-/**
- * a rank column is not just a column but a whole ranking
- */
 var RankColumn = (function (_super) {
     __extends(RankColumn, _super);
     function RankColumn(id, desc) {
         var _this = this;
         _super.call(this, id, desc);
-        /**
-         * the current sort criteria
-         * @type {null}
-         * @private
-         */
         this.sortBy_ = null;
-        /**
-         * ascending or descending order
-         * @type {boolean}
-         */
         this.ascending = false;
-        /**
-         * columns of this ranking
-         * @type {Array}
-         * @private
-         */
         this.columns_ = [];
         this.comparator = function (a, b) {
             if (_this.sortBy_ === null) {
@@ -1382,7 +1274,7 @@ var RankColumn = (function (_super) {
             asc: this.ascending
         };
         if (this.sortBy_) {
-            r.sortCriteria.sortBy = this.sortBy_.id; //store the index not the object
+            r.sortCriteria.sortBy = this.sortBy_.id;
         }
         return r;
     };
@@ -1419,10 +1311,8 @@ var RankColumn = (function (_super) {
     };
     RankColumn.prototype.sortByMe = function (ascending) {
         if (ascending === void 0) { ascending = false; }
-        //noop
     };
     RankColumn.prototype.toggleMySorting = function () {
-        //noop
     };
     RankColumn.prototype.findMyRanker = function () {
         return this;
@@ -1439,10 +1329,10 @@ var RankColumn = (function (_super) {
     RankColumn.prototype.sortBy = function (col, ascending) {
         if (ascending === void 0) { ascending = false; }
         if (col !== null && col.findMyRanker() !== this) {
-            return false; //not one of mine
+            return false;
         }
         if (this.sortBy_ === col && this.ascending === ascending) {
-            return true; //already in this order
+            return true;
         }
         if (this.sortBy_) {
             this.sortBy_.on('dirtyValues.order', null);
@@ -1528,13 +1418,7 @@ var RankColumn = (function (_super) {
         }
         return null;
     };
-    /**
-     * converts the sorting criteria to a json compatible notation for transfering it to the server
-     * @param toId
-     * @return {any}
-     */
     RankColumn.prototype.toSortingDesc = function (toId) {
-        //TODO describe also all the filter settings
         var resolve = function (s) {
             if (s === null) {
                 return null;
@@ -1568,9 +1452,6 @@ var RankColumn = (function (_super) {
     return RankColumn;
 })(ValueColumn);
 exports.RankColumn = RankColumn;
-/**
- * a map of all known column types *
- */
 function models() {
     return {
         number: NumberColumn,
@@ -1610,24 +1491,13 @@ function computeStats(arr, acc, range) {
         hist: hist_data
     };
 }
-/**
- * a basic data provider holding the data and rankings
- */
 var DataProvider = (function (_super) {
     __extends(DataProvider, _super);
     function DataProvider() {
         _super.call(this);
-        /**
-         * all rankings
-         * @type {Array}
-         * @private
-         */
         this.rankings_ = [];
         this.selection = d3.set();
         this.uid = 0;
-        /**
-         * lookup map of a column type to its column implementation
-         */
         this.columnTypes = model.models();
         var that = this;
         this.reorder = function () {
@@ -1641,11 +1511,6 @@ var DataProvider = (function (_super) {
     DataProvider.prototype.getColumns = function () {
         return [];
     };
-    /**
-     * adds a new ranking
-     * @param existing an optional existing ranking to clone
-     * @return the new ranking
-     */
     DataProvider.prototype.pushRanking = function (existing) {
         var r = this.cloneRanking(existing);
         this.pushRankingImpl(r);
@@ -1683,17 +1548,10 @@ var DataProvider = (function (_super) {
         return this.rankings_.slice();
     };
     DataProvider.prototype.cleanUpRanking = function (ranking) {
-        //nothing to do
     };
     DataProvider.prototype.cloneRanking = function (existing) {
-        return null; //implement me
+        return null;
     };
-    /**
-     * adds a column to a ranking described by its column description
-     * @param ranking
-     * @param desc
-     * @return {boolean}
-     */
     DataProvider.prototype.push = function (ranking, desc) {
         var r = this.create(desc);
         if (r) {
@@ -1793,7 +1651,6 @@ var DataProvider = (function (_super) {
     DataProvider.prototype.deriveDefault = function () {
         var _this = this;
         if (this.rankings_.length > 0) {
-            //no default if we have a ranking
             return;
         }
         var r = this.pushRanking();
@@ -1801,18 +1658,13 @@ var DataProvider = (function (_super) {
             _this.push(r, col);
         });
     };
-    /**
-     * derives a ranking from an old layout bundle format
-     * @param bundle
-     */
     DataProvider.prototype.deriveRanking = function (bundle) {
         var _this = this;
         var toCol = function (column) {
             if (column.type === 'rank') {
-                return null; //can't handle
+                return null;
             }
             if (column.type === 'stacked') {
-                //create a stacked one
                 var r = _this.create(model.StackColumn.desc(column.label || 'Combined'));
                 (column.children || []).forEach(function (col) {
                     var c = toCol(col);
@@ -1842,65 +1694,30 @@ var DataProvider = (function (_super) {
         });
         return r;
     };
-    /**
-     * sorts the given ranking and eventually return a ordering of the data items
-     * @param ranking
-     * @return {Promise<any>}
-     */
     DataProvider.prototype.sort = function (ranking) {
         return Promise.reject('not implemented');
     };
-    /**
-     * returns a view in the order of the given indices
-     * @param indices
-     * @return {Promise<any>}
-     */
     DataProvider.prototype.view = function (indices) {
         return Promise.reject('not implemented');
     };
-    /**
-     * returns a data sample used for the mapping editor
-     * @param col
-     * @return {Promise<any>}
-     */
     DataProvider.prototype.mappingSample = function (col) {
         return Promise.reject('not implemented');
     };
     DataProvider.prototype.stats = function (indices, col) {
         return Promise.reject('not implemented');
     };
-    /**
-     * method for computing the unique key of a row
-     * @param row
-     * @param i
-     * @return {string}
-     */
     DataProvider.prototype.rowKey = function (row, i) {
         return typeof (row) === 'number' ? String(row) : String(row._index);
     };
-    /**
-     * is the given row selected
-     * @param index
-     * @return {boolean}
-     */
     DataProvider.prototype.isSelected = function (index) {
         return this.selection.has(String(index));
     };
-    /**
-     * also select the given row
-     * @param index
-     */
     DataProvider.prototype.select = function (index) {
         this.selection.add(String(index));
         this.fire('selectionChanged', this.selection.values().map(Number));
     };
     DataProvider.prototype.searchSelect = function (search, col) {
-        //TODO
     };
-    /**
-     * also select all the given rows
-     * @param indices
-     */
     DataProvider.prototype.selectAll = function (indices) {
         var _this = this;
         indices.forEach(function (index) {
@@ -1908,26 +1725,14 @@ var DataProvider = (function (_super) {
         });
         this.fire('selectionChanged', this.selection.values().map(Number));
     };
-    /**
-     * set the selection to the given rows
-     * @param indices
-     */
     DataProvider.prototype.setSelection = function (indices) {
         this.selection = d3.set();
         this.selectAll(indices);
     };
-    /**
-     * deselect the given row
-     * @param index
-     */
     DataProvider.prototype.deselect = function (index) {
         this.selection.remove(String(index));
         this.fire('selectionChanged', this.selection.values().map(Number));
     };
-    /**
-     * returns a promise containing the selected rows
-     * @return {Promise<any[]>}
-     */
     DataProvider.prototype.selectedRows = function () {
         if (this.selection.empty()) {
             return Promise.resolve([]);
@@ -1940,9 +1745,6 @@ var DataProvider = (function (_super) {
         indices.sort();
         return indices;
     };
-    /**
-     * clears the selection
-     */
     DataProvider.prototype.clearSelection = function () {
         this.selection = d3.set();
         this.fire('selectionChanged', []);
@@ -1958,10 +1760,8 @@ var CommonDataProvider = (function (_super) {
         _super.call(this);
         this.columns = columns;
         this.rankingIndex = 0;
-        //generic accessor of the data item
         this.rowGetter = function (row, id, desc) { return row[desc.column]; };
         this.columns = columns.slice();
-        //generate the accessor
         columns.forEach(function (d) {
             d.accessor = _this.rowGetter;
             d.label = d.label || d.column;
@@ -2002,16 +1802,12 @@ var CommonDataProvider = (function (_super) {
     return CommonDataProvider;
 })(DataProvider);
 exports.CommonDataProvider = CommonDataProvider;
-/**
- * a data provider based on an local array
- */
 var LocalDataProvider = (function (_super) {
     __extends(LocalDataProvider, _super);
     function LocalDataProvider(data, columns) {
         if (columns === void 0) { columns = []; }
         _super.call(this, columns);
         this.data = data;
-        //enhance with a magic attribute storing ranking information
         data.forEach(function (d, i) {
             d._rankings = {};
             d._index = i;
@@ -2031,7 +1827,6 @@ var LocalDataProvider = (function (_super) {
                 var r = row._rankings;
                 r[id] = r[existing.id];
             });
-            //TODO better cloning
             existing.children.forEach(function (child) {
                 _this.push(new_, child.desc);
             });
@@ -2039,19 +1834,14 @@ var LocalDataProvider = (function (_super) {
         return new_;
     };
     LocalDataProvider.prototype.cleanUpRanking = function (ranking) {
-        //delete all stored information
         this.data.forEach(function (d) { return delete d._rankings[ranking.id]; });
     };
     LocalDataProvider.prototype.sort = function (ranking) {
-        //wrap in a helper and store the initial index
         var helper = this.data.map(function (r, i) { return ({ row: r, i: i, prev: r._rankings[ranking.id] || 0 }); });
-        //do the optional filtering step
         if (ranking.isFiltered()) {
             helper = helper.filter(function (d) { return ranking.filter(d.row); });
         }
-        //sort by the ranking column
         helper.sort(function (a, b) { return ranking.comparator(a.row, b.row); });
-        //store the ranking index and create an argsort version, i.e. rank 0 -> index i
         var argsort = helper.map(function (r, i) {
             r.row._rankings[ranking.id] = i;
             return r.i;
@@ -2072,9 +1862,6 @@ var LocalDataProvider = (function (_super) {
     return LocalDataProvider;
 })(CommonDataProvider);
 exports.LocalDataProvider = LocalDataProvider;
-/**
- * a remote implementation of the data provider
- */
 var RemoteDataProvider = (function (_super) {
     __extends(RemoteDataProvider, _super);
     function RemoteDataProvider(server, columns) {
@@ -2092,29 +1879,23 @@ var RemoteDataProvider = (function (_super) {
             accessor: function (row, id) { return _this.ranks[id][row._index] || 0; }
         };
         if (existing) {
-            //copy the ranking
             this.ranks[id] = this.ranks[existing.id];
         }
         return new model.RankColumn(id, rankDesc);
     };
     RemoteDataProvider.prototype.cleanUpRanking = function (ranking) {
-        //delete all stored information
         delete this.ranks[ranking.id];
     };
     RemoteDataProvider.prototype.sort = function (ranking) {
         var _this = this;
-        //generate a description of what to sort
         var desc = ranking.toSortingDesc(function (desc) { return desc.column; });
-        //use the server side to sort
         return this.server.sort(desc).then(function (argsort) {
-            //store the result
             _this.ranks[ranking.id] = argsort;
             return argsort;
         });
     };
     RemoteDataProvider.prototype.view = function (argsort) {
         return this.server.view(argsort).then(function (view) {
-            //enhance with the data index
             view.forEach(function (d, i) { return d._index = argsort[i]; });
             return view;
         });
@@ -2136,15 +1917,8 @@ var __extends = (this && this.__extends) || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-/**
- * default renderer instance rendering the value as a text
- */
 var DefaultCellRenderer = (function () {
     function DefaultCellRenderer() {
-        /**
-         * class to append to the text elements
-         * @type {string}
-         */
         this.textClass = 'text';
         this.align = 'left';
     }
@@ -2165,18 +1939,11 @@ var DefaultCellRenderer = (function () {
         });
         $rows.exit().remove();
     };
-    /**
-     * resolves the cell in the column for a given row
-     * @param $col
-     * @param index
-     * @return {Selection<Datum>}
-     */
     DefaultCellRenderer.prototype.findRow = function ($col, index) {
         return $col.selectAll('text.' + this.textClass + '[data-index="' + index + '"]');
     };
     DefaultCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
         var rowNode = $row.node();
-        //find the right one and
         var n = this.findRow($col, index).node();
         if (n) {
             rowNode.appendChild(n);
@@ -2185,7 +1952,6 @@ var DefaultCellRenderer = (function () {
     DefaultCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
         var colNode = $col.node();
         var rowNode = $row.node();
-        //move back
         if (rowNode.hasChildNodes()) {
             colNode.appendChild(rowNode.firstChild);
         }
@@ -2194,9 +1960,6 @@ var DefaultCellRenderer = (function () {
     return DefaultCellRenderer;
 })();
 exports.DefaultCellRenderer = DefaultCellRenderer;
-/**
- * simple derived one where individual elements can be overridden
- */
 var DerivedCellRenderer = (function (_super) {
     __extends(DerivedCellRenderer, _super);
     function DerivedCellRenderer(extraFuncs) {
@@ -2327,11 +2090,6 @@ var DerivedBarCellRenderer = (function (_super) {
 })(BarCellRenderer);
 var defaultRendererInstance = new DefaultCellRenderer();
 var barRendererInstance = new BarCellRenderer();
-/**
- * creates a new instance with optional overridden methods
- * @param extraFuncs
- * @return {DefaultCellRenderer}
- */
 function defaultRenderer(extraFuncs) {
     if (!extraFuncs) {
         return defaultRendererInstance;
@@ -2352,7 +2110,6 @@ var LinkCellRenderer = (function (_super) {
         _super.apply(this, arguments);
     }
     LinkCellRenderer.prototype.render = function ($col, col, rows, context) {
-        //wrap the text elements with an a element
         var $rows = $col.datum(col).selectAll('a.link').data(rows, context.rowKey);
         $rows.enter().append('a').attr({
             'class': 'link',
@@ -2445,7 +2202,6 @@ var StackCellRenderer = (function (_super) {
             if (context.showStacked(col)) {
                 var preChildren = children.slice(0, i);
                 context.cellX = function (index) {
-                    //shift by all the empty space left from the previous columns
                     return ueber(index) - preChildren.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rowGetter(index))); }, 0);
                 };
             }
@@ -2477,10 +2233,6 @@ var StackCellRenderer = (function (_super) {
     };
     return StackCellRenderer;
 })(DefaultCellRenderer);
-/**
- * returns a map of all known renderers by type
- * @return
- */
 function renderers() {
     return {
         string: defaultRenderer(),
@@ -2589,7 +2341,7 @@ var PoolRenderer = (function () {
             'draggable': true
         }).on('dragstart', function (d) {
             var e = d3.event;
-            e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
+            e.dataTransfer.effectAllowed = 'copyMove';
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(data.toDescRef(d)));
         }).style({
@@ -2605,9 +2357,8 @@ var PoolRenderer = (function () {
         $headers.attr({
             title: function (d) { return d.label; }
         });
-        $headers.select('span');
+        $headers.select('span').text(function (d) { return d.label; });
         $headers.exit().remove();
-        //compute the size of this node
         switch (this.options.layout) {
             case 'horizontal':
                 this.$node.style({
@@ -2622,7 +2373,6 @@ var PoolRenderer = (function () {
                     height: Math.ceil(descToShow.length / perRow) * this.options.elemHeight + 'px'
                 });
                 break;
-            //case 'vertical':
             default:
                 this.$node.style({
                     width: (this.options.elemWidth * 1) + 'px',
@@ -2638,7 +2388,6 @@ var PoolRenderer = (function () {
             case 'grid':
                 var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
                 return { x: (i % perRow) * this.options.elemWidth, y: Math.floor(i / perRow) * this.options.elemHeight };
-            //case 'vertical':
             default:
                 return { x: 0, y: i * this.options.elemHeight };
         }
@@ -2667,7 +2416,6 @@ var HeaderRenderer = (function () {
             d3.event.sourceEvent.preventDefault();
         })
             .on('drag', function (d) {
-            //the new width
             var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
             d.setWidth(newValue);
             d3.event.sourceEvent.stopPropagation();
@@ -2721,7 +2469,6 @@ var HeaderRenderer = (function () {
         rankings.forEach(function (ranking) {
             offset += ranking.flatten(shifts, offset, 1, _this.options.columnPadding) + _this.options.slopeWidth;
         });
-        //real width
         offset -= this.options.slopeWidth;
         var columns = shifts.map(function (d) { return d.col; });
         function countStacked(c) {
@@ -2738,33 +2485,27 @@ var HeaderRenderer = (function () {
         var _this = this;
         var filterDialogs = this.options.filterDialogs, provider = this.data;
         var $regular = $node.filter(function (d) { return !(d instanceof model.RankColumn); }), $stacked = $node.filter(function (d) { return d instanceof model.StackColumn; });
-        //edit weights
         $stacked.append('i').attr('class', 'fa fa-tasks').on('click', function (d) {
             dialogs.openEditWeightsDialog(d, d3.select(this.parentNode.parentNode));
             d3.event.stopPropagation();
         });
-        //rename
         $regular.append('i').attr('class', 'fa fa-pencil-square-o').on('click', function (d) {
             dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
             d3.event.stopPropagation();
         });
-        //clone
         $regular.append('i').attr('class', 'fa fa-code-fork').on('click', function (d) {
             var r = provider.pushRanking();
             r.push(provider.clone(d));
             d3.event.stopPropagation();
         });
-        //filter
         $node.filter(function (d) { return filterDialogs.hasOwnProperty(d.desc.type); }).append('i').attr('class', 'fa fa-filter').on('click', function (d) {
             filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
             d3.event.stopPropagation();
         });
-        //search
         $node.filter(function (d) { return _this.options.searchAble(d); }).append('i').attr('class', 'fa fa-search').on('click', function (d) {
             dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
             d3.event.stopPropagation();
         });
-        //remove
         $node.append('i').attr('class', 'fa fa-times').on('click', function (d) {
             if (d instanceof model.RankColumn) {
                 provider.removeRanking(d);
@@ -2788,15 +2529,14 @@ var HeaderRenderer = (function () {
         });
         var $header_enter_div = $headers_enter.append('div').classed('lu-label', true).style({
             'background-color': function (d) { return d.color; }
-        }).call(function ($span) {
-            $span.on('click', function (d) {
-                if (_this.options.manipulative && !d3.event.defaultPrevented) {
-                    d.toggleMySorting();
-                }
-            });
-        }).on('dragstart', function (d) {
+        }).on('click', function (d) {
+            if (_this.options.manipulative && !d3.event.defaultPrevented) {
+                d.toggleMySorting();
+            }
+        })
+            .on('dragstart', function (d) {
             var e = d3.event;
-            e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
+            e.dataTransfer.effectAllowed = 'copyMove';
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
             e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(_this.data.toDescRef(d.desc)));
@@ -2873,7 +2613,6 @@ var BodyRenderer = (function () {
             animationDuration: 1000,
             renderers: renderer.renderers()
         };
-        //merge options
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('svg').classed('lu-body', true);
         this.changeDataStorage(data);
@@ -2931,9 +2670,6 @@ var BodyRenderer = (function () {
         if ($base.empty()) {
             $base = this.$node.append('defs').classed('body', true);
         }
-        //generate clip paths for the text columns to avoid text overflow
-        //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
-        //there is a bug in webkit which present camelCase selectors
         var textClipPath = $base.selectAll(function () {
             return this.getElementsByTagName('clipPath');
         }).data(r, function (d) { return d.id; });
@@ -3011,7 +2747,6 @@ var BodyRenderer = (function () {
                 });
             });
             $value_cols.exit().remove();
-            //data.mouseOver(d, i);
         }
         function mouseLeaveRow($row, $cols, index, ranking, rankingIndex) {
             $row.classed('hover', false);
@@ -3021,7 +2756,6 @@ var BodyRenderer = (function () {
                     context.renderer(d).mouseLeave($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(_this), d, data[index], index, context);
                 });
             }).remove();
-            //data.mouseLeave(d, i);
         }
         this.mouseOverItem = function (data_index, hover) {
             if (hover === void 0) { hover = true; }
@@ -3062,19 +2796,17 @@ var BodyRenderer = (function () {
             y: function (data_index) { return context.cellY(data_index.i); },
             height: function (data_index) { return context.rowHeight(data_index.i); },
             width: function (d, i, j) { return shifts[j].width; },
-            'class': function (d, i) { return 'bg ' + (i % 2 == 0 ? 'even' : 'odd'); }
+            'class': function (d, i) { return 'bg ' + (i % 2 === 0 ? 'even' : 'odd'); }
         });
         $rows.exit().remove();
         $rankings.exit().remove();
     };
     BodyRenderer.prototype.select = function (data_index, additional) {
         if (additional === void 0) { additional = false; }
-        //TODO
     };
     BodyRenderer.prototype.mouseOver = function (dataIndex, hover) {
         if (hover === void 0) { hover = true; }
         this.mouseOverItem(dataIndex, hover);
-        //update the slope graph
         this.$node.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
     };
     BodyRenderer.prototype.renderSlopeGraphs = function ($body, rankings, orders, shifts, context) {
@@ -3120,9 +2852,6 @@ var BodyRenderer = (function () {
         $lines.exit().remove();
         $slopes.exit().remove();
     };
-    /**
-     * render the body
-     */
     BodyRenderer.prototype.update = function () {
         var _this = this;
         var rankings = this.data.getRankings();
@@ -3137,7 +2866,6 @@ var BodyRenderer = (function () {
         };
         var orders = rankings.map(function (r) { return orderSlicer(r.getOrder()); });
         var context = this.createContext(visibleRange.from);
-        //compute offsets and shifts for individual rankings and columns inside the rankings
         var offset = 0, shifts = rankings.map(function (d, i) {
             var r = offset;
             offset += _this.options.slopeWidth;
@@ -3268,9 +2996,6 @@ function openEditWeightsDialog(column, $header) {
         column.setWeights(weights);
         $popup.remove();
     });
-    /*$popup.select('.reset').on('click', function () {
-  
-    });*/
     $popup.select('.ok').on('click', function () {
         column.setWeights(children.map(function (d) { return d.weight; }));
         $popup.remove();
@@ -3287,7 +3012,6 @@ function openCategoricalFilter(column, $header) {
         top: pos.top + 'px'
     })
         .html(dialogForm('Edit Filter', '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>'));
-    // list all data rows !
     var trData = column.categories.map(function (d) {
         return { d: d, isChecked: bak.length === 0 || bak.indexOf(d) >= 0 };
     });
@@ -3365,7 +3089,7 @@ function openMappingEditor(column, $header, data) {
         'class': 'lu-popup'
     }).style({
         left: pos.left + 'px',
-        top: pos.top + 'px',
+        top: pos.top + 'px'
     })
         .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>' +
         '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'));
@@ -3454,18 +3178,11 @@ function openCategoricalMappingEditor(column, $header) {
         column.setRange(range);
         $popup.remove();
     });
-    /*$popup.select('.reset').on('click', function () {
-  
-    });*/
     $popup.select('.ok').on('click', function () {
         column.setRange(children.map(function (d) { return d.range / 100; }));
         $popup.remove();
     });
 }
-/**
- * returns all known filter dialogs mappings
- * @return
- */
 function filterDialogs() {
     return {
         string: openStringFilter,
@@ -3488,13 +3205,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 ///<reference path='../typings/tsd.d.ts' />
 var d3 = require('d3');
-/**
- * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
- * @param callback
- * @param thisCallback
- * @param timeToDelay
- * @return {function(...[any]): undefined}
- */
 function delayedCall(callback, timeToDelay, thisCallback) {
     if (timeToDelay === void 0) { timeToDelay = 100; }
     if (thisCallback === void 0) { thisCallback = this; }
@@ -3513,12 +3223,6 @@ function delayedCall(callback, timeToDelay, thisCallback) {
     };
 }
 exports.delayedCall = delayedCall;
-/**
- * utility for AEventDispatcher to forward an event
- * @param to
- * @param event
- * @return {function(...[any]): undefined}
- */
 function forwardEvent(to, event) {
     return function () {
         var args = [];
@@ -3530,9 +3234,6 @@ function forwardEvent(to, event) {
     };
 }
 exports.forwardEvent = forwardEvent;
-/**
- * base class for event dispatching using d3 event mechanism
- */
 var AEventDispatcher = (function () {
     function AEventDispatcher() {
         this.forwarder = forwardEvent(this);
@@ -3551,10 +3252,6 @@ var AEventDispatcher = (function () {
         }
         return this.listeners.on(type);
     };
-    /**
-     * return the list of events to be able to dispatch
-     * @return {Array}
-     */
     AEventDispatcher.prototype.createEventList = function () {
         return [];
     };
@@ -3598,7 +3295,6 @@ var AEventDispatcher = (function () {
 exports.AEventDispatcher = AEventDispatcher;
 var TYPE_OBJECT = '[object Object]';
 var TYPE_ARRAY = '[object Array]';
-//credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
 function merge() {
     var args = [];
     for (var _i = 0; _i < arguments.length; _i++) {
@@ -3634,11 +3330,6 @@ function merge() {
     return result;
 }
 exports.merge = merge;
-/**
- * computes the absolute offset of the given element
- * @param element
- * @return {{left: number, top: number, width: number, height: number}}
- */
 function offset(element) {
     var obj = element.getBoundingClientRect();
     return {
@@ -3649,9 +3340,6 @@ function offset(element) {
     };
 }
 exports.offset = offset;
-/**
- * content scroller utility
- */
 var ContentScroller = (function (_super) {
     __extends(ContentScroller, _super);
     function ContentScroller(container, content, options) {
@@ -3677,26 +3365,19 @@ var ContentScroller = (function (_super) {
     };
     ContentScroller.prototype.select = function (start, length, row2y) {
         var top = this.container.scrollTop - this.shift, bottom = top + this.container.clientHeight, i = 0, j;
-        /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
-         if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
-         console.log('show all');
-         return [0, data.length];
-         }*/
         if (top > 0) {
             i = Math.round(top / this.options.rowHeight);
-            //count up till really even partial rows are visible
             while (i >= start && row2y(i + 1) > top) {
                 i--;
             }
-            i -= this.options.backupRows; //one more row as backup for scrolling
+            i -= this.options.backupRows;
         }
         {
             j = Math.round(bottom / this.options.rowHeight);
-            //count down till really even partial rows are visible
             while (j <= length && row2y(j - 1) < bottom) {
                 j++;
             }
-            j += this.options.backupRows; //one more row as backup for scrolling
+            j += this.options.backupRows;
         }
         return {
             from: Math.max(i, start),
@@ -3706,8 +3387,6 @@ var ContentScroller = (function (_super) {
     ContentScroller.prototype.onScroll = function () {
         var top = this.container.scrollTop;
         var left = this.container.scrollLeft;
-        //at least one row changed
-        //console.log(top, left);
         this.fire('scroll', top, left);
         if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
             this.prevScrollTop = top;
@@ -3720,9 +3399,6 @@ var ContentScroller = (function (_super) {
     return ContentScroller;
 })(AEventDispatcher);
 exports.ContentScroller = ContentScroller;
-/**
- * checks whether the given DragEvent has one of the given types
- */
 function hasDnDType(e, typesToCheck) {
     var types = e.dataTransfer.types;
     if (typeof types.indexOf === 'function') {
@@ -3737,9 +3413,6 @@ function hasDnDType(e, typesToCheck) {
     return false;
 }
 exports.hasDnDType = hasDnDType;
-/**
- * should it be a copy dnd operation?
- */
 function copyDnD(e) {
     var dT = e.dataTransfer;
     return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
@@ -3755,16 +3428,10 @@ function updateDropEffect(e) {
     }
 }
 exports.updateDropEffect = updateDropEffect;
-/**
- * returns a d3 callable function to make an element dropable
- * @param mimeTypes the mime types to be dropable
- * @param onDrop: handler when an element is dropped
- */
 function dropAble(mimeTypes, onDrop) {
     return function ($node) {
         $node.on('dragenter', function () {
             var e = d3.event;
-            //var xy = d3.mouse($node.node());
             if (hasDnDType(e, mimeTypes)) {
                 return false;
             }
@@ -3777,12 +3444,10 @@ function dropAble(mimeTypes, onDrop) {
                 return false;
             }
         }).on('dragleave', function () {
-            //
             d3.select(this).classed('drag_over', false);
         }).on('drop', function (d) {
             var e = d3.event;
             e.preventDefault();
-            //var xy = d3.mouse($node.node());
             if (hasDnDType(e, mimeTypes)) {
                 var data = {};
                 mimeTypes.forEach(function (mime) {

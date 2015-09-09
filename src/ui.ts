@@ -113,8 +113,8 @@ export class PoolRenderer {
     });
     $headers.attr({
       title: (d) => d.label
-    })
-    $headers.select('span');
+    });
+    $headers.select('span').text((d) => d.label);
     $headers.exit().remove();
 
     //compute the size of this node
@@ -306,13 +306,12 @@ export class HeaderRenderer {
     });
     var $header_enter_div = $headers_enter.append('div').classed('lu-label', true).style({
       'background-color': (d) => d.color
-    }).call(($span) => {
-      $span.on('click', (d) => {
+    }).on('click', (d) => {
         if (this.options.manipulative && !d3.event.defaultPrevented) {
           d.toggleMySorting();
         }
       })
-    }).on('dragstart', (d) => {
+      .on('dragstart', (d) => {
       var e = <DragEvent>(<any>d3.event);
       e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
       e.dataTransfer.setData('text/plain', d.label);
@@ -465,7 +464,7 @@ export class BodyRenderer {
     }
 
     //generate clip paths for the text columns to avoid text overflow
-    //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
+    //see http://stackoverflow.com/questions/L742812/cannot-select-svg-foreignobject-element-in-d3
     //there is a bug in webkit which present camelCase selectors
     var textClipPath = $base.selectAll(function () {
       return this.getElementsByTagName('clipPath');
@@ -596,7 +595,7 @@ export class BodyRenderer {
       y: (data_index) => context.cellY(data_index.i),
       height: (data_index) => context.rowHeight(data_index.i),
       width: (d, i, j?) => shifts[j].width,
-      'class': (d, i) => 'bg '+(i%2==0?'even':'odd')
+      'class': (d, i) => 'bg '+(i%2===0?'even':'odd')
     });
     $rows.exit().remove();
 
