@@ -54,7 +54,7 @@ export interface IStatistics {
  * a column in LineUp
  */
 export class Column extends utils.AEventDispatcher {
-  static DEFAULT_COLOR = 'gray';
+  static DEFAULT_COLOR = '#C1C1C1';
   static FLAT_ALL_COLUMNS = -1;
 
   public id:string;

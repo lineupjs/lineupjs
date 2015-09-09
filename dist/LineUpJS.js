@@ -72,7 +72,7 @@ var LineUp = (function (_super) {
         this.config = {
             numberformat: d3.format('.3n'),
             htmlLayout: {
-                headerHeight: 30,
+                headerHeight: 20,
                 headerOffset: 1,
                 buttonTopPadding: 10,
                 labelLeftPadding: 5
@@ -654,7 +654,7 @@ var Column = (function (_super) {
     Column.prototype.filter = function (row) {
         return row !== null;
     };
-    Column.DEFAULT_COLOR = 'gray';
+    Column.DEFAULT_COLOR = '#C1C1C1';
     Column.FLAT_ALL_COLUMNS = -1;
     return Column;
 })(utils.AEventDispatcher);
@@ -2601,6 +2601,9 @@ var PoolRenderer = (function () {
             var pos = _this.layout(i);
             return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
         });
+        $headers.attr({
+            title: function (d) { return d.label; }
+        });
         $headers.select('span');
         $headers.exit().remove();
         //compute the size of this node
@@ -2615,7 +2618,7 @@ var PoolRenderer = (function () {
                 var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
                 this.$node.style({
                     width: perRow * this.options.elemWidth + 'px',
-                    height: Math.floor(descToShow.length / perRow) * this.options.elemHeight + 'px'
+                    height: Math.ceil(descToShow.length / perRow) * this.options.elemHeight + 'px'
                 });
                 break;
             //case 'vertical':
@@ -2653,7 +2656,8 @@ var HeaderRenderer = (function () {
             headerHeight: 20,
             manipulative: true,
             filterDialogs: dialogs.filterDialogs(),
-            searchAble: function (col) { return col instanceof model.StringColumn; }
+            searchAble: function (col) { return col instanceof model.StringColumn; },
+            sortOnLabel: true
         };
         this.dragHandler = d3.behavior.drag()
             .on('dragstart', function () {
@@ -2780,22 +2784,25 @@ var HeaderRenderer = (function () {
         var $headers = $base.selectAll('div.' + clazz).data(columns, function (d) { return d.id; });
         var $headers_enter = $headers.enter().append('div').attr({
             'class': clazz
-        }).style({
-            'background-color': function (d) { return d.color; }
         });
-        $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
-        $headers_enter.append('span').classed('label', true).attr({
-            'draggable': this.options.manipulative
+        var $header_enter_div = $headers_enter.append('div').classed('lu-label', true).style({
+            'background-color': function (d) { return d.color; }
+        }).call(function ($span) {
+            $span.on('click', function (d) {
+                if (_this.options.manipulative && !d3.event.defaultPrevented) {
+                    d.toggleMySorting();
+                }
+            });
         }).on('dragstart', function (d) {
             var e = d3.event;
             e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
             e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(_this.data.toDescRef(d.desc)));
-        }).on('click', function (d) {
-            if (_this.options.manipulative && !d3.event.defaultPrevented) {
-                d.toggleMySorting();
-            }
+        });
+        $header_enter_div.append('i').attr('class', 'fa fa sort_indicator');
+        $header_enter_div.append('span').classed('lu-label', true).attr({
+            'draggable': this.options.manipulative
         });
         if (this.options.manipulative) {
             $headers_enter.append('div').classed('handle', true)
@@ -2808,6 +2815,9 @@ var HeaderRenderer = (function () {
             width: function (d, i) { return (shifts[i].width + _this.options.columnPadding) + 'px'; },
             left: function (d, i) { return shifts[i].offset + 'px'; }
         });
+        $headers.attr({
+            title: function (d) { return d.label; }
+        });
         $headers.select('i.sort_indicator').attr('class', function (d) {
             var r = d.findMyRanker();
             if (r && r.sortCriteria().col === d) {
@@ -2815,14 +2825,14 @@ var HeaderRenderer = (function () {
             }
             return 'sort_indicator fa';
         });
-        $headers.select('span.label').text(function (d) { return d.label; });
+        $headers.select('span.lu-label').text(function (d) { return d.label; });
         var that = this;
         $headers.filter(function (d) { return d instanceof model.StackColumn && !d.collapsed; }).each(function (col) {
             var s_shifts = [];
             col.flatten(s_shifts, 0, 1, that.options.columnPadding);
             var s_columns = s_shifts.map(function (d) { return d.col; });
             that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + '_i');
-        }).select('span.label').call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], function (data, d, copy) {
+        }).call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], function (data, d, copy) {
             var col = null;
             if ('application/caleydo-lineup-column-ref' in data) {
                 var id = data['application/caleydo-lineup-column-ref'];

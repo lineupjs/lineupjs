@@ -105,7 +105,13 @@
 }
 
 $lu_hover_color: #e5e5e5;
-$lu_toolbar_font_size: 9pt;
+$lu_toolbar_font_size: 8pt;
+
+.lu-pool {
+  div.header {
+    border: 2px solid white;
+  }
+}
 
 .lu, .lu-pool {
   position: relative;
@@ -176,10 +182,9 @@ $lu_toolbar_font_size: 9pt;
     text-align: center;
     height: 100%;
 
-    span {
-      position: relative;
-      top: 1em;
-    }
+    font-size: 90%;
+
+
 
     &:hover {
       &> div.toolbar {
@@ -195,14 +200,21 @@ $lu_toolbar_font_size: 9pt;
   div.lu-header div.toolbar {
     display: none;
     position: absolute;
-    right: 6px;
     text-align: right;
-    top: 0;
+    right: 5px;
+    border-radius: 3px 0 0 3px;
     cursor: auto;
+    background: #6D6C6C;
   }
 
   div.lu-header {
     div.header {
+
+      div.lu-label {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
 
       i.sort_indicator {
         position: absolute;

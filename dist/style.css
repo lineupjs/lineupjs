@@ -71,6 +71,9 @@
   .lu-tooltip td, .lu-tooltip th {
     border: 1px solid black; }
 
+.lu-pool div.header {
+  border: 2px solid white; }
+
 .lu, .lu-pool {
   position: relative; }
   .lu div.lu-header, .lu-pool div.lu-header {
@@ -110,10 +113,8 @@
     overflow: hidden;
     color: white;
     text-align: center;
-    height: 100%; }
-    .lu div.header span, .lu div.header_i span, .lu-pool div.header span, .lu-pool div.header_i span {
-      position: relative;
-      top: 1em; }
+    height: 100%;
+    font-size: 90%; }
     .lu div.header:hover > div.toolbar, .lu div.header_i:hover > div.toolbar, .lu-pool div.header:hover > div.toolbar, .lu-pool div.header_i:hover > div.toolbar {
       display: block; }
   .lu div.header_i, .lu-pool div.header_i {
@@ -121,15 +122,20 @@
   .lu div.lu-header div.toolbar, .lu-pool div.lu-header div.toolbar {
     display: none;
     position: absolute;
-    right: 6px;
     text-align: right;
-    top: 0;
-    cursor: auto; }
+    right: 5px;
+    border-radius: 3px 0 0 3px;
+    cursor: auto;
+    background: #6D6C6C; }
+  .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {
+    position: absolute;
+    width: 100%;
+    height: 100%; }
   .lu div.lu-header div.header i.sort_indicator, .lu-pool div.lu-header div.header i.sort_indicator {
     position: absolute;
     left: 1px;
     top: 1px;
-    font-size: 9pt; }
+    font-size: 8pt; }
   .lu div.lu-header div.header div.handle, .lu-pool div.lu-header div.header div.handle {
     position: absolute;
     right: 0;
@@ -141,7 +147,7 @@
     .lu div.lu-header div.header div.handle.drag_over, .lu-pool div.lu-header div.header div.handle.drag_over {
       background-color: black; }
   .lu div.lu-header div.toolbar i, .lu-pool div.lu-header div.toolbar i {
-    font-size: 9pt;
+    font-size: 8pt;
     padding: 1px; }
     .lu div.lu-header div.toolbar i:hover, .lu-pool div.lu-header div.toolbar i:hover {
       color: darkblue; }

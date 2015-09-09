@@ -110,6 +110,9 @@ export class PoolRenderer {
       var pos = this.layout(i);
       return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
     });
+    $headers.attr({
+      title: (d) => d.label
+    })
     $headers.select('span');
     $headers.exit().remove();
 
@@ -125,7 +128,7 @@ export class PoolRenderer {
         var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
         this.$node.style({
           width: perRow * this.options.elemWidth+'px',
-          height: Math.floor(descToShow.length / perRow) * this.options.elemHeight+'px'
+          height: Math.ceil(descToShow.length / perRow) * this.options.elemHeight+'px'
         });
         break;
       //case 'vertical':
@@ -161,7 +164,8 @@ export class HeaderRenderer {
     manipulative: true,
 
     filterDialogs : dialogs.filterDialogs(),
-    searchAble: (col: model.Column) => col instanceof model.StringColumn
+    searchAble: (col: model.Column) => col instanceof model.StringColumn,
+    sortOnLabel: true
   };
 
   $node:d3.Selection<any>;
@@ -298,22 +302,25 @@ export class HeaderRenderer {
     var $headers = $base.selectAll('div.'+clazz).data(columns, (d) => d.id);
     var $headers_enter = $headers.enter().append('div').attr({
       'class': clazz
-    }).style({
-      'background-color': (d) => d.color
     });
-    $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
-    $headers_enter.append('span').classed('label',true).attr({
-      'draggable': this.options.manipulative
+    var $header_enter_div = $headers_enter.append('div').classed('lu-label', true).style({
+      'background-color': (d) => d.color
+    }).call(($span) => {
+      $span.on('click', (d) => {
+        if (this.options.manipulative && !d3.event.defaultPrevented) {
+          d.toggleMySorting();
+        }
+      })
     }).on('dragstart', (d) => {
       var e = <DragEvent>(<any>d3.event);
       e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
       e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(this.data.toDescRef(d.desc)));
-    }).on('click', (d) => {
-      if (this.options.manipulative && !d3.event.defaultPrevented) {
-        d.toggleMySorting();
-      }
+    });
+    $header_enter_div.append('i').attr('class', 'fa fa sort_indicator');
+    $header_enter_div.append('span').classed('lu-label',true).attr({
+      'draggable': this.options.manipulative
     });
 
     if (this.options.manipulative) {
@@ -327,6 +334,9 @@ export class HeaderRenderer {
       width: (d, i) => (shifts[i].width+this.options.columnPadding)+'px',
       left: (d, i) => shifts[i].offset+'px'
     });
+    $headers.attr({
+      title: (d) => d.label
+    });
     $headers.select('i.sort_indicator').attr('class', (d) => {
       var r = d.findMyRanker();
       if (r && r.sortCriteria().col === d) {
@@ -334,7 +344,7 @@ export class HeaderRenderer {
       }
       return 'sort_indicator fa';
     });
-    $headers.select('span.label').text((d) => d.label);
+    $headers.select('span.lu-label').text((d) => d.label);
 
     var that = this;
     $headers.filter((d) => d instanceof model.StackColumn && !d.collapsed).each(function (col : model.StackColumn) {
@@ -343,7 +353,7 @@ export class HeaderRenderer {
 
       var s_columns = s_shifts.map((d) => d.col);
       that.renderColumns(s_columns, s_shifts, d3.select(this), clazz+'_i');
-    }).select('span.label').call(utils.dropAble(['application/caleydo-lineup-column-ref','application/caleydo-lineup-column'], (data, d: model.StackColumn, copy) => {
+    }).call(utils.dropAble(['application/caleydo-lineup-column-ref','application/caleydo-lineup-column'], (data, d: model.StackColumn, copy) => {
       var col: model.Column = null;
       if ('application/caleydo-lineup-column-ref' in data) {
         var id = data['application/caleydo-lineup-column-ref'];
