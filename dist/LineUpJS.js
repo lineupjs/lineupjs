@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-09-08
+/*! LineUpJS - v0.1.0 - 2015-09-09
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -2644,6 +2644,7 @@ var PoolRenderer = (function () {
 exports.PoolRenderer = PoolRenderer;
 var HeaderRenderer = (function () {
     function HeaderRenderer(data, parent, options) {
+        var _this = this;
         if (options === void 0) { options = {}; }
         this.data = data;
         this.options = {
@@ -2672,8 +2673,33 @@ var HeaderRenderer = (function () {
             d3.event.sourceEvent.stopPropagation();
             d3.event.sourceEvent.preventDefault();
         });
+        this.dropHandler = utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], function (data, d, copy) {
+            var col = null;
+            if ('application/caleydo-lineup-column-ref' in data) {
+                var id = data['application/caleydo-lineup-column-ref'];
+                col = _this.data.find(id);
+                if (copy) {
+                    col = _this.data.clone(col);
+                }
+                else {
+                    col.removeMe();
+                }
+            }
+            else {
+                var desc = JSON.parse(data['application/caleydo-lineup-column']);
+                col = _this.data.create(_this.data.fromDescRef(desc));
+            }
+            if (d instanceof model.Column) {
+                return d.insertAfterMe(col);
+            }
+            else {
+                var r = _this.data.getRankings();
+                return r[r.length - 1].push(col) !== null;
+            }
+        });
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('div').classed('lu-header', true);
+        this.$node.append('div').classed('drop', true).call(this.dropHandler);
         this.changeDataStorage(data);
     }
     HeaderRenderer.prototype.changeDataStorage = function (data) {
@@ -2751,7 +2777,6 @@ var HeaderRenderer = (function () {
         var _this = this;
         if ($base === void 0) { $base = this.$node; }
         if (clazz === void 0) { clazz = 'header'; }
-        var provider = this.data;
         var $headers = $base.selectAll('div.' + clazz).data(columns, function (d) { return d.id; });
         var $headers_enter = $headers.enter().append('div').attr({
             'class': clazz
@@ -2766,7 +2791,7 @@ var HeaderRenderer = (function () {
             e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
-            e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
+            e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(_this.data.toDescRef(d.desc)));
         }).on('click', function (d) {
             if (_this.options.manipulative && !d3.event.defaultPrevented) {
                 d.toggleMySorting();
@@ -2776,24 +2801,7 @@ var HeaderRenderer = (function () {
             $headers_enter.append('div').classed('handle', true)
                 .call(this.dragHandler)
                 .style('width', this.options.columnPadding + 'px')
-                .call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], function (data, d, copy) {
-                var col = null;
-                if ('application/caleydo-lineup-column-ref' in data) {
-                    var id = data['application/caleydo-lineup-column-ref'];
-                    col = provider.find(id);
-                    if (copy) {
-                        col = provider.clone(col);
-                    }
-                    else {
-                        col.removeMe();
-                    }
-                }
-                else {
-                    var desc = JSON.parse(data['application/caleydo-lineup-column']);
-                    col = provider.create(provider.fromDescRef(desc));
-                }
-                return d.insertAfterMe(col);
-            }));
+                .call(this.dropHandler);
             $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
         }
         $headers.style({
@@ -2818,9 +2826,9 @@ var HeaderRenderer = (function () {
             var col = null;
             if ('application/caleydo-lineup-column-ref' in data) {
                 var id = data['application/caleydo-lineup-column-ref'];
-                col = provider.find(id);
+                col = _this.data.find(id);
                 if (copy) {
-                    col = provider.clone(col);
+                    col = _this.data.clone(col);
                 }
                 else {
                     col.removeMe();
@@ -2828,7 +2836,7 @@ var HeaderRenderer = (function () {
             }
             else {
                 var desc = JSON.parse(data['application/caleydo-lineup-column']);
-                col = provider.create(provider.fromDescRef(desc));
+                col = _this.data.create(_this.data.fromDescRef(desc));
             }
             return d.push(col);
         }));

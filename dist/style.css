@@ -100,6 +100,10 @@
     opacity: 0.5; }
   .lu div.lu-header, .lu div.lu-pool, .lu-pool div.lu-header, .lu-pool div.lu-pool {
     position: relative; }
+    .lu div.lu-header .drop, .lu div.lu-pool .drop, .lu-pool div.lu-header .drop, .lu-pool div.lu-pool .drop {
+      width: 100%;
+      height: 100%;
+      position: absolute; }
   .lu div.header, .lu div.header_i, .lu-pool div.header, .lu-pool div.header_i {
     position: absolute;
     display: inline-block;

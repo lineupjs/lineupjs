@@ -186,11 +186,34 @@ export class HeaderRenderer {
       (<any>d3.event).sourceEvent.preventDefault();
     });
 
+  private dropHandler = utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d:model.Column, copy) => {
+    var col:model.Column = null;
+    if ('application/caleydo-lineup-column-ref' in data) {
+      var id = data['application/caleydo-lineup-column-ref'];
+      col = this.data.find(id);
+      if (copy) {
+        col = this.data.clone(col);
+      } else {
+        col.removeMe();
+      }
+    } else {
+      var desc = JSON.parse(data['application/caleydo-lineup-column']);
+      col = this.data.create(this.data.fromDescRef(desc));
+    }
+    if (d instanceof model.Column) {
+      return d.insertAfterMe(col);
+    } else {
+      var r= this.data.getRankings();
+      return r[r.length-1].push(col) !== null;
+    }
+  });
+
 
   constructor(private data:provider.DataProvider,parent:Element, options:any = {}) {
     utils.merge(this.options, options);
 
     this.$node = d3.select(parent).append('div').classed('lu-header',true);
+    this.$node.append('div').classed('drop',true).call(this.dropHandler);
 
     this.changeDataStorage(data);
   }
@@ -272,8 +295,6 @@ export class HeaderRenderer {
   }
 
   private renderColumns(columns: model.Column[], shifts, $base: d3.Selection<any> = this.$node, clazz: string = 'header') {
-
-    var provider = this.data;
     var $headers = $base.selectAll('div.'+clazz).data(columns, (d) => d.id);
     var $headers_enter = $headers.enter().append('div').attr({
       'class': clazz
@@ -288,7 +309,7 @@ export class HeaderRenderer {
       e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
-      e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
+      e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(this.data.toDescRef(d.desc)));
     }).on('click', (d) => {
       if (this.options.manipulative && !d3.event.defaultPrevented) {
         d.toggleMySorting();
@@ -299,22 +320,7 @@ export class HeaderRenderer {
       $headers_enter.append('div').classed('handle', true)
         .call(this.dragHandler)
         .style('width', this.options.columnPadding + 'px')
-        .call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d:model.Column, copy) => {
-          var col:model.Column = null;
-          if ('application/caleydo-lineup-column-ref' in data) {
-            var id = data['application/caleydo-lineup-column-ref'];
-            col = provider.find(id);
-            if (copy) {
-              col = provider.clone(col);
-            } else {
-              col.removeMe();
-            }
-          } else {
-            var desc = JSON.parse(data['application/caleydo-lineup-column']);
-            col = provider.create(provider.fromDescRef(desc));
-          }
-          return d.insertAfterMe(col);
-        }));
+        .call(this.dropHandler);
       $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
     }
     $headers.style({
@@ -341,15 +347,15 @@ export class HeaderRenderer {
       var col: model.Column = null;
       if ('application/caleydo-lineup-column-ref' in data) {
         var id = data['application/caleydo-lineup-column-ref'];
-        col = provider.find(id);
+        col = this.data.find(id);
         if (copy) {
-          col = provider.clone(col);
+          col = this.data.clone(col);
         } else {
           col.removeMe();
         }
       } else {
         var desc = JSON.parse(data['application/caleydo-lineup-column']);
-        col = provider.create(provider.fromDescRef(desc));
+        col = this.data.create(this.data.fromDescRef(desc));
       }
       return d.push(col);
     }));
