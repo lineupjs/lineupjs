@@ -51,6 +51,7 @@ export class PoolRenderer {
     this.data = data;
     data.on(['addDesc.pool'], (desc) => {
       this.entries.push(new PoolEntry(desc));
+      this.update();
     });
     if (this.options.hideUsed) {
       var that = this;

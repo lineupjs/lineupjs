@@ -2366,7 +2366,7 @@ var LinkCellRenderer = (function (_super) {
             x: function (d, i) { return context.cellX(i); },
             'xlink:href': function (d) { return col.getValue(d); },
             'data-index': function (d, i) { return i; }
-        }).text(function (d) { return col.getLabel(d); });
+        }).select('text').text(function (d) { return col.getLabel(d); });
         context.animated($rows).select('text').attr({
             y: function (d, i) { return context.cellY(i); }
         });
@@ -2542,6 +2542,7 @@ var PoolRenderer = (function () {
         this.data = data;
         data.on(['addDesc.pool'], function (desc) {
             _this.entries.push(new PoolEntry(desc));
+            _this.update();
         });
         if (this.options.hideUsed) {
             var that = this;

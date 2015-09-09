@@ -321,7 +321,7 @@ class LinkCellRenderer extends DefaultCellRenderer {
       x: (d, i) => context.cellX(i),
       'xlink:href': (d) => col.getValue(d),
       'data-index': (d, i) => i
-    }).text((d) => col.getLabel(d));
+    }).select('text').text((d) => col.getLabel(d));
 
     context.animated($rows).select('text').attr({
       y: (d, i) => context.cellY(i)
