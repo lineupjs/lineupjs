@@ -234,6 +234,28 @@ export class ValueColumn<T> extends Column {
   }
 }
 
+/**
+ * a column having an accessor to get the cell value
+ */
+export class DummyColumn extends Column {
+
+  constructor(id:string, desc:any) {
+    super(id, desc);
+  }
+
+  getLabel(row:any) {
+    return '';
+  }
+
+  getValue(row:any) {
+    return '';
+  }
+
+  compare(a:any[], b:any[]) {
+    return 0; //can't compare
+  }
+}
+
 export interface INumberColumn {
   getNumber(row: any): number;
 }
@@ -1192,6 +1214,11 @@ export class RankColumn extends ValueColumn<number> {
   }
 }
 
+export const createStackDesc = StackColumn.desc;
+export function createActionDesc(label = 'actions') {
+ return { type: 'actions', label : label };
+}
+
 /**
  * a map of all known column types *
  */
@@ -1203,6 +1230,7 @@ export function models() {
     stack: StackColumn,
     rank: RankColumn,
     categorical: CategoricalColumn,
-    ordinal: CategoricalNumberColumn
+    ordinal: CategoricalNumberColumn,
+    actions: DummyColumn
   };
 }

@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-09-09
+/*! LineUpJS - v0.1.0 - 2015-09-10
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -84,7 +84,8 @@ var LineUp = (function (_super) {
                 rowBarPadding: 1,
                 visibleRowsOnly: true,
                 backupScrollRows: 4,
-                animationDuration: 1000
+                animationDuration: 1000,
+                rowActions: []
             },
             manipulative: true,
             interaction: {
@@ -111,8 +112,10 @@ var LineUp = (function (_super) {
             rowBarPadding: this.config.svgLayout.rowBarPadding,
             animationDuration: this.config.svgLayout.animationDuration,
             animation: this.config.renderingOptions.animation,
-            stacked: this.config.renderingOptions.stacked
+            stacked: this.config.renderingOptions.stacked,
+            actions: this.config.svgLayout.rowActions
         });
+        this.forward(this.body, 'selectionChanged', 'hoverChanged');
         if (this.config.pool && this.config.manipulative) {
             this.addPool(new ui_.PoolRenderer(data, this.node, this.config));
         }
@@ -598,6 +601,23 @@ var ValueColumn = (function (_super) {
     return ValueColumn;
 })(Column);
 exports.ValueColumn = ValueColumn;
+var DummyColumn = (function (_super) {
+    __extends(DummyColumn, _super);
+    function DummyColumn(id, desc) {
+        _super.call(this, id, desc);
+    }
+    DummyColumn.prototype.getLabel = function (row) {
+        return '';
+    };
+    DummyColumn.prototype.getValue = function (row) {
+        return '';
+    };
+    DummyColumn.prototype.compare = function (a, b) {
+        return 0;
+    };
+    return DummyColumn;
+})(Column);
+exports.DummyColumn = DummyColumn;
 function isNumberColumn(col) {
     return typeof col.getNumber === 'function';
 }
@@ -1452,6 +1472,12 @@ var RankColumn = (function (_super) {
     return RankColumn;
 })(ValueColumn);
 exports.RankColumn = RankColumn;
+exports.createStackDesc = StackColumn.desc;
+function createActionDesc(label) {
+    if (label === void 0) { label = 'actions'; }
+    return { type: 'actions', label: label };
+}
+exports.createActionDesc = createActionDesc;
 function models() {
     return {
         number: NumberColumn,
@@ -1460,7 +1486,8 @@ function models() {
         stack: StackColumn,
         rank: RankColumn,
         categorical: CategoricalColumn,
-        ordinal: CategoricalNumberColumn
+        ordinal: CategoricalNumberColumn,
+        actions: DummyColumn
     };
 }
 exports.models = models;
@@ -1664,6 +1691,11 @@ var DataProvider = (function (_super) {
             if (column.type === 'rank') {
                 return null;
             }
+            if (column.type === 'actions') {
+                var r = _this.create(model.createActionDesc(column.label || 'actions'));
+                r.restore(column);
+                return r;
+            }
             if (column.type === 'stacked') {
                 var r = _this.create(model.StackColumn.desc(column.label || 'Combined'));
                 (column.children || []).forEach(function (col) {
@@ -1728,6 +1760,27 @@ var DataProvider = (function (_super) {
     DataProvider.prototype.setSelection = function (indices) {
         this.selection = d3.set();
         this.selectAll(indices);
+    };
+    DataProvider.prototype.toggleSelection = function (index, additional) {
+        if (additional === void 0) { additional = false; }
+        if (this.isSelected(index)) {
+            if (additional) {
+                this.deselect(index);
+            }
+            else {
+                this.clearSelection();
+            }
+            return false;
+        }
+        else {
+            if (additional) {
+                this.select(index);
+            }
+            else {
+                this.setSelection([index]);
+            }
+            return true;
+        }
     };
     DataProvider.prototype.deselect = function (index) {
         this.selection.remove(String(index));
@@ -2088,6 +2141,34 @@ var DerivedBarCellRenderer = (function (_super) {
     }
     return DerivedBarCellRenderer;
 })(BarCellRenderer);
+var ActionCellRenderer = (function () {
+    function ActionCellRenderer() {
+    }
+    ActionCellRenderer.prototype.render = function ($col, col, rows, context) {
+    };
+    ActionCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
+        var actions = context.option('actions', []);
+        var $actions = $row.append('text').attr({
+            'class': 'actions fa',
+            x: function (d) { return context.cellX(index); },
+            y: function (d) { return context.cellPrevY(index); },
+            'data-index': index
+        }).selectAll('tspan').data(actions);
+        $actions.enter().append('tspan')
+            .text(function (d) { return d.icon; })
+            .attr('title', function (d) { return d.name; })
+            .on('click', function (d) {
+            d.action(row);
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+        });
+    };
+    ActionCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
+        $row.selectAll('*').remove();
+    };
+    return ActionCellRenderer;
+})();
+exports.ActionCellRenderer = ActionCellRenderer;
 var defaultRendererInstance = new DefaultCellRenderer();
 var barRendererInstance = new BarCellRenderer();
 function defaultRenderer(extraFuncs) {
@@ -2246,7 +2327,11 @@ function renderers() {
         categorical: new CategoricalRenderer(),
         ordinal: barRenderer({
             colorOf: function (d, i, col) { return col.getColor(d); }
-        })
+        }),
+        max: barRenderer({
+            colorOf: function (d, i, col) { return col.getColor(d); }
+        }),
+        actions: new ActionCellRenderer()
     };
 }
 exports.renderers = renderers;
@@ -2255,6 +2340,12 @@ exports.renderers = renderers;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 ///<reference path='../typings/tsd.d.ts' />
 var d3 = require('d3');
 var utils = require('./utils');
@@ -2596,9 +2687,11 @@ var HeaderRenderer = (function () {
     return HeaderRenderer;
 })();
 exports.HeaderRenderer = HeaderRenderer;
-var BodyRenderer = (function () {
+var BodyRenderer = (function (_super) {
+    __extends(BodyRenderer, _super);
     function BodyRenderer(data, parent, slicer, options) {
         if (options === void 0) { options = {}; }
+        _super.call(this);
         this.data = data;
         this.slicer = slicer;
         this.options = {
@@ -2611,12 +2704,16 @@ var BodyRenderer = (function () {
             stacked: true,
             animation: false,
             animationDuration: 1000,
-            renderers: renderer.renderers()
+            renderers: renderer.renderers(),
+            actions: []
         };
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('svg').classed('lu-body', true);
         this.changeDataStorage(data);
     }
+    BodyRenderer.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['hoverChanged', 'selectionChanged']);
+    };
     Object.defineProperty(BodyRenderer.prototype, "node", {
         get: function () {
             return this.$node.node();
@@ -2793,21 +2890,26 @@ var BodyRenderer = (function () {
             'data-index': function (d) { return d.d; }
         });
         $rows.select('rect').attr({
-            y: function (data_index) { return context.cellY(data_index.i); },
-            height: function (data_index) { return context.rowHeight(data_index.i); },
+            y: function (d) { return context.cellY(d.i); },
+            height: function (d) { return context.rowHeight(d.i); },
             width: function (d, i, j) { return shifts[j].width; },
-            'class': function (d, i) { return 'bg ' + (i % 2 === 0 ? 'even' : 'odd'); }
+            'class': function (d, i) { return 'bg ' + (i % 2 === 0 ? 'even' : 'odd') + (_this.data.isSelected(d.i) ? ' selected' : ''); }
         });
         $rows.exit().remove();
         $rankings.exit().remove();
     };
-    BodyRenderer.prototype.select = function (data_index, additional) {
+    BodyRenderer.prototype.select = function (dataIndex, additional) {
         if (additional === void 0) { additional = false; }
+        this.fire('selectionChanged', dataIndex);
+        var selected = this.data.toggleSelection(dataIndex, additional);
+        this.$node.selectAll('g.row[data-index="' + dataIndex + '"] rect.bg').classed('selected', selected);
+        this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
     };
     BodyRenderer.prototype.mouseOver = function (dataIndex, hover) {
         if (hover === void 0) { hover = true; }
+        this.fire('hoverChanged', hover ? dataIndex : -1);
         this.mouseOverItem(dataIndex, hover);
-        this.$node.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
+        this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('hover', hover);
     };
     BodyRenderer.prototype.renderSlopeGraphs = function ($body, rankings, orders, shifts, context) {
         var _this = this;
@@ -2897,7 +2999,7 @@ var BodyRenderer = (function () {
         this.renderSlopeGraphs($body, rankings, orders, shifts, context);
     };
     return BodyRenderer;
-})();
+})(utils.AEventDispatcher);
 exports.BodyRenderer = BodyRenderer;
 
 },{"./model":3,"./renderer":5,"./ui_dialogs":7,"./utils":8,"d3":undefined}],7:[function(require,module,exports){

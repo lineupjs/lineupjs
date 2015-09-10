@@ -248,6 +248,11 @@ export class DataProvider extends utils.AEventDispatcher {
       if (column.type === 'rank') {
         return null; //can't handle
       }
+      if (column.type === 'actions') {
+        var r = this.create(model.createActionDesc(column.label || 'actions'));
+        r.restore(column);
+        return r;
+      }
       if (column.type === 'stacked') {
         //create a stacked one
         var r = this.create(model.StackColumn.desc(column.label || 'Combined'));
@@ -361,6 +366,30 @@ export class DataProvider extends utils.AEventDispatcher {
   setSelection(indices: number[]) {
     this.selection = d3.set();
     this.selectAll(indices);
+  }
+
+  /**
+   * toggles the selection of the given data index
+   * @param index
+   * @param additional just this element or all
+   * @returns {boolean} whether the index is currently selected
+   */
+  toggleSelection(index: number, additional = false) {
+    if (this.isSelected(index)) {
+      if (additional) {
+        this.deselect(index);
+      } else {
+        this.clearSelection();
+      }
+      return false;
+    } else {
+      if (additional) {
+        this.select(index);
+      } else {
+        this.setSelection([index]);
+      }
+      return true;
+    }
   }
 
   /**

@@ -282,6 +282,35 @@ class DerivedBarCellRenderer extends BarCellRenderer {
   }
 }
 
+export class ActionCellRenderer implements ICellRenderer {
+  render($col:d3.Selection<any>, col:model.Column, rows:any[], context:IRenderContext) {
+    //nothing to render in normal mode
+  }
+
+  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
+    var actions = context.option('actions',[]);
+    var $actions = $row.append('text').attr({
+      'class': 'actions fa',
+      x: (d) => context.cellX(index),
+      y: (d) => context.cellPrevY(index),
+      'data-index': index
+    }).selectAll('tspan').data(actions);
+    $actions.enter().append('tspan')
+      .text((d) => d.icon)
+      .attr('title',(d) => d.name)
+      .on('click', (d) => {
+        d3.event.preventDefault();
+        d3.event.stopPropagation();
+        d.action(row);
+      });
+  }
+
+  mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
+    $row.selectAll('*').remove();
+  }
+
+}
+
 var defaultRendererInstance = new DefaultCellRenderer();
 var barRendererInstance = new BarCellRenderer();
 
@@ -455,6 +484,10 @@ export function renderers() {
     categorical: new CategoricalRenderer(),
     ordinal: barRenderer({
       colorOf: (d, i, col) => col.getColor(d)
-    })
+    }),
+    max: barRenderer({
+      colorOf: (d, i, col) => col.getColor(d)
+    }),
+    actions: new ActionCellRenderer()
   };
 }

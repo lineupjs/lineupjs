@@ -47,7 +47,9 @@ export class LineUp extends utils_.AEventDispatcher {
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
       backupScrollRows: 4,
-      animationDuration: 1000
+      animationDuration: 1000,
+
+      rowActions: []
     },
     /* enables manipulation features, remove column, reorder,... */
     manipulative: true,
@@ -84,8 +86,10 @@ export class LineUp extends utils_.AEventDispatcher {
       rowBarPadding: this.config.svgLayout.rowBarPadding,
       animationDuration: this.config.svgLayout.animationDuration,
       animation: this.config.renderingOptions.animation,
-      stacked: this.config.renderingOptions.stacked
+      stacked: this.config.renderingOptions.stacked,
+      actions: this.config.svgLayout.rowActions
     });
+    this.forward(this.body, 'selectionChanged', 'hoverChanged');
     if(this.config.pool && this.config.manipulative) {
       this.addPool(new ui_.PoolRenderer(data, this.node, this.config));
     }

@@ -379,7 +379,7 @@ export interface ISlicer {
   (start:number, length:number, row2y:(i:number) => number) : { from: number; to: number };
 }
 
-export class BodyRenderer {
+export class BodyRenderer extends utils.AEventDispatcher {
   private mouseOverItem:(dataIndex:number, hover:boolean) => void;
   private options = {
     rowHeight: 20,
@@ -392,19 +392,26 @@ export class BodyRenderer {
     animation: false, //200
     animationDuration: 1000,
 
-    renderers: renderer.renderers()
+    renderers: renderer.renderers(),
+
+    actions: []
 
   };
 
   private $node: d3.Selection<any>;
 
   constructor(private data:provider.DataProvider, parent: Element, private slicer: ISlicer, options = {}) {
+    super();
     //merge options
     utils.merge(this.options, options);
 
     this.$node = d3.select(parent).append('svg').classed('lu-body',true);
 
     this.changeDataStorage(data);
+  }
+
+  createEventList() {
+    return super.createEventList().concat(['hoverChanged', 'selectionChanged']);
   }
 
   get node() {
@@ -592,24 +599,29 @@ export class BodyRenderer {
       'data-index': (d) => d.d
     });
     $rows.select('rect').attr({
-      y: (data_index) => context.cellY(data_index.i),
-      height: (data_index) => context.rowHeight(data_index.i),
+      y: (d) => context.cellY(d.i),
+      height: (d) => context.rowHeight(d.i),
       width: (d, i, j?) => shifts[j].width,
-      'class': (d, i) => 'bg '+(i%2===0?'even':'odd')
+      'class': (d, i) => 'bg '+(i%2===0?'even':'odd')+(this.data.isSelected(d.i) ? ' selected': '')
     });
     $rows.exit().remove();
 
     $rankings.exit().remove();
   }
 
-  select(data_index: number, additional = false) {
+  select(dataIndex: number, additional = false) {
+    this.fire('selectionChanged', dataIndex);
     //TODO
+    var selected = this.data.toggleSelection(dataIndex, additional);
+    this.$node.selectAll('g.row[data-index="' + dataIndex + '"] rect.bg').classed('selected', selected);
+    this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
   }
 
   mouseOver(dataIndex:number, hover = true) {
+    this.fire('hoverChanged', hover? dataIndex : -1);
     this.mouseOverItem(dataIndex, hover);
     //update the slope graph
-    this.$node.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
+    this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('hover', hover);
   }
 
   renderSlopeGraphs($body: d3.Selection<any>, rankings:model.RankColumn[], orders: number[][], shifts:any[], context:renderer.IRenderContext) {

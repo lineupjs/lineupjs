@@ -105,7 +105,9 @@
 }
 
 $lu_hover_color: #e5e5e5;
+$lu_selected_color: #ffa500;
 $lu_toolbar_font_size: 8pt;
+$lu_even_bg: #f7f7f7;
 
 .lu-pool {
   div.header {
@@ -120,8 +122,16 @@ $lu_toolbar_font_size: 8pt;
     position: relative;
   }
 
-  text {
+  text, tspan {
     dominant-baseline: text-before-edge;
+  }
+
+  text.actions tspan {
+    cursor: pointer;
+
+    &:hover {
+      color: darkblue;
+    }
   }
 
   text.rank {
@@ -141,26 +151,36 @@ $lu_toolbar_font_size: 8pt;
     &.hover {
       stroke: $lu_hover_color;
     }
+
+    &.selected {
+      stroke: $lu_selected_color;
+    }
   }
 
   g.cols {
     pointer-events: none;
   }
 
-  rect.bg {
-    fill: transparent;
-
-    &.even {
-      fill: #f7f7f7;
-    }
-  }
-
-  g.row.hover {
+  g.row {
     rect.bg {
-      fill: $lu_hover_color;
+      fill: transparent;
+
+      &.even {
+        fill: $lu_even_bg;
+      }
+
+      &.selected {
+        stroke: $lu_selected_color;
+        stroke-width: 1;
+      }
     }
-    rect.bar {
-      opacity: 0.5;
+    &.hover {
+      rect.bg {
+        fill: $lu_hover_color;
+      }
+      rect.bar {
+        opacity: 0.5;
+      }
     }
   }
 

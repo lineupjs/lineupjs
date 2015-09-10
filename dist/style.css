@@ -78,8 +78,12 @@
   position: relative; }
   .lu div.lu-header, .lu-pool div.lu-header {
     position: relative; }
-  .lu text, .lu-pool text {
+  .lu text, .lu tspan, .lu-pool text, .lu-pool tspan {
     dominant-baseline: text-before-edge; }
+  .lu text.actions tspan, .lu-pool text.actions tspan {
+    cursor: pointer; }
+    .lu text.actions tspan:hover, .lu-pool text.actions tspan:hover {
+      color: darkblue; }
   .lu text.rank, .lu-pool text.rank {
     text-anchor: end; }
   .lu *[draggable], .lu-pool *[draggable] {
@@ -91,12 +95,17 @@
     shape-rendering: geometricPrecision; }
     .lu line.slope.hover, .lu-pool line.slope.hover {
       stroke: #e5e5e5; }
+    .lu line.slope.selected, .lu-pool line.slope.selected {
+      stroke: #ffa500; }
   .lu g.cols, .lu-pool g.cols {
     pointer-events: none; }
-  .lu rect.bg, .lu-pool rect.bg {
+  .lu g.row rect.bg, .lu-pool g.row rect.bg {
     fill: transparent; }
-    .lu rect.bg.even, .lu-pool rect.bg.even {
+    .lu g.row rect.bg.even, .lu-pool g.row rect.bg.even {
       fill: #f7f7f7; }
+    .lu g.row rect.bg.selected, .lu-pool g.row rect.bg.selected {
+      stroke: #ffa500;
+      stroke-width: 1; }
   .lu g.row.hover rect.bg, .lu-pool g.row.hover rect.bg {
     fill: #e5e5e5; }
   .lu g.row.hover rect.bar, .lu-pool g.row.hover rect.bar {
