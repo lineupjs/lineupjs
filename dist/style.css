@@ -103,9 +103,9 @@
     fill: transparent; }
     .lu g.row rect.bg.even, .lu-pool g.row rect.bg.even {
       fill: #f7f7f7; }
-    .lu g.row rect.bg.selected, .lu-pool g.row rect.bg.selected {
-      stroke: #ffa500;
-      stroke-width: 1; }
+  .lu g.row.selected rect.bg, .lu-pool g.row.selected rect.bg {
+    stroke: #ffa500;
+    stroke-width: 1; }
   .lu g.row.hover rect.bg, .lu-pool g.row.hover rect.bg {
     fill: #e5e5e5; }
   .lu g.row.hover rect.bar, .lu-pool g.row.hover rect.bar {

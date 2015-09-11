@@ -613,7 +613,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
     this.fire('selectionChanged', dataIndex);
     //TODO
     var selected = this.data.toggleSelection(dataIndex, additional);
-    this.$node.selectAll('g.row[data-index="' + dataIndex + '"] rect.bg').classed('selected', selected);
+    this.$node.selectAll('g.row[data-index="' + dataIndex + '"]').classed('selected', selected);
     this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
   }
 

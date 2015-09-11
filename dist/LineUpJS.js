@@ -2158,9 +2158,9 @@ var ActionCellRenderer = (function () {
             .text(function (d) { return d.icon; })
             .attr('title', function (d) { return d.name; })
             .on('click', function (d) {
-            d.action(row);
             d3.event.preventDefault();
             d3.event.stopPropagation();
+            d.action(row);
         });
     };
     ActionCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
@@ -2902,7 +2902,7 @@ var BodyRenderer = (function (_super) {
         if (additional === void 0) { additional = false; }
         this.fire('selectionChanged', dataIndex);
         var selected = this.data.toggleSelection(dataIndex, additional);
-        this.$node.selectAll('g.row[data-index="' + dataIndex + '"] rect.bg').classed('selected', selected);
+        this.$node.selectAll('g.row[data-index="' + dataIndex + '"]').classed('selected', selected);
         this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
     };
     BodyRenderer.prototype.mouseOver = function (dataIndex, hover) {

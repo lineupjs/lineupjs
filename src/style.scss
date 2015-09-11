@@ -168,8 +168,9 @@ $lu_even_bg: #f7f7f7;
       &.even {
         fill: $lu_even_bg;
       }
-
-      &.selected {
+    }
+    &.selected {
+      rect.bg {
         stroke: $lu_selected_color;
         stroke-width: 1;
       }
