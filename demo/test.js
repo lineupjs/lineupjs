@@ -16,7 +16,9 @@ window.onload = function () {
     {label: 'L', type: 'link', column: 'l'},
     {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
     {label: 'Cat', type: 'categorical', column: 'cat', categories : ['c1','c2','c3']},
-    {label: 'Ord', type: 'ordinal', column: 'cat', categories : ['c1','c2','c3']}];
+    {label: 'Ord', type: 'ordinal', column: 'cat', categories : ['c1','c2','c3']},
+    {label: 'Ann', type: 'annotate', column: 'd'}
+  ];
   var colors = d3.scale.category10();
   desc.forEach(function (d, i) {
     d.color = colors(''+i);
@@ -43,6 +45,7 @@ window.onload = function () {
 
   r.push(p.create(desc[0]));
   r.push(p.create(desc[1]));
+  r.push(p.create(desc[8]));
   var rstack = p.create(LineUpJS.model.StackColumn.desc('Stack'));
   r.push(rstack);
   rstack.push(p.create(desc[1]));
@@ -58,7 +61,7 @@ window.onload = function () {
   r2.push(p.create(desc[6]));
   r2.push(p.create(desc[7]));
 
-  var body = new LineUpJS.create(root.node(), p, {
+  var body = new LineUpJS.create(p, root.node(), {
     additionalDesc : [
       LineUpJS.model.StackColumn.desc('+ Stack')
     ]

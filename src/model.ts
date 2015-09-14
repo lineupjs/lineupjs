@@ -214,7 +214,7 @@ export class Column extends utils.AEventDispatcher {
  * a column having an accessor to get the cell value
  */
 export class ValueColumn<T> extends Column {
-  accessor:(row:any, id:string, desc:any) => T;
+  protected accessor:(row:any, id:string, desc:any) => T;
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -504,6 +504,24 @@ export class LinkColumn extends StringColumn {
       return this.link.replace(/\$1/g , v);
     }
     return v;
+  }
+}
+
+export class AnnotateColumn extends StringColumn {
+  private setter: (row: any, id: string, desc: any, value: string) => boolean;
+
+  constructor(id:string, desc:any) {
+    super(id, desc);
+    this.setter = desc.setter || (() => false);
+  }
+
+  setValue(row:any, value: string) {
+    var old = this.getValue(row);
+    if (this.setter(row, this.id, this.desc, value)) {
+      this.fire(['dirtyValues','dirty'], value, old);
+      return true;
+    }
+    return false;
   }
 }
 
@@ -1231,6 +1249,7 @@ export function models() {
     rank: RankColumn,
     categorical: CategoricalColumn,
     ordinal: CategoricalNumberColumn,
-    actions: DummyColumn
+    actions: DummyColumn,
+    annotate: AnnotateColumn
   };
 }

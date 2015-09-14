@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-09-10
+/*! LineUpJS - v0.1.0 - 2015-09-14
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -849,6 +849,23 @@ var LinkColumn = (function (_super) {
     return LinkColumn;
 })(StringColumn);
 exports.LinkColumn = LinkColumn;
+var AnnotateColumn = (function (_super) {
+    __extends(AnnotateColumn, _super);
+    function AnnotateColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.setter = desc.setter || (function () { return false; });
+    }
+    AnnotateColumn.prototype.setValue = function (row, value) {
+        var old = this.getValue(row);
+        if (this.setter(row, this.id, this.desc, value)) {
+            this.fire(['dirtyValues', 'dirty'], value, old);
+            return true;
+        }
+        return false;
+    };
+    return AnnotateColumn;
+})(StringColumn);
+exports.AnnotateColumn = AnnotateColumn;
 var CategoricalColumn = (function (_super) {
     __extends(CategoricalColumn, _super);
     function CategoricalColumn(id, desc) {
@@ -1487,7 +1504,8 @@ function models() {
         rank: RankColumn,
         categorical: CategoricalColumn,
         ordinal: CategoricalNumberColumn,
-        actions: DummyColumn
+        actions: DummyColumn,
+        annotate: AnnotateColumn
     };
 }
 exports.models = models;
@@ -1814,9 +1832,14 @@ var CommonDataProvider = (function (_super) {
         this.columns = columns;
         this.rankingIndex = 0;
         this.rowGetter = function (row, id, desc) { return row[desc.column]; };
+        this.rowSetter = function (row, id, desc, value) {
+            row[desc.column] = value;
+            return true;
+        };
         this.columns = columns.slice();
         columns.forEach(function (d) {
             d.accessor = _this.rowGetter;
+            d.setter = _this.rowSetter;
             d.label = d.label || d.column;
         });
     }
@@ -1826,6 +1849,7 @@ var CommonDataProvider = (function (_super) {
     CommonDataProvider.prototype.pushDesc = function (column) {
         var d = column;
         d.accessor = this.rowGetter;
+        d.setter = this.rowSetter;
         d.label = column.label || d.column;
         this.columns.push(column);
         this.fire('addDesc', d);
@@ -2150,8 +2174,8 @@ var ActionCellRenderer = (function () {
         var actions = context.option('actions', []);
         var $actions = $row.append('text').attr({
             'class': 'actions fa',
-            x: function (d) { return context.cellX(index); },
-            y: function (d) { return context.cellPrevY(index); },
+            x: context.cellX(index),
+            y: context.cellPrevY(index),
             'data-index': index
         }).selectAll('tspan').data(actions);
         $actions.enter().append('tspan')
@@ -2169,6 +2193,35 @@ var ActionCellRenderer = (function () {
     return ActionCellRenderer;
 })();
 exports.ActionCellRenderer = ActionCellRenderer;
+var AnnotateCellRenderer = (function (_super) {
+    __extends(AnnotateCellRenderer, _super);
+    function AnnotateCellRenderer() {
+        _super.apply(this, arguments);
+    }
+    AnnotateCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
+        this.findRow($col, index).attr('display', 'none');
+        $row.append('foreignObject').attr({
+            x: context.cellX(index) - 2,
+            y: context.cellPrevY(index) - 2,
+            'data-index': index,
+            width: col.getWidth(),
+            height: context.rowHeight(index)
+        }).append('xhtml:input').attr({
+            type: 'text',
+            value: col.getValue(row)
+        }).style({
+            width: col.getWidth() + 'px'
+        }).on('change', function () {
+            var text = this.value;
+            col.setValue(row, text);
+        });
+    };
+    AnnotateCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
+        this.findRow($col, index).attr('display', null);
+        $row.selectAll('*').remove();
+    };
+    return AnnotateCellRenderer;
+})(DefaultCellRenderer);
 var defaultRendererInstance = new DefaultCellRenderer();
 var barRendererInstance = new BarCellRenderer();
 function defaultRenderer(extraFuncs) {
@@ -2331,7 +2384,8 @@ function renderers() {
         max: barRenderer({
             colorOf: function (d, i, col) { return col.getColor(d); }
         }),
-        actions: new ActionCellRenderer()
+        actions: new ActionCellRenderer(),
+        annotate: new AnnotateCellRenderer()
     };
 }
 exports.renderers = renderers;

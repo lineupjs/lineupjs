@@ -432,6 +432,10 @@ export class CommonDataProvider extends DataProvider {
   private rankingIndex = 0;
   //generic accessor of the data item
   private rowGetter = (row:any, id:string, desc:any) => row[desc.column];
+  private rowSetter = (row:any, id:string, desc:any, value: any) => {
+    row[desc.column] = value;
+    return true;
+  };
 
   constructor(private columns:model.IColumnDesc[] = []) {
     super();
@@ -439,6 +443,7 @@ export class CommonDataProvider extends DataProvider {
     //generate the accessor
     columns.forEach((d:any) => {
       d.accessor = this.rowGetter;
+      d.setter = this.rowSetter;
       d.label = d.label || d.column;
     });
   }
@@ -450,6 +455,7 @@ export class CommonDataProvider extends DataProvider {
   pushDesc(column: model.IColumnDesc) {
     var d : any = column;
     d.accessor = this.rowGetter;
+    d.setter = this.rowSetter;
     d.label = column.label || d.column;
     this.columns.push(column);
     this.fire('addDesc', d);

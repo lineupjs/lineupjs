@@ -291,8 +291,8 @@ export class ActionCellRenderer implements ICellRenderer {
     var actions = context.option('actions',[]);
     var $actions = $row.append('text').attr({
       'class': 'actions fa',
-      x: (d) => context.cellX(index),
-      y: (d) => context.cellPrevY(index),
+      x: context.cellX(index),
+      y: context.cellPrevY(index),
       'data-index': index
     }).selectAll('tspan').data(actions);
     $actions.enter().append('tspan')
@@ -309,6 +309,32 @@ export class ActionCellRenderer implements ICellRenderer {
     $row.selectAll('*').remove();
   }
 
+}
+
+class AnnotateCellRenderer extends DefaultCellRenderer {
+  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.AnnotateColumn, row:any, index:number, context:IRenderContext) {
+    this.findRow($col, index).attr('display', 'none');
+    $row.append('foreignObject').attr({
+      x: context.cellX(index)-2,
+      y: context.cellPrevY(index)-2,
+      'data-index': index,
+      width: col.getWidth(),
+      height: context.rowHeight(index)
+    }).append('xhtml:input').attr({
+      type: 'text',
+      value: col.getValue(row)
+    }).style({
+      width: col.getWidth()+'px'
+    }).on('change', function() {
+      var text = this.value;
+      col.setValue(row, text);
+    });
+  }
+
+  mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
+    this.findRow($col, index).attr('display', null);
+    $row.selectAll('*').remove();
+  }
 }
 
 var defaultRendererInstance = new DefaultCellRenderer();
@@ -488,6 +514,7 @@ export function renderers() {
     max: barRenderer({
       colorOf: (d, i, col) => col.getColor(d)
     }),
-    actions: new ActionCellRenderer()
+    actions: new ActionCellRenderer(),
+    annotate: new AnnotateCellRenderer()
   };
 }
