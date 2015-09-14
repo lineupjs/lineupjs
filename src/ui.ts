@@ -411,7 +411,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
   }
 
   createEventList() {
-    return super.createEventList().concat(['hoverChanged', 'selectionChanged']);
+    return super.createEventList().concat(['hoverChanged']);
   }
 
   get node() {
@@ -424,10 +424,11 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
   changeDataStorage(data: provider.DataProvider) {
     if (this.data) {
-      this.data.on('dirtyValues.bodyRenderer', null);
+      this.data.on(['dirtyValues.bodyRenderer','selectionChanged.bodyRenderer'], null);
     }
     this.data = data;
     data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this),1));
+    data.on('selectionChanged.bodyRenderer', utils.delayedCall(this.drawSelection.bind(this),1));
   }
 
   createContext(index_shift: number):renderer.IRenderContext {
@@ -597,12 +598,12 @@ export class BodyRenderer extends utils.AEventDispatcher {
     });
     $rows.attr({
       'data-index': (d) => d.d
-    });
+    }).classed('selected', (d) => this.data.isSelected(d.d));
     $rows.select('rect').attr({
       y: (d) => context.cellY(d.i),
       height: (d) => context.rowHeight(d.i),
       width: (d, i, j?) => shifts[j].width,
-      'class': (d, i) => 'bg '+(i%2===0?'even':'odd')+(this.data.isSelected(d.i) ? ' selected': '')
+      'class': (d, i) => 'bg '+(i%2===0?'even':'odd')
     });
     $rows.exit().remove();
 
@@ -610,11 +611,19 @@ export class BodyRenderer extends utils.AEventDispatcher {
   }
 
   select(dataIndex: number, additional = false) {
-    this.fire('selectionChanged', dataIndex);
-    //TODO
     var selected = this.data.toggleSelection(dataIndex, additional);
-    this.$node.selectAll('g.row[data-index="' + dataIndex + '"]').classed('selected', selected);
-    this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
+    this.$node.selectAll('g.row[data-index="' + dataIndex + '"], line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
+  }
+
+  drawSelection() {
+    var indices = this.data.getSelection();
+    if (indices.length === 0) {
+      this.$node.selectAll('g.row.selected, line.slope.selected').classed('selected', false);
+    } else {
+      var s = d3.set(indices);
+      this.$node.selectAll('g.row').classed('selected', (d) => s.has(String(d.d)));
+      this.$node.selectAll('line.slope').classed('selected', (d) => s.has(String(d.data_index)));
+    }
   }
 
   mouseOver(dataIndex:number, hover = true) {

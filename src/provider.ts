@@ -351,7 +351,7 @@ export class DataProvider extends utils.AEventDispatcher {
   }
 
   searchSelect(search: string|RegExp, col: model.Column) {
-    //TODO
+    //implemented by custom provider
   }
 
   /**
@@ -564,12 +564,22 @@ export class LocalDataProvider extends CommonDataProvider {
   stats(indices: number[], col: model.INumberColumn): Promise<model.IStatistics> {
     return Promise.resolve(computeStats(this.data, col.getNumber.bind(col), [0, 1]));
   }
+
+  searchSelect(search: string|RegExp, col: model.Column) {
+    const f = typeof search === 'string' ? (v: string) => v.indexOf(search) >= 0 : (v: string) => v.match(search) != null;
+    const indices = this.data.filter((row) => {
+      return f(col.getLabel(row));
+    }).map((row) => row._index);
+    this.setSelection(indices);
+  }
+
 }
 
 export interface IServerData {
   sort(desc:any) : Promise<number[]>;
   view(indices:number[]): Promise<any[]>;
   mappingSample(column: any) : Promise<number[]>;
+  search(search: string|RegExp, column: any): Promise<number[]>;
 }
 
 /**
@@ -623,5 +633,11 @@ export class RemoteDataProvider extends CommonDataProvider {
 
   mappingSample(col: model.Column) : Promise<number[]> {
     return this.server.mappingSample((<any>col.desc).column);
+  }
+
+  searchSelect(search: string|RegExp, col: model.Column) {
+    this.server.search(search, (<any>col.desc).column).then((indices) => {
+      this.setSelection(indices);
+    });
   }
 }

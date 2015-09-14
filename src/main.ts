@@ -89,7 +89,7 @@ export class LineUp extends utils_.AEventDispatcher {
       stacked: this.config.renderingOptions.stacked,
       actions: this.config.svgLayout.rowActions
     });
-    this.forward(this.body, 'selectionChanged', 'hoverChanged');
+    this.forward(this.body, 'hoverChanged');
     if(this.config.pool && this.config.manipulative) {
       this.addPool(new ui_.PoolRenderer(data, this.node, this.config));
     }
@@ -109,7 +109,7 @@ export class LineUp extends utils_.AEventDispatcher {
     }
   }
   createEventList() {
-    return super.createEventList().concat(['hoverChanged', 'selectionChanged']);
+    return super.createEventList().concat(['hoverChanged', 'selectionChanged', 'multiSelectionChanged']);
   }
 
   addPool(node: Element, config? : any): ui_.PoolRenderer;
@@ -158,14 +158,23 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 
   changeDataStorage(data: provider_.DataProvider, dump?: any) {
+    if (this.data) {
+      this.data.on('selectionChanged.main', null);
+    }
     this.data = data;
     if (dump) {
       this.data.restore(dump);
     }
+    this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
     this.header.changeDataStorage(data);
     this.body.changeDataStorage(data);
     this.pools.forEach((p) => p.changeDataStorage(data));
     this.update();
+  }
+
+  private triggerSelection(data_indices: number[]) {
+    this.fire('selectionChanged', data_indices.length > 0 ? data_indices[0] : -1);
+    this.fire('multiSelectionChanged', data_indices);
   }
 
   restore(dump: any) {

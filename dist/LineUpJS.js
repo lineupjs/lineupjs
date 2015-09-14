@@ -115,7 +115,7 @@ var LineUp = (function (_super) {
             stacked: this.config.renderingOptions.stacked,
             actions: this.config.svgLayout.rowActions
         });
-        this.forward(this.body, 'selectionChanged', 'hoverChanged');
+        this.forward(this.body, 'hoverChanged');
         if (this.config.pool && this.config.manipulative) {
             this.addPool(new ui_.PoolRenderer(data, this.node, this.config));
         }
@@ -132,7 +132,7 @@ var LineUp = (function (_super) {
         }
     }
     LineUp.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['hoverChanged', 'selectionChanged']);
+        return _super.prototype.createEventList.call(this).concat(['hoverChanged', 'selectionChanged', 'multiSelectionChanged']);
     };
     LineUp.prototype.addPool = function (pool_node, config) {
         if (config === void 0) { config = this.config; }
@@ -176,14 +176,22 @@ var LineUp = (function (_super) {
         return s;
     };
     LineUp.prototype.changeDataStorage = function (data, dump) {
+        if (this.data) {
+            this.data.on('selectionChanged.main', null);
+        }
         this.data = data;
         if (dump) {
             this.data.restore(dump);
         }
+        this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
         this.header.changeDataStorage(data);
         this.body.changeDataStorage(data);
         this.pools.forEach(function (p) { return p.changeDataStorage(data); });
         this.update();
+    };
+    LineUp.prototype.triggerSelection = function (data_indices) {
+        this.fire('selectionChanged', data_indices.length > 0 ? data_indices[0] : -1);
+        this.fire('multiSelectionChanged', data_indices);
     };
     LineUp.prototype.restore = function (dump) {
         this.changeDataStorage(this.data, dump);
@@ -1968,6 +1976,13 @@ var LocalDataProvider = (function (_super) {
     LocalDataProvider.prototype.stats = function (indices, col) {
         return Promise.resolve(computeStats(this.data, col.getNumber.bind(col), [0, 1]));
     };
+    LocalDataProvider.prototype.searchSelect = function (search, col) {
+        var f = typeof search === 'string' ? function (v) { return v.indexOf(search) >= 0; } : function (v) { return v.match(search) != null; };
+        var indices = this.data.filter(function (row) {
+            return f(col.getLabel(row));
+        }).map(function (row) { return row._index; });
+        this.setSelection(indices);
+    };
     return LocalDataProvider;
 })(CommonDataProvider);
 exports.LocalDataProvider = LocalDataProvider;
@@ -2011,6 +2026,12 @@ var RemoteDataProvider = (function (_super) {
     };
     RemoteDataProvider.prototype.mappingSample = function (col) {
         return this.server.mappingSample(col.desc.column);
+    };
+    RemoteDataProvider.prototype.searchSelect = function (search, col) {
+        var _this = this;
+        this.server.search(search, col.desc.column).then(function (indices) {
+            _this.setSelection(indices);
+        });
     };
     return RemoteDataProvider;
 })(CommonDataProvider);
@@ -2798,7 +2819,7 @@ var BodyRenderer = (function (_super) {
         this.changeDataStorage(data);
     }
     BodyRenderer.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['hoverChanged', 'selectionChanged']);
+        return _super.prototype.createEventList.call(this).concat(['hoverChanged']);
     };
     Object.defineProperty(BodyRenderer.prototype, "node", {
         get: function () {
@@ -2812,10 +2833,11 @@ var BodyRenderer = (function (_super) {
     };
     BodyRenderer.prototype.changeDataStorage = function (data) {
         if (this.data) {
-            this.data.on('dirtyValues.bodyRenderer', null);
+            this.data.on(['dirtyValues.bodyRenderer', 'selectionChanged.bodyRenderer'], null);
         }
         this.data = data;
         data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this), 1));
+        data.on('selectionChanged.bodyRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
     };
     BodyRenderer.prototype.createContext = function (index_shift) {
         var options = this.options;
@@ -2974,22 +2996,31 @@ var BodyRenderer = (function (_super) {
         });
         $rows.attr({
             'data-index': function (d) { return d.d; }
-        });
+        }).classed('selected', function (d) { return _this.data.isSelected(d.d); });
         $rows.select('rect').attr({
             y: function (d) { return context.cellY(d.i); },
             height: function (d) { return context.rowHeight(d.i); },
             width: function (d, i, j) { return shifts[j].width; },
-            'class': function (d, i) { return 'bg ' + (i % 2 === 0 ? 'even' : 'odd') + (_this.data.isSelected(d.i) ? ' selected' : ''); }
+            'class': function (d, i) { return 'bg ' + (i % 2 === 0 ? 'even' : 'odd'); }
         });
         $rows.exit().remove();
         $rankings.exit().remove();
     };
     BodyRenderer.prototype.select = function (dataIndex, additional) {
         if (additional === void 0) { additional = false; }
-        this.fire('selectionChanged', dataIndex);
         var selected = this.data.toggleSelection(dataIndex, additional);
-        this.$node.selectAll('g.row[data-index="' + dataIndex + '"]').classed('selected', selected);
-        this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
+        this.$node.selectAll('g.row[data-index="' + dataIndex + '"], line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
+    };
+    BodyRenderer.prototype.drawSelection = function () {
+        var indices = this.data.getSelection();
+        if (indices.length === 0) {
+            this.$node.selectAll('g.row.selected, line.slope.selected').classed('selected', false);
+        }
+        else {
+            var s = d3.set(indices);
+            this.$node.selectAll('g.row').classed('selected', function (d) { return s.has(String(d.d)); });
+            this.$node.selectAll('line.slope').classed('selected', function (d) { return s.has(String(d.data_index)); });
+        }
     };
     BodyRenderer.prototype.mouseOver = function (dataIndex, hover) {
         if (hover === void 0) { hover = true; }
