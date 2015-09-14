@@ -471,6 +471,9 @@ var Column = (function (_super) {
         this.id = fixCSS(id);
         this.label = this.desc.label || this.id;
     }
+    Column.prototype.assignNewId = function (idGenerator) {
+        this.id = fixCSS(idGenerator());
+    };
     Column.prototype.init = function (callback) {
         return Promise.resolve(true);
     };
@@ -853,15 +856,37 @@ var AnnotateColumn = (function (_super) {
     __extends(AnnotateColumn, _super);
     function AnnotateColumn(id, desc) {
         _super.call(this, id, desc);
-        this.setter = desc.setter || (function () { return false; });
+        this.annotations = d3.map();
     }
+    AnnotateColumn.prototype.getValue = function (row) {
+        var index = String(row._index);
+        if (this.annotations.has(index)) {
+            return this.annotations.get(index);
+        }
+        return _super.prototype.getValue.call(this, row);
+    };
+    AnnotateColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.annotations = {};
+        this.annotations.forEach(function (k, v) {
+            r.annotations[k] = v;
+        });
+        return r;
+    };
+    AnnotateColumn.prototype.restore = function (dump, factory) {
+        var _this = this;
+        _super.prototype.restore.call(this, dump, factory);
+        if (dump.annotations) {
+            Object.keys(dump.annotations).forEach(function (k) {
+                _this.annotations.set(k, dump.annotations[k]);
+            });
+        }
+    };
     AnnotateColumn.prototype.setValue = function (row, value) {
         var old = this.getValue(row);
-        if (this.setter(row, this.id, this.desc, value)) {
-            this.fire(['dirtyValues', 'dirty'], value, old);
-            return true;
-        }
-        return false;
+        this.annotations.set(String(row._index), value);
+        this.fire(['dirtyValues', 'dirty'], value, old);
+        return true;
     };
     return AnnotateColumn;
 })(StringColumn);
@@ -1077,6 +1102,10 @@ var StackColumn = (function (_super) {
     };
     StackColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat(['collapseChanged']);
+    };
+    StackColumn.prototype.assignNewId = function (idGenerator) {
+        _super.prototype.assignNewId.call(this, idGenerator);
+        this.children_.forEach(function (c) { return c.assignNewId(idGenerator); });
     };
     Object.defineProperty(StackColumn.prototype, "children", {
         get: function () {
@@ -1297,6 +1326,10 @@ var RankColumn = (function (_super) {
     }
     RankColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
+    };
+    RankColumn.prototype.assignNewId = function (idGenerator) {
+        _super.prototype.assignNewId.call(this, idGenerator);
+        this.columns_.forEach(function (c) { return c.assignNewId(idGenerator); });
     };
     RankColumn.prototype.setOrder = function (order) {
         this.fire(['orderChanged', 'dirtyValues', 'dirty'], this.order, this.order = order);
@@ -1620,8 +1653,9 @@ var DataProvider = (function (_super) {
         var _this = this;
         var create = function (d) {
             var type = _this.columnTypes[d.desc.type];
-            var c = new type(_this.nextId(), d.desc);
+            var c = new type('', d.desc);
             c.restore(d, create);
+            c.assignNewId(_this.nextId.bind(_this));
             return c;
         };
         return create(dump);
@@ -1689,6 +1723,10 @@ var DataProvider = (function (_super) {
                 _this.deriveRanking(dump.layout[key]);
             });
         }
+        var idGenerator = this.nextId.bind(this);
+        this.rankings_.forEach(function (r) {
+            r.children.forEach(function (c) { return c.assignNewId(idGenerator); });
+        });
     };
     DataProvider.prototype.findDesc = function (ref) {
         return null;
@@ -1832,14 +1870,9 @@ var CommonDataProvider = (function (_super) {
         this.columns = columns;
         this.rankingIndex = 0;
         this.rowGetter = function (row, id, desc) { return row[desc.column]; };
-        this.rowSetter = function (row, id, desc, value) {
-            row[desc.column] = value;
-            return true;
-        };
         this.columns = columns.slice();
         columns.forEach(function (d) {
             d.accessor = _this.rowGetter;
-            d.setter = _this.rowSetter;
             d.label = d.label || d.column;
         });
     }
@@ -1849,7 +1882,6 @@ var CommonDataProvider = (function (_super) {
     CommonDataProvider.prototype.pushDesc = function (column) {
         var d = column;
         d.accessor = this.rowGetter;
-        d.setter = this.rowSetter;
         d.label = column.label || d.column;
         this.columns.push(column);
         this.fire('addDesc', d);
@@ -2214,7 +2246,7 @@ var AnnotateCellRenderer = (function (_super) {
         }).on('change', function () {
             var text = this.value;
             col.setValue(row, text);
-        });
+        }).on('click', function () { return d3.event.stopPropagation(); });
     };
     AnnotateCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
         this.findRow($col, index).attr('display', null);
@@ -2823,7 +2855,7 @@ var BodyRenderer = (function (_super) {
         }
         var textClipPath = $base.selectAll(function () {
             return this.getElementsByTagName('clipPath');
-        }).data(r, function (d) { return d.id; });
+        }).data(r);
         textClipPath.enter().append('clipPath')
             .attr('id', function (d) { return context.idPrefix + 'clipCol' + d.id; })
             .append('rect').attr({

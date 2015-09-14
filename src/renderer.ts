@@ -328,7 +328,7 @@ class AnnotateCellRenderer extends DefaultCellRenderer {
     }).on('change', function() {
       var text = this.value;
       col.setValue(row, text);
-    });
+    }).on('click', () => d3.event.stopPropagation() );
   }
 
   mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {

@@ -475,7 +475,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
     //there is a bug in webkit which present camelCase selectors
     var textClipPath = $base.selectAll(function () {
       return this.getElementsByTagName('clipPath');
-    }).data(r, (d) => d.id);
+    }).data(r);
     textClipPath.enter().append('clipPath')
       .attr('id', (d) => context.idPrefix+'clipCol'+d.id)
       .append('rect').attr({

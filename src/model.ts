@@ -57,7 +57,7 @@ export class Column extends utils.AEventDispatcher {
   static DEFAULT_COLOR = '#C1C1C1';
   static FLAT_ALL_COLUMNS = -1;
 
-  public id:string;
+  id:string;
 
   private width_:number = 100;
 
@@ -69,6 +69,10 @@ export class Column extends utils.AEventDispatcher {
     super();
     this.id = fixCSS(id);
     this.label = this.desc.label || this.id;
+  }
+
+  assignNewId(idGenerator: () => string) {
+    this.id = fixCSS(idGenerator());
   }
 
   init(callback : (desc: IColumnDesc) => Promise<IStatistics>) : Promise<boolean> {
@@ -508,20 +512,44 @@ export class LinkColumn extends StringColumn {
 }
 
 export class AnnotateColumn extends StringColumn {
-  private setter: (row: any, id: string, desc: any, value: string) => boolean;
+  private annotations = d3.map<string>();
 
   constructor(id:string, desc:any) {
     super(id, desc);
-    this.setter = desc.setter || (() => false);
+
+  }
+
+  getValue(row: any) {
+    var index = String(row._index);
+    if (this.annotations.has(index)) {
+      return this.annotations.get(index);
+    }
+    return super.getValue(row);
+  }
+
+  dump(toDescRef: (desc: any) => any) : any {
+    var r = super.dump(toDescRef);
+    r.annotations = {};
+    this.annotations.forEach((k,v) => {
+      r.annotations[k] = v;
+    });
+    return r;
+  }
+
+  restore(dump: any, factory : (dump: any) => Column) {
+    super.restore(dump, factory);
+    if (dump.annotations) {
+      Object.keys(dump.annotations).forEach((k) => {
+        this.annotations.set(k, dump.annotations[k]);
+      });
+    }
   }
 
   setValue(row:any, value: string) {
     var old = this.getValue(row);
-    if (this.setter(row, this.id, this.desc, value)) {
-      this.fire(['dirtyValues','dirty'], value, old);
-      return true;
-    }
-    return false;
+    this.annotations.set(String(row._index), value);
+    this.fire(['dirtyValues','dirty'], value, old);
+    return true;
   }
 }
 
@@ -756,6 +784,11 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
 
   createEventList() {
     return super.createEventList().concat(['collapseChanged']);
+  }
+
+  assignNewId(idGenerator: () => string) {
+    super.assignNewId(idGenerator);
+    this.children_.forEach((c) => c.assignNewId(idGenerator));
   }
 
   get children() {
@@ -1023,6 +1056,11 @@ export class RankColumn extends ValueColumn<number> {
 
   createEventList() {
     return super.createEventList().concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
+  }
+
+  assignNewId(idGenerator: () => string) {
+    super.assignNewId(idGenerator);
+    this.columns_.forEach((c) => c.assignNewId(idGenerator));
   }
 
   setOrder(order: number[]) {

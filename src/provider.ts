@@ -142,8 +142,9 @@ export class DataProvider extends utils.AEventDispatcher {
   restoreColumn(dump: any) {
     var create = (d: any) => {
       var type = this.columnTypes[d.desc.type];
-      var c  = new type(this.nextId(), d.desc);
+      var c  = new type('', d.desc);
       c.restore(d, create);
+      c.assignNewId(this.nextId.bind(this));
       return c;
     };
     return create(dump);
@@ -222,6 +223,11 @@ export class DataProvider extends utils.AEventDispatcher {
         this.deriveRanking(dump.layout[key]);
       });
     }
+
+    var idGenerator = this.nextId.bind(this);
+    this.rankings_.forEach((r) => {
+      r.children.forEach((c) => c.assignNewId(idGenerator));
+    });
   }
 
   findDesc(ref: string) {
@@ -432,10 +438,6 @@ export class CommonDataProvider extends DataProvider {
   private rankingIndex = 0;
   //generic accessor of the data item
   private rowGetter = (row:any, id:string, desc:any) => row[desc.column];
-  private rowSetter = (row:any, id:string, desc:any, value: any) => {
-    row[desc.column] = value;
-    return true;
-  };
 
   constructor(private columns:model.IColumnDesc[] = []) {
     super();
@@ -443,7 +445,6 @@ export class CommonDataProvider extends DataProvider {
     //generate the accessor
     columns.forEach((d:any) => {
       d.accessor = this.rowGetter;
-      d.setter = this.rowSetter;
       d.label = d.label || d.column;
     });
   }
@@ -455,7 +456,6 @@ export class CommonDataProvider extends DataProvider {
   pushDesc(column: model.IColumnDesc) {
     var d : any = column;
     d.accessor = this.rowGetter;
-    d.setter = this.rowSetter;
     d.label = column.label || d.column;
     this.columns.push(column);
     this.fire('addDesc', d);
