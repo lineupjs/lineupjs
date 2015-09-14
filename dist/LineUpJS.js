@@ -478,6 +478,7 @@ var Column = (function (_super) {
         this.parent = null;
         this.id = fixCSS(id);
         this.label = this.desc.label || this.id;
+        this.color = this.desc.color || Column.DEFAULT_COLOR;
     }
     Column.prototype.assignNewId = function (idGenerator) {
         this.id = fixCSS(idGenerator());
@@ -513,19 +514,16 @@ var Column = (function (_super) {
     Column.prototype.setWidthImpl = function (value) {
         this.width_ = value;
     };
-    Column.prototype.setLabel = function (value) {
-        if (value === this.label) {
+    Column.prototype.setMetaData = function (value, color) {
+        if (color === void 0) { color = this.color; }
+        if (value === this.label && this.color === color) {
             return;
         }
-        this.fire(['labelChanged', 'dirtyHeader', 'dirty'], this.label, this.label = value);
+        this.fire(['labelChanged', 'dirtyHeader', 'dirty'], { label: this.label, color: this.color }, {
+            label: this.label = value,
+            color: this.color = color
+        });
     };
-    Object.defineProperty(Column.prototype, "color", {
-        get: function () {
-            return this.desc.color || Column.DEFAULT_COLOR;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Column.prototype.sortByMe = function (ascending) {
         if (ascending === void 0) { ascending = false; }
         var r = this.findMyRanker();
@@ -568,11 +566,15 @@ var Column = (function (_super) {
         if (this.label !== (this.desc.label || this.id)) {
             r.label = this.label;
         }
+        if (this.color !== (this.desc.color || Column.DEFAULT_COLOR)) {
+            r.color = this.color;
+        }
         return r;
     };
     Column.prototype.restore = function (dump, factory) {
         this.width_ = dump.width || this.width_;
         this.label = dump.label || this.label;
+        this.color = dump.color || this.color;
     };
     Column.prototype.getLabel = function (row) {
         return '' + this.getValue(row);
@@ -2543,14 +2545,16 @@ var PoolRenderer = (function () {
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(data.toDescRef(d)));
         }).style({
-            'background-color': function (d) { return d.color || model.Column.DEFAULT_COLOR; },
             width: this.options.elemWidth + 'px',
             height: this.options.elemHeight + 'px'
         });
         $headers_enter.append('span').classed('label', true).text(function (d) { return d.label; });
-        $headers.style('transform', function (d, i) {
-            var pos = _this.layout(i);
-            return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
+        $headers.style({
+            'transform': function (d, i) {
+                var pos = _this.layout(i);
+                return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
+            },
+            'background-color': function (d) { return d.color || model.Column.DEFAULT_COLOR; }
         });
         $headers.attr({
             title: function (d) { return d.label; }
@@ -2725,9 +2729,7 @@ var HeaderRenderer = (function () {
         var $headers_enter = $headers.enter().append('div').attr({
             'class': clazz
         });
-        var $header_enter_div = $headers_enter.append('div').classed('lu-label', true).style({
-            'background-color': function (d) { return d.color; }
-        }).on('click', function (d) {
+        var $header_enter_div = $headers_enter.append('div').classed('lu-label', true).on('click', function (d) {
             if (_this.options.manipulative && !d3.event.defaultPrevented) {
                 d.toggleMySorting();
             }
@@ -2752,7 +2754,8 @@ var HeaderRenderer = (function () {
         }
         $headers.style({
             width: function (d, i) { return (shifts[i].width + _this.options.columnPadding) + 'px'; },
-            left: function (d, i) { return shifts[i].offset + 'px'; }
+            left: function (d, i) { return shifts[i].offset + 'px'; },
+            'background-color': function (d) { return d.color; }
         });
         $headers.attr({
             title: function (d) { return d.label; }
@@ -3142,10 +3145,11 @@ function openRenameDialog(column, $header) {
     }).style({
         left: pos.left + 'px',
         top: pos.top + 'px'
-    }).html(dialogForm('Rename Column', '<input type="text" size="15" value="' + column.label + '" required="required"><br>'));
+    }).html(dialogForm('Rename Column', '<input type="text" size="15" value="' + column.label + '" required="required"><br><input type="color" size="15" value="' + column.color + '" required="required"><br>'));
     popup.select('.ok').on('click', function () {
-        var newValue = popup.select('input').property('value');
-        column.setLabel(newValue);
+        var newValue = popup.select('input[type="text"]').property('value');
+        var newColor = popup.select('input[type="color"]').property('value');
+        column.setMetaData(newValue, newColor);
         popup.remove();
     });
     popup.select('.cancel').on('click', function () {

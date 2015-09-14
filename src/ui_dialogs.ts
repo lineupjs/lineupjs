@@ -24,11 +24,12 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
       left: pos.left + 'px',
       top: pos.top + 'px'
 
-    }).html(dialogForm('Rename Column', '<input type="text" size="15" value="' + column.label + '" required="required"><br>'));
+    }).html(dialogForm('Rename Column', '<input type="text" size="15" value="' + column.label + '" required="required"><br><input type="color" size="15" value="' + column.color + '" required="required"><br>'));
 
   popup.select('.ok').on('click', function () {
-    var newValue = popup.select('input').property('value');
-    column.setLabel(newValue);
+    var newValue = popup.select('input[type="text"]').property('value');
+    var newColor = popup.select('input[type="color"]').property('value');
+    column.setMetaData(newValue, newColor);
     popup.remove();
   });
 

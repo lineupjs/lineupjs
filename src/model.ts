@@ -64,11 +64,13 @@ export class Column extends utils.AEventDispatcher {
   parent: IColumnParent = null;
 
   label: string;
+  color: string;
 
   constructor(id:string, public desc:IColumnDesc) {
     super();
     this.id = fixCSS(id);
     this.label = this.desc.label || this.id;
+    this.color = (<any>this.desc).color || Column.DEFAULT_COLOR;
   }
 
   assignNewId(idGenerator: () => string) {
@@ -107,15 +109,14 @@ export class Column extends utils.AEventDispatcher {
     this.width_ = value;
   }
 
-  setLabel(value: string) {
-    if (value === this.label) {
+  setMetaData(value: string, color: string = this.color) {
+    if (value === this.label && this.color === color) {
       return;
     }
-    this.fire(['labelChanged', 'dirtyHeader','dirty'], this.label, this.label = value);
-  }
-
-  get color() {
-    return (<any>this.desc).color || Column.DEFAULT_COLOR;
+    this.fire(['labelChanged', 'dirtyHeader','dirty'], { label: this.label, color: this.color }, {
+      label: this.label = value,
+      color: this.color = color
+    });
   }
 
   sortByMe(ascending = false) {
@@ -161,12 +162,16 @@ export class Column extends utils.AEventDispatcher {
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
     }
+    if (this.color !== ((<any>this.desc).color || Column.DEFAULT_COLOR)) {
+      r.color = this.color;
+    }
     return r;
   }
 
   restore(dump: any, factory : (dump: any) => Column) {
     this.width_ = dump.width || this.width_;
     this.label = dump.label || this.label;
+    this.color = dump.color || this.color;
   }
 
   /**

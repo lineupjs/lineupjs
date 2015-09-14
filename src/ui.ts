@@ -102,14 +102,16 @@ export class PoolRenderer {
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(data.toDescRef(d)));
     }).style({
-      'background-color': (d) => (<any>d).color || model.Column.DEFAULT_COLOR,
       width: this.options.elemWidth+'px',
       height: this.options.elemHeight+'px'
     });
     $headers_enter.append('span').classed('label',true).text((d) => d.label);
-    $headers.style('transform', (d, i) => {
-      var pos = this.layout(i);
-      return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
+    $headers.style({
+      'transform': (d, i) => {
+        var pos = this.layout(i);
+        return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
+      },
+      'background-color': (d) => (<any>d).color || model.Column.DEFAULT_COLOR
     });
     $headers.attr({
       title: (d) => d.label
@@ -304,9 +306,7 @@ export class HeaderRenderer {
     var $headers_enter = $headers.enter().append('div').attr({
       'class': clazz
     });
-    var $header_enter_div = $headers_enter.append('div').classed('lu-label', true).style({
-      'background-color': (d) => d.color
-    }).on('click', (d) => {
+    var $header_enter_div = $headers_enter.append('div').classed('lu-label', true).on('click', (d) => {
         if (this.options.manipulative && !d3.event.defaultPrevented) {
           d.toggleMySorting();
         }
@@ -332,7 +332,8 @@ export class HeaderRenderer {
     }
     $headers.style({
       width: (d, i) => (shifts[i].width+this.options.columnPadding)+'px',
-      left: (d, i) => shifts[i].offset+'px'
+      left: (d, i) => shifts[i].offset+'px',
+      'background-color': (d) => d.color
     });
     $headers.attr({
       title: (d) => d.label
