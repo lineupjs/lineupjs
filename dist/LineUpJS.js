@@ -3153,7 +3153,7 @@ var BodyRenderer = (function (_super) {
         //there is a bug in webkit which present camelCase selectors
         var textClipPath = $base.selectAll(function () {
             return this.getElementsByTagName('clipPath');
-        }).data(r);
+        }).data(r, function (d) { return d.id; });
         textClipPath.enter().append('clipPath')
             .attr('id', function (d) { return context.idPrefix + 'clipCol' + d.id; })
             .append('rect').attr({
