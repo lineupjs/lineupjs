@@ -276,6 +276,10 @@ $lu_drag_over: #979797;
       &:hover {
         color: darkblue;
       }
+
+      &.filtered {
+        color: darkblue;
+      }
     }
   }
 

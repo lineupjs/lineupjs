@@ -56,6 +56,17 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
 export function openSearchDialog(column:model.Column, $header:d3.Selection<model.Column>, provider: provider.DataProvider) {
   var popup = makePopup($header,'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
 
+  popup.select('input[type="text"]').on('input', function() {
+    var search : any = (<HTMLInputElement>d3.event.target).value;
+    if (search.length >= 3) {
+      var isRegex = popup.select('input[type="text"]').property('checked');
+      if (isRegex) {
+        search = new RegExp(search);
+      }
+      provider.searchSelect(search, column);
+    }
+  });
+
   popup.select('.ok').on('click', function () {
     var search = popup.select('input[type="text"]').property('value');
     var isRegex = popup.select('input[type="text"]').property('checked');
@@ -76,7 +87,6 @@ export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Sel
     children = column.children.map((d, i) => ({ col: d, weight: weights[i] * 100} ));
 
   var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
-  var pos = utils.offset($header.node());
 
   var $popup = makePopup($header, 'Edit Weights', '<table></table>');
 
@@ -182,6 +192,13 @@ function openStringFilter(column: model.StringColumn, $header: d3.Selection<mode
     $header.select('i.fa-filter').classed('filtered', (filter && filter.length > 0));
     column.setFilter(filter);
   }
+
+  $popup.select('input[type="text"]').on('input', function() {
+    var search : any = (<HTMLInputElement>d3.event.target).value;
+    if (search.length >= 3) {
+      updateData(search);
+    }
+  });
 
   $popup.select('.cancel').on('click', function () {
     $popup.select('input').property('value', bak);

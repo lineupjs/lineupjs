@@ -166,6 +166,8 @@
     padding: 1px; }
     .lu div.lu-header div.toolbar i:hover, .lu-pool div.lu-header div.toolbar i:hover {
       color: darkblue; }
+    .lu div.lu-header div.toolbar i.filtered, .lu-pool div.lu-header div.toolbar i.filtered {
+      color: darkblue; }
   .lu svg.lu-body, .lu-pool svg.lu-body {
     foreignObject-padding: 0;
     foreignObject-margin: 0; }
@@ -175,5 +177,3 @@
       padding: 0;
       margin: 0;
       font-size: 9pt; }
-
-/*# sourceMappingURL=style.css.map */
