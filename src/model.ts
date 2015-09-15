@@ -821,12 +821,13 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
   }
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
+    var self = null;
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       var w = this.getWidth();
       if (!this.collapsed) {
         w += (this.children_.length-1)*padding;
       }
-      r.push({col: this, offset: offset, width: w});
+      r.push(self = {col: this, offset: offset, width: w});
       if (levelsToGo === 0) {
         return w;
       }
@@ -836,6 +837,9 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     this.children_.forEach((c) => {
       acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
     });
+    if (self) { //nesting my even increase my width
+      self.width = acc - offset - padding;
+    }
     return acc - offset - padding;
   }
 
@@ -861,7 +865,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
       return null;
     }
     if (col instanceof StackColumn) {
-      //col.collapsed = true;
+      col.collapsed = true;
     }
     if (!isNaN(weight)) {
       col.setWidth((weight/(1-weight)*this.getWidth()));

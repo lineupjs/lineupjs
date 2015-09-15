@@ -373,7 +373,7 @@ export class HeaderRenderer {
       col.flatten(s_shifts, 0, 1, that.options.columnPadding);
 
       var s_columns = s_shifts.map((d) => d.col);
-      that.renderColumns(s_columns, s_shifts, d3.select(this), clazz+'_i');
+      that.renderColumns(s_columns, s_shifts, d3.select(this), clazz+(clazz.substr(clazz.length-2) !== '_i' ? '_i' : ''));
     }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref','application/caleydo-lineup-column-number'], (data, d: model.StackColumn, copy) => {
       var col: model.Column = null;
       if ('application/caleydo-lineup-column-number-ref' in data) {

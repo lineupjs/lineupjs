@@ -455,7 +455,7 @@ class StackCellRenderer extends DefaultCellRenderer {
     });
     $children.attr({
       'class': (d) => 'component ' + d.desc.type,
-      'data-index': (d,i) => i
+      'data-stack': (d,i) => i
     }).each(function (d, i) {
       if (context.showStacked(col)) {
         var preChildren = children.slice(0, i);
@@ -480,14 +480,18 @@ class StackCellRenderer extends DefaultCellRenderer {
   }
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.StackColumn, row:any, index:number, context:IRenderContext) {
     this.renderImpl($row, col, context, ($row_i, col, i, ccontext) => {
-      var $col_i = $col.selectAll('g.component[data-index="'+i+'"]');
-      ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
+      var $col_i = $col.selectAll('g.component[data-stack="'+i+'"]');
+      if (!$col_i.empty()) {
+        ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
+      }
     }, (index) => row, false);
   }
   mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.StackColumn, row:any, index:number, context:IRenderContext) {
     this.renderImpl($row, col, context, ($row_i, d, i, ccontext) => {
-      var $col_i = $col.selectAll('g.component[data-index="'+i+'"]');
-      ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
+      var $col_i = $col.selectAll('g.component[data-stack="'+i+'"]');
+      if (!$col_i.empty()) {
+        ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
+      }
     }, (index) => row, false);
     $row.selectAll('*').remove();
   }

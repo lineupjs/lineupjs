@@ -1156,12 +1156,13 @@ var StackColumn = (function (_super) {
     StackColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
         if (levelsToGo === void 0) { levelsToGo = 0; }
         if (padding === void 0) { padding = 0; }
+        var self = null;
         if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
             var w = this.getWidth();
             if (!this.collapsed) {
                 w += (this.children_.length - 1) * padding;
             }
-            r.push({ col: this, offset: offset, width: w });
+            r.push(self = { col: this, offset: offset, width: w });
             if (levelsToGo === 0) {
                 return w;
             }
@@ -1170,6 +1171,9 @@ var StackColumn = (function (_super) {
         this.children_.forEach(function (c) {
             acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
         });
+        if (self) {
+            self.width = acc - offset - padding;
+        }
         return acc - offset - padding;
     };
     StackColumn.prototype.dump = function (toDescRef) {
@@ -1194,6 +1198,7 @@ var StackColumn = (function (_super) {
             return null;
         }
         if (col instanceof StackColumn) {
+            col.collapsed = true;
         }
         if (!isNaN(weight)) {
             col.setWidth((weight / (1 - weight) * this.getWidth()));
@@ -2390,7 +2395,7 @@ var StackCellRenderer = (function (_super) {
         });
         $children.attr({
             'class': function (d) { return 'component ' + d.desc.type; },
-            'data-index': function (d, i) { return i; }
+            'data-stack': function (d, i) { return i; }
         }).each(function (d, i) {
             if (context.showStacked(col)) {
                 var preChildren = children.slice(0, i);
@@ -2413,14 +2418,18 @@ var StackCellRenderer = (function (_super) {
     };
     StackCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
         this.renderImpl($row, col, context, function ($row_i, col, i, ccontext) {
-            var $col_i = $col.selectAll('g.component[data-index="' + i + '"]');
-            ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
+            var $col_i = $col.selectAll('g.component[data-stack="' + i + '"]');
+            if (!$col_i.empty()) {
+                ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
+            }
         }, function (index) { return row; }, false);
     };
     StackCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
         this.renderImpl($row, col, context, function ($row_i, d, i, ccontext) {
-            var $col_i = $col.selectAll('g.component[data-index="' + i + '"]');
-            ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
+            var $col_i = $col.selectAll('g.component[data-stack="' + i + '"]');
+            if (!$col_i.empty()) {
+                ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
+            }
         }, function (index) { return row; }, false);
         $row.selectAll('*').remove();
     };
@@ -2797,7 +2806,7 @@ var HeaderRenderer = (function () {
             var s_shifts = [];
             col.flatten(s_shifts, 0, 1, that.options.columnPadding);
             var s_columns = s_shifts.map(function (d) { return d.col; });
-            that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + '_i');
+            that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
         }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], function (data, d, copy) {
             var col = null;
             if ('application/caleydo-lineup-column-number-ref' in data) {

@@ -131,7 +131,8 @@
     .lu div.header:hover > div.toolbar, .lu div.header_i:hover > div.toolbar, .lu-pool div.header:hover > div.toolbar, .lu-pool div.header_i:hover > div.toolbar {
       display: block; }
   .lu div.header_i, .lu-pool div.header_i {
-    top: 50%; }
+    top: 50%;
+    height: 50%; }
   .lu div.lu-header div.toolbar, .lu-pool div.lu-header div.toolbar {
     display: none;
     position: absolute;
