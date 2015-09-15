@@ -269,8 +269,8 @@ export interface INumberColumn {
   getNumber(row: any): number;
 }
 
-export function isNumberColumn(col: Column) {
-  return typeof (<any>col).getNumber === 'function';
+export function isNumberColumn(col: Column|IColumnDesc) {
+  return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/)));
 }
 
 export class NumberColumn extends ValueColumn<number> implements INumberColumn {

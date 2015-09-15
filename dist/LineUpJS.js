@@ -717,7 +717,7 @@ var DummyColumn = (function (_super) {
 })(Column);
 exports.DummyColumn = DummyColumn;
 function isNumberColumn(col) {
-    return typeof col.getNumber === 'function';
+    return (col instanceof Column && typeof col.getNumber === 'function' || (!(col instanceof Column) && col.type.match(/(number|stack|ordinal)/)));
 }
 exports.isNumberColumn = isNumberColumn;
 var NumberColumn = (function (_super) {
@@ -2806,6 +2806,9 @@ var PoolRenderer = (function () {
             e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(data.toDescRef(d)));
+            if (model.isNumberColumn(d)) {
+                e.dataTransfer.setData('application/caleydo-lineup-column-number', JSON.stringify(data.toDescRef(d)));
+            }
         }).style({
             width: this.options.elemWidth + 'px',
             height: this.options.elemHeight + 'px'
@@ -3017,7 +3020,12 @@ var HeaderRenderer = (function () {
             e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
             e.dataTransfer.setData('text/plain', d.label);
             e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
-            e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(_this.data.toDescRef(d.desc)));
+            var ref = JSON.stringify(_this.data.toDescRef(d.desc));
+            e.dataTransfer.setData('application/caleydo-lineup-column', ref);
+            if (model.isNumberColumn(d)) {
+                e.dataTransfer.setData('application/caleydo-lineup-column-number', ref);
+                e.dataTransfer.setData('application/caleydo-lineup-column-number-ref', d.id);
+            }
         });
         $header_enter_div.append('i').attr('class', 'fa fa sort_indicator');
         $header_enter_div.append('span').classed('lu-label', true).attr({
@@ -3052,10 +3060,10 @@ var HeaderRenderer = (function () {
             col.flatten(s_shifts, 0, 1, that.options.columnPadding);
             var s_columns = s_shifts.map(function (d) { return d.col; });
             that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + '_i');
-        }).call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], function (data, d, copy) {
+        }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], function (data, d, copy) {
             var col = null;
-            if ('application/caleydo-lineup-column-ref' in data) {
-                var id = data['application/caleydo-lineup-column-ref'];
+            if ('application/caleydo-lineup-column-number-ref' in data) {
+                var id = data['application/caleydo-lineup-column-number-ref'];
                 col = _this.data.find(id);
                 if (copy) {
                     col = _this.data.clone(col);
@@ -3065,7 +3073,7 @@ var HeaderRenderer = (function () {
                 }
             }
             else {
-                var desc = JSON.parse(data['application/caleydo-lineup-column']);
+                var desc = JSON.parse(data['application/caleydo-lineup-column-number']);
                 col = _this.data.create(_this.data.fromDescRef(desc));
             }
             return d.push(col);
@@ -3984,14 +3992,16 @@ function dropAble(mimeTypes, onDrop) {
             var e = d3.event;
             //var xy = d3.mouse($node.node());
             if (hasDnDType(e, mimeTypes)) {
+                d3.select(this).classed('drag_over', true);
                 return false;
             }
-            d3.select(this).classed('drag_over', true);
+            d3.select(this).classed('drag_over', false);
         }).on('dragover', function () {
             var e = d3.event;
             if (hasDnDType(e, mimeTypes)) {
                 e.preventDefault();
                 updateDropEffect(e);
+                d3.select(this).classed('drag_over', true);
                 return false;
             }
         }).on('dragleave', function () {
@@ -4000,6 +4010,7 @@ function dropAble(mimeTypes, onDrop) {
         }).on('drop', function (d) {
             var e = d3.event;
             e.preventDefault();
+            d3.select(this).classed('drag_over', false);
             //var xy = d3.mouse($node.node());
             if (hasDnDType(e, mimeTypes)) {
                 var data = {};

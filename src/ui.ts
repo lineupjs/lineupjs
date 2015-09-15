@@ -101,6 +101,9 @@ export class PoolRenderer {
       e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(data.toDescRef(d)));
+      if (model.isNumberColumn(d)) {
+        e.dataTransfer.setData('application/caleydo-lineup-column-number', JSON.stringify(data.toDescRef(d)));
+      }
     }).style({
       width: this.options.elemWidth+'px',
       height: this.options.elemHeight+'px'
@@ -321,7 +324,12 @@ export class HeaderRenderer {
       e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
-      e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(this.data.toDescRef(d.desc)));
+      var ref = JSON.stringify(this.data.toDescRef(d.desc));
+      e.dataTransfer.setData('application/caleydo-lineup-column', ref);
+      if (model.isNumberColumn(d)) {
+        e.dataTransfer.setData('application/caleydo-lineup-column-number', ref);
+        e.dataTransfer.setData('application/caleydo-lineup-column-number-ref', d.id);
+      }
     });
     $header_enter_div.append('i').attr('class', 'fa fa sort_indicator');
     $header_enter_div.append('span').classed('lu-label',true).attr({
@@ -359,10 +367,10 @@ export class HeaderRenderer {
 
       var s_columns = s_shifts.map((d) => d.col);
       that.renderColumns(s_columns, s_shifts, d3.select(this), clazz+'_i');
-    }).call(utils.dropAble(['application/caleydo-lineup-column-ref','application/caleydo-lineup-column'], (data, d: model.StackColumn, copy) => {
+    }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref','application/caleydo-lineup-column-number'], (data, d: model.StackColumn, copy) => {
       var col: model.Column = null;
-      if ('application/caleydo-lineup-column-ref' in data) {
-        var id = data['application/caleydo-lineup-column-ref'];
+      if ('application/caleydo-lineup-column-number-ref' in data) {
+        var id = data['application/caleydo-lineup-column-number-ref'];
         col = this.data.find(id);
         if (copy) {
           col = this.data.clone(col);
@@ -370,7 +378,7 @@ export class HeaderRenderer {
           col.removeMe();
         }
       } else {
-        var desc = JSON.parse(data['application/caleydo-lineup-column']);
+        var desc = JSON.parse(data['application/caleydo-lineup-column-number']);
         col = this.data.create(this.data.fromDescRef(desc));
       }
       return d.push(col);

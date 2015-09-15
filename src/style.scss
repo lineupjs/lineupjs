@@ -108,10 +108,15 @@ $lu_hover_color: #e5e5e5;
 $lu_selected_color: #ffa500;
 $lu_toolbar_font_size: 8pt;
 $lu_even_bg: #f7f7f7;
+$lu_drag_over: #979797;
 
 .lu-pool {
   div.header {
-    border: 2px solid white;
+    border: 2px outset white;
+
+    &:hover {
+      border-color: $lu_hover_color;
+    }
   }
 }
 
@@ -192,6 +197,10 @@ $lu_even_bg: #f7f7f7;
       width: 100%;
       height: 100%;
       position: absolute;
+
+      &.drag_over {
+        background-color: $lu_drag_over;
+      }
     }
   }
 
@@ -204,8 +213,6 @@ $lu_even_bg: #f7f7f7;
     height: 100%;
 
     font-size: 90%;
-
-
 
     &:hover {
       &> div.toolbar {
@@ -230,6 +237,9 @@ $lu_even_bg: #f7f7f7;
 
   div.lu-header {
     div.header {
+      &.drag_over div.lu-label {
+        color: $lu_drag_over;
+      }
 
       div.lu-label {
         position: absolute;
@@ -254,7 +264,7 @@ $lu_even_bg: #f7f7f7;
         cursor: col-resize;
 
         &.drag_over {
-          background-color: black;
+          background-color: $lu_drag_over;
         }
       }
     }

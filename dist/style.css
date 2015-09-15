@@ -72,7 +72,9 @@
     border: 1px solid black; }
 
 .lu-pool div.header {
-  border: 2px solid white; }
+  border: 2px outset white; }
+  .lu-pool div.header:hover {
+    border-color: #e5e5e5; }
 
 .lu, .lu-pool {
   position: relative; }
@@ -116,6 +118,8 @@
       width: 100%;
       height: 100%;
       position: absolute; }
+      .lu div.lu-header .drop.drag_over, .lu div.lu-pool .drop.drag_over, .lu-pool div.lu-header .drop.drag_over, .lu-pool div.lu-pool .drop.drag_over {
+        background-color: #979797; }
   .lu div.header, .lu div.header_i, .lu-pool div.header, .lu-pool div.header_i {
     position: absolute;
     display: inline-block;
@@ -136,6 +140,8 @@
     border-radius: 3px 0 0 3px;
     cursor: auto;
     background: #6D6C6C; }
+  .lu div.lu-header div.header.drag_over div.lu-label, .lu-pool div.lu-header div.header.drag_over div.lu-label {
+    color: #979797; }
   .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {
     position: absolute;
     width: 100%;
@@ -154,7 +160,7 @@
     display: inline-block;
     cursor: col-resize; }
     .lu div.lu-header div.header div.handle.drag_over, .lu-pool div.lu-header div.header div.handle.drag_over {
-      background-color: black; }
+      background-color: #979797; }
   .lu div.lu-header div.toolbar i, .lu-pool div.lu-header div.toolbar i {
     font-size: 8pt;
     padding: 1px; }
@@ -169,3 +175,5 @@
       padding: 0;
       margin: 0;
       font-size: 9pt; }
+
+/*# sourceMappingURL=style.css.map */
