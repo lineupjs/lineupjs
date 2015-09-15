@@ -103,6 +103,10 @@ export class DataProvider extends utils.AEventDispatcher {
     return this.rankings_.slice();
   }
 
+  getLastRanking() {
+    return this.rankings_[this.rankings_.length - 1];
+  }
+
   cleanUpRanking(ranking:model.RankColumn) {
     //nothing to do
   }
@@ -125,6 +129,8 @@ export class DataProvider extends utils.AEventDispatcher {
     }
     return null;
   }
+
+
 
   create(desc: model.IColumnDesc) {
     var type = this.columnTypes[desc.type];

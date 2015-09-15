@@ -27,8 +27,8 @@ export class PoolRenderer {
     width: 100,
     height: 500,
     additionalDesc : [],
-    hideUsed: true
-
+    hideUsed: true,
+    addAtEndOnClick: false
   };
 
   private $node:d3.Selection<any>;
@@ -105,6 +105,11 @@ export class PoolRenderer {
       width: this.options.elemWidth+'px',
       height: this.options.elemHeight+'px'
     });
+    if (this.options.addAtEndOnClick) {
+      $headers_enter.on('click', (d) => {
+        this.data.push(this.data.getLastRanking(), d);
+      });
+    }
     $headers_enter.append('span').classed('label',true).text((d) => d.label);
     $headers.style({
       'transform': (d, i) => {
@@ -210,8 +215,8 @@ export class HeaderRenderer {
     if (d instanceof model.Column) {
       return d.insertAfterMe(col);
     } else {
-      var r= this.data.getRankings();
-      return r[r.length-1].push(col) !== null;
+      var r= this.data.getLastRanking();
+      return r.push(col) !== null;
     }
   });
 

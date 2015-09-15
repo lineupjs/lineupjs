@@ -1773,6 +1773,9 @@ var DataProvider = (function (_super) {
     DataProvider.prototype.getRankings = function () {
         return this.rankings_.slice();
     };
+    DataProvider.prototype.getLastRanking = function () {
+        return this.rankings_[this.rankings_.length - 1];
+    };
     DataProvider.prototype.cleanUpRanking = function (ranking) {
         //nothing to do
     };
@@ -2737,7 +2740,8 @@ var PoolRenderer = (function () {
             width: 100,
             height: 500,
             additionalDesc: [],
-            hideUsed: true
+            hideUsed: true,
+            addAtEndOnClick: false
         };
         utils.merge(this.options, options);
         this.entries = data.getColumns().concat(this.options.additionalDesc).map(function (d) { return new PoolEntry(d); });
@@ -2806,6 +2810,11 @@ var PoolRenderer = (function () {
             width: this.options.elemWidth + 'px',
             height: this.options.elemHeight + 'px'
         });
+        if (this.options.addAtEndOnClick) {
+            $headers_enter.on('click', function (d) {
+                _this.data.push(_this.data.getLastRanking(), d);
+            });
+        }
         $headers_enter.append('span').classed('label', true).text(function (d) { return d.label; });
         $headers.style({
             'transform': function (d, i) {
@@ -2910,8 +2919,8 @@ var HeaderRenderer = (function () {
                 return d.insertAfterMe(col);
             }
             else {
-                var r = _this.data.getRankings();
-                return r[r.length - 1].push(col) !== null;
+                var r = _this.data.getLastRanking();
+                return r.push(col) !== null;
             }
         });
         utils.merge(this.options, options);
