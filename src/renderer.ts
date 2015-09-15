@@ -447,14 +447,21 @@ class StackCellRenderer extends DefaultCellRenderer {
       });
 
     var ueber = context.cellX;
+    var ueberOption = context.option;
+    context.option = (option, default_) => {
+      var r = ueberOption(option, default_);
+      return option === 'stackLevel' ? r + 'N' : r;
+    };
 
-    var $children = $group.selectAll('g.component').data(children, (d) => d.id);
+    var baseclass = 'component'+context.option('stackLevel','');
+
+    var $children = $group.selectAll('g.'+baseclass).data(children, (d) => d.id);
     $children.enter().append('g').attr({
-      'class': 'component',
+      'class': baseclass,
       transform: (d, i) => 'translate(' + shifts[i] + ',0)'
     });
     $children.attr({
-      'class': (d) => 'component ' + d.desc.type,
+      'class': (d) => baseclass+' ' + d.desc.type,
       'data-stack': (d,i) => i
     }).each(function (d, i) {
       if (context.showStacked(col)) {
@@ -479,16 +486,18 @@ class StackCellRenderer extends DefaultCellRenderer {
     }, (index) => rows[index]);
   }
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.StackColumn, row:any, index:number, context:IRenderContext) {
+    var baseclass = 'component'+context.option('stackLevel','');
     this.renderImpl($row, col, context, ($row_i, col, i, ccontext) => {
-      var $col_i = $col.selectAll('g.component[data-stack="'+i+'"]');
+      var $col_i = $col.selectAll('g.'+baseclass+'[data-stack="'+i+'"]');
       if (!$col_i.empty()) {
         ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
       }
     }, (index) => row, false);
   }
   mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.StackColumn, row:any, index:number, context:IRenderContext) {
+    var baseclass = 'component'+context.option('stackLevel','');
     this.renderImpl($row, col, context, ($row_i, d, i, ccontext) => {
-      var $col_i = $col.selectAll('g.component[data-stack="'+i+'"]');
+      var $col_i = $col.selectAll('g.'+baseclass+'[data-stack="'+i+'"]');
       if (!$col_i.empty()) {
         ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
       }

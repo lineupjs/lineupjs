@@ -2388,13 +2388,19 @@ var StackCellRenderer = (function (_super) {
             return r;
         });
         var ueber = context.cellX;
-        var $children = $group.selectAll('g.component').data(children, function (d) { return d.id; });
+        var ueberOption = context.option;
+        context.option = function (option, default_) {
+            var r = ueberOption(option, default_);
+            return option === 'stackLevel' ? r + 'N' : r;
+        };
+        var baseclass = 'component' + context.option('stackLevel', '');
+        var $children = $group.selectAll('g.' + baseclass).data(children, function (d) { return d.id; });
         $children.enter().append('g').attr({
-            'class': 'component',
+            'class': baseclass,
             transform: function (d, i) { return 'translate(' + shifts[i] + ',0)'; }
         });
         $children.attr({
-            'class': function (d) { return 'component ' + d.desc.type; },
+            'class': function (d) { return baseclass + ' ' + d.desc.type; },
             'data-stack': function (d, i) { return i; }
         }).each(function (d, i) {
             if (context.showStacked(col)) {
@@ -2417,16 +2423,18 @@ var StackCellRenderer = (function (_super) {
         }, function (index) { return rows[index]; });
     };
     StackCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
+        var baseclass = 'component' + context.option('stackLevel', '');
         this.renderImpl($row, col, context, function ($row_i, col, i, ccontext) {
-            var $col_i = $col.selectAll('g.component[data-stack="' + i + '"]');
+            var $col_i = $col.selectAll('g.' + baseclass + '[data-stack="' + i + '"]');
             if (!$col_i.empty()) {
                 ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
             }
         }, function (index) { return row; }, false);
     };
     StackCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
+        var baseclass = 'component' + context.option('stackLevel', '');
         this.renderImpl($row, col, context, function ($row_i, d, i, ccontext) {
-            var $col_i = $col.selectAll('g.component[data-stack="' + i + '"]');
+            var $col_i = $col.selectAll('g.' + baseclass + '[data-stack="' + i + '"]');
             if (!$col_i.empty()) {
                 ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
             }
