@@ -158,6 +158,7 @@ var LineUp = (function (_super) {
         return { from: start, to: length };
     };
     LineUp.prototype.destroy = function () {
+        this.pools.forEach(function (p) { return p.remove(); });
         this.$container.remove();
         if (this.contentScroller) {
             this.contentScroller.destroy();
@@ -2533,6 +2534,12 @@ var PoolRenderer = (function () {
                     entry.used += change;
                 });
             });
+        }
+    };
+    PoolRenderer.prototype.remove = function () {
+        this.$node.remove();
+        if (this.data) {
+            this.data.on(['addColumn.pool', 'removeColumn.pool', 'addRanking.pool', 'removeRanking.pool', 'addDesc.pool'], null);
         }
     };
     PoolRenderer.prototype.update = function () {

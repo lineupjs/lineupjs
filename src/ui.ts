@@ -89,6 +89,13 @@ export class PoolRenderer {
     }
   }
 
+  remove() {
+    this.$node.remove();
+    if (this.data) {
+      this.data.on(['addColumn.pool', 'removeColumn.pool', 'addRanking.pool', 'removeRanking.pool', 'addDesc.pool'], null);
+    }
+  }
+
   update() {
     var data = this.data;
     var descToShow = this.entries.filter((e) => e.used === 0).map((d) => d.desc);

@@ -138,6 +138,7 @@ export class LineUp extends utils_.AEventDispatcher {
    * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
    */
   destroy() {
+    this.pools.forEach((p) => p.remove());
     this.$container.remove();
     if (this.contentScroller) {
       this.contentScroller.destroy();
