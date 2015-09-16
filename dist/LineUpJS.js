@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-09-15
+/*! LineUpJS - v0.1.0 - 2015-09-16
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -2380,20 +2380,21 @@ var StackCellRenderer = (function (_super) {
     function StackCellRenderer() {
         _super.apply(this, arguments);
     }
-    StackCellRenderer.prototype.renderImpl = function ($col, col, context, perChild, rowGetter, animated) {
+    StackCellRenderer.prototype.renderImpl = function ($base, col, context, perChild, rowGetter, animated) {
         if (animated === void 0) { animated = true; }
-        var $group = $col.datum(col), children = col.children, offset = 0, shifts = children.map(function (d) {
+        var $group = $base.datum(col), children = col.children;
+        var offset = 0, shifts = children.map(function (d) {
             var r = offset;
             offset += d.getWidth();
             return r;
         });
+        var baseclass = 'component' + context.option('stackLevel', '');
         var ueber = context.cellX;
         var ueberOption = context.option;
         context.option = function (option, default_) {
             var r = ueberOption(option, default_);
             return option === 'stackLevel' ? r + 'N' : r;
         };
-        var baseclass = 'component' + context.option('stackLevel', '');
         var $children = $group.selectAll('g.' + baseclass).data(children, function (d) { return d.id; });
         $children.enter().append('g').attr({
             'class': baseclass,
@@ -2416,27 +2417,28 @@ var StackCellRenderer = (function (_super) {
         });
         $children.exit().remove();
         context.cellX = ueber;
+        context.option = ueberOption;
     };
-    StackCellRenderer.prototype.render = function ($col, col, rows, context) {
-        this.renderImpl($col, col, context, function ($child, col, i, ccontext) {
+    StackCellRenderer.prototype.render = function ($col, stack, rows, context) {
+        this.renderImpl($col, stack, context, function ($child, col, i, ccontext) {
             ccontext.renderer(col).render($child, col, rows, ccontext);
         }, function (index) { return rows[index]; });
     };
-    StackCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
+    StackCellRenderer.prototype.mouseEnter = function ($col, $row, stack, row, index, context) {
         var baseclass = 'component' + context.option('stackLevel', '');
-        this.renderImpl($row, col, context, function ($row_i, col, i, ccontext) {
-            var $col_i = $col.selectAll('g.' + baseclass + '[data-stack="' + i + '"]');
+        this.renderImpl($row, stack, context, function ($row_i, col, i, ccontext) {
+            var $col_i = $col.select('g.' + baseclass + '[data-stack="' + i + '"]');
             if (!$col_i.empty()) {
                 ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
             }
         }, function (index) { return row; }, false);
     };
-    StackCellRenderer.prototype.mouseLeave = function ($col, $row, col, row, index, context) {
+    StackCellRenderer.prototype.mouseLeave = function ($col, $row, satck, row, index, context) {
         var baseclass = 'component' + context.option('stackLevel', '');
-        this.renderImpl($row, col, context, function ($row_i, d, i, ccontext) {
-            var $col_i = $col.selectAll('g.' + baseclass + '[data-stack="' + i + '"]');
+        this.renderImpl($row, satck, context, function ($row_i, col, i, ccontext) {
+            var $col_i = $col.select('g.' + baseclass + '[data-stack="' + i + '"]');
             if (!$col_i.empty()) {
-                ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
+                ccontext.renderer(col).mouseLeave($col_i, $row_i, col, row, index, ccontext);
             }
         }, function (index) { return row; }, false);
         $row.selectAll('*').remove();

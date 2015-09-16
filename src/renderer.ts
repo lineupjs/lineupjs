@@ -436,26 +436,25 @@ class CategoricalRenderer extends DefaultCellRenderer {
 }
 
 class StackCellRenderer extends DefaultCellRenderer {
-  renderImpl($col:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
-    var $group = $col.datum(col),
-      children = col.children,
-      offset = 0,
+  renderImpl($base:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
+    const $group = $base.datum(col),
+      children = col.children;
+    var offset = 0,
       shifts = children.map((d) => {
         var r = offset;
         offset += d.getWidth();
         return r;
       });
+    const baseclass = 'component'+context.option('stackLevel','');
 
-    var ueber = context.cellX;
-    var ueberOption = context.option;
+    const ueber = context.cellX;
+    const ueberOption = context.option;
     context.option = (option, default_) => {
       var r = ueberOption(option, default_);
       return option === 'stackLevel' ? r + 'N' : r;
     };
 
-    var baseclass = 'component'+context.option('stackLevel','');
-
-    var $children = $group.selectAll('g.'+baseclass).data(children, (d) => d.id);
+    const $children = $group.selectAll('g.'+baseclass).data(children, (d) => d.id);
     $children.enter().append('g').attr({
       'class': baseclass,
       transform: (d, i) => 'translate(' + shifts[i] + ',0)'
@@ -465,7 +464,7 @@ class StackCellRenderer extends DefaultCellRenderer {
       'data-stack': (d,i) => i
     }).each(function (d, i) {
       if (context.showStacked(col)) {
-        var preChildren = children.slice(0, i);
+        const preChildren = children.slice(0, i);
         context.cellX = (index) => {
           //shift by all the empty space left from the previous columns
           return ueber(index) -preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rowGetter(index))), 0);
@@ -479,27 +478,28 @@ class StackCellRenderer extends DefaultCellRenderer {
     $children.exit().remove();
 
     context.cellX = ueber;
+    context.option = ueberOption;
   }
-  render($col:d3.Selection<any>, col:model.StackColumn, rows:any[], context:IRenderContext) {
-    this.renderImpl($col, col, context, ($child, col, i, ccontext) => {
+  render($col:d3.Selection<any>, stack:model.StackColumn, rows:any[], context:IRenderContext) {
+    this.renderImpl($col, stack, context, ($child, col, i, ccontext) => {
       ccontext.renderer(col).render($child, col, rows, ccontext);
     }, (index) => rows[index]);
   }
-  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.StackColumn, row:any, index:number, context:IRenderContext) {
+  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, stack:model.StackColumn, row:any, index:number, context:IRenderContext) {
     var baseclass = 'component'+context.option('stackLevel','');
-    this.renderImpl($row, col, context, ($row_i, col, i, ccontext) => {
-      var $col_i = $col.selectAll('g.'+baseclass+'[data-stack="'+i+'"]');
+    this.renderImpl($row, stack, context, ($row_i, col, i, ccontext) => {
+      var $col_i = $col.select('g.'+baseclass+'[data-stack="'+i+'"]');
       if (!$col_i.empty()) {
         ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
       }
     }, (index) => row, false);
   }
-  mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.StackColumn, row:any, index:number, context:IRenderContext) {
+  mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, satck:model.StackColumn, row:any, index:number, context:IRenderContext) {
     var baseclass = 'component'+context.option('stackLevel','');
-    this.renderImpl($row, col, context, ($row_i, d, i, ccontext) => {
-      var $col_i = $col.selectAll('g.'+baseclass+'[data-stack="'+i+'"]');
+    this.renderImpl($row, satck, context, ($row_i, col, i, ccontext) => {
+      var $col_i = $col.select('g.'+baseclass+'[data-stack="'+i+'"]');
       if (!$col_i.empty()) {
-        ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
+        ccontext.renderer(col).mouseLeave($col_i, $row_i, col, row, index, ccontext);
       }
     }, (index) => row, false);
     $row.selectAll('*').remove();
