@@ -302,6 +302,17 @@ export class HeaderRenderer {
       dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
+    $stacked.append('i')
+      .attr('class', 'fa')
+      .classed('fa-compress',(d: model.StackColumn) => !d.collapsed)
+      .classed('fa-expand', (d: model.StackColumn) => d.collapsed)
+      .on('click', function(d: model.StackColumn) {
+        d.collapsed = !d.collapsed;
+        d3.select(this)
+          .classed('fa-compress',!d.collapsed)
+          .classed('fa-expand', d.collapsed);
+        d3.event.stopPropagation();
+      });
     //remove
     $node.append('i').attr('class', 'fa fa-times').on('click', (d) => {
       if (d instanceof model.RankColumn) {
@@ -368,12 +379,16 @@ export class HeaderRenderer {
     $headers.select('span.lu-label').text((d) => d.label);
 
     var that = this;
-    $headers.filter((d) => d instanceof model.StackColumn && !d.collapsed).each(function (col : model.StackColumn) {
-      var s_shifts = [];
-      col.flatten(s_shifts, 0, 1, that.options.columnPadding);
+    $headers.filter((d) => d instanceof model.StackColumn).each(function (col : model.StackColumn) {
+      if (col.collapsed) {
+        d3.select(this).selectAll('div.'+clazz+'_i').remove();
+      } else {
+        let s_shifts = [];
+        col.flatten(s_shifts, 0, 1, that.options.columnPadding);
 
-      var s_columns = s_shifts.map((d) => d.col);
-      that.renderColumns(s_columns, s_shifts, d3.select(this), clazz+(clazz.substr(clazz.length-2) !== '_i' ? '_i' : ''));
+        let s_columns = s_shifts.map((d) => d.col);
+        that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
+      }
     }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref','application/caleydo-lineup-column-number'], (data, d: model.StackColumn, copy) => {
       var col: model.Column = null;
       if ('application/caleydo-lineup-column-number-ref' in data) {

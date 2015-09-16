@@ -865,7 +865,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
       return null;
     }
     if (col instanceof StackColumn) {
-      col.collapsed = true;
+      //STACK col.collapsed = true;
     }
     if (!isNaN(weight)) {
       col.setWidth((weight/(1-weight)*this.getWidth()));
@@ -959,7 +959,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     this.children_.splice(i, 1); //remove and deregister listeners
     child.parent = null;
     if (child instanceof StackColumn) {
-      (<StackColumn>child).collapsed = false;
+      //STACK (<StackColumn>child).collapsed = false;
     }
     this.unforward(child, 'dirtyHeader.stack','dirtyValues.stack','dirty.stack','filterChanged.stack');
     child.on('widthChanged.stack', null);

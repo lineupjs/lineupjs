@@ -1198,7 +1198,6 @@ var StackColumn = (function (_super) {
             return null;
         }
         if (col instanceof StackColumn) {
-            col.collapsed = true;
         }
         if (!isNaN(weight)) {
             col.setWidth((weight / (1 - weight) * this.getWidth()));
@@ -1281,7 +1280,6 @@ var StackColumn = (function (_super) {
         this.children_.splice(i, 1);
         child.parent = null;
         if (child instanceof StackColumn) {
-            child.collapsed = false;
         }
         this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
         child.on('widthChanged.stack', null);
@@ -2746,6 +2744,17 @@ var HeaderRenderer = (function () {
             dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
             d3.event.stopPropagation();
         });
+        $stacked.append('i')
+            .attr('class', 'fa')
+            .classed('fa-compress', function (d) { return !d.collapsed; })
+            .classed('fa-expand', function (d) { return d.collapsed; })
+            .on('click', function (d) {
+            d.collapsed = !d.collapsed;
+            d3.select(this)
+                .classed('fa-compress', !d.collapsed)
+                .classed('fa-expand', d.collapsed);
+            d3.event.stopPropagation();
+        });
         $node.append('i').attr('class', 'fa fa-times').on('click', function (d) {
             if (d instanceof model.RankColumn) {
                 provider.removeRanking(d);
@@ -2812,11 +2821,16 @@ var HeaderRenderer = (function () {
         });
         $headers.select('span.lu-label').text(function (d) { return d.label; });
         var that = this;
-        $headers.filter(function (d) { return d instanceof model.StackColumn && !d.collapsed; }).each(function (col) {
-            var s_shifts = [];
-            col.flatten(s_shifts, 0, 1, that.options.columnPadding);
-            var s_columns = s_shifts.map(function (d) { return d.col; });
-            that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
+        $headers.filter(function (d) { return d instanceof model.StackColumn; }).each(function (col) {
+            if (col.collapsed) {
+                d3.select(this).selectAll('div.' + clazz + '_i').remove();
+            }
+            else {
+                var s_shifts = [];
+                col.flatten(s_shifts, 0, 1, that.options.columnPadding);
+                var s_columns = s_shifts.map(function (d) { return d.col; });
+                that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
+            }
         }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], function (data, d, copy) {
             var col = null;
             if ('application/caleydo-lineup-column-number-ref' in data) {
