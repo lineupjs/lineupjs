@@ -573,8 +573,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
     function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.RankColumn>, index:number, ranking:model.RankColumn, rankingIndex:number) {
       $row.classed('hover', true);
-      var children = $cols.selectAll('g.child').data();
-      var $value_cols = $row.select('g.values').selectAll('g.child').data(children);
+      var $value_cols = $row.select('g.values').selectAll('g.child').data([<model.Column>ranking].concat(ranking.children), (d) => d.id);
       $value_cols.enter().append('g').attr({
         'class': 'child'
       });

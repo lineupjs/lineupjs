@@ -3282,8 +3282,7 @@ var BodyRenderer = (function (_super) {
         $cols.exit().remove();
         function mouseOverRow($row, $cols, index, ranking, rankingIndex) {
             $row.classed('hover', true);
-            var children = $cols.selectAll('g.child').data();
-            var $value_cols = $row.select('g.values').selectAll('g.child').data(children);
+            var $value_cols = $row.select('g.values').selectAll('g.child').data([ranking].concat(ranking.children), function (d) { return d.id; });
             $value_cols.enter().append('g').attr({
                 'class': 'child'
             });
