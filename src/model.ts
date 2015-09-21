@@ -553,7 +553,14 @@ export class AnnotateColumn extends StringColumn {
 
   setValue(row:any, value: string) {
     var old = this.getValue(row);
-    this.annotations.set(String(row._index), value);
+    if (old === value) {
+      return true;
+    }
+    if (value === '' || value == null) {
+      this.annotations.remove(String(row._index));
+    } else {
+      this.annotations.set(String(row._index), value);
+    }
     this.fire(['dirtyValues','dirty'], value, old);
     return true;
   }

@@ -331,8 +331,12 @@ class AnnotateCellRenderer extends DefaultCellRenderer {
     }).on('click', () => d3.event.stopPropagation() );
   }
 
-  mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
+  mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.AnnotateColumn, row:any, index:number, context:IRenderContext) {
     this.findRow($col, index).attr('display', null);
+    var node = <HTMLInputElement>$row.select('input').node();
+    if (node) {
+      col.setValue(row, node.value);
+    }
     $row.selectAll('*').remove();
   }
 }
