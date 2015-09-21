@@ -113,7 +113,8 @@ export class Column extends utils.AEventDispatcher {
     if (value === this.label && this.color === color) {
       return;
     }
-    this.fire(['labelChanged', 'dirtyHeader','dirty'], { label: this.label, color: this.color }, {
+    var events = this.color === color ? ['labelChanged', 'dirtyHeader','dirty'] : ['labelChanged', 'dirtyHeader','dirtyValues','dirty']
+    this.fire(events, { label: this.label, color: this.color }, {
       label: this.label = value,
       color: this.color = color
     });

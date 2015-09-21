@@ -36,8 +36,6 @@ export class PoolRenderer {
 
   constructor(private data: provider.DataProvider, parent:Element, options:any = {}) {
     utils.merge(this.options, options);
-    this.entries = data.getColumns().concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
-
 
     this.$node = d3.select(parent).append('div').classed('lu-pool',true);
 
@@ -49,6 +47,7 @@ export class PoolRenderer {
       this.data.on(['addColumn.pool','removeColumn.pool','addRanking.pool','removeRanking.pool', 'addDesc.pool'], null);
     }
     this.data = data;
+    this.entries = data.getColumns().concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
     data.on(['addDesc.pool'], (desc) => {
       this.entries.push(new PoolEntry(desc));
       this.update();
