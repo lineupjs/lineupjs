@@ -113,7 +113,7 @@ export class Column extends utils.AEventDispatcher {
     if (value === this.label && this.color === color) {
       return;
     }
-    var events = this.color === color ? ['labelChanged', 'dirtyHeader','dirty'] : ['labelChanged', 'dirtyHeader','dirtyValues','dirty']
+    var events = this.color === color ? ['labelChanged', 'dirtyHeader','dirty'] : ['labelChanged', 'dirtyHeader','dirtyValues','dirty'];
     this.fire(events, { label: this.label, color: this.color }, {
       label: this.label = value,
       color: this.color = color
@@ -277,7 +277,7 @@ export function isNumberColumn(col: Column|IColumnDesc) {
 export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   missingValue = 0;
   private scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
-  private mapping = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+  private original = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
 
   private filter_ = {min: -Infinity, max: Infinity};
 
@@ -289,7 +289,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     if (desc.range) {
       this.scale.range(desc.range);
     }
-    this.mapping.domain(this.scale.domain()).range(this.scale.range());
+    this.original.domain(this.scale.domain()).range(this.scale.range());
   }
 
   init(callback : (desc: IColumnDesc) => Promise<IStatistics>) : Promise<boolean> {
@@ -297,7 +297,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     if (isNaN(d[0]) || isNaN(d[1])) {
       return callback(this.desc).then((stats) => {
         this.scale.domain([stats.min, stats.max]);
-        this.mapping.domain(this.scale.domain());
+        this.original.domain(this.scale.domain());
         return true;
       });
     }
@@ -308,7 +308,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     var r = super.dump(toDescRef);
     r.domain = this.scale.domain();
     r.range = this.scale.range();
-    r.mapping = this.getMapping();
+    r.mapping = this.getOriginalMapping();
     r.filter = this.filter;
     r.missingValue = this.missingValue;
     return r;
@@ -323,7 +323,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
       this.scale.range(dump.range);
     }
     if (dump.mapping) {
-      this.mapping.domain(dump.mapping.domain).range(dump.mapping.range);
+      this.original.domain(dump.mapping.domain).range(dump.mapping.range);
     }
     if (dump.filter) {
       this.filter_ = dump.filter;
@@ -367,21 +367,21 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 
   getMapping() {
     return {
-      domain: <[number, number]>this.mapping.domain(),
-      range: <[number, number]>this.mapping.range()
+      domain: <[number, number]>this.scale.domain(),
+      range: <[number, number]>this.scale.range()
     };
   }
 
   getOriginalMapping() {
     return {
-      domain: <[number, number]>this.mapping.domain(),
-      range: <[number, number]>this.mapping.range()
+      domain: <[number, number]>this.original.domain(),
+      range: <[number, number]>this.original.range()
     };
   }
 
   setMapping(domain: [number, number], range: [number, number]) {
     var bak = this.getMapping();
-    this.mapping.domain(domain).range(range);
+    this.scale.domain(domain).range(range);
     this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
   }
 
