@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-09-21
+/*! LineUpJS - v0.1.0 - 2015-09-23
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -2736,24 +2736,24 @@ var HeaderRenderer = (function () {
         var _this = this;
         var filterDialogs = this.options.filterDialogs, provider = this.data;
         var $regular = $node.filter(function (d) { return !(d instanceof model.RankColumn); }), $stacked = $node.filter(function (d) { return d instanceof model.StackColumn; });
-        $stacked.append('i').attr('class', 'fa fa-tasks').on('click', function (d) {
+        $stacked.append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
             dialogs.openEditWeightsDialog(d, d3.select(this.parentNode.parentNode));
             d3.event.stopPropagation();
         });
-        $regular.append('i').attr('class', 'fa fa-pencil-square-o').on('click', function (d) {
+        $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
             dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
             d3.event.stopPropagation();
         });
-        $regular.append('i').attr('class', 'fa fa-code-fork').on('click', function (d) {
+        $regular.append('i').attr('class', 'fa fa-code-fork').attr('title', 'Generate Snapshot').on('click', function (d) {
             var r = provider.pushRanking();
             r.push(provider.clone(d));
             d3.event.stopPropagation();
         });
-        $node.filter(function (d) { return filterDialogs.hasOwnProperty(d.desc.type); }).append('i').attr('class', 'fa fa-filter').on('click', function (d) {
+        $node.filter(function (d) { return filterDialogs.hasOwnProperty(d.desc.type); }).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
             filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
             d3.event.stopPropagation();
         });
-        $node.filter(function (d) { return _this.options.searchAble(d); }).append('i').attr('class', 'fa fa-search').on('click', function (d) {
+        $node.filter(function (d) { return _this.options.searchAble(d); }).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
             dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
             d3.event.stopPropagation();
         });
@@ -2761,6 +2761,7 @@ var HeaderRenderer = (function () {
             .attr('class', 'fa')
             .classed('fa-compress', function (d) { return !d.collapsed; })
             .classed('fa-expand', function (d) { return d.collapsed; })
+            .attr('title', 'Compress/Expand')
             .on('click', function (d) {
             d.collapsed = !d.collapsed;
             d3.select(this)
@@ -2768,7 +2769,7 @@ var HeaderRenderer = (function () {
                 .classed('fa-expand', d.collapsed);
             d3.event.stopPropagation();
         });
-        $node.append('i').attr('class', 'fa fa-times').on('click', function (d) {
+        $node.append('i').attr('class', 'fa fa-times').attr('title', 'Hide').on('click', function (d) {
             if (d instanceof model.RankColumn) {
                 provider.removeRanking(d);
                 if (provider.getRankings().length === 0) {
@@ -3245,7 +3246,7 @@ function openSearchDialog(column, $header, provider) {
     popup.select('input[type="text"]').on('input', function () {
         var search = d3.event.target.value;
         if (search.length >= 3) {
-            var isRegex = popup.select('input[type="text"]').property('checked');
+            var isRegex = popup.select('input[type="checkbox"]').property('checked');
             if (isRegex) {
                 search = new RegExp(search);
             }

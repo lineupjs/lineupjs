@@ -59,7 +59,7 @@ export function openSearchDialog(column:model.Column, $header:d3.Selection<model
   popup.select('input[type="text"]').on('input', function() {
     var search : any = (<HTMLInputElement>d3.event.target).value;
     if (search.length >= 3) {
-      var isRegex = popup.select('input[type="text"]').property('checked');
+      var isRegex = popup.select('input[type="checkbox"]').property('checked');
       if (isRegex) {
         search = new RegExp(search);
       }
