@@ -276,28 +276,28 @@ export class HeaderRenderer {
       $stacked = $node.filter(d=> d instanceof model.StackColumn);
 
     //edit weights
-    $stacked.append('i').attr('class', 'fa fa-tasks').on('click', function(d) {
+    $stacked.append('i').attr('class', 'fa fa-tasks').attr('title','Edit Weights').on('click', function(d) {
       dialogs.openEditWeightsDialog(<model.StackColumn>d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
     //rename
-    $regular.append('i').attr('class', 'fa fa-pencil-square-o').on('click', function(d) {
+    $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title','Rename').on('click', function(d) {
       dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
     //clone
-    $regular.append('i').attr('class', 'fa fa-code-fork').on('click', function(d) {
+    $regular.append('i').attr('class', 'fa fa-code-fork').attr('title','Generate Snapshot').on('click', function(d) {
       var r = provider.pushRanking();
       r.push(provider.clone(d));
       d3.event.stopPropagation();
     });
     //filter
-    $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').on('click', function(d) {
+    $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title','Filter').on('click', function(d) {
       filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
     //search
-    $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').on('click', function(d) {
+    $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').attr('title','Search').on('click', function(d) {
       dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
@@ -305,6 +305,7 @@ export class HeaderRenderer {
       .attr('class', 'fa')
       .classed('fa-compress',(d: model.StackColumn) => !d.collapsed)
       .classed('fa-expand', (d: model.StackColumn) => d.collapsed)
+      .attr('title','Compress/Expand')
       .on('click', function(d: model.StackColumn) {
         d.collapsed = !d.collapsed;
         d3.select(this)
@@ -313,7 +314,7 @@ export class HeaderRenderer {
         d3.event.stopPropagation();
       });
     //remove
-    $node.append('i').attr('class', 'fa fa-times').on('click', (d) => {
+    $node.append('i').attr('class', 'fa fa-times').attr('title','Hide').on('click', (d) => {
       if (d instanceof model.RankColumn) {
         provider.removeRanking(<model.RankColumn>d);
         if (provider.getRankings().length === 0) { //create at least one
