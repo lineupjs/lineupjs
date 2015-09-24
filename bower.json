@@ -35,6 +35,13 @@
     "bower_components",
     "test",
     "tests",
-    "demo"
+    "demo",
+    "src",
+    "tmp",
+    "typings",
+    "jsdoc.conf.json",
+    "tsd.gen.d.ts",
+    "tsd.json",
+    "tslint.json"
   ]
 }

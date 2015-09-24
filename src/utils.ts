@@ -267,22 +267,25 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
       var e = <DragEvent>(<any>d3.event);
       //var xy = d3.mouse($node.node());
       if (hasDnDType(e, mimeTypes)) {
+        d3.select(this).classed('drag_over', true);
         return false;
       }
-      d3.select(this).classed('drag_over', true);
-    }).on('dragover', () => {
+      d3.select(this).classed('drag_over', false);
+    }).on('dragover', function() {
       var e = <DragEvent>(<any>d3.event);
       if (hasDnDType(e, mimeTypes)) {
         e.preventDefault();
         updateDropEffect(e);
+        d3.select(this).classed('drag_over', true);
         return false;
       }
     }).on('dragleave', function() {
       //
       d3.select(this).classed('drag_over', false);
-    }).on('drop', (d: T) => {
+    }).on('drop', function(d: T)  {
       var e = <DragEvent>(<any>d3.event);
       e.preventDefault();
+      d3.select(this).classed('drag_over', false);
       //var xy = d3.mouse($node.node());
       if (hasDnDType(e, mimeTypes)) {
         var data : any = {};

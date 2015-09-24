@@ -18,35 +18,33 @@
   text-anchor: middle; }
 
 .lu-popup {
-  background: white;
   position: absolute;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 10px 10px 5px #888888;
-  font-size: 9pt;
   dominant-baseline: central;
   text-anchor: middle; }
-  .lu-popup .selectionTable {
-    background: white;
-    overflow-x: auto;
-    overflow-y: scroll; }
-    .lu-popup .selectionTable table {
-      width: 95%;
-      border: 0; }
-    .lu-popup .selectionTable tr:hover {
-      background-color: lightblue; }
   .lu-popup .ok {
     position: absolute;
     right: 10px; }
 
 .lu-popup, .lu-popup2 {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.9);
   position: absolute;
   padding: 2px;
+  box-shadow: 5px 5px 3px #888888;
   font-size: 8pt;
   clear: right; }
   .lu-popup input, .lu-popup2 input {
     font-size: 8pt; }
+  .lu-popup .selectionTable, .lu-popup2 .selectionTable {
+    background: white;
+    overflow-x: auto;
+    overflow-y: scroll; }
+    .lu-popup .selectionTable td, .lu-popup2 .selectionTable td {
+      white-space: nowrap; }
+    .lu-popup .selectionTable table, .lu-popup2 .selectionTable table {
+      width: 95%;
+      border: 0; }
+    .lu-popup .selectionTable tr:hover, .lu-popup2 .selectionTable tr:hover {
+      background-color: lightblue; }
 
 .lu-popup2 * {
   margin: 0; }
@@ -73,12 +71,21 @@
   .lu-tooltip td, .lu-tooltip th {
     border: 1px solid black; }
 
+.lu-pool div.header {
+  border: 2px outset white; }
+  .lu-pool div.header:hover {
+    border-color: #e5e5e5; }
+
 .lu, .lu-pool {
   position: relative; }
   .lu div.lu-header, .lu-pool div.lu-header {
     position: relative; }
-  .lu text, .lu-pool text {
+  .lu text, .lu tspan, .lu-pool text, .lu-pool tspan {
     dominant-baseline: text-before-edge; }
+  .lu text.actions tspan, .lu-pool text.actions tspan {
+    cursor: pointer; }
+    .lu text.actions tspan:hover, .lu-pool text.actions tspan:hover {
+      color: darkblue; }
   .lu text.rank, .lu-pool text.rank {
     text-anchor: end; }
   .lu *[draggable], .lu-pool *[draggable] {
@@ -90,39 +97,61 @@
     shape-rendering: geometricPrecision; }
     .lu line.slope.hover, .lu-pool line.slope.hover {
       stroke: #e5e5e5; }
+    .lu line.slope.selected, .lu-pool line.slope.selected {
+      stroke: #ffa500; }
   .lu g.cols, .lu-pool g.cols {
     pointer-events: none; }
-  .lu rect.bg, .lu-pool rect.bg {
+  .lu g.row rect.bg, .lu-pool g.row rect.bg {
     fill: transparent; }
+    .lu g.row rect.bg.even, .lu-pool g.row rect.bg.even {
+      fill: #f7f7f7; }
+  .lu g.row.selected rect.bg, .lu-pool g.row.selected rect.bg {
+    stroke: #ffa500;
+    stroke-width: 1; }
   .lu g.row.hover rect.bg, .lu-pool g.row.hover rect.bg {
     fill: #e5e5e5; }
   .lu g.row.hover rect.bar, .lu-pool g.row.hover rect.bar {
     opacity: 0.5; }
   .lu div.lu-header, .lu div.lu-pool, .lu-pool div.lu-header, .lu-pool div.lu-pool {
     position: relative; }
+    .lu div.lu-header .drop, .lu div.lu-pool .drop, .lu-pool div.lu-header .drop, .lu-pool div.lu-pool .drop {
+      width: 100%;
+      height: 100%;
+      position: absolute; }
+      .lu div.lu-header .drop.drag_over, .lu div.lu-pool .drop.drag_over, .lu-pool div.lu-header .drop.drag_over, .lu-pool div.lu-pool .drop.drag_over {
+        background-color: #979797; }
   .lu div.header, .lu div.header_i, .lu-pool div.header, .lu-pool div.header_i {
     position: absolute;
     display: inline-block;
     overflow: hidden;
     color: white;
     text-align: center;
-    height: 100%; }
+    height: 100%;
+    font-size: 90%; }
     .lu div.header:hover > div.toolbar, .lu div.header_i:hover > div.toolbar, .lu-pool div.header:hover > div.toolbar, .lu-pool div.header_i:hover > div.toolbar {
       display: block; }
   .lu div.header_i, .lu-pool div.header_i {
-    top: 50%; }
+    top: 50%;
+    height: 50%; }
   .lu div.lu-header div.toolbar, .lu-pool div.lu-header div.toolbar {
     display: none;
     position: absolute;
-    right: 6px;
     text-align: right;
-    top: 0;
-    cursor: auto; }
+    right: 5px;
+    border-radius: 3px 0 0 3px;
+    cursor: auto;
+    background: #6D6C6C; }
+  .lu div.lu-header div.header.drag_over div.lu-label, .lu-pool div.lu-header div.header.drag_over div.lu-label {
+    color: #979797; }
+  .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {
+    position: absolute;
+    width: 100%;
+    height: 100%; }
   .lu div.lu-header div.header i.sort_indicator, .lu-pool div.lu-header div.header i.sort_indicator {
     position: absolute;
     left: 1px;
     top: 1px;
-    font-size: 9pt; }
+    font-size: 8pt; }
   .lu div.lu-header div.header div.handle, .lu-pool div.lu-header div.header div.handle {
     position: absolute;
     right: 0;
@@ -132,11 +161,20 @@
     display: inline-block;
     cursor: col-resize; }
     .lu div.lu-header div.header div.handle.drag_over, .lu-pool div.lu-header div.header div.handle.drag_over {
-      background-color: black; }
+      background-color: #979797; }
   .lu div.lu-header div.toolbar i, .lu-pool div.lu-header div.toolbar i {
-    font-size: 9pt;
+    font-size: 8pt;
     padding: 1px; }
     .lu div.lu-header div.toolbar i:hover, .lu-pool div.lu-header div.toolbar i:hover {
       color: darkblue; }
-  .lu svg.lu-body text, .lu-pool svg.lu-body text {
-    font-size: 10pt; }
+    .lu div.lu-header div.toolbar i.filtered, .lu-pool div.lu-header div.toolbar i.filtered {
+      color: darkblue; }
+  .lu svg.lu-body, .lu-pool svg.lu-body {
+    foreignObject-padding: 0;
+    foreignObject-margin: 0; }
+    .lu svg.lu-body text, .lu-pool svg.lu-body text {
+      font-size: 10pt; }
+    .lu svg.lu-body input, .lu-pool svg.lu-body input {
+      padding: 0;
+      margin: 0;
+      font-size: 9pt; }

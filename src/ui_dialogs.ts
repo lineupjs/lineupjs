@@ -15,20 +15,35 @@ export function dialogForm(title, body, buttonsWithLabel = false) {
     '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
 }
 
-export function openRenameDialog(column:model.Column, $header:d3.Selection<model.Column>) {
-  var pos = utils.offset($header.node());
-  var popup = d3.select('body').append('div')
+export function makePopup(attachement: d3.Selection<any>, title: string, body: string) {
+  var pos = utils.offset(<Element>attachement.node());
+  var $popup = d3.select('body').append('div')
     .attr({
       'class': 'lu-popup2'
     }).style({
       left: pos.left + 'px',
       top: pos.top + 'px'
+    }).html(dialogForm(title, body));
+  $popup.on('keydown', () => {
+    if (d3.event.which === 27) {
+      $popup.remove();
+    }
+  });
+  var auto = <HTMLInputElement>$popup.select('input[autofocus]').node();
+  if (auto) {
+    auto.focus();
+  }
+  return $popup;
 
-    }).html(dialogForm('Rename Column', '<input type="text" size="15" value="' + column.label + '" required="required"><br>'));
+}
+
+export function openRenameDialog(column:model.Column, $header:d3.Selection<model.Column>) {
+  var popup = makePopup($header, 'Rename Column', `<input type="text" size="15" value="${column.label}" required="required" autofocus="autofocus"><br><input type="color" size="15" value="${column.color}" required="required"><br>`);
 
   popup.select('.ok').on('click', function () {
-    var newValue = popup.select('input').property('value');
-    column.setLabel(newValue);
+    var newValue = popup.select('input[type="text"]').property('value');
+    var newColor = popup.select('input[type="color"]').property('value');
+    column.setMetaData(newValue, newColor);
     popup.remove();
   });
 
@@ -39,15 +54,18 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
 
 
 export function openSearchDialog(column:model.Column, $header:d3.Selection<model.Column>, provider: provider.DataProvider) {
-  var pos = utils.offset($header.node());
-  var popup = d3.select('body').append('div')
-    .attr({
-      'class': 'lu-popup2'
-    }).style({
-      left: pos.left + 'px',
-      top: pos.top + 'px'
+  var popup = makePopup($header,'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
 
-    }).html(dialogForm('Search', '<input type="text" size="15" value="" required="required"><br><label><input type="checkbox">RegExp</label><br>'));
+  popup.select('input[type="text"]').on('input', function() {
+    var search : any = (<HTMLInputElement>d3.event.target).value;
+    if (search.length >= 3) {
+      var isRegex = popup.select('input[type="checkbox"]').property('checked');
+      if (isRegex) {
+        search = new RegExp(search);
+      }
+      provider.searchSelect(search, column);
+    }
+  });
 
   popup.select('.ok').on('click', function () {
     var search = popup.select('input[type="text"]').property('value');
@@ -69,16 +87,8 @@ export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Sel
     children = column.children.map((d, i) => ({ col: d, weight: weights[i] * 100} ));
 
   var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
-  var pos = utils.offset($header.node());
 
-  var $popup = d3.select('body').append('div')
-    .attr({
-      'class': 'lu-popup2'
-    }).style({
-      left: pos.left + 'px',
-      top: pos.top + 'px'
-    })
-    .html(dialogForm('Edit Weights', '<table></table>'));
+  var $popup = makePopup($header, 'Edit Weights', '<table></table>');
 
   var $rows = $popup.select('table').selectAll('tr').data(children);
   var $rows_enter = $rows.enter().append('tr');
@@ -122,21 +132,8 @@ export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Sel
 }
 
 function openCategoricalFilter(column: model.CategoricalColumn, $header: d3.Selection<model.Column>) {
-  var pos = utils.offset($header.node()),
-    bak = column.getFilter() || [];
-  var popup = d3.select('body').append('div')
-    .attr({
-      'class': 'lu-popup'
-    }).style({
-      left: pos.left + 'px',
-      top: pos.top + 'px'
-    })
-    .html(dialogForm('Edit Filter', '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>'));
-
-  popup.select('.selectionTable').style({
-    width: (400 - 10) + 'px',
-    height: (300 - 40) + 'px'
-  });
+  var bak = column.getFilter() || [];
+  var popup = makePopup($header, 'Edit Filter', '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>');
 
   // list all data rows !
   var trData = column.categories.map(function (d) {
@@ -187,22 +184,21 @@ function openCategoricalFilter(column: model.CategoricalColumn, $header: d3.Sele
 }
 
 function openStringFilter(column: model.StringColumn, $header: d3.Selection<model.Column>) {
-  var pos = utils.offset($header.node()),
-    bak = column.getFilter() || '';
+  var bak = column.getFilter() || '';
 
-  var $popup = d3.select('body').append('div')
-    .attr({
-      'class': 'lu-popup2'
-    }).style({
-      left: pos.left + 'px',
-      top: pos.top + 'px'
-    })
-    .html(dialogForm('Filter', '<input type="text" placeholder="containing..." autofocus="true" size="18" value="' + bak + '"><br>'));
+  var $popup = makePopup($header, 'Filter', `<input type="text" placeholder="containing..." autofocus="true" size="18" value="${bak}" autofocus="autofocus"><br>`);
 
   function updateData(filter) {
     $header.select('i.fa-filter').classed('filtered', (filter && filter.length > 0));
     column.setFilter(filter);
   }
+
+  $popup.select('input[type="text"]').on('input', function() {
+    var search : any = (<HTMLInputElement>d3.event.target).value;
+    if (search.length >= 3) {
+      updateData(search);
+    }
+  });
 
   $popup.select('.cancel').on('click', function () {
     $popup.select('input').property('value', bak);
@@ -230,9 +226,7 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
       'class': 'lu-popup'
     }).style({
       left: pos.left + 'px',
-      top: pos.top + 'px',
-      width: '420px',
-      height: '470px'
+      top: pos.top + 'px'
     })
     .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>' +
       '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'));
@@ -292,16 +286,8 @@ function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $he
     children = column.categories.map((d, i) => ({ cat: d, range: range[i] * 100, color: colors[i] }));
 
   var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
-  var pos = utils.offset($header.node());
 
-  var $popup = d3.select('body').append('div')
-    .attr({
-      'class': 'lu-popup2'
-    }).style({
-      left: pos.left + 'px',
-      top: pos.top + 'px'
-    })
-    .html(dialogForm('Edit Categorical Mapping', '<table></table>'));
+  var $popup = makePopup($header, 'Edit Categorical Mapping', '<table></table>');
 
   var $rows = $popup.select('table').selectAll('tr').data(children);
   var $rows_enter = $rows.enter().append('tr');

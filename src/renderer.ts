@@ -220,12 +220,124 @@ export class BarCellRenderer extends DefaultCellRenderer {
   }
 }
 
+export class HeatMapCellRenderer extends DefaultCellRenderer {
+  render($col:d3.Selection<any>, col:model.NumberColumn, rows:any[], context:IRenderContext) {
+    var $rows = $col.datum(col).selectAll('rect.heatmap').data(rows, context.rowKey);
+
+    $rows.enter().append('rect').attr({
+      'class' : 'bar',
+      x: (d, i) => context.cellX(i),
+      y: (d, i) => context.cellPrevY(i) + context.option('rowPadding',1),
+      width: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2
+    }).style('fill', col.color);
+
+    $rows.attr({
+      'data-index': (d, i) => i,
+      width: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2,
+      height: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2
+    });
+
+    context.animated($rows).attr({
+      x: (d, i) => context.cellX(i),
+      y: (d, i) => context.cellY(i) + context.option('rowPadding',1)
+    }).style({
+      fill: (d,i) => this.colorOf(d, i, col)
+    });
+    $rows.exit().remove();
+  }
+
+  colorOf(d: any, i: number, col: model.Column) {
+    var v = col.getValue(d);
+    if (isNaN(v)) {
+      v = 0;
+    }
+    var color = d3.hsl(col.color);
+    color.h = v;
+    return color.toString();
+  }
+
+  findRow($col:d3.Selection<any>, index:number) {
+    return $col.selectAll('rect.heatmap[data-index="' + index + '"]');
+  }
+
+  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
+    var rowNode = this.findRow($col, index);
+    if (!rowNode.empty()) {
+      (<Node>$row.node()).appendChild(<Node>(rowNode.node()));
+      $row.append('text').datum(rowNode.datum()).attr({
+        'class': 'number',
+        'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+        transform: 'translate('+context.cellX(index)+','+context.cellY(index)+')'
+      }).text((d) => col.getLabel(d));
+    }
+  }
+}
+
 class DerivedBarCellRenderer extends BarCellRenderer {
   constructor(extraFuncs:any) {
     super();
     Object.keys(extraFuncs).forEach((key) => {
       this[key] = extraFuncs[key];
     });
+  }
+}
+
+export class ActionCellRenderer implements ICellRenderer {
+  render($col:d3.Selection<any>, col:model.Column, rows:any[], context:IRenderContext) {
+    //nothing to render in normal mode
+  }
+
+  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
+    var actions = context.option('actions',[]);
+    var $actions = $row.append('text').attr({
+      'class': 'actions fa',
+      x: context.cellX(index),
+      y: context.cellPrevY(index),
+      'data-index': index
+    }).selectAll('tspan').data(actions);
+    $actions.enter().append('tspan')
+      .text((d) => d.icon)
+      .attr('title',(d) => d.name)
+      .on('click', (d) => {
+        d3.event.preventDefault();
+        d3.event.stopPropagation();
+        d.action(row);
+      });
+  }
+
+  mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
+    $row.selectAll('*').remove();
+  }
+
+}
+
+class AnnotateCellRenderer extends DefaultCellRenderer {
+  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.AnnotateColumn, row:any, index:number, context:IRenderContext) {
+    this.findRow($col, index).attr('display', 'none');
+    $row.append('foreignObject').attr({
+      x: context.cellX(index)-2,
+      y: context.cellPrevY(index)-2,
+      'data-index': index,
+      width: col.getWidth(),
+      height: context.rowHeight(index)
+    }).append('xhtml:input').attr({
+      type: 'text',
+      value: col.getValue(row)
+    }).style({
+      width: col.getWidth()+'px'
+    }).on('change', function() {
+      var text = this.value;
+      col.setValue(row, text);
+    }).on('click', () => d3.event.stopPropagation() );
+  }
+
+  mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.AnnotateColumn, row:any, index:number, context:IRenderContext) {
+    this.findRow($col, index).attr('display', null);
+    var node = <HTMLInputElement>$row.select('input').node();
+    if (node) {
+      col.setValue(row, node.value);
+    }
+    $row.selectAll('*').remove();
   }
 }
 
@@ -268,7 +380,7 @@ class LinkCellRenderer extends DefaultCellRenderer {
       x: (d, i) => context.cellX(i),
       'xlink:href': (d) => col.getValue(d),
       'data-index': (d, i) => i
-    }).text((d) => col.getLabel(d));
+    }).select('text').text((d) => col.getLabel(d));
 
     context.animated($rows).select('text').attr({
       y: (d, i) => context.cellY(i)
@@ -328,35 +440,38 @@ class CategoricalRenderer extends DefaultCellRenderer {
 }
 
 class StackCellRenderer extends DefaultCellRenderer {
-  renderImpl($col:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
-    var $group = $col.datum(col),
-      children = col.children,
-      offset = 0,
+  renderImpl($base:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
+    const $group = $base.datum(col),
+      children = col.children;
+    var offset = 0,
       shifts = children.map((d) => {
         var r = offset;
         offset += d.getWidth();
         return r;
       });
+    const baseclass = 'component'+context.option('stackLevel','');
 
-    var bak = context.cellX;
-    if (!context.showStacked(col)) {
-      context.cellX = () => 0;
-    }
+    const ueber = context.cellX;
+    const ueberOption = context.option;
+    context.option = (option, default_) => {
+      var r = ueberOption(option, default_);
+      return option === 'stackLevel' ? r + 'N' : r;
+    };
 
-    var $children = $group.selectAll('g.component').data(children, (d) => d.id);
+    const $children = $group.selectAll('g.'+baseclass).data(children, (d) => d.id);
     $children.enter().append('g').attr({
-      'class': 'component',
+      'class': baseclass,
       transform: (d, i) => 'translate(' + shifts[i] + ',0)'
     });
     $children.attr({
-      'class': (d) => 'component ' + d.desc.type,
-      'data-index': (d,i) => i
+      'class': (d) => baseclass+' ' + d.desc.type,
+      'data-stack': (d,i) => i
     }).each(function (d, i) {
       if (context.showStacked(col)) {
-        var preChildren = children.slice(0, i);
+        const preChildren = children.slice(0, i);
         context.cellX = (index) => {
           //shift by all the empty space left from the previous columns
-          return -preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rowGetter(index))), 0);
+          return ueber(index) -preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rowGetter(index))), 0);
         };
       }
       perChild(d3.select(this), d, i, context);
@@ -366,23 +481,30 @@ class StackCellRenderer extends DefaultCellRenderer {
     });
     $children.exit().remove();
 
-    context.cellX = bak;
+    context.cellX = ueber;
+    context.option = ueberOption;
   }
-  render($col:d3.Selection<any>, col:model.StackColumn, rows:any[], context:IRenderContext) {
-    this.renderImpl($col, col, context, ($child, col, i, ccontext) => {
+  render($col:d3.Selection<any>, stack:model.StackColumn, rows:any[], context:IRenderContext) {
+    this.renderImpl($col, stack, context, ($child, col, i, ccontext) => {
       ccontext.renderer(col).render($child, col, rows, ccontext);
     }, (index) => rows[index]);
   }
-  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.StackColumn, row:any, index:number, context:IRenderContext) {
-    this.renderImpl($row, col, context, ($row_i, col, i, ccontext) => {
-      var $col_i = $col.selectAll('g.component[data-index="'+i+'"]');
-      ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
+  mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, stack:model.StackColumn, row:any, index:number, context:IRenderContext) {
+    var baseclass = 'component'+context.option('stackLevel','');
+    this.renderImpl($row, stack, context, ($row_i, col, i, ccontext) => {
+      var $col_i = $col.select('g.'+baseclass+'[data-stack="'+i+'"]');
+      if (!$col_i.empty()) {
+        ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
+      }
     }, (index) => row, false);
   }
-  mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.StackColumn, row:any, index:number, context:IRenderContext) {
-    this.renderImpl($row, col, context, ($row_i, d, i, ccontext) => {
-      var $col_i = $col.selectAll('g.component[data-index="'+i+'"]');
-      ccontext.renderer(d).mouseLeave($col_i, $row_i, d, row, index, ccontext);
+  mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, satck:model.StackColumn, row:any, index:number, context:IRenderContext) {
+    var baseclass = 'component'+context.option('stackLevel','');
+    this.renderImpl($row, satck, context, ($row_i, col, i, ccontext) => {
+      var $col_i = $col.select('g.'+baseclass+'[data-stack="'+i+'"]');
+      if (!$col_i.empty()) {
+        ccontext.renderer(col).mouseLeave($col_i, $row_i, col, row, index, ccontext);
+      }
     }, (index) => row, false);
     $row.selectAll('*').remove();
   }
@@ -405,6 +527,11 @@ export function renderers() {
     categorical: new CategoricalRenderer(),
     ordinal: barRenderer({
       colorOf: (d, i, col) => col.getColor(d)
-    })
+    }),
+    max: barRenderer({
+      colorOf: (d, i, col) => col.getColor(d)
+    }),
+    actions: new ActionCellRenderer(),
+    annotate: new AnnotateCellRenderer()
   };
 }

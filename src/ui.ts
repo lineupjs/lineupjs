@@ -27,8 +27,8 @@ export class PoolRenderer {
     width: 100,
     height: 500,
     additionalDesc : [],
-    hideUsed: true
-
+    hideUsed: true,
+    addAtEndOnClick: false
   };
 
   private $node:d3.Selection<any>;
@@ -36,7 +36,6 @@ export class PoolRenderer {
 
   constructor(private data: provider.DataProvider, parent:Element, options:any = {}) {
     utils.merge(this.options, options);
-    this.entries = data.getColumns().concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
 
     this.$node = d3.select(parent).append('div').classed('lu-pool',true);
 
@@ -45,9 +44,14 @@ export class PoolRenderer {
 
   changeDataStorage(data: provider.DataProvider) {
     if (this.data) {
-      this.data.on(['addColumn.pool','removeColumn.pool','addRanking.pool','removeRanking.pool'], null);
+      this.data.on(['addColumn.pool','removeColumn.pool','addRanking.pool','removeRanking.pool', 'addDesc.pool'], null);
     }
     this.data = data;
+    this.entries = data.getColumns().concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
+    data.on(['addDesc.pool'], (desc) => {
+      this.entries.push(new PoolEntry(desc));
+      this.update();
+    });
     if (this.options.hideUsed) {
       var that = this;
       data.on(['addColumn.pool','removeColumn.pool'], function(col) {
@@ -84,6 +88,13 @@ export class PoolRenderer {
     }
   }
 
+  remove() {
+    this.$node.remove();
+    if (this.data) {
+      this.data.on(['addColumn.pool', 'removeColumn.pool', 'addRanking.pool', 'removeRanking.pool', 'addDesc.pool'], null);
+    }
+  }
+
   update() {
     var data = this.data;
     var descToShow = this.entries.filter((e) => e.used === 0).map((d) => d.desc);
@@ -96,17 +107,30 @@ export class PoolRenderer {
       e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(data.toDescRef(d)));
+      if (model.isNumberColumn(d)) {
+        e.dataTransfer.setData('application/caleydo-lineup-column-number', JSON.stringify(data.toDescRef(d)));
+      }
     }).style({
-      'background-color': (d) => (<any>d).color || model.Column.DEFAULT_COLOR,
       width: this.options.elemWidth+'px',
       height: this.options.elemHeight+'px'
     });
+    if (this.options.addAtEndOnClick) {
+      $headers_enter.on('click', (d) => {
+        this.data.push(this.data.getLastRanking(), d);
+      });
+    }
     $headers_enter.append('span').classed('label',true).text((d) => d.label);
-    $headers.style('transform', (d, i) => {
-      var pos = this.layout(i);
-      return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
+    $headers.style({
+      'transform': (d, i) => {
+        var pos = this.layout(i);
+        return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
+      },
+      'background-color': (d) => (<any>d).color || model.Column.DEFAULT_COLOR
     });
-    $headers.select('span');
+    $headers.attr({
+      title: (d) => d.label
+    });
+    $headers.select('span').text((d) => d.label);
     $headers.exit().remove();
 
     //compute the size of this node
@@ -121,7 +145,7 @@ export class PoolRenderer {
         var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
         this.$node.style({
           width: perRow * this.options.elemWidth+'px',
-          height: Math.floor(descToShow.length / perRow) * this.options.elemHeight+'px'
+          height: Math.ceil(descToShow.length / perRow) * this.options.elemHeight+'px'
         });
         break;
       //case 'vertical':
@@ -157,7 +181,8 @@ export class HeaderRenderer {
     manipulative: true,
 
     filterDialogs : dialogs.filterDialogs(),
-    searchAble: (col: model.Column) => col instanceof model.StringColumn
+    searchAble: (col: model.Column) => col instanceof model.StringColumn,
+    sortOnLabel: true
   };
 
   $node:d3.Selection<any>;
@@ -182,11 +207,34 @@ export class HeaderRenderer {
       (<any>d3.event).sourceEvent.preventDefault();
     });
 
+  private dropHandler = utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d:model.Column, copy) => {
+    var col:model.Column = null;
+    if ('application/caleydo-lineup-column-ref' in data) {
+      var id = data['application/caleydo-lineup-column-ref'];
+      col = this.data.find(id);
+      if (copy) {
+        col = this.data.clone(col);
+      } else {
+        col.removeMe();
+      }
+    } else {
+      var desc = JSON.parse(data['application/caleydo-lineup-column']);
+      col = this.data.create(this.data.fromDescRef(desc));
+    }
+    if (d instanceof model.Column) {
+      return d.insertAfterMe(col);
+    } else {
+      var r= this.data.getLastRanking();
+      return r.push(col) !== null;
+    }
+  });
+
 
   constructor(private data:provider.DataProvider,parent:Element, options:any = {}) {
     utils.merge(this.options, options);
 
     this.$node = d3.select(parent).append('div').classed('lu-header',true);
+    this.$node.append('div').classed('drop',true).call(this.dropHandler);
 
     this.changeDataStorage(data);
   }
@@ -210,12 +258,14 @@ export class HeaderRenderer {
     offset -= this.options.slopeWidth;
 
     var columns = shifts.map((d) => d.col);
-    if (columns.some((c) => c instanceof model.StackColumn && !c.collapsed)) {
-      //we have a second level
-      this.$node.style('height', this.options.headerHeight*2 + 'px');
-    } else {
-      this.$node.style('height', this.options.headerHeight + 'px');
+    function countStacked(c: model.Column) : number {
+      if (c instanceof model.StackColumn && !(<model.StackColumn>c).collapsed) {
+        return 1 + Math.max.apply(Math, (<model.StackColumn>c).children.map(countStacked));
+      }
+      return 1;
     }
+    var levels = Math.max.apply(Math,columns.map(countStacked));
+    this.$node.style('height', this.options.headerHeight*levels + 'px');
     this.renderColumns(columns, shifts);
   }
 
@@ -226,33 +276,45 @@ export class HeaderRenderer {
       $stacked = $node.filter(d=> d instanceof model.StackColumn);
 
     //edit weights
-    $stacked.append('i').attr('class', 'fa fa-tasks').on('click', function(d) {
+    $stacked.append('i').attr('class', 'fa fa-tasks').attr('title','Edit Weights').on('click', function(d) {
       dialogs.openEditWeightsDialog(<model.StackColumn>d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
     //rename
-    $regular.append('i').attr('class', 'fa fa-pencil-square-o').on('click', function(d) {
+    $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title','Rename').on('click', function(d) {
       dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
     //clone
-    $regular.append('i').attr('class', 'fa fa-code-fork').on('click', function(d) {
+    $regular.append('i').attr('class', 'fa fa-code-fork').attr('title','Generate Snapshot').on('click', function(d) {
       var r = provider.pushRanking();
       r.push(provider.clone(d));
       d3.event.stopPropagation();
     });
     //filter
-    $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').on('click', function(d) {
+    $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title','Filter').on('click', function(d) {
       filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
     //search
-    $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').on('click', function(d) {
+    $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').attr('title','Search').on('click', function(d) {
       dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
+    $stacked.append('i')
+      .attr('class', 'fa')
+      .classed('fa-compress',(d: model.StackColumn) => !d.collapsed)
+      .classed('fa-expand', (d: model.StackColumn) => d.collapsed)
+      .attr('title','Compress/Expand')
+      .on('click', function(d: model.StackColumn) {
+        d.collapsed = !d.collapsed;
+        d3.select(this)
+          .classed('fa-compress',!d.collapsed)
+          .classed('fa-expand', d.collapsed);
+        d3.event.stopPropagation();
+      });
     //remove
-    $node.append('i').attr('class', 'fa fa-times').on('click', (d) => {
+    $node.append('i').attr('class', 'fa fa-times').attr('title','Hide').on('click', (d) => {
       if (d instanceof model.RankColumn) {
         provider.removeRanking(<model.RankColumn>d);
         if (provider.getRankings().length === 0) { //create at least one
@@ -266,54 +328,46 @@ export class HeaderRenderer {
   }
 
   private renderColumns(columns: model.Column[], shifts, $base: d3.Selection<any> = this.$node, clazz: string = 'header') {
-
-    var provider = this.data;
     var $headers = $base.selectAll('div.'+clazz).data(columns, (d) => d.id);
     var $headers_enter = $headers.enter().append('div').attr({
       'class': clazz
-    }).style({
-      'background-color': (d) => d.color
     });
-    $headers_enter.append('i').attr('class', 'fa fa sort_indicator');
-    $headers_enter.append('span').classed('label',true).attr({
-      'draggable': this.options.manipulative
-    }).on('dragstart', (d) => {
+    var $header_enter_div = $headers_enter.append('div').classed('lu-label', true).on('click', (d) => {
+        if (this.options.manipulative && !d3.event.defaultPrevented) {
+          d.toggleMySorting();
+        }
+      })
+      .on('dragstart', (d) => {
       var e = <DragEvent>(<any>d3.event);
       e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
       e.dataTransfer.setData('text/plain', d.label);
       e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
-      e.dataTransfer.setData('application/caleydo-lineup-column', JSON.stringify(provider.toDescRef(d.desc)));
-    }).on('click', (d) => {
-      if (this.options.manipulative && !d3.event.defaultPrevented) {
-        d.toggleMySorting();
+      var ref = JSON.stringify(this.data.toDescRef(d.desc));
+      e.dataTransfer.setData('application/caleydo-lineup-column', ref);
+      if (model.isNumberColumn(d)) {
+        e.dataTransfer.setData('application/caleydo-lineup-column-number', ref);
+        e.dataTransfer.setData('application/caleydo-lineup-column-number-ref', d.id);
       }
+    });
+    $header_enter_div.append('i').attr('class', 'fa fa sort_indicator');
+    $header_enter_div.append('span').classed('lu-label',true).attr({
+      'draggable': this.options.manipulative
     });
 
     if (this.options.manipulative) {
       $headers_enter.append('div').classed('handle', true)
         .call(this.dragHandler)
         .style('width', this.options.columnPadding + 'px')
-        .call(utils.dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d:model.Column, copy) => {
-          var col:model.Column = null;
-          if ('application/caleydo-lineup-column-ref' in data) {
-            var id = data['application/caleydo-lineup-column-ref'];
-            col = provider.find(id);
-            if (copy) {
-              col = provider.clone(col);
-            } else {
-              col.removeMe();
-            }
-          } else {
-            var desc = JSON.parse(data['application/caleydo-lineup-column']);
-            col = provider.create(provider.fromDescRef(desc));
-          }
-          return d.insertAfterMe(col);
-        }));
+        .call(this.dropHandler);
       $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
     }
     $headers.style({
       width: (d, i) => (shifts[i].width+this.options.columnPadding)+'px',
-      left: (d, i) => shifts[i].offset+'px'
+      left: (d, i) => shifts[i].offset+'px',
+      'background-color': (d) => d.color
+    });
+    $headers.attr({
+      title: (d) => d.label
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {
       var r = d.findMyRanker();
@@ -322,28 +376,32 @@ export class HeaderRenderer {
       }
       return 'sort_indicator fa';
     });
-    $headers.select('span.label').text((d) => d.label);
+    $headers.select('span.lu-label').text((d) => d.label);
 
     var that = this;
-    $headers.filter((d) => d instanceof model.StackColumn && !d.collapsed).each(function (col : model.StackColumn) {
-      var s_shifts = [];
-      col.flatten(s_shifts, 0, 1, that.options.columnPadding);
+    $headers.filter((d) => d instanceof model.StackColumn).each(function (col : model.StackColumn) {
+      if (col.collapsed) {
+        d3.select(this).selectAll('div.'+clazz+'_i').remove();
+      } else {
+        let s_shifts = [];
+        col.flatten(s_shifts, 0, 1, that.options.columnPadding);
 
-      var s_columns = s_shifts.map((d) => d.col);
-      that.renderColumns(s_columns, s_shifts, d3.select(this), clazz+'_i');
-    }).select('span.label').call(utils.dropAble(['application/caleydo-lineup-column-ref','application/caleydo-lineup-column'], (data, d: model.StackColumn, copy) => {
+        let s_columns = s_shifts.map((d) => d.col);
+        that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
+      }
+    }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref','application/caleydo-lineup-column-number'], (data, d: model.StackColumn, copy) => {
       var col: model.Column = null;
-      if ('application/caleydo-lineup-column-ref' in data) {
-        var id = data['application/caleydo-lineup-column-ref'];
-        col = provider.find(id);
+      if ('application/caleydo-lineup-column-number-ref' in data) {
+        var id = data['application/caleydo-lineup-column-number-ref'];
+        col = this.data.find(id);
         if (copy) {
-          col = provider.clone(col);
+          col = this.data.clone(col);
         } else {
           col.removeMe();
         }
       } else {
-        var desc = JSON.parse(data['application/caleydo-lineup-column']);
-        col = provider.create(provider.fromDescRef(desc));
+        var desc = JSON.parse(data['application/caleydo-lineup-column-number']);
+        col = this.data.create(this.data.fromDescRef(desc));
       }
       return d.push(col);
     }));
@@ -357,7 +415,7 @@ export interface ISlicer {
   (start:number, length:number, row2y:(i:number) => number) : { from: number; to: number };
 }
 
-export class BodyRenderer {
+export class BodyRenderer extends utils.AEventDispatcher {
   private mouseOverItem:(dataIndex:number, hover:boolean) => void;
   private options = {
     rowHeight: 20,
@@ -370,19 +428,26 @@ export class BodyRenderer {
     animation: false, //200
     animationDuration: 1000,
 
-    renderers: renderer.renderers()
+    renderers: renderer.renderers(),
+
+    actions: []
 
   };
 
   private $node: d3.Selection<any>;
 
   constructor(private data:provider.DataProvider, parent: Element, private slicer: ISlicer, options = {}) {
+    super();
     //merge options
     utils.merge(this.options, options);
 
     this.$node = d3.select(parent).append('svg').classed('lu-body',true);
 
     this.changeDataStorage(data);
+  }
+
+  createEventList() {
+    return super.createEventList().concat(['hoverChanged']);
   }
 
   get node() {
@@ -395,10 +460,11 @@ export class BodyRenderer {
 
   changeDataStorage(data: provider.DataProvider) {
     if (this.data) {
-      this.data.on('dirtyValues.bodyRenderer', null);
+      this.data.on(['dirtyValues.bodyRenderer','selectionChanged.bodyRenderer'], null);
     }
     this.data = data;
     data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this),1));
+    data.on('selectionChanged.bodyRenderer', utils.delayedCall(this.drawSelection.bind(this),1));
   }
 
   createContext(index_shift: number):renderer.IRenderContext {
@@ -442,7 +508,7 @@ export class BodyRenderer {
     }
 
     //generate clip paths for the text columns to avoid text overflow
-    //see http://stackoverflow.com/questions/11742812/cannot-select-svg-foreignobject-element-in-d3
+    //see http://stackoverflow.com/questions/L742812/cannot-select-svg-foreignobject-element-in-d3
     //there is a bug in webkit which present camelCase selectors
     var textClipPath = $base.selectAll(function () {
       return this.getElementsByTagName('clipPath');
@@ -508,8 +574,7 @@ export class BodyRenderer {
 
     function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.RankColumn>, index:number, ranking:model.RankColumn, rankingIndex:number) {
       $row.classed('hover', true);
-      var children = $cols.selectAll('g.child').data();
-      var $value_cols = $row.select('g.values').selectAll('g.child').data(children);
+      var $value_cols = $row.select('g.values').selectAll('g.child').data([<model.Column>ranking].concat(ranking.children), (d) => d.id);
       $value_cols.enter().append('g').attr({
         'class': 'child'
       });
@@ -568,25 +633,39 @@ export class BodyRenderer {
     });
     $rows.attr({
       'data-index': (d) => d.d
-    });
-    context.animated($rows).select('rect').attr({
-      y: (data_index) => context.cellY(data_index.i),
-      height: (data_index) => context.rowHeight(data_index.i),
-      width: (d, i, j?) => shifts[j].width
+    }).classed('selected', (d) => this.data.isSelected(d.d));
+    $rows.select('rect').attr({
+      y: (d) => context.cellY(d.i),
+      height: (d) => context.rowHeight(d.i),
+      width: (d, i, j?) => shifts[j].width,
+      'class': (d, i) => 'bg '+(i%2===0?'even':'odd')
     });
     $rows.exit().remove();
 
     $rankings.exit().remove();
   }
 
-  select(data_index: number, additional = false) {
-    //TODO
+  select(dataIndex: number, additional = false) {
+    var selected = this.data.toggleSelection(dataIndex, additional);
+    this.$node.selectAll('g.row[data-index="' + dataIndex + '"], line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
+  }
+
+  drawSelection() {
+    var indices = this.data.getSelection();
+    if (indices.length === 0) {
+      this.$node.selectAll('g.row.selected, line.slope.selected').classed('selected', false);
+    } else {
+      var s = d3.set(indices);
+      this.$node.selectAll('g.row').classed('selected', (d) => s.has(String(d.d)));
+      this.$node.selectAll('line.slope').classed('selected', (d) => s.has(String(d.data_index)));
+    }
   }
 
   mouseOver(dataIndex:number, hover = true) {
+    this.fire('hoverChanged', hover? dataIndex : -1);
     this.mouseOverItem(dataIndex, hover);
     //update the slope graph
-    this.$node.selectAll('line.slope[data-index="' + dataIndex + '"').classed('hover', hover);
+    this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('hover', hover);
   }
 
   renderSlopeGraphs($body: d3.Selection<any>, rankings:model.RankColumn[], orders: number[][], shifts:any[], context:renderer.IRenderContext) {

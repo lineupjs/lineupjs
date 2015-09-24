@@ -54,21 +54,27 @@ export interface IStatistics {
  * a column in LineUp
  */
 export class Column extends utils.AEventDispatcher {
-  static DEFAULT_COLOR = 'gray';
+  static DEFAULT_COLOR = '#C1C1C1';
   static FLAT_ALL_COLUMNS = -1;
 
-  public id:string;
+  id:string;
 
   private width_:number = 100;
 
   parent: IColumnParent = null;
 
   label: string;
+  color: string;
 
   constructor(id:string, public desc:IColumnDesc) {
     super();
     this.id = fixCSS(id);
     this.label = this.desc.label || this.id;
+    this.color = (<any>this.desc).color || Column.DEFAULT_COLOR;
+  }
+
+  assignNewId(idGenerator: () => string) {
+    this.id = fixCSS(idGenerator());
   }
 
   init(callback : (desc: IColumnDesc) => Promise<IStatistics>) : Promise<boolean> {
@@ -103,15 +109,15 @@ export class Column extends utils.AEventDispatcher {
     this.width_ = value;
   }
 
-  setLabel(value: string) {
-    if (value === this.label) {
+  setMetaData(value: string, color: string = this.color) {
+    if (value === this.label && this.color === color) {
       return;
     }
-    this.fire(['labelChanged', 'dirtyHeader','dirty'], this.label, this.label = value);
-  }
-
-  get color() {
-    return (<any>this.desc).color || Column.DEFAULT_COLOR;
+    var events = this.color === color ? ['labelChanged', 'dirtyHeader','dirty'] : ['labelChanged', 'dirtyHeader','dirtyValues','dirty'];
+    this.fire(events, { label: this.label, color: this.color }, {
+      label: this.label = value,
+      color: this.color = color
+    });
   }
 
   sortByMe(ascending = false) {
@@ -157,12 +163,16 @@ export class Column extends utils.AEventDispatcher {
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
     }
+    if (this.color !== ((<any>this.desc).color || Column.DEFAULT_COLOR)) {
+      r.color = this.color;
+    }
     return r;
   }
 
   restore(dump: any, factory : (dump: any) => Column) {
     this.width_ = dump.width || this.width_;
     this.label = dump.label || this.label;
+    this.color = dump.color || this.color;
   }
 
   /**
@@ -214,7 +224,7 @@ export class Column extends utils.AEventDispatcher {
  * a column having an accessor to get the cell value
  */
 export class ValueColumn<T> extends Column {
-  accessor:(row:any, id:string, desc:any) => T;
+  protected accessor:(row:any, id:string, desc:any) => T;
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -234,18 +244,40 @@ export class ValueColumn<T> extends Column {
   }
 }
 
+/**
+ * a column having an accessor to get the cell value
+ */
+export class DummyColumn extends Column {
+
+  constructor(id:string, desc:any) {
+    super(id, desc);
+  }
+
+  getLabel(row:any) {
+    return '';
+  }
+
+  getValue(row:any) {
+    return '';
+  }
+
+  compare(a:any[], b:any[]) {
+    return 0; //can't compare
+  }
+}
+
 export interface INumberColumn {
   getNumber(row: any): number;
 }
 
-export function isNumberColumn(col: Column) {
-  return typeof (<any>col).getNumber === 'function';
+export function isNumberColumn(col: Column|IColumnDesc) {
+  return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/)));
 }
 
 export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   missingValue = 0;
   private scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
-  private mapping = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+  private original = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
 
   private filter_ = {min: -Infinity, max: Infinity};
 
@@ -257,7 +289,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     if (desc.range) {
       this.scale.range(desc.range);
     }
-    this.mapping.domain(this.scale.domain()).range(this.scale.range());
+    this.original.domain(this.scale.domain()).range(this.scale.range());
   }
 
   init(callback : (desc: IColumnDesc) => Promise<IStatistics>) : Promise<boolean> {
@@ -265,7 +297,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     if (isNaN(d[0]) || isNaN(d[1])) {
       return callback(this.desc).then((stats) => {
         this.scale.domain([stats.min, stats.max]);
-        this.mapping.domain(this.scale.domain());
+        this.original.domain(this.scale.domain());
         return true;
       });
     }
@@ -276,7 +308,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     var r = super.dump(toDescRef);
     r.domain = this.scale.domain();
     r.range = this.scale.range();
-    r.mapping = this.getMapping();
+    r.mapping = this.getOriginalMapping();
     r.filter = this.filter;
     r.missingValue = this.missingValue;
     return r;
@@ -291,7 +323,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
       this.scale.range(dump.range);
     }
     if (dump.mapping) {
-      this.mapping.domain(dump.mapping.domain).range(dump.mapping.range);
+      this.original.domain(dump.mapping.domain).range(dump.mapping.range);
     }
     if (dump.filter) {
       this.filter_ = dump.filter;
@@ -335,21 +367,21 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 
   getMapping() {
     return {
-      domain: <[number, number]>this.mapping.domain(),
-      range: <[number, number]>this.mapping.range()
+      domain: <[number, number]>this.scale.domain(),
+      range: <[number, number]>this.scale.range()
     };
   }
 
   getOriginalMapping() {
     return {
-      domain: <[number, number]>this.mapping.domain(),
-      range: <[number, number]>this.mapping.range()
+      domain: <[number, number]>this.original.domain(),
+      range: <[number, number]>this.original.range()
     };
   }
 
   setMapping(domain: [number, number], range: [number, number]) {
     var bak = this.getMapping();
-    this.mapping.domain(domain).range(range);
+    this.scale.domain(domain).range(range);
     this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
   }
 
@@ -482,6 +514,55 @@ export class LinkColumn extends StringColumn {
       return this.link.replace(/\$1/g , v);
     }
     return v;
+  }
+}
+
+export class AnnotateColumn extends StringColumn {
+  private annotations = d3.map<string>();
+
+  constructor(id:string, desc:any) {
+    super(id, desc);
+
+  }
+
+  getValue(row: any) {
+    var index = String(row._index);
+    if (this.annotations.has(index)) {
+      return this.annotations.get(index);
+    }
+    return super.getValue(row);
+  }
+
+  dump(toDescRef: (desc: any) => any) : any {
+    var r = super.dump(toDescRef);
+    r.annotations = {};
+    this.annotations.forEach((k,v) => {
+      r.annotations[k] = v;
+    });
+    return r;
+  }
+
+  restore(dump: any, factory : (dump: any) => Column) {
+    super.restore(dump, factory);
+    if (dump.annotations) {
+      Object.keys(dump.annotations).forEach((k) => {
+        this.annotations.set(k, dump.annotations[k]);
+      });
+    }
+  }
+
+  setValue(row:any, value: string) {
+    var old = this.getValue(row);
+    if (old === value) {
+      return true;
+    }
+    if (value === '' || value == null) {
+      this.annotations.remove(String(row._index));
+    } else {
+      this.annotations.set(String(row._index), value);
+    }
+    this.fire(['dirtyValues','dirty'], value, old);
+    return true;
   }
 }
 
@@ -718,6 +799,11 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     return super.createEventList().concat(['collapseChanged']);
   }
 
+  assignNewId(idGenerator: () => string) {
+    super.assignNewId(idGenerator);
+    this.children_.forEach((c) => c.assignNewId(idGenerator));
+  }
+
   get children() {
     return this.children_.slice();
   }
@@ -743,12 +829,13 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
   }
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
+    var self = null;
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       var w = this.getWidth();
       if (!this.collapsed) {
         w += (this.children_.length-1)*padding;
       }
-      r.push({col: this, offset: offset, width: w});
+      r.push(self = {col: this, offset: offset, width: w});
       if (levelsToGo === 0) {
         return w;
       }
@@ -758,6 +845,9 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     this.children_.forEach((c) => {
       acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
     });
+    if (self) { //nesting my even increase my width
+      self.width = acc - offset - padding;
+    }
     return acc - offset - padding;
   }
 
@@ -783,7 +873,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
       return null;
     }
     if (col instanceof StackColumn) {
-      col.collapsed = true;
+      //STACK col.collapsed = true;
     }
     if (!isNaN(weight)) {
       col.setWidth((weight/(1-weight)*this.getWidth()));
@@ -876,6 +966,9 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     }
     this.children_.splice(i, 1); //remove and deregister listeners
     child.parent = null;
+    if (child instanceof StackColumn) {
+      //STACK (<StackColumn>child).collapsed = false;
+    }
     this.unforward(child, 'dirtyHeader.stack','dirtyValues.stack','dirty.stack','filterChanged.stack');
     child.on('widthChanged.stack', null);
 
@@ -980,6 +1073,11 @@ export class RankColumn extends ValueColumn<number> {
 
   createEventList() {
     return super.createEventList().concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
+  }
+
+  assignNewId(idGenerator: () => string) {
+    super.assignNewId(idGenerator);
+    this.columns_.forEach((c) => c.assignNewId(idGenerator));
   }
 
   setOrder(order: number[]) {
@@ -1088,6 +1186,7 @@ export class RankColumn extends ValueColumn<number> {
     this.columns_.splice(index, 0, col);
     col.parent = this;
     this.forward(col, 'dirtyValues.ranking','dirtyHeader.ranking','dirty.ranking');
+    col.on('filterChanged.order', this.dirtyOrder);
 
 
     this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
@@ -1188,6 +1287,11 @@ export class RankColumn extends ValueColumn<number> {
   }
 }
 
+export const createStackDesc = StackColumn.desc;
+export function createActionDesc(label = 'actions') {
+ return { type: 'actions', label : label };
+}
+
 /**
  * a map of all known column types *
  */
@@ -1199,6 +1303,8 @@ export function models() {
     stack: StackColumn,
     rank: RankColumn,
     categorical: CategoricalColumn,
-    ordinal: CategoricalNumberColumn
+    ordinal: CategoricalNumberColumn,
+    actions: DummyColumn,
+    annotate: AnnotateColumn
   };
 }

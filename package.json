@@ -9,14 +9,14 @@
   },
   "homepage": "https://github.com/Caleydo/lineup.js",
   "dependencies": {
-    "grunt-ts": "^4.2.0"
   },
   "engines": {
     "node": ">= 0.10.0"
   },
-  "main": "dist/LineUp.js",
+  "main": "dist/LineUpJS.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "grunt"
   },
   "repository": {
     "type": "git",
@@ -41,6 +41,6 @@
     "grunt-wrap": "^0.3.0",
     "load-grunt-tasks": "^3.2.0",
     "time-grunt": "^1.2.1",
-    "tslint": "^2.4.3"
+    "tslint": "^2.5.0-beta"
   }
 }

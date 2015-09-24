@@ -103,6 +103,10 @@ export class DataProvider extends utils.AEventDispatcher {
     return this.rankings_.slice();
   }
 
+  getLastRanking() {
+    return this.rankings_[this.rankings_.length - 1];
+  }
+
   cleanUpRanking(ranking:model.RankColumn) {
     //nothing to do
   }
@@ -126,6 +130,8 @@ export class DataProvider extends utils.AEventDispatcher {
     return null;
   }
 
+
+
   create(desc: model.IColumnDesc) {
     var type = this.columnTypes[desc.type];
     if (type) {
@@ -136,14 +142,20 @@ export class DataProvider extends utils.AEventDispatcher {
 
   clone(col: model.Column) {
     var dump = col.dump((d) => d);
+    return this.restoreColumn(dump);
+  }
+
+  restoreColumn(dump: any) {
     var create = (d: any) => {
       var type = this.columnTypes[d.desc.type];
-      var c  = new type(this.nextId(), d.desc);
+      var c  = new type('', d.desc);
       c.restore(d, create);
+      c.assignNewId(this.nextId.bind(this));
       return c;
     };
     return create(dump);
   }
+
 
   find(id_or_filter: (col: model.Column) => boolean | string) {
     var filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
@@ -175,6 +187,10 @@ export class DataProvider extends utils.AEventDispatcher {
       selection: this.selection.values().map(Number),
       rankings: this.rankings_.map((r) => r.dump(this.toDescRef))
     };
+  }
+
+  dumpColumn(col: model.Column) {
+    return col.dump(this.toDescRef);
   }
 
   toDescRef(desc: any) : any {
@@ -213,6 +229,11 @@ export class DataProvider extends utils.AEventDispatcher {
         this.deriveRanking(dump.layout[key]);
       });
     }
+
+    var idGenerator = this.nextId.bind(this);
+    this.rankings_.forEach((r) => {
+      r.children.forEach((c) => c.assignNewId(idGenerator));
+    });
   }
 
   findDesc(ref: string) {
@@ -238,6 +259,11 @@ export class DataProvider extends utils.AEventDispatcher {
     var toCol = (column) => {
       if (column.type === 'rank') {
         return null; //can't handle
+      }
+      if (column.type === 'actions') {
+        var r = this.create(model.createActionDesc(column.label || 'actions'));
+        r.restore(column);
+        return r;
       }
       if (column.type === 'stacked') {
         //create a stacked one
@@ -331,7 +357,7 @@ export class DataProvider extends utils.AEventDispatcher {
   }
 
   searchSelect(search: string|RegExp, col: model.Column) {
-    //TODO
+    //implemented by custom provider
   }
 
   /**
@@ -352,6 +378,30 @@ export class DataProvider extends utils.AEventDispatcher {
   setSelection(indices: number[]) {
     this.selection = d3.set();
     this.selectAll(indices);
+  }
+
+  /**
+   * toggles the selection of the given data index
+   * @param index
+   * @param additional just this element or all
+   * @returns {boolean} whether the index is currently selected
+   */
+  toggleSelection(index: number, additional = false) {
+    if (this.isSelected(index)) {
+      if (additional) {
+        this.deselect(index);
+      } else {
+        this.clearSelection();
+      }
+      return false;
+    } else {
+      if (additional) {
+        this.select(index);
+      } else {
+        this.setSelection([index]);
+      }
+      return true;
+    }
   }
 
   /**
@@ -397,12 +447,24 @@ export class CommonDataProvider extends DataProvider {
 
   constructor(private columns:model.IColumnDesc[] = []) {
     super();
-
+    this.columns = columns.slice();
     //generate the accessor
     columns.forEach((d:any) => {
       d.accessor = this.rowGetter;
       d.label = d.label || d.column;
     });
+  }
+
+  createEventList() {
+    return super.createEventList().concat(['addDesc']);
+  }
+
+  pushDesc(column: model.IColumnDesc) {
+    var d : any = column;
+    d.accessor = this.rowGetter;
+    d.label = column.label || d.column;
+    this.columns.push(column);
+    this.fire('addDesc', d);
   }
 
   getColumns(): model.IColumnDesc[] {
@@ -508,12 +570,22 @@ export class LocalDataProvider extends CommonDataProvider {
   stats(indices: number[], col: model.INumberColumn): Promise<model.IStatistics> {
     return Promise.resolve(computeStats(this.data, col.getNumber.bind(col), [0, 1]));
   }
+
+  searchSelect(search: string|RegExp, col: model.Column) {
+    const f = typeof search === 'string' ? (v: string) => v.indexOf(search) >= 0 : (v: string) => v.match(search) != null;
+    const indices = this.data.filter((row) => {
+      return f(col.getLabel(row));
+    }).map((row) => row._index);
+    this.setSelection(indices);
+  }
+
 }
 
 export interface IServerData {
   sort(desc:any) : Promise<number[]>;
   view(indices:number[]): Promise<any[]>;
   mappingSample(column: any) : Promise<number[]>;
+  search(search: string|RegExp, column: any): Promise<number[]>;
 }
 
 /**
@@ -567,5 +639,11 @@ export class RemoteDataProvider extends CommonDataProvider {
 
   mappingSample(col: model.Column) : Promise<number[]> {
     return this.server.mappingSample((<any>col.desc).column);
+  }
+
+  searchSelect(search: string|RegExp, col: model.Column) {
+    this.server.search(search, (<any>col.desc).column).then((indices) => {
+      this.setSelection(indices);
+    });
   }
 }

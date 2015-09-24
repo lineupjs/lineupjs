@@ -25,21 +25,40 @@
 }
 
 .lu-popup {
-  background: white;
   position: absolute;
 
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 10px 10px 5px #888888;
-
-  font-size: 9pt;
   dominant-baseline: central;
   text-anchor: middle;
+
+
+  .ok {
+    position: absolute;
+    right: 10px;
+  }
+}
+
+.lu-popup, .lu-popup2 {
+  background-color: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  padding: 2px;
+  box-shadow: 5px 5px 3px #888888;
+
+  font-size: 8pt;
+
+  clear: right;
+
+  input {
+    font-size: 8pt;
+  }
 
   .selectionTable {
     background: white;
     overflow-x: auto;
     overflow-y: scroll;
+
+    td {
+      white-space: nowrap;
+    }
 
     table {
       width: 95%;
@@ -48,24 +67,6 @@
     tr:hover {
       background-color: lightblue;
     }
-  }
-  .ok {
-    position: absolute;
-    right: 10px;
-  }
-}
-
-.lu-popup, .lu-popup2 {
-  background-color: rgba(255, 255, 255, 0.5);
-  position: absolute;
-  padding: 2px;
-
-  font-size: 8pt;
-
-  clear: right;
-
-  input {
-    font-size: 8pt;
   }
 }
 
@@ -104,7 +105,20 @@
 }
 
 $lu_hover_color: #e5e5e5;
-$lu_toolbar_font_size: 9pt;
+$lu_selected_color: #ffa500;
+$lu_toolbar_font_size: 8pt;
+$lu_even_bg: #f7f7f7;
+$lu_drag_over: #979797;
+
+.lu-pool {
+  div.header {
+    border: 2px outset white;
+
+    &:hover {
+      border-color: $lu_hover_color;
+    }
+  }
+}
 
 .lu, .lu-pool {
   position: relative;
@@ -113,8 +127,16 @@ $lu_toolbar_font_size: 9pt;
     position: relative;
   }
 
-  text {
+  text, tspan {
     dominant-baseline: text-before-edge;
+  }
+
+  text.actions tspan {
+    cursor: pointer;
+
+    &:hover {
+      color: darkblue;
+    }
   }
 
   text.rank {
@@ -134,27 +156,52 @@ $lu_toolbar_font_size: 9pt;
     &.hover {
       stroke: $lu_hover_color;
     }
+
+    &.selected {
+      stroke: $lu_selected_color;
+    }
   }
 
   g.cols {
     pointer-events: none;
   }
 
-  rect.bg {
-    fill: transparent;
-  }
-
-  g.row.hover {
+  g.row {
     rect.bg {
-      fill: $lu_hover_color;
+      fill: transparent;
+
+      &.even {
+        fill: $lu_even_bg;
+      }
     }
-    rect.bar {
-      opacity: 0.5;
+    &.selected {
+      rect.bg {
+        stroke: $lu_selected_color;
+        stroke-width: 1;
+      }
+    }
+    &.hover {
+      rect.bg {
+        fill: $lu_hover_color;
+      }
+      rect.bar {
+        opacity: 0.5;
+      }
     }
   }
 
   div.lu-header, div.lu-pool {
     position: relative;
+
+    .drop {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+
+      &.drag_over {
+        background-color: $lu_drag_over;
+      }
+    }
   }
 
   div.header, div.header_i {
@@ -165,6 +212,8 @@ $lu_toolbar_font_size: 9pt;
     text-align: center;
     height: 100%;
 
+    font-size: 90%;
+
     &:hover {
       &> div.toolbar {
         display: block;
@@ -174,19 +223,30 @@ $lu_toolbar_font_size: 9pt;
 
   div.header_i {
     top: 50%;
+    height: 50%;
   }
 
   div.lu-header div.toolbar {
     display: none;
     position: absolute;
-    right: 6px;
     text-align: right;
-    top: 0;
+    right: 5px;
+    border-radius: 3px 0 0 3px;
     cursor: auto;
+    background: #6D6C6C;
   }
 
   div.lu-header {
     div.header {
+      &.drag_over div.lu-label {
+        color: $lu_drag_over;
+      }
+
+      div.lu-label {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
 
       i.sort_indicator {
         position: absolute;
@@ -205,7 +265,7 @@ $lu_toolbar_font_size: 9pt;
         cursor: col-resize;
 
         &.drag_over {
-          background-color: black;
+          background-color: $lu_drag_over;
         }
       }
     }
@@ -217,6 +277,10 @@ $lu_toolbar_font_size: 9pt;
       &:hover {
         color: darkblue;
       }
+
+      &.filtered {
+        color: darkblue;
+      }
     }
   }
 
@@ -224,5 +288,15 @@ $lu_toolbar_font_size: 9pt;
     text {
       font-size: 10pt;
     }
+    foreignObject: {
+      padding: 0;
+      margin: 0;
+    }
+    input {
+      padding: 0;
+      margin: 0;
+      font-size: 9pt;
+    }
   }
+
 }

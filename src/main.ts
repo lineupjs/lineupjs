@@ -47,7 +47,9 @@ export class LineUp extends utils_.AEventDispatcher {
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
       backupScrollRows: 4,
-      animationDuration: 1000
+      animationDuration: 1000,
+
+      rowActions: []
     },
     /* enables manipulation features, remove column, reorder,... */
     manipulative: true,
@@ -84,8 +86,10 @@ export class LineUp extends utils_.AEventDispatcher {
       rowBarPadding: this.config.svgLayout.rowBarPadding,
       animationDuration: this.config.svgLayout.animationDuration,
       animation: this.config.renderingOptions.animation,
-      stacked: this.config.renderingOptions.stacked
+      stacked: this.config.renderingOptions.stacked,
+      actions: this.config.svgLayout.rowActions
     });
+    this.forward(this.body, 'hoverChanged');
     if(this.config.pool && this.config.manipulative) {
       this.addPool(new ui_.PoolRenderer(data, this.node, this.config));
     }
@@ -105,7 +109,7 @@ export class LineUp extends utils_.AEventDispatcher {
     }
   }
   createEventList() {
-    return super.createEventList().concat(['hoverChanged', 'selectionChanged']);
+    return super.createEventList().concat(['hoverChanged', 'selectionChanged', 'multiSelectionChanged']);
   }
 
   addPool(node: Element, config? : any): ui_.PoolRenderer;
@@ -134,6 +138,7 @@ export class LineUp extends utils_.AEventDispatcher {
    * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
    */
   destroy() {
+    this.pools.forEach((p) => p.remove());
     this.$container.remove();
     if (this.contentScroller) {
       this.contentScroller.destroy();
@@ -154,14 +159,23 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 
   changeDataStorage(data: provider_.DataProvider, dump?: any) {
+    if (this.data) {
+      this.data.on('selectionChanged.main', null);
+    }
     this.data = data;
     if (dump) {
       this.data.restore(dump);
     }
+    this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
     this.header.changeDataStorage(data);
     this.body.changeDataStorage(data);
     this.pools.forEach((p) => p.changeDataStorage(data));
     this.update();
+  }
+
+  private triggerSelection(data_indices: number[]) {
+    this.fire('selectionChanged', data_indices.length > 0 ? data_indices[0] : -1);
+    this.fire('multiSelectionChanged', data_indices);
   }
 
   restore(dump: any) {
