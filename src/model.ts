@@ -433,7 +433,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 }
 
 export class StringColumn extends ValueColumn<string> {
-  private filter_ : string = null;
+  private filter_ : string|RegExp = null;
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -450,13 +450,21 @@ export class StringColumn extends ValueColumn<string> {
 
   dump(toDescRef: (desc: any) => any) : any {
     var r = super.dump(toDescRef);
-    r.filter = this.filter_;
+    if(this.filter_ instanceof RegExp) {
+      r.filter = 'REGEX:'+(<RegExp>this.filter_).source;
+    } else {
+      r.filter = this.filter_;
+    }
     return r;
   }
 
   restore(dump: any, factory : (dump: any) => Column) {
     super.restore(dump, factory);
-    this.filter_ = dump.filter || null;
+    if (dump.filter && dump.filter.slice(0,6) === 'REGEX:') {
+      this.filter_ = new RegExp(dump.filter.slice(6));
+    } else {
+      this.filter_ = dump.filter || null;
+    }
   }
 
   isFiltered() {
@@ -472,6 +480,9 @@ export class StringColumn extends ValueColumn<string> {
     if (typeof filter === 'string' && filter.length > 0) {
       return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
     }
+    if (filter instanceof RegExp) {
+      return r && filter.test(r);
+    }
     return true;
   }
 
@@ -479,7 +490,7 @@ export class StringColumn extends ValueColumn<string> {
     return this.filter_;
   }
 
-  setFilter(filter: string) {
+  setFilter(filter: string|RegExp) {
     if (filter === '') {
       filter = null;
     }

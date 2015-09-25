@@ -67,7 +67,7 @@ export function openSearchDialog(column:model.Column, $header:d3.Selection<model
     }
   });
 
-  popup.select('.ok').on('click', function () {
+  function updateImpl() {
     var search = popup.select('input[type="text"]').property('value');
     var isRegex = popup.select('input[type="text"]').property('checked');
     if (isRegex) {
@@ -75,7 +75,10 @@ export function openSearchDialog(column:model.Column, $header:d3.Selection<model
     }
     provider.searchSelect(search, column);
     popup.remove();
-  });
+  }
+
+  popup.select('input[type="checkbox"]').on('change', updateImpl);
+  popup.select('.ok').on('click', updateImpl);
 
   popup.select('.cancel').on('click', function () {
     popup.remove();
@@ -186,31 +189,44 @@ function openCategoricalFilter(column: model.CategoricalColumn, $header: d3.Sele
 function openStringFilter(column: model.StringColumn, $header: d3.Selection<model.Column>) {
   var bak = column.getFilter() || '';
 
-  var $popup = makePopup($header, 'Filter', `<input type="text" placeholder="containing..." autofocus="true" size="18" value="${bak}" autofocus="autofocus"><br>`);
+  var $popup = makePopup($header, 'Filter',
+    `<input type="text" placeholder="containing..." autofocus="true" size="15" value="${(bak instanceof RegExp) ? bak.source : bak}" autofocus="autofocus">
+    <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
+    <br>`);
 
   function updateData(filter) {
-    $header.select('i.fa-filter').classed('filtered', (filter && filter.length > 0));
+    $header.select('i.fa-filter').classed('filtered', (filter && filter !== ''));
     column.setFilter(filter);
   }
 
-  $popup.select('input[type="text"]').on('input', function() {
-    var search : any = (<HTMLInputElement>d3.event.target).value;
-    if (search.length >= 3) {
+  function updateImpl(force) {
+    var search : any = $popup.select('input[type="text"]').property('value');
+    if (search.length >= 3 || force) {
+      var isRegex = $popup.select('input[type="checkbox"]').property('checked');
+      if (isRegex) {
+        search = new RegExp(search);
+      }
       updateData(search);
     }
-  });
+
+  }
+
+  $popup.select('input[type="checkbox"]').on('change', updateImpl);
+  $popup.select('input[type="text"]').on('input', updateImpl);
 
   $popup.select('.cancel').on('click', function () {
-    $popup.select('input').property('value', bak);
+    $popup.select('input[type="text"]').property('value', bak);
+    $popup.select('input[type="checkbox"]').property('checked', bak instanceof RegExp ? 'checked': null);
     updateData(bak);
     $popup.remove();
   });
   $popup.select('.reset').on('click', function () {
-    $popup.select('input').property('value', '');
+    $popup.select('input[type="text"]').property('value', '');
+    $popup.select('input[type="checkbox"]').property('checked', null);
     updateData(null);
   });
   $popup.select('.ok').on('click', function () {
-    updateData($popup.select('input').property('value'));
+    updateImpl(true);
     $popup.remove();
   });
 }

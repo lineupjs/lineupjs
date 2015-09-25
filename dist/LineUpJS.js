@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-09-23
+/*! LineUpJS - v0.1.0 - 2015-09-25
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -802,12 +802,22 @@ var StringColumn = (function (_super) {
     };
     StringColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
-        r.filter = this.filter_;
+        if (this.filter_ instanceof RegExp) {
+            r.filter = 'REGEX:' + this.filter_.source;
+        }
+        else {
+            r.filter = this.filter_;
+        }
         return r;
     };
     StringColumn.prototype.restore = function (dump, factory) {
         _super.prototype.restore.call(this, dump, factory);
-        this.filter_ = dump.filter || null;
+        if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
+            this.filter_ = new RegExp(dump.filter.slice(6));
+        }
+        else {
+            this.filter_ = dump.filter || null;
+        }
     };
     StringColumn.prototype.isFiltered = function () {
         return this.filter_ != null;
@@ -819,6 +829,9 @@ var StringColumn = (function (_super) {
         var r = this.getLabel(row), filter = this.filter_;
         if (typeof filter === 'string' && filter.length > 0) {
             return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+        }
+        if (filter instanceof RegExp) {
+            return r && filter.test(r);
         }
         return true;
     };
@@ -3253,7 +3266,7 @@ function openSearchDialog(column, $header, provider) {
             provider.searchSelect(search, column);
         }
     });
-    popup.select('.ok').on('click', function () {
+    function updateImpl() {
         var search = popup.select('input[type="text"]').property('value');
         var isRegex = popup.select('input[type="text"]').property('checked');
         if (isRegex) {
@@ -3261,7 +3274,9 @@ function openSearchDialog(column, $header, provider) {
         }
         provider.searchSelect(search, column);
         popup.remove();
-    });
+    }
+    popup.select('input[type="checkbox"]').on('change', updateImpl);
+    popup.select('.ok').on('click', updateImpl);
     popup.select('.cancel').on('click', function () {
         popup.remove();
     });
@@ -3350,28 +3365,36 @@ function openCategoricalFilter(column, $header) {
 }
 function openStringFilter(column, $header) {
     var bak = column.getFilter() || '';
-    var $popup = makePopup($header, 'Filter', "<input type=\"text\" placeholder=\"containing...\" autofocus=\"true\" size=\"18\" value=\"" + bak + "\" autofocus=\"autofocus\"><br>");
+    var $popup = makePopup($header, 'Filter', "<input type=\"text\" placeholder=\"containing...\" autofocus=\"true\" size=\"15\" value=\"" + ((bak instanceof RegExp) ? bak.source : bak) + "\" autofocus=\"autofocus\">\n    <br><label><input type=\"checkbox\" " + ((bak instanceof RegExp) ? 'checked="checked"' : '') + ">RegExp</label>\n    <br>");
     function updateData(filter) {
-        $header.select('i.fa-filter').classed('filtered', (filter && filter.length > 0));
+        $header.select('i.fa-filter').classed('filtered', (filter && filter !== ''));
         column.setFilter(filter);
     }
-    $popup.select('input[type="text"]').on('input', function () {
-        var search = d3.event.target.value;
-        if (search.length >= 3) {
+    function updateImpl(force) {
+        var search = $popup.select('input[type="text"]').property('value');
+        if (search.length >= 3 || force) {
+            var isRegex = $popup.select('input[type="checkbox"]').property('checked');
+            if (isRegex) {
+                search = new RegExp(search);
+            }
             updateData(search);
         }
-    });
+    }
+    $popup.select('input[type="checkbox"]').on('change', updateImpl);
+    $popup.select('input[type="text"]').on('input', updateImpl);
     $popup.select('.cancel').on('click', function () {
-        $popup.select('input').property('value', bak);
+        $popup.select('input[type="text"]').property('value', bak);
+        $popup.select('input[type="checkbox"]').property('checked', bak instanceof RegExp ? 'checked' : null);
         updateData(bak);
         $popup.remove();
     });
     $popup.select('.reset').on('click', function () {
-        $popup.select('input').property('value', '');
+        $popup.select('input[type="text"]').property('value', '');
+        $popup.select('input[type="checkbox"]').property('checked', null);
         updateData(null);
     });
     $popup.select('.ok').on('click', function () {
-        updateData($popup.select('input').property('value'));
+        updateImpl(true);
         $popup.remove();
     });
 }
