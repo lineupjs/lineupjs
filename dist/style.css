@@ -17,6 +17,10 @@
 .lugui-me text.centered {
   text-anchor: middle; }
 
+.lugui-me text.editableLabel:hover {
+  cursor: pointer;
+  text-decoration: underline; }
+
 .lu-popup {
   position: absolute;
   dominant-baseline: central;

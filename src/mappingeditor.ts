@@ -58,7 +58,7 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
     //location for the raw2pixel value axis
     var raw2pixelAxisY = options.height - options.padding_ver;
     //this is needed for filtering the shown datalines
-    var raw2pixel = d3.scale.linear().domain(dataDomain).range([lowerLimitX, upperLimitX]);
+    var raw2pixel = d3.scale.linear().domain([Math.min(dataDomain[0],scale.domain()[0]),Math.min(dataDomain[1],scale.domain()[1])]).range([lowerLimitX, upperLimitX]);
     var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
 
     //x coordinate for the score axis lower bound
@@ -85,10 +85,16 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
 
     //lower axis for raw2pixel values
     addLine($base, lowerLimitX, raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
-    //label for minimum raw2pixel value
-    addText($base, lowerLimitX, raw2pixelAxisY + 20, dataDomain[0], '.75em');
+
+    addText($base, lowerLimitX, raw2pixelAxisY + 20, raw2pixel.domain()[0], '.75em')
+      .on('click', editLimit(0))
+      .classed('editableLabel', true)
+      .append('title').text('Click to Modify');
     //label for maximum raw2pixel value
-    addText($base, upperLimitX, raw2pixelAxisY + 20, dataDomain[1], '.75em');
+    addText($base, upperLimitX, raw2pixelAxisY + 20, raw2pixel.domain()[1], '.75em')
+      .on('click', editLimit(1))
+      .classed('editableLabel', true)
+      .append('title').text('Click to Modify');
     addText($base, options.width / 2, raw2pixelAxisY + 20, 'Raw', '.75em', 'centered');
 
     //lines that show mapping of individual data items
@@ -206,7 +212,7 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
         }
       }));
     //draggable circle that defines the lower bound of raw2pixel values
-    addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
+    var $lowRawCircle = addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
       .call(createDrag(lowerBoundRawLabel, function () {
         if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
           mapperLineLowerBounds.attr('x2', lowerLimitX + d3.event.x);
@@ -220,7 +226,7 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
         }
       }));
     //draggable circle that defines the upper bound of raw2pixel values
-    addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
+    var $upperRawCircle = addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
       .call(createDrag(upperBoundRawLabel, function () {
         if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
           mapperLineUpperBounds.attr('x2', upperLimitX + d3.event.x);
@@ -242,6 +248,44 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
         .domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)])
         .range([normal2pixel.invert(lowerNormalized), normal2pixel.invert(upperNormalized)]);
       options.callback.call(options.callbackThisArg, newScale);
+    }
+
+    //label for minimum raw2pixel value
+    function editLimit(index: number) {
+      return function () {
+        var $elem = d3.select(this);
+        var $input = $base.append('foreignObject').attr({
+          x: (index === 0 ? lowerLimitX - 7 : upperLimitX - 45),
+          y: raw2pixelAxisY + 15,
+          width: 50,
+          height: 20
+        });
+        function update() {
+          var old = raw2pixel.domain();
+          var new_ = old.slice();
+          new_[index] = +this.value;
+          if (old[index] === new_[index]) {
+            return;
+          }
+          raw2pixel.domain(new_);
+          $elem.text(this.value);
+          lowerRaw = raw2pixel(scale.domain()[0]);
+          upperRaw = raw2pixel(scale.domain()[1]);
+          $lowRawCircle.attr('transform', 'translate(' + (lowerRaw-lowerLimitX) + ',0)');
+          $upperRawCircle.attr('transform', 'translate(' + (upperRaw-upperLimitX) + ',0)');
+          mapperLineLowerBounds.attr('x2', lowerRaw);
+          mapperLineUpperBounds.attr('x2', upperRaw);
+          datalines.attr('x2', raw2pixel);
+          updateRaw();
+          updateScale(true);
+          $input.remove();
+        }
+        $input.append('xhtml:input')
+          .attr('value', raw2pixel.domain()[index])
+          .style('width', '5em')
+          .on('change', update)
+          .on('blur', update);
+      };
     }
   };
   return editor;

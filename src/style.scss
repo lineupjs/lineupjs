@@ -21,6 +21,11 @@
     &.centered {
       text-anchor: middle;
     }
+
+    &.editableLabel:hover {
+      cursor: pointer;
+      text-decoration: underline;
+    }
   }
 }
 
