@@ -238,284 +238,259 @@ exports.create = create;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
-define(["require", "exports", 'd3', './utils'], function (require, exports, d3, utils) {
-    'use strict';
-    function addLine($svg, x1, y1, x2, y2, clazz) {
-        return $svg.append('line').attr({
-            x1: x1, y1: y1, x2: x2, y2: y2, 'class': clazz
+///<reference path='../typings/tsd.d.ts' />
+var d3 = require('d3');
+var utils = require('./utils');
+'use strict';
+function addLine($svg, x1, y1, x2, y2, clazz) {
+    return $svg.append('line').attr({
+        x1: x1, y1: y1, x2: x2, y2: y2, 'class': clazz
+    });
+}
+function addText($svg, x, y, text, dy, clazz) {
+    return $svg.append('text').attr({
+        x: x, y: y, dy: dy, 'class': clazz
+    }).text(text);
+}
+function addCircle($svg, x, shift, y, radius) {
+    shift -= x;
+    return $svg
+        .append('circle')
+        .attr({
+        'class': 'handle',
+        r: radius,
+        cx: x,
+        cy: y,
+        transform: 'translate(' + shift + ',0)'
+    });
+}
+function open(scale, dataDomain, dataPromise, options) {
+    options = utils.merge({
+        width: 320,
+        height: 250,
+        padding_hor: 10,
+        padding_ver: 30,
+        radius: 8,
+        callback: function (d) { return d; },
+        callbackThisArg: null,
+        triggerCallback: 'change'
+    }, options);
+    var editor = function ($root) {
+        var $svg = $root.append('svg').attr({
+            'class': 'lugui-me',
+            width: options.width,
+            height: options.height
         });
-    }
-    function addText($svg, x, y, text, dy, clazz) {
-        return $svg.append('text').attr({
-            x: x, y: y, dy: dy, 'class': clazz
-        }).text(text);
-    }
-    function addCircle($svg, x, shift, y, radius) {
-        shift -= x;
-        return $svg
-            .append('circle')
-            .attr({
-            'class': 'handle',
-            r: radius,
-            cx: x,
-            cy: y,
-            transform: 'translate(' + shift + ',0)'
-        });
-    }
-    function open(scale, dataDomain, dataPromise, options) {
-        options = utils.merge({
-            width: 320,
-            height: 250,
-            padding_hor: 10,
-            padding_ver: 30,
-            radius: 8,
-            callback: function (d) { return d; },
-            callbackThisArg: null,
-            triggerCallback: 'change' //change, dragend
-        }, options);
-        var editor = function ($root) {
-            var $svg = $root.append('svg').attr({
-                'class': 'lugui-me',
-                width: options.width,
-                height: options.height
-            });
-            //left limit for the axes
-            var lowerLimitX = options.padding_hor;
-            //right limit for the axes
-            var upperLimitX = options.width - options.padding_hor;
-            //location for the score axis
-            var scoreAxisY = options.padding_ver;
-            //location for the raw2pixel value axis
-            var raw2pixelAxisY = options.height - options.padding_ver;
-            //this is needed for filtering the shown datalines
-            var raw2pixel = d3.scale.linear().domain([Math.min(dataDomain[0], scale.domain()[0]), Math.min(dataDomain[1], scale.domain()[1])]).range([lowerLimitX, upperLimitX]);
-            var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
-            //x coordinate for the score axis lower bound
-            var lowerNormalized = normal2pixel(scale.range()[0]);
-            //x coordinate for the score axis upper bound
-            var upperNormalized = normal2pixel(scale.range()[1]);
-            //x coordinate for the raw2pixel axis lower bound
-            var lowerRaw = raw2pixel(scale.domain()[0]);
-            //x coordinate for the raw2pixel axis upper bound
-            var upperRaw = raw2pixel(scale.domain()[1]);
-            scale = d3.scale.linear()
-                .clamp(true)
-                .domain(scale.domain())
-                .range([lowerNormalized, upperNormalized]);
-            var $base = $svg.append('g');
-            //upper axis for scored values
-            addLine($base, lowerLimitX, scoreAxisY, upperLimitX, scoreAxisY, 'axis');
-            //label for minimum scored value
-            addText($base, lowerLimitX, scoreAxisY - 25, 0, '.75em');
-            //label for maximum scored value
-            addText($base, upperLimitX, scoreAxisY - 25, 1, '.75em');
-            addText($base, options.width / 2, scoreAxisY - 25, 'Score', '.75em', 'centered');
-            //lower axis for raw2pixel values
-            addLine($base, lowerLimitX, raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
-            addText($base, lowerLimitX, raw2pixelAxisY + 20, raw2pixel.domain()[0], '.75em')
-                .on('click', editLimit(0))
-                .classed('editableLabel', true)
-                .append('title').text('Click to Modify');
-            //label for maximum raw2pixel value
-            addText($base, upperLimitX, raw2pixelAxisY + 20, raw2pixel.domain()[1], '.75em')
-                .on('click', editLimit(1))
-                .classed('editableLabel', true)
-                .append('title').text('Click to Modify');
-            addText($base, options.width / 2, raw2pixelAxisY + 20, 'Raw', '.75em', 'centered');
-            //lines that show mapping of individual data items
-            var datalines = $svg.append('g').classed('data', true).selectAll('line').data([]);
-            dataPromise.then(function (data) {
-                datalines = datalines.data(data);
-                datalines.enter().append('line')
-                    .attr({
-                    x1: scale,
-                    y1: scoreAxisY,
-                    x2: raw2pixel,
-                    y2: raw2pixelAxisY
-                }).style('visibility', function (d) {
-                    var a;
-                    if (lowerRaw < upperRaw) {
-                        a = (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
-                    }
-                    else {
-                        a = (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
-                    }
-                    return a ? 'hidden' : null;
-                });
-            });
-            //line that defines lower bounds for the scale
-            var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, raw2pixelAxisY, 'bound');
-            //line that defines upper bounds for the scale
-            var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
-            //label for lower bound of normalized values
-            var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerNormalized - lowerLimitX) + ',0)');
-            //label for lower bound of raw2pixel values
-            var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
-            //label for upper bound of normalized values
-            var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperNormalized - upperLimitX) + ',0)');
-            //label for upper bound of raw2pixel values
-            var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
-            function createDrag(label, move) {
-                return d3.behavior.drag()
-                    .on('dragstart', function () {
-                    d3.select(this)
-                        .classed('dragging', true)
-                        .attr('r', options.radius * 1.1);
-                    label.style('visibility', 'visible');
-                })
-                    .on('drag', move)
-                    .on('dragend', function () {
-                    d3.select(this)
-                        .classed('dragging', false)
-                        .attr('r', options.radius);
-                    label.style('visibility', null);
-                    updateScale(true);
-                })
-                    .origin(function () {
-                    var t = d3.transform(d3.select(this).attr('transform'));
-                    return { x: t.translate[0], y: t.translate[1] };
-                });
-            }
-            function updateNormalized() {
-                scale.range([lowerNormalized, upperNormalized]);
-                datalines.attr('x1', scale);
-                updateScale();
-            }
-            function updateRaw() {
-                var hiddenDatalines, shownDatalines;
+        var lowerLimitX = options.padding_hor;
+        var upperLimitX = options.width - options.padding_hor;
+        var scoreAxisY = options.padding_ver;
+        var raw2pixelAxisY = options.height - options.padding_ver;
+        var raw2pixel = d3.scale.linear().domain([Math.min(dataDomain[0], scale.domain()[0]), Math.min(dataDomain[1], scale.domain()[1])]).range([lowerLimitX, upperLimitX]);
+        var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
+        var lowerNormalized = normal2pixel(scale.range()[0]);
+        var upperNormalized = normal2pixel(scale.range()[1]);
+        var lowerRaw = raw2pixel(scale.domain()[0]);
+        var upperRaw = raw2pixel(scale.domain()[1]);
+        scale = d3.scale.linear()
+            .clamp(true)
+            .domain(scale.domain())
+            .range([lowerNormalized, upperNormalized]);
+        var $base = $svg.append('g');
+        addLine($base, lowerLimitX, scoreAxisY, upperLimitX, scoreAxisY, 'axis');
+        addText($base, lowerLimitX, scoreAxisY - 25, 0, '.75em');
+        addText($base, upperLimitX, scoreAxisY - 25, 1, '.75em');
+        addText($base, options.width / 2, scoreAxisY - 25, 'Score', '.75em', 'centered');
+        addLine($base, lowerLimitX, raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
+        addText($base, lowerLimitX, raw2pixelAxisY + 20, raw2pixel.domain()[0], '.75em')
+            .on('click', editLimit(0))
+            .classed('editableLabel', true)
+            .append('title').text('Click to Modify');
+        addText($base, upperLimitX, raw2pixelAxisY + 20, raw2pixel.domain()[1], '.75em')
+            .on('click', editLimit(1))
+            .classed('editableLabel', true)
+            .append('title').text('Click to Modify');
+        addText($base, options.width / 2, raw2pixelAxisY + 20, 'Raw', '.75em', 'centered');
+        var datalines = $svg.append('g').classed('data', true).selectAll('line').data([]);
+        dataPromise.then(function (data) {
+            datalines = datalines.data(data);
+            datalines.enter().append('line')
+                .attr({
+                x1: scale,
+                y1: scoreAxisY,
+                x2: raw2pixel,
+                y2: raw2pixelAxisY
+            }).style('visibility', function (d) {
+                var a;
                 if (lowerRaw < upperRaw) {
-                    hiddenDatalines = datalines.filter(function (d) {
-                        return (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
-                    });
-                    shownDatalines = datalines.filter(function (d) {
-                        return !(raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
-                    });
+                    a = (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
                 }
                 else {
-                    hiddenDatalines = datalines.filter(function (d) {
-                        return (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
-                    });
-                    shownDatalines = datalines.filter(function (d) {
-                        return !(raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
-                    });
+                    a = (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
                 }
-                hiddenDatalines.style('visibility', 'hidden');
-                scale.domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)]);
-                shownDatalines
-                    .style('visibility', null)
-                    .attr('x1', scale);
-                updateScale();
+                return a ? 'hidden' : null;
+            });
+        });
+        var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, raw2pixelAxisY, 'bound');
+        var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
+        var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerNormalized - lowerLimitX) + ',0)');
+        var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
+        var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperNormalized - upperLimitX) + ',0)');
+        var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
+        function createDrag(label, move) {
+            return d3.behavior.drag()
+                .on('dragstart', function () {
+                d3.select(this)
+                    .classed('dragging', true)
+                    .attr('r', options.radius * 1.1);
+                label.style('visibility', 'visible');
+            })
+                .on('drag', move)
+                .on('dragend', function () {
+                d3.select(this)
+                    .classed('dragging', false)
+                    .attr('r', options.radius);
+                label.style('visibility', null);
+                updateScale(true);
+            })
+                .origin(function () {
+                var t = d3.transform(d3.select(this).attr('transform'));
+                return { x: t.translate[0], y: t.translate[1] };
+            });
+        }
+        function updateNormalized() {
+            scale.range([lowerNormalized, upperNormalized]);
+            datalines.attr('x1', scale);
+            updateScale();
+        }
+        function updateRaw() {
+            var hiddenDatalines, shownDatalines;
+            if (lowerRaw < upperRaw) {
+                hiddenDatalines = datalines.filter(function (d) {
+                    return (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
+                });
+                shownDatalines = datalines.filter(function (d) {
+                    return !(raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
+                });
             }
-            //draggable circle that defines the lower bound of normalized values
-            addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
-                .call(createDrag(lowerBoundNormalizedLabel, function () {
-                if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-                    mapperLineLowerBounds.attr('x1', lowerLimitX + d3.event.x);
-                    d3.select(this)
-                        .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                    lowerNormalized = d3.event.x + lowerLimitX;
-                    lowerBoundNormalizedLabel
-                        .text(d3.round(normal2pixel.invert(lowerNormalized), 2))
-                        .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                    updateNormalized();
-                }
-            }));
-            //draggable circle that defines the upper bound of normalized values
-            addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
-                .call(createDrag(upperBoundNormalizedLabel, function () {
-                if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-                    mapperLineUpperBounds.attr('x1', upperLimitX + d3.event.x);
-                    d3.select(this)
-                        .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                    upperNormalized = d3.event.x + upperLimitX;
-                    upperBoundNormalizedLabel
-                        .text(d3.round(normal2pixel.invert(upperNormalized), 2))
-                        .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                    updateNormalized();
-                }
-            }));
-            //draggable circle that defines the lower bound of raw2pixel values
-            var $lowRawCircle = addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
-                .call(createDrag(lowerBoundRawLabel, function () {
-                if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-                    mapperLineLowerBounds.attr('x2', lowerLimitX + d3.event.x);
-                    d3.select(this)
-                        .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                    lowerRaw = d3.event.x + lowerLimitX;
-                    lowerBoundRawLabel
-                        .text(d3.round(raw2pixel.invert(lowerRaw), 2))
-                        .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                    updateRaw();
-                }
-            }));
-            //draggable circle that defines the upper bound of raw2pixel values
-            var $upperRawCircle = addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
-                .call(createDrag(upperBoundRawLabel, function () {
-                if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-                    mapperLineUpperBounds.attr('x2', upperLimitX + d3.event.x);
-                    d3.select(this)
-                        .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                    upperRaw = d3.event.x + upperLimitX;
-                    upperBoundRawLabel
-                        .text(d3.round(raw2pixel.invert(upperRaw), 2))
-                        .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                    updateRaw();
-                }
-            }));
-            function updateScale(isDragEnd) {
-                if (isDragEnd === void 0) { isDragEnd = false; }
-                if (isDragEnd !== (options.triggerCallback === 'dragend')) {
-                    return;
-                }
-                var newScale = d3.scale.linear()
-                    .domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)])
-                    .range([normal2pixel.invert(lowerNormalized), normal2pixel.invert(upperNormalized)]);
-                options.callback.call(options.callbackThisArg, newScale);
+            else {
+                hiddenDatalines = datalines.filter(function (d) {
+                    return (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
+                });
+                shownDatalines = datalines.filter(function (d) {
+                    return !(raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
+                });
             }
-            //label for minimum raw2pixel value
-            function editLimit(index) {
-                return function () {
-                    var $elem = d3.select(this);
-                    var $input = $base.append('foreignObject').attr({
-                        x: (index === 0 ? lowerLimitX - 7 : upperLimitX - 45),
-                        y: raw2pixelAxisY + 15,
-                        width: 50,
-                        height: 20
-                    });
-                    function update() {
-                        var old = raw2pixel.domain();
-                        var new_ = old.slice();
-                        new_[index] = +this.value;
-                        if (old[index] === new_[index]) {
-                            return;
-                        }
-                        raw2pixel.domain(new_);
-                        $elem.text(this.value);
-                        lowerRaw = raw2pixel(scale.domain()[0]);
-                        upperRaw = raw2pixel(scale.domain()[1]);
-                        $lowRawCircle.attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
-                        $upperRawCircle.attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
-                        mapperLineLowerBounds.attr('x2', lowerRaw);
-                        mapperLineUpperBounds.attr('x2', upperRaw);
-                        datalines.attr('x2', raw2pixel);
-                        updateRaw();
-                        updateScale(true);
-                        $input.remove();
+            hiddenDatalines.style('visibility', 'hidden');
+            scale.domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)]);
+            shownDatalines
+                .style('visibility', null)
+                .attr('x1', scale);
+            updateScale();
+        }
+        addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
+            .call(createDrag(lowerBoundNormalizedLabel, function () {
+            if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
+                mapperLineLowerBounds.attr('x1', lowerLimitX + d3.event.x);
+                d3.select(this)
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                lowerNormalized = d3.event.x + lowerLimitX;
+                lowerBoundNormalizedLabel
+                    .text(d3.round(normal2pixel.invert(lowerNormalized), 2))
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                updateNormalized();
+            }
+        }));
+        addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
+            .call(createDrag(upperBoundNormalizedLabel, function () {
+            if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
+                mapperLineUpperBounds.attr('x1', upperLimitX + d3.event.x);
+                d3.select(this)
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                upperNormalized = d3.event.x + upperLimitX;
+                upperBoundNormalizedLabel
+                    .text(d3.round(normal2pixel.invert(upperNormalized), 2))
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                updateNormalized();
+            }
+        }));
+        var $lowRawCircle = addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
+            .call(createDrag(lowerBoundRawLabel, function () {
+            if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
+                mapperLineLowerBounds.attr('x2', lowerLimitX + d3.event.x);
+                d3.select(this)
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                lowerRaw = d3.event.x + lowerLimitX;
+                lowerBoundRawLabel
+                    .text(d3.round(raw2pixel.invert(lowerRaw), 2))
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                updateRaw();
+            }
+        }));
+        var $upperRawCircle = addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
+            .call(createDrag(upperBoundRawLabel, function () {
+            if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
+                mapperLineUpperBounds.attr('x2', upperLimitX + d3.event.x);
+                d3.select(this)
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                upperRaw = d3.event.x + upperLimitX;
+                upperBoundRawLabel
+                    .text(d3.round(raw2pixel.invert(upperRaw), 2))
+                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
+                updateRaw();
+            }
+        }));
+        function updateScale(isDragEnd) {
+            if (isDragEnd === void 0) { isDragEnd = false; }
+            if (isDragEnd !== (options.triggerCallback === 'dragend')) {
+                return;
+            }
+            var newScale = d3.scale.linear()
+                .domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)])
+                .range([normal2pixel.invert(lowerNormalized), normal2pixel.invert(upperNormalized)]);
+            options.callback.call(options.callbackThisArg, newScale);
+        }
+        function editLimit(index) {
+            return function () {
+                var $elem = d3.select(this);
+                var $input = $base.append('foreignObject').attr({
+                    x: (index === 0 ? lowerLimitX - 7 : upperLimitX - 45),
+                    y: raw2pixelAxisY + 15,
+                    width: 50,
+                    height: 20
+                });
+                function update() {
+                    var old = raw2pixel.domain();
+                    var new_ = old.slice();
+                    new_[index] = +this.value;
+                    if (old[index] === new_[index]) {
+                        return;
                     }
-                    $input.append('xhtml:input')
-                        .attr('value', raw2pixel.domain()[index])
-                        .style('width', '5em')
-                        .on('change', update)
-                        .on('blur', update);
-                };
-            }
-        };
-        return editor;
-    }
-    exports.open = open;
-});
+                    raw2pixel.domain(new_);
+                    $elem.text(this.value);
+                    lowerRaw = raw2pixel(scale.domain()[0]);
+                    upperRaw = raw2pixel(scale.domain()[1]);
+                    $lowRawCircle.attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
+                    $upperRawCircle.attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
+                    mapperLineLowerBounds.attr('x2', lowerRaw);
+                    mapperLineUpperBounds.attr('x2', upperRaw);
+                    datalines.attr('x2', raw2pixel);
+                    updateRaw();
+                    updateScale(true);
+                    $input.remove();
+                }
+                $input.append('xhtml:input')
+                    .attr('value', raw2pixel.domain()[index])
+                    .style('width', '5em')
+                    .on('change', update)
+                    .on('blur', update);
+            };
+        }
+    };
+    return editor;
+}
+exports.open = open;
 
-},{}],3:[function(require,module,exports){
+},{"./utils":8,"d3":undefined}],3:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 06.08.2015.
  */
@@ -3579,321 +3554,269 @@ var __extends = (this && this.__extends) || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-define(["require", "exports", 'd3'], function (require, exports, d3) {
-    /**
-     * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
-     * @param callback
-     * @param thisCallback
-     * @param timeToDelay
-     * @return {function(...[any]): undefined}
-     */
-    function delayedCall(callback, timeToDelay, thisCallback) {
-        if (timeToDelay === void 0) { timeToDelay = 100; }
-        if (thisCallback === void 0) { thisCallback = this; }
-        var tm = -1;
-        return function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            if (tm >= 0) {
-                clearTimeout(tm);
-                tm = -1;
-            }
-            args.unshift(thisCallback);
-            tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
-        };
-    }
-    exports.delayedCall = delayedCall;
-    /**
-     * utility for AEventDispatcher to forward an event
-     * @param to
-     * @param event
-     * @return {function(...[any]): undefined}
-     */
-    function forwardEvent(to, event) {
-        return function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            args.unshift(event || this.type);
-            to.fire.apply(to, args);
-        };
-    }
-    exports.forwardEvent = forwardEvent;
-    /**
-     * base class for event dispatching using d3 event mechanism
-     */
-    var AEventDispatcher = (function () {
-        function AEventDispatcher() {
-            this.forwarder = forwardEvent(this);
-            this.listeners = d3.dispatch.apply(d3, this.createEventList());
-        }
-        AEventDispatcher.prototype.on = function (type, listener) {
-            var _this = this;
-            if (arguments.length > 1) {
-                if (Array.isArray(type)) {
-                    type.forEach(function (d) { return _this.listeners.on(d, listener); });
-                }
-                else {
-                    this.listeners.on(type, listener);
-                }
-                return this;
-            }
-            return this.listeners.on(type);
-        };
-        /**
-         * return the list of events to be able to dispatch
-         * @return {Array}
-         */
-        AEventDispatcher.prototype.createEventList = function () {
-            return [];
-        };
-        AEventDispatcher.prototype.fire = function (type) {
-            var _this = this;
-            var args = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                args[_i - 1] = arguments[_i];
-            }
-            var fireImpl = function (t) {
-                var context = {
-                    source: _this,
-                    type: t,
-                    args: args
-                };
-                _this.listeners[t].apply(context, args);
-            };
-            if (Array.isArray(type)) {
-                type.forEach(fireImpl.bind(this));
-            }
-            else {
-                fireImpl(type);
-            }
-        };
-        AEventDispatcher.prototype.forward = function (from) {
-            var types = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                types[_i - 1] = arguments[_i];
-            }
-            from.on(types, this.forwarder);
-        };
-        AEventDispatcher.prototype.unforward = function (from) {
-            var types = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                types[_i - 1] = arguments[_i];
-            }
-            from.on(types, null);
-        };
-        return AEventDispatcher;
-    })();
-    exports.AEventDispatcher = AEventDispatcher;
-    var TYPE_OBJECT = '[object Object]';
-    var TYPE_ARRAY = '[object Array]';
-    //credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
-    function merge() {
+///<reference path='../typings/tsd.d.ts' />
+var d3 = require('d3');
+function delayedCall(callback, timeToDelay, thisCallback) {
+    if (timeToDelay === void 0) { timeToDelay = 100; }
+    if (thisCallback === void 0) { thisCallback = this; }
+    var tm = -1;
+    return function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        var result = null;
-        for (var i = 0; i < args.length; i++) {
-            var toMerge = args[i], keys = Object.keys(toMerge);
-            if (result === null) {
-                result = toMerge;
-                continue;
-            }
-            for (var j = 0; j < keys.length; j++) {
-                var keyName = keys[j];
-                var value = toMerge[keyName];
-                if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
-                    if (result[keyName] === undefined) {
-                        result[keyName] = {};
-                    }
-                    result[keyName] = merge(result[keyName], value);
-                }
-                else if (Object.prototype.toString.call(value) === TYPE_ARRAY) {
-                    if (result[keyName] === undefined) {
-                        result[keyName] = [];
-                    }
-                    result[keyName] = value.concat(result[keyName]);
-                }
-                else {
-                    result[keyName] = value;
-                }
-            }
+        if (tm >= 0) {
+            clearTimeout(tm);
+            tm = -1;
         }
-        return result;
+        args.unshift(thisCallback);
+        tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
+    };
+}
+exports.delayedCall = delayedCall;
+function forwardEvent(to, event) {
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+        args.unshift(event || this.type);
+        to.fire.apply(to, args);
+    };
+}
+exports.forwardEvent = forwardEvent;
+var AEventDispatcher = (function () {
+    function AEventDispatcher() {
+        this.forwarder = forwardEvent(this);
+        this.listeners = d3.dispatch.apply(d3, this.createEventList());
     }
-    exports.merge = merge;
-    /**
-     * computes the absolute offset of the given element
-     * @param element
-     * @return {{left: number, top: number, width: number, height: number}}
-     */
-    function offset(element) {
-        var obj = element.getBoundingClientRect();
-        return {
-            left: obj.left + window.pageXOffset,
-            top: obj.top + window.pageYOffset,
-            width: obj.width,
-            height: obj.height
-        };
-    }
-    exports.offset = offset;
-    /**
-     * content scroller utility
-     */
-    var ContentScroller = (function (_super) {
-        __extends(ContentScroller, _super);
-        function ContentScroller(container, content, options) {
-            var _this = this;
-            if (options === void 0) { options = {}; }
-            _super.call(this);
-            this.container = container;
-            this.content = content;
-            this.options = {
-                topShift: 0,
-                backupRows: 5,
-                rowHeight: 10
+    AEventDispatcher.prototype.on = function (type, listener) {
+        var _this = this;
+        if (arguments.length > 1) {
+            if (Array.isArray(type)) {
+                type.forEach(function (d) { return _this.listeners.on(d, listener); });
+            }
+            else {
+                this.listeners.on(type, listener);
+            }
+            return this;
+        }
+        return this.listeners.on(type);
+    };
+    AEventDispatcher.prototype.createEventList = function () {
+        return [];
+    };
+    AEventDispatcher.prototype.fire = function (type) {
+        var _this = this;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        var fireImpl = function (t) {
+            var context = {
+                source: _this,
+                type: t,
+                args: args
             };
-            this.prevScrollTop = 0;
-            this.shift = 0;
-            merge(this.options, options);
-            d3.select(container).on('scroll.scroller', function () { return _this.onScroll(); });
-            this.prevScrollTop = container.scrollTop;
-            this.shift = offset(content).top - offset(container).top + this.options.topShift;
-        }
-        ContentScroller.prototype.createEventList = function () {
-            return _super.prototype.createEventList.call(this).concat(['scroll', 'redraw']);
+            _this.listeners[t].apply(context, args);
         };
-        ContentScroller.prototype.select = function (start, length, row2y) {
-            var top = this.container.scrollTop - this.shift, bottom = top + this.container.clientHeight, i = 0, j;
-            /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
-             if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
-             console.log('show all');
-             return [0, data.length];
-             }*/
-            if (top > 0) {
-                i = Math.round(top / this.options.rowHeight);
-                //count up till really even partial rows are visible
-                while (i >= start && row2y(i + 1) > top) {
-                    i--;
-                }
-                i -= this.options.backupRows; //one more row as backup for scrolling
-            }
-            {
-                j = Math.round(bottom / this.options.rowHeight);
-                //count down till really even partial rows are visible
-                while (j <= length && row2y(j - 1) < bottom) {
-                    j++;
-                }
-                j += this.options.backupRows; //one more row as backup for scrolling
-            }
-            return {
-                from: Math.max(i, start),
-                to: Math.min(j, length)
-            };
-        };
-        ContentScroller.prototype.onScroll = function () {
-            var top = this.container.scrollTop;
-            var left = this.container.scrollLeft;
-            //at least one row changed
-            //console.log(top, left);
-            this.fire('scroll', top, left);
-            if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
-                this.prevScrollTop = top;
-                this.fire('redraw');
-            }
-        };
-        ContentScroller.prototype.destroy = function () {
-            d3.select(this.container).on('scroll.scroller', null);
-        };
-        return ContentScroller;
-    })(AEventDispatcher);
-    exports.ContentScroller = ContentScroller;
-    /**
-     * checks whether the given DragEvent has one of the given types
-     */
-    function hasDnDType(e, typesToCheck) {
-        var types = e.dataTransfer.types;
-        if (typeof types.indexOf === 'function') {
-            return typesToCheck.some(function (type) { return types.indexOf(type) >= 0; });
-        }
-        if (typeof types.includes === 'function') {
-            return typesToCheck.some(function (type) { return types.includes(type); });
-        }
-        if (typeof types.contains === 'function') {
-            return typesToCheck.some(function (type) { return types.contains(type); });
-        }
-        return false;
-    }
-    exports.hasDnDType = hasDnDType;
-    /**
-     * should it be a copy dnd operation?
-     */
-    function copyDnD(e) {
-        var dT = e.dataTransfer;
-        return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
-    }
-    exports.copyDnD = copyDnD;
-    function updateDropEffect(e) {
-        var dT = e.dataTransfer;
-        if (copyDnD(e)) {
-            dT.dropEffect = 'copy';
+        if (Array.isArray(type)) {
+            type.forEach(fireImpl.bind(this));
         }
         else {
-            dT.dropEffect = 'move';
+            fireImpl(type);
+        }
+    };
+    AEventDispatcher.prototype.forward = function (from) {
+        var types = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            types[_i - 1] = arguments[_i];
+        }
+        from.on(types, this.forwarder);
+    };
+    AEventDispatcher.prototype.unforward = function (from) {
+        var types = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            types[_i - 1] = arguments[_i];
+        }
+        from.on(types, null);
+    };
+    return AEventDispatcher;
+})();
+exports.AEventDispatcher = AEventDispatcher;
+var TYPE_OBJECT = '[object Object]';
+var TYPE_ARRAY = '[object Array]';
+function merge() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i - 0] = arguments[_i];
+    }
+    var result = null;
+    for (var i = 0; i < args.length; i++) {
+        var toMerge = args[i], keys = Object.keys(toMerge);
+        if (result === null) {
+            result = toMerge;
+            continue;
+        }
+        for (var j = 0; j < keys.length; j++) {
+            var keyName = keys[j];
+            var value = toMerge[keyName];
+            if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
+                if (result[keyName] === undefined) {
+                    result[keyName] = {};
+                }
+                result[keyName] = merge(result[keyName], value);
+            }
+            else if (Object.prototype.toString.call(value) === TYPE_ARRAY) {
+                if (result[keyName] === undefined) {
+                    result[keyName] = [];
+                }
+                result[keyName] = value.concat(result[keyName]);
+            }
+            else {
+                result[keyName] = value;
+            }
         }
     }
-    exports.updateDropEffect = updateDropEffect;
-    /**
-     * returns a d3 callable function to make an element dropable
-     * @param mimeTypes the mime types to be dropable
-     * @param onDrop: handler when an element is dropped
-     */
-    function dropAble(mimeTypes, onDrop) {
-        return function ($node) {
-            $node.on('dragenter', function () {
-                var e = d3.event;
-                //var xy = d3.mouse($node.node());
-                if (hasDnDType(e, mimeTypes)) {
-                    d3.select(this).classed('drag_over', true);
-                    return false;
-                }
-                d3.select(this).classed('drag_over', false);
-            }).on('dragover', function () {
-                var e = d3.event;
-                if (hasDnDType(e, mimeTypes)) {
-                    e.preventDefault();
-                    updateDropEffect(e);
-                    d3.select(this).classed('drag_over', true);
-                    return false;
-                }
-            }).on('dragleave', function () {
-                //
-                d3.select(this).classed('drag_over', false);
-            }).on('drop', function (d) {
-                var e = d3.event;
-                e.preventDefault();
-                d3.select(this).classed('drag_over', false);
-                //var xy = d3.mouse($node.node());
-                if (hasDnDType(e, mimeTypes)) {
-                    var data = {};
-                    mimeTypes.forEach(function (mime) {
-                        var value = e.dataTransfer.getData(mime);
-                        if (value !== '') {
-                            data[mime] = value;
-                        }
-                    });
-                    return onDrop(data, d, copyDnD(e));
-                }
-            });
+    return result;
+}
+exports.merge = merge;
+function offset(element) {
+    var obj = element.getBoundingClientRect();
+    return {
+        left: obj.left + window.pageXOffset,
+        top: obj.top + window.pageYOffset,
+        width: obj.width,
+        height: obj.height
+    };
+}
+exports.offset = offset;
+var ContentScroller = (function (_super) {
+    __extends(ContentScroller, _super);
+    function ContentScroller(container, content, options) {
+        var _this = this;
+        if (options === void 0) { options = {}; }
+        _super.call(this);
+        this.container = container;
+        this.content = content;
+        this.options = {
+            topShift: 0,
+            backupRows: 5,
+            rowHeight: 10
         };
+        this.prevScrollTop = 0;
+        this.shift = 0;
+        merge(this.options, options);
+        d3.select(container).on('scroll.scroller', function () { return _this.onScroll(); });
+        this.prevScrollTop = container.scrollTop;
+        this.shift = offset(content).top - offset(container).top + this.options.topShift;
     }
-    exports.dropAble = dropAble;
-});
+    ContentScroller.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['scroll', 'redraw']);
+    };
+    ContentScroller.prototype.select = function (start, length, row2y) {
+        var top = this.container.scrollTop - this.shift, bottom = top + this.container.clientHeight, i = 0, j;
+        if (top > 0) {
+            i = Math.round(top / this.options.rowHeight);
+            while (i >= start && row2y(i + 1) > top) {
+                i--;
+            }
+            i -= this.options.backupRows;
+        }
+        {
+            j = Math.round(bottom / this.options.rowHeight);
+            while (j <= length && row2y(j - 1) < bottom) {
+                j++;
+            }
+            j += this.options.backupRows;
+        }
+        return {
+            from: Math.max(i, start),
+            to: Math.min(j, length)
+        };
+    };
+    ContentScroller.prototype.onScroll = function () {
+        var top = this.container.scrollTop;
+        var left = this.container.scrollLeft;
+        this.fire('scroll', top, left);
+        if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
+            this.prevScrollTop = top;
+            this.fire('redraw');
+        }
+    };
+    ContentScroller.prototype.destroy = function () {
+        d3.select(this.container).on('scroll.scroller', null);
+    };
+    return ContentScroller;
+})(AEventDispatcher);
+exports.ContentScroller = ContentScroller;
+function hasDnDType(e, typesToCheck) {
+    var types = e.dataTransfer.types;
+    if (typeof types.indexOf === 'function') {
+        return typesToCheck.some(function (type) { return types.indexOf(type) >= 0; });
+    }
+    if (typeof types.includes === 'function') {
+        return typesToCheck.some(function (type) { return types.includes(type); });
+    }
+    if (typeof types.contains === 'function') {
+        return typesToCheck.some(function (type) { return types.contains(type); });
+    }
+    return false;
+}
+exports.hasDnDType = hasDnDType;
+function copyDnD(e) {
+    var dT = e.dataTransfer;
+    return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
+}
+exports.copyDnD = copyDnD;
+function updateDropEffect(e) {
+    var dT = e.dataTransfer;
+    if (copyDnD(e)) {
+        dT.dropEffect = 'copy';
+    }
+    else {
+        dT.dropEffect = 'move';
+    }
+}
+exports.updateDropEffect = updateDropEffect;
+function dropAble(mimeTypes, onDrop) {
+    return function ($node) {
+        $node.on('dragenter', function () {
+            var e = d3.event;
+            if (hasDnDType(e, mimeTypes)) {
+                d3.select(this).classed('drag_over', true);
+                return false;
+            }
+            d3.select(this).classed('drag_over', false);
+        }).on('dragover', function () {
+            var e = d3.event;
+            if (hasDnDType(e, mimeTypes)) {
+                e.preventDefault();
+                updateDropEffect(e);
+                d3.select(this).classed('drag_over', true);
+                return false;
+            }
+        }).on('dragleave', function () {
+            d3.select(this).classed('drag_over', false);
+        }).on('drop', function (d) {
+            var e = d3.event;
+            e.preventDefault();
+            d3.select(this).classed('drag_over', false);
+            if (hasDnDType(e, mimeTypes)) {
+                var data = {};
+                mimeTypes.forEach(function (mime) {
+                    var value = e.dataTransfer.getData(mime);
+                    if (value !== '') {
+                        data[mime] = value;
+                    }
+                });
+                return onDrop(data, d, copyDnD(e));
+            }
+        });
+    };
+}
+exports.dropAble = dropAble;
 
-},{}]},{},[1]);
+},{"d3":undefined}]},{},[1]);
  
 });
