@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-09-28
+/*! LineUpJS - v0.1.0 - 2015-10-01
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -66,6 +66,7 @@ var LineUp = (function (_super) {
         _super.call(this);
         this.data = data;
         this.config = {
+            idPrefix: Math.random().toString(36).slice(-8).substr(0, 3),
             numberformat: d3.format('.3n'),
             htmlLayout: {
                 headerHeight: 20,
@@ -113,7 +114,8 @@ var LineUp = (function (_super) {
             animationDuration: this.config.svgLayout.animationDuration,
             animation: this.config.renderingOptions.animation,
             stacked: this.config.renderingOptions.stacked,
-            actions: this.config.svgLayout.rowActions
+            actions: this.config.svgLayout.rowActions,
+            idPrefix: this.config.idPrefix
         });
         this.forward(this.body, 'hoverChanged');
         if (this.config.pool && this.config.manipulative) {

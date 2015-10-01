@@ -25,6 +25,7 @@ export class LineUp extends utils_.AEventDispatcher {
    *
    */
   config = {
+    idPrefix: Math.random().toString(36).slice(-8).substr(0,3), //generate a random string with length3
     numberformat: d3.format('.3n'),
     htmlLayout: {
       headerHeight: 20,
@@ -87,7 +88,8 @@ export class LineUp extends utils_.AEventDispatcher {
       animationDuration: this.config.svgLayout.animationDuration,
       animation: this.config.renderingOptions.animation,
       stacked: this.config.renderingOptions.stacked,
-      actions: this.config.svgLayout.rowActions
+      actions: this.config.svgLayout.rowActions,
+      idPrefix: this.config.idPrefix
     });
     this.forward(this.body, 'hoverChanged');
     if(this.config.pool && this.config.manipulative) {
