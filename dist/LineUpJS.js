@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-10-01
+/*! LineUpJS - v0.1.0 - 2015-10-19
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -103,6 +103,7 @@ var LineUp = (function (_super) {
         this.$container = container instanceof d3.selection ? container : d3.select(container);
         this.$container = this.$container.append('div').classed('lu', true);
         exports.utils.merge(this.config, config);
+        this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
         this.header = new ui_.HeaderRenderer(data, this.node, {
             manipulative: this.config.manipulative,
             headerHeight: this.config.htmlLayout.headerHeight

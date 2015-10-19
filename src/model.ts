@@ -675,7 +675,7 @@ export class CategoricalColumn extends ValueColumn<string> {
   }
 }
 
-export class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn{
+export class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn {
   private colors = d3.scale.category10();
   private scale = d3.scale.ordinal().rangeRoundPoints([0,1]);
 

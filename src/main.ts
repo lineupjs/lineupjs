@@ -76,6 +76,7 @@ export class LineUp extends utils_.AEventDispatcher {
     this.$container = this.$container.append('div').classed('lu', true);
     utils.merge(this.config, config);
 
+    this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
 
     this.header = new ui_.HeaderRenderer(data,  this.node, {
       manipulative: this.config.manipulative,
