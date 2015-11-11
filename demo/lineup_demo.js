@@ -109,14 +109,14 @@
     }
   }
 
-  function uploadUI(dropCallback) {
+  function uploadUI(dropFileCallback, dropURLCallback) {
     function handleFileSelect(evt) {
       evt.stopPropagation();
       evt.preventDefault();
       var files = evt.target.files || evt.dataTransfer.files;
       //console.log('drop',files);
       files = Array.prototype.slice.call(files); // FileList object.
-      dropCallback(files);
+      dropFileCallback(files);
     }
 
     function handleDragOver(evt) {
@@ -135,7 +135,22 @@
       $drop.classed('dragging',false);
     }, false);
     drop.addEventListener('dragover', handleDragOver, false);
-    drop.addEventListener('drop', handleFileSelect, false);
+    drop.addEventListener('drop', function(evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      var files = evt.dataTransfer.files;
+      //console.log('drop',files);
+      files = Array.prototype.slice.call(files); // FileList object.
+      if (files.length > 0) {
+        return dropFileCallback(files);
+      } else {
+        var url = evt.dataTransfer.getData('text/uri-list');
+        if (url) {
+          return dropURLCallback(url);
+        }
+      }
+      console.error('unknown datatransfer');
+    }, false);
   }
 
   function openAddColumnDialog() {
@@ -227,6 +242,24 @@
       return r;
     }
 
+    function loadDataFileFromText(data_s, fileName) {
+      var header = data_s.slice(0,data_s.indexOf('\n'));
+      //guess the separator,
+      var separator = [',','\t',';'].reduce(function(prev, current) {
+        var c = countOccurrences(header, current);
+        if (c > prev.c) {
+          prev.c = c;
+          prev.s = current;
+        }
+        return prev;
+      },{ s: ',', c : 0});
+      var _data = d3.dsv(separator.s, 'text/plain').parse(data_s, normalizeRow);
+      //derive a description file
+      var desc = deriveDesc(header.split(separator.s).map(normalizeValue), _data);
+      var name = fileName.substring(0, fileName.lastIndexOf('.'));
+      loadDataImpl(name, desc, _data);
+    }
+
     uploadUI(function (files) {
       var descs = files.filter(function (f) {
         return f.name.match(/.*\.json/i) || f.type === 'application/json';
@@ -261,24 +294,15 @@
         var f = files[0];
         reader.onload = function (e) {
           var data_s = e.target.result;
-          var header = data_s.slice(0,data_s.indexOf('\n'));
-          //guess the separator,
-          var separator = [',','\t',';'].reduce(function(prev, current) {
-            var c = countOccurrences(header, current);
-            if (c > prev.c) {
-              prev.c = c;
-              prev.s = current;
-            }
-            return prev;
-          },{ s: ',', c : 0});
-          var _data = d3.dsv(separator.s, 'text/plain').parse(data_s, normalizeRow);
-          //derive a description file
-          var desc = deriveDesc(header.split(separator.s).map(normalizeValue), _data);
-          var name = f.name.substring(0, f.name.lastIndexOf('.'));
-          loadDataImpl(name, desc, _data);
+          loadDataFileFromText(data_s, f.name);
         };
         reader.readAsText(f);
       }
+    }, function (url) {
+      //access the url using get request and then parse the data file
+      d3.text(url, 'text/plain', function(data) {
+        loadDataFileFromText(data, 'by_url');
+      });
     });
   }
 
