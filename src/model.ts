@@ -65,12 +65,14 @@ export class Column extends utils.AEventDispatcher {
 
   label: string;
   color: string;
+  cssClass : string;
 
   constructor(id:string, public desc:IColumnDesc) {
     super();
     this.id = fixCSS(id);
     this.label = this.desc.label || this.id;
-    this.color = (<any>this.desc).color || Column.DEFAULT_COLOR;
+    this.cssClass = (<any>this.desc).cssClass || '';
+    this.color = (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
   }
 
   assignNewId(idGenerator: () => string) {
@@ -163,7 +165,7 @@ export class Column extends utils.AEventDispatcher {
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
     }
-    if (this.color !== ((<any>this.desc).color || Column.DEFAULT_COLOR)) {
+    if (this.color !== ((<any>this.desc).color || Column.DEFAULT_COLOR) && this.color) {
       r.color = this.color;
     }
     return r;

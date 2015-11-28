@@ -9,20 +9,20 @@ window.onload = function () {
     {a: 2, b: 7, c: 100, d: 'Row3', l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
     {a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', l: {alt: 'Google', href: 'https://google.com'}, cat: 'c1'}];
   var desc = [
-    {label: 'D', type: 'string', column: 'd'},
+    {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
     {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
     {label: 'B', type: 'number', column: 'b', 'domain': [0, 30]},
-    {label: 'C', type: 'number', column: 'c', 'domain': [0, 120]},
+    {label: 'C', type: 'number', column: 'c', 'domain': [0, 120], cssClass: 'green'},
     {label: 'L', type: 'link', column: 'l'},
     {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
     {label: 'Cat', type: 'categorical', column: 'cat', categories : ['c1','c2','c3']},
     {label: 'Ord', type: 'ordinal', column: 'cat', categories : ['c1','c2','c3']},
     {label: 'Ann', type: 'annotate', column: 'd'}
   ];
-  var colors = d3.scale.category10();
-  desc.forEach(function (d, i) {
-    d.color = colors(''+i);
-  });
+  //var colors = d3.scale.category10();
+  //desc.forEach(function (d, i) {
+  //  d.color = colors(''+i);
+  //});
   /*var server = {
    sort: function (desc) {
    return Promise.resolve(d3.shuffle(d3.range(arr.length)));

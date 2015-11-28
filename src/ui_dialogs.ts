@@ -106,7 +106,7 @@ export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Sel
     });
 
   $rows_enter.append('td').append('div')
-    .attr('class', 'bar')
+    .attr('class', (d) => 'bar '+d.col.cssClass)
     .style('background-color', (d) => d.col.color);
 
   $rows_enter.append('td').text((d) => d.col.label);

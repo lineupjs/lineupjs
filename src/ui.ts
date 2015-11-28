@@ -120,12 +120,13 @@ export class PoolRenderer {
       });
     }
     $headers_enter.append('span').classed('label',true).text((d) => d.label);
+    $headers.attr('class', (d) => 'header '+(<any>d).cssClass);
     $headers.style({
       'transform': (d, i) => {
         var pos = this.layout(i);
         return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
       },
-      'background-color': (d) => (<any>d).color || model.Column.DEFAULT_COLOR
+      'background-color': (d) => (<any>d).color
     });
     $headers.attr({
       title: (d) => d.label
@@ -367,6 +368,7 @@ export class HeaderRenderer {
       'background-color': (d) => d.color
     });
     $headers.attr({
+      class: (d) => clazz+' '+d.cssClass,
       title: (d) => d.label
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {

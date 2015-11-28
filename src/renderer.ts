@@ -172,7 +172,7 @@ export class BarCellRenderer extends DefaultCellRenderer {
     var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
 
     $rows.enter().append('rect').attr({
-      'class' : 'bar',
+      'class' : 'bar '+col.cssClass,
       x: (d, i) => context.cellX(i),
       y: (d, i) => context.cellPrevY(i) + context.option('rowPadding',1),
       width: (d) => {
@@ -225,7 +225,7 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
     var $rows = $col.datum(col).selectAll('rect.heatmap').data(rows, context.rowKey);
 
     $rows.enter().append('rect').attr({
-      'class' : 'bar',
+      'class' : 'bar '+col.cssClass,
       x: (d, i) => context.cellX(i),
       y: (d, i) => context.cellPrevY(i) + context.option('rowPadding',1),
       width: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2
@@ -251,7 +251,7 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
     if (isNaN(v)) {
       v = 0;
     }
-    var color = d3.hsl(col.color);
+    var color = d3.hsl(col.color || model.Column.DEFAULT_COLOR);
     color.h = v;
     return color.toString();
   }

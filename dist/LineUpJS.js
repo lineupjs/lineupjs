@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-10-19
+/*! LineUpJS - v0.1.0 - 2015-11-28
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -524,7 +524,8 @@ var Column = (function (_super) {
         this.parent = null;
         this.id = fixCSS(id);
         this.label = this.desc.label || this.id;
-        this.color = this.desc.color || Column.DEFAULT_COLOR;
+        this.cssClass = this.desc.cssClass || '';
+        this.color = this.desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
     }
     Column.prototype.assignNewId = function (idGenerator) {
         this.id = fixCSS(idGenerator());
@@ -613,7 +614,7 @@ var Column = (function (_super) {
         if (this.label !== (this.desc.label || this.id)) {
             r.label = this.label;
         }
-        if (this.color !== (this.desc.color || Column.DEFAULT_COLOR)) {
+        if (this.color !== (this.desc.color || Column.DEFAULT_COLOR) && this.color) {
             r.color = this.color;
         }
         return r;
@@ -2123,6 +2124,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
+var model = require('./model');
 var DefaultCellRenderer = (function () {
     function DefaultCellRenderer() {
         this.textClass = 'text';
@@ -2186,7 +2188,7 @@ var BarCellRenderer = (function (_super) {
         var _this = this;
         var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
         $rows.enter().append('rect').attr({
-            'class': 'bar',
+            'class': 'bar ' + col.cssClass,
             x: function (d, i) { return context.cellX(i); },
             y: function (d, i) { return context.cellPrevY(i) + context.option('rowPadding', 1); },
             width: function (d) {
@@ -2239,7 +2241,7 @@ var HeatMapCellRenderer = (function (_super) {
         var _this = this;
         var $rows = $col.datum(col).selectAll('rect.heatmap').data(rows, context.rowKey);
         $rows.enter().append('rect').attr({
-            'class': 'bar',
+            'class': 'bar ' + col.cssClass,
             x: function (d, i) { return context.cellX(i); },
             y: function (d, i) { return context.cellPrevY(i) + context.option('rowPadding', 1); },
             width: function (d, i) { return context.rowHeight(i) - context.option('rowPadding', 1) * 2; }
@@ -2262,7 +2264,7 @@ var HeatMapCellRenderer = (function (_super) {
         if (isNaN(v)) {
             v = 0;
         }
-        var color = d3.hsl(col.color);
+        var color = d3.hsl(col.color || model.Column.DEFAULT_COLOR);
         color.h = v;
         return color.toString();
     };
@@ -2537,7 +2539,7 @@ function renderers() {
 }
 exports.renderers = renderers;
 
-},{}],6:[function(require,module,exports){
+},{"./model":3}],6:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -2656,12 +2658,13 @@ var PoolRenderer = (function () {
             });
         }
         $headers_enter.append('span').classed('label', true).text(function (d) { return d.label; });
+        $headers.attr('class', function (d) { return 'header ' + d.cssClass; });
         $headers.style({
             'transform': function (d, i) {
                 var pos = _this.layout(i);
                 return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
             },
-            'background-color': function (d) { return d.color || model.Column.DEFAULT_COLOR; }
+            'background-color': function (d) { return d.color; }
         });
         $headers.attr({
             title: function (d) { return d.label; }
@@ -2882,6 +2885,7 @@ var HeaderRenderer = (function () {
             'background-color': function (d) { return d.color; }
         });
         $headers.attr({
+            class: function (d) { return clazz + ' ' + d.cssClass; },
             title: function (d) { return d.label; }
         });
         $headers.select('i.sort_indicator').attr('class', function (d) {
@@ -3343,7 +3347,7 @@ function openEditWeightsDialog(column, $header) {
         redraw();
     });
     $rows_enter.append('td').append('div')
-        .attr('class', 'bar')
+        .attr('class', function (d) { return 'bar ' + d.col.cssClass; })
         .style('background-color', function (d) { return d.col.color; });
     $rows_enter.append('td').text(function (d) { return d.col.label; });
     function redraw() {
