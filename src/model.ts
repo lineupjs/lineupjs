@@ -437,9 +437,17 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 export class StringColumn extends ValueColumn<string> {
   private filter_ : string|RegExp = null;
 
+  private _alignment: string = 'left';
+
   constructor(id:string, desc:any) {
     super(id, desc);
     this.setWidthImpl(200); //by default 200
+    this._alignment = desc.alignment || 'left';
+  }
+
+  //readonly
+  get alignment() {
+    return this._alignment;
   }
 
   getValue(row:any) {
@@ -457,6 +465,7 @@ export class StringColumn extends ValueColumn<string> {
     } else {
       r.filter = this.filter_;
     }
+    r.alignment = this.alignment;
     return r;
   }
 
@@ -467,6 +476,7 @@ export class StringColumn extends ValueColumn<string> {
     } else {
       this.filter_ = dump.filter || null;
     }
+    this._alignment = dump.alignment || this._alignment;
   }
 
   isFiltered() {

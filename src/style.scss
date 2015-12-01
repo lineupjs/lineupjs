@@ -144,8 +144,11 @@ $lu_drag_over: #979797;
     }
   }
 
-  text.rank {
+  text.rank, text.text_right {
     text-anchor: end;
+  }
+  text.text_center {
+    text-anchor: middle;
   }
 
   *[draggable] {

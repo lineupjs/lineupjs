@@ -112,8 +112,15 @@ export class DefaultCellRenderer implements ICellRenderer {
       y: (d, i) => context.cellPrevY(i)
     });
 
+    var alignmentShift = 0;
+    if (this.align === 'right') {
+      alignmentShift = col.getWidth() - 5;
+    } else if (this.align === 'center') {
+      alignmentShift = col.getWidth() * 0.5;
+    }
+
     $rows.attr({
-      x: (d, i) => context.cellX(i) + (this.align === 'right' ? col.getWidth() - 5 : 0),
+      x: (d, i) => context.cellX(i) + alignmentShift,
       'data-index': (d, i) => i
     }).text((d) => col.getLabel(d));
 
@@ -394,6 +401,16 @@ class LinkCellRenderer extends DefaultCellRenderer {
   }
 }
 
+
+
+class StringCellRenderer extends DefaultCellRenderer {
+  render($col:d3.Selection<any>, col:model.StringColumn, rows:any[], context:IRenderContext) {
+    this.align = col.alignment;
+    this.textClass = 'text'+(col.alignment === 'left' ? '' : '_'+col.alignment);
+    return super.render($col, col, rows, context);
+  }
+}
+
 class CategoricalRenderer extends DefaultCellRenderer {
   textClass = 'cat';
 
@@ -516,7 +533,7 @@ class StackCellRenderer extends DefaultCellRenderer {
  */
 export function renderers() {
   return {
-    string: defaultRenderer(),
+    string: new StringCellRenderer(),
     link: new LinkCellRenderer(),
     number: barRenderer(),
     rank: defaultRenderer({
