@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-11-28
+/*! LineUpJS - v0.1.0 - 2015-12-01
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -837,8 +837,17 @@ var StringColumn = (function (_super) {
     function StringColumn(id, desc) {
         _super.call(this, id, desc);
         this.filter_ = null;
+        this._alignment = 'left';
         this.setWidthImpl(200);
+        this._alignment = desc.alignment || 'left';
     }
+    Object.defineProperty(StringColumn.prototype, "alignment", {
+        get: function () {
+            return this._alignment;
+        },
+        enumerable: true,
+        configurable: true
+    });
     StringColumn.prototype.getValue = function (row) {
         var v = _super.prototype.getValue.call(this, row);
         if (typeof (v) === 'undefined' || v == null) {
@@ -854,6 +863,7 @@ var StringColumn = (function (_super) {
         else {
             r.filter = this.filter_;
         }
+        r.alignment = this.alignment;
         return r;
     };
     StringColumn.prototype.restore = function (dump, factory) {
@@ -864,6 +874,7 @@ var StringColumn = (function (_super) {
         else {
             this.filter_ = dump.filter || null;
         }
+        this._alignment = dump.alignment || this._alignment;
     };
     StringColumn.prototype.isFiltered = function () {
         return this.filter_ != null;
@@ -2131,15 +2142,21 @@ var DefaultCellRenderer = (function () {
         this.align = 'left';
     }
     DefaultCellRenderer.prototype.render = function ($col, col, rows, context) {
-        var _this = this;
         var $rows = $col.datum(col).selectAll('text.' + this.textClass).data(rows, context.rowKey);
         $rows.enter().append('text').attr({
             'class': this.textClass,
             'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
             y: function (d, i) { return context.cellPrevY(i); }
         });
+        var alignmentShift = 0;
+        if (this.align === 'right') {
+            alignmentShift = col.getWidth() - 5;
+        }
+        else if (this.align === 'center') {
+            alignmentShift = col.getWidth() * 0.5;
+        }
         $rows.attr({
-            x: function (d, i) { return context.cellX(i) + (_this.align === 'right' ? col.getWidth() - 5 : 0); },
+            x: function (d, i) { return context.cellX(i) + alignmentShift; },
             'data-index': function (d, i) { return i; }
         }).text(function (d) { return col.getLabel(d); });
         context.animated($rows).attr({
@@ -2403,6 +2420,18 @@ var LinkCellRenderer = (function (_super) {
     };
     return LinkCellRenderer;
 })(DefaultCellRenderer);
+var StringCellRenderer = (function (_super) {
+    __extends(StringCellRenderer, _super);
+    function StringCellRenderer() {
+        _super.apply(this, arguments);
+    }
+    StringCellRenderer.prototype.render = function ($col, col, rows, context) {
+        this.align = col.alignment;
+        this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
+        return _super.prototype.render.call(this, $col, col, rows, context);
+    };
+    return StringCellRenderer;
+})(DefaultCellRenderer);
 var CategoricalRenderer = (function (_super) {
     __extends(CategoricalRenderer, _super);
     function CategoricalRenderer() {
@@ -2518,7 +2547,7 @@ var StackCellRenderer = (function (_super) {
 })(DefaultCellRenderer);
 function renderers() {
     return {
-        string: defaultRenderer(),
+        string: new StringCellRenderer(),
         link: new LinkCellRenderer(),
         number: barRenderer(),
         rank: defaultRenderer({

@@ -90,8 +90,10 @@
     cursor: pointer; }
     .lu text.actions tspan:hover, .lu-pool text.actions tspan:hover {
       color: darkblue; }
-  .lu text.rank, .lu-pool text.rank {
+  .lu text.rank, .lu text.text_right, .lu-pool text.rank, .lu-pool text.text_right {
     text-anchor: end; }
+  .lu text.text_center, .lu-pool text.text_center {
+    text-anchor: middle; }
   .lu *[draggable], .lu-pool *[draggable] {
     cursor: pointer;
     cursor: -webkit-grab; }
