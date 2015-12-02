@@ -112,7 +112,7 @@ export class DefaultCellRenderer implements ICellRenderer {
       y: (d, i) => context.cellPrevY(i)
     });
 
-    var alignmentShift = 0;
+    var alignmentShift = 2;
     if (this.align === 'right') {
       alignmentShift = col.getWidth() - 5;
     } else if (this.align === 'center') {

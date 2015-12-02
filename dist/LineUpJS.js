@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-12-01
+/*! LineUpJS - v0.1.0 - 2015-12-02
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -2148,7 +2148,7 @@ var DefaultCellRenderer = (function () {
             'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
             y: function (d, i) { return context.cellPrevY(i); }
         });
-        var alignmentShift = 0;
+        var alignmentShift = 2;
         if (this.align === 'right') {
             alignmentShift = col.getWidth() - 5;
         }
