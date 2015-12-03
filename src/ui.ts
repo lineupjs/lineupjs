@@ -120,13 +120,16 @@ export class PoolRenderer {
       });
     }
     $headers_enter.append('span').classed('label',true).text((d) => d.label);
-    $headers.attr('class', (d) => 'header '+(<any>d).cssClass);
+    $headers.attr('class', (d) => 'header '+((<any>d).cssClass || ''));
     $headers.style({
       'transform': (d, i) => {
         var pos = this.layout(i);
         return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
       },
-      'background-color': (d) => (<any>d).color
+      'background-color': (d) => {
+        const s = (<any>d);
+        return s.cssClass ? null : s.color || model.Column.DEFAULT_COLOR;
+      }
     });
     $headers.attr({
       title: (d) => d.label

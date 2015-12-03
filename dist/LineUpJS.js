@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-12-02
+/*! LineUpJS - v0.1.0 - 2015-12-03
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -2687,13 +2687,16 @@ var PoolRenderer = (function () {
             });
         }
         $headers_enter.append('span').classed('label', true).text(function (d) { return d.label; });
-        $headers.attr('class', function (d) { return 'header ' + d.cssClass; });
+        $headers.attr('class', function (d) { return 'header ' + (d.cssClass || ''); });
         $headers.style({
             'transform': function (d, i) {
                 var pos = _this.layout(i);
                 return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
             },
-            'background-color': function (d) { return d.color; }
+            'background-color': function (d) {
+                var s = d;
+                return s.cssClass ? null : s.color || model.Column.DEFAULT_COLOR;
+            }
         });
         $headers.attr({
             title: function (d) { return d.label; }
