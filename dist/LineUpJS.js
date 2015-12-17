@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.1.0 - 2015-12-03
+/*! LineUpJS - v0.1.0 - 2015-12-17
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
@@ -1910,6 +1910,10 @@ var DataProvider = (function (_super) {
         this.fire('selectionChanged', this.selection.values().map(Number));
     };
     DataProvider.prototype.setSelection = function (indices) {
+        var _this = this;
+        if (this.selection.size() === indices.length && indices.every(function (i) { return _this.selection.has(String(i)); })) {
+            return;
+        }
         this.selection = d3.set();
         this.selectAll(indices);
     };

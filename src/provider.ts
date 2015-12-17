@@ -376,6 +376,9 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param indices
    */
   setSelection(indices: number[]) {
+    if (this.selection.size() === indices.length && indices.every((i) => this.selection.has(String(i)))) {
+      return; //no change
+    }
     this.selection = d3.set();
     this.selectAll(indices);
   }
