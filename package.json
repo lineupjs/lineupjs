@@ -8,8 +8,7 @@
     "url": "https://github.com/Caleydo/lineup.js/issues"
   },
   "homepage": "https://github.com/Caleydo/lineup.js",
-  "dependencies": {
-  },
+  "dependencies": {},
   "engines": {
     "node": ">= 0.10.0"
   },
@@ -37,6 +36,7 @@
     "grunt-ts": "^4.2.0",
     "grunt-tsd": "^0.1.0",
     "grunt-tslint": "^2.4.0",
+    "grunt-typedoc": "^0.2.3",
     "grunt-webpack": "^1.0.11",
     "grunt-wrap": "^0.3.0",
     "load-grunt-tasks": "^3.2.0",

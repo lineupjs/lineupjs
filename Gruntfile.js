@@ -109,6 +109,22 @@ module.exports = function (grunt) {
         src: ['src/**.ts', 'demo/**.ts']
       }
     },
+    typedoc: {
+      build: {
+        options: {
+          target: 'es5',
+          module: 'commonjs', // 'amd' (default) | 'commonjs'
+          out: './docs',
+          name: 'LineUp.js',
+
+          entryPoint: 'main.LineUp',
+          mode: 'file',
+          theme: 'minimal'
+        },
+        src: ['src/**.ts', 'demo/**.ts'],
+        reference: 'tsd.gen.d.ts'
+      }
+    },
     ts: {
       // A specific target
       dev: {
@@ -173,6 +189,6 @@ module.exports = function (grunt) {
   // Default task.
   grunt.registerTask('watch_all', ['ts:dev', 'sass:dev', 'watch']);
   grunt.registerTask('compile', ['ts:dev', 'browserify', 'wrap']);
-  grunt.registerTask('default', ['clean', 'tsd:reinstall', 'ts:dist', 'sass:dist', 'tslint', 'browserify', 'wrap', 'uglify']);
+  grunt.registerTask('default', ['clean', 'tsd:reinstall', 'ts:dist', 'sass:dist', 'tslint', 'typedoc', 'browserify', 'wrap', 'uglify']);
 
 };
