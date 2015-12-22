@@ -42,6 +42,7 @@
     "jsdoc.conf.json",
     "tsd.gen.d.ts",
     "tsd.json",
-    "tslint.json"
+    "tslint.json",
+    "docs"
   ]
 }
