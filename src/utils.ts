@@ -7,10 +7,10 @@ import d3 = require('d3');
 
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
- * @param callback
- * @param thisCallback
- * @param timeToDelay
- * @return {function(...[any]): undefined}
+ * @param callback the callback to call
+ * @param timeToDelay delay the call in milliseconds
+ * @param thisCallback this argument of the callback
+ * @return {function(...[any]): undefined} a function that can be called with the same interface as the callback but delayed
  */
 export function delayedCall(callback:() => void, timeToDelay = 100, thisCallback = this) {
   var tm = -1;
@@ -72,10 +72,11 @@ export class AEventDispatcher {
 
   fire(type:string|string[], ...args:any[]) {
     var fireImpl = (t) => {
+      //local context per event, set a this argument
       var context = {
-        source: this,
-        type: t,
-        args: args
+        source: this, //who is sending this event
+        type: t, //the event type
+        args: args //the arguments to the listener
       };
       this.listeners[<string>t].apply(context, args);
     };
@@ -86,9 +87,21 @@ export class AEventDispatcher {
     }
   }
 
+  /**
+   * forwards one or more events from a given dispatcher to the current one
+   * i.e. when one of the given events is fired in 'from' it will be forwared to all my listeners
+   * @param from the event dispatcher to forward from
+   * @param types the event types to forward
+   */
   forward(from: AEventDispatcher, ...types: string[]) {
     from.on(types, this.forwarder);
   }
+
+  /**
+   * removes the forwarding declarations
+   * @param from
+   * @param types
+   */
   unforward(from: AEventDispatcher, ...types: string[]) {
     from.on(types, null);
   }
@@ -150,30 +163,64 @@ export function offset(element) {
 
 /**
  * content scroller utility
+ *
+ * a class for efficiently selecting a range of data items that are currently visible according to the scrolled position
  */
 export class ContentScroller extends AEventDispatcher {
   private options = {
+    /**
+     * shift that should be used for calculating the top position
+     */
     topShift: 0,
+    /**
+     * backup rows, i.e .the number of rows that should also be shown for avoiding to frequent updates
+     */
     backupRows: 5,
+    /**
+     * the height of one row in pixel
+     */
     rowHeight: 10
   };
 
   private prevScrollTop = 0;
   private shift = 0;
 
+  /**
+   *
+   * @param container the container element wrapping the content with a fixed height for enforcing scrolling
+   * @param content the content element to scroll
+   * @param options options see attribute
+   */
   constructor(private container:Element, private content:Element, options:any = {}) {
     super();
     merge(this.options, options);
     d3.select(container).on('scroll.scroller', () => this.onScroll());
 
+    //keep the previous state computing whether a redraw is needed
     this.prevScrollTop = container.scrollTop;
+    //total shift to the top
     this.shift = offset(content).top - offset(container).top + this.options.topShift;
   }
 
+  /**
+   * two events are fired:
+   *  * scroll when the user scrolls the container
+   *  * redraw when a redraw of the content must be performed due to scrolling changes. Note due to backup rows
+   *     a scrolling operation might not include a redraw
+   *
+   * @returns {string[]}
+   */
   createEventList() {
     return super.createEventList().concat(['scroll', 'redraw']);
   }
 
+  /**
+   * selects a range identified by start and length and the row2y position callback returning the slice to show according to the current user scrolling position
+   * @param start start of the range
+   * @param length length of the range
+   * @param row2y lookup for computing the y position of a given row
+   * @returns {{from: number, to: number}} the slide to show
+   */
   select(start:number, length:number, row2y:(i:number) => number) {
     var top = this.container.scrollTop - this.shift,
       bottom = top + this.container.clientHeight,
@@ -212,11 +259,15 @@ export class ContentScroller extends AEventDispatcher {
     //console.log(top, left);
     this.fire('scroll', top, left);
     if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
+      //we scrolled out of our backup rows, so we have to redraw the content
       this.prevScrollTop = top;
       this.fire('redraw');
     }
   }
 
+  /**
+   * removes the listeners
+   */
   destroy() {
     d3.select(this.container).on('scroll.scroller', null);
   }
@@ -247,6 +298,10 @@ export function copyDnD(e: DragEvent) {
   return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
 }
 
+/**
+ * updates the drop effect according to the currently selected meta keys
+ * @param e
+ */
 export function updateDropEffect(e: DragEvent) {
   var dT = e.dataTransfer;
   if (copyDnD(e)) {
@@ -257,7 +312,7 @@ export function updateDropEffect(e: DragEvent) {
 }
 
 /**
- * returns a d3 callable function to make an element dropable
+ * returns a d3 callable function to make an element dropable, managed the class css 'drag_over' for hovering effects
  * @param mimeTypes the mime types to be dropable
  * @param onDrop: handler when an element is dropped
  */
@@ -268,8 +323,10 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
       //var xy = d3.mouse($node.node());
       if (hasDnDType(e, mimeTypes)) {
         d3.select(this).classed('drag_over', true);
+        //sounds good
         return false;
       }
+      //not a valid mime type
       d3.select(this).classed('drag_over', false);
     }).on('dragover', function() {
       var e = <DragEvent>(<any>d3.event);
@@ -289,6 +346,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
       //var xy = d3.mouse($node.node());
       if (hasDnDType(e, mimeTypes)) {
         var data : any = {};
+        //selects the data contained in the data transfer
         mimeTypes.forEach((mime) => {
           var value = e.dataTransfer.getData(mime);
           if (value !== '') {

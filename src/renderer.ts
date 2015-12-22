@@ -53,8 +53,17 @@ export interface IRenderContext {
    */
   idPrefix: string;
 
+  /**
+   * wrapper for a d3 selection making it (optinally) to an animated transition
+   * @param $sel
+   */
   animated<T>($sel: d3.Selection<T>) : any;
 
+  /**
+   * lookup custom options by key
+   * @param key key to lookup
+   * @param default_ default value
+   */
   option<T>(key: string, default_ : T): T;
 }
 

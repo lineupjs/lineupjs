@@ -163,7 +163,8 @@ function openCategoricalFilter(column: model.CategoricalColumn, $header: d3.Sele
   redraw();
 
   function updateData(filter) {
-    $header.select('i.fa-filter').classed('filtered', (filter && filter.length > 0 && filter.length < column.categories.length));
+    $header.select('i.fa-filter');
+    $header.classed('filtered', (filter && filter.length > 0 && filter.length < column.categories.length));
     column.setFilter(filter);
   }
 
