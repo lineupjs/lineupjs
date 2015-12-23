@@ -59,12 +59,20 @@ export class Column extends utils.AEventDispatcher {
 
   id:string;
 
+  /**
+   * width of the column
+   * @type {number}
+   * @private
+   */
   private width_:number = 100;
 
   parent: IColumnParent = null;
 
   label: string;
   color: string;
+  /**
+   * alternative to specifying a color is defining a css class that should be used
+   */
   cssClass : string;
 
   constructor(id:string, public desc:IColumnDesc) {
@@ -83,10 +91,23 @@ export class Column extends utils.AEventDispatcher {
     return Promise.resolve(true);
   }
 
+  /**
+   * returns the fully qualified id i.e. path the parent
+   * @returns {string}
+   */
   get fqid() {
     return this.parent ? this.parent.fqid +'_'+this.id : this.id;
   }
 
+  /**
+   * fires:
+   *  * widthChanged
+   *  * filterChanged
+   *  * labelChanged
+   *  * addColumn, removeColumn ... for composite pattern
+   *  * dirty, dirtyHeader, dirtyValues
+   * @returns {string[]}
+   */
   createEventList() {
     return super.createEventList().concat(['widthChanged', 'filterChanged', 'labelChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
   }
@@ -95,6 +116,14 @@ export class Column extends utils.AEventDispatcher {
     return this.width_;
   }
 
+  /**
+   * visitor pattern for flattening the columns
+   * @param r the result array
+   * @param offset left offeset
+   * @param levelsToGo how many levels down
+   * @param padding padding between columns
+   * @returns {number} the used width by this column
+   */
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0): number {
     r.push({ col: this, offset: offset, width: this.getWidth() });
     return this.getWidth();
@@ -122,6 +151,11 @@ export class Column extends utils.AEventDispatcher {
     });
   }
 
+  /**
+   * triggers that the ranking is sorted by this column
+   * @param ascending
+   * @returns {any}
+   */
   sortByMe(ascending = false) {
     var r = this.findMyRanker();
     if (r) {
@@ -129,6 +163,11 @@ export class Column extends utils.AEventDispatcher {
     }
     return false;
   }
+
+  /**
+   * toggles the sorting order of this column in the ranking
+   * @returns {any}
+   */
   toggleMySorting() {
     var r = this.findMyRanker();
     if (r) {
@@ -136,12 +175,23 @@ export class Column extends utils.AEventDispatcher {
     }
     return false;
   }
+
+  /**
+   * removes the column from the ranking
+    * @returns {boolean}
+   */
   removeMe() {
     if (this.parent) {
       return this.parent.remove(this);
     }
     return false;
   }
+
+  /**
+   * inserts the given column after itself
+   * @param col
+   * @returns {boolean}
+   */
   insertAfterMe(col: Column) {
     if (this.parent) {
       return this.parent.insertAfter(col, this);
@@ -149,13 +199,22 @@ export class Column extends utils.AEventDispatcher {
     return false;
   }
 
-  findMyRanker() {
+  /**
+   * finds the underlying ranking column
+   * @returns {RankColumn}
+   */
+  findMyRanker(): RankColumn {
     if (this.parent) {
       return this.parent.findMyRanker();
     }
     return null;
   }
 
+  /**
+   * dumps this column to JSON compatible format
+   * @param toDescRef
+   * @returns {any}
+   */
   dump(toDescRef: (desc: any) => any) : any {
     var r: any = {
       id: this.id,
@@ -171,6 +230,11 @@ export class Column extends utils.AEventDispatcher {
     return r;
   }
 
+  /**
+   * restore the column content from a dump
+   * @param dump
+   * @param factory
+   */
   restore(dump: any, factory : (dump: any) => Column) {
     this.width_ = dump.width || this.width_;
     this.label = dump.label || this.label;
@@ -230,6 +294,7 @@ export class ValueColumn<T> extends Column {
 
   constructor(id:string, desc:any) {
     super(id, desc);
+    //find accessor
     this.accessor = desc.accessor || ((row:any, id:string, desc:any) => null);
   }
 
@@ -247,7 +312,7 @@ export class ValueColumn<T> extends Column {
 }
 
 /**
- * a column having an accessor to get the cell value
+ * a default column with no values
  */
 export class DummyColumn extends Column {
 
@@ -272,19 +337,41 @@ export interface INumberColumn {
   getNumber(row: any): number;
 }
 
+/**
+ * checks whether the given column or description is a number column, i.e. the value is a number
+ * @param col
+ * @returns {boolean|RegExpMatchArray}
+ */
 export function isNumberColumn(col: Column|IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/)));
 }
 
+/**
+ * a number column mapped from an original input scale to an output range
+ */
 export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   missingValue = 0;
+  /**
+   * the current scale applied
+   * @type {Linear<number, number>}
+   */
   private scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+  /**
+   * the original scale for resetting purpose
+   * @type {Linear<number, number>}
+   */
   private original = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
 
+  /**
+   * currently active filter
+   * @type {{min: number, max: number}}
+   * @private
+   */
   private filter_ = {min: -Infinity, max: Infinity};
 
   constructor(id:string, desc:any) {
     super(id, desc);
+    //initialize with the description
     if (desc.domain) {
       this.scale.domain(desc.domain);
     }
@@ -296,6 +383,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 
   init(callback : (desc: IColumnDesc) => Promise<IStatistics>) : Promise<boolean> {
     var d = this.scale.domain();
+    //if any of the values is not given use the statistics to compute them
     if (isNaN(d[0]) || isNaN(d[1])) {
       return callback(this.desc).then((stats) => {
         this.scale.domain([stats.min, stats.max]);
@@ -422,6 +510,11 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
   }
 
+  /**
+   * filter the current row if any filter is set
+   * @param row
+   * @returns {boolean}
+   */
   filter(row:any) {
     if (!this.isFiltered()) {
       return true;
@@ -434,6 +527,9 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   }
 }
 
+/**
+ * a string column with optional alignment
+ */
 export class StringColumn extends ValueColumn<string> {
   private filter_ : string|RegExp = null;
 
@@ -514,8 +610,16 @@ export class StringColumn extends ValueColumn<string> {
   }
 }
 
+/**
+ * a string column in which the label is a text but the value a link
+ */
 export class LinkColumn extends StringColumn {
+  /**
+   * a pattern used for generating the link, $1 is replaced with the actual value
+   * @type {null}
+   */
   private link = null;
+
   constructor(id:string, desc:any) {
     super(id, desc);
     this.link = desc.link;
@@ -530,7 +634,9 @@ export class LinkColumn extends StringColumn {
   }
 
   getValue(row:any) {
+    //get original value
     var v:any = super.getValue(row);
+    //convert to link
     if (v.href) {
       return v.href;
     } else if (this.link) {
@@ -540,6 +646,9 @@ export class LinkColumn extends StringColumn {
   }
 }
 
+/**
+ * a string column in which the values can be edited locally
+ */
 export class AnnotateColumn extends StringColumn {
   private annotations = d3.map<string>();
 
@@ -589,9 +698,21 @@ export class AnnotateColumn extends StringColumn {
   }
 }
 
+/**
+ * column for categorical values
+ */
 export class CategoricalColumn extends ValueColumn<string> {
+  /**
+   * colors for each category
+   * @type {Ordinal<string, string>}
+   */
   private colors = d3.scale.category10();
 
+  /**
+   * set of categories to show
+   * @type {null}
+   * @private
+   */
   private filter_ : string[] = null;
 
   constructor(id:string, desc:any) {
@@ -664,11 +785,11 @@ export class CategoricalColumn extends ValueColumn<string> {
     }
     var r = this.getLabel(row),
       filter: any = this.filter_;
-    if (Array.isArray(filter) && filter.length > 0) {
+    if (Array.isArray(filter) && filter.length > 0) { //array mode
       return filter.indexOf(r) >= 0;
-    } else if (typeof filter === 'string' && filter.length > 0) {
+    } else if (typeof filter === 'string' && filter.length > 0) { //search mode
       return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-    } else if (filter instanceof RegExp) {
+    } else if (filter instanceof RegExp) { //regex match mode
       return r != null && r.match(filter).length > 0;
     }
     return true;
@@ -687,6 +808,9 @@ export class CategoricalColumn extends ValueColumn<string> {
   }
 }
 
+/**
+ * similar to a categorical column but the categoriees are mapped to numbers
+ */
 export class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn {
   private colors = d3.scale.category10();
   private scale = d3.scale.ordinal().rangeRoundPoints([0,1]);
@@ -704,7 +828,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
         if (typeof d !== 'string' && typeof (d.value) === 'number') {
           values.push(d.value);
         } else {
-          values.push(0.5);
+          values.push(0.5); //by default 0.5
         }
       });
       this.scale.range(values);
@@ -795,9 +919,14 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
 }
 
 /**
- * implementation of the stacked colum
+ * implementation of the stacked column
  */
 export class StackColumn extends Column implements IColumnParent, INumberColumn {
+  /**
+   * factory for creating a description creating a stacked column
+   * @param label
+   * @returns {{type: string, label: string}}
+   */
   static desc(label: string = 'Combined') {
     return { type: 'stack', label : label };
   }
@@ -807,6 +936,11 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
 
   private adaptChange;
 
+  /**
+   * whether this stack column is collapsed i.e. just looks like an ordinary number column
+   * @type {boolean}
+   * @private
+   */
   private _collapsed = false;
 
   constructor(id:string, desc:any) {
@@ -853,6 +987,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     var self = null;
+    //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       var w = this.getWidth();
       if (!this.collapsed) {
@@ -863,7 +998,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
         return w;
       }
     }
-
+    //push children
     var acc = offset;
     this.children_.forEach((c) => {
       acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
@@ -891,6 +1026,13 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     super.restore(dump, factory);
   }
 
+  /**
+   * inserts a column at a the given position
+   * @param col
+   * @param index
+   * @param weight
+   * @returns {any}
+   */
   insert(col: Column, index: number, weight = NaN) {
     if (!isNumberColumn(col)) { //indicator it is a number type
       return null;
@@ -938,6 +1080,12 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     return this.insert(col, i+1, weight);
   }
 
+  /**
+   * adapts weights according to an own width change
+   * @param col
+   * @param old
+   * @param new_
+   */
   private adaptWidthChange(col: Column, old, new_) {
     if (old === new_) {
       return;
@@ -1087,6 +1235,10 @@ export class RankColumn extends ValueColumn<number> {
     this.fire(['dirtyOrder','dirtyValues','dirty'],this.sortCriteria());
   };
 
+  /**
+   * the current ordering as an sorted array of indices
+   * @type {Array}
+   */
   private order: number[] = [];
 
   constructor(id:string, desc:any) {
@@ -1310,13 +1462,22 @@ export class RankColumn extends ValueColumn<number> {
   }
 }
 
+/**
+ * utility for creating a stacked column description
+ * @type {function(string=): {type: string, label: string}}
+ */
 export const createStackDesc = StackColumn.desc;
+/**
+ * utility for creating an action description with optional label
+ * @param label
+ * @returns {{type: string, label: string}}
+ */
 export function createActionDesc(label = 'actions') {
  return { type: 'actions', label : label };
 }
 
 /**
- * a map of all known column types *
+ * a map of all known column types
  */
 export function models() {
   return {

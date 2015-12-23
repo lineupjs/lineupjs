@@ -32,7 +32,7 @@ Data Model
 Documentation
 -------------
 
-[TypeDoc Docu](./docs/index.html)
+[TypeDoc Docu](http://sgratzl.github.io/lineup.js/docs/index.html)
 
 
 

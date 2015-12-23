@@ -19,6 +19,9 @@ export var utils = utils_;
 export var ui_dialogs = ui_dialogs_;
 
 
+/**
+ * main LineUp class managing data and rendering
+ */
 export class LineUp extends utils_.AEventDispatcher {
   /**
    * default config of LineUp with all available options
@@ -200,6 +203,11 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 }
 
+/**
+ * assigns colors to colmns if they are numbers and not yet defined
+ * @param columns
+ * @returns {model_.IColumnDesc[]}
+ */
 export function deriveColors(columns: model_.IColumnDesc[]) {
   var colors = d3.scale.category10().range().slice();
   columns.forEach((col: any) => {
@@ -212,6 +220,12 @@ export function deriveColors(columns: model_.IColumnDesc[]) {
   return columns;
 }
 
+/**
+ * creates a local storage provider
+ * @param data
+ * @param columns
+ * @returns {LocalDataProvider}
+ */
 export function createLocalStorage(data: any[], columns: model_.IColumnDesc[]) {
   return new provider_.LocalDataProvider(data, columns);
 }

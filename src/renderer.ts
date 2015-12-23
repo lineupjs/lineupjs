@@ -110,6 +110,10 @@ export class DefaultCellRenderer implements ICellRenderer {
    * @type {string}
    */
   textClass = 'text';
+  /**
+   * the text alignment: left, center, right
+   * @type {string}
+   */
   align: string = 'left';
 
   render($col:d3.Selection<any>, col:model.Column, rows:any[], context:IRenderContext) {
@@ -177,14 +181,19 @@ export class DefaultCellRenderer implements ICellRenderer {
 class DerivedCellRenderer extends DefaultCellRenderer {
   constructor(extraFuncs:any) {
     super();
+    //integrate all the extra functions
     Object.keys(extraFuncs).forEach((key) => {
       this[key] = extraFuncs[key];
     });
   }
 }
 
+/**
+ * a renderer rendering a bar for numerical columns
+ */
 export class BarCellRenderer extends DefaultCellRenderer {
   render($col:d3.Selection<any>, col:model.NumberColumn, rows:any[], context:IRenderContext) {
+    //map to bars
     var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
 
     $rows.enter().append('rect').attr({
@@ -215,6 +224,13 @@ export class BarCellRenderer extends DefaultCellRenderer {
     $rows.exit().remove();
   }
 
+  /**
+   * computes the color for a given row
+   * @param d the current row
+   * @param i the row index
+   * @param col the model column
+   * @returns {string}
+   */
   colorOf(d: any, i: number, col: model.Column) {
     return col.color;
   }
@@ -226,6 +242,7 @@ export class BarCellRenderer extends DefaultCellRenderer {
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
     var rowNode = this.findRow($col, index);
     if (!rowNode.empty()) {
+      //create a text element on top
       (<Node>$row.node()).appendChild(<Node>(rowNode.node()));
       $row.append('text').datum(rowNode.datum()).attr({
         'class': 'number',
@@ -236,7 +253,11 @@ export class BarCellRenderer extends DefaultCellRenderer {
   }
 }
 
+/**
+ * render as a heatmap cell, e.g., encode the value in color
+ */
 export class HeatMapCellRenderer extends DefaultCellRenderer {
+
   render($col:d3.Selection<any>, col:model.NumberColumn, rows:any[], context:IRenderContext) {
     var $rows = $col.datum(col).selectAll('rect.heatmap').data(rows, context.rowKey);
 
@@ -262,13 +283,21 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
     $rows.exit().remove();
   }
 
+  /**
+   * computes the color of the cell
+   * @param d the row
+   * @param i the data index
+   * @param col the column
+   * @returns {string} the computed color
+   */
   colorOf(d: any, i: number, col: model.Column) {
     var v = col.getValue(d);
     if (isNaN(v)) {
       v = 0;
     }
+    //hsl space encoding, encode in lightness
     var color = d3.hsl(col.color || model.Column.DEFAULT_COLOR);
-    color.h = v;
+    color.l = v;
     return color.toString();
   }
 
@@ -279,6 +308,7 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
     var rowNode = this.findRow($col, index);
     if (!rowNode.empty()) {
+      //append a text element on top
       (<Node>$row.node()).appendChild(<Node>(rowNode.node()));
       $row.append('text').datum(rowNode.datum()).attr({
         'class': 'number',
@@ -289,6 +319,9 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
   }
 }
 
+/**
+ * a bar cell renderer where individual function can be overwritten
+ */
 class DerivedBarCellRenderer extends BarCellRenderer {
   constructor(extraFuncs:any) {
     super();
@@ -298,12 +331,16 @@ class DerivedBarCellRenderer extends BarCellRenderer {
   }
 }
 
+/**
+ * an rendering for action columns, i.e., clickable column actions
+ */
 export class ActionCellRenderer implements ICellRenderer {
   render($col:d3.Selection<any>, col:model.Column, rows:any[], context:IRenderContext) {
     //nothing to render in normal mode
   }
 
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
+    //render all actions at tspans
     var actions = context.option('actions',[]);
     var $actions = $row.append('text').attr({
       'class': 'actions fa',
@@ -327,8 +364,12 @@ export class ActionCellRenderer implements ICellRenderer {
 
 }
 
+/**
+ * a renderer for annotate columns
+ */
 class AnnotateCellRenderer extends DefaultCellRenderer {
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.AnnotateColumn, row:any, index:number, context:IRenderContext) {
+    //render an input field for editing
     this.findRow($col, index).attr('display', 'none');
     $row.append('foreignObject').attr({
       x: context.cellX(index)-2,
@@ -342,6 +383,7 @@ class AnnotateCellRenderer extends DefaultCellRenderer {
     }).style({
       width: col.getWidth()+'px'
     }).on('change', function() {
+      //update the value
       var text = this.value;
       col.setValue(row, text);
     }).on('click', () => d3.event.stopPropagation() );
@@ -351,6 +393,7 @@ class AnnotateCellRenderer extends DefaultCellRenderer {
     this.findRow($col, index).attr('display', null);
     var node = <HTMLInputElement>$row.select('input').node();
     if (node) {
+      //update the value before removal, the change event may not have been fired
       col.setValue(row, node.value);
     }
     $row.selectAll('*').remove();
@@ -372,6 +415,11 @@ export function defaultRenderer(extraFuncs?:any) {
   return new DerivedCellRenderer(extraFuncs);
 }
 
+/**
+ * creates a new instance with optional overridden methods
+ * @param extraFuncs
+ * @return {BarCellRenderer}
+ */
 export function barRenderer(extraFuncs?: any) {
   if (!extraFuncs) {
     return barRendererInstance;
@@ -379,6 +427,9 @@ export function barRenderer(extraFuncs?: any) {
   return new DerivedBarCellRenderer(extraFuncs);
 }
 
+/**
+ * renderer of a link column, i.e. render an intermediate *a* element
+ */
 class LinkCellRenderer extends DefaultCellRenderer {
   render($col:d3.Selection<any>, col:model.LinkColumn, rows:any[], context:IRenderContext) {
     //wrap the text elements with an a element
@@ -411,7 +462,9 @@ class LinkCellRenderer extends DefaultCellRenderer {
 }
 
 
-
+/**
+ * renders a string with additional alignment behavior
+ */
 class StringCellRenderer extends DefaultCellRenderer {
   render($col:d3.Selection<any>, col:model.StringColumn, rows:any[], context:IRenderContext) {
     this.align = col.alignment;
@@ -420,6 +473,9 @@ class StringCellRenderer extends DefaultCellRenderer {
   }
 }
 
+/**
+ * renders categorical columns as a colored rect with label
+ */
 class CategoricalRenderer extends DefaultCellRenderer {
   textClass = 'cat';
 
@@ -465,6 +521,9 @@ class CategoricalRenderer extends DefaultCellRenderer {
   }
 }
 
+/**
+ * renderes a stacked column using composite pattern
+ */
 class StackCellRenderer extends DefaultCellRenderer {
   renderImpl($base:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
     const $group = $base.datum(col),
@@ -484,17 +543,21 @@ class StackCellRenderer extends DefaultCellRenderer {
       return option === 'stackLevel' ? r + 'N' : r;
     };
 
+    //map all children to g elements
     const $children = $group.selectAll('g.'+baseclass).data(children, (d) => d.id);
+    //shift children horizontally
     $children.enter().append('g').attr({
       'class': baseclass,
       transform: (d, i) => 'translate(' + shifts[i] + ',0)'
     });
+    //for each children render the column
     $children.attr({
       'class': (d) => baseclass+' ' + d.desc.type,
       'data-stack': (d,i) => i
     }).each(function (d, i) {
       if (context.showStacked(col)) {
         const preChildren = children.slice(0, i);
+        //if shown as stacked bar shift individual cells of a column to the left where they belong to
         context.cellX = (index) => {
           //shift by all the empty space left from the previous columns
           return ueber(index) -preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rowGetter(index))), 0);

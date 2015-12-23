@@ -1,4 +1,6 @@
 /**
+ * a set of simple dialogs for LineUp
+ *
  * Created by Samuel Gratzl on 24.08.2015.
  */
 
@@ -15,6 +17,13 @@ export function dialogForm(title, body, buttonsWithLabel = false) {
     '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
 }
 
+/**
+ * creates a simple popup dialog under the given attachment
+ * @param attachement
+ * @param title
+ * @param body
+ * @returns {Selection<any>}
+ */
 export function makePopup(attachement: d3.Selection<any>, title: string, body: string) {
   var pos = utils.offset(<Element>attachement.node());
   var $popup = d3.select('body').append('div')
@@ -37,6 +46,11 @@ export function makePopup(attachement: d3.Selection<any>, title: string, body: s
 
 }
 
+/**
+ * opens a rename dialog for the given column
+ * @param column the column to rename
+ * @param $header the visual header element of this column
+ */
 export function openRenameDialog(column:model.Column, $header:d3.Selection<model.Column>) {
   var popup = makePopup($header, 'Rename Column', `<input type="text" size="15" value="${column.label}" required="required" autofocus="autofocus"><br><input type="color" size="15" value="${column.color}" required="required"><br>`);
 
@@ -52,7 +66,12 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
   });
 }
 
-
+/**
+ * opens a search dialog for the given column
+ * @param column the column to rename
+ * @param $header the visual header element of this column
+ * @param provider the data provider for the actual search
+ */
 export function openSearchDialog(column:model.Column, $header:d3.Selection<model.Column>, provider: provider.DataProvider) {
   var popup = makePopup($header,'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
 
@@ -85,14 +104,21 @@ export function openSearchDialog(column:model.Column, $header:d3.Selection<model
   });
 }
 
+/**
+ * opens a dialog for editing the weights of a stack column
+ * @param column the column to filter
+ * @param $header the visual header element of this column
+ */
 export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Selection<model.Column>) {
   var weights = column.weights,
     children = column.children.map((d, i) => ({ col: d, weight: weights[i] * 100} ));
 
+  //map weights to pixels
   var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
 
   var $popup = makePopup($header, 'Edit Weights', '<table></table>');
 
+  //show as a table with inputs and bars
   var $rows = $popup.select('table').selectAll('tr').data(children);
   var $rows_enter = $rows.enter().append('tr');
   $rows_enter.append('td')
@@ -133,7 +159,11 @@ export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Sel
     $popup.remove();
   });
 }
-
+/**
+ * opens a dialog for filtering a categorical column
+ * @param column the column to rename
+ * @param $header the visual header element of this column
+ */
 function openCategoricalFilter(column: model.CategoricalColumn, $header: d3.Selection<model.Column>) {
   var bak = column.getFilter() || [];
   var popup = makePopup($header, 'Edit Filter', '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>');
@@ -187,6 +217,11 @@ function openCategoricalFilter(column: model.CategoricalColumn, $header: d3.Sele
   });
 }
 
+/**
+ * opens a dialog for filtering a string column
+ * @param column the column to filter
+ * @param $header the visual header element of this column
+ */
 function openStringFilter(column: model.StringColumn, $header: d3.Selection<model.Column>) {
   var bak = column.getFilter() || '';
 
@@ -201,6 +236,7 @@ function openStringFilter(column: model.StringColumn, $header: d3.Selection<mode
   }
 
   function updateImpl(force) {
+    //get value
     var search : any = $popup.select('input[type="text"]').property('value');
     if (search.length >= 3 || force) {
       var isRegex = $popup.select('input[type="checkbox"]').property('checked');
@@ -232,6 +268,12 @@ function openStringFilter(column: model.StringColumn, $header: d3.Selection<mode
   });
 }
 
+/**
+ * opens the mapping editor for a given NumberColumn
+ * @param column the column to rename
+ * @param $header the visual header element of this column
+ * @param data the data provider for illustrating the mapping by example
+ */
 function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any>, data: provider.DataProvider) {
   var pos = utils.offset($header.node()),
     bak = column.getMapping(),
@@ -297,6 +339,12 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
   });
 }
 
+
+/**
+ * opens the mapping editor for a given CategoricalNumberColumn, i.e. to map categories to numbers
+ * @param column the column to rename
+ * @param $header the visual header element of this column
+ */
 function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $header: d3.Selection<any>) {
   var range = column.getScale().range,
     colors = column.categoryColors,
@@ -350,7 +398,7 @@ function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $he
 }
 
 /**
- * returns all known filter dialogs mappings
+ * returns all known filter dialogs mappings by type
  * @return
  */
 export function filterDialogs() {

@@ -1,4 +1,5 @@
 
+//mapping editor
 .lugui-me {
   line.axis, g.data line {
     stroke: gray;
@@ -28,6 +29,8 @@
     }
   }
 }
+
+//popups, e.g., rename dialogs,...
 
 .lu-popup {
   position: absolute;
@@ -87,6 +90,7 @@
   }
 }
 
+//fat tooltip
 .lu-tooltip {
   background-color: white;
   min-width: 200px;
@@ -296,10 +300,12 @@ $lu_drag_over: #979797;
     text {
       font-size: 10pt;
     }
-    foreignObject: {
+
+    foreignObject: { //e.g. the input field in annotate columns
       padding: 0;
       margin: 0;
     }
+
     input {
       padding: 0;
       margin: 0;
