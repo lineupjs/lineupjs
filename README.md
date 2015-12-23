@@ -26,8 +26,8 @@ Column groups are used for efficient use of D3 for rendering individual columns.
 Data Model
 ----------
 
-![Data Model](docs/data_model.png)
-![Data Model](data_model.png)
+![Data Model](assets/data_model.png)
+![Data Model](../assets/data_model.png)
 
 Documentation
 -------------

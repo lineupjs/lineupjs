@@ -178,7 +178,7 @@ export class Column extends utils.AEventDispatcher {
 
   /**
    * removes the column from the ranking
-    * @returns {boolean}
+   * @returns {boolean}
    */
   removeMe() {
     if (this.parent) {
@@ -1308,10 +1308,12 @@ export class RankColumn extends ValueColumn<number> {
 
   sortByMe(ascending = false) {
     //noop
+    return false;
   }
 
   toggleMySorting() {
     //noop
+    return false;
   }
 
   findMyRanker() {

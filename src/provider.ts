@@ -370,13 +370,13 @@ export class DataProvider extends utils.AEventDispatcher {
         return null; //can't handle
       }
       if (column.type === 'actions') {
-        var r = this.create(model.createActionDesc(column.label || 'actions'));
-        r.restore(column);
+        let r = this.create(model.createActionDesc(column.label || 'actions'));
+        r.restore(column, null);
         return r;
       }
       if (column.type === 'stacked') {
         //create a stacked one
-        var r = this.create(model.StackColumn.desc(column.label || 'Combined'));
+        let r = <model.StackColumn>this.create(model.StackColumn.desc(column.label || 'Combined'));
         (column.children || []).forEach((col) => {
           var c = toCol(col);
           if (c) {
@@ -385,17 +385,17 @@ export class DataProvider extends utils.AEventDispatcher {
         });
         return r;
       } else {
-        var desc = this.findDesc(column.column);
+        let desc = this.findDesc(column.column);
         if (desc) {
-          var r = this.create(desc);
+          let r = this.create(desc);
           column.label = column.label || desc.label || desc.column;
-          r.restore(column);
+          r.restore(column, null);
           return r;
         }
       }
       return null;
     };
-    var r = this.pushRanking();
+    const r = this.pushRanking();
     bundle.forEach((column) => {
       var col = toCol(column);
       if (col) {
