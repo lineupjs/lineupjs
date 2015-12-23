@@ -1,5 +1,5 @@
-/*! LineUpJS - v0.1.0 - 2015-12-23
-* https://github.com/Caleydo/lineup.js
+/*! LineUpJS - v0.2.0 - 2015-12-23
+* https://github.com/sgratzl/lineup.js
 * Copyright (c) 2015 ; Licensed BSD */
 
 //based on https://github.com/ForbesLindesay/umd but with a custom list of external dependencies
@@ -35,16 +35,11 @@
 
 })(function (require) {
   return  (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-///<reference path='../typings/tsd.d.ts' />
 var model_ = require('./model');
 var provider_ = require('./provider');
 var renderer_ = require('./renderer');
@@ -238,10 +233,6 @@ function create(data, container, config) {
 exports.create = create;
 
 },{"./model":3,"./provider":4,"./renderer":5,"./ui":6,"./ui_dialogs":7,"./utils":8,"d3":undefined}],2:[function(require,module,exports){
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-///<reference path='../typings/tsd.d.ts' />
 var d3 = require('d3');
 var utils = require('./utils');
 'use strict';
@@ -501,1152 +492,1423 @@ exports.open = open;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var d3 = require('d3');
-var utils = require('./utils');
-function fixCSS(id) {
-    return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_');
-}
-function numberCompare(a, b) {
-    if (a === b || (isNaN(a) && isNaN(b))) {
-        return 0;
+define(["require", "exports", 'd3', './utils'], function (require, exports, d3, utils) {
+    /**
+     * converts a given id to css compatible one
+     * @param id
+     * @return {string|void}
+     */
+    function fixCSS(id) {
+        return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_'); //replace non css stuff to _
     }
-    return a - b;
-}
-var Column = (function (_super) {
-    __extends(Column, _super);
-    function Column(id, desc) {
-        _super.call(this);
-        this.desc = desc;
-        this.width_ = 100;
-        this.parent = null;
-        this.id = fixCSS(id);
-        this.label = this.desc.label || this.id;
-        this.cssClass = this.desc.cssClass || '';
-        this.color = this.desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
+    /**
+     * save number comparison
+     * @param a
+     * @param b
+     * @return {number}
+     */
+    function numberCompare(a, b) {
+        if (a === b || (isNaN(a) && isNaN(b))) {
+            return 0;
+        }
+        return a - b;
     }
-    Column.prototype.assignNewId = function (idGenerator) {
-        this.id = fixCSS(idGenerator());
-    };
-    Column.prototype.init = function (callback) {
-        return Promise.resolve(true);
-    };
-    Object.defineProperty(Column.prototype, "fqid", {
-        get: function () {
-            return this.parent ? this.parent.fqid + '_' + this.id : this.id;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Column.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['widthChanged', 'filterChanged', 'labelChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
-    };
-    Column.prototype.getWidth = function () {
-        return this.width_;
-    };
-    Column.prototype.flatten = function (r, offset, levelsToGo, padding) {
-        if (levelsToGo === void 0) { levelsToGo = 0; }
-        if (padding === void 0) { padding = 0; }
-        r.push({ col: this, offset: offset, width: this.getWidth() });
-        return this.getWidth();
-    };
-    Column.prototype.setWidth = function (value) {
-        if (this.width_ === value) {
-            return;
+    /**
+     * a column in LineUp
+     */
+    var Column = (function (_super) {
+        __extends(Column, _super);
+        function Column(id, desc) {
+            _super.call(this);
+            this.desc = desc;
+            /**
+             * width of the column
+             * @type {number}
+             * @private
+             */
+            this.width_ = 100;
+            this.parent = null;
+            /**
+             * whether this column is compressed i.e. just shown in a minimal version
+             * @type {boolean}
+             * @private
+             */
+            this._compressed = false;
+            this.id = fixCSS(id);
+            this.label = this.desc.label || this.id;
+            this.cssClass = this.desc.cssClass || '';
+            this.color = this.desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
         }
-        this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.width_, this.width_ = value);
-    };
-    Column.prototype.setWidthImpl = function (value) {
-        this.width_ = value;
-    };
-    Column.prototype.setMetaData = function (value, color) {
-        if (color === void 0) { color = this.color; }
-        if (value === this.label && this.color === color) {
-            return;
-        }
-        var events = this.color === color ? ['labelChanged', 'dirtyHeader', 'dirty'] : ['labelChanged', 'dirtyHeader', 'dirtyValues', 'dirty'];
-        this.fire(events, { label: this.label, color: this.color }, {
-            label: this.label = value,
-            color: this.color = color
+        Column.prototype.assignNewId = function (idGenerator) {
+            this.id = fixCSS(idGenerator());
+        };
+        Column.prototype.init = function (callback) {
+            return Promise.resolve(true);
+        };
+        Object.defineProperty(Column.prototype, "fqid", {
+            /**
+             * returns the fully qualified id i.e. path the parent
+             * @returns {string}
+             */
+            get: function () {
+                return this.parent ? this.parent.fqid + '_' + this.id : this.id;
+            },
+            enumerable: true,
+            configurable: true
         });
-    };
-    Column.prototype.sortByMe = function (ascending) {
-        if (ascending === void 0) { ascending = false; }
-        var r = this.findMyRanker();
-        if (r) {
-            return r.sortBy(this, ascending);
-        }
-        return false;
-    };
-    Column.prototype.toggleMySorting = function () {
-        var r = this.findMyRanker();
-        if (r) {
-            return r.toggleSorting(this);
-        }
-        return false;
-    };
-    Column.prototype.removeMe = function () {
-        if (this.parent) {
-            return this.parent.remove(this);
-        }
-        return false;
-    };
-    Column.prototype.insertAfterMe = function (col) {
-        if (this.parent) {
-            return this.parent.insertAfter(col, this);
-        }
-        return false;
-    };
-    Column.prototype.findMyRanker = function () {
-        if (this.parent) {
-            return this.parent.findMyRanker();
-        }
-        return null;
-    };
-    Column.prototype.dump = function (toDescRef) {
-        var r = {
-            id: this.id,
-            desc: toDescRef(this.desc),
-            width: this.width_
+        /**
+         * fires:
+         *  * widthChanged
+         *  * filterChanged
+         *  * labelChanged,
+         *  * compressChanged
+         *  * addColumn, removeColumn ... for composite pattern
+         *  * dirty, dirtyHeader, dirtyValues
+         * @returns {string[]}
+         */
+        Column.prototype.createEventList = function () {
+            return _super.prototype.createEventList.call(this).concat(['widthChanged', 'filterChanged', 'labelChanged', 'compressChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
         };
-        if (this.label !== (this.desc.label || this.id)) {
-            r.label = this.label;
-        }
-        if (this.color !== (this.desc.color || Column.DEFAULT_COLOR) && this.color) {
-            r.color = this.color;
-        }
-        return r;
-    };
-    Column.prototype.restore = function (dump, factory) {
-        this.width_ = dump.width || this.width_;
-        this.label = dump.label || this.label;
-        this.color = dump.color || this.color;
-    };
-    Column.prototype.getLabel = function (row) {
-        return '' + this.getValue(row);
-    };
-    Column.prototype.getValue = function (row) {
-        return '';
-    };
-    Column.prototype.compare = function (a, b) {
-        return 0;
-    };
-    Column.prototype.isFiltered = function () {
-        return false;
-    };
-    Column.prototype.filter = function (row) {
-        return row !== null;
-    };
-    Column.DEFAULT_COLOR = '#C1C1C1';
-    Column.FLAT_ALL_COLUMNS = -1;
-    return Column;
-})(utils.AEventDispatcher);
-exports.Column = Column;
-var ValueColumn = (function (_super) {
-    __extends(ValueColumn, _super);
-    function ValueColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.accessor = desc.accessor || (function (row, id, desc) { return null; });
-    }
-    ValueColumn.prototype.getLabel = function (row) {
-        return '' + this.getValue(row);
-    };
-    ValueColumn.prototype.getValue = function (row) {
-        return this.accessor(row, this.id, this.desc);
-    };
-    ValueColumn.prototype.compare = function (a, b) {
-        return 0;
-    };
-    return ValueColumn;
-})(Column);
-exports.ValueColumn = ValueColumn;
-var DummyColumn = (function (_super) {
-    __extends(DummyColumn, _super);
-    function DummyColumn(id, desc) {
-        _super.call(this, id, desc);
-    }
-    DummyColumn.prototype.getLabel = function (row) {
-        return '';
-    };
-    DummyColumn.prototype.getValue = function (row) {
-        return '';
-    };
-    DummyColumn.prototype.compare = function (a, b) {
-        return 0;
-    };
-    return DummyColumn;
-})(Column);
-exports.DummyColumn = DummyColumn;
-function isNumberColumn(col) {
-    return (col instanceof Column && typeof col.getNumber === 'function' || (!(col instanceof Column) && col.type.match(/(number|stack|ordinal)/)));
-}
-exports.isNumberColumn = isNumberColumn;
-var NumberColumn = (function (_super) {
-    __extends(NumberColumn, _super);
-    function NumberColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.missingValue = 0;
-        this.scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
-        this.original = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
-        this.filter_ = { min: -Infinity, max: Infinity };
-        if (desc.domain) {
-            this.scale.domain(desc.domain);
-        }
-        if (desc.range) {
-            this.scale.range(desc.range);
-        }
-        this.original.domain(this.scale.domain()).range(this.scale.range());
-    }
-    NumberColumn.prototype.init = function (callback) {
-        var _this = this;
-        var d = this.scale.domain();
-        if (isNaN(d[0]) || isNaN(d[1])) {
-            return callback(this.desc).then(function (stats) {
-                _this.scale.domain([stats.min, stats.max]);
-                _this.original.domain(_this.scale.domain());
-                return true;
-            });
-        }
-        return Promise.resolve(true);
-    };
-    NumberColumn.prototype.dump = function (toDescRef) {
-        var r = _super.prototype.dump.call(this, toDescRef);
-        r.domain = this.scale.domain();
-        r.range = this.scale.range();
-        r.mapping = this.getOriginalMapping();
-        r.filter = this.filter;
-        r.missingValue = this.missingValue;
-        return r;
-    };
-    NumberColumn.prototype.restore = function (dump, factory) {
-        _super.prototype.restore.call(this, dump, factory);
-        if (dump.domain) {
-            this.scale.domain(dump.domain);
-        }
-        if (dump.range) {
-            this.scale.range(dump.range);
-        }
-        if (dump.mapping) {
-            this.original.domain(dump.mapping.domain).range(dump.mapping.range);
-        }
-        if (dump.filter) {
-            this.filter_ = dump.filter;
-        }
-        if (dump.missingValue) {
-            this.missingValue = dump.missingValue;
-        }
-    };
-    NumberColumn.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
-    };
-    NumberColumn.prototype.getLabel = function (row) {
-        return '' + _super.prototype.getValue.call(this, row);
-    };
-    NumberColumn.prototype.getRawValue = function (row) {
-        var v = _super.prototype.getValue.call(this, row);
-        if (typeof (v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof (v) === 'string' && (v.toLowerCase() === 'na'))) {
-            return this.missingValue;
-        }
-        return +v;
-    };
-    NumberColumn.prototype.getValue = function (row) {
-        var v = this.getRawValue(row);
-        if (isNaN(v)) {
-            return v;
-        }
-        return this.scale(v);
-    };
-    NumberColumn.prototype.getNumber = function (row) {
-        return this.getValue(row);
-    };
-    NumberColumn.prototype.compare = function (a, b) {
-        return numberCompare(this.getValue(a), this.getValue(b));
-    };
-    NumberColumn.prototype.getMapping = function () {
-        return {
-            domain: this.scale.domain(),
-            range: this.scale.range()
+        Column.prototype.getWidth = function () {
+            return this.width_;
         };
-    };
-    NumberColumn.prototype.getOriginalMapping = function () {
-        return {
-            domain: this.original.domain(),
-            range: this.original.range()
-        };
-    };
-    NumberColumn.prototype.setMapping = function (domain, range) {
-        var bak = this.getMapping();
-        this.scale.domain(domain).range(range);
-        this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
-    };
-    NumberColumn.prototype.isFiltered = function () {
-        return isFinite(this.filter_.min) || isFinite(this.filter_.max);
-    };
-    Object.defineProperty(NumberColumn.prototype, "filterMin", {
-        get: function () {
-            return this.filter_.min;
-        },
-        set: function (min) {
-            var bak = { min: this.filter_.min, max: this.filter_.max };
-            this.filter_.min = isNaN(min) ? -Infinity : min;
-            this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(NumberColumn.prototype, "filterMax", {
-        get: function () {
-            return this.filter_.max;
-        },
-        set: function (max) {
-            var bak = { min: this.filter_.min, max: this.filter_.max };
-            this.filter_.max = isNaN(max) ? Infinity : max;
-            this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    NumberColumn.prototype.getFilter = function () {
-        return this.filter_;
-    };
-    NumberColumn.prototype.setFilter = function (min, max) {
-        if (min === void 0) { min = -Infinity; }
-        if (max === void 0) { max = +Infinity; }
-        var bak = { min: this.filter_.min, max: this.filter_.max };
-        this.filter_.min = isNaN(min) ? -Infinity : min;
-        this.filter_.max = isNaN(max) ? Infinity : max;
-        this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
-    };
-    NumberColumn.prototype.filter = function (row) {
-        if (!this.isFiltered()) {
-            return true;
-        }
-        var v = this.getRawValue(row);
-        if (isNaN(v)) {
-            return true;
-        }
-        return !((isFinite(this.filter_.min) && v < this.filter_.min) || (isFinite(this.filter_.max) && v < this.filter_.max));
-    };
-    return NumberColumn;
-})(ValueColumn);
-exports.NumberColumn = NumberColumn;
-var StringColumn = (function (_super) {
-    __extends(StringColumn, _super);
-    function StringColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.filter_ = null;
-        this._alignment = 'left';
-        this.setWidthImpl(200);
-        this._alignment = desc.alignment || 'left';
-    }
-    Object.defineProperty(StringColumn.prototype, "alignment", {
-        get: function () {
-            return this._alignment;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    StringColumn.prototype.getValue = function (row) {
-        var v = _super.prototype.getValue.call(this, row);
-        if (typeof (v) === 'undefined' || v == null) {
-            return '';
-        }
-        return v;
-    };
-    StringColumn.prototype.dump = function (toDescRef) {
-        var r = _super.prototype.dump.call(this, toDescRef);
-        if (this.filter_ instanceof RegExp) {
-            r.filter = 'REGEX:' + this.filter_.source;
-        }
-        else {
-            r.filter = this.filter_;
-        }
-        r.alignment = this.alignment;
-        return r;
-    };
-    StringColumn.prototype.restore = function (dump, factory) {
-        _super.prototype.restore.call(this, dump, factory);
-        if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
-            this.filter_ = new RegExp(dump.filter.slice(6));
-        }
-        else {
-            this.filter_ = dump.filter || null;
-        }
-        this._alignment = dump.alignment || this._alignment;
-    };
-    StringColumn.prototype.isFiltered = function () {
-        return this.filter_ != null;
-    };
-    StringColumn.prototype.filter = function (row) {
-        if (!this.isFiltered()) {
-            return true;
-        }
-        var r = this.getLabel(row), filter = this.filter_;
-        if (typeof filter === 'string' && filter.length > 0) {
-            return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-        }
-        if (filter instanceof RegExp) {
-            return r && filter.test(r);
-        }
-        return true;
-    };
-    StringColumn.prototype.getFilter = function () {
-        return this.filter_;
-    };
-    StringColumn.prototype.setFilter = function (filter) {
-        if (filter === '') {
-            filter = null;
-        }
-        this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
-    };
-    StringColumn.prototype.compare = function (a, b) {
-        return d3.ascending(this.getValue(a), this.getValue(b));
-    };
-    return StringColumn;
-})(ValueColumn);
-exports.StringColumn = StringColumn;
-var LinkColumn = (function (_super) {
-    __extends(LinkColumn, _super);
-    function LinkColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.link = null;
-        this.link = desc.link;
-    }
-    LinkColumn.prototype.getLabel = function (row) {
-        var v = _super.prototype.getValue.call(this, row);
-        if (v.alt) {
-            return v.alt;
-        }
-        return '' + v;
-    };
-    LinkColumn.prototype.getValue = function (row) {
-        var v = _super.prototype.getValue.call(this, row);
-        if (v.href) {
-            return v.href;
-        }
-        else if (this.link) {
-            return this.link.replace(/\$1/g, v);
-        }
-        return v;
-    };
-    return LinkColumn;
-})(StringColumn);
-exports.LinkColumn = LinkColumn;
-var AnnotateColumn = (function (_super) {
-    __extends(AnnotateColumn, _super);
-    function AnnotateColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.annotations = d3.map();
-    }
-    AnnotateColumn.prototype.getValue = function (row) {
-        var index = String(row._index);
-        if (this.annotations.has(index)) {
-            return this.annotations.get(index);
-        }
-        return _super.prototype.getValue.call(this, row);
-    };
-    AnnotateColumn.prototype.dump = function (toDescRef) {
-        var r = _super.prototype.dump.call(this, toDescRef);
-        r.annotations = {};
-        this.annotations.forEach(function (k, v) {
-            r.annotations[k] = v;
+        Object.defineProperty(Column.prototype, "compressed", {
+            get: function () {
+                return this._compressed;
+            },
+            set: function (value) {
+                if (this._compressed === value) {
+                    return;
+                }
+                this.fire(['compressChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this._compressed, this._compressed = value);
+            },
+            enumerable: true,
+            configurable: true
         });
-        return r;
-    };
-    AnnotateColumn.prototype.restore = function (dump, factory) {
-        var _this = this;
-        _super.prototype.restore.call(this, dump, factory);
-        if (dump.annotations) {
-            Object.keys(dump.annotations).forEach(function (k) {
-                _this.annotations.set(k, dump.annotations[k]);
-            });
-        }
-    };
-    AnnotateColumn.prototype.setValue = function (row, value) {
-        var old = this.getValue(row);
-        if (old === value) {
-            return true;
-        }
-        if (value === '' || value == null) {
-            this.annotations.remove(String(row._index));
-        }
-        else {
-            this.annotations.set(String(row._index), value);
-        }
-        this.fire(['dirtyValues', 'dirty'], value, old);
-        return true;
-    };
-    return AnnotateColumn;
-})(StringColumn);
-exports.AnnotateColumn = AnnotateColumn;
-var CategoricalColumn = (function (_super) {
-    __extends(CategoricalColumn, _super);
-    function CategoricalColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.colors = d3.scale.category10();
-        this.filter_ = null;
-        this.initCategories(desc);
-    }
-    CategoricalColumn.prototype.initCategories = function (desc) {
-        if (desc.categories) {
-            var cats = [], cols = this.colors.range();
-            desc.categories.forEach(function (cat, i) {
-                if (typeof cat === 'string') {
-                    cats.push(cat);
-                }
-                else {
-                    cats.push(cat.name);
-                    cols[i] = cat.color;
-                }
-            });
-            this.colors.domain(cats).range(cols);
-        }
-    };
-    Object.defineProperty(CategoricalColumn.prototype, "categories", {
-        get: function () {
-            return this.colors.domain();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CategoricalColumn.prototype, "categoryColors", {
-        get: function () {
-            return this.colors.range();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    CategoricalColumn.prototype.getValue = function (row) {
-        return StringColumn.prototype.getValue.call(this, row);
-    };
-    CategoricalColumn.prototype.getColor = function (row) {
-        var cat = this.getLabel(row);
-        if (cat === null || cat === '') {
-            return null;
-        }
-        return this.colors(cat);
-    };
-    CategoricalColumn.prototype.dump = function (toDescRef) {
-        var r = _super.prototype.dump.call(this, toDescRef);
-        r.filter = this.filter_;
-        r.colors = {
-            domain: this.colors.domain(),
-            range: this.colors.range()
+        /**
+         * visitor pattern for flattening the columns
+         * @param r the result array
+         * @param offset left offeset
+         * @param levelsToGo how many levels down
+         * @param padding padding between columns
+         * @returns {number} the used width by this column
+         */
+        Column.prototype.flatten = function (r, offset, levelsToGo, padding) {
+            if (levelsToGo === void 0) { levelsToGo = 0; }
+            if (padding === void 0) { padding = 0; }
+            var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
+            r.push({ col: this, offset: offset, width: w });
+            return w;
         };
-        return r;
-    };
-    CategoricalColumn.prototype.restore = function (dump, factory) {
-        _super.prototype.restore.call(this, dump, factory);
-        this.filter_ = dump.filter || null;
-        if (dump.colors) {
-            this.colors.domain(dump.colors.domain).range(dump.colors.range);
-        }
-    };
-    CategoricalColumn.prototype.isFiltered = function () {
-        return this.filter_ != null;
-    };
-    CategoricalColumn.prototype.filter = function (row) {
-        if (!this.isFiltered()) {
-            return true;
-        }
-        var r = this.getLabel(row), filter = this.filter_;
-        if (Array.isArray(filter) && filter.length > 0) {
-            return filter.indexOf(r) >= 0;
-        }
-        else if (typeof filter === 'string' && filter.length > 0) {
-            return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-        }
-        else if (filter instanceof RegExp) {
-            return r != null && r.match(filter).length > 0;
-        }
-        return true;
-    };
-    CategoricalColumn.prototype.getFilter = function () {
-        return this.filter_;
-    };
-    CategoricalColumn.prototype.setFilter = function (filter) {
-        this.fire(['filterChanged', 'dirtyValues', 'dirty'], this, this.filter_, this.filter_ = filter);
-    };
-    CategoricalColumn.prototype.compare = function (a, b) {
-        return StringColumn.prototype.compare.call(this, a, b);
-    };
-    return CategoricalColumn;
-})(ValueColumn);
-exports.CategoricalColumn = CategoricalColumn;
-var CategoricalNumberColumn = (function (_super) {
-    __extends(CategoricalNumberColumn, _super);
-    function CategoricalNumberColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.colors = d3.scale.category10();
-        this.scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
-        this.filter_ = null;
-        CategoricalColumn.prototype.init.call(this, desc);
-        this.scale.domain(this.colors.domain());
-        if (desc.categories) {
-            var values = [];
-            desc.categories.forEach(function (d) {
-                if (typeof d !== 'string' && typeof (d.value) === 'number') {
-                    values.push(d.value);
-                }
-                else {
-                    values.push(0.5);
-                }
-            });
-            this.scale.range(values);
-        }
-    }
-    CategoricalNumberColumn.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
-    };
-    Object.defineProperty(CategoricalNumberColumn.prototype, "categories", {
-        get: function () {
-            return this.colors.domain();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CategoricalNumberColumn.prototype, "categoryColors", {
-        get: function () {
-            return this.colors.range();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    CategoricalNumberColumn.prototype.getLabel = function (row) {
-        var v = _super.prototype.getValue.call(this, row);
-        if (typeof (v) === 'undefined' || v == null) {
-            return '';
-        }
-        return v;
-    };
-    CategoricalNumberColumn.prototype.getValue = function (row) {
-        var v = this.getLabel(row);
-        return this.scale(v);
-    };
-    CategoricalNumberColumn.prototype.getNumber = function (row) {
-        return this.getValue(row);
-    };
-    CategoricalNumberColumn.prototype.getColor = function (row) {
-        return CategoricalColumn.prototype.getColor.call(this, row);
-    };
-    CategoricalNumberColumn.prototype.dump = function (toDescRef) {
-        var r = CategoricalColumn.prototype.dump.call(this, toDescRef);
-        r.scale = {
-            domain: this.scale.domain(),
-            range: this.scale.range()
-        };
-        return r;
-    };
-    CategoricalNumberColumn.prototype.restore = function (dump, factory) {
-        CategoricalColumn.prototype.restore.call(this, dump, factory);
-        if (dump.scale) {
-            this.scale.domain(dump.scale.domain).range(dump.scale.range);
-        }
-    };
-    CategoricalNumberColumn.prototype.getScale = function () {
-        return {
-            domain: this.scale.domain(),
-            range: this.scale.range()
-        };
-    };
-    CategoricalNumberColumn.prototype.setRange = function (range) {
-        var bak = this.getScale();
-        this.scale.range(range);
-        this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getScale());
-    };
-    CategoricalNumberColumn.prototype.isFiltered = function () {
-        return this.filter_ != null;
-    };
-    CategoricalNumberColumn.prototype.filter = function (row) {
-        return CategoricalColumn.prototype.filter.call(this, row);
-    };
-    CategoricalNumberColumn.prototype.getFilter = function () {
-        return this.filter_;
-    };
-    CategoricalNumberColumn.prototype.setFilter = function (filter) {
-        this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
-    };
-    CategoricalNumberColumn.prototype.compare = function (a, b) {
-        return NumberColumn.prototype.compare.call(this, a, b);
-    };
-    return CategoricalNumberColumn;
-})(ValueColumn);
-exports.CategoricalNumberColumn = CategoricalNumberColumn;
-var StackColumn = (function (_super) {
-    __extends(StackColumn, _super);
-    function StackColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.missingValue = 0;
-        this.children_ = [];
-        this._collapsed = false;
-        var that = this;
-        this.adaptChange = function (old, new_) {
-            that.adaptWidthChange(this.source, old, new_);
-        };
-    }
-    StackColumn.desc = function (label) {
-        if (label === void 0) { label = 'Combined'; }
-        return { type: 'stack', label: label };
-    };
-    StackColumn.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['collapseChanged']);
-    };
-    StackColumn.prototype.assignNewId = function (idGenerator) {
-        _super.prototype.assignNewId.call(this, idGenerator);
-        this.children_.forEach(function (c) { return c.assignNewId(idGenerator); });
-    };
-    Object.defineProperty(StackColumn.prototype, "children", {
-        get: function () {
-            return this.children_.slice();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StackColumn.prototype, "length", {
-        get: function () {
-            return this.children_.length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StackColumn.prototype, "weights", {
-        get: function () {
-            var w = this.getWidth();
-            return this.children_.map(function (d) { return d.getWidth() / w; });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StackColumn.prototype, "collapsed", {
-        get: function () {
-            return this._collapsed;
-        },
-        set: function (value) {
-            if (this._collapsed === value) {
+        Column.prototype.setWidth = function (value) {
+            if (this.width_ === value) {
                 return;
             }
-            this.fire(['collapseChanged', 'dirtyHeader', 'dirty'], this._collapsed, this._collapsed = value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    StackColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
-        if (levelsToGo === void 0) { levelsToGo = 0; }
-        if (padding === void 0) { padding = 0; }
-        var self = null;
-        if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-            var w = this.getWidth();
-            if (!this.collapsed) {
-                w += (this.children_.length - 1) * padding;
-            }
-            r.push(self = { col: this, offset: offset, width: w });
-            if (levelsToGo === 0) {
-                return w;
-            }
-        }
-        var acc = offset;
-        this.children_.forEach(function (c) {
-            acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
-        });
-        if (self) {
-            self.width = acc - offset - padding;
-        }
-        return acc - offset - padding;
-    };
-    StackColumn.prototype.dump = function (toDescRef) {
-        var r = _super.prototype.dump.call(this, toDescRef);
-        r.children = this.children_.map(function (d) { return d.dump(toDescRef); });
-        r.missingValue = this.missingValue;
-        return r;
-    };
-    StackColumn.prototype.restore = function (dump, factory) {
-        var _this = this;
-        if (dump.missingValue) {
-            this.missingValue = dump.missingValue;
-        }
-        dump.children.map(function (child) {
-            _this.push(factory(child));
-        });
-        _super.prototype.restore.call(this, dump, factory);
-    };
-    StackColumn.prototype.insert = function (col, index, weight) {
-        if (weight === void 0) { weight = NaN; }
-        if (!isNumberColumn(col)) {
-            return null;
-        }
-        if (col instanceof StackColumn) {
-        }
-        if (!isNaN(weight)) {
-            col.setWidth((weight / (1 - weight) * this.getWidth()));
-        }
-        this.children_.splice(index, 0, col);
-        col.parent = this;
-        this.forward(col, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
-        col.on('widthChanged.stack', this.adaptChange);
-        _super.prototype.setWidth.call(this, this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
-        this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth());
-        return true;
-    };
-    StackColumn.prototype.push = function (col, weight) {
-        if (weight === void 0) { weight = NaN; }
-        return this.insert(col, this.children_.length, weight);
-    };
-    StackColumn.prototype.indexOf = function (col) {
-        var j = -1;
-        this.children_.some(function (d, i) {
-            if (d === col) {
-                j = i;
-                return true;
-            }
-            return false;
-        });
-        return j;
-    };
-    StackColumn.prototype.insertAfter = function (col, ref, weight) {
-        if (weight === void 0) { weight = NaN; }
-        var i = this.indexOf(ref);
-        if (i < 0) {
-            return false;
-        }
-        return this.insert(col, i + 1, weight);
-    };
-    StackColumn.prototype.adaptWidthChange = function (col, old, new_) {
-        if (old === new_) {
-            return;
-        }
-        var full = this.getWidth(), change = (new_ - old) / full;
-        var oldWeight = old / full;
-        var factor = (1 - oldWeight - change) / (1 - oldWeight);
-        this.children_.forEach(function (c) {
-            if (c === col) {
-            }
-            else {
-                c.setWidthImpl(c.getWidth() * factor);
-            }
-        });
-        this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], full, full);
-    };
-    StackColumn.prototype.setWeights = function (weights) {
-        var s, delta = weights.length - this.length;
-        if (delta < 0) {
-            s = d3.sum(weights);
-            if (s <= 1) {
-                for (var i = 0; i < -delta; ++i) {
-                    weights.push((1 - s) * (1 / -delta));
-                }
-            }
-            else if (s <= 100) {
-                for (var i = 0; i < -delta; ++i) {
-                    weights.push((100 - s) * (1 / -delta));
-                }
-            }
-        }
-        weights = weights.slice(0, this.length);
-        s = d3.sum(weights) / this.getWidth();
-        weights = weights.map(function (d) { return d / s; });
-        this.children_.forEach(function (c, i) {
-            c.setWidthImpl(weights[i]);
-        });
-        this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.getWidth(), this.getWidth());
-    };
-    StackColumn.prototype.remove = function (child) {
-        var i = this.children_.indexOf(child);
-        if (i < 0) {
-            return false;
-        }
-        this.children_.splice(i, 1);
-        child.parent = null;
-        if (child instanceof StackColumn) {
-        }
-        this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
-        child.on('widthChanged.stack', null);
-        _super.prototype.setWidth.call(this, this.length === 0 ? 100 : this.getWidth() - child.getWidth());
-        this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
-        return true;
-    };
-    StackColumn.prototype.setWidth = function (value) {
-        var factor = value / this.getWidth();
-        this.children_.forEach(function (child) {
-            child.setWidthImpl(child.getWidth() * factor);
-        });
-        _super.prototype.setWidth.call(this, value);
-    };
-    StackColumn.prototype.getValue = function (row) {
-        var w = this.getWidth();
-        var v = this.children_.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
-        if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
-            return this.missingValue;
-        }
-        return v;
-    };
-    StackColumn.prototype.getNumber = function (row) {
-        return this.getValue(row);
-    };
-    StackColumn.prototype.compare = function (a, b) {
-        return numberCompare(this.getValue(a), this.getValue(b));
-    };
-    StackColumn.prototype.isFiltered = function () {
-        return this.children_.some(function (d) { return d.isFiltered(); });
-    };
-    StackColumn.prototype.filter = function (row) {
-        return this.children_.every(function (d) { return d.filter(row); });
-    };
-    return StackColumn;
-})(Column);
-exports.StackColumn = StackColumn;
-var RankColumn = (function (_super) {
-    __extends(RankColumn, _super);
-    function RankColumn(id, desc) {
-        var _this = this;
-        _super.call(this, id, desc);
-        this.sortBy_ = null;
-        this.ascending = false;
-        this.columns_ = [];
-        this.comparator = function (a, b) {
-            if (_this.sortBy_ === null) {
-                return 0;
-            }
-            var r = _this.sortBy_.compare(a, b);
-            return _this.ascending ? r : -r;
+            this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.width_, this.width_ = value);
         };
-        this.dirtyOrder = function () {
-            _this.fire(['dirtyOrder', 'dirtyValues', 'dirty'], _this.sortCriteria());
+        Column.prototype.setWidthImpl = function (value) {
+            this.width_ = value;
         };
-        this.order = [];
-        this.setWidthImpl(50);
-    }
-    RankColumn.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
-    };
-    RankColumn.prototype.assignNewId = function (idGenerator) {
-        _super.prototype.assignNewId.call(this, idGenerator);
-        this.columns_.forEach(function (c) { return c.assignNewId(idGenerator); });
-    };
-    RankColumn.prototype.setOrder = function (order) {
-        this.fire(['orderChanged', 'dirtyValues', 'dirty'], this.order, this.order = order);
-    };
-    RankColumn.prototype.getOrder = function () {
-        return this.order;
-    };
-    RankColumn.prototype.dump = function (toDescRef) {
-        var r = _super.prototype.dump.call(this, toDescRef);
-        r.columns = this.columns_.map(function (d) { return d.dump(toDescRef); });
-        r.sortCriteria = {
-            asc: this.ascending
-        };
-        if (this.sortBy_) {
-            r.sortCriteria.sortBy = this.sortBy_.id;
-        }
-        return r;
-    };
-    RankColumn.prototype.restore = function (dump, factory) {
-        var _this = this;
-        _super.prototype.restore.call(this, dump, factory);
-        dump.columns.map(function (child) {
-            _this.push(factory(child));
-        });
-        if (dump.sortCriteria) {
-            this.ascending = dump.sortCriteria.asc;
-            if (dump.sortCriteria.sortBy) {
-                this.sortBy(this.columns_.filter(function (d) { return d.id === dump.sortCriteria.sortBy; })[0], dump.sortCriteria.asc);
+        Column.prototype.setMetaData = function (value, color) {
+            if (color === void 0) { color = this.color; }
+            if (value === this.label && this.color === color) {
+                return;
             }
-        }
-    };
-    RankColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
-        if (levelsToGo === void 0) { levelsToGo = 0; }
-        if (padding === void 0) { padding = 0; }
-        r.push({ col: this, offset: offset, width: this.getWidth() });
-        var acc = offset + this.getWidth() + padding;
-        if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-            this.columns_.forEach(function (c) {
-                acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+            var events = this.color === color ? ['labelChanged', 'dirtyHeader', 'dirty'] : ['labelChanged', 'dirtyHeader', 'dirtyValues', 'dirty'];
+            this.fire(events, { label: this.label, color: this.color }, {
+                label: this.label = value,
+                color: this.color = color
             });
-        }
-        return acc - offset;
-    };
-    RankColumn.prototype.sortCriteria = function () {
-        return {
-            col: this.sortBy_,
-            asc: this.ascending
         };
-    };
-    RankColumn.prototype.sortByMe = function (ascending) {
-        if (ascending === void 0) { ascending = false; }
-        return false;
-    };
-    RankColumn.prototype.toggleMySorting = function () {
-        return false;
-    };
-    RankColumn.prototype.findMyRanker = function () {
-        return this;
-    };
-    RankColumn.prototype.insertAfterMe = function (col) {
-        return this.insert(col, 0) !== null;
-    };
-    RankColumn.prototype.toggleSorting = function (col) {
-        if (this.sortBy_ === col) {
-            return this.sortBy(col, !this.ascending);
-        }
-        return this.sortBy(col);
-    };
-    RankColumn.prototype.sortBy = function (col, ascending) {
-        if (ascending === void 0) { ascending = false; }
-        if (col !== null && col.findMyRanker() !== this) {
-            return false;
-        }
-        if (this.sortBy_ === col && this.ascending === ascending) {
-            return true;
-        }
-        if (this.sortBy_) {
-            this.sortBy_.on('dirtyValues.order', null);
-        }
-        var bak = this.sortCriteria();
-        this.sortBy_ = col;
-        if (this.sortBy_) {
-            this.sortBy_.on('dirtyValues.order', this.dirtyOrder);
-        }
-        this.ascending = ascending;
-        this.fire(['sortCriteriaChanged', 'dirtyOrder', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, this.sortCriteria());
-        return true;
-    };
-    Object.defineProperty(RankColumn.prototype, "children", {
-        get: function () {
-            return this.columns_.slice();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(RankColumn.prototype, "length", {
-        get: function () {
-            return this.columns_.length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    RankColumn.prototype.insert = function (col, index) {
-        if (index === void 0) { index = this.columns_.length; }
-        this.columns_.splice(index, 0, col);
-        col.parent = this;
-        this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
-        col.on('filterChanged.order', this.dirtyOrder);
-        this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
-        if (this.sortBy_ === null) {
-            this.sortBy(col);
-        }
-        return col;
-    };
-    RankColumn.prototype.insertAfter = function (col, ref) {
-        if (ref === this) {
-            return this.insert(col, 0) != null;
-        }
-        var i = this.columns_.indexOf(ref);
-        if (i < 0) {
-            return false;
-        }
-        return this.insert(col, i + 1) != null;
-    };
-    RankColumn.prototype.push = function (col) {
-        return this.insert(col);
-    };
-    RankColumn.prototype.remove = function (col) {
-        var i = this.columns_.indexOf(col);
-        if (i < 0) {
-            return false;
-        }
-        this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
-        col.parent = null;
-        this.columns_.splice(i, 1);
-        this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col);
-        if (this.sortBy_ === col) {
-            this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
-        }
-        return true;
-    };
-    Object.defineProperty(RankColumn.prototype, "flatColumns", {
-        get: function () {
-            var r = [];
-            this.flatten(r, 0, Column.FLAT_ALL_COLUMNS);
-            return r.map(function (d) { return d.col; });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    RankColumn.prototype.find = function (id_or_filter) {
-        var filter = typeof (id_or_filter) === 'string' ? function (col) { return col.id === id_or_filter; } : id_or_filter;
-        var r = this.flatColumns;
-        for (var i = 0; i < r.length; ++i) {
-            if (filter(r[i])) {
-                return r[i];
+        /**
+         * triggers that the ranking is sorted by this column
+         * @param ascending
+         * @returns {any}
+         */
+        Column.prototype.sortByMe = function (ascending) {
+            if (ascending === void 0) { ascending = false; }
+            var r = this.findMyRanker();
+            if (r) {
+                return r.sortBy(this, ascending);
             }
-        }
-        return null;
-    };
-    RankColumn.prototype.toSortingDesc = function (toId) {
-        var resolve = function (s) {
-            if (s === null) {
-                return null;
+            return false;
+        };
+        /**
+         * toggles the sorting order of this column in the ranking
+         * @returns {any}
+         */
+        Column.prototype.toggleMySorting = function () {
+            var r = this.findMyRanker();
+            if (r) {
+                return r.toggleSorting(this);
             }
-            if (s instanceof StackColumn) {
-                var w = s.weights;
-                return s.children.map(function (child, i) {
-                    return {
-                        weight: w[i],
-                        id: resolve(child)
-                    };
+            return false;
+        };
+        /**
+         * removes the column from the ranking
+         * @returns {boolean}
+         */
+        Column.prototype.removeMe = function () {
+            if (this.parent) {
+                return this.parent.remove(this);
+            }
+            return false;
+        };
+        /**
+         * inserts the given column after itself
+         * @param col
+         * @returns {boolean}
+         */
+        Column.prototype.insertAfterMe = function (col) {
+            if (this.parent) {
+                return this.parent.insertAfter(col, this);
+            }
+            return false;
+        };
+        /**
+         * finds the underlying ranking column
+         * @returns {RankColumn}
+         */
+        Column.prototype.findMyRanker = function () {
+            if (this.parent) {
+                return this.parent.findMyRanker();
+            }
+            return null;
+        };
+        /**
+         * dumps this column to JSON compatible format
+         * @param toDescRef
+         * @returns {any}
+         */
+        Column.prototype.dump = function (toDescRef) {
+            var r = {
+                id: this.id,
+                desc: toDescRef(this.desc),
+                width: this.width_,
+                compressed: this.compressed
+            };
+            if (this.label !== (this.desc.label || this.id)) {
+                r.label = this.label;
+            }
+            if (this.color !== (this.desc.color || Column.DEFAULT_COLOR) && this.color) {
+                r.color = this.color;
+            }
+            return r;
+        };
+        /**
+         * restore the column content from a dump
+         * @param dump
+         * @param factory
+         */
+        Column.prototype.restore = function (dump, factory) {
+            this.width_ = dump.width || this.width_;
+            this.label = dump.label || this.label;
+            this.color = dump.color || this.color;
+            this.compressed = dump.compressed === true;
+        };
+        /**
+         * return the label of a given row for the current column
+         * @param row
+         * @return {string}
+         */
+        Column.prototype.getLabel = function (row) {
+            return '' + this.getValue(row);
+        };
+        /**
+         * return the value of a given row for the current column
+         * @param row
+         * @return
+         */
+        Column.prototype.getValue = function (row) {
+            return ''; //no value
+        };
+        /**
+         * compare function used to determine the order according to the values of the current column
+         * @param a
+         * @param b
+         * @return {number}
+         */
+        Column.prototype.compare = function (a, b) {
+            return 0; //can't compare
+        };
+        /**
+         * flag whether any filter is applied
+         * @return {boolean}
+         */
+        Column.prototype.isFiltered = function () {
+            return false;
+        };
+        /**
+         * predicate whether the current row should be included
+         * @param row
+         * @return {boolean}
+         */
+        Column.prototype.filter = function (row) {
+            return row !== null;
+        };
+        /**
+         * default color that should be used
+         * @type {string}
+         */
+        Column.DEFAULT_COLOR = '#C1C1C1';
+        /**
+         * magic variable for showing all columns
+         * @type {number}
+         */
+        Column.FLAT_ALL_COLUMNS = -1;
+        /**
+         * width of a compressed column
+         * @type {number}
+         */
+        Column.COMPRESSED_WIDTH = 16;
+        return Column;
+    })(utils.AEventDispatcher);
+    exports.Column = Column;
+    /**
+     * a column having an accessor to get the cell value
+     */
+    var ValueColumn = (function (_super) {
+        __extends(ValueColumn, _super);
+        function ValueColumn(id, desc) {
+            _super.call(this, id, desc);
+            //find accessor
+            this.accessor = desc.accessor || (function (row, id, desc) { return null; });
+        }
+        ValueColumn.prototype.getLabel = function (row) {
+            return '' + this.getValue(row);
+        };
+        ValueColumn.prototype.getValue = function (row) {
+            return this.accessor(row, this.id, this.desc);
+        };
+        ValueColumn.prototype.compare = function (a, b) {
+            return 0; //can't compare
+        };
+        return ValueColumn;
+    })(Column);
+    exports.ValueColumn = ValueColumn;
+    /**
+     * a default column with no values
+     */
+    var DummyColumn = (function (_super) {
+        __extends(DummyColumn, _super);
+        function DummyColumn(id, desc) {
+            _super.call(this, id, desc);
+        }
+        DummyColumn.prototype.getLabel = function (row) {
+            return '';
+        };
+        DummyColumn.prototype.getValue = function (row) {
+            return '';
+        };
+        DummyColumn.prototype.compare = function (a, b) {
+            return 0; //can't compare
+        };
+        return DummyColumn;
+    })(Column);
+    exports.DummyColumn = DummyColumn;
+    /**
+     * checks whether the given column or description is a number column, i.e. the value is a number
+     * @param col
+     * @returns {boolean|RegExpMatchArray}
+     */
+    function isNumberColumn(col) {
+        return (col instanceof Column && typeof col.getNumber === 'function' || (!(col instanceof Column) && col.type.match(/(number|stack|ordinal)/)));
+    }
+    exports.isNumberColumn = isNumberColumn;
+    /**
+     * a number column mapped from an original input scale to an output range
+     */
+    var NumberColumn = (function (_super) {
+        __extends(NumberColumn, _super);
+        function NumberColumn(id, desc) {
+            _super.call(this, id, desc);
+            this.missingValue = 0;
+            /**
+             * the current scale applied
+             * @type {Linear<number, number>}
+             */
+            this.scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+            /**
+             * the original scale for resetting purpose
+             * @type {Linear<number, number>}
+             */
+            this.original = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+            /**
+             * currently active filter
+             * @type {{min: number, max: number}}
+             * @private
+             */
+            this.filter_ = { min: -Infinity, max: Infinity };
+            //initialize with the description
+            if (desc.domain) {
+                this.scale.domain(desc.domain);
+            }
+            if (desc.range) {
+                this.scale.range(desc.range);
+            }
+            this.original.domain(this.scale.domain()).range(this.scale.range());
+        }
+        NumberColumn.prototype.init = function (callback) {
+            var _this = this;
+            var d = this.scale.domain();
+            //if any of the values is not given use the statistics to compute them
+            if (isNaN(d[0]) || isNaN(d[1])) {
+                return callback(this.desc).then(function (stats) {
+                    _this.scale.domain([stats.min, stats.max]);
+                    _this.original.domain(_this.scale.domain());
+                    return true;
                 });
             }
-            return toId(s.desc);
+            return Promise.resolve(true);
         };
-        var id = resolve(this.sortBy_);
-        if (id === null) {
-            return null;
+        NumberColumn.prototype.dump = function (toDescRef) {
+            var r = _super.prototype.dump.call(this, toDescRef);
+            r.domain = this.scale.domain();
+            r.range = this.scale.range();
+            r.mapping = this.getOriginalMapping();
+            r.filter = this.filter;
+            r.missingValue = this.missingValue;
+            return r;
+        };
+        NumberColumn.prototype.restore = function (dump, factory) {
+            _super.prototype.restore.call(this, dump, factory);
+            if (dump.domain) {
+                this.scale.domain(dump.domain);
+            }
+            if (dump.range) {
+                this.scale.range(dump.range);
+            }
+            if (dump.mapping) {
+                this.original.domain(dump.mapping.domain).range(dump.mapping.range);
+            }
+            if (dump.filter) {
+                this.filter_ = dump.filter;
+            }
+            if (dump.missingValue) {
+                this.missingValue = dump.missingValue;
+            }
+        };
+        NumberColumn.prototype.createEventList = function () {
+            return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
+        };
+        NumberColumn.prototype.getLabel = function (row) {
+            return '' + _super.prototype.getValue.call(this, row);
+        };
+        NumberColumn.prototype.getRawValue = function (row) {
+            var v = _super.prototype.getValue.call(this, row);
+            if (typeof (v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof (v) === 'string' && (v.toLowerCase() === 'na'))) {
+                return this.missingValue;
+            }
+            return +v;
+        };
+        NumberColumn.prototype.getValue = function (row) {
+            var v = this.getRawValue(row);
+            if (isNaN(v)) {
+                return v;
+            }
+            return this.scale(v);
+        };
+        NumberColumn.prototype.getNumber = function (row) {
+            return this.getValue(row);
+        };
+        NumberColumn.prototype.compare = function (a, b) {
+            return numberCompare(this.getValue(a), this.getValue(b));
+        };
+        NumberColumn.prototype.getMapping = function () {
+            return {
+                domain: this.scale.domain(),
+                range: this.scale.range()
+            };
+        };
+        NumberColumn.prototype.getOriginalMapping = function () {
+            return {
+                domain: this.original.domain(),
+                range: this.original.range()
+            };
+        };
+        NumberColumn.prototype.setMapping = function (domain, range) {
+            var bak = this.getMapping();
+            this.scale.domain(domain).range(range);
+            this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
+        };
+        NumberColumn.prototype.isFiltered = function () {
+            return isFinite(this.filter_.min) || isFinite(this.filter_.max);
+        };
+        Object.defineProperty(NumberColumn.prototype, "filterMin", {
+            get: function () {
+                return this.filter_.min;
+            },
+            set: function (min) {
+                var bak = { min: this.filter_.min, max: this.filter_.max };
+                this.filter_.min = isNaN(min) ? -Infinity : min;
+                this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(NumberColumn.prototype, "filterMax", {
+            get: function () {
+                return this.filter_.max;
+            },
+            set: function (max) {
+                var bak = { min: this.filter_.min, max: this.filter_.max };
+                this.filter_.max = isNaN(max) ? Infinity : max;
+                this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        NumberColumn.prototype.getFilter = function () {
+            return this.filter_;
+        };
+        NumberColumn.prototype.setFilter = function (min, max) {
+            if (min === void 0) { min = -Infinity; }
+            if (max === void 0) { max = +Infinity; }
+            var bak = { min: this.filter_.min, max: this.filter_.max };
+            this.filter_.min = isNaN(min) ? -Infinity : min;
+            this.filter_.max = isNaN(max) ? Infinity : max;
+            this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
+        };
+        /**
+         * filter the current row if any filter is set
+         * @param row
+         * @returns {boolean}
+         */
+        NumberColumn.prototype.filter = function (row) {
+            if (!this.isFiltered()) {
+                return true;
+            }
+            var v = this.getRawValue(row);
+            if (isNaN(v)) {
+                return true;
+            }
+            return !((isFinite(this.filter_.min) && v < this.filter_.min) || (isFinite(this.filter_.max) && v < this.filter_.max));
+        };
+        return NumberColumn;
+    })(ValueColumn);
+    exports.NumberColumn = NumberColumn;
+    /**
+     * a string column with optional alignment
+     */
+    var StringColumn = (function (_super) {
+        __extends(StringColumn, _super);
+        function StringColumn(id, desc) {
+            _super.call(this, id, desc);
+            this.filter_ = null;
+            this._alignment = 'left';
+            this.setWidthImpl(200); //by default 200
+            this._alignment = desc.alignment || 'left';
         }
-        return {
-            id: id,
-            asc: this.ascending
+        Object.defineProperty(StringColumn.prototype, "alignment", {
+            //readonly
+            get: function () {
+                return this._alignment;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        StringColumn.prototype.getValue = function (row) {
+            var v = _super.prototype.getValue.call(this, row);
+            if (typeof (v) === 'undefined' || v == null) {
+                return '';
+            }
+            return v;
         };
-    };
-    RankColumn.prototype.isFiltered = function () {
-        return this.columns_.some(function (d) { return d.isFiltered(); });
-    };
-    RankColumn.prototype.filter = function (row) {
-        return this.columns_.every(function (d) { return d.filter(row); });
-    };
-    return RankColumn;
-})(ValueColumn);
-exports.RankColumn = RankColumn;
-exports.createStackDesc = StackColumn.desc;
-function createActionDesc(label) {
-    if (label === void 0) { label = 'actions'; }
-    return { type: 'actions', label: label };
-}
-exports.createActionDesc = createActionDesc;
-function models() {
-    return {
-        number: NumberColumn,
-        string: StringColumn,
-        link: LinkColumn,
-        stack: StackColumn,
-        rank: RankColumn,
-        categorical: CategoricalColumn,
-        ordinal: CategoricalNumberColumn,
-        actions: DummyColumn,
-        annotate: AnnotateColumn
-    };
-}
-exports.models = models;
+        StringColumn.prototype.dump = function (toDescRef) {
+            var r = _super.prototype.dump.call(this, toDescRef);
+            if (this.filter_ instanceof RegExp) {
+                r.filter = 'REGEX:' + this.filter_.source;
+            }
+            else {
+                r.filter = this.filter_;
+            }
+            r.alignment = this.alignment;
+            return r;
+        };
+        StringColumn.prototype.restore = function (dump, factory) {
+            _super.prototype.restore.call(this, dump, factory);
+            if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
+                this.filter_ = new RegExp(dump.filter.slice(6));
+            }
+            else {
+                this.filter_ = dump.filter || null;
+            }
+            this._alignment = dump.alignment || this._alignment;
+        };
+        StringColumn.prototype.isFiltered = function () {
+            return this.filter_ != null;
+        };
+        StringColumn.prototype.filter = function (row) {
+            if (!this.isFiltered()) {
+                return true;
+            }
+            var r = this.getLabel(row), filter = this.filter_;
+            if (typeof filter === 'string' && filter.length > 0) {
+                return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+            }
+            if (filter instanceof RegExp) {
+                return r && filter.test(r);
+            }
+            return true;
+        };
+        StringColumn.prototype.getFilter = function () {
+            return this.filter_;
+        };
+        StringColumn.prototype.setFilter = function (filter) {
+            if (filter === '') {
+                filter = null;
+            }
+            this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
+        };
+        StringColumn.prototype.compare = function (a, b) {
+            return d3.ascending(this.getValue(a), this.getValue(b));
+        };
+        return StringColumn;
+    })(ValueColumn);
+    exports.StringColumn = StringColumn;
+    /**
+     * a string column in which the label is a text but the value a link
+     */
+    var LinkColumn = (function (_super) {
+        __extends(LinkColumn, _super);
+        function LinkColumn(id, desc) {
+            _super.call(this, id, desc);
+            /**
+             * a pattern used for generating the link, $1 is replaced with the actual value
+             * @type {null}
+             */
+            this.link = null;
+            this.link = desc.link;
+        }
+        LinkColumn.prototype.getLabel = function (row) {
+            var v = _super.prototype.getValue.call(this, row);
+            if (v.alt) {
+                return v.alt;
+            }
+            return '' + v;
+        };
+        LinkColumn.prototype.getValue = function (row) {
+            //get original value
+            var v = _super.prototype.getValue.call(this, row);
+            //convert to link
+            if (v.href) {
+                return v.href;
+            }
+            else if (this.link) {
+                return this.link.replace(/\$1/g, v);
+            }
+            return v;
+        };
+        return LinkColumn;
+    })(StringColumn);
+    exports.LinkColumn = LinkColumn;
+    /**
+     * a string column in which the values can be edited locally
+     */
+    var AnnotateColumn = (function (_super) {
+        __extends(AnnotateColumn, _super);
+        function AnnotateColumn(id, desc) {
+            _super.call(this, id, desc);
+            this.annotations = d3.map();
+        }
+        AnnotateColumn.prototype.getValue = function (row) {
+            var index = String(row._index);
+            if (this.annotations.has(index)) {
+                return this.annotations.get(index);
+            }
+            return _super.prototype.getValue.call(this, row);
+        };
+        AnnotateColumn.prototype.dump = function (toDescRef) {
+            var r = _super.prototype.dump.call(this, toDescRef);
+            r.annotations = {};
+            this.annotations.forEach(function (k, v) {
+                r.annotations[k] = v;
+            });
+            return r;
+        };
+        AnnotateColumn.prototype.restore = function (dump, factory) {
+            var _this = this;
+            _super.prototype.restore.call(this, dump, factory);
+            if (dump.annotations) {
+                Object.keys(dump.annotations).forEach(function (k) {
+                    _this.annotations.set(k, dump.annotations[k]);
+                });
+            }
+        };
+        AnnotateColumn.prototype.setValue = function (row, value) {
+            var old = this.getValue(row);
+            if (old === value) {
+                return true;
+            }
+            if (value === '' || value == null) {
+                this.annotations.remove(String(row._index));
+            }
+            else {
+                this.annotations.set(String(row._index), value);
+            }
+            this.fire(['dirtyValues', 'dirty'], value, old);
+            return true;
+        };
+        return AnnotateColumn;
+    })(StringColumn);
+    exports.AnnotateColumn = AnnotateColumn;
+    /**
+     * column for categorical values
+     */
+    var CategoricalColumn = (function (_super) {
+        __extends(CategoricalColumn, _super);
+        function CategoricalColumn(id, desc) {
+            _super.call(this, id, desc);
+            /**
+             * colors for each category
+             * @type {Ordinal<string, string>}
+             */
+            this.colors = d3.scale.category10();
+            /**
+             * set of categories to show
+             * @type {null}
+             * @private
+             */
+            this.filter_ = null;
+            this.initCategories(desc);
+            //TODO infer categories from data
+        }
+        CategoricalColumn.prototype.initCategories = function (desc) {
+            if (desc.categories) {
+                var cats = [], cols = this.colors.range();
+                desc.categories.forEach(function (cat, i) {
+                    if (typeof cat === 'string') {
+                        cats.push(cat);
+                    }
+                    else {
+                        cats.push(cat.name);
+                        cols[i] = cat.color;
+                    }
+                });
+                this.colors.domain(cats).range(cols);
+            }
+        };
+        Object.defineProperty(CategoricalColumn.prototype, "categories", {
+            get: function () {
+                return this.colors.domain();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CategoricalColumn.prototype, "categoryColors", {
+            get: function () {
+                return this.colors.range();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        CategoricalColumn.prototype.getValue = function (row) {
+            return StringColumn.prototype.getValue.call(this, row);
+        };
+        CategoricalColumn.prototype.getColor = function (row) {
+            var cat = this.getLabel(row);
+            if (cat === null || cat === '') {
+                return null;
+            }
+            return this.colors(cat);
+        };
+        CategoricalColumn.prototype.dump = function (toDescRef) {
+            var r = _super.prototype.dump.call(this, toDescRef);
+            r.filter = this.filter_;
+            r.colors = {
+                domain: this.colors.domain(),
+                range: this.colors.range()
+            };
+            return r;
+        };
+        CategoricalColumn.prototype.restore = function (dump, factory) {
+            _super.prototype.restore.call(this, dump, factory);
+            this.filter_ = dump.filter || null;
+            if (dump.colors) {
+                this.colors.domain(dump.colors.domain).range(dump.colors.range);
+            }
+        };
+        CategoricalColumn.prototype.isFiltered = function () {
+            return this.filter_ != null;
+        };
+        CategoricalColumn.prototype.filter = function (row) {
+            if (!this.isFiltered()) {
+                return true;
+            }
+            var r = this.getLabel(row), filter = this.filter_;
+            if (Array.isArray(filter) && filter.length > 0) {
+                return filter.indexOf(r) >= 0;
+            }
+            else if (typeof filter === 'string' && filter.length > 0) {
+                return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+            }
+            else if (filter instanceof RegExp) {
+                return r != null && r.match(filter).length > 0;
+            }
+            return true;
+        };
+        CategoricalColumn.prototype.getFilter = function () {
+            return this.filter_;
+        };
+        CategoricalColumn.prototype.setFilter = function (filter) {
+            this.fire(['filterChanged', 'dirtyValues', 'dirty'], this, this.filter_, this.filter_ = filter);
+        };
+        CategoricalColumn.prototype.compare = function (a, b) {
+            return StringColumn.prototype.compare.call(this, a, b);
+        };
+        return CategoricalColumn;
+    })(ValueColumn);
+    exports.CategoricalColumn = CategoricalColumn;
+    /**
+     * similar to a categorical column but the categoriees are mapped to numbers
+     */
+    var CategoricalNumberColumn = (function (_super) {
+        __extends(CategoricalNumberColumn, _super);
+        function CategoricalNumberColumn(id, desc) {
+            _super.call(this, id, desc);
+            this.colors = d3.scale.category10();
+            this.scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
+            this.filter_ = null;
+            CategoricalColumn.prototype.init.call(this, desc);
+            this.scale.domain(this.colors.domain());
+            if (desc.categories) {
+                var values = [];
+                desc.categories.forEach(function (d) {
+                    if (typeof d !== 'string' && typeof (d.value) === 'number') {
+                        values.push(d.value);
+                    }
+                    else {
+                        values.push(0.5); //by default 0.5
+                    }
+                });
+                this.scale.range(values);
+            }
+        }
+        CategoricalNumberColumn.prototype.createEventList = function () {
+            return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
+        };
+        Object.defineProperty(CategoricalNumberColumn.prototype, "categories", {
+            get: function () {
+                return this.colors.domain();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(CategoricalNumberColumn.prototype, "categoryColors", {
+            get: function () {
+                return this.colors.range();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        CategoricalNumberColumn.prototype.getLabel = function (row) {
+            var v = _super.prototype.getValue.call(this, row);
+            if (typeof (v) === 'undefined' || v == null) {
+                return '';
+            }
+            return v;
+        };
+        CategoricalNumberColumn.prototype.getValue = function (row) {
+            var v = this.getLabel(row);
+            return this.scale(v);
+        };
+        CategoricalNumberColumn.prototype.getNumber = function (row) {
+            return this.getValue(row);
+        };
+        CategoricalNumberColumn.prototype.getColor = function (row) {
+            return CategoricalColumn.prototype.getColor.call(this, row);
+        };
+        CategoricalNumberColumn.prototype.dump = function (toDescRef) {
+            var r = CategoricalColumn.prototype.dump.call(this, toDescRef);
+            r.scale = {
+                domain: this.scale.domain(),
+                range: this.scale.range()
+            };
+            return r;
+        };
+        CategoricalNumberColumn.prototype.restore = function (dump, factory) {
+            CategoricalColumn.prototype.restore.call(this, dump, factory);
+            if (dump.scale) {
+                this.scale.domain(dump.scale.domain).range(dump.scale.range);
+            }
+        };
+        CategoricalNumberColumn.prototype.getScale = function () {
+            return {
+                domain: this.scale.domain(),
+                range: this.scale.range()
+            };
+        };
+        CategoricalNumberColumn.prototype.setRange = function (range) {
+            var bak = this.getScale();
+            this.scale.range(range);
+            this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getScale());
+        };
+        CategoricalNumberColumn.prototype.isFiltered = function () {
+            return this.filter_ != null;
+        };
+        CategoricalNumberColumn.prototype.filter = function (row) {
+            return CategoricalColumn.prototype.filter.call(this, row);
+        };
+        CategoricalNumberColumn.prototype.getFilter = function () {
+            return this.filter_;
+        };
+        CategoricalNumberColumn.prototype.setFilter = function (filter) {
+            this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
+        };
+        CategoricalNumberColumn.prototype.compare = function (a, b) {
+            return NumberColumn.prototype.compare.call(this, a, b);
+        };
+        return CategoricalNumberColumn;
+    })(ValueColumn);
+    exports.CategoricalNumberColumn = CategoricalNumberColumn;
+    /**
+     * implementation of the stacked column
+     */
+    var StackColumn = (function (_super) {
+        __extends(StackColumn, _super);
+        function StackColumn(id, desc) {
+            _super.call(this, id, desc);
+            this.missingValue = 0;
+            this.children_ = [];
+            /**
+             * whether this stack column is collapsed i.e. just looks like an ordinary number column
+             * @type {boolean}
+             * @private
+             */
+            this._collapsed = false;
+            var that = this;
+            this.adaptChange = function (old, new_) {
+                that.adaptWidthChange(this.source, old, new_);
+            };
+        }
+        /**
+         * factory for creating a description creating a stacked column
+         * @param label
+         * @returns {{type: string, label: string}}
+         */
+        StackColumn.desc = function (label) {
+            if (label === void 0) { label = 'Combined'; }
+            return { type: 'stack', label: label };
+        };
+        StackColumn.prototype.createEventList = function () {
+            return _super.prototype.createEventList.call(this).concat(['collapseChanged']);
+        };
+        StackColumn.prototype.assignNewId = function (idGenerator) {
+            _super.prototype.assignNewId.call(this, idGenerator);
+            this.children_.forEach(function (c) { return c.assignNewId(idGenerator); });
+        };
+        Object.defineProperty(StackColumn.prototype, "children", {
+            get: function () {
+                return this.children_.slice();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(StackColumn.prototype, "length", {
+            get: function () {
+                return this.children_.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(StackColumn.prototype, "weights", {
+            get: function () {
+                var w = this.getWidth();
+                return this.children_.map(function (d) { return d.getWidth() / w; });
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(StackColumn.prototype, "collapsed", {
+            get: function () {
+                return this._collapsed;
+            },
+            set: function (value) {
+                if (this._collapsed === value) {
+                    return;
+                }
+                this.fire(['collapseChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this._collapsed, this._collapsed = value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        StackColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
+            if (levelsToGo === void 0) { levelsToGo = 0; }
+            if (padding === void 0) { padding = 0; }
+            var self = null;
+            //no more levels or just this one
+            if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
+                var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
+                if (!this.collapsed && !this.compressed) {
+                    w += (this.children_.length - 1) * padding;
+                }
+                r.push(self = { col: this, offset: offset, width: w });
+                if (levelsToGo === 0) {
+                    return w;
+                }
+            }
+            //push children
+            var acc = offset;
+            this.children_.forEach(function (c) {
+                acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+            });
+            if (self) {
+                self.width = acc - offset - padding;
+            }
+            return acc - offset - padding;
+        };
+        StackColumn.prototype.dump = function (toDescRef) {
+            var r = _super.prototype.dump.call(this, toDescRef);
+            r.children = this.children_.map(function (d) { return d.dump(toDescRef); });
+            r.missingValue = this.missingValue;
+            r.collapsed = this.collapsed;
+            return r;
+        };
+        StackColumn.prototype.restore = function (dump, factory) {
+            var _this = this;
+            if (dump.missingValue) {
+                this.missingValue = dump.missingValue;
+            }
+            dump.children.map(function (child) {
+                _this.push(factory(child));
+            });
+            this.collapsed = dump.collapsed === true;
+            _super.prototype.restore.call(this, dump, factory);
+        };
+        /**
+         * inserts a column at a the given position
+         * @param col
+         * @param index
+         * @param weight
+         * @returns {any}
+         */
+        StackColumn.prototype.insert = function (col, index, weight) {
+            if (weight === void 0) { weight = NaN; }
+            if (!isNumberColumn(col)) {
+                return null;
+            }
+            if (col instanceof StackColumn) {
+            }
+            if (!isNaN(weight)) {
+                col.setWidth((weight / (1 - weight) * this.getWidth()));
+            }
+            this.children_.splice(index, 0, col);
+            //listen and propagate events
+            col.parent = this;
+            this.forward(col, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
+            col.on('widthChanged.stack', this.adaptChange);
+            //increase my width
+            _super.prototype.setWidth.call(this, this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
+            this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth());
+            return true;
+        };
+        StackColumn.prototype.push = function (col, weight) {
+            if (weight === void 0) { weight = NaN; }
+            return this.insert(col, this.children_.length, weight);
+        };
+        StackColumn.prototype.indexOf = function (col) {
+            var j = -1;
+            this.children_.some(function (d, i) {
+                if (d === col) {
+                    j = i;
+                    return true;
+                }
+                return false;
+            });
+            return j;
+        };
+        StackColumn.prototype.insertAfter = function (col, ref, weight) {
+            if (weight === void 0) { weight = NaN; }
+            var i = this.indexOf(ref);
+            if (i < 0) {
+                return false;
+            }
+            return this.insert(col, i + 1, weight);
+        };
+        /**
+         * adapts weights according to an own width change
+         * @param col
+         * @param old
+         * @param new_
+         */
+        StackColumn.prototype.adaptWidthChange = function (col, old, new_) {
+            if (old === new_) {
+                return;
+            }
+            var full = this.getWidth(), change = (new_ - old) / full;
+            var oldWeight = old / full;
+            var factor = (1 - oldWeight - change) / (1 - oldWeight);
+            this.children_.forEach(function (c) {
+                if (c === col) {
+                }
+                else {
+                    c.setWidthImpl(c.getWidth() * factor);
+                }
+            });
+            this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], full, full);
+        };
+        StackColumn.prototype.setWeights = function (weights) {
+            var s, delta = weights.length - this.length;
+            if (delta < 0) {
+                s = d3.sum(weights);
+                if (s <= 1) {
+                    for (var i = 0; i < -delta; ++i) {
+                        weights.push((1 - s) * (1 / -delta));
+                    }
+                }
+                else if (s <= 100) {
+                    for (var i = 0; i < -delta; ++i) {
+                        weights.push((100 - s) * (1 / -delta));
+                    }
+                }
+            }
+            weights = weights.slice(0, this.length);
+            s = d3.sum(weights) / this.getWidth();
+            weights = weights.map(function (d) { return d / s; });
+            this.children_.forEach(function (c, i) {
+                c.setWidthImpl(weights[i]);
+            });
+            this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.getWidth(), this.getWidth());
+        };
+        StackColumn.prototype.remove = function (child) {
+            var i = this.children_.indexOf(child);
+            if (i < 0) {
+                return false;
+            }
+            this.children_.splice(i, 1); //remove and deregister listeners
+            child.parent = null;
+            if (child instanceof StackColumn) {
+            }
+            this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
+            child.on('widthChanged.stack', null);
+            //reduce width to keep the percentages
+            _super.prototype.setWidth.call(this, this.length === 0 ? 100 : this.getWidth() - child.getWidth());
+            this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
+            return true;
+        };
+        StackColumn.prototype.setWidth = function (value) {
+            var factor = value / this.getWidth();
+            this.children_.forEach(function (child) {
+                //disable since we change it
+                child.setWidthImpl(child.getWidth() * factor);
+            });
+            _super.prototype.setWidth.call(this, value);
+        };
+        StackColumn.prototype.getValue = function (row) {
+            //weighted sum
+            var w = this.getWidth();
+            var v = this.children_.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
+            if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
+                return this.missingValue;
+            }
+            return v;
+        };
+        StackColumn.prototype.getNumber = function (row) {
+            return this.getValue(row);
+        };
+        StackColumn.prototype.compare = function (a, b) {
+            return numberCompare(this.getValue(a), this.getValue(b));
+        };
+        StackColumn.prototype.isFiltered = function () {
+            return this.children_.some(function (d) { return d.isFiltered(); });
+        };
+        StackColumn.prototype.filter = function (row) {
+            return this.children_.every(function (d) { return d.filter(row); });
+        };
+        return StackColumn;
+    })(Column);
+    exports.StackColumn = StackColumn;
+    /**
+     * a rank column is not just a column but a whole ranking
+     */
+    var RankColumn = (function (_super) {
+        __extends(RankColumn, _super);
+        function RankColumn(id, desc) {
+            var _this = this;
+            _super.call(this, id, desc);
+            /**
+             * the current sort criteria
+             * @type {null}
+             * @private
+             */
+            this.sortBy_ = null;
+            /**
+             * ascending or descending order
+             * @type {boolean}
+             */
+            this.ascending = false;
+            /**
+             * columns of this ranking
+             * @type {Array}
+             * @private
+             */
+            this.columns_ = [];
+            this.comparator = function (a, b) {
+                if (_this.sortBy_ === null) {
+                    return 0;
+                }
+                var r = _this.sortBy_.compare(a, b);
+                return _this.ascending ? r : -r;
+            };
+            this.dirtyOrder = function () {
+                _this.fire(['dirtyOrder', 'dirtyValues', 'dirty'], _this.sortCriteria());
+            };
+            /**
+             * the current ordering as an sorted array of indices
+             * @type {Array}
+             */
+            this.order = [];
+            this.setWidthImpl(50);
+        }
+        RankColumn.prototype.createEventList = function () {
+            return _super.prototype.createEventList.call(this).concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
+        };
+        RankColumn.prototype.assignNewId = function (idGenerator) {
+            _super.prototype.assignNewId.call(this, idGenerator);
+            this.columns_.forEach(function (c) { return c.assignNewId(idGenerator); });
+        };
+        RankColumn.prototype.setOrder = function (order) {
+            this.fire(['orderChanged', 'dirtyValues', 'dirty'], this.order, this.order = order);
+        };
+        RankColumn.prototype.getOrder = function () {
+            return this.order;
+        };
+        RankColumn.prototype.dump = function (toDescRef) {
+            var r = _super.prototype.dump.call(this, toDescRef);
+            r.columns = this.columns_.map(function (d) { return d.dump(toDescRef); });
+            r.sortCriteria = {
+                asc: this.ascending
+            };
+            if (this.sortBy_) {
+                r.sortCriteria.sortBy = this.sortBy_.id; //store the index not the object
+            }
+            return r;
+        };
+        RankColumn.prototype.restore = function (dump, factory) {
+            var _this = this;
+            _super.prototype.restore.call(this, dump, factory);
+            dump.columns.map(function (child) {
+                _this.push(factory(child));
+            });
+            if (dump.sortCriteria) {
+                this.ascending = dump.sortCriteria.asc;
+                if (dump.sortCriteria.sortBy) {
+                    this.sortBy(this.columns_.filter(function (d) { return d.id === dump.sortCriteria.sortBy; })[0], dump.sortCriteria.asc);
+                }
+            }
+        };
+        RankColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
+            if (levelsToGo === void 0) { levelsToGo = 0; }
+            if (padding === void 0) { padding = 0; }
+            r.push({ col: this, offset: offset, width: this.getWidth() });
+            var acc = offset + this.getWidth() + padding;
+            if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
+                this.columns_.forEach(function (c) {
+                    acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+                });
+            }
+            return acc - offset;
+        };
+        RankColumn.prototype.sortCriteria = function () {
+            return {
+                col: this.sortBy_,
+                asc: this.ascending
+            };
+        };
+        RankColumn.prototype.sortByMe = function (ascending) {
+            if (ascending === void 0) { ascending = false; }
+            //noop
+            return false;
+        };
+        RankColumn.prototype.toggleMySorting = function () {
+            //noop
+            return false;
+        };
+        RankColumn.prototype.findMyRanker = function () {
+            return this;
+        };
+        RankColumn.prototype.insertAfterMe = function (col) {
+            return this.insert(col, 0) !== null;
+        };
+        RankColumn.prototype.toggleSorting = function (col) {
+            if (this.sortBy_ === col) {
+                return this.sortBy(col, !this.ascending);
+            }
+            return this.sortBy(col);
+        };
+        RankColumn.prototype.sortBy = function (col, ascending) {
+            if (ascending === void 0) { ascending = false; }
+            if (col !== null && col.findMyRanker() !== this) {
+                return false; //not one of mine
+            }
+            if (this.sortBy_ === col && this.ascending === ascending) {
+                return true; //already in this order
+            }
+            if (this.sortBy_) {
+                this.sortBy_.on('dirtyValues.order', null);
+            }
+            var bak = this.sortCriteria();
+            this.sortBy_ = col;
+            if (this.sortBy_) {
+                this.sortBy_.on('dirtyValues.order', this.dirtyOrder);
+            }
+            this.ascending = ascending;
+            this.fire(['sortCriteriaChanged', 'dirtyOrder', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, this.sortCriteria());
+            return true;
+        };
+        Object.defineProperty(RankColumn.prototype, "children", {
+            get: function () {
+                return this.columns_.slice();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(RankColumn.prototype, "length", {
+            get: function () {
+                return this.columns_.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RankColumn.prototype.insert = function (col, index) {
+            if (index === void 0) { index = this.columns_.length; }
+            this.columns_.splice(index, 0, col);
+            col.parent = this;
+            this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
+            col.on('filterChanged.order', this.dirtyOrder);
+            this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
+            if (this.sortBy_ === null) {
+                this.sortBy(col);
+            }
+            return col;
+        };
+        RankColumn.prototype.insertAfter = function (col, ref) {
+            if (ref === this) {
+                return this.insert(col, 0) != null;
+            }
+            var i = this.columns_.indexOf(ref);
+            if (i < 0) {
+                return false;
+            }
+            return this.insert(col, i + 1) != null;
+        };
+        RankColumn.prototype.push = function (col) {
+            return this.insert(col);
+        };
+        RankColumn.prototype.remove = function (col) {
+            var i = this.columns_.indexOf(col);
+            if (i < 0) {
+                return false;
+            }
+            this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
+            col.parent = null;
+            this.columns_.splice(i, 1);
+            this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col);
+            if (this.sortBy_ === col) {
+                this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
+            }
+            return true;
+        };
+        Object.defineProperty(RankColumn.prototype, "flatColumns", {
+            get: function () {
+                var r = [];
+                this.flatten(r, 0, Column.FLAT_ALL_COLUMNS);
+                return r.map(function (d) { return d.col; });
+            },
+            enumerable: true,
+            configurable: true
+        });
+        RankColumn.prototype.find = function (id_or_filter) {
+            var filter = typeof (id_or_filter) === 'string' ? function (col) { return col.id === id_or_filter; } : id_or_filter;
+            var r = this.flatColumns;
+            for (var i = 0; i < r.length; ++i) {
+                if (filter(r[i])) {
+                    return r[i];
+                }
+            }
+            return null;
+        };
+        /**
+         * converts the sorting criteria to a json compatible notation for transfering it to the server
+         * @param toId
+         * @return {any}
+         */
+        RankColumn.prototype.toSortingDesc = function (toId) {
+            //TODO describe also all the filter settings
+            var resolve = function (s) {
+                if (s === null) {
+                    return null;
+                }
+                if (s instanceof StackColumn) {
+                    var w = s.weights;
+                    return s.children.map(function (child, i) {
+                        return {
+                            weight: w[i],
+                            id: resolve(child)
+                        };
+                    });
+                }
+                return toId(s.desc);
+            };
+            var id = resolve(this.sortBy_);
+            if (id === null) {
+                return null;
+            }
+            return {
+                id: id,
+                asc: this.ascending
+            };
+        };
+        RankColumn.prototype.isFiltered = function () {
+            return this.columns_.some(function (d) { return d.isFiltered(); });
+        };
+        RankColumn.prototype.filter = function (row) {
+            return this.columns_.every(function (d) { return d.filter(row); });
+        };
+        return RankColumn;
+    })(ValueColumn);
+    exports.RankColumn = RankColumn;
+    /**
+     * utility for creating a stacked column description
+     * @type {function(string=): {type: string, label: string}}
+     */
+    exports.createStackDesc = StackColumn.desc;
+    /**
+     * utility for creating an action description with optional label
+     * @param label
+     * @returns {{type: string, label: string}}
+     */
+    function createActionDesc(label) {
+        if (label === void 0) { label = 'actions'; }
+        return { type: 'actions', label: label };
+    }
+    exports.createActionDesc = createActionDesc;
+    /**
+     * a map of all known column types
+     */
+    function models() {
+        return {
+            number: NumberColumn,
+            string: StringColumn,
+            link: LinkColumn,
+            stack: StackColumn,
+            rank: RankColumn,
+            categorical: CategoricalColumn,
+            ordinal: CategoricalNumberColumn,
+            actions: DummyColumn,
+            annotate: AnnotateColumn
+        };
+    }
+    exports.models = models;
+});
 
-},{"./utils":8,"d3":undefined}],4:[function(require,module,exports){
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
+},{}],4:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var model = require('./model');
 var utils = require('./utils');
@@ -2132,14 +2394,10 @@ var RemoteDataProvider = (function (_super) {
 exports.RemoteDataProvider = RemoteDataProvider;
 
 },{"./model":3,"./utils":8,"d3":undefined}],5:[function(require,module,exports){
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var model = require('./model');
 var DefaultCellRenderer = (function () {
@@ -2527,7 +2785,7 @@ var StackCellRenderer = (function (_super) {
     };
     StackCellRenderer.prototype.render = function ($col, stack, rows, context) {
         this.renderImpl($col, stack, context, function ($child, col, i, ccontext) {
-            ccontext.renderer(col).render($child, col, rows, ccontext);
+            ccontext.render(col, $child, rows, ccontext);
         }, function (index) { return rows[index]; });
     };
     StackCellRenderer.prototype.mouseEnter = function ($col, $row, stack, row, index, context) {
@@ -2560,6 +2818,7 @@ function renderers() {
             textClass: 'rank',
             align: 'right'
         }),
+        heatmap: new HeatMapCellRenderer(),
         stack: new StackCellRenderer(),
         categorical: new CategoricalRenderer(),
         ordinal: barRenderer({
@@ -2575,16 +2834,11 @@ function renderers() {
 exports.renderers = renderers;
 
 },{"./model":3}],6:[function(require,module,exports){
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-///<reference path='../typings/tsd.d.ts' />
 var d3 = require('d3');
 var utils = require('./utils');
 var model = require('./model');
@@ -2822,7 +3076,7 @@ var HeaderRenderer = (function () {
         offset -= this.options.slopeWidth;
         var columns = shifts.map(function (d) { return d.col; });
         function countStacked(c) {
-            if (c instanceof model.StackColumn && !c.collapsed) {
+            if (c instanceof model.StackColumn && !c.collapsed && !c.compressed) {
                 return 1 + Math.max.apply(Math, c.children.map(countStacked));
             }
             return 1;
@@ -2854,6 +3108,18 @@ var HeaderRenderer = (function () {
         });
         $node.filter(function (d) { return _this.options.searchAble(d); }).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
             dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
+            d3.event.stopPropagation();
+        });
+        $regular.append('i')
+            .attr('class', 'fa')
+            .classed('fa-toggle-left', function (d) { return !d.compressed; })
+            .classed('fa-toggle-right', function (d) { return d.compressed; })
+            .attr('title', '(Un)Collapse')
+            .on('click', function (d) {
+            d.compressed = !d.compressed;
+            d3.select(this)
+                .classed('fa-toggle-left', !d.compressed)
+                .classed('fa-toggle-right', d.compressed);
             d3.event.stopPropagation();
         });
         $stacked.append('i')
@@ -2923,7 +3189,7 @@ var HeaderRenderer = (function () {
             'background-color': function (d) { return d.color; }
         });
         $headers.attr({
-            class: function (d) { return clazz + ' ' + d.cssClass; },
+            class: function (d) { return clazz + ' ' + d.cssClass + ' ' + (d.compressed ? 'compressed' : ''); },
             title: function (d) { return d.label; }
         });
         $headers.select('i.sort_indicator').attr('class', function (d) {
@@ -2936,7 +3202,7 @@ var HeaderRenderer = (function () {
         $headers.select('span.lu-label').text(function (d) { return d.label; });
         var that = this;
         $headers.filter(function (d) { return d instanceof model.StackColumn; }).each(function (col) {
-            if (col.collapsed) {
+            if (col.collapsed || col.compressed) {
                 d3.select(this).selectAll('div.' + clazz + '_i').remove();
             }
             else {
@@ -3030,11 +3296,25 @@ var BodyRenderer = (function (_super) {
                 return options.rowHeight * (1 - options.rowPadding);
             },
             renderer: function (col) {
+                if (col.compressed && model.isNumberColumn(col)) {
+                    return options.renderers.heatmap;
+                }
                 if (col instanceof model.StackColumn && col.collapsed) {
                     return options.renderers.number;
                 }
                 var l = options.renderers[col.desc.type];
                 return l || renderer.defaultRenderer();
+            },
+            render: function (col, $this, data, context) {
+                if (context === void 0) { context = this; }
+                var tthis = ($this.node());
+                var old_renderer = tthis.__renderer__;
+                var act_renderer = this.renderer(col);
+                if (old_renderer !== act_renderer) {
+                    $this.selectAll('*').remove();
+                    tthis.__renderer__ = act_renderer;
+                }
+                act_renderer.render($this, col, data, context);
             },
             showStacked: function (col) {
                 return options.stacked;
@@ -3104,7 +3384,7 @@ var BodyRenderer = (function (_super) {
         }).each(function (d, i, j) {
             var _this = this;
             dataPromises[j].then(function (data) {
-                context.renderer(d).render(d3.select(_this), d, data, context);
+                context.render(d, d3.select(_this), data, context);
             });
         });
         $cols.exit().remove();
@@ -3263,8 +3543,8 @@ var BodyRenderer = (function (_super) {
             offset += _this.options.slopeWidth;
             var o2 = 0, shift2 = [d].concat(d.children).map(function (o) {
                 var r = o2;
-                o2 += o.getWidth() + _this.options.columnPadding;
-                if (o instanceof model.StackColumn && !o.collapsed) {
+                o2 += (o.compressed ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + _this.options.columnPadding;
+                if (o instanceof model.StackColumn && !o.collapsed && !o.compressed) {
                     o2 += _this.options.columnPadding * (o.length - 1);
                 }
                 return r;
@@ -3293,11 +3573,6 @@ var BodyRenderer = (function (_super) {
 exports.BodyRenderer = BodyRenderer;
 
 },{"./model":3,"./renderer":5,"./ui_dialogs":7,"./utils":8,"d3":undefined}],7:[function(require,module,exports){
-/**
- * a set of simple dialogs for LineUp
- *
- * Created by Samuel Gratzl on 24.08.2015.
- */
 var utils = require('./utils');
 var mappingeditor = require('./mappingeditor');
 function dialogForm(title, body, buttonsWithLabel) {
@@ -3599,272 +3874,380 @@ exports.filterDialogs = filterDialogs;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-///<reference path='../typings/tsd.d.ts' />
-var d3 = require('d3');
-function delayedCall(callback, timeToDelay, thisCallback) {
-    if (timeToDelay === void 0) { timeToDelay = 100; }
-    if (thisCallback === void 0) { thisCallback = this; }
-    var tm = -1;
-    return function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i - 0] = arguments[_i];
-        }
-        if (tm >= 0) {
-            clearTimeout(tm);
-            tm = -1;
-        }
-        args.unshift(thisCallback);
-        tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
-    };
-}
-exports.delayedCall = delayedCall;
-function forwardEvent(to, event) {
-    return function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i - 0] = arguments[_i];
-        }
-        args.unshift(event || this.type);
-        to.fire.apply(to, args);
-    };
-}
-exports.forwardEvent = forwardEvent;
-var AEventDispatcher = (function () {
-    function AEventDispatcher() {
-        this.forwarder = forwardEvent(this);
-        this.listeners = d3.dispatch.apply(d3, this.createEventList());
+define(["require", "exports", 'd3'], function (require, exports, d3) {
+    /**
+     * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
+     * @param callback the callback to call
+     * @param timeToDelay delay the call in milliseconds
+     * @param thisCallback this argument of the callback
+     * @return {function(...[any]): undefined} a function that can be called with the same interface as the callback but delayed
+     */
+    function delayedCall(callback, timeToDelay, thisCallback) {
+        if (timeToDelay === void 0) { timeToDelay = 100; }
+        if (thisCallback === void 0) { thisCallback = this; }
+        var tm = -1;
+        return function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i - 0] = arguments[_i];
+            }
+            if (tm >= 0) {
+                clearTimeout(tm);
+                tm = -1;
+            }
+            args.unshift(thisCallback);
+            tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
+        };
     }
-    AEventDispatcher.prototype.on = function (type, listener) {
-        var _this = this;
-        if (arguments.length > 1) {
+    exports.delayedCall = delayedCall;
+    /**
+     * utility for AEventDispatcher to forward an event
+     * @param to
+     * @param event
+     * @return {function(...[any]): undefined}
+     */
+    function forwardEvent(to, event) {
+        return function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i - 0] = arguments[_i];
+            }
+            args.unshift(event || this.type);
+            to.fire.apply(to, args);
+        };
+    }
+    exports.forwardEvent = forwardEvent;
+    /**
+     * base class for event dispatching using d3 event mechanism
+     */
+    var AEventDispatcher = (function () {
+        function AEventDispatcher() {
+            this.forwarder = forwardEvent(this);
+            this.listeners = d3.dispatch.apply(d3, this.createEventList());
+        }
+        AEventDispatcher.prototype.on = function (type, listener) {
+            var _this = this;
+            if (arguments.length > 1) {
+                if (Array.isArray(type)) {
+                    type.forEach(function (d) { return _this.listeners.on(d, listener); });
+                }
+                else {
+                    this.listeners.on(type, listener);
+                }
+                return this;
+            }
+            return this.listeners.on(type);
+        };
+        /**
+         * return the list of events to be able to dispatch
+         * @return {Array}
+         */
+        AEventDispatcher.prototype.createEventList = function () {
+            return [];
+        };
+        AEventDispatcher.prototype.fire = function (type) {
+            var _this = this;
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
+            var fireImpl = function (t) {
+                //local context per event, set a this argument
+                var context = {
+                    source: _this,
+                    type: t,
+                    args: args //the arguments to the listener
+                };
+                _this.listeners[t].apply(context, args);
+            };
             if (Array.isArray(type)) {
-                type.forEach(function (d) { return _this.listeners.on(d, listener); });
+                type.forEach(fireImpl.bind(this));
             }
             else {
-                this.listeners.on(type, listener);
+                fireImpl(type);
             }
-            return this;
-        }
-        return this.listeners.on(type);
-    };
-    AEventDispatcher.prototype.createEventList = function () {
-        return [];
-    };
-    AEventDispatcher.prototype.fire = function (type) {
-        var _this = this;
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
-        var fireImpl = function (t) {
-            var context = {
-                source: _this,
-                type: t,
-                args: args
-            };
-            _this.listeners[t].apply(context, args);
         };
-        if (Array.isArray(type)) {
-            type.forEach(fireImpl.bind(this));
+        /**
+         * forwards one or more events from a given dispatcher to the current one
+         * i.e. when one of the given events is fired in 'from' it will be forwared to all my listeners
+         * @param from the event dispatcher to forward from
+         * @param types the event types to forward
+         */
+        AEventDispatcher.prototype.forward = function (from) {
+            var types = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                types[_i - 1] = arguments[_i];
+            }
+            from.on(types, this.forwarder);
+        };
+        /**
+         * removes the forwarding declarations
+         * @param from
+         * @param types
+         */
+        AEventDispatcher.prototype.unforward = function (from) {
+            var types = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                types[_i - 1] = arguments[_i];
+            }
+            from.on(types, null);
+        };
+        return AEventDispatcher;
+    })();
+    exports.AEventDispatcher = AEventDispatcher;
+    var TYPE_OBJECT = '[object Object]';
+    var TYPE_ARRAY = '[object Array]';
+    //credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
+    function merge() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+        var result = null;
+        for (var i = 0; i < args.length; i++) {
+            var toMerge = args[i], keys = Object.keys(toMerge);
+            if (result === null) {
+                result = toMerge;
+                continue;
+            }
+            for (var j = 0; j < keys.length; j++) {
+                var keyName = keys[j];
+                var value = toMerge[keyName];
+                if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
+                    if (result[keyName] === undefined) {
+                        result[keyName] = {};
+                    }
+                    result[keyName] = merge(result[keyName], value);
+                }
+                else if (Object.prototype.toString.call(value) === TYPE_ARRAY) {
+                    if (result[keyName] === undefined) {
+                        result[keyName] = [];
+                    }
+                    result[keyName] = value.concat(result[keyName]);
+                }
+                else {
+                    result[keyName] = value;
+                }
+            }
+        }
+        return result;
+    }
+    exports.merge = merge;
+    /**
+     * computes the absolute offset of the given element
+     * @param element
+     * @return {{left: number, top: number, width: number, height: number}}
+     */
+    function offset(element) {
+        var obj = element.getBoundingClientRect();
+        return {
+            left: obj.left + window.pageXOffset,
+            top: obj.top + window.pageYOffset,
+            width: obj.width,
+            height: obj.height
+        };
+    }
+    exports.offset = offset;
+    /**
+     * content scroller utility
+     *
+     * a class for efficiently selecting a range of data items that are currently visible according to the scrolled position
+     */
+    var ContentScroller = (function (_super) {
+        __extends(ContentScroller, _super);
+        /**
+         *
+         * @param container the container element wrapping the content with a fixed height for enforcing scrolling
+         * @param content the content element to scroll
+         * @param options options see attribute
+         */
+        function ContentScroller(container, content, options) {
+            var _this = this;
+            if (options === void 0) { options = {}; }
+            _super.call(this);
+            this.container = container;
+            this.content = content;
+            this.options = {
+                /**
+                 * shift that should be used for calculating the top position
+                 */
+                topShift: 0,
+                /**
+                 * backup rows, i.e .the number of rows that should also be shown for avoiding to frequent updates
+                 */
+                backupRows: 5,
+                /**
+                 * the height of one row in pixel
+                 */
+                rowHeight: 10
+            };
+            this.prevScrollTop = 0;
+            this.shift = 0;
+            merge(this.options, options);
+            d3.select(container).on('scroll.scroller', function () { return _this.onScroll(); });
+            //keep the previous state computing whether a redraw is needed
+            this.prevScrollTop = container.scrollTop;
+            //total shift to the top
+            this.shift = offset(content).top - offset(container).top + this.options.topShift;
+        }
+        /**
+         * two events are fired:
+         *  * scroll when the user scrolls the container
+         *  * redraw when a redraw of the content must be performed due to scrolling changes. Note due to backup rows
+         *     a scrolling operation might not include a redraw
+         *
+         * @returns {string[]}
+         */
+        ContentScroller.prototype.createEventList = function () {
+            return _super.prototype.createEventList.call(this).concat(['scroll', 'redraw']);
+        };
+        /**
+         * selects a range identified by start and length and the row2y position callback returning the slice to show according to the current user scrolling position
+         * @param start start of the range
+         * @param length length of the range
+         * @param row2y lookup for computing the y position of a given row
+         * @returns {{from: number, to: number}} the slide to show
+         */
+        ContentScroller.prototype.select = function (start, length, row2y) {
+            var top = this.container.scrollTop - this.shift, bottom = top + this.container.clientHeight, i = 0, j;
+            /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
+             if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
+             console.log('show all');
+             return [0, data.length];
+             }*/
+            if (top > 0) {
+                i = Math.round(top / this.options.rowHeight);
+                //count up till really even partial rows are visible
+                while (i >= start && row2y(i + 1) > top) {
+                    i--;
+                }
+                i -= this.options.backupRows; //one more row as backup for scrolling
+            }
+            {
+                j = Math.round(bottom / this.options.rowHeight);
+                //count down till really even partial rows are visible
+                while (j <= length && row2y(j - 1) < bottom) {
+                    j++;
+                }
+                j += this.options.backupRows; //one more row as backup for scrolling
+            }
+            return {
+                from: Math.max(i, start),
+                to: Math.min(j, length)
+            };
+        };
+        ContentScroller.prototype.onScroll = function () {
+            var top = this.container.scrollTop;
+            var left = this.container.scrollLeft;
+            //at least one row changed
+            //console.log(top, left);
+            this.fire('scroll', top, left);
+            if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
+                //we scrolled out of our backup rows, so we have to redraw the content
+                this.prevScrollTop = top;
+                this.fire('redraw');
+            }
+        };
+        /**
+         * removes the listeners
+         */
+        ContentScroller.prototype.destroy = function () {
+            d3.select(this.container).on('scroll.scroller', null);
+        };
+        return ContentScroller;
+    })(AEventDispatcher);
+    exports.ContentScroller = ContentScroller;
+    /**
+     * checks whether the given DragEvent has one of the given types
+     */
+    function hasDnDType(e, typesToCheck) {
+        var types = e.dataTransfer.types;
+        if (typeof types.indexOf === 'function') {
+            return typesToCheck.some(function (type) { return types.indexOf(type) >= 0; });
+        }
+        if (typeof types.includes === 'function') {
+            return typesToCheck.some(function (type) { return types.includes(type); });
+        }
+        if (typeof types.contains === 'function') {
+            return typesToCheck.some(function (type) { return types.contains(type); });
+        }
+        return false;
+    }
+    exports.hasDnDType = hasDnDType;
+    /**
+     * should it be a copy dnd operation?
+     */
+    function copyDnD(e) {
+        var dT = e.dataTransfer;
+        return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
+    }
+    exports.copyDnD = copyDnD;
+    /**
+     * updates the drop effect according to the currently selected meta keys
+     * @param e
+     */
+    function updateDropEffect(e) {
+        var dT = e.dataTransfer;
+        if (copyDnD(e)) {
+            dT.dropEffect = 'copy';
         }
         else {
-            fireImpl(type);
+            dT.dropEffect = 'move';
         }
-    };
-    AEventDispatcher.prototype.forward = function (from) {
-        var types = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            types[_i - 1] = arguments[_i];
-        }
-        from.on(types, this.forwarder);
-    };
-    AEventDispatcher.prototype.unforward = function (from) {
-        var types = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            types[_i - 1] = arguments[_i];
-        }
-        from.on(types, null);
-    };
-    return AEventDispatcher;
-})();
-exports.AEventDispatcher = AEventDispatcher;
-var TYPE_OBJECT = '[object Object]';
-var TYPE_ARRAY = '[object Array]';
-function merge() {
-    var args = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i - 0] = arguments[_i];
     }
-    var result = null;
-    for (var i = 0; i < args.length; i++) {
-        var toMerge = args[i], keys = Object.keys(toMerge);
-        if (result === null) {
-            result = toMerge;
-            continue;
-        }
-        for (var j = 0; j < keys.length; j++) {
-            var keyName = keys[j];
-            var value = toMerge[keyName];
-            if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
-                if (result[keyName] === undefined) {
-                    result[keyName] = {};
+    exports.updateDropEffect = updateDropEffect;
+    /**
+     * returns a d3 callable function to make an element dropable, managed the class css 'drag_over' for hovering effects
+     * @param mimeTypes the mime types to be dropable
+     * @param onDrop: handler when an element is dropped
+     */
+    function dropAble(mimeTypes, onDrop) {
+        return function ($node) {
+            $node.on('dragenter', function () {
+                var e = d3.event;
+                //var xy = d3.mouse($node.node());
+                if (hasDnDType(e, mimeTypes)) {
+                    d3.select(this).classed('drag_over', true);
+                    //sounds good
+                    return false;
                 }
-                result[keyName] = merge(result[keyName], value);
-            }
-            else if (Object.prototype.toString.call(value) === TYPE_ARRAY) {
-                if (result[keyName] === undefined) {
-                    result[keyName] = [];
+                //not a valid mime type
+                d3.select(this).classed('drag_over', false);
+            }).on('dragover', function () {
+                var e = d3.event;
+                if (hasDnDType(e, mimeTypes)) {
+                    e.preventDefault();
+                    updateDropEffect(e);
+                    d3.select(this).classed('drag_over', true);
+                    return false;
                 }
-                result[keyName] = value.concat(result[keyName]);
-            }
-            else {
-                result[keyName] = value;
-            }
-        }
-    }
-    return result;
-}
-exports.merge = merge;
-function offset(element) {
-    var obj = element.getBoundingClientRect();
-    return {
-        left: obj.left + window.pageXOffset,
-        top: obj.top + window.pageYOffset,
-        width: obj.width,
-        height: obj.height
-    };
-}
-exports.offset = offset;
-var ContentScroller = (function (_super) {
-    __extends(ContentScroller, _super);
-    function ContentScroller(container, content, options) {
-        var _this = this;
-        if (options === void 0) { options = {}; }
-        _super.call(this);
-        this.container = container;
-        this.content = content;
-        this.options = {
-            topShift: 0,
-            backupRows: 5,
-            rowHeight: 10
-        };
-        this.prevScrollTop = 0;
-        this.shift = 0;
-        merge(this.options, options);
-        d3.select(container).on('scroll.scroller', function () { return _this.onScroll(); });
-        this.prevScrollTop = container.scrollTop;
-        this.shift = offset(content).top - offset(container).top + this.options.topShift;
-    }
-    ContentScroller.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat(['scroll', 'redraw']);
-    };
-    ContentScroller.prototype.select = function (start, length, row2y) {
-        var top = this.container.scrollTop - this.shift, bottom = top + this.container.clientHeight, i = 0, j;
-        if (top > 0) {
-            i = Math.round(top / this.options.rowHeight);
-            while (i >= start && row2y(i + 1) > top) {
-                i--;
-            }
-            i -= this.options.backupRows;
-        }
-        {
-            j = Math.round(bottom / this.options.rowHeight);
-            while (j <= length && row2y(j - 1) < bottom) {
-                j++;
-            }
-            j += this.options.backupRows;
-        }
-        return {
-            from: Math.max(i, start),
-            to: Math.min(j, length)
-        };
-    };
-    ContentScroller.prototype.onScroll = function () {
-        var top = this.container.scrollTop;
-        var left = this.container.scrollLeft;
-        this.fire('scroll', top, left);
-        if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
-            this.prevScrollTop = top;
-            this.fire('redraw');
-        }
-    };
-    ContentScroller.prototype.destroy = function () {
-        d3.select(this.container).on('scroll.scroller', null);
-    };
-    return ContentScroller;
-})(AEventDispatcher);
-exports.ContentScroller = ContentScroller;
-function hasDnDType(e, typesToCheck) {
-    var types = e.dataTransfer.types;
-    if (typeof types.indexOf === 'function') {
-        return typesToCheck.some(function (type) { return types.indexOf(type) >= 0; });
-    }
-    if (typeof types.includes === 'function') {
-        return typesToCheck.some(function (type) { return types.includes(type); });
-    }
-    if (typeof types.contains === 'function') {
-        return typesToCheck.some(function (type) { return types.contains(type); });
-    }
-    return false;
-}
-exports.hasDnDType = hasDnDType;
-function copyDnD(e) {
-    var dT = e.dataTransfer;
-    return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
-}
-exports.copyDnD = copyDnD;
-function updateDropEffect(e) {
-    var dT = e.dataTransfer;
-    if (copyDnD(e)) {
-        dT.dropEffect = 'copy';
-    }
-    else {
-        dT.dropEffect = 'move';
-    }
-}
-exports.updateDropEffect = updateDropEffect;
-function dropAble(mimeTypes, onDrop) {
-    return function ($node) {
-        $node.on('dragenter', function () {
-            var e = d3.event;
-            if (hasDnDType(e, mimeTypes)) {
-                d3.select(this).classed('drag_over', true);
-                return false;
-            }
-            d3.select(this).classed('drag_over', false);
-        }).on('dragover', function () {
-            var e = d3.event;
-            if (hasDnDType(e, mimeTypes)) {
+            }).on('dragleave', function () {
+                //
+                d3.select(this).classed('drag_over', false);
+            }).on('drop', function (d) {
+                var e = d3.event;
                 e.preventDefault();
-                updateDropEffect(e);
-                d3.select(this).classed('drag_over', true);
-                return false;
-            }
-        }).on('dragleave', function () {
-            d3.select(this).classed('drag_over', false);
-        }).on('drop', function (d) {
-            var e = d3.event;
-            e.preventDefault();
-            d3.select(this).classed('drag_over', false);
-            if (hasDnDType(e, mimeTypes)) {
-                var data = {};
-                mimeTypes.forEach(function (mime) {
-                    var value = e.dataTransfer.getData(mime);
-                    if (value !== '') {
-                        data[mime] = value;
-                    }
-                });
-                return onDrop(data, d, copyDnD(e));
-            }
-        });
-    };
-}
-exports.dropAble = dropAble;
+                d3.select(this).classed('drag_over', false);
+                //var xy = d3.mouse($node.node());
+                if (hasDnDType(e, mimeTypes)) {
+                    var data = {};
+                    //selects the data contained in the data transfer
+                    mimeTypes.forEach(function (mime) {
+                        var value = e.dataTransfer.getData(mime);
+                        if (value !== '') {
+                            data[mime] = value;
+                        }
+                    });
+                    return onDrop(data, d, copyDnD(e));
+                }
+            });
+        };
+    }
+    exports.dropAble = dropAble;
+});
 
-},{"d3":undefined}]},{},[1]);
+},{}]},{},[1]);
  
 });

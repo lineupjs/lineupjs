@@ -149,6 +149,8 @@
     background: #6D6C6C; }
   .lu div.lu-header div.header.drag_over div.lu-label, .lu-pool div.lu-header div.header.drag_over div.lu-label {
     color: #979797; }
+  .lu div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu-pool div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right) {
+    display: none; }
   .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {
     position: absolute;
     width: 100%;
