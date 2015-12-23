@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
   "version": "0.2.0",
-  "homepage": "https://github.com/Caleydo/lineup.js",
+  "homepage": "https://github.com/sgratzl/lineup.js",
   "authors": [
     "Hendrik Strobelt",
     "Samuel Gratzl <samuel.gratzl@jku.at> (https://sgratzl@github.io)"
