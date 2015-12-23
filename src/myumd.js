@@ -1,5 +1,5 @@
 
-//based on https://github.com/ForbesLindesay/umd but with a custom list of external DEPENDENCIES, NAMESPACE and SOURCECODE templates
+//based on https://github.com/ForbesLindesay/umd but with a custom list of external dependencies
 ;(function (f) {
   // CommonJS
   if (typeof exports === "object" && typeof module !== "undefined") {

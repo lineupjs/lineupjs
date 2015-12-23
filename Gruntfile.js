@@ -118,7 +118,7 @@ module.exports = function (grunt) {
           name: 'LineUp.js',
 
           entryPoint: 'main.LineUp',
-          mode: 'file',
+          mode: 'modules',
           theme: 'minimal'
         },
         src: ['src/**.ts', 'demo/**.ts'],
