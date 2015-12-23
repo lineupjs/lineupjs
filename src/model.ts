@@ -40,6 +40,9 @@ export interface IColumnParent extends Column {
 
 export interface IColumnDesc {
   label:string;
+  /**
+   * the column type
+   */
   type:string;
 }
 
@@ -54,8 +57,21 @@ export interface IStatistics {
  * a column in LineUp
  */
 export class Column extends utils.AEventDispatcher {
+  /**
+   * default color that should be used
+   * @type {string}
+   */
   static DEFAULT_COLOR = '#C1C1C1';
+  /**
+   * magic variable for showing all columns
+   * @type {number}
+   */
   static FLAT_ALL_COLUMNS = -1;
+  /**
+   * width of a compressed column
+   * @type {number}
+   */
+  static COMPRESSED_WIDTH = 16;
 
   id:string;
 
@@ -74,6 +90,13 @@ export class Column extends utils.AEventDispatcher {
    * alternative to specifying a color is defining a css class that should be used
    */
   cssClass : string;
+
+  /**
+   * whether this column is compressed i.e. just shown in a minimal version
+   * @type {boolean}
+   * @private
+   */
+  private _compressed = false;
 
   constructor(id:string, public desc:IColumnDesc) {
     super();
@@ -103,17 +126,29 @@ export class Column extends utils.AEventDispatcher {
    * fires:
    *  * widthChanged
    *  * filterChanged
-   *  * labelChanged
+   *  * labelChanged,
+   *  * compressChanged
    *  * addColumn, removeColumn ... for composite pattern
    *  * dirty, dirtyHeader, dirtyValues
    * @returns {string[]}
    */
   createEventList() {
-    return super.createEventList().concat(['widthChanged', 'filterChanged', 'labelChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
+    return super.createEventList().concat(['widthChanged', 'filterChanged', 'labelChanged', 'compressChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
   }
 
   getWidth() {
     return this.width_;
+  }
+
+  set compressed(value: boolean) {
+    if (this._compressed === value) {
+      return;
+    }
+    this.fire(['compressChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this._compressed, this._compressed = value);
+  }
+
+  get compressed() {
+    return this._compressed;
   }
 
   /**
@@ -125,8 +160,9 @@ export class Column extends utils.AEventDispatcher {
    * @returns {number} the used width by this column
    */
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0): number {
-    r.push({ col: this, offset: offset, width: this.getWidth() });
-    return this.getWidth();
+    const w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
+    r.push({ col: this, offset: offset, width: w });
+    return w;
   }
 
   setWidth(value:number) {
@@ -219,7 +255,8 @@ export class Column extends utils.AEventDispatcher {
     var r: any = {
       id: this.id,
       desc: toDescRef(this.desc),
-      width: this.width_
+      width: this.width_,
+      compressed: this.compressed
     };
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
@@ -239,6 +276,7 @@ export class Column extends utils.AEventDispatcher {
     this.width_ = dump.width || this.width_;
     this.label = dump.label || this.label;
     this.color = dump.color || this.color;
+    this.compressed = dump.compressed === true;
   }
 
   /**
@@ -978,7 +1016,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     if (this._collapsed === value) {
       return;
     }
-    this.fire(['collapseChanged', 'dirtyHeader', 'dirty'], this._collapsed, this._collapsed = value);
+    this.fire(['collapseChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this._collapsed, this._collapsed = value);
   }
 
   get collapsed() {
@@ -989,8 +1027,8 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     var self = null;
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      var w = this.getWidth();
-      if (!this.collapsed) {
+      var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
+      if (!this.collapsed && !this.compressed) {
         w += (this.children_.length-1)*padding;
       }
       r.push(self = {col: this, offset: offset, width: w});
@@ -1013,6 +1051,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     var r = super.dump(toDescRef);
     r.children = this.children_.map((d) => d.dump(toDescRef));
     r.missingValue = this.missingValue;
+    r.collapsed = this.collapsed;
     return r;
   }
 
@@ -1023,6 +1062,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     dump.children.map((child) => {
       this.push(factory(child));
     });
+    this.collapsed = dump.collapsed === true;
     super.restore(dump, factory);
   }
 

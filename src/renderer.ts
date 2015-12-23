@@ -43,6 +43,12 @@ export interface IRenderContext {
   renderer(col:model.Column): ICellRenderer;
 
   /**
+   * render a column
+   * @param col
+   */
+  render(col: model.Column, $this: d3.Selection<model.Column>, data: any[], context?: IRenderContext);
+
+  /**
    * internal option flags
    * @param col
    */
@@ -522,7 +528,7 @@ class CategoricalRenderer extends DefaultCellRenderer {
 }
 
 /**
- * renderes a stacked column using composite pattern
+ * renders a stacked column using composite pattern
  */
 class StackCellRenderer extends DefaultCellRenderer {
   renderImpl($base:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
@@ -575,7 +581,7 @@ class StackCellRenderer extends DefaultCellRenderer {
   }
   render($col:d3.Selection<any>, stack:model.StackColumn, rows:any[], context:IRenderContext) {
     this.renderImpl($col, stack, context, ($child, col, i, ccontext) => {
-      ccontext.renderer(col).render($child, col, rows, ccontext);
+      ccontext.render(col, $child, rows, ccontext);
     }, (index) => rows[index]);
   }
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, stack:model.StackColumn, row:any, index:number, context:IRenderContext) {
@@ -612,6 +618,7 @@ export function renderers() {
       textClass: 'rank',
       align: 'right'
     }),
+    heatmap: new HeatMapCellRenderer(),
     stack: new StackCellRenderer(),
     categorical: new CategoricalRenderer(),
     ordinal: barRenderer({

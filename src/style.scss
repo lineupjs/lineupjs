@@ -254,6 +254,12 @@ $lu_drag_over: #979797;
         color: $lu_drag_over;
       }
 
+      &.compressed  {
+        div.toolbar i:not(.fa-toggle-right) {
+          display: none;
+        }
+      }
+
       div.lu-label {
         position: absolute;
         width: 100%;

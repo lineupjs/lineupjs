@@ -263,7 +263,7 @@ export class HeaderRenderer {
 
     var columns = shifts.map((d) => d.col);
     function countStacked(c: model.Column) : number {
-      if (c instanceof model.StackColumn && !(<model.StackColumn>c).collapsed) {
+      if (c instanceof model.StackColumn && !(<model.StackColumn>c).collapsed && !c.compressed) {
         return 1 + Math.max.apply(Math, (<model.StackColumn>c).children.map(countStacked));
       }
       return 1;
@@ -305,6 +305,20 @@ export class HeaderRenderer {
       dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
+    //collapse
+    $regular.append('i')
+      .attr('class', 'fa')
+      .classed('fa-toggle-left',(d: model.Column) => !d.compressed)
+      .classed('fa-toggle-right', (d: model.Column) => d.compressed)
+      .attr('title','(Un)Collapse')
+      .on('click', function(d: model.Column) {
+        d.compressed = !d.compressed;
+        d3.select(this)
+          .classed('fa-toggle-left',!d.compressed)
+          .classed('fa-toggle-right', d.compressed);
+        d3.event.stopPropagation();
+      });
+    //compress
     $stacked.append('i')
       .attr('class', 'fa')
       .classed('fa-compress',(d: model.StackColumn) => !d.collapsed)
@@ -371,7 +385,7 @@ export class HeaderRenderer {
       'background-color': (d) => d.color
     });
     $headers.attr({
-      class: (d) => clazz+' '+d.cssClass,
+      class: (d) => clazz+' '+d.cssClass+' '+(d.compressed ? 'compressed':''),
       title: (d) => d.label
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {
@@ -385,7 +399,7 @@ export class HeaderRenderer {
 
     var that = this;
     $headers.filter((d) => d instanceof model.StackColumn).each(function (col : model.StackColumn) {
-      if (col.collapsed) {
+      if (col.collapsed || col.compressed) {
         d3.select(this).selectAll('div.'+clazz+'_i').remove();
       } else {
         let s_shifts = [];
@@ -489,11 +503,25 @@ export class BodyRenderer extends utils.AEventDispatcher {
         return options.rowHeight* (1-options.rowPadding);
       },
       renderer(col:model.Column) {
+        if (col.compressed && model.isNumberColumn(col)) {
+          return options.renderers.heatmap;
+        }
         if (col instanceof model.StackColumn && col.collapsed) {
           return options.renderers.number;
         }
         var l = options.renderers[col.desc.type];
         return l || renderer.defaultRenderer();
+      },
+      render(col: model.Column, $this: d3.Selection<model.Column>, data: any[], context: renderer.IRenderContext = this) {
+        //if renderers change delete old stuff
+        const tthis = <any>($this.node());
+        const old_renderer = tthis.__renderer__;
+        const act_renderer = this.renderer(col);
+        if (old_renderer !== act_renderer) {
+          $this.selectAll('*').remove();
+          tthis.__renderer__ = act_renderer;
+        }
+        act_renderer.render($this, col, data, context);
       },
       showStacked(col:model.StackColumn) {
         return options.stacked;
@@ -572,7 +600,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
       }
     }).each(function (d, i, j?) {
       dataPromises[j].then((data) => {
-        context.renderer(d).render(d3.select(this), d, data, context);
+        context.render(d, d3.select(this), data, context);
       });
     });
     $cols.exit().remove();
@@ -743,8 +771,8 @@ export class BodyRenderer extends utils.AEventDispatcher {
         var o2 = 0,
           shift2 = [<model.Column>d].concat(d.children).map((o) => {
             var r = o2;
-            o2 += o.getWidth() + this.options.columnPadding;
-            if (o instanceof model.StackColumn && !o.collapsed) {
+            o2 += (o.compressed ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
+            if (o instanceof model.StackColumn && !o.collapsed && !o.compressed) {
               o2 += this.options.columnPadding * (o.length -1);
             }
             return r;
