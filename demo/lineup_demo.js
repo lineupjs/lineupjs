@@ -20,6 +20,9 @@
   var lineUpDemoConfig = {
     renderingOptions: {
       stacked: true
+    },
+    svgLayout: {
+      freezeRows: 2
     }
   };
 
