@@ -34,8 +34,8 @@ interface IFlatColumn {
 }
 
 export interface IColumnParent extends Column {
-  remove(col: Column): boolean;
-  insertAfter(col: Column, reference: Column): boolean;
+  remove(col:Column): boolean;
+  insertAfter(col:Column, reference:Column): boolean;
 }
 
 export interface IColumnDesc {
@@ -43,7 +43,7 @@ export interface IColumnDesc {
   /**
    * the column type
    */
-  type:string;
+    type:string;
 }
 
 export interface IStatistics {
@@ -82,14 +82,14 @@ export class Column extends utils.AEventDispatcher {
    */
   private width_:number = 100;
 
-  parent: IColumnParent = null;
+  parent:IColumnParent = null;
 
-  label: string;
-  color: string;
+  label:string;
+  color:string;
   /**
    * alternative to specifying a color is defining a css class that should be used
    */
-  cssClass : string;
+  cssClass:string;
 
   /**
    * whether this column is compressed i.e. just shown in a minimal version
@@ -106,11 +106,11 @@ export class Column extends utils.AEventDispatcher {
     this.color = (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
   }
 
-  assignNewId(idGenerator: () => string) {
+  assignNewId(idGenerator:() => string) {
     this.id = fixCSS(idGenerator());
   }
 
-  init(callback : (desc: IColumnDesc) => Promise<IStatistics>) : Promise<boolean> {
+  init(callback:(desc:IColumnDesc) => Promise<IStatistics>):Promise<boolean> {
     return Promise.resolve(true);
   }
 
@@ -119,7 +119,7 @@ export class Column extends utils.AEventDispatcher {
    * @returns {string}
    */
   get fqid() {
-    return this.parent ? this.parent.fqid +'_'+this.id : this.id;
+    return this.parent ? this.parent.fqid + '_' + this.id : this.id;
   }
 
   /**
@@ -140,7 +140,7 @@ export class Column extends utils.AEventDispatcher {
     return this.width_;
   }
 
-  set compressed(value: boolean) {
+  set compressed(value:boolean) {
     if (this._compressed === value) {
       return;
     }
@@ -159,9 +159,9 @@ export class Column extends utils.AEventDispatcher {
    * @param padding padding between columns
    * @returns {number} the used width by this column
    */
-  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0): number {
+  flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0):number {
     const w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
-    r.push({ col: this, offset: offset, width: w });
+    r.push({col: this, offset: offset, width: w});
     return w;
   }
 
@@ -169,19 +169,19 @@ export class Column extends utils.AEventDispatcher {
     if (this.width_ === value) {
       return;
     }
-    this.fire(['widthChanged','dirtyHeader','dirtyValues','dirty'], this.width_, this.width_ = value);
+    this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.width_, this.width_ = value);
   }
 
-  setWidthImpl(value: number) {
+  setWidthImpl(value:number) {
     this.width_ = value;
   }
 
-  setMetaData(value: string, color: string = this.color) {
+  setMetaData(value:string, color:string = this.color) {
     if (value === this.label && this.color === color) {
       return;
     }
-    var events = this.color === color ? ['labelChanged', 'dirtyHeader','dirty'] : ['labelChanged', 'dirtyHeader','dirtyValues','dirty'];
-    this.fire(events, { label: this.label, color: this.color }, {
+    var events = this.color === color ? ['labelChanged', 'dirtyHeader', 'dirty'] : ['labelChanged', 'dirtyHeader', 'dirtyValues', 'dirty'];
+    this.fire(events, {label: this.label, color: this.color}, {
       label: this.label = value,
       color: this.color = color
     });
@@ -228,7 +228,7 @@ export class Column extends utils.AEventDispatcher {
    * @param col
    * @returns {boolean}
    */
-  insertAfterMe(col: Column) {
+  insertAfterMe(col:Column) {
     if (this.parent) {
       return this.parent.insertAfter(col, this);
     }
@@ -239,7 +239,7 @@ export class Column extends utils.AEventDispatcher {
    * finds the underlying ranking column
    * @returns {RankColumn}
    */
-  findMyRanker(): RankColumn {
+  findMyRanker():RankColumn {
     if (this.parent) {
       return this.parent.findMyRanker();
     }
@@ -251,8 +251,8 @@ export class Column extends utils.AEventDispatcher {
    * @param toDescRef
    * @returns {any}
    */
-  dump(toDescRef: (desc: any) => any) : any {
-    var r: any = {
+  dump(toDescRef:(desc:any) => any):any {
+    var r:any = {
       id: this.id,
       desc: toDescRef(this.desc),
       width: this.width_,
@@ -272,7 +272,7 @@ export class Column extends utils.AEventDispatcher {
    * @param dump
    * @param factory
    */
-  restore(dump: any, factory : (dump: any) => Column) {
+  restore(dump:any, factory:(dump:any) => Column) {
     this.width_ = dump.width || this.width_;
     this.label = dump.label || this.label;
     this.color = dump.color || this.color;
@@ -372,7 +372,7 @@ export class DummyColumn extends Column {
 }
 
 export interface INumberColumn {
-  getNumber(row: any): number;
+  getNumber(row:any): number;
 }
 
 /**
@@ -380,7 +380,7 @@ export interface INumberColumn {
  * @param col
  * @returns {boolean|RegExpMatchArray}
  */
-export function isNumberColumn(col: Column|IColumnDesc) {
+export function isNumberColumn(col:Column|IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/)));
 }
 
@@ -419,7 +419,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     this.original.domain(this.scale.domain()).range(this.scale.range());
   }
 
-  init(callback : (desc: IColumnDesc) => Promise<IStatistics>) : Promise<boolean> {
+  init(callback:(desc:IColumnDesc) => Promise<IStatistics>):Promise<boolean> {
     var d = this.scale.domain();
     //if any of the values is not given use the statistics to compute them
     if (isNaN(d[0]) || isNaN(d[1])) {
@@ -432,7 +432,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     return Promise.resolve(true);
   }
 
-  dump(toDescRef: (desc: any) => any) {
+  dump(toDescRef:(desc:any) => any) {
     var r = super.dump(toDescRef);
     r.domain = this.scale.domain();
     r.range = this.scale.range();
@@ -442,7 +442,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     return r;
   }
 
-  restore(dump: any, factory : (dump: any) => Column) {
+  restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
     if (dump.domain) {
       this.scale.domain(dump.domain);
@@ -485,7 +485,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     return this.scale(v);
   }
 
-  getNumber(row: any) {
+  getNumber(row:any) {
     return this.getValue(row);
   }
 
@@ -507,7 +507,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     };
   }
 
-  setMapping(domain: [number, number], range: [number, number]) {
+  setMapping(domain:[number, number], range:[number, number]) {
     var bak = this.getMapping();
     this.scale.domain(domain).range(range);
     this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
@@ -569,9 +569,9 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
  * a string column with optional alignment
  */
 export class StringColumn extends ValueColumn<string> {
-  private filter_ : string|RegExp = null;
+  private filter_:string|RegExp = null;
 
-  private _alignment: string = 'left';
+  private _alignment:string = 'left';
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -592,10 +592,10 @@ export class StringColumn extends ValueColumn<string> {
     return v;
   }
 
-  dump(toDescRef: (desc: any) => any) : any {
+  dump(toDescRef:(desc:any) => any):any {
     var r = super.dump(toDescRef);
-    if(this.filter_ instanceof RegExp) {
-      r.filter = 'REGEX:'+(<RegExp>this.filter_).source;
+    if (this.filter_ instanceof RegExp) {
+      r.filter = 'REGEX:' + (<RegExp>this.filter_).source;
     } else {
       r.filter = this.filter_;
     }
@@ -603,9 +603,9 @@ export class StringColumn extends ValueColumn<string> {
     return r;
   }
 
-  restore(dump: any, factory : (dump: any) => Column) {
+  restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
-    if (dump.filter && dump.filter.slice(0,6) === 'REGEX:') {
+    if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
       this.filter_ = new RegExp(dump.filter.slice(6));
     } else {
       this.filter_ = dump.filter || null;
@@ -617,7 +617,7 @@ export class StringColumn extends ValueColumn<string> {
     return this.filter_ != null;
   }
 
-  filter(row: any) {
+  filter(row:any) {
     if (!this.isFiltered()) {
       return true;
     }
@@ -636,11 +636,11 @@ export class StringColumn extends ValueColumn<string> {
     return this.filter_;
   }
 
-  setFilter(filter: string|RegExp) {
+  setFilter(filter:string|RegExp) {
     if (filter === '') {
       filter = null;
     }
-    this.fire(['filterChanged','dirtyValues','dirty'], this.filter_, this.filter_ = filter);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
   }
 
   compare(a:any[], b:any[]) {
@@ -678,7 +678,7 @@ export class LinkColumn extends StringColumn {
     if (v.href) {
       return v.href;
     } else if (this.link) {
-      return this.link.replace(/\$1/g , v);
+      return this.link.replace(/\$1/g, v);
     }
     return v;
   }
@@ -695,7 +695,7 @@ export class AnnotateColumn extends StringColumn {
 
   }
 
-  getValue(row: any) {
+  getValue(row:any) {
     var index = String(row._index);
     if (this.annotations.has(index)) {
       return this.annotations.get(index);
@@ -703,16 +703,16 @@ export class AnnotateColumn extends StringColumn {
     return super.getValue(row);
   }
 
-  dump(toDescRef: (desc: any) => any) : any {
+  dump(toDescRef:(desc:any) => any):any {
     var r = super.dump(toDescRef);
     r.annotations = {};
-    this.annotations.forEach((k,v) => {
+    this.annotations.forEach((k, v) => {
       r.annotations[k] = v;
     });
     return r;
   }
 
-  restore(dump: any, factory : (dump: any) => Column) {
+  restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
     if (dump.annotations) {
       Object.keys(dump.annotations).forEach((k) => {
@@ -721,7 +721,7 @@ export class AnnotateColumn extends StringColumn {
     }
   }
 
-  setValue(row:any, value: string) {
+  setValue(row:any, value:string) {
     var old = this.getValue(row);
     if (old === value) {
       return true;
@@ -731,7 +731,7 @@ export class AnnotateColumn extends StringColumn {
     } else {
       this.annotations.set(String(row._index), value);
     }
-    this.fire(['dirtyValues','dirty'], value, old);
+    this.fire(['dirtyValues', 'dirty'], value, old);
     return true;
   }
 }
@@ -751,7 +751,7 @@ export class CategoricalColumn extends ValueColumn<string> {
    * @type {null}
    * @private
    */
-  private filter_ : string[] = null;
+  private filter_:string[] = null;
 
   /**
    * split multiple categories
@@ -761,15 +761,16 @@ export class CategoricalColumn extends ValueColumn<string> {
 
   constructor(id:string, desc:any) {
     super(id, desc);
+    this.separator = desc.separator || this.separator;
     this.initCategories(desc);
     //TODO infer categories from data
   }
 
-  initCategories(desc: any) {
+  initCategories(desc:any) {
     if (desc.categories) {
       var cats = [],
         cols = this.colors.range();
-      desc.categories.forEach((cat,i) => {
+      desc.categories.forEach((cat, i) => {
         if (typeof cat === 'string') {
           cats.push(cat);
         } else {
@@ -798,7 +799,7 @@ export class CategoricalColumn extends ValueColumn<string> {
     return r.length > 0 ? r[0] : null;
   }
 
-  getValues(row: any) {
+  getValues(row:any) {
     var v = StringColumn.prototype.getValue.call(this, row);
     const r = v.split(this.separator);
     return r;
@@ -812,18 +813,18 @@ export class CategoricalColumn extends ValueColumn<string> {
     return this.colors(cat);
   }
 
-  dump(toDescRef: (desc: any) => any) : any {
+  dump(toDescRef:(desc:any) => any):any {
     var r = super.dump(toDescRef);
     r.filter = this.filter_;
     r.colors = {
       domain: this.colors.domain(),
       range: this.colors.range(),
-      separator : this.separator
+      separator: this.separator
     };
     return r;
   }
 
-  restore(dump: any, factory : (dump: any) => Column) {
+  restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
     this.filter_ = dump.filter || null;
     if (dump.colors) {
@@ -836,12 +837,12 @@ export class CategoricalColumn extends ValueColumn<string> {
     return this.filter_ != null;
   }
 
-  filter(row: any) : boolean {
+  filter(row:any):boolean {
     if (!this.isFiltered()) {
       return true;
     }
     var vs = this.getValues(row),
-      filter: any = this.filter_;
+      filter:any = this.filter_;
     return vs.every((v) => {
       if (Array.isArray(filter) && filter.length > 0) { //array mode
         return filter.indexOf(v) >= 0;
@@ -858,15 +859,15 @@ export class CategoricalColumn extends ValueColumn<string> {
     return this.filter_;
   }
 
-  setFilter(filter: string[]) {
-    this.fire(['filterChanged','dirtyValues','dirty'], this, this.filter_, this.filter_ = filter);
+  setFilter(filter:string[]) {
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this, this.filter_, this.filter_ = filter);
   }
 
   compare(a:any[], b:any[]) {
     const va = this.getValues(a);
     const vb = this.getValues(b);
     //check all categories
-    for(let i = 0; i < Math.min(va.length, vb.length); ++i) {
+    for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
       let ci = d3.ascending(va[i], vb[i]);
       if (ci !== 0) {
         return ci;
@@ -882,9 +883,9 @@ export class CategoricalColumn extends ValueColumn<string> {
  */
 export class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn {
   private colors = d3.scale.category10();
-  private scale = d3.scale.ordinal().rangeRoundPoints([0,1]);
+  private scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
 
-  private filter_ : string = null;
+  private filter_:string = null;
   /**
    * separator for multi handling
    * @type {string}
@@ -894,6 +895,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
 
   constructor(id:string, desc:any) {
     super(id, desc);
+    this.separator = desc.separator || this.separator;
     CategoricalColumn.prototype.init.call(this, desc);
 
     this.scale.domain(this.colors.domain());
@@ -935,12 +937,12 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     return r.length > 0 ? this.combiner(r) : 0;
   }
 
-  getValues(row: any) {
+  getValues(row:any) {
     const r = CategoricalColumn.prototype.getValues.call(this, row);
     return r.map(this.scale);
   }
 
-  getNumber(row: any) {
+  getNumber(row:any) {
     return this.getValue(row);
   }
 
@@ -948,7 +950,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     return CategoricalColumn.prototype.getColor.call(this, row);
   }
 
-  dump(toDescRef: (desc: any) => any) : any {
+  dump(toDescRef:(desc:any) => any):any {
     var r = CategoricalColumn.prototype.dump.call(this, toDescRef);
     r.scale = {
       domain: this.scale.domain(),
@@ -958,7 +960,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     return r;
   }
 
-  restore(dump: any, factory : (dump: any) => Column) {
+  restore(dump:any, factory:(dump:any) => Column) {
     CategoricalColumn.prototype.restore.call(this, dump, factory);
     if (dump.scale) {
       this.scale.domain(dump.scale.domain).range(dump.scale.range);
@@ -973,17 +975,17 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     };
   }
 
-  setRange(range: number[]) {
+  setRange(range:number[]) {
     var bak = this.getScale();
     this.scale.range(range);
-    this.fire(['mappingChanged','dirtyValues','dirty'], bak, this.getScale());
+    this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getScale());
   }
 
   isFiltered() {
     return this.filter_ != null;
   }
 
-  filter(row: any) : boolean {
+  filter(row:any):boolean {
     return CategoricalColumn.prototype.filter.call(this, row);
   }
 
@@ -991,8 +993,8 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     return this.filter_;
   }
 
-  setFilter(filter: string) {
-    this.fire(['filterChanged','dirtyValues','dirty'], this.filter_, this.filter_ = filter);
+  setFilter(filter:string) {
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
   }
 
   compare(a:any[], b:any[]) {
@@ -1009,8 +1011,8 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
    * @param label
    * @returns {{type: string, label: string}}
    */
-  static desc(label: string = 'Combined') {
-    return { type: 'stack', label : label };
+  static desc(label:string = 'Combined') {
+    return {type: 'stack', label: label};
   }
 
   public missingValue = 0;
@@ -1029,7 +1031,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     super(id, desc);
 
     var that = this;
-    this.adaptChange = function(old, new_) {
+    this.adaptChange = function (old, new_) {
       that.adaptWidthChange(this.source, old, new_);
     };
   }
@@ -1038,7 +1040,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     return super.createEventList().concat(['collapseChanged']);
   }
 
-  assignNewId(idGenerator: () => string) {
+  assignNewId(idGenerator:() => string) {
     super.assignNewId(idGenerator);
     this.children_.forEach((c) => c.assignNewId(idGenerator));
   }
@@ -1056,7 +1058,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     return this.children_.map((d) => d.getWidth() / w);
   }
 
-  set collapsed(value: boolean) {
+  set collapsed(value:boolean) {
     if (this._collapsed === value) {
       return;
     }
@@ -1067,13 +1069,13 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     return this._collapsed;
   }
 
-  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
+  flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0) {
     var self = null;
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
       if (!this.collapsed && !this.compressed) {
-        w += (this.children_.length-1)*padding;
+        w += (this.children_.length - 1) * padding;
       }
       r.push(self = {col: this, offset: offset, width: w});
       if (levelsToGo === 0) {
@@ -1091,7 +1093,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     return acc - offset - padding;
   }
 
-  dump(toDescRef: (desc: any) => any) {
+  dump(toDescRef:(desc:any) => any) {
     var r = super.dump(toDescRef);
     r.children = this.children_.map((d) => d.dump(toDescRef));
     r.missingValue = this.missingValue;
@@ -1099,7 +1101,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     return r;
   }
 
-  restore(dump: any, factory : (dump: any) => Column) {
+  restore(dump:any, factory:(dump:any) => Column) {
     if (dump.missingValue) {
       this.missingValue = dump.missingValue;
     }
@@ -1117,7 +1119,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
    * @param weight
    * @returns {any}
    */
-  insert(col: Column, index: number, weight = NaN) {
+  insert(col:Column, index:number, weight = NaN) {
     if (!isNumberColumn(col)) { //indicator it is a number type
       return null;
     }
@@ -1125,18 +1127,18 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
       //STACK col.collapsed = true;
     }
     if (!isNaN(weight)) {
-      col.setWidth((weight/(1-weight)*this.getWidth()));
+      col.setWidth((weight / (1 - weight) * this.getWidth()));
     }
 
     this.children_.splice(index, 0, col);
     //listen and propagate events
     col.parent = this;
-    this.forward(col, 'dirtyHeader.stack','dirtyValues.stack','dirty.stack','filterChanged.stack');
+    this.forward(col, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
     col.on('widthChanged.stack', this.adaptChange);
 
     //increase my width
     super.setWidth(this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
-    this.fire(['addColumn','dirtyHeader','dirtyValues','dirty'], col, col.getWidth() / this.getWidth());
+    this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth());
     return true;
   }
 
@@ -1144,24 +1146,24 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     return this.insert(col, this.children_.length, weight);
   }
 
-  indexOf(col: Column) {
+  indexOf(col:Column) {
     var j = -1;
-    this.children_.some((d,i) => {
-        if (d === col) {
-          j = i;
-          return true;
-        }
-        return false;
-      });
+    this.children_.some((d, i) => {
+      if (d === col) {
+        j = i;
+        return true;
+      }
+      return false;
+    });
     return j;
   }
 
-  insertAfter(col: Column, ref: Column, weight = NaN) {
+  insertAfter(col:Column, ref:Column, weight = NaN) {
     var i = this.indexOf(ref);
     if (i < 0) {
       return false;
     }
-    return this.insert(col, i+1, weight);
+    return this.insert(col, i + 1, weight);
   }
 
   /**
@@ -1170,47 +1172,47 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
    * @param old
    * @param new_
    */
-  private adaptWidthChange(col: Column, old, new_) {
+  private adaptWidthChange(col:Column, old, new_) {
     if (old === new_) {
       return;
     }
     var full = this.getWidth(),
       change = (new_ - old) / full;
-    var oldWeight = old/full;
-    var factor = (1-oldWeight-change)/(1-oldWeight);
+    var oldWeight = old / full;
+    var factor = (1 - oldWeight - change) / (1 - oldWeight);
     this.children_.forEach((c) => {
       if (c === col) {
         //c.weight += change;
       } else {
-        c.setWidthImpl(c.getWidth()*factor);
+        c.setWidthImpl(c.getWidth() * factor);
       }
     });
-    this.fire(['widthChanged','dirtyHeader','dirtyValues','dirty'], full, full);
+    this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], full, full);
   }
 
-  setWeights(weights: number[]) {
+  setWeights(weights:number[]) {
     var s,
-      delta = weights.length -this.length;
+      delta = weights.length - this.length;
     if (delta < 0) {
       s = d3.sum(weights);
       if (s <= 1) {
-        for(var i = 0; i < -delta; ++i) {
-          weights.push((1-s)*(1/-delta));
+        for (var i = 0; i < -delta; ++i) {
+          weights.push((1 - s) * (1 / -delta));
         }
       } else if (s <= 100) {
-        for(var i = 0; i < -delta; ++i) {
-          weights.push((100-s)*(1/-delta));
+        for (var i = 0; i < -delta; ++i) {
+          weights.push((100 - s) * (1 / -delta));
         }
       }
     }
     weights = weights.slice(0, this.length);
     s = d3.sum(weights) / this.getWidth();
-    weights = weights.map(d => d/s);
+    weights = weights.map(d => d / s);
 
     this.children_.forEach((c, i) => {
       c.setWidthImpl(weights[i]);
     });
-    this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues','dirty'], this.getWidth(), this.getWidth());
+    this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.getWidth(), this.getWidth());
 
   }
 
@@ -1224,12 +1226,12 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     if (child instanceof StackColumn) {
       //STACK (<StackColumn>child).collapsed = false;
     }
-    this.unforward(child, 'dirtyHeader.stack','dirtyValues.stack','dirty.stack','filterChanged.stack');
+    this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
     child.on('widthChanged.stack', null);
 
     //reduce width to keep the percentages
     super.setWidth(this.length === 0 ? 100 : this.getWidth() - child.getWidth());
-    this.fire(['removeColumn','dirtyHeader','dirtyValues','dirty'], child);
+    this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
     return true;
   }
 
@@ -1245,14 +1247,14 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
   getValue(row:any) {
     //weighted sum
     var w = this.getWidth();
-    var v = this.children_.reduce((acc, d) => acc + d.getValue(row) * (d.getWidth()/w), 0);
+    var v = this.children_.reduce((acc, d) => acc + d.getValue(row) * (d.getWidth() / w), 0);
     if (typeof(v) === 'undefined' || v == null || isNaN(v)) {
       return this.missingValue;
     }
     return v;
   }
 
-  getNumber(row: any) {
+  getNumber(row:any) {
     return this.getValue(row);
   }
 
@@ -1264,23 +1266,23 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
     return this.children_.some((d) => d.isFiltered());
   }
 
-  filter(row: any) {
+  filter(row:any) {
     return this.children_.every((d) => d.filter(row));
   }
 
   /*static merge(a: Column, b: Column) {
-    if ((typeof a['getNumber'] !== 'function') || (typeof b['getNumber'] !== 'function')) {
-      return false;
-    }
-    if (a instanceof StackColumn) {
-      return (<StackColumn>a).push(b);
-    } else if (b instanceof StackColumn) {
-      a.parent.replace(a, b);
-      return (<StackColumn>b).push(a);
-    } else {
-      return false; //not yet possible
-    }
-  }*/
+   if ((typeof a['getNumber'] !== 'function') || (typeof b['getNumber'] !== 'function')) {
+   return false;
+   }
+   if (a instanceof StackColumn) {
+   return (<StackColumn>a).push(b);
+   } else if (b instanceof StackColumn) {
+   a.parent.replace(a, b);
+   return (<StackColumn>b).push(a);
+   } else {
+   return false; //not yet possible
+   }
+   }*/
 }
 
 /**
@@ -1316,14 +1318,14 @@ export class RankColumn extends ValueColumn<number> {
   };
 
   private dirtyOrder = () => {
-    this.fire(['dirtyOrder','dirtyValues','dirty'],this.sortCriteria());
+    this.fire(['dirtyOrder', 'dirtyValues', 'dirty'], this.sortCriteria());
   };
 
   /**
    * the current ordering as an sorted array of indices
    * @type {Array}
    */
-  private order: number[] = [];
+  private order:number[] = [];
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -1334,13 +1336,13 @@ export class RankColumn extends ValueColumn<number> {
     return super.createEventList().concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
   }
 
-  assignNewId(idGenerator: () => string) {
+  assignNewId(idGenerator:() => string) {
     super.assignNewId(idGenerator);
     this.columns_.forEach((c) => c.assignNewId(idGenerator));
   }
 
-  setOrder(order: number[]) {
-    this.fire(['orderChanged','dirtyValues','dirty'], this.order, this.order = order);
+  setOrder(order:number[]) {
+    this.fire(['orderChanged', 'dirtyValues', 'dirty'], this.order, this.order = order);
   }
 
   getOrder() {
@@ -1404,7 +1406,7 @@ export class RankColumn extends ValueColumn<number> {
     return this;
   }
 
-  insertAfterMe(col: Column) {
+  insertAfterMe(col:Column) {
     return this.insert(col, 0) !== null;
   }
 
@@ -1431,7 +1433,7 @@ export class RankColumn extends ValueColumn<number> {
       this.sortBy_.on('dirtyValues.order', this.dirtyOrder);
     }
     this.ascending = ascending;
-    this.fire(['sortCriteriaChanged','dirtyOrder','dirtyHeader','dirtyValues','dirty'], bak, this.sortCriteria());
+    this.fire(['sortCriteriaChanged', 'dirtyOrder', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, this.sortCriteria());
     return true;
   }
 
@@ -1446,7 +1448,7 @@ export class RankColumn extends ValueColumn<number> {
   insert(col:Column, index:number = this.columns_.length) {
     this.columns_.splice(index, 0, col);
     col.parent = this;
-    this.forward(col, 'dirtyValues.ranking','dirtyHeader.ranking','dirty.ranking');
+    this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
     col.on('filterChanged.order', this.dirtyOrder);
 
 
@@ -1458,15 +1460,15 @@ export class RankColumn extends ValueColumn<number> {
     return col;
   }
 
-  insertAfter(col: Column, ref: Column) {
-    if (ref === this ) {
+  insertAfter(col:Column, ref:Column) {
+    if (ref === this) {
       return this.insert(col, 0) != null;
     }
     var i = this.columns_.indexOf(ref);
     if (i < 0) {
       return false;
     }
-    return this.insert(col, i+1) != null;
+    return this.insert(col, i + 1) != null;
   }
 
   push(col:Column) {
@@ -1479,11 +1481,11 @@ export class RankColumn extends ValueColumn<number> {
       return false;
     }
 
-    this.unforward(col, 'dirtyValues.ranking','dirtyHeader.ranking','dirty.ranking');
+    this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
 
     col.parent = null;
     this.columns_.splice(i, 1);
-    this.fire(['removeColumn','dirtyHeader','dirtyValues','dirty'], col);
+    this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col);
     if (this.sortBy_ === col) { //was my sorting one
       this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
     }
@@ -1559,7 +1561,7 @@ export const createStackDesc = StackColumn.desc;
  * @returns {{type: string, label: string}}
  */
 export function createActionDesc(label = 'actions') {
- return { type: 'actions', label : label };
+  return {type: 'actions', label: label};
 }
 
 /**
