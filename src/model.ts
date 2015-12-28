@@ -794,6 +794,17 @@ export class CategoricalColumn extends ValueColumn<string> {
     return '' + StringColumn.prototype.getValue.call(this, row);
   }
 
+  getFirstLabel(row:any) {
+    const l = this.getLabels(row);
+    return l.length > 0 ? l[0] : null;
+  }
+
+  getLabels(row:any) {
+    var v = StringColumn.prototype.getValue.call(this, row);
+    const r = v.split(this.separator);
+    return r;
+  }
+
   getValue(row:any) {
     const r = this.getValues(row);
     return r.length > 0 ? r[0] : null;
@@ -805,12 +816,16 @@ export class CategoricalColumn extends ValueColumn<string> {
     return r;
   }
 
-  getColor(row) {
-    var cat = this.getValue(row);
+  getColor(row:any) {
+    var cat = this.getFirstLabel(row);
     if (cat === null || cat === '') {
       return null;
     }
     return this.colors(cat);
+  }
+
+  getColors(row:any) {
+    return this.getLabels(row).map(this.colors);
   }
 
   dump(toDescRef:(desc:any) => any):any {
@@ -896,7 +911,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   constructor(id:string, desc:any) {
     super(id, desc);
     this.separator = desc.separator || this.separator;
-    CategoricalColumn.prototype.init.call(this, desc);
+    CategoricalColumn.prototype.initCategories.call(this, desc);
 
     this.scale.domain(this.colors.domain());
     if (desc.categories) {
@@ -925,11 +940,15 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   }
 
   getLabel(row:any) {
-    var v:any = super.getValue(row);
-    if (typeof(v) === 'undefined' || v == null) {
-      return '';
-    }
-    return v;
+    return CategoricalColumn.prototype.getLabel.call(this, row);
+  }
+
+  getFirstLabel(row:any) {
+    return CategoricalColumn.prototype.getFirstLabel.call(this, row);
+  }
+
+  getLabels(row:any) {
+    return CategoricalColumn.prototype.getLabels.call(this, row);
   }
 
   getValue(row:any) {
@@ -946,8 +965,29 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     return this.getValue(row);
   }
 
-  getColor(row) {
-    return CategoricalColumn.prototype.getColor.call(this, row);
+  getColor(row:any) {
+    const vs = this.getValues(row);
+    const cs = this.getColors(row);
+    if (this.combiner === d3.max) {
+      //use the max color
+      return cs.slice(1).reduce((prev, act, i) => vs[i + 1] > prev.v ? {c: act, v: vs[i + 1]} : prev, {
+        c: cs[0],
+        v: vs[0]
+      }).c;
+    } else if (this.combiner === d3.min) {
+      //use the max color
+      return cs.slice(1).reduce((prev, act, i) => vs[i + 1] < prev.v ? {c: act, v: vs[i + 1]} : prev, {
+        c: cs[0],
+        v: vs[0]
+      }).c;
+    } else {
+      //use the first
+      return cs[0] || null;
+    }
+  }
+
+  getColors(row) {
+    return CategoricalColumn.prototype.getColors.call(this, row);
   }
 
   dump(toDescRef:(desc:any) => any):any {
