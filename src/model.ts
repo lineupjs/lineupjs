@@ -385,20 +385,35 @@ export function isNumberColumn(col:Column|IColumnDesc) {
 }
 
 /**
+ * interface of a d3 scale
+ */
+export interface IScale {
+  (v:number): number;
+
+  domain():number[];
+  domain(domain:number[]);
+
+  range():number[];
+  range(range:number[]);
+}
+
+/**
  * a number column mapped from an original input scale to an output range
  */
 export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   missingValue = 0;
+
+  private transformation = 'linear';
   /**
    * the current scale applied
-   * @type {Linear<number, number>}
+   * @type {IScale}
    */
-  private scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+  private scale : IScale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
   /**
    * the original scale for resetting purpose
-   * @type {Linear<number, number>}
+   * @type {IScale}
    */
-  private original = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+  private original : IScale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
 
   /**
    * currently active filter
@@ -409,6 +424,14 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 
   constructor(id:string, desc:any) {
     super(id, desc);
+    if (desc.transformation === 'log') {
+      this.scale = d3.scale.log().domain([NaN, NaN]).range([0, 1]).clamp(true);
+      this.original = d3.scale.log().domain([NaN, NaN]).range([0, 1]).clamp(true);
+    } else if (desc.transformation === 'invert') {
+      this.scale.range([1, 0]);
+    }
+    this.transformation = desc.transformation || 'linear';
+
     //initialize with the description
     if (desc.domain) {
       this.scale.domain(desc.domain);
@@ -438,12 +461,23 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     r.range = this.scale.range();
     r.mapping = this.getOriginalMapping();
     r.filter = this.filter;
+    if (this.transformation !== 'linear') {
+      r.transformation = this.transformation;
+    }
     r.missingValue = this.missingValue;
     return r;
   }
 
   restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
+    if (dump.transformation !== 'linear') {
+      this.transformation = dump.transformation;
+      if (this.transformation === 'log') {
+        this.scale = d3.scale.log().domain(this.scale.domain()).range(this.scale.range()).clamp(true);
+      } else if (this.transformation === 'invert') {
+        this.scale.range([1, 0]);
+      }
+    }
     if (dump.domain) {
       this.scale.domain(dump.domain);
     }
@@ -495,6 +529,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 
   getMapping() {
     return {
+      type: this.transformation,
       domain: <[number, number]>this.scale.domain(),
       range: <[number, number]>this.scale.range()
     };
@@ -502,13 +537,22 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 
   getOriginalMapping() {
     return {
+      type: (<any>this.desc).transformation || 'linear',
       domain: <[number, number]>this.original.domain(),
       range: <[number, number]>this.original.range()
     };
   }
 
-  setMapping(domain:[number, number], range:[number, number]) {
+  setMapping(domain:[number, number], range:[number, number], type: string = this.transformation) {
     var bak = this.getMapping();
+    if (type !== this.transformation) {
+      this.transformation = type;
+      if (this.transformation === 'log') {
+        this.scale = d3.scale.log().clamp(true);
+      } else {
+        this.scale = d3.scale.linear().clamp(true);
+      }
+    }
     this.scale.domain(domain).range(range);
     this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
   }

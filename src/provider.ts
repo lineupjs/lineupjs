@@ -682,6 +682,7 @@ export class LocalDataProvider extends CommonDataProvider {
     var helper = this.data.map((r, i) => ({row: r, i: i, prev: r._rankings[ranking.id] || 0}));
 
     //do the optional filtering step
+    //TODO apply filters of others, too
     if (ranking.isFiltered()) {
       helper = helper.filter((d) => ranking.filter(d.row));
     }
