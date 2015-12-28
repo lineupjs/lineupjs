@@ -53,6 +53,9 @@ export class LineUp extends utils_.AEventDispatcher {
       backupScrollRows: 4,
       animationDuration: 1000,
 
+      //number of rows that should be frozen on the left side
+      freezeRows: 0,
+
       rowActions: []
     },
     /* enables manipulation features, remove column, reorder,... */
@@ -114,6 +117,10 @@ export class LineUp extends utils_.AEventDispatcher {
         //in two svg mode propagate horizontal shift
         //console.log(top, left,'ss');
         this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
+        if (this.config.svgLayout.freezeRows > 0) {
+         this.header.updateFreeze(this.config.svgLayout.freezeRows, left);
+         this.body.updateFreeze(this.config.svgLayout.freezeRows, left);
+        }
       });
       this.contentScroller.on('redraw', this.body.update.bind(this.body));
     }

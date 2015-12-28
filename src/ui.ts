@@ -347,6 +347,12 @@ export class HeaderRenderer {
     });
   }
 
+  updateFreeze(numColumns:number, left:number) {
+    this.$node.selectAll('div.header')
+      .style('z-index', (d, i) => i < numColumns ? 1 : null)
+      .style('transform', (d, i) => i < numColumns ? `translate(${left}px,0)` : null);
+  }
+
   private renderColumns(columns:model.Column[], shifts, $base:d3.Selection<any> = this.$node, clazz:string = 'header') {
     var $headers = $base.selectAll('div.' + clazz).data(columns, (d) => d.id);
     var $headers_enter = $headers.enter().append('div').attr({
@@ -569,6 +575,17 @@ export class BodyRenderer extends utils.AEventDispatcher {
       offset += w + this.options.slopeWidth;
     });
     this.updateClipPathsImpl(shifts.map(s => s.col), context, height);
+
+    var $elem = this.$node.select('clipPath#c' + context.idPrefix + 'Freeze');
+    if ($elem.empty()) {
+      $elem = this.$node.append('clipPath').attr('id', 'c' + context.idPrefix + 'Freeze').append('rect').attr({
+        y: 0,
+        width: 20000
+      });
+    }
+    $elem.select('rect').attr({
+      height: height
+    });
   }
 
   renderRankings($body:d3.Selection<any>, rankings:model.RankColumn[], orders:number[][], shifts:any[], context:renderer.IRenderContext) {
@@ -586,13 +603,14 @@ export class BodyRenderer extends utils.AEventDispatcher {
       transform: (d, i) => 'translate(' + shifts[i].shift + ',0)'
     });
 
-    var $cols = $rankings.select('g.cols').selectAll('g.child').data((d) => [<model.Column>d].concat(d.children), (d) => d.id);
-    $cols.enter().append('g').attr({
+    var $cols = $rankings.select('g.cols').selectAll('g.uchild').data((d) => [<model.Column>d].concat(d.children), (d) => d.id);
+    $cols.enter().append('g').attr('class', 'uchild')
+      .append('g').attr({
       'class': 'child',
-      transform: (d, i, j?) => {
-        return 'translate(' + shifts[j].shifts[i] + ',0)';
-      }
+      transform: (d, i, j?) => 'translate(' + shifts[j].shifts[i] + ',0)'
     });
+    $cols.exit().remove();
+    $cols = $cols.select('g.child');
     $cols.attr({
       'data-index': (d, i) => i
     });
@@ -605,7 +623,6 @@ export class BodyRenderer extends utils.AEventDispatcher {
         context.render(d, d3.select(this), data, context);
       });
     });
-    $cols.exit().remove();
 
     function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.RankColumn>, index:number, ranking:model.RankColumn, rankingIndex:number) {
       $row.classed('hover', true);
@@ -745,6 +762,16 @@ export class BodyRenderer extends utils.AEventDispatcher {
     $lines.exit().remove();
 
     $slopes.exit().remove();
+  }
+
+  updateFreeze(numColumns:number, left:number) {
+    var $n = this.$node.select('#c' + this.options.idPrefix + 'Freeze').select('rect');
+    var x = d3.transform(this.$node.select(`g.child[data-index="${numColumns}"]`).attr('transform') || '').translate[0];
+    $n.attr('x', left + x);
+    this.$node.selectAll('g.uchild').attr({
+      'clip-path': (d, i) => i < numColumns ? null : 'url(#c' + this.options.idPrefix + 'Freeze)',
+      'transform': (d, i) => i < numColumns ? 'translate(' + left + ',0)' : null
+    });
   }
 
   /**
