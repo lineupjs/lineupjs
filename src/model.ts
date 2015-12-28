@@ -753,6 +753,12 @@ export class CategoricalColumn extends ValueColumn<string> {
    */
   private filter_ : string[] = null;
 
+  /**
+   * split multiple categories
+   * @type {string}
+   */
+  private separator = ';';
+
   constructor(id:string, desc:any) {
     super(id, desc);
     this.initCategories(desc);
@@ -783,12 +789,23 @@ export class CategoricalColumn extends ValueColumn<string> {
     return this.colors.range();
   }
 
+  getLabel(row:any) {
+    return '' + StringColumn.prototype.getValue.call(this, row);
+  }
+
   getValue(row:any) {
-    return StringColumn.prototype.getValue.call(this, row);
+    const r = this.getValues(row);
+    return r.length > 0 ? r[0] : null;
+  }
+
+  getValues(row: any) {
+    var v = StringColumn.prototype.getValue.call(this, row);
+    const r = v.split(this.separator);
+    return r;
   }
 
   getColor(row) {
-    var cat = this.getLabel(row);
+    var cat = this.getValue(row);
     if (cat === null || cat === '') {
       return null;
     }
@@ -800,7 +817,8 @@ export class CategoricalColumn extends ValueColumn<string> {
     r.filter = this.filter_;
     r.colors = {
       domain: this.colors.domain(),
-      range: this.colors.range()
+      range: this.colors.range(),
+      separator : this.separator
     };
     return r;
   }
@@ -811,6 +829,7 @@ export class CategoricalColumn extends ValueColumn<string> {
     if (dump.colors) {
       this.colors.domain(dump.colors.domain).range(dump.colors.range);
     }
+    this.separator = dump.separator || this.separator;
   }
 
   isFiltered() {
@@ -821,16 +840,18 @@ export class CategoricalColumn extends ValueColumn<string> {
     if (!this.isFiltered()) {
       return true;
     }
-    var r = this.getLabel(row),
+    var vs = this.getValues(row),
       filter: any = this.filter_;
-    if (Array.isArray(filter) && filter.length > 0) { //array mode
-      return filter.indexOf(r) >= 0;
-    } else if (typeof filter === 'string' && filter.length > 0) { //search mode
-      return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-    } else if (filter instanceof RegExp) { //regex match mode
-      return r != null && r.match(filter).length > 0;
-    }
-    return true;
+    return vs.every((v) => {
+      if (Array.isArray(filter) && filter.length > 0) { //array mode
+        return filter.indexOf(v) >= 0;
+      } else if (typeof filter === 'string' && filter.length > 0) { //search mode
+        return v && v.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+      } else if (filter instanceof RegExp) { //regex match mode
+        return v != null && v.match(filter).length > 0;
+      }
+      return true;
+    });
   }
 
   getFilter() {
@@ -842,7 +863,17 @@ export class CategoricalColumn extends ValueColumn<string> {
   }
 
   compare(a:any[], b:any[]) {
-    return StringColumn.prototype.compare.call(this, a, b);
+    const va = this.getValues(a);
+    const vb = this.getValues(b);
+    //check all categories
+    for(let i = 0; i < Math.min(va.length, vb.length); ++i) {
+      let ci = d3.ascending(va[i], vb[i]);
+      if (ci !== 0) {
+        return ci;
+      }
+    }
+    //smaller length wins
+    return va.length - vb.length;
   }
 }
 
@@ -854,6 +885,12 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   private scale = d3.scale.ordinal().rangeRoundPoints([0,1]);
 
   private filter_ : string = null;
+  /**
+   * separator for multi handling
+   * @type {string}
+   */
+  private separator = ';';
+  private combiner = d3.max;
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -894,8 +931,13 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   }
 
   getValue(row:any) {
-    var v = this.getLabel(row);
-    return this.scale(v);
+    const r = this.getValues(row);
+    return r.length > 0 ? this.combiner(r) : 0;
+  }
+
+  getValues(row: any) {
+    const r = CategoricalColumn.prototype.getValues.call(this, row);
+    return r.map(this.scale);
   }
 
   getNumber(row: any) {
@@ -910,7 +952,8 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     var r = CategoricalColumn.prototype.dump.call(this, toDescRef);
     r.scale = {
       domain: this.scale.domain(),
-      range: this.scale.range()
+      range: this.scale.range(),
+      separator: this.separator
     };
     return r;
   }
@@ -920,6 +963,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     if (dump.scale) {
       this.scale.domain(dump.scale.domain).range(dump.scale.range);
     }
+    this.separator = dump.separator || this.separator;
   }
 
   getScale() {
