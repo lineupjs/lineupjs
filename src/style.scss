@@ -1,4 +1,3 @@
-
 //mapping editor
 .lugui-me {
   line.axis, g.data line {
@@ -37,7 +36,6 @@
 
   dominant-baseline: central;
   text-anchor: middle;
-
 
   .ok {
     position: absolute;
@@ -227,7 +225,7 @@ $lu_drag_over: #979797;
     font-size: 90%;
 
     &:hover {
-      &> div.toolbar {
+      & > div.toolbar {
         display: block;
       }
     }
@@ -254,7 +252,7 @@ $lu_drag_over: #979797;
         color: $lu_drag_over;
       }
 
-      &.compressed  {
+      &.compressed {
         div.toolbar i:not(.fa-toggle-right) {
           display: none;
         }

@@ -31,7 +31,7 @@ function addCircle($svg, x, shift, y, radius) {
 }
 
 
-export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[], dataPromise: Promise<number[]>, options: any) {
+export function open(scale:d3.scale.Linear<number,number>, dataDomain:number[], dataPromise:Promise<number[]>, options:any) {
   options = utils.merge({
     width: 320,
     height: 250,
@@ -58,7 +58,7 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
     //location for the raw2pixel value axis
     var raw2pixelAxisY = options.height - options.padding_ver;
     //this is needed for filtering the shown datalines
-    var raw2pixel = d3.scale.linear().domain([Math.min(dataDomain[0],scale.domain()[0]),Math.min(dataDomain[1],scale.domain()[1])]).range([lowerLimitX, upperLimitX]);
+    var raw2pixel = d3.scale.linear().domain([Math.min(dataDomain[0], scale.domain()[0]), Math.min(dataDomain[1], scale.domain()[1])]).range([lowerLimitX, upperLimitX]);
     var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
 
     //x coordinate for the score axis lower bound
@@ -108,14 +108,14 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
           x2: raw2pixel,
           y2: raw2pixelAxisY
         }).style('visibility', function (d) {
-          var a;
-          if (lowerRaw < upperRaw) {
-            a = (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
-          } else {
-            a = (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
-          }
-          return a ? 'hidden' : null;
-        });
+        var a;
+        if (lowerRaw < upperRaw) {
+          a = (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
+        } else {
+          a = (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
+        }
+        return a ? 'hidden' : null;
+      });
     });
     //line that defines lower bounds for the scale
     var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, raw2pixelAxisY, 'bound');
@@ -251,7 +251,7 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
     }
 
     //label for minimum raw2pixel value
-    function editLimit(index: number) {
+    function editLimit(index:number) {
       return function () {
         var $elem = d3.select(this);
         var $input = $base.append('foreignObject').attr({
@@ -260,6 +260,7 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
           width: 50,
           height: 20
         });
+
         function update() {
           var old = raw2pixel.domain();
           var new_ = old.slice();
@@ -271,8 +272,8 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
           $elem.text(this.value);
           lowerRaw = raw2pixel(scale.domain()[0]);
           upperRaw = raw2pixel(scale.domain()[1]);
-          $lowRawCircle.attr('transform', 'translate(' + (lowerRaw-lowerLimitX) + ',0)');
-          $upperRawCircle.attr('transform', 'translate(' + (upperRaw-upperLimitX) + ',0)');
+          $lowRawCircle.attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
+          $upperRawCircle.attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
           mapperLineLowerBounds.attr('x2', lowerRaw);
           mapperLineUpperBounds.attr('x2', upperRaw);
           datalines.attr('x2', raw2pixel);
@@ -280,6 +281,7 @@ export function open(scale: d3.scale.Linear<number,number>, dataDomain: number[]
           updateScale(true);
           $input.remove();
         }
+
         $input.append('xhtml:input')
           .attr('value', raw2pixel.domain()[index])
           .style('width', '5em')

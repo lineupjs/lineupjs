@@ -24,7 +24,7 @@ export function dialogForm(title, body, buttonsWithLabel = false) {
  * @param body
  * @returns {Selection<any>}
  */
-export function makePopup(attachement: d3.Selection<any>, title: string, body: string) {
+export function makePopup(attachement:d3.Selection<any>, title:string, body:string) {
   var pos = utils.offset(<Element>attachement.node());
   var $popup = d3.select('body').append('div')
     .attr({
@@ -72,11 +72,11 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
  * @param $header the visual header element of this column
  * @param provider the data provider for the actual search
  */
-export function openSearchDialog(column:model.Column, $header:d3.Selection<model.Column>, provider: provider.DataProvider) {
-  var popup = makePopup($header,'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
+export function openSearchDialog(column:model.Column, $header:d3.Selection<model.Column>, provider:provider.DataProvider) {
+  var popup = makePopup($header, 'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
 
-  popup.select('input[type="text"]').on('input', function() {
-    var search : any = (<HTMLInputElement>d3.event.target).value;
+  popup.select('input[type="text"]').on('input', function () {
+    var search:any = (<HTMLInputElement>d3.event.target).value;
     if (search.length >= 3) {
       var isRegex = popup.select('input[type="checkbox"]').property('checked');
       if (isRegex) {
@@ -109,9 +109,9 @@ export function openSearchDialog(column:model.Column, $header:d3.Selection<model
  * @param column the column to filter
  * @param $header the visual header element of this column
  */
-export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Selection<model.Column>) {
+export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selection<model.Column>) {
   var weights = column.weights,
-    children = column.children.map((d, i) => ({ col: d, weight: weights[i] * 100} ));
+    children = column.children.map((d, i) => ({col: d, weight: weights[i] * 100} ));
 
   //map weights to pixels
   var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
@@ -123,16 +123,16 @@ export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Sel
   var $rows_enter = $rows.enter().append('tr');
   $rows_enter.append('td')
     .append('input').attr({
-      type: 'number',
-      value: (d) => d.weight,
-      size: 5
-    }).on('input', function(d) {
-      d.weight = +this.value;
-      redraw();
-    });
+    type: 'number',
+    value: (d) => d.weight,
+    size: 5
+  }).on('input', function (d) {
+    d.weight = +this.value;
+    redraw();
+  });
 
   $rows_enter.append('td').append('div')
-    .attr('class', (d) => 'bar '+d.col.cssClass)
+    .attr('class', (d) => 'bar ' + d.col.cssClass)
     .style('background-color', (d) => d.col.color);
 
   $rows_enter.append('td').text((d) => d.col.label);
@@ -153,7 +153,7 @@ export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Sel
   });
   /*$popup.select('.reset').on('click', function () {
 
-  });*/
+   });*/
   $popup.select('.ok').on('click', function () {
     column.setWeights(children.map((d) => d.weight));
     $popup.remove();
@@ -164,7 +164,7 @@ export function openEditWeightsDialog(column: model.StackColumn, $header: d3.Sel
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-function openCategoricalFilter(column: model.CategoricalColumn, $header: d3.Selection<model.Column>) {
+function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Selection<model.Column>) {
   var bak = column.getFilter() || [];
   var popup = makePopup($header, 'Edit Filter', '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>');
 
@@ -222,7 +222,7 @@ function openCategoricalFilter(column: model.CategoricalColumn, $header: d3.Sele
  * @param column the column to filter
  * @param $header the visual header element of this column
  */
-function openStringFilter(column: model.StringColumn, $header: d3.Selection<model.Column>) {
+function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.Column>) {
   var bak = column.getFilter() || '';
 
   var $popup = makePopup($header, 'Filter',
@@ -237,7 +237,7 @@ function openStringFilter(column: model.StringColumn, $header: d3.Selection<mode
 
   function updateImpl(force) {
     //get value
-    var search : any = $popup.select('input[type="text"]').property('value');
+    var search:any = $popup.select('input[type="text"]').property('value');
     if (search.length >= 3 || force) {
       var isRegex = $popup.select('input[type="checkbox"]').property('checked');
       if (isRegex) {
@@ -253,7 +253,7 @@ function openStringFilter(column: model.StringColumn, $header: d3.Selection<mode
 
   $popup.select('.cancel').on('click', function () {
     $popup.select('input[type="text"]').property('value', bak);
-    $popup.select('input[type="checkbox"]').property('checked', bak instanceof RegExp ? 'checked': null);
+    $popup.select('input[type="checkbox"]').property('checked', bak instanceof RegExp ? 'checked' : null);
     updateData(bak);
     $popup.remove();
   });
@@ -274,7 +274,7 @@ function openStringFilter(column: model.StringColumn, $header: d3.Selection<mode
  * @param $header the visual header element of this column
  * @param data the data provider for illustrating the mapping by example
  */
-function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any>, data: provider.DataProvider) {
+function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>, data:provider.DataProvider) {
   var pos = utils.offset($header.node()),
     bak = column.getMapping(),
     original = column.getOriginalMapping();
@@ -290,7 +290,7 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
     .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>' +
       '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'));
 
-  var $filterIt = popup.select('input').on('change', function() {
+  var $filterIt = popup.select('input').on('change', function () {
     applyMapping(act);
   });
   $filterIt.property('checked', column.isFiltered());
@@ -310,7 +310,7 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
 
   var editorOptions = {
     callback: applyMapping,
-    triggerCallback : 'dragend'
+    triggerCallback: 'dragend'
   };
   var data_sample = data.mappingSample(column);
   var editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, data_sample, editorOptions);
@@ -331,7 +331,7 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
   });
   popup.select('.reset').on('click', function () {
     bak = original;
-    act =  d3.scale.linear().domain(bak.domain).range(bak.range);
+    act = d3.scale.linear().domain(bak.domain).range(bak.range);
     applyMapping(act);
     editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, data_sample, editorOptions);
     popup.selectAll('.mappingArea *').remove();
@@ -345,10 +345,10 @@ function openMappingEditor(column: model.NumberColumn, $header: d3.Selection<any
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $header: d3.Selection<any>) {
+function openCategoricalMappingEditor(column:model.CategoricalNumberColumn, $header:d3.Selection<any>) {
   var range = column.getScale().range,
     colors = column.categoryColors,
-    children = column.categories.map((d, i) => ({ cat: d, range: range[i] * 100, color: colors[i] }));
+    children = column.categories.map((d, i) => ({cat: d, range: range[i] * 100, color: colors[i]}));
 
   var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
 
@@ -358,15 +358,15 @@ function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $he
   var $rows_enter = $rows.enter().append('tr');
   $rows_enter.append('td')
     .append('input').attr({
-      type: 'number',
-      value: (d) => d.range,
-      min: 0,
-      max: 100,
-      size: 5
-    }).on('input', function(d) {
-      d.range = +this.value;
-      redraw();
-    });
+    type: 'number',
+    value: (d) => d.range,
+    min: 0,
+    max: 100,
+    size: 5
+  }).on('input', function (d) {
+    d.range = +this.value;
+    redraw();
+  });
 
   $rows_enter.append('td').append('div')
     .attr('class', 'bar')
@@ -390,7 +390,7 @@ function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $he
   });
   /*$popup.select('.reset').on('click', function () {
 
-  });*/
+   });*/
   $popup.select('.ok').on('click', function () {
     column.setRange(children.map((d) => d.range / 100));
     $popup.remove();
@@ -403,7 +403,7 @@ function openCategoricalMappingEditor(column: model.CategoricalNumberColumn, $he
  */
 export function filterDialogs() {
   return {
-    string : openStringFilter,
+    string: openStringFilter,
     categorical: openCategoricalFilter,
     number: openMappingEditor,
     ordinal: openCategoricalMappingEditor

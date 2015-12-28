@@ -12,9 +12,9 @@ import provider = require('./provider');
 import dialogs = require('./ui_dialogs');
 
 class PoolEntry {
-  used : number = 0;
+  used:number = 0;
 
-  constructor(public desc : model.IColumnDesc) {
+  constructor(public desc:model.IColumnDesc) {
 
   }
 }
@@ -26,25 +26,25 @@ export class PoolRenderer {
     elemHeight: 40,
     width: 100,
     height: 500,
-    additionalDesc : [],
+    additionalDesc: [],
     hideUsed: true,
     addAtEndOnClick: false
   };
 
   private $node:d3.Selection<any>;
-  private entries : PoolEntry[];
+  private entries:PoolEntry[];
 
-  constructor(private data: provider.DataProvider, parent:Element, options:any = {}) {
+  constructor(private data:provider.DataProvider, parent:Element, options:any = {}) {
     utils.merge(this.options, options);
 
-    this.$node = d3.select(parent).append('div').classed('lu-pool',true);
+    this.$node = d3.select(parent).append('div').classed('lu-pool', true);
 
     this.changeDataStorage(data);
   }
 
-  changeDataStorage(data: provider.DataProvider) {
+  changeDataStorage(data:provider.DataProvider) {
     if (this.data) {
-      this.data.on(['addColumn.pool','removeColumn.pool','addRanking.pool','removeRanking.pool', 'addDesc.pool'], null);
+      this.data.on(['addColumn.pool', 'removeColumn.pool', 'addRanking.pool', 'removeRanking.pool', 'addDesc.pool'], null);
     }
     this.data = data;
     this.entries = data.getColumns().concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
@@ -54,7 +54,7 @@ export class PoolRenderer {
     });
     if (this.options.hideUsed) {
       var that = this;
-      data.on(['addColumn.pool','removeColumn.pool'], function(col) {
+      data.on(['addColumn.pool', 'removeColumn.pool'], function (col) {
         var desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
         that.entries.some((entry) => {
           if (entry.desc !== desc) {
@@ -65,7 +65,7 @@ export class PoolRenderer {
         });
         that.update();
       });
-      data.on(['addRanking.pool','removeRanking.pool'], function(ranking) {
+      data.on(['addRanking.pool', 'removeRanking.pool'], function (ranking) {
         var descs = ranking.flatColumns.map((d) => d.desc), change = this.type === 'addRanking' ? 1 : -1;
         that.entries.some((entry) => {
           if (descs.indexOf(entry.desc) < 0) {
@@ -111,16 +111,16 @@ export class PoolRenderer {
         e.dataTransfer.setData('application/caleydo-lineup-column-number', JSON.stringify(data.toDescRef(d)));
       }
     }).style({
-      width: this.options.elemWidth+'px',
-      height: this.options.elemHeight+'px'
+      width: this.options.elemWidth + 'px',
+      height: this.options.elemHeight + 'px'
     });
     if (this.options.addAtEndOnClick) {
       $headers_enter.on('click', (d) => {
         this.data.push(this.data.getLastRanking(), d);
       });
     }
-    $headers_enter.append('span').classed('label',true).text((d) => d.label);
-    $headers.attr('class', (d) => 'header '+((<any>d).cssClass || ''));
+    $headers_enter.append('span').classed('label', true).text((d) => d.label);
+    $headers.attr('class', (d) => 'header ' + ((<any>d).cssClass || ''));
     $headers.style({
       'transform': (d, i) => {
         var pos = this.layout(i);
@@ -141,22 +141,22 @@ export class PoolRenderer {
     switch (this.options.layout) {
       case 'horizontal':
         this.$node.style({
-          width: (this.options.elemWidth * descToShow.length)+'px',
-          height: (this.options.elemHeight * 1)+'px'
+          width: (this.options.elemWidth * descToShow.length) + 'px',
+          height: (this.options.elemHeight * 1) + 'px'
         });
         break;
       case 'grid':
         var perRow = d3.round(this.options.width / this.options.elemWidth, 0);
         this.$node.style({
-          width: perRow * this.options.elemWidth+'px',
-          height: Math.ceil(descToShow.length / perRow) * this.options.elemHeight+'px'
+          width: perRow * this.options.elemWidth + 'px',
+          height: Math.ceil(descToShow.length / perRow) * this.options.elemHeight + 'px'
         });
         break;
       //case 'vertical':
       default:
         this.$node.style({
-          width: (this.options.elemWidth * 1)+'px',
-          height: (this.options.elemHeight * descToShow.length)+'px'
+          width: (this.options.elemWidth * 1) + 'px',
+          height: (this.options.elemHeight * descToShow.length) + 'px'
         });
         break;
     }
@@ -180,12 +180,12 @@ export class PoolRenderer {
 export class HeaderRenderer {
   private options = {
     slopeWidth: 150,
-    columnPadding : 5,
+    columnPadding: 5,
     headerHeight: 20,
     manipulative: true,
 
-    filterDialogs : dialogs.filterDialogs(),
-    searchAble: (col: model.Column) => col instanceof model.StringColumn,
+    filterDialogs: dialogs.filterDialogs(),
+    searchAble: (col:model.Column) => col instanceof model.StringColumn,
     sortOnLabel: true
   };
 
@@ -228,33 +228,33 @@ export class HeaderRenderer {
     if (d instanceof model.Column) {
       return d.insertAfterMe(col);
     } else {
-      var r= this.data.getLastRanking();
+      var r = this.data.getLastRanking();
       return r.push(col) !== null;
     }
   });
 
 
-  constructor(private data:provider.DataProvider,parent:Element, options:any = {}) {
+  constructor(private data:provider.DataProvider, parent:Element, options:any = {}) {
     utils.merge(this.options, options);
 
-    this.$node = d3.select(parent).append('div').classed('lu-header',true);
-    this.$node.append('div').classed('drop',true).call(this.dropHandler);
+    this.$node = d3.select(parent).append('div').classed('lu-header', true);
+    this.$node.append('div').classed('drop', true).call(this.dropHandler);
 
     this.changeDataStorage(data);
   }
 
-  changeDataStorage(data: provider.DataProvider) {
+  changeDataStorage(data:provider.DataProvider) {
     if (this.data) {
       this.data.on('dirtyHeader.headerRenderer', null);
     }
     this.data = data;
-    data.on('dirtyHeader.headerRenderer', utils.delayedCall(this.update.bind(this),1));
+    data.on('dirtyHeader.headerRenderer', utils.delayedCall(this.update.bind(this), 1));
   }
 
   update() {
 
     var rankings = this.data.getRankings();
-    var shifts =[], offset = 0;
+    var shifts = [], offset = 0;
     rankings.forEach((ranking) => {
       offset += ranking.flatten(shifts, offset, 1, this.options.columnPadding) + this.options.slopeWidth;
     });
@@ -262,77 +262,79 @@ export class HeaderRenderer {
     offset -= this.options.slopeWidth;
 
     var columns = shifts.map((d) => d.col);
-    function countStacked(c: model.Column) : number {
+
+    function countStacked(c:model.Column):number {
       if (c instanceof model.StackColumn && !(<model.StackColumn>c).collapsed && !c.compressed) {
         return 1 + Math.max.apply(Math, (<model.StackColumn>c).children.map(countStacked));
       }
       return 1;
     }
-    var levels = Math.max.apply(Math,columns.map(countStacked));
-    this.$node.style('height', this.options.headerHeight*levels + 'px');
+
+    var levels = Math.max.apply(Math, columns.map(countStacked));
+    this.$node.style('height', this.options.headerHeight * levels + 'px');
     this.renderColumns(columns, shifts);
   }
 
-  private createToolbar($node: d3.Selection<model.Column>) {
+  private createToolbar($node:d3.Selection<model.Column>) {
     var filterDialogs = this.options.filterDialogs,
       provider = this.data;
     var $regular = $node.filter(d=> !(d instanceof model.RankColumn)),
       $stacked = $node.filter(d=> d instanceof model.StackColumn);
 
     //edit weights
-    $stacked.append('i').attr('class', 'fa fa-tasks').attr('title','Edit Weights').on('click', function(d) {
+    $stacked.append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
       dialogs.openEditWeightsDialog(<model.StackColumn>d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
     //rename
-    $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title','Rename').on('click', function(d) {
+    $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
       dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
     //clone
-    $regular.append('i').attr('class', 'fa fa-code-fork').attr('title','Generate Snapshot').on('click', function(d) {
+    $regular.append('i').attr('class', 'fa fa-code-fork').attr('title', 'Generate Snapshot').on('click', function (d) {
       var r = provider.pushRanking();
       r.push(provider.clone(d));
       d3.event.stopPropagation();
     });
     //filter
-    $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title','Filter').on('click', function(d) {
+    $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
       filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
     //search
-    $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').attr('title','Search').on('click', function(d) {
+    $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
       dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
       d3.event.stopPropagation();
     });
     //collapse
     $regular.append('i')
       .attr('class', 'fa')
-      .classed('fa-toggle-left',(d: model.Column) => !d.compressed)
-      .classed('fa-toggle-right', (d: model.Column) => d.compressed)
-      .attr('title','(Un)Collapse')
-      .on('click', function(d: model.Column) {
+      .classed('fa-toggle-left', (d:model.Column) => !d.compressed)
+      .classed('fa-toggle-right', (d:model.Column) => d.compressed)
+      .attr('title', '(Un)Collapse')
+      .on('click', function (d:model.Column) {
         d.compressed = !d.compressed;
         d3.select(this)
-          .classed('fa-toggle-left',!d.compressed)
+          .classed('fa-toggle-left', !d.compressed)
           .classed('fa-toggle-right', d.compressed);
         d3.event.stopPropagation();
       });
     //compress
     $stacked.append('i')
       .attr('class', 'fa')
-      .classed('fa-compress',(d: model.StackColumn) => !d.collapsed)
-      .classed('fa-expand', (d: model.StackColumn) => d.collapsed)
-      .attr('title','Compress/Expand')
-      .on('click', function(d: model.StackColumn) {
+      .classed('fa-compress', (d:model.StackColumn) => !d.collapsed)
+      .classed('fa-expand', (d:model.StackColumn) => d.collapsed)
+      .attr('title', 'Compress/Expand')
+      .on('click', function (d:model.StackColumn) {
         d.collapsed = !d.collapsed;
         d3.select(this)
-          .classed('fa-compress',!d.collapsed)
+          .classed('fa-compress', !d.collapsed)
           .classed('fa-expand', d.collapsed);
         d3.event.stopPropagation();
       });
     //remove
-    $node.append('i').attr('class', 'fa fa-times').attr('title','Hide').on('click', (d) => {
+    $node.append('i').attr('class', 'fa fa-times').attr('title', 'Hide').on('click', (d) => {
       if (d instanceof model.RankColumn) {
         provider.removeRanking(<model.RankColumn>d);
         if (provider.getRankings().length === 0) { //create at least one
@@ -345,8 +347,8 @@ export class HeaderRenderer {
     });
   }
 
-  private renderColumns(columns: model.Column[], shifts, $base: d3.Selection<any> = this.$node, clazz: string = 'header') {
-    var $headers = $base.selectAll('div.'+clazz).data(columns, (d) => d.id);
+  private renderColumns(columns:model.Column[], shifts, $base:d3.Selection<any> = this.$node, clazz:string = 'header') {
+    var $headers = $base.selectAll('div.' + clazz).data(columns, (d) => d.id);
     var $headers_enter = $headers.enter().append('div').attr({
       'class': clazz
     });
@@ -356,19 +358,19 @@ export class HeaderRenderer {
         }
       })
       .on('dragstart', (d) => {
-      var e = <DragEvent>(<any>d3.event);
-      e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
-      e.dataTransfer.setData('text/plain', d.label);
-      e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
-      var ref = JSON.stringify(this.data.toDescRef(d.desc));
-      e.dataTransfer.setData('application/caleydo-lineup-column', ref);
-      if (model.isNumberColumn(d)) {
-        e.dataTransfer.setData('application/caleydo-lineup-column-number', ref);
-        e.dataTransfer.setData('application/caleydo-lineup-column-number-ref', d.id);
-      }
-    });
+        var e = <DragEvent>(<any>d3.event);
+        e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
+        e.dataTransfer.setData('text/plain', d.label);
+        e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
+        var ref = JSON.stringify(this.data.toDescRef(d.desc));
+        e.dataTransfer.setData('application/caleydo-lineup-column', ref);
+        if (model.isNumberColumn(d)) {
+          e.dataTransfer.setData('application/caleydo-lineup-column-number', ref);
+          e.dataTransfer.setData('application/caleydo-lineup-column-number-ref', d.id);
+        }
+      });
     $header_enter_div.append('i').attr('class', 'fa fa sort_indicator');
-    $header_enter_div.append('span').classed('lu-label',true).attr({
+    $header_enter_div.append('span').classed('lu-label', true).attr({
       'draggable': this.options.manipulative
     });
 
@@ -380,27 +382,27 @@ export class HeaderRenderer {
       $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
     }
     $headers.style({
-      width: (d, i) => (shifts[i].width+this.options.columnPadding)+'px',
-      left: (d, i) => shifts[i].offset+'px',
+      width: (d, i) => (shifts[i].width + this.options.columnPadding) + 'px',
+      left: (d, i) => shifts[i].offset + 'px',
       'background-color': (d) => d.color
     });
     $headers.attr({
-      class: (d) => clazz+' '+d.cssClass+' '+(d.compressed ? 'compressed':''),
+      class: (d) => clazz + ' ' + d.cssClass + ' ' + (d.compressed ? 'compressed' : ''),
       title: (d) => d.label
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {
       var r = d.findMyRanker();
       if (r && r.sortCriteria().col === d) {
-        return 'sort_indicator fa fa-sort-'+(r.sortCriteria().asc ? 'asc' : 'desc');
+        return 'sort_indicator fa fa-sort-' + (r.sortCriteria().asc ? 'asc' : 'desc');
       }
       return 'sort_indicator fa';
     });
     $headers.select('span.lu-label').text((d) => d.label);
 
     var that = this;
-    $headers.filter((d) => d instanceof model.StackColumn).each(function (col : model.StackColumn) {
+    $headers.filter((d) => d instanceof model.StackColumn).each(function (col:model.StackColumn) {
       if (col.collapsed || col.compressed) {
-        d3.select(this).selectAll('div.'+clazz+'_i').remove();
+        d3.select(this).selectAll('div.' + clazz + '_i').remove();
       } else {
         let s_shifts = [];
         col.flatten(s_shifts, 0, 1, that.options.columnPadding);
@@ -408,8 +410,8 @@ export class HeaderRenderer {
         let s_columns = s_shifts.map((d) => d.col);
         that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
       }
-    }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref','application/caleydo-lineup-column-number'], (data, d: model.StackColumn, copy) => {
-      var col: model.Column = null;
+    }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d:model.StackColumn, copy) => {
+      var col:model.Column = null;
       if ('application/caleydo-lineup-column-number-ref' in data) {
         var id = data['application/caleydo-lineup-column-number-ref'];
         col = this.data.find(id);
@@ -439,10 +441,10 @@ export class BodyRenderer extends utils.AEventDispatcher {
   private options = {
     rowHeight: 20,
     rowPadding: 1,
-    rowBarPadding : 1,
+    rowBarPadding: 1,
     idPrefix: '',
     slopeWidth: 150,
-    columnPadding : 5,
+    columnPadding: 5,
     stacked: true,
     animation: false, //200
     animationDuration: 1000,
@@ -453,14 +455,14 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
   };
 
-  private $node: d3.Selection<any>;
+  private $node:d3.Selection<any>;
 
-  constructor(private data:provider.DataProvider, parent: Element, private slicer: ISlicer, options = {}) {
+  constructor(private data:provider.DataProvider, parent:Element, private slicer:ISlicer, options = {}) {
     super();
     //merge options
     utils.merge(this.options, options);
 
-    this.$node = d3.select(parent).append('svg').classed('lu-body',true);
+    this.$node = d3.select(parent).append('svg').classed('lu-body', true);
 
     this.changeDataStorage(data);
   }
@@ -473,34 +475,34 @@ export class BodyRenderer extends utils.AEventDispatcher {
     return <Element>this.$node.node();
   }
 
-  setOption(key: string, value: any) {
+  setOption(key:string, value:any) {
     this.options[key] = value;
   }
 
-  changeDataStorage(data: provider.DataProvider) {
+  changeDataStorage(data:provider.DataProvider) {
     if (this.data) {
-      this.data.on(['dirtyValues.bodyRenderer','selectionChanged.bodyRenderer'], null);
+      this.data.on(['dirtyValues.bodyRenderer', 'selectionChanged.bodyRenderer'], null);
     }
     this.data = data;
-    data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this),1));
-    data.on('selectionChanged.bodyRenderer', utils.delayedCall(this.drawSelection.bind(this),1));
+    data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this), 1));
+    data.on('selectionChanged.bodyRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
   }
 
-  createContext(index_shift: number):renderer.IRenderContext {
+  createContext(index_shift:number):renderer.IRenderContext {
     var options = this.options;
     return {
       rowKey: this.data.rowKey,
       cellY(index:number) {
-        return (index+index_shift) * (options.rowHeight);
+        return (index + index_shift) * (options.rowHeight);
       },
       cellPrevY(index:number) {
-        return (index+index_shift) * (options.rowHeight);
+        return (index + index_shift) * (options.rowHeight);
       },
       cellX(index:number) {
         return 0;
       },
       rowHeight(index:number) {
-        return options.rowHeight* (1-options.rowPadding);
+        return options.rowHeight * (1 - options.rowPadding);
       },
       renderer(col:model.Column) {
         if (col.compressed && model.isNumberColumn(col)) {
@@ -512,7 +514,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
         var l = options.renderers[col.desc.type];
         return l || renderer.defaultRenderer();
       },
-      render(col: model.Column, $this: d3.Selection<model.Column>, data: any[], context: renderer.IRenderContext = this) {
+      render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context:renderer.IRenderContext = this) {
         //if renderers change delete old stuff
         const tthis = <any>($this.node());
         const old_renderer = tthis.__renderer__;
@@ -528,16 +530,16 @@ export class BodyRenderer extends utils.AEventDispatcher {
       },
       idPrefix: options.idPrefix,
 
-      animated: ($sel: d3.Selection<any>) => options.animation ? $sel.transition().duration(options.animationDuration) : $sel,
+      animated: ($sel:d3.Selection<any>) => options.animation ? $sel.transition().duration(options.animationDuration) : $sel,
 
-      option : (key:string, default_: any) => (key in options) ? options[key] : default_
+      option: (key:string, default_:any) => (key in options) ? options[key] : default_
     };
   }
 
-  updateClipPathsImpl(r:model.Column[],context:renderer.IRenderContext, height: number) {
+  updateClipPathsImpl(r:model.Column[], context:renderer.IRenderContext, height:number) {
     var $base = this.$node.select('defs.body');
     if ($base.empty()) {
-      $base = this.$node.append('defs').classed('body',true);
+      $base = this.$node.append('defs').classed('body', true);
     }
 
     //generate clip paths for the text columns to avoid text overflow
@@ -547,10 +549,10 @@ export class BodyRenderer extends utils.AEventDispatcher {
       return this.getElementsByTagName('clipPath');
     }).data(r, (d) => d.id);
     textClipPath.enter().append('clipPath')
-      .attr('id', (d) => context.idPrefix+'clipCol'+d.id)
+      .attr('id', (d) => context.idPrefix + 'clipCol' + d.id)
       .append('rect').attr({
-        y: 0
-      });
+      y: 0
+    });
     textClipPath.exit().remove();
     textClipPath.select('rect')
       .attr({
@@ -560,7 +562,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
       });
   }
 
-  updateClipPaths(rankings:model.RankColumn[], context:renderer.IRenderContext, height: number) {
+  updateClipPaths(rankings:model.RankColumn[], context:renderer.IRenderContext, height:number) {
     var shifts = [], offset = 0;
     rankings.forEach((r) => {
       var w = r.flatten(shifts, offset, 2, this.options.columnPadding);
@@ -569,7 +571,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
     this.updateClipPathsImpl(shifts.map(s => s.col), context, height);
   }
 
-  renderRankings($body: d3.Selection<any>, rankings:model.RankColumn[], orders: number[][], shifts:any[], context:renderer.IRenderContext) {
+  renderRankings($body:d3.Selection<any>, rankings:model.RankColumn[], orders:number[][], shifts:any[], context:renderer.IRenderContext) {
     var dataPromises = orders.map((r) => this.data.view(r));
 
     var $rankings = $body.selectAll('g.ranking').data(rankings, (d) => d.id);
@@ -649,7 +651,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
         }
       });
     };
-    var $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => orders[i].map((d, i) => ({ d: d, i: i })));
+    var $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => orders[i].map((d, i) => ({d: d, i: i})));
     var $rows_enter = $rows.enter().append('g').attr({
       'class': 'row'
     });
@@ -671,14 +673,14 @@ export class BodyRenderer extends utils.AEventDispatcher {
       y: (d) => context.cellY(d.i),
       height: (d) => context.rowHeight(d.i),
       width: (d, i, j?) => shifts[j].width,
-      'class': (d, i) => 'bg '+(i%2===0?'even':'odd')
+      'class': (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd')
     });
     $rows.exit().remove();
 
     $rankings.exit().remove();
   }
 
-  select(dataIndex: number, additional = false) {
+  select(dataIndex:number, additional = false) {
     var selected = this.data.toggleSelection(dataIndex, additional);
     this.$node.selectAll('g.row[data-index="' + dataIndex + '"], line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
   }
@@ -695,14 +697,14 @@ export class BodyRenderer extends utils.AEventDispatcher {
   }
 
   mouseOver(dataIndex:number, hover = true) {
-    this.fire('hoverChanged', hover? dataIndex : -1);
+    this.fire('hoverChanged', hover ? dataIndex : -1);
     this.mouseOverItem(dataIndex, hover);
     //update the slope graph
     this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('hover', hover);
   }
 
-  renderSlopeGraphs($body: d3.Selection<any>, rankings:model.RankColumn[], orders: number[][], shifts:any[], context:renderer.IRenderContext) {
-    var slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i : i, right: d, right_i : i+1}));
+  renderSlopeGraphs($body:d3.Selection<any>, rankings:model.RankColumn[], orders:number[][], shifts:any[], context:renderer.IRenderContext) {
+    var slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i: i, right: d, right_i: i + 1}));
     var $slopes = $body.selectAll('g.slopegraph').data(slopes);
     $slopes.enter().append('g').attr({
       'class': 'slopegraph'
@@ -753,7 +755,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
     var maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
     var height = this.options.rowHeight * maxElems;
     var visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
-    var orderSlicer = (order: number[]) => {
+    var orderSlicer = (order:number[]) => {
       if (visibleRange.from === 0 && order.length <= visibleRange.to) {
         return order;
       }
@@ -773,7 +775,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
             var r = o2;
             o2 += (o.compressed ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
             if (o instanceof model.StackColumn && !o.collapsed && !o.compressed) {
-              o2 += this.options.columnPadding * (o.length -1);
+              o2 += this.options.columnPadding * (o.length - 1);
             }
             return r;
           });
@@ -787,14 +789,14 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
     this.$node.attr({
       width: offset,
-      height : height
+      height: height
     });
     this.updateClipPaths(rankings, context, height);
 
 
     var $body = this.$node.select('g.body');
     if ($body.empty()) {
-      $body = this.$node.append('g').classed('body',true);
+      $body = this.$node.append('g').classed('body', true);
     }
 
     this.renderRankings($body, rankings, orders, shifts, context);

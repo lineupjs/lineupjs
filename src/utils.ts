@@ -30,8 +30,8 @@ export function delayedCall(callback:() => void, timeToDelay = 100, thisCallback
  * @param event
  * @return {function(...[any]): undefined}
  */
-export function forwardEvent(to: AEventDispatcher, event?: string) {
-  return function(...args: any[]) {
+export function forwardEvent(to:AEventDispatcher, event?:string) {
+  return function (...args:any[]) {
     args.unshift(event || this.type);
     to.fire.apply(to, args);
   };
@@ -93,7 +93,7 @@ export class AEventDispatcher {
    * @param from the event dispatcher to forward from
    * @param types the event types to forward
    */
-  forward(from: AEventDispatcher, ...types: string[]) {
+  forward(from:AEventDispatcher, ...types:string[]) {
     from.on(types, this.forwarder);
   }
 
@@ -102,16 +102,16 @@ export class AEventDispatcher {
    * @param from
    * @param types
    */
-  unforward(from: AEventDispatcher, ...types: string[]) {
+  unforward(from:AEventDispatcher, ...types:string[]) {
     from.on(types, null);
   }
 }
 
 var TYPE_OBJECT = '[object Object]';
-var TYPE_ARRAY  = '[object Array]';
+var TYPE_ARRAY = '[object Array]';
 
 //credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
-export function merge(...args: any[]) {
+export function merge(...args:any[]) {
   var result = null;
 
   for (var i = 0; i < args.length; i++) {
@@ -125,7 +125,7 @@ export function merge(...args: any[]) {
 
     for (var j = 0; j < keys.length; j++) {
       var keyName = keys[j];
-      var value   = toMerge[keyName];
+      var value = toMerge[keyName];
 
       if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
         if (result[keyName] === undefined) {
@@ -154,7 +154,7 @@ export function merge(...args: any[]) {
 export function offset(element) {
   var obj = element.getBoundingClientRect();
   return {
-    left: obj.left + window.pageXOffset ,
+    left: obj.left + window.pageXOffset,
     top: obj.top + window.pageYOffset,
     width: obj.width,
     height: obj.height
@@ -276,8 +276,8 @@ export class ContentScroller extends AEventDispatcher {
 /**
  * checks whether the given DragEvent has one of the given types
  */
-export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
-  var types : any = e.dataTransfer.types;
+export function hasDnDType(e:DragEvent, typesToCheck:string[]) {
+  var types:any = e.dataTransfer.types;
   if (typeof types.indexOf === 'function') {
     return typesToCheck.some((type) => types.indexOf(type) >= 0);
   }
@@ -293,7 +293,7 @@ export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
 /**
  * should it be a copy dnd operation?
  */
-export function copyDnD(e: DragEvent) {
+export function copyDnD(e:DragEvent) {
   var dT = e.dataTransfer;
   return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
 }
@@ -302,7 +302,7 @@ export function copyDnD(e: DragEvent) {
  * updates the drop effect according to the currently selected meta keys
  * @param e
  */
-export function updateDropEffect(e: DragEvent) {
+export function updateDropEffect(e:DragEvent) {
   var dT = e.dataTransfer;
   if (copyDnD(e)) {
     dT.dropEffect = 'copy';
@@ -316,9 +316,9 @@ export function updateDropEffect(e: DragEvent) {
  * @param mimeTypes the mime types to be dropable
  * @param onDrop: handler when an element is dropped
  */
-export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy: boolean) => boolean) {
+export function dropAble<T>(mimeTypes:string[], onDrop:(data:any, d:T, copy:boolean) => boolean) {
   return ($node) => {
-    $node.on('dragenter', function() {
+    $node.on('dragenter', function () {
       var e = <DragEvent>(<any>d3.event);
       //var xy = d3.mouse($node.node());
       if (hasDnDType(e, mimeTypes)) {
@@ -328,7 +328,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
       }
       //not a valid mime type
       d3.select(this).classed('drag_over', false);
-    }).on('dragover', function() {
+    }).on('dragover', function () {
       var e = <DragEvent>(<any>d3.event);
       if (hasDnDType(e, mimeTypes)) {
         e.preventDefault();
@@ -336,16 +336,16 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
         d3.select(this).classed('drag_over', true);
         return false;
       }
-    }).on('dragleave', function() {
+    }).on('dragleave', function () {
       //
       d3.select(this).classed('drag_over', false);
-    }).on('drop', function(d: T)  {
+    }).on('drop', function (d:T) {
       var e = <DragEvent>(<any>d3.event);
       e.preventDefault();
       d3.select(this).classed('drag_over', false);
       //var xy = d3.mouse($node.node());
       if (hasDnDType(e, mimeTypes)) {
-        var data : any = {};
+        var data:any = {};
         //selects the data contained in the data transfer
         mimeTypes.forEach((mime) => {
           var value = e.dataTransfer.getData(mime);

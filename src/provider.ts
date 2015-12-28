@@ -13,17 +13,17 @@ import d3 = require('d3');
  * @param range the total value range
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  */
-function computeStats(arr: any[], acc: (any) => number, range?: [number, number]) : model.IStatistics {
+function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):model.IStatistics {
   var hist = d3.layout.histogram().value(acc);
   if (range) {
     hist.range(() => range);
   }
   var hist_data = hist(arr);
   return {
-    min : hist_data[0].x,
-    max : hist_data[hist_data.length-1].x + hist_data[hist_data.length-1].dx,
+    min: hist_data[0].x,
+    max: hist_data[hist_data.length - 1].x + hist_data[hist_data.length - 1].dx,
     count: arr.length,
-    hist : hist_data
+    hist: hist_data
   };
 }
 
@@ -58,7 +58,7 @@ export class DataProvider extends utils.AEventDispatcher {
   constructor() {
     super();
     var that = this;
-    this.reorder = function() {
+    this.reorder = function () {
       var ranking = this.source;
       that.sort(ranking).then((order) => ranking.setOrder(order));
     };
@@ -80,7 +80,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * returns a list of all known column descriptions
    * @returns {Array}
    */
-  getColumns(): model.IColumnDesc[] {
+  getColumns():model.IColumnDesc[] {
     return [];
   }
 
@@ -95,11 +95,11 @@ export class DataProvider extends utils.AEventDispatcher {
     return r;
   }
 
-  private pushRankingImpl(r: model.RankColumn) {
+  private pushRankingImpl(r:model.RankColumn) {
     this.rankings_.push(r);
     this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyValues.provider');
-    r.on('dirtyOrder.provider',this.reorder);
-    this.fire(['addRanking','dirtyHeader','dirtyValues','dirty'], r);
+    r.on('dirtyOrder.provider', this.reorder);
+    this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r);
   }
 
   /**
@@ -114,9 +114,9 @@ export class DataProvider extends utils.AEventDispatcher {
     }
     this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
     this.rankings_.splice(i, 1);
-    ranking.on('dirtyOrder.provider',null);
+    ranking.on('dirtyOrder.provider', null);
     this.cleanUpRanking(ranking);
-    this.fire(['removeRanking','dirtyHeader','dirtyValues','dirty'], ranking);
+    this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], ranking);
     return true;
   }
 
@@ -126,11 +126,11 @@ export class DataProvider extends utils.AEventDispatcher {
   clearRankings() {
     this.rankings_.forEach((ranking) => {
       this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
-      ranking.on('dirtyOrder.provider',null);
+      ranking.on('dirtyOrder.provider', null);
       this.cleanUpRanking(ranking);
     });
     this.rankings_ = [];
-    this.fire(['removeRanking','dirtyHeader','dirtyValues','dirty']);
+    this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty']);
   }
 
   /**
@@ -172,7 +172,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param desc the description of the column
    * @return {model.Column} the newly created column or null
    */
-  push(ranking:model.RankColumn, desc:model.IColumnDesc): model.Column {
+  push(ranking:model.RankColumn, desc:model.IColumnDesc):model.Column {
     var r = this.create(desc);
     if (r) {
       ranking.push(r);
@@ -188,7 +188,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param desc the description of the column
    * @return {model.Column} the newly created column or null
    */
-  insert(ranking: model.RankColumn, index: number, desc: model.IColumnDesc) {
+  insert(ranking:model.RankColumn, index:number, desc:model.IColumnDesc) {
     var r = this.create(desc);
     if (r) {
       ranking.insert(r, index);
@@ -211,7 +211,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param desc
    * @returns {model.Column] the new column or null if it can't be created
    */
-  create(desc: model.IColumnDesc) : model.Column {
+  create(desc:model.IColumnDesc):model.Column {
     //find by type and instantiate
     var type = this.columnTypes[desc.type];
     if (type) {
@@ -225,7 +225,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param col
    * @returns {model.Column}
    */
-  clone(col: model.Column) {
+  clone(col:model.Column) {
     var dump = col.dump((d) => d);
     return this.restoreColumn(dump);
   }
@@ -235,10 +235,10 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param dump
    * @returns {model.Column}
    */
-  restoreColumn(dump: any) : model.Column {
-    var create = (d: any) => {
+  restoreColumn(dump:any):model.Column {
+    var create = (d:any) => {
       var type = this.columnTypes[d.desc.type];
-      var c  = new type('', d.desc);
+      var c = new type('', d.desc);
       c.restore(d, create);
       c.assignNewId(this.nextId.bind(this));
       return c;
@@ -251,11 +251,11 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param id_or_filter by id or by a filter function
    * @returns {model.Column}
    */
-  find(id_or_filter: (col: model.Column) => boolean | string): model.Column {
+  find(id_or_filter:(col:model.Column) => boolean | string):model.Column {
     //convert to function
     var filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
 
-    for(var i = 0; i < this.rankings_.length; ++i) {
+    for (var i = 0; i < this.rankings_.length; ++i) {
       var r = this.rankings_[i].find(filter);
       if (r) {
         return r;
@@ -269,7 +269,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * dumps this whole provider including selection and the rankings
    * @returns {{uid: number, selection: number[], rankings: *[]}}
    */
-  dump() : any {
+  dump():any {
     return {
       uid: this.uid,
       selection: this.selection.values().map(Number),
@@ -282,15 +282,16 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param col
    * @returns {any}
    */
-  dumpColumn(col: model.Column) {
+  dumpColumn(col:model.Column) {
     return col.dump(this.toDescRef);
   }
+
   /**
    * for better dumping describe reference, by default just return the description
    * @param desc
    * @returns {any}
    */
-  toDescRef(desc: any) : any {
+  toDescRef(desc:any):any {
     return desc;
   }
 
@@ -299,11 +300,11 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param descRef
    * @returns {any}
    */
-  fromDescRef(descRef: any) : any {
+  fromDescRef(descRef:any):any {
     return descRef;
   }
 
-  restore(dump: any) {
+  restore(dump:any) {
     //factory method for restoring a column
     var create = (d:any) => {
       var desc = this.fromDescRef(d.desc);
@@ -342,7 +343,7 @@ export class DataProvider extends utils.AEventDispatcher {
     });
   }
 
-  findDesc(ref: string) {
+  findDesc(ref:string) {
     return null;
   }
 
@@ -364,7 +365,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * derives a ranking from an old layout bundle format
    * @param bundle
    */
-  private deriveRanking(bundle: any[]) {
+  private deriveRanking(bundle:any[]) {
     var toCol = (column) => {
       if (column.type === 'rank') {
         return null; //can't handle
@@ -428,7 +429,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param col
    * @return {Promise<any>}
    */
-  mappingSample(col: model.Column) : Promise<number[]> {
+  mappingSample(col:model.Column):Promise<number[]> {
     return Promise.reject('not implemented');
   }
 
@@ -438,7 +439,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param col
    * @returns {Promise<any>}
    */
-  stats(indices: number[], col: model.INumberColumn): Promise<model.IStatistics> {
+  stats(indices:number[], col:model.INumberColumn):Promise<model.IStatistics> {
     return Promise.reject('not implemented');
   }
 
@@ -458,7 +459,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param index
    * @return {boolean}
    */
-  isSelected(index: number) {
+  isSelected(index:number) {
     return this.selection.has(String(index));
   }
 
@@ -466,7 +467,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * also select the given row
    * @param index
    */
-  select(index: number) {
+  select(index:number) {
     this.selection.add(String(index));
     this.fire('selectionChanged', this.selection.values().map(Number));
   }
@@ -476,7 +477,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param search
    * @param col
    */
-  searchSelect(search: string|RegExp, col: model.Column) {
+  searchSelect(search:string|RegExp, col:model.Column) {
     //implemented by custom provider
   }
 
@@ -484,7 +485,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * also select all the given rows
    * @param indices
    */
-  selectAll(indices: number[]) {
+  selectAll(indices:number[]) {
     indices.forEach((index) => {
       this.selection.add(String(index));
     });
@@ -495,7 +496,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * set the selection to the given rows
    * @param indices
    */
-  setSelection(indices: number[]) {
+  setSelection(indices:number[]) {
     if (this.selection.size() === indices.length && indices.every((i) => this.selection.has(String(i)))) {
       return; //no change
     }
@@ -509,7 +510,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param additional just this element or all
    * @returns {boolean} whether the index is currently selected
    */
-  toggleSelection(index: number, additional = false) {
+  toggleSelection(index:number, additional = false) {
     if (this.isSelected(index)) {
       if (additional) {
         this.deselect(index);
@@ -531,9 +532,9 @@ export class DataProvider extends utils.AEventDispatcher {
    * deselect the given row
    * @param index
    */
-  deselect(index: number) {
+  deselect(index:number) {
     this.selection.remove(String(index));
-    this.fire('selectionChanged',  this.selection.values().map(Number));
+    this.fire('selectionChanged', this.selection.values().map(Number));
   }
 
   /**
@@ -593,19 +594,19 @@ export class CommonDataProvider extends DataProvider {
    * adds another column description to this data provider
    * @param column
    */
-  pushDesc(column: model.IColumnDesc) {
-    var d : any = column;
+  pushDesc(column:model.IColumnDesc) {
+    var d:any = column;
     d.accessor = this.rowGetter;
     d.label = column.label || d.column;
     this.columns.push(column);
     this.fire('addDesc', d);
   }
 
-  getColumns(): model.IColumnDesc[] {
+  getColumns():model.IColumnDesc[] {
     return this.columns.slice();
   }
 
-  findDesc(ref: string) {
+  findDesc(ref:string) {
     return this.columns.filter((c) => (<any>c).column === ref)[0];
   }
 
@@ -614,20 +615,20 @@ export class CommonDataProvider extends DataProvider {
    * @param desc
    * @returns {string}
    */
-  toDescRef(desc: any) : any {
-    return desc.column ? desc.type+'@'+desc.column : desc;
+  toDescRef(desc:any):any {
+    return desc.column ? desc.type + '@' + desc.column : desc;
   }
 
-  fromDescRef(descRef: any) : any {
+  fromDescRef(descRef:any):any {
     if (typeof(descRef) === 'string') {
-      return this.columns.filter((d: any) => d.type+'@'+d.column === descRef) [0];
+      return this.columns.filter((d:any) => d.type + '@' + d.column === descRef) [0];
     }
     return descRef;
   }
 
-  restore(dump: any) {
+  restore(dump:any) {
     super.restore(dump);
-    this.rankingIndex = 1 + d3.max(this.getRankings(), (r) => + r.id.substring(4));
+    this.rankingIndex = 1 + d3.max(this.getRankings(), (r) => +r.id.substring(4));
   }
 
   nextRankingId() {
@@ -653,7 +654,7 @@ export class LocalDataProvider extends CommonDataProvider {
     var rankDesc = {
       label: 'Rank',
       type: 'rank',
-      accessor: (row, id) => (row._rankings[id]+1) || 1
+      accessor: (row, id) => (row._rankings[id] + 1) || 1
     };
 
     var new_ = new model.RankColumn(id, rankDesc);
@@ -703,18 +704,18 @@ export class LocalDataProvider extends CommonDataProvider {
     return Promise.resolve(slice);
   }
 
-  mappingSample(col: model.NumberColumn) : Promise<number[]> {
+  mappingSample(col:model.NumberColumn):Promise<number[]> {
     //return all
     return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
   }
 
-  stats(indices: number[], col: model.INumberColumn): Promise<model.IStatistics> {
+  stats(indices:number[], col:model.INumberColumn):Promise<model.IStatistics> {
     //compute local stats
     return Promise.resolve(computeStats(this.data, col.getNumber.bind(col), [0, 1]));
   }
 
-  searchSelect(search: string|RegExp, col: model.Column) {
-    const f = typeof search === 'string' ? (v: string) => v.indexOf(search) >= 0 : (v: string) => v.match(search) != null;
+  searchSelect(search:string|RegExp, col:model.Column) {
+    const f = typeof search === 'string' ? (v:string) => v.indexOf(search) >= 0 : (v:string) => v.match(search) != null;
     const indices = this.data.filter((row) => {
       return f(col.getLabel(row));
     }).map((row) => row._index);
@@ -741,13 +742,13 @@ export interface IServerData {
    * returns a sample of the values for a given column
    * @param column
    */
-  mappingSample(column: any) : Promise<number[]>;
+  mappingSample(column:any) : Promise<number[]>;
   /**
    * return the matching indices matching the given arguments
    * @param search
    * @param column
    */
-  search(search: string|RegExp, column: any): Promise<number[]>;
+  search(search:string|RegExp, column:any): Promise<number[]>;
 }
 
 /**
@@ -803,11 +804,11 @@ export class RemoteDataProvider extends CommonDataProvider {
     });
   }
 
-  mappingSample(col: model.Column) : Promise<number[]> {
+  mappingSample(col:model.Column):Promise<number[]> {
     return this.server.mappingSample((<any>col.desc).column);
   }
 
-  searchSelect(search: string|RegExp, col: model.Column) {
+  searchSelect(search:string|RegExp, col:model.Column) {
     this.server.search(search, (<any>col.desc).column).then((indices) => {
       this.setSelection(indices);
     });

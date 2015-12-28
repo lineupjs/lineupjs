@@ -18,7 +18,7 @@ export interface IRenderContext {
    * the previous y position of the cell
    * @param index
    */
-  cellPrevY(index: number): number;
+  cellPrevY(index:number): number;
   /**
    * the x position of the cell
    * @param index
@@ -46,7 +46,7 @@ export interface IRenderContext {
    * render a column
    * @param col
    */
-  render(col: model.Column, $this: d3.Selection<model.Column>, data: any[], context?: IRenderContext);
+  render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context?:IRenderContext);
 
   /**
    * internal option flags
@@ -63,14 +63,14 @@ export interface IRenderContext {
    * wrapper for a d3 selection making it (optinally) to an animated transition
    * @param $sel
    */
-  animated<T>($sel: d3.Selection<T>) : any;
+  animated<T>($sel:d3.Selection<T>) : any;
 
   /**
    * lookup custom options by key
    * @param key key to lookup
    * @param default_ default value
    */
-  option<T>(key: string, default_ : T): T;
+  option<T>(key:string, default_:T): T;
 }
 
 /**
@@ -120,7 +120,7 @@ export class DefaultCellRenderer implements ICellRenderer {
    * the text alignment: left, center, right
    * @type {string}
    */
-  align: string = 'left';
+  align:string = 'left';
 
   render($col:d3.Selection<any>, col:model.Column, rows:any[], context:IRenderContext) {
     var $rows = $col.datum(col).selectAll('text.' + this.textClass).data(rows, context.rowKey);
@@ -156,8 +156,8 @@ export class DefaultCellRenderer implements ICellRenderer {
    * @param index
    * @return {Selection<Datum>}
    */
-  findRow($col:d3.Selection<any>, index: number) {
-    return $col.selectAll('text.' + this.textClass+'[data-index="'+index+'"]');
+  findRow($col:d3.Selection<any>, index:number) {
+    return $col.selectAll('text.' + this.textClass + '[data-index="' + index + '"]');
   }
 
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
@@ -203,9 +203,9 @@ export class BarCellRenderer extends DefaultCellRenderer {
     var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
 
     $rows.enter().append('rect').attr({
-      'class' : 'bar '+col.cssClass,
+      'class': 'bar ' + col.cssClass,
       x: (d, i) => context.cellX(i),
-      y: (d, i) => context.cellPrevY(i) + context.option('rowPadding',1),
+      y: (d, i) => context.cellPrevY(i) + context.option('rowPadding', 1),
       width: (d) => {
         var n = col.getWidth() * col.getValue(d);
         return isNaN(n) ? 0 : n;
@@ -214,18 +214,18 @@ export class BarCellRenderer extends DefaultCellRenderer {
 
     $rows.attr({
       'data-index': (d, i) => i,
-      height: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2
+      height: (d, i) => context.rowHeight(i) - context.option('rowPadding', 1) * 2
     });
 
     context.animated($rows).attr({
       x: (d, i) => context.cellX(i),
-      y: (d, i) => context.cellY(i) + context.option('rowPadding',1),
+      y: (d, i) => context.cellY(i) + context.option('rowPadding', 1),
       width: (d) => {
         var n = col.getWidth() * col.getValue(d);
         return isNaN(n) ? 0 : n;
       }
     }).style({
-      fill: (d,i) => this.colorOf(d, i, col)
+      fill: (d, i) => this.colorOf(d, i, col)
     });
     $rows.exit().remove();
   }
@@ -237,7 +237,7 @@ export class BarCellRenderer extends DefaultCellRenderer {
    * @param col the model column
    * @returns {string}
    */
-  colorOf(d: any, i: number, col: model.Column) {
+  colorOf(d:any, i:number, col:model.Column) {
     return col.color;
   }
 
@@ -253,7 +253,7 @@ export class BarCellRenderer extends DefaultCellRenderer {
       $row.append('text').datum(rowNode.datum()).attr({
         'class': 'number',
         'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
-        transform: 'translate('+context.cellX(index)+','+context.cellY(index)+')'
+        transform: 'translate(' + context.cellX(index) + ',' + context.cellY(index) + ')'
       }).text((d) => col.getLabel(d));
     }
   }
@@ -268,23 +268,23 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
     var $rows = $col.datum(col).selectAll('rect.heatmap').data(rows, context.rowKey);
 
     $rows.enter().append('rect').attr({
-      'class' : 'bar '+col.cssClass,
+      'class': 'bar ' + col.cssClass,
       x: (d, i) => context.cellX(i),
-      y: (d, i) => context.cellPrevY(i) + context.option('rowPadding',1),
-      width: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2
+      y: (d, i) => context.cellPrevY(i) + context.option('rowPadding', 1),
+      width: (d, i) => context.rowHeight(i) - context.option('rowPadding', 1) * 2
     }).style('fill', col.color);
 
     $rows.attr({
       'data-index': (d, i) => i,
-      width: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2,
-      height: (d, i) => context.rowHeight(i) - context.option('rowPadding',1)*2
+      width: (d, i) => context.rowHeight(i) - context.option('rowPadding', 1) * 2,
+      height: (d, i) => context.rowHeight(i) - context.option('rowPadding', 1) * 2
     });
 
     context.animated($rows).attr({
       x: (d, i) => context.cellX(i),
-      y: (d, i) => context.cellY(i) + context.option('rowPadding',1)
+      y: (d, i) => context.cellY(i) + context.option('rowPadding', 1)
     }).style({
-      fill: (d,i) => this.colorOf(d, i, col)
+      fill: (d, i) => this.colorOf(d, i, col)
     });
     $rows.exit().remove();
   }
@@ -296,7 +296,7 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
    * @param col the column
    * @returns {string} the computed color
    */
-  colorOf(d: any, i: number, col: model.Column) {
+  colorOf(d:any, i:number, col:model.Column) {
     var v = col.getValue(d);
     if (isNaN(v)) {
       v = 0;
@@ -319,7 +319,7 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
       $row.append('text').datum(rowNode.datum()).attr({
         'class': 'number',
         'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
-        transform: 'translate('+context.cellX(index)+','+context.cellY(index)+')'
+        transform: 'translate(' + context.cellX(index) + ',' + context.cellY(index) + ')'
       }).text((d) => col.getLabel(d));
     }
   }
@@ -347,7 +347,7 @@ export class ActionCellRenderer implements ICellRenderer {
 
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
     //render all actions at tspans
-    var actions = context.option('actions',[]);
+    var actions = context.option('actions', []);
     var $actions = $row.append('text').attr({
       'class': 'actions fa',
       x: context.cellX(index),
@@ -356,7 +356,7 @@ export class ActionCellRenderer implements ICellRenderer {
     }).selectAll('tspan').data(actions);
     $actions.enter().append('tspan')
       .text((d) => d.icon)
-      .attr('title',(d) => d.name)
+      .attr('title', (d) => d.name)
       .on('click', (d) => {
         d3.event.preventDefault();
         d3.event.stopPropagation();
@@ -378,8 +378,8 @@ class AnnotateCellRenderer extends DefaultCellRenderer {
     //render an input field for editing
     this.findRow($col, index).attr('display', 'none');
     $row.append('foreignObject').attr({
-      x: context.cellX(index)-2,
-      y: context.cellPrevY(index)-2,
+      x: context.cellX(index) - 2,
+      y: context.cellPrevY(index) - 2,
       'data-index': index,
       width: col.getWidth(),
       height: context.rowHeight(index)
@@ -387,12 +387,12 @@ class AnnotateCellRenderer extends DefaultCellRenderer {
       type: 'text',
       value: col.getValue(row)
     }).style({
-      width: col.getWidth()+'px'
-    }).on('change', function() {
+      width: col.getWidth() + 'px'
+    }).on('change', function () {
       //update the value
       var text = this.value;
       col.setValue(row, text);
-    }).on('click', () => d3.event.stopPropagation() );
+    }).on('click', () => d3.event.stopPropagation());
   }
 
   mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.AnnotateColumn, row:any, index:number, context:IRenderContext) {
@@ -426,7 +426,7 @@ export function defaultRenderer(extraFuncs?:any) {
  * @param extraFuncs
  * @return {BarCellRenderer}
  */
-export function barRenderer(extraFuncs?: any) {
+export function barRenderer(extraFuncs?:any) {
   if (!extraFuncs) {
     return barRendererInstance;
   }
@@ -474,7 +474,7 @@ class LinkCellRenderer extends DefaultCellRenderer {
 class StringCellRenderer extends DefaultCellRenderer {
   render($col:d3.Selection<any>, col:model.StringColumn, rows:any[], context:IRenderContext) {
     this.align = col.alignment;
-    this.textClass = 'text'+(col.alignment === 'left' ? '' : '_'+col.alignment);
+    this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
     return super.render($col, col, rows, context);
   }
 }
@@ -531,7 +531,7 @@ class CategoricalRenderer extends DefaultCellRenderer {
  * renders a stacked column using composite pattern
  */
 class StackCellRenderer extends DefaultCellRenderer {
-  renderImpl($base:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i: number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
+  renderImpl($base:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i:number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
     const $group = $base.datum(col),
       children = col.children;
     var offset = 0,
@@ -540,7 +540,7 @@ class StackCellRenderer extends DefaultCellRenderer {
         offset += d.getWidth();
         return r;
       });
-    const baseclass = 'component'+context.option('stackLevel','');
+    const baseclass = 'component' + context.option('stackLevel', '');
 
     const ueber = context.cellX;
     const ueberOption = context.option;
@@ -550,7 +550,7 @@ class StackCellRenderer extends DefaultCellRenderer {
     };
 
     //map all children to g elements
-    const $children = $group.selectAll('g.'+baseclass).data(children, (d) => d.id);
+    const $children = $group.selectAll('g.' + baseclass).data(children, (d) => d.id);
     //shift children horizontally
     $children.enter().append('g').attr({
       'class': baseclass,
@@ -558,20 +558,20 @@ class StackCellRenderer extends DefaultCellRenderer {
     });
     //for each children render the column
     $children.attr({
-      'class': (d) => baseclass+' ' + d.desc.type,
-      'data-stack': (d,i) => i
+      'class': (d) => baseclass + ' ' + d.desc.type,
+      'data-stack': (d, i) => i
     }).each(function (d, i) {
       if (context.showStacked(col)) {
         const preChildren = children.slice(0, i);
         //if shown as stacked bar shift individual cells of a column to the left where they belong to
         context.cellX = (index) => {
           //shift by all the empty space left from the previous columns
-          return ueber(index) -preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rowGetter(index))), 0);
+          return ueber(index) - preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rowGetter(index))), 0);
         };
       }
       perChild(d3.select(this), d, i, context);
     });
-    (animated? context.animated($children): $children).attr({
+    (animated ? context.animated($children) : $children).attr({
       transform: (d, i) => 'translate(' + shifts[i] + ',0)'
     });
     $children.exit().remove();
@@ -579,24 +579,27 @@ class StackCellRenderer extends DefaultCellRenderer {
     context.cellX = ueber;
     context.option = ueberOption;
   }
+
   render($col:d3.Selection<any>, stack:model.StackColumn, rows:any[], context:IRenderContext) {
     this.renderImpl($col, stack, context, ($child, col, i, ccontext) => {
       ccontext.render(col, $child, rows, ccontext);
     }, (index) => rows[index]);
   }
+
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, stack:model.StackColumn, row:any, index:number, context:IRenderContext) {
-    var baseclass = 'component'+context.option('stackLevel','');
+    var baseclass = 'component' + context.option('stackLevel', '');
     this.renderImpl($row, stack, context, ($row_i, col, i, ccontext) => {
-      var $col_i = $col.select('g.'+baseclass+'[data-stack="'+i+'"]');
+      var $col_i = $col.select('g.' + baseclass + '[data-stack="' + i + '"]');
       if (!$col_i.empty()) {
         ccontext.renderer(col).mouseEnter($col_i, $row_i, col, row, index, ccontext);
       }
     }, (index) => row, false);
   }
+
   mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, satck:model.StackColumn, row:any, index:number, context:IRenderContext) {
-    var baseclass = 'component'+context.option('stackLevel','');
+    var baseclass = 'component' + context.option('stackLevel', '');
     this.renderImpl($row, satck, context, ($row_i, col, i, ccontext) => {
-      var $col_i = $col.select('g.'+baseclass+'[data-stack="'+i+'"]');
+      var $col_i = $col.select('g.' + baseclass + '[data-stack="' + i + '"]');
       if (!$col_i.empty()) {
         ccontext.renderer(col).mouseLeave($col_i, $row_i, col, row, index, ccontext);
       }

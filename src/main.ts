@@ -28,7 +28,7 @@ export class LineUp extends utils_.AEventDispatcher {
    *
    */
   config = {
-    idPrefix: Math.random().toString(36).slice(-8).substr(0,3), //generate a random string with length3
+    idPrefix: Math.random().toString(36).slice(-8).substr(0, 3), //generate a random string with length3
     numberformat: d3.format('.3n'),
     htmlLayout: {
       headerHeight: 20,
@@ -43,7 +43,7 @@ export class LineUp extends utils_.AEventDispatcher {
     },
     svgLayout: {
       rowHeight: 17,
-      rowPadding : 0.2, //padding for scale.rangeBands
+      rowPadding: 0.2, //padding for scale.rangeBands
       rowBarPadding: 1,
 
       visibleRowsOnly: true,
@@ -60,20 +60,24 @@ export class LineUp extends utils_.AEventDispatcher {
     interaction: {
       //enable the table tooltips
       tooltips: true,
-      multiselect: () => { return false; },
-      rangeselect: () => { return false; }
+      multiselect: () => {
+        return false;
+      },
+      rangeselect: () => {
+        return false;
+      }
     },
     pool: false
   };
 
-  private $container : d3.Selection<any>;
+  private $container:d3.Selection<any>;
 
-  private body : ui_.BodyRenderer = null;
-  private header : ui_.HeaderRenderer = null;
-  private pools: ui_.PoolRenderer[] = [];
-  private contentScroller : utils_.ContentScroller = null;
+  private body:ui_.BodyRenderer = null;
+  private header:ui_.HeaderRenderer = null;
+  private pools:ui_.PoolRenderer[] = [];
+  private contentScroller:utils_.ContentScroller = null;
 
-  constructor(container : d3.Selection<any> | Element, public data: provider_.DataProvider, config: any = {}) {
+  constructor(container:d3.Selection<any> | Element, public data:provider_.DataProvider, config:any = {}) {
     super();
     this.$container = container instanceof d3.selection ? <d3.Selection<any>>container : d3.select(<Element>container);
     this.$container = this.$container.append('div').classed('lu', true);
@@ -81,13 +85,13 @@ export class LineUp extends utils_.AEventDispatcher {
 
     this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
 
-    this.header = new ui_.HeaderRenderer(data,  this.node, {
+    this.header = new ui_.HeaderRenderer(data, this.node, {
       manipulative: this.config.manipulative,
       headerHeight: this.config.htmlLayout.headerHeight
     });
     this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
       rowHeight: this.config.svgLayout.rowHeight,
-      rowPadding : this.config.svgLayout.rowPadding,
+      rowPadding: this.config.svgLayout.rowPadding,
       rowBarPadding: this.config.svgLayout.rowBarPadding,
       animationDuration: this.config.svgLayout.animationDuration,
       animation: this.config.renderingOptions.animation,
@@ -96,7 +100,7 @@ export class LineUp extends utils_.AEventDispatcher {
       idPrefix: this.config.idPrefix
     });
     this.forward(this.body, 'hoverChanged');
-    if(this.config.pool && this.config.manipulative) {
+    if (this.config.pool && this.config.manipulative) {
       this.addPool(new ui_.PoolRenderer(data, this.node, this.config));
     }
 
@@ -109,24 +113,25 @@ export class LineUp extends utils_.AEventDispatcher {
       this.contentScroller.on('scroll', (top, left) => {
         //in two svg mode propagate horizontal shift
         //console.log(top, left,'ss');
-        this.header.$node.style('transform', 'translate('+0+'px,'+top+'px)');
+        this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
       });
       this.contentScroller.on('redraw', this.body.update.bind(this.body));
     }
   }
+
   createEventList() {
     return super.createEventList().concat(['hoverChanged', 'selectionChanged', 'multiSelectionChanged']);
   }
 
-  addPool(node: Element, config? : any): ui_.PoolRenderer;
-  addPool(pool: ui_.PoolRenderer): ui_.PoolRenderer;
-  addPool(pool_node : Element|ui_.PoolRenderer, config = this.config) {
+  addPool(node:Element, config?:any):ui_.PoolRenderer;
+  addPool(pool:ui_.PoolRenderer):ui_.PoolRenderer;
+  addPool(pool_node:Element|ui_.PoolRenderer, config = this.config) {
     if (pool_node instanceof ui_.PoolRenderer) {
       this.pools.push(<ui_.PoolRenderer>pool_node);
     } else {
       this.pools.push(new ui_.PoolRenderer(this.data, <Element>pool_node, config));
     }
-    return this.pools[this.pools.length-1];
+    return this.pools[this.pools.length - 1];
   }
 
   get node() {
@@ -137,7 +142,7 @@ export class LineUp extends utils_.AEventDispatcher {
     if (this.contentScroller) {
       return this.contentScroller.select(start, length, row2y);
     }
-    return { from: start, to: length};
+    return {from: start, to: length};
   }
 
   /**
@@ -151,7 +156,7 @@ export class LineUp extends utils_.AEventDispatcher {
     }
   }
 
-  sortBy(column : (col: model_.Column) => boolean | string, ascending = false) {
+  sortBy(column:(col:model_.Column) => boolean | string, ascending = false) {
     var col = this.data.find(column);
     if (col) {
       col.sortByMe(ascending);
@@ -164,7 +169,7 @@ export class LineUp extends utils_.AEventDispatcher {
     return s;
   }
 
-  changeDataStorage(data: provider_.DataProvider, dump?: any) {
+  changeDataStorage(data:provider_.DataProvider, dump?:any) {
     if (this.data) {
       this.data.on('selectionChanged.main', null);
     }
@@ -179,12 +184,12 @@ export class LineUp extends utils_.AEventDispatcher {
     this.update();
   }
 
-  private triggerSelection(data_indices: number[]) {
+  private triggerSelection(data_indices:number[]) {
     this.fire('selectionChanged', data_indices.length > 0 ? data_indices[0] : -1);
     this.fire('multiSelectionChanged', data_indices);
   }
 
-  restore(dump: any) {
+  restore(dump:any) {
     this.changeDataStorage(this.data, dump);
   }
 
@@ -194,7 +199,7 @@ export class LineUp extends utils_.AEventDispatcher {
     this.pools.forEach((p) => p.update());
   }
 
-  changeRenderingOption(option: string, value: boolean) {
+  changeRenderingOption(option:string, value:boolean) {
     this.config.renderingOptions[option] = value;
     if (option === 'animation' || option === 'stacked') {
       this.body.setOption(option, value);
@@ -208,13 +213,13 @@ export class LineUp extends utils_.AEventDispatcher {
  * @param columns
  * @returns {model_.IColumnDesc[]}
  */
-export function deriveColors(columns: model_.IColumnDesc[]) {
+export function deriveColors(columns:model_.IColumnDesc[]) {
   var colors = d3.scale.category10().range().slice();
-  columns.forEach((col: any) => {
-    switch(col.type) {
-    case 'number':
-      col.color = colors.shift();
-      break;
+  columns.forEach((col:any) => {
+    switch (col.type) {
+      case 'number':
+        col.color = colors.shift();
+        break;
     }
   });
   return columns;
@@ -226,11 +231,11 @@ export function deriveColors(columns: model_.IColumnDesc[]) {
  * @param columns
  * @returns {LocalDataProvider}
  */
-export function createLocalStorage(data: any[], columns: model_.IColumnDesc[]) {
+export function createLocalStorage(data:any[], columns:model_.IColumnDesc[]) {
   return new provider_.LocalDataProvider(data, columns);
 }
 
-export function create(data: provider_.DataProvider, container : d3.Selection<any> | Element, config: any = {}) {
+export function create(data:provider_.DataProvider, container:d3.Selection<any> | Element, config:any = {}) {
   return new LineUp(container, data, config);
 }
 
