@@ -7,7 +7,7 @@ window.onload = function () {
     {a: 10, b: 20, c: 30, d: 'Row1', l: {alt: 'Google', href: 'https://google.com'}, cat: 'c2'},
     {a: 5, b: 14, c: 2, d: 'Row2', l: {alt: 'ORF', href: 'https://orf.at'}, cat: 'c3'},
     {a: 2, b: 7, c: 100, d: 'Row3', l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
-    {a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', l: {alt: 'Google', href: 'https://google.com'}, cat: 'c1'}];
+    {a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', l: {alt: 'Google', href: 'https://google.com'}, cat: 'c1;c3'}];
   var desc = [
     {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
     {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
