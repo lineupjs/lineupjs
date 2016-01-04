@@ -66,6 +66,29 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
   });
 }
 
+
+/**
+ * opens a dialog for editing the link of a column
+ * @param column the column to rename
+ * @param $header the visual header element of this column
+ */
+export function openEditLinkDialog(column:model.LinkColumn, $header:d3.Selection<model.Column>) {
+  var t = `<input type="text" size="15" value="${column.getLink()}" required="required" autofocus="autofocus"><br>`;
+
+  var popup = makePopup($header, 'Edit Link ($ as Placeholder)', t);
+
+  popup.select('.ok').on('click', function () {
+    var newValue = popup.select('input[type="text"]').property('value');
+    column.setLink(newValue);
+
+    popup.remove();
+  });
+
+  popup.select('.cancel').on('click', function () {
+    popup.remove();
+  });
+}
+
 /**
  * opens a search dialog for the given column
  * @param column the column to rename

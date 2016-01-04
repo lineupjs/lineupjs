@@ -729,12 +729,55 @@ export class LinkColumn extends StringColumn {
     this.link = desc.link;
   }
 
+  createEventList() {
+    return super.createEventList().concat(['linkChanged']);
+  }
+
+  setLink(link: string) {
+    if (link == this.link) { //== on purpose
+      return;
+    }
+    this.fire(['linkChanged', 'dirtyValues', 'dirty'], this.link, this.link = link);
+  }
+
+  getLink() {
+    return this.link || '';
+  }
+
+  dump(toDescRef:(desc:any) => any):any {
+    var r = super.dump(toDescRef);
+    if (this.link != (<any>this.desc).link) {
+      r.link = this.link;
+    }
+    return r;
+  }
+
+  restore(dump:any, factory:(dump:any) => Column) {
+    super.restore(dump, factory);
+    if (dump.link) {
+      this.link = dump.link;
+    }
+  }
+
   getLabel(row:any) {
     var v:any = super.getValue(row);
     if (v.alt) {
       return v.alt;
     }
     return '' + v;
+  }
+
+  isLink(row: any) {
+    if (this.link) {
+      return true;
+    }
+    //get original value
+    var v:any = super.getValue(row);
+    //convert to link
+    if (v.href) {
+      return true;
+    }
+    return false;
   }
 
   getValue(row:any) {

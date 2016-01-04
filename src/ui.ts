@@ -380,6 +380,11 @@ export class HeaderRenderer {
       r.push(provider.clone(d));
       d3.event.stopPropagation();
     });
+    //edit link
+    $node.filter((d) => d instanceof model.LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
+      dialogs.openEditLinkDialog(<model.LinkColumn>d, d3.select(this.parentNode.parentNode));
+      d3.event.stopPropagation();
+    });
     //filter
     $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
       filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);

@@ -19,7 +19,8 @@
   ];
   var lineUpDemoConfig = {
     renderingOptions: {
-      stacked: true
+      stacked: true,
+      histograms: true
     },
     svgLayout: {
       freezeRows: 2
