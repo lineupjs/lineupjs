@@ -120,7 +120,7 @@ export class PoolRenderer {
       });
     }
     $headers_enter.append('span').classed('label', true).text((d) => d.label);
-    $headers.attr('class', (d) => 'header ' + ((<any>d).cssClass || ''));
+    $headers.attr('class', (d) => `header ${((<any>d).cssClass || '')} ${d.type}`);
     $headers.style({
       'transform': (d, i) => {
         var pos = this.layout(i);
@@ -187,7 +187,11 @@ export class HeaderRenderer {
 
     filterDialogs: dialogs.filterDialogs(),
     searchAble: (col:model.Column) => col instanceof model.StringColumn,
-    sortOnLabel: true
+    sortOnLabel: true,
+
+    autoRotateLabels: false,
+    rotationHeight: 50, //in px
+    rotationDegree: -20, //in deg
   };
 
   $node:d3.Selection<any>;
@@ -257,6 +261,15 @@ export class HeaderRenderer {
       data.on('selectionChanged.headerRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
 
     }
+  }
+
+
+  /**
+   * defines the current header height in pixel
+   * @returns {number}
+   */
+  currentHeight() {
+    return parseInt(this.$node.style('height'),10);
   }
 
   private updateHist() {
@@ -329,7 +342,8 @@ export class HeaderRenderer {
   }
 
   update() {
-    var rankings = this.data.getRankings();
+    const that = this;
+    const rankings = this.data.getRankings();
 
     var shifts = [], offset = 0;
     rankings.forEach((ranking) => {
@@ -340,6 +354,13 @@ export class HeaderRenderer {
 
     var columns = shifts.map((d) => d.col);
 
+    //update all if needed
+    if (this.options.histograms && this.histCache.empty() && rankings.length > 0) {
+      this.updateHist();
+    }
+
+    this.renderColumns(columns, shifts);
+
     function countStacked(c:model.Column):number {
       if (c instanceof model.StackColumn && !(<model.StackColumn>c).collapsed && !c.compressed) {
         return 1 + Math.max.apply(Math, (<model.StackColumn>c).children.map(countStacked));
@@ -347,15 +368,27 @@ export class HeaderRenderer {
       return 1;
     }
 
-    var levels = Math.max.apply(Math, columns.map(countStacked));
-    this.$node.style('height', this.options.headerHeight * levels + 'px');
+    const levels = Math.max.apply(Math, columns.map(countStacked));
+    var height = levels * this.options.headerHeight;
 
-    //update all if needed
-    if (this.options.histograms && this.histCache.empty() && rankings.length > 0) {
-      this.updateHist();
+    if (this.options.autoRotateLabels) {
+      //check if we have overflows
+      var rotatedAny = false;
+      this.$node.selectAll('div.header')
+        .style('height', height + 'px').select('div.lu-label').each(function (d) {
+        const w = this.querySelector('span.lu-label').offsetWidth;
+        const actWidth = d.getWidth();
+        if (w > (actWidth+30)) { //rotate
+          d3.select(this).style('transform',`rotate(${that.options.rotationDegree}deg)`);
+          rotatedAny = true;
+        } else {
+          d3.select(this).style('transform',null);
+        }
+      });
+      this.$node.selectAll('div.header').style('margin-top', rotatedAny ? this.options.rotationHeight + 'px' : null);
+      height += rotatedAny ? this.options.rotationHeight : 0;
     }
-
-    this.renderColumns(columns, shifts);
+    this.$node.style('height', height + 'px');
   }
 
   private createToolbar($node:d3.Selection<model.Column>) {
@@ -486,7 +519,7 @@ export class HeaderRenderer {
       'background-color': (d) => d.color
     });
     $headers.attr({
-      class: (d) => clazz + ' ' + d.cssClass + ' ' + (d.compressed ? 'compressed' : ''),
+      class: (d) => `${clazz} ${d.cssClass||''} ${(d.compressed ? 'compressed' : '')} ${d.desc.type} ${this.options.autoRotateLabels ? 'rotateable': ''}`,
       title: (d) => d.label,
       'data-id': (d) => d.id,
     });

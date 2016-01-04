@@ -171,7 +171,7 @@ export class ContentScroller extends AEventDispatcher {
     /**
      * shift that should be used for calculating the top position
      */
-    topShift: 0,
+    topShift: () => 0,
     /**
      * backup rows, i.e .the number of rows that should also be shown for avoiding to frequent updates
      */
@@ -199,7 +199,7 @@ export class ContentScroller extends AEventDispatcher {
     //keep the previous state computing whether a redraw is needed
     this.prevScrollTop = container.scrollTop;
     //total shift to the top
-    this.shift = offset(content).top - offset(container).top + this.options.topShift;
+    this.shift = offset(content).top - offset(container).top;
   }
 
   /**
@@ -222,7 +222,7 @@ export class ContentScroller extends AEventDispatcher {
    * @returns {{from: number, to: number}} the slide to show
    */
   select(start:number, length:number, row2y:(i:number) => number) {
-    var top = this.container.scrollTop - this.shift,
+    var top = this.container.scrollTop - this.shift - this.options.topShift(),
       bottom = top + this.container.clientHeight,
       i = 0, j;
     /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);

@@ -214,33 +214,12 @@ $lu_drag_over: #979797;
     }
   }
 
-  div.header, div.header_i {
-    position: absolute;
-    display: inline-block;
-    overflow: hidden;
-    color: white;
-    text-align: center;
-    height: 100%;
-
-    font-size: 90%;
-
-    &:hover {
-      & > div.toolbar {
-        display: block;
-      }
-    }
-  }
-
-  div.header_i {
-    top: 50%;
-    height: 50%;
-  }
-
   div.lu-header div.toolbar {
     display: none;
     position: absolute;
     text-align: right;
     right: 5px;
+    top: 0;
     border-radius: 3px 0 0 3px;
     cursor: auto;
     background: #6D6C6C;
@@ -264,6 +243,7 @@ $lu_drag_over: #979797;
         right: 8px;
         top: 40%;
         height: 60%;
+        display: none;
 
         > div.bar {
           position: absolute;
@@ -288,9 +268,13 @@ $lu_drag_over: #979797;
       }
 
       div.lu-label {
-        position: absolute;
-        width: 100%;
-        height: 100%;
+        position: relative;
+        background: inherit;
+        transform-origin: left top;
+      }
+
+      span.lu-label {
+        background: inherit;
       }
 
       i.sort_indicator {
@@ -326,6 +310,41 @@ $lu_drag_over: #979797;
       &.filtered {
         color: darkblue;
       }
+    }
+
+    div.header, div.header_i {
+
+
+      position: absolute;
+      display: inline-block;
+      overflow: hidden;
+      color: white;
+      text-align: center;
+      height: 100%;
+
+      font-size: 90%;
+
+      &:hover {
+        & > div.toolbar {
+          display: block;
+        }
+      }
+
+      &.number, &.categorical, &.ordinal {
+        div.histogram {
+          display: block
+        }
+      }
+
+      &.rotateable {
+        overflow: visible;
+        white-space: nowrap;
+      }
+    }
+
+    div.header_i {
+      top: 50%;
+      height: 50%;
     }
   }
 

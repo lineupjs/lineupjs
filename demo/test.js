@@ -17,7 +17,7 @@ window.onload = function () {
     {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
     {label: 'Cat', type: 'categorical', column: 'cat', categories : ['c1','c2','c3']},
     {label: 'Ord', type: 'ordinal', column: 'cat', categories : ['c1','c2','c3']},
-    {label: 'Ann', type: 'annotate', column: 'd'}
+    {label: 'Annadfas fasdf adsf asdfasd fasd', type: 'annotate', column: 'd'}
   ];
   //var colors = d3.scale.category10();
   //desc.forEach(function (d, i) {
@@ -65,6 +65,9 @@ window.onload = function () {
     additionalDesc : [
       LineUpJS.model.StackColumn.desc('+ Stack')
     ],
+    htmlLayout: {
+      autoRotateLabels: true
+    },
     renderingOptions: {
       histograms: true
     }

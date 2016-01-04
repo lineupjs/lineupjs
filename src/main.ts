@@ -32,6 +32,9 @@ export class LineUp extends utils_.AEventDispatcher {
     numberformat: d3.format('.3n'),
     htmlLayout: {
       headerHeight: 20,
+      autoRotateLabels: false,
+      rotationHeight: 50, //in px
+      rotationDegree: -20, //in deg
       headerOffset: 1,
       buttonTopPadding: 10,
       labelLeftPadding: 5
@@ -92,7 +95,11 @@ export class LineUp extends utils_.AEventDispatcher {
     this.header = new ui_.HeaderRenderer(data, this.node, {
       manipulative: this.config.manipulative,
       headerHeight: this.config.htmlLayout.headerHeight,
-      histograms : this.config.renderingOptions.histograms
+      histograms : this.config.renderingOptions.histograms,
+
+      autoRotateLabels: this.config.htmlLayout.autoRotateLabels,
+      rotationHeight: this.config.htmlLayout.rotationHeight, //in px
+      rotationDegree:  this.config.htmlLayout.rotationDegree, //in deg
     });
     this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
       rowHeight: this.config.svgLayout.rowHeight,
@@ -113,7 +120,7 @@ export class LineUp extends utils_.AEventDispatcher {
       this.contentScroller = new utils_.ContentScroller(<Element>this.$container.node(), this.body.node, {
         backupRows: this.config.svgLayout.backupScrollRows,
         rowHeight: this.config.svgLayout.rowHeight,
-        topShift: this.config.htmlLayout.headerHeight
+        topShift: () => this.header.currentHeight()
       });
       this.contentScroller.on('scroll', (top, left) => {
         //in two svg mode propagate horizontal shift
