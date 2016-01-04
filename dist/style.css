@@ -162,9 +162,14 @@
       background-color: #8c8c8c;
       opacity: 0.5; }
       .lu div.lu-header div.header div.histogram > div.bar.selected, .lu-pool div.lu-header div.header div.histogram > div.bar.selected {
-        opacity: 0.8; }
+        opacity: 1.0; }
       .lu div.lu-header div.header div.histogram > div.bar:hover, .lu-pool div.lu-header div.header div.histogram > div.bar:hover {
         opacity: 0.7; }
+    .lu div.lu-header div.header div.histogram div.mean, .lu-pool div.lu-header div.header div.histogram div.mean {
+      position: absolute;
+      height: 100%;
+      width: 1px;
+      border-left: 1px solid black; }
   .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {
     position: absolute;
     width: 100%;

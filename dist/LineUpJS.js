@@ -966,12 +966,47 @@ var LinkColumn = (function (_super) {
         this.link = null;
         this.link = desc.link;
     }
+    LinkColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['linkChanged']);
+    };
+    LinkColumn.prototype.setLink = function (link) {
+        if (link == this.link) {
+            return;
+        }
+        this.fire(['linkChanged', 'dirtyValues', 'dirty'], this.link, this.link = link);
+    };
+    LinkColumn.prototype.getLink = function () {
+        return this.link || '';
+    };
+    LinkColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        if (this.link != this.desc.link) {
+            r.link = this.link;
+        }
+        return r;
+    };
+    LinkColumn.prototype.restore = function (dump, factory) {
+        _super.prototype.restore.call(this, dump, factory);
+        if (dump.link) {
+            this.link = dump.link;
+        }
+    };
     LinkColumn.prototype.getLabel = function (row) {
         var v = _super.prototype.getValue.call(this, row);
         if (v.alt) {
             return v.alt;
         }
         return '' + v;
+    };
+    LinkColumn.prototype.isLink = function (row) {
+        if (this.link) {
+            return true;
+        }
+        var v = _super.prototype.getValue.call(this, row);
+        if (v.href) {
+            return true;
+        }
+        return false;
     };
     LinkColumn.prototype.getValue = function (row) {
         var v = _super.prototype.getValue.call(this, row);
@@ -1783,6 +1818,7 @@ function computeStats(arr, acc, range) {
         return {
             min: NaN,
             max: NaN,
+            mean: NaN,
             count: 0,
             maxBin: 0,
             hist: []
@@ -1792,10 +1828,12 @@ function computeStats(arr, acc, range) {
     if (range) {
         hist.range(function () { return range; });
     }
+    var ex = d3.extent(arr, acc);
     var hist_data = hist(arr);
     return {
-        min: hist_data[0].x,
-        max: hist_data[hist_data.length - 1].x + hist_data[hist_data.length - 1].dx,
+        min: ex[0],
+        max: ex[1],
+        mean: d3.mean(arr, acc),
         count: arr.length,
         maxBin: d3.max(hist_data, function (d) { return d.y; }),
         hist: hist_data
@@ -2964,13 +3002,13 @@ var HeaderRenderer = (function () {
     }
     HeaderRenderer.prototype.changeDataStorage = function (data) {
         if (this.data) {
-            this.data.on('dirtyHeader.headerRenderer', null);
-            this.data.on('orderChanged.headerRenderer', null);
+            this.data.on(['dirtyHeader.headerRenderer', 'orderChanged.headerRenderer', 'selectionChanged.headerRenderer'], null);
         }
         this.data = data;
         data.on('dirtyHeader.headerRenderer', utils.delayedCall(this.update.bind(this), 1));
         if (this.options.histograms) {
             data.on('orderChanged.headerRenderer', this.updateHist.bind(this));
+            data.on('selectionChanged.headerRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
         }
     };
     HeaderRenderer.prototype.updateHist = function () {
@@ -2988,6 +3026,50 @@ var HeaderRenderer = (function () {
             });
         });
         this.update();
+    };
+    HeaderRenderer.prototype.drawSelection = function () {
+        var _this = this;
+        if (!this.options.histograms) {
+            return;
+        }
+        var node = this.$node.node();
+        [].slice.call(node.querySelectorAll('div.bar')).forEach(function (d) { return d.classList.remove('selected'); });
+        var indices = this.data.getSelection();
+        if (indices.length <= 0) {
+            return;
+        }
+        this.data.view(indices).then(function (data) {
+            var rankings = _this.data.getRankings();
+            rankings.forEach(function (ranking) {
+                var cols = ranking.flatColumns;
+                cols.filter(function (d) { return d instanceof model.NumberColumn; }).forEach(function (col) {
+                    var bars = [].slice.call(node.querySelectorAll("div.header[data-id=\"" + col.id + "\"] div.bar"));
+                    data.forEach(function (d) {
+                        var v = col.getValue(d);
+                        for (var i = 1; i < bars.length; ++i) {
+                            var bar = bars[i];
+                            if (bar.dataset.x > v) {
+                                bars[i - 1].classList.add('selected');
+                                break;
+                            }
+                            else if (i === bars.length - 1) {
+                                bar.classList.add('selected');
+                                break;
+                            }
+                        }
+                    });
+                });
+                cols.filter(model.isCategoricalColumn).forEach(function (col) {
+                    var header = node.querySelector("div.header[data-id=\"" + col.id + "\"]");
+                    data.forEach(function (d) {
+                        var cats = col.getCategories(d);
+                        (cats || []).forEach(function (cat) {
+                            header.querySelector("div.bar[data-cat=\"" + cat + "\"]").classList.add('selected');
+                        });
+                    });
+                });
+            });
+        });
     };
     HeaderRenderer.prototype.update = function () {
         var _this = this;
@@ -3026,6 +3108,10 @@ var HeaderRenderer = (function () {
         $regular.append('i').attr('class', 'fa fa-code-fork').attr('title', 'Generate Snapshot').on('click', function (d) {
             var r = provider.pushRanking();
             r.push(provider.clone(d));
+            d3.event.stopPropagation();
+        });
+        $node.filter(function (d) { return d instanceof model.LinkColumn; }).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
+            dialogs.openEditLinkDialog(d, d3.select(this.parentNode.parentNode));
             d3.event.stopPropagation();
         });
         $node.filter(function (d) { return filterDialogs.hasOwnProperty(d.desc.type); }).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
@@ -3124,7 +3210,8 @@ var HeaderRenderer = (function () {
         });
         $headers.attr({
             class: function (d) { return clazz + ' ' + d.cssClass + ' ' + (d.compressed ? 'compressed' : ''); },
-            title: function (d) { return d.label; }
+            title: function (d) { return d.label; },
+            'data-id': function (d) { return d.id; },
         });
         $headers.select('i.sort_indicator').attr('class', function (d) {
             var r = d.findMyRanker();
@@ -3179,7 +3266,10 @@ var HeaderRenderer = (function () {
                             top: function (d) { return (100 - sy(d.y)) + '%'; },
                             height: function (d) { return sy(d.y) + '%'; },
                             'background-color': function (d) { return col.colorOf(d.cat); }
-                        }).attr('title', function (d) { return (d.cat + ": " + d.y); });
+                        }).attr({
+                            title: function (d) { return (d.cat + ": " + d.y); },
+                            'data-cat': function (d) { return d.cat; }
+                        });
                         $bars.exit().remove();
                     });
                 }
@@ -3198,8 +3288,16 @@ var HeaderRenderer = (function () {
                             width: function (d, i) { return sx.rangeBand() + '%'; },
                             top: function (d) { return (100 - sy(d.y)) + '%'; },
                             height: function (d) { return sy(d.y) + '%'; }
-                        }).attr('title', function (d, i) { return ("Bin " + i + ": " + d.y); });
+                        }).attr({
+                            title: function (d, i) { return ("Bin " + i + ": " + d.y); },
+                            'data-x': function (d) { return d.x; }
+                        });
                         $bars.exit().remove();
+                        var $mean = $this.select('div.mean');
+                        if ($mean.empty()) {
+                            $mean = $this.append('div').classed('mean', true);
+                        }
+                        $mean.style('left', (stats.mean * 100) + '%');
                     });
                 }
             });
@@ -3613,6 +3711,19 @@ function openRenameDialog(column, $header) {
     });
 }
 exports.openRenameDialog = openRenameDialog;
+function openEditLinkDialog(column, $header) {
+    var t = "<input type=\"text\" size=\"15\" value=\"" + column.getLink() + "\" required=\"required\" autofocus=\"autofocus\"><br>";
+    var popup = makePopup($header, 'Edit Link ($ as Placeholder)', t);
+    popup.select('.ok').on('click', function () {
+        var newValue = popup.select('input[type="text"]').property('value');
+        column.setLink(newValue);
+        popup.remove();
+    });
+    popup.select('.cancel').on('click', function () {
+        popup.remove();
+    });
+}
+exports.openEditLinkDialog = openEditLinkDialog;
 function openSearchDialog(column, $header, provider) {
     var popup = makePopup($header, 'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
     popup.select('input[type="text"]').on('input', function () {

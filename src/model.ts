@@ -734,9 +734,11 @@ export class LinkColumn extends StringColumn {
   }
 
   setLink(link: string) {
-    if (link == this.link) { //== on purpose
+    /* tslint:disable */
+    if (link == this.link) { /*== on purpose*/
       return;
     }
+    /* tslint:enable */
     this.fire(['linkChanged', 'dirtyValues', 'dirty'], this.link, this.link = link);
   }
 
@@ -746,9 +748,11 @@ export class LinkColumn extends StringColumn {
 
   dump(toDescRef:(desc:any) => any):any {
     var r = super.dump(toDescRef);
+    /* tslint:disable */
     if (this.link != (<any>this.desc).link) {
       r.link = this.link;
     }
+    /* tslint:enable */
     return r;
   }
 
