@@ -65,6 +65,9 @@ var LineUp = (function (_super) {
             numberformat: d3.format('.3n'),
             htmlLayout: {
                 headerHeight: 20,
+                autoRotateLabels: false,
+                rotationHeight: 50,
+                rotationDegree: -20,
                 headerOffset: 1,
                 buttonTopPadding: 10,
                 labelLeftPadding: 5
@@ -108,7 +111,10 @@ var LineUp = (function (_super) {
         this.header = new ui_.HeaderRenderer(data, this.node, {
             manipulative: this.config.manipulative,
             headerHeight: this.config.htmlLayout.headerHeight,
-            histograms: this.config.renderingOptions.histograms
+            histograms: this.config.renderingOptions.histograms,
+            autoRotateLabels: this.config.htmlLayout.autoRotateLabels,
+            rotationHeight: this.config.htmlLayout.rotationHeight,
+            rotationDegree: this.config.htmlLayout.rotationDegree,
         });
         this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
             rowHeight: this.config.svgLayout.rowHeight,
@@ -128,7 +134,7 @@ var LineUp = (function (_super) {
             this.contentScroller = new utils_.ContentScroller(this.$container.node(), this.body.node, {
                 backupRows: this.config.svgLayout.backupScrollRows,
                 rowHeight: this.config.svgLayout.rowHeight,
-                topShift: this.config.htmlLayout.headerHeight
+                topShift: function () { return _this.header.currentHeight(); }
             });
             this.contentScroller.on('scroll', function (top, left) {
                 _this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
@@ -2886,7 +2892,7 @@ var PoolRenderer = (function () {
             });
         }
         $headers_enter.append('span').classed('label', true).text(function (d) { return d.label; });
-        $headers.attr('class', function (d) { return 'header ' + (d.cssClass || ''); });
+        $headers.attr('class', function (d) { return ("header " + (d.cssClass || '') + " " + d.type); });
         $headers.style({
             'transform': function (d, i) {
                 var pos = _this.layout(i);
@@ -2951,7 +2957,10 @@ var HeaderRenderer = (function () {
             histograms: false,
             filterDialogs: dialogs.filterDialogs(),
             searchAble: function (col) { return col instanceof model.StringColumn; },
-            sortOnLabel: true
+            sortOnLabel: true,
+            autoRotateLabels: false,
+            rotationHeight: 50,
+            rotationDegree: -20,
         };
         this.histCache = d3.map();
         this.dragHandler = d3.behavior.drag()
@@ -3010,6 +3019,9 @@ var HeaderRenderer = (function () {
             data.on('orderChanged.headerRenderer', this.updateHist.bind(this));
             data.on('selectionChanged.headerRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
         }
+    };
+    HeaderRenderer.prototype.currentHeight = function () {
+        return parseInt(this.$node.style('height'), 10);
     };
     HeaderRenderer.prototype.updateHist = function () {
         var _this = this;
@@ -3073,6 +3085,7 @@ var HeaderRenderer = (function () {
     };
     HeaderRenderer.prototype.update = function () {
         var _this = this;
+        var that = this;
         var rankings = this.data.getRankings();
         var shifts = [], offset = 0;
         rankings.forEach(function (ranking) {
@@ -3080,6 +3093,10 @@ var HeaderRenderer = (function () {
         });
         offset -= this.options.slopeWidth;
         var columns = shifts.map(function (d) { return d.col; });
+        if (this.options.histograms && this.histCache.empty() && rankings.length > 0) {
+            this.updateHist();
+        }
+        this.renderColumns(columns, shifts);
         function countStacked(c) {
             if (c instanceof model.StackColumn && !c.collapsed && !c.compressed) {
                 return 1 + Math.max.apply(Math, c.children.map(countStacked));
@@ -3087,11 +3104,25 @@ var HeaderRenderer = (function () {
             return 1;
         }
         var levels = Math.max.apply(Math, columns.map(countStacked));
-        this.$node.style('height', this.options.headerHeight * levels + 'px');
-        if (this.options.histograms && this.histCache.empty() && rankings.length > 0) {
-            this.updateHist();
+        var height = levels * this.options.headerHeight;
+        if (this.options.autoRotateLabels) {
+            var rotatedAny = false;
+            this.$node.selectAll('div.header')
+                .style('height', height + 'px').select('div.lu-label').each(function (d) {
+                var w = this.querySelector('span.lu-label').offsetWidth;
+                var actWidth = d.getWidth();
+                if (w > (actWidth + 30)) {
+                    d3.select(this).style('transform', "rotate(" + that.options.rotationDegree + "deg)");
+                    rotatedAny = true;
+                }
+                else {
+                    d3.select(this).style('transform', null);
+                }
+            });
+            this.$node.selectAll('div.header').style('margin-top', rotatedAny ? this.options.rotationHeight + 'px' : null);
+            height += rotatedAny ? this.options.rotationHeight : 0;
         }
-        this.renderColumns(columns, shifts);
+        this.$node.style('height', height + 'px');
     };
     HeaderRenderer.prototype.createToolbar = function ($node) {
         var _this = this;
@@ -3209,7 +3240,7 @@ var HeaderRenderer = (function () {
             'background-color': function (d) { return d.color; }
         });
         $headers.attr({
-            class: function (d) { return clazz + ' ' + d.cssClass + ' ' + (d.compressed ? 'compressed' : ''); },
+            class: function (d) { return (clazz + " " + (d.cssClass || '') + " " + (d.compressed ? 'compressed' : '') + " " + d.desc.type + " " + (_this.options.autoRotateLabels ? 'rotateable' : '')); },
             title: function (d) { return d.label; },
             'data-id': function (d) { return d.id; },
         });
@@ -4124,7 +4155,7 @@ var ContentScroller = (function (_super) {
         this.container = container;
         this.content = content;
         this.options = {
-            topShift: 0,
+            topShift: function () { return 0; },
             backupRows: 5,
             rowHeight: 10
         };
@@ -4133,13 +4164,13 @@ var ContentScroller = (function (_super) {
         merge(this.options, options);
         d3.select(container).on('scroll.scroller', function () { return _this.onScroll(); });
         this.prevScrollTop = container.scrollTop;
-        this.shift = offset(content).top - offset(container).top + this.options.topShift;
+        this.shift = offset(content).top - offset(container).top;
     }
     ContentScroller.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat(['scroll', 'redraw']);
     };
     ContentScroller.prototype.select = function (start, length, row2y) {
-        var top = this.container.scrollTop - this.shift, bottom = top + this.container.clientHeight, i = 0, j;
+        var top = this.container.scrollTop - this.shift - this.options.topShift(), bottom = top + this.container.clientHeight, i = 0, j;
         if (top > 0) {
             i = Math.round(top / this.options.rowHeight);
             while (i >= start && row2y(i + 1) > top) {
