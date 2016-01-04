@@ -28,6 +28,31 @@ function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):m
 }
 
 /**
+ * computes a categorical histogram
+ * @param arr the data array
+ * @param acc the accessor
+ * @param categories the list of known categories
+ * @returns {{hist: {cat: string, y: number}[]}}
+ */
+function computeHist(arr:any[], acc:(any) => string[], categories: string[]):model.ICategoricalStatistics {
+  var m = d3.map<number>();
+  categories.forEach((cat) => m.set(cat, 0));
+
+  arr.forEach((a) => {
+    const vs = acc(a);
+    if (vs == null) {
+      return;
+    }
+    vs.forEach((v) => {
+      m.set(v, (m.get(v) || 0) + 1);
+    });
+  });
+  return {
+    hist: m.entries().map((entry) => ({ cat: entry.key, y : entry.value}))
+  };
+}
+
+/**
  * a basic data provider holding the data and rankings
  */
 export class DataProvider extends utils.AEventDispatcher {
@@ -60,7 +85,11 @@ export class DataProvider extends utils.AEventDispatcher {
     var that = this;
     this.reorder = function () {
       var ranking = this.source;
-      that.sort(ranking).then((order) => ranking.setOrder(order));
+      that.sort(ranking).then((order) => {
+        ranking.setOrder(order);
+        //update all histograms if they are needed
+
+      });
     };
   }
 
@@ -434,13 +463,15 @@ export class DataProvider extends utils.AEventDispatcher {
   }
 
   /**
-   * computes the statistics of a number column, i.e. for histograms
+   * helper for computing statistics
    * @param indices
-   * @param col
-   * @returns {Promise<any>}
+   * @returns {{stats: (function(model.INumberColumn): *), hist: (function(model.ICategoricalColumn): *)}}
    */
-  stats(indices:number[], col:model.INumberColumn):Promise<model.IStatistics> {
-    return Promise.reject('not implemented');
+  stats(indices:number[]) {
+    return {
+      stats: (col:model.INumberColumn) => Promise.reject('not implemented'),
+      hist: (col:model.ICategoricalColumn) => Promise.reject('not implemented')
+    };
   }
 
   /**
@@ -705,14 +736,23 @@ export class LocalDataProvider extends CommonDataProvider {
     return Promise.resolve(slice);
   }
 
+  /**
+   * helper for computing statistics
+   * @param indices
+   * @returns {{stats: (function(model.INumberColumn): *), hist: (function(model.ICategoricalColumn): *)}}
+   */
+  stats(indices:number[]) {
+    var d:Promise<any[]> = null;
+    return {
+      stats: (col:model.INumberColumn) => ((d === null) ? (d = this.view(indices)) : d).then((data) => computeStats(data, col.getNumber.bind(col), [0, 1])),
+      hist: (col:model.ICategoricalColumn) => ((d === null) ? (d = this.view(indices)) : d).then((data) => computeHist(data, col.getCategories.bind(col), col.categories))
+    };
+  }
+
+
   mappingSample(col:model.NumberColumn):Promise<number[]> {
     //return all
     return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
-  }
-
-  stats(indices:number[], col:model.INumberColumn):Promise<model.IStatistics> {
-    //compute local stats
-    return Promise.resolve(computeStats(this.data, col.getNumber.bind(col), [0, 1]));
   }
 
   searchSelect(search:string|RegExp, col:model.Column) {

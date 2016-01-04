@@ -43,7 +43,7 @@ export interface IColumnDesc {
   /**
    * the column type
    */
-    type:string;
+  type:string;
 }
 
 export interface IStatistics {
@@ -51,6 +51,10 @@ export interface IStatistics {
   max: number;
   count: number;
   hist: { x : number; dx : number; y : number;}[];
+}
+
+export interface ICategoricalStatistics {
+  hist: { cat: string; y : number }[];
 }
 
 /**
@@ -373,6 +377,12 @@ export class DummyColumn extends Column {
 
 export interface INumberColumn {
   getNumber(row:any): number;
+}
+
+export interface ICategoricalColumn {
+  categories: string[];
+
+  getCategories(row: any): string[];
 }
 
 /**
@@ -783,7 +793,7 @@ export class AnnotateColumn extends StringColumn {
 /**
  * column for categorical values
  */
-export class CategoricalColumn extends ValueColumn<string> {
+export class CategoricalColumn extends ValueColumn<string> implements ICategoricalColumn {
   /**
    * colors for each category
    * @type {Ordinal<string, string>}
@@ -858,6 +868,10 @@ export class CategoricalColumn extends ValueColumn<string> {
     var v = StringColumn.prototype.getValue.call(this, row);
     const r = v.split(this.separator);
     return r;
+  }
+
+  getCategories(row: any) {
+    return this.getValues(row);
   }
 
   getColor(row:any) {
@@ -938,9 +952,9 @@ export class CategoricalColumn extends ValueColumn<string> {
 }
 
 /**
- * similar to a categorical column but the categoriees are mapped to numbers
+ * similar to a categorical column but the categories are mapped to numbers
  */
-export class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn {
+export class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
   private colors = d3.scale.category10();
   private scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
 
@@ -1003,6 +1017,10 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   getValues(row:any) {
     const r = CategoricalColumn.prototype.getValues.call(this, row);
     return r.map(this.scale);
+  }
+
+  getCategories(row: any) {
+    return this.getValues(row);
   }
 
   getNumber(row:any) {
