@@ -566,6 +566,12 @@ export class HeaderRenderer {
               'data-x': (d) => d.x
             });
             $bars.exit().remove();
+
+            var $mean = $this.select('div.mean');
+            if ($mean.empty()) {
+              $mean = $this.append('div').classed('mean',true);
+            }
+            $mean.style('left', (stats.mean * 100) + '%');
           });
         }
       });

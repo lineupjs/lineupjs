@@ -264,6 +264,7 @@ $lu_drag_over: #979797;
         right: 8px;
         top: 40%;
         height: 60%;
+
         > div.bar {
           position: absolute;
           background-color: #8c8c8c;
@@ -276,6 +277,13 @@ $lu_drag_over: #979797;
           &:hover {
             opacity: 0.7;
           }
+        }
+
+        div.mean {
+          position: absolute;
+          height: 100%;
+          width: 1px;
+          border-left: 1px solid black;
         }
       }
 
