@@ -50,10 +50,12 @@ export interface IStatistics {
   min: number;
   max: number;
   count: number;
+  maxBin: number;
   hist: { x : number; dx : number; y : number;}[];
 }
 
 export interface ICategoricalStatistics {
+  maxBin: number;
   hist: { cat: string; y : number }[];
 }
 
@@ -388,10 +390,19 @@ export interface ICategoricalColumn {
 /**
  * checks whether the given column or description is a number column, i.e. the value is a number
  * @param col
- * @returns {boolean|RegExpMatchArray}
+ * @returns {boolean}
  */
 export function isNumberColumn(col:Column|IColumnDesc) {
-  return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/)));
+  return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
+}
+
+/**
+ * checks whether the given column or description is a categorical column, i.e. the value is a list of categories
+ * @param col
+ * @returns {boolean}
+ */
+export function isCategoricalColumn(col:Column|IColumnDesc) {
+  return (col instanceof Column && typeof (<any>col).getCategories === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal)/) != null));
 }
 
 /**
@@ -844,6 +855,10 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
     return this.colors.range();
   }
 
+  colorOf(cat: string) {
+    return this.colors(cat);
+  }
+
   getLabel(row:any) {
     return '' + StringColumn.prototype.getValue.call(this, row);
   }
@@ -997,6 +1012,10 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     return this.colors.range();
   }
 
+  colorOf(cat: string) {
+    return this.colors(cat);
+  }
+
   getLabel(row:any) {
     return CategoricalColumn.prototype.getLabel.call(this, row);
   }
@@ -1020,7 +1039,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   }
 
   getCategories(row: any) {
-    return this.getValues(row);
+    return CategoricalColumn.prototype.getValues.call(this, row);
   }
 
   getNumber(row:any) {

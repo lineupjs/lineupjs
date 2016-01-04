@@ -72,7 +72,8 @@ var LineUp = (function (_super) {
             renderingOptions: {
                 stacked: false,
                 animation: true,
-                visibleRowsOnly: true
+                visibleRowsOnly: true,
+                histograms: false
             },
             svgLayout: {
                 rowHeight: 17,
@@ -106,7 +107,8 @@ var LineUp = (function (_super) {
         this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
         this.header = new ui_.HeaderRenderer(data, this.node, {
             manipulative: this.config.manipulative,
-            headerHeight: this.config.htmlLayout.headerHeight
+            headerHeight: this.config.htmlLayout.headerHeight,
+            histograms: this.config.renderingOptions.histograms
         });
         this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
             rowHeight: this.config.svgLayout.rowHeight,
@@ -494,2319 +496,1805 @@ function open(scale, dataDomain, dataPromise, options) {
 exports.open = open;
 
 },{"./utils":8,"d3":undefined}],3:[function(require,module,exports){
-/**
- * Created by Samuel Gratzl on 06.08.2015.
- */
-///<reference path='../typings/tsd.d.ts' />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", 'd3', './utils'], function (require, exports, d3, utils) {
-    /**
-     * converts a given id to css compatible one
-     * @param id
-     * @return {string|void}
-     */
-    function fixCSS(id) {
-        return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_'); //replace non css stuff to _
+var d3 = require('d3');
+var utils = require('./utils');
+function fixCSS(id) {
+    return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_');
+}
+function numberCompare(a, b) {
+    if (a === b || (isNaN(a) && isNaN(b))) {
+        return 0;
     }
-    /**
-     * save number comparison
-     * @param a
-     * @param b
-     * @return {number}
-     */
-    function numberCompare(a, b) {
-        if (a === b || (isNaN(a) && isNaN(b))) {
-            return 0;
-        }
-        return a - b;
+    return a - b;
+}
+var Column = (function (_super) {
+    __extends(Column, _super);
+    function Column(id, desc) {
+        _super.call(this);
+        this.desc = desc;
+        this.width_ = 100;
+        this.parent = null;
+        this._compressed = false;
+        this.id = fixCSS(id);
+        this.label = this.desc.label || this.id;
+        this.cssClass = this.desc.cssClass || '';
+        this.color = this.desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
     }
-    /**
-     * a column in LineUp
-     */
-    var Column = (function (_super) {
-        __extends(Column, _super);
-        function Column(id, desc) {
-            _super.call(this);
-            this.desc = desc;
-            /**
-             * width of the column
-             * @type {number}
-             * @private
-             */
-            this.width_ = 100;
-            this.parent = null;
-            /**
-             * whether this column is compressed i.e. just shown in a minimal version
-             * @type {boolean}
-             * @private
-             */
-            this._compressed = false;
-            this.id = fixCSS(id);
-            this.label = this.desc.label || this.id;
-            this.cssClass = this.desc.cssClass || '';
-            this.color = this.desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
-        }
-        Column.prototype.assignNewId = function (idGenerator) {
-            this.id = fixCSS(idGenerator());
-        };
-        Column.prototype.init = function (callback) {
-            return Promise.resolve(true);
-        };
-        Object.defineProperty(Column.prototype, "fqid", {
-            /**
-             * returns the fully qualified id i.e. path the parent
-             * @returns {string}
-             */
-            get: function () {
-                return this.parent ? this.parent.fqid + '_' + this.id : this.id;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * fires:
-         *  * widthChanged
-         *  * filterChanged
-         *  * labelChanged,
-         *  * compressChanged
-         *  * addColumn, removeColumn ... for composite pattern
-         *  * dirty, dirtyHeader, dirtyValues
-         * @returns {string[]}
-         */
-        Column.prototype.createEventList = function () {
-            return _super.prototype.createEventList.call(this).concat(['widthChanged', 'filterChanged', 'labelChanged', 'compressChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
-        };
-        Column.prototype.getWidth = function () {
-            return this.width_;
-        };
-        Object.defineProperty(Column.prototype, "compressed", {
-            get: function () {
-                return this._compressed;
-            },
-            set: function (value) {
-                if (this._compressed === value) {
-                    return;
-                }
-                this.fire(['compressChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this._compressed, this._compressed = value);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * visitor pattern for flattening the columns
-         * @param r the result array
-         * @param offset left offeset
-         * @param levelsToGo how many levels down
-         * @param padding padding between columns
-         * @returns {number} the used width by this column
-         */
-        Column.prototype.flatten = function (r, offset, levelsToGo, padding) {
-            if (levelsToGo === void 0) { levelsToGo = 0; }
-            if (padding === void 0) { padding = 0; }
-            var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
-            r.push({ col: this, offset: offset, width: w });
-            return w;
-        };
-        Column.prototype.setWidth = function (value) {
-            if (this.width_ === value) {
+    Column.prototype.assignNewId = function (idGenerator) {
+        this.id = fixCSS(idGenerator());
+    };
+    Column.prototype.init = function (callback) {
+        return Promise.resolve(true);
+    };
+    Object.defineProperty(Column.prototype, "fqid", {
+        get: function () {
+            return this.parent ? this.parent.fqid + '_' + this.id : this.id;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Column.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['widthChanged', 'filterChanged', 'labelChanged', 'compressChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
+    };
+    Column.prototype.getWidth = function () {
+        return this.width_;
+    };
+    Object.defineProperty(Column.prototype, "compressed", {
+        get: function () {
+            return this._compressed;
+        },
+        set: function (value) {
+            if (this._compressed === value) {
                 return;
             }
-            this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.width_, this.width_ = value);
+            this.fire(['compressChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this._compressed, this._compressed = value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Column.prototype.flatten = function (r, offset, levelsToGo, padding) {
+        if (levelsToGo === void 0) { levelsToGo = 0; }
+        if (padding === void 0) { padding = 0; }
+        var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
+        r.push({ col: this, offset: offset, width: w });
+        return w;
+    };
+    Column.prototype.setWidth = function (value) {
+        if (this.width_ === value) {
+            return;
+        }
+        this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.width_, this.width_ = value);
+    };
+    Column.prototype.setWidthImpl = function (value) {
+        this.width_ = value;
+    };
+    Column.prototype.setMetaData = function (value, color) {
+        if (color === void 0) { color = this.color; }
+        if (value === this.label && this.color === color) {
+            return;
+        }
+        var events = this.color === color ? ['labelChanged', 'dirtyHeader', 'dirty'] : ['labelChanged', 'dirtyHeader', 'dirtyValues', 'dirty'];
+        this.fire(events, { label: this.label, color: this.color }, {
+            label: this.label = value,
+            color: this.color = color
+        });
+    };
+    Column.prototype.sortByMe = function (ascending) {
+        if (ascending === void 0) { ascending = false; }
+        var r = this.findMyRanker();
+        if (r) {
+            return r.sortBy(this, ascending);
+        }
+        return false;
+    };
+    Column.prototype.toggleMySorting = function () {
+        var r = this.findMyRanker();
+        if (r) {
+            return r.toggleSorting(this);
+        }
+        return false;
+    };
+    Column.prototype.removeMe = function () {
+        if (this.parent) {
+            return this.parent.remove(this);
+        }
+        return false;
+    };
+    Column.prototype.insertAfterMe = function (col) {
+        if (this.parent) {
+            return this.parent.insertAfter(col, this);
+        }
+        return false;
+    };
+    Column.prototype.findMyRanker = function () {
+        if (this.parent) {
+            return this.parent.findMyRanker();
+        }
+        return null;
+    };
+    Column.prototype.dump = function (toDescRef) {
+        var r = {
+            id: this.id,
+            desc: toDescRef(this.desc),
+            width: this.width_,
+            compressed: this.compressed
         };
-        Column.prototype.setWidthImpl = function (value) {
-            this.width_ = value;
-        };
-        Column.prototype.setMetaData = function (value, color) {
-            if (color === void 0) { color = this.color; }
-            if (value === this.label && this.color === color) {
-                return;
-            }
-            var events = this.color === color ? ['labelChanged', 'dirtyHeader', 'dirty'] : ['labelChanged', 'dirtyHeader', 'dirtyValues', 'dirty'];
-            this.fire(events, { label: this.label, color: this.color }, {
-                label: this.label = value,
-                color: this.color = color
+        if (this.label !== (this.desc.label || this.id)) {
+            r.label = this.label;
+        }
+        if (this.color !== (this.desc.color || Column.DEFAULT_COLOR) && this.color) {
+            r.color = this.color;
+        }
+        return r;
+    };
+    Column.prototype.restore = function (dump, factory) {
+        this.width_ = dump.width || this.width_;
+        this.label = dump.label || this.label;
+        this.color = dump.color || this.color;
+        this.compressed = dump.compressed === true;
+    };
+    Column.prototype.getLabel = function (row) {
+        return '' + this.getValue(row);
+    };
+    Column.prototype.getValue = function (row) {
+        return '';
+    };
+    Column.prototype.compare = function (a, b) {
+        return 0;
+    };
+    Column.prototype.isFiltered = function () {
+        return false;
+    };
+    Column.prototype.filter = function (row) {
+        return row !== null;
+    };
+    Column.DEFAULT_COLOR = '#C1C1C1';
+    Column.FLAT_ALL_COLUMNS = -1;
+    Column.COMPRESSED_WIDTH = 16;
+    return Column;
+})(utils.AEventDispatcher);
+exports.Column = Column;
+var ValueColumn = (function (_super) {
+    __extends(ValueColumn, _super);
+    function ValueColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.accessor = desc.accessor || (function (row, id, desc) { return null; });
+    }
+    ValueColumn.prototype.getLabel = function (row) {
+        return '' + this.getValue(row);
+    };
+    ValueColumn.prototype.getValue = function (row) {
+        return this.accessor(row, this.id, this.desc);
+    };
+    ValueColumn.prototype.compare = function (a, b) {
+        return 0;
+    };
+    return ValueColumn;
+})(Column);
+exports.ValueColumn = ValueColumn;
+var DummyColumn = (function (_super) {
+    __extends(DummyColumn, _super);
+    function DummyColumn(id, desc) {
+        _super.call(this, id, desc);
+    }
+    DummyColumn.prototype.getLabel = function (row) {
+        return '';
+    };
+    DummyColumn.prototype.getValue = function (row) {
+        return '';
+    };
+    DummyColumn.prototype.compare = function (a, b) {
+        return 0;
+    };
+    return DummyColumn;
+})(Column);
+exports.DummyColumn = DummyColumn;
+function isNumberColumn(col) {
+    return (col instanceof Column && typeof col.getNumber === 'function' || (!(col instanceof Column) && col.type.match(/(number|stack|ordinal)/) != null));
+}
+exports.isNumberColumn = isNumberColumn;
+function isCategoricalColumn(col) {
+    return (col instanceof Column && typeof col.getCategories === 'function' || (!(col instanceof Column) && col.type.match(/(categorical|ordinal)/) != null));
+}
+exports.isCategoricalColumn = isCategoricalColumn;
+var NumberColumn = (function (_super) {
+    __extends(NumberColumn, _super);
+    function NumberColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.missingValue = 0;
+        this.transformation = 'linear';
+        this.scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+        this.original = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+        this.filter_ = { min: -Infinity, max: Infinity };
+        if (desc.transformation === 'log') {
+            this.scale = d3.scale.log().domain([NaN, NaN]).range([0, 1]).clamp(true);
+            this.original = d3.scale.log().domain([NaN, NaN]).range([0, 1]).clamp(true);
+        }
+        else if (desc.transformation === 'invert') {
+            this.scale.range([1, 0]);
+        }
+        this.transformation = desc.transformation || 'linear';
+        if (desc.domain) {
+            this.scale.domain(desc.domain);
+        }
+        if (desc.range) {
+            this.scale.range(desc.range);
+        }
+        this.original.domain(this.scale.domain()).range(this.scale.range());
+    }
+    NumberColumn.prototype.init = function (callback) {
+        var _this = this;
+        var d = this.scale.domain();
+        if (isNaN(d[0]) || isNaN(d[1])) {
+            return callback(this.desc).then(function (stats) {
+                _this.scale.domain([stats.min, stats.max]);
+                _this.original.domain(_this.scale.domain());
+                return true;
             });
-        };
-        /**
-         * triggers that the ranking is sorted by this column
-         * @param ascending
-         * @returns {any}
-         */
-        Column.prototype.sortByMe = function (ascending) {
-            if (ascending === void 0) { ascending = false; }
-            var r = this.findMyRanker();
-            if (r) {
-                return r.sortBy(this, ascending);
-            }
-            return false;
-        };
-        /**
-         * toggles the sorting order of this column in the ranking
-         * @returns {any}
-         */
-        Column.prototype.toggleMySorting = function () {
-            var r = this.findMyRanker();
-            if (r) {
-                return r.toggleSorting(this);
-            }
-            return false;
-        };
-        /**
-         * removes the column from the ranking
-         * @returns {boolean}
-         */
-        Column.prototype.removeMe = function () {
-            if (this.parent) {
-                return this.parent.remove(this);
-            }
-            return false;
-        };
-        /**
-         * inserts the given column after itself
-         * @param col
-         * @returns {boolean}
-         */
-        Column.prototype.insertAfterMe = function (col) {
-            if (this.parent) {
-                return this.parent.insertAfter(col, this);
-            }
-            return false;
-        };
-        /**
-         * finds the underlying ranking column
-         * @returns {RankColumn}
-         */
-        Column.prototype.findMyRanker = function () {
-            if (this.parent) {
-                return this.parent.findMyRanker();
-            }
-            return null;
-        };
-        /**
-         * dumps this column to JSON compatible format
-         * @param toDescRef
-         * @returns {any}
-         */
-        Column.prototype.dump = function (toDescRef) {
-            var r = {
-                id: this.id,
-                desc: toDescRef(this.desc),
-                width: this.width_,
-                compressed: this.compressed
-            };
-            if (this.label !== (this.desc.label || this.id)) {
-                r.label = this.label;
-            }
-            if (this.color !== (this.desc.color || Column.DEFAULT_COLOR) && this.color) {
-                r.color = this.color;
-            }
-            return r;
-        };
-        /**
-         * restore the column content from a dump
-         * @param dump
-         * @param factory
-         */
-        Column.prototype.restore = function (dump, factory) {
-            this.width_ = dump.width || this.width_;
-            this.label = dump.label || this.label;
-            this.color = dump.color || this.color;
-            this.compressed = dump.compressed === true;
-        };
-        /**
-         * return the label of a given row for the current column
-         * @param row
-         * @return {string}
-         */
-        Column.prototype.getLabel = function (row) {
-            return '' + this.getValue(row);
-        };
-        /**
-         * return the value of a given row for the current column
-         * @param row
-         * @return
-         */
-        Column.prototype.getValue = function (row) {
-            return ''; //no value
-        };
-        /**
-         * compare function used to determine the order according to the values of the current column
-         * @param a
-         * @param b
-         * @return {number}
-         */
-        Column.prototype.compare = function (a, b) {
-            return 0; //can't compare
-        };
-        /**
-         * flag whether any filter is applied
-         * @return {boolean}
-         */
-        Column.prototype.isFiltered = function () {
-            return false;
-        };
-        /**
-         * predicate whether the current row should be included
-         * @param row
-         * @return {boolean}
-         */
-        Column.prototype.filter = function (row) {
-            return row !== null;
-        };
-        /**
-         * default color that should be used
-         * @type {string}
-         */
-        Column.DEFAULT_COLOR = '#C1C1C1';
-        /**
-         * magic variable for showing all columns
-         * @type {number}
-         */
-        Column.FLAT_ALL_COLUMNS = -1;
-        /**
-         * width of a compressed column
-         * @type {number}
-         */
-        Column.COMPRESSED_WIDTH = 16;
-        return Column;
-    })(utils.AEventDispatcher);
-    exports.Column = Column;
-    /**
-     * a column having an accessor to get the cell value
-     */
-    var ValueColumn = (function (_super) {
-        __extends(ValueColumn, _super);
-        function ValueColumn(id, desc) {
-            _super.call(this, id, desc);
-            //find accessor
-            this.accessor = desc.accessor || (function (row, id, desc) { return null; });
         }
-        ValueColumn.prototype.getLabel = function (row) {
-            return '' + this.getValue(row);
-        };
-        ValueColumn.prototype.getValue = function (row) {
-            return this.accessor(row, this.id, this.desc);
-        };
-        ValueColumn.prototype.compare = function (a, b) {
-            return 0; //can't compare
-        };
-        return ValueColumn;
-    })(Column);
-    exports.ValueColumn = ValueColumn;
-    /**
-     * a default column with no values
-     */
-    var DummyColumn = (function (_super) {
-        __extends(DummyColumn, _super);
-        function DummyColumn(id, desc) {
-            _super.call(this, id, desc);
+        return Promise.resolve(true);
+    };
+    NumberColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.domain = this.scale.domain();
+        r.range = this.scale.range();
+        r.mapping = this.getOriginalMapping();
+        r.filter = this.filter;
+        if (this.transformation !== 'linear') {
+            r.transformation = this.transformation;
         }
-        DummyColumn.prototype.getLabel = function (row) {
-            return '';
-        };
-        DummyColumn.prototype.getValue = function (row) {
-            return '';
-        };
-        DummyColumn.prototype.compare = function (a, b) {
-            return 0; //can't compare
-        };
-        return DummyColumn;
-    })(Column);
-    exports.DummyColumn = DummyColumn;
-    /**
-     * checks whether the given column or description is a number column, i.e. the value is a number
-     * @param col
-     * @returns {boolean|RegExpMatchArray}
-     */
-    function isNumberColumn(col) {
-        return (col instanceof Column && typeof col.getNumber === 'function' || (!(col instanceof Column) && col.type.match(/(number|stack|ordinal)/)));
-    }
-    exports.isNumberColumn = isNumberColumn;
-    /**
-     * a number column mapped from an original input scale to an output range
-     */
-    var NumberColumn = (function (_super) {
-        __extends(NumberColumn, _super);
-        function NumberColumn(id, desc) {
-            _super.call(this, id, desc);
-            this.missingValue = 0;
-            this.transformation = 'linear';
-            /**
-             * the current scale applied
-             * @type {IScale}
-             */
-            this.scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
-            /**
-             * the original scale for resetting purpose
-             * @type {IScale}
-             */
-            this.original = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
-            /**
-             * currently active filter
-             * @type {{min: number, max: number}}
-             * @private
-             */
-            this.filter_ = { min: -Infinity, max: Infinity };
-            if (desc.transformation === 'log') {
-                this.scale = d3.scale.log().domain([NaN, NaN]).range([0, 1]).clamp(true);
-                this.original = d3.scale.log().domain([NaN, NaN]).range([0, 1]).clamp(true);
+        r.missingValue = this.missingValue;
+        return r;
+    };
+    NumberColumn.prototype.restore = function (dump, factory) {
+        _super.prototype.restore.call(this, dump, factory);
+        if (dump.transformation !== 'linear') {
+            this.transformation = dump.transformation;
+            if (this.transformation === 'log') {
+                this.scale = d3.scale.log().domain(this.scale.domain()).range(this.scale.range()).clamp(true);
             }
-            else if (desc.transformation === 'invert') {
+            else if (this.transformation === 'invert') {
                 this.scale.range([1, 0]);
             }
-            this.transformation = desc.transformation || 'linear';
-            //initialize with the description
-            if (desc.domain) {
-                this.scale.domain(desc.domain);
-            }
-            if (desc.range) {
-                this.scale.range(desc.range);
-            }
-            this.original.domain(this.scale.domain()).range(this.scale.range());
         }
-        NumberColumn.prototype.init = function (callback) {
-            var _this = this;
-            var d = this.scale.domain();
-            //if any of the values is not given use the statistics to compute them
-            if (isNaN(d[0]) || isNaN(d[1])) {
-                return callback(this.desc).then(function (stats) {
-                    _this.scale.domain([stats.min, stats.max]);
-                    _this.original.domain(_this.scale.domain());
-                    return true;
-                });
+        if (dump.domain) {
+            this.scale.domain(dump.domain);
+        }
+        if (dump.range) {
+            this.scale.range(dump.range);
+        }
+        if (dump.mapping) {
+            this.original.domain(dump.mapping.domain).range(dump.mapping.range);
+        }
+        if (dump.filter) {
+            this.filter_ = dump.filter;
+        }
+        if (dump.missingValue) {
+            this.missingValue = dump.missingValue;
+        }
+    };
+    NumberColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
+    };
+    NumberColumn.prototype.getLabel = function (row) {
+        return '' + _super.prototype.getValue.call(this, row);
+    };
+    NumberColumn.prototype.getRawValue = function (row) {
+        var v = _super.prototype.getValue.call(this, row);
+        if (typeof (v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof (v) === 'string' && (v.toLowerCase() === 'na'))) {
+            return this.missingValue;
+        }
+        return +v;
+    };
+    NumberColumn.prototype.getValue = function (row) {
+        var v = this.getRawValue(row);
+        if (isNaN(v)) {
+            return v;
+        }
+        return this.scale(v);
+    };
+    NumberColumn.prototype.getNumber = function (row) {
+        return this.getValue(row);
+    };
+    NumberColumn.prototype.compare = function (a, b) {
+        return numberCompare(this.getValue(a), this.getValue(b));
+    };
+    NumberColumn.prototype.getMapping = function () {
+        return {
+            type: this.transformation,
+            domain: this.scale.domain(),
+            range: this.scale.range()
+        };
+    };
+    NumberColumn.prototype.getOriginalMapping = function () {
+        return {
+            type: this.desc.transformation || 'linear',
+            domain: this.original.domain(),
+            range: this.original.range()
+        };
+    };
+    NumberColumn.prototype.setMapping = function (domain, range, type) {
+        if (type === void 0) { type = this.transformation; }
+        var bak = this.getMapping();
+        if (type !== this.transformation) {
+            this.transformation = type;
+            if (this.transformation === 'log') {
+                this.scale = d3.scale.log().clamp(true);
             }
-            return Promise.resolve(true);
-        };
-        NumberColumn.prototype.dump = function (toDescRef) {
-            var r = _super.prototype.dump.call(this, toDescRef);
-            r.domain = this.scale.domain();
-            r.range = this.scale.range();
-            r.mapping = this.getOriginalMapping();
-            r.filter = this.filter;
-            if (this.transformation !== 'linear') {
-                r.transformation = this.transformation;
+            else {
+                this.scale = d3.scale.linear().clamp(true);
             }
-            r.missingValue = this.missingValue;
-            return r;
-        };
-        NumberColumn.prototype.restore = function (dump, factory) {
-            _super.prototype.restore.call(this, dump, factory);
-            if (dump.transformation !== 'linear') {
-                this.transformation = dump.transformation;
-                if (this.transformation === 'log') {
-                    this.scale = d3.scale.log().domain(this.scale.domain()).range(this.scale.range()).clamp(true);
-                }
-                else if (this.transformation === 'invert') {
-                    this.scale.range([1, 0]);
-                }
-            }
-            if (dump.domain) {
-                this.scale.domain(dump.domain);
-            }
-            if (dump.range) {
-                this.scale.range(dump.range);
-            }
-            if (dump.mapping) {
-                this.original.domain(dump.mapping.domain).range(dump.mapping.range);
-            }
-            if (dump.filter) {
-                this.filter_ = dump.filter;
-            }
-            if (dump.missingValue) {
-                this.missingValue = dump.missingValue;
-            }
-        };
-        NumberColumn.prototype.createEventList = function () {
-            return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
-        };
-        NumberColumn.prototype.getLabel = function (row) {
-            return '' + _super.prototype.getValue.call(this, row);
-        };
-        NumberColumn.prototype.getRawValue = function (row) {
-            var v = _super.prototype.getValue.call(this, row);
-            if (typeof (v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof (v) === 'string' && (v.toLowerCase() === 'na'))) {
-                return this.missingValue;
-            }
-            return +v;
-        };
-        NumberColumn.prototype.getValue = function (row) {
-            var v = this.getRawValue(row);
-            if (isNaN(v)) {
-                return v;
-            }
-            return this.scale(v);
-        };
-        NumberColumn.prototype.getNumber = function (row) {
-            return this.getValue(row);
-        };
-        NumberColumn.prototype.compare = function (a, b) {
-            return numberCompare(this.getValue(a), this.getValue(b));
-        };
-        NumberColumn.prototype.getMapping = function () {
-            return {
-                type: this.transformation,
-                domain: this.scale.domain(),
-                range: this.scale.range()
-            };
-        };
-        NumberColumn.prototype.getOriginalMapping = function () {
-            return {
-                type: this.desc.transformation || 'linear',
-                domain: this.original.domain(),
-                range: this.original.range()
-            };
-        };
-        NumberColumn.prototype.setMapping = function (domain, range, type) {
-            if (type === void 0) { type = this.transformation; }
-            var bak = this.getMapping();
-            if (type !== this.transformation) {
-                this.transformation = type;
-                if (this.transformation === 'log') {
-                    this.scale = d3.scale.log().clamp(true);
-                }
-                else {
-                    this.scale = d3.scale.linear().clamp(true);
-                }
-            }
-            this.scale.domain(domain).range(range);
-            this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
-        };
-        NumberColumn.prototype.isFiltered = function () {
-            return isFinite(this.filter_.min) || isFinite(this.filter_.max);
-        };
-        Object.defineProperty(NumberColumn.prototype, "filterMin", {
-            get: function () {
-                return this.filter_.min;
-            },
-            set: function (min) {
-                var bak = { min: this.filter_.min, max: this.filter_.max };
-                this.filter_.min = isNaN(min) ? -Infinity : min;
-                this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(NumberColumn.prototype, "filterMax", {
-            get: function () {
-                return this.filter_.max;
-            },
-            set: function (max) {
-                var bak = { min: this.filter_.min, max: this.filter_.max };
-                this.filter_.max = isNaN(max) ? Infinity : max;
-                this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        NumberColumn.prototype.getFilter = function () {
-            return this.filter_;
-        };
-        NumberColumn.prototype.setFilter = function (min, max) {
-            if (min === void 0) { min = -Infinity; }
-            if (max === void 0) { max = +Infinity; }
+        }
+        this.scale.domain(domain).range(range);
+        this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
+    };
+    NumberColumn.prototype.isFiltered = function () {
+        return isFinite(this.filter_.min) || isFinite(this.filter_.max);
+    };
+    Object.defineProperty(NumberColumn.prototype, "filterMin", {
+        get: function () {
+            return this.filter_.min;
+        },
+        set: function (min) {
             var bak = { min: this.filter_.min, max: this.filter_.max };
             this.filter_.min = isNaN(min) ? -Infinity : min;
+            this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NumberColumn.prototype, "filterMax", {
+        get: function () {
+            return this.filter_.max;
+        },
+        set: function (max) {
+            var bak = { min: this.filter_.min, max: this.filter_.max };
             this.filter_.max = isNaN(max) ? Infinity : max;
             this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
-        };
-        /**
-         * filter the current row if any filter is set
-         * @param row
-         * @returns {boolean}
-         */
-        NumberColumn.prototype.filter = function (row) {
-            if (!this.isFiltered()) {
-                return true;
-            }
-            var v = this.getRawValue(row);
-            if (isNaN(v)) {
-                return true;
-            }
-            return !((isFinite(this.filter_.min) && v < this.filter_.min) || (isFinite(this.filter_.max) && v < this.filter_.max));
-        };
-        return NumberColumn;
-    })(ValueColumn);
-    exports.NumberColumn = NumberColumn;
-    /**
-     * a string column with optional alignment
-     */
-    var StringColumn = (function (_super) {
-        __extends(StringColumn, _super);
-        function StringColumn(id, desc) {
-            _super.call(this, id, desc);
-            this.filter_ = null;
-            this._alignment = 'left';
-            this.setWidthImpl(200); //by default 200
-            this._alignment = desc.alignment || 'left';
-        }
-        Object.defineProperty(StringColumn.prototype, "alignment", {
-            //readonly
-            get: function () {
-                return this._alignment;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        StringColumn.prototype.getValue = function (row) {
-            var v = _super.prototype.getValue.call(this, row);
-            if (typeof (v) === 'undefined' || v == null) {
-                return '';
-            }
-            return v;
-        };
-        StringColumn.prototype.dump = function (toDescRef) {
-            var r = _super.prototype.dump.call(this, toDescRef);
-            if (this.filter_ instanceof RegExp) {
-                r.filter = 'REGEX:' + this.filter_.source;
-            }
-            else {
-                r.filter = this.filter_;
-            }
-            r.alignment = this.alignment;
-            return r;
-        };
-        StringColumn.prototype.restore = function (dump, factory) {
-            _super.prototype.restore.call(this, dump, factory);
-            if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
-                this.filter_ = new RegExp(dump.filter.slice(6));
-            }
-            else {
-                this.filter_ = dump.filter || null;
-            }
-            this._alignment = dump.alignment || this._alignment;
-        };
-        StringColumn.prototype.isFiltered = function () {
-            return this.filter_ != null;
-        };
-        StringColumn.prototype.filter = function (row) {
-            if (!this.isFiltered()) {
-                return true;
-            }
-            var r = this.getLabel(row), filter = this.filter_;
-            if (typeof filter === 'string' && filter.length > 0) {
-                return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-            }
-            if (filter instanceof RegExp) {
-                return r && filter.test(r);
-            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    NumberColumn.prototype.getFilter = function () {
+        return this.filter_;
+    };
+    NumberColumn.prototype.setFilter = function (min, max) {
+        if (min === void 0) { min = -Infinity; }
+        if (max === void 0) { max = +Infinity; }
+        var bak = { min: this.filter_.min, max: this.filter_.max };
+        this.filter_.min = isNaN(min) ? -Infinity : min;
+        this.filter_.max = isNaN(max) ? Infinity : max;
+        this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
+    };
+    NumberColumn.prototype.filter = function (row) {
+        if (!this.isFiltered()) {
             return true;
-        };
-        StringColumn.prototype.getFilter = function () {
-            return this.filter_;
-        };
-        StringColumn.prototype.setFilter = function (filter) {
-            if (filter === '') {
-                filter = null;
-            }
-            this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
-        };
-        StringColumn.prototype.compare = function (a, b) {
-            return d3.ascending(this.getValue(a), this.getValue(b));
-        };
-        return StringColumn;
-    })(ValueColumn);
-    exports.StringColumn = StringColumn;
-    /**
-     * a string column in which the label is a text but the value a link
-     */
-    var LinkColumn = (function (_super) {
-        __extends(LinkColumn, _super);
-        function LinkColumn(id, desc) {
-            _super.call(this, id, desc);
-            /**
-             * a pattern used for generating the link, $1 is replaced with the actual value
-             * @type {null}
-             */
-            this.link = null;
-            this.link = desc.link;
         }
-        LinkColumn.prototype.getLabel = function (row) {
-            var v = _super.prototype.getValue.call(this, row);
-            if (v.alt) {
-                return v.alt;
-            }
-            return '' + v;
-        };
-        LinkColumn.prototype.getValue = function (row) {
-            //get original value
-            var v = _super.prototype.getValue.call(this, row);
-            //convert to link
-            if (v.href) {
-                return v.href;
-            }
-            else if (this.link) {
-                return this.link.replace(/\$1/g, v);
-            }
-            return v;
-        };
-        return LinkColumn;
-    })(StringColumn);
-    exports.LinkColumn = LinkColumn;
-    /**
-     * a string column in which the values can be edited locally
-     */
-    var AnnotateColumn = (function (_super) {
-        __extends(AnnotateColumn, _super);
-        function AnnotateColumn(id, desc) {
-            _super.call(this, id, desc);
-            this.annotations = d3.map();
-        }
-        AnnotateColumn.prototype.getValue = function (row) {
-            var index = String(row._index);
-            if (this.annotations.has(index)) {
-                return this.annotations.get(index);
-            }
-            return _super.prototype.getValue.call(this, row);
-        };
-        AnnotateColumn.prototype.dump = function (toDescRef) {
-            var r = _super.prototype.dump.call(this, toDescRef);
-            r.annotations = {};
-            this.annotations.forEach(function (k, v) {
-                r.annotations[k] = v;
-            });
-            return r;
-        };
-        AnnotateColumn.prototype.restore = function (dump, factory) {
-            var _this = this;
-            _super.prototype.restore.call(this, dump, factory);
-            if (dump.annotations) {
-                Object.keys(dump.annotations).forEach(function (k) {
-                    _this.annotations.set(k, dump.annotations[k]);
-                });
-            }
-        };
-        AnnotateColumn.prototype.setValue = function (row, value) {
-            var old = this.getValue(row);
-            if (old === value) {
-                return true;
-            }
-            if (value === '' || value == null) {
-                this.annotations.remove(String(row._index));
-            }
-            else {
-                this.annotations.set(String(row._index), value);
-            }
-            this.fire(['dirtyValues', 'dirty'], value, old);
+        var v = this.getRawValue(row);
+        if (isNaN(v)) {
             return true;
-        };
-        return AnnotateColumn;
-    })(StringColumn);
-    exports.AnnotateColumn = AnnotateColumn;
-    /**
-     * column for categorical values
-     */
-    var CategoricalColumn = (function (_super) {
-        __extends(CategoricalColumn, _super);
-        function CategoricalColumn(id, desc) {
-            _super.call(this, id, desc);
-            /**
-             * colors for each category
-             * @type {Ordinal<string, string>}
-             */
-            this.colors = d3.scale.category10();
-            /**
-             * set of categories to show
-             * @type {null}
-             * @private
-             */
-            this.filter_ = null;
-            /**
-             * split multiple categories
-             * @type {string}
-             */
-            this.separator = ';';
-            this.separator = desc.separator || this.separator;
-            this.initCategories(desc);
-            //TODO infer categories from data
         }
-        CategoricalColumn.prototype.initCategories = function (desc) {
-            if (desc.categories) {
-                var cats = [], cols = this.colors.range();
-                desc.categories.forEach(function (cat, i) {
-                    if (typeof cat === 'string') {
-                        cats.push(cat);
-                    }
-                    else {
-                        cats.push(cat.name);
-                        cols[i] = cat.color;
-                    }
-                });
-                this.colors.domain(cats).range(cols);
-            }
-        };
-        Object.defineProperty(CategoricalColumn.prototype, "categories", {
-            get: function () {
-                return this.colors.domain();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CategoricalColumn.prototype, "categoryColors", {
-            get: function () {
-                return this.colors.range();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        CategoricalColumn.prototype.getLabel = function (row) {
-            return '' + StringColumn.prototype.getValue.call(this, row);
-        };
-        CategoricalColumn.prototype.getFirstLabel = function (row) {
-            var l = this.getLabels(row);
-            return l.length > 0 ? l[0] : null;
-        };
-        CategoricalColumn.prototype.getLabels = function (row) {
-            var v = StringColumn.prototype.getValue.call(this, row);
-            var r = v.split(this.separator);
-            return r;
-        };
-        CategoricalColumn.prototype.getValue = function (row) {
-            var r = this.getValues(row);
-            return r.length > 0 ? r[0] : null;
-        };
-        CategoricalColumn.prototype.getValues = function (row) {
-            var v = StringColumn.prototype.getValue.call(this, row);
-            var r = v.split(this.separator);
-            return r;
-        };
-        CategoricalColumn.prototype.getCategories = function (row) {
-            return this.getValues(row);
-        };
-        CategoricalColumn.prototype.getColor = function (row) {
-            var cat = this.getFirstLabel(row);
-            if (cat === null || cat === '') {
-                return null;
-            }
-            return this.colors(cat);
-        };
-        CategoricalColumn.prototype.getColors = function (row) {
-            return this.getLabels(row).map(this.colors);
-        };
-        CategoricalColumn.prototype.dump = function (toDescRef) {
-            var r = _super.prototype.dump.call(this, toDescRef);
+        return !((isFinite(this.filter_.min) && v < this.filter_.min) || (isFinite(this.filter_.max) && v < this.filter_.max));
+    };
+    return NumberColumn;
+})(ValueColumn);
+exports.NumberColumn = NumberColumn;
+var StringColumn = (function (_super) {
+    __extends(StringColumn, _super);
+    function StringColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.filter_ = null;
+        this._alignment = 'left';
+        this.setWidthImpl(200);
+        this._alignment = desc.alignment || 'left';
+    }
+    Object.defineProperty(StringColumn.prototype, "alignment", {
+        get: function () {
+            return this._alignment;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    StringColumn.prototype.getValue = function (row) {
+        var v = _super.prototype.getValue.call(this, row);
+        if (typeof (v) === 'undefined' || v == null) {
+            return '';
+        }
+        return v;
+    };
+    StringColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        if (this.filter_ instanceof RegExp) {
+            r.filter = 'REGEX:' + this.filter_.source;
+        }
+        else {
             r.filter = this.filter_;
-            r.colors = {
-                domain: this.colors.domain(),
-                range: this.colors.range(),
-                separator: this.separator
-            };
-            return r;
-        };
-        CategoricalColumn.prototype.restore = function (dump, factory) {
-            _super.prototype.restore.call(this, dump, factory);
+        }
+        r.alignment = this.alignment;
+        return r;
+    };
+    StringColumn.prototype.restore = function (dump, factory) {
+        _super.prototype.restore.call(this, dump, factory);
+        if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
+            this.filter_ = new RegExp(dump.filter.slice(6));
+        }
+        else {
             this.filter_ = dump.filter || null;
-            if (dump.colors) {
-                this.colors.domain(dump.colors.domain).range(dump.colors.range);
-            }
-            this.separator = dump.separator || this.separator;
-        };
-        CategoricalColumn.prototype.isFiltered = function () {
-            return this.filter_ != null;
-        };
-        CategoricalColumn.prototype.filter = function (row) {
-            if (!this.isFiltered()) {
-                return true;
-            }
-            var vs = this.getValues(row), filter = this.filter_;
-            return vs.every(function (v) {
-                if (Array.isArray(filter) && filter.length > 0) {
-                    return filter.indexOf(v) >= 0;
-                }
-                else if (typeof filter === 'string' && filter.length > 0) {
-                    return v && v.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-                }
-                else if (filter instanceof RegExp) {
-                    return v != null && v.match(filter).length > 0;
-                }
-                return true;
-            });
-        };
-        CategoricalColumn.prototype.getFilter = function () {
-            return this.filter_;
-        };
-        CategoricalColumn.prototype.setFilter = function (filter) {
-            this.fire(['filterChanged', 'dirtyValues', 'dirty'], this, this.filter_, this.filter_ = filter);
-        };
-        CategoricalColumn.prototype.compare = function (a, b) {
-            var va = this.getValues(a);
-            var vb = this.getValues(b);
-            //check all categories
-            for (var i = 0; i < Math.min(va.length, vb.length); ++i) {
-                var ci = d3.ascending(va[i], vb[i]);
-                if (ci !== 0) {
-                    return ci;
-                }
-            }
-            //smaller length wins
-            return va.length - vb.length;
-        };
-        return CategoricalColumn;
-    })(ValueColumn);
-    exports.CategoricalColumn = CategoricalColumn;
-    /**
-     * similar to a categorical column but the categories are mapped to numbers
-     */
-    var CategoricalNumberColumn = (function (_super) {
-        __extends(CategoricalNumberColumn, _super);
-        function CategoricalNumberColumn(id, desc) {
-            _super.call(this, id, desc);
-            this.colors = d3.scale.category10();
-            this.scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
-            this.filter_ = null;
-            /**
-             * separator for multi handling
-             * @type {string}
-             */
-            this.separator = ';';
-            this.combiner = d3.max;
-            this.separator = desc.separator || this.separator;
-            CategoricalColumn.prototype.initCategories.call(this, desc);
-            this.scale.domain(this.colors.domain());
-            if (desc.categories) {
-                var values = [];
-                desc.categories.forEach(function (d) {
-                    if (typeof d !== 'string' && typeof (d.value) === 'number') {
-                        values.push(d.value);
-                    }
-                    else {
-                        values.push(0.5); //by default 0.5
-                    }
-                });
-                this.scale.range(values);
-            }
         }
-        CategoricalNumberColumn.prototype.createEventList = function () {
-            return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
-        };
-        Object.defineProperty(CategoricalNumberColumn.prototype, "categories", {
-            get: function () {
-                return this.colors.domain();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(CategoricalNumberColumn.prototype, "categoryColors", {
-            get: function () {
-                return this.colors.range();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        CategoricalNumberColumn.prototype.getLabel = function (row) {
-            return CategoricalColumn.prototype.getLabel.call(this, row);
-        };
-        CategoricalNumberColumn.prototype.getFirstLabel = function (row) {
-            return CategoricalColumn.prototype.getFirstLabel.call(this, row);
-        };
-        CategoricalNumberColumn.prototype.getLabels = function (row) {
-            return CategoricalColumn.prototype.getLabels.call(this, row);
-        };
-        CategoricalNumberColumn.prototype.getValue = function (row) {
-            var r = this.getValues(row);
-            return r.length > 0 ? this.combiner(r) : 0;
-        };
-        CategoricalNumberColumn.prototype.getValues = function (row) {
-            var r = CategoricalColumn.prototype.getValues.call(this, row);
-            return r.map(this.scale);
-        };
-        CategoricalNumberColumn.prototype.getCategories = function (row) {
-            return this.getValues(row);
-        };
-        CategoricalNumberColumn.prototype.getNumber = function (row) {
-            return this.getValue(row);
-        };
-        CategoricalNumberColumn.prototype.getColor = function (row) {
-            var vs = this.getValues(row);
-            var cs = this.getColors(row);
-            if (this.combiner === d3.max) {
-                //use the max color
-                return cs.slice(1).reduce(function (prev, act, i) { return vs[i + 1] > prev.v ? { c: act, v: vs[i + 1] } : prev; }, {
-                    c: cs[0],
-                    v: vs[0]
-                }).c;
-            }
-            else if (this.combiner === d3.min) {
-                //use the max color
-                return cs.slice(1).reduce(function (prev, act, i) { return vs[i + 1] < prev.v ? { c: act, v: vs[i + 1] } : prev; }, {
-                    c: cs[0],
-                    v: vs[0]
-                }).c;
-            }
-            else {
-                //use the first
-                return cs[0] || null;
-            }
-        };
-        CategoricalNumberColumn.prototype.getColors = function (row) {
-            return CategoricalColumn.prototype.getColors.call(this, row);
-        };
-        CategoricalNumberColumn.prototype.dump = function (toDescRef) {
-            var r = CategoricalColumn.prototype.dump.call(this, toDescRef);
-            r.scale = {
-                domain: this.scale.domain(),
-                range: this.scale.range(),
-                separator: this.separator
-            };
-            return r;
-        };
-        CategoricalNumberColumn.prototype.restore = function (dump, factory) {
-            CategoricalColumn.prototype.restore.call(this, dump, factory);
-            if (dump.scale) {
-                this.scale.domain(dump.scale.domain).range(dump.scale.range);
-            }
-            this.separator = dump.separator || this.separator;
-        };
-        CategoricalNumberColumn.prototype.getScale = function () {
-            return {
-                domain: this.scale.domain(),
-                range: this.scale.range()
-            };
-        };
-        CategoricalNumberColumn.prototype.setRange = function (range) {
-            var bak = this.getScale();
-            this.scale.range(range);
-            this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getScale());
-        };
-        CategoricalNumberColumn.prototype.isFiltered = function () {
-            return this.filter_ != null;
-        };
-        CategoricalNumberColumn.prototype.filter = function (row) {
-            return CategoricalColumn.prototype.filter.call(this, row);
-        };
-        CategoricalNumberColumn.prototype.getFilter = function () {
-            return this.filter_;
-        };
-        CategoricalNumberColumn.prototype.setFilter = function (filter) {
-            this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
-        };
-        CategoricalNumberColumn.prototype.compare = function (a, b) {
-            return NumberColumn.prototype.compare.call(this, a, b);
-        };
-        return CategoricalNumberColumn;
-    })(ValueColumn);
-    exports.CategoricalNumberColumn = CategoricalNumberColumn;
-    /**
-     * implementation of the stacked column
-     */
-    var StackColumn = (function (_super) {
-        __extends(StackColumn, _super);
-        function StackColumn(id, desc) {
-            _super.call(this, id, desc);
-            this.missingValue = 0;
-            this.children_ = [];
-            /**
-             * whether this stack column is collapsed i.e. just looks like an ordinary number column
-             * @type {boolean}
-             * @private
-             */
-            this._collapsed = false;
-            var that = this;
-            this.adaptChange = function (old, new_) {
-                that.adaptWidthChange(this.source, old, new_);
-            };
-        }
-        /**
-         * factory for creating a description creating a stacked column
-         * @param label
-         * @returns {{type: string, label: string}}
-         */
-        StackColumn.desc = function (label) {
-            if (label === void 0) { label = 'Combined'; }
-            return { type: 'stack', label: label };
-        };
-        StackColumn.prototype.createEventList = function () {
-            return _super.prototype.createEventList.call(this).concat(['collapseChanged']);
-        };
-        StackColumn.prototype.assignNewId = function (idGenerator) {
-            _super.prototype.assignNewId.call(this, idGenerator);
-            this.children_.forEach(function (c) { return c.assignNewId(idGenerator); });
-        };
-        Object.defineProperty(StackColumn.prototype, "children", {
-            get: function () {
-                return this.children_.slice();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StackColumn.prototype, "length", {
-            get: function () {
-                return this.children_.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StackColumn.prototype, "weights", {
-            get: function () {
-                var w = this.getWidth();
-                return this.children_.map(function (d) { return d.getWidth() / w; });
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StackColumn.prototype, "collapsed", {
-            get: function () {
-                return this._collapsed;
-            },
-            set: function (value) {
-                if (this._collapsed === value) {
-                    return;
-                }
-                this.fire(['collapseChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this._collapsed, this._collapsed = value);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        StackColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
-            if (levelsToGo === void 0) { levelsToGo = 0; }
-            if (padding === void 0) { padding = 0; }
-            var self = null;
-            //no more levels or just this one
-            if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-                var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
-                if (!this.collapsed && !this.compressed) {
-                    w += (this.children_.length - 1) * padding;
-                }
-                r.push(self = { col: this, offset: offset, width: w });
-                if (levelsToGo === 0) {
-                    return w;
-                }
-            }
-            //push children
-            var acc = offset;
-            this.children_.forEach(function (c) {
-                acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
-            });
-            if (self) {
-                self.width = acc - offset - padding;
-            }
-            return acc - offset - padding;
-        };
-        StackColumn.prototype.dump = function (toDescRef) {
-            var r = _super.prototype.dump.call(this, toDescRef);
-            r.children = this.children_.map(function (d) { return d.dump(toDescRef); });
-            r.missingValue = this.missingValue;
-            r.collapsed = this.collapsed;
-            return r;
-        };
-        StackColumn.prototype.restore = function (dump, factory) {
-            var _this = this;
-            if (dump.missingValue) {
-                this.missingValue = dump.missingValue;
-            }
-            dump.children.map(function (child) {
-                _this.push(factory(child));
-            });
-            this.collapsed = dump.collapsed === true;
-            _super.prototype.restore.call(this, dump, factory);
-        };
-        /**
-         * inserts a column at a the given position
-         * @param col
-         * @param index
-         * @param weight
-         * @returns {any}
-         */
-        StackColumn.prototype.insert = function (col, index, weight) {
-            if (weight === void 0) { weight = NaN; }
-            if (!isNumberColumn(col)) {
-                return null;
-            }
-            if (col instanceof StackColumn) {
-            }
-            if (!isNaN(weight)) {
-                col.setWidth((weight / (1 - weight) * this.getWidth()));
-            }
-            this.children_.splice(index, 0, col);
-            //listen and propagate events
-            col.parent = this;
-            this.forward(col, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
-            col.on('widthChanged.stack', this.adaptChange);
-            //increase my width
-            _super.prototype.setWidth.call(this, this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
-            this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth());
+        this._alignment = dump.alignment || this._alignment;
+    };
+    StringColumn.prototype.isFiltered = function () {
+        return this.filter_ != null;
+    };
+    StringColumn.prototype.filter = function (row) {
+        if (!this.isFiltered()) {
             return true;
-        };
-        StackColumn.prototype.push = function (col, weight) {
-            if (weight === void 0) { weight = NaN; }
-            return this.insert(col, this.children_.length, weight);
-        };
-        StackColumn.prototype.indexOf = function (col) {
-            var j = -1;
-            this.children_.some(function (d, i) {
-                if (d === col) {
-                    j = i;
-                    return true;
-                }
-                return false;
+        }
+        var r = this.getLabel(row), filter = this.filter_;
+        if (typeof filter === 'string' && filter.length > 0) {
+            return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+        }
+        if (filter instanceof RegExp) {
+            return r && filter.test(r);
+        }
+        return true;
+    };
+    StringColumn.prototype.getFilter = function () {
+        return this.filter_;
+    };
+    StringColumn.prototype.setFilter = function (filter) {
+        if (filter === '') {
+            filter = null;
+        }
+        this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
+    };
+    StringColumn.prototype.compare = function (a, b) {
+        return d3.ascending(this.getValue(a), this.getValue(b));
+    };
+    return StringColumn;
+})(ValueColumn);
+exports.StringColumn = StringColumn;
+var LinkColumn = (function (_super) {
+    __extends(LinkColumn, _super);
+    function LinkColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.link = null;
+        this.link = desc.link;
+    }
+    LinkColumn.prototype.getLabel = function (row) {
+        var v = _super.prototype.getValue.call(this, row);
+        if (v.alt) {
+            return v.alt;
+        }
+        return '' + v;
+    };
+    LinkColumn.prototype.getValue = function (row) {
+        var v = _super.prototype.getValue.call(this, row);
+        if (v.href) {
+            return v.href;
+        }
+        else if (this.link) {
+            return this.link.replace(/\$1/g, v);
+        }
+        return v;
+    };
+    return LinkColumn;
+})(StringColumn);
+exports.LinkColumn = LinkColumn;
+var AnnotateColumn = (function (_super) {
+    __extends(AnnotateColumn, _super);
+    function AnnotateColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.annotations = d3.map();
+    }
+    AnnotateColumn.prototype.getValue = function (row) {
+        var index = String(row._index);
+        if (this.annotations.has(index)) {
+            return this.annotations.get(index);
+        }
+        return _super.prototype.getValue.call(this, row);
+    };
+    AnnotateColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.annotations = {};
+        this.annotations.forEach(function (k, v) {
+            r.annotations[k] = v;
+        });
+        return r;
+    };
+    AnnotateColumn.prototype.restore = function (dump, factory) {
+        var _this = this;
+        _super.prototype.restore.call(this, dump, factory);
+        if (dump.annotations) {
+            Object.keys(dump.annotations).forEach(function (k) {
+                _this.annotations.set(k, dump.annotations[k]);
             });
-            return j;
-        };
-        StackColumn.prototype.insertAfter = function (col, ref, weight) {
-            if (weight === void 0) { weight = NaN; }
-            var i = this.indexOf(ref);
-            if (i < 0) {
-                return false;
-            }
-            return this.insert(col, i + 1, weight);
-        };
-        /**
-         * adapts weights according to an own width change
-         * @param col
-         * @param old
-         * @param new_
-         */
-        StackColumn.prototype.adaptWidthChange = function (col, old, new_) {
-            if (old === new_) {
-                return;
-            }
-            var full = this.getWidth(), change = (new_ - old) / full;
-            var oldWeight = old / full;
-            var factor = (1 - oldWeight - change) / (1 - oldWeight);
-            this.children_.forEach(function (c) {
-                if (c === col) {
+        }
+    };
+    AnnotateColumn.prototype.setValue = function (row, value) {
+        var old = this.getValue(row);
+        if (old === value) {
+            return true;
+        }
+        if (value === '' || value == null) {
+            this.annotations.remove(String(row._index));
+        }
+        else {
+            this.annotations.set(String(row._index), value);
+        }
+        this.fire(['dirtyValues', 'dirty'], value, old);
+        return true;
+    };
+    return AnnotateColumn;
+})(StringColumn);
+exports.AnnotateColumn = AnnotateColumn;
+var CategoricalColumn = (function (_super) {
+    __extends(CategoricalColumn, _super);
+    function CategoricalColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.colors = d3.scale.category10();
+        this.filter_ = null;
+        this.separator = ';';
+        this.separator = desc.separator || this.separator;
+        this.initCategories(desc);
+    }
+    CategoricalColumn.prototype.initCategories = function (desc) {
+        if (desc.categories) {
+            var cats = [], cols = this.colors.range();
+            desc.categories.forEach(function (cat, i) {
+                if (typeof cat === 'string') {
+                    cats.push(cat);
                 }
                 else {
-                    c.setWidthImpl(c.getWidth() * factor);
+                    cats.push(cat.name);
+                    cols[i] = cat.color;
                 }
             });
-            this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], full, full);
-        };
-        StackColumn.prototype.setWeights = function (weights) {
-            var s, delta = weights.length - this.length;
-            if (delta < 0) {
-                s = d3.sum(weights);
-                if (s <= 1) {
-                    for (var i = 0; i < -delta; ++i) {
-                        weights.push((1 - s) * (1 / -delta));
-                    }
-                }
-                else if (s <= 100) {
-                    for (var i = 0; i < -delta; ++i) {
-                        weights.push((100 - s) * (1 / -delta));
-                    }
-                }
-            }
-            weights = weights.slice(0, this.length);
-            s = d3.sum(weights) / this.getWidth();
-            weights = weights.map(function (d) { return d / s; });
-            this.children_.forEach(function (c, i) {
-                c.setWidthImpl(weights[i]);
-            });
-            this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.getWidth(), this.getWidth());
-        };
-        StackColumn.prototype.remove = function (child) {
-            var i = this.children_.indexOf(child);
-            if (i < 0) {
-                return false;
-            }
-            this.children_.splice(i, 1); //remove and deregister listeners
-            child.parent = null;
-            if (child instanceof StackColumn) {
-            }
-            this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
-            child.on('widthChanged.stack', null);
-            //reduce width to keep the percentages
-            _super.prototype.setWidth.call(this, this.length === 0 ? 100 : this.getWidth() - child.getWidth());
-            this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
-            return true;
-        };
-        StackColumn.prototype.setWidth = function (value) {
-            var factor = value / this.getWidth();
-            this.children_.forEach(function (child) {
-                //disable since we change it
-                child.setWidthImpl(child.getWidth() * factor);
-            });
-            _super.prototype.setWidth.call(this, value);
-        };
-        StackColumn.prototype.getValue = function (row) {
-            //weighted sum
-            var w = this.getWidth();
-            var v = this.children_.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
-            if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
-                return this.missingValue;
-            }
-            return v;
-        };
-        StackColumn.prototype.getNumber = function (row) {
-            return this.getValue(row);
-        };
-        StackColumn.prototype.compare = function (a, b) {
-            return numberCompare(this.getValue(a), this.getValue(b));
-        };
-        StackColumn.prototype.isFiltered = function () {
-            return this.children_.some(function (d) { return d.isFiltered(); });
-        };
-        StackColumn.prototype.filter = function (row) {
-            return this.children_.every(function (d) { return d.filter(row); });
-        };
-        return StackColumn;
-    })(Column);
-    exports.StackColumn = StackColumn;
-    /**
-     * a rank column is not just a column but a whole ranking
-     */
-    var RankColumn = (function (_super) {
-        __extends(RankColumn, _super);
-        function RankColumn(id, desc) {
-            var _this = this;
-            _super.call(this, id, desc);
-            /**
-             * the current sort criteria
-             * @type {null}
-             * @private
-             */
-            this.sortBy_ = null;
-            /**
-             * ascending or descending order
-             * @type {boolean}
-             */
-            this.ascending = false;
-            /**
-             * columns of this ranking
-             * @type {Array}
-             * @private
-             */
-            this.columns_ = [];
-            this.comparator = function (a, b) {
-                if (_this.sortBy_ === null) {
-                    return 0;
-                }
-                var r = _this.sortBy_.compare(a, b);
-                return _this.ascending ? r : -r;
-            };
-            this.dirtyOrder = function () {
-                _this.fire(['dirtyOrder', 'dirtyValues', 'dirty'], _this.sortCriteria());
-            };
-            /**
-             * the current ordering as an sorted array of indices
-             * @type {Array}
-             */
-            this.order = [];
-            this.setWidthImpl(50);
+            this.colors.domain(cats).range(cols);
         }
-        RankColumn.prototype.createEventList = function () {
-            return _super.prototype.createEventList.call(this).concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
-        };
-        RankColumn.prototype.assignNewId = function (idGenerator) {
-            _super.prototype.assignNewId.call(this, idGenerator);
-            this.columns_.forEach(function (c) { return c.assignNewId(idGenerator); });
-        };
-        RankColumn.prototype.setOrder = function (order) {
-            this.fire(['orderChanged', 'dirtyValues', 'dirty'], this.order, this.order = order);
-        };
-        RankColumn.prototype.getOrder = function () {
-            return this.order;
-        };
-        RankColumn.prototype.dump = function (toDescRef) {
-            var r = _super.prototype.dump.call(this, toDescRef);
-            r.columns = this.columns_.map(function (d) { return d.dump(toDescRef); });
-            r.sortCriteria = {
-                asc: this.ascending
-            };
-            if (this.sortBy_) {
-                r.sortCriteria.sortBy = this.sortBy_.id; //store the index not the object
-            }
-            return r;
-        };
-        RankColumn.prototype.restore = function (dump, factory) {
-            var _this = this;
-            _super.prototype.restore.call(this, dump, factory);
-            dump.columns.map(function (child) {
-                _this.push(factory(child));
-            });
-            if (dump.sortCriteria) {
-                this.ascending = dump.sortCriteria.asc;
-                if (dump.sortCriteria.sortBy) {
-                    this.sortBy(this.columns_.filter(function (d) { return d.id === dump.sortCriteria.sortBy; })[0], dump.sortCriteria.asc);
-                }
-            }
-        };
-        RankColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
-            if (levelsToGo === void 0) { levelsToGo = 0; }
-            if (padding === void 0) { padding = 0; }
-            r.push({ col: this, offset: offset, width: this.getWidth() });
-            var acc = offset + this.getWidth() + padding;
-            if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-                this.columns_.forEach(function (c) {
-                    acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
-                });
-            }
-            return acc - offset;
-        };
-        RankColumn.prototype.sortCriteria = function () {
-            return {
-                col: this.sortBy_,
-                asc: this.ascending
-            };
-        };
-        RankColumn.prototype.sortByMe = function (ascending) {
-            if (ascending === void 0) { ascending = false; }
-            //noop
-            return false;
-        };
-        RankColumn.prototype.toggleMySorting = function () {
-            //noop
-            return false;
-        };
-        RankColumn.prototype.findMyRanker = function () {
-            return this;
-        };
-        RankColumn.prototype.insertAfterMe = function (col) {
-            return this.insert(col, 0) !== null;
-        };
-        RankColumn.prototype.toggleSorting = function (col) {
-            if (this.sortBy_ === col) {
-                return this.sortBy(col, !this.ascending);
-            }
-            return this.sortBy(col);
-        };
-        RankColumn.prototype.sortBy = function (col, ascending) {
-            if (ascending === void 0) { ascending = false; }
-            if (col !== null && col.findMyRanker() !== this) {
-                return false; //not one of mine
-            }
-            if (this.sortBy_ === col && this.ascending === ascending) {
-                return true; //already in this order
-            }
-            if (this.sortBy_) {
-                this.sortBy_.on('dirtyValues.order', null);
-            }
-            var bak = this.sortCriteria();
-            this.sortBy_ = col;
-            if (this.sortBy_) {
-                this.sortBy_.on('dirtyValues.order', this.dirtyOrder);
-            }
-            this.ascending = ascending;
-            this.fire(['sortCriteriaChanged', 'dirtyOrder', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, this.sortCriteria());
-            return true;
-        };
-        Object.defineProperty(RankColumn.prototype, "children", {
-            get: function () {
-                return this.columns_.slice();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(RankColumn.prototype, "length", {
-            get: function () {
-                return this.columns_.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        RankColumn.prototype.insert = function (col, index) {
-            if (index === void 0) { index = this.columns_.length; }
-            this.columns_.splice(index, 0, col);
-            col.parent = this;
-            this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
-            col.on('filterChanged.order', this.dirtyOrder);
-            this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
-            if (this.sortBy_ === null) {
-                this.sortBy(col);
-            }
-            return col;
-        };
-        RankColumn.prototype.insertAfter = function (col, ref) {
-            if (ref === this) {
-                return this.insert(col, 0) != null;
-            }
-            var i = this.columns_.indexOf(ref);
-            if (i < 0) {
-                return false;
-            }
-            return this.insert(col, i + 1) != null;
-        };
-        RankColumn.prototype.push = function (col) {
-            return this.insert(col);
-        };
-        RankColumn.prototype.remove = function (col) {
-            var i = this.columns_.indexOf(col);
-            if (i < 0) {
-                return false;
-            }
-            this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
-            col.parent = null;
-            this.columns_.splice(i, 1);
-            this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col);
-            if (this.sortBy_ === col) {
-                this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
-            }
-            return true;
-        };
-        Object.defineProperty(RankColumn.prototype, "flatColumns", {
-            get: function () {
-                var r = [];
-                this.flatten(r, 0, Column.FLAT_ALL_COLUMNS);
-                return r.map(function (d) { return d.col; });
-            },
-            enumerable: true,
-            configurable: true
-        });
-        RankColumn.prototype.find = function (id_or_filter) {
-            var filter = typeof (id_or_filter) === 'string' ? function (col) { return col.id === id_or_filter; } : id_or_filter;
-            var r = this.flatColumns;
-            for (var i = 0; i < r.length; ++i) {
-                if (filter(r[i])) {
-                    return r[i];
-                }
-            }
+    };
+    Object.defineProperty(CategoricalColumn.prototype, "categories", {
+        get: function () {
+            return this.colors.domain();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CategoricalColumn.prototype, "categoryColors", {
+        get: function () {
+            return this.colors.range();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    CategoricalColumn.prototype.colorOf = function (cat) {
+        return this.colors(cat);
+    };
+    CategoricalColumn.prototype.getLabel = function (row) {
+        return '' + StringColumn.prototype.getValue.call(this, row);
+    };
+    CategoricalColumn.prototype.getFirstLabel = function (row) {
+        var l = this.getLabels(row);
+        return l.length > 0 ? l[0] : null;
+    };
+    CategoricalColumn.prototype.getLabels = function (row) {
+        var v = StringColumn.prototype.getValue.call(this, row);
+        var r = v.split(this.separator);
+        return r;
+    };
+    CategoricalColumn.prototype.getValue = function (row) {
+        var r = this.getValues(row);
+        return r.length > 0 ? r[0] : null;
+    };
+    CategoricalColumn.prototype.getValues = function (row) {
+        var v = StringColumn.prototype.getValue.call(this, row);
+        var r = v.split(this.separator);
+        return r;
+    };
+    CategoricalColumn.prototype.getCategories = function (row) {
+        return this.getValues(row);
+    };
+    CategoricalColumn.prototype.getColor = function (row) {
+        var cat = this.getFirstLabel(row);
+        if (cat === null || cat === '') {
             return null;
+        }
+        return this.colors(cat);
+    };
+    CategoricalColumn.prototype.getColors = function (row) {
+        return this.getLabels(row).map(this.colors);
+    };
+    CategoricalColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.filter = this.filter_;
+        r.colors = {
+            domain: this.colors.domain(),
+            range: this.colors.range(),
+            separator: this.separator
         };
-        /**
-         * converts the sorting criteria to a json compatible notation for transfering it to the server
-         * @param toId
-         * @return {any}
-         */
-        RankColumn.prototype.toSortingDesc = function (toId) {
-            //TODO describe also all the filter settings
-            var resolve = function (s) {
-                if (s === null) {
-                    return null;
+        return r;
+    };
+    CategoricalColumn.prototype.restore = function (dump, factory) {
+        _super.prototype.restore.call(this, dump, factory);
+        this.filter_ = dump.filter || null;
+        if (dump.colors) {
+            this.colors.domain(dump.colors.domain).range(dump.colors.range);
+        }
+        this.separator = dump.separator || this.separator;
+    };
+    CategoricalColumn.prototype.isFiltered = function () {
+        return this.filter_ != null;
+    };
+    CategoricalColumn.prototype.filter = function (row) {
+        if (!this.isFiltered()) {
+            return true;
+        }
+        var vs = this.getValues(row), filter = this.filter_;
+        return vs.every(function (v) {
+            if (Array.isArray(filter) && filter.length > 0) {
+                return filter.indexOf(v) >= 0;
+            }
+            else if (typeof filter === 'string' && filter.length > 0) {
+                return v && v.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+            }
+            else if (filter instanceof RegExp) {
+                return v != null && v.match(filter).length > 0;
+            }
+            return true;
+        });
+    };
+    CategoricalColumn.prototype.getFilter = function () {
+        return this.filter_;
+    };
+    CategoricalColumn.prototype.setFilter = function (filter) {
+        this.fire(['filterChanged', 'dirtyValues', 'dirty'], this, this.filter_, this.filter_ = filter);
+    };
+    CategoricalColumn.prototype.compare = function (a, b) {
+        var va = this.getValues(a);
+        var vb = this.getValues(b);
+        for (var i = 0; i < Math.min(va.length, vb.length); ++i) {
+            var ci = d3.ascending(va[i], vb[i]);
+            if (ci !== 0) {
+                return ci;
+            }
+        }
+        return va.length - vb.length;
+    };
+    return CategoricalColumn;
+})(ValueColumn);
+exports.CategoricalColumn = CategoricalColumn;
+var CategoricalNumberColumn = (function (_super) {
+    __extends(CategoricalNumberColumn, _super);
+    function CategoricalNumberColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.colors = d3.scale.category10();
+        this.scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
+        this.filter_ = null;
+        this.separator = ';';
+        this.combiner = d3.max;
+        this.separator = desc.separator || this.separator;
+        CategoricalColumn.prototype.initCategories.call(this, desc);
+        this.scale.domain(this.colors.domain());
+        if (desc.categories) {
+            var values = [];
+            desc.categories.forEach(function (d) {
+                if (typeof d !== 'string' && typeof (d.value) === 'number') {
+                    values.push(d.value);
                 }
-                if (s instanceof StackColumn) {
-                    var w = s.weights;
-                    return s.children.map(function (child, i) {
-                        return {
-                            weight: w[i],
-                            id: resolve(child)
-                        };
-                    });
+                else {
+                    values.push(0.5);
                 }
-                return toId(s.desc);
-            };
-            var id = resolve(this.sortBy_);
-            if (id === null) {
+            });
+            this.scale.range(values);
+        }
+    }
+    CategoricalNumberColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
+    };
+    Object.defineProperty(CategoricalNumberColumn.prototype, "categories", {
+        get: function () {
+            return this.colors.domain();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CategoricalNumberColumn.prototype, "categoryColors", {
+        get: function () {
+            return this.colors.range();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    CategoricalNumberColumn.prototype.colorOf = function (cat) {
+        return this.colors(cat);
+    };
+    CategoricalNumberColumn.prototype.getLabel = function (row) {
+        return CategoricalColumn.prototype.getLabel.call(this, row);
+    };
+    CategoricalNumberColumn.prototype.getFirstLabel = function (row) {
+        return CategoricalColumn.prototype.getFirstLabel.call(this, row);
+    };
+    CategoricalNumberColumn.prototype.getLabels = function (row) {
+        return CategoricalColumn.prototype.getLabels.call(this, row);
+    };
+    CategoricalNumberColumn.prototype.getValue = function (row) {
+        var r = this.getValues(row);
+        return r.length > 0 ? this.combiner(r) : 0;
+    };
+    CategoricalNumberColumn.prototype.getValues = function (row) {
+        var r = CategoricalColumn.prototype.getValues.call(this, row);
+        return r.map(this.scale);
+    };
+    CategoricalNumberColumn.prototype.getCategories = function (row) {
+        return CategoricalColumn.prototype.getValues.call(this, row);
+    };
+    CategoricalNumberColumn.prototype.getNumber = function (row) {
+        return this.getValue(row);
+    };
+    CategoricalNumberColumn.prototype.getColor = function (row) {
+        var vs = this.getValues(row);
+        var cs = this.getColors(row);
+        if (this.combiner === d3.max) {
+            return cs.slice(1).reduce(function (prev, act, i) { return vs[i + 1] > prev.v ? { c: act, v: vs[i + 1] } : prev; }, {
+                c: cs[0],
+                v: vs[0]
+            }).c;
+        }
+        else if (this.combiner === d3.min) {
+            return cs.slice(1).reduce(function (prev, act, i) { return vs[i + 1] < prev.v ? { c: act, v: vs[i + 1] } : prev; }, {
+                c: cs[0],
+                v: vs[0]
+            }).c;
+        }
+        else {
+            return cs[0] || null;
+        }
+    };
+    CategoricalNumberColumn.prototype.getColors = function (row) {
+        return CategoricalColumn.prototype.getColors.call(this, row);
+    };
+    CategoricalNumberColumn.prototype.dump = function (toDescRef) {
+        var r = CategoricalColumn.prototype.dump.call(this, toDescRef);
+        r.scale = {
+            domain: this.scale.domain(),
+            range: this.scale.range(),
+            separator: this.separator
+        };
+        return r;
+    };
+    CategoricalNumberColumn.prototype.restore = function (dump, factory) {
+        CategoricalColumn.prototype.restore.call(this, dump, factory);
+        if (dump.scale) {
+            this.scale.domain(dump.scale.domain).range(dump.scale.range);
+        }
+        this.separator = dump.separator || this.separator;
+    };
+    CategoricalNumberColumn.prototype.getScale = function () {
+        return {
+            domain: this.scale.domain(),
+            range: this.scale.range()
+        };
+    };
+    CategoricalNumberColumn.prototype.setRange = function (range) {
+        var bak = this.getScale();
+        this.scale.range(range);
+        this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getScale());
+    };
+    CategoricalNumberColumn.prototype.isFiltered = function () {
+        return this.filter_ != null;
+    };
+    CategoricalNumberColumn.prototype.filter = function (row) {
+        return CategoricalColumn.prototype.filter.call(this, row);
+    };
+    CategoricalNumberColumn.prototype.getFilter = function () {
+        return this.filter_;
+    };
+    CategoricalNumberColumn.prototype.setFilter = function (filter) {
+        this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
+    };
+    CategoricalNumberColumn.prototype.compare = function (a, b) {
+        return NumberColumn.prototype.compare.call(this, a, b);
+    };
+    return CategoricalNumberColumn;
+})(ValueColumn);
+exports.CategoricalNumberColumn = CategoricalNumberColumn;
+var StackColumn = (function (_super) {
+    __extends(StackColumn, _super);
+    function StackColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.missingValue = 0;
+        this.children_ = [];
+        this._collapsed = false;
+        var that = this;
+        this.adaptChange = function (old, new_) {
+            that.adaptWidthChange(this.source, old, new_);
+        };
+    }
+    StackColumn.desc = function (label) {
+        if (label === void 0) { label = 'Combined'; }
+        return { type: 'stack', label: label };
+    };
+    StackColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['collapseChanged']);
+    };
+    StackColumn.prototype.assignNewId = function (idGenerator) {
+        _super.prototype.assignNewId.call(this, idGenerator);
+        this.children_.forEach(function (c) { return c.assignNewId(idGenerator); });
+    };
+    Object.defineProperty(StackColumn.prototype, "children", {
+        get: function () {
+            return this.children_.slice();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StackColumn.prototype, "length", {
+        get: function () {
+            return this.children_.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StackColumn.prototype, "weights", {
+        get: function () {
+            var w = this.getWidth();
+            return this.children_.map(function (d) { return d.getWidth() / w; });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StackColumn.prototype, "collapsed", {
+        get: function () {
+            return this._collapsed;
+        },
+        set: function (value) {
+            if (this._collapsed === value) {
+                return;
+            }
+            this.fire(['collapseChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this._collapsed, this._collapsed = value);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    StackColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
+        if (levelsToGo === void 0) { levelsToGo = 0; }
+        if (padding === void 0) { padding = 0; }
+        var self = null;
+        if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
+            var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
+            if (!this.collapsed && !this.compressed) {
+                w += (this.children_.length - 1) * padding;
+            }
+            r.push(self = { col: this, offset: offset, width: w });
+            if (levelsToGo === 0) {
+                return w;
+            }
+        }
+        var acc = offset;
+        this.children_.forEach(function (c) {
+            acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+        });
+        if (self) {
+            self.width = acc - offset - padding;
+        }
+        return acc - offset - padding;
+    };
+    StackColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.children = this.children_.map(function (d) { return d.dump(toDescRef); });
+        r.missingValue = this.missingValue;
+        r.collapsed = this.collapsed;
+        return r;
+    };
+    StackColumn.prototype.restore = function (dump, factory) {
+        var _this = this;
+        if (dump.missingValue) {
+            this.missingValue = dump.missingValue;
+        }
+        dump.children.map(function (child) {
+            _this.push(factory(child));
+        });
+        this.collapsed = dump.collapsed === true;
+        _super.prototype.restore.call(this, dump, factory);
+    };
+    StackColumn.prototype.insert = function (col, index, weight) {
+        if (weight === void 0) { weight = NaN; }
+        if (!isNumberColumn(col)) {
+            return null;
+        }
+        if (col instanceof StackColumn) {
+        }
+        if (!isNaN(weight)) {
+            col.setWidth((weight / (1 - weight) * this.getWidth()));
+        }
+        this.children_.splice(index, 0, col);
+        col.parent = this;
+        this.forward(col, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
+        col.on('widthChanged.stack', this.adaptChange);
+        _super.prototype.setWidth.call(this, this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
+        this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth());
+        return true;
+    };
+    StackColumn.prototype.push = function (col, weight) {
+        if (weight === void 0) { weight = NaN; }
+        return this.insert(col, this.children_.length, weight);
+    };
+    StackColumn.prototype.indexOf = function (col) {
+        var j = -1;
+        this.children_.some(function (d, i) {
+            if (d === col) {
+                j = i;
+                return true;
+            }
+            return false;
+        });
+        return j;
+    };
+    StackColumn.prototype.insertAfter = function (col, ref, weight) {
+        if (weight === void 0) { weight = NaN; }
+        var i = this.indexOf(ref);
+        if (i < 0) {
+            return false;
+        }
+        return this.insert(col, i + 1, weight);
+    };
+    StackColumn.prototype.adaptWidthChange = function (col, old, new_) {
+        if (old === new_) {
+            return;
+        }
+        var full = this.getWidth(), change = (new_ - old) / full;
+        var oldWeight = old / full;
+        var factor = (1 - oldWeight - change) / (1 - oldWeight);
+        this.children_.forEach(function (c) {
+            if (c === col) {
+            }
+            else {
+                c.setWidthImpl(c.getWidth() * factor);
+            }
+        });
+        this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], full, full);
+    };
+    StackColumn.prototype.setWeights = function (weights) {
+        var s, delta = weights.length - this.length;
+        if (delta < 0) {
+            s = d3.sum(weights);
+            if (s <= 1) {
+                for (var i = 0; i < -delta; ++i) {
+                    weights.push((1 - s) * (1 / -delta));
+                }
+            }
+            else if (s <= 100) {
+                for (var i = 0; i < -delta; ++i) {
+                    weights.push((100 - s) * (1 / -delta));
+                }
+            }
+        }
+        weights = weights.slice(0, this.length);
+        s = d3.sum(weights) / this.getWidth();
+        weights = weights.map(function (d) { return d / s; });
+        this.children_.forEach(function (c, i) {
+            c.setWidthImpl(weights[i]);
+        });
+        this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.getWidth(), this.getWidth());
+    };
+    StackColumn.prototype.remove = function (child) {
+        var i = this.children_.indexOf(child);
+        if (i < 0) {
+            return false;
+        }
+        this.children_.splice(i, 1);
+        child.parent = null;
+        if (child instanceof StackColumn) {
+        }
+        this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
+        child.on('widthChanged.stack', null);
+        _super.prototype.setWidth.call(this, this.length === 0 ? 100 : this.getWidth() - child.getWidth());
+        this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
+        return true;
+    };
+    StackColumn.prototype.setWidth = function (value) {
+        var factor = value / this.getWidth();
+        this.children_.forEach(function (child) {
+            child.setWidthImpl(child.getWidth() * factor);
+        });
+        _super.prototype.setWidth.call(this, value);
+    };
+    StackColumn.prototype.getValue = function (row) {
+        var w = this.getWidth();
+        var v = this.children_.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
+        if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
+            return this.missingValue;
+        }
+        return v;
+    };
+    StackColumn.prototype.getNumber = function (row) {
+        return this.getValue(row);
+    };
+    StackColumn.prototype.compare = function (a, b) {
+        return numberCompare(this.getValue(a), this.getValue(b));
+    };
+    StackColumn.prototype.isFiltered = function () {
+        return this.children_.some(function (d) { return d.isFiltered(); });
+    };
+    StackColumn.prototype.filter = function (row) {
+        return this.children_.every(function (d) { return d.filter(row); });
+    };
+    return StackColumn;
+})(Column);
+exports.StackColumn = StackColumn;
+var RankColumn = (function (_super) {
+    __extends(RankColumn, _super);
+    function RankColumn(id, desc) {
+        var _this = this;
+        _super.call(this, id, desc);
+        this.sortBy_ = null;
+        this.ascending = false;
+        this.columns_ = [];
+        this.comparator = function (a, b) {
+            if (_this.sortBy_ === null) {
+                return 0;
+            }
+            var r = _this.sortBy_.compare(a, b);
+            return _this.ascending ? r : -r;
+        };
+        this.dirtyOrder = function () {
+            _this.fire(['dirtyOrder', 'dirtyValues', 'dirty'], _this.sortCriteria());
+        };
+        this.order = [];
+        this.setWidthImpl(50);
+    }
+    RankColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
+    };
+    RankColumn.prototype.assignNewId = function (idGenerator) {
+        _super.prototype.assignNewId.call(this, idGenerator);
+        this.columns_.forEach(function (c) { return c.assignNewId(idGenerator); });
+    };
+    RankColumn.prototype.setOrder = function (order) {
+        this.fire(['orderChanged', 'dirtyValues', 'dirty'], this.order, this.order = order);
+    };
+    RankColumn.prototype.getOrder = function () {
+        return this.order;
+    };
+    RankColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.columns = this.columns_.map(function (d) { return d.dump(toDescRef); });
+        r.sortCriteria = {
+            asc: this.ascending
+        };
+        if (this.sortBy_) {
+            r.sortCriteria.sortBy = this.sortBy_.id;
+        }
+        return r;
+    };
+    RankColumn.prototype.restore = function (dump, factory) {
+        var _this = this;
+        _super.prototype.restore.call(this, dump, factory);
+        dump.columns.map(function (child) {
+            _this.push(factory(child));
+        });
+        if (dump.sortCriteria) {
+            this.ascending = dump.sortCriteria.asc;
+            if (dump.sortCriteria.sortBy) {
+                this.sortBy(this.columns_.filter(function (d) { return d.id === dump.sortCriteria.sortBy; })[0], dump.sortCriteria.asc);
+            }
+        }
+    };
+    RankColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
+        if (levelsToGo === void 0) { levelsToGo = 0; }
+        if (padding === void 0) { padding = 0; }
+        r.push({ col: this, offset: offset, width: this.getWidth() });
+        var acc = offset + this.getWidth() + padding;
+        if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
+            this.columns_.forEach(function (c) {
+                acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+            });
+        }
+        return acc - offset;
+    };
+    RankColumn.prototype.sortCriteria = function () {
+        return {
+            col: this.sortBy_,
+            asc: this.ascending
+        };
+    };
+    RankColumn.prototype.sortByMe = function (ascending) {
+        if (ascending === void 0) { ascending = false; }
+        return false;
+    };
+    RankColumn.prototype.toggleMySorting = function () {
+        return false;
+    };
+    RankColumn.prototype.findMyRanker = function () {
+        return this;
+    };
+    RankColumn.prototype.insertAfterMe = function (col) {
+        return this.insert(col, 0) !== null;
+    };
+    RankColumn.prototype.toggleSorting = function (col) {
+        if (this.sortBy_ === col) {
+            return this.sortBy(col, !this.ascending);
+        }
+        return this.sortBy(col);
+    };
+    RankColumn.prototype.sortBy = function (col, ascending) {
+        if (ascending === void 0) { ascending = false; }
+        if (col !== null && col.findMyRanker() !== this) {
+            return false;
+        }
+        if (this.sortBy_ === col && this.ascending === ascending) {
+            return true;
+        }
+        if (this.sortBy_) {
+            this.sortBy_.on('dirtyValues.order', null);
+        }
+        var bak = this.sortCriteria();
+        this.sortBy_ = col;
+        if (this.sortBy_) {
+            this.sortBy_.on('dirtyValues.order', this.dirtyOrder);
+        }
+        this.ascending = ascending;
+        this.fire(['sortCriteriaChanged', 'dirtyOrder', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, this.sortCriteria());
+        return true;
+    };
+    Object.defineProperty(RankColumn.prototype, "children", {
+        get: function () {
+            return this.columns_.slice();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RankColumn.prototype, "length", {
+        get: function () {
+            return this.columns_.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    RankColumn.prototype.insert = function (col, index) {
+        if (index === void 0) { index = this.columns_.length; }
+        this.columns_.splice(index, 0, col);
+        col.parent = this;
+        this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
+        col.on('filterChanged.order', this.dirtyOrder);
+        this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
+        if (this.sortBy_ === null) {
+            this.sortBy(col);
+        }
+        return col;
+    };
+    RankColumn.prototype.insertAfter = function (col, ref) {
+        if (ref === this) {
+            return this.insert(col, 0) != null;
+        }
+        var i = this.columns_.indexOf(ref);
+        if (i < 0) {
+            return false;
+        }
+        return this.insert(col, i + 1) != null;
+    };
+    RankColumn.prototype.push = function (col) {
+        return this.insert(col);
+    };
+    RankColumn.prototype.remove = function (col) {
+        var i = this.columns_.indexOf(col);
+        if (i < 0) {
+            return false;
+        }
+        this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
+        col.parent = null;
+        this.columns_.splice(i, 1);
+        this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col);
+        if (this.sortBy_ === col) {
+            this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
+        }
+        return true;
+    };
+    Object.defineProperty(RankColumn.prototype, "flatColumns", {
+        get: function () {
+            var r = [];
+            this.flatten(r, 0, Column.FLAT_ALL_COLUMNS);
+            return r.map(function (d) { return d.col; });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    RankColumn.prototype.find = function (id_or_filter) {
+        var filter = typeof (id_or_filter) === 'string' ? function (col) { return col.id === id_or_filter; } : id_or_filter;
+        var r = this.flatColumns;
+        for (var i = 0; i < r.length; ++i) {
+            if (filter(r[i])) {
+                return r[i];
+            }
+        }
+        return null;
+    };
+    RankColumn.prototype.toSortingDesc = function (toId) {
+        var resolve = function (s) {
+            if (s === null) {
                 return null;
             }
-            return {
-                id: id,
-                asc: this.ascending
-            };
+            if (s instanceof StackColumn) {
+                var w = s.weights;
+                return s.children.map(function (child, i) {
+                    return {
+                        weight: w[i],
+                        id: resolve(child)
+                    };
+                });
+            }
+            return toId(s.desc);
         };
-        RankColumn.prototype.isFiltered = function () {
-            return this.columns_.some(function (d) { return d.isFiltered(); });
-        };
-        RankColumn.prototype.filter = function (row) {
-            return this.columns_.every(function (d) { return d.filter(row); });
-        };
-        return RankColumn;
-    })(ValueColumn);
-    exports.RankColumn = RankColumn;
-    /**
-     * utility for creating a stacked column description
-     * @type {function(string=): {type: string, label: string}}
-     */
-    exports.createStackDesc = StackColumn.desc;
-    /**
-     * utility for creating an action description with optional label
-     * @param label
-     * @returns {{type: string, label: string}}
-     */
-    function createActionDesc(label) {
-        if (label === void 0) { label = 'actions'; }
-        return { type: 'actions', label: label };
-    }
-    exports.createActionDesc = createActionDesc;
-    /**
-     * a map of all known column types
-     */
-    function models() {
+        var id = resolve(this.sortBy_);
+        if (id === null) {
+            return null;
+        }
         return {
-            number: NumberColumn,
-            string: StringColumn,
-            link: LinkColumn,
-            stack: StackColumn,
-            rank: RankColumn,
-            categorical: CategoricalColumn,
-            ordinal: CategoricalNumberColumn,
-            actions: DummyColumn,
-            annotate: AnnotateColumn
+            id: id,
+            asc: this.ascending
         };
-    }
-    exports.models = models;
-});
+    };
+    RankColumn.prototype.isFiltered = function () {
+        return this.columns_.some(function (d) { return d.isFiltered(); });
+    };
+    RankColumn.prototype.filter = function (row) {
+        return this.columns_.every(function (d) { return d.filter(row); });
+    };
+    return RankColumn;
+})(ValueColumn);
+exports.RankColumn = RankColumn;
+exports.createStackDesc = StackColumn.desc;
+function createActionDesc(label) {
+    if (label === void 0) { label = 'actions'; }
+    return { type: 'actions', label: label };
+}
+exports.createActionDesc = createActionDesc;
+function models() {
+    return {
+        number: NumberColumn,
+        string: StringColumn,
+        link: LinkColumn,
+        stack: StackColumn,
+        rank: RankColumn,
+        categorical: CategoricalColumn,
+        ordinal: CategoricalNumberColumn,
+        actions: DummyColumn,
+        annotate: AnnotateColumn
+    };
+}
+exports.models = models;
 
-},{}],4:[function(require,module,exports){
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
+},{"./utils":8,"d3":undefined}],4:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", './model', './utils', 'd3'], function (require, exports, model, utils, d3) {
-    /**
-     * computes the simple statistics of an array using d3 histogram
-     * @param arr the data array
-     * @param acc accessor function
-     * @param range the total value range
-     * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
-     */
-    function computeStats(arr, acc, range) {
-        var hist = d3.layout.histogram().value(acc);
-        if (range) {
-            hist.range(function () { return range; });
-        }
-        var hist_data = hist(arr);
+var model = require('./model');
+var utils = require('./utils');
+var d3 = require('d3');
+function computeStats(arr, acc, range) {
+    if (arr.length === 0) {
         return {
-            min: hist_data[0].x,
-            max: hist_data[hist_data.length - 1].x + hist_data[hist_data.length - 1].dx,
-            count: arr.length,
-            hist: hist_data
+            min: NaN,
+            max: NaN,
+            count: 0,
+            maxBin: 0,
+            hist: []
         };
     }
-    /**
-     * computes a categorical histogram
-     * @param arr the data array
-     * @param acc the accessor
-     * @param categories the list of known categories
-     * @returns {{hist: {cat: string, y: number}[]}}
-     */
-    function computeHist(arr, acc, categories) {
-        var m = d3.map();
-        categories.forEach(function (cat) { return m.set(cat, 0); });
-        arr.forEach(function (a) {
-            var vs = acc(a);
-            if (vs == null) {
-                return;
-            }
-            vs.forEach(function (v) {
-                m.set(v, (m.get(v) || 0) + 1);
-            });
+    var hist = d3.layout.histogram().value(acc);
+    if (range) {
+        hist.range(function () { return range; });
+    }
+    var hist_data = hist(arr);
+    return {
+        min: hist_data[0].x,
+        max: hist_data[hist_data.length - 1].x + hist_data[hist_data.length - 1].dx,
+        count: arr.length,
+        maxBin: d3.max(hist_data, function (d) { return d.y; }),
+        hist: hist_data
+    };
+}
+function computeHist(arr, acc, categories) {
+    var m = d3.map();
+    categories.forEach(function (cat) { return m.set(cat, 0); });
+    arr.forEach(function (a) {
+        var vs = acc(a);
+        if (vs == null) {
+            return;
+        }
+        vs.forEach(function (v) {
+            m.set(v, (m.get(v) || 0) + 1);
         });
-        return {
-            hist: m.entries().map(function (entry) { return ({ cat: entry.key, y: entry.value }); })
+    });
+    return {
+        maxBin: d3.max(m.values()),
+        hist: m.entries().map(function (entry) { return ({ cat: entry.key, y: entry.value }); })
+    };
+}
+var DataProvider = (function (_super) {
+    __extends(DataProvider, _super);
+    function DataProvider() {
+        _super.call(this);
+        this.rankings_ = [];
+        this.selection = d3.set();
+        this.uid = 0;
+        this.columnTypes = model.models();
+        var that = this;
+        this.reorder = function () {
+            var ranking = this.source;
+            that.sort(ranking).then(function (order) { return ranking.setOrder(order); });
         };
     }
-    /**
-     * a basic data provider holding the data and rankings
-     */
-    var DataProvider = (function (_super) {
-        __extends(DataProvider, _super);
-        function DataProvider() {
-            _super.call(this);
-            /**
-             * all rankings
-             * @type {Array}
-             * @private
-             */
-            this.rankings_ = [];
-            /**
-             * the current selected indices
-             * @type {Set}
-             */
-            this.selection = d3.set();
-            this.uid = 0;
-            /**
-             * lookup map of a column type to its column implementation
-             */
-            this.columnTypes = model.models();
-            var that = this;
-            this.reorder = function () {
-                var ranking = this.source;
-                that.sort(ranking).then(function (order) {
-                    ranking.setOrder(order);
-                    //update all histograms if they are needed
-                });
-            };
+    DataProvider.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'orderChanged', 'selectionChanged']);
+    };
+    DataProvider.prototype.getColumns = function () {
+        return [];
+    };
+    DataProvider.prototype.pushRanking = function (existing) {
+        var r = this.cloneRanking(existing);
+        this.pushRankingImpl(r);
+        return r;
+    };
+    DataProvider.prototype.pushRankingImpl = function (r) {
+        this.rankings_.push(r);
+        this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');
+        r.on('dirtyOrder.provider', this.reorder);
+        this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r);
+    };
+    DataProvider.prototype.removeRanking = function (ranking) {
+        var i = this.rankings_.indexOf(ranking);
+        if (i < 0) {
+            return false;
         }
-        /**
-         * events:
-         *  * column changes: addColumn, removeColumn
-         *  * ranking changes: addRanking, removeRanking
-         *  * dirty: dirty, dirtyHeder, dirtyValues
-         *  * selectionChanged
-         * @returns {string[]}
-         */
-        DataProvider.prototype.createEventList = function () {
-            return _super.prototype.createEventList.call(this).concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'selectionChanged']);
-        };
-        /**
-         * returns a list of all known column descriptions
-         * @returns {Array}
-         */
-        DataProvider.prototype.getColumns = function () {
-            return [];
-        };
-        /**
-         * adds a new ranking
-         * @param existing an optional existing ranking to clone
-         * @return the new ranking
-         */
-        DataProvider.prototype.pushRanking = function (existing) {
-            var r = this.cloneRanking(existing);
-            this.pushRankingImpl(r);
-            return r;
-        };
-        DataProvider.prototype.pushRankingImpl = function (r) {
-            this.rankings_.push(r);
-            this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyValues.provider');
-            r.on('dirtyOrder.provider', this.reorder);
-            this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r);
-        };
-        /**
-         * removes a ranking from this data provider
-         * @param ranking
-         * @returns {boolean}
-         */
-        DataProvider.prototype.removeRanking = function (ranking) {
-            var i = this.rankings_.indexOf(ranking);
-            if (i < 0) {
-                return false;
-            }
-            this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
-            this.rankings_.splice(i, 1);
+        this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
+        this.rankings_.splice(i, 1);
+        ranking.on('dirtyOrder.provider', null);
+        this.cleanUpRanking(ranking);
+        this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], ranking);
+        return true;
+    };
+    DataProvider.prototype.clearRankings = function () {
+        var _this = this;
+        this.rankings_.forEach(function (ranking) {
+            _this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
             ranking.on('dirtyOrder.provider', null);
-            this.cleanUpRanking(ranking);
-            this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], ranking);
-            return true;
-        };
-        /**
-         * removes all rankings
-         */
-        DataProvider.prototype.clearRankings = function () {
-            var _this = this;
-            this.rankings_.forEach(function (ranking) {
-                _this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
-                ranking.on('dirtyOrder.provider', null);
-                _this.cleanUpRanking(ranking);
-            });
-            this.rankings_ = [];
-            this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty']);
-        };
-        /**
-         * returns a list of all current rankings
-         * @returns {model.RankColumn[]}
-         */
-        DataProvider.prototype.getRankings = function () {
-            return this.rankings_.slice();
-        };
-        /**
-         * returns the last ranking for quicker access
-         * @returns {model.RankColumn}
-         */
-        DataProvider.prototype.getLastRanking = function () {
-            return this.rankings_[this.rankings_.length - 1];
-        };
-        /**
-         * hook method for cleaning up a ranking
-         * @param ranking
-         */
-        DataProvider.prototype.cleanUpRanking = function (ranking) {
-            //nothing to do
-        };
-        /**
-         * abstract method for cloning a ranking
-         * @param existing
-         * @returns {null}
-         */
-        DataProvider.prototype.cloneRanking = function (existing) {
-            return null; //implement me
-        };
-        /**
-         * adds a column to a ranking described by its column description
-         * @param ranking the ranking to add the column to
-         * @param desc the description of the column
-         * @return {model.Column} the newly created column or null
-         */
-        DataProvider.prototype.push = function (ranking, desc) {
-            var r = this.create(desc);
-            if (r) {
-                ranking.push(r);
-                return r;
-            }
-            return null;
-        };
-        /**
-         * adds a column to a ranking described by its column description
-         * @param ranking the ranking to add the column to
-         * @param index the position to insert the column
-         * @param desc the description of the column
-         * @return {model.Column} the newly created column or null
-         */
-        DataProvider.prototype.insert = function (ranking, index, desc) {
-            var r = this.create(desc);
-            if (r) {
-                ranking.insert(r, index);
-                return r;
-            }
-            return null;
-        };
-        /**
-         * creates a new unique id for a column
-         * @returns {string}
-         */
-        DataProvider.prototype.nextId = function () {
-            return 'col' + (this.uid++);
-        };
-        /**
-         * creates an internal column model out of the given column description
-         * @param desc
-         * @returns {model.Column] the new column or null if it can't be created
-         */
-        DataProvider.prototype.create = function (desc) {
-            //find by type and instantiate
-            var type = this.columnTypes[desc.type];
-            if (type) {
-                return new type(this.nextId(), desc);
-            }
-            return null;
-        };
-        /**
-         * clones a column by dumping and restoring
-         * @param col
-         * @returns {model.Column}
-         */
-        DataProvider.prototype.clone = function (col) {
-            var dump = col.dump(function (d) { return d; });
-            return this.restoreColumn(dump);
-        };
-        /**
-         * restores a column from a dump
-         * @param dump
-         * @returns {model.Column}
-         */
-        DataProvider.prototype.restoreColumn = function (dump) {
-            var _this = this;
-            var create = function (d) {
-                var type = _this.columnTypes[d.desc.type];
-                var c = new type('', d.desc);
-                c.restore(d, create);
-                c.assignNewId(_this.nextId.bind(_this));
-                return c;
-            };
-            return create(dump);
-        };
-        /**
-         * finds a column in all rankings returning the first match
-         * @param id_or_filter by id or by a filter function
-         * @returns {model.Column}
-         */
-        DataProvider.prototype.find = function (id_or_filter) {
-            //convert to function
-            var filter = typeof (id_or_filter) === 'string' ? function (col) { return col.id === id_or_filter; } : id_or_filter;
-            for (var i = 0; i < this.rankings_.length; ++i) {
-                var r = this.rankings_[i].find(filter);
-                if (r) {
-                    return r;
-                }
-            }
-            return null;
-        };
-        /**
-         * dumps this whole provider including selection and the rankings
-         * @returns {{uid: number, selection: number[], rankings: *[]}}
-         */
-        DataProvider.prototype.dump = function () {
-            var _this = this;
-            return {
-                uid: this.uid,
-                selection: this.selection.values().map(Number),
-                rankings: this.rankings_.map(function (r) { return r.dump(_this.toDescRef); })
-            };
-        };
-        /**
-         * dumps a specific column
-         * @param col
-         * @returns {any}
-         */
-        DataProvider.prototype.dumpColumn = function (col) {
-            return col.dump(this.toDescRef);
-        };
-        /**
-         * for better dumping describe reference, by default just return the description
-         * @param desc
-         * @returns {any}
-         */
-        DataProvider.prototype.toDescRef = function (desc) {
-            return desc;
-        };
-        /**
-         * inverse operation of toDescRef
-         * @param descRef
-         * @returns {any}
-         */
-        DataProvider.prototype.fromDescRef = function (descRef) {
-            return descRef;
-        };
-        DataProvider.prototype.restore = function (dump) {
-            var _this = this;
-            //factory method for restoring a column
-            var create = function (d) {
-                var desc = _this.fromDescRef(d.desc);
-                var type = _this.columnTypes[desc.type];
-                var c = new type(d.id, desc);
-                c.restore(d, create);
-                return c;
-            };
-            //clean old
-            this.clearRankings();
-            //restore selection
-            this.uid = dump.uid || 0;
-            if (dump.selection) {
-                dump.selection.forEach(function (s) { return _this.selection.add(String(s)); });
-            }
-            //restore rankings
-            if (dump.rankings) {
-                dump.rankings.forEach(function (r) {
-                    var ranking = _this.pushRanking();
-                    ranking.restore(r, create);
-                });
-            }
-            if (dump.layout) {
-                Object.keys(dump.layout).forEach(function (key) {
-                    _this.deriveRanking(dump.layout[key]);
-                });
-            }
-            //assign new ids
-            var idGenerator = this.nextId.bind(this);
-            this.rankings_.forEach(function (r) {
-                r.children.forEach(function (c) { return c.assignNewId(idGenerator); });
-            });
-        };
-        DataProvider.prototype.findDesc = function (ref) {
-            return null;
-        };
-        /**
-         * generates a default ranking by using all column descriptions ones
-         */
-        DataProvider.prototype.deriveDefault = function () {
-            var _this = this;
-            if (this.rankings_.length > 0) {
-                //no default if we have a ranking
-                return;
-            }
-            var r = this.pushRanking();
-            this.getColumns().forEach(function (col) {
-                _this.push(r, col);
-            });
-        };
-        /**
-         * derives a ranking from an old layout bundle format
-         * @param bundle
-         */
-        DataProvider.prototype.deriveRanking = function (bundle) {
-            var _this = this;
-            var toCol = function (column) {
-                if (column.type === 'rank') {
-                    return null; //can't handle
-                }
-                if (column.type === 'actions') {
-                    var r_1 = _this.create(model.createActionDesc(column.label || 'actions'));
-                    r_1.restore(column, null);
-                    return r_1;
-                }
-                if (column.type === 'stacked') {
-                    //create a stacked one
-                    var r_2 = _this.create(model.StackColumn.desc(column.label || 'Combined'));
-                    (column.children || []).forEach(function (col) {
-                        var c = toCol(col);
-                        if (c) {
-                            r_2.push(c);
-                        }
-                    });
-                    return r_2;
-                }
-                else {
-                    var desc = _this.findDesc(column.column);
-                    if (desc) {
-                        var r_3 = _this.create(desc);
-                        column.label = column.label || desc.label || desc.column;
-                        r_3.restore(column, null);
-                        return r_3;
-                    }
-                }
-                return null;
-            };
-            var r = this.pushRanking();
-            bundle.forEach(function (column) {
-                var col = toCol(column);
-                if (col) {
-                    r.push(col);
-                }
-            });
+            _this.cleanUpRanking(ranking);
+        });
+        this.rankings_ = [];
+        this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty']);
+    };
+    DataProvider.prototype.getRankings = function () {
+        return this.rankings_.slice();
+    };
+    DataProvider.prototype.getLastRanking = function () {
+        return this.rankings_[this.rankings_.length - 1];
+    };
+    DataProvider.prototype.cleanUpRanking = function (ranking) {
+    };
+    DataProvider.prototype.cloneRanking = function (existing) {
+        return null;
+    };
+    DataProvider.prototype.push = function (ranking, desc) {
+        var r = this.create(desc);
+        if (r) {
+            ranking.push(r);
             return r;
+        }
+        return null;
+    };
+    DataProvider.prototype.insert = function (ranking, index, desc) {
+        var r = this.create(desc);
+        if (r) {
+            ranking.insert(r, index);
+            return r;
+        }
+        return null;
+    };
+    DataProvider.prototype.nextId = function () {
+        return 'col' + (this.uid++);
+    };
+    DataProvider.prototype.create = function (desc) {
+        var type = this.columnTypes[desc.type];
+        if (type) {
+            return new type(this.nextId(), desc);
+        }
+        return null;
+    };
+    DataProvider.prototype.clone = function (col) {
+        var dump = col.dump(function (d) { return d; });
+        return this.restoreColumn(dump);
+    };
+    DataProvider.prototype.restoreColumn = function (dump) {
+        var _this = this;
+        var create = function (d) {
+            var type = _this.columnTypes[d.desc.type];
+            var c = new type('', d.desc);
+            c.restore(d, create);
+            c.assignNewId(_this.nextId.bind(_this));
+            return c;
         };
-        /**
-         * sorts the given ranking and eventually return a ordering of the data items
-         * @param ranking
-         * @return {Promise<any>}
-         */
-        DataProvider.prototype.sort = function (ranking) {
-            return Promise.reject('not implemented');
-        };
-        /**
-         * returns a view in the order of the given indices
-         * @param indices
-         * @return {Promise<any>}
-         */
-        DataProvider.prototype.view = function (indices) {
-            return Promise.reject('not implemented');
-        };
-        /**
-         * returns a data sample used for the mapping editor
-         * @param col
-         * @return {Promise<any>}
-         */
-        DataProvider.prototype.mappingSample = function (col) {
-            return Promise.reject('not implemented');
-        };
-        /**
-         * helper for computing statistics
-         * @param indices
-         * @returns {{stats: (function(model.INumberColumn): *), hist: (function(model.ICategoricalColumn): *)}}
-         */
-        DataProvider.prototype.stats = function (indices) {
-            return {
-                stats: function (col) { return Promise.reject('not implemented'); },
-                hist: function (col) { return Promise.reject('not implemented'); }
-            };
-        };
-        /**
-         * method for computing the unique key of a row
-         * @param row
-         * @param i
-         * @return {string}
-         */
-        DataProvider.prototype.rowKey = function (row, i) {
-            return typeof (row) === 'number' ? String(row) : String(row._index);
-        };
-        /**
-         * is the given row selected
-         * @param index
-         * @return {boolean}
-         */
-        DataProvider.prototype.isSelected = function (index) {
-            return this.selection.has(String(index));
-        };
-        /**
-         * also select the given row
-         * @param index
-         */
-        DataProvider.prototype.select = function (index) {
-            this.selection.add(String(index));
-            this.fire('selectionChanged', this.selection.values().map(Number));
-        };
-        /**
-         * hook for selecting elements matching the given arguments
-         * @param search
-         * @param col
-         */
-        DataProvider.prototype.searchSelect = function (search, col) {
-            //implemented by custom provider
-        };
-        /**
-         * also select all the given rows
-         * @param indices
-         */
-        DataProvider.prototype.selectAll = function (indices) {
-            var _this = this;
-            indices.forEach(function (index) {
-                _this.selection.add(String(index));
-            });
-            this.fire('selectionChanged', this.selection.values().map(Number));
-        };
-        /**
-         * set the selection to the given rows
-         * @param indices
-         */
-        DataProvider.prototype.setSelection = function (indices) {
-            var _this = this;
-            if (this.selection.size() === indices.length && indices.every(function (i) { return _this.selection.has(String(i)); })) {
-                return; //no change
+        return create(dump);
+    };
+    DataProvider.prototype.find = function (id_or_filter) {
+        var filter = typeof (id_or_filter) === 'string' ? function (col) { return col.id === id_or_filter; } : id_or_filter;
+        for (var i = 0; i < this.rankings_.length; ++i) {
+            var r = this.rankings_[i].find(filter);
+            if (r) {
+                return r;
             }
-            this.selection = d3.set();
-            this.selectAll(indices);
+        }
+        return null;
+    };
+    DataProvider.prototype.dump = function () {
+        var _this = this;
+        return {
+            uid: this.uid,
+            selection: this.selection.values().map(Number),
+            rankings: this.rankings_.map(function (r) { return r.dump(_this.toDescRef); })
         };
-        /**
-         * toggles the selection of the given data index
-         * @param index
-         * @param additional just this element or all
-         * @returns {boolean} whether the index is currently selected
-         */
-        DataProvider.prototype.toggleSelection = function (index, additional) {
-            if (additional === void 0) { additional = false; }
-            if (this.isSelected(index)) {
-                if (additional) {
-                    this.deselect(index);
-                }
-                else {
-                    this.clearSelection();
-                }
-                return false;
+    };
+    DataProvider.prototype.dumpColumn = function (col) {
+        return col.dump(this.toDescRef);
+    };
+    DataProvider.prototype.toDescRef = function (desc) {
+        return desc;
+    };
+    DataProvider.prototype.fromDescRef = function (descRef) {
+        return descRef;
+    };
+    DataProvider.prototype.restore = function (dump) {
+        var _this = this;
+        var create = function (d) {
+            var desc = _this.fromDescRef(d.desc);
+            var type = _this.columnTypes[desc.type];
+            var c = new type(d.id, desc);
+            c.restore(d, create);
+            return c;
+        };
+        this.clearRankings();
+        this.uid = dump.uid || 0;
+        if (dump.selection) {
+            dump.selection.forEach(function (s) { return _this.selection.add(String(s)); });
+        }
+        if (dump.rankings) {
+            dump.rankings.forEach(function (r) {
+                var ranking = _this.pushRanking();
+                ranking.restore(r, create);
+            });
+        }
+        if (dump.layout) {
+            Object.keys(dump.layout).forEach(function (key) {
+                _this.deriveRanking(dump.layout[key]);
+            });
+        }
+        var idGenerator = this.nextId.bind(this);
+        this.rankings_.forEach(function (r) {
+            r.children.forEach(function (c) { return c.assignNewId(idGenerator); });
+        });
+    };
+    DataProvider.prototype.findDesc = function (ref) {
+        return null;
+    };
+    DataProvider.prototype.deriveDefault = function () {
+        var _this = this;
+        if (this.rankings_.length > 0) {
+            return;
+        }
+        var r = this.pushRanking();
+        this.getColumns().forEach(function (col) {
+            _this.push(r, col);
+        });
+    };
+    DataProvider.prototype.deriveRanking = function (bundle) {
+        var _this = this;
+        var toCol = function (column) {
+            if (column.type === 'rank') {
+                return null;
+            }
+            if (column.type === 'actions') {
+                var r_1 = _this.create(model.createActionDesc(column.label || 'actions'));
+                r_1.restore(column, null);
+                return r_1;
+            }
+            if (column.type === 'stacked') {
+                var r_2 = _this.create(model.StackColumn.desc(column.label || 'Combined'));
+                (column.children || []).forEach(function (col) {
+                    var c = toCol(col);
+                    if (c) {
+                        r_2.push(c);
+                    }
+                });
+                return r_2;
             }
             else {
-                if (additional) {
-                    this.select(index);
+                var desc = _this.findDesc(column.column);
+                if (desc) {
+                    var r_3 = _this.create(desc);
+                    column.label = column.label || desc.label || desc.column;
+                    r_3.restore(column, null);
+                    return r_3;
                 }
-                else {
-                    this.setSelection([index]);
-                }
-                return true;
             }
+            return null;
         };
-        /**
-         * deselect the given row
-         * @param index
-         */
-        DataProvider.prototype.deselect = function (index) {
-            this.selection.remove(String(index));
-            this.fire('selectionChanged', this.selection.values().map(Number));
-        };
-        /**
-         * returns a promise containing the selected rows
-         * @return {Promise<any[]>}
-         */
-        DataProvider.prototype.selectedRows = function () {
-            if (this.selection.empty()) {
-                return Promise.resolve([]);
+        var r = this.pushRanking();
+        bundle.forEach(function (column) {
+            var col = toCol(column);
+            if (col) {
+                r.push(col);
             }
-            return this.view(this.getSelection());
+        });
+        return r;
+    };
+    DataProvider.prototype.sort = function (ranking) {
+        return Promise.reject('not implemented');
+    };
+    DataProvider.prototype.view = function (indices) {
+        return Promise.reject('not implemented');
+    };
+    DataProvider.prototype.mappingSample = function (col) {
+        return Promise.reject('not implemented');
+    };
+    DataProvider.prototype.stats = function (indices) {
+        return {
+            stats: function (col) { return Promise.reject('not implemented'); },
+            hist: function (col) { return Promise.reject('not implemented'); }
         };
-        /**
-         * returns the currently selected indices
-         * @returns {Array}
-         */
-        DataProvider.prototype.getSelection = function () {
-            var indices = [];
-            this.selection.forEach(function (s) { return indices.push(+s); });
-            indices.sort();
-            return indices;
+    };
+    DataProvider.prototype.rowKey = function (row, i) {
+        return typeof (row) === 'number' ? String(row) : String(row._index);
+    };
+    DataProvider.prototype.isSelected = function (index) {
+        return this.selection.has(String(index));
+    };
+    DataProvider.prototype.select = function (index) {
+        this.selection.add(String(index));
+        this.fire('selectionChanged', this.selection.values().map(Number));
+    };
+    DataProvider.prototype.searchSelect = function (search, col) {
+    };
+    DataProvider.prototype.selectAll = function (indices) {
+        var _this = this;
+        indices.forEach(function (index) {
+            _this.selection.add(String(index));
+        });
+        this.fire('selectionChanged', this.selection.values().map(Number));
+    };
+    DataProvider.prototype.setSelection = function (indices) {
+        var _this = this;
+        if (this.selection.size() === indices.length && indices.every(function (i) { return _this.selection.has(String(i)); })) {
+            return;
+        }
+        this.selection = d3.set();
+        this.selectAll(indices);
+    };
+    DataProvider.prototype.toggleSelection = function (index, additional) {
+        if (additional === void 0) { additional = false; }
+        if (this.isSelected(index)) {
+            if (additional) {
+                this.deselect(index);
+            }
+            else {
+                this.clearSelection();
+            }
+            return false;
+        }
+        else {
+            if (additional) {
+                this.select(index);
+            }
+            else {
+                this.setSelection([index]);
+            }
+            return true;
+        }
+    };
+    DataProvider.prototype.deselect = function (index) {
+        this.selection.remove(String(index));
+        this.fire('selectionChanged', this.selection.values().map(Number));
+    };
+    DataProvider.prototype.selectedRows = function () {
+        if (this.selection.empty()) {
+            return Promise.resolve([]);
+        }
+        return this.view(this.getSelection());
+    };
+    DataProvider.prototype.getSelection = function () {
+        var indices = [];
+        this.selection.forEach(function (s) { return indices.push(+s); });
+        indices.sort();
+        return indices;
+    };
+    DataProvider.prototype.clearSelection = function () {
+        this.selection = d3.set();
+        this.fire('selectionChanged', []);
+    };
+    return DataProvider;
+})(utils.AEventDispatcher);
+exports.DataProvider = DataProvider;
+var CommonDataProvider = (function (_super) {
+    __extends(CommonDataProvider, _super);
+    function CommonDataProvider(columns) {
+        var _this = this;
+        if (columns === void 0) { columns = []; }
+        _super.call(this);
+        this.columns = columns;
+        this.rankingIndex = 0;
+        this.rowGetter = function (row, id, desc) { return row[desc.column]; };
+        this.columns = columns.slice();
+        columns.forEach(function (d) {
+            d.accessor = _this.rowGetter;
+            d.label = d.label || d.column;
+        });
+    }
+    CommonDataProvider.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['addDesc']);
+    };
+    CommonDataProvider.prototype.pushDesc = function (column) {
+        var d = column;
+        d.accessor = this.rowGetter;
+        d.label = column.label || d.column;
+        this.columns.push(column);
+        this.fire('addDesc', d);
+    };
+    CommonDataProvider.prototype.getColumns = function () {
+        return this.columns.slice();
+    };
+    CommonDataProvider.prototype.findDesc = function (ref) {
+        return this.columns.filter(function (c) { return c.column === ref; })[0];
+    };
+    CommonDataProvider.prototype.toDescRef = function (desc) {
+        return desc.column ? desc.type + '@' + desc.column : desc;
+    };
+    CommonDataProvider.prototype.fromDescRef = function (descRef) {
+        if (typeof (descRef) === 'string') {
+            return this.columns.filter(function (d) { return d.type + '@' + d.column === descRef; })[0];
+        }
+        return descRef;
+    };
+    CommonDataProvider.prototype.restore = function (dump) {
+        _super.prototype.restore.call(this, dump);
+        this.rankingIndex = 1 + d3.max(this.getRankings(), function (r) { return +r.id.substring(4); });
+    };
+    CommonDataProvider.prototype.nextRankingId = function () {
+        return 'rank' + (this.rankingIndex++);
+    };
+    return CommonDataProvider;
+})(DataProvider);
+exports.CommonDataProvider = CommonDataProvider;
+var LocalDataProvider = (function (_super) {
+    __extends(LocalDataProvider, _super);
+    function LocalDataProvider(data, columns) {
+        if (columns === void 0) { columns = []; }
+        _super.call(this, columns);
+        this.data = data;
+        data.forEach(function (d, i) {
+            d._rankings = {};
+            d._index = i;
+        });
+    }
+    LocalDataProvider.prototype.cloneRanking = function (existing) {
+        var _this = this;
+        var id = this.nextRankingId();
+        var rankDesc = {
+            label: 'Rank',
+            type: 'rank',
+            accessor: function (row, id) { return (row._rankings[id] + 1) || 1; }
         };
-        /**
-         * clears the selection
-         */
-        DataProvider.prototype.clearSelection = function () {
-            this.selection = d3.set();
-            this.fire('selectionChanged', []);
-        };
-        return DataProvider;
-    })(utils.AEventDispatcher);
-    exports.DataProvider = DataProvider;
-    /**
-     * common base implementation of a DataProvider with a fixed list of column descriptions
-     */
-    var CommonDataProvider = (function (_super) {
-        __extends(CommonDataProvider, _super);
-        function CommonDataProvider(columns) {
-            var _this = this;
-            if (columns === void 0) { columns = []; }
-            _super.call(this);
-            this.columns = columns;
-            this.rankingIndex = 0;
-            //generic accessor of the data item
-            this.rowGetter = function (row, id, desc) { return row[desc.column]; };
-            this.columns = columns.slice();
-            //generate the accessor
-            columns.forEach(function (d) {
-                d.accessor = _this.rowGetter;
-                d.label = d.label || d.column;
+        var new_ = new model.RankColumn(id, rankDesc);
+        if (existing) {
+            this.data.forEach(function (row) {
+                var r = row._rankings;
+                r[id] = r[existing.id];
+            });
+            existing.children.forEach(function (child) {
+                _this.push(new_, child.desc);
             });
         }
-        CommonDataProvider.prototype.createEventList = function () {
-            return _super.prototype.createEventList.call(this).concat(['addDesc']);
-        };
-        /**
-         * adds another column description to this data provider
-         * @param column
-         */
-        CommonDataProvider.prototype.pushDesc = function (column) {
-            var d = column;
-            d.accessor = this.rowGetter;
-            d.label = column.label || d.column;
-            this.columns.push(column);
-            this.fire('addDesc', d);
-        };
-        CommonDataProvider.prototype.getColumns = function () {
-            return this.columns.slice();
-        };
-        CommonDataProvider.prototype.findDesc = function (ref) {
-            return this.columns.filter(function (c) { return c.column === ref; })[0];
-        };
-        /**
-         * identify by the tuple type@columnname
-         * @param desc
-         * @returns {string}
-         */
-        CommonDataProvider.prototype.toDescRef = function (desc) {
-            return desc.column ? desc.type + '@' + desc.column : desc;
-        };
-        CommonDataProvider.prototype.fromDescRef = function (descRef) {
-            if (typeof (descRef) === 'string') {
-                return this.columns.filter(function (d) { return d.type + '@' + d.column === descRef; })[0];
-            }
-            return descRef;
-        };
-        CommonDataProvider.prototype.restore = function (dump) {
-            _super.prototype.restore.call(this, dump);
-            this.rankingIndex = 1 + d3.max(this.getRankings(), function (r) { return +r.id.substring(4); });
-        };
-        CommonDataProvider.prototype.nextRankingId = function () {
-            return 'rank' + (this.rankingIndex++);
-        };
-        return CommonDataProvider;
-    })(DataProvider);
-    exports.CommonDataProvider = CommonDataProvider;
-    /**
-     * a data provider based on an local array
-     */
-    var LocalDataProvider = (function (_super) {
-        __extends(LocalDataProvider, _super);
-        function LocalDataProvider(data, columns) {
-            if (columns === void 0) { columns = []; }
-            _super.call(this, columns);
-            this.data = data;
-            //enhance with a magic attribute storing ranking information
-            data.forEach(function (d, i) {
-                d._rankings = {};
-                d._index = i;
-            });
+        return new_;
+    };
+    LocalDataProvider.prototype.cleanUpRanking = function (ranking) {
+        this.data.forEach(function (d) { return delete d._rankings[ranking.id]; });
+    };
+    LocalDataProvider.prototype.sort = function (ranking) {
+        var helper = this.data.map(function (r, i) { return ({ row: r, i: i, prev: r._rankings[ranking.id] || 0 }); });
+        if (ranking.isFiltered()) {
+            helper = helper.filter(function (d) { return ranking.filter(d.row); });
         }
-        LocalDataProvider.prototype.cloneRanking = function (existing) {
-            var _this = this;
-            var id = this.nextRankingId();
-            var rankDesc = {
-                label: 'Rank',
-                type: 'rank',
-                accessor: function (row, id) { return (row._rankings[id] + 1) || 1; }
-            };
-            var new_ = new model.RankColumn(id, rankDesc);
-            if (existing) {
-                this.data.forEach(function (row) {
-                    var r = row._rankings;
-                    r[id] = r[existing.id];
-                });
-                //TODO better cloning
-                existing.children.forEach(function (child) {
-                    _this.push(new_, child.desc);
-                });
-            }
-            return new_;
+        helper.sort(function (a, b) { return ranking.comparator(a.row, b.row); });
+        var argsort = helper.map(function (r, i) {
+            r.row._rankings[ranking.id] = i;
+            return r.i;
+        });
+        return Promise.resolve(argsort);
+    };
+    LocalDataProvider.prototype.view = function (indices) {
+        var _this = this;
+        var slice = indices.map(function (index) { return _this.data[index]; });
+        return Promise.resolve(slice);
+    };
+    LocalDataProvider.prototype.stats = function (indices) {
+        var _this = this;
+        var d = null;
+        var getD = function () { return d === null ? (d = _this.view(indices)) : d; };
+        return {
+            stats: function (col) { return getD().then(function (data) { return computeStats(data, col.getNumber.bind(col), [0, 1]); }); },
+            hist: function (col) { return getD().then(function (data) { return computeHist(data, col.getCategories.bind(col), col.categories); }); }
         };
-        LocalDataProvider.prototype.cleanUpRanking = function (ranking) {
-            //delete all stored information
-            this.data.forEach(function (d) { return delete d._rankings[ranking.id]; });
+    };
+    LocalDataProvider.prototype.mappingSample = function (col) {
+        return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
+    };
+    LocalDataProvider.prototype.searchSelect = function (search, col) {
+        var f = typeof search === 'string' ? function (v) { return v.indexOf(search) >= 0; } : function (v) { return v.match(search) != null; };
+        var indices = this.data.filter(function (row) {
+            return f(col.getLabel(row));
+        }).map(function (row) { return row._index; });
+        this.setSelection(indices);
+    };
+    return LocalDataProvider;
+})(CommonDataProvider);
+exports.LocalDataProvider = LocalDataProvider;
+var RemoteDataProvider = (function (_super) {
+    __extends(RemoteDataProvider, _super);
+    function RemoteDataProvider(server, columns) {
+        if (columns === void 0) { columns = []; }
+        _super.call(this, columns);
+        this.server = server;
+        this.ranks = {};
+    }
+    RemoteDataProvider.prototype.cloneRanking = function (existing) {
+        var _this = this;
+        var id = this.nextRankingId();
+        var rankDesc = {
+            label: 'Rank',
+            type: 'rank',
+            accessor: function (row, id) { return _this.ranks[id][row._index] || 0; }
         };
-        LocalDataProvider.prototype.sort = function (ranking) {
-            //wrap in a helper and store the initial index
-            var helper = this.data.map(function (r, i) { return ({ row: r, i: i, prev: r._rankings[ranking.id] || 0 }); });
-            //do the optional filtering step
-            //TODO apply filters of others, too
-            if (ranking.isFiltered()) {
-                helper = helper.filter(function (d) { return ranking.filter(d.row); });
-            }
-            //sort by the ranking column
-            helper.sort(function (a, b) { return ranking.comparator(a.row, b.row); });
-            //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-            var argsort = helper.map(function (r, i) {
-                r.row._rankings[ranking.id] = i;
-                return r.i;
-            });
-            return Promise.resolve(argsort);
-        };
-        LocalDataProvider.prototype.view = function (indices) {
-            var _this = this;
-            var slice = indices.map(function (index) { return _this.data[index]; });
-            return Promise.resolve(slice);
-        };
-        /**
-         * helper for computing statistics
-         * @param indices
-         * @returns {{stats: (function(model.INumberColumn): *), hist: (function(model.ICategoricalColumn): *)}}
-         */
-        LocalDataProvider.prototype.stats = function (indices) {
-            var _this = this;
-            var d = null;
-            return {
-                stats: function (col) { return ((d === null) ? (d = _this.view(indices)) : d).then(function (data) { return computeStats(data, col.getNumber.bind(col), [0, 1]); }); },
-                hist: function (col) { return ((d === null) ? (d = _this.view(indices)) : d).then(function (data) { return computeHist(data, col.getCategories.bind(col), col.categories); }); }
-            };
-        };
-        LocalDataProvider.prototype.mappingSample = function (col) {
-            //return all
-            return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
-        };
-        LocalDataProvider.prototype.searchSelect = function (search, col) {
-            var f = typeof search === 'string' ? function (v) { return v.indexOf(search) >= 0; } : function (v) { return v.match(search) != null; };
-            var indices = this.data.filter(function (row) {
-                return f(col.getLabel(row));
-            }).map(function (row) { return row._index; });
-            this.setSelection(indices);
-        };
-        return LocalDataProvider;
-    })(CommonDataProvider);
-    exports.LocalDataProvider = LocalDataProvider;
-    /**
-     * a remote implementation of the data provider
-     */
-    var RemoteDataProvider = (function (_super) {
-        __extends(RemoteDataProvider, _super);
-        function RemoteDataProvider(server, columns) {
-            if (columns === void 0) { columns = []; }
-            _super.call(this, columns);
-            this.server = server;
-            /**
-             * the local ranking orders
-             * @type {{}}
-             */
-            this.ranks = {};
+        if (existing) {
+            this.ranks[id] = this.ranks[existing.id];
         }
-        RemoteDataProvider.prototype.cloneRanking = function (existing) {
-            var _this = this;
-            var id = this.nextRankingId();
-            var rankDesc = {
-                label: 'Rank',
-                type: 'rank',
-                accessor: function (row, id) { return _this.ranks[id][row._index] || 0; }
-            };
-            if (existing) {
-                //copy the ranking
-                this.ranks[id] = this.ranks[existing.id];
-            }
-            return new model.RankColumn(id, rankDesc);
-        };
-        RemoteDataProvider.prototype.cleanUpRanking = function (ranking) {
-            //delete all stored information
-            delete this.ranks[ranking.id];
-        };
-        RemoteDataProvider.prototype.sort = function (ranking) {
-            var _this = this;
-            //generate a description of what to sort
-            var desc = ranking.toSortingDesc(function (desc) { return desc.column; });
-            //use the server side to sort
-            return this.server.sort(desc).then(function (argsort) {
-                //store the result
-                _this.ranks[ranking.id] = argsort;
-                return argsort;
-            });
-        };
-        RemoteDataProvider.prototype.view = function (argsort) {
-            return this.server.view(argsort).then(function (view) {
-                //enhance with the data index
-                view.forEach(function (d, i) { return d._index = argsort[i]; });
-                return view;
-            });
-        };
-        RemoteDataProvider.prototype.mappingSample = function (col) {
-            return this.server.mappingSample(col.desc.column);
-        };
-        RemoteDataProvider.prototype.searchSelect = function (search, col) {
-            var _this = this;
-            this.server.search(search, col.desc.column).then(function (indices) {
-                _this.setSelection(indices);
-            });
-        };
-        return RemoteDataProvider;
-    })(CommonDataProvider);
-    exports.RemoteDataProvider = RemoteDataProvider;
-});
+        return new model.RankColumn(id, rankDesc);
+    };
+    RemoteDataProvider.prototype.cleanUpRanking = function (ranking) {
+        delete this.ranks[ranking.id];
+    };
+    RemoteDataProvider.prototype.sort = function (ranking) {
+        var _this = this;
+        var desc = ranking.toSortingDesc(function (desc) { return desc.column; });
+        return this.server.sort(desc).then(function (argsort) {
+            _this.ranks[ranking.id] = argsort;
+            return argsort;
+        });
+    };
+    RemoteDataProvider.prototype.view = function (argsort) {
+        return this.server.view(argsort).then(function (view) {
+            view.forEach(function (d, i) { return d._index = argsort[i]; });
+            return view;
+        });
+    };
+    RemoteDataProvider.prototype.mappingSample = function (col) {
+        return this.server.mappingSample(col.desc.column);
+    };
+    RemoteDataProvider.prototype.searchSelect = function (search, col) {
+        var _this = this;
+        this.server.search(search, col.desc.column).then(function (indices) {
+            _this.setSelection(indices);
+        });
+    };
+    return RemoteDataProvider;
+})(CommonDataProvider);
+exports.RemoteDataProvider = RemoteDataProvider;
 
-},{}],5:[function(require,module,exports){
+},{"./model":3,"./utils":8,"d3":undefined}],5:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3422,10 +2910,12 @@ var HeaderRenderer = (function () {
             columnPadding: 5,
             headerHeight: 20,
             manipulative: true,
+            histograms: false,
             filterDialogs: dialogs.filterDialogs(),
             searchAble: function (col) { return col instanceof model.StringColumn; },
             sortOnLabel: true
         };
+        this.histCache = d3.map();
         this.dragHandler = d3.behavior.drag()
             .on('dragstart', function () {
             d3.select(this).classed('dragging', true);
@@ -3475,9 +2965,29 @@ var HeaderRenderer = (function () {
     HeaderRenderer.prototype.changeDataStorage = function (data) {
         if (this.data) {
             this.data.on('dirtyHeader.headerRenderer', null);
+            this.data.on('orderChanged.headerRenderer', null);
         }
         this.data = data;
         data.on('dirtyHeader.headerRenderer', utils.delayedCall(this.update.bind(this), 1));
+        if (this.options.histograms) {
+            data.on('orderChanged.headerRenderer', this.updateHist.bind(this));
+        }
+    };
+    HeaderRenderer.prototype.updateHist = function () {
+        var _this = this;
+        var rankings = this.data.getRankings();
+        rankings.forEach(function (ranking) {
+            var order = ranking.getOrder();
+            var cols = ranking.flatColumns;
+            var histo = order == null ? null : _this.data.stats(order);
+            cols.filter(function (d) { return d instanceof model.NumberColumn; }).forEach(function (col) {
+                _this.histCache.set(col.id, histo === null ? null : histo.stats(col));
+            });
+            cols.filter(model.isCategoricalColumn).forEach(function (col) {
+                _this.histCache.set(col.id, histo === null ? null : histo.hist(col));
+            });
+        });
+        this.update();
     };
     HeaderRenderer.prototype.update = function () {
         var _this = this;
@@ -3496,6 +3006,9 @@ var HeaderRenderer = (function () {
         }
         var levels = Math.max.apply(Math, columns.map(countStacked));
         this.$node.style('height', this.options.headerHeight * levels + 'px');
+        if (this.options.histograms && this.histCache.empty() && rankings.length > 0) {
+            this.updateHist();
+        }
         this.renderColumns(columns, shifts);
     };
     HeaderRenderer.prototype.createToolbar = function ($node) {
@@ -3601,6 +3114,9 @@ var HeaderRenderer = (function () {
                 .call(this.dropHandler);
             $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
         }
+        if (this.options.histograms) {
+            $headers_enter.append('div').classed('histogram', true);
+        }
         $headers.style({
             width: function (d, i) { return (shifts[i].width + _this.options.columnPadding) + 'px'; },
             left: function (d, i) { return shifts[i].offset + 'px'; },
@@ -3647,6 +3163,47 @@ var HeaderRenderer = (function () {
             }
             return d.push(col);
         }));
+        if (this.options.histograms) {
+            $headers.filter(function (d) { return model.isCategoricalColumn(d); }).each(function (col) {
+                var $this = d3.select(this).select('div.histogram');
+                var hist = that.histCache.get(col.id);
+                if (hist) {
+                    hist.then(function (stats) {
+                        var $bars = $this.selectAll('div.bar').data(stats.hist);
+                        $bars.enter().append('div').classed('bar', true);
+                        var sx = d3.scale.ordinal().domain(col.categories).rangeBands([0, 100], 0.1);
+                        var sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
+                        $bars.style({
+                            left: function (d) { return sx(d.cat) + '%'; },
+                            width: function (d) { return sx.rangeBand() + '%'; },
+                            top: function (d) { return (100 - sy(d.y)) + '%'; },
+                            height: function (d) { return sy(d.y) + '%'; },
+                            'background-color': function (d) { return col.colorOf(d.cat); }
+                        }).attr('title', function (d) { return (d.cat + ": " + d.y); });
+                        $bars.exit().remove();
+                    });
+                }
+            });
+            $headers.filter(function (d) { return d instanceof model.NumberColumn; }).each(function (col) {
+                var $this = d3.select(this).select('div.histogram');
+                var hist = that.histCache.get(col.id);
+                if (hist) {
+                    hist.then(function (stats) {
+                        var $bars = $this.selectAll('div.bar').data(stats.hist);
+                        $bars.enter().append('div').classed('bar', true);
+                        var sx = d3.scale.ordinal().domain(d3.range(stats.hist.length).map(String)).rangeBands([0, 100], 0.1);
+                        var sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
+                        $bars.style({
+                            left: function (d, i) { return sx(String(i)) + '%'; },
+                            width: function (d, i) { return sx.rangeBand() + '%'; },
+                            top: function (d) { return (100 - sy(d.y)) + '%'; },
+                            height: function (d) { return sy(d.y) + '%'; }
+                        }).attr('title', function (d, i) { return ("Bin " + i + ": " + d.y); });
+                        $bars.exit().remove();
+                    });
+                }
+            });
+        }
         $headers.exit().remove();
     };
     return HeaderRenderer;
@@ -4306,386 +3863,273 @@ function filterDialogs() {
 exports.filterDialogs = filterDialogs;
 
 },{"./mappingeditor":2,"./utils":8}],8:[function(require,module,exports){
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", 'd3'], function (require, exports, d3) {
-    /**
-     * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
-     * @param callback the callback to call
-     * @param timeToDelay delay the call in milliseconds
-     * @param thisCallback this argument of the callback
-     * @return {function(...[any]): undefined} a function that can be called with the same interface as the callback but delayed
-     */
-    function delayedCall(callback, timeToDelay, thisCallback) {
-        if (timeToDelay === void 0) { timeToDelay = 100; }
-        if (thisCallback === void 0) { thisCallback = this; }
-        var tm = -1;
-        return function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            if (tm >= 0) {
-                clearTimeout(tm);
-                tm = -1;
-            }
-            args.unshift(thisCallback);
-            tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
-        };
-    }
-    exports.delayedCall = delayedCall;
-    /**
-     * utility for AEventDispatcher to forward an event
-     * @param to
-     * @param event
-     * @return {function(...[any]): undefined}
-     */
-    function forwardEvent(to, event) {
-        return function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            args.unshift(event || this.type);
-            to.fire.apply(to, args);
-        };
-    }
-    exports.forwardEvent = forwardEvent;
-    /**
-     * base class for event dispatching using d3 event mechanism
-     */
-    var AEventDispatcher = (function () {
-        function AEventDispatcher() {
-            this.forwarder = forwardEvent(this);
-            this.listeners = d3.dispatch.apply(d3, this.createEventList());
-        }
-        AEventDispatcher.prototype.on = function (type, listener) {
-            var _this = this;
-            if (arguments.length > 1) {
-                if (Array.isArray(type)) {
-                    type.forEach(function (d) { return _this.listeners.on(d, listener); });
-                }
-                else {
-                    this.listeners.on(type, listener);
-                }
-                return this;
-            }
-            return this.listeners.on(type);
-        };
-        /**
-         * return the list of events to be able to dispatch
-         * @return {Array}
-         */
-        AEventDispatcher.prototype.createEventList = function () {
-            return [];
-        };
-        AEventDispatcher.prototype.fire = function (type) {
-            var _this = this;
-            var args = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                args[_i - 1] = arguments[_i];
-            }
-            var fireImpl = function (t) {
-                //local context per event, set a this argument
-                var context = {
-                    source: _this,
-                    type: t,
-                    args: args //the arguments to the listener
-                };
-                _this.listeners[t].apply(context, args);
-            };
-            if (Array.isArray(type)) {
-                type.forEach(fireImpl.bind(this));
-            }
-            else {
-                fireImpl(type);
-            }
-        };
-        /**
-         * forwards one or more events from a given dispatcher to the current one
-         * i.e. when one of the given events is fired in 'from' it will be forwared to all my listeners
-         * @param from the event dispatcher to forward from
-         * @param types the event types to forward
-         */
-        AEventDispatcher.prototype.forward = function (from) {
-            var types = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                types[_i - 1] = arguments[_i];
-            }
-            from.on(types, this.forwarder);
-        };
-        /**
-         * removes the forwarding declarations
-         * @param from
-         * @param types
-         */
-        AEventDispatcher.prototype.unforward = function (from) {
-            var types = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                types[_i - 1] = arguments[_i];
-            }
-            from.on(types, null);
-        };
-        return AEventDispatcher;
-    })();
-    exports.AEventDispatcher = AEventDispatcher;
-    var TYPE_OBJECT = '[object Object]';
-    var TYPE_ARRAY = '[object Array]';
-    //credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
-    function merge() {
+var d3 = require('d3');
+function delayedCall(callback, timeToDelay, thisCallback) {
+    if (timeToDelay === void 0) { timeToDelay = 100; }
+    if (thisCallback === void 0) { thisCallback = this; }
+    var tm = -1;
+    return function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        var result = null;
-        for (var i = 0; i < args.length; i++) {
-            var toMerge = args[i], keys = Object.keys(toMerge);
-            if (result === null) {
-                result = toMerge;
-                continue;
-            }
-            for (var j = 0; j < keys.length; j++) {
-                var keyName = keys[j];
-                var value = toMerge[keyName];
-                if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
-                    if (result[keyName] === undefined) {
-                        result[keyName] = {};
-                    }
-                    result[keyName] = merge(result[keyName], value);
-                }
-                else if (Object.prototype.toString.call(value) === TYPE_ARRAY) {
-                    if (result[keyName] === undefined) {
-                        result[keyName] = [];
-                    }
-                    result[keyName] = value.concat(result[keyName]);
-                }
-                else {
-                    result[keyName] = value;
-                }
-            }
+        if (tm >= 0) {
+            clearTimeout(tm);
+            tm = -1;
         }
-        return result;
+        args.unshift(thisCallback);
+        tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
+    };
+}
+exports.delayedCall = delayedCall;
+function forwardEvent(to, event) {
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+        args.unshift(event || this.type);
+        to.fire.apply(to, args);
+    };
+}
+exports.forwardEvent = forwardEvent;
+var AEventDispatcher = (function () {
+    function AEventDispatcher() {
+        this.forwarder = forwardEvent(this);
+        this.listeners = d3.dispatch.apply(d3, this.createEventList());
     }
-    exports.merge = merge;
-    /**
-     * computes the absolute offset of the given element
-     * @param element
-     * @return {{left: number, top: number, width: number, height: number}}
-     */
-    function offset(element) {
-        var obj = element.getBoundingClientRect();
-        return {
-            left: obj.left + window.pageXOffset,
-            top: obj.top + window.pageYOffset,
-            width: obj.width,
-            height: obj.height
-        };
-    }
-    exports.offset = offset;
-    /**
-     * content scroller utility
-     *
-     * a class for efficiently selecting a range of data items that are currently visible according to the scrolled position
-     */
-    var ContentScroller = (function (_super) {
-        __extends(ContentScroller, _super);
-        /**
-         *
-         * @param container the container element wrapping the content with a fixed height for enforcing scrolling
-         * @param content the content element to scroll
-         * @param options options see attribute
-         */
-        function ContentScroller(container, content, options) {
-            var _this = this;
-            if (options === void 0) { options = {}; }
-            _super.call(this);
-            this.container = container;
-            this.content = content;
-            this.options = {
-                /**
-                 * shift that should be used for calculating the top position
-                 */
-                topShift: 0,
-                /**
-                 * backup rows, i.e .the number of rows that should also be shown for avoiding to frequent updates
-                 */
-                backupRows: 5,
-                /**
-                 * the height of one row in pixel
-                 */
-                rowHeight: 10
+    AEventDispatcher.prototype.on = function (type, listener) {
+        var _this = this;
+        if (arguments.length > 1) {
+            if (Array.isArray(type)) {
+                type.forEach(function (d) { return _this.listeners.on(d, listener); });
+            }
+            else {
+                this.listeners.on(type, listener);
+            }
+            return this;
+        }
+        return this.listeners.on(type);
+    };
+    AEventDispatcher.prototype.createEventList = function () {
+        return [];
+    };
+    AEventDispatcher.prototype.fire = function (type) {
+        var _this = this;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        var fireImpl = function (t) {
+            var context = {
+                source: _this,
+                type: t,
+                args: args
             };
-            this.prevScrollTop = 0;
-            this.shift = 0;
-            merge(this.options, options);
-            d3.select(container).on('scroll.scroller', function () { return _this.onScroll(); });
-            //keep the previous state computing whether a redraw is needed
-            this.prevScrollTop = container.scrollTop;
-            //total shift to the top
-            this.shift = offset(content).top - offset(container).top + this.options.topShift;
-        }
-        /**
-         * two events are fired:
-         *  * scroll when the user scrolls the container
-         *  * redraw when a redraw of the content must be performed due to scrolling changes. Note due to backup rows
-         *     a scrolling operation might not include a redraw
-         *
-         * @returns {string[]}
-         */
-        ContentScroller.prototype.createEventList = function () {
-            return _super.prototype.createEventList.call(this).concat(['scroll', 'redraw']);
+            _this.listeners[t].apply(context, args);
         };
-        /**
-         * selects a range identified by start and length and the row2y position callback returning the slice to show according to the current user scrolling position
-         * @param start start of the range
-         * @param length length of the range
-         * @param row2y lookup for computing the y position of a given row
-         * @returns {{from: number, to: number}} the slide to show
-         */
-        ContentScroller.prototype.select = function (start, length, row2y) {
-            var top = this.container.scrollTop - this.shift, bottom = top + this.container.clientHeight, i = 0, j;
-            /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
-             if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
-             console.log('show all');
-             return [0, data.length];
-             }*/
-            if (top > 0) {
-                i = Math.round(top / this.options.rowHeight);
-                //count up till really even partial rows are visible
-                while (i >= start && row2y(i + 1) > top) {
-                    i--;
-                }
-                i -= this.options.backupRows; //one more row as backup for scrolling
-            }
-            {
-                j = Math.round(bottom / this.options.rowHeight);
-                //count down till really even partial rows are visible
-                while (j <= length && row2y(j - 1) < bottom) {
-                    j++;
-                }
-                j += this.options.backupRows; //one more row as backup for scrolling
-            }
-            return {
-                from: Math.max(i, start),
-                to: Math.min(j, length)
-            };
-        };
-        ContentScroller.prototype.onScroll = function () {
-            var top = this.container.scrollTop;
-            var left = this.container.scrollLeft;
-            //at least one row changed
-            //console.log(top, left);
-            this.fire('scroll', top, left);
-            if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
-                //we scrolled out of our backup rows, so we have to redraw the content
-                this.prevScrollTop = top;
-                this.fire('redraw');
-            }
-        };
-        /**
-         * removes the listeners
-         */
-        ContentScroller.prototype.destroy = function () {
-            d3.select(this.container).on('scroll.scroller', null);
-        };
-        return ContentScroller;
-    })(AEventDispatcher);
-    exports.ContentScroller = ContentScroller;
-    /**
-     * checks whether the given DragEvent has one of the given types
-     */
-    function hasDnDType(e, typesToCheck) {
-        var types = e.dataTransfer.types;
-        if (typeof types.indexOf === 'function') {
-            return typesToCheck.some(function (type) { return types.indexOf(type) >= 0; });
-        }
-        if (typeof types.includes === 'function') {
-            return typesToCheck.some(function (type) { return types.includes(type); });
-        }
-        if (typeof types.contains === 'function') {
-            return typesToCheck.some(function (type) { return types.contains(type); });
-        }
-        return false;
-    }
-    exports.hasDnDType = hasDnDType;
-    /**
-     * should it be a copy dnd operation?
-     */
-    function copyDnD(e) {
-        var dT = e.dataTransfer;
-        return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
-    }
-    exports.copyDnD = copyDnD;
-    /**
-     * updates the drop effect according to the currently selected meta keys
-     * @param e
-     */
-    function updateDropEffect(e) {
-        var dT = e.dataTransfer;
-        if (copyDnD(e)) {
-            dT.dropEffect = 'copy';
+        if (Array.isArray(type)) {
+            type.forEach(fireImpl.bind(this));
         }
         else {
-            dT.dropEffect = 'move';
+            fireImpl(type);
+        }
+    };
+    AEventDispatcher.prototype.forward = function (from) {
+        var types = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            types[_i - 1] = arguments[_i];
+        }
+        from.on(types, this.forwarder);
+    };
+    AEventDispatcher.prototype.unforward = function (from) {
+        var types = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            types[_i - 1] = arguments[_i];
+        }
+        from.on(types, null);
+    };
+    return AEventDispatcher;
+})();
+exports.AEventDispatcher = AEventDispatcher;
+var TYPE_OBJECT = '[object Object]';
+var TYPE_ARRAY = '[object Array]';
+function merge() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i - 0] = arguments[_i];
+    }
+    var result = null;
+    for (var i = 0; i < args.length; i++) {
+        var toMerge = args[i], keys = Object.keys(toMerge);
+        if (result === null) {
+            result = toMerge;
+            continue;
+        }
+        for (var j = 0; j < keys.length; j++) {
+            var keyName = keys[j];
+            var value = toMerge[keyName];
+            if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
+                if (result[keyName] === undefined) {
+                    result[keyName] = {};
+                }
+                result[keyName] = merge(result[keyName], value);
+            }
+            else if (Object.prototype.toString.call(value) === TYPE_ARRAY) {
+                if (result[keyName] === undefined) {
+                    result[keyName] = [];
+                }
+                result[keyName] = value.concat(result[keyName]);
+            }
+            else {
+                result[keyName] = value;
+            }
         }
     }
-    exports.updateDropEffect = updateDropEffect;
-    /**
-     * returns a d3 callable function to make an element dropable, managed the class css 'drag_over' for hovering effects
-     * @param mimeTypes the mime types to be dropable
-     * @param onDrop: handler when an element is dropped
-     */
-    function dropAble(mimeTypes, onDrop) {
-        return function ($node) {
-            $node.on('dragenter', function () {
-                var e = d3.event;
-                //var xy = d3.mouse($node.node());
-                if (hasDnDType(e, mimeTypes)) {
-                    d3.select(this).classed('drag_over', true);
-                    //sounds good
-                    return false;
-                }
-                //not a valid mime type
-                d3.select(this).classed('drag_over', false);
-            }).on('dragover', function () {
-                var e = d3.event;
-                if (hasDnDType(e, mimeTypes)) {
-                    e.preventDefault();
-                    updateDropEffect(e);
-                    d3.select(this).classed('drag_over', true);
-                    return false;
-                }
-            }).on('dragleave', function () {
-                //
-                d3.select(this).classed('drag_over', false);
-            }).on('drop', function (d) {
-                var e = d3.event;
-                e.preventDefault();
-                d3.select(this).classed('drag_over', false);
-                //var xy = d3.mouse($node.node());
-                if (hasDnDType(e, mimeTypes)) {
-                    var data = {};
-                    //selects the data contained in the data transfer
-                    mimeTypes.forEach(function (mime) {
-                        var value = e.dataTransfer.getData(mime);
-                        if (value !== '') {
-                            data[mime] = value;
-                        }
-                    });
-                    return onDrop(data, d, copyDnD(e));
-                }
-            });
+    return result;
+}
+exports.merge = merge;
+function offset(element) {
+    var obj = element.getBoundingClientRect();
+    return {
+        left: obj.left + window.pageXOffset,
+        top: obj.top + window.pageYOffset,
+        width: obj.width,
+        height: obj.height
+    };
+}
+exports.offset = offset;
+var ContentScroller = (function (_super) {
+    __extends(ContentScroller, _super);
+    function ContentScroller(container, content, options) {
+        var _this = this;
+        if (options === void 0) { options = {}; }
+        _super.call(this);
+        this.container = container;
+        this.content = content;
+        this.options = {
+            topShift: 0,
+            backupRows: 5,
+            rowHeight: 10
         };
+        this.prevScrollTop = 0;
+        this.shift = 0;
+        merge(this.options, options);
+        d3.select(container).on('scroll.scroller', function () { return _this.onScroll(); });
+        this.prevScrollTop = container.scrollTop;
+        this.shift = offset(content).top - offset(container).top + this.options.topShift;
     }
-    exports.dropAble = dropAble;
-});
+    ContentScroller.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['scroll', 'redraw']);
+    };
+    ContentScroller.prototype.select = function (start, length, row2y) {
+        var top = this.container.scrollTop - this.shift, bottom = top + this.container.clientHeight, i = 0, j;
+        if (top > 0) {
+            i = Math.round(top / this.options.rowHeight);
+            while (i >= start && row2y(i + 1) > top) {
+                i--;
+            }
+            i -= this.options.backupRows;
+        }
+        {
+            j = Math.round(bottom / this.options.rowHeight);
+            while (j <= length && row2y(j - 1) < bottom) {
+                j++;
+            }
+            j += this.options.backupRows;
+        }
+        return {
+            from: Math.max(i, start),
+            to: Math.min(j, length)
+        };
+    };
+    ContentScroller.prototype.onScroll = function () {
+        var top = this.container.scrollTop;
+        var left = this.container.scrollLeft;
+        this.fire('scroll', top, left);
+        if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
+            this.prevScrollTop = top;
+            this.fire('redraw');
+        }
+    };
+    ContentScroller.prototype.destroy = function () {
+        d3.select(this.container).on('scroll.scroller', null);
+    };
+    return ContentScroller;
+})(AEventDispatcher);
+exports.ContentScroller = ContentScroller;
+function hasDnDType(e, typesToCheck) {
+    var types = e.dataTransfer.types;
+    if (typeof types.indexOf === 'function') {
+        return typesToCheck.some(function (type) { return types.indexOf(type) >= 0; });
+    }
+    if (typeof types.includes === 'function') {
+        return typesToCheck.some(function (type) { return types.includes(type); });
+    }
+    if (typeof types.contains === 'function') {
+        return typesToCheck.some(function (type) { return types.contains(type); });
+    }
+    return false;
+}
+exports.hasDnDType = hasDnDType;
+function copyDnD(e) {
+    var dT = e.dataTransfer;
+    return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
+}
+exports.copyDnD = copyDnD;
+function updateDropEffect(e) {
+    var dT = e.dataTransfer;
+    if (copyDnD(e)) {
+        dT.dropEffect = 'copy';
+    }
+    else {
+        dT.dropEffect = 'move';
+    }
+}
+exports.updateDropEffect = updateDropEffect;
+function dropAble(mimeTypes, onDrop) {
+    return function ($node) {
+        $node.on('dragenter', function () {
+            var e = d3.event;
+            if (hasDnDType(e, mimeTypes)) {
+                d3.select(this).classed('drag_over', true);
+                return false;
+            }
+            d3.select(this).classed('drag_over', false);
+        }).on('dragover', function () {
+            var e = d3.event;
+            if (hasDnDType(e, mimeTypes)) {
+                e.preventDefault();
+                updateDropEffect(e);
+                d3.select(this).classed('drag_over', true);
+                return false;
+            }
+        }).on('dragleave', function () {
+            d3.select(this).classed('drag_over', false);
+        }).on('drop', function (d) {
+            var e = d3.event;
+            e.preventDefault();
+            d3.select(this).classed('drag_over', false);
+            if (hasDnDType(e, mimeTypes)) {
+                var data = {};
+                mimeTypes.forEach(function (mime) {
+                    var value = e.dataTransfer.getData(mime);
+                    if (value !== '') {
+                        data[mime] = value;
+                    }
+                });
+                return onDrop(data, d, copyDnD(e));
+            }
+        });
+    };
+}
+exports.dropAble = dropAble;
 
-},{}]},{},[1]);
+},{"d3":undefined}]},{},[1]);
  
 });

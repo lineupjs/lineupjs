@@ -183,6 +183,7 @@ export class HeaderRenderer {
     columnPadding: 5,
     headerHeight: 20,
     manipulative: true,
+    histograms: false,
 
     filterDialogs: dialogs.filterDialogs(),
     searchAble: (col:model.Column) => col instanceof model.StringColumn,
@@ -190,6 +191,8 @@ export class HeaderRenderer {
   };
 
   $node:d3.Selection<any>;
+
+  private histCache = d3.map<Promise<any>>();
 
   private dragHandler = d3.behavior.drag<model.Column>()
     //.origin((d) => d)
@@ -246,14 +249,35 @@ export class HeaderRenderer {
   changeDataStorage(data:provider.DataProvider) {
     if (this.data) {
       this.data.on('dirtyHeader.headerRenderer', null);
+      this.data.on('orderChanged.headerRenderer', null);
     }
     this.data = data;
     data.on('dirtyHeader.headerRenderer', utils.delayedCall(this.update.bind(this), 1));
+    if (this.options.histograms) {
+      data.on('orderChanged.headerRenderer', this.updateHist.bind(this));
+
+    }
+  }
+
+  private updateHist() {
+    var rankings = this.data.getRankings();
+    rankings.forEach((ranking) => {
+      const order = ranking.getOrder();
+      const cols = ranking.flatColumns;
+      const histo = order == null ? null : this.data.stats(order);
+      cols.filter((d) => d instanceof model.NumberColumn).forEach((col:any) => {
+        this.histCache.set(col.id,histo === null ? null : histo.stats(col));
+      });
+      cols.filter(model.isCategoricalColumn).forEach((col:any) => {
+        this.histCache.set(col.id,histo === null ? null : histo.hist(col));
+      });
+    });
+    this.update();
   }
 
   update() {
-
     var rankings = this.data.getRankings();
+
     var shifts = [], offset = 0;
     rankings.forEach((ranking) => {
       offset += ranking.flatten(shifts, offset, 1, this.options.columnPadding) + this.options.slopeWidth;
@@ -272,6 +296,12 @@ export class HeaderRenderer {
 
     var levels = Math.max.apply(Math, columns.map(countStacked));
     this.$node.style('height', this.options.headerHeight * levels + 'px');
+
+    //update all if needed
+    if (this.options.histograms && this.histCache.empty() && rankings.length > 0) {
+      this.updateHist();
+    }
+
     this.renderColumns(columns, shifts);
   }
 
@@ -387,6 +417,11 @@ export class HeaderRenderer {
         .call(this.dropHandler);
       $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
     }
+
+    if (this.options.histograms) {
+      $headers_enter.append('div').classed('histogram', true);
+    }
+
     $headers.style({
       width: (d, i) => (shifts[i].width + this.options.columnPadding) + 'px',
       left: (d, i) => shifts[i].offset + 'px',
@@ -432,6 +467,49 @@ export class HeaderRenderer {
       }
       return d.push(col);
     }));
+
+    if (this.options.histograms) {
+
+      $headers.filter((d) => model.isCategoricalColumn(d)).each(function (col:model.CategoricalColumn) {
+        var $this = d3.select(this).select('div.histogram');
+        var hist = that.histCache.get(col.id);
+        if (hist) {
+          hist.then((stats:model.ICategoricalStatistics) => {
+            const $bars = $this.selectAll('div.bar').data(stats.hist);
+            $bars.enter().append('div').classed('bar', true);
+            const sx = d3.scale.ordinal().domain(col.categories).rangeBands([0, 100], 0.1);
+            const sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
+            $bars.style({
+              left: (d) => sx(d.cat) + '%',
+              width: (d) => sx.rangeBand() + '%',
+              top: (d) => (100 - sy(d.y)) + '%',
+              height: (d) => sy(d.y) + '%',
+              'background-color': (d) => col.colorOf(d.cat)
+            }).attr('title', (d) => `${d.cat}: ${d.y}`);
+            $bars.exit().remove();
+          });
+        }
+      });
+      $headers.filter((d) => d instanceof model.NumberColumn).each(function (col:model.Column) {
+        var $this = d3.select(this).select('div.histogram');
+        var hist = that.histCache.get(col.id);
+        if (hist) {
+          hist.then((stats:model.IStatistics) => {
+            const $bars = $this.selectAll('div.bar').data(stats.hist);
+            $bars.enter().append('div').classed('bar', true);
+            const sx = d3.scale.ordinal().domain(d3.range(stats.hist.length).map(String)).rangeBands([0, 100], 0.1);
+            const sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
+            $bars.style({
+              left: (d,i) => sx(String(i)) + '%',
+              width: (d,i) => sx.rangeBand() + '%',
+              top: (d) => (100 - sy(d.y)) + '%',
+              height: (d) => sy(d.y) + '%'
+            }).attr('title', (d,i) => `Bin ${i}: ${d.y}`);
+            $bars.exit().remove();
+          });
+        }
+      });
+    }
 
     $headers.exit().remove();
   }

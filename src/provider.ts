@@ -14,6 +14,15 @@ import d3 = require('d3');
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  */
 function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):model.IStatistics {
+  if (arr.length === 0) {
+    return {
+      min: NaN,
+      max: NaN,
+      count: 0,
+      maxBin: 0,
+      hist: []
+    };
+  }
   var hist = d3.layout.histogram().value(acc);
   if (range) {
     hist.range(() => range);
@@ -23,6 +32,7 @@ function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):m
     min: hist_data[0].x,
     max: hist_data[hist_data.length - 1].x + hist_data[hist_data.length - 1].dx,
     count: arr.length,
+    maxBin: d3.max(hist_data, (d) => d.y),
     hist: hist_data
   };
 }
@@ -48,6 +58,7 @@ function computeHist(arr:any[], acc:(any) => string[], categories: string[]):mod
     });
   });
   return {
+    maxBin: d3.max(m.values()),
     hist: m.entries().map((entry) => ({ cat: entry.key, y : entry.value}))
   };
 }
@@ -85,11 +96,7 @@ export class DataProvider extends utils.AEventDispatcher {
     var that = this;
     this.reorder = function () {
       var ranking = this.source;
-      that.sort(ranking).then((order) => {
-        ranking.setOrder(order);
-        //update all histograms if they are needed
-
-      });
+      that.sort(ranking).then((order) => ranking.setOrder(order));
     };
   }
 
@@ -102,7 +109,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @returns {string[]}
    */
   createEventList() {
-    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'selectionChanged']);
+    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'orderChanged', 'selectionChanged']);
   }
 
   /**
@@ -126,7 +133,7 @@ export class DataProvider extends utils.AEventDispatcher {
 
   private pushRankingImpl(r:model.RankColumn) {
     this.rankings_.push(r);
-    this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyValues.provider');
+    this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');
     r.on('dirtyOrder.provider', this.reorder);
     this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r);
   }
@@ -141,7 +148,7 @@ export class DataProvider extends utils.AEventDispatcher {
     if (i < 0) {
       return false;
     }
-    this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
+    this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
     this.rankings_.splice(i, 1);
     ranking.on('dirtyOrder.provider', null);
     this.cleanUpRanking(ranking);
@@ -743,9 +750,11 @@ export class LocalDataProvider extends CommonDataProvider {
    */
   stats(indices:number[]) {
     var d:Promise<any[]> = null;
+    const getD= () => d === null ? (d = this.view(indices)) : d;
+
     return {
-      stats: (col:model.INumberColumn) => ((d === null) ? (d = this.view(indices)) : d).then((data) => computeStats(data, col.getNumber.bind(col), [0, 1])),
-      hist: (col:model.ICategoricalColumn) => ((d === null) ? (d = this.view(indices)) : d).then((data) => computeHist(data, col.getCategories.bind(col), col.categories))
+      stats: (col:model.INumberColumn) => getD().then((data) => computeStats(data, col.getNumber.bind(col), [0, 1])),
+      hist: (col:model.ICategoricalColumn) => getD().then((data) => computeHist(data, col.getCategories.bind(col), col.categories))
     };
   }
 

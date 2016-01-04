@@ -64,7 +64,10 @@ window.onload = function () {
   var body = new LineUpJS.create(p, root.node(), {
     additionalDesc : [
       LineUpJS.model.StackColumn.desc('+ Stack')
-    ]
+    ],
+    renderingOptions: {
+      histograms: true
+    }
   });
   body.update();
 };

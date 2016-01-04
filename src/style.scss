@@ -253,8 +253,29 @@ $lu_drag_over: #979797;
       }
 
       &.compressed {
-        div.toolbar i:not(.fa-toggle-right) {
+        div.toolbar i:not(.fa-toggle-right), div.histogram {
           display: none;
+        }
+      }
+
+      div.histogram {
+        position: absolute;
+        left: 3px;
+        right: 8px;
+        top: 40%;
+        height: 60%;
+        > div.bar {
+          position: absolute;
+          background-color: #8c8c8c;
+          opacity: 0.5;
+
+          &.selected {
+            opacity: 0.8;
+          }
+
+          &:hover {
+            opacity: 0.7;
+          }
         }
       }
 

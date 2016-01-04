@@ -39,7 +39,8 @@ export class LineUp extends utils_.AEventDispatcher {
     renderingOptions: {
       stacked: false,
       animation: true,
-      visibleRowsOnly: true
+      visibleRowsOnly: true,
+      histograms: false
     },
     svgLayout: {
       rowHeight: 17,
@@ -90,7 +91,8 @@ export class LineUp extends utils_.AEventDispatcher {
 
     this.header = new ui_.HeaderRenderer(data, this.node, {
       manipulative: this.config.manipulative,
-      headerHeight: this.config.htmlLayout.headerHeight
+      headerHeight: this.config.htmlLayout.headerHeight,
+      histograms : this.config.renderingOptions.histograms
     });
     this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
       rowHeight: this.config.svgLayout.rowHeight,
