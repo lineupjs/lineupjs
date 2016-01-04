@@ -248,13 +248,13 @@ export class HeaderRenderer {
 
   changeDataStorage(data:provider.DataProvider) {
     if (this.data) {
-      this.data.on('dirtyHeader.headerRenderer', null);
-      this.data.on('orderChanged.headerRenderer', null);
+      this.data.on(['dirtyHeader.headerRenderer', 'orderChanged.headerRenderer', 'selectionChanged.headerRenderer'], null);
     }
     this.data = data;
     data.on('dirtyHeader.headerRenderer', utils.delayedCall(this.update.bind(this), 1));
     if (this.options.histograms) {
       data.on('orderChanged.headerRenderer', this.updateHist.bind(this));
+      data.on('selectionChanged.headerRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
 
     }
   }
@@ -273,6 +273,59 @@ export class HeaderRenderer {
       });
     });
     this.update();
+  }
+
+  /**
+   * update the selection in the histograms
+   */
+  drawSelection() {
+    if (!this.options.histograms) {
+      return;
+    }
+    //highlight the bins in the histograms
+    const node = <HTMLElement>this.$node.node();
+
+    [].slice.call(node.querySelectorAll('div.bar')).forEach((d) => d.classList.remove('selected'));
+    var indices = this.data.getSelection();
+    if (indices.length <= 0) {
+      return;
+    }
+    this.data.view(indices).then((data) => {
+      //get the data
+
+      var rankings = this.data.getRankings();
+
+      rankings.forEach((ranking) => {
+        const cols = ranking.flatColumns;
+        //find all number histograms
+        cols.filter((d) => d instanceof model.NumberColumn).forEach((col:model.NumberColumn) => {
+          const bars = [].slice.call(node.querySelectorAll(`div.header[data-id="${col.id}"] div.bar`));
+          data.forEach((d) => {
+            const v = col.getValue(d);
+            //choose the right bin
+            for (let i = 1 ; i < bars.length; ++i) {
+              let bar = bars[i];
+              if (bar.dataset.x > v) { //previous bin
+                bars[i-1].classList.add('selected');
+                break;
+              } else if (i === bars.length - 1) { //last bin
+                bar.classList.add('selected');
+                break;
+              }
+            }
+          });
+        });
+        cols.filter(model.isCategoricalColumn).forEach((col:model.CategoricalColumn) => {
+          const header = node.querySelector(`div.header[data-id="${col.id}"]`);
+          data.forEach((d) => {
+            const cats = col.getCategories(d);
+            (cats || []).forEach((cat) => {
+              header.querySelector(`div.bar[data-cat="${cat}"]`).classList.add('selected');
+            });
+          });
+        });
+      });
+    });
   }
 
   update() {
@@ -429,7 +482,8 @@ export class HeaderRenderer {
     });
     $headers.attr({
       class: (d) => clazz + ' ' + d.cssClass + ' ' + (d.compressed ? 'compressed' : ''),
-      title: (d) => d.label
+      title: (d) => d.label,
+      'data-id': (d) => d.id,
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {
       var r = d.findMyRanker();
@@ -485,7 +539,10 @@ export class HeaderRenderer {
               top: (d) => (100 - sy(d.y)) + '%',
               height: (d) => sy(d.y) + '%',
               'background-color': (d) => col.colorOf(d.cat)
-            }).attr('title', (d) => `${d.cat}: ${d.y}`);
+            }).attr({
+              title: (d) => `${d.cat}: ${d.y}`,
+              'data-cat': (d) => d.cat
+            });
             $bars.exit().remove();
           });
         }
@@ -504,7 +561,10 @@ export class HeaderRenderer {
               width: (d,i) => sx.rangeBand() + '%',
               top: (d) => (100 - sy(d.y)) + '%',
               height: (d) => sy(d.y) + '%'
-            }).attr('title', (d,i) => `Bin ${i}: ${d.y}`);
+            }).attr({
+              title: (d,i) => `Bin ${i}: ${d.y}`,
+              'data-x': (d) => d.x
+            });
             $bars.exit().remove();
           });
         }

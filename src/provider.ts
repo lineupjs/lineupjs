@@ -18,6 +18,7 @@ function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):m
     return {
       min: NaN,
       max: NaN,
+      mean: NaN,
       count: 0,
       maxBin: 0,
       hist: []
@@ -27,10 +28,12 @@ function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):m
   if (range) {
     hist.range(() => range);
   }
+  const ex = d3.extent(arr, acc);
   var hist_data = hist(arr);
   return {
-    min: hist_data[0].x,
-    max: hist_data[hist_data.length - 1].x + hist_data[hist_data.length - 1].dx,
+    min: ex[0],
+    max: ex[1],
+    mean: d3.mean(arr, acc),
     count: arr.length,
     maxBin: d3.max(hist_data, (d) => d.y),
     hist: hist_data

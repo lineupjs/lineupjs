@@ -49,6 +49,7 @@ export interface IColumnDesc {
 export interface IStatistics {
   min: number;
   max: number;
+  mean: number;
   count: number;
   maxBin: number;
   hist: { x : number; dx : number; y : number;}[];
