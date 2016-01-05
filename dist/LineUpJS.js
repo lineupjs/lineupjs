@@ -86,7 +86,7 @@ var LineUp = (function (_super) {
                 visibleRowsOnly: true,
                 backupScrollRows: 4,
                 animationDuration: 1000,
-                freezeRows: 0,
+                freezeCols: 0,
                 rowActions: []
             },
             manipulative: true,
@@ -140,9 +140,9 @@ var LineUp = (function (_super) {
             });
             this.contentScroller.on('scroll', function (top, left) {
                 _this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
-                if (_this.config.svgLayout.freezeRows > 0) {
-                    _this.header.updateFreeze(_this.config.svgLayout.freezeRows, left);
-                    _this.body.updateFreeze(_this.config.svgLayout.freezeRows, left);
+                if (_this.config.svgLayout.freezeCols > 0) {
+                    _this.header.updateFreeze(_this.config.svgLayout.freezeCols, left);
+                    _this.body.updateFreeze(_this.config.svgLayout.freezeCols, left);
                 }
             });
             this.contentScroller.on('redraw', this.body.update.bind(this.body));
@@ -3521,7 +3521,8 @@ var BodyRenderer = (function (_super) {
         if ($elem.empty()) {
             $elem = this.$node.append('clipPath').attr('id', 'c' + context.idPrefix + 'Freeze').append('rect').attr({
                 y: 0,
-                width: 20000
+                width: 20000,
+                height: height
             });
         }
         $elem.select('rect').attr({
