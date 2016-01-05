@@ -76,7 +76,8 @@
     border: 1px solid black; }
 
 .lu-pool div.header {
-  border: 2px outset white; }
+  border: 2px outset white;
+  position: absolute; }
   .lu-pool div.header:hover {
     border-color: #e5e5e5; }
 
@@ -185,8 +186,6 @@
     padding: 1px; }
     .lu div.lu-header div.toolbar i:hover, .lu-pool div.lu-header div.toolbar i:hover {
       color: darkblue; }
-    .lu div.lu-header div.toolbar i.filtered, .lu-pool div.lu-header div.toolbar i.filtered {
-      color: darkblue; }
   .lu div.lu-header div.header, .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header, .lu-pool div.lu-header div.header_i {
     position: absolute;
     display: inline-block;
@@ -195,6 +194,8 @@
     text-align: center;
     height: 100%;
     font-size: 90%; }
+    .lu div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu div.lu-header div.header_i.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header_i.filtered > div.toolbar i.fa-filter {
+      color: darkblue; }
     .lu div.lu-header div.header:hover > div.toolbar, .lu div.lu-header div.header_i:hover > div.toolbar, .lu-pool div.lu-header div.header:hover > div.toolbar, .lu-pool div.lu-header div.header_i:hover > div.toolbar {
       display: block; }
     .lu div.lu-header div.header.number div.histogram, .lu div.lu-header div.header.categorical div.histogram, .lu div.lu-header div.header.ordinal div.histogram, .lu div.lu-header div.header_i.number div.histogram, .lu div.lu-header div.header_i.categorical div.histogram, .lu div.lu-header div.header_i.ordinal div.histogram, .lu-pool div.lu-header div.header.number div.histogram, .lu-pool div.lu-header div.header.categorical div.histogram, .lu-pool div.lu-header div.header.ordinal div.histogram, .lu-pool div.lu-header div.header_i.number div.histogram, .lu-pool div.lu-header div.header_i.categorical div.histogram, .lu-pool div.lu-header div.header_i.ordinal div.histogram {

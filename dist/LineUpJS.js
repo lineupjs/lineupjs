@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-01-04
+/*! LineUpJS - v0.2.0 - 2016-01-05
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -65,6 +65,7 @@ var LineUp = (function (_super) {
             numberformat: d3.format('.3n'),
             htmlLayout: {
                 headerHeight: 20,
+                headerHistogramHeight: 40,
                 autoRotateLabels: false,
                 rotationHeight: 50,
                 rotationDegree: -20,
@@ -111,6 +112,7 @@ var LineUp = (function (_super) {
         this.header = new ui_.HeaderRenderer(data, this.node, {
             manipulative: this.config.manipulative,
             headerHeight: this.config.htmlLayout.headerHeight,
+            headerHistogramHeight: this.config.htmlLayout.headerHistogramHeight,
             histograms: this.config.renderingOptions.histograms,
             autoRotateLabels: this.config.htmlLayout.autoRotateLabels,
             rotationHeight: this.config.htmlLayout.rotationHeight,
@@ -239,8 +241,9 @@ function deriveColors(columns) {
     return columns;
 }
 exports.deriveColors = deriveColors;
-function createLocalStorage(data, columns) {
-    return new provider_.LocalDataProvider(data, columns);
+function createLocalStorage(data, columns, options) {
+    if (options === void 0) { options = {}; }
+    return new provider_.LocalDataProvider(data, columns, options);
 }
 exports.createLocalStorage = createLocalStorage;
 function create(data, container, config) {
@@ -1701,7 +1704,7 @@ var RankColumn = (function (_super) {
         if (index === void 0) { index = this.columns_.length; }
         this.columns_.splice(index, 0, col);
         col.parent = this;
-        this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
+        this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
         col.on('filterChanged.order', this.dirtyOrder);
         this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
         if (this.sortBy_ === null) {
@@ -1727,7 +1730,7 @@ var RankColumn = (function (_super) {
         if (i < 0) {
             return false;
         }
-        this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
+        this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
         col.parent = null;
         this.columns_.splice(i, 1);
         this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col);
@@ -1872,8 +1875,7 @@ var DataProvider = (function (_super) {
         this.columnTypes = model.models();
         var that = this;
         this.reorder = function () {
-            var ranking = this.source;
-            that.sort(ranking).then(function (order) { return ranking.setOrder(order); });
+            that.triggerReorder(this.source);
         };
     }
     DataProvider.prototype.createEventList = function () {
@@ -1892,6 +1894,9 @@ var DataProvider = (function (_super) {
         this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');
         r.on('dirtyOrder.provider', this.reorder);
         this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r);
+    };
+    DataProvider.prototype.triggerReorder = function (ranking) {
+        this.sort(ranking).then(function (order) { return ranking.setOrder(order); });
     };
     DataProvider.prototype.removeRanking = function (ranking) {
         var i = this.rankings_.indexOf(ranking);
@@ -2161,6 +2166,34 @@ var DataProvider = (function (_super) {
         this.selection = d3.set();
         this.fire('selectionChanged', []);
     };
+    DataProvider.prototype.exportTable = function (ranking, options) {
+        if (options === void 0) { options = {}; }
+        var op = {
+            separator: '\t',
+            newline: '\n',
+            header: true,
+            quote: false,
+            quoteChar: '"'
+        };
+        function quote(l, c) {
+            if (op.quote && (!c || !model.isNumberColumn(c))) {
+                return op.quoteChar + l + op.quoteChar;
+            }
+            return l;
+        }
+        utils.merge(op, options);
+        var columns = ranking.flatColumns;
+        return this.view(ranking.getOrder()).then(function (data) {
+            var r = [];
+            if (op.header) {
+                r.push(columns.map(function (d) { return quote(d.label); }).join(op.separator));
+            }
+            data.forEach(function (row) {
+                r.push(columns.map(function (c) { return quote(c.getLabel(row), c); }).join(op.separator));
+            });
+            return r.join(op.newline);
+        });
+    };
     return DataProvider;
 })(utils.AEventDispatcher);
 exports.DataProvider = DataProvider;
@@ -2216,14 +2249,28 @@ var CommonDataProvider = (function (_super) {
 exports.CommonDataProvider = CommonDataProvider;
 var LocalDataProvider = (function (_super) {
     __extends(LocalDataProvider, _super);
-    function LocalDataProvider(data, columns) {
+    function LocalDataProvider(data, columns, options) {
         if (columns === void 0) { columns = []; }
+        if (options === void 0) { options = {}; }
         _super.call(this, columns);
         this.data = data;
+        this.options = {
+            filterGlobally: false
+        };
+        utils.merge(this.options, options);
         data.forEach(function (d, i) {
             d._rankings = {};
             d._index = i;
         });
+        var that = this;
+        this.reorderall = function () {
+            var ranking = this.source;
+            that.getRankings().forEach(function (r) {
+                if (r !== ranking) {
+                    r.dirtyOrder();
+                }
+            });
+        };
     }
     LocalDataProvider.prototype.cloneRanking = function (existing) {
         var _this = this;
@@ -2243,14 +2290,26 @@ var LocalDataProvider = (function (_super) {
                 _this.push(new_, child.desc);
             });
         }
+        if (this.options.filterGlobally) {
+            new_.on('filterChanged.reorderall', this.reorderall);
+        }
         return new_;
     };
     LocalDataProvider.prototype.cleanUpRanking = function (ranking) {
+        if (this.options.filterGlobally) {
+            ranking.on('filterChanged.reorderall', null);
+        }
         this.data.forEach(function (d) { return delete d._rankings[ranking.id]; });
     };
     LocalDataProvider.prototype.sort = function (ranking) {
         var helper = this.data.map(function (r, i) { return ({ row: r, i: i, prev: r._rankings[ranking.id] || 0 }); });
-        if (ranking.isFiltered()) {
+        if (this.options.filterGlobally) {
+            var filtered = this.getRankings().filter(function (d) { return d.isFiltered(); });
+            if (filtered.length > 0) {
+                helper = helper.filter(function (d) { return filtered.every(function (f) { return f.filter(d.row); }); });
+            }
+        }
+        else if (ranking.isFiltered()) {
             helper = helper.filter(function (d) { return ranking.filter(d.row); });
         }
         helper.sort(function (a, b) { return ranking.comparator(a.row, b.row); });
@@ -2952,6 +3011,7 @@ var HeaderRenderer = (function () {
         this.options = {
             slopeWidth: 150,
             columnPadding: 5,
+            headerHistogramHeight: 40,
             headerHeight: 20,
             manipulative: true,
             histograms: false,
@@ -3104,7 +3164,7 @@ var HeaderRenderer = (function () {
             return 1;
         }
         var levels = Math.max.apply(Math, columns.map(countStacked));
-        var height = levels * this.options.headerHeight;
+        var height = (this.options.histograms ? this.options.headerHistogramHeight : this.options.headerHeight) + (levels - 1) * this.options.headerHeight;
         if (this.options.autoRotateLabels) {
             var rotatedAny = false;
             this.$node.selectAll('div.header')
@@ -3240,7 +3300,7 @@ var HeaderRenderer = (function () {
             'background-color': function (d) { return d.color; }
         });
         $headers.attr({
-            class: function (d) { return (clazz + " " + (d.cssClass || '') + " " + (d.compressed ? 'compressed' : '') + " " + d.desc.type + " " + (_this.options.autoRotateLabels ? 'rotateable' : '')); },
+            'class': function (d) { return (clazz + " " + (d.cssClass || '') + " " + (d.compressed ? 'compressed' : '') + " " + d.desc.type + " " + (_this.options.autoRotateLabels ? 'rotateable' : '') + " " + (d.isFiltered() ? 'filtered' : '')); },
             title: function (d) { return d.label; },
             'data-id': function (d) { return d.id; },
         });
@@ -3820,6 +3880,10 @@ function openEditWeightsDialog(column, $header) {
     });
 }
 exports.openEditWeightsDialog = openEditWeightsDialog;
+function markFiltered($header, filtered) {
+    if (filtered === void 0) { filtered = false; }
+    $header.classed('filtered', filtered);
+}
 function openCategoricalFilter(column, $header) {
     var bak = column.getFilter() || [];
     var popup = makePopup($header, 'Edit Filter', '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>');
@@ -3843,8 +3907,7 @@ function openCategoricalFilter(column, $header) {
     }
     redraw();
     function updateData(filter) {
-        $header.select('i.fa-filter');
-        $header.classed('filtered', (filter && filter.length > 0 && filter.length < column.categories.length));
+        markFiltered($header, filter && filter.length > 0 && filter.length < column.categories.length);
         column.setFilter(filter);
     }
     popup.select('.cancel').on('click', function () {
@@ -3869,7 +3932,7 @@ function openStringFilter(column, $header) {
     var bak = column.getFilter() || '';
     var $popup = makePopup($header, 'Filter', "<input type=\"text\" placeholder=\"containing...\" autofocus=\"true\" size=\"15\" value=\"" + ((bak instanceof RegExp) ? bak.source : bak) + "\" autofocus=\"autofocus\">\n    <br><label><input type=\"checkbox\" " + ((bak instanceof RegExp) ? 'checked="checked"' : '') + ">RegExp</label>\n    <br>");
     function updateData(filter) {
-        $header.select('i.fa-filter').classed('filtered', (filter && filter !== ''));
+        markFiltered($header, (filter && filter !== ''));
         column.setFilter(filter);
     }
     function updateImpl(force) {
@@ -3918,7 +3981,7 @@ function openMappingEditor(column, $header, data) {
     $filterIt.property('checked', column.isFiltered());
     function applyMapping(newscale) {
         act = newscale;
-        $header.select('i.fa-filter').classed('filtered', !isSame(act.range(), original.range) || !isSame(act.domain(), original.domain));
+        markFiltered($header, !isSame(act.range(), original.range) || !isSame(act.domain(), original.domain));
         column.setMapping(act.domain(), act.range());
         var val = $filterIt.property('checked');
         if (val) {
@@ -3944,7 +4007,7 @@ function openMappingEditor(column, $header, data) {
     });
     popup.select('.cancel').on('click', function () {
         column.setMapping(bak.domain, bak.range);
-        $header.classed('filtered', !isSame(bak.range, original.range) || !isSame(bak.domain, original.domain));
+        markFiltered($header, !isSame(bak.range, original.range) || !isSame(bak.domain, original.domain));
         popup.remove();
     });
     popup.select('.reset').on('click', function () {

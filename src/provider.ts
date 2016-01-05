@@ -643,7 +643,7 @@ export class DataProvider extends utils.AEventDispatcher {
         r.push(columns.map((c) => quote(c.getLabel(row),c)).join(op.separator));
       });
       return r.join(op.newline);
-    })
+    });
   }
 
 }
@@ -746,7 +746,7 @@ export class LocalDataProvider extends CommonDataProvider {
           r.dirtyOrder();
         }
       });
-    }
+    };
   }
 
   cloneRanking(existing?:model.RankColumn) {
