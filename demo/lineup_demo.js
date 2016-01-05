@@ -23,7 +23,7 @@
       histograms: true
     },
     svgLayout: {
-      freezeRows: 2
+      freezeCols: 2
     }
   };
 
