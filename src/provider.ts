@@ -607,6 +607,42 @@ export class DataProvider extends utils.AEventDispatcher {
     this.selection = d3.set();
     this.fire('selectionChanged', []);
   }
+
+  /**
+   * utility to export a ranking to a table with the given separator
+   * @param ranking
+   * @param options
+   * @returns {Promise<string>}
+   */
+  exportTable(ranking: model.RankColumn, options : { separator?: string; newline?: string; header? : boolean} = {}) {
+    const op = {
+      separator : '\t',
+      newline: '\n',
+      header: true,
+      quote: false,
+      quoteChar: '"'
+    };
+    //optionaly quote not numbers
+    function quote(l: string, c?: model.Column) {
+      if (op.quote && (!c || !model.isNumberColumn(c))) {
+        return op.quoteChar + l + op.quoteChar;
+      }
+      return l;
+    }
+    utils.merge(op, options);
+    const columns = ranking.flatColumns;
+    return this.view(ranking.getOrder()).then((data) => {
+      var r = [];
+      if (op.header) {
+        r.push(columns.map((d) => quote(d.label)).join(op.separator));
+      }
+      data.forEach((row) => {
+        r.push(columns.map((c) => quote(c.getLabel(row),c)).join(op.separator));
+      });
+      return r.join(op.newline);
+    })
+  }
+
 }
 
 /**
