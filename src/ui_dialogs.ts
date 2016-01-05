@@ -182,6 +182,16 @@ export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selec
     $popup.remove();
   });
 }
+
+/**
+ * flags the header to be filtered
+ * @param $header
+ * @param filtered
+ */
+function markFiltered($header: d3.Selection<model.Column>, filtered = false) {
+  $header.classed('filtered', filtered);
+}
+
 /**
  * opens a dialog for filtering a categorical column
  * @param column the column to rename
@@ -216,8 +226,7 @@ function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Select
   redraw();
 
   function updateData(filter) {
-    $header.select('i.fa-filter');
-    $header.classed('filtered', (filter && filter.length > 0 && filter.length < column.categories.length));
+    markFiltered($header, filter && filter.length > 0 && filter.length < column.categories.length);
     column.setFilter(filter);
   }
 
@@ -254,7 +263,7 @@ function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.
     <br>`);
 
   function updateData(filter) {
-    $header.select('i.fa-filter').classed('filtered', (filter && filter !== ''));
+    markFiltered($header, (filter && filter !== ''));
     column.setFilter(filter);
   }
 
@@ -320,7 +329,7 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
 
   function applyMapping(newscale) {
     act = newscale;
-    $header.select('i.fa-filter').classed('filtered', !isSame(act.range(), original.range) || !isSame(act.domain(), original.domain));
+    markFiltered($header, !isSame(act.range(), original.range) || !isSame(act.domain(), original.domain));
 
     column.setMapping(<[number, number]>act.domain(), <[number, number]>act.range());
     var val = $filterIt.property('checked');
@@ -349,7 +358,7 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
   });
   popup.select('.cancel').on('click', function () {
     column.setMapping(bak.domain, bak.range);
-    $header.classed('filtered', !isSame(bak.range, original.range) || !isSame(bak.domain, original.domain));
+    markFiltered($header, !isSame(bak.range, original.range) || !isSame(bak.domain, original.domain));
     popup.remove();
   });
   popup.select('.reset').on('click', function () {

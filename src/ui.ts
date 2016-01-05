@@ -519,7 +519,7 @@ export class HeaderRenderer {
       'background-color': (d) => d.color
     });
     $headers.attr({
-      class: (d) => `${clazz} ${d.cssClass||''} ${(d.compressed ? 'compressed' : '')} ${d.desc.type} ${this.options.autoRotateLabels ? 'rotateable': ''}`,
+      'class': (d) => `${clazz} ${d.cssClass||''} ${(d.compressed ? 'compressed' : '')} ${d.desc.type} ${this.options.autoRotateLabels ? 'rotateable': ''} ${d.isFiltered() ? 'filtered' : ''}`,
       title: (d) => d.label,
       'data-id': (d) => d.id,
     });

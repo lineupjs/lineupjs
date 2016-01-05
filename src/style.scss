@@ -306,14 +306,13 @@ $lu_drag_over: #979797;
       &:hover {
         color: darkblue;
       }
-
-      &.filtered {
-        color: darkblue;
-      }
     }
 
     div.header, div.header_i {
 
+      &.filtered > div.toolbar i.fa-filter {
+         color: darkblue;
+      }
 
       position: absolute;
       display: inline-block;
