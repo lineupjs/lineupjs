@@ -112,10 +112,12 @@ export function openSearchDialog(column:model.Column, $header:d3.Selection<model
   function updateImpl() {
     var search = popup.select('input[type="text"]').property('value');
     var isRegex = popup.select('input[type="text"]').property('checked');
-    if (isRegex) {
-      search = new RegExp(search);
+    if (search.length > 0) {
+      if (isRegex) {
+        search = new RegExp(search);
+      }
+      provider.searchSelect(search, column);
     }
-    provider.searchSelect(search, column);
     popup.remove();
   }
 
