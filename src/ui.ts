@@ -181,6 +181,7 @@ export class HeaderRenderer {
   private options = {
     slopeWidth: 150,
     columnPadding: 5,
+    headerHistogramHeight: 40,
     headerHeight: 20,
     manipulative: true,
     histograms: false,
@@ -369,7 +370,7 @@ export class HeaderRenderer {
     }
 
     const levels = Math.max.apply(Math, columns.map(countStacked));
-    var height = levels * this.options.headerHeight;
+    var height = (this.options.histograms ? this.options.headerHistogramHeight : this.options.headerHeight) + (levels-1)*this.options.headerHeight;
 
     if (this.options.autoRotateLabels) {
       //check if we have overflows

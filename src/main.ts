@@ -32,6 +32,7 @@ export class LineUp extends utils_.AEventDispatcher {
     numberformat: d3.format('.3n'),
     htmlLayout: {
       headerHeight: 20,
+      headerHistogramHeight: 40,
       autoRotateLabels: false,
       rotationHeight: 50, //in px
       rotationDegree: -20, //in deg
@@ -95,6 +96,7 @@ export class LineUp extends utils_.AEventDispatcher {
     this.header = new ui_.HeaderRenderer(data, this.node, {
       manipulative: this.config.manipulative,
       headerHeight: this.config.htmlLayout.headerHeight,
+      headerHistogramHeight: this.config.htmlLayout.headerHistogramHeight,
       histograms : this.config.renderingOptions.histograms,
 
       autoRotateLabels: this.config.htmlLayout.autoRotateLabels,
