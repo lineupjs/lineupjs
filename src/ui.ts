@@ -763,7 +763,8 @@ export class BodyRenderer extends utils.AEventDispatcher {
     if ($elem.empty()) {
       $elem = this.$node.append('clipPath').attr('id', 'c' + context.idPrefix + 'Freeze').append('rect').attr({
         y: 0,
-        width: 20000
+        width: 20000,
+        height: height
       });
     }
     $elem.select('rect').attr({
