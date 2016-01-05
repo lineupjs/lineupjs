@@ -1486,7 +1486,7 @@ export class RankColumn extends ValueColumn<number> {
     return this.ascending ? r : -r;
   };
 
-  private dirtyOrder = () => {
+  dirtyOrder = () => {
     this.fire(['dirtyOrder', 'dirtyValues', 'dirty'], this.sortCriteria());
   };
 
@@ -1504,6 +1504,7 @@ export class RankColumn extends ValueColumn<number> {
   createEventList() {
     return super.createEventList().concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
   }
+
 
   assignNewId(idGenerator:() => string) {
     super.assignNewId(idGenerator);
@@ -1617,7 +1618,7 @@ export class RankColumn extends ValueColumn<number> {
   insert(col:Column, index:number = this.columns_.length) {
     this.columns_.splice(index, 0, col);
     col.parent = this;
-    this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
+    this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
     col.on('filterChanged.order', this.dirtyOrder);
 
 
@@ -1650,7 +1651,7 @@ export class RankColumn extends ValueColumn<number> {
       return false;
     }
 
-    this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking');
+    this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
 
     col.parent = null;
     this.columns_.splice(i, 1);

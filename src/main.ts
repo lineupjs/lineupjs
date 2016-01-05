@@ -245,10 +245,11 @@ export function deriveColors(columns:model_.IColumnDesc[]) {
  * creates a local storage provider
  * @param data
  * @param columns
+ * @param options
  * @returns {LocalDataProvider}
  */
-export function createLocalStorage(data:any[], columns:model_.IColumnDesc[]) {
-  return new provider_.LocalDataProvider(data, columns);
+export function createLocalStorage(data:any[], columns:model_.IColumnDesc[], options = {}) {
+  return new provider_.LocalDataProvider(data, columns, options);
 }
 
 export function create(data:provider_.DataProvider, container:d3.Selection<any> | Element, config:any = {}) {

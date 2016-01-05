@@ -98,8 +98,7 @@ export class DataProvider extends utils.AEventDispatcher {
     super();
     var that = this;
     this.reorder = function () {
-      var ranking = this.source;
-      that.sort(ranking).then((order) => ranking.setOrder(order));
+      that.triggerReorder(this.source);
     };
   }
 
@@ -139,6 +138,10 @@ export class DataProvider extends utils.AEventDispatcher {
     this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');
     r.on('dirtyOrder.provider', this.reorder);
     this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r);
+  }
+
+  protected triggerReorder(ranking: model.RankColumn) {
+    this.sort(ranking).then((order) => ranking.setOrder(order));
   }
 
   /**
@@ -716,14 +719,34 @@ export class CommonDataProvider extends DataProvider {
  * a data provider based on an local array
  */
 export class LocalDataProvider extends CommonDataProvider {
+  private options = {
+    /**
+     * whether the filter should be applied to all rankings regardless where they are
+     */
+    filterGlobally: false
+  };
 
-  constructor(public data:any[], columns:model.IColumnDesc[] = []) {
+  private reorderall;
+
+  constructor(public data:any[], columns:model.IColumnDesc[] = [], options = {}) {
     super(columns);
+    utils.merge(this.options, options);
     //enhance with a magic attribute storing ranking information
     data.forEach((d, i) => {
       d._rankings = {};
       d._index = i;
     });
+
+    const that = this;
+    this.reorderall = function() {
+      //fire for all other rankings a dirty order event, too
+      var ranking = this.source;
+      that.getRankings().forEach((r) => {
+        if (r !== ranking) {
+          r.dirtyOrder();
+        }
+      });
+    }
   }
 
   cloneRanking(existing?:model.RankColumn) {
@@ -746,10 +769,18 @@ export class LocalDataProvider extends CommonDataProvider {
         this.push(new_, child.desc);
       });
     }
+
+    if (this.options.filterGlobally) {
+      new_.on('filterChanged.reorderall', this.reorderall);
+    }
+
     return new_;
   }
 
   cleanUpRanking(ranking:model.RankColumn) {
+    if (this.options.filterGlobally) {
+      ranking.on('filterChanged.reorderall', null);
+    }
     //delete all stored information
     this.data.forEach((d) => delete d._rankings[ranking.id]);
   }
@@ -759,8 +790,12 @@ export class LocalDataProvider extends CommonDataProvider {
     var helper = this.data.map((r, i) => ({row: r, i: i, prev: r._rankings[ranking.id] || 0}));
 
     //do the optional filtering step
-    //TODO apply filters of others, too
-    if (ranking.isFiltered()) {
+    if (this.options.filterGlobally) {
+      let filtered = this.getRankings().filter((d) => d.isFiltered());
+      if (filtered.length > 0) {
+        helper = helper.filter((d) => filtered.every((f) => f.filter(d.row)));
+      }
+    } else if (ranking.isFiltered()) {
       helper = helper.filter((d) => ranking.filter(d.row));
     }
 
