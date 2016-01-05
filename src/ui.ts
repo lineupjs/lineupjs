@@ -258,7 +258,10 @@ export class HeaderRenderer {
     this.data = data;
     data.on('dirtyHeader.headerRenderer', utils.delayedCall(this.update.bind(this), 1));
     if (this.options.histograms) {
-      data.on('orderChanged.headerRenderer', this.updateHist.bind(this));
+      data.on('orderChanged.headerRenderer', () => {
+        this.updateHist();
+        this.update();
+      });
       data.on('selectionChanged.headerRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
 
     }
@@ -286,7 +289,6 @@ export class HeaderRenderer {
         this.histCache.set(col.id,histo === null ? null : histo.hist(col));
       });
     });
-    this.update();
   }
 
   /**

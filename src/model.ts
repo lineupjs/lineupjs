@@ -1275,7 +1275,10 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
       this.missingValue = dump.missingValue;
     }
     dump.children.map((child) => {
-      this.push(factory(child));
+      var c = factory(child);
+      if (c) {
+        this.push(c);
+      }
     });
     this.collapsed = dump.collapsed === true;
     super.restore(dump, factory);
@@ -1534,12 +1537,16 @@ export class RankColumn extends ValueColumn<number> {
   restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
     dump.columns.map((child) => {
-      this.push(factory(child));
+      var c = factory(child);
+      if (c) {
+        this.push(c);
+      }
     });
     if (dump.sortCriteria) {
       this.ascending = dump.sortCriteria.asc;
       if (dump.sortCriteria.sortBy) {
-        this.sortBy(this.columns_.filter((d) => d.id === dump.sortCriteria.sortBy)[0], dump.sortCriteria.asc);
+        let help = this.columns_.filter((d) => d.id === dump.sortCriteria.sortBy);
+        this.sortBy(help.length === 0 ? null : help[0], dump.sortCriteria.asc);
       }
     }
   }

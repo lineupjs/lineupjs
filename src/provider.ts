@@ -350,9 +350,12 @@ export class DataProvider extends utils.AEventDispatcher {
     //factory method for restoring a column
     var create = (d:any) => {
       var desc = this.fromDescRef(d.desc);
-      var type = this.columnTypes[desc.type];
-      var c = new type(d.id, desc);
-      c.restore(d, create);
+      var c = null;
+      if (desc && desc.type) {
+        var type = this.columnTypes[desc.type];
+        c = new type(d.id, desc);
+        c.restore(d, create);
+      }
       return c;
     };
 
