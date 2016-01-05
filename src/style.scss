@@ -120,6 +120,7 @@ $lu_drag_over: #979797;
 .lu-pool {
   div.header {
     border: 2px outset white;
+    position: absolute;
 
     &:hover {
       border-color: $lu_hover_color;
