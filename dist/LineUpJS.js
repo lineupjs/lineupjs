@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-01-05
+/*! LineUpJS - v0.2.0 - 2016-01-08
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -255,256 +255,244 @@ exports.create = create;
 },{"./model":3,"./provider":4,"./renderer":5,"./ui":6,"./ui_dialogs":7,"./utils":8,"d3":undefined}],2:[function(require,module,exports){
 var d3 = require('d3');
 var utils = require('./utils');
+var model = require('./model');
 'use strict';
-function addLine($svg, x1, y1, x2, y2, clazz) {
-    return $svg.append('line').attr({
-        x1: x1, y1: y1, x2: x2, y2: y2, 'class': clazz
+function clamp(v, min, max) {
+    return Math.max(Math.min(v, max), min);
+}
+var MappingEditor = (function () {
+    function MappingEditor(parent, scale_, original, dataPromise, options) {
+        if (options === void 0) { options = {}; }
+        this.parent = parent;
+        this.scale_ = scale_;
+        this.original = original;
+        this.dataPromise = dataPromise;
+        this.options = {
+            width: 320,
+            height: 200,
+            padding_hor: 5,
+            padding_ver: 5,
+            radius: 5,
+            callback: function (d) { return d; },
+            callbackThisArg: null,
+            triggerCallback: 'change'
+        };
+        utils.merge(this.options, options);
+        this.scale_ = scale_.clone();
+        this.build(d3.select(parent));
+    }
+    Object.defineProperty(MappingEditor.prototype, "scale", {
+        get: function () {
+            return this.scale_;
+        },
+        enumerable: true,
+        configurable: true
     });
-}
-function addText($svg, x, y, text, dy, clazz) {
-    return $svg.append('text').attr({
-        x: x, y: y, dy: dy, 'class': clazz
-    }).text(text);
-}
-function addCircle($svg, x, shift, y, radius) {
-    shift -= x;
-    return $svg
-        .append('circle')
-        .attr({
-        'class': 'handle',
-        r: radius,
-        cx: x,
-        cy: y,
-        transform: 'translate(' + shift + ',0)'
-    });
-}
-function open(scale, dataDomain, dataPromise, options) {
-    options = utils.merge({
-        width: 320,
-        height: 250,
-        padding_hor: 10,
-        padding_ver: 30,
-        radius: 8,
-        callback: function (d) { return d; },
-        callbackThisArg: null,
-        triggerCallback: 'change'
-    }, options);
-    var editor = function ($root) {
-        var $svg = $root.append('svg').attr({
-            'class': 'lugui-me',
-            width: options.width,
-            height: options.height
+    MappingEditor.prototype.build = function ($root) {
+        var options = this.options, that = this;
+        $root = $root.append('div').classed('lugui-me', true);
+        $root.node().innerHTML = "<div>\n    <span class=\"raw_min\">0</span>\n    <span class=\"center\"><label><select>\n        <option value=\"linear\">Linear</option>\n        <option value=\"linear_invert\">Invert</option>\n        <option value=\"linear_abs\">Absolute</option>\n        <option value=\"log\">Log</option>\n        <option value=\"pow1.1\">Pow 1.1</option>\n        <option value=\"pow2\">Pow 2</option>\n        <option value=\"pow3\">Pow 3</option>\n        <option value=\"sqrt\">Sqrt</option>\n        <option value=\"script\">Custom Script</option>\n      </select></label>\n      </span>\n    <span class=\"raw_max\">1</span>\n  </div>\n  <svg width=\"" + options.width + "\" height=\"" + options.height + "\">\n    <rect width=\"100%\" height=\"10\"></rect>\n    <rect width=\"100%\" height=\"10\" y=\"" + (options.height - 10) + "\"></rect>\n    <g transform=\"translate(" + options.padding_hor + "," + options.padding_ver + ")\">\n      <g class=\"samples\">\n\n      </g>\n      <g class=\"mappings\">\n\n      </g>\n    </g>\n  </svg>\n  <div>\n    <input type=\"text\" class=\"raw_min\" value=\"0\">\n    <span class=\"center\">Raw</span>\n    <input type=\"text\" class=\"raw_max\" value=\"1\">\n  </div>\n  <div class=\"script\">\n    <textarea>\n\n    </textarea>\n    <button>Apply</button>\n  </div>";
+        var width = options.width - options.padding_hor * 2;
+        var height = options.height - options.padding_ver * 2;
+        var raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.min(this.scale.domain[1], this.original.domain[1])])
+            .range([0, width]);
+        var normal2pixel = d3.scale.linear().domain([0, 1])
+            .range([0, width]);
+        $root.select('input.raw_min')
+            .property('value', raw2pixel.domain()[0])
+            .on('blur', function () {
+            var d = raw2pixel.domain();
+            d[0] = parseFloat(this.value);
+            raw2pixel.domain(d);
+            updateRaw();
         });
-        var lowerLimitX = options.padding_hor;
-        var upperLimitX = options.width - options.padding_hor;
-        var scoreAxisY = options.padding_ver;
-        var raw2pixelAxisY = options.height - options.padding_ver;
-        var raw2pixel = d3.scale.linear().domain([Math.min(dataDomain[0], scale.domain()[0]), Math.min(dataDomain[1], scale.domain()[1])]).range([lowerLimitX, upperLimitX]);
-        var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
-        var lowerNormalized = normal2pixel(scale.range()[0]);
-        var upperNormalized = normal2pixel(scale.range()[1]);
-        var lowerRaw = raw2pixel(scale.domain()[0]);
-        var upperRaw = raw2pixel(scale.domain()[1]);
-        scale = d3.scale.linear()
-            .clamp(true)
-            .domain(scale.domain())
-            .range([lowerNormalized, upperNormalized]);
-        var $base = $svg.append('g');
-        addLine($base, lowerLimitX, scoreAxisY, upperLimitX, scoreAxisY, 'axis');
-        addText($base, lowerLimitX, scoreAxisY - 25, 0, '.75em');
-        addText($base, upperLimitX, scoreAxisY - 25, 1, '.75em');
-        addText($base, options.width / 2, scoreAxisY - 25, 'Score', '.75em', 'centered');
-        addLine($base, lowerLimitX, raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
-        addText($base, lowerLimitX, raw2pixelAxisY + 20, raw2pixel.domain()[0], '.75em')
-            .on('click', editLimit(0))
-            .classed('editableLabel', true)
-            .append('title').text('Click to Modify');
-        addText($base, upperLimitX, raw2pixelAxisY + 20, raw2pixel.domain()[1], '.75em')
-            .on('click', editLimit(1))
-            .classed('editableLabel', true)
-            .append('title').text('Click to Modify');
-        addText($base, options.width / 2, raw2pixelAxisY + 20, 'Raw', '.75em', 'centered');
-        var datalines = $svg.append('g').classed('data', true).selectAll('line').data([]);
-        dataPromise.then(function (data) {
+        $root.select('input.raw_max')
+            .property('value', raw2pixel.domain()[1])
+            .on('blur', function () {
+            var d = raw2pixel.domain();
+            d[1] = parseFloat(this.value);
+            raw2pixel.domain(d);
+            updateRaw();
+        });
+        var datalines = $root.select('g.samples').selectAll('line').data([]);
+        this.dataPromise.then(function (data) {
+            data = d3.set(data.map(String)).values().map(parseFloat);
             datalines = datalines.data(data);
-            datalines.enter().append('line')
+            datalines.enter()
+                .append('line')
                 .attr({
-                x1: scale,
-                y1: scoreAxisY,
+                x1: function (d) { return normal2pixel(that.scale.apply(d)); },
+                y1: 0,
                 x2: raw2pixel,
-                y2: raw2pixelAxisY
+                y2: height
             }).style('visibility', function (d) {
-                var a;
-                if (lowerRaw < upperRaw) {
-                    a = (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
-                }
-                else {
-                    a = (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
-                }
-                return a ? 'hidden' : null;
+                var domain = that.scale.domain;
+                return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
             });
         });
-        var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, raw2pixelAxisY, 'bound');
-        var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
-        var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerNormalized - lowerLimitX) + ',0)');
-        var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
-        var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperNormalized - upperLimitX) + ',0)');
-        var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
-        function createDrag(label, move) {
+        function updateDataLines() {
+            datalines.attr({
+                x1: function (d) { return normal2pixel(that.scale.apply(d)); },
+                x2: raw2pixel
+            }).style('visibility', function (d) {
+                var domain = that.scale.domain;
+                return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
+            });
+        }
+        function createDrag(move) {
             return d3.behavior.drag()
                 .on('dragstart', function () {
                 d3.select(this)
                     .classed('dragging', true)
                     .attr('r', options.radius * 1.1);
-                label.style('visibility', 'visible');
             })
                 .on('drag', move)
                 .on('dragend', function () {
                 d3.select(this)
                     .classed('dragging', false)
                     .attr('r', options.radius);
-                label.style('visibility', null);
-                updateScale(true);
-            })
-                .origin(function () {
-                var t = d3.transform(d3.select(this).attr('transform'));
-                return { x: t.translate[0], y: t.translate[1] };
+                triggerUpdate(true);
             });
         }
-        function updateNormalized() {
-            scale.range([lowerNormalized, upperNormalized]);
-            datalines.attr('x1', scale);
-            updateScale();
-        }
-        function updateRaw() {
-            var hiddenDatalines, shownDatalines;
-            if (lowerRaw < upperRaw) {
-                hiddenDatalines = datalines.filter(function (d) {
-                    return (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
-                });
-                shownDatalines = datalines.filter(function (d) {
-                    return !(raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
-                });
-            }
-            else {
-                hiddenDatalines = datalines.filter(function (d) {
-                    return (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
-                });
-                shownDatalines = datalines.filter(function (d) {
-                    return !(raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
-                });
-            }
-            hiddenDatalines.style('visibility', 'hidden');
-            scale.domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)]);
-            shownDatalines
-                .style('visibility', null)
-                .attr('x1', scale);
-            updateScale();
-        }
-        addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
-            .call(createDrag(lowerBoundNormalizedLabel, function () {
-            if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-                mapperLineLowerBounds.attr('x1', lowerLimitX + d3.event.x);
-                d3.select(this)
-                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                lowerNormalized = d3.event.x + lowerLimitX;
-                lowerBoundNormalizedLabel
-                    .text(d3.round(normal2pixel.invert(lowerNormalized), 2))
-                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                updateNormalized();
-            }
-        }));
-        addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
-            .call(createDrag(upperBoundNormalizedLabel, function () {
-            if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-                mapperLineUpperBounds.attr('x1', upperLimitX + d3.event.x);
-                d3.select(this)
-                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                upperNormalized = d3.event.x + upperLimitX;
-                upperBoundNormalizedLabel
-                    .text(d3.round(normal2pixel.invert(upperNormalized), 2))
-                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                updateNormalized();
-            }
-        }));
-        var $lowRawCircle = addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
-            .call(createDrag(lowerBoundRawLabel, function () {
-            if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-                mapperLineLowerBounds.attr('x2', lowerLimitX + d3.event.x);
-                d3.select(this)
-                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                lowerRaw = d3.event.x + lowerLimitX;
-                lowerBoundRawLabel
-                    .text(d3.round(raw2pixel.invert(lowerRaw), 2))
-                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                updateRaw();
-            }
-        }));
-        var $upperRawCircle = addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
-            .call(createDrag(upperBoundRawLabel, function () {
-            if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-                mapperLineUpperBounds.attr('x2', upperLimitX + d3.event.x);
-                d3.select(this)
-                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                upperRaw = d3.event.x + upperLimitX;
-                upperBoundRawLabel
-                    .text(d3.round(raw2pixel.invert(upperRaw), 2))
-                    .attr('transform', 'translate(' + d3.event.x + ', 0)');
-                updateRaw();
-            }
-        }));
-        function updateScale(isDragEnd) {
-            if (isDragEnd === void 0) { isDragEnd = false; }
-            if (isDragEnd !== (options.triggerCallback === 'dragend')) {
+        var mapping_lines = [];
+        function renderMappingLines() {
+            if (!(that.scale instanceof model.ScaleMappingFunction)) {
                 return;
             }
-            var newScale = d3.scale.linear()
-                .domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)])
-                .range([normal2pixel.invert(lowerNormalized), normal2pixel.invert(upperNormalized)]);
-            options.callback.call(options.callbackThisArg, newScale);
-        }
-        function editLimit(index) {
-            return function () {
-                var $elem = d3.select(this);
-                var $input = $base.append('foreignObject').attr({
-                    x: (index === 0 ? lowerLimitX - 7 : upperLimitX - 45),
-                    y: raw2pixelAxisY + 15,
-                    width: 50,
-                    height: 20
-                });
-                function update() {
-                    var old = raw2pixel.domain();
-                    var new_ = old.slice();
-                    new_[index] = +this.value;
-                    if (old[index] === new_[index]) {
-                        return;
-                    }
-                    raw2pixel.domain(new_);
-                    $elem.text(this.value);
-                    lowerRaw = raw2pixel(scale.domain()[0]);
-                    upperRaw = raw2pixel(scale.domain()[1]);
-                    $lowRawCircle.attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
-                    $upperRawCircle.attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
-                    mapperLineLowerBounds.attr('x2', lowerRaw);
-                    mapperLineUpperBounds.attr('x2', upperRaw);
-                    datalines.attr('x2', raw2pixel);
-                    updateRaw();
-                    updateScale(true);
-                    $input.remove();
+            var sscale = that.scale;
+            var domain = sscale.domain;
+            var range = sscale.range;
+            mapping_lines = domain.map(function (d, i) { return ({ r: d, n: range[i] }); });
+            function updateScale() {
+                mapping_lines.sort(function (a, b) { return a.r - b.r; });
+                sscale.domain = mapping_lines.map(function (d) { return d.r; });
+                sscale.range = mapping_lines.map(function (d) { return d.n; });
+                updateDataLines();
+            }
+            function removePoint(i) {
+                if (mapping_lines.length <= 2) {
+                    return;
                 }
-                $input.append('xhtml:input')
-                    .attr('value', raw2pixel.domain()[index])
-                    .style('width', '5em')
-                    .on('change', update)
-                    .on('blur', update);
-            };
+                mapping_lines.splice(i, 1);
+                updateScale();
+                renderMappingLines();
+            }
+            function addPoint(x) {
+                x = clamp(x, 0, width);
+                mapping_lines.push({
+                    n: normal2pixel.invert(x),
+                    r: raw2pixel.invert(x)
+                });
+                updateScale();
+                renderMappingLines();
+            }
+            $root.selectAll('rect').on('click', function () {
+                addPoint(d3.mouse($root.select('svg > g').node())[0]);
+            });
+            var $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mapping_lines);
+            var $mapping_enter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', function (d, i) {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                removePoint(i);
+            });
+            $mapping_enter.append('line').attr({
+                y1: 0,
+                y2: height
+            }).call(createDrag(function (d) {
+                var dx = d3.event.dx;
+                var nx = clamp(normal2pixel(d.n) + dx, 0, width);
+                var rx = clamp(raw2pixel(d.r) + dx, 0, width);
+                d.n = normal2pixel.invert(nx);
+                d.r = raw2pixel.invert(rx);
+                d3.select(this).attr('x1', nx).attr('x2', rx);
+                d3.select(this.parentElement).select('circle.normalized').attr('cx', nx);
+                d3.select(this.parentElement).select('circle.raw').attr('cx', rx);
+                updateScale();
+            }));
+            $mapping_enter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
+                var x = clamp(d3.event.x, 0, width);
+                d.n = normal2pixel.invert(x);
+                d3.select(this).attr('cx', x);
+                d3.select(this.parentElement).select('line').attr('x1', x);
+                updateScale();
+            }));
+            $mapping_enter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
+                var x = clamp(d3.event.x, 0, width);
+                d.r = raw2pixel.invert(x);
+                d3.select(this).attr('cx', x);
+                d3.select(this.parentElement).select('line').attr('x2', x);
+                updateScale();
+            }));
+            $mapping.select('line').attr({
+                x1: function (d) { return normal2pixel(d.n); },
+                x2: function (d) { return raw2pixel(d.r); }
+            });
+            $mapping.select('circle.normalized').attr('cx', function (d) { return normal2pixel(d.n); });
+            $mapping.select('circle.raw').attr('cx', function (d) { return raw2pixel(d.r); });
+            $mapping.exit().remove();
         }
+        function renderScript() {
+            if (!(that.scale instanceof model.ScriptMappingFunction)) {
+                $root.select('div.script').style('display', 'none');
+                return;
+            }
+            $root.select('div.script').style('display', null);
+            var sscale = that.scale;
+            var $text = $root.select('textarea').text(sscale.code);
+            $root.select('div.script').select('button').on('click', function () {
+                var code = $text.property('value');
+                sscale.code = code;
+                updateDataLines();
+                triggerUpdate();
+            });
+        }
+        renderMappingLines();
+        renderScript();
+        function triggerUpdate(isDragEnd) {
+            if (isDragEnd === void 0) { isDragEnd = false; }
+            if (isDragEnd && (options.triggerCallback !== 'dragend')) {
+                return;
+            }
+            options.callback.call(options.callbackThisArg, that.scale.clone());
+        }
+        function updateRaw() {
+            var d = raw2pixel.domain();
+            $root.select('input.raw_min').property('value', d[0]);
+            $root.select('input.raw_max').property('value', d[1]);
+            updateDataLines();
+            renderMappingLines();
+        }
+        updateRaw();
+        $root.select('select').on('change', function () {
+            var v = this.value;
+            if (v === 'linear_invert') {
+                that.scale_ = new model.ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);
+            }
+            else if (v === 'linear_abs') {
+                var d = raw2pixel.domain();
+                that.scale_ = new model.ScaleMappingFunction([d[0], (d[1] - d[0]) / 2, d[1]], 'linear', [1, 0, 1]);
+            }
+            else if (v === 'script') {
+                that.scale_ = new model.ScriptMappingFunction(raw2pixel.domain());
+            }
+            else {
+                that.scale_ = new model.ScaleMappingFunction(raw2pixel.domain(), v);
+            }
+            updateDataLines();
+            renderMappingLines();
+            renderScript();
+            triggerUpdate();
+        });
     };
-    return editor;
+    return MappingEditor;
+})();
+function create(parent, scale, original, dataPromise, options) {
+    if (options === void 0) { options = {}; }
+    return new MappingEditor(parent, scale, original, dataPromise, options);
 }
-exports.open = open;
+exports.create = create;
 
-},{"./utils":8,"d3":undefined}],3:[function(require,module,exports){
+},{"./model":3,"./utils":8,"d3":undefined}],3:[function(require,module,exports){
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -711,38 +699,192 @@ function isCategoricalColumn(col) {
     return (col instanceof Column && typeof col.getCategories === 'function' || (!(col instanceof Column) && col.type.match(/(categorical|ordinal)/) != null));
 }
 exports.isCategoricalColumn = isCategoricalColumn;
+function toScale(type) {
+    if (type === void 0) { type = 'linear'; }
+    switch (type) {
+        case 'log':
+            return d3.scale.log().clamp(true);
+        case 'sqrt':
+            return d3.scale.sqrt().clamp(true);
+        case 'pow1.1':
+            return d3.scale.pow().exponent(1.1).clamp(true);
+        case 'pow2':
+            return d3.scale.pow().exponent(2).clamp(true);
+        case 'pow3':
+            return d3.scale.pow().exponent(3).clamp(true);
+        default:
+            return d3.scale.linear().clamp(true);
+    }
+}
+function isSame(a, b) {
+    if (a.length !== b.length) {
+        return false;
+    }
+    return a.every(function (ai, i) { return ai === b[i]; });
+}
+function fixDomain(domain, type) {
+    if (type === 'log' && domain[0] === 0) {
+        domain[0] = 0.0000001;
+    }
+    return domain;
+}
+var ScaleMappingFunction = (function () {
+    function ScaleMappingFunction(domain, type, range) {
+        if (domain === void 0) { domain = [0, 1]; }
+        if (type === void 0) { type = 'linear'; }
+        if (range === void 0) { range = [0, 1]; }
+        this.type = type;
+        this.s = toScale(type).domain(fixDomain(domain, this.type)).range(range);
+    }
+    Object.defineProperty(ScaleMappingFunction.prototype, "domain", {
+        get: function () {
+            return this.s.domain();
+        },
+        set: function (domain) {
+            this.s.domain(fixDomain(domain, this.type));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScaleMappingFunction.prototype, "range", {
+        get: function () {
+            return this.s.range();
+        },
+        set: function (range) {
+            this.s.range(range);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ScaleMappingFunction.prototype.apply = function (v) {
+        return this.s(v);
+    };
+    ScaleMappingFunction.prototype.dump = function () {
+        return {
+            type: this.type,
+            domain: this.domain,
+            range: this.range
+        };
+    };
+    ScaleMappingFunction.prototype.eq = function (other) {
+        if (!(other instanceof ScaleMappingFunction)) {
+            return false;
+        }
+        var that = other;
+        return that.type === this.type && isSame(this.domain, that.domain) && isSame(this.range, that.range);
+    };
+    ScaleMappingFunction.prototype.restore = function (dump) {
+        this.type = dump.type;
+        this.s = toScale(dump.type).domain(dump.domain).range(dump.range);
+    };
+    ScaleMappingFunction.prototype.clone = function () {
+        return new ScaleMappingFunction(this.domain, this.type, this.range);
+    };
+    return ScaleMappingFunction;
+})();
+exports.ScaleMappingFunction = ScaleMappingFunction;
+var ScriptMappingFunction = (function () {
+    function ScriptMappingFunction(domain_, code_) {
+        if (domain_ === void 0) { domain_ = [0, 1]; }
+        if (code_ === void 0) { code_ = 'return this.linear(value,this.value_min,this.value_max);'; }
+        this.domain_ = domain_;
+        this.code_ = code_;
+        this.f = new Function('value', code_);
+    }
+    Object.defineProperty(ScriptMappingFunction.prototype, "domain", {
+        get: function () {
+            return this.domain_;
+        },
+        set: function (domain) {
+            this.domain_ = domain;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScriptMappingFunction.prototype, "code", {
+        get: function () {
+            return this.code_;
+        },
+        set: function (code) {
+            if (this.code_ === code) {
+                return;
+            }
+            this.code_ = code;
+            this.f = new Function('value', code);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ScriptMappingFunction.prototype.apply = function (v) {
+        var min = this.domain_[0], max = this.domain_[this.domain_.length - 1];
+        var r = this.f.call({
+            value_min: min,
+            value_max: max,
+            value_range: max - min,
+            value_domain: this.domain_.slice(),
+            linear: function (v, mi, ma) { return (v - mi) / (ma - mi); }
+        }, v);
+        if (typeof r === 'number') {
+            return Math.max(Math.min(r, 1), 0);
+        }
+        return NaN;
+    };
+    ScriptMappingFunction.prototype.dump = function () {
+        return {
+            type: 'script',
+            code: this.code
+        };
+    };
+    ScriptMappingFunction.prototype.eq = function (other) {
+        if (!(other instanceof ScriptMappingFunction)) {
+            return false;
+        }
+        var that = other;
+        return that.code === this.code;
+    };
+    ScriptMappingFunction.prototype.restore = function (dump) {
+        this.code = dump.code;
+    };
+    ScriptMappingFunction.prototype.clone = function () {
+        return new ScriptMappingFunction(this.domain, this.code);
+    };
+    return ScriptMappingFunction;
+})();
+exports.ScriptMappingFunction = ScriptMappingFunction;
+function createMappingFunction(dump) {
+    if (dump.type === 'script') {
+        var s = new ScriptMappingFunction();
+        s.restore(dump);
+        return s;
+    }
+    else {
+        var l = new ScaleMappingFunction();
+        l.restore(dump);
+        return l;
+    }
+}
+exports.createMappingFunction = createMappingFunction;
 var NumberColumn = (function (_super) {
     __extends(NumberColumn, _super);
     function NumberColumn(id, desc) {
         _super.call(this, id, desc);
         this.missingValue = 0;
-        this.transformation = 'linear';
-        this.scale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
-        this.original = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
         this.filter_ = { min: -Infinity, max: Infinity };
-        if (desc.transformation === 'log') {
-            this.scale = d3.scale.log().domain([NaN, NaN]).range([0, 1]).clamp(true);
-            this.original = d3.scale.log().domain([NaN, NaN]).range([0, 1]).clamp(true);
+        if (desc.map) {
+            this.mapping = createMappingFunction(desc.map);
         }
-        else if (desc.transformation === 'invert') {
-            this.scale.range([1, 0]);
+        else if (desc.domain) {
+            this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
         }
-        this.transformation = desc.transformation || 'linear';
-        if (desc.domain) {
-            this.scale.domain(desc.domain);
-        }
-        if (desc.range) {
-            this.scale.range(desc.range);
-        }
-        this.original.domain(this.scale.domain()).range(this.scale.range());
+        this.original = this.mapping.clone();
     }
     NumberColumn.prototype.init = function (callback) {
         var _this = this;
-        var d = this.scale.domain();
+        var d = this.mapping.domain;
         if (isNaN(d[0]) || isNaN(d[1])) {
             return callback(this.desc).then(function (stats) {
-                _this.scale.domain([stats.min, stats.max]);
-                _this.original.domain(_this.scale.domain());
+                _this.mapping.domain = [stats.min, stats.max];
+                _this.original.domain = [stats.min, stats.max];
                 return true;
             });
         }
@@ -750,35 +892,18 @@ var NumberColumn = (function (_super) {
     };
     NumberColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
-        r.domain = this.scale.domain();
-        r.range = this.scale.range();
-        r.mapping = this.getOriginalMapping();
+        r.map = this.mapping.dump();
         r.filter = this.filter;
-        if (this.transformation !== 'linear') {
-            r.transformation = this.transformation;
-        }
         r.missingValue = this.missingValue;
         return r;
     };
     NumberColumn.prototype.restore = function (dump, factory) {
         _super.prototype.restore.call(this, dump, factory);
-        if (dump.transformation !== 'linear') {
-            this.transformation = dump.transformation;
-            if (this.transformation === 'log') {
-                this.scale = d3.scale.log().domain(this.scale.domain()).range(this.scale.range()).clamp(true);
-            }
-            else if (this.transformation === 'invert') {
-                this.scale.range([1, 0]);
-            }
+        if (dump.map) {
+            this.mapping = createMappingFunction(dump.map);
         }
-        if (dump.domain) {
-            this.scale.domain(dump.domain);
-        }
-        if (dump.range) {
-            this.scale.range(dump.range);
-        }
-        if (dump.mapping) {
-            this.original.domain(dump.mapping.domain).range(dump.mapping.range);
+        else if (dump.domain) {
+            this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
         }
         if (dump.filter) {
             this.filter_ = dump.filter;
@@ -805,7 +930,7 @@ var NumberColumn = (function (_super) {
         if (isNaN(v)) {
             return v;
         }
-        return this.scale(v);
+        return this.mapping.apply(v);
     };
     NumberColumn.prototype.getNumber = function (row) {
         return this.getValue(row);
@@ -813,34 +938,17 @@ var NumberColumn = (function (_super) {
     NumberColumn.prototype.compare = function (a, b) {
         return numberCompare(this.getValue(a), this.getValue(b));
     };
-    NumberColumn.prototype.getMapping = function () {
-        return {
-            type: this.transformation,
-            domain: this.scale.domain(),
-            range: this.scale.range()
-        };
-    };
     NumberColumn.prototype.getOriginalMapping = function () {
-        return {
-            type: this.desc.transformation || 'linear',
-            domain: this.original.domain(),
-            range: this.original.range()
-        };
+        return this.original.clone();
     };
-    NumberColumn.prototype.setMapping = function (domain, range, type) {
-        if (type === void 0) { type = this.transformation; }
-        var bak = this.getMapping();
-        if (type !== this.transformation) {
-            this.transformation = type;
-            if (this.transformation === 'log') {
-                this.scale = d3.scale.log().clamp(true);
-            }
-            else {
-                this.scale = d3.scale.linear().clamp(true);
-            }
+    NumberColumn.prototype.getMapping = function () {
+        return this.mapping.clone();
+    };
+    NumberColumn.prototype.setMapping = function (mapping) {
+        if (this.mapping.eq(mapping)) {
+            return;
         }
-        this.scale.domain(domain).range(range);
-        this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
+        this.fire(['mappingChanged', 'dirtyValues', 'dirty'], this.mapping.clone(), this.mapping = mapping);
     };
     NumberColumn.prototype.isFiltered = function () {
         return isFinite(this.filter_.min) || isFinite(this.filter_.max);
@@ -1441,7 +1549,10 @@ var StackColumn = (function (_super) {
             this.missingValue = dump.missingValue;
         }
         dump.children.map(function (child) {
-            _this.push(factory(child));
+            var c = factory(child);
+            if (c) {
+                _this.push(c);
+            }
         });
         this.collapsed = dump.collapsed === true;
         _super.prototype.restore.call(this, dump, factory);
@@ -1620,12 +1731,16 @@ var RankColumn = (function (_super) {
         var _this = this;
         _super.prototype.restore.call(this, dump, factory);
         dump.columns.map(function (child) {
-            _this.push(factory(child));
+            var c = factory(child);
+            if (c) {
+                _this.push(c);
+            }
         });
         if (dump.sortCriteria) {
             this.ascending = dump.sortCriteria.asc;
             if (dump.sortCriteria.sortBy) {
-                this.sortBy(this.columns_.filter(function (d) { return d.id === dump.sortCriteria.sortBy; })[0], dump.sortCriteria.asc);
+                var help = this.columns_.filter(function (d) { return d.id === dump.sortCriteria.sortBy; });
+                this.sortBy(help.length === 0 ? null : help[0], dump.sortCriteria.asc);
             }
         }
     };
@@ -2003,9 +2118,12 @@ var DataProvider = (function (_super) {
         var _this = this;
         var create = function (d) {
             var desc = _this.fromDescRef(d.desc);
-            var type = _this.columnTypes[desc.type];
-            var c = new type(d.id, desc);
-            c.restore(d, create);
+            var c = null;
+            if (desc && desc.type) {
+                var type = _this.columnTypes[desc.type];
+                c = new type(d.id, desc);
+                c.restore(d, create);
+            }
             return c;
         };
         this.clearRankings();
@@ -3070,13 +3188,17 @@ var HeaderRenderer = (function () {
         this.changeDataStorage(data);
     }
     HeaderRenderer.prototype.changeDataStorage = function (data) {
+        var _this = this;
         if (this.data) {
             this.data.on(['dirtyHeader.headerRenderer', 'orderChanged.headerRenderer', 'selectionChanged.headerRenderer'], null);
         }
         this.data = data;
         data.on('dirtyHeader.headerRenderer', utils.delayedCall(this.update.bind(this), 1));
         if (this.options.histograms) {
-            data.on('orderChanged.headerRenderer', this.updateHist.bind(this));
+            data.on('orderChanged.headerRenderer', function () {
+                _this.updateHist();
+                _this.update();
+            });
             data.on('selectionChanged.headerRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
         }
     };
@@ -3097,7 +3219,6 @@ var HeaderRenderer = (function () {
                 _this.histCache.set(col.id, histo === null ? null : histo.hist(col));
             });
         });
-        this.update();
     };
     HeaderRenderer.prototype.drawSelection = function () {
         var _this = this;
@@ -3831,10 +3952,12 @@ function openSearchDialog(column, $header, provider) {
     function updateImpl() {
         var search = popup.select('input[type="text"]').property('value');
         var isRegex = popup.select('input[type="text"]').property('checked');
-        if (isRegex) {
-            search = new RegExp(search);
+        if (search.length > 0) {
+            if (isRegex) {
+                search = new RegExp(search);
+            }
+            provider.searchSelect(search, column);
         }
-        provider.searchSelect(search, column);
         popup.remove();
     }
     popup.select('input[type="checkbox"]').on('change', updateImpl);
@@ -3965,8 +4088,7 @@ function openStringFilter(column, $header) {
     });
 }
 function openMappingEditor(column, $header, data) {
-    var pos = utils.offset($header.node()), bak = column.getMapping(), original = column.getOriginalMapping();
-    var act = d3.scale.linear().domain(bak.domain).range(bak.range);
+    var pos = utils.offset($header.node()), bak = column.getMapping(), original = column.getOriginalMapping(), act = bak.clone();
     var popup = d3.select('body').append('div')
         .attr({
         'class': 'lu-popup'
@@ -3982,11 +4104,11 @@ function openMappingEditor(column, $header, data) {
     $filterIt.property('checked', column.isFiltered());
     function applyMapping(newscale) {
         act = newscale;
-        markFiltered($header, !isSame(act.range(), original.range) || !isSame(act.domain(), original.domain));
-        column.setMapping(act.domain(), act.range());
+        markFiltered($header, !newscale.eq(original));
+        column.setMapping(newscale);
         var val = $filterIt.property('checked');
         if (val) {
-            column.setFilter(newscale.domain()[0], newscale.domain()[1]);
+            column.setFilter(newscale.domain[0], newscale.domain[1]);
         }
         else {
             column.setFilter();
@@ -3997,27 +4119,22 @@ function openMappingEditor(column, $header, data) {
         triggerCallback: 'dragend'
     };
     var data_sample = data.mappingSample(column);
-    var editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, data_sample, editorOptions);
-    popup.select('.mappingArea').call(editor);
-    function isSame(a, b) {
-        return a[0] === b[0] && a[1] === b[1];
-    }
+    var editor = mappingeditor.create(popup.select('.mappingArea').node(), act, original, data_sample, editorOptions);
     popup.select('.ok').on('click', function () {
-        applyMapping(act);
+        applyMapping(editor.scale);
         popup.remove();
     });
     popup.select('.cancel').on('click', function () {
-        column.setMapping(bak.domain, bak.range);
-        markFiltered($header, !isSame(bak.range, original.range) || !isSame(bak.domain, original.domain));
+        column.setMapping(bak);
+        markFiltered($header, !bak.eq(original));
         popup.remove();
     });
     popup.select('.reset').on('click', function () {
         bak = original;
-        act = d3.scale.linear().domain(bak.domain).range(bak.range);
+        act = bak.clone();
         applyMapping(act);
-        editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, data_sample, editorOptions);
         popup.selectAll('.mappingArea *').remove();
-        popup.select('.mappingArea').call(editor);
+        editor = mappingeditor.create(popup.select('.mappingArea').node(), act, original, data_sample, editorOptions);
     });
 }
 function openCategoricalMappingEditor(column, $header) {

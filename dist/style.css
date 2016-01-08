@@ -1,25 +1,49 @@
-.lugui-me line.axis, .lugui-me g.data line {
-  stroke: gray; }
-
-.lugui-me line.bound {
-  stroke: black;
-  stroke-width: 2; }
-
-.lugui-me circle.handle {
-  fill: steelblue;
-  cursor: pointer; }
-  .lugui-me circle.handle.dragging {
-    fill: black; }
-
-.lugui-me text.drag {
-  visibility: hidden; }
-
-.lugui-me text.centered {
-  text-anchor: middle; }
-
-.lugui-me text.editableLabel:hover {
-  cursor: pointer;
-  text-decoration: underline; }
+.lugui-me {
+  clear: both; }
+  .lugui-me > div:first-of-type {
+    padding-bottom: 5px;
+    border-bottom: 1px solid black; }
+  .lugui-me > div:nth-of-type(2) {
+    padding-top: 5px;
+    border-top: 1px solid black; }
+    .lugui-me > div:nth-of-type(2) input {
+      width: 4em; }
+  .lugui-me > div:first-of-type, .lugui-me > div:nth-of-type(2) {
+    margin: 0 5px;
+    font-size: 10pt;
+    text-align: center; }
+    .lugui-me > div:first-of-type .raw_min, .lugui-me > div:nth-of-type(2) .raw_min {
+      float: left; }
+    .lugui-me > div:first-of-type .raw_max, .lugui-me > div:nth-of-type(2) .raw_max {
+      float: right;
+      text-align: right; }
+  .lugui-me svg {
+    margin-top: -5px;
+    margin-bottom: -7px; }
+    .lugui-me svg rect {
+      fill: white;
+      opacity: 0; }
+    .lugui-me svg g.samples line {
+      stroke: black;
+      opacity: 0.5; }
+    .lugui-me svg g.mapping:hover {
+      cursor: ew-resize; }
+      .lugui-me svg g.mapping:hover line {
+        stroke: #0000cf; }
+      .lugui-me svg g.mapping:hover circle {
+        fill: #0000cf; }
+    .lugui-me svg g.mapping line {
+      stroke: blue; }
+    .lugui-me svg g.mapping circle {
+      fill: blue; }
+  .lugui-me div.script {
+    clear: both;
+    text-align: right; }
+    .lugui-me div.script textarea {
+      height: 4em;
+      width: 98%;
+      font-size: 8pt;
+      display: block; }
 
 .lu-popup {
   position: absolute;

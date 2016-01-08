@@ -702,7 +702,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     return numberCompare(this.getValue(a), this.getValue(b));
   }
 
-  getOriginalMapping(){
+  getOriginalMapping() {
     return this.original.clone();
   }
 
