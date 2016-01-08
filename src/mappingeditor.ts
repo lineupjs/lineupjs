@@ -5,6 +5,7 @@
 ///<reference path='../typings/tsd.d.ts' />
 import d3 = require('d3');
 import utils = require('./utils');
+import model = require('./model');
 
 'use strict';
 function addLine($svg, x1, y1, x2, y2, clazz) {
@@ -30,225 +31,199 @@ function addCircle($svg, x, shift, y, radius) {
     });
 }
 
+function clamp(v:number, min:number, max:number) {
+  return Math.max(Math.min(v, max), min);
+}
 
-export function open(scale:d3.scale.Linear<number,number>, dataDomain:number[], dataPromise:Promise<number[]>, options:any) {
+
+export function open(scale:model.IMappingFunction, original:model.IMappingFunction, dataPromise:Promise<number[]>, options:any) {
+  //work on a local copy
+  scale = scale.clone();
+
   options = utils.merge({
     width: 320,
-    height: 250,
-    padding_hor: 10,
-    padding_ver: 30,
-    radius: 8,
+    height: 200,
+    padding_hor: 5,
+    padding_ver: 5,
+    radius: 5,
     callback: (d)=>d,
     callbackThisArg: null,
     triggerCallback: 'change' //change, dragend
   }, options);
 
-  var editor = function ($root) {
-    var $svg = $root.append('svg').attr({
-      'class': 'lugui-me',
-      width: options.width,
-      height: options.height
-    });
-    //left limit for the axes
-    var lowerLimitX = options.padding_hor;
-    //right limit for the axes
-    var upperLimitX = options.width - options.padding_hor;
-    //location for the score axis
-    var scoreAxisY = options.padding_ver;
-    //location for the raw2pixel value axis
-    var raw2pixelAxisY = options.height - options.padding_ver;
-    //this is needed for filtering the shown datalines
-    var raw2pixel = d3.scale.linear().domain([Math.min(dataDomain[0], scale.domain()[0]), Math.min(dataDomain[1], scale.domain()[1])]).range([lowerLimitX, upperLimitX]);
-    var normal2pixel = d3.scale.linear().domain([0, 1]).range([lowerLimitX, upperLimitX]);
+  var editor = function ($root: d3.Selection<any>) {
+    $root = $root.append('div').classed('lugui-me', true);
+    (<HTMLElement>$root.node()).innerHTML = `<div>
+    <span class="raw_min">0</span>
+    <span class="center"><label><select>
+        <option value="linear">Linear</option>
+        <option value="linear_invert">Invert</option>
+        <option value="log">Log</option>
+        <option value="sqrt">Sqrt</option>
+      </select></label>
+      </span>
+    <span class="raw_max">1</span>
+  </div>
+  <svg width="${options.width}" height="${options.height}">
+    <g transform="translate(${options.padding_hor},${options.padding_ver})">
+      <g class="samples">
 
-    //x coordinate for the score axis lower bound
-    var lowerNormalized = normal2pixel(scale.range()[0]);
-    //x coordinate for the score axis upper bound
-    var upperNormalized = normal2pixel(scale.range()[1]);
-    //x coordinate for the raw2pixel axis lower bound
-    var lowerRaw = raw2pixel(scale.domain()[0]);
-    //x coordinate for the raw2pixel axis upper bound
-    var upperRaw = raw2pixel(scale.domain()[1]);
+      </g>
+      <g class="mappings">
 
-    scale = d3.scale.linear()
-      .clamp(true)
-      .domain(scale.domain())
-      .range([lowerNormalized, upperNormalized]);
-    var $base = $svg.append('g');
-    //upper axis for scored values
-    addLine($base, lowerLimitX, scoreAxisY, upperLimitX, scoreAxisY, 'axis');
-    //label for minimum scored value
-    addText($base, lowerLimitX, scoreAxisY - 25, 0, '.75em');
-    //label for maximum scored value
-    addText($base, upperLimitX, scoreAxisY - 25, 1, '.75em');
-    addText($base, options.width / 2, scoreAxisY - 25, 'Score', '.75em', 'centered');
+      </g>
+    </g>
+  </svg>
+  <div>
+    <input type="text" class="raw_min" value="0">
+    <span class="center">Raw</span>
+    <input type="text" class="raw_max" value="1">
+  </div>
+  <div class="script">
+    <textarea>
 
-    //lower axis for raw2pixel values
-    addLine($base, lowerLimitX, raw2pixelAxisY, upperLimitX, raw2pixelAxisY, 'axis');
+    </textarea>
+    <button>Apply</button>
+  </div>`;
 
-    addText($base, lowerLimitX, raw2pixelAxisY + 20, raw2pixel.domain()[0], '.75em')
-      .on('click', editLimit(0))
-      .classed('editableLabel', true)
-      .append('title').text('Click to Modify');
-    //label for maximum raw2pixel value
-    addText($base, upperLimitX, raw2pixelAxisY + 20, raw2pixel.domain()[1], '.75em')
-      .on('click', editLimit(1))
-      .classed('editableLabel', true)
-      .append('title').text('Click to Modify');
-    addText($base, options.width / 2, raw2pixelAxisY + 20, 'Raw', '.75em', 'centered');
+    const width = options.width - options.padding_hor*2;
+    const height = options.height - options.padding_ver*2;
+
+    const raw2pixel = d3.scale.linear().domain([Math.min(scale.domain[0], original.domain[0]), Math.min(scale.domain[1], original.domain[1])])
+      .range([0,width]);
+    const normal2pixel = d3.scale.linear().domain([0, 1])
+      .range([0, width]);
 
     //lines that show mapping of individual data items
-    var datalines = $svg.append('g').classed('data', true).selectAll('line').data([]);
+    var datalines = $root.select('g.samples').selectAll('line').data([]);
     dataPromise.then((data) => {
-      datalines = datalines.data(data);
-      datalines.enter().append('line')
-        .attr({
-          x1: scale,
-          y1: scoreAxisY,
-          x2: raw2pixel,
-          y2: raw2pixelAxisY
-        }).style('visibility', function (d) {
-        var a;
-        if (lowerRaw < upperRaw) {
-          a = (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
-        } else {
-          a = (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
-        }
-        return a ? 'hidden' : null;
-      });
-    });
-    //line that defines lower bounds for the scale
-    var mapperLineLowerBounds = addLine($svg, lowerNormalized, scoreAxisY, lowerRaw, raw2pixelAxisY, 'bound');
-    //line that defines upper bounds for the scale
-    var mapperLineUpperBounds = addLine($svg, upperNormalized, scoreAxisY, upperRaw, raw2pixelAxisY, 'bound');
-    //label for lower bound of normalized values
-    var lowerBoundNormalizedLabel = addText($svg, lowerLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(lowerNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerNormalized - lowerLimitX) + ',0)');
-    //label for lower bound of raw2pixel values
-    var lowerBoundRawLabel = addText($svg, lowerLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(lowerRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
-    //label for upper bound of normalized values
-    var upperBoundNormalizedLabel = addText($svg, upperLimitX + 5, scoreAxisY - 15, d3.round(normal2pixel.invert(upperNormalized), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperNormalized - upperLimitX) + ',0)');
-    //label for upper bound of raw2pixel values
-    var upperBoundRawLabel = addText($svg, upperLimitX + 5, raw2pixelAxisY - 15, d3.round(raw2pixel.invert(upperRaw), 2), '.25em', 'drag').attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
+      //to unique values
+      data = d3.set(data.map(String)).values().map(parseFloat);
 
-    function createDrag(label, move) {
+      datalines = datalines.data(data);
+      datalines.enter()
+        .append('line')
+          .attr({
+            x1: (d) => normal2pixel(scale.apply(d)),
+            y1: 0,
+            x2: raw2pixel,
+            y2: height
+          }).style('visibility', function (d) {
+            const domain = scale.domain;
+            return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
+        });
+    });
+
+    function updateDataLines() {
+      datalines.attr({
+        x1: (d) => normal2pixel(scale.apply(d)),
+        x2: raw2pixel
+      }).style('visibility', function (d) {
+        const domain = scale.domain;
+        return (d < domain[0] || d > domain[domain.length-1]) ? 'hidden' : null;
+      });
+    }
+
+    function createDrag(move) {
       return d3.behavior.drag()
         .on('dragstart', function () {
           d3.select(this)
             .classed('dragging', true)
             .attr('r', options.radius * 1.1);
-          label.style('visibility', 'visible');
         })
         .on('drag', move)
         .on('dragend', function () {
           d3.select(this)
             .classed('dragging', false)
             .attr('r', options.radius);
-          label.style('visibility', null);
-          updateScale(true);
-        })
-        .origin(function () {
-          var t = d3.transform(d3.select(this).attr('transform'));
-          return {x: t.translate[0], y: t.translate[1]};
+          triggerUpdate(true);
         });
     }
 
-    function updateNormalized() {
-      scale.range([lowerNormalized, upperNormalized]);
-      datalines.attr('x1', scale);
-      updateScale();
-    }
-
-    function updateRaw() {
-      var hiddenDatalines, shownDatalines;
-      if (lowerRaw < upperRaw) {
-        hiddenDatalines = datalines.filter(function (d) {
-          return (raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
-        });
-        shownDatalines = datalines.filter(function (d) {
-          return !(raw2pixel(d) < lowerRaw || raw2pixel(d) > upperRaw);
-        });
-      } else {
-        hiddenDatalines = datalines.filter(function (d) {
-          return (raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
-        });
-        shownDatalines = datalines.filter(function (d) {
-          return !(raw2pixel(d) > lowerRaw || raw2pixel(d) < upperRaw);
-        });
+    function renderMappingLines() {
+      if (!(scale instanceof model.ScaleMappingFunction)) {
+        return;
       }
-      hiddenDatalines.style('visibility', 'hidden');
-      scale.domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)]);
-      shownDatalines
-        .style('visibility', null)
-        .attr('x1', scale);
-      updateScale();
+
+      let sscale = <model.ScaleMappingFunction>scale;
+      let domain = sscale.domain;
+      let range = sscale.range;
+
+      let mapping_lines = domain.map((d,i) => ({ r: d, n: range[i]}));
+
+      function updateScale() {
+        //sort by raw value
+        mapping_lines.sort((a,b) => a.r - b.r);
+        sscale.domain = mapping_lines.map((d) => d.r);
+        sscale.range = mapping_lines.map((d) => d.n);
+        console.log(sscale.domain, sscale.range);
+        updateDataLines();
+      }
+
+      const $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mapping_lines);
+      const $mapping_enter = $mapping.enter().append('g').classed('mapping', true);
+      $mapping_enter.append('line').attr({
+          y1: 0,
+          y2: height
+      }).call(createDrag(function(d) {
+        const dx = (<any>d3.event).dx;
+        const nx = clamp(normal2pixel(d.n)+dx, 0, width);
+        const rx = clamp(raw2pixel(d.r)+dx, 0, width);
+        d.n = normal2pixel.invert(nx);
+        d.r = raw2pixel.invert(rx);
+        d3.select(this).attr('x1', nx).attr('x2', rx);
+        d3.select(this.parentElement).select('circle.normalized').attr('cx', nx);
+        d3.select(this.parentElement).select('circle.raw').attr('cx', rx);
+
+        updateScale();
+      }));
+      $mapping_enter.append('circle').classed('normalized',true).attr('r',options.radius).call(createDrag(function(d) {
+        const x = clamp(d3.event.x, 0, width);
+        d.n = normal2pixel.invert(x);
+        d3.select(this).attr('cx', x);
+        d3.select(this.parentElement).select('line').attr('x1', x);
+
+        updateScale();
+      }));
+      $mapping_enter.append('circle').classed('raw', true).attr('r',options.radius).attr('cy',height).call(createDrag(function(d) {
+        const x = clamp(d3.event.x, 0, width);
+        d.r = raw2pixel.invert(x);
+        d3.select(this).attr('cx', x);
+        d3.select(this.parentElement).select('line').attr('x2', x);
+
+        updateScale();
+      }));
+
+      $mapping.select('line').attr({
+        x1: (d) => normal2pixel(d.n),
+        x2: (d) => raw2pixel(d.r)
+      });
+      $mapping.select('circle.normalized').attr('cx', (d) => normal2pixel(d.n));
+      $mapping.select('circle.raw').attr('cx', (d) => raw2pixel(d.r));
+      $mapping.exit().remove();
     }
 
-    //draggable circle that defines the lower bound of normalized values
-    addCircle($svg, lowerLimitX, lowerNormalized, scoreAxisY, options.radius)
-      .call(createDrag(lowerBoundNormalizedLabel, function () {
-        if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-          mapperLineLowerBounds.attr('x1', lowerLimitX + d3.event.x);
-          d3.select(this)
-            .attr('transform', 'translate(' + d3.event.x + ', 0)');
-          lowerNormalized = d3.event.x + lowerLimitX;
-          lowerBoundNormalizedLabel
-            .text(d3.round(normal2pixel.invert(lowerNormalized), 2))
-            .attr('transform', 'translate(' + d3.event.x + ', 0)');
-          updateNormalized();
-        }
-      }));
-    //draggable circle that defines the upper bound of normalized values
-    addCircle($svg, upperLimitX, upperNormalized, scoreAxisY, options.radius)
-      .call(createDrag(upperBoundNormalizedLabel, function () {
-        if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-          mapperLineUpperBounds.attr('x1', upperLimitX + d3.event.x);
-          d3.select(this)
-            .attr('transform', 'translate(' + d3.event.x + ', 0)');
-          upperNormalized = d3.event.x + upperLimitX;
-          upperBoundNormalizedLabel
-            .text(d3.round(normal2pixel.invert(upperNormalized), 2))
-            .attr('transform', 'translate(' + d3.event.x + ', 0)');
-          updateNormalized();
-        }
-      }));
-    //draggable circle that defines the lower bound of raw2pixel values
-    var $lowRawCircle = addCircle($svg, lowerLimitX, lowerRaw, raw2pixelAxisY, options.radius)
-      .call(createDrag(lowerBoundRawLabel, function () {
-        if (d3.event.x >= 0 && d3.event.x <= (upperLimitX - lowerLimitX)) {
-          mapperLineLowerBounds.attr('x2', lowerLimitX + d3.event.x);
-          d3.select(this)
-            .attr('transform', 'translate(' + d3.event.x + ', 0)');
-          lowerRaw = d3.event.x + lowerLimitX;
-          lowerBoundRawLabel
-            .text(d3.round(raw2pixel.invert(lowerRaw), 2))
-            .attr('transform', 'translate(' + d3.event.x + ', 0)');
-          updateRaw();
-        }
-      }));
-    //draggable circle that defines the upper bound of raw2pixel values
-    var $upperRawCircle = addCircle($svg, upperLimitX, upperRaw, raw2pixelAxisY, options.radius)
-      .call(createDrag(upperBoundRawLabel, function () {
-        if (d3.event.x >= (-1 * (upperLimitX - lowerLimitX)) && d3.event.x <= 0) {
-          mapperLineUpperBounds.attr('x2', upperLimitX + d3.event.x);
-          d3.select(this)
-            .attr('transform', 'translate(' + d3.event.x + ', 0)');
-          upperRaw = d3.event.x + upperLimitX;
-          upperBoundRawLabel
-            .text(d3.round(raw2pixel.invert(upperRaw), 2))
-            .attr('transform', 'translate(' + d3.event.x + ', 0)');
-          updateRaw();
-        }
-      }));
+    function renderScript() {
+       if (!(scale instanceof model.ScriptMappingFunction)) {
+       $root.select('div.script').style('display', 'none');
+        return;
+      }
+      $root.select('div.script').style('display', null);
 
-    function updateScale(isDragEnd = false) {
+      let sscale = <model.ScriptMappingFunction>scale;
+      $root.select('textarea').text(sscale.code);
+    }
+
+    renderMappingLines();
+    renderScript();
+
+    function triggerUpdate(isDragEnd = false) {
       if (isDragEnd !== (options.triggerCallback === 'dragend')) {
         return;
       }
-      var newScale = d3.scale.linear()
-        .domain([raw2pixel.invert(lowerRaw), raw2pixel.invert(upperRaw)])
-        .range([normal2pixel.invert(lowerNormalized), normal2pixel.invert(upperNormalized)]);
-      options.callback.call(options.callbackThisArg, newScale);
+      options.callback.call(options.callbackThisArg, scale.clone());
     }
+  /*
 
     //label for minimum raw2pixel value
     function editLimit(index:number) {
@@ -270,15 +245,22 @@ export function open(scale:d3.scale.Linear<number,number>, dataDomain:number[], 
           }
           raw2pixel.domain(new_);
           $elem.text(this.value);
+
+          scale.domain.forEach((p) => {
+
+          })
           lowerRaw = raw2pixel(scale.domain()[0]);
           upperRaw = raw2pixel(scale.domain()[1]);
           $lowRawCircle.attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
           $upperRawCircle.attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
           mapperLineLowerBounds.attr('x2', lowerRaw);
           mapperLineUpperBounds.attr('x2', upperRaw);
+
           datalines.attr('x2', raw2pixel);
+
           updateRaw();
           updateScale(true);
+
           $input.remove();
         }
 
@@ -288,7 +270,7 @@ export function open(scale:d3.scale.Linear<number,number>, dataDomain:number[], 
           .on('change', update)
           .on('blur', update);
       };
-    }
+    }*/
   };
   return editor;
 }

@@ -37,7 +37,7 @@ div#pool {
   font-weight: bold;
 }
 
-#lugui-menu-actions span, form span {
+#lugui-menu-actions span, #lugui-menu-actions form span {
   font-size: 10pt;
   font-weight: normal;
   font-style: normal;

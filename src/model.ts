@@ -419,23 +419,176 @@ export interface IScale {
   range(range:number[]);
 }
 
+export interface IMappingFunction {
+  //new(domain: number[]);
+
+  apply(v: number): number;
+
+  dump(): any;
+  restore(dump: any);
+
+  domain: number[];
+
+  clone(): IMappingFunction;
+
+  eq(other: IMappingFunction): boolean;
+
+}
+
+function toScale(type = 'linear'):IScale {
+  switch (type) {
+    case 'log':
+      return d3.scale.log().clamp(true);
+    case 'sqrt':
+      return d3.scale.sqrt().clamp(true);
+    default:
+      return d3.scale.linear().clamp(true);
+  }
+}
+
+function isSame(a: number[], b: number[]) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return a.every((ai, i) => ai === b[i]);
+}
+
+/**
+ * a mapping function based on a d3 scale (linear, sqrt, log)
+ */
+export class ScaleMappingFunction implements IMappingFunction {
+  private s:IScale;
+
+  constructor(domain:number[] = [0,1], private type = 'linear', range : number[] = [0,1]) {
+    this.s = toScale(type).domain(domain).range(range);
+  }
+
+  get domain() {
+    return this.s.domain();
+  }
+
+  set domain(domain: number[]) {
+    this.s.domain(domain);
+  }
+
+  get range() {
+    return this.s.range();
+  }
+
+  set range(range: number[]) {
+    this.s.range(range);
+  }
+
+  apply(v:number):number {
+    return this.s(v);
+  }
+
+  dump():any {
+    return {
+      type: this.type,
+      domain: this.domain,
+      range: this.range
+    };
+  }
+
+  eq(other: IMappingFunction) {
+    if (!(other instanceof ScaleMappingFunction)) {
+      return false;
+    }
+    const that = <ScaleMappingFunction>other;
+    return that.type === this.type && isSame(this.domain, that.domain) && isSame(this.range, that.range);
+  }
+
+  restore(dump:any) {
+    this.type = dump.type;
+    this.s = toScale(dump.type).domain(dump.domain).range(dump.range);
+  }
+
+  clone() {
+    return new ScaleMappingFunction(this.domain, this.type, this.range);
+  }
+}
+
+/**
+ * a mapping function based on a custom user function using 'value' as the current value
+ */
+export class ScriptMappingFunction implements IMappingFunction {
+  private f:Function;
+
+  constructor(private domain_:number[] = [0,1], code:string = 'return 0;') {
+    this.f = new Function('value', code);
+  }
+
+  get domain() {
+    return this.domain_;
+  }
+
+  set domain(domain: number[]) {
+    this.domain_ = domain;
+  }
+
+  get code() {
+    return this.f.toString();
+  }
+
+  apply(v:number):number {
+    const r = this.f.call({
+      value_min: this.domain_[0],
+      value_max: this.domain_[this.domain_.length-1],
+      value_domain: this.domain_.slice()
+    }, v);
+
+    if (typeof r === 'number') {
+      return Math.max(Math.min(r, 1), 0);
+    }
+    return NaN;
+  }
+
+  dump():any {
+    return {
+      type: 'script',
+      code: this.code
+    };
+  }
+
+  eq(other: IMappingFunction) {
+    if (!(other instanceof ScriptMappingFunction)) {
+      return false;
+    }
+    const that = <ScriptMappingFunction>other;
+    return that.code === this.code;
+  }
+
+  restore(dump:any) {
+    this.f = new Function('value', dump.code);
+  }
+
+  clone() {
+    return new ScriptMappingFunction(this.domain, this.code);
+  }
+}
+
+export function createMappingFunction(dump: any): IMappingFunction {
+  if (dump.type === 'script') {
+    let s = new ScriptMappingFunction();
+    s.restore(dump);
+    return s;
+  } else {
+    let l = new ScaleMappingFunction();
+    l.restore(dump);
+    return l;
+  }
+}
+
 /**
  * a number column mapped from an original input scale to an output range
  */
 export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   missingValue = 0;
 
-  private transformation = 'linear';
-  /**
-   * the current scale applied
-   * @type {IScale}
-   */
-  private scale : IScale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
-  /**
-   * the original scale for resetting purpose
-   * @type {IScale}
-   */
-  private original : IScale = d3.scale.linear().domain([NaN, NaN]).range([0, 1]).clamp(true);
+  private mapping : IMappingFunction;
+
+  private original : IMappingFunction;
 
   /**
    * currently active filter
@@ -446,31 +599,23 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 
   constructor(id:string, desc:any) {
     super(id, desc);
-    if (desc.transformation === 'log') {
-      this.scale = d3.scale.log().domain([NaN, NaN]).range([0, 1]).clamp(true);
-      this.original = d3.scale.log().domain([NaN, NaN]).range([0, 1]).clamp(true);
-    } else if (desc.transformation === 'invert') {
-      this.scale.range([1, 0]);
-    }
-    this.transformation = desc.transformation || 'linear';
 
-    //initialize with the description
-    if (desc.domain) {
-      this.scale.domain(desc.domain);
+    if (desc.map) {
+      this.mapping = createMappingFunction(desc.map);
+    } else if (desc.domain) {
+      this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0,1]);
     }
-    if (desc.range) {
-      this.scale.range(desc.range);
-    }
-    this.original.domain(this.scale.domain()).range(this.scale.range());
+    this.original = this.mapping.clone();
   }
 
   init(callback:(desc:IColumnDesc) => Promise<IStatistics>):Promise<boolean> {
-    var d = this.scale.domain();
+
+    var d = this.mapping.domain;
     //if any of the values is not given use the statistics to compute them
     if (isNaN(d[0]) || isNaN(d[1])) {
       return callback(this.desc).then((stats) => {
-        this.scale.domain([stats.min, stats.max]);
-        this.original.domain(this.scale.domain());
+        this.mapping.domain = [stats.min, stats.max];
+        this.original.domain = [stats.min, stats.max];
         return true;
       });
     }
@@ -479,35 +624,18 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
 
   dump(toDescRef:(desc:any) => any) {
     var r = super.dump(toDescRef);
-    r.domain = this.scale.domain();
-    r.range = this.scale.range();
-    r.mapping = this.getOriginalMapping();
+    r.map = this.mapping.dump();
     r.filter = this.filter;
-    if (this.transformation !== 'linear') {
-      r.transformation = this.transformation;
-    }
     r.missingValue = this.missingValue;
     return r;
   }
 
   restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
-    if (dump.transformation !== 'linear') {
-      this.transformation = dump.transformation;
-      if (this.transformation === 'log') {
-        this.scale = d3.scale.log().domain(this.scale.domain()).range(this.scale.range()).clamp(true);
-      } else if (this.transformation === 'invert') {
-        this.scale.range([1, 0]);
-      }
-    }
-    if (dump.domain) {
-      this.scale.domain(dump.domain);
-    }
-    if (dump.range) {
-      this.scale.range(dump.range);
-    }
-    if (dump.mapping) {
-      this.original.domain(dump.mapping.domain).range(dump.mapping.range);
+    if (dump.map) {
+      this.mapping = createMappingFunction(dump.map);
+    } else if (dump.domain) {
+      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0,1]);
     }
     if (dump.filter) {
       this.filter_ = dump.filter;
@@ -538,7 +666,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     if (isNaN(v)) {
       return v;
     }
-    return this.scale(v);
+    return this.mapping.apply(v);
   }
 
   getNumber(row:any) {
@@ -549,34 +677,19 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     return numberCompare(this.getValue(a), this.getValue(b));
   }
 
+  getOriginalMapping(){
+    return this.original.clone();
+  }
+
   getMapping() {
-    return {
-      type: this.transformation,
-      domain: <[number, number]>this.scale.domain(),
-      range: <[number, number]>this.scale.range()
-    };
+    return this.mapping.clone();
   }
 
-  getOriginalMapping() {
-    return {
-      type: (<any>this.desc).transformation || 'linear',
-      domain: <[number, number]>this.original.domain(),
-      range: <[number, number]>this.original.range()
-    };
-  }
-
-  setMapping(domain:[number, number], range:[number, number], type: string = this.transformation) {
-    var bak = this.getMapping();
-    if (type !== this.transformation) {
-      this.transformation = type;
-      if (this.transformation === 'log') {
-        this.scale = d3.scale.log().clamp(true);
-      } else {
-        this.scale = d3.scale.linear().clamp(true);
-      }
+  setMapping(mapping: IMappingFunction) {
+    if (this.mapping.eq(mapping)) {
+      return;
     }
-    this.scale.domain(domain).range(range);
-    this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getMapping());
+    this.fire(['mappingChanged', 'dirtyValues', 'dirty'], this.mapping.clone(), this.mapping = mapping);
   }
 
   isFiltered() {

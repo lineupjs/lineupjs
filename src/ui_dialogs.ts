@@ -311,8 +311,8 @@ function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.
 function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>, data:provider.DataProvider) {
   var pos = utils.offset($header.node()),
     bak = column.getMapping(),
-    original = column.getOriginalMapping();
-  var act = d3.scale.linear().domain(bak.domain).range(bak.range);
+    original = column.getOriginalMapping(),
+    act: model.IMappingFunction = bak.clone();
 
   var popup = d3.select('body').append('div')
     .attr({
@@ -329,14 +329,14 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
   });
   $filterIt.property('checked', column.isFiltered());
 
-  function applyMapping(newscale) {
+  function applyMapping(newscale: model.IMappingFunction) {
     act = newscale;
-    markFiltered($header, !isSame(act.range(), original.range) || !isSame(act.domain(), original.domain));
+    markFiltered($header, !newscale.eq(original));
 
-    column.setMapping(<[number, number]>act.domain(), <[number, number]>act.range());
+    column.setMapping(newscale);
     var val = $filterIt.property('checked');
     if (val) {
-      column.setFilter(newscale.domain()[0], newscale.domain()[1]);
+      column.setFilter(newscale.domain[0], newscale.domain[1]);
     } else {
       column.setFilter();
     }
@@ -347,27 +347,24 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
     triggerCallback: 'dragend'
   };
   var data_sample = data.mappingSample(column);
-  var editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, data_sample, editorOptions);
+  var editor = mappingeditor.open(act, original, data_sample, editorOptions);
   popup.select('.mappingArea').call(editor);
 
-  function isSame(a, b) {
-    return a[0] === b[0] && a[1] === b[1];
-  }
 
   popup.select('.ok').on('click', function () {
     applyMapping(act);
     popup.remove();
   });
   popup.select('.cancel').on('click', function () {
-    column.setMapping(bak.domain, bak.range);
-    markFiltered($header, !isSame(bak.range, original.range) || !isSame(bak.domain, original.domain));
+    column.setMapping(bak);
+    markFiltered($header, !bak.eq(original));
     popup.remove();
   });
   popup.select('.reset').on('click', function () {
     bak = original;
-    act = d3.scale.linear().domain(bak.domain).range(bak.range);
+    act = bak.clone();
     applyMapping(act);
-    editor = mappingeditor.open(d3.scale.linear().domain(bak.domain).range(bak.range), original.domain, data_sample, editorOptions);
+    editor = mappingeditor.open(act, original, data_sample, editorOptions);
     popup.selectAll('.mappingArea *').remove();
     popup.select('.mappingArea').call(editor);
   });
