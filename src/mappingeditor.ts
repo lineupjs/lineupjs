@@ -8,39 +8,13 @@ import utils = require('./utils');
 import model = require('./model');
 
 'use strict';
-function addLine($svg, x1, y1, x2, y2, clazz) {
-  return $svg.append('line').attr({
-    x1: x1, y1: y1, x2: x2, y2: y2, 'class': clazz
-  });
-}
-function addText($svg, x, y, text, dy?, clazz?) {
-  return $svg.append('text').attr({
-    x: x, y: y, dy: dy, 'class': clazz
-  }).text(text);
-}
-function addCircle($svg, x, shift, y, radius) {
-  shift -= x;
-  return $svg
-    .append('circle')
-    .attr({
-      'class': 'handle',
-      r: radius,
-      cx: x,
-      cy: y,
-      transform: 'translate(' + shift + ',0)'
-    });
-}
 
 function clamp(v:number, min:number, max:number) {
   return Math.max(Math.min(v, max), min);
 }
 
-
-export function open(scale:model.IMappingFunction, original:model.IMappingFunction, dataPromise:Promise<number[]>, options:any) {
-  //work on a local copy
-  scale = scale.clone();
-
-  options = utils.merge({
+class MappingEditor {
+  private options = {
     width: 320,
     height: 200,
     padding_hor: 5,
@@ -49,9 +23,23 @@ export function open(scale:model.IMappingFunction, original:model.IMappingFuncti
     callback: (d)=>d,
     callbackThisArg: null,
     triggerCallback: 'change' //change, dragend
-  }, options);
+  };
 
-  var editor = function ($root: d3.Selection<any>) {
+  constructor(private parent: HTMLElement, private scale_:model.IMappingFunction, private original:model.IMappingFunction, private dataPromise:Promise<number[]>, options:any = {}) {
+    utils.merge(this.options, options);
+    //work on a local copy
+    this.scale_ = scale_.clone();
+
+    this.build(d3.select(parent));
+  }
+
+  get scale() {
+    return this.scale_;
+  }
+
+  private build($root: d3.Selection<any>) {
+    const options = this.options,
+      that = this;
     $root = $root.append('div').classed('lugui-me', true);
     (<HTMLElement>$root.node()).innerHTML = `<div>
     <span class="raw_min">0</span>
@@ -96,7 +84,7 @@ export function open(scale:model.IMappingFunction, original:model.IMappingFuncti
     const width = options.width - options.padding_hor*2;
     const height = options.height - options.padding_ver*2;
 
-    const raw2pixel = d3.scale.linear().domain([Math.min(scale.domain[0], original.domain[0]), Math.min(scale.domain[1], original.domain[1])])
+    const raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.min(this.scale.domain[1], this.original.domain[1])])
       .range([0,width]);
     const normal2pixel = d3.scale.linear().domain([0, 1])
       .range([0, width]);
@@ -120,7 +108,7 @@ export function open(scale:model.IMappingFunction, original:model.IMappingFuncti
 
     //lines that show mapping of individual data items
     var datalines = $root.select('g.samples').selectAll('line').data([]);
-    dataPromise.then((data) => {
+    this.dataPromise.then((data) => {
       //to unique values
       data = d3.set(data.map(String)).values().map(parseFloat);
 
@@ -128,22 +116,22 @@ export function open(scale:model.IMappingFunction, original:model.IMappingFuncti
       datalines.enter()
         .append('line')
           .attr({
-            x1: (d) => normal2pixel(scale.apply(d)),
+            x1: (d) => normal2pixel(that.scale.apply(d)),
             y1: 0,
             x2: raw2pixel,
             y2: height
           }).style('visibility', function (d) {
-            const domain = scale.domain;
+            const domain = that.scale.domain;
             return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
         });
     });
 
     function updateDataLines() {
       datalines.attr({
-        x1: (d) => normal2pixel(scale.apply(d)),
+        x1: (d) => normal2pixel(that.scale.apply(d)),
         x2: raw2pixel
       }).style('visibility', function (d) {
-        const domain = scale.domain;
+        const domain = that.scale.domain;
         return (d < domain[0] || d > domain[domain.length-1]) ? 'hidden' : null;
       });
     }
@@ -166,11 +154,11 @@ export function open(scale:model.IMappingFunction, original:model.IMappingFuncti
 
     var mapping_lines = [];
     function renderMappingLines() {
-      if (!(scale instanceof model.ScaleMappingFunction)) {
+      if (!(that.scale instanceof model.ScaleMappingFunction)) {
         return;
       }
 
-      let sscale = <model.ScaleMappingFunction>scale;
+      let sscale = <model.ScaleMappingFunction>that.scale;
       let domain = sscale.domain;
       let range = sscale.range;
 
@@ -261,24 +249,31 @@ export function open(scale:model.IMappingFunction, original:model.IMappingFuncti
     }
 
     function renderScript() {
-       if (!(scale instanceof model.ScriptMappingFunction)) {
+       if (!(that.scale instanceof model.ScriptMappingFunction)) {
        $root.select('div.script').style('display', 'none');
         return;
       }
       $root.select('div.script').style('display', null);
 
-      let sscale = <model.ScriptMappingFunction>scale;
-      $root.select('textarea').text(sscale.code);
+      let sscale = <model.ScriptMappingFunction>that.scale;
+      const $text = $root.select('textarea').text(sscale.code);
+
+      $root.select('div.script').select('button').on('click', () => {
+        const code = $text.property('value');
+        sscale.code = code;
+        updateDataLines();
+        triggerUpdate();
+      });
     }
 
     renderMappingLines();
     renderScript();
 
     function triggerUpdate(isDragEnd = false) {
-      if (isDragEnd !== (options.triggerCallback === 'dragend')) {
+      if (isDragEnd && (options.triggerCallback !== 'dragend')) {
         return;
       }
-      options.callback.call(options.callbackThisArg, scale.clone());
+      options.callback.call(options.callbackThisArg, that.scale.clone());
     }
 
     function updateRaw() {
@@ -295,69 +290,23 @@ export function open(scale:model.IMappingFunction, original:model.IMappingFuncti
     $root.select('select').on('change', function() {
       const v = this.value;
       if (v === 'linear_invert') {
-        scale = new model.ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);
+        that.scale_ = new model.ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);
       } else if (v === 'linear_abs') {
         let d = raw2pixel.domain();
-        scale = new model.ScaleMappingFunction([d[0], (d[1]-d[0])/2, d[1]], 'linear', [1, 0, 1]);
+        that.scale_ = new model.ScaleMappingFunction([d[0], (d[1]-d[0])/2, d[1]], 'linear', [1, 0, 1]);
       } else if (v === 'script') {
-        scale = new model.ScriptMappingFunction(raw2pixel.domain());
+        that.scale_ = new model.ScriptMappingFunction(raw2pixel.domain());
       } else {
-        scale = new model.ScaleMappingFunction(raw2pixel.domain(), v);
+        that.scale_ = new model.ScaleMappingFunction(raw2pixel.domain(), v);
       }
       updateDataLines();
       renderMappingLines();
       renderScript();
-      triggerUpdate()
+      triggerUpdate();
     });
+  }
+}
 
-  /*
-
-    //label for minimum raw2pixel value
-    function editLimit(index:number) {
-      return function () {
-        var $elem = d3.select(this);
-        var $input = $base.append('foreignObject').attr({
-          x: (index === 0 ? lowerLimitX - 7 : upperLimitX - 45),
-          y: raw2pixelAxisY + 15,
-          width: 50,
-          height: 20
-        });
-
-        function update() {
-          var old = raw2pixel.domain();
-          var new_ = old.slice();
-          new_[index] = +this.value;
-          if (old[index] === new_[index]) {
-            return;
-          }
-          raw2pixel.domain(new_);
-          $elem.text(this.value);
-
-          scale.domain.forEach((p) => {
-
-          })
-          lowerRaw = raw2pixel(scale.domain()[0]);
-          upperRaw = raw2pixel(scale.domain()[1]);
-          $lowRawCircle.attr('transform', 'translate(' + (lowerRaw - lowerLimitX) + ',0)');
-          $upperRawCircle.attr('transform', 'translate(' + (upperRaw - upperLimitX) + ',0)');
-          mapperLineLowerBounds.attr('x2', lowerRaw);
-          mapperLineUpperBounds.attr('x2', upperRaw);
-
-          datalines.attr('x2', raw2pixel);
-
-          updateRaw();
-          updateScale(true);
-
-          $input.remove();
-        }
-
-        $input.append('xhtml:input')
-          .attr('value', raw2pixel.domain()[index])
-          .style('width', '5em')
-          .on('change', update)
-          .on('blur', update);
-      };
-    }*/
-  };
-  return editor;
+export function create(parent: HTMLElement, scale:model.IMappingFunction, original:model.IMappingFunction, dataPromise:Promise<number[]>, options:any = {}) {
+  return new MappingEditor(parent, scale, original, dataPromise, options);
 }

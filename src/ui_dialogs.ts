@@ -347,12 +347,11 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
     triggerCallback: 'dragend'
   };
   var data_sample = data.mappingSample(column);
-  var editor = mappingeditor.open(act, original, data_sample, editorOptions);
-  popup.select('.mappingArea').call(editor);
+  var editor = mappingeditor.create(<HTMLElement>popup.select('.mappingArea').node(), act, original, data_sample, editorOptions);
 
 
   popup.select('.ok').on('click', function () {
-    applyMapping(act);
+    applyMapping(editor.scale);
     popup.remove();
   });
   popup.select('.cancel').on('click', function () {
@@ -364,9 +363,8 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
     bak = original;
     act = bak.clone();
     applyMapping(act);
-    editor = mappingeditor.open(act, original, data_sample, editorOptions);
     popup.selectAll('.mappingArea *').remove();
-    popup.select('.mappingArea').call(editor);
+    editor = mappingeditor.create(<HTMLElement>popup.select('.mappingArea').node(), act, original, data_sample, editorOptions);
   });
 }
 

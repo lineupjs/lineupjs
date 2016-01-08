@@ -43,16 +43,24 @@
         opacity: 0.5;
       }
     }
-    g.mappings {
+    g.mapping {
+      &:hover {
+        cursor: ew-resize;
+        line {
+          stroke: #0000cf;
+        }
+        circle {
+          fill: #0000cf;
+        }
+      }
+
       line {
         stroke: blue;
+
+
       }
       circle {
         fill: blue;
-
-        &:hover {
-          cursor: ew-resize;
-        }
       }
     }
 
@@ -60,12 +68,13 @@
 
   div.script {
     clear: both;
-  }
-  circle {
-    fill: steelblue;
-    cursor: pointer;
-    &.dragging {
-      fill: black;
+    text-align: right;
+
+    textarea {
+      height: 4em;
+      width: 98%;
+      font-size: 8pt;
+      display: block;
     }
   }
 }

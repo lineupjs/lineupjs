@@ -528,8 +528,8 @@ export class ScaleMappingFunction implements IMappingFunction {
 export class ScriptMappingFunction implements IMappingFunction {
   private f:Function;
 
-  constructor(private domain_:number[] = [0,1], code:string = 'return this.linear(value,this.value_min,this.value_max);') {
-    this.f = new Function('value', code);
+  constructor(private domain_:number[] = [0,1], private code_:string = 'return this.linear(value,this.value_min,this.value_max);') {
+    this.f = new Function('value', code_);
   }
 
   get domain() {
@@ -541,7 +541,15 @@ export class ScriptMappingFunction implements IMappingFunction {
   }
 
   get code() {
-    return this.f.toString();
+    return this.code_;
+  }
+
+  set code(code: string) {
+    if (this.code_ === code) {
+      return;
+    }
+    this.code_ = code;
+    this.f = new Function('value', code);
   }
 
   apply(v:number):number {
@@ -577,7 +585,7 @@ export class ScriptMappingFunction implements IMappingFunction {
   }
 
   restore(dump:any) {
-    this.f = new Function('value', dump.code);
+    this.code = dump.code;
   }
 
   clone() {
