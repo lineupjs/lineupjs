@@ -32,6 +32,11 @@
     margin-top: -5px;
     margin-bottom: -7px;
 
+    rect {
+      fill: white;
+      opacity: 0;
+    }
+
     g.samples {
       line {
         stroke: black;

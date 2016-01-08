@@ -441,6 +441,12 @@ function toScale(type = 'linear'):IScale {
       return d3.scale.log().clamp(true);
     case 'sqrt':
       return d3.scale.sqrt().clamp(true);
+    case 'pow1.1':
+      return d3.scale.pow().exponent(1.1).clamp(true);
+    case 'pow2':
+      return d3.scale.pow().exponent(2).clamp(true);
+    case 'pow3':
+      return d3.scale.pow().exponent(3).clamp(true);
     default:
       return d3.scale.linear().clamp(true);
   }
@@ -453,6 +459,13 @@ function isSame(a: number[], b: number[]) {
   return a.every((ai, i) => ai === b[i]);
 }
 
+
+function fixDomain(domain: number[], type: string) {
+  if (type === 'log' && domain[0] === 0) {
+    domain[0] = 0.0000001; //0 is bad
+  }
+  return domain;
+}
 /**
  * a mapping function based on a d3 scale (linear, sqrt, log)
  */
@@ -460,7 +473,7 @@ export class ScaleMappingFunction implements IMappingFunction {
   private s:IScale;
 
   constructor(domain:number[] = [0,1], private type = 'linear', range : number[] = [0,1]) {
-    this.s = toScale(type).domain(domain).range(range);
+    this.s = toScale(type).domain(fixDomain(domain,this.type)).range(range);
   }
 
   get domain() {
@@ -468,7 +481,7 @@ export class ScaleMappingFunction implements IMappingFunction {
   }
 
   set domain(domain: number[]) {
-    this.s.domain(domain);
+    this.s.domain(fixDomain(domain,this.type));
   }
 
   get range() {
@@ -515,7 +528,7 @@ export class ScaleMappingFunction implements IMappingFunction {
 export class ScriptMappingFunction implements IMappingFunction {
   private f:Function;
 
-  constructor(private domain_:number[] = [0,1], code:string = 'return 0;') {
+  constructor(private domain_:number[] = [0,1], code:string = 'return this.linear(value,this.value_min,this.value_max);') {
     this.f = new Function('value', code);
   }
 
@@ -532,10 +545,14 @@ export class ScriptMappingFunction implements IMappingFunction {
   }
 
   apply(v:number):number {
+    const min = this.domain_[0],
+      max = this.domain_[this.domain_.length-1];
     const r = this.f.call({
-      value_min: this.domain_[0],
-      value_max: this.domain_[this.domain_.length-1],
-      value_domain: this.domain_.slice()
+      value_min: min,
+      value_max: max,
+      value_range: max - min,
+      value_domain: this.domain_.slice(),
+      linear : (v, mi, ma) => (v-mi)/(ma-mi)
     }, v);
 
     if (typeof r === 'number') {
