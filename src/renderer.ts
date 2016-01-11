@@ -439,23 +439,19 @@ export function barRenderer(extraFuncs?:any) {
 class LinkCellRenderer extends DefaultCellRenderer {
   render($col:d3.Selection<any>, col:model.LinkColumn, rows:any[], context:IRenderContext) {
     //wrap the text elements with an a element
-    var $rows = $col.datum(col).selectAll('a.link').data(rows, context.rowKey);
-    $rows.enter().append('a').attr({
-      'class': 'link',
-      'target': '_blank'
-    }).append('text').attr({
-      'class': 'text',
+    var $rows = $col.datum(col).selectAll('text.link').data(rows, context.rowKey);
+    $rows.enter().append('text').attr({
+      'class': 'text link',
       'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
       y: (d, i) => context.cellPrevY(i)
     });
 
     $rows.attr({
       x: (d, i) => context.cellX(i),
-      'xlink:href': (d) => col.getValue(d),
       'data-index': (d, i) => i
-    }).select('text').text((d) => col.getLabel(d));
+    }).html((d) => col.isLink(d) ?`<a class="link" xlink:href="${col.getValue(d)}" target="_blank">${col.getLabel(d)}</a>`: col.getLabel(d));
 
-    context.animated($rows).select('text').attr({
+    context.animated($rows).attr({
       y: (d, i) => context.cellY(i)
     });
 
@@ -463,7 +459,7 @@ class LinkCellRenderer extends DefaultCellRenderer {
   }
 
   findRow($col:d3.Selection<any>, index:number) {
-    return $col.selectAll('a.link[data-index="' + index + '"]');
+    return $col.selectAll('text.link[data-index="' + index + '"]');
   }
 }
 

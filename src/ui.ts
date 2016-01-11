@@ -522,7 +522,7 @@ export class HeaderRenderer {
       'background-color': (d) => d.color
     });
     $headers.attr({
-      'class': (d) => `${clazz} ${d.cssClass||''} ${(d.compressed ? 'compressed' : '')} ${d.desc.type} ${this.options.autoRotateLabels ? 'rotateable': ''} ${d.isFiltered() ? 'filtered' : ''}`,
+      'class': (d) => `${clazz} ${d.cssClass||''} ${(d.compressed ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable': ''} ${d.isFiltered() ? 'filtered' : ''}`,
       title: (d) => d.label,
       'data-id': (d) => d.id,
     });
@@ -951,8 +951,13 @@ export class BodyRenderer extends utils.AEventDispatcher {
   }
 
   updateFreeze(numColumns:number, left:number) {
-    var $n = this.$node.select('#c' + this.options.idPrefix + 'Freeze').select('rect');
-    var x = d3.transform(this.$node.select(`g.child[data-index="${numColumns}"]`).attr('transform') || '').translate[0];
+    const $n = this.$node.select('#c' + this.options.idPrefix + 'Freeze').select('rect');
+    var $col = this.$node.select(`g.child[data-index="${numColumns}"]`);
+    if ($col.empty()) {
+      //use the last one
+      $col =  this.$node.select('g.child:last-of-type');
+    }
+    var x = d3.transform($col.attr('transform') || '').translate[0];
     $n.attr('x', left + x);
     this.$node.selectAll('g.uchild').attr({
       'clip-path': (d, i) => i < numColumns ? null : 'url(#c' + this.options.idPrefix + 'Freeze)',

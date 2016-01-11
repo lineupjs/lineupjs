@@ -113,6 +113,10 @@ export class Column extends utils.AEventDispatcher {
     this.color = (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
   }
 
+  get headerCssClass() {
+    return this.desc.type;
+  }
+
   assignNewId(idGenerator:() => string) {
     this.id = fixCSS(idGenerator());
   }
@@ -867,6 +871,10 @@ export class LinkColumn extends StringColumn {
     this.link = desc.link;
   }
 
+  get headerCssClass() {
+    return this.link == null ? 'link' : 'link link_pattern';
+  }
+
   createEventList() {
     return super.createEventList().concat(['linkChanged']);
   }
@@ -877,7 +885,7 @@ export class LinkColumn extends StringColumn {
       return;
     }
     /* tslint:enable */
-    this.fire(['linkChanged', 'dirtyValues', 'dirty'], this.link, this.link = link);
+    this.fire(['linkChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.link, this.link = link);
   }
 
   getLink() {
@@ -916,10 +924,7 @@ export class LinkColumn extends StringColumn {
     //get original value
     var v:any = super.getValue(row);
     //convert to link
-    if (v.href) {
-      return true;
-    }
-    return false;
+    return v.href != null;
   }
 
   getValue(row:any) {
@@ -1448,7 +1453,7 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
 
     //increase my width
     super.setWidth(this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
-    this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth());
+    this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth(), index);
     return true;
   }
 
