@@ -119,6 +119,9 @@
     text-anchor: end; }
   .lu text.text_center, .lu-pool text.text_center {
     text-anchor: middle; }
+  .lu line.meanline, .lu-pool line.meanline {
+    stroke: darkgray;
+    stroke-width: 1; }
   .lu *[draggable], .lu-pool *[draggable] {
     cursor: pointer;
     cursor: -webkit-grab; }
@@ -167,8 +170,8 @@
     display: none; }
   .lu div.lu-header div.header div.histogram, .lu-pool div.lu-header div.header div.histogram {
     position: absolute;
-    left: 3px;
-    right: 8px;
+    left: 0;
+    right: 5px;
     top: 40%;
     height: 60%;
     display: none; }

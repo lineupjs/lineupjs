@@ -77,7 +77,8 @@ var LineUp = (function (_super) {
                 stacked: false,
                 animation: true,
                 visibleRowsOnly: true,
-                histograms: false
+                histograms: false,
+                meanLine: false,
             },
             svgLayout: {
                 rowHeight: 17,
@@ -123,6 +124,7 @@ var LineUp = (function (_super) {
             rowPadding: this.config.svgLayout.rowPadding,
             rowBarPadding: this.config.svgLayout.rowBarPadding,
             animationDuration: this.config.svgLayout.animationDuration,
+            meanLine: this.config.renderingOptions.meanLine,
             animation: this.config.renderingOptions.animation,
             stacked: this.config.renderingOptions.stacked,
             actions: this.config.svgLayout.rowActions,
@@ -482,6 +484,13 @@ var MappingEditor = (function () {
             renderMappingLines();
             renderScript();
             triggerUpdate();
+        }).property('selectedIndex', function () {
+            var name = 'script';
+            if (that.scale_ instanceof model.ScaleMappingFunction) {
+                name = that.scale.scaleType;
+            }
+            var types = ['linear', 'linear_invert', 'linear_abs', 'log', 'pow1.1', 'pow2', 'pow3', 'sqrt', 'script'];
+            return types.indexOf(name);
         });
     };
     return MappingEditor;
@@ -766,6 +775,13 @@ var ScaleMappingFunction = (function () {
     ScaleMappingFunction.prototype.apply = function (v) {
         return this.s(v);
     };
+    Object.defineProperty(ScaleMappingFunction.prototype, "scaleType", {
+        get: function () {
+            return this.type;
+        },
+        enumerable: true,
+        configurable: true
+    });
     ScaleMappingFunction.prototype.dump = function () {
         return {
             type: this.type,
@@ -3544,6 +3560,7 @@ var BodyRenderer = (function (_super) {
             animation: false,
             animationDuration: 1000,
             renderers: renderer.renderers(),
+            meanLine: false,
             actions: []
         };
         utils.merge(this.options, options);
@@ -3613,6 +3630,7 @@ var BodyRenderer = (function (_super) {
             },
             idPrefix: options.idPrefix,
             animated: function ($sel) { return options.animation ? $sel.transition().duration(options.animationDuration) : $sel; },
+            showMeanLine: function (col) { return options.meanLine && model.isNumberColumn(col) && !col.compressed && col.parent instanceof model.RankColumn; },
             option: function (key, default_) { return (key in options) ? options[key] : default_; }
         };
     };
@@ -3657,9 +3675,10 @@ var BodyRenderer = (function (_super) {
             height: height
         });
     };
-    BodyRenderer.prototype.renderRankings = function ($body, rankings, orders, shifts, context) {
+    BodyRenderer.prototype.renderRankings = function ($body, rankings, orders, shifts, context, height) {
         var _this = this;
         var dataPromises = orders.map(function (r) { return _this.data.view(r); });
+        var statsPromises = rankings.map(function (r) { return _this.data.stats(r.getOrder()); });
         var $rankings = $body.selectAll('g.ranking').data(rankings, function (d) { return d.id; });
         var $rankings_enter = $rankings.enter().append('g').attr({
             'class': 'ranking',
@@ -3686,10 +3705,23 @@ var BodyRenderer = (function (_super) {
                 return 'translate(' + shifts[j].shifts[i] + ',0)';
             }
         }).each(function (d, i, j) {
-            var _this = this;
+            var $col = d3.select(this);
             dataPromises[j].then(function (data) {
-                context.render(d, d3.select(_this), data, context);
+                context.render(d, $col, data, context);
             });
+            if (context.showMeanLine(d)) {
+                statsPromises[j].stats(d).then(function (stats) {
+                    var $mean = $col.selectAll('line.meanline').data([stats.mean]);
+                    $mean.enter().append('line').attr('class', 'meanline');
+                    $mean.exit().remove();
+                    $mean.attr('x1', d.getWidth() * stats.mean)
+                        .attr('x2', d.getWidth() * stats.mean)
+                        .attr('y2', height);
+                });
+            }
+            else {
+                $col.selectAll('line.meanline').remove();
+            }
         });
         function mouseOverRow($row, $cols, index, ranking, rankingIndex) {
             $row.classed('hover', true);
@@ -3882,7 +3914,7 @@ var BodyRenderer = (function (_super) {
         if ($body.empty()) {
             $body = this.$node.append('g').classed('body', true);
         }
-        this.renderRankings($body, rankings, orders, shifts, context);
+        this.renderRankings($body, rankings, orders, shifts, context, height);
         this.renderSlopeGraphs($body, rankings, orders, shifts, context);
     };
     return BodyRenderer;
