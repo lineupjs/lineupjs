@@ -204,6 +204,11 @@ $lu_drag_over: #979797;
     text-anchor: middle;
   }
 
+  line.meanline {
+    stroke: darkgray;
+    stroke-width: 1;
+  }
+
   *[draggable] {
     cursor: pointer;
     cursor: -webkit-grab; //indicate grab able
@@ -292,8 +297,8 @@ $lu_drag_over: #979797;
 
       div.histogram {
         position: absolute;
-        left: 3px;
-        right: 8px;
+        left: 0;
+        right: 5px;
         top: 40%;
         height: 60%;
         display: none;

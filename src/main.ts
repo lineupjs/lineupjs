@@ -44,7 +44,8 @@ export class LineUp extends utils_.AEventDispatcher {
       stacked: false,
       animation: true,
       visibleRowsOnly: true,
-      histograms: false
+      histograms: false,
+      meanLine: false,
     },
     svgLayout: {
       rowHeight: 17,
@@ -108,6 +109,7 @@ export class LineUp extends utils_.AEventDispatcher {
       rowPadding: this.config.svgLayout.rowPadding,
       rowBarPadding: this.config.svgLayout.rowBarPadding,
       animationDuration: this.config.svgLayout.animationDuration,
+      meanLine: this.config.renderingOptions.meanLine,
       animation: this.config.renderingOptions.animation,
       stacked: this.config.renderingOptions.stacked,
       actions: this.config.svgLayout.rowActions,

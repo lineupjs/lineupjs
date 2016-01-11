@@ -71,6 +71,12 @@ export interface IRenderContext {
    * @param default_ default value
    */
   option<T>(key:string, default_:T): T;
+
+  /**
+   * whether to show the mean line for a given column
+   * @param col
+   */
+  showMeanLine(col: model.Column): boolean;
 }
 
 /**

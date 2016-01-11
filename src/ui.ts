@@ -642,6 +642,8 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
     renderers: renderer.renderers(),
 
+    meanLine: false,
+
     actions: []
 
   };
@@ -723,6 +725,9 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
       animated: ($sel:d3.Selection<any>) => options.animation ? $sel.transition().duration(options.animationDuration) : $sel,
 
+      //show mean line if option is enabled and top level
+      showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.compressed && col.parent instanceof model.RankColumn,
+
       option: (key:string, default_:any) => (key in options) ? options[key] : default_
     };
   }
@@ -774,8 +779,9 @@ export class BodyRenderer extends utils.AEventDispatcher {
     });
   }
 
-  renderRankings($body:d3.Selection<any>, rankings:model.RankColumn[], orders:number[][], shifts:any[], context:renderer.IRenderContext) {
-    var dataPromises = orders.map((r) => this.data.view(r));
+  renderRankings($body:d3.Selection<any>, rankings:model.RankColumn[], orders:number[][], shifts:any[], context:renderer.IRenderContext, height: number) {
+    const dataPromises = orders.map((r) => this.data.view(r));
+    const statsPromises = rankings.map((r) => this.data.stats(r.getOrder())); //full order
 
     var $rankings = $body.selectAll('g.ranking').data(rankings, (d) => d.id);
     var $rankings_enter = $rankings.enter().append('g').attr({
@@ -805,9 +811,23 @@ export class BodyRenderer extends utils.AEventDispatcher {
         return 'translate(' + shifts[j].shifts[i] + ',0)';
       }
     }).each(function (d, i, j?) {
+      const $col = d3.select(this);
       dataPromises[j].then((data) => {
-        context.render(d, d3.select(this), data, context);
+        context.render(d, $col, data, context);
       });
+
+      if (context.showMeanLine(d)) {
+        statsPromises[j].stats(d).then((stats: model.IStatistics) => {
+          const $mean = $col.selectAll('line.meanline').data([stats.mean]);
+          $mean.enter().append('line').attr('class', 'meanline');
+          $mean.exit().remove();
+          $mean.attr('x1', d.getWidth() * stats.mean)
+            .attr('x2', d.getWidth() * stats.mean)
+            .attr('y2', height);
+        });
+      } else {
+        $col.selectAll('line.meanline').remove();
+      }
     });
 
     function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.RankColumn>, index:number, ranking:model.RankColumn, rankingIndex:number) {
@@ -1012,12 +1032,13 @@ export class BodyRenderer extends utils.AEventDispatcher {
     this.updateClipPaths(rankings, context, height);
 
 
+
     var $body = this.$node.select('g.body');
     if ($body.empty()) {
       $body = this.$node.append('g').classed('body', true);
     }
 
-    this.renderRankings($body, rankings, orders, shifts, context);
+    this.renderRankings($body, rankings, orders, shifts, context, height);
     this.renderSlopeGraphs($body, rankings, orders, shifts, context);
   }
 }
