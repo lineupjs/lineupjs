@@ -500,6 +500,10 @@ export class ScaleMappingFunction implements IMappingFunction {
     return this.s(v);
   }
 
+  get scaleType() {
+    return this.type;
+  }
+
   dump():any {
     return {
       type: this.type,

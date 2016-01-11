@@ -303,6 +303,13 @@ class MappingEditor {
       renderMappingLines();
       renderScript();
       triggerUpdate();
+    }).property('selectedIndex', function() {
+      var name = 'script';
+      if (that.scale_ instanceof model.ScaleMappingFunction) {
+        name = (<model.ScaleMappingFunction>that.scale).scaleType;
+      }
+      const types = ['linear', 'linear_invert', 'linear_abs', 'log', 'pow1.1', 'pow2', 'pow3', 'sqrt', 'script'];
+      return types.indexOf(name);
     });
   }
 }
