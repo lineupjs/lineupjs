@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-01-08
+/*! LineUpJS - v0.2.0 - 2016-01-11
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -522,6 +522,13 @@ var Column = (function (_super) {
         this.cssClass = this.desc.cssClass || '';
         this.color = this.desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
     }
+    Object.defineProperty(Column.prototype, "headerCssClass", {
+        get: function () {
+            return this.desc.type;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Column.prototype.assignNewId = function (idGenerator) {
         this.id = fixCSS(idGenerator());
     };
@@ -1083,6 +1090,13 @@ var LinkColumn = (function (_super) {
         this.link = null;
         this.link = desc.link;
     }
+    Object.defineProperty(LinkColumn.prototype, "headerCssClass", {
+        get: function () {
+            return this.link == null ? 'link' : 'link link_pattern';
+        },
+        enumerable: true,
+        configurable: true
+    });
     LinkColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat(['linkChanged']);
     };
@@ -1090,7 +1104,7 @@ var LinkColumn = (function (_super) {
         if (link == this.link) {
             return;
         }
-        this.fire(['linkChanged', 'dirtyValues', 'dirty'], this.link, this.link = link);
+        this.fire(['linkChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.link, this.link = link);
     };
     LinkColumn.prototype.getLink = function () {
         return this.link || '';
@@ -1120,10 +1134,7 @@ var LinkColumn = (function (_super) {
             return true;
         }
         var v = _super.prototype.getValue.call(this, row);
-        if (v.href) {
-            return true;
-        }
-        return false;
+        return v.href != null;
     };
     LinkColumn.prototype.getValue = function (row) {
         var v = _super.prototype.getValue.call(this, row);
@@ -1572,7 +1583,7 @@ var StackColumn = (function (_super) {
         this.forward(col, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
         col.on('widthChanged.stack', this.adaptChange);
         _super.prototype.setWidth.call(this, this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
-        this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth());
+        this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth(), index);
         return true;
     };
     StackColumn.prototype.push = function (col, weight) {
@@ -2782,27 +2793,23 @@ var LinkCellRenderer = (function (_super) {
         _super.apply(this, arguments);
     }
     LinkCellRenderer.prototype.render = function ($col, col, rows, context) {
-        var $rows = $col.datum(col).selectAll('a.link').data(rows, context.rowKey);
-        $rows.enter().append('a').attr({
-            'class': 'link',
-            'target': '_blank'
-        }).append('text').attr({
-            'class': 'text',
+        var $rows = $col.datum(col).selectAll('text.link').data(rows, context.rowKey);
+        $rows.enter().append('text').attr({
+            'class': 'text link',
             'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
             y: function (d, i) { return context.cellPrevY(i); }
         });
         $rows.attr({
             x: function (d, i) { return context.cellX(i); },
-            'xlink:href': function (d) { return col.getValue(d); },
             'data-index': function (d, i) { return i; }
-        }).select('text').text(function (d) { return col.getLabel(d); });
-        context.animated($rows).select('text').attr({
+        }).html(function (d) { return col.isLink(d) ? "<a class=\"link\" xlink:href=\"" + col.getValue(d) + "\" target=\"_blank\">" + col.getLabel(d) + "</a>" : col.getLabel(d); });
+        context.animated($rows).attr({
             y: function (d, i) { return context.cellY(i); }
         });
         $rows.exit().remove();
     };
     LinkCellRenderer.prototype.findRow = function ($col, index) {
-        return $col.selectAll('a.link[data-index="' + index + '"]');
+        return $col.selectAll('text.link[data-index="' + index + '"]');
     };
     return LinkCellRenderer;
 })(DefaultCellRenderer);
@@ -3421,7 +3428,7 @@ var HeaderRenderer = (function () {
             'background-color': function (d) { return d.color; }
         });
         $headers.attr({
-            'class': function (d) { return (clazz + " " + (d.cssClass || '') + " " + (d.compressed ? 'compressed' : '') + " " + d.desc.type + " " + (_this.options.autoRotateLabels ? 'rotateable' : '') + " " + (d.isFiltered() ? 'filtered' : '')); },
+            'class': function (d) { return (clazz + " " + (d.cssClass || '') + " " + (d.compressed ? 'compressed' : '') + " " + d.headerCssClass + " " + (_this.options.autoRotateLabels ? 'rotateable' : '') + " " + (d.isFiltered() ? 'filtered' : '')); },
             title: function (d) { return d.label; },
             'data-id': function (d) { return d.id; },
         });
@@ -3823,7 +3830,11 @@ var BodyRenderer = (function (_super) {
     BodyRenderer.prototype.updateFreeze = function (numColumns, left) {
         var _this = this;
         var $n = this.$node.select('#c' + this.options.idPrefix + 'Freeze').select('rect');
-        var x = d3.transform(this.$node.select("g.child[data-index=\"" + numColumns + "\"]").attr('transform') || '').translate[0];
+        var $col = this.$node.select("g.child[data-index=\"" + numColumns + "\"]");
+        if ($col.empty()) {
+            $col = this.$node.select('g.child:last-of-type');
+        }
+        var x = d3.transform($col.attr('transform') || '').translate[0];
         $n.attr('x', left + x);
         this.$node.selectAll('g.uchild').attr({
             'clip-path': function (d, i) { return i < numColumns ? null : 'url(#c' + _this.options.idPrefix + 'Freeze)'; },
