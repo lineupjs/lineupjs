@@ -193,6 +193,8 @@ export class HeaderRenderer {
     autoRotateLabels: false,
     rotationHeight: 50, //in px
     rotationDegree: -20, //in deg
+
+    freezeCols: 0
   };
 
   $node:d3.Selection<any>;
@@ -471,7 +473,8 @@ export class HeaderRenderer {
     });
   }
 
-  updateFreeze(numColumns:number, left:number) {
+  updateFreeze(left:number) {
+    const numColumns = this.options.freezeCols;
     this.$node.selectAll('div.header')
       .style('z-index', (d, i) => i < numColumns ? 1 : null)
       .style('transform', (d, i) => i < numColumns ? `translate(${left}px,0)` : null);
@@ -644,11 +647,14 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
     meanLine: false,
 
-    actions: []
+    actions: [],
 
+    freezeCols: 0
   };
 
   private $node:d3.Selection<any>;
+
+  private currentFreezeLeft = 0;
 
   constructor(private data:provider.DataProvider, parent:Element, private slicer:ISlicer, options = {}) {
     super();
@@ -780,6 +786,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
   }
 
   renderRankings($body:d3.Selection<any>, rankings:model.RankColumn[], orders:number[][], shifts:any[], context:renderer.IRenderContext, height: number) {
+    const that = this;
     const dataPromises = orders.map((r) => this.data.view(r));
     const statsPromises = rankings.map((r) => this.data.stats(r.getOrder())); //full order
 
@@ -832,17 +839,20 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
     function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.RankColumn>, index:number, ranking:model.RankColumn, rankingIndex:number) {
       $row.classed('hover', true);
-      var $value_cols = $row.select('g.values').selectAll('g.child').data([<model.Column>ranking].concat(ranking.children), (d) => d.id);
+      var $value_cols = $row.select('g.values').selectAll('g.uchild').data([<model.Column>ranking].concat(ranking.children), (d) => d.id);
       $value_cols.enter().append('g').attr({
-        'class': 'child'
-      });
-      $value_cols.attr({
+        'class': 'uchild'
+      }).append('g').classed('child', true);
+
+      $value_cols.select('g.child').attr({
         transform: (d, i) => {
           return 'translate(' + shifts[rankingIndex].shifts[i] + ',0)';
         }
       }).each(function (d:model.Column, i) {
         dataPromises[rankingIndex].then((data) => {
           context.renderer(d).mouseEnter($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(this), d, data[index], index, context);
+
+
         });
       });
       $value_cols.exit().remove();
@@ -851,9 +861,9 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
     function mouseLeaveRow($row:d3.Selection<number>, $cols:d3.Selection<model.RankColumn>, index:number, ranking:model.RankColumn, rankingIndex:number) {
       $row.classed('hover', false);
-      $row.select('g.values').selectAll('g.child').each(function (d:model.Column, i) {
+      $row.select('g.values').selectAll('g.uchild').each(function (d:model.Column, i) {
         dataPromises[rankingIndex].then((data) => {
-          context.renderer(d).mouseLeave($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(this), d, data[index], index, context);
+          context.renderer(d).mouseLeave($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(this).select('g.child'), d, data[index], index, context);
         });
       }).remove();
       //data.mouseLeave(d, i);
@@ -873,6 +883,9 @@ export class BodyRenderer extends utils.AEventDispatcher {
           }
         }
       });
+
+      //set clip path for frozen columns
+      that.updateFrozenRows();
     };
     var $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => orders[i].map((d, i) => ({d: d, i: i})));
     var $rows_enter = $rows.enter().append('g').attr({
@@ -970,16 +983,37 @@ export class BodyRenderer extends utils.AEventDispatcher {
     $slopes.exit().remove();
   }
 
-  updateFreeze(numColumns:number, left:number) {
+  updateFreeze(left:number) {
+    const numColumns = this.options.freezeCols;
+    const $cols = this.$node.select('g.cols');
     const $n = this.$node.select('#c' + this.options.idPrefix + 'Freeze').select('rect');
-    var $col = this.$node.select(`g.child[data-index="${numColumns}"]`);
+    var $col = $cols.select(`g.child[data-index="${numColumns}"]`);
     if ($col.empty()) {
       //use the last one
-      $col =  this.$node.select('g.child:last-of-type');
+      $col =  $cols.select('g.child:last-of-type');
     }
     var x = d3.transform($col.attr('transform') || '').translate[0];
     $n.attr('x', left + x);
-    this.$node.selectAll('g.uchild').attr({
+    $cols.selectAll('g.uchild').attr({
+      'clip-path': (d, i) => i < numColumns ? null : 'url(#c' + this.options.idPrefix + 'Freeze)',
+      'transform': (d, i) => i < numColumns ? 'translate(' + left + ',0)' : null
+    });
+
+
+    this.currentFreezeLeft = left;
+    //update all mouse over rows and selected rows with
+    this.updateFrozenRows();
+  }
+
+  private updateFrozenRows() {
+    const numColumns = this.options.freezeCols;
+    if (numColumns <= 0) {
+      return;
+    }
+    const left = this.currentFreezeLeft;
+    const $rows = this.$node.select('g.rows');
+
+    $rows.select('g.row.hover g.values').selectAll('g.uchild').attr({
       'clip-path': (d, i) => i < numColumns ? null : 'url(#c' + this.options.idPrefix + 'Freeze)',
       'transform': (d, i) => i < numColumns ? 'translate(' + left + ',0)' : null
     });

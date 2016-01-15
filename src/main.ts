@@ -103,6 +103,7 @@ export class LineUp extends utils_.AEventDispatcher {
       autoRotateLabels: this.config.htmlLayout.autoRotateLabels,
       rotationHeight: this.config.htmlLayout.rotationHeight, //in px
       rotationDegree:  this.config.htmlLayout.rotationDegree, //in deg
+      freezeCols: this.config.svgLayout.freezeCols
     });
     this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
       rowHeight: this.config.svgLayout.rowHeight,
@@ -113,7 +114,8 @@ export class LineUp extends utils_.AEventDispatcher {
       animation: this.config.renderingOptions.animation,
       stacked: this.config.renderingOptions.stacked,
       actions: this.config.svgLayout.rowActions,
-      idPrefix: this.config.idPrefix
+      idPrefix: this.config.idPrefix,
+      freezeCols: this.config.svgLayout.freezeCols
     });
     this.forward(this.body, 'hoverChanged');
     if (this.config.pool && this.config.manipulative) {
@@ -131,8 +133,8 @@ export class LineUp extends utils_.AEventDispatcher {
         //console.log(top, left,'ss');
         this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
         if (this.config.svgLayout.freezeCols > 0) {
-         this.header.updateFreeze(this.config.svgLayout.freezeCols, left);
-         this.body.updateFreeze(this.config.svgLayout.freezeCols, left);
+         this.header.updateFreeze(left);
+         this.body.updateFreeze(left);
         }
       });
       this.contentScroller.on('redraw', this.body.update.bind(this.body));
