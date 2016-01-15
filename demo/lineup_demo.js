@@ -18,6 +18,9 @@
     {name: ' save layout', icon: 'fa-floppy-o', action: saveLayout}
   ];
   var lineUpDemoConfig = {
+    htmlLayout: {
+      autoRotateLabels: true
+    },
     renderingOptions: {
       stacked: true,
       histograms: true

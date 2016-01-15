@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-01-11
+/*! LineUpJS - v0.2.0 - 2016-01-15
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -118,6 +118,7 @@ var LineUp = (function (_super) {
             autoRotateLabels: this.config.htmlLayout.autoRotateLabels,
             rotationHeight: this.config.htmlLayout.rotationHeight,
             rotationDegree: this.config.htmlLayout.rotationDegree,
+            freezeCols: this.config.svgLayout.freezeCols
         });
         this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
             rowHeight: this.config.svgLayout.rowHeight,
@@ -128,7 +129,8 @@ var LineUp = (function (_super) {
             animation: this.config.renderingOptions.animation,
             stacked: this.config.renderingOptions.stacked,
             actions: this.config.svgLayout.rowActions,
-            idPrefix: this.config.idPrefix
+            idPrefix: this.config.idPrefix,
+            freezeCols: this.config.svgLayout.freezeCols
         });
         this.forward(this.body, 'hoverChanged');
         if (this.config.pool && this.config.manipulative) {
@@ -143,8 +145,8 @@ var LineUp = (function (_super) {
             this.contentScroller.on('scroll', function (top, left) {
                 _this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
                 if (_this.config.svgLayout.freezeCols > 0) {
-                    _this.header.updateFreeze(_this.config.svgLayout.freezeCols, left);
-                    _this.body.updateFreeze(_this.config.svgLayout.freezeCols, left);
+                    _this.header.updateFreeze(left);
+                    _this.body.updateFreeze(left);
                 }
             });
             this.contentScroller.on('redraw', this.body.update.bind(this.body));
@@ -3162,6 +3164,7 @@ var HeaderRenderer = (function () {
             autoRotateLabels: false,
             rotationHeight: 50,
             rotationDegree: -20,
+            freezeCols: 0
         };
         this.histCache = d3.map();
         this.dragHandler = d3.behavior.drag()
@@ -3394,7 +3397,8 @@ var HeaderRenderer = (function () {
             d3.event.stopPropagation();
         });
     };
-    HeaderRenderer.prototype.updateFreeze = function (numColumns, left) {
+    HeaderRenderer.prototype.updateFreeze = function (left) {
+        var numColumns = this.options.freezeCols;
         this.$node.selectAll('div.header')
             .style('z-index', function (d, i) { return i < numColumns ? 1 : null; })
             .style('transform', function (d, i) { return i < numColumns ? "translate(" + left + "px,0)" : null; });
@@ -3561,8 +3565,10 @@ var BodyRenderer = (function (_super) {
             animationDuration: 1000,
             renderers: renderer.renderers(),
             meanLine: false,
-            actions: []
+            actions: [],
+            freezeCols: 0
         };
+        this.currentFreezeLeft = 0;
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('svg').classed('lu-body', true);
         this.changeDataStorage(data);
@@ -3677,6 +3683,7 @@ var BodyRenderer = (function (_super) {
     };
     BodyRenderer.prototype.renderRankings = function ($body, rankings, orders, shifts, context, height) {
         var _this = this;
+        var that = this;
         var dataPromises = orders.map(function (r) { return _this.data.view(r); });
         var statsPromises = rankings.map(function (r) { return _this.data.stats(r.getOrder()); });
         var $rankings = $body.selectAll('g.ranking').data(rankings, function (d) { return d.id; });
@@ -3725,11 +3732,11 @@ var BodyRenderer = (function (_super) {
         });
         function mouseOverRow($row, $cols, index, ranking, rankingIndex) {
             $row.classed('hover', true);
-            var $value_cols = $row.select('g.values').selectAll('g.child').data([ranking].concat(ranking.children), function (d) { return d.id; });
+            var $value_cols = $row.select('g.values').selectAll('g.uchild').data([ranking].concat(ranking.children), function (d) { return d.id; });
             $value_cols.enter().append('g').attr({
-                'class': 'child'
-            });
-            $value_cols.attr({
+                'class': 'uchild'
+            }).append('g').classed('child', true);
+            $value_cols.select('g.child').attr({
                 transform: function (d, i) {
                     return 'translate(' + shifts[rankingIndex].shifts[i] + ',0)';
                 }
@@ -3743,10 +3750,10 @@ var BodyRenderer = (function (_super) {
         }
         function mouseLeaveRow($row, $cols, index, ranking, rankingIndex) {
             $row.classed('hover', false);
-            $row.select('g.values').selectAll('g.child').each(function (d, i) {
+            $row.select('g.values').selectAll('g.uchild').each(function (d, i) {
                 var _this = this;
                 dataPromises[rankingIndex].then(function (data) {
-                    context.renderer(d).mouseLeave($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(_this), d, data[index], index, context);
+                    context.renderer(d).mouseLeave($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(_this).select('g.child'), d, data[index], index, context);
                 });
             }).remove();
         }
@@ -3766,6 +3773,7 @@ var BodyRenderer = (function (_super) {
                     }
                 }
             });
+            that.updateFrozenRows();
         };
         var $rows = $rankings.select('g.rows').selectAll('g.row').data(function (d, i) { return orders[i].map(function (d, i) { return ({ d: d, i: i }); }); });
         var $rows_enter = $rows.enter().append('g').attr({
@@ -3859,16 +3867,33 @@ var BodyRenderer = (function (_super) {
         $lines.exit().remove();
         $slopes.exit().remove();
     };
-    BodyRenderer.prototype.updateFreeze = function (numColumns, left) {
+    BodyRenderer.prototype.updateFreeze = function (left) {
         var _this = this;
+        var numColumns = this.options.freezeCols;
+        var $cols = this.$node.select('g.cols');
         var $n = this.$node.select('#c' + this.options.idPrefix + 'Freeze').select('rect');
-        var $col = this.$node.select("g.child[data-index=\"" + numColumns + "\"]");
+        var $col = $cols.select("g.child[data-index=\"" + numColumns + "\"]");
         if ($col.empty()) {
-            $col = this.$node.select('g.child:last-of-type');
+            $col = $cols.select('g.child:last-of-type');
         }
         var x = d3.transform($col.attr('transform') || '').translate[0];
         $n.attr('x', left + x);
-        this.$node.selectAll('g.uchild').attr({
+        $cols.selectAll('g.uchild').attr({
+            'clip-path': function (d, i) { return i < numColumns ? null : 'url(#c' + _this.options.idPrefix + 'Freeze)'; },
+            'transform': function (d, i) { return i < numColumns ? 'translate(' + left + ',0)' : null; }
+        });
+        this.currentFreezeLeft = left;
+        this.updateFrozenRows();
+    };
+    BodyRenderer.prototype.updateFrozenRows = function () {
+        var _this = this;
+        var numColumns = this.options.freezeCols;
+        if (numColumns <= 0) {
+            return;
+        }
+        var left = this.currentFreezeLeft;
+        var $rows = this.$node.select('g.rows');
+        $rows.select('g.row.hover g.values').selectAll('g.uchild').attr({
             'clip-path': function (d, i) { return i < numColumns ? null : 'url(#c' + _this.options.idPrefix + 'Freeze)'; },
             'transform': function (d, i) { return i < numColumns ? 'translate(' + left + ',0)' : null; }
         });
