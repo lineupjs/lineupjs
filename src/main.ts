@@ -117,6 +117,9 @@ export class LineUp extends utils_.AEventDispatcher {
       idPrefix: this.config.idPrefix,
       freezeCols: this.config.svgLayout.freezeCols
     });
+    //share hist caches
+    this.body.histCache = this.header.sharedHistCache;
+
     this.forward(this.body, 'hoverChanged');
     if (this.config.pool && this.config.manipulative) {
       this.addPool(new ui_.PoolRenderer(data, this.node, this.config));

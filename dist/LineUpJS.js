@@ -132,6 +132,7 @@ var LineUp = (function (_super) {
             idPrefix: this.config.idPrefix,
             freezeCols: this.config.svgLayout.freezeCols
         });
+        this.body.histCache = this.header.sharedHistCache;
         this.forward(this.body, 'hoverChanged');
         if (this.config.pool && this.config.manipulative) {
             this.addPool(new ui_.PoolRenderer(data, this.node, this.config));
@@ -3228,6 +3229,13 @@ var HeaderRenderer = (function () {
             data.on('selectionChanged.headerRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
         }
     };
+    Object.defineProperty(HeaderRenderer.prototype, "sharedHistCache", {
+        get: function () {
+            return this.histCache;
+        },
+        enumerable: true,
+        configurable: true
+    });
     HeaderRenderer.prototype.currentHeight = function () {
         return parseInt(this.$node.style('height'), 10);
     };
@@ -3569,6 +3577,7 @@ var BodyRenderer = (function (_super) {
             freezeCols: 0
         };
         this.currentFreezeLeft = 0;
+        this.histCache = d3.map();
         utils.merge(this.options, options);
         this.$node = d3.select(parent).append('svg').classed('lu-body', true);
         this.changeDataStorage(data);
@@ -3685,7 +3694,6 @@ var BodyRenderer = (function (_super) {
         var _this = this;
         var that = this;
         var dataPromises = orders.map(function (r) { return _this.data.view(r); });
-        var statsPromises = rankings.map(function (r) { return _this.data.stats(r.getOrder()); });
         var $rankings = $body.selectAll('g.ranking').data(rankings, function (d) { return d.id; });
         var $rankings_enter = $rankings.enter().append('g').attr({
             'class': 'ranking',
@@ -3717,14 +3725,17 @@ var BodyRenderer = (function (_super) {
                 context.render(d, $col, data, context);
             });
             if (context.showMeanLine(d)) {
-                statsPromises[j].stats(d).then(function (stats) {
-                    var $mean = $col.selectAll('line.meanline').data([stats.mean]);
-                    $mean.enter().append('line').attr('class', 'meanline');
-                    $mean.exit().remove();
-                    $mean.attr('x1', d.getWidth() * stats.mean)
-                        .attr('x2', d.getWidth() * stats.mean)
-                        .attr('y2', height);
-                });
+                var h = that.histCache.get(d.id);
+                if (h) {
+                    h.then(function (stats) {
+                        var $mean = $col.selectAll('line.meanline').data([stats.mean]);
+                        $mean.enter().append('line').attr('class', 'meanline');
+                        $mean.exit().remove();
+                        $mean.attr('x1', d.getWidth() * stats.mean)
+                            .attr('x2', d.getWidth() * stats.mean)
+                            .attr('y2', height);
+                    });
+                }
             }
             else {
                 $col.selectAll('line.meanline').remove();
