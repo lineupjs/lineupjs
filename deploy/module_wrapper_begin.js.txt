@@ -1,6 +1,0 @@
-/**
- * Created by Samuel Gratzl on 02.10.2014.
- */
-
-(function() {
-  function LineUpLoader(jQuery, d3, _) {

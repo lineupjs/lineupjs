@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
-  "version": "0.1.1",
-  "homepage": "https://github.com/Caleydo/lineup.js",
+  "version": "0.2.0",
+  "homepage": "https://github.com/sgratzl/lineup.js",
   "authors": [
     "Hendrik Strobelt",
     "Samuel Gratzl <samuel.gratzl@jku.at> (https://sgratzl@github.io)"
@@ -9,7 +9,7 @@
   "description": "LineUp.js: Visual Analysis of Multi-Attribute Rankings ====== LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. This is a D3-based re-implementation with limited functionality relative to the original stand-alone LineUp, which you can check out at http://lineup.caleydo.org",
   "repository": {
     "type": "git",
-    "url": "git://github.com/Caleydo/lineup.js.git"
+    "url": "git://github.com/sgratzl/lineup.js.git"
   },
   "main": [
     "dist/LineUpJS.js"
@@ -24,9 +24,7 @@
     "caleydo"
   ],
   "dependencies": {
-    "jquery": ">=1.10",
     "d3": ">=3.4",
-    "underscore": ">=1.6",
     "font-awesome": ">=4.2.0"
   },
   "license": "BSD",
@@ -37,6 +35,15 @@
     "bower_components",
     "test",
     "tests",
-    "demo"
+    "demo",
+    "src",
+    "tmp",
+    "typings",
+    "jsdoc.conf.json",
+    "tsd.gen.d.ts",
+    "tsd.json",
+    "tslint.json",
+    "docs",
+    "assets"
   ]
 }

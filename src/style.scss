@@ -1,0 +1,425 @@
+//mapping editor
+.lugui-me {
+
+  clear: both;
+
+  > div:first-of-type {
+    padding-bottom: 5px;
+    border-bottom: 1px solid black;
+  }
+  > div:nth-of-type(2) {
+    padding-top: 5px;
+    border-top: 1px solid black;
+    input {
+      width: 4em;
+    }
+  }
+
+  > div:first-of-type, > div:nth-of-type(2) {
+    margin: 0 5px;
+    font-size: 10pt;
+    text-align: center;
+    .raw_min {
+      float: left;
+    }
+    .raw_max {
+      float: right;
+      text-align: right;
+    }
+  }
+
+  svg {
+    margin-top: -5px;
+    margin-bottom: -7px;
+
+    rect {
+      fill: white;
+      opacity: 0;
+    }
+
+    g.samples {
+      line {
+        stroke: black;
+        opacity: 0.5;
+      }
+    }
+    g.mapping {
+      &:hover {
+        cursor: ew-resize;
+        line {
+          stroke: #0000cf;
+        }
+        circle {
+          fill: #0000cf;
+        }
+      }
+
+      line {
+        stroke: blue;
+
+
+      }
+      circle {
+        fill: blue;
+      }
+    }
+
+  }
+
+  div.script {
+    clear: both;
+    text-align: right;
+
+    textarea {
+      height: 4em;
+      width: 98%;
+      font-size: 8pt;
+      display: block;
+    }
+  }
+}
+
+//popups, e.g., rename dialogs,...
+
+.lu-popup {
+  position: absolute;
+
+  dominant-baseline: central;
+  text-anchor: middle;
+
+  .ok {
+    position: absolute;
+    right: 10px;
+  }
+}
+
+.lu-popup, .lu-popup2 {
+  background-color: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  padding: 2px;
+  box-shadow: 5px 5px 3px #888888;
+
+  font-size: 8pt;
+
+  clear: right;
+
+  input {
+    font-size: 8pt;
+  }
+
+  .selectionTable {
+    background: white;
+    overflow-x: auto;
+    overflow-y: scroll;
+
+    td {
+      white-space: nowrap;
+    }
+
+    table {
+      width: 95%;
+      border: 0;
+    }
+    tr:hover {
+      background-color: lightblue;
+    }
+  }
+}
+
+.lu-popup2 {
+  * {
+    margin: 0;
+  }
+  .ok {
+    float: right;
+  }
+  div.bar {
+    height: 1em;
+  }
+}
+
+//fat tooltip
+.lu-tooltip {
+  background-color: white;
+  min-width: 200px;
+  position: absolute;
+  z-index: 3;
+
+  font-size: 9pt;
+  text-align: left;
+
+  padding: 2px;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  tbody th {
+    width: 100px;
+  }
+  td, th {
+    border: 1px solid black;
+  }
+}
+
+$lu_hover_color: #e5e5e5;
+$lu_selected_color: #ffa500;
+$lu_toolbar_font_size: 8pt;
+$lu_even_bg: #f7f7f7;
+$lu_drag_over: #979797;
+
+.lu-pool {
+  div.header {
+    border: 2px outset white;
+    position: absolute;
+
+    &:hover {
+      border-color: $lu_hover_color;
+    }
+  }
+}
+
+.lu, .lu-pool {
+  position: relative;
+
+  div.lu-header {
+    position: relative;
+  }
+
+  text, tspan {
+    dominant-baseline: text-before-edge;
+  }
+
+  text.actions tspan {
+    cursor: pointer;
+
+    &:hover {
+      color: darkblue;
+    }
+  }
+
+  text.rank, text.text_right {
+    text-anchor: end;
+  }
+  text.text_center {
+    text-anchor: middle;
+  }
+
+  line.meanline {
+    stroke: darkgray;
+    stroke-width: 1;
+  }
+
+  *[draggable] {
+    cursor: pointer;
+    cursor: -webkit-grab; //indicate grab able
+  }
+
+  line.slope {
+    stroke: darkgray;
+    stroke-width: 2;
+    shape-rendering: geometricPrecision;
+
+    &.hover {
+      stroke: $lu_hover_color;
+    }
+
+    &.selected {
+      stroke: $lu_selected_color;
+    }
+  }
+
+  g.cols {
+    pointer-events: none;
+  }
+
+  g.row {
+    rect.bg {
+      fill: transparent;
+
+      &.even {
+        fill: $lu_even_bg;
+      }
+    }
+    &.selected {
+      rect.bg {
+        stroke: $lu_selected_color;
+        stroke-width: 1;
+      }
+    }
+    &.hover {
+      rect.bg {
+        fill: $lu_hover_color;
+      }
+      rect.bar {
+        opacity: 0.5;
+      }
+    }
+  }
+
+  div.lu-header, div.lu-pool {
+    position: relative;
+
+    background-color: white;
+
+    .drop {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+
+      &.drag_over {
+        background-color: $lu_drag_over;
+      }
+    }
+  }
+
+  div.lu-header div.toolbar {
+    display: none;
+    position: absolute;
+    text-align: right;
+    right: 5px;
+    top: 0px;
+    border-radius: 3px 0 0 3px;
+    cursor: auto;
+    background: #6D6C6C;
+  }
+
+  div.lu-header {
+    div.header {
+      &.drag_over div.lu-label {
+        color: $lu_drag_over;
+      }
+
+      &.compressed {
+        div.toolbar i:not(.fa-toggle-right), div.histogram {
+          display: none;
+        }
+      }
+
+      div.histogram {
+        position: absolute;
+        left: 0;
+        right: 5px;
+        top: 40%;
+        height: 60%;
+        display: none;
+
+        > div.bar {
+          position: absolute;
+          background-color: #8c8c8c;
+          opacity: 0.5;
+
+          &.selected {
+            opacity: 1.0;
+          }
+
+          &:hover {
+            opacity: 0.7;
+          }
+        }
+
+        div.mean {
+          position: absolute;
+          height: 100%;
+          width: 1px;
+          border-left: 1px solid black;
+        }
+      }
+
+      div.lu-label {
+        position: relative;
+        background: inherit;
+        transform-origin: left top;
+      }
+
+      span.lu-label {
+        background: inherit;
+      }
+
+      i.sort_indicator {
+        position: absolute;
+        left: 1px;
+        top: 1px;
+        font-size: $lu_toolbar_font_size;
+      }
+
+      div.handle {
+        position: absolute;
+        right: 0;
+        height: 100%;
+        top: 0;
+        background-color: white;
+        display: inline-block;
+        cursor: col-resize;
+
+        &.drag_over {
+          background-color: $lu_drag_over;
+        }
+      }
+    }
+
+    div.toolbar i {
+      font-size: $lu_toolbar_font_size;
+      padding: 1px;
+
+      &:hover {
+        color: darkblue;
+      }
+    }
+
+    div.header, div.header_i {
+
+      &.filtered > div.toolbar i.fa-filter {
+         color: darkblue;
+      }
+
+      position: absolute;
+      display: inline-block;
+      overflow: hidden;
+      color: white;
+      text-align: center;
+      height: 100%;
+
+      font-size: 90%;
+
+      &:hover {
+        & > div.toolbar {
+          display: block;
+        }
+      }
+
+      &.number, &.categorical, &.ordinal {
+        div.histogram {
+          display: block
+        }
+      }
+
+      &.rotateable {
+        overflow: visible;
+        white-space: nowrap;
+      }
+    }
+
+    div.header_i {
+      top: 50%;
+      height: 50%;
+    }
+  }
+
+  svg.lu-body {
+    text {
+      font-size: 10pt;
+    }
+
+    foreignObject: { //e.g. the input field in annotate columns
+      padding: 0;
+      margin: 0;
+    }
+
+    input {
+      padding: 0;
+      margin: 0;
+      font-size: 9pt;
+    }
+  }
+
+}

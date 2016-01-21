@@ -1,32 +1,37 @@
 {
-  "engines": {
-    "node": ">= 0.10.0"
-  },
-  "devDependencies": {
-    "grunt": "~0.4.2",
-    "grunt-contrib-jshint": "~0.7.2",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-contrib-nodeunit": "~0.2.2",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-uglify": "~0.2.7",
-    "grunt-jsdoc": "^0.5.4",
-    "grunt-contrib-clean": "^0.5.0"
-  },
   "name": "LineUpJS",
   "description": "LineUp.js: Visual Analysis of Multi-Attribute Rankings ====== LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. This is a D3-based re-implementation with limited functionality relative to the original stand-alone LineUp, which you can check out at http://lineup.caleydo.org",
-  "version": "0.1.0",
-  "main": "src/lineup.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Caleydo/lineup.js.git"
-  },
+  "version": "0.2.0",
   "author": "Hendrik Strobelt",
   "license": "BSD",
   "bugs": {
-    "url": "https://github.com/Caleydo/lineup.js/issues"
+    "url": "https://github.com/sgratzl/lineup.js/issues"
   },
-  "homepage": "https://github.com/Caleydo/lineup.js"
+  "homepage": "https://github.com/sgratzl/lineup.js",
+  "main": "dist/LineUpJS.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "grunt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sgratzl/lineup.js.git"
+  },
+  "devDependencies": {
+    "browserify": "^12.0.1",
+    "grunt": "~0.4.2",
+    "grunt-browserify": "^4.0.0",
+    "grunt-contrib-clean": "^0.7.0",
+    "grunt-contrib-uglify": "~0.11.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-wrap": "^0.3.0",
+    "grunt-sass": "^1.0.0",
+    "grunt-ts": "^5.3.0-beta.2",
+    "grunt-tsd": "^0.1.0",
+    "grunt-tslint": "^3.0.1",
+    "grunt-typedoc": "^0.2.3",
+    "load-grunt-tasks": "^3.2.0",
+    "time-grunt": "^1.2.1",
+    "tslint": "^3.2.1"
+  }
 }

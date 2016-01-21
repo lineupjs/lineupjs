@@ -1,8 +1,11 @@
-/development-bundle/
-/jquery-ui.html
-/lineup2.js
-out
-doc
+/doc
+/.tscache
 node_modules
-exportToHTML
 /.idea
+/bower_components
+/tsd.gen.d.ts
+/typings
+/tmp
+*.map
+/.bower.json
+/tscommand*.tmp.txt

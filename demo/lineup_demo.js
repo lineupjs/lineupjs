@@ -2,86 +2,94 @@
  * Created by Samuel Gratzl on 04.09.2014.
  */
 
-(function (LineUp) {
+(function (LineUpJS) {
   var menuActions = [
-    {name: " new combined", icon: "fa-plus", action: function () {
-      lineup.addNewStackedColumnDialog();
+    {name: ' new combined', icon: 'fa-plus', action: function () {
+      var r = lineup.data.getRankings();
+      r = r[r.length-1];
+      lineup.data.push(r, LineUpJS.model.StackColumn.desc('Combined'));
     }},
-    {name: " add single columns", icon: "fa-plus", action: function () {
-      lineup.addNewSingleColumnDialog();
+    {name: ' new ranking', icon: 'fa-plus', action: function () {
+      var old = lineup.data.getRankings()[0];
+      var r = lineup.data.pushRanking();
+      r.push(lineup.data.clone(old.children[0]));
     }},
-    {name: " save layout", icon: "fa-floppy-o", action: saveLayout}
+    {name: ' add single columns', icon: 'fa-plus', action: openAddColumnDialog},
+    {name: ' save layout', icon: 'fa-floppy-o', action: saveLayout}
   ];
   var lineUpDemoConfig = {
-    svgLayout: {
-      mode: 'separate',
-      plusSigns: {
-        addStackedColumn: {
-          title: "add stacked column",
-          action: "addNewEmptyStackedColumn",
-          x: 0, y: 2,
-          w: 21, h: 21 // LineUpGlobal.htmlLayout.headerHeight/2-4
-        }
-      }
+    htmlLayout: {
+      autoRotateLabels: true
     },
     renderingOptions: {
-      stacked: true
+      stacked: true,
+      histograms: true
+    },
+    svgLayout: {
+      freezeCols: 2
     }
   };
 
   var lineup = null;
   var datasets = [];
 
-  $(window).resize(function() {
+  d3.select(window).on('resize', function() {
     if (lineup) {
-      lineup.updateBody()
+      lineup.update()
     }
   });
   function updateMenu() {
     var config = lineup.config;
-    var kv = d3.entries(lineup.config.renderingOptions);
-    var kvNodes = d3.select("#lugui-menu-rendering").selectAll("span").data(kv, function (d) {
-      return d.key;
-    });
+    var kvNodes = d3.select('#lugui-menu-rendering').selectAll('span').data(['stacked', 'animation']);
     kvNodes.exit().remove();
-    kvNodes.enter().append("span").on('click', function (d) {
-      lineup.changeRenderingOption(d.key, !config.renderingOptions[d.key]);
+    kvNodes.enter().append('span').on('click', function (d) {
+      lineup.changeRenderingOption(d, !config.renderingOptions[d]);
       updateMenu();
     });
     kvNodes.html(function (d) {
-      return '<a href="#"> <i class="fa ' + (d.value ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d.key + '</a>&nbsp;&nbsp;'
+      return '<a href="#"> <i class="fa ' + (config.renderingOptions[d] ? 'fa-check-square-o' : 'fa-square-o') + '" ></i> ' + d + '</a>&nbsp;&nbsp;'
     });
 
-    d3.select("#lugui-menu-actions").selectAll("span").data(menuActions)
-      .enter().append("span").html(
+    d3.select('#lugui-menu-actions').selectAll('span').data(menuActions)
+      .enter().append('span').html(
       function (d) {
         return '<i class="fa ' + (d.icon) + '" ></i>' + d.name + '&nbsp;&nbsp;'
       }
-    ).on("click", function (d) {
+    ).on('click', function (d) {
       d.action.call(d);
     })
-
-
   }
 
-  function layoutHTML() {
-
+  function fixMissing(columns, data) {
+    columns.forEach(function(col){
+      if (col.type === 'number' && !col.domain) {
+        var old = col.domain || [NaN, NaN];
+        var minmax = d3.extent(data, function (row) { return row[col.column].length === 0 ? undefined : +(row[col.column])});
+        col.domain = [
+          isNaN(old[0]) ? minmax[0] : old[0],
+          isNaN(old[1]) ? minmax[1] : old[1]
+        ];
+      } else if (col.type === 'categorical' && !col.categories) {
+        var sset = d3.set(data.map(function (row) { return row[col];}));
+        col.categories = sset.values().sort();
+      }
+    });
   }
 
   function loadDataImpl(name, desc, _data) {
-    var spec = {};
-    spec.name = name;
-    spec.dataspec = desc;
-    delete spec.dataspec.file;
-    delete spec.dataspec.separator;
-    spec.dataspec.data = _data;
-    spec.storage = LineUp.createLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
-
+    fixMissing(desc.columns, _data);
+    var provider = LineUpJS.createLocalStorage(_data, LineUpJS.deriveColors(desc.columns));
+    lineUpDemoConfig.name = name;
     if (lineup) {
-      lineup.changeDataStorage(spec);
+      lineup.changeDataStorage(provider, desc);
     } else {
-      lineup = LineUp.create(spec, d3.select('#lugui-wrapper'), lineUpDemoConfig);
+      lineup = LineUpJS.create(provider, d3.select('#lugui-wrapper'), lineUpDemoConfig);
+      lineup.addPool(d3.select('#pool').node(), {
+        hideUsed: false
+      }).update();
+      lineup.restore(desc);
     }
+    provider.deriveDefault();
     updateMenu();
   }
 
@@ -90,12 +98,8 @@
       if (desc.data) {
         loadDataImpl(name, desc, desc.data);
       } else if (desc.file) {
-        d3.dsv(desc.separator || '\t', 'text/plain')(baseUrl + "/" + desc.file, function (_data) {
+        d3.dsv(desc.separator || '\t', 'text/plain')(baseUrl + '/' + desc.file, function (_data) {
           loadDataImpl(name, desc, _data);
-
-          if (desc.sortBy) {
-            lineup.sortBy(desc.sortBy);
-          }
         });
       }
     }
@@ -104,7 +108,7 @@
 
     if (ds.descriptionFile) {
       var name = ds.descriptionFile.substring(0, ds.descriptionFile.length - 5);
-      d3.json(ds.baseURL + "/" + ds.descriptionFile, function (desc) {
+      d3.json(ds.baseURL + '/' + ds.descriptionFile, function (desc) {
         loadDesc(desc, ds.baseURL);
       })
     } else {
@@ -112,14 +116,14 @@
     }
   }
 
-  function uploadUI(dropCallback) {
+  function uploadUI(dropFileCallback, dropURLCallback) {
     function handleFileSelect(evt) {
       evt.stopPropagation();
       evt.preventDefault();
       var files = evt.target.files || evt.dataTransfer.files;
       //console.log('drop',files);
       files = Array.prototype.slice.call(files); // FileList object.
-      dropCallback(files);
+      dropFileCallback(files);
     }
 
     function handleDragOver(evt) {
@@ -127,7 +131,7 @@
       evt.preventDefault();
       evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
     }
-    var $file = d3.select('input[type="file"]');
+    var $file = d3.select('#lugui-menu input[type="file"]');
     $file.node().addEventListener('change', handleFileSelect, false);
     var $drop = d3.select('#drop_zone');
     var drop = $drop.node();
@@ -138,42 +142,46 @@
       $drop.classed('dragging',false);
     }, false);
     drop.addEventListener('dragover', handleDragOver, false);
-    drop.addEventListener('drop', handleFileSelect, false);
+    drop.addEventListener('drop', function(evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      var files = evt.dataTransfer.files;
+      //console.log('drop',files);
+      files = Array.prototype.slice.call(files); // FileList object.
+      if (files.length > 0) {
+        return dropFileCallback(files);
+      } else {
+        var url = evt.dataTransfer.getData('text/uri-list');
+        if (url) {
+          return dropURLCallback(url);
+        }
+      }
+      console.error('unknown datatransfer');
+    }, false);
   }
+
+  function openAddColumnDialog() {
+    d3.select('#pool').style('display','block');
+  }
+  d3.select('#pool > div i.fa-close').on('click', function() {
+    d3.select('#pool').style('display','none');
+  });
 
 
   function saveLayout() {
     //full spec
-    var s = $.extend({}, {}, lineup.spec.dataspec);
-    //create current layout
-    var descs = lineup.storage.getColumnLayout()
-      .map(function (d) {
-        return d.description();
-      });
-    s.layout = _.groupBy(descs, function (d) {
-      return d.columnBundle;
-    });
+    var s = lineup.dump();
+    s.columns = lineup.data.columns;
+    s.data = lineup.data.data;
+
     //stringify with pretty print
     var str = JSON.stringify(s, null, '\t');
     //create blob and save it
-    var blob = new Blob([str], {type: "application/json;charset=utf-8"});
-    saveAs(blob, 'LineUp-' + lineup.spec.name + '.json');
+    var blob = new Blob([str], {type: 'application/json;charset=utf-8'});
+    saveAs(blob, 'LineUp-'+lineUpDemoConfig.name+'.json');
   }
 
   function loadLayout() {
-    function loadDataImpl(name, desc, _data) {
-      var spec = {};
-      spec.name = name;
-      spec.dataspec = desc;
-      delete spec.dataspec.file;
-      delete spec.dataspec.separator;
-      spec.dataspec.data = _data;
-      spec.storage = LineUp.createLocalStorage(_data, desc.columns, desc.layout, desc.primaryKey);
-      lineup.changeDataStorage(spec);
-      updateMenu();
-      lineup.startVis();
-    }
-
     function loadDataFile(name, desc, datafile) {
       var reader = new FileReader();
       reader.onload = function (e) {
@@ -196,6 +204,7 @@
     function deriveDesc(columns, data, separator) {
       var cols = columns.map(function(col) {
         var r = {
+          label: col,
           column: col,
           type: 'string'
         };
@@ -240,6 +249,24 @@
       return r;
     }
 
+    function loadDataFileFromText(data_s, fileName) {
+      var header = data_s.slice(0,data_s.indexOf('\n'));
+      //guess the separator,
+      var separator = [',','\t',';'].reduce(function(prev, current) {
+        var c = countOccurrences(header, current);
+        if (c > prev.c) {
+          prev.c = c;
+          prev.s = current;
+        }
+        return prev;
+      },{ s: ',', c : 0});
+      var _data = d3.dsv(separator.s, 'text/plain').parse(data_s, normalizeRow);
+      //derive a description file
+      var desc = deriveDesc(header.split(separator.s).map(normalizeValue), _data);
+      var name = fileName.substring(0, fileName.lastIndexOf('.'));
+      loadDataImpl(name, desc, _data);
+    }
+
     uploadUI(function (files) {
       var descs = files.filter(function (f) {
         return f.name.match(/.*\.json/i) || f.type === 'application/json';
@@ -274,64 +301,52 @@
         var f = files[0];
         reader.onload = function (e) {
           var data_s = e.target.result;
-          var header = data_s.slice(0,data_s.indexOf('\n'));
-          //guess the separator,
-          var separator = [',','\t',';'].reduce(function(prev, current) {
-            var c = countOccurrences(header, current);
-            if (c > prev.c) {
-              prev.c = c;
-              prev.s = current;
-            }
-            return prev;
-          },{ s: ',', c : 0});
-          var _data = d3.dsv(separator.s, 'text/plain').parse(data_s, normalizeRow);
-          //derive a description file
-          var desc = deriveDesc(header.split(separator.s).map(normalizeValue), _data);
-          var name = f.name.substring(0, f.name.lastIndexOf('.'));
-          loadDataImpl(name, desc, _data);
+          loadDataFileFromText(data_s, f.name);
         };
         reader.readAsText(f);
       }
+    }, function (url) {
+      //access the url using get request and then parse the data file
+      d3.text(url, 'text/plain', function(data) {
+        loadDataFileFromText(data, 'by_url');
+      });
     });
   }
 
 // document ready
-  $(function () {
-      layoutHTML();
+  d3.json('datasets.json', function (error, data) {
+    //console.log('datasets:', data, error);
 
-      d3.json("datasets.json", function (error, data) {
-        //console.log("datasets:", data, error);
-
-        datasets = data.datasets;
-        var $s = d3.select("#lugui-dataset-selector");
-        var ds = $s.selectAll("option").data(data.datasets);
-        ds.enter().append("option")
-          .attr('value', function (d, i) {
-            return i;
-          }).text(function (d) {
-            return d.name;
-          });
-        $s.on('change', function() {
-          loadDataset(datasets[this.value]);
-        });
-
-        var old = history.state;
-        if (old) {
-          $s.property('value', datasets.indexOf(old));
-          loadDataset(old);
-        } else if (window.location.hash) {
-          var choose = datasets.filter(function(d) { return d.id === window.location.hash.substr(1); });
-          if (choose.length > 0) {
-            $s.property('value', datasets.indexOf(choose[0]));
-            loadDataset(choose[0]);
-          } else {
-            loadDataset(datasets[0]);
-          }
-        } else {
-          //and start with 0:
-          loadDataset(datasets[0]);
-        }
-        loadLayout();
+    datasets = data.datasets;
+    var $s = d3.select('#lugui-dataset-selector');
+    var ds = $s.selectAll('option').data(data.datasets);
+    ds.enter().append('option')
+      .attr('value', function (d, i) {
+        return i;
+      }).text(function (d) {
+        return d.name;
       });
-  })
-}(LineUp));
+    $s.on('change', function() {
+      loadDataset(datasets[this.value]);
+    });
+
+    var old = history.state;
+    if (old) {
+      var choose = datasets.filter(function(d) { return d.id === old.id; });
+      $s.property('value', datasets.indexOf(choose[0]));
+      loadDataset(choose[0]);
+    } else if (window.location.hash) {
+      var choose = datasets.filter(function(d) { return d.id === window.location.hash.substr(1); });
+      if (choose.length > 0) {
+        $s.property('value', datasets.indexOf(choose[0]));
+        loadDataset(choose[0]);
+      } else {
+        loadDataset(datasets[0]);
+      }
+    } else {
+      //and start with 0:
+      loadDataset(datasets[0]);
+    }
+    loadLayout();
+  });
+}(LineUpJS));
