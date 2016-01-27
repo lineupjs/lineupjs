@@ -1,4 +1,5 @@
 /**
+ * main module of LineUp.js containing the main class and exposes all other modules
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
@@ -11,11 +12,35 @@ import utils_ = require('./utils');
 import ui_dialogs_ = require('./ui_dialogs');
 import d3 = require('d3');
 
+/**
+ * access to the model module
+ * @type {--global-type--}
+ */
 export var model = model_;
+/**
+ * access to the provider module
+ * @type {--global-type--}
+ */
 export var provider = provider_;
+/**
+ * access to the renderer module
+ * @type {--global-type--}
+ */
 export var renderer = renderer_;
+/**
+ * access to the ui module
+ * @type {--global-type--}
+ */
 export var ui = ui_;
+/**
+ * access to the utils module
+ * @type {--global-type--}
+ */
 export var utils = utils_;
+/**
+ * access to the ui_dialogs module
+ * @type {--global-type--}
+ */
 export var ui_dialogs = ui_dialogs_;
 
 
@@ -24,29 +49,80 @@ export var ui_dialogs = ui_dialogs_;
  */
 export class LineUp extends utils_.AEventDispatcher {
   /**
+   * triggered when the mouse is over a specific row
+   * @argument data_index:number the selected data index or <0 if no row
+   */
+  static EVENT_HOVER_CHANGED = 'hoverChanged';
+
+  /**
+   * triggered when the user click on a row
+   * @argument data_index:number the selected data index or <0 if no row
+   */
+  static EVENT_SELECTION_CHANGED = 'selectionChanged';
+  /**
+   * triggered when the user selects one or more rows
+   * @argument data_indices:number[] the selected data indices
+   */
+  static EVENT_MULTISELECTION_CHANGED = 'multiSelectionChanged';
+  /**
    * default config of LineUp with all available options
-   *
    */
   config = {
+    /**
+     * a prefix used for all generated html ids
+     */
     idPrefix: Math.random().toString(36).slice(-8).substr(0, 3), //generate a random string with length3
     numberformat: d3.format('.3n'),
+
+    /**
+     * options related to the header html layout
+     */
     htmlLayout: {
+      /**
+       * standard height of the header
+       */
       headerHeight: 20,
+      /**
+       * height of the header including histogram
+       */
       headerHistogramHeight: 40,
+      /**
+       * should labels be automatically rotated if they doesn't fit?
+       */
       autoRotateLabels: false,
+      /**
+       * space reserved if a label is rotated
+       */
       rotationHeight: 50, //in px
+      /**
+       * the degrees to rotate a label
+       */
       rotationDegree: -20, //in deg
-      headerOffset: 1,
-      buttonTopPadding: 10,
-      labelLeftPadding: 5
     },
+    /**
+     * visual representation options
+     */
     renderingOptions: {
-      stacked: false,
+      /**
+       * show combined bars as stacked bars
+       */
+      stacked: true,
+      /**
+       * use animation for reordering
+       */
       animation: true,
-      visibleRowsOnly: true,
+      /**
+       * show histograms of the headers (just settable at the beginning)
+       */
       histograms: false,
+      /**
+       * show a mean line for single numberial columns
+       */
       meanLine: false,
     },
+    /**
+     * options related to the rendering of the body
+     */
     svgLayout: {
       rowHeight: 17,
       rowPadding: 0.2, //padding for scale.rangeBands
@@ -64,18 +140,13 @@ export class LineUp extends utils_.AEventDispatcher {
 
       rowActions: []
     },
-    /* enables manipulation features, remove column, reorder,... */
+    /**
+     *  enables manipulation features, remove column, reorder,...
+     */
     manipulative: true,
-    interaction: {
-      //enable the table tooltips
-      tooltips: true,
-      multiselect: () => {
-        return false;
-      },
-      rangeselect: () => {
-        return false;
-      }
-    },
+    /**
+     * automatically add a column pool at the end
+     */
     pool: false
   };
 
@@ -120,7 +191,7 @@ export class LineUp extends utils_.AEventDispatcher {
     //share hist caches
     this.body.histCache = this.header.sharedHistCache;
 
-    this.forward(this.body, 'hoverChanged');
+    this.forward(this.body, LineUp.EVENT_HOVER_CHANGED);
     if (this.config.pool && this.config.manipulative) {
       this.addPool(new ui_.PoolRenderer(data, this.node, this.config));
     }
@@ -145,9 +216,14 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 
   createEventList() {
-    return super.createEventList().concat(['hoverChanged', 'selectionChanged', 'multiSelectionChanged']);
+    return super.createEventList().concat([LineUp.EVENT_HOVER_CHANGED, LineUp.EVENT_SELECTION_CHANGED, LineUp.EVENT_MULTISELECTION_CHANGED]);
   }
 
+  /**
+   * add and column pool at the given element position, with custom configuration
+   * @param node the node element to attach
+   * @param config
+   */
   addPool(node:Element, config?:any):ui_.PoolRenderer;
   addPool(pool:ui_.PoolRenderer):ui_.PoolRenderer;
   addPool(pool_node:Element|ui_.PoolRenderer, config = this.config) {
@@ -159,6 +235,10 @@ export class LineUp extends utils_.AEventDispatcher {
     return this.pools[this.pools.length - 1];
   }
 
+  /**
+   * returns the main lineup DOM element
+   * @returns {Element}
+   */
   get node() {
     return <Element>this.$container.node();
   }
@@ -181,6 +261,12 @@ export class LineUp extends utils_.AEventDispatcher {
     }
   }
 
+  /**
+   * sorts LineUp by he given column
+   * @param column callback function finding the column to sort
+   * @param ascending
+   * @returns {boolean}
+   */
   sortBy(column:(col:model_.Column) => boolean | string, ascending = false) {
     var col = this.data.find(column);
     if (col) {
@@ -210,8 +296,8 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 
   private triggerSelection(data_indices:number[]) {
-    this.fire('selectionChanged', data_indices.length > 0 ? data_indices[0] : -1);
-    this.fire('multiSelectionChanged', data_indices);
+    this.fire(LineUp.EVENT_SELECTION_CHANGED, data_indices.length > 0 ? data_indices[0] : -1);
+    this.fire(LineUp.EVENT_MULTISELECTION_CHANGED, data_indices);
   }
 
   restore(dump:any) {

@@ -13,7 +13,7 @@ function clamp(v:number, min:number, max:number) {
   return Math.max(Math.min(v, max), min);
 }
 
-class MappingEditor {
+export class MappingEditor {
   private options = {
     width: 320,
     height: 200,
