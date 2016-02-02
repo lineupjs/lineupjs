@@ -269,6 +269,9 @@ export class HeaderRenderer {
     }
   }
 
+  get sharedHistCache() {
+    return this.histCache;
+  }
 
   /**
    * defines the current header height in pixel
@@ -656,6 +659,8 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
   private currentFreezeLeft = 0;
 
+  histCache = d3.map<Promise<model.IStatistics>>();
+
   constructor(private data:provider.DataProvider, parent:Element, private slicer:ISlicer, options = {}) {
     super();
     //merge options
@@ -788,7 +793,6 @@ export class BodyRenderer extends utils.AEventDispatcher {
   renderRankings($body:d3.Selection<any>, rankings:model.RankColumn[], orders:number[][], shifts:any[], context:renderer.IRenderContext, height: number) {
     const that = this;
     const dataPromises = orders.map((r) => this.data.view(r));
-    const statsPromises = rankings.map((r) => this.data.stats(r.getOrder())); //full order
 
     var $rankings = $body.selectAll('g.ranking').data(rankings, (d) => d.id);
     var $rankings_enter = $rankings.enter().append('g').attr({
@@ -824,14 +828,17 @@ export class BodyRenderer extends utils.AEventDispatcher {
       });
 
       if (context.showMeanLine(d)) {
-        statsPromises[j].stats(d).then((stats: model.IStatistics) => {
-          const $mean = $col.selectAll('line.meanline').data([stats.mean]);
-          $mean.enter().append('line').attr('class', 'meanline');
-          $mean.exit().remove();
-          $mean.attr('x1', d.getWidth() * stats.mean)
-            .attr('x2', d.getWidth() * stats.mean)
-            .attr('y2', height);
-        });
+        const h = that.histCache.get(d.id);
+        if (h) {
+          h.then((stats:model.IStatistics) => {
+            const $mean = $col.selectAll('line.meanline').data([stats.mean]);
+            $mean.enter().append('line').attr('class', 'meanline');
+            $mean.exit().remove();
+            $mean.attr('x1', d.getWidth() * stats.mean)
+              .attr('x2', d.getWidth() * stats.mean)
+              .attr('y2', height);
+          });
+        }
       } else {
         $col.selectAll('line.meanline').remove();
       }

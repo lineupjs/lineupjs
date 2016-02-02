@@ -837,8 +837,21 @@ export class LocalDataProvider extends CommonDataProvider {
 
 
   mappingSample(col:model.NumberColumn):Promise<number[]> {
-    //return all
-    return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
+    const MAX_SAMPLE = 500; //at most 500 sample lines
+    const l = this.data.length;
+    if (l <= MAX_SAMPLE) {
+      return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
+    }
+    //randomly select 500 elements
+    var indices = [];
+    for(let i = 0; i < MAX_SAMPLE; ++i) {
+      let j = Math.floor(Math.random()*(l-1));
+      while (indices.indexOf(j) >= 0) {
+        j = Math.floor(Math.random()*(l-1));
+      }
+      indices.push(j);
+    }
+    return Promise.resolve(indices.map((i) => col.getRawValue(this.data[i])));
   }
 
   searchSelect(search:string|RegExp, col:model.Column) {
