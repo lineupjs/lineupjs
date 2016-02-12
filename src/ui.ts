@@ -552,14 +552,14 @@ export class HeaderRenderer {
         let s_columns = s_shifts.map((d) => d.col);
         that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
       }
-    }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d:model.StackColumn, copy) => {
+    }).select('div.lu-label').call(utils.dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d:model.StackColumn, copy) => {
       var col:model.Column = null;
       if ('application/caleydo-lineup-column-number-ref' in data) {
         var id = data['application/caleydo-lineup-column-number-ref'];
         col = this.data.find(id);
         if (copy) {
           col = this.data.clone(col);
-        } else {
+        } else if (col) {
           col.removeMe();
         }
       } else {
