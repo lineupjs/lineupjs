@@ -12,6 +12,7 @@
     "dist",
     "bower_components",
     ".tscache",
-    "tmp"
+    "tmp",
+    "src/*.d.ts"
   ]
 }
