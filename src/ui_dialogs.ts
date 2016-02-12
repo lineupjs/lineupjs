@@ -165,11 +165,7 @@ export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selec
   $rows_enter.append('td').text((d) => d.col.label);
 
   function redraw() {
-    $rows.select('.bar').transition().style({
-      width: function (d) {
-        return scale(d.weight) + 'px';
-      }
-    });
+    $rows.select('.bar').transition().style('width', (d) => scale(d.weight) + 'px');
   }
 
   redraw();
@@ -178,9 +174,11 @@ export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selec
     column.setWeights(weights);
     $popup.remove();
   });
-  /*$popup.select('.reset').on('click', function () {
-
-   });*/
+  $popup.select('.reset').on('click', function () {
+    children.forEach((d, i) => d.weight = weights[i] * 100);
+    $rows.select('input').property('value', (d) => d.weight);
+    redraw();
+   });
   $popup.select('.ok').on('click', function () {
     column.setWeights(children.map((d) => d.weight));
     $popup.remove();
