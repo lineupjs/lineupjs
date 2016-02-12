@@ -9,3 +9,4 @@ node_modules
 *.map
 /.bower.json
 /tscommand*.tmp.txt
+demo/.idea/
