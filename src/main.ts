@@ -77,7 +77,7 @@ export class LineUp extends utils_.AEventDispatcher {
     /**
      * options related to the header html layout
      */
-    htmlLayout: {
+    header: {
       /**
        * standard height of the header
        */
@@ -99,6 +99,10 @@ export class LineUp extends utils_.AEventDispatcher {
        */
       rotationDegree: -20, //in deg
     },
+    /**
+     * old name for header
+     */
+    htmlLayout: {},
     /**
      * visual representation options
      */
@@ -123,12 +127,20 @@ export class LineUp extends utils_.AEventDispatcher {
     /**
      * options related to the rendering of the body
      */
-    svgLayout: {
+    body: {
       rowHeight: 17,
       rowPadding: 0.2, //padding for scale.rangeBands
       rowBarPadding: 1,
 
+      /**
+       * whether just the visible rows or all rows should be rendered - rendering performance (default: true)
+       */
       visibleRowsOnly: true,
+
+      /**
+       * show selection checkboxes for simple multiSelection
+       */
+      selectionCheckBox: false,
       /**
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
@@ -140,6 +152,10 @@ export class LineUp extends utils_.AEventDispatcher {
 
       rowActions: []
     },
+    /**
+     * old name for body
+     */
+    svgLayout: {},
     /**
      *  enables manipulation features, remove column, reorder,...
      */
@@ -161,32 +177,40 @@ export class LineUp extends utils_.AEventDispatcher {
     super();
     this.$container = container instanceof d3.selection ? <d3.Selection<any>>container : d3.select(<Element>container);
     this.$container = this.$container.append('div').classed('lu', true);
+    this.config.svgLayout = this.config.body;
+    this.config.htmlLayout = this.config.header;
+
     utils.merge(this.config, config);
+
 
     this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
 
     this.header = new ui_.HeaderRenderer(data, this.node, {
       manipulative: this.config.manipulative,
-      headerHeight: this.config.htmlLayout.headerHeight,
-      headerHistogramHeight: this.config.htmlLayout.headerHistogramHeight,
+      headerHeight: this.config.header.headerHeight,
+      headerHistogramHeight: this.config.header.headerHistogramHeight,
       histograms : this.config.renderingOptions.histograms,
 
-      autoRotateLabels: this.config.htmlLayout.autoRotateLabels,
-      rotationHeight: this.config.htmlLayout.rotationHeight, //in px
-      rotationDegree:  this.config.htmlLayout.rotationDegree, //in deg
-      freezeCols: this.config.svgLayout.freezeCols
+      autoRotateLabels: this.config.header.autoRotateLabels,
+      rotationHeight: this.config.header.rotationHeight, //in px
+      rotationDegree:  this.config.header.rotationDegree, //in deg
+
+      freezeCols: this.config.body.freezeCols,
+      selectionCheckBox: this.config.body.selectionCheckBox
     });
     this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
-      rowHeight: this.config.svgLayout.rowHeight,
-      rowPadding: this.config.svgLayout.rowPadding,
-      rowBarPadding: this.config.svgLayout.rowBarPadding,
-      animationDuration: this.config.svgLayout.animationDuration,
+      rowHeight: this.config.body.rowHeight,
+      rowPadding: this.config.body.rowPadding,
+      rowBarPadding: this.config.body.rowBarPadding,
+      animationDuration: this.config.body.animationDuration,
       meanLine: this.config.renderingOptions.meanLine,
       animation: this.config.renderingOptions.animation,
       stacked: this.config.renderingOptions.stacked,
-      actions: this.config.svgLayout.rowActions,
+      actions: this.config.body.rowActions,
       idPrefix: this.config.idPrefix,
-      freezeCols: this.config.svgLayout.freezeCols
+
+      freezeCols: this.config.body.freezeCols,
+      selectionCheckBox: this.config.body.selectionCheckBox
     });
     //share hist caches
     this.body.histCache = this.header.sharedHistCache;
@@ -196,17 +220,17 @@ export class LineUp extends utils_.AEventDispatcher {
       this.addPool(new ui_.PoolRenderer(data, this.node, this.config));
     }
 
-    if (this.config.svgLayout.visibleRowsOnly) {
+    if (this.config.body.visibleRowsOnly) {
       this.contentScroller = new utils_.ContentScroller(<Element>this.$container.node(), this.body.node, {
-        backupRows: this.config.svgLayout.backupScrollRows,
-        rowHeight: this.config.svgLayout.rowHeight,
+        backupRows: this.config.body.backupScrollRows,
+        rowHeight: this.config.body.rowHeight,
         topShift: () => this.header.currentHeight()
       });
       this.contentScroller.on('scroll', (top, left) => {
         //in two svg mode propagate horizontal shift
         //console.log(top, left,'ss');
         this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
-        if (this.config.svgLayout.freezeCols > 0) {
+        if (this.config.body.freezeCols > 0) {
          this.header.updateFreeze(left);
          this.body.updateFreeze(left);
         }

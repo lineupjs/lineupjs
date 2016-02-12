@@ -33,9 +33,11 @@ interface IFlatColumn {
   width: number;
 }
 
-export interface IColumnParent extends Column {
+export interface IColumnParent {
   remove(col:Column): boolean;
   insertAfter(col:Column, reference:Column): boolean;
+  findMyRanker() : Ranking;
+  fqid: string;
 }
 
 export interface IColumnDesc {
@@ -248,9 +250,9 @@ export class Column extends utils.AEventDispatcher {
 
   /**
    * finds the underlying ranking column
-   * @returns {RankColumn}
+   * @returns {Ranking}
    */
-  findMyRanker():RankColumn {
+  findMyRanker():Ranking {
     if (this.parent) {
       return this.parent.findMyRanker();
     }
@@ -996,6 +998,33 @@ export class AnnotateColumn extends StringColumn {
   }
 }
 
+
+/**
+ * a checkbox column for selections
+ */
+export class SelectionColumn extends ValueColumn<boolean> {
+
+  constructor(id:string, desc:any) {
+    super(id, desc);
+  }
+
+  createEventList() {
+    return super.createEventList().concat(['select']);
+  }
+
+  setValue(row:any, value:boolean) {
+    var old = this.getValue(row);
+    if (old === value) {
+      return true;
+    }
+    if ((<any>this.desc).setter) {
+      (<any>this.desc).setter(row, value);
+    }
+    this.fire('select', row, value);
+    return true;
+  }
+}
+
 /**
  * column for categorical values
  */
@@ -1605,9 +1634,20 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
 }
 
 /**
- * a rank column is not just a column but a whole ranking
+ * a rank column
  */
 export class RankColumn extends ValueColumn<number> {
+  constructor(id:string, desc:any) {
+    super(id, desc);
+    this.setWidthImpl(50);
+  }
+}
+
+
+/**
+ * a ranking
+ */
+export class Ranking extends utils.AEventDispatcher implements IColumnParent {
 
   /**
    * the current sort criteria
@@ -1646,18 +1686,17 @@ export class RankColumn extends ValueColumn<number> {
    */
   private order:number[] = [];
 
-  constructor(id:string, desc:any) {
-    super(id, desc);
-    this.setWidthImpl(50);
+  constructor(public id : string) {
+    super();
+    this.id = fixCSS(id);
   }
 
   createEventList() {
     return super.createEventList().concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
   }
 
-
   assignNewId(idGenerator:() => string) {
-    super.assignNewId(idGenerator);
+    this.id = fixCSS(idGenerator());
     this.columns_.forEach((c) => c.assignNewId(idGenerator));
   }
 
@@ -1670,7 +1709,7 @@ export class RankColumn extends ValueColumn<number> {
   }
 
   dump(toDescRef:(desc:any) => any) {
-    var r = super.dump(toDescRef);
+    var r : any = {};
     r.columns = this.columns_.map((d) => d.dump(toDescRef));
     r.sortCriteria = {
       asc: this.ascending
@@ -1682,7 +1721,6 @@ export class RankColumn extends ValueColumn<number> {
   }
 
   restore(dump:any, factory:(dump:any) => Column) {
-    super.restore(dump, factory);
     dump.columns.map((child) => {
       var c = factory(child);
       if (c) {
@@ -1699,8 +1737,7 @@ export class RankColumn extends ValueColumn<number> {
   }
 
   flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0) {
-    r.push({col: this, offset: offset, width: this.getWidth()});
-    var acc = offset + this.getWidth() + padding;
+    var acc = offset; // + this.getWidth() + padding;
     if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       this.columns_.forEach((c) => {
         acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
@@ -1714,24 +1751,6 @@ export class RankColumn extends ValueColumn<number> {
       col: this.sortBy_,
       asc: this.ascending
     };
-  }
-
-  sortByMe(ascending = false) {
-    //noop
-    return false;
-  }
-
-  toggleMySorting() {
-    //noop
-    return false;
-  }
-
-  findMyRanker() {
-    return this;
-  }
-
-  insertAfterMe(col:Column) {
-    return this.insert(col, 0) !== null;
   }
 
   toggleSorting(col:Column) {
@@ -1785,9 +1804,6 @@ export class RankColumn extends ValueColumn<number> {
   }
 
   insertAfter(col:Column, ref:Column) {
-    if (ref === this) {
-      return this.insert(col, 0) != null;
-    }
     var i = this.columns_.indexOf(ref);
     if (i < 0) {
       return false;
@@ -1872,6 +1888,14 @@ export class RankColumn extends ValueColumn<number> {
   filter(row:any) {
     return this.columns_.every((d) => d.filter(row));
   }
+
+  findMyRanker() {
+    return this;
+  }
+
+  get fqid() {
+    return this.id;
+  }
 }
 
 /**
@@ -1901,6 +1925,7 @@ export function models() {
     categorical: CategoricalColumn,
     ordinal: CategoricalNumberColumn,
     actions: DummyColumn,
-    annotate: AnnotateColumn
+    annotate: AnnotateColumn,
+    selection: SelectionColumn
   };
 }
