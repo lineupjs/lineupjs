@@ -768,7 +768,7 @@ export class LocalDataProvider extends CommonDataProvider {
     return {
       label: 'Rank',
       type: 'rank',
-      accessor: (row, id) => (row._rankings[id] + 1) || 1
+      accessor: (row, id, desc, ranking) => (row._rankings[ranking.id] + 1) || 1
     };
   }
 
@@ -927,7 +927,7 @@ export class RemoteDataProvider extends CommonDataProvider {
     return {
       label: 'Rank',
       type: 'rank',
-      accessor: (row, id) => this.ranks[id][row._index] || 0
+      accessor: (row, id, desc, ranking) => this.ranks[ranking.id][row._index] || 0
     };
   }
 

@@ -341,12 +341,12 @@ export class Column extends utils.AEventDispatcher {
  * a column having an accessor to get the cell value
  */
 export class ValueColumn<T> extends Column {
-  protected accessor:(row:any, id:string, desc:any) => T;
+  protected accessor:(row:any, id:string, desc:any, ranking: Ranking) => T;
 
   constructor(id:string, desc:any) {
     super(id, desc);
     //find accessor
-    this.accessor = desc.accessor || ((row:any, id:string, desc:any) => null);
+    this.accessor = desc.accessor || (() => null);
   }
 
   getLabel(row:any) {
@@ -354,7 +354,7 @@ export class ValueColumn<T> extends Column {
   }
 
   getValue(row:any) {
-    return this.accessor(row, this.id, this.desc);
+    return this.accessor(row, this.id, this.desc, this.findMyRanker());
   }
 
   compare(a:any[], b:any[]) {
@@ -1692,7 +1692,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   }
 
   createEventList() {
-    return super.createEventList().concat(['sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
+    return super.createEventList().concat(['widthChanged', 'filterChanged', 'labelChanged', 'compressChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues', 'sortCriteriaChanged', 'dirtyOrder', 'orderChanged']);
   }
 
   assignNewId(idGenerator:() => string) {
@@ -1797,7 +1797,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
 
     this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
 
-    if (this.sortBy_ === null) {
+    if (this.sortBy_ === null && !(col instanceof RankColumn || col instanceof SelectionColumn || col instanceof DummyColumn)) {
       this.sortBy(col);
     }
     return col;

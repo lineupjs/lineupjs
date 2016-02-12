@@ -90,6 +90,7 @@
       lineup.restore(desc);
     }
     provider.deriveDefault();
+    lineup.update();
     updateMenu();
   }
 
