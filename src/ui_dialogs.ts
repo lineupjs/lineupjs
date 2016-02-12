@@ -150,6 +150,8 @@ export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selec
     .append('input').attr({
     type: 'number',
     value: (d) => d.weight,
+    min: 0,
+    max: 100,
     size: 5
   }).on('input', function (d) {
     d.weight = +this.value;
