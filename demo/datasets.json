@@ -1,6 +1,12 @@
 {
   "datasets": [
     {
+      "id": "prosperity",
+      "baseURL": "data",
+      "descriptionFile": "prosperity.json",
+      "name": "Legatum Prosperity Index"
+    },
+    {
       "id": "uni",
       "baseURL": "data",
       "descriptionFile": "data_small.json",

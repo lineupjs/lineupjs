@@ -4,16 +4,20 @@
 
 (function (LineUpJS) {
   var menuActions = [
-    {name: ' new combined', icon: 'fa-plus', action: function () {
+    {
+      name: ' new combined', icon: 'fa-plus', action: function () {
       var r = lineup.data.getRankings();
-      r = r[r.length-1];
+      r = r[r.length - 1];
       lineup.data.push(r, LineUpJS.model.StackColumn.desc('Combined'));
-    }},
-    {name: ' new ranking', icon: 'fa-plus', action: function () {
+    }
+    },
+    {
+      name: ' new ranking', icon: 'fa-plus', action: function () {
       var old = lineup.data.getRankings()[0];
       var r = lineup.data.pushRanking();
       r.push(lineup.data.clone(old.children[0]));
-    }},
+    }
+    },
     {name: ' add single columns', icon: 'fa-plus', action: openAddColumnDialog},
     {name: ' save layout', icon: 'fa-floppy-o', action: saveLayout}
   ];
@@ -23,7 +27,9 @@
     },
     renderingOptions: {
       stacked: true,
-      histograms: true
+      histograms: true,
+      meanLine: true,
+      animated: true
     },
     svgLayout: {
       freezeCols: 2
@@ -33,14 +39,15 @@
   var lineup = null;
   var datasets = [];
 
-  d3.select(window).on('resize', function() {
+  d3.select(window).on('resize', function () {
     if (lineup) {
       lineup.update()
     }
   });
+
   function updateMenu() {
     var config = lineup.config;
-    var kvNodes = d3.select('#lugui-menu-rendering').selectAll('span').data(['stacked', 'animation']);
+    var kvNodes = d3.select('#lugui-menu-rendering').selectAll('span').data(['stacked', 'animation', 'histograms', 'meanLine']);
     kvNodes.exit().remove();
     kvNodes.enter().append('span').on('click', function (d) {
       lineup.changeRenderingOption(d, !config.renderingOptions[d]);
@@ -61,16 +68,20 @@
   }
 
   function fixMissing(columns, data) {
-    columns.forEach(function(col){
+    columns.forEach(function (col) {
       if (col.type === 'number' && !col.domain) {
         var old = col.domain || [NaN, NaN];
-        var minmax = d3.extent(data, function (row) { return row[col.column].length === 0 ? undefined : +(row[col.column])});
+        var minmax = d3.extent(data, function (row) {
+          return row[col.column].length === 0 ? undefined : +(row[col.column])
+        });
         col.domain = [
           isNaN(old[0]) ? minmax[0] : old[0],
           isNaN(old[1]) ? minmax[1] : old[1]
         ];
       } else if (col.type === 'categorical' && !col.categories) {
-        var sset = d3.set(data.map(function (row) { return row[col];}));
+        var sset = d3.set(data.map(function (row) {
+          return row[col];
+        }));
         col.categories = sset.values().sort();
       }
     });
@@ -90,6 +101,14 @@
       lineup.restore(desc);
     }
     provider.deriveDefault();
+
+    var cols = provider.getRankings();
+    cols.forEach(function (rankCol) {
+      rankCol.children.forEach(function(col){
+        if(col.desc.type==="stack")
+          col.sortByMe();
+      })
+    })
     updateMenu();
   }
 
@@ -103,8 +122,9 @@
         });
       }
     }
-    document.title = 'LineUp - '+ (ds.name || 'Custom');
-    history.pushState(ds, 'LineUp - '+ (ds.name || 'Custom'), '#'+ (ds.id || 'custom'));
+
+    document.title = 'LineUp - ' + (ds.name || 'Custom');
+    history.pushState(ds, 'LineUp - ' + (ds.name || 'Custom'), '#' + (ds.id || 'custom'));
 
     if (ds.descriptionFile) {
       var name = ds.descriptionFile.substring(0, ds.descriptionFile.length - 5);
@@ -131,18 +151,20 @@
       evt.preventDefault();
       evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
     }
+
+
     var $file = d3.select('#lugui-menu input[type="file"]');
     $file.node().addEventListener('change', handleFileSelect, false);
     var $drop = d3.select('#drop_zone');
     var drop = $drop.node();
-    drop.addEventListener('dragenter', function() {
-      $drop.classed('dragging',true);
+    drop.addEventListener('dragenter', function () {
+      $drop.classed('dragging', true);
     }, false);
-    drop.addEventListener('dragleave', function() {
-      $drop.classed('dragging',false);
+    drop.addEventListener('dragleave', function () {
+      $drop.classed('dragging', false);
     }, false);
     drop.addEventListener('dragover', handleDragOver, false);
-    drop.addEventListener('drop', function(evt) {
+    drop.addEventListener('drop', function (evt) {
       evt.stopPropagation();
       evt.preventDefault();
       var files = evt.dataTransfer.files;
@@ -161,10 +183,11 @@
   }
 
   function openAddColumnDialog() {
-    d3.select('#pool').style('display','block');
+    d3.select('#pool').style('display', 'block');
   }
-  d3.select('#pool > div i.fa-close').on('click', function() {
-    d3.select('#pool').style('display','none');
+
+  d3.select('#pool > div i.fa-close').on('click', function () {
+    d3.select('#pool').style('display', 'none');
   });
 
 
@@ -178,7 +201,7 @@
     var str = JSON.stringify(s, null, '\t');
     //create blob and save it
     var blob = new Blob([str], {type: 'application/json;charset=utf-8'});
-    saveAs(blob, 'LineUp-'+lineUpDemoConfig.name+'.json');
+    saveAs(blob, 'LineUp-' + lineUpDemoConfig.name + '.json');
   }
 
   function loadLayout() {
@@ -194,7 +217,7 @@
     }
 
     function countOccurrences(text, char) {
-      return (text.match(new RegExp(char,'g'))||[]).length;
+      return (text.match(new RegExp(char, 'g')) || []).length;
     }
 
     function isNumeric(obj) {
@@ -202,7 +225,7 @@
     }
 
     function deriveDesc(columns, data, separator) {
-      var cols = columns.map(function(col) {
+      var cols = columns.map(function (col) {
         var r = {
           label: col,
           column: col,
@@ -210,9 +233,13 @@
         };
         if (isNumeric(data[0][col])) {
           r.type = 'number';
-          r.domain = d3.extent(data, function (row) { return row[col].length === 0 ? undefined : +(row[col])});
+          r.domain = d3.extent(data, function (row) {
+            return row[col].length === 0 ? undefined : +(row[col])
+          });
         } else {
-          var sset = d3.set(data.map(function (row) { return row[col];}));
+          var sset = d3.set(data.map(function (row) {
+            return row[col];
+          }));
           if (sset.size() <= Math.max(20, data.length * 0.2)) { //at most 20 percent unique values
             r.type = 'categorical';
             r.categories = sset.values().sort();
@@ -222,7 +249,7 @@
       });
       return {
         separator: separator,
-        primaryKey : columns[0],
+        primaryKey: columns[0],
         columns: cols
       };
     }
@@ -230,12 +257,13 @@
     function normalizeValue(val) {
       if (typeof val === 'string') {
         val = val.trim();
-        if (val.length >= 2 && val.charAt(0) === '"' && val.charAt(val.length-1) === '"') {
-          val = val.slice(1, val.length-1);
+        if (val.length >= 2 && val.charAt(0) === '"' && val.charAt(val.length - 1) === '"') {
+          val = val.slice(1, val.length - 1);
         }
       }
       return val;
     }
+
     /**
      * trims the given object
      * @param row
@@ -250,16 +278,16 @@
     }
 
     function loadDataFileFromText(data_s, fileName) {
-      var header = data_s.slice(0,data_s.indexOf('\n'));
+      var header = data_s.slice(0, data_s.indexOf('\n'));
       //guess the separator,
-      var separator = [',','\t',';'].reduce(function(prev, current) {
+      var separator = [',', '\t', ';'].reduce(function (prev, current) {
         var c = countOccurrences(header, current);
         if (c > prev.c) {
           prev.c = c;
           prev.s = current;
         }
         return prev;
-      },{ s: ',', c : 0});
+      }, {s: ',', c: 0});
       var _data = d3.dsv(separator.s, 'text/plain').parse(data_s, normalizeRow);
       //derive a description file
       var desc = deriveDesc(header.split(separator.s).map(normalizeValue), _data);
@@ -307,7 +335,7 @@
       }
     }, function (url) {
       //access the url using get request and then parse the data file
-      d3.text(url, 'text/plain', function(data) {
+      d3.text(url, 'text/plain', function (data) {
         loadDataFileFromText(data, 'by_url');
       });
     });
@@ -324,19 +352,23 @@
       .attr('value', function (d, i) {
         return i;
       }).text(function (d) {
-        return d.name;
-      });
-    $s.on('change', function() {
+      return d.name;
+    });
+    $s.on('change', function () {
       loadDataset(datasets[this.value]);
     });
 
     var old = history.state;
     if (old) {
-      var choose = datasets.filter(function(d) { return d.id === old.id; });
+      var choose = datasets.filter(function (d) {
+        return d.id === old.id;
+      });
       $s.property('value', datasets.indexOf(choose[0]));
       loadDataset(choose[0]);
     } else if (window.location.hash) {
-      var choose = datasets.filter(function(d) { return d.id === window.location.hash.substr(1); });
+      var choose = datasets.filter(function (d) {
+        return d.id === window.location.hash.substr(1);
+      });
       if (choose.length > 0) {
         $s.property('value', datasets.indexOf(choose[0]));
         loadDataset(choose[0]);
@@ -347,6 +379,8 @@
       //and start with 0:
       loadDataset(datasets[0]);
     }
+
+
     loadLayout();
   });
 }(LineUpJS));
