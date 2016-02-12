@@ -194,8 +194,6 @@ export class HeaderRenderer {
     rotationHeight: 50, //in px
     rotationDegree: -20, //in deg
 
-    selectionCheckBox: false,
-
     freezeCols: 0
   };
 
@@ -650,8 +648,6 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
     renderers: renderer.renderers(),
 
-    selectionCheckBox: false,
-
     meanLine: false,
 
     actions: [],
@@ -932,7 +928,14 @@ export class BodyRenderer extends utils.AEventDispatcher {
     this.$node.selectAll('g.row[data-index="' + dataIndex + '"], line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
   }
 
+  private hasAnySelectionColumn() {
+    return this.data.getRankings().some((r) => r.children.some((c) => c instanceof model.SelectionColumn));
+  }
+
   drawSelection() {
+    if (this.hasAnySelectionColumn()) {
+      this.update();
+    }
     var indices = this.data.getSelection();
     if (indices.length === 0) {
       this.$node.selectAll('g.row.selected, line.slope.selected').classed('selected', false);

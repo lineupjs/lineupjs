@@ -1006,6 +1006,7 @@ export class SelectionColumn extends ValueColumn<boolean> {
 
   constructor(id:string, desc:any) {
     super(id, desc);
+    this.compressed = true;
   }
 
   createEventList() {
@@ -1013,15 +1014,25 @@ export class SelectionColumn extends ValueColumn<boolean> {
   }
 
   setValue(row:any, value:boolean) {
-    var old = this.getValue(row);
+    const old = this.getValue(row);
     if (old === value) {
       return true;
     }
+    return this.setImpl(row, value);
+  }
+
+  private setImpl(row: any, value: boolean) {
     if ((<any>this.desc).setter) {
       (<any>this.desc).setter(row, value);
     }
     this.fire('select', row, value);
     return true;
+  }
+
+  toggleValue(row:any) {
+    const old = this.getValue(row);
+    this.setImpl(row, !old);
+    return !old;
   }
 }
 

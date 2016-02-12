@@ -138,10 +138,6 @@ export class LineUp extends utils_.AEventDispatcher {
       visibleRowsOnly: true,
 
       /**
-       * show selection checkboxes for simple multiSelection
-       */
-      selectionCheckBox: false,
-      /**
        * number of backup rows to keep to avoid updating on every small scroll thing
        */
       backupScrollRows: 4,
@@ -195,8 +191,7 @@ export class LineUp extends utils_.AEventDispatcher {
       rotationHeight: this.config.header.rotationHeight, //in px
       rotationDegree:  this.config.header.rotationDegree, //in deg
 
-      freezeCols: this.config.body.freezeCols,
-      selectionCheckBox: this.config.body.selectionCheckBox
+      freezeCols: this.config.body.freezeCols
     });
     this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
       rowHeight: this.config.body.rowHeight,
@@ -209,8 +204,7 @@ export class LineUp extends utils_.AEventDispatcher {
       actions: this.config.body.rowActions,
       idPrefix: this.config.idPrefix,
 
-      freezeCols: this.config.body.freezeCols,
-      selectionCheckBox: this.config.body.selectionCheckBox
+      freezeCols: this.config.body.freezeCols
     });
     //share hist caches
     this.body.histCache = this.header.sharedHistCache;

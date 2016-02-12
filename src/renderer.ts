@@ -376,6 +376,39 @@ export class ActionCellRenderer implements ICellRenderer {
 
 }
 
+export class SelectionCellRenderer extends DefaultCellRenderer {
+
+  constructor() {
+    super();
+    this.textClass = 'selection';
+  }
+
+  render($col:d3.Selection<any>, col:model.SelectionColumn, rows:any[], context:IRenderContext) {
+    var $rows = $col.datum(col).selectAll('text.' + this.textClass).data(rows, context.rowKey);
+
+    $rows.enter().append('text').attr({
+      'class': this.textClass+' fa',
+      y: (d, i) => context.cellPrevY(i)
+    }).on('click', function(d){
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+      const new_ = col.toggleValue(d);
+      d3.select(this).text(new_ === true ? '\uf046' : '\uf096');
+    });
+
+    $rows.attr({
+      x: (d, i) => context.cellX(i),
+      'data-index': (d, i) => i
+    }).text((d) => col.getValue(d) === true ? '\uf046' : '\uf096');
+
+    context.animated($rows).attr({
+      y: (d, i) => context.cellY(i)
+    });
+
+    $rows.exit().remove();
+  }
+}
+
 /**
  * a renderer for annotate columns
  */
@@ -633,6 +666,7 @@ export function renderers() {
       colorOf: (d, i, col) => col.getColor(d)
     }),
     actions: new ActionCellRenderer(),
-    annotate: new AnnotateCellRenderer()
+    annotate: new AnnotateCellRenderer(),
+    selection: new SelectionCellRenderer()
   };
 }
