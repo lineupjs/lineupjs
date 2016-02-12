@@ -568,11 +568,13 @@ class CategoricalRenderer extends DefaultCellRenderer {
 class StackCellRenderer extends DefaultCellRenderer {
   renderImpl($base:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i:number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
     const $group = $base.datum(col),
-      children = col.children;
+      children = col.children,
+      stacked = context.showStacked(col);
     var offset = 0,
       shifts = children.map((d) => {
         var r = offset;
         offset += d.getWidth();
+        offset += (!stacked ? context.option('columnPadding',0) : 0);
         return r;
       });
     const baseclass = 'component' + context.option('stackLevel', '');
@@ -596,7 +598,7 @@ class StackCellRenderer extends DefaultCellRenderer {
       'class': (d) => baseclass + ' ' + d.desc.type,
       'data-stack': (d, i) => i
     }).each(function (d, i) {
-      if (context.showStacked(col)) {
+      if (stacked) {
         const preChildren = children.slice(0, i);
         //if shown as stacked bar shift individual cells of a column to the left where they belong to
         context.cellX = (index) => {
