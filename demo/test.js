@@ -42,7 +42,7 @@ window.onload = function () {
   var r = p.pushRanking();
 
   var root = d3.select('body');
-
+  r.insert(p.create(p.createSelectionDesc()),0);
   r.push(p.create(desc[0]));
   r.push(p.create(desc[1]));
   r.push(p.create(desc[8]));
