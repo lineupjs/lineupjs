@@ -61,7 +61,7 @@ window.onload = function () {
   r2.push(p.create(desc[6]));
   r2.push(p.create(desc[7]));
 
-  var body = new LineUpJS.create(p, root.node(), {
+  var body = LineUpJS.create(p, root.node(), {
     additionalDesc : [
       LineUpJS.model.StackColumn.desc('+ Stack')
     ],
