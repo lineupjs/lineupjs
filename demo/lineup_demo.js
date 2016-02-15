@@ -28,7 +28,7 @@
     renderingOptions: {
       stacked: true,
       histograms: true,
-      meanLine: true,
+      meanLine: false,
       animated: true
     },
     svgLayout: {
@@ -67,24 +67,54 @@
     })
   }
 
-  function fixMissing(columns, data) {
-    columns.forEach(function (col) {
-      if (col.type === 'number' && !col.domain) {
-        var old = col.domain || [NaN, NaN];
-        var minmax = d3.extent(data, function (row) {
-          return row[col.column].length === 0 ? undefined : +(row[col.column])
-        });
-        col.domain = [
-          isNaN(old[0]) ? minmax[0] : old[0],
-          isNaN(old[1]) ? minmax[1] : old[1]
-        ];
-      } else if (col.type === 'categorical' && !col.categories) {
-        var sset = d3.set(data.map(function (row) {
-          return row[col];
-        }));
-        col.categories = sset.values().sort();
+  function uploadDataset(dropFileCallback, dropURLCallback) {
+    function handleFileSelect(evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      var files = evt.target.files || evt.dataTransfer.files;
+      //console.log('drop',files);
+      files = Array.prototype.slice.call(files); // FileList object.
+      dropFileCallback(files);
+    }
+
+    function handleDragOver(evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+    }
+
+    var $file = d3.select('#lugui-menu input[type="file"]');
+    $file.node().addEventListener('change', handleFileSelect, false);
+    var $drop = d3.select('#drop_zone');
+    var drop = $drop.node();
+
+    drop.addEventListener('click', function () {
+      document.getElementById('fileselect').click();
+    })
+
+    drop.addEventListener('dragenter', function () {
+      $drop.classed('dragging', true);
+    }, false);
+    drop.addEventListener('dragleave', function () {
+      $drop.classed('dragging', false);
+    }, false);
+    drop.addEventListener('dragover', handleDragOver, false);
+    drop.addEventListener('drop', function (evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      var files = evt.dataTransfer.files;
+      //console.log('drop',files);
+      files = Array.prototype.slice.call(files); // FileList object.
+      if (files.length > 0) {
+        return dropFileCallback(files);
+      } else {
+        var url = evt.dataTransfer.getData('text/uri-list');
+        if (url) {
+          return dropURLCallback(url);
+        }
       }
-    });
+      console.error('unknown datatransfer');
+    }, false);
   }
 
   function loadDataset(ds) {
@@ -129,63 +159,34 @@
 
     var cols = provider.getRankings();
     cols.forEach(function (rankCol) {
-      rankCol.children.forEach(function(col){
-        if(col.desc.type==="stack")
+      rankCol.children.forEach(function (col) {
+        if (col.desc.type === "stack")
           col.sortByMe();
       })
     })
     updateMenu();
   }
 
-  function uploadUI(dropFileCallback, dropURLCallback) {
-    function handleFileSelect(evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      var files = evt.target.files || evt.dataTransfer.files;
-      //console.log('drop',files);
-      files = Array.prototype.slice.call(files); // FileList object.
-      dropFileCallback(files);
-    }
-
-    function handleDragOver(evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
-    }
-
-    var $file = d3.select('#lugui-menu input[type="file"]');
-    $file.node().addEventListener('change', handleFileSelect, false);
-    var $drop = d3.select('#drop_zone');
-    var drop = $drop.node();
-
-    drop.addEventListener('click', function(){
-      document.getElementById('fileselect').click();
-    })
-
-    drop.addEventListener('dragenter', function () {
-      $drop.classed('dragging', true);
-    }, false);
-    drop.addEventListener('dragleave', function () {
-      $drop.classed('dragging', false);
-    }, false);
-    drop.addEventListener('dragover', handleDragOver, false);
-    drop.addEventListener('drop', function (evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      var files = evt.dataTransfer.files;
-      //console.log('drop',files);
-      files = Array.prototype.slice.call(files); // FileList object.
-      if (files.length > 0) {
-        return dropFileCallback(files);
-      } else {
-        var url = evt.dataTransfer.getData('text/uri-list');
-        if (url) {
-          return dropURLCallback(url);
-        }
+  function fixMissing(columns, data) {
+    columns.forEach(function (col) {
+      if (col.type === 'number' && !col.domain) {
+        var old = col.domain || [NaN, NaN];
+        var minmax = d3.extent(data, function (row) {
+          return row[col.column].length === 0 ? undefined : +(row[col.column])
+        });
+        col.domain = [
+          isNaN(old[0]) ? minmax[0] : old[0],
+          isNaN(old[1]) ? minmax[1] : old[1]
+        ];
+      } else if (col.type === 'categorical' && !col.categories) {
+        var sset = d3.set(data.map(function (row) {
+          return row[col];
+        }));
+        col.categories = sset.values().sort();
       }
-      console.error('unknown datatransfer');
-    }, false);
+    });
   }
+
 
   function openAddColumnDialog() {
     d3.select('#pool').style('display', 'block');
@@ -300,7 +301,7 @@
       loadDataImpl(name, desc, _data);
     }
 
-    uploadUI(function (files) {
+    uploadDataset(function (files) {
       var descs = files.filter(function (f) {
         return f.name.match(/.*\.json/i) || f.type === 'application/json';
       });
@@ -351,15 +352,15 @@
     //console.log('datasets:', data, error);
 
     datasets = data.datasets;
-    var $s = d3.select('#lugui-dataset-selector');
-    var ds = $s.selectAll('option').data(data.datasets);
+    var $selector = d3.select('#lugui-dataset-selector');
+    var ds = $selector.selectAll('option').data(data.datasets);
     ds.enter().append('option')
       .attr('value', function (d, i) {
         return i;
       }).text(function (d) {
       return d.name;
     });
-    $s.on('change', function () {
+    $selector.on('change', function () {
       loadDataset(datasets[this.value]);
     });
 
@@ -368,14 +369,14 @@
       var choose = datasets.filter(function (d) {
         return d.id === old.id;
       });
-      $s.property('value', datasets.indexOf(choose[0]));
+      $selector.property('value', datasets.indexOf(choose[0]));
       loadDataset(choose[0]);
     } else if (window.location.hash) {
       var choose = datasets.filter(function (d) {
         return d.id === window.location.hash.substr(1);
       });
       if (choose.length > 0) {
-        $s.property('value', datasets.indexOf(choose[0]));
+        $selector.property('value', datasets.indexOf(choose[0]));
         loadDataset(choose[0]);
       } else {
         loadDataset(datasets[0]);
