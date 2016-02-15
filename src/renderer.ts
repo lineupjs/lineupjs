@@ -376,6 +376,39 @@ export class ActionCellRenderer implements ICellRenderer {
 
 }
 
+export class SelectionCellRenderer extends DefaultCellRenderer {
+
+  constructor() {
+    super();
+    this.textClass = 'selection';
+  }
+
+  render($col:d3.Selection<any>, col:model.SelectionColumn, rows:any[], context:IRenderContext) {
+    var $rows = $col.datum(col).selectAll('text.' + this.textClass).data(rows, context.rowKey);
+
+    $rows.enter().append('text').attr({
+      'class': this.textClass+' fa',
+      y: (d, i) => context.cellPrevY(i)
+    }).on('click', function(d){
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+      const new_ = col.toggleValue(d);
+      d3.select(this).text(new_ === true ? '\uf046' : '\uf096');
+    });
+
+    $rows.attr({
+      x: (d, i) => context.cellX(i),
+      'data-index': (d, i) => i
+    }).text((d) => col.getValue(d) === true ? '\uf046' : '\uf096');
+
+    context.animated($rows).attr({
+      y: (d, i) => context.cellY(i)
+    });
+
+    $rows.exit().remove();
+  }
+}
+
 /**
  * a renderer for annotate columns
  */
@@ -535,11 +568,13 @@ class CategoricalRenderer extends DefaultCellRenderer {
 class StackCellRenderer extends DefaultCellRenderer {
   renderImpl($base:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i:number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
     const $group = $base.datum(col),
-      children = col.children;
+      children = col.children,
+      stacked = context.showStacked(col);
     var offset = 0,
       shifts = children.map((d) => {
         var r = offset;
         offset += d.getWidth();
+        offset += (!stacked ? context.option('columnPadding',0) : 0);
         return r;
       });
     const baseclass = 'component' + context.option('stackLevel', '');
@@ -563,7 +598,7 @@ class StackCellRenderer extends DefaultCellRenderer {
       'class': (d) => baseclass + ' ' + d.desc.type,
       'data-stack': (d, i) => i
     }).each(function (d, i) {
-      if (context.showStacked(col)) {
+      if (stacked) {
         const preChildren = children.slice(0, i);
         //if shown as stacked bar shift individual cells of a column to the left where they belong to
         context.cellX = (index) => {
@@ -633,6 +668,7 @@ export function renderers() {
       colorOf: (d, i, col) => col.getColor(d)
     }),
     actions: new ActionCellRenderer(),
-    annotate: new AnnotateCellRenderer()
+    annotate: new AnnotateCellRenderer(),
+    selection: new SelectionCellRenderer()
   };
 }

@@ -197,6 +197,14 @@ $lu_drag_over: #979797;
     }
   }
 
+  text.selection {
+    cursor: pointer;
+
+    &:hover {
+      color: darkblue;
+    }
+  }
+
   text.rank, text.text_right {
     text-anchor: end;
   }

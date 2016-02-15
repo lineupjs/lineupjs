@@ -13,7 +13,7 @@ function clamp(v:number, min:number, max:number) {
   return Math.max(Math.min(v, max), min);
 }
 
-class MappingEditor {
+export class MappingEditor {
   private options = {
     width: 320,
     height: 200,
@@ -158,18 +158,21 @@ class MappingEditor {
         return;
       }
 
-      let sscale = <model.ScaleMappingFunction>that.scale;
-      let domain = sscale.domain;
-      let range = sscale.range;
+      {
+        let sscale = <model.ScaleMappingFunction>that.scale;
+        let domain = sscale.domain;
+        let range = sscale.range;
 
-      mapping_lines = domain.map((d,i) => ({ r: d, n: range[i]}));
+        mapping_lines = domain.map((d, i) => ({r: d, n: range[i]}));
+      }
 
       function updateScale() {
         //sort by raw value
         mapping_lines.sort((a,b) => a.r - b.r);
         //update the scale
-        sscale.domain = mapping_lines.map((d) => d.r);
-        sscale.range = mapping_lines.map((d) => d.n);
+        let scale = <model.ScaleMappingFunction>that.scale;
+        scale.domain = mapping_lines.map((d) => d.r);
+        scale.range = mapping_lines.map((d) => d.n);
 
         //console.log(sscale.domain, sscale.range);
         updateDataLines();

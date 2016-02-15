@@ -75,7 +75,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @type {Array}
    * @private
    */
-  private rankings_:model.RankColumn[] = [];
+  private rankings_:model.Ranking[] = [];
   /**
    * the current selected indices
    * @type {Set}
@@ -127,20 +127,20 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param existing an optional existing ranking to clone
    * @return the new ranking
    */
-  pushRanking(existing?:model.RankColumn) {
+  pushRanking(existing?:model.Ranking) {
     var r = this.cloneRanking(existing);
     this.pushRankingImpl(r);
     return r;
   }
 
-  private pushRankingImpl(r:model.RankColumn) {
+  private pushRankingImpl(r:model.Ranking) {
     this.rankings_.push(r);
     this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');
     r.on('dirtyOrder.provider', this.reorder);
     this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r);
   }
 
-  protected triggerReorder(ranking: model.RankColumn) {
+  protected triggerReorder(ranking: model.Ranking) {
     this.sort(ranking).then((order) => ranking.setOrder(order));
   }
 
@@ -149,7 +149,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param ranking
    * @returns {boolean}
    */
-  removeRanking(ranking:model.RankColumn) {
+  removeRanking(ranking:model.Ranking) {
     var i = this.rankings_.indexOf(ranking);
     if (i < 0) {
       return false;
@@ -177,7 +177,7 @@ export class DataProvider extends utils.AEventDispatcher {
 
   /**
    * returns a list of all current rankings
-   * @returns {model.RankColumn[]}
+   * @returns {model.Ranking[]}
    */
   getRankings() {
     return this.rankings_.slice();
@@ -185,7 +185,7 @@ export class DataProvider extends utils.AEventDispatcher {
 
   /**
    * returns the last ranking for quicker access
-   * @returns {model.RankColumn}
+   * @returns {model.Ranking}
    */
   getLastRanking() {
     return this.rankings_[this.rankings_.length - 1];
@@ -195,7 +195,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * hook method for cleaning up a ranking
    * @param ranking
    */
-  cleanUpRanking(ranking:model.RankColumn) {
+  cleanUpRanking(ranking:model.Ranking) {
     //nothing to do
   }
 
@@ -204,7 +204,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param existing
    * @returns {null}
    */
-  cloneRanking(existing?:model.RankColumn) {
+  cloneRanking(existing?:model.Ranking) {
     return null; //implement me
   }
 
@@ -214,7 +214,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param desc the description of the column
    * @return {model.Column} the newly created column or null
    */
-  push(ranking:model.RankColumn, desc:model.IColumnDesc):model.Column {
+  push(ranking:model.Ranking, desc:model.IColumnDesc):model.Column {
     var r = this.create(desc);
     if (r) {
       ranking.push(r);
@@ -230,7 +230,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param desc the description of the column
    * @return {model.Column} the newly created column or null
    */
-  insert(ranking:model.RankColumn, index:number, desc:model.IColumnDesc) {
+  insert(ranking:model.Ranking, index:number, desc:model.IColumnDesc) {
     var r = this.create(desc);
     if (r) {
       ranking.insert(r, index);
@@ -456,7 +456,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param ranking
    * @return {Promise<any>}
    */
-  sort(ranking:model.RankColumn):Promise<number[]> {
+  sort(ranking:model.Ranking):Promise<number[]> {
     return Promise.reject('not implemented');
   }
 
@@ -575,6 +575,18 @@ export class DataProvider extends utils.AEventDispatcher {
     }
   }
 
+  createSelectionDesc() : model.IColumnDesc {
+    return <any>{
+      type: 'selection',
+      label: 'S',
+      accessor: (row: any) => this.isSelected(row._index),
+      setter: (row: any, value: boolean) => value ? this.select(row._index) : this.deselect(row._index)
+    };
+  }
+
+  createRankDesc() : model.IColumnDesc {
+    return null;
+  }
   /**
    * deselect the given row
    * @param index
@@ -620,7 +632,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param options
    * @returns {Promise<string>}
    */
-  exportTable(ranking: model.RankColumn, options : { separator?: string; newline?: string; header? : boolean} = {}) {
+  exportTable(ranking: model.Ranking, options : { separator?: string; newline?: string; header? : boolean} = {}) {
     const op = {
       separator : '\t',
       newline: '\n',
@@ -661,7 +673,7 @@ export class CommonDataProvider extends DataProvider {
 
   constructor(private columns:model.IColumnDesc[] = []) {
     super();
-    this.columns = columns.slice();
+    this.columns = columns.concat([this.createRankDesc(), this.createSelectionDesc()]);
     //generate the accessor
     columns.forEach((d:any) => {
       d.accessor = this.rowGetter;
@@ -752,15 +764,18 @@ export class LocalDataProvider extends CommonDataProvider {
     };
   }
 
-  cloneRanking(existing?:model.RankColumn) {
-    var id = this.nextRankingId();
-    var rankDesc = {
+  createRankDesc() {
+    return {
       label: 'Rank',
       type: 'rank',
-      accessor: (row, id) => (row._rankings[id] + 1) || 1
+      accessor: (row, id, desc, ranking) => (row._rankings[ranking.id] + 1) || 1
     };
+  }
 
-    var new_ = new model.RankColumn(id, rankDesc);
+  cloneRanking(existing?:model.Ranking) {
+    var id = this.nextRankingId();
+
+    var new_ = new model.Ranking(id);
 
     if (existing) { //copy the ranking of the other one
       this.data.forEach((row) => {
@@ -771,6 +786,8 @@ export class LocalDataProvider extends CommonDataProvider {
       existing.children.forEach((child) => {
         this.push(new_, child.desc);
       });
+    } else {
+      new_.push(this.create(this.createRankDesc()));
     }
 
     if (this.options.filterGlobally) {
@@ -780,7 +797,7 @@ export class LocalDataProvider extends CommonDataProvider {
     return new_;
   }
 
-  cleanUpRanking(ranking:model.RankColumn) {
+  cleanUpRanking(ranking:model.Ranking) {
     if (this.options.filterGlobally) {
       ranking.on('filterChanged.reorderall', null);
     }
@@ -788,7 +805,7 @@ export class LocalDataProvider extends CommonDataProvider {
     this.data.forEach((d) => delete d._rankings[ranking.id]);
   }
 
-  sort(ranking:model.RankColumn):Promise<number[]> {
+  sort(ranking:model.Ranking):Promise<number[]> {
     //wrap in a helper and store the initial index
     var helper = this.data.map((r, i) => ({row: r, i: i, prev: r._rankings[ranking.id] || 0}));
 
@@ -906,26 +923,30 @@ export class RemoteDataProvider extends CommonDataProvider {
     super(columns);
   }
 
-  cloneRanking(existing?:model.RankColumn) {
-    var id = this.nextRankingId();
-    var rankDesc = {
+  createRankDesc() {
+    return {
       label: 'Rank',
       type: 'rank',
-      accessor: (row, id) => this.ranks[id][row._index] || 0
+      accessor: (row, id, desc, ranking) => this.ranks[ranking.id][row._index] || 0
     };
+  }
+
+  cloneRanking(existing?:model.Ranking) {
+    var id = this.nextRankingId();
     if (existing) { //copy the ranking of the other one
       //copy the ranking
       this.ranks[id] = this.ranks[existing.id];
     }
-    return new model.RankColumn(id, rankDesc);
+    var r = new model.Ranking(id);
+    r.push(this.create(this.createRankDesc()));
   }
 
-  cleanUpRanking(ranking:model.RankColumn) {
+  cleanUpRanking(ranking:model.Ranking) {
     //delete all stored information
     delete this.ranks[ranking.id];
   }
 
-  sort(ranking:model.RankColumn):Promise<number[]> {
+  sort(ranking:model.Ranking):Promise<number[]> {
     //generate a description of what to sort
     var desc = ranking.toSortingDesc((desc) => desc.column);
     //use the server side to sort

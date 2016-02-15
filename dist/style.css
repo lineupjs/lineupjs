@@ -115,6 +115,10 @@
     cursor: pointer; }
     .lu text.actions tspan:hover, .lu-pool text.actions tspan:hover {
       color: darkblue; }
+  .lu text.selection, .lu-pool text.selection {
+    cursor: pointer; }
+    .lu text.selection:hover, .lu-pool text.selection:hover {
+      color: darkblue; }
   .lu text.rank, .lu text.text_right, .lu-pool text.rank, .lu-pool text.text_right {
     text-anchor: end; }
   .lu text.text_center, .lu-pool text.text_center {

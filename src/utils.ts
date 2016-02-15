@@ -107,8 +107,8 @@ export class AEventDispatcher {
   }
 }
 
-var TYPE_OBJECT = '[object Object]';
-var TYPE_ARRAY = '[object Array]';
+const TYPE_OBJECT = '[object Object]';
+const TYPE_ARRAY = '[object Array]';
 
 //credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
 export function merge(...args:any[]) {

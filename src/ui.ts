@@ -402,7 +402,7 @@ export class HeaderRenderer {
   private createToolbar($node:d3.Selection<model.Column>) {
     var filterDialogs = this.options.filterDialogs,
       provider = this.data;
-    var $regular = $node.filter(d=> !(d instanceof model.RankColumn)),
+    var $regular = $node.filter(d=> !(d instanceof model.Ranking)),
       $stacked = $node.filter(d=> d instanceof model.StackColumn);
 
     //edit weights
@@ -465,7 +465,7 @@ export class HeaderRenderer {
     //remove
     $node.append('i').attr('class', 'fa fa-times').attr('title', 'Hide').on('click', (d) => {
       if (d instanceof model.RankColumn) {
-        provider.removeRanking(<model.RankColumn>d);
+        provider.removeRanking(d.findMyRanker());
         if (provider.getRankings().length === 0) { //create at least one
           provider.pushRanking();
         }
@@ -552,14 +552,14 @@ export class HeaderRenderer {
         let s_columns = s_shifts.map((d) => d.col);
         that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
       }
-    }).call(utils.dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d:model.StackColumn, copy) => {
+    }).select('div.lu-label').call(utils.dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d:model.StackColumn, copy) => {
       var col:model.Column = null;
       if ('application/caleydo-lineup-column-number-ref' in data) {
         var id = data['application/caleydo-lineup-column-number-ref'];
         col = this.data.find(id);
         if (copy) {
           col = this.data.clone(col);
-        } else {
+        } else if (col) {
           col.removeMe();
         }
       } else {
@@ -695,7 +695,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
   createContext(index_shift:number):renderer.IRenderContext {
     var options = this.options;
     return {
-      rowKey: this.data.rowKey,
+      rowKey: this.options.animation ? this.data.rowKey : undefined,
       cellY(index:number) {
         return (index + index_shift) * (options.rowHeight);
       },
@@ -737,7 +737,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
       animated: ($sel:d3.Selection<any>) => options.animation ? $sel.transition().duration(options.animationDuration) : $sel,
 
       //show mean line if option is enabled and top level
-      showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.compressed && col.parent instanceof model.RankColumn,
+      showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.compressed && col.parent instanceof model.Ranking,
 
       option: (key:string, default_:any) => (key in options) ? options[key] : default_
     };
@@ -769,7 +769,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
       });
   }
 
-  updateClipPaths(rankings:model.RankColumn[], context:renderer.IRenderContext, height:number) {
+  updateClipPaths(rankings:model.Ranking[], context:renderer.IRenderContext, height:number) {
     var shifts = [], offset = 0;
     rankings.forEach((r) => {
       var w = r.flatten(shifts, offset, 2, this.options.columnPadding);
@@ -790,7 +790,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
     });
   }
 
-  renderRankings($body:d3.Selection<any>, rankings:model.RankColumn[], orders:number[][], shifts:any[], context:renderer.IRenderContext, height: number) {
+  renderRankings($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IRenderContext, height: number) {
     const that = this;
     const dataPromises = orders.map((r) => this.data.view(r));
 
@@ -806,7 +806,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
       transform: (d, i) => 'translate(' + shifts[i].shift + ',0)'
     });
 
-    var $cols = $rankings.select('g.cols').selectAll('g.uchild').data((d) => [<model.Column>d].concat(d.children), (d) => d.id);
+    var $cols = $rankings.select('g.cols').selectAll('g.uchild').data((d) => d.children, (d) => d.id);
     $cols.enter().append('g').attr('class', 'uchild')
       .append('g').attr({
       'class': 'child',
@@ -844,9 +844,9 @@ export class BodyRenderer extends utils.AEventDispatcher {
       }
     });
 
-    function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.RankColumn>, index:number, ranking:model.RankColumn, rankingIndex:number) {
+    function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.Ranking>, index:number, ranking:model.Ranking, rankingIndex:number) {
       $row.classed('hover', true);
-      var $value_cols = $row.select('g.values').selectAll('g.uchild').data([<model.Column>ranking].concat(ranking.children), (d) => d.id);
+      var $value_cols = $row.select('g.values').selectAll('g.uchild').data(ranking.children, (d) => d.id);
       $value_cols.enter().append('g').attr({
         'class': 'uchild'
       }).append('g').classed('child', true);
@@ -866,7 +866,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
       //data.mouseOver(d, i);
     }
 
-    function mouseLeaveRow($row:d3.Selection<number>, $cols:d3.Selection<model.RankColumn>, index:number, ranking:model.RankColumn, rankingIndex:number) {
+    function mouseLeaveRow($row:d3.Selection<number>, $cols:d3.Selection<model.Ranking>, index:number, ranking:model.Ranking, rankingIndex:number) {
       $row.classed('hover', false);
       $row.select('g.values').selectAll('g.uchild').each(function (d:model.Column, i) {
         dataPromises[rankingIndex].then((data) => {
@@ -928,7 +928,14 @@ export class BodyRenderer extends utils.AEventDispatcher {
     this.$node.selectAll('g.row[data-index="' + dataIndex + '"], line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
   }
 
+  private hasAnySelectionColumn() {
+    return this.data.getRankings().some((r) => r.children.some((c) => c instanceof model.SelectionColumn));
+  }
+
   drawSelection() {
+    if (this.hasAnySelectionColumn()) {
+      this.update();
+    }
     var indices = this.data.getSelection();
     if (indices.length === 0) {
       this.$node.selectAll('g.row.selected, line.slope.selected').classed('selected', false);
@@ -946,7 +953,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
     this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('hover', hover);
   }
 
-  renderSlopeGraphs($body:d3.Selection<any>, rankings:model.RankColumn[], orders:number[][], shifts:any[], context:renderer.IRenderContext) {
+  renderSlopeGraphs($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IRenderContext) {
     var slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i: i, right: d, right_i: i + 1}));
     var $slopes = $body.selectAll('g.slopegraph').data(slopes);
     $slopes.enter().append('g').attr({
@@ -1050,7 +1057,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
         var r = offset;
         offset += this.options.slopeWidth;
         var o2 = 0,
-          shift2 = [<model.Column>d].concat(d.children).map((o) => {
+          shift2 = d.children.map((o) => {
             var r = o2;
             o2 += (o.compressed ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
             if (o instanceof model.StackColumn && !o.collapsed && !o.compressed) {

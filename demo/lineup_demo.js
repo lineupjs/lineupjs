@@ -87,31 +87,6 @@
     });
   }
 
-  function loadDataImpl(name, desc, _data) {
-    fixMissing(desc.columns, _data);
-    var provider = LineUpJS.createLocalStorage(_data, LineUpJS.deriveColors(desc.columns));
-    lineUpDemoConfig.name = name;
-    if (lineup) {
-      lineup.changeDataStorage(provider, desc);
-    } else {
-      lineup = LineUpJS.create(provider, d3.select('#lugui-wrapper'), lineUpDemoConfig);
-      lineup.addPool(d3.select('#pool').node(), {
-        hideUsed: false
-      }).update();
-      lineup.restore(desc);
-    }
-    provider.deriveDefault();
-
-    var cols = provider.getRankings();
-    cols.forEach(function (rankCol) {
-      rankCol.children.forEach(function(col){
-        if(col.desc.type==="stack")
-          col.sortByMe();
-      })
-    })
-    updateMenu();
-  }
-
   function loadDataset(ds) {
     function loadDesc(desc, baseUrl) {
       if (desc.data) {
@@ -136,6 +111,32 @@
     }
   }
 
+  function loadDataImpl(name, desc, _data) {
+    fixMissing(desc.columns, _data);
+    var provider = LineUpJS.createLocalStorage(_data, LineUpJS.deriveColors(desc.columns));
+    lineUpDemoConfig.name = name;
+    if (lineup) {
+      lineup.changeDataStorage(provider, desc);
+    } else {
+      lineup = LineUpJS.create(provider, d3.select('#lugui-wrapper'), lineUpDemoConfig);
+      lineup.addPool(d3.select('#pool').node(), {
+        hideUsed: false
+      }).update();
+      lineup.restore(desc);
+    }
+    provider.deriveDefault();
+    lineup.update();
+
+    var cols = provider.getRankings();
+    cols.forEach(function (rankCol) {
+      rankCol.children.forEach(function(col){
+        if(col.desc.type==="stack")
+          col.sortByMe();
+      })
+    })
+    updateMenu();
+  }
+
   function uploadUI(dropFileCallback, dropURLCallback) {
     function handleFileSelect(evt) {
       evt.stopPropagation();
@@ -152,11 +153,15 @@
       evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
     }
 
-
     var $file = d3.select('#lugui-menu input[type="file"]');
     $file.node().addEventListener('change', handleFileSelect, false);
     var $drop = d3.select('#drop_zone');
     var drop = $drop.node();
+
+    drop.addEventListener('click', function(){
+      document.getElementById('fileselect').click();
+    })
+
     drop.addEventListener('dragenter', function () {
       $drop.classed('dragging', true);
     }, false);

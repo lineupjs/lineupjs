@@ -137,25 +137,13 @@ module.exports = function (grunt) {
         // If specified, watches this directory for changes, and re-runs the current target
         //watch: '<%= yeoman.app %>/scripts',
         // Use to override the default options, http://gruntjs.com/configuring-tasks#options
-        options: {
-          target: 'es5',
-          module: 'commonjs', // 'amd' (default) | 'commonjs'
-          sourceMap: true,
-          declaration: false,
-          removeComments: false
-        }
+        tsconfig: true
       },
       // A specific target
       dist: {
         src: ['src/**.ts', 'demo/**.ts'],
         reference: 'tsd.gen.d.ts',
-        options: {
-          target: 'es5',
-          module: 'commonjs', // 'amd' (default) | 'commonjs'
-          sourceMap: false,
-          declaration: false,
-          removeComments: true
-        }
+        tsconfig: true
       }
     },
 

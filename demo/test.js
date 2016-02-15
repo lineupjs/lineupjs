@@ -42,7 +42,7 @@ window.onload = function () {
   var r = p.pushRanking();
 
   var root = d3.select('body');
-
+  r.insert(p.create(p.createSelectionDesc()),0);
   r.push(p.create(desc[0]));
   r.push(p.create(desc[1]));
   r.push(p.create(desc[8]));
@@ -61,7 +61,7 @@ window.onload = function () {
   r2.push(p.create(desc[6]));
   r2.push(p.create(desc[7]));
 
-  var body = new LineUpJS.create(p, root.node(), {
+  var body = LineUpJS.create(p, root.node(), {
     additionalDesc : [
       LineUpJS.model.StackColumn.desc('+ Stack')
     ],
