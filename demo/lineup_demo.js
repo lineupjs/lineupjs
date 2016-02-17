@@ -28,11 +28,10 @@
     renderingOptions: {
       stacked: true,
       histograms: true,
-      meanLine: false,
-      animated: true
+      animated: true,
     },
     svgLayout: {
-      freezeCols: 2
+      freezeCols: 0
     }
   };
 
@@ -47,7 +46,7 @@
 
   function updateMenu() {
     var config = lineup.config;
-    var kvNodes = d3.select('#lugui-menu-rendering').selectAll('span').data(['stacked', 'animation', 'histograms', 'meanLine']);
+    var kvNodes = d3.select('#lugui-menu-rendering').selectAll('span').data(['stacked', 'animation']);
     kvNodes.exit().remove();
     kvNodes.enter().append('span').on('click', function (d) {
       lineup.changeRenderingOption(d, !config.renderingOptions[d]);
@@ -118,12 +117,12 @@
   }
 
   function loadDataset(ds) {
-    function loadDesc(desc, baseUrl) {
+    function loadData(desc, baseUrl) {
       if (desc.data) {
-        loadDataImpl(name, desc, desc.data);
+        initLineup(name, desc, desc.data);
       } else if (desc.file) {
         d3.dsv(desc.separator || '\t', 'text/plain')(baseUrl + '/' + desc.file, function (_data) {
-          loadDataImpl(name, desc, _data);
+          initLineup(name, desc, _data);
         });
       }
     }
@@ -134,14 +133,20 @@
     if (ds.descriptionFile) {
       var name = ds.descriptionFile.substring(0, ds.descriptionFile.length - 5);
       d3.json(ds.baseURL + '/' + ds.descriptionFile, function (desc) {
-        loadDesc(desc, ds.baseURL);
+        loadData(desc, ds.baseURL);
       })
     } else {
-      loadDesc(ds, '');
+      loadData(ds, '');
     }
   }
 
-  function loadDataImpl(name, desc, _data) {
+  /**
+   *
+   * @param name - name of the dataset
+   * @param desc - description of the dataset
+   * @param _data - the loaded data
+   */
+  function initLineup(name, desc, _data) {
     fixMissing(desc.columns, _data);
     var provider = LineUpJS.createLocalStorage(_data, LineUpJS.deriveColors(desc.columns));
     lineUpDemoConfig.name = name;
@@ -152,11 +157,12 @@
       lineup.addPool(d3.select('#pool').node(), {
         hideUsed: false
       }).update();
-      lineup.restore(desc);
+      lineup.restore(desc);//TODO: why?
     }
     provider.deriveDefault();
     lineup.update();
 
+    //sort by stacked columns
     var cols = provider.getRankings();
     cols.forEach(function (rankCol) {
       rankCol.children.forEach(function (col) {
@@ -216,7 +222,7 @@
       reader.onload = function (e) {
         var data_s = e.target.result;
         var _data = d3.dsv(desc.separator || '\t', 'text/plain').parse(data_s);
-        loadDataImpl(name, desc, _data);
+        initLineup(name, desc, _data);
       };
       // Read in the image file as a data URL.
       reader.readAsText(datafile);
@@ -298,7 +304,7 @@
       //derive a description file
       var desc = deriveDesc(header.split(separator.s).map(normalizeValue), _data);
       var name = fileName.substring(0, fileName.lastIndexOf('.'));
-      loadDataImpl(name, desc, _data);
+      initLineup(name, desc, _data);
     }
 
     uploadDataset(function (files) {
@@ -314,10 +320,10 @@
           var name = descs[0].name.substring(0, descs[0].name.length - 5);
           desc = JSON.parse(desc);
           if (desc.data) {
-            loadDataImpl(name, desc, desc.data);
+            initLineup(name, desc, desc.data);
           } else if (desc.url) {
             d3.dsv(desc.separator || '\t', 'text/plain')(desc.url, normalizeRow, function (_data) {
-              loadDataImpl(name, desc, _data);
+              initLineup(name, desc, _data);
             });
           } else if (desc.file) {
             var d = files.filter(function (f) {
@@ -351,6 +357,7 @@
   d3.json('datasets.json', function (error, data) {
     //console.log('datasets:', data, error);
 
+    //setup dataset select
     datasets = data.datasets;
     var $selector = d3.select('#lugui-dataset-selector');
     var ds = $selector.selectAll('option').data(data.datasets);
@@ -363,6 +370,8 @@
     $selector.on('change', function () {
       loadDataset(datasets[this.value]);
     });
+
+    //load data and init lineup
 
     var old = history.state;
     if (old) {
@@ -389,4 +398,5 @@
 
     loadLayout();
   });
+
 }(LineUpJS));
