@@ -2804,7 +2804,7 @@ var DataProvider = (function (_super) {
         var ranking = this.pushRanking();
         var toCol = function (column) {
             if (column.type === 'rank') {
-                return _this.create(ranking.createRankDesc());
+                return _this.create(_this.createRankDesc());
             }
             if (column.type === 'selection') {
                 return _this.create(_this.createSelectionDesc());
@@ -2842,8 +2842,8 @@ var DataProvider = (function (_super) {
                 ranking.push(col);
             }
         });
-        if (ranking.columns.filter(function (c) { return c.desc.type === 'rank'; }).length > 1) {
-            ranking.remove(ranking.columns[0]); //remove the first rank column if there are some in between.
+        if (ranking.children.filter(function (c) { return c.desc.type === 'rank'; }).length > 1) {
+            ranking.remove(ranking.children[0]); //remove the first rank column if there are some in between.
         }
         return ranking;
     };
@@ -3283,6 +3283,7 @@ var RemoteDataProvider = (function (_super) {
         }
         var r = new model.Ranking(id);
         r.push(this.create(this.createRankDesc()));
+        return r;
     };
     RemoteDataProvider.prototype.cleanUpRanking = function (ranking) {
         //delete all stored information

@@ -127,7 +127,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param existing an optional existing ranking to clone
    * @return the new ranking
    */
-  pushRanking(existing?:model.Ranking) {
+  pushRanking(existing?:model.Ranking) : model.Ranking {
     var r = this.cloneRanking(existing);
     this.pushRankingImpl(r);
     return r;
@@ -204,7 +204,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param existing
    * @returns {null}
    */
-  cloneRanking(existing?:model.Ranking) {
+  cloneRanking(existing?:model.Ranking): model.Ranking {
     return null; //implement me
   }
 
@@ -414,7 +414,7 @@ export class DataProvider extends utils.AEventDispatcher {
     const ranking = this.pushRanking();
     var toCol = (column) => {
       if (column.type === 'rank') {
-        return this.create(ranking.createRankDesc());
+        return this.create(this.createRankDesc());
       }
       if (column.type === 'selection') {
         return this.create(this.createSelectionDesc());
@@ -451,8 +451,8 @@ export class DataProvider extends utils.AEventDispatcher {
         ranking.push(col);
       }
     });
-    if (ranking.columns.filter((c) => c.desc.type === 'rank').length > 1) {
-      ranking.remove(ranking.columns[0]); //remove the first rank column if there are some in between.
+    if (ranking.children.filter((c) => c.desc.type === 'rank').length > 1) {
+      ranking.remove(ranking.children[0]); //remove the first rank column if there are some in between.
     }
     return ranking;
   }
@@ -945,6 +945,8 @@ export class RemoteDataProvider extends CommonDataProvider {
     }
     var r = new model.Ranking(id);
     r.push(this.create(this.createRankDesc()));
+
+    return r;
   }
 
   cleanUpRanking(ranking:model.Ranking) {
