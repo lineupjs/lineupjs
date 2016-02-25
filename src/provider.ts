@@ -411,9 +411,13 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param bundle
    */
   private deriveRanking(bundle:any[]) {
+    const r = this.pushRanking();
     var toCol = (column) => {
       if (column.type === 'rank') {
-        return null; //can't handle
+        return this.create(r.createRankDesc());
+      }
+      if (column.type === 'selection') {
+        return this.create(this.createSelectionDesc());
       }
       if (column.type === 'actions') {
         let r = this.create(model.createActionDesc(column.label || 'actions'));
@@ -441,13 +445,15 @@ export class DataProvider extends utils.AEventDispatcher {
       }
       return null;
     };
-    const r = this.pushRanking();
     bundle.forEach((column) => {
       var col = toCol(column);
       if (col) {
         r.push(col);
       }
     });
+    if (r.columns.filter((c) => c.desc.type === 'rank').length > 1) {
+      r.remove(r.columns[0]); //remove the first rank column if there are some in between.
+    }
     return r;
   }
 
