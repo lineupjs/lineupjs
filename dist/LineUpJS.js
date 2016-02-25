@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-02-12
+/*! LineUpJS - v0.2.0 - 2016-02-25
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -2801,9 +2801,13 @@ var DataProvider = (function (_super) {
      */
     DataProvider.prototype.deriveRanking = function (bundle) {
         var _this = this;
+        var r = this.pushRanking();
         var toCol = function (column) {
             if (column.type === 'rank') {
-                return null; //can't handle
+                return _this.create(r.createRankDesc());
+            }
+            if (column.type === 'selection') {
+                return _this.create(_this.createSelectionDesc());
             }
             if (column.type === 'actions') {
                 var r_1 = _this.create(model.createActionDesc(column.label || 'actions'));
@@ -2832,13 +2836,15 @@ var DataProvider = (function (_super) {
             }
             return null;
         };
-        var r = this.pushRanking();
         bundle.forEach(function (column) {
             var col = toCol(column);
             if (col) {
                 r.push(col);
             }
         });
+        if (r.columns.filter(function (c) { return c.desc.type === 'rank'; }).length > 1) {
+            r.remove(r.columns[0]); //remove the first rank column if there are some in between.
+        }
         return r;
     };
     /**
