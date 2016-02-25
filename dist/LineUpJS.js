@@ -2801,37 +2801,37 @@ var DataProvider = (function (_super) {
      */
     DataProvider.prototype.deriveRanking = function (bundle) {
         var _this = this;
-        var r = this.pushRanking();
+        var ranking = this.pushRanking();
         var toCol = function (column) {
             if (column.type === 'rank') {
-                return _this.create(r.createRankDesc());
+                return _this.create(ranking.createRankDesc());
             }
             if (column.type === 'selection') {
                 return _this.create(_this.createSelectionDesc());
             }
             if (column.type === 'actions') {
-                var r_1 = _this.create(model.createActionDesc(column.label || 'actions'));
-                r_1.restore(column, null);
-                return r_1;
+                var r = _this.create(model.createActionDesc(column.label || 'actions'));
+                r.restore(column, null);
+                return r;
             }
             if (column.type === 'stacked') {
                 //create a stacked one
-                var r_2 = _this.create(model.StackColumn.desc(column.label || 'Combined'));
+                var r = _this.create(model.StackColumn.desc(column.label || 'Combined'));
                 (column.children || []).forEach(function (col) {
                     var c = toCol(col);
                     if (c) {
-                        r_2.push(c);
+                        r.push(c);
                     }
                 });
-                return r_2;
+                return r;
             }
             else {
                 var desc = _this.findDesc(column.column);
                 if (desc) {
-                    var r_3 = _this.create(desc);
+                    var r = _this.create(desc);
                     column.label = column.label || desc.label || desc.column;
-                    r_3.restore(column, null);
-                    return r_3;
+                    r.restore(column, null);
+                    return r;
                 }
             }
             return null;
@@ -2839,13 +2839,13 @@ var DataProvider = (function (_super) {
         bundle.forEach(function (column) {
             var col = toCol(column);
             if (col) {
-                r.push(col);
+                ranking.push(col);
             }
         });
-        if (r.columns.filter(function (c) { return c.desc.type === 'rank'; }).length > 1) {
-            r.remove(r.columns[0]); //remove the first rank column if there are some in between.
+        if (ranking.columns.filter(function (c) { return c.desc.type === 'rank'; }).length > 1) {
+            ranking.remove(ranking.columns[0]); //remove the first rank column if there are some in between.
         }
-        return r;
+        return ranking;
     };
     /**
      * sorts the given ranking and eventually return a ordering of the data items
