@@ -84,7 +84,8 @@ export class MappingEditor {
     const width = options.width - options.padding_hor*2;
     const height = options.height - options.padding_ver*2;
 
-    const raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.min(this.scale.domain[1], this.original.domain[1])])
+
+    const raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
       .range([0,width]);
     const normal2pixel = d3.scale.linear().domain([0, 1])
       .range([0, width]);
@@ -95,7 +96,11 @@ export class MappingEditor {
         var d = raw2pixel.domain();
         d[0] = parseFloat(this.value);
         raw2pixel.domain(d);
+        var old = that.scale_.domain;
+        old[0] = d[0];
+        that.scale_.domain = old;
         updateRaw();
+        triggerUpdate();
       });
     $root.select('input.raw_max')
       .property('value', raw2pixel.domain()[1])
@@ -103,7 +108,11 @@ export class MappingEditor {
         var d = raw2pixel.domain();
         d[1] = parseFloat(this.value);
         raw2pixel.domain(d);
+        var old = that.scale_.domain;
+        old[old.length-1] = d[1];
+        that.scale_.domain = old;
         updateRaw();
+        triggerUpdate();
       });
 
     //lines that show mapping of individual data items

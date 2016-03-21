@@ -431,7 +431,7 @@ var MappingEditor = (function () {
         $root.node().innerHTML = "<div>\n    <span class=\"raw_min\">0</span>\n    <span class=\"center\"><label><select>\n        <option value=\"linear\">Linear</option>\n        <option value=\"linear_invert\">Invert</option>\n        <option value=\"linear_abs\">Absolute</option>\n        <option value=\"log\">Log</option>\n        <option value=\"pow1.1\">Pow 1.1</option>\n        <option value=\"pow2\">Pow 2</option>\n        <option value=\"pow3\">Pow 3</option>\n        <option value=\"sqrt\">Sqrt</option>\n        <option value=\"script\">Custom Script</option>\n      </select></label>\n      </span>\n    <span class=\"raw_max\">1</span>\n  </div>\n  <svg width=\"" + options.width + "\" height=\"" + options.height + "\">\n    <rect width=\"100%\" height=\"10\"></rect>\n    <rect width=\"100%\" height=\"10\" y=\"" + (options.height - 10) + "\"></rect>\n    <g transform=\"translate(" + options.padding_hor + "," + options.padding_ver + ")\">\n      <g class=\"samples\">\n\n      </g>\n      <g class=\"mappings\">\n\n      </g>\n    </g>\n  </svg>\n  <div>\n    <input type=\"text\" class=\"raw_min\" value=\"0\">\n    <span class=\"center\">Raw</span>\n    <input type=\"text\" class=\"raw_max\" value=\"1\">\n  </div>\n  <div class=\"script\">\n    <textarea>\n\n    </textarea>\n    <button>Apply</button>\n  </div>";
         var width = options.width - options.padding_hor * 2;
         var height = options.height - options.padding_ver * 2;
-        var raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.min(this.scale.domain[1], this.original.domain[1])])
+        var raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
             .range([0, width]);
         var normal2pixel = d3.scale.linear().domain([0, 1])
             .range([0, width]);
@@ -441,7 +441,11 @@ var MappingEditor = (function () {
             var d = raw2pixel.domain();
             d[0] = parseFloat(this.value);
             raw2pixel.domain(d);
+            var old = that.scale_.domain;
+            old[0] = d[0];
+            that.scale_.domain = old;
             updateRaw();
+            triggerUpdate();
         });
         $root.select('input.raw_max')
             .property('value', raw2pixel.domain()[1])
@@ -449,7 +453,11 @@ var MappingEditor = (function () {
             var d = raw2pixel.domain();
             d[1] = parseFloat(this.value);
             raw2pixel.domain(d);
+            var old = that.scale_.domain;
+            old[old.length - 1] = d[1];
+            that.scale_.domain = old;
             updateRaw();
+            triggerUpdate();
         });
         //lines that show mapping of individual data items
         var datalines = $root.select('g.samples').selectAll('line').data([]);
