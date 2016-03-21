@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-02-25
+/*! LineUpJS - v0.2.0 - 2016-03-21
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -2490,6 +2490,9 @@ function computeHist(arr, acc, categories) {
         hist: m.entries().map(function (entry) { return ({ cat: entry.key, y: entry.value }); })
     };
 }
+function isSupportType(col) {
+    return ['rank', 'selection', 'actions'].indexOf(col.type) >= 0;
+}
 /**
  * a basic data provider holding the data and rankings
  */
@@ -2792,7 +2795,9 @@ var DataProvider = (function (_super) {
         }
         var r = this.pushRanking();
         this.getColumns().forEach(function (col) {
-            _this.push(r, col);
+            if (!isSupportType(col)) {
+                _this.push(r, col);
+            }
         });
     };
     /**

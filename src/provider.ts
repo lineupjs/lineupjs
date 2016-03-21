@@ -66,6 +66,11 @@ function computeHist(arr:any[], acc:(any) => string[], categories: string[]):mod
   };
 }
 
+
+function isSupportType(col: model.IColumnDesc) {
+  return ['rank', 'selection', 'actions'].indexOf(col.type) >= 0;
+}
+
 /**
  * a basic data provider holding the data and rankings
  */
@@ -402,7 +407,9 @@ export class DataProvider extends utils.AEventDispatcher {
     }
     var r = this.pushRanking();
     this.getColumns().forEach((col) => {
-      this.push(r, col);
+      if (!isSupportType(col)) {
+        this.push(r, col);
+      }
     });
   }
 
