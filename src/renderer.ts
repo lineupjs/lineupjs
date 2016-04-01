@@ -293,7 +293,7 @@ export class BarCellRenderer extends DefaultCellRenderer {
       const n = col.getWidth() * col.getValue(d);
       const w = isNaN(n) ? 0 : n;
       const h = context.rowHeight(i) - context.option('rowPadding', 1) * 2;
-      ctx.fillStyle = this.colorOf(d, i, col);
+      ctx.fillStyle = this.colorOf(d, i, col) || col.color || model.Column.DEFAULT_COLOR;
       ctx.fillRect(x, y, w, h);
     });
     ctx.restore();
@@ -724,6 +724,44 @@ class StackCellRenderer extends DefaultCellRenderer {
       }
     }, (index) => row, false);
     $row.selectAll('*').remove();
+  }
+
+  renderCanvas(ctx: CanvasRenderingContext2D, stack:model.StackColumn, rows:any[], context:IRenderContext) {
+    const children = stack.children,
+      stacked = context.showStacked(stack);
+    var offset = 0,
+      shifts = children.map((d) => {
+        var r = offset;
+        offset += d.getWidth();
+        offset += (!stacked ? context.option('columnPadding', 0) : 0);
+        return r;
+      });
+    const ueber = context.cellX;
+    const ueberOption = context.option;
+    context.option = (option, default_) => {
+      var r = ueberOption(option, default_);
+      return option === 'stackLevel' ? r + 'N' : r;
+    };
+    ctx.save();
+    children.forEach((child, i) => {
+      ctx.save();
+      ctx.translate(shifts[i], 0);
+
+      if (stacked) {
+        const preChildren = children.slice(0, i);
+        //if shown as stacked bar shift individual cells of a column to the left where they belong to
+        context.cellX = (index) => {
+          //shift by all the empty space left from the previous columns
+          return ueber(index) - preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rows[index])), 0);
+        };
+      }
+      context.renderCanvas(child, ctx, rows, context);
+
+      ctx.restore();
+    });
+    ctx.restore();
+    context.cellX = ueber;
+    context.option = ueberOption;
   }
 }
 

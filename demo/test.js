@@ -12,7 +12,7 @@ window.onload = function () {
     {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
     {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
     {label: 'B', type: 'number', column: 'b', 'domain': [0, 30]},
-    {label: 'C', type: 'number', column: 'c', 'domain': [0, 120], cssClass: 'green'},
+    {label: 'C', type: 'number', column: 'c', 'domain': [0, 120], color: 'green'},
     {label: 'L', type: 'link', column: 'l'},
     {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
     {label: 'Cat', type: 'categorical', column: 'cat', categories : ['c1','c2','c3']},

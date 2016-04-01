@@ -3518,7 +3518,8 @@ var BarCellRenderer = (function (_super) {
             var n = col.getWidth() * col.getValue(d);
             var w = isNaN(n) ? 0 : n;
             var h = context.rowHeight(i) - context.option('rowPadding', 1) * 2;
-            ctx.fillStyle = _this.colorOf(d, i, col);
+            console.log(_this.colorOf(d, i, col));
+            ctx.fillStyle = _this.colorOf(d, i, col) || col.color || model.Column.DEFAULT_COLOR;
             ctx.fillRect(x, y, w, h);
         });
         ctx.restore();
@@ -3942,6 +3943,39 @@ var StackCellRenderer = (function (_super) {
             }
         }, function (index) { return row; }, false);
         $row.selectAll('*').remove();
+    };
+    StackCellRenderer.prototype.renderCanvas = function (ctx, stack, rows, context) {
+        var children = stack.children, stacked = context.showStacked(stack);
+        var offset = 0, shifts = children.map(function (d) {
+            var r = offset;
+            offset += d.getWidth();
+            offset += (!stacked ? context.option('columnPadding', 0) : 0);
+            return r;
+        });
+        var ueber = context.cellX;
+        var ueberOption = context.option;
+        context.option = function (option, default_) {
+            var r = ueberOption(option, default_);
+            return option === 'stackLevel' ? r + 'N' : r;
+        };
+        ctx.save();
+        children.forEach(function (child, i) {
+            ctx.save();
+            ctx.translate(shifts[i], 0);
+            if (stacked) {
+                var preChildren = children.slice(0, i);
+                //if shown as stacked bar shift individual cells of a column to the left where they belong to
+                context.cellX = function (index) {
+                    //shift by all the empty space left from the previous columns
+                    return ueber(index) - preChildren.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rows[index])); }, 0);
+                };
+            }
+            context.renderCanvas(child, ctx, rows, context);
+            ctx.restore();
+        });
+        ctx.restore();
+        context.cellX = ueber;
+        context.option = ueberOption;
     };
     return StackCellRenderer;
 })(DefaultCellRenderer);
