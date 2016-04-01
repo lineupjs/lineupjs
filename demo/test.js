@@ -68,6 +68,9 @@ window.onload = function () {
     htmlLayout: {
       autoRotateLabels: true
     },
+    body: {
+      renderer: 'canvas'
+    },
     renderingOptions: {
       histograms: true
     }

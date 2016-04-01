@@ -128,6 +128,7 @@ export class LineUp extends utils_.AEventDispatcher {
      * options related to the rendering of the body
      */
     body: {
+      renderer: 'svg', //svg, canvas
       rowHeight: 17,
       rowPadding: 0.2, //padding for scale.rangeBands
       rowBarPadding: 1,
@@ -164,7 +165,7 @@ export class LineUp extends utils_.AEventDispatcher {
 
   private $container:d3.Selection<any>;
 
-  private body:ui_.BodyRenderer = null;
+  private body:ui_.IBodyRenderer = null;
   private header:ui_.HeaderRenderer = null;
   private pools:ui_.PoolRenderer[] = [];
   private contentScroller:utils_.ContentScroller = null;
@@ -193,7 +194,7 @@ export class LineUp extends utils_.AEventDispatcher {
 
       freezeCols: this.config.body.freezeCols
     });
-    this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
+    this.body = new (this.config.body.renderer === 'svg' ? ui_.BodyRenderer: ui_.BodyCanvasRenderer)(data, this.node, this.slice.bind(this), {
       rowHeight: this.config.body.rowHeight,
       rowPadding: this.config.body.rowPadding,
       rowBarPadding: this.config.body.rowBarPadding,

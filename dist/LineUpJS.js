@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-03-21
+/*! LineUpJS - v0.2.0 - 2016-04-01
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -155,6 +155,7 @@ var LineUp = (function (_super) {
              * options related to the rendering of the body
              */
             body: {
+                renderer: 'svg',
                 rowHeight: 17,
                 rowPadding: 0.2,
                 rowBarPadding: 1,
@@ -204,7 +205,7 @@ var LineUp = (function (_super) {
             rotationDegree: this.config.header.rotationDegree,
             freezeCols: this.config.body.freezeCols
         });
-        this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
+        this.body = new (this.config.body.renderer === 'svg' ? ui_.BodyRenderer : ui_.BodyCanvasRenderer)(data, this.node, this.slice.bind(this), {
             rowHeight: this.config.body.rowHeight,
             rowPadding: this.config.body.rowPadding,
             rowBarPadding: this.config.body.rowBarPadding,
@@ -3408,6 +3409,26 @@ var DefaultCellRenderer = (function () {
         }
         $row.selectAll('*').remove();
     };
+    DefaultCellRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
+        var _this = this;
+        ctx.save();
+        ctx.textAlign = this.align;
+        rows.forEach(function (row, i) {
+            var y = context.cellY(i);
+            var alignmentShift = 2;
+            if (_this.align === 'right') {
+                alignmentShift = col.getWidth() - 5;
+            }
+            else if (_this.align === 'center') {
+                alignmentShift = col.getWidth() * 0.5;
+            }
+            var x = context.cellX(i) + alignmentShift;
+            ctx.fillText(col.getLabel(row), x, y, col.getWidth());
+        });
+        ctx.restore();
+    };
+    DefaultCellRenderer.prototype.mouseEnterCanvas = function (ctx, col, row, index, context) {
+    };
     return DefaultCellRenderer;
 })();
 exports.DefaultCellRenderer = DefaultCellRenderer;
@@ -3488,6 +3509,25 @@ var BarCellRenderer = (function (_super) {
             }).text(function (d) { return col.getLabel(d); });
         }
     };
+    BarCellRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
+        var _this = this;
+        ctx.save();
+        rows.forEach(function (d, i) {
+            var x = context.cellX(i);
+            var y = context.cellY(i) + context.option('rowPadding', 1);
+            var n = col.getWidth() * col.getValue(d);
+            var w = isNaN(n) ? 0 : n;
+            var h = context.rowHeight(i) - context.option('rowPadding', 1) * 2;
+            ctx.fillStyle = _this.colorOf(d, i, col);
+            ctx.fillRect(x, y, w, h);
+        });
+        ctx.restore();
+    };
+    BarCellRenderer.prototype.mouseEnterCanvas = function (ctx, col, row, index, context) {
+        ctx.save();
+        ctx.fillText(col.getLabel(row), context.cellX(index), context.cellY(index), col.getWidth());
+        ctx.restore();
+    };
     return BarCellRenderer;
 })(DefaultCellRenderer);
 exports.BarCellRenderer = BarCellRenderer;
@@ -3552,6 +3592,23 @@ var HeatMapCellRenderer = (function (_super) {
                 transform: 'translate(' + context.cellX(index) + ',' + context.cellY(index) + ')'
             }).text(function (d) { return col.getLabel(d); });
         }
+    };
+    HeatMapCellRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
+        var _this = this;
+        ctx.save();
+        rows.forEach(function (d, i) {
+            var x = context.cellX(i);
+            var y = context.cellY(i) + context.option('rowPadding', 1);
+            var h = context.rowHeight(i) - context.option('rowPadding', 1) * 2;
+            ctx.fillStyle = _this.colorOf(d, i, col);
+            ctx.fillRect(x, y, h, h);
+        });
+        ctx.restore();
+    };
+    HeatMapCellRenderer.prototype.mouseEnterCanvas = function (ctx, col, row, index, context) {
+        ctx.save();
+        ctx.fillText(col.getLabel(row), context.cellX(index), context.cellY(index), col.getWidth());
+        ctx.restore();
     };
     return HeatMapCellRenderer;
 })(DefaultCellRenderer);
@@ -3628,6 +3685,16 @@ var SelectionCellRenderer = (function (_super) {
             y: function (d, i) { return context.cellY(i); }
         });
         $rows.exit().remove();
+    };
+    SelectionCellRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
+        ctx.save();
+        ctx.font = 'FontAwesome';
+        rows.forEach(function (d, i) {
+            var x = context.cellX(i);
+            var y = context.cellY(i);
+            ctx.fillText(col.getValue(d) === true ? '\uf046' : '\uf096', x, y);
+        });
+        ctx.restore();
     };
     return SelectionCellRenderer;
 })(DefaultCellRenderer);
@@ -3785,6 +3852,17 @@ var CategoricalRenderer = (function (_super) {
     };
     CategoricalRenderer.prototype.findRow = function ($col, index) {
         return $col.selectAll('g.' + this.textClass + '[data-index="' + index + '"]');
+    };
+    CategoricalRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
+        ctx.save();
+        rows.forEach(function (d, i) {
+            var x = context.cellX(i);
+            var y = context.cellY(i);
+            ctx.fillStyle = 'black';
+            ctx.fillText(col.getLabel(d), x + context.rowHeight(i), y);
+            ctx.fillStyle = col.getColor(d);
+            ctx.fillRect(x, y + context.option('rowPadding', 1), Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0), Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0));
+        });
     };
     return CategoricalRenderer;
 })(DefaultCellRenderer);
@@ -4588,6 +4666,9 @@ var BodyRenderer = (function (_super) {
                 }
                 act_renderer.render($this, col, data, context);
             },
+            renderCanvas: function (col, ctx, data, context) {
+                if (context === void 0) { context = this; }
+            },
             showStacked: function (col) {
                 return options.stacked;
             },
@@ -4924,6 +5005,207 @@ var BodyRenderer = (function (_super) {
     return BodyRenderer;
 })(utils.AEventDispatcher);
 exports.BodyRenderer = BodyRenderer;
+var BodyCanvasRenderer = (function (_super) {
+    __extends(BodyCanvasRenderer, _super);
+    function BodyCanvasRenderer(data, parent, slicer, options) {
+        if (options === void 0) { options = {}; }
+        _super.call(this);
+        this.data = data;
+        this.slicer = slicer;
+        this.options = {
+            rowHeight: 20,
+            rowPadding: 1,
+            rowBarPadding: 1,
+            idPrefix: '',
+            slopeWidth: 150,
+            columnPadding: 5,
+            stacked: true,
+            renderers: renderer.renderers(),
+            meanLine: false,
+            freezeCols: 0
+        };
+        this.currentFreezeLeft = 0;
+        this.histCache = d3.map();
+        //merge options
+        utils.merge(this.options, options);
+        this.$node = d3.select(parent).append('canvas').classed('lu-canvas.body', true);
+        this.changeDataStorage(data);
+    }
+    BodyCanvasRenderer.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['hoverChanged']);
+    };
+    Object.defineProperty(BodyCanvasRenderer.prototype, "node", {
+        get: function () {
+            return this.$node.node();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BodyCanvasRenderer.prototype.setOption = function (key, value) {
+        this.options[key] = value;
+    };
+    BodyCanvasRenderer.prototype.updateFreeze = function (left) {
+    };
+    BodyCanvasRenderer.prototype.select = function (dataIndex, additional) {
+        if (additional === void 0) { additional = false; }
+    };
+    BodyCanvasRenderer.prototype.changeDataStorage = function (data) {
+        if (this.data) {
+            this.data.on(['dirtyValues.bodyRenderer', 'selectionChanged.bodyRenderer'], null);
+        }
+        this.data = data;
+        data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this), 1));
+        //data.on('selectionChanged.bodyRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
+    };
+    BodyCanvasRenderer.prototype.createContext = function (index_shift) {
+        var options = this.options;
+        return {
+            rowKey: undefined,
+            cellY: function (index) {
+                return (index + index_shift) * (options.rowHeight);
+            },
+            cellPrevY: function (index) {
+                return (index + index_shift) * (options.rowHeight);
+            },
+            cellX: function (index) {
+                return 0;
+            },
+            rowHeight: function (index) {
+                return options.rowHeight * (1 - options.rowPadding);
+            },
+            renderer: function (col) {
+                if (col.compressed && model.isNumberColumn(col)) {
+                    return options.renderers.heatmap;
+                }
+                if (col instanceof model.StackColumn && col.collapsed) {
+                    return options.renderers.number;
+                }
+                var l = options.renderers[col.desc.type];
+                return l || renderer.defaultRenderer();
+            },
+            render: function (col, $this, data, context) {
+                if (context === void 0) { context = this; }
+            },
+            renderCanvas: function (col, ctx, data, context) {
+                if (context === void 0) { context = this; }
+                var act_renderer = this.renderer(col);
+                act_renderer.renderCanvas(ctx, col, data, context);
+            },
+            showStacked: function (col) {
+                return options.stacked;
+            },
+            idPrefix: options.idPrefix,
+            animated: function ($sel) { return $sel; },
+            //show mean line if option is enabled and top level
+            showMeanLine: function (col) { return options.meanLine && model.isNumberColumn(col) && !col.compressed && col.parent instanceof model.Ranking; },
+            option: function (key, default_) { return (key in options) ? options[key] : default_; }
+        };
+    };
+    BodyCanvasRenderer.prototype.renderRankings = function (ctx, rankings, orders, shifts, context, height) {
+        var _this = this;
+        var that = this;
+        var dataPromises = orders.map(function (r) { return _this.data.view(r); });
+        ctx.save();
+        rankings.forEach(function (ranking, j) {
+            dataPromises[j].then(function (data) {
+                ctx.save();
+                ctx.translate(shifts[j].shift, 0);
+                ctx.save();
+                ctx.fillStyle = '#f7f7f7';
+                orders[j].forEach(function (order, i) {
+                    if (i % 2 === 0) {
+                        ctx.fillRect(0, context.cellY(i), shifts[j].width, context.rowHeight(i));
+                    }
+                });
+                ctx.restore();
+                ranking.children.forEach(function (child, i) {
+                    ctx.save();
+                    ctx.translate(shifts[j].shifts[i], 0);
+                    context.renderCanvas(child, ctx, data, context);
+                    ctx.restore();
+                });
+                ctx.restore();
+            });
+        });
+        ctx.restore();
+    };
+    BodyCanvasRenderer.prototype.renderSlopeGraphs = function (ctx, rankings, orders, shifts, context) {
+        var _this = this;
+        var slopes = orders.slice(1).map(function (d, i) { return ({ left: orders[i], left_i: i, right: d, right_i: i + 1 }); });
+        ctx.save();
+        ctx.fillStyle = 'darkgray';
+        slopes.forEach(function (slope, i) {
+            ctx.save();
+            ctx.translate(shifts[i + 1].shift - _this.options.slopeWidth, 0);
+            var cache = {};
+            slope.right.forEach(function (data_index, pos) {
+                cache[data_index] = pos;
+            });
+            var lines = slope.left.map(function (data_index, pos) { return ({
+                data_index: data_index,
+                lpos: pos,
+                rpos: cache[data_index]
+            }); }).filter(function (d) { return d.rpos != null; });
+            ctx.beginPath();
+            lines.forEach(function (line) {
+                ctx.moveTo(0, context.rowHeight(line.lpos) * 0.5 + context.cellY(line.lpos));
+                ctx.lineTo(_this.options.slopeWidth, context.rowHeight(line.rpos) * 0.5 + context.cellY(line.rpos));
+            });
+            ctx.stroke();
+            ctx.restore();
+        });
+        ctx.restore();
+    };
+    /**
+     * render the body
+     */
+    BodyCanvasRenderer.prototype.update = function () {
+        var _this = this;
+        var rankings = this.data.getRankings();
+        var maxElems = d3.max(rankings, function (d) { return d.getOrder().length; }) || 0;
+        var height = this.options.rowHeight * maxElems;
+        var visibleRange = this.slicer(0, maxElems, function (i) { return i * _this.options.rowHeight; });
+        var orderSlicer = function (order) {
+            if (visibleRange.from === 0 && order.length <= visibleRange.to) {
+                return order;
+            }
+            return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
+        };
+        var orders = rankings.map(function (r) { return orderSlicer(r.getOrder()); });
+        var context = this.createContext(visibleRange.from);
+        //compute offsets and shifts for individual rankings and columns inside the rankings
+        var offset = 0, shifts = rankings.map(function (d, i) {
+            var r = offset;
+            offset += _this.options.slopeWidth;
+            var o2 = 0, shift2 = d.children.map(function (o) {
+                var r = o2;
+                o2 += (o.compressed ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + _this.options.columnPadding;
+                if (o instanceof model.StackColumn && !o.collapsed && !o.compressed) {
+                    o2 += _this.options.columnPadding * (o.length - 1);
+                }
+                return r;
+            });
+            offset += o2;
+            return {
+                shift: r,
+                shifts: shift2,
+                width: o2
+            };
+        });
+        this.$node.attr({
+            width: offset,
+            height: height
+        });
+        var ctx = this.$node.node().getContext('2d');
+        ctx.font = '10pt Times New Roman';
+        ctx.textBaseline = 'top';
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        this.renderRankings(ctx, rankings, orders, shifts, context, height);
+        this.renderSlopeGraphs(ctx, rankings, orders, shifts, context);
+    };
+    return BodyCanvasRenderer;
+})(utils.AEventDispatcher);
+exports.BodyCanvasRenderer = BodyCanvasRenderer;
 
 },{"./model":3,"./renderer":5,"./ui_dialogs":7,"./utils":8,"d3":undefined}],7:[function(require,module,exports){
 /**

@@ -633,7 +633,23 @@ export interface ISlicer {
   (start:number, length:number, row2y:(i:number) => number) : { from: number; to: number };
 }
 
-export class BodyRenderer extends utils.AEventDispatcher {
+export interface IBodyRenderer extends utils.AEventDispatcher {
+  histCache : d3.Map<Promise<model.IStatistics>>;
+
+  node: Element;
+
+  setOption(key: string, value: any);
+
+  changeDataStorage(data:provider.DataProvider);
+
+  select(dataIndex:number, additional?: boolean);
+
+  updateFreeze(left:number),
+
+  update();
+}
+
+export class BodyRenderer extends utils.AEventDispatcher implements IBodyRenderer{
   private mouseOverItem:(dataIndex:number, hover:boolean) => void;
   private options = {
     rowHeight: 20,
@@ -729,6 +745,7 @@ export class BodyRenderer extends utils.AEventDispatcher {
         }
         act_renderer.render($this, col, data, context);
       },
+      renderCanvas(col:model.Column, ctx:CanvasRenderingContext2D, data:any[], context:renderer.IRenderContext = this) { },
       showStacked(col:model.StackColumn) {
         return options.stacked;
       },
@@ -1088,5 +1105,232 @@ export class BodyRenderer extends utils.AEventDispatcher {
 
     this.renderRankings($body, rankings, orders, shifts, context, height);
     this.renderSlopeGraphs($body, rankings, orders, shifts, context);
+  }
+}
+
+
+export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyRenderer  {
+  private options = {
+    rowHeight: 20,
+    rowPadding: 1,
+    rowBarPadding: 1,
+    idPrefix: '',
+    slopeWidth: 150,
+    columnPadding: 5,
+    stacked: true,
+
+    renderers: renderer.renderers(),
+
+    meanLine: false,
+
+    freezeCols: 0
+  };
+
+  private $node:d3.Selection<any>;
+
+  private currentFreezeLeft = 0;
+
+  histCache = d3.map<Promise<model.IStatistics>>();
+
+  constructor(private data:provider.DataProvider, parent:Element, private slicer:ISlicer, options = {}) {
+    super();
+    //merge options
+    utils.merge(this.options, options);
+
+    this.$node = d3.select(parent).append('canvas').classed('lu-canvas.body', true);
+
+    this.changeDataStorage(data);
+  }
+
+  createEventList() {
+    return super.createEventList().concat(['hoverChanged']);
+  }
+
+  get node() {
+    return <Element>this.$node.node();
+  }
+
+  setOption(key:string, value:any) {
+    this.options[key] = value;
+  }
+
+  updateFreeze(left: number) {
+
+  }
+
+  select(dataIndex:number, additional = false) {
+
+  }
+
+  changeDataStorage(data:provider.DataProvider) {
+    if (this.data) {
+      this.data.on(['dirtyValues.bodyRenderer', 'selectionChanged.bodyRenderer'], null);
+    }
+    this.data = data;
+    data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this), 1));
+    //data.on('selectionChanged.bodyRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
+  }
+
+  createContext(index_shift:number):renderer.IRenderContext {
+    var options = this.options;
+    return {
+      rowKey: undefined,
+      cellY(index:number) {
+        return (index + index_shift) * (options.rowHeight);
+      },
+      cellPrevY(index:number) {
+        return (index + index_shift) * (options.rowHeight);
+      },
+      cellX(index:number) {
+        return 0;
+      },
+      rowHeight(index:number) {
+        return options.rowHeight * (1 - options.rowPadding);
+      },
+      renderer(col:model.Column) {
+        if (col.compressed && model.isNumberColumn(col)) {
+          return options.renderers.heatmap;
+        }
+        if (col instanceof model.StackColumn && col.collapsed) {
+          return options.renderers.number;
+        }
+        var l = options.renderers[col.desc.type];
+        return l || renderer.defaultRenderer();
+      },
+      render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context:renderer.IRenderContext = this) { },
+      renderCanvas(col:model.Column, ctx:CanvasRenderingContext2D, data:any[], context:renderer.IRenderContext = this) {
+        const act_renderer = this.renderer(col);
+        act_renderer.renderCanvas(ctx, col, data, context);
+      },
+      showStacked(col:model.StackColumn) {
+        return options.stacked;
+      },
+      idPrefix: options.idPrefix,
+
+      animated: ($sel:d3.Selection<any>) => $sel,
+
+      //show mean line if option is enabled and top level
+      showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.compressed && col.parent instanceof model.Ranking,
+
+      option: (key:string, default_:any) => (key in options) ? options[key] : default_
+    };
+  }
+
+
+  renderRankings(ctx: CanvasRenderingContext2D, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IRenderContext, height: number) {
+    const that = this;
+    const dataPromises = orders.map((r) => this.data.view(r));
+    ctx.save();
+
+
+    rankings.forEach((ranking, j) => {
+
+      dataPromises[j].then((data) => {
+        ctx.save();
+        ctx.translate(shifts[j].shift, 0);
+
+        ctx.save();
+        ctx.fillStyle = '#f7f7f7';
+        orders[j].forEach((order,i) => {
+          if (i%2 === 0) {
+            ctx.fillRect(0, context.cellY(i), shifts[j].width, context.rowHeight(i));
+          }
+        });
+        ctx.restore();
+
+        ranking.children.forEach((child, i) =>  {
+          ctx.save();
+          ctx.translate(shifts[j].shifts[i], 0);
+          context.renderCanvas(child, ctx, data, context);
+          ctx.restore();
+        });
+        ctx.restore();
+      });
+    });
+    ctx.restore();
+  }
+
+  renderSlopeGraphs(ctx: CanvasRenderingContext2D, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IRenderContext) {
+    var slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i: i, right: d, right_i: i + 1}));
+    ctx.save();
+    ctx.fillStyle = 'darkgray';
+    slopes.forEach((slope, i) => {
+      ctx.save();
+      ctx.translate(shifts[i + 1].shift - this.options.slopeWidth, 0);
+
+      var cache = {};
+      slope.right.forEach((data_index, pos) => {
+        cache[data_index] = pos;
+      });
+      const lines = slope.left.map((data_index, pos) => ({
+        data_index: data_index,
+        lpos: pos,
+        rpos: cache[data_index]
+      })).filter((d) => d.rpos != null);
+
+      ctx.beginPath();
+      lines.forEach((line) => {
+        ctx.moveTo(0, context.rowHeight(line.lpos) * 0.5 + context.cellY(line.lpos));
+        ctx.lineTo(this.options.slopeWidth, context.rowHeight(line.rpos) * 0.5 + context.cellY(line.rpos));
+      });
+      ctx.stroke();
+
+      ctx.restore();
+    });
+    ctx.restore();
+  }
+
+  /**
+   * render the body
+   */
+  update() {
+    var rankings = this.data.getRankings();
+    var maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
+    var height = this.options.rowHeight * maxElems;
+    var visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
+    var orderSlicer = (order:number[]) => {
+      if (visibleRange.from === 0 && order.length <= visibleRange.to) {
+        return order;
+      }
+      return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
+    };
+    var orders = rankings.map((r) => orderSlicer(r.getOrder()));
+    var context = this.createContext(visibleRange.from);
+
+
+    //compute offsets and shifts for individual rankings and columns inside the rankings
+    var offset = 0,
+      shifts = rankings.map((d, i) => {
+        var r = offset;
+        offset += this.options.slopeWidth;
+        var o2 = 0,
+          shift2 = d.children.map((o) => {
+            var r = o2;
+            o2 += (o.compressed ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
+            if (o instanceof model.StackColumn && !o.collapsed && !o.compressed) {
+              o2 += this.options.columnPadding * (o.length - 1);
+            }
+            return r;
+          });
+        offset += o2;
+        return {
+          shift: r,
+          shifts: shift2,
+          width: o2
+        };
+      });
+
+    this.$node.attr({
+      width: offset,
+      height: height
+    });
+
+    const ctx = (<HTMLCanvasElement>this.$node.node()).getContext('2d');
+    ctx.font = '10pt Times New Roman';
+    ctx.textBaseline = 'top';
+    ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
+
+    this.renderRankings(ctx, rankings, orders, shifts, context, height);
+    this.renderSlopeGraphs(ctx, rankings, orders, shifts, context);
   }
 }
