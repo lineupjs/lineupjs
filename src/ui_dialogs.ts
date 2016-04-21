@@ -302,6 +302,43 @@ function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.
   });
 }
 
+
+/**
+ * opens a dialog for editing the script code
+ * @param column the column to edit
+ * @param $header the visual header element of this column
+ */
+export function openEditScriptDialog(column:model.ScriptColumn, $header:d3.Selection<model.Column>) {
+  const bak = column.script;
+  const $popup = makePopup($header, 'Edit Script',
+    `Parameters: <code>values: number[], children: Column[]</code><br>
+      <textarea autofocus="true" rows="5" autofocus="autofocus" style="width: 95%;">${column.script}</textarea><br>`);
+
+  function updateData(script) {
+    column.script = script;
+  }
+
+  function updateImpl() {
+    //get value
+    var script = $popup.select('textarea').property('value');
+    updateData(script);
+  }
+
+  $popup.select('.cancel').on('click', function () {
+    $popup.select('textarea"]').property('value', bak);
+    updateData(bak);
+    $popup.remove();
+  });
+  $popup.select('.reset').on('click', function () {
+    $popup.select('textarea').property('value', model.ScriptColumn.DEFAULT_SCRIPT);
+    updateData(model.ScriptColumn.DEFAULT_SCRIPT);
+  });
+  $popup.select('.ok').on('click', function () {
+    updateImpl();
+    $popup.remove();
+  });
+}
+
 /**
  * opens the mapping editor for a given NumberColumn
  * @param column the column to rename

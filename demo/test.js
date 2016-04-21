@@ -53,6 +53,14 @@ window.onload = function () {
   rstack.push(p.create(desc[3]));
   rstack.setWeights([0.2, 0.4]);
   r.push(p.create(desc[4]));
+  var rscript = p.create(LineUpJS.model.ScriptColumn.desc('Script'));
+  r.push(p.create(desc[1]));
+  r.push(p.create(desc[2]));
+  r.push(p.create(desc[3]));
+  r.push(rscript);
+  rscript.push(p.create(desc[1]));
+  rscript.push(p.create(desc[2]));
+  rscript.push(p.create(desc[3]));
 
   var r2 = p.pushRanking();
   r2.push(p.create(desc[1]));
