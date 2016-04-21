@@ -19,7 +19,8 @@
     }
     },
     {name: ' add single columns', icon: 'fa-plus', action: openAddColumnDialog},
-    {name: ' save layout', icon: 'fa-floppy-o', action: saveLayout}
+    {name: ' save layout', icon: 'fa-floppy-o', action: saveLayout},
+    {name: ' save to gist', icon: 'fa-github', action: saveToGist}
   ];
   var lineUpDemoConfig = {
     htmlLayout: {
@@ -216,18 +217,45 @@
     d3.select('#pool').style('display', 'none');
   });
 
-
-  function saveLayout() {
+  function dumpLayout() {
     //full spec
     var s = lineup.dump();
     s.columns = lineup.data.columns;
     s.data = lineup.data.data;
 
     //stringify with pretty print
-    var str = JSON.stringify(s, null, '\t');
+    return JSON.stringify(s, null, '\t');
+  }
+
+  function saveLayout() {
+    //stringify with pretty print
+    var str = dumpLayout();
     //create blob and save it
     var blob = new Blob([str], {type: 'application/json;charset=utf-8'});
     saveAs(blob, 'LineUp-' + lineUpDemoConfig.name + '.json');
+  }
+
+  function saveToGist() {
+    //stringify with pretty print
+    var str = dumpLayout();
+    var args = {
+        'description': lineUpDemoConfig.name,
+        'public': true,
+        'files': {
+          'lineup.json': {
+            'content': str
+          }
+        }
+    };
+    d3.json('https://api.github.com/gists').post(JSON.stringify(args), function (error, data) {
+      if (error) {
+        console.log('cant store to gist', error);
+      } else {
+        var id = data.id;
+        document.title = 'LineUp - ' + (args.description || 'Custom');
+        history.pushState({ id: 'gist:'+id }, 'LineUp - ' + (args.description || 'Custom'), '#gist:' + id);
+      }
+    });
   }
 
   function loadLayout() {
@@ -387,37 +415,24 @@
 
     //load data and init lineup
 
-    var old = history.state;
-    if (old) {
-      var choose = datasets.filter(function (d) {
-        return d.id === old.id;
+    var old = history.state ? history.state.id : (window.location.hash ? window.location.hash.substr(1) : '');
+    if (old.match(/gist:.*/)) {
+      loadDataset({
+        name: 'Github Gist '+old.substr(5),
+        id: old,
+        gist: old.substr(5)
       });
-      $selector.property('value', datasets.indexOf(choose[0]));
-      loadDataset(choose[0]);
-    } else if (window.location.hash) {
-      var hash = window.location.hash.substr(1);
-      if (hash.match(/gist:.*/)) {
-        loadDataset({
-          name: 'Github Gist '+hash.substr(5),
-          id: hash,
-          gist: hash.substr(5)
-        });
-      } else {
-        var choose = datasets.filter(function (d) {
-          return d.id === hash;
-        });
-        if (choose.length > 0) {
-          $selector.property('value', datasets.indexOf(choose[0]));
-          loadDataset(choose[0]);
-        } else {
-          loadDataset(datasets[0]);
-        }
-      }
     } else {
-      //and start with 0:
-      loadDataset(datasets[0]);
+      var choose = datasets.filter(function (d) {
+        return d.id === old;
+      })
+      if (choose.length > 0) {
+        $selector.property('value', datasets.indexOf(choose[0]));
+        loadDataset(choose[0]);
+      } else {
+        loadDataset(datasets[0]);
+      }
     }
-
 
     loadLayout();
   });
