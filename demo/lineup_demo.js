@@ -28,7 +28,7 @@
     renderingOptions: {
       stacked: true,
       histograms: true,
-      animated: true,
+      animated: true
     },
     svgLayout: {
       freezeCols: 0
@@ -119,12 +119,24 @@
   function loadDataset(ds) {
     function loadData(desc, baseUrl) {
       if (desc.data) {
-        initLineup(name, desc, desc.data);
+        initLineup(desc.name, desc, desc.data);
       } else if (desc.file) {
         d3.dsv(desc.separator || '\t', 'text/plain')(baseUrl + '/' + desc.file, function (_data) {
-          initLineup(name, desc, _data);
+          initLineup(desc.name, desc, _data);
         });
       }
+    }
+
+    function loadGist(gistid) {
+      d3.json('https://api.github.com/gists/'+gistid, function(error, gistdesc) {
+        if (error) {
+          console.error('cant load gist id: '+gistid, error);
+        } else if (gistdesc) {
+          var firstFile = gistdesc.files[Object.keys(gistdesc.files)[0]];
+          var content = JSON.parse(firstFile.content);
+          initLineup(gistdesc.description, content, content.data);
+        }
+      });
     }
 
     document.title = 'LineUp - ' + (ds.name || 'Custom');
@@ -135,6 +147,8 @@
       d3.json(ds.baseURL + '/' + ds.descriptionFile, function (desc) {
         loadData(desc, ds.baseURL);
       })
+    } else if (ds.gist) {
+      loadGist(ds.gist);
     } else {
       loadData(ds, '');
     }
@@ -381,14 +395,23 @@
       $selector.property('value', datasets.indexOf(choose[0]));
       loadDataset(choose[0]);
     } else if (window.location.hash) {
-      var choose = datasets.filter(function (d) {
-        return d.id === window.location.hash.substr(1);
-      });
-      if (choose.length > 0) {
-        $selector.property('value', datasets.indexOf(choose[0]));
-        loadDataset(choose[0]);
+      var hash = window.location.hash.substr(1);
+      if (hash.match(/gist:.*/)) {
+        loadDataset({
+          name: 'Github Gist '+hash.substr(5),
+          id: hash,
+          gist: hash.substr(5)
+        });
       } else {
-        loadDataset(datasets[0]);
+        var choose = datasets.filter(function (d) {
+          return d.id === hash;
+        });
+        if (choose.length > 0) {
+          $selector.property('value', datasets.indexOf(choose[0]));
+          loadDataset(choose[0]);
+        } else {
+          loadDataset(datasets[0]);
+        }
       }
     } else {
       //and start with 0:

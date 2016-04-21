@@ -29,6 +29,11 @@
       "baseURL": "data",
       "descriptionFile": "sp500.json",
       "name": "SP500 2015-06-26"
+    },
+    {
+      "id": "prosperity2",
+      "name": "Legatum Prosperity Index @ Gist",
+      "gist": "23d8abd8f152e0c00081de31eb43cb21"
     }
   ]
 }
