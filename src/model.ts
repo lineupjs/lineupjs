@@ -1677,7 +1677,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
    * @type {Array}
    * @private
    */
-  private columns_:Column[] = [];
+  private _columns:Column[] = [];
 
   comparator = (a:any[], b:any[]) => {
     if (this.sortBy_ === null) {
@@ -1708,7 +1708,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
 
   assignNewId(idGenerator:() => string) {
     this.id = fixCSS(idGenerator());
-    this.columns_.forEach((c) => c.assignNewId(idGenerator));
+    this._columns.forEach((c) => c.assignNewId(idGenerator));
   }
 
   setOrder(order:number[]) {
@@ -1721,7 +1721,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
 
   dump(toDescRef:(desc:any) => any) {
     var r : any = {};
-    r.columns = this.columns_.map((d) => d.dump(toDescRef));
+    r.columns = this._columns.map((d) => d.dump(toDescRef));
     r.sortCriteria = {
       asc: this.ascending
     };
@@ -1732,6 +1732,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   }
 
   restore(dump:any, factory:(dump:any) => Column) {
+    this.clear();
     dump.columns.map((child) => {
       var c = factory(child);
       if (c) {
@@ -1741,7 +1742,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
     if (dump.sortCriteria) {
       this.ascending = dump.sortCriteria.asc;
       if (dump.sortCriteria.sortBy) {
-        let help = this.columns_.filter((d) => d.id === dump.sortCriteria.sortBy);
+        let help = this._columns.filter((d) => d.id === dump.sortCriteria.sortBy);
         this.sortBy(help.length === 0 ? null : help[0], dump.sortCriteria.asc);
       }
     }
@@ -1750,7 +1751,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0) {
     var acc = offset; // + this.getWidth() + padding;
     if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      this.columns_.forEach((c) => {
+      this._columns.forEach((c) => {
         acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
       });
     }
@@ -1792,15 +1793,15 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   }
 
   get children() {
-    return this.columns_.slice();
+    return this._columns.slice();
   }
 
   get length() {
-    return this.columns_.length;
+    return this._columns.length;
   }
 
-  insert(col:Column, index:number = this.columns_.length) {
-    this.columns_.splice(index, 0, col);
+  insert(col:Column, index:number = this._columns.length) {
+    this._columns.splice(index, 0, col);
     col.parent = this;
     this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
     col.on('filterChanged.order', this.dirtyOrder);
@@ -1815,7 +1816,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   }
 
   insertAfter(col:Column, ref:Column) {
-    var i = this.columns_.indexOf(ref);
+    var i = this._columns.indexOf(ref);
     if (i < 0) {
       return false;
     }
@@ -1827,7 +1828,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   }
 
   remove(col:Column) {
-    var i = this.columns_.indexOf(col);
+    var i = this._columns.indexOf(col);
     if (i < 0) {
       return false;
     }
@@ -1835,12 +1836,25 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
     this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
 
     col.parent = null;
-    this.columns_.splice(i, 1);
+    this._columns.splice(i, 1);
     this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col);
     if (this.sortBy_ === col) { //was my sorting one
-      this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
+      this.sortBy(this._columns.length > 0 ? this._columns[0] : null);
     }
     return true;
+  }
+
+  clear() {
+    if (this._columns.length === 0) {
+      return;
+    }
+    this.sortBy_ = null;
+    this._columns.forEach((col) => {
+      this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
+      col.parent = null;
+    });
+    this._columns.length = 0;
+    this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], null);
   }
 
   get flatColumns() {
@@ -1893,11 +1907,11 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   }
 
   isFiltered() {
-    return this.columns_.some((d) => d.isFiltered());
+    return this._columns.some((d) => d.isFiltered());
   }
 
   filter(row:any) {
-    return this.columns_.every((d) => d.filter(row));
+    return this._columns.every((d) => d.filter(row));
   }
 
   findMyRanker() {

@@ -379,6 +379,10 @@ export class DataProvider extends utils.AEventDispatcher {
       dump.rankings.forEach((r) => {
         var ranking = this.pushRanking();
         ranking.restore(r, create);
+        //if no rank column add one
+        if (!ranking.children.some((d) => d instanceof model.RankColumn)) {
+          ranking.insert(this.create(this.createRankDesc()), 0);
+        }
       });
     }
     if (dump.layout) { //we have the old format try to create it
@@ -419,6 +423,7 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   private deriveRanking(bundle:any[]) {
     const ranking = this.pushRanking();
+    ranking.clear();
     var toCol = (column) => {
       if (column.type === 'rank') {
         return this.create(this.createRankDesc());
@@ -458,8 +463,9 @@ export class DataProvider extends utils.AEventDispatcher {
         ranking.push(col);
       }
     });
-    if (ranking.children.filter((c) => c.desc.type === 'rank').length > 1) {
-      ranking.remove(ranking.children[0]); //remove the first rank column if there are some in between.
+    //if no rank column add one
+    if (!ranking.children.some((d) => d instanceof model.RankColumn)) {
+      ranking.insert(this.create(this.createRankDesc()), 0);
     }
     return ranking;
   }
