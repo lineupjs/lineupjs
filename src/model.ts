@@ -1003,6 +1003,15 @@ export class AnnotateColumn extends StringColumn {
  * a checkbox column for selections
  */
 export class SelectionColumn extends ValueColumn<boolean> {
+  /**
+   * factory for creating a description creating a rank column
+   * @param label
+   * @returns {{type: string, label: string}}
+   */
+  static desc(label:string = 'S') {
+    return {type: 'selection', label: label};
+  }
+
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -1648,6 +1657,15 @@ export class StackColumn extends Column implements IColumnParent, INumberColumn 
  * a rank column
  */
 export class RankColumn extends ValueColumn<number> {
+  /**
+   * factory for creating a description creating a rank column
+   * @param label
+   * @returns {{type: string, label: string}}
+   */
+  static desc(label:string = 'Rank') {
+    return {type: 'rank', label: label};
+  }
+
   constructor(id:string, desc:any) {
     super(id, desc);
     this.setWidthImpl(50);
@@ -1928,6 +1946,8 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
  * @type {function(string=): {type: string, label: string}}
  */
 export const createStackDesc = StackColumn.desc;
+export const createRankDesc = RankColumn.desc;
+export const createSelectionDesc = SelectionColumn.desc;
 /**
  * utility for creating an action description with optional label
  * @param label

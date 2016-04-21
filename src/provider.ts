@@ -252,13 +252,23 @@ export class DataProvider extends utils.AEventDispatcher {
     return 'col' + (this.uid++);
   }
 
-
+  protected rankAccessor(row: any, id: string, desc: model.IColumnDesc, ranking: model.Ranking) {
+    return 0;
+  }
   /**
    * creates an internal column model out of the given column description
    * @param desc
    * @returns {model.Column] the new column or null if it can't be created
    */
   create(desc:model.IColumnDesc):model.Column {
+    //hacks for provider dependent descriptors
+    if (desc.type === 'rank') {
+      (<any>desc).accessor = this.rankAccessor.bind(this);
+    } else if (desc.type === 'selection') {
+      (<any>desc).accessor = (row: any) => this.isSelected(row._index);
+      (<any>desc).setter = (row: any, value: boolean) => value ? this.select(row._index) : this.deselect(row._index);
+    }
+
     //find by type and instantiate
     var type = this.columnTypes[desc.type];
     if (type) {
@@ -381,7 +391,7 @@ export class DataProvider extends utils.AEventDispatcher {
         ranking.restore(r, create);
         //if no rank column add one
         if (!ranking.children.some((d) => d instanceof model.RankColumn)) {
-          ranking.insert(this.create(this.createRankDesc()), 0);
+          ranking.insert(this.create(model.RankColumn.desc()), 0);
         }
       });
     }
@@ -426,10 +436,10 @@ export class DataProvider extends utils.AEventDispatcher {
     ranking.clear();
     var toCol = (column) => {
       if (column.type === 'rank') {
-        return this.create(this.createRankDesc());
+        return this.create(model.createRankDesc());
       }
       if (column.type === 'selection') {
-        return this.create(this.createSelectionDesc());
+        return this.create(model.createSelectionDesc());
       }
       if (column.type === 'actions') {
         let r = this.create(model.createActionDesc(column.label || 'actions'));
@@ -438,7 +448,7 @@ export class DataProvider extends utils.AEventDispatcher {
       }
       if (column.type === 'stacked') {
         //create a stacked one
-        let r = <model.StackColumn>this.create(model.StackColumn.desc(column.label || 'Combined'));
+        let r = <model.StackColumn>this.create(model.createStackDesc(column.label || 'Combined'));
         (column.children || []).forEach((col) => {
           var c = toCol(col);
           if (c) {
@@ -465,7 +475,7 @@ export class DataProvider extends utils.AEventDispatcher {
     });
     //if no rank column add one
     if (!ranking.children.some((d) => d instanceof model.RankColumn)) {
-      ranking.insert(this.create(this.createRankDesc()), 0);
+      ranking.insert(this.create(model.createRankDesc()), 0);
     }
     return ranking;
   }
@@ -593,19 +603,6 @@ export class DataProvider extends utils.AEventDispatcher {
       return true;
     }
   }
-
-  createSelectionDesc() : model.IColumnDesc {
-    return <any>{
-      type: 'selection',
-      label: 'S',
-      accessor: (row: any) => this.isSelected(row._index),
-      setter: (row: any, value: boolean) => value ? this.select(row._index) : this.deselect(row._index)
-    };
-  }
-
-  createRankDesc() : model.IColumnDesc {
-    return null;
-  }
   /**
    * deselect the given row
    * @param index
@@ -692,7 +689,6 @@ export class CommonDataProvider extends DataProvider {
 
   constructor(private columns:model.IColumnDesc[] = []) {
     super();
-    this.columns = columns.concat([this.createRankDesc(), this.createSelectionDesc()]);
     //generate the accessor
     columns.forEach((d:any) => {
       d.accessor = this.rowGetter;
@@ -783,12 +779,8 @@ export class LocalDataProvider extends CommonDataProvider {
     };
   }
 
-  createRankDesc() {
-    return {
-      label: 'Rank',
-      type: 'rank',
-      accessor: (row, id, desc, ranking) => (row._rankings[ranking.id] + 1) || 1
-    };
+  protected rankAccessor(row: any, id: string, desc: model.IColumnDesc, ranking: model.Ranking) {
+    return (row._rankings[ranking.id] + 1) || 1;
   }
 
   cloneRanking(existing?:model.Ranking) {
@@ -806,7 +798,7 @@ export class LocalDataProvider extends CommonDataProvider {
         this.push(new_, child.desc);
       });
     } else {
-      new_.push(this.create(this.createRankDesc()));
+      new_.push(this.create(model.createRankDesc()));
     }
 
     if (this.options.filterGlobally) {
@@ -942,12 +934,8 @@ export class RemoteDataProvider extends CommonDataProvider {
     super(columns);
   }
 
-  createRankDesc() {
-    return {
-      label: 'Rank',
-      type: 'rank',
-      accessor: (row, id, desc, ranking) => this.ranks[ranking.id][row._index] || 0
-    };
+  protected rankAccessor(row: any, id: string, desc: model.IColumnDesc, ranking: model.Ranking) {
+    return this.ranks[ranking.id][row._index] || 0;
   }
 
   cloneRanking(existing?:model.Ranking) {
@@ -957,7 +945,7 @@ export class RemoteDataProvider extends CommonDataProvider {
       this.ranks[id] = this.ranks[existing.id];
     }
     var r = new model.Ranking(id);
-    r.push(this.create(this.createRankDesc()));
+    r.push(this.create(model.createRankDesc()));
 
     return r;
   }

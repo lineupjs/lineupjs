@@ -2332,10 +2332,10 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<a href="index.html#_model_.ranking.constructor-8" class="tsd-kind-icon">constructor</a>
 						</li>
 						<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-							<a href="index.html#_model_.ranking.ascending" class="tsd-kind-icon">ascending</a>
+							<a href="index.html#_model_.ranking._columns" class="tsd-kind-icon">_columns</a>
 						</li>
 						<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-							<a href="index.html#_model_.ranking.columns_" class="tsd-kind-icon">columns_</a>
+							<a href="index.html#_model_.ranking.ascending" class="tsd-kind-icon">ascending</a>
 						</li>
 						<li class=" tsd-kind-property tsd-parent-kind-class">
 							<a href="index.html#_model_.ranking.id-8" class="tsd-kind-icon">id</a>
@@ -2360,6 +2360,9 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						</li>
 						<li class=" tsd-kind-method tsd-parent-kind-class">
 							<a href="index.html#_model_.ranking.assignnewid-8" class="tsd-kind-icon">assign<wbr>New<wbr>Id</a>
+						</li>
+						<li class=" tsd-kind-method tsd-parent-kind-class">
+							<a href="index.html#_model_.ranking.clear" class="tsd-kind-icon">clear</a>
 						</li>
 						<li class=" tsd-kind-method tsd-parent-kind-class">
 							<a href="index.html#_model_.ranking.comparator" class="tsd-kind-icon">comparator</a>
@@ -15721,6 +15724,26 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						</ul>
 					</section>
 					<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+						<a name="_model_.ranking._columns" class="tsd-anchor"></a>
+						<h3>_columns</h3>
+						<div class="tsd-signature tsd-kind-icon">_columns<span class="tsd-signature-symbol">:</span> <a href="index.html#_model_.column" class="tsd-signature-type">Column</a><span class="tsd-signature-symbol">[]</span></div>
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1680">model.ts:1680</a></li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>columns of this ranking</p>
+							</div>
+							<dl class="tsd-comment-tags">
+								<dt>type</dt>
+								<dd><p>{Array}</p>
+								</dd>
+							</dl>
+						</div>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
 						<a name="_model_.ranking.ascending" class="tsd-anchor"></a>
 						<h3>ascending</h3>
 						<div class="tsd-signature tsd-kind-icon">ascending<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -15736,26 +15759,6 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<dl class="tsd-comment-tags">
 								<dt>type</dt>
 								<dd><p>{boolean}</p>
-								</dd>
-							</dl>
-						</div>
-					</section>
-					<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-						<a name="_model_.ranking.columns_" class="tsd-anchor"></a>
-						<h3>columns_</h3>
-						<div class="tsd-signature tsd-kind-icon">columns_<span class="tsd-signature-symbol">:</span> <a href="index.html#_model_.column" class="tsd-signature-type">Column</a><span class="tsd-signature-symbol">[]</span></div>
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1680">model.ts:1680</a></li>
-							</ul>
-						</aside>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>columns of this ranking</p>
-							</div>
-							<dl class="tsd-comment-tags">
-								<dt>type</dt>
-								<dd><p>{Array}</p>
 								</dd>
 							</dl>
 						</div>
@@ -15816,7 +15819,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<div class="tsd-signature tsd-kind-icon">children<span class="tsd-signature-symbol">:</span> </div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1794">model.ts:1794</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1795">model.ts:1795</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -15826,7 +15829,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<div class="tsd-signature tsd-kind-icon">flat<wbr>Columns<span class="tsd-signature-symbol">:</span> </div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1846">model.ts:1846</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1860">model.ts:1860</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -15837,7 +15840,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<aside class="tsd-sources">
 							<p>Implementation of <a href="index.html#_model_.icolumnparent">IColumnParent</a>.<a href="index.html#_model_.icolumnparent.fqid-13">fqid</a></p>
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1907">model.ts:1907</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1921">model.ts:1921</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -15847,7 +15850,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<div class="tsd-signature tsd-kind-icon">length<span class="tsd-signature-symbol">:</span> </div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1798">model.ts:1798</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1799">model.ts:1799</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -15882,6 +15885,23 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 										</ul>
 									</li>
 								</ul>
+								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+							</li>
+						</ul>
+					</section>
+					<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+						<a name="_model_.ranking.clear" class="tsd-anchor"></a>
+						<h3>clear</h3>
+						<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+							<li class="tsd-signature tsd-kind-icon">clear<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						</ul>
+						<ul class="tsd-descriptions">
+							<li class="tsd-description">
+								<aside class="tsd-sources">
+									<ul>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1847">model.ts:1847</a></li>
+									</ul>
+								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 							</li>
 						</ul>
@@ -15998,7 +16018,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1899">model.ts:1899</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1913">model.ts:1913</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -16021,7 +16041,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1852">model.ts:1852</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1866">model.ts:1866</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -16066,7 +16086,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Implementation of <a href="index.html#_model_.icolumnparent">IColumnParent</a>.<a href="index.html#_model_.icolumnparent.findmyranker-13">findMyRanker</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1903">model.ts:1903</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1917">model.ts:1917</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.ranking" class="tsd-signature-type">Ranking</a></h4>
@@ -16110,7 +16130,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1750">model.ts:1750</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1751">model.ts:1751</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -16198,7 +16218,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1802">model.ts:1802</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1803">model.ts:1803</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -16207,7 +16227,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 										<h5>col: <a href="index.html#_model_.column" class="tsd-signature-type">Column</a></h5>
 									</li>
 									<li>
-										<h5><span class="tsd-flag ts-flagDefault value">Default value</span> index: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;this.columns_.length</span></h5>
+										<h5><span class="tsd-flag ts-flagDefault value">Default value</span> index: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;this._columns.length</span></h5>
 									</li>
 								</ul>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.column" class="tsd-signature-type">Column</a></h4>
@@ -16225,7 +16245,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Implementation of <a href="index.html#_model_.icolumnparent">IColumnParent</a>.<a href="index.html#_model_.icolumnparent.insertafter-2">insertAfter</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1817">model.ts:1817</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1818">model.ts:1818</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -16251,7 +16271,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1895">model.ts:1895</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1909">model.ts:1909</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -16347,7 +16367,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1825">model.ts:1825</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1826">model.ts:1826</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -16371,7 +16391,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Implementation of <a href="index.html#_model_.icolumnparent">IColumnParent</a>.<a href="index.html#_model_.icolumnparent.remove-2">remove</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1829">model.ts:1829</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1830">model.ts:1830</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -16461,7 +16481,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1774">model.ts:1774</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1775">model.ts:1775</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -16487,7 +16507,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1760">model.ts:1760</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1761">model.ts:1761</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
@@ -16512,7 +16532,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1868">model.ts:1868</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1882">model.ts:1882</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -16566,7 +16586,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1767">model.ts:1767</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1768">model.ts:1768</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -22145,7 +22165,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 					<div class="tsd-signature tsd-kind-icon">create<wbr>Stack<wbr>Desc<span class="tsd-signature-symbol">:</span> <a href="index.html#_model_.stackcolumn.desc-10" class="tsd-signature-type">desc</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1916">model.ts:1916</a></li>
+							<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1930">model.ts:1930</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -22169,7 +22189,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1922">model.ts:1922</a></li>
+									<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1936">model.ts:1936</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -22364,7 +22384,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1929">model.ts:1929</a></li>
+									<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/model.ts#L1943">model.ts:1943</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -22478,7 +22498,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 					<div class="tsd-signature tsd-kind-icon">Common<wbr>Data<wbr>Provider<span class="tsd-signature-symbol">:</span> </div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L682">provider.ts:682</a></li>
+							<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L688">provider.ts:688</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -22497,7 +22517,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.constructor-1">constructor</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L685">provider.ts:685</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L691">provider.ts:691</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -22532,7 +22552,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<div class="tsd-signature tsd-kind-icon">columns<span class="tsd-signature-symbol">:</span> <a href="index.html#_model_.icolumndesc" class="tsd-signature-type">IColumnDesc</a><span class="tsd-signature-symbol">[]</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L687">provider.ts:687</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L693">provider.ts:693</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -22542,7 +22562,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<div class="tsd-signature tsd-kind-icon">ranking<wbr>Index<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L683">provider.ts:683</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L689">provider.ts:689</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -22611,7 +22631,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.clearselection-1">clearSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L637">provider.ts:637</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L643">provider.ts:643</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -22722,7 +22742,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.createeventlist-1">createEventList</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L697">provider.ts:697</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L703">provider.ts:703</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -22740,7 +22760,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.createrankdesc-1">createRankDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L600">provider.ts:600</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L606">provider.ts:606</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.icolumndesc" class="tsd-signature-type">IColumnDesc</a></h4>
@@ -22758,7 +22778,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.createselectiondesc-1">createSelectionDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L591">provider.ts:591</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L597">provider.ts:597</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.icolumndesc" class="tsd-signature-type">IColumnDesc</a></h4>
@@ -22776,7 +22796,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.derivedefault-1">deriveDefault</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L403">provider.ts:403</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L407">provider.ts:407</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -22799,7 +22819,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.deselect-1">deselect</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L607">provider.ts:607</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L613">provider.ts:613</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -22882,7 +22902,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.exporttable-1">exportTable</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L648">provider.ts:648</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L654">provider.ts:654</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -22978,7 +22998,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.finddesc-1">findDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L717">provider.ts:717</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L723">provider.ts:723</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -23068,7 +23088,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.fromdescref-1">fromDescRef</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L730">provider.ts:730</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L736">provider.ts:736</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -23092,7 +23112,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.getcolumns-1">getColumns</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L713">provider.ts:713</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L719">provider.ts:719</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.icolumndesc" class="tsd-signature-type">IColumnDesc</a><span class="tsd-signature-symbol">[]</span></h4>
@@ -23156,7 +23176,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.getselection-1">getSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L627">provider.ts:627</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L633">provider.ts:633</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23224,7 +23244,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.isselected-1">isSelected</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L522">provider.ts:522</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L528">provider.ts:528</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23253,7 +23273,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.mappingsample-1">mappingSample</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L490">provider.ts:490</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L496">provider.ts:496</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23281,7 +23301,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L742">provider.ts:742</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L748">provider.ts:748</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -23416,7 +23436,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L705">provider.ts:705</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L711">provider.ts:711</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23509,7 +23529,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.restore-1">restore</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L737">provider.ts:737</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L743">provider.ts:743</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -23561,7 +23581,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L685">provider.ts:685</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L691">provider.ts:691</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -23591,7 +23611,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.rowkey-1">rowKey</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L512">provider.ts:512</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L518">provider.ts:518</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23623,7 +23643,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.searchselect-1">searchSelect</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L540">provider.ts:540</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L546">provider.ts:546</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23657,7 +23677,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.select-1">select</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L530">provider.ts:530</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L536">provider.ts:536</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23688,7 +23708,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.selectall-1">selectAll</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L548">provider.ts:548</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L554">provider.ts:554</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23719,7 +23739,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.selectedrows-1">selectedRows</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L616">provider.ts:616</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L622">provider.ts:622</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23742,7 +23762,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.setselection-1">setSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L559">provider.ts:559</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L565">provider.ts:565</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23773,7 +23793,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.sort-1">sort</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L472">provider.ts:472</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L478">provider.ts:478</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23802,7 +23822,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.stats-1">stats</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L499">provider.ts:499</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L505">provider.ts:505</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23827,7 +23847,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 											<li class="tsd-description">
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L502">provider.ts:502</a></li>
+														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L508">provider.ts:508</a></li>
 													</ul>
 												</aside>
 												<h4 class="tsd-parameters-title">Parameters</h4>
@@ -23848,7 +23868,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 											<li class="tsd-description">
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L501">provider.ts:501</a></li>
+														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L507">provider.ts:507</a></li>
 													</ul>
 												</aside>
 												<h4 class="tsd-parameters-title">Parameters</h4>
@@ -23875,7 +23895,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.todescref-1">toDescRef</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L726">provider.ts:726</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L732">provider.ts:732</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23904,7 +23924,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.toggleselection-1">toggleSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L573">provider.ts:573</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L579">provider.ts:579</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -23998,7 +24018,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.view-1">view</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L481">provider.ts:481</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L487">provider.ts:487</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -24191,7 +24211,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L637">provider.ts:637</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L643">provider.ts:643</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -24327,7 +24347,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L600">provider.ts:600</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L606">provider.ts:606</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.icolumndesc" class="tsd-signature-type">IColumnDesc</a></h4>
@@ -24344,7 +24364,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L591">provider.ts:591</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L597">provider.ts:597</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.icolumndesc" class="tsd-signature-type">IColumnDesc</a></h4>
@@ -24361,7 +24381,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L403">provider.ts:403</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L407">provider.ts:407</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -24383,7 +24403,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L420">provider.ts:420</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L424">provider.ts:424</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -24413,7 +24433,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L607">provider.ts:607</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L613">provider.ts:613</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -24493,7 +24513,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L648">provider.ts:648</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L654">provider.ts:654</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -24587,7 +24607,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L396">provider.ts:396</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L400">provider.ts:400</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -24770,7 +24790,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L627">provider.ts:627</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L633">provider.ts:633</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -24836,7 +24856,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L522">provider.ts:522</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L528">provider.ts:528</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -24864,7 +24884,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L490">provider.ts:490</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L496">provider.ts:496</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25165,7 +25185,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L512">provider.ts:512</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L518">provider.ts:518</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25196,7 +25216,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L540">provider.ts:540</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L546">provider.ts:546</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25229,7 +25249,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L530">provider.ts:530</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L536">provider.ts:536</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25259,7 +25279,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L548">provider.ts:548</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L554">provider.ts:554</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25289,7 +25309,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L616">provider.ts:616</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L622">provider.ts:622</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25311,7 +25331,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L559">provider.ts:559</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L565">provider.ts:565</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25341,7 +25361,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L472">provider.ts:472</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L478">provider.ts:478</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25369,7 +25389,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L499">provider.ts:499</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L505">provider.ts:505</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25394,7 +25414,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 											<li class="tsd-description">
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L502">provider.ts:502</a></li>
+														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L508">provider.ts:508</a></li>
 													</ul>
 												</aside>
 												<h4 class="tsd-parameters-title">Parameters</h4>
@@ -25415,7 +25435,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 											<li class="tsd-description">
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L501">provider.ts:501</a></li>
+														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L507">provider.ts:507</a></li>
 													</ul>
 												</aside>
 												<h4 class="tsd-parameters-title">Parameters</h4>
@@ -25469,7 +25489,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L573">provider.ts:573</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L579">provider.ts:579</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25561,7 +25581,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L481">provider.ts:481</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L487">provider.ts:487</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25586,7 +25606,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 					<div class="tsd-signature tsd-kind-icon">Local<wbr>Data<wbr>Provider<span class="tsd-signature-symbol">:</span> </div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L749">provider.ts:749</a></li>
+							<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L755">provider.ts:755</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -25605,7 +25625,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.constructor">constructor</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L757">provider.ts:757</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L763">provider.ts:763</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -25648,7 +25668,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<div class="tsd-signature tsd-kind-icon">data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L759">provider.ts:759</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L765">provider.ts:765</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -25658,7 +25678,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<div class="tsd-signature tsd-kind-icon">reorderall<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L757">provider.ts:757</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L763">provider.ts:763</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -25673,7 +25693,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.cleanupranking-1">cleanUpRanking</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L813">provider.ts:813</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L819">provider.ts:819</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -25720,7 +25740,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.clearselection-1">clearSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L637">provider.ts:637</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L643">provider.ts:643</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25772,7 +25792,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.cloneranking-1">cloneRanking</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L788">provider.ts:788</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L794">provider.ts:794</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -25827,7 +25847,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.createeventlist">createEventList</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.createeventlist-1">createEventList</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L697">provider.ts:697</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L703">provider.ts:703</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -25845,7 +25865,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.createrankdesc-1">createRankDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L780">provider.ts:780</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L786">provider.ts:786</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
@@ -25865,7 +25885,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 											<li class="tsd-description">
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L784">provider.ts:784</a></li>
+														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L790">provider.ts:790</a></li>
 													</ul>
 												</aside>
 												<h4 class="tsd-parameters-title">Parameters</h4>
@@ -25901,7 +25921,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.createselectiondesc-1">createSelectionDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L591">provider.ts:591</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L597">provider.ts:597</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.icolumndesc" class="tsd-signature-type">IColumnDesc</a></h4>
@@ -25919,7 +25939,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.derivedefault-1">deriveDefault</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L403">provider.ts:403</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L407">provider.ts:407</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -25942,7 +25962,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.deselect-1">deselect</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L607">provider.ts:607</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L613">provider.ts:613</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26025,7 +26045,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.exporttable-1">exportTable</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L648">provider.ts:648</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L654">provider.ts:654</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26122,7 +26142,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.finddesc">findDesc</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.finddesc-1">findDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L717">provider.ts:717</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L723">provider.ts:723</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -26213,7 +26233,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.fromdescref">fromDescRef</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.fromdescref-1">fromDescRef</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L730">provider.ts:730</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L736">provider.ts:736</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -26238,7 +26258,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.getcolumns">getColumns</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.getcolumns-1">getColumns</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L713">provider.ts:713</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L719">provider.ts:719</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.icolumndesc" class="tsd-signature-type">IColumnDesc</a><span class="tsd-signature-symbol">[]</span></h4>
@@ -26302,7 +26322,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.getselection-1">getSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L627">provider.ts:627</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L633">provider.ts:633</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26370,7 +26390,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.isselected-1">isSelected</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L522">provider.ts:522</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L528">provider.ts:528</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26399,7 +26419,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.mappingsample-1">mappingSample</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L869">provider.ts:869</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L875">provider.ts:875</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -26423,7 +26443,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.nextrankingid">nextRankingId</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L742">provider.ts:742</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L748">provider.ts:748</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -26559,7 +26579,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.pushdesc">pushDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L705">provider.ts:705</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L711">provider.ts:711</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26653,7 +26673,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.restore">restore</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.restore-1">restore</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L737">provider.ts:737</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L743">provider.ts:743</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -26706,7 +26726,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.rowkey-1">rowKey</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L512">provider.ts:512</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L518">provider.ts:518</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26738,7 +26758,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.searchselect-1">searchSelect</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L887">provider.ts:887</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L893">provider.ts:893</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -26765,7 +26785,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.select-1">select</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L530">provider.ts:530</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L536">provider.ts:536</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26796,7 +26816,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.selectall-1">selectAll</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L548">provider.ts:548</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L554">provider.ts:554</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26827,7 +26847,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.selectedrows-1">selectedRows</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L616">provider.ts:616</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L622">provider.ts:622</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26850,7 +26870,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.setselection-1">setSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L559">provider.ts:559</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L565">provider.ts:565</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26881,7 +26901,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.sort-1">sort</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L821">provider.ts:821</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L827">provider.ts:827</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -26905,7 +26925,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.stats-1">stats</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L858">provider.ts:858</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L864">provider.ts:864</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -26930,7 +26950,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 											<li class="tsd-description">
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L864">provider.ts:864</a></li>
+														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L870">provider.ts:870</a></li>
 													</ul>
 												</aside>
 												<h4 class="tsd-parameters-title">Parameters</h4>
@@ -26951,7 +26971,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 											<li class="tsd-description">
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L863">provider.ts:863</a></li>
+														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L869">provider.ts:869</a></li>
 													</ul>
 												</aside>
 												<h4 class="tsd-parameters-title">Parameters</h4>
@@ -26979,7 +26999,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.todescref">toDescRef</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.todescref-1">toDescRef</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L726">provider.ts:726</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L732">provider.ts:732</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -27008,7 +27028,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.toggleselection-1">toggleSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L573">provider.ts:573</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L579">provider.ts:579</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -27102,7 +27122,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.view-1">view</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L847">provider.ts:847</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L853">provider.ts:853</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -27121,7 +27141,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<div class="tsd-signature tsd-kind-icon">options<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L750">provider.ts:750</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L756">provider.ts:756</a></li>
 							</ul>
 						</aside>
 						<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
@@ -27130,7 +27150,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<div class="tsd-signature tsd-kind-icon">filter<wbr>Globally<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L754">provider.ts:754</a></li>
+									<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L760">provider.ts:760</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -27147,7 +27167,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 					<div class="tsd-signature tsd-kind-icon">Remote<wbr>Data<wbr>Provider<span class="tsd-signature-symbol">:</span> </div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L927">provider.ts:927</a></li>
+							<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L933">provider.ts:933</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -27166,7 +27186,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.constructor">constructor</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L933">provider.ts:933</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L939">provider.ts:939</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -27204,7 +27224,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<div class="tsd-signature tsd-kind-icon">ranks<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L933">provider.ts:933</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L939">provider.ts:939</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -27224,7 +27244,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 						<div class="tsd-signature tsd-kind-icon">server<span class="tsd-signature-symbol">:</span> <a href="index.html#_provider_.iserverdata" class="tsd-signature-type">IServerData</a></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L935">provider.ts:935</a></li>
+								<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L941">provider.ts:941</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -27239,7 +27259,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.cleanupranking-1">cleanUpRanking</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L959">provider.ts:959</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L965">provider.ts:965</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -27286,7 +27306,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.clearselection-1">clearSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L637">provider.ts:637</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L643">provider.ts:643</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -27338,7 +27358,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.cloneranking-1">cloneRanking</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L947">provider.ts:947</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L953">provider.ts:953</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -27393,7 +27413,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.createeventlist">createEventList</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.createeventlist-1">createEventList</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L697">provider.ts:697</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L703">provider.ts:703</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -27411,7 +27431,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.createrankdesc-1">createRankDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L939">provider.ts:939</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L945">provider.ts:945</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
@@ -27431,7 +27451,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 											<li class="tsd-description">
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L943">provider.ts:943</a></li>
+														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L949">provider.ts:949</a></li>
 													</ul>
 												</aside>
 												<h4 class="tsd-parameters-title">Parameters</h4>
@@ -27467,7 +27487,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.createselectiondesc-1">createSelectionDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L591">provider.ts:591</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L597">provider.ts:597</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.icolumndesc" class="tsd-signature-type">IColumnDesc</a></h4>
@@ -27485,7 +27505,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.derivedefault-1">deriveDefault</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L403">provider.ts:403</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L407">provider.ts:407</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -27508,7 +27528,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.deselect-1">deselect</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L607">provider.ts:607</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L613">provider.ts:613</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -27591,7 +27611,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.exporttable-1">exportTable</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L648">provider.ts:648</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L654">provider.ts:654</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -27688,7 +27708,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.finddesc">findDesc</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.finddesc-1">findDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L717">provider.ts:717</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L723">provider.ts:723</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -27779,7 +27799,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.fromdescref">fromDescRef</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.fromdescref-1">fromDescRef</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L730">provider.ts:730</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L736">provider.ts:736</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -27804,7 +27824,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.getcolumns">getColumns</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.getcolumns-1">getColumns</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L713">provider.ts:713</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L719">provider.ts:719</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <a href="index.html#_model_.icolumndesc" class="tsd-signature-type">IColumnDesc</a><span class="tsd-signature-symbol">[]</span></h4>
@@ -27868,7 +27888,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.getselection-1">getSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L627">provider.ts:627</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L633">provider.ts:633</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -27936,7 +27956,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.isselected-1">isSelected</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L522">provider.ts:522</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L528">provider.ts:528</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -27965,7 +27985,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.mappingsample-1">mappingSample</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L983">provider.ts:983</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L989">provider.ts:989</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -27989,7 +28009,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.nextrankingid">nextRankingId</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L742">provider.ts:742</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L748">provider.ts:748</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -28125,7 +28145,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.pushdesc">pushDesc</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L705">provider.ts:705</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L711">provider.ts:711</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28219,7 +28239,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.restore">restore</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.restore-1">restore</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L737">provider.ts:737</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L743">provider.ts:743</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -28272,7 +28292,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.rowkey-1">rowKey</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L512">provider.ts:512</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L518">provider.ts:518</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28304,7 +28324,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.searchselect-1">searchSelect</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L987">provider.ts:987</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L993">provider.ts:993</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -28331,7 +28351,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.select-1">select</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L530">provider.ts:530</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L536">provider.ts:536</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28362,7 +28382,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.selectall-1">selectAll</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L548">provider.ts:548</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L554">provider.ts:554</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28393,7 +28413,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.selectedrows-1">selectedRows</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L616">provider.ts:616</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L622">provider.ts:622</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28416,7 +28436,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.setselection-1">setSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L559">provider.ts:559</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L565">provider.ts:565</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28447,7 +28467,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.sort-1">sort</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L964">provider.ts:964</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L970">provider.ts:970</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -28471,7 +28491,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.stats-1">stats</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L499">provider.ts:499</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L505">provider.ts:505</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28496,7 +28516,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 											<li class="tsd-description">
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L502">provider.ts:502</a></li>
+														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L508">provider.ts:508</a></li>
 													</ul>
 												</aside>
 												<h4 class="tsd-parameters-title">Parameters</h4>
@@ -28517,7 +28537,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 											<li class="tsd-description">
 												<aside class="tsd-sources">
 													<ul>
-														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L501">provider.ts:501</a></li>
+														<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L507">provider.ts:507</a></li>
 													</ul>
 												</aside>
 												<h4 class="tsd-parameters-title">Parameters</h4>
@@ -28545,7 +28565,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 									<p>Inherited from <a href="index.html#_provider_.commondataprovider">CommonDataProvider</a>.<a href="index.html#_provider_.commondataprovider.todescref">toDescRef</a></p>
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.todescref-1">toDescRef</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L726">provider.ts:726</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L732">provider.ts:732</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28574,7 +28594,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Inherited from <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.toggleselection-1">toggleSelection</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L573">provider.ts:573</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L579">provider.ts:579</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28668,7 +28688,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 								<aside class="tsd-sources">
 									<p>Overwrites <a href="index.html#_provider_.dataprovider">DataProvider</a>.<a href="index.html#_provider_.dataprovider.view-1">view</a></p>
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L975">provider.ts:975</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L981">provider.ts:981</a></li>
 									</ul>
 								</aside>
 								<h4 class="tsd-parameters-title">Parameters</h4>
@@ -28688,7 +28708,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 					<div class="tsd-signature tsd-kind-icon">IServer<wbr>Data<span class="tsd-signature-symbol">:</span> </div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L900">provider.ts:900</a></li>
+							<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L906">provider.ts:906</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -28706,7 +28726,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L915">provider.ts:915</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L921">provider.ts:921</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28736,7 +28756,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L921">provider.ts:921</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L927">provider.ts:927</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28769,7 +28789,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L905">provider.ts:905</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L911">provider.ts:911</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">
@@ -28799,7 +28819,7 @@ input[type=checkbox]:checked + .tsd-widget:before { background-position: -160px 
 							<li class="tsd-description">
 								<aside class="tsd-sources">
 									<ul>
-										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L910">provider.ts:910</a></li>
+										<li>Defined in <a href="https://github.com/Caleydo/lineup.js/blob/master/src/provider.ts#L916">provider.ts:916</a></li>
 									</ul>
 								</aside>
 								<div class="tsd-comment tsd-typography">

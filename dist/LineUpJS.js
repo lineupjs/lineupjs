@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-03-21
+/*! LineUpJS - v0.2.0 - 2016-04-21
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -1554,6 +1554,15 @@ var SelectionColumn = (function (_super) {
         _super.call(this, id, desc);
         this.compressed = true;
     }
+    /**
+     * factory for creating a description creating a rank column
+     * @param label
+     * @returns {{type: string, label: string}}
+     */
+    SelectionColumn.desc = function (label) {
+        if (label === void 0) { label = 'S'; }
+        return { type: 'selection', label: label };
+    };
     SelectionColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat(['select']);
     };
@@ -2147,6 +2156,15 @@ var RankColumn = (function (_super) {
         _super.call(this, id, desc);
         this.setWidthImpl(50);
     }
+    /**
+     * factory for creating a description creating a rank column
+     * @param label
+     * @returns {{type: string, label: string}}
+     */
+    RankColumn.desc = function (label) {
+        if (label === void 0) { label = 'Rank'; }
+        return { type: 'rank', label: label };
+    };
     return RankColumn;
 })(ValueColumn);
 exports.RankColumn = RankColumn;
@@ -2175,7 +2193,7 @@ var Ranking = (function (_super) {
          * @type {Array}
          * @private
          */
-        this.columns_ = [];
+        this._columns = [];
         this.comparator = function (a, b) {
             if (_this.sortBy_ === null) {
                 return 0;
@@ -2198,7 +2216,7 @@ var Ranking = (function (_super) {
     };
     Ranking.prototype.assignNewId = function (idGenerator) {
         this.id = fixCSS(idGenerator());
-        this.columns_.forEach(function (c) { return c.assignNewId(idGenerator); });
+        this._columns.forEach(function (c) { return c.assignNewId(idGenerator); });
     };
     Ranking.prototype.setOrder = function (order) {
         this.fire(['orderChanged', 'dirtyValues', 'dirty'], this.order, this.order = order);
@@ -2208,7 +2226,7 @@ var Ranking = (function (_super) {
     };
     Ranking.prototype.dump = function (toDescRef) {
         var r = {};
-        r.columns = this.columns_.map(function (d) { return d.dump(toDescRef); });
+        r.columns = this._columns.map(function (d) { return d.dump(toDescRef); });
         r.sortCriteria = {
             asc: this.ascending
         };
@@ -2219,6 +2237,7 @@ var Ranking = (function (_super) {
     };
     Ranking.prototype.restore = function (dump, factory) {
         var _this = this;
+        this.clear();
         dump.columns.map(function (child) {
             var c = factory(child);
             if (c) {
@@ -2228,7 +2247,7 @@ var Ranking = (function (_super) {
         if (dump.sortCriteria) {
             this.ascending = dump.sortCriteria.asc;
             if (dump.sortCriteria.sortBy) {
-                var help = this.columns_.filter(function (d) { return d.id === dump.sortCriteria.sortBy; });
+                var help = this._columns.filter(function (d) { return d.id === dump.sortCriteria.sortBy; });
                 this.sortBy(help.length === 0 ? null : help[0], dump.sortCriteria.asc);
             }
         }
@@ -2238,7 +2257,7 @@ var Ranking = (function (_super) {
         if (padding === void 0) { padding = 0; }
         var acc = offset; // + this.getWidth() + padding;
         if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-            this.columns_.forEach(function (c) {
+            this._columns.forEach(function (c) {
                 acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
             });
         }
@@ -2278,21 +2297,21 @@ var Ranking = (function (_super) {
     };
     Object.defineProperty(Ranking.prototype, "children", {
         get: function () {
-            return this.columns_.slice();
+            return this._columns.slice();
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(Ranking.prototype, "length", {
         get: function () {
-            return this.columns_.length;
+            return this._columns.length;
         },
         enumerable: true,
         configurable: true
     });
     Ranking.prototype.insert = function (col, index) {
-        if (index === void 0) { index = this.columns_.length; }
-        this.columns_.splice(index, 0, col);
+        if (index === void 0) { index = this._columns.length; }
+        this._columns.splice(index, 0, col);
         col.parent = this;
         this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
         col.on('filterChanged.order', this.dirtyOrder);
@@ -2303,7 +2322,7 @@ var Ranking = (function (_super) {
         return col;
     };
     Ranking.prototype.insertAfter = function (col, ref) {
-        var i = this.columns_.indexOf(ref);
+        var i = this._columns.indexOf(ref);
         if (i < 0) {
             return false;
         }
@@ -2313,18 +2332,31 @@ var Ranking = (function (_super) {
         return this.insert(col);
     };
     Ranking.prototype.remove = function (col) {
-        var i = this.columns_.indexOf(col);
+        var i = this._columns.indexOf(col);
         if (i < 0) {
             return false;
         }
         this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
         col.parent = null;
-        this.columns_.splice(i, 1);
+        this._columns.splice(i, 1);
         this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col);
         if (this.sortBy_ === col) {
-            this.sortBy(this.columns_.length > 0 ? this.columns_[0] : null);
+            this.sortBy(this._columns.length > 0 ? this._columns[0] : null);
         }
         return true;
+    };
+    Ranking.prototype.clear = function () {
+        var _this = this;
+        if (this._columns.length === 0) {
+            return;
+        }
+        this.sortBy_ = null;
+        this._columns.forEach(function (col) {
+            _this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
+            col.parent = null;
+        });
+        this._columns.length = 0;
+        this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], null);
     };
     Object.defineProperty(Ranking.prototype, "flatColumns", {
         get: function () {
@@ -2377,10 +2409,10 @@ var Ranking = (function (_super) {
         };
     };
     Ranking.prototype.isFiltered = function () {
-        return this.columns_.some(function (d) { return d.isFiltered(); });
+        return this._columns.some(function (d) { return d.isFiltered(); });
     };
     Ranking.prototype.filter = function (row) {
-        return this.columns_.every(function (d) { return d.filter(row); });
+        return this._columns.every(function (d) { return d.filter(row); });
     };
     Ranking.prototype.findMyRanker = function () {
         return this;
@@ -2400,6 +2432,8 @@ exports.Ranking = Ranking;
  * @type {function(string=): {type: string, label: string}}
  */
 exports.createStackDesc = StackColumn.desc;
+exports.createRankDesc = RankColumn.desc;
+exports.createSelectionDesc = SelectionColumn.desc;
 /**
  * utility for creating an action description with optional label
  * @param label
@@ -2661,12 +2695,24 @@ var DataProvider = (function (_super) {
     DataProvider.prototype.nextId = function () {
         return 'col' + (this.uid++);
     };
+    DataProvider.prototype.rankAccessor = function (row, id, desc, ranking) {
+        return 0;
+    };
     /**
      * creates an internal column model out of the given column description
      * @param desc
      * @returns {model.Column] the new column or null if it can't be created
      */
     DataProvider.prototype.create = function (desc) {
+        var _this = this;
+        //hacks for provider dependent descriptors
+        if (desc.type === 'rank') {
+            desc.accessor = this.rankAccessor.bind(this);
+        }
+        else if (desc.type === 'selection') {
+            desc.accessor = function (row) { return _this.isSelected(row._index); };
+            desc.setter = function (row, value) { return value ? _this.select(row._index) : _this.deselect(row._index); };
+        }
         //find by type and instantiate
         var type = this.columnTypes[desc.type];
         if (type) {
@@ -2776,6 +2822,10 @@ var DataProvider = (function (_super) {
             dump.rankings.forEach(function (r) {
                 var ranking = _this.pushRanking();
                 ranking.restore(r, create);
+                //if no rank column add one
+                if (!ranking.children.some(function (d) { return d instanceof model.RankColumn; })) {
+                    ranking.insert(_this.create(model.RankColumn.desc()), 0);
+                }
             });
         }
         if (dump.layout) {
@@ -2815,12 +2865,13 @@ var DataProvider = (function (_super) {
     DataProvider.prototype.deriveRanking = function (bundle) {
         var _this = this;
         var ranking = this.pushRanking();
+        ranking.clear();
         var toCol = function (column) {
             if (column.type === 'rank') {
-                return _this.create(_this.createRankDesc());
+                return _this.create(model.createRankDesc());
             }
             if (column.type === 'selection') {
-                return _this.create(_this.createSelectionDesc());
+                return _this.create(model.createSelectionDesc());
             }
             if (column.type === 'actions') {
                 var r = _this.create(model.createActionDesc(column.label || 'actions'));
@@ -2829,7 +2880,7 @@ var DataProvider = (function (_super) {
             }
             if (column.type === 'stacked') {
                 //create a stacked one
-                var r = _this.create(model.StackColumn.desc(column.label || 'Combined'));
+                var r = _this.create(model.createStackDesc(column.label || 'Combined'));
                 (column.children || []).forEach(function (col) {
                     var c = toCol(col);
                     if (c) {
@@ -2855,8 +2906,9 @@ var DataProvider = (function (_super) {
                 ranking.push(col);
             }
         });
-        if (ranking.children.filter(function (c) { return c.desc.type === 'rank'; }).length > 1) {
-            ranking.remove(ranking.children[0]); //remove the first rank column if there are some in between.
+        //if no rank column add one
+        if (!ranking.children.some(function (d) { return d instanceof model.RankColumn; })) {
+            ranking.insert(this.create(model.createRankDesc()), 0);
         }
         return ranking;
     };
@@ -2978,18 +3030,6 @@ var DataProvider = (function (_super) {
             return true;
         }
     };
-    DataProvider.prototype.createSelectionDesc = function () {
-        var _this = this;
-        return {
-            type: 'selection',
-            label: 'S',
-            accessor: function (row) { return _this.isSelected(row._index); },
-            setter: function (row, value) { return value ? _this.select(row._index) : _this.deselect(row._index); }
-        };
-    };
-    DataProvider.prototype.createRankDesc = function () {
-        return null;
-    };
     /**
      * deselect the given row
      * @param index
@@ -3076,7 +3116,6 @@ var CommonDataProvider = (function (_super) {
         this.rankingIndex = 0;
         //generic accessor of the data item
         this.rowGetter = function (row, id, desc) { return row[desc.column]; };
-        this.columns = columns.concat([this.createRankDesc(), this.createSelectionDesc()]);
         //generate the accessor
         columns.forEach(function (d) {
             d.accessor = _this.rowGetter;
@@ -3160,12 +3199,8 @@ var LocalDataProvider = (function (_super) {
             });
         };
     }
-    LocalDataProvider.prototype.createRankDesc = function () {
-        return {
-            label: 'Rank',
-            type: 'rank',
-            accessor: function (row, id, desc, ranking) { return (row._rankings[ranking.id] + 1) || 1; }
-        };
+    LocalDataProvider.prototype.rankAccessor = function (row, id, desc, ranking) {
+        return (row._rankings[ranking.id] + 1) || 1;
     };
     LocalDataProvider.prototype.cloneRanking = function (existing) {
         var _this = this;
@@ -3182,7 +3217,7 @@ var LocalDataProvider = (function (_super) {
             });
         }
         else {
-            new_.push(this.create(this.createRankDesc()));
+            new_.push(this.create(model.createRankDesc()));
         }
         if (this.options.filterGlobally) {
             new_.on('filterChanged.reorderall', this.reorderall);
@@ -3280,13 +3315,8 @@ var RemoteDataProvider = (function (_super) {
          */
         this.ranks = {};
     }
-    RemoteDataProvider.prototype.createRankDesc = function () {
-        var _this = this;
-        return {
-            label: 'Rank',
-            type: 'rank',
-            accessor: function (row, id, desc, ranking) { return _this.ranks[ranking.id][row._index] || 0; }
-        };
+    RemoteDataProvider.prototype.rankAccessor = function (row, id, desc, ranking) {
+        return this.ranks[ranking.id][row._index] || 0;
     };
     RemoteDataProvider.prototype.cloneRanking = function (existing) {
         var id = this.nextRankingId();
@@ -3295,7 +3325,7 @@ var RemoteDataProvider = (function (_super) {
             this.ranks[id] = this.ranks[existing.id];
         }
         var r = new model.Ranking(id);
-        r.push(this.create(this.createRankDesc()));
+        r.push(this.create(model.createRankDesc()));
         return r;
     };
     RemoteDataProvider.prototype.cleanUpRanking = function (ranking) {
