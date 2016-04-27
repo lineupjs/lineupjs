@@ -19,7 +19,8 @@
     }
     },
     {name: ' add single columns', icon: 'fa-plus', action: openAddColumnDialog},
-    {name: ' save layout', icon: 'fa-floppy-o', action: saveLayout}
+    {name: ' save layout', icon: 'fa-floppy-o', action: saveLayout},
+    {name: ' export to csv', icon: 'fa-download', action: exportToCSV}
   ];
   var lineUpDemoConfig = {
     htmlLayout: {
@@ -214,6 +215,15 @@
     //create blob and save it
     var blob = new Blob([str], {type: 'application/json;charset=utf-8'});
     saveAs(blob, 'LineUp-' + lineUpDemoConfig.name + '.json');
+  }
+
+  function exportToCSV() {
+    var first = lineup.data.getRankings()[0];
+    lineup.data.exportTable(first).then(function(str) {
+      //create blob and save it
+      var blob = new Blob([str], {type: 'text/csv;charset=utf-8'});
+      saveAs(blob, 'LineUp-' + lineUpDemoConfig.name + '.csv');
+    });
   }
 
   function loadLayout() {
