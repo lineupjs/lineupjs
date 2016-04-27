@@ -12,71 +12,72 @@ export interface IRenderContext {
    * the y position of the cell
    * @param index
    */
-  cellY(index:number) : number;
+  cellY(index:number):number;
 
   /**
    * the previous y position of the cell
    * @param index
    */
-  cellPrevY(index:number): number;
+  cellPrevY(index:number):number;
   /**
    * the x position of the cell
    * @param index
    */
-  cellX(index:number): number;
+  cellX(index:number):number;
   /**
    * the height of a row
    * @param index
    */
-  rowHeight(index:number) : number;
+  rowHeight(index:number):number;
   /**
    * a key function for uniquely identifying a data row
    * @param d
    * @param i
    */
-  rowKey(d:any, i:number): string;
+  rowKey(d:any, i:number):string;
 
   /**
    * factory function for resolving the renderer for a given column
    * @param col
    */
-  renderer(col:model.Column): ICellRenderer;
+  renderer(col:model.Column):ICellRenderer;
 
   /**
    * render a column
    * @param col
    */
   render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context?:IRenderContext);
+  renderCanvas(col:model.Column, ctx: CanvasRenderingContext2D, data:any[], context?:IRenderContext);
 
   /**
    * internal option flags
    * @param col
    */
-  showStacked(col:model.StackColumn): boolean;
+  showStacked(col:model.StackColumn):boolean;
 
   /**
    * prefix used for all generated id names
    */
-  idPrefix: string;
+  idPrefix:string;
 
   /**
    * wrapper for a d3 selection making it (optinally) to an animated transition
    * @param $sel
    */
-  animated<T>($sel:d3.Selection<T>) : any;
+  animated<T>($sel:d3.Selection<T>):any;
 
   /**
    * lookup custom options by key
    * @param key key to lookup
    * @param default_ default value
    */
-  option<T>(key:string, default_:T): T;
+  option<T>(key:string, default_:T):T;
 
   /**
    * whether to show the mean line for a given column
    * @param col
    */
-  showMeanLine(col: model.Column): boolean;
+  showMeanLine(col:model.Column):boolean;
 }
 
 /**
@@ -185,6 +186,26 @@ export class DefaultCellRenderer implements ICellRenderer {
     $row.selectAll('*').remove();
   }
 
+  renderCanvas(ctx:CanvasRenderingContext2D, col:model.Column, rows:any[], context:IRenderContext) {
+    ctx.save();
+    ctx.textAlign = this.align;
+    rows.forEach((row, i) => {
+      const y = context.cellY(i);
+      var alignmentShift = 2;
+      if (this.align === 'right') {
+        alignmentShift = col.getWidth() - 5;
+      } else if (this.align === 'center') {
+        alignmentShift = col.getWidth() * 0.5;
+      }
+      const x = context.cellX(i) + alignmentShift;
+      ctx.fillText(col.getLabel(row), x, y, col.getWidth());
+    });
+    ctx.restore();
+  }
+
+  mouseEnterCanvas(ctx:CanvasRenderingContext2D, col:model.Column, row:any, index:number, context:IRenderContext) {
+    //TODO
+  }
 }
 
 /**
@@ -263,6 +284,26 @@ export class BarCellRenderer extends DefaultCellRenderer {
       }).text((d) => col.getLabel(d));
     }
   }
+
+  renderCanvas(ctx:CanvasRenderingContext2D, col:model.NumberColumn, rows:any[], context:IRenderContext) {
+    ctx.save();
+    rows.forEach((d, i) => {
+      const x = context.cellX(i);
+      const y = context.cellY(i) + context.option('rowPadding', 1);
+      const n = col.getWidth() * col.getValue(d);
+      const w = isNaN(n) ? 0 : n;
+      const h = context.rowHeight(i) - context.option('rowPadding', 1) * 2;
+      ctx.fillStyle = this.colorOf(d, i, col) || col.color || model.Column.DEFAULT_COLOR;
+      ctx.fillRect(x, y, w, h);
+    });
+    ctx.restore();
+  }
+
+  mouseEnterCanvas(ctx:CanvasRenderingContext2D, col:model.Column, row:any, index:number, context:IRenderContext) {
+    ctx.save();
+    ctx.fillText(col.getLabel(row), context.cellX(index), context.cellY(index), col.getWidth());
+    ctx.restore();
+  }
 }
 
 /**
@@ -329,6 +370,24 @@ export class HeatMapCellRenderer extends DefaultCellRenderer {
       }).text((d) => col.getLabel(d));
     }
   }
+
+  renderCanvas(ctx:CanvasRenderingContext2D, col:model.NumberColumn, rows:any[], context:IRenderContext) {
+    ctx.save();
+    rows.forEach((d, i) => {
+      const x = context.cellX(i);
+      const y = context.cellY(i) + context.option('rowPadding', 1);
+      const h = context.rowHeight(i) - context.option('rowPadding', 1) * 2;
+      ctx.fillStyle = this.colorOf(d, i, col);
+      ctx.fillRect(x, y, h, h);
+    });
+    ctx.restore();
+  }
+
+  mouseEnterCanvas(ctx:CanvasRenderingContext2D, col:model.Column, row:any, index:number, context:IRenderContext) {
+    ctx.save();
+    ctx.fillText(col.getLabel(row), context.cellX(index), context.cellY(index), col.getWidth());
+    ctx.restore();
+  }
 }
 
 /**
@@ -374,6 +433,50 @@ export class ActionCellRenderer implements ICellRenderer {
     $row.selectAll('*').remove();
   }
 
+}
+
+export class SelectionCellRenderer extends DefaultCellRenderer {
+
+  constructor() {
+    super();
+    this.textClass = 'selection';
+  }
+
+  render($col:d3.Selection<any>, col:model.SelectionColumn, rows:any[], context:IRenderContext) {
+    var $rows = $col.datum(col).selectAll('text.' + this.textClass).data(rows, context.rowKey);
+
+    $rows.enter().append('text').attr({
+      'class': this.textClass + ' fa',
+      y: (d, i) => context.cellPrevY(i)
+    }).on('click', function (d) {
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+      const new_ = col.toggleValue(d);
+      d3.select(this).text(new_ === true ? '\uf046' : '\uf096');
+    });
+
+    $rows.attr({
+      x: (d, i) => context.cellX(i),
+      'data-index': (d, i) => i
+    }).text((d) => col.getValue(d) === true ? '\uf046' : '\uf096');
+
+    context.animated($rows).attr({
+      y: (d, i) => context.cellY(i)
+    });
+
+    $rows.exit().remove();
+  }
+
+  renderCanvas(ctx:CanvasRenderingContext2D, col:model.SelectionColumn, rows:any[], context:IRenderContext) {
+    ctx.save();
+    ctx.font = 'FontAwesome';
+    rows.forEach((d, i) => {
+      const x = context.cellX(i);
+      const y = context.cellY(i);
+      ctx.fillText(col.getValue(d) === true ? '\uf046' : '\uf096', x, y);
+    });
+    ctx.restore();
+  }
 }
 
 /**
@@ -455,7 +558,7 @@ class LinkCellRenderer extends DefaultCellRenderer {
     $rows.attr({
       x: (d, i) => context.cellX(i),
       'data-index': (d, i) => i
-    }).html((d) => col.isLink(d) ?`<a class="link" xlink:href="${col.getValue(d)}" target="_blank">${col.getLabel(d)}</a>`: col.getLabel(d));
+    }).html((d) => col.isLink(d) ? `<a class="link" xlink:href="${col.getValue(d)}" target="_blank">${col.getLabel(d)}</a>` : col.getLabel(d));
 
     context.animated($rows).attr({
       y: (d, i) => context.cellY(i)
@@ -527,6 +630,18 @@ class CategoricalRenderer extends DefaultCellRenderer {
   findRow($col:d3.Selection<any>, index:number) {
     return $col.selectAll('g.' + this.textClass + '[data-index="' + index + '"]');
   }
+
+  renderCanvas(ctx:CanvasRenderingContext2D, col:model.CategoricalColumn, rows:any[], context:IRenderContext) {
+    ctx.save();
+    rows.forEach((d, i) => {
+      const x = context.cellX(i);
+      const y = context.cellY(i);
+      ctx.fillStyle = 'black';
+      ctx.fillText(col.getLabel(d), x + context.rowHeight(i), y);
+      ctx.fillStyle = col.getColor(d);
+      ctx.fillRect(x, y+context.option('rowPadding', 1), Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0), Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0));
+    });
+  }
 }
 
 /**
@@ -535,11 +650,13 @@ class CategoricalRenderer extends DefaultCellRenderer {
 class StackCellRenderer extends DefaultCellRenderer {
   renderImpl($base:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i:number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
     const $group = $base.datum(col),
-      children = col.children;
+      children = col.children,
+      stacked = context.showStacked(col);
     var offset = 0,
       shifts = children.map((d) => {
         var r = offset;
         offset += d.getWidth();
+        offset += (!stacked ? context.option('columnPadding', 0) : 0);
         return r;
       });
     const baseclass = 'component' + context.option('stackLevel', '');
@@ -563,7 +680,7 @@ class StackCellRenderer extends DefaultCellRenderer {
       'class': (d) => baseclass + ' ' + d.desc.type,
       'data-stack': (d, i) => i
     }).each(function (d, i) {
-      if (context.showStacked(col)) {
+      if (stacked) {
         const preChildren = children.slice(0, i);
         //if shown as stacked bar shift individual cells of a column to the left where they belong to
         context.cellX = (index) => {
@@ -608,7 +725,49 @@ class StackCellRenderer extends DefaultCellRenderer {
     }, (index) => row, false);
     $row.selectAll('*').remove();
   }
+
+  renderCanvas(ctx: CanvasRenderingContext2D, stack:model.StackColumn, rows:any[], context:IRenderContext) {
+    const children = stack.children,
+      stacked = context.showStacked(stack);
+    var offset = 0,
+      shifts = children.map((d) => {
+        var r = offset;
+        offset += d.getWidth();
+        offset += (!stacked ? context.option('columnPadding', 0) : 0);
+        return r;
+      });
+    const ueber = context.cellX;
+    const ueberOption = context.option;
+    context.option = (option, default_) => {
+      var r = ueberOption(option, default_);
+      return option === 'stackLevel' ? r + 'N' : r;
+    };
+    ctx.save();
+    children.forEach((child, i) => {
+      ctx.save();
+      ctx.translate(shifts[i], 0);
+
+      if (stacked) {
+        const preChildren = children.slice(0, i);
+        //if shown as stacked bar shift individual cells of a column to the left where they belong to
+        context.cellX = (index) => {
+          //shift by all the empty space left from the previous columns
+          return ueber(index) - preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rows[index])), 0);
+        };
+      }
+      context.renderCanvas(child, ctx, rows, context);
+
+      ctx.restore();
+    });
+    ctx.restore();
+    context.cellX = ueber;
+    context.option = ueberOption;
+  }
 }
+
+const combineRenderer = barRenderer({
+  colorOf: (d, i, col) => col.getColor(d)
+});
 
 /**
  * returns a map of all known renderers by type
@@ -626,13 +785,13 @@ export function renderers() {
     heatmap: new HeatMapCellRenderer(),
     stack: new StackCellRenderer(),
     categorical: new CategoricalRenderer(),
-    ordinal: barRenderer({
-      colorOf: (d, i, col) => col.getColor(d)
-    }),
-    max: barRenderer({
-      colorOf: (d, i, col) => col.getColor(d)
-    }),
+    ordinal: combineRenderer,
+    max: combineRenderer,
+    min: combineRenderer,
+    mean: combineRenderer,
+    script: combineRenderer,
     actions: new ActionCellRenderer(),
-    annotate: new AnnotateCellRenderer()
+    annotate: new AnnotateCellRenderer(),
+    selection: new SelectionCellRenderer()
   };
 }

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "sourceMap": true,
+    "declaration": false,
+    "removeComments": false
+  },
+  "exclude": [
+    "node_modules",
+    "docs",
+    "dist",
+    "bower_components",
+    ".tscache",
+    "tmp",
+    "src/*.d.ts"
+  ]
+}

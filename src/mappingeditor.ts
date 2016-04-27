@@ -13,7 +13,7 @@ function clamp(v:number, min:number, max:number) {
   return Math.max(Math.min(v, max), min);
 }
 
-class MappingEditor {
+export class MappingEditor {
   private options = {
     width: 320,
     height: 200,
@@ -84,7 +84,8 @@ class MappingEditor {
     const width = options.width - options.padding_hor*2;
     const height = options.height - options.padding_ver*2;
 
-    const raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.min(this.scale.domain[1], this.original.domain[1])])
+
+    const raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
       .range([0,width]);
     const normal2pixel = d3.scale.linear().domain([0, 1])
       .range([0, width]);
@@ -95,7 +96,11 @@ class MappingEditor {
         var d = raw2pixel.domain();
         d[0] = parseFloat(this.value);
         raw2pixel.domain(d);
+        var old = that.scale_.domain;
+        old[0] = d[0];
+        that.scale_.domain = old;
         updateRaw();
+        triggerUpdate();
       });
     $root.select('input.raw_max')
       .property('value', raw2pixel.domain()[1])
@@ -103,7 +108,11 @@ class MappingEditor {
         var d = raw2pixel.domain();
         d[1] = parseFloat(this.value);
         raw2pixel.domain(d);
+        var old = that.scale_.domain;
+        old[old.length-1] = d[1];
+        that.scale_.domain = old;
         updateRaw();
+        triggerUpdate();
       });
 
     //lines that show mapping of individual data items
@@ -158,18 +167,21 @@ class MappingEditor {
         return;
       }
 
-      let sscale = <model.ScaleMappingFunction>that.scale;
-      let domain = sscale.domain;
-      let range = sscale.range;
+      {
+        let sscale = <model.ScaleMappingFunction>that.scale;
+        let domain = sscale.domain;
+        let range = sscale.range;
 
-      mapping_lines = domain.map((d,i) => ({ r: d, n: range[i]}));
+        mapping_lines = domain.map((d, i) => ({r: d, n: range[i]}));
+      }
 
       function updateScale() {
         //sort by raw value
         mapping_lines.sort((a,b) => a.r - b.r);
         //update the scale
-        sscale.domain = mapping_lines.map((d) => d.r);
-        sscale.range = mapping_lines.map((d) => d.n);
+        let scale = <model.ScaleMappingFunction>that.scale;
+        scale.domain = mapping_lines.map((d) => d.r);
+        scale.range = mapping_lines.map((d) => d.n);
 
         //console.log(sscale.domain, sscale.range);
         updateDataLines();

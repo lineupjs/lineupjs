@@ -115,6 +115,10 @@
     cursor: pointer; }
     .lu text.actions tspan:hover, .lu-pool text.actions tspan:hover {
       color: darkblue; }
+  .lu text.selection, .lu-pool text.selection {
+    cursor: pointer; }
+    .lu text.selection:hover, .lu-pool text.selection:hover {
+      color: darkblue; }
   .lu text.rank, .lu text.text_right, .lu-pool text.rank, .lu-pool text.text_right {
     text-anchor: end; }
   .lu text.text_center, .lu-pool text.text_center {
@@ -177,7 +181,7 @@
     display: none; }
     .lu div.lu-header div.header div.histogram > div.bar, .lu-pool div.lu-header div.header div.histogram > div.bar {
       position: absolute;
-      background-color: #8c8c8c;
+      background-color: white;
       opacity: 0.5; }
       .lu div.lu-header div.header div.histogram > div.bar.selected, .lu-pool div.lu-header div.header div.histogram > div.bar.selected {
         opacity: 1.0; }

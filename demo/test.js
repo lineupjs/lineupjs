@@ -12,7 +12,7 @@ window.onload = function () {
     {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
     {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
     {label: 'B', type: 'number', column: 'b', 'domain': [0, 30]},
-    {label: 'C', type: 'number', column: 'c', 'domain': [0, 120], cssClass: 'green'},
+    {label: 'C', type: 'number', column: 'c', 'domain': [0, 120], color: 'green'},
     {label: 'L', type: 'link', column: 'l'},
     {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
     {label: 'Cat', type: 'categorical', column: 'cat', categories : ['c1','c2','c3']},
@@ -42,7 +42,7 @@ window.onload = function () {
   var r = p.pushRanking();
 
   var root = d3.select('body');
-
+  r.insert(p.create(p.createSelectionDesc()),0);
   r.push(p.create(desc[0]));
   r.push(p.create(desc[1]));
   r.push(p.create(desc[8]));
@@ -53,6 +53,14 @@ window.onload = function () {
   rstack.push(p.create(desc[3]));
   rstack.setWeights([0.2, 0.4]);
   r.push(p.create(desc[4]));
+  var rscript = p.create(LineUpJS.model.ScriptColumn.desc('Script'));
+  r.push(p.create(desc[1]));
+  r.push(p.create(desc[2]));
+  r.push(p.create(desc[3]));
+  r.push(rscript);
+  rscript.push(p.create(desc[1]));
+  rscript.push(p.create(desc[2]));
+  rscript.push(p.create(desc[3]));
 
   var r2 = p.pushRanking();
   r2.push(p.create(desc[1]));
@@ -61,12 +69,15 @@ window.onload = function () {
   r2.push(p.create(desc[6]));
   r2.push(p.create(desc[7]));
 
-  var body = new LineUpJS.create(p, root.node(), {
+  var body = LineUpJS.create(p, root.node(), {
     additionalDesc : [
       LineUpJS.model.StackColumn.desc('+ Stack')
     ],
     htmlLayout: {
       autoRotateLabels: true
+    },
+    body: {
+      renderer: 'canvas'
     },
     renderingOptions: {
       histograms: true

@@ -150,6 +150,8 @@ export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selec
     .append('input').attr({
     type: 'number',
     value: (d) => d.weight,
+    min: 0,
+    max: 100,
     size: 5
   }).on('input', function (d) {
     d.weight = +this.value;
@@ -163,11 +165,7 @@ export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selec
   $rows_enter.append('td').text((d) => d.col.label);
 
   function redraw() {
-    $rows.select('.bar').transition().style({
-      width: function (d) {
-        return scale(d.weight) + 'px';
-      }
-    });
+    $rows.select('.bar').transition().style('width', (d) => scale(d.weight) + 'px');
   }
 
   redraw();
@@ -176,9 +174,11 @@ export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selec
     column.setWeights(weights);
     $popup.remove();
   });
-  /*$popup.select('.reset').on('click', function () {
-
-   });*/
+  $popup.select('.reset').on('click', function () {
+    children.forEach((d, i) => d.weight = weights[i] * 100);
+    $rows.select('input').property('value', (d) => d.weight);
+    redraw();
+   });
   $popup.select('.ok').on('click', function () {
     column.setWeights(children.map((d) => d.weight));
     $popup.remove();
@@ -298,6 +298,43 @@ function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.
   });
   $popup.select('.ok').on('click', function () {
     updateImpl(true);
+    $popup.remove();
+  });
+}
+
+
+/**
+ * opens a dialog for editing the script code
+ * @param column the column to edit
+ * @param $header the visual header element of this column
+ */
+export function openEditScriptDialog(column:model.ScriptColumn, $header:d3.Selection<model.Column>) {
+  const bak = column.script;
+  const $popup = makePopup($header, 'Edit Script',
+    `Parameters: <code>values: number[], children: Column[]</code><br>
+      <textarea autofocus="true" rows="5" autofocus="autofocus" style="width: 95%;">${column.script}</textarea><br>`);
+
+  function updateData(script) {
+    column.script = script;
+  }
+
+  function updateImpl() {
+    //get value
+    var script = $popup.select('textarea').property('value');
+    updateData(script);
+  }
+
+  $popup.select('.cancel').on('click', function () {
+    $popup.select('textarea"]').property('value', bak);
+    updateData(bak);
+    $popup.remove();
+  });
+  $popup.select('.reset').on('click', function () {
+    $popup.select('textarea').property('value', model.ScriptColumn.DEFAULT_SCRIPT);
+    updateData(model.ScriptColumn.DEFAULT_SCRIPT);
+  });
+  $popup.select('.ok').on('click', function () {
+    updateImpl();
     $popup.remove();
   });
 }
