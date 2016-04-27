@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-04-21
+/*! LineUpJS - v0.2.0 - 2016-04-27
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -39,6 +39,7 @@
  * main module of LineUp.js containing the main class and exposes all other modules
  * Created by Samuel Gratzl on 14.08.2015.
  */
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -155,6 +156,7 @@ var LineUp = (function (_super) {
              * options related to the rendering of the body
              */
             body: {
+                renderer: 'svg',
                 rowHeight: 17,
                 rowPadding: 0.2,
                 rowBarPadding: 1,
@@ -204,7 +206,7 @@ var LineUp = (function (_super) {
             rotationDegree: this.config.header.rotationDegree,
             freezeCols: this.config.body.freezeCols
         });
-        this.body = new ui_.BodyRenderer(data, this.node, this.slice.bind(this), {
+        this.body = new (this.config.body.renderer === 'svg' ? ui_.BodyRenderer : ui_.BodyCanvasRenderer)(data, this.node, this.slice.bind(this), {
             rowHeight: this.config.body.rowHeight,
             rowPadding: this.config.body.rowPadding,
             rowBarPadding: this.config.body.rowBarPadding,
@@ -295,8 +297,7 @@ var LineUp = (function (_super) {
         return col !== null;
     };
     LineUp.prototype.dump = function () {
-        var s = this.data.dump();
-        return s;
+        return this.data.dump();
     };
     LineUp.prototype.changeDataStorage = function (data, dump) {
         if (this.data) {
@@ -347,7 +348,7 @@ var LineUp = (function (_super) {
      */
     LineUp.EVENT_MULTISELECTION_CHANGED = 'multiSelectionChanged';
     return LineUp;
-})(utils_.AEventDispatcher);
+}(utils_.AEventDispatcher));
 exports.LineUp = LineUp;
 /**
  * assigns colors to colmns if they are numbers and not yet defined
@@ -388,6 +389,7 @@ exports.create = create;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
+"use strict";
 ///<reference path='../typings/tsd.d.ts' />
 var d3 = require('d3');
 var utils = require('./utils');
@@ -509,8 +511,8 @@ var MappingEditor = (function () {
             {
                 var sscale = that.scale;
                 var domain = sscale.domain;
-                var range = sscale.range;
-                mapping_lines = domain.map(function (d, i) { return ({ r: d, n: range[i] }); });
+                var range_1 = sscale.range;
+                mapping_lines = domain.map(function (d, i) { return ({ r: d, n: range_1[i] }); });
             }
             function updateScale() {
                 //sort by raw value
@@ -648,7 +650,7 @@ var MappingEditor = (function () {
         });
     };
     return MappingEditor;
-})();
+}());
 exports.MappingEditor = MappingEditor;
 function create(parent, scale, original, dataPromise, options) {
     if (options === void 0) { options = {}; }
@@ -661,6 +663,7 @@ exports.create = create;
  * Created by Samuel Gratzl on 06.08.2015.
  */
 ///<reference path='../typings/tsd.d.ts' />
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -944,7 +947,7 @@ var Column = (function (_super) {
      */
     Column.COMPRESSED_WIDTH = 16;
     return Column;
-})(utils.AEventDispatcher);
+}(utils.AEventDispatcher));
 exports.Column = Column;
 /**
  * a column having an accessor to get the cell value
@@ -966,7 +969,7 @@ var ValueColumn = (function (_super) {
         return 0; //can't compare
     };
     return ValueColumn;
-})(Column);
+}(Column));
 exports.ValueColumn = ValueColumn;
 /**
  * a default column with no values
@@ -986,7 +989,7 @@ var DummyColumn = (function (_super) {
         return 0; //can't compare
     };
     return DummyColumn;
-})(Column);
+}(Column));
 exports.DummyColumn = DummyColumn;
 /**
  * checks whether the given column or description is a number column, i.e. the value is a number
@@ -1098,7 +1101,7 @@ var ScaleMappingFunction = (function () {
         return new ScaleMappingFunction(this.domain, this.type, this.range);
     };
     return ScaleMappingFunction;
-})();
+}());
 exports.ScaleMappingFunction = ScaleMappingFunction;
 /**
  * a mapping function based on a custom user function using 'value' as the current value
@@ -1169,7 +1172,7 @@ var ScriptMappingFunction = (function () {
         return new ScriptMappingFunction(this.domain, this.code);
     };
     return ScriptMappingFunction;
-})();
+}());
 exports.ScriptMappingFunction = ScriptMappingFunction;
 function createMappingFunction(dump) {
     if (dump.type === 'script') {
@@ -1333,7 +1336,7 @@ var NumberColumn = (function (_super) {
         return !((isFinite(this.filter_.min) && v < this.filter_.min) || (isFinite(this.filter_.max) && v < this.filter_.max));
     };
     return NumberColumn;
-})(ValueColumn);
+}(ValueColumn));
 exports.NumberColumn = NumberColumn;
 /**
  * a string column with optional alignment
@@ -1412,7 +1415,7 @@ var StringColumn = (function (_super) {
         return d3.ascending(this.getValue(a), this.getValue(b));
     };
     return StringColumn;
-})(ValueColumn);
+}(ValueColumn));
 exports.StringColumn = StringColumn;
 /**
  * a string column in which the label is a text but the value a link
@@ -1493,7 +1496,7 @@ var LinkColumn = (function (_super) {
         return v;
     };
     return LinkColumn;
-})(StringColumn);
+}(StringColumn));
 exports.LinkColumn = LinkColumn;
 /**
  * a string column in which the values can be edited locally
@@ -1543,7 +1546,7 @@ var AnnotateColumn = (function (_super) {
         return true;
     };
     return AnnotateColumn;
-})(StringColumn);
+}(StringColumn));
 exports.AnnotateColumn = AnnotateColumn;
 /**
  * a checkbox column for selections
@@ -1586,7 +1589,7 @@ var SelectionColumn = (function (_super) {
         return !old;
     };
     return SelectionColumn;
-})(ValueColumn);
+}(ValueColumn));
 exports.SelectionColumn = SelectionColumn;
 /**
  * column for categorical values
@@ -1740,7 +1743,7 @@ var CategoricalColumn = (function (_super) {
         return va.length - vb.length;
     };
     return CategoricalColumn;
-})(ValueColumn);
+}(ValueColumn));
 exports.CategoricalColumn = CategoricalColumn;
 /**
  * similar to a categorical column but the categories are mapped to numbers
@@ -1885,8 +1888,158 @@ var CategoricalNumberColumn = (function (_super) {
         return NumberColumn.prototype.compare.call(this, a, b);
     };
     return CategoricalNumberColumn;
-})(ValueColumn);
+}(ValueColumn));
 exports.CategoricalNumberColumn = CategoricalNumberColumn;
+/**
+ * implementation of a combine column, standard operations how to select
+ */
+var CompositeColumn = (function (_super) {
+    __extends(CompositeColumn, _super);
+    function CompositeColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.missingValue = 0;
+        this._children = [];
+    }
+    CompositeColumn.prototype.assignNewId = function (idGenerator) {
+        _super.prototype.assignNewId.call(this, idGenerator);
+        this._children.forEach(function (c) { return c.assignNewId(idGenerator); });
+    };
+    Object.defineProperty(CompositeColumn.prototype, "children", {
+        get: function () {
+            return this._children.slice();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CompositeColumn.prototype, "length", {
+        get: function () {
+            return this._children.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    CompositeColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
+        if (levelsToGo === void 0) { levelsToGo = 0; }
+        if (padding === void 0) { padding = 0; }
+        var self = null;
+        //no more levels or just this one
+        if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
+            var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
+            r.push(self = { col: this, offset: offset, width: w });
+            if (levelsToGo === 0) {
+                return w;
+            }
+        }
+        //push children
+        this._children.forEach(function (c) {
+            c.flatten(r, offset, levelsToGo - 1, padding);
+        });
+        return w;
+    };
+    CompositeColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.children = this._children.map(function (d) { return d.dump(toDescRef); });
+        r.missingValue = this.missingValue;
+        return r;
+    };
+    CompositeColumn.prototype.restore = function (dump, factory) {
+        var _this = this;
+        if (dump.missingValue) {
+            this.missingValue = dump.missingValue;
+        }
+        dump.children.map(function (child) {
+            var c = factory(child);
+            if (c) {
+                _this.push(c);
+            }
+        });
+        _super.prototype.restore.call(this, dump, factory);
+    };
+    /**
+     * inserts a column at a the given position
+     * @param col
+     * @param index
+     * @param weight
+     * @returns {any}
+     */
+    CompositeColumn.prototype.insert = function (col, index) {
+        if (!isNumberColumn(col)) {
+            return null;
+        }
+        this._children.splice(index, 0, col);
+        //listen and propagate events
+        return this.insertImpl(col, index);
+    };
+    CompositeColumn.prototype.insertImpl = function (col, index) {
+        col.parent = this;
+        this.forward(col, 'dirtyHeader.combine', 'dirtyValues.combine', 'dirty.combine', 'filterChanged.combine');
+        this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
+        return true;
+    };
+    CompositeColumn.prototype.push = function (col) {
+        return this.insert(col, this._children.length);
+    };
+    CompositeColumn.prototype.indexOf = function (col) {
+        var j = -1;
+        this._children.some(function (d, i) {
+            if (d === col) {
+                j = i;
+                return true;
+            }
+            return false;
+        });
+        return j;
+    };
+    CompositeColumn.prototype.insertAfter = function (col, ref) {
+        var i = this.indexOf(ref);
+        if (i < 0) {
+            return false;
+        }
+        return this.insert(col, i + 1);
+    };
+    CompositeColumn.prototype.remove = function (child) {
+        var i = this._children.indexOf(child);
+        if (i < 0) {
+            return false;
+        }
+        this._children.splice(i, 1); //remove and deregister listeners
+        return this.removeImpl(child);
+    };
+    CompositeColumn.prototype.removeImpl = function (child) {
+        child.parent = null;
+        this.unforward(child, 'dirtyHeader.combine', 'dirtyValues.combine', 'dirty.combine', 'filterChanged.combine');
+        this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
+        return true;
+    };
+    CompositeColumn.prototype.getColor = function (row) {
+        return this.color;
+    };
+    CompositeColumn.prototype.getValue = function (row) {
+        //weighted sum
+        var v = this.compute(row);
+        if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
+            return this.missingValue;
+        }
+        return v;
+    };
+    CompositeColumn.prototype.compute = function (row) {
+        return NaN;
+    };
+    CompositeColumn.prototype.getNumber = function (row) {
+        return this.getValue(row);
+    };
+    CompositeColumn.prototype.compare = function (a, b) {
+        return numberCompare(this.getValue(a), this.getValue(b));
+    };
+    CompositeColumn.prototype.isFiltered = function () {
+        return this._children.some(function (d) { return d.isFiltered(); });
+    };
+    CompositeColumn.prototype.filter = function (row) {
+        return this._children.every(function (d) { return d.filter(row); });
+    };
+    return CompositeColumn;
+}(Column));
+exports.CompositeColumn = CompositeColumn;
 /**
  * implementation of the stacked column
  */
@@ -1894,8 +2047,6 @@ var StackColumn = (function (_super) {
     __extends(StackColumn, _super);
     function StackColumn(id, desc) {
         _super.call(this, id, desc);
-        this.missingValue = 0;
-        this.children_ = [];
         /**
          * whether this stack column is collapsed i.e. just looks like an ordinary number column
          * @type {boolean}
@@ -1919,28 +2070,10 @@ var StackColumn = (function (_super) {
     StackColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat(['collapseChanged']);
     };
-    StackColumn.prototype.assignNewId = function (idGenerator) {
-        _super.prototype.assignNewId.call(this, idGenerator);
-        this.children_.forEach(function (c) { return c.assignNewId(idGenerator); });
-    };
-    Object.defineProperty(StackColumn.prototype, "children", {
-        get: function () {
-            return this.children_.slice();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StackColumn.prototype, "length", {
-        get: function () {
-            return this.children_.length;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(StackColumn.prototype, "weights", {
         get: function () {
             var w = this.getWidth();
-            return this.children_.map(function (d) { return d.getWidth() / w; });
+            return this._children.map(function (d) { return d.getWidth() / w; });
         },
         enumerable: true,
         configurable: true
@@ -1962,11 +2095,12 @@ var StackColumn = (function (_super) {
         if (levelsToGo === void 0) { levelsToGo = 0; }
         if (padding === void 0) { padding = 0; }
         var self = null;
+        var children = this._children;
         //no more levels or just this one
         if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
             var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
             if (!this.collapsed && !this.compressed) {
-                w += (this.children_.length - 1) * padding;
+                w += (children.length - 1) * padding;
             }
             r.push(self = { col: this, offset: offset, width: w });
             if (levelsToGo === 0) {
@@ -1975,7 +2109,7 @@ var StackColumn = (function (_super) {
         }
         //push children
         var acc = offset;
-        this.children_.forEach(function (c) {
+        children.forEach(function (c) {
             acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
         });
         if (self) {
@@ -1985,22 +2119,10 @@ var StackColumn = (function (_super) {
     };
     StackColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
-        r.children = this.children_.map(function (d) { return d.dump(toDescRef); });
-        r.missingValue = this.missingValue;
         r.collapsed = this.collapsed;
         return r;
     };
     StackColumn.prototype.restore = function (dump, factory) {
-        var _this = this;
-        if (dump.missingValue) {
-            this.missingValue = dump.missingValue;
-        }
-        dump.children.map(function (child) {
-            var c = factory(child);
-            if (c) {
-                _this.push(c);
-            }
-        });
         this.collapsed = dump.collapsed === true;
         _super.prototype.restore.call(this, dump, factory);
     };
@@ -2013,38 +2135,17 @@ var StackColumn = (function (_super) {
      */
     StackColumn.prototype.insert = function (col, index, weight) {
         if (weight === void 0) { weight = NaN; }
-        if (!isNumberColumn(col)) {
-            return null;
-        }
-        if (col instanceof StackColumn) {
-        }
         if (!isNaN(weight)) {
             col.setWidth((weight / (1 - weight) * this.getWidth()));
         }
-        this.children_.splice(index, 0, col);
-        //listen and propagate events
-        col.parent = this;
-        this.forward(col, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
         col.on('widthChanged.stack', this.adaptChange);
         //increase my width
-        _super.prototype.setWidth.call(this, this.children_.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
-        this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, col.getWidth() / this.getWidth(), index);
-        return true;
+        _super.prototype.setWidth.call(this, this.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
+        return _super.prototype.insert.call(this, col, index);
     };
     StackColumn.prototype.push = function (col, weight) {
         if (weight === void 0) { weight = NaN; }
-        return this.insert(col, this.children_.length, weight);
-    };
-    StackColumn.prototype.indexOf = function (col) {
-        var j = -1;
-        this.children_.some(function (d, i) {
-            if (d === col) {
-                j = i;
-                return true;
-            }
-            return false;
-        });
-        return j;
+        return this.insert(col, this.length, weight);
     };
     StackColumn.prototype.insertAfter = function (col, ref, weight) {
         if (weight === void 0) { weight = NaN; }
@@ -2067,7 +2168,7 @@ var StackColumn = (function (_super) {
         var full = this.getWidth(), change = (new_ - old) / full;
         var oldWeight = old / full;
         var factor = (1 - oldWeight - change) / (1 - oldWeight);
-        this.children_.forEach(function (c) {
+        this._children.forEach(function (c) {
             if (c === col) {
             }
             else {
@@ -2094,59 +2195,186 @@ var StackColumn = (function (_super) {
         weights = weights.slice(0, this.length);
         s = d3.sum(weights) / this.getWidth();
         weights = weights.map(function (d) { return d / s; });
-        this.children_.forEach(function (c, i) {
+        this._children.forEach(function (c, i) {
             c.setWidthImpl(weights[i]);
         });
         this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.getWidth(), this.getWidth());
     };
-    StackColumn.prototype.remove = function (child) {
-        var i = this.children_.indexOf(child);
-        if (i < 0) {
-            return false;
-        }
-        this.children_.splice(i, 1); //remove and deregister listeners
-        child.parent = null;
-        if (child instanceof StackColumn) {
-        }
-        this.unforward(child, 'dirtyHeader.stack', 'dirtyValues.stack', 'dirty.stack', 'filterChanged.stack');
+    StackColumn.prototype.removeImpl = function (child) {
         child.on('widthChanged.stack', null);
-        //reduce width to keep the percentages
         _super.prototype.setWidth.call(this, this.length === 0 ? 100 : this.getWidth() - child.getWidth());
-        this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
-        return true;
+        return _super.prototype.removeImpl.call(this, child);
     };
     StackColumn.prototype.setWidth = function (value) {
         var factor = value / this.getWidth();
-        this.children_.forEach(function (child) {
+        this._children.forEach(function (child) {
             //disable since we change it
             child.setWidthImpl(child.getWidth() * factor);
         });
         _super.prototype.setWidth.call(this, value);
     };
-    StackColumn.prototype.getValue = function (row) {
-        //weighted sum
+    StackColumn.prototype.compute = function (row) {
         var w = this.getWidth();
-        var v = this.children_.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
-        if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
-            return this.missingValue;
-        }
-        return v;
-    };
-    StackColumn.prototype.getNumber = function (row) {
-        return this.getValue(row);
-    };
-    StackColumn.prototype.compare = function (a, b) {
-        return numberCompare(this.getValue(a), this.getValue(b));
-    };
-    StackColumn.prototype.isFiltered = function () {
-        return this.children_.some(function (d) { return d.isFiltered(); });
-    };
-    StackColumn.prototype.filter = function (row) {
-        return this.children_.every(function (d) { return d.filter(row); });
+        return this._children.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
     };
     return StackColumn;
-})(Column);
+}(CompositeColumn));
 exports.StackColumn = StackColumn;
+/**
+ * combines multiple columns by using the maximal value
+ */
+var MaxColumn = (function (_super) {
+    __extends(MaxColumn, _super);
+    function MaxColumn(id, desc) {
+        _super.call(this, id, desc);
+    }
+    /**
+     * factory for creating a description creating a max column
+     * @param label
+     * @returns {{type: string, label: string}}
+     */
+    MaxColumn.desc = function (label) {
+        if (label === void 0) { label = 'Max'; }
+        return { type: 'max', label: label };
+    };
+    MaxColumn.prototype.getColor = function (row) {
+        //compute the index of the maximal one
+        var c = this._children;
+        if (c.length === 0) {
+            return this.color;
+        }
+        var max_i = 0, max_v = c[0].getValue(row);
+        for (var i = 1; i < c.length; ++i) {
+            var v = c[i].getValue(row);
+            if (v > max_v) {
+                max_i = i;
+                max_v = v;
+            }
+        }
+        return c[max_i].color;
+    };
+    MaxColumn.prototype.compute = function (row) {
+        return d3.max(this._children, function (d) { return d.getValue(row); });
+    };
+    return MaxColumn;
+}(CompositeColumn));
+exports.MaxColumn = MaxColumn;
+var MinColumn = (function (_super) {
+    __extends(MinColumn, _super);
+    function MinColumn(id, desc) {
+        _super.call(this, id, desc);
+    }
+    /**
+     * factory for creating a description creating a min column
+     * @param label
+     * @returns {{type: string, label: string}}
+     */
+    MinColumn.desc = function (label) {
+        if (label === void 0) { label = 'Min'; }
+        return { type: 'min', label: label };
+    };
+    MinColumn.prototype.getColor = function (row) {
+        //compute the index of the maximal one
+        var c = this._children;
+        if (c.length === 0) {
+            return this.color;
+        }
+        var min_i = 0, min_v = c[0].getValue(row);
+        for (var i = 1; i < c.length; ++i) {
+            var v = c[i].getValue(row);
+            if (v < min_v) {
+                min_i = i;
+                min_v = v;
+            }
+        }
+        return c[min_i].color;
+    };
+    MinColumn.prototype.compute = function (row) {
+        return d3.min(this._children, function (d) { return d.getValue(row); });
+    };
+    return MinColumn;
+}(CompositeColumn));
+exports.MinColumn = MinColumn;
+var MeanColumn = (function (_super) {
+    __extends(MeanColumn, _super);
+    function MeanColumn(id, desc) {
+        _super.call(this, id, desc);
+    }
+    /**
+     * factory for creating a description creating a mean column
+     * @param label
+     * @returns {{type: string, label: string}}
+     */
+    MeanColumn.desc = function (label) {
+        if (label === void 0) { label = 'Mean'; }
+        return { type: 'mean', label: label };
+    };
+    MeanColumn.prototype.compute = function (row) {
+        return d3.mean(this._children, function (d) { return d.getValue(row); });
+    };
+    return MeanColumn;
+}(CompositeColumn));
+exports.MeanColumn = MeanColumn;
+var ScriptColumn = (function (_super) {
+    __extends(ScriptColumn, _super);
+    function ScriptColumn(id, desc) {
+        _super.call(this, id, desc);
+        this._script = ScriptColumn.DEFAULT_SCRIPT;
+        this._f = null;
+        this._script = desc.script || this._script;
+    }
+    /**
+     * factory for creating a description creating a mean column
+     * @param label
+     * @returns {{type: string, label: string}}
+     */
+    ScriptColumn.desc = function (label) {
+        if (label === void 0) { label = 'script'; }
+        return { type: 'script', label: label, script: ScriptColumn.DEFAULT_SCRIPT };
+    };
+    ScriptColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['scriptChanged']);
+    };
+    Object.defineProperty(ScriptColumn.prototype, "script", {
+        get: function () {
+            return this._script;
+        },
+        set: function (script) {
+            if (this._script === script) {
+                return;
+            }
+            this._f = null;
+            this.fire(['scriptChanged', 'dirtyValues', 'dirty'], this._script, this._script = script);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ScriptColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.script = this.script;
+        return r;
+    };
+    ScriptColumn.prototype.restore = function (dump, factory) {
+        this.script = dump.script || this.script;
+        _super.prototype.restore.call(this, dump, factory);
+    };
+    Object.defineProperty(ScriptColumn.prototype, "f", {
+        get: function () {
+            if (this._f == null) {
+                this._f = new Function('children', 'values', this._script);
+            }
+            return this._f;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ScriptColumn.prototype.compute = function (row) {
+        return this.f.call(this, this._children, this._children.map(function (d) { return d.getValue(row); }));
+    };
+    ScriptColumn.DEFAULT_SCRIPT = 'return d3.max(values)';
+    return ScriptColumn;
+}(CompositeColumn));
+exports.ScriptColumn = ScriptColumn;
 /**
  * a rank column
  */
@@ -2166,7 +2394,7 @@ var RankColumn = (function (_super) {
         return { type: 'rank', label: label };
     };
     return RankColumn;
-})(ValueColumn);
+}(ValueColumn));
 exports.RankColumn = RankColumn;
 /**
  * a ranking
@@ -2425,7 +2653,7 @@ var Ranking = (function (_super) {
         configurable: true
     });
     return Ranking;
-})(utils.AEventDispatcher);
+}(utils.AEventDispatcher));
 exports.Ranking = Ranking;
 /**
  * utility for creating a stacked column description
@@ -2434,6 +2662,10 @@ exports.Ranking = Ranking;
 exports.createStackDesc = StackColumn.desc;
 exports.createRankDesc = RankColumn.desc;
 exports.createSelectionDesc = SelectionColumn.desc;
+exports.createMinDesc = MinColumn.desc;
+exports.createMaxDesc = MaxColumn.desc;
+exports.createMeanDesc = MeanColumn.desc;
+exports.createScriptDesc = ScriptColumn.desc;
 /**
  * utility for creating an action description with optional label
  * @param label
@@ -2458,7 +2690,11 @@ function models() {
         ordinal: CategoricalNumberColumn,
         actions: DummyColumn,
         annotate: AnnotateColumn,
-        selection: SelectionColumn
+        selection: SelectionColumn,
+        max: MaxColumn,
+        min: MinColumn,
+        mean: MinColumn,
+        script: ScriptColumn
     };
 }
 exports.models = models;
@@ -2467,6 +2703,7 @@ exports.models = models;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -2880,14 +3117,14 @@ var DataProvider = (function (_super) {
             }
             if (column.type === 'stacked') {
                 //create a stacked one
-                var r = _this.create(model.createStackDesc(column.label || 'Combined'));
+                var r_1 = _this.create(model.createStackDesc(column.label || 'Combined'));
                 (column.children || []).forEach(function (col) {
                     var c = toCol(col);
                     if (c) {
-                        r.push(c);
+                        r_1.push(c);
                     }
                 });
-                return r;
+                return r_1;
             }
             else {
                 var desc = _this.findDesc(column.column);
@@ -3101,7 +3338,7 @@ var DataProvider = (function (_super) {
         });
     };
     return DataProvider;
-})(utils.AEventDispatcher);
+}(utils.AEventDispatcher));
 exports.DataProvider = DataProvider;
 /**
  * common base implementation of a DataProvider with a fixed list of column descriptions
@@ -3164,7 +3401,7 @@ var CommonDataProvider = (function (_super) {
         return 'rank' + (this.rankingIndex++);
     };
     return CommonDataProvider;
-})(DataProvider);
+}(DataProvider));
 exports.CommonDataProvider = CommonDataProvider;
 /**
  * a data provider based on an local array
@@ -3236,9 +3473,9 @@ var LocalDataProvider = (function (_super) {
         var helper = this.data.map(function (r, i) { return ({ row: r, i: i, prev: r._rankings[ranking.id] || 0 }); });
         //do the optional filtering step
         if (this.options.filterGlobally) {
-            var filtered = this.getRankings().filter(function (d) { return d.isFiltered(); });
-            if (filtered.length > 0) {
-                helper = helper.filter(function (d) { return filtered.every(function (f) { return f.filter(d.row); }); });
+            var filtered_1 = this.getRankings().filter(function (d) { return d.isFiltered(); });
+            if (filtered_1.length > 0) {
+                helper = helper.filter(function (d) { return filtered_1.every(function (f) { return f.filter(d.row); }); });
             }
         }
         else if (ranking.isFiltered()) {
@@ -3298,7 +3535,7 @@ var LocalDataProvider = (function (_super) {
         this.setSelection(indices);
     };
     return LocalDataProvider;
-})(CommonDataProvider);
+}(CommonDataProvider));
 exports.LocalDataProvider = LocalDataProvider;
 /**
  * a remote implementation of the data provider
@@ -3360,13 +3597,14 @@ var RemoteDataProvider = (function (_super) {
         });
     };
     return RemoteDataProvider;
-})(CommonDataProvider);
+}(CommonDataProvider));
 exports.RemoteDataProvider = RemoteDataProvider;
 
 },{"./model":3,"./utils":8,"d3":undefined}],5:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3438,8 +3676,29 @@ var DefaultCellRenderer = (function () {
         }
         $row.selectAll('*').remove();
     };
+    DefaultCellRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
+        var _this = this;
+        ctx.save();
+        ctx.textAlign = this.align;
+        rows.forEach(function (row, i) {
+            var y = context.cellY(i);
+            var alignmentShift = 2;
+            if (_this.align === 'right') {
+                alignmentShift = col.getWidth() - 5;
+            }
+            else if (_this.align === 'center') {
+                alignmentShift = col.getWidth() * 0.5;
+            }
+            var x = context.cellX(i) + alignmentShift;
+            ctx.fillText(col.getLabel(row), x, y, col.getWidth());
+        });
+        ctx.restore();
+    };
+    DefaultCellRenderer.prototype.mouseEnterCanvas = function (ctx, col, row, index, context) {
+        //TODO
+    };
     return DefaultCellRenderer;
-})();
+}());
 exports.DefaultCellRenderer = DefaultCellRenderer;
 /**
  * simple derived one where individual elements can be overridden
@@ -3455,7 +3714,7 @@ var DerivedCellRenderer = (function (_super) {
         });
     }
     return DerivedCellRenderer;
-})(DefaultCellRenderer);
+}(DefaultCellRenderer));
 /**
  * a renderer rendering a bar for numerical columns
  */
@@ -3518,8 +3777,27 @@ var BarCellRenderer = (function (_super) {
             }).text(function (d) { return col.getLabel(d); });
         }
     };
+    BarCellRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
+        var _this = this;
+        ctx.save();
+        rows.forEach(function (d, i) {
+            var x = context.cellX(i);
+            var y = context.cellY(i) + context.option('rowPadding', 1);
+            var n = col.getWidth() * col.getValue(d);
+            var w = isNaN(n) ? 0 : n;
+            var h = context.rowHeight(i) - context.option('rowPadding', 1) * 2;
+            ctx.fillStyle = _this.colorOf(d, i, col) || col.color || model.Column.DEFAULT_COLOR;
+            ctx.fillRect(x, y, w, h);
+        });
+        ctx.restore();
+    };
+    BarCellRenderer.prototype.mouseEnterCanvas = function (ctx, col, row, index, context) {
+        ctx.save();
+        ctx.fillText(col.getLabel(row), context.cellX(index), context.cellY(index), col.getWidth());
+        ctx.restore();
+    };
     return BarCellRenderer;
-})(DefaultCellRenderer);
+}(DefaultCellRenderer));
 exports.BarCellRenderer = BarCellRenderer;
 /**
  * render as a heatmap cell, e.g., encode the value in color
@@ -3583,8 +3861,25 @@ var HeatMapCellRenderer = (function (_super) {
             }).text(function (d) { return col.getLabel(d); });
         }
     };
+    HeatMapCellRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
+        var _this = this;
+        ctx.save();
+        rows.forEach(function (d, i) {
+            var x = context.cellX(i);
+            var y = context.cellY(i) + context.option('rowPadding', 1);
+            var h = context.rowHeight(i) - context.option('rowPadding', 1) * 2;
+            ctx.fillStyle = _this.colorOf(d, i, col);
+            ctx.fillRect(x, y, h, h);
+        });
+        ctx.restore();
+    };
+    HeatMapCellRenderer.prototype.mouseEnterCanvas = function (ctx, col, row, index, context) {
+        ctx.save();
+        ctx.fillText(col.getLabel(row), context.cellX(index), context.cellY(index), col.getWidth());
+        ctx.restore();
+    };
     return HeatMapCellRenderer;
-})(DefaultCellRenderer);
+}(DefaultCellRenderer));
 exports.HeatMapCellRenderer = HeatMapCellRenderer;
 /**
  * a bar cell renderer where individual function can be overwritten
@@ -3599,7 +3894,7 @@ var DerivedBarCellRenderer = (function (_super) {
         });
     }
     return DerivedBarCellRenderer;
-})(BarCellRenderer);
+}(BarCellRenderer));
 /**
  * an rendering for action columns, i.e., clickable column actions
  */
@@ -3631,7 +3926,7 @@ var ActionCellRenderer = (function () {
         $row.selectAll('*').remove();
     };
     return ActionCellRenderer;
-})();
+}());
 exports.ActionCellRenderer = ActionCellRenderer;
 var SelectionCellRenderer = (function (_super) {
     __extends(SelectionCellRenderer, _super);
@@ -3659,8 +3954,18 @@ var SelectionCellRenderer = (function (_super) {
         });
         $rows.exit().remove();
     };
+    SelectionCellRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
+        ctx.save();
+        ctx.font = 'FontAwesome';
+        rows.forEach(function (d, i) {
+            var x = context.cellX(i);
+            var y = context.cellY(i);
+            ctx.fillText(col.getValue(d) === true ? '\uf046' : '\uf096', x, y);
+        });
+        ctx.restore();
+    };
     return SelectionCellRenderer;
-})(DefaultCellRenderer);
+}(DefaultCellRenderer));
 exports.SelectionCellRenderer = SelectionCellRenderer;
 /**
  * a renderer for annotate columns
@@ -3700,7 +4005,7 @@ var AnnotateCellRenderer = (function (_super) {
         $row.selectAll('*').remove();
     };
     return AnnotateCellRenderer;
-})(DefaultCellRenderer);
+}(DefaultCellRenderer));
 var defaultRendererInstance = new DefaultCellRenderer();
 var barRendererInstance = new BarCellRenderer();
 /**
@@ -3756,7 +4061,7 @@ var LinkCellRenderer = (function (_super) {
         return $col.selectAll('text.link[data-index="' + index + '"]');
     };
     return LinkCellRenderer;
-})(DefaultCellRenderer);
+}(DefaultCellRenderer));
 /**
  * renders a string with additional alignment behavior
  */
@@ -3771,7 +4076,7 @@ var StringCellRenderer = (function (_super) {
         return _super.prototype.render.call(this, $col, col, rows, context);
     };
     return StringCellRenderer;
-})(DefaultCellRenderer);
+}(DefaultCellRenderer));
 /**
  * renders categorical columns as a colored rect with label
  */
@@ -3816,8 +4121,19 @@ var CategoricalRenderer = (function (_super) {
     CategoricalRenderer.prototype.findRow = function ($col, index) {
         return $col.selectAll('g.' + this.textClass + '[data-index="' + index + '"]');
     };
+    CategoricalRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
+        ctx.save();
+        rows.forEach(function (d, i) {
+            var x = context.cellX(i);
+            var y = context.cellY(i);
+            ctx.fillStyle = 'black';
+            ctx.fillText(col.getLabel(d), x + context.rowHeight(i), y);
+            ctx.fillStyle = col.getColor(d);
+            ctx.fillRect(x, y + context.option('rowPadding', 1), Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0), Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0));
+        });
+    };
     return CategoricalRenderer;
-})(DefaultCellRenderer);
+}(DefaultCellRenderer));
 /**
  * renders a stacked column using composite pattern
  */
@@ -3855,11 +4171,11 @@ var StackCellRenderer = (function (_super) {
             'data-stack': function (d, i) { return i; }
         }).each(function (d, i) {
             if (stacked) {
-                var preChildren = children.slice(0, i);
+                var preChildren_1 = children.slice(0, i);
                 //if shown as stacked bar shift individual cells of a column to the left where they belong to
                 context.cellX = function (index) {
                     //shift by all the empty space left from the previous columns
-                    return ueber(index) - preChildren.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rowGetter(index))); }, 0);
+                    return ueber(index) - preChildren_1.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rowGetter(index))); }, 0);
                 };
             }
             perChild(d3.select(this), d, i, context);
@@ -3895,8 +4211,44 @@ var StackCellRenderer = (function (_super) {
         }, function (index) { return row; }, false);
         $row.selectAll('*').remove();
     };
+    StackCellRenderer.prototype.renderCanvas = function (ctx, stack, rows, context) {
+        var children = stack.children, stacked = context.showStacked(stack);
+        var offset = 0, shifts = children.map(function (d) {
+            var r = offset;
+            offset += d.getWidth();
+            offset += (!stacked ? context.option('columnPadding', 0) : 0);
+            return r;
+        });
+        var ueber = context.cellX;
+        var ueberOption = context.option;
+        context.option = function (option, default_) {
+            var r = ueberOption(option, default_);
+            return option === 'stackLevel' ? r + 'N' : r;
+        };
+        ctx.save();
+        children.forEach(function (child, i) {
+            ctx.save();
+            ctx.translate(shifts[i], 0);
+            if (stacked) {
+                var preChildren_2 = children.slice(0, i);
+                //if shown as stacked bar shift individual cells of a column to the left where they belong to
+                context.cellX = function (index) {
+                    //shift by all the empty space left from the previous columns
+                    return ueber(index) - preChildren_2.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rows[index])); }, 0);
+                };
+            }
+            context.renderCanvas(child, ctx, rows, context);
+            ctx.restore();
+        });
+        ctx.restore();
+        context.cellX = ueber;
+        context.option = ueberOption;
+    };
     return StackCellRenderer;
-})(DefaultCellRenderer);
+}(DefaultCellRenderer));
+var combineRenderer = barRenderer({
+    colorOf: function (d, i, col) { return col.getColor(d); }
+});
 /**
  * returns a map of all known renderers by type
  * @return
@@ -3913,12 +4265,11 @@ function renderers() {
         heatmap: new HeatMapCellRenderer(),
         stack: new StackCellRenderer(),
         categorical: new CategoricalRenderer(),
-        ordinal: barRenderer({
-            colorOf: function (d, i, col) { return col.getColor(d); }
-        }),
-        max: barRenderer({
-            colorOf: function (d, i, col) { return col.getColor(d); }
-        }),
+        ordinal: combineRenderer,
+        max: combineRenderer,
+        min: combineRenderer,
+        mean: combineRenderer,
+        script: combineRenderer,
         actions: new ActionCellRenderer(),
         annotate: new AnnotateCellRenderer(),
         selection: new SelectionCellRenderer()
@@ -3930,6 +4281,7 @@ exports.renderers = renderers;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3947,7 +4299,7 @@ var PoolEntry = (function () {
         this.used = 0;
     }
     return PoolEntry;
-})();
+}());
 var PoolRenderer = (function () {
     function PoolRenderer(data, parent, options) {
         if (options === void 0) { options = {}; }
@@ -4097,7 +4449,7 @@ var PoolRenderer = (function () {
         }
     };
     return PoolRenderer;
-})();
+}());
 exports.PoolRenderer = PoolRenderer;
 var HeaderRenderer = (function () {
     function HeaderRenderer(data, parent, options) {
@@ -4331,6 +4683,11 @@ var HeaderRenderer = (function () {
             dialogs.openEditLinkDialog(d, d3.select(this.parentNode.parentNode));
             d3.event.stopPropagation();
         });
+        //edit script
+        $node.filter(function (d) { return d instanceof model.ScriptColumn; }).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
+            dialogs.openEditScriptDialog(d, d3.select(this.parentNode.parentNode));
+            d3.event.stopPropagation();
+        });
         //filter
         $node.filter(function (d) { return filterDialogs.hasOwnProperty(d.desc.type); }).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
             filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
@@ -4528,7 +4885,7 @@ var HeaderRenderer = (function () {
         $headers.exit().remove();
     };
     return HeaderRenderer;
-})();
+}());
 exports.HeaderRenderer = HeaderRenderer;
 var BodyRenderer = (function (_super) {
     __extends(BodyRenderer, _super);
@@ -4617,6 +4974,10 @@ var BodyRenderer = (function (_super) {
                     tthis.__renderer__ = act_renderer;
                 }
                 act_renderer.render($this, col, data, context);
+            },
+            renderCanvas: function (col, ctx, data, context) {
+                if (context === void 0) { context = this; }
+                //dummy impl
             },
             showStacked: function (col) {
                 return options.stacked;
@@ -4952,8 +5313,210 @@ var BodyRenderer = (function (_super) {
         this.renderSlopeGraphs($body, rankings, orders, shifts, context);
     };
     return BodyRenderer;
-})(utils.AEventDispatcher);
+}(utils.AEventDispatcher));
 exports.BodyRenderer = BodyRenderer;
+var BodyCanvasRenderer = (function (_super) {
+    __extends(BodyCanvasRenderer, _super);
+    function BodyCanvasRenderer(data, parent, slicer, options) {
+        if (options === void 0) { options = {}; }
+        _super.call(this);
+        this.data = data;
+        this.slicer = slicer;
+        this.options = {
+            rowHeight: 20,
+            rowPadding: 1,
+            rowBarPadding: 1,
+            idPrefix: '',
+            slopeWidth: 150,
+            columnPadding: 5,
+            stacked: true,
+            renderers: renderer.renderers(),
+            meanLine: false,
+            freezeCols: 0
+        };
+        this.histCache = d3.map();
+        //merge options
+        utils.merge(this.options, options);
+        this.$node = d3.select(parent).append('canvas').classed('lu-canvas.body', true);
+        this.changeDataStorage(data);
+    }
+    BodyCanvasRenderer.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat(['hoverChanged']);
+    };
+    Object.defineProperty(BodyCanvasRenderer.prototype, "node", {
+        get: function () {
+            return this.$node.node();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BodyCanvasRenderer.prototype.setOption = function (key, value) {
+        this.options[key] = value;
+    };
+    BodyCanvasRenderer.prototype.updateFreeze = function (left) {
+        //dummy impl
+    };
+    BodyCanvasRenderer.prototype.select = function (dataIndex, additional) {
+        if (additional === void 0) { additional = false; }
+        //dummy impl
+    };
+    BodyCanvasRenderer.prototype.changeDataStorage = function (data) {
+        if (this.data) {
+            this.data.on(['dirtyValues.bodyRenderer', 'selectionChanged.bodyRenderer'], null);
+        }
+        this.data = data;
+        data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this), 1));
+        //data.on('selectionChanged.bodyRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
+    };
+    BodyCanvasRenderer.prototype.createContext = function (index_shift) {
+        var options = this.options;
+        return {
+            rowKey: undefined,
+            cellY: function (index) {
+                return (index + index_shift) * (options.rowHeight);
+            },
+            cellPrevY: function (index) {
+                return (index + index_shift) * (options.rowHeight);
+            },
+            cellX: function (index) {
+                return 0;
+            },
+            rowHeight: function (index) {
+                return options.rowHeight * (1 - options.rowPadding);
+            },
+            renderer: function (col) {
+                if (col.compressed && model.isNumberColumn(col)) {
+                    return options.renderers.heatmap;
+                }
+                if (col instanceof model.StackColumn && col.collapsed) {
+                    return options.renderers.number;
+                }
+                var l = options.renderers[col.desc.type];
+                return l || renderer.defaultRenderer();
+            },
+            render: function (col, $this, data, context) {
+                if (context === void 0) { context = this; }
+                //dummy impl
+            },
+            renderCanvas: function (col, ctx, data, context) {
+                if (context === void 0) { context = this; }
+                var act_renderer = this.renderer(col);
+                act_renderer.renderCanvas(ctx, col, data, context);
+            },
+            showStacked: function (col) {
+                return options.stacked;
+            },
+            idPrefix: options.idPrefix,
+            animated: function ($sel) { return $sel; },
+            //show mean line if option is enabled and top level
+            showMeanLine: function (col) { return options.meanLine && model.isNumberColumn(col) && !col.compressed && col.parent instanceof model.Ranking; },
+            option: function (key, default_) { return (key in options) ? options[key] : default_; }
+        };
+    };
+    BodyCanvasRenderer.prototype.renderRankings = function (ctx, rankings, orders, shifts, context, height) {
+        var _this = this;
+        var dataPromises = orders.map(function (r) { return _this.data.view(r); });
+        ctx.save();
+        rankings.forEach(function (ranking, j) {
+            dataPromises[j].then(function (data) {
+                ctx.save();
+                ctx.translate(shifts[j].shift, 0);
+                ctx.save();
+                ctx.fillStyle = '#f7f7f7';
+                orders[j].forEach(function (order, i) {
+                    if (i % 2 === 0) {
+                        ctx.fillRect(0, context.cellY(i), shifts[j].width, context.rowHeight(i));
+                    }
+                });
+                ctx.restore();
+                ranking.children.forEach(function (child, i) {
+                    ctx.save();
+                    ctx.translate(shifts[j].shifts[i], 0);
+                    context.renderCanvas(child, ctx, data, context);
+                    ctx.restore();
+                });
+                ctx.restore();
+            });
+        });
+        ctx.restore();
+    };
+    BodyCanvasRenderer.prototype.renderSlopeGraphs = function (ctx, rankings, orders, shifts, context) {
+        var _this = this;
+        var slopes = orders.slice(1).map(function (d, i) { return ({ left: orders[i], left_i: i, right: d, right_i: i + 1 }); });
+        ctx.save();
+        ctx.fillStyle = 'darkgray';
+        slopes.forEach(function (slope, i) {
+            ctx.save();
+            ctx.translate(shifts[i + 1].shift - _this.options.slopeWidth, 0);
+            var cache = {};
+            slope.right.forEach(function (data_index, pos) {
+                cache[data_index] = pos;
+            });
+            var lines = slope.left.map(function (data_index, pos) { return ({
+                data_index: data_index,
+                lpos: pos,
+                rpos: cache[data_index]
+            }); }).filter(function (d) { return d.rpos != null; });
+            ctx.beginPath();
+            lines.forEach(function (line) {
+                ctx.moveTo(0, context.rowHeight(line.lpos) * 0.5 + context.cellY(line.lpos));
+                ctx.lineTo(_this.options.slopeWidth, context.rowHeight(line.rpos) * 0.5 + context.cellY(line.rpos));
+            });
+            ctx.stroke();
+            ctx.restore();
+        });
+        ctx.restore();
+    };
+    /**
+     * render the body
+     */
+    BodyCanvasRenderer.prototype.update = function () {
+        var _this = this;
+        var rankings = this.data.getRankings();
+        var maxElems = d3.max(rankings, function (d) { return d.getOrder().length; }) || 0;
+        var height = this.options.rowHeight * maxElems;
+        var visibleRange = this.slicer(0, maxElems, function (i) { return i * _this.options.rowHeight; });
+        var orderSlicer = function (order) {
+            if (visibleRange.from === 0 && order.length <= visibleRange.to) {
+                return order;
+            }
+            return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
+        };
+        var orders = rankings.map(function (r) { return orderSlicer(r.getOrder()); });
+        var context = this.createContext(visibleRange.from);
+        //compute offsets and shifts for individual rankings and columns inside the rankings
+        var offset = 0, shifts = rankings.map(function (d, i) {
+            var r = offset;
+            offset += _this.options.slopeWidth;
+            var o2 = 0, shift2 = d.children.map(function (o) {
+                var r = o2;
+                o2 += (o.compressed ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + _this.options.columnPadding;
+                if (o instanceof model.StackColumn && !o.collapsed && !o.compressed) {
+                    o2 += _this.options.columnPadding * (o.length - 1);
+                }
+                return r;
+            });
+            offset += o2;
+            return {
+                shift: r,
+                shifts: shift2,
+                width: o2
+            };
+        });
+        this.$node.attr({
+            width: offset,
+            height: height
+        });
+        var ctx = this.$node.node().getContext('2d');
+        ctx.font = '10pt Times New Roman';
+        ctx.textBaseline = 'top';
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        this.renderRankings(ctx, rankings, orders, shifts, context, height);
+        this.renderSlopeGraphs(ctx, rankings, orders, shifts, context);
+    };
+    return BodyCanvasRenderer;
+}(utils.AEventDispatcher));
+exports.BodyCanvasRenderer = BodyCanvasRenderer;
 
 },{"./model":3,"./renderer":5,"./ui_dialogs":7,"./utils":8,"d3":undefined}],7:[function(require,module,exports){
 /**
@@ -4961,6 +5524,8 @@ exports.BodyRenderer = BodyRenderer;
  *
  * Created by Samuel Gratzl on 24.08.2015.
  */
+"use strict";
+var model = require('./model');
 var utils = require('./utils');
 var mappingeditor = require('./mappingeditor');
 function dialogForm(title, body, buttonsWithLabel) {
@@ -5220,6 +5785,37 @@ function openStringFilter(column, $header) {
     });
 }
 /**
+ * opens a dialog for editing the script code
+ * @param column the column to edit
+ * @param $header the visual header element of this column
+ */
+function openEditScriptDialog(column, $header) {
+    var bak = column.script;
+    var $popup = makePopup($header, 'Edit Script', "Parameters: <code>values: number[], children: Column[]</code><br>\n      <textarea autofocus=\"true\" rows=\"5\" autofocus=\"autofocus\" style=\"width: 95%;\">" + column.script + "</textarea><br>");
+    function updateData(script) {
+        column.script = script;
+    }
+    function updateImpl() {
+        //get value
+        var script = $popup.select('textarea').property('value');
+        updateData(script);
+    }
+    $popup.select('.cancel').on('click', function () {
+        $popup.select('textarea"]').property('value', bak);
+        updateData(bak);
+        $popup.remove();
+    });
+    $popup.select('.reset').on('click', function () {
+        $popup.select('textarea').property('value', model.ScriptColumn.DEFAULT_SCRIPT);
+        updateData(model.ScriptColumn.DEFAULT_SCRIPT);
+    });
+    $popup.select('.ok').on('click', function () {
+        updateImpl();
+        $popup.remove();
+    });
+}
+exports.openEditScriptDialog = openEditScriptDialog;
+/**
  * opens the mapping editor for a given NumberColumn
  * @param column the column to rename
  * @param $header the visual header element of this column
@@ -5335,10 +5931,11 @@ function filterDialogs() {
 }
 exports.filterDialogs = filterDialogs;
 
-},{"./mappingeditor":2,"./utils":8}],8:[function(require,module,exports){
+},{"./mappingeditor":2,"./model":3,"./utils":8}],8:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -5464,7 +6061,7 @@ var AEventDispatcher = (function () {
         from.on(types, null);
     };
     return AEventDispatcher;
-})();
+}());
 exports.AEventDispatcher = AEventDispatcher;
 var TYPE_OBJECT = '[object Object]';
 var TYPE_ARRAY = '[object Array]';
@@ -5626,7 +6223,7 @@ var ContentScroller = (function (_super) {
         d3.select(this.container).on('scroll.scroller', null);
     };
     return ContentScroller;
-})(AEventDispatcher);
+}(AEventDispatcher));
 exports.ContentScroller = ContentScroller;
 /**
  * checks whether the given DragEvent has one of the given types
