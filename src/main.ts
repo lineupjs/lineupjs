@@ -295,8 +295,7 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 
   dump() {
-    var s = this.data.dump();
-    return s;
+    return this.data.dump();
   }
 
   changeDataStorage(data:provider_.DataProvider, dump?:any) {

@@ -426,6 +426,11 @@ export class HeaderRenderer {
       dialogs.openEditLinkDialog(<model.LinkColumn>d, d3.select(this.parentNode.parentNode));
       d3.event.stopPropagation();
     });
+    //edit script
+    $node.filter((d) => d instanceof model.ScriptColumn).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
+      dialogs.openEditScriptDialog(<model.ScriptColumn>d, d3.select(this.parentNode.parentNode));
+      d3.event.stopPropagation();
+    });
     //filter
     $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
       filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);

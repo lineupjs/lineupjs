@@ -765,6 +765,10 @@ class StackCellRenderer extends DefaultCellRenderer {
   }
 }
 
+const combineRenderer = barRenderer({
+  colorOf: (d, i, col) => col.getColor(d)
+});
+
 /**
  * returns a map of all known renderers by type
  * @return
@@ -781,12 +785,11 @@ export function renderers() {
     heatmap: new HeatMapCellRenderer(),
     stack: new StackCellRenderer(),
     categorical: new CategoricalRenderer(),
-    ordinal: barRenderer({
-      colorOf: (d, i, col) => col.getColor(d)
-    }),
-    max: barRenderer({
-      colorOf: (d, i, col) => col.getColor(d)
-    }),
+    ordinal: combineRenderer,
+    max: combineRenderer,
+    min: combineRenderer,
+    mean: combineRenderer,
+    script: combineRenderer,
     actions: new ActionCellRenderer(),
     annotate: new AnnotateCellRenderer(),
     selection: new SelectionCellRenderer()
