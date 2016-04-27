@@ -19,8 +19,8 @@
     }
     },
     {name: ' add single columns', icon: 'fa-plus', action: openAddColumnDialog},
-    {name: ' save layout', icon: 'fa-floppy-o', action: saveLayout},
-    {name: ' export to csv', icon: 'fa-download', action: exportToCSV}
+    {name: ' export to csv', icon: 'fa-download', action: exportToCSV},
+    {name: ' save to gist', icon: 'fa-github', action: saveToGist}
   ];
   var lineUpDemoConfig = {
     htmlLayout: {
@@ -29,7 +29,7 @@
     renderingOptions: {
       stacked: true,
       histograms: true,
-      animated: true,
+      animated: true
     },
     svgLayout: {
       freezeCols: 0
@@ -120,12 +120,24 @@
   function loadDataset(ds) {
     function loadData(desc, baseUrl) {
       if (desc.data) {
-        initLineup(name, desc, desc.data);
+        initLineup(desc.name, desc, desc.data);
       } else if (desc.file) {
         d3.dsv(desc.separator || '\t', 'text/plain')(baseUrl + '/' + desc.file, function (_data) {
-          initLineup(name, desc, _data);
+          initLineup(desc.name, desc, _data);
         });
       }
+    }
+
+    function loadGist(gistid) {
+      d3.json('https://api.github.com/gists/'+gistid, function(error, gistdesc) {
+        if (error) {
+          console.error('cant load gist id: '+gistid, error);
+        } else if (gistdesc) {
+          var firstFile = gistdesc.files[Object.keys(gistdesc.files)[0]];
+          var content = JSON.parse(firstFile.content);
+          initLineup(gistdesc.description, content, content.data);
+        }
+      });
     }
 
     document.title = 'LineUp - ' + (ds.name || 'Custom');
@@ -136,6 +148,8 @@
       d3.json(ds.baseURL + '/' + ds.descriptionFile, function (desc) {
         loadData(desc, ds.baseURL);
       })
+    } else if (ds.gist) {
+      loadGist(ds.gist);
     } else {
       loadData(ds, '');
     }
@@ -203,15 +217,19 @@
     d3.select('#pool').style('display', 'none');
   });
 
-
-  function saveLayout() {
+  function dumpLayout() {
     //full spec
     var s = lineup.dump();
     s.columns = lineup.data.columns;
     s.data = lineup.data.data;
 
     //stringify with pretty print
-    var str = JSON.stringify(s, null, '\t');
+    return JSON.stringify(s, null, '\t');
+  }
+
+  function saveLayout() {
+    //stringify with pretty print
+    var str = dumpLayout();
     //create blob and save it
     var blob = new Blob([str], {type: 'application/json;charset=utf-8'});
     saveAs(blob, 'LineUp-' + lineUpDemoConfig.name + '.json');
@@ -223,6 +241,29 @@
       //create blob and save it
       var blob = new Blob([str], {type: 'text/csv;charset=utf-8'});
       saveAs(blob, 'LineUp-' + lineUpDemoConfig.name + '.csv');
+    });
+  }
+
+  function saveToGist() {
+    //stringify with pretty print
+    var str = dumpLayout();
+    var args = {
+        'description': lineUpDemoConfig.name,
+        'public': true,
+        'files': {
+          'lineup.json': {
+            'content': str
+          }
+        }
+    };
+    d3.json('https://api.github.com/gists').post(JSON.stringify(args), function (error, data) {
+      if (error) {
+        console.log('cant store to gist', error);
+      } else {
+        var id = data.id;
+        document.title = 'LineUp - ' + (args.description || 'Custom');
+        history.pushState({ id: 'gist:'+id }, 'LineUp - ' + (args.description || 'Custom'), '#gist:' + id);
+      }
     });
   }
 
@@ -383,28 +424,24 @@
 
     //load data and init lineup
 
-    var old = history.state;
-    if (old) {
-      var choose = datasets.filter(function (d) {
-        return d.id === old.id;
+    var old = history.state ? history.state.id : (window.location.hash ? window.location.hash.substr(1) : '');
+    if (old.match(/gist:.*/)) {
+      loadDataset({
+        name: 'Github Gist '+old.substr(5),
+        id: old,
+        gist: old.substr(5)
       });
-      $selector.property('value', datasets.indexOf(choose[0]));
-      loadDataset(choose[0]);
-    } else if (window.location.hash) {
+    } else {
       var choose = datasets.filter(function (d) {
-        return d.id === window.location.hash.substr(1);
-      });
+        return d.id === old;
+      })
       if (choose.length > 0) {
         $selector.property('value', datasets.indexOf(choose[0]));
         loadDataset(choose[0]);
       } else {
         loadDataset(datasets[0]);
       }
-    } else {
-      //and start with 0:
-      loadDataset(datasets[0]);
     }
-
 
     loadLayout();
   });
