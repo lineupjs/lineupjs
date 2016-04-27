@@ -2140,7 +2140,7 @@ var StackColumn = (function (_super) {
         }
         col.on('widthChanged.stack', this.adaptChange);
         //increase my width
-        _super.prototype.setWidth.call(this, this.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
+        _super.prototype.setWidth.call(this, this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
         return _super.prototype.insert.call(this, col, index);
     };
     StackColumn.prototype.push = function (col, weight) {
@@ -2202,7 +2202,7 @@ var StackColumn = (function (_super) {
     };
     StackColumn.prototype.removeImpl = function (child) {
         child.on('widthChanged.stack', null);
-        _super.prototype.setWidth.call(this, this.length === 0 ? 100 : this.getWidth() - child.getWidth());
+        _super.prototype.setWidth.call(this, this.length === 1 ? 100 : this.getWidth() - child.getWidth());
         return _super.prototype.removeImpl.call(this, child);
     };
     StackColumn.prototype.setWidth = function (value) {

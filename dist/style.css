@@ -195,7 +195,9 @@
   .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {
     position: relative;
     background: inherit;
-    transform-origin: left top; }
+    transform-origin: left top;
+    text-overflow: ellipsis;
+    overflow-x: hidden; }
   .lu div.lu-header div.header span.lu-label, .lu-pool div.lu-header div.header span.lu-label {
     background: inherit; }
   .lu div.lu-header div.header i.sort_indicator, .lu-pool div.lu-header div.header i.sort_indicator {
