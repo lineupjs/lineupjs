@@ -649,12 +649,12 @@ export interface IBodyRenderer extends utils.AEventDispatcher {
 
   select(dataIndex:number, additional?: boolean);
 
-  updateFreeze(left:number),
+  updateFreeze(left:number);
 
   update();
 }
 
-export class BodyRenderer extends utils.AEventDispatcher implements IBodyRenderer{
+export class BodyRenderer extends utils.AEventDispatcher implements IBodyRenderer {
   private mouseOverItem:(dataIndex:number, hover:boolean) => void;
   private options = {
     rowHeight: 20,
@@ -750,7 +750,9 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
         }
         act_renderer.render($this, col, data, context);
       },
-      renderCanvas(col:model.Column, ctx:CanvasRenderingContext2D, data:any[], context:renderer.IRenderContext = this) { },
+      renderCanvas(col:model.Column, ctx:CanvasRenderingContext2D, data:any[], context:renderer.IRenderContext = this) {
+        //dummy impl
+      },
       showStacked(col:model.StackColumn) {
         return options.stacked;
       },
@@ -1133,8 +1135,6 @@ export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyR
 
   private $node:d3.Selection<any>;
 
-  private currentFreezeLeft = 0;
-
   histCache = d3.map<Promise<model.IStatistics>>();
 
   constructor(private data:provider.DataProvider, parent:Element, private slicer:ISlicer, options = {}) {
@@ -1160,11 +1160,11 @@ export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyR
   }
 
   updateFreeze(left: number) {
-
+    //dummy impl
   }
 
   select(dataIndex:number, additional = false) {
-
+    //dummy impl
   }
 
   changeDataStorage(data:provider.DataProvider) {
@@ -1202,7 +1202,9 @@ export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyR
         var l = options.renderers[col.desc.type];
         return l || renderer.defaultRenderer();
       },
-      render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context:renderer.IRenderContext = this) { },
+      render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context:renderer.IRenderContext = this) {
+        //dummy impl
+      },
       renderCanvas(col:model.Column, ctx:CanvasRenderingContext2D, data:any[], context:renderer.IRenderContext = this) {
         const act_renderer = this.renderer(col);
         act_renderer.renderCanvas(ctx, col, data, context);
@@ -1223,7 +1225,6 @@ export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyR
 
 
   renderRankings(ctx: CanvasRenderingContext2D, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IRenderContext, height: number) {
-    const that = this;
     const dataPromises = orders.map((r) => this.data.view(r));
     ctx.save();
 

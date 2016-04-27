@@ -204,7 +204,7 @@ export class DefaultCellRenderer implements ICellRenderer {
   }
 
   mouseEnterCanvas(ctx:CanvasRenderingContext2D, col:model.Column, row:any, index:number, context:IRenderContext) {
-
+    //TODO
   }
 }
 
