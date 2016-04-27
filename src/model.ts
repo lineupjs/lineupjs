@@ -1626,7 +1626,7 @@ export class StackColumn extends CompositeColumn {
     }
     col.on('widthChanged.stack', this.adaptChange);
     //increase my width
-    super.setWidth(this.length === 1 ? col.getWidth() : (this.getWidth() + col.getWidth()));
+    super.setWidth(this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
 
     return super.insert(col, index);
   }
@@ -1695,7 +1695,7 @@ export class StackColumn extends CompositeColumn {
 
   removeImpl(child:Column) {
     child.on('widthChanged.stack', null);
-    super.setWidth(this.length === 0 ? 100 : this.getWidth() - child.getWidth());
+    super.setWidth(this.length === 1 ? 100 : this.getWidth() - child.getWidth());
     return super.removeImpl(child);
   }
 
