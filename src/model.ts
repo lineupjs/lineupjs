@@ -632,6 +632,8 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
    */
   private filter_ = {min: -Infinity, max: Infinity};
 
+  private numberFormat : (n: number) => string = d3.format('.3n');
+
   constructor(id:string, desc:any) {
     super(id, desc);
 
@@ -641,6 +643,10 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
       this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0,1]);
     }
     this.original = this.mapping.clone();
+
+    if (desc.numberFormat) {
+      this.numberFormat = d3.format(desc.numberFormat);
+    }
   }
 
   init(callback:(desc:IColumnDesc) => Promise<IStatistics>):Promise<boolean> {
@@ -678,6 +684,9 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     if (dump.missingValue) {
       this.missingValue = dump.missingValue;
     }
+    if (dump.numberFormat) {
+      this.numberFormat = d3.format(dump.numberFormat);
+    }
   }
 
   createEventList() {
@@ -685,7 +694,9 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   }
 
   getLabel(row:any) {
-    return '' + super.getValue(row);
+    const v = super.getValue(row);
+    //keep non number if it is not a number else convert using formatter
+    return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
   }
 
   getRawValue(row:any) {
@@ -1375,8 +1386,14 @@ export class CompositeColumn extends Column implements IColumnParent, INumberCol
   public missingValue = 0;
   protected _children:Column[] = [];
 
+  private numberFormat : (n: number) => string = d3.format('.3n');
+
   constructor(id:string, desc:any) {
     super(id, desc);
+
+    if (desc.numberFormat) {
+      this.numberFormat = d3.format(desc.numberFormat);
+    }
   }
 
   assignNewId(idGenerator:() => string) {
@@ -1419,6 +1436,9 @@ export class CompositeColumn extends Column implements IColumnParent, INumberCol
   restore(dump:any, factory:(dump:any) => Column) {
     if (dump.missingValue) {
       this.missingValue = dump.missingValue;
+    }
+    if (dump.numberFormat) {
+      this.numberFormat = d3.format(dump.numberFormat);
     }
     dump.children.map((child) => {
       var c = factory(child);
@@ -1494,6 +1514,12 @@ export class CompositeColumn extends Column implements IColumnParent, INumberCol
 
   getColor(row: any) {
     return this.color;
+  }
+
+  getLabel(row: any) {
+    const v = this.getValue(row);
+    //keep non number if it is not a number else convert using formatter
+    return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
   }
 
   getValue(row:any) {

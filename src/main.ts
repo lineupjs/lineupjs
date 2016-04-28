@@ -72,7 +72,6 @@ export class LineUp extends utils_.AEventDispatcher {
      * a prefix used for all generated html ids
      */
     idPrefix: Math.random().toString(36).slice(-8).substr(0, 3), //generate a random string with length3
-    numberformat: d3.format('.3n'),
 
     /**
      * options related to the header html layout
