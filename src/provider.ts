@@ -255,12 +255,8 @@ export class DataProvider extends utils.AEventDispatcher {
   protected rankAccessor(row: any, id: string, desc: model.IColumnDesc, ranking: model.Ranking) {
     return 0;
   }
-  /**
-   * creates an internal column model out of the given column description
-   * @param desc
-   * @returns {model.Column] the new column or null if it can't be created
-   */
-  create(desc:model.IColumnDesc):model.Column {
+
+  private fixDesc(desc: model.IColumnDesc) {
     //hacks for provider dependent descriptors
     if (desc.type === 'rank') {
       (<any>desc).accessor = this.rankAccessor.bind(this);
@@ -268,7 +264,14 @@ export class DataProvider extends utils.AEventDispatcher {
       (<any>desc).accessor = (row: any) => this.isSelected(row._index);
       (<any>desc).setter = (row: any, value: boolean) => value ? this.select(row._index) : this.deselect(row._index);
     }
-
+  }
+  /**
+   * creates an internal column model out of the given column description
+   * @param desc
+   * @returns {model.Column] the new column or null if it can't be created
+   */
+  create(desc:model.IColumnDesc):model.Column {
+    this.fixDesc(desc);
     //find by type and instantiate
     var type = this.columnTypes[desc.type];
     if (type) {
@@ -295,6 +298,7 @@ export class DataProvider extends utils.AEventDispatcher {
   restoreColumn(dump:any):model.Column {
     var create = (d:any) => {
       var type = this.columnTypes[d.desc.type];
+      this.fixDesc(d.desc);
       var c = new type('', d.desc);
       c.restore(d, create);
       c.assignNewId(this.nextId.bind(this));
@@ -367,6 +371,7 @@ export class DataProvider extends utils.AEventDispatcher {
       var desc = this.fromDescRef(d.desc);
       var c = null;
       if (desc && desc.type) {
+        this.fixDesc(d.desc);
         var type = this.columnTypes[desc.type];
         c = new type(d.id, desc);
         c.restore(d, create);
