@@ -2940,12 +2940,7 @@ var DataProvider = (function (_super) {
     DataProvider.prototype.rankAccessor = function (row, id, desc, ranking) {
         return 0;
     };
-    /**
-     * creates an internal column model out of the given column description
-     * @param desc
-     * @returns {model.Column] the new column or null if it can't be created
-     */
-    DataProvider.prototype.create = function (desc) {
+    DataProvider.prototype.fixDesc = function (desc) {
         var _this = this;
         //hacks for provider dependent descriptors
         if (desc.type === 'rank') {
@@ -2955,6 +2950,14 @@ var DataProvider = (function (_super) {
             desc.accessor = function (row) { return _this.isSelected(row._index); };
             desc.setter = function (row, value) { return value ? _this.select(row._index) : _this.deselect(row._index); };
         }
+    };
+    /**
+     * creates an internal column model out of the given column description
+     * @param desc
+     * @returns {model.Column] the new column or null if it can't be created
+     */
+    DataProvider.prototype.create = function (desc) {
+        this.fixDesc(desc);
         //find by type and instantiate
         var type = this.columnTypes[desc.type];
         if (type) {
@@ -2980,6 +2983,7 @@ var DataProvider = (function (_super) {
         var _this = this;
         var create = function (d) {
             var type = _this.columnTypes[d.desc.type];
+            _this.fixDesc(d.desc);
             var c = new type('', d.desc);
             c.restore(d, create);
             c.assignNewId(_this.nextId.bind(_this));
@@ -3046,6 +3050,7 @@ var DataProvider = (function (_super) {
             var desc = _this.fromDescRef(d.desc);
             var c = null;
             if (desc && desc.type) {
+                _this.fixDesc(d.desc);
                 var type = _this.columnTypes[desc.type];
                 c = new type(d.id, desc);
                 c.restore(d, create);
