@@ -5323,7 +5323,7 @@ var BodyRenderer = (function (_super) {
             };
         });
         this.$node.attr({
-            width: offset - this.options.slopeWidth,
+            width: Math.max(0, offset - this.options.slopeWidth),
             height: height
         });
         this.updateClipPaths(rankings, context, height);
