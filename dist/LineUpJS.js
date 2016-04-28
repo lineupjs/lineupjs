@@ -39,7 +39,6 @@
  * main module of LineUp.js containing the main class and exposes all other modules
  * Created by Samuel Gratzl on 14.08.2015.
  */
-"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -101,7 +100,6 @@ var LineUp = (function (_super) {
              * a prefix used for all generated html ids
              */
             idPrefix: Math.random().toString(36).slice(-8).substr(0, 3),
-            numberformat: d3.format('.3n'),
             /**
              * options related to the header html layout
              */
@@ -129,7 +127,11 @@ var LineUp = (function (_super) {
                 /**
                  * hook for adding buttons to rankings in the header
                  */
-                rankingButtons: ui_.dummyRankingButtonHook
+                rankingButtons: ui_.dummyRankingButtonHook,
+                /**
+                 * templates for link patterns
+                 */
+                linkTemplates: []
             },
             /**
              * old name for header
@@ -209,7 +211,8 @@ var LineUp = (function (_super) {
             rotationHeight: this.config.header.rotationHeight,
             rotationDegree: this.config.header.rotationDegree,
             freezeCols: this.config.body.freezeCols,
-            rankingButtons: this.config.header.rankingButtons
+            rankingButtons: this.config.header.rankingButtons,
+            linkTemplates: this.config.header.linkTemplates
         });
         this.body = new (this.config.body.renderer === 'svg' ? ui_.BodyRenderer : ui_.BodyCanvasRenderer)(data, this.node, this.slice.bind(this), {
             rowHeight: this.config.body.rowHeight,
@@ -353,7 +356,7 @@ var LineUp = (function (_super) {
      */
     LineUp.EVENT_MULTISELECTION_CHANGED = 'multiSelectionChanged';
     return LineUp;
-}(utils_.AEventDispatcher));
+})(utils_.AEventDispatcher);
 exports.LineUp = LineUp;
 /**
  * assigns colors to colmns if they are numbers and not yet defined
@@ -394,7 +397,6 @@ exports.create = create;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
-"use strict";
 ///<reference path='../typings/tsd.d.ts' />
 var d3 = require('d3');
 var utils = require('./utils');
@@ -516,8 +518,8 @@ var MappingEditor = (function () {
             {
                 var sscale = that.scale;
                 var domain = sscale.domain;
-                var range_1 = sscale.range;
-                mapping_lines = domain.map(function (d, i) { return ({ r: d, n: range_1[i] }); });
+                var range = sscale.range;
+                mapping_lines = domain.map(function (d, i) { return ({ r: d, n: range[i] }); });
             }
             function updateScale() {
                 //sort by raw value
@@ -655,7 +657,7 @@ var MappingEditor = (function () {
         });
     };
     return MappingEditor;
-}());
+})();
 exports.MappingEditor = MappingEditor;
 function create(parent, scale, original, dataPromise, options) {
     if (options === void 0) { options = {}; }
@@ -668,7 +670,6 @@ exports.create = create;
  * Created by Samuel Gratzl on 06.08.2015.
  */
 ///<reference path='../typings/tsd.d.ts' />
-"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -952,7 +953,7 @@ var Column = (function (_super) {
      */
     Column.COMPRESSED_WIDTH = 16;
     return Column;
-}(utils.AEventDispatcher));
+})(utils.AEventDispatcher);
 exports.Column = Column;
 /**
  * a column having an accessor to get the cell value
@@ -974,7 +975,7 @@ var ValueColumn = (function (_super) {
         return 0; //can't compare
     };
     return ValueColumn;
-}(Column));
+})(Column);
 exports.ValueColumn = ValueColumn;
 /**
  * a default column with no values
@@ -994,7 +995,7 @@ var DummyColumn = (function (_super) {
         return 0; //can't compare
     };
     return DummyColumn;
-}(Column));
+})(Column);
 exports.DummyColumn = DummyColumn;
 /**
  * checks whether the given column or description is a number column, i.e. the value is a number
@@ -1106,7 +1107,7 @@ var ScaleMappingFunction = (function () {
         return new ScaleMappingFunction(this.domain, this.type, this.range);
     };
     return ScaleMappingFunction;
-}());
+})();
 exports.ScaleMappingFunction = ScaleMappingFunction;
 /**
  * a mapping function based on a custom user function using 'value' as the current value
@@ -1177,7 +1178,7 @@ var ScriptMappingFunction = (function () {
         return new ScriptMappingFunction(this.domain, this.code);
     };
     return ScriptMappingFunction;
-}());
+})();
 exports.ScriptMappingFunction = ScriptMappingFunction;
 function createMappingFunction(dump) {
     if (dump.type === 'script') {
@@ -1206,6 +1207,7 @@ var NumberColumn = (function (_super) {
          * @private
          */
         this.filter_ = { min: -Infinity, max: Infinity };
+        this.numberFormat = d3.format('.3n');
         if (desc.map) {
             this.mapping = createMappingFunction(desc.map);
         }
@@ -1213,6 +1215,9 @@ var NumberColumn = (function (_super) {
             this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
         }
         this.original = this.mapping.clone();
+        if (desc.numberFormat) {
+            this.numberFormat = d3.format(desc.numberFormat);
+        }
     }
     NumberColumn.prototype.init = function (callback) {
         var _this = this;
@@ -1248,12 +1253,17 @@ var NumberColumn = (function (_super) {
         if (dump.missingValue) {
             this.missingValue = dump.missingValue;
         }
+        if (dump.numberFormat) {
+            this.numberFormat = d3.format(dump.numberFormat);
+        }
     };
     NumberColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
     };
     NumberColumn.prototype.getLabel = function (row) {
-        return '' + _super.prototype.getValue.call(this, row);
+        var v = _super.prototype.getValue.call(this, row);
+        //keep non number if it is not a number else convert using formatter
+        return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
     };
     NumberColumn.prototype.getRawValue = function (row) {
         var v = _super.prototype.getValue.call(this, row);
@@ -1341,7 +1351,7 @@ var NumberColumn = (function (_super) {
         return !((isFinite(this.filter_.min) && v < this.filter_.min) || (isFinite(this.filter_.max) && v < this.filter_.max));
     };
     return NumberColumn;
-}(ValueColumn));
+})(ValueColumn);
 exports.NumberColumn = NumberColumn;
 /**
  * a string column with optional alignment
@@ -1420,7 +1430,7 @@ var StringColumn = (function (_super) {
         return d3.ascending(this.getValue(a), this.getValue(b));
     };
     return StringColumn;
-}(ValueColumn));
+})(ValueColumn);
 exports.StringColumn = StringColumn;
 /**
  * a string column in which the label is a text but the value a link
@@ -1501,7 +1511,7 @@ var LinkColumn = (function (_super) {
         return v;
     };
     return LinkColumn;
-}(StringColumn));
+})(StringColumn);
 exports.LinkColumn = LinkColumn;
 /**
  * a string column in which the values can be edited locally
@@ -1551,7 +1561,7 @@ var AnnotateColumn = (function (_super) {
         return true;
     };
     return AnnotateColumn;
-}(StringColumn));
+})(StringColumn);
 exports.AnnotateColumn = AnnotateColumn;
 /**
  * a checkbox column for selections
@@ -1594,7 +1604,7 @@ var SelectionColumn = (function (_super) {
         return !old;
     };
     return SelectionColumn;
-}(ValueColumn));
+})(ValueColumn);
 exports.SelectionColumn = SelectionColumn;
 /**
  * column for categorical values
@@ -1748,7 +1758,7 @@ var CategoricalColumn = (function (_super) {
         return va.length - vb.length;
     };
     return CategoricalColumn;
-}(ValueColumn));
+})(ValueColumn);
 exports.CategoricalColumn = CategoricalColumn;
 /**
  * similar to a categorical column but the categories are mapped to numbers
@@ -1893,7 +1903,7 @@ var CategoricalNumberColumn = (function (_super) {
         return NumberColumn.prototype.compare.call(this, a, b);
     };
     return CategoricalNumberColumn;
-}(ValueColumn));
+})(ValueColumn);
 exports.CategoricalNumberColumn = CategoricalNumberColumn;
 /**
  * implementation of a combine column, standard operations how to select
@@ -1904,6 +1914,10 @@ var CompositeColumn = (function (_super) {
         _super.call(this, id, desc);
         this.missingValue = 0;
         this._children = [];
+        this.numberFormat = d3.format('.3n');
+        if (desc.numberFormat) {
+            this.numberFormat = d3.format(desc.numberFormat);
+        }
     }
     CompositeColumn.prototype.assignNewId = function (idGenerator) {
         _super.prototype.assignNewId.call(this, idGenerator);
@@ -1951,6 +1965,9 @@ var CompositeColumn = (function (_super) {
         var _this = this;
         if (dump.missingValue) {
             this.missingValue = dump.missingValue;
+        }
+        if (dump.numberFormat) {
+            this.numberFormat = d3.format(dump.numberFormat);
         }
         dump.children.map(function (child) {
             var c = factory(child);
@@ -2019,6 +2036,11 @@ var CompositeColumn = (function (_super) {
     CompositeColumn.prototype.getColor = function (row) {
         return this.color;
     };
+    CompositeColumn.prototype.getLabel = function (row) {
+        var v = this.getValue(row);
+        //keep non number if it is not a number else convert using formatter
+        return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
+    };
     CompositeColumn.prototype.getValue = function (row) {
         //weighted sum
         var v = this.compute(row);
@@ -2043,7 +2065,7 @@ var CompositeColumn = (function (_super) {
         return this._children.every(function (d) { return d.filter(row); });
     };
     return CompositeColumn;
-}(Column));
+})(Column);
 exports.CompositeColumn = CompositeColumn;
 /**
  * implementation of the stacked column
@@ -2223,7 +2245,7 @@ var StackColumn = (function (_super) {
         return this._children.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
     };
     return StackColumn;
-}(CompositeColumn));
+})(CompositeColumn);
 exports.StackColumn = StackColumn;
 /**
  * combines multiple columns by using the maximal value
@@ -2262,7 +2284,7 @@ var MaxColumn = (function (_super) {
         return d3.max(this._children, function (d) { return d.getValue(row); });
     };
     return MaxColumn;
-}(CompositeColumn));
+})(CompositeColumn);
 exports.MaxColumn = MaxColumn;
 var MinColumn = (function (_super) {
     __extends(MinColumn, _super);
@@ -2298,7 +2320,7 @@ var MinColumn = (function (_super) {
         return d3.min(this._children, function (d) { return d.getValue(row); });
     };
     return MinColumn;
-}(CompositeColumn));
+})(CompositeColumn);
 exports.MinColumn = MinColumn;
 var MeanColumn = (function (_super) {
     __extends(MeanColumn, _super);
@@ -2318,7 +2340,7 @@ var MeanColumn = (function (_super) {
         return d3.mean(this._children, function (d) { return d.getValue(row); });
     };
     return MeanColumn;
-}(CompositeColumn));
+})(CompositeColumn);
 exports.MeanColumn = MeanColumn;
 var ScriptColumn = (function (_super) {
     __extends(ScriptColumn, _super);
@@ -2378,7 +2400,7 @@ var ScriptColumn = (function (_super) {
     };
     ScriptColumn.DEFAULT_SCRIPT = 'return d3.max(values)';
     return ScriptColumn;
-}(CompositeColumn));
+})(CompositeColumn);
 exports.ScriptColumn = ScriptColumn;
 /**
  * a rank column
@@ -2399,7 +2421,7 @@ var RankColumn = (function (_super) {
         return { type: 'rank', label: label };
     };
     return RankColumn;
-}(ValueColumn));
+})(ValueColumn);
 exports.RankColumn = RankColumn;
 /**
  * a ranking
@@ -2658,7 +2680,7 @@ var Ranking = (function (_super) {
         configurable: true
     });
     return Ranking;
-}(utils.AEventDispatcher));
+})(utils.AEventDispatcher);
 exports.Ranking = Ranking;
 /**
  * utility for creating a stacked column description
@@ -2708,7 +2730,6 @@ exports.models = models;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
-"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3127,14 +3148,14 @@ var DataProvider = (function (_super) {
             }
             if (column.type === 'stacked') {
                 //create a stacked one
-                var r_1 = _this.create(model.createStackDesc(column.label || 'Combined'));
+                var r = _this.create(model.createStackDesc(column.label || 'Combined'));
                 (column.children || []).forEach(function (col) {
                     var c = toCol(col);
                     if (c) {
-                        r_1.push(c);
+                        r.push(c);
                     }
                 });
-                return r_1;
+                return r;
             }
             else {
                 var desc = _this.findDesc(column.column);
@@ -3348,7 +3369,7 @@ var DataProvider = (function (_super) {
         });
     };
     return DataProvider;
-}(utils.AEventDispatcher));
+})(utils.AEventDispatcher);
 exports.DataProvider = DataProvider;
 /**
  * common base implementation of a DataProvider with a fixed list of column descriptions
@@ -3411,7 +3432,7 @@ var CommonDataProvider = (function (_super) {
         return 'rank' + (this.rankingIndex++);
     };
     return CommonDataProvider;
-}(DataProvider));
+})(DataProvider);
 exports.CommonDataProvider = CommonDataProvider;
 /**
  * a data provider based on an local array
@@ -3483,9 +3504,9 @@ var LocalDataProvider = (function (_super) {
         var helper = this.data.map(function (r, i) { return ({ row: r, i: i, prev: r._rankings[ranking.id] || 0 }); });
         //do the optional filtering step
         if (this.options.filterGlobally) {
-            var filtered_1 = this.getRankings().filter(function (d) { return d.isFiltered(); });
-            if (filtered_1.length > 0) {
-                helper = helper.filter(function (d) { return filtered_1.every(function (f) { return f.filter(d.row); }); });
+            var filtered = this.getRankings().filter(function (d) { return d.isFiltered(); });
+            if (filtered.length > 0) {
+                helper = helper.filter(function (d) { return filtered.every(function (f) { return f.filter(d.row); }); });
             }
         }
         else if (ranking.isFiltered()) {
@@ -3545,7 +3566,7 @@ var LocalDataProvider = (function (_super) {
         this.setSelection(indices);
     };
     return LocalDataProvider;
-}(CommonDataProvider));
+})(CommonDataProvider);
 exports.LocalDataProvider = LocalDataProvider;
 /**
  * a remote implementation of the data provider
@@ -3607,14 +3628,13 @@ var RemoteDataProvider = (function (_super) {
         });
     };
     return RemoteDataProvider;
-}(CommonDataProvider));
+})(CommonDataProvider);
 exports.RemoteDataProvider = RemoteDataProvider;
 
 },{"./model":3,"./utils":8,"d3":undefined}],5:[function(require,module,exports){
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
-"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -3708,7 +3728,7 @@ var DefaultCellRenderer = (function () {
         //TODO
     };
     return DefaultCellRenderer;
-}());
+})();
 exports.DefaultCellRenderer = DefaultCellRenderer;
 /**
  * simple derived one where individual elements can be overridden
@@ -3724,7 +3744,7 @@ var DerivedCellRenderer = (function (_super) {
         });
     }
     return DerivedCellRenderer;
-}(DefaultCellRenderer));
+})(DefaultCellRenderer);
 /**
  * a renderer rendering a bar for numerical columns
  */
@@ -3807,7 +3827,7 @@ var BarCellRenderer = (function (_super) {
         ctx.restore();
     };
     return BarCellRenderer;
-}(DefaultCellRenderer));
+})(DefaultCellRenderer);
 exports.BarCellRenderer = BarCellRenderer;
 /**
  * render as a heatmap cell, e.g., encode the value in color
@@ -3889,7 +3909,7 @@ var HeatMapCellRenderer = (function (_super) {
         ctx.restore();
     };
     return HeatMapCellRenderer;
-}(DefaultCellRenderer));
+})(DefaultCellRenderer);
 exports.HeatMapCellRenderer = HeatMapCellRenderer;
 /**
  * a bar cell renderer where individual function can be overwritten
@@ -3904,7 +3924,7 @@ var DerivedBarCellRenderer = (function (_super) {
         });
     }
     return DerivedBarCellRenderer;
-}(BarCellRenderer));
+})(BarCellRenderer);
 /**
  * an rendering for action columns, i.e., clickable column actions
  */
@@ -3936,7 +3956,7 @@ var ActionCellRenderer = (function () {
         $row.selectAll('*').remove();
     };
     return ActionCellRenderer;
-}());
+})();
 exports.ActionCellRenderer = ActionCellRenderer;
 var SelectionCellRenderer = (function (_super) {
     __extends(SelectionCellRenderer, _super);
@@ -3975,7 +3995,7 @@ var SelectionCellRenderer = (function (_super) {
         ctx.restore();
     };
     return SelectionCellRenderer;
-}(DefaultCellRenderer));
+})(DefaultCellRenderer);
 exports.SelectionCellRenderer = SelectionCellRenderer;
 /**
  * a renderer for annotate columns
@@ -4015,7 +4035,7 @@ var AnnotateCellRenderer = (function (_super) {
         $row.selectAll('*').remove();
     };
     return AnnotateCellRenderer;
-}(DefaultCellRenderer));
+})(DefaultCellRenderer);
 var defaultRendererInstance = new DefaultCellRenderer();
 var barRendererInstance = new BarCellRenderer();
 /**
@@ -4071,7 +4091,7 @@ var LinkCellRenderer = (function (_super) {
         return $col.selectAll('text.link[data-index="' + index + '"]');
     };
     return LinkCellRenderer;
-}(DefaultCellRenderer));
+})(DefaultCellRenderer);
 /**
  * renders a string with additional alignment behavior
  */
@@ -4086,7 +4106,7 @@ var StringCellRenderer = (function (_super) {
         return _super.prototype.render.call(this, $col, col, rows, context);
     };
     return StringCellRenderer;
-}(DefaultCellRenderer));
+})(DefaultCellRenderer);
 /**
  * renders categorical columns as a colored rect with label
  */
@@ -4143,7 +4163,7 @@ var CategoricalRenderer = (function (_super) {
         });
     };
     return CategoricalRenderer;
-}(DefaultCellRenderer));
+})(DefaultCellRenderer);
 /**
  * renders a stacked column using composite pattern
  */
@@ -4181,11 +4201,11 @@ var StackCellRenderer = (function (_super) {
             'data-stack': function (d, i) { return i; }
         }).each(function (d, i) {
             if (stacked) {
-                var preChildren_1 = children.slice(0, i);
+                var preChildren = children.slice(0, i);
                 //if shown as stacked bar shift individual cells of a column to the left where they belong to
                 context.cellX = function (index) {
                     //shift by all the empty space left from the previous columns
-                    return ueber(index) - preChildren_1.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rowGetter(index))); }, 0);
+                    return ueber(index) - preChildren.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rowGetter(index))); }, 0);
                 };
             }
             perChild(d3.select(this), d, i, context);
@@ -4240,11 +4260,11 @@ var StackCellRenderer = (function (_super) {
             ctx.save();
             ctx.translate(shifts[i], 0);
             if (stacked) {
-                var preChildren_2 = children.slice(0, i);
+                var preChildren = children.slice(0, i);
                 //if shown as stacked bar shift individual cells of a column to the left where they belong to
                 context.cellX = function (index) {
                     //shift by all the empty space left from the previous columns
-                    return ueber(index) - preChildren_2.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rows[index])); }, 0);
+                    return ueber(index) - preChildren.reduce(function (prev, child) { return prev + child.getWidth() * (1 - child.getValue(rows[index])); }, 0);
                 };
             }
             context.renderCanvas(child, ctx, rows, context);
@@ -4255,7 +4275,7 @@ var StackCellRenderer = (function (_super) {
         context.option = ueberOption;
     };
     return StackCellRenderer;
-}(DefaultCellRenderer));
+})(DefaultCellRenderer);
 var combineRenderer = barRenderer({
     colorOf: function (d, i, col) { return col.getColor(d); }
 });
@@ -4291,7 +4311,6 @@ exports.renderers = renderers;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
-"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4309,7 +4328,7 @@ var PoolEntry = (function () {
         this.used = 0;
     }
     return PoolEntry;
-}());
+})();
 var PoolRenderer = (function () {
     function PoolRenderer(data, parent, options) {
         if (options === void 0) { options = {}; }
@@ -4459,7 +4478,7 @@ var PoolRenderer = (function () {
         }
     };
     return PoolRenderer;
-}());
+})();
 exports.PoolRenderer = PoolRenderer;
 function dummyRankingButtonHook() {
     return null;
@@ -4478,6 +4497,7 @@ var HeaderRenderer = (function () {
             manipulative: true,
             histograms: false,
             filterDialogs: dialogs.filterDialogs(),
+            linkTemplates: [],
             searchAble: function (col) { return col instanceof model.StringColumn; },
             sortOnLabel: true,
             autoRotateLabels: false,
@@ -4687,7 +4707,7 @@ var HeaderRenderer = (function () {
     };
     HeaderRenderer.prototype.createToolbar = function ($node) {
         var _this = this;
-        var filterDialogs = this.options.filterDialogs, provider = this.data;
+        var filterDialogs = this.options.filterDialogs, provider = this.data, that = this;
         var $regular = $node.filter(function (d) { return !(d instanceof model.Ranking); }), $stacked = $node.filter(function (d) { return d instanceof model.StackColumn; });
         //edit weights
         $stacked.append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
@@ -4707,7 +4727,7 @@ var HeaderRenderer = (function () {
         });
         //edit link
         $node.filter(function (d) { return d instanceof model.LinkColumn; }).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-            dialogs.openEditLinkDialog(d, d3.select(this.parentNode.parentNode));
+            dialogs.openEditLinkDialog(d, d3.select(this.parentNode.parentNode), [].concat(d.desc.templates || [], that.options.linkTemplates));
             d3.event.stopPropagation();
         });
         //edit script
@@ -4912,7 +4932,7 @@ var HeaderRenderer = (function () {
         $headers.exit().remove();
     };
     return HeaderRenderer;
-}());
+})();
 exports.HeaderRenderer = HeaderRenderer;
 var BodyRenderer = (function (_super) {
     __extends(BodyRenderer, _super);
@@ -5340,7 +5360,7 @@ var BodyRenderer = (function (_super) {
         this.renderSlopeGraphs($body, rankings, orders, shifts, context);
     };
     return BodyRenderer;
-}(utils.AEventDispatcher));
+})(utils.AEventDispatcher);
 exports.BodyRenderer = BodyRenderer;
 var BodyCanvasRenderer = (function (_super) {
     __extends(BodyCanvasRenderer, _super);
@@ -5542,7 +5562,7 @@ var BodyCanvasRenderer = (function (_super) {
         this.renderSlopeGraphs(ctx, rankings, orders, shifts, context);
     };
     return BodyCanvasRenderer;
-}(utils.AEventDispatcher));
+})(utils.AEventDispatcher);
 exports.BodyCanvasRenderer = BodyCanvasRenderer;
 
 },{"./model":3,"./renderer":5,"./ui_dialogs":7,"./utils":8,"d3":undefined}],7:[function(require,module,exports){
@@ -5551,7 +5571,6 @@ exports.BodyCanvasRenderer = BodyCanvasRenderer;
  *
  * Created by Samuel Gratzl on 24.08.2015.
  */
-"use strict";
 var model = require('./model');
 var utils = require('./utils');
 var mappingeditor = require('./mappingeditor');
@@ -5615,8 +5634,12 @@ exports.openRenameDialog = openRenameDialog;
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-function openEditLinkDialog(column, $header) {
-    var t = "<input type=\"text\" size=\"15\" value=\"" + column.getLink() + "\" required=\"required\" autofocus=\"autofocus\"><br>";
+function openEditLinkDialog(column, $header, templates) {
+    if (templates === void 0) { templates = []; }
+    var t = "<input type=\"text\" size=\"15\" value=\"" + column.getLink() + "\" required=\"required\" autofocus=\"autofocus\" " + (templates.length > 0 ? 'list="lineupPatternList"' : '') + "><br>";
+    if (templates.length > 0) {
+        t += '<datalist id="lineupPatternList">' + templates.map(function (t) { return ("<option value=\"" + t + "\">"); }) + '</datalist>';
+    }
     var popup = makePopup($header, 'Edit Link ($ as Placeholder)', t);
     popup.select('.ok').on('click', function () {
         var newValue = popup.select('input[type="text"]').property('value');
@@ -5962,7 +5985,6 @@ exports.filterDialogs = filterDialogs;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
-"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -6088,7 +6110,7 @@ var AEventDispatcher = (function () {
         from.on(types, null);
     };
     return AEventDispatcher;
-}());
+})();
 exports.AEventDispatcher = AEventDispatcher;
 var TYPE_OBJECT = '[object Object]';
 var TYPE_ARRAY = '[object Array]';
@@ -6250,7 +6272,7 @@ var ContentScroller = (function (_super) {
         d3.select(this.container).on('scroll.scroller', null);
     };
     return ContentScroller;
-}(AEventDispatcher));
+})(AEventDispatcher);
 exports.ContentScroller = ContentScroller;
 /**
  * checks whether the given DragEvent has one of the given types
