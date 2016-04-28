@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-04-27
+/*! LineUpJS - v0.2.0 - 2016-04-28
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -126,6 +126,10 @@ var LineUp = (function (_super) {
                  * the degrees to rotate a label
                  */
                 rotationDegree: -20,
+                /**
+                 * hook for adding buttons to rankings in the header
+                 */
+                rankingButtons: ui_.dummyRankingButtonHook
             },
             /**
              * old name for header
@@ -204,7 +208,8 @@ var LineUp = (function (_super) {
             autoRotateLabels: this.config.header.autoRotateLabels,
             rotationHeight: this.config.header.rotationHeight,
             rotationDegree: this.config.header.rotationDegree,
-            freezeCols: this.config.body.freezeCols
+            freezeCols: this.config.body.freezeCols,
+            rankingButtons: this.config.header.rankingButtons
         });
         this.body = new (this.config.body.renderer === 'svg' ? ui_.BodyRenderer : ui_.BodyCanvasRenderer)(data, this.node, this.slice.bind(this), {
             rowHeight: this.config.body.rowHeight,
@@ -4451,6 +4456,10 @@ var PoolRenderer = (function () {
     return PoolRenderer;
 }());
 exports.PoolRenderer = PoolRenderer;
+function dummyRankingButtonHook() {
+    return null;
+}
+exports.dummyRankingButtonHook = dummyRankingButtonHook;
 var HeaderRenderer = (function () {
     function HeaderRenderer(data, parent, options) {
         var _this = this;
@@ -4469,7 +4478,8 @@ var HeaderRenderer = (function () {
             autoRotateLabels: false,
             rotationHeight: 50,
             rotationDegree: -20,
-            freezeCols: 0
+            freezeCols: 0,
+            rankingButtons: dummyRankingButtonHook
         };
         this.histCache = d3.map();
         this.dragHandler = d3.behavior.drag()
@@ -4614,13 +4624,22 @@ var HeaderRenderer = (function () {
             });
         });
     };
+    HeaderRenderer.prototype.renderRankingButtons = function (rankings, rankingsOffsets) {
+        var $rankingbuttons = this.$node.selectAll('div.rankingbuttons').data(rankings);
+        $rankingbuttons.enter().append('div')
+            .classed('rankingbuttons', true)
+            .call(this.options.rankingButtons);
+        $rankingbuttons.style('left', function (d, i) { return rankingsOffsets[i] + 'px'; });
+        $rankingbuttons.exit().remove();
+    };
     HeaderRenderer.prototype.update = function () {
         var _this = this;
         var that = this;
         var rankings = this.data.getRankings();
-        var shifts = [], offset = 0;
+        var shifts = [], offset = 0, rankingOffsets = [];
         rankings.forEach(function (ranking) {
             offset += ranking.flatten(shifts, offset, 1, _this.options.columnPadding) + _this.options.slopeWidth;
+            rankingOffsets.push(offset - _this.options.slopeWidth);
         });
         //real width
         offset -= this.options.slopeWidth;
@@ -4630,6 +4649,9 @@ var HeaderRenderer = (function () {
             this.updateHist();
         }
         this.renderColumns(columns, shifts);
+        if (this.options.rankingButtons !== dummyRankingButtonHook) {
+            this.renderRankingButtons(rankings, rankingOffsets);
+        }
         function countStacked(c) {
             if (c instanceof model.StackColumn && !c.collapsed && !c.compressed) {
                 return 1 + Math.max.apply(Math, c.children.map(countStacked));
@@ -5301,7 +5323,7 @@ var BodyRenderer = (function (_super) {
             };
         });
         this.$node.attr({
-            width: offset,
+            width: offset - this.options.slopeWidth,
             height: height
         });
         this.updateClipPaths(rankings, context, height);

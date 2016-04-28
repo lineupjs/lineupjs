@@ -220,6 +220,11 @@
     padding: 1px; }
     .lu div.lu-header div.toolbar i:hover, .lu-pool div.lu-header div.toolbar i:hover {
       color: darkblue; }
+  .lu div.lu-header div.rankingbuttons, .lu-pool div.lu-header div.rankingbuttons {
+    position: absolute;
+    display: inline-block;
+    height: 100%;
+    font-size: 90%; }
   .lu div.lu-header div.header, .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header, .lu-pool div.lu-header div.header_i {
     position: absolute;
     display: inline-block;
