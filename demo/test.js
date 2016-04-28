@@ -42,18 +42,18 @@ window.onload = function () {
   var r = p.pushRanking();
 
   var root = d3.select('body');
-  r.insert(p.create(p.createSelectionDesc()),0);
+  r.insert(p.create(LineUpJS.model.createSelectionDesc()),0);
   r.push(p.create(desc[0]));
   r.push(p.create(desc[1]));
   r.push(p.create(desc[8]));
-  var rstack = p.create(LineUpJS.model.StackColumn.desc('Stack'));
+  var rstack = p.create(LineUpJS.model.createStackDesc('Stack'));
   r.push(rstack);
   rstack.push(p.create(desc[1]));
   rstack.push(p.create(desc[2]));
   rstack.push(p.create(desc[3]));
   rstack.setWeights([0.2, 0.4]);
   r.push(p.create(desc[4]));
-  var rscript = p.create(LineUpJS.model.ScriptColumn.desc('Script'));
+  var rscript = p.create(LineUpJS.model.createScriptDesc('Script'));
   r.push(p.create(desc[1]));
   r.push(p.create(desc[2]));
   r.push(p.create(desc[3]));
@@ -78,6 +78,13 @@ window.onload = function () {
     },
     body: {
       renderer: 'canvas'
+    },
+    header: {
+      rankingButtons: function($node) {
+        $node.append('button').text('+').on('click', function(d) {
+          console.log(d);
+        });
+      }
     },
     renderingOptions: {
       histograms: true

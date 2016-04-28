@@ -377,6 +377,14 @@ $lu_drag_over: #979797;
       }
     }
 
+    div.rankingbuttons {
+      position: absolute;
+      display: inline-block;
+      height: 100%;
+
+      font-size: 90%;
+    }
+
     div.header, div.header_i {
 
       &.filtered > div.toolbar i.fa-filter {

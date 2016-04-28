@@ -98,6 +98,10 @@ export class LineUp extends utils_.AEventDispatcher {
        * the degrees to rotate a label
        */
       rotationDegree: -20, //in deg
+      /**
+       * hook for adding buttons to rankings in the header
+       */
+      rankingButtons: <ui_.IRankingHook>ui_.dummyRankingButtonHook
     },
     /**
      * old name for header
@@ -192,7 +196,9 @@ export class LineUp extends utils_.AEventDispatcher {
       rotationHeight: this.config.header.rotationHeight, //in px
       rotationDegree:  this.config.header.rotationDegree, //in deg
 
-      freezeCols: this.config.body.freezeCols
+      freezeCols: this.config.body.freezeCols,
+
+      rankingButtons: this.config.header.rankingButtons
     });
     this.body = new (this.config.body.renderer === 'svg' ? ui_.BodyRenderer: ui_.BodyCanvasRenderer)(data, this.node, this.slice.bind(this), {
       rowHeight: this.config.body.rowHeight,

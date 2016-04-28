@@ -176,6 +176,13 @@ export class PoolRenderer {
   }
 }
 
+export interface IRankingHook {
+  ($node: d3.Selection<model.Ranking>):void;
+}
+
+export function dummyRankingButtonHook() {
+  return null;
+}
 
 export class HeaderRenderer {
   private options = {
@@ -194,7 +201,9 @@ export class HeaderRenderer {
     rotationHeight: 50, //in px
     rotationDegree: -20, //in deg
 
-    freezeCols: 0
+    freezeCols: 0,
+
+    rankingButtons: <IRankingHook>dummyRankingButtonHook
   };
 
   $node:d3.Selection<any>;
@@ -349,13 +358,23 @@ export class HeaderRenderer {
     });
   }
 
+  private renderRankingButtons(rankings: model.Ranking[], rankingsOffsets: number[]) {
+    const $rankingbuttons = this.$node.selectAll('div.rankingbuttons').data(rankings);
+    $rankingbuttons.enter().append('div')
+      .classed('rankingbuttons', true)
+      .call(this.options.rankingButtons);
+    $rankingbuttons.style('left', (d,i) => rankingsOffsets[i]+'px');
+    $rankingbuttons.exit().remove();
+  }
+
   update() {
     const that = this;
     const rankings = this.data.getRankings();
 
-    var shifts = [], offset = 0;
+    var shifts = [], offset = 0, rankingOffsets = [];
     rankings.forEach((ranking) => {
       offset += ranking.flatten(shifts, offset, 1, this.options.columnPadding) + this.options.slopeWidth;
+      rankingOffsets.push(offset - this.options.slopeWidth);
     });
     //real width
     offset -= this.options.slopeWidth;
@@ -368,6 +387,10 @@ export class HeaderRenderer {
     }
 
     this.renderColumns(columns, shifts);
+
+    if (this.options.rankingButtons !== dummyRankingButtonHook) {
+      this.renderRankingButtons(rankings, rankingOffsets);
+    }
 
     function countStacked(c:model.Column):number {
       if (c instanceof model.StackColumn && !(<model.StackColumn>c).collapsed && !c.compressed) {
