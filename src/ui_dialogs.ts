@@ -72,8 +72,11 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-export function openEditLinkDialog(column:model.LinkColumn, $header:d3.Selection<model.Column>) {
-  var t = `<input type="text" size="15" value="${column.getLink()}" required="required" autofocus="autofocus"><br>`;
+export function openEditLinkDialog(column:model.LinkColumn, $header:d3.Selection<model.Column>, templates: string[] = []) {
+  var t = `<input type="text" size="15" value="${column.getLink()}" required="required" autofocus="autofocus" ${templates.length > 0 ? 'list="lineupPatternList"' : ''}><br>`;
+  if (templates.length > 0) {
+    t += '<datalist id="lineupPatternList">'+templates.map((t) => `<option value="${t}">`)+'</datalist>';
+  }
 
   var popup = makePopup($header, 'Edit Link ($ as Placeholder)', t);
 

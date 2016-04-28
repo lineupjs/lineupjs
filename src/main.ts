@@ -100,7 +100,12 @@ export class LineUp extends utils_.AEventDispatcher {
       /**
        * hook for adding buttons to rankings in the header
        */
-      rankingButtons: <ui_.IRankingHook>ui_.dummyRankingButtonHook
+      rankingButtons: <ui_.IRankingHook>ui_.dummyRankingButtonHook,
+
+      /**
+       * templates for link patterns
+       */
+      linkTemplates: []
     },
     /**
      * old name for header
@@ -197,7 +202,8 @@ export class LineUp extends utils_.AEventDispatcher {
 
       freezeCols: this.config.body.freezeCols,
 
-      rankingButtons: this.config.header.rankingButtons
+      rankingButtons: this.config.header.rankingButtons,
+      linkTemplates: this.config.header.linkTemplates
     });
     this.body = new (this.config.body.renderer === 'svg' ? ui_.BodyRenderer: ui_.BodyCanvasRenderer)(data, this.node, this.slice.bind(this), {
       rowHeight: this.config.body.rowHeight,

@@ -77,14 +77,15 @@ window.onload = function () {
       autoRotateLabels: true
     },
     body: {
-      renderer: 'canvas'
+      renderer: 'svg'
     },
     header: {
       rankingButtons: function($node) {
         $node.append('button').text('+').on('click', function(d) {
           console.log(d);
         });
-      }
+      },
+      linkTemplates: ['a/$1', 'b/$1']
     },
     renderingOptions: {
       histograms: true

@@ -194,6 +194,7 @@ export class HeaderRenderer {
     histograms: false,
 
     filterDialogs: dialogs.filterDialogs(),
+    linkTemplates: [],
     searchAble: (col:model.Column) => col instanceof model.StringColumn,
     sortOnLabel: true,
 
@@ -423,8 +424,9 @@ export class HeaderRenderer {
   }
 
   private createToolbar($node:d3.Selection<model.Column>) {
-    var filterDialogs = this.options.filterDialogs,
-      provider = this.data;
+    const filterDialogs = this.options.filterDialogs,
+      provider = this.data,
+      that = this;
     var $regular = $node.filter(d=> !(d instanceof model.Ranking)),
       $stacked = $node.filter(d=> d instanceof model.StackColumn);
 
@@ -446,7 +448,7 @@ export class HeaderRenderer {
     });
     //edit link
     $node.filter((d) => d instanceof model.LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-      dialogs.openEditLinkDialog(<model.LinkColumn>d, d3.select(this.parentNode.parentNode));
+      dialogs.openEditLinkDialog(<model.LinkColumn>d, d3.select(this.parentNode.parentNode), [].concat((<any>d.desc).templates || [], that.options.linkTemplates));
       d3.event.stopPropagation();
     });
     //edit script
