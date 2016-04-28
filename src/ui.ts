@@ -1121,7 +1121,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       });
 
     this.$node.attr({
-      width: offset - this.options.slopeWidth, //added one to often
+      width: Math.max(0, offset - this.options.slopeWidth), //added one to often
       height: height
     });
     this.updateClipPaths(rankings, context, height);
