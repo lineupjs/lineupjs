@@ -696,7 +696,7 @@ export class CommonDataProvider extends DataProvider {
     super();
     //generate the accessor
     columns.forEach((d:any) => {
-      d.accessor = this.rowGetter;
+      d.accessor = d.accessor || this.rowGetter;
       d.label = d.label || d.column;
     });
   }
@@ -711,7 +711,7 @@ export class CommonDataProvider extends DataProvider {
    */
   pushDesc(column:model.IColumnDesc) {
     var d:any = column;
-    d.accessor = this.rowGetter;
+    d.accessor = d.accessor || this.rowGetter;
     d.label = column.label || d.column;
     this.columns.push(column);
     this.fire('addDesc', d);
