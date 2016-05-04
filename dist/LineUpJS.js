@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-04-28
+/*! LineUpJS - v0.2.0 - 2016-05-04
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -3386,7 +3386,7 @@ var CommonDataProvider = (function (_super) {
         this.rowGetter = function (row, id, desc) { return row[desc.column]; };
         //generate the accessor
         columns.forEach(function (d) {
-            d.accessor = _this.rowGetter;
+            d.accessor = d.accessor || _this.rowGetter;
             d.label = d.label || d.column;
         });
     }
@@ -3399,7 +3399,7 @@ var CommonDataProvider = (function (_super) {
      */
     CommonDataProvider.prototype.pushDesc = function (column) {
         var d = column;
-        d.accessor = this.rowGetter;
+        d.accessor = d.accessor || this.rowGetter;
         d.label = column.label || d.column;
         this.columns.push(column);
         this.fire('addDesc', d);
