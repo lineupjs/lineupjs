@@ -307,6 +307,52 @@ function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.
 
 
 /**
+ * opens a dialog for filtering a boolean column
+ * @param column the column to filter
+ * @param $header the visual header element of this column
+ */
+function openBooleanFilter(column:model.BooleanColumn, $header:d3.Selection<model.Column>) {
+  var bak = column.getFilter();
+
+  var $popup = makePopup($header, 'Filter',
+    `<label><input type="radio" name="boolean_check" value="null" ${bak === null ? 'checked="checked"': ''}>No Filter</label><br>
+     <label><input type="radio" name="boolean_check" value="true" ${bak === true ? 'checked="checked"': ''}>True</label><br>
+     <label><input type="radio" name="boolean_check" value="false" ${bak === false ? 'checked="checked"': ''}>False</label>
+    <br>`);
+
+  function updateData(filter) {
+    markFiltered($header, (filter !== null));
+    column.setFilter(filter);
+  }
+
+  function updateImpl(force) {
+    //get value
+    const isTrue = $popup.select('input[type="radio"][value="true"]').property('checked');
+    const isFalse = $popup.select('input[type="radio"][value="false"]').property('checked');
+    updateData(isTrue ? true : (isFalse ? false: null));
+  }
+
+  $popup.selectAll('input[type="radio"]').on('change', updateImpl);
+
+  $popup.select('.cancel').on('click', function () {
+    updateData(bak);
+    $popup.remove();
+  });
+  $popup.select('.reset').on('click', function () {
+    const v = bak === null ? 'null': String(bak);
+    $popup.selectAll('input[type="radio"]').property('checked', function() {
+      return this.value === v;
+    });
+    updateData(null);
+  });
+  $popup.select('.ok').on('click', function () {
+    updateImpl(true);
+    $popup.remove();
+  });
+}
+
+
+/**
  * opens a dialog for editing the script code
  * @param column the column to edit
  * @param $header the visual header element of this column
@@ -475,6 +521,7 @@ export function filterDialogs() {
     string: openStringFilter,
     categorical: openCategoricalFilter,
     number: openMappingEditor,
-    ordinal: openCategoricalMappingEditor
+    ordinal: openCategoricalMappingEditor,
+    boolean: openBooleanFilter
   };
 }

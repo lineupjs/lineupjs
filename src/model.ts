@@ -1056,6 +1056,75 @@ export class SelectionColumn extends ValueColumn<boolean> {
   }
 }
 
+
+/**
+ * a string column with optional alignment
+ */
+export class BooleanColumn extends ValueColumn<boolean> {
+  private filter_:boolean = null;
+  private trueMarker = 'X';
+  private falseMarker = '';
+
+  constructor(id:string, desc:any) {
+    super(id, desc);
+    this.setWidthImpl(30);
+    this.trueMarker = desc.trueMarker || this.trueMarker;
+    this.falseMarker = desc.falseMarker || this.falseMarker;
+  }
+
+  getValue(row:any) {
+    var v:any = super.getValue(row);
+    if (typeof(v) === 'undefined' || v == null) {
+      return false;
+    }
+    return v === true || v === 'true' || v === 'yes' || v === 'x';
+  }
+
+  getLabel(row: any) {
+    const v = this.getValue(row);
+    return v ? this.trueMarker : this.falseMarker;
+  }
+
+  dump(toDescRef:(desc:any) => any):any {
+    var r = super.dump(toDescRef);
+    if (this.filter_ !== null) {
+      r.filter = this.filter_;
+    }
+    return r;
+  }
+
+  restore(dump:any, factory:(dump:any) => Column) {
+    super.restore(dump, factory);
+    if (typeof dump.filter !== 'undefined') {
+      this.filter_ = dump.filter;
+    }
+  }
+
+  isFiltered() {
+    return this.filter_ !== null;
+  }
+
+  filter(row:any) {
+    if (!this.isFiltered()) {
+      return true;
+    }
+    var r = this.getValue(row);
+    return r === this.filter_;
+  }
+
+  getFilter() {
+    return this.filter_;
+  }
+
+  setFilter(filter:boolean) {
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
+  }
+
+  compare(a:any[], b:any[]) {
+    return d3.ascending(this.getValue(a), this.getValue(b));
+  }
+}
+
 /**
  * column for categorical values
  */
@@ -2212,6 +2281,7 @@ export function models() {
     link: LinkColumn,
     stack: StackColumn,
     rank: RankColumn,
+    boolean: BooleanColumn,
     categorical: CategoricalColumn,
     ordinal: CategoricalNumberColumn,
     actions: DummyColumn,

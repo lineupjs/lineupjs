@@ -782,6 +782,10 @@ export function renderers() {
       textClass: 'rank',
       align: 'right'
     }),
+    boolean: defaultRenderer({
+      textClass: 'boolean',
+      align: 'center'
+    }),
     heatmap: new HeatMapCellRenderer(),
     stack: new StackCellRenderer(),
     categorical: new CategoricalRenderer(),
