@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.0 - 2016-05-04
+/*! LineUpJS - v0.2.0 - 2016-05-10
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -1607,6 +1607,66 @@ var SelectionColumn = (function (_super) {
 })(ValueColumn);
 exports.SelectionColumn = SelectionColumn;
 /**
+ * a string column with optional alignment
+ */
+var BooleanColumn = (function (_super) {
+    __extends(BooleanColumn, _super);
+    function BooleanColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.filter_ = null;
+        this.trueMarker = 'X';
+        this.falseMarker = '';
+        this.setWidthImpl(30);
+        this.trueMarker = desc.trueMarker || this.trueMarker;
+        this.falseMarker = desc.falseMarker || this.falseMarker;
+    }
+    BooleanColumn.prototype.getValue = function (row) {
+        var v = _super.prototype.getValue.call(this, row);
+        if (typeof (v) === 'undefined' || v == null) {
+            return false;
+        }
+        return v === true || v === 'true' || v === 'yes' || v === 'x';
+    };
+    BooleanColumn.prototype.getLabel = function (row) {
+        var v = this.getValue(row);
+        return v ? this.trueMarker : this.falseMarker;
+    };
+    BooleanColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        if (this.filter_ !== null) {
+            r.filter = this.filter_;
+        }
+        return r;
+    };
+    BooleanColumn.prototype.restore = function (dump, factory) {
+        _super.prototype.restore.call(this, dump, factory);
+        if (typeof dump.filter !== 'undefined') {
+            this.filter_ = dump.filter;
+        }
+    };
+    BooleanColumn.prototype.isFiltered = function () {
+        return this.filter_ !== null;
+    };
+    BooleanColumn.prototype.filter = function (row) {
+        if (!this.isFiltered()) {
+            return true;
+        }
+        var r = this.getValue(row);
+        return r === this.filter_;
+    };
+    BooleanColumn.prototype.getFilter = function () {
+        return this.filter_;
+    };
+    BooleanColumn.prototype.setFilter = function (filter) {
+        this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
+    };
+    BooleanColumn.prototype.compare = function (a, b) {
+        return d3.ascending(this.getValue(a), this.getValue(b));
+    };
+    return BooleanColumn;
+})(ValueColumn);
+exports.BooleanColumn = BooleanColumn;
+/**
  * column for categorical values
  */
 var CategoricalColumn = (function (_super) {
@@ -2713,6 +2773,7 @@ function models() {
         link: LinkColumn,
         stack: StackColumn,
         rank: RankColumn,
+        boolean: BooleanColumn,
         categorical: CategoricalColumn,
         ordinal: CategoricalNumberColumn,
         actions: DummyColumn,
@@ -4292,6 +4353,10 @@ function renderers() {
             textClass: 'rank',
             align: 'right'
         }),
+        boolean: defaultRenderer({
+            textClass: 'boolean',
+            align: 'center'
+        }),
         heatmap: new HeatMapCellRenderer(),
         stack: new StackCellRenderer(),
         categorical: new CategoricalRenderer(),
@@ -5835,6 +5900,41 @@ function openStringFilter(column, $header) {
     });
 }
 /**
+ * opens a dialog for filtering a boolean column
+ * @param column the column to filter
+ * @param $header the visual header element of this column
+ */
+function openBooleanFilter(column, $header) {
+    var bak = column.getFilter();
+    var $popup = makePopup($header, 'Filter', "<label><input type=\"radio\" name=\"boolean_check\" value=\"null\" " + (bak === null ? 'checked="checked"' : '') + ">No Filter</label><br>\n     <label><input type=\"radio\" name=\"boolean_check\" value=\"true\" " + (bak === true ? 'checked="checked"' : '') + ">True</label><br>\n     <label><input type=\"radio\" name=\"boolean_check\" value=\"false\" " + (bak === false ? 'checked="checked"' : '') + ">False</label>\n    <br>");
+    function updateData(filter) {
+        markFiltered($header, (filter !== null));
+        column.setFilter(filter);
+    }
+    function updateImpl(force) {
+        //get value
+        var isTrue = $popup.select('input[type="radio"][value="true"]').property('checked');
+        var isFalse = $popup.select('input[type="radio"][value="false"]').property('checked');
+        updateData(isTrue ? true : (isFalse ? false : null));
+    }
+    $popup.selectAll('input[type="radio"]').on('change', updateImpl);
+    $popup.select('.cancel').on('click', function () {
+        updateData(bak);
+        $popup.remove();
+    });
+    $popup.select('.reset').on('click', function () {
+        var v = bak === null ? 'null' : String(bak);
+        $popup.selectAll('input[type="radio"]').property('checked', function () {
+            return this.value === v;
+        });
+        updateData(null);
+    });
+    $popup.select('.ok').on('click', function () {
+        updateImpl(true);
+        $popup.remove();
+    });
+}
+/**
  * opens a dialog for editing the script code
  * @param column the column to edit
  * @param $header the visual header element of this column
@@ -5976,7 +6076,8 @@ function filterDialogs() {
         string: openStringFilter,
         categorical: openCategoricalFilter,
         number: openMappingEditor,
-        ordinal: openCategoricalMappingEditor
+        ordinal: openCategoricalMappingEditor,
+        boolean: openBooleanFilter
     };
 }
 exports.filterDialogs = filterDialogs;
