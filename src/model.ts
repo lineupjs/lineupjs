@@ -2138,7 +2138,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
     this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
 
     if (this.sortBy_ === null && !(col instanceof RankColumn || col instanceof SelectionColumn || col instanceof DummyColumn)) {
-      this.sortBy(col);
+      this.sortBy(col, col instanceof StringColumn);
     }
     return col;
   }
