@@ -142,7 +142,7 @@ export class DataProvider extends utils.AEventDispatcher {
     this.rankings_.push(r);
     this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');
     r.on('dirtyOrder.provider', this.reorder);
-    this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r);
+    this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r, this.rankings_.length);
   }
 
   protected triggerReorder(ranking: model.Ranking) {
@@ -163,7 +163,7 @@ export class DataProvider extends utils.AEventDispatcher {
     this.rankings_.splice(i, 1);
     ranking.on('dirtyOrder.provider', null);
     this.cleanUpRanking(ranking);
-    this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], ranking);
+    this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], ranking, i);
     return true;
   }
 
@@ -177,7 +177,7 @@ export class DataProvider extends utils.AEventDispatcher {
       this.cleanUpRanking(ranking);
     });
     this.rankings_ = [];
-    this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty']);
+    this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], null);
   }
 
   /**

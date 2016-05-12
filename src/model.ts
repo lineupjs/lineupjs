@@ -62,6 +62,11 @@ export interface ICategoricalStatistics {
   hist: { cat: string; y : number }[];
 }
 
+export interface IColumnMetaData {
+  label: string;
+  color: string;
+}
+
 /**
  * a column in LineUp
  */
@@ -89,7 +94,7 @@ export class Column extends utils.AEventDispatcher {
    * @type {number}
    * @private
    */
-  private width_:number = 100;
+  private width:number = 100;
 
   parent:IColumnParent = null;
 
@@ -105,7 +110,7 @@ export class Column extends utils.AEventDispatcher {
    * @type {boolean}
    * @private
    */
-  private _compressed = false;
+  private compressed = false;
 
   constructor(id:string, public desc:IColumnDesc) {
     super();
@@ -139,29 +144,30 @@ export class Column extends utils.AEventDispatcher {
    * fires:
    *  * widthChanged
    *  * filterChanged
-   *  * labelChanged,
+   *  * labelChanged
+   *  * metaDataChanged
    *  * compressChanged
    *  * addColumn, removeColumn ... for composite pattern
    *  * dirty, dirtyHeader, dirtyValues
    * @returns {string[]}
    */
   createEventList() {
-    return super.createEventList().concat(['widthChanged', 'filterChanged', 'labelChanged', 'compressChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
+    return super.createEventList().concat(['widthChanged', 'filterChanged', 'labelChanged', 'metaDataChanged', 'compressChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
   }
 
   getWidth() {
-    return this.width_;
+    return this.width;
   }
 
-  set compressed(value:boolean) {
-    if (this._compressed === value) {
+  setCompressed(value:boolean) {
+    if (this.compressed === value) {
       return;
     }
-    this.fire(['compressChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this._compressed, this._compressed = value);
+    this.fire(['compressChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.compressed, this.compressed = value);
   }
 
-  get compressed() {
-    return this._compressed;
+  getCompressed() {
+    return this.compressed;
   }
 
   /**
@@ -179,25 +185,32 @@ export class Column extends utils.AEventDispatcher {
   }
 
   setWidth(value:number) {
-    if (this.width_ === value) {
+    if (this.width === value) {
       return;
     }
-    this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.width_, this.width_ = value);
+    this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.width, this.width = value);
   }
 
   setWidthImpl(value:number) {
-    this.width_ = value;
+    this.width = value;
   }
 
-  setMetaData(value:string, color:string = this.color) {
-    if (value === this.label && this.color === color) {
+  setMetaData(value: IColumnMetaData) {
+    if (value.label === this.label && this.color === value.color) {
       return;
     }
-    var events = this.color === color ? ['labelChanged', 'dirtyHeader', 'dirty'] : ['labelChanged', 'dirtyHeader', 'dirtyValues', 'dirty'];
-    this.fire(events, {label: this.label, color: this.color}, {
-      label: this.label = value,
-      color: this.color = color
+    var events = this.color === value.color ? ['labelChanged', 'metaDataChanged','dirtyHeader', 'dirty'] : ['labelChanged', 'metaDataChanged','dirtyHeader', 'dirtyValues', 'dirty'];
+    this.fire(events, this.getMetaData(), {
+      label: this.label = value.label,
+      color: this.color = value.color
     });
+  }
+
+  getMetaData() : IColumnMetaData {
+    return {
+      label: this.label,
+      color: this.color
+    };
   }
 
   /**
@@ -268,7 +281,7 @@ export class Column extends utils.AEventDispatcher {
     var r:any = {
       id: this.id,
       desc: toDescRef(this.desc),
-      width: this.width_,
+      width: this.width,
       compressed: this.compressed
     };
     if (this.label !== (this.desc.label || this.id)) {
@@ -286,7 +299,7 @@ export class Column extends utils.AEventDispatcher {
    * @param factory
    */
   restore(dump:any, factory:(dump:any) => Column) {
-    this.width_ = dump.width || this.width_;
+    this.width = dump.width || this.width;
     this.label = dump.label || this.label;
     this.color = dump.color || this.color;
     this.compressed = dump.compressed === true;
@@ -630,7 +643,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
    * @type {{min: number, max: number}}
    * @private
    */
-  private filter_ = {min: -Infinity, max: Infinity};
+  private currentFilter = {min: -Infinity, max: Infinity};
 
   private numberFormat : (n: number) => string = d3.format('.3n');
 
@@ -666,7 +679,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   dump(toDescRef:(desc:any) => any) {
     var r = super.dump(toDescRef);
     r.map = this.mapping.dump();
-    r.filter = this.filter;
+    r.filter = this.currentFilter;
     r.missingValue = this.missingValue;
     return r;
   }
@@ -678,8 +691,8 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     } else if (dump.domain) {
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0,1]);
     }
-    if (dump.filter) {
-      this.filter_ = dump.filter;
+    if (dump.currentFilter) {
+      this.currentFilter = dump.currentFilter;
     }
     if (dump.missingValue) {
       this.missingValue = dump.missingValue;
@@ -739,38 +752,41 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   }
 
   isFiltered() {
-    return isFinite(this.filter_.min) || isFinite(this.filter_.max);
+    return isFinite(this.currentFilter.min) || isFinite(this.currentFilter.max);
   }
 
   get filterMin() {
-    return this.filter_.min;
+    return this.currentFilter.min;
   }
 
   get filterMax() {
-    return this.filter_.max;
+    return this.currentFilter.max;
   }
 
   getFilter() {
-    return this.filter_;
+    return {
+      min: this.currentFilter.min,
+      max: this.currentFilter.max
+    };
   }
 
   set filterMin(min:number) {
-    var bak = {min: this.filter_.min, max: this.filter_.max};
-    this.filter_.min = isNaN(min) ? -Infinity : min;
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
+    var bak = {min: this.currentFilter.min, max: this.currentFilter.max};
+    this.currentFilter.min = isNaN(min) ? -Infinity : min;
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.currentFilter);
   }
 
   set filterMax(max:number) {
-    var bak = {min: this.filter_.min, max: this.filter_.max};
-    this.filter_.max = isNaN(max) ? Infinity : max;
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
+    var bak = {min: this.currentFilter.min, max: this.currentFilter.max};
+    this.currentFilter.max = isNaN(max) ? Infinity : max;
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.currentFilter);
   }
 
-  setFilter(min:number = -Infinity, max:number = +Infinity) {
-    var bak = {min: this.filter_.min, max: this.filter_.max};
-    this.filter_.min = isNaN(min) ? -Infinity : min;
-    this.filter_.max = isNaN(max) ? Infinity : max;
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.filter_);
+  setFilter(value: {min: number, max: number} = {min: -Infinity, max: +Infinity}) {
+    const bak = this.getFilter();
+    this.currentFilter.min = isNaN(value.min) ? -Infinity :value. min;
+    this.currentFilter.max = isNaN(value.max) ? Infinity : value.max;
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.currentFilter);
   }
 
   /**
@@ -786,7 +802,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     if (isNaN(v)) {
       return true;
     }
-    return !((isFinite(this.filter_.min) && v < this.filter_.min) || (isFinite(this.filter_.max) && v < this.filter_.max));
+    return !((isFinite(this.currentFilter.min) && v < this.currentFilter.min) || (isFinite(this.currentFilter.max) && v < this.currentFilter.max));
   }
 }
 
@@ -794,7 +810,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
  * a string column with optional alignment
  */
 export class StringColumn extends ValueColumn<string> {
-  private filter_:string|RegExp = null;
+  private currentFilter:string|RegExp = null;
 
   private _alignment:string = 'left';
 
@@ -819,10 +835,10 @@ export class StringColumn extends ValueColumn<string> {
 
   dump(toDescRef:(desc:any) => any):any {
     var r = super.dump(toDescRef);
-    if (this.filter_ instanceof RegExp) {
-      r.filter = 'REGEX:' + (<RegExp>this.filter_).source;
+    if (this.currentFilter instanceof RegExp) {
+      r.filter = 'REGEX:' + (<RegExp>this.currentFilter).source;
     } else {
-      r.filter = this.filter_;
+      r.filter = this.currentFilter;
     }
     r.alignment = this.alignment;
     return r;
@@ -831,15 +847,15 @@ export class StringColumn extends ValueColumn<string> {
   restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
     if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
-      this.filter_ = new RegExp(dump.filter.slice(6));
+      this.currentFilter = new RegExp(dump.filter.slice(6));
     } else {
-      this.filter_ = dump.filter || null;
+      this.currentFilter = dump.filter || null;
     }
     this._alignment = dump.alignment || this._alignment;
   }
 
   isFiltered() {
-    return this.filter_ != null;
+    return this.currentFilter != null;
   }
 
   filter(row:any) {
@@ -847,7 +863,7 @@ export class StringColumn extends ValueColumn<string> {
       return true;
     }
     var r = this.getLabel(row),
-      filter = this.filter_;
+      filter = this.currentFilter;
     if (typeof filter === 'string' && filter.length > 0) {
       return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
     }
@@ -858,14 +874,14 @@ export class StringColumn extends ValueColumn<string> {
   }
 
   getFilter() {
-    return this.filter_;
+    return this.currentFilter;
   }
 
   setFilter(filter:string|RegExp) {
     if (filter === '') {
       filter = null;
     }
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
   }
 
   compare(a:any[], b:any[]) {
@@ -965,7 +981,10 @@ export class AnnotateColumn extends StringColumn {
 
   constructor(id:string, desc:any) {
     super(id, desc);
+  }
 
+  createEventList() {
+    return super.createEventList().concat(['valueChanged']);
   }
 
   getValue(row:any) {
@@ -1004,7 +1023,7 @@ export class AnnotateColumn extends StringColumn {
     } else {
       this.annotations.set(String(row._index), value);
     }
-    this.fire(['dirtyValues', 'dirty'], value, old);
+    this.fire(['valueChanged', 'dirtyValues', 'dirty'], row._index, old, value);
     return true;
   }
 }
@@ -1026,7 +1045,7 @@ export class SelectionColumn extends ValueColumn<boolean> {
 
   constructor(id:string, desc:any) {
     super(id, desc);
-    this.compressed = true;
+    this.setCompressed(true);
   }
 
   createEventList() {
@@ -1061,7 +1080,7 @@ export class SelectionColumn extends ValueColumn<boolean> {
  * a string column with optional alignment
  */
 export class BooleanColumn extends ValueColumn<boolean> {
-  private filter_:boolean = null;
+  private currentFilter:boolean = null;
   private trueMarker = 'X';
   private falseMarker = '';
 
@@ -1087,8 +1106,8 @@ export class BooleanColumn extends ValueColumn<boolean> {
 
   dump(toDescRef:(desc:any) => any):any {
     var r = super.dump(toDescRef);
-    if (this.filter_ !== null) {
-      r.filter = this.filter_;
+    if (this.currentFilter !== null) {
+      r.filter = this.currentFilter;
     }
     return r;
   }
@@ -1096,12 +1115,12 @@ export class BooleanColumn extends ValueColumn<boolean> {
   restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
     if (typeof dump.filter !== 'undefined') {
-      this.filter_ = dump.filter;
+      this.currentFilter = dump.filter;
     }
   }
 
   isFiltered() {
-    return this.filter_ !== null;
+    return this.currentFilter !== null;
   }
 
   filter(row:any) {
@@ -1109,15 +1128,15 @@ export class BooleanColumn extends ValueColumn<boolean> {
       return true;
     }
     var r = this.getValue(row);
-    return r === this.filter_;
+    return r === this.currentFilter;
   }
 
   getFilter() {
-    return this.filter_;
+    return this.currentFilter;
   }
 
   setFilter(filter:boolean) {
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
   }
 
   compare(a:any[], b:any[]) {
@@ -1140,7 +1159,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
    * @type {null}
    * @private
    */
-  private filter_:string[] = null;
+  private currentFilter:string[] = null;
 
   /**
    * split multiple categories
@@ -1227,7 +1246,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
 
   dump(toDescRef:(desc:any) => any):any {
     var r = super.dump(toDescRef);
-    r.filter = this.filter_;
+    r.filter = this.currentFilter;
     r.colors = {
       domain: this.colors.domain(),
       range: this.colors.range(),
@@ -1238,7 +1257,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
 
   restore(dump:any, factory:(dump:any) => Column) {
     super.restore(dump, factory);
-    this.filter_ = dump.filter || null;
+    this.currentFilter = dump.filter || null;
     if (dump.colors) {
       this.colors.domain(dump.colors.domain).range(dump.colors.range);
     }
@@ -1246,7 +1265,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
   }
 
   isFiltered() {
-    return this.filter_ != null;
+    return this.currentFilter != null;
   }
 
   filter(row:any):boolean {
@@ -1254,7 +1273,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
       return true;
     }
     var vs = this.getValues(row),
-      filter:any = this.filter_;
+      filter:any = this.currentFilter;
     return vs.every((v) => {
       if (Array.isArray(filter) && filter.length > 0) { //array mode
         return filter.indexOf(v) >= 0;
@@ -1268,11 +1287,11 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
   }
 
   getFilter() {
-    return this.filter_;
+    return this.currentFilter;
   }
 
   setFilter(filter:string[]) {
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this, this.filter_, this.filter_ = filter);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this, this.currentFilter, this.currentFilter = filter);
   }
 
   compare(a:any[], b:any[]) {
@@ -1297,7 +1316,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   private colors = d3.scale.category10();
   private scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
 
-  private filter_:string = null;
+  private currentFilter:string = null;
   /**
    * separator for multi handling
    * @type {string}
@@ -1419,15 +1438,19 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
       range: this.scale.range()
     };
   }
+  
+  getMapping() {
+    return this.scale.range().slice();
+  }
 
-  setRange(range:number[]) {
+  setMapping(range:number[]) {
     var bak = this.getScale();
     this.scale.range(range);
     this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getScale());
   }
 
   isFiltered() {
-    return this.filter_ != null;
+    return this.currentFilter != null;
   }
 
   filter(row:any):boolean {
@@ -1435,11 +1458,11 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   }
 
   getFilter() {
-    return this.filter_;
+    return this.currentFilter;
   }
 
   setFilter(filter:string) {
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.filter_, this.filter_ = filter);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
   }
 
   compare(a:any[], b:any[]) {
@@ -1482,7 +1505,7 @@ export class CompositeColumn extends Column implements IColumnParent, INumberCol
     var self = null;
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
+      var w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
       r.push(self = {col: this, offset: offset, width: w});
       if (levelsToGo === 0) {
         return w;
@@ -1641,7 +1664,7 @@ export class StackColumn extends CompositeColumn {
    * @type {boolean}
    * @private
    */
-  private _collapsed = false;
+  private collapsed = false;
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -1661,15 +1684,15 @@ export class StackColumn extends CompositeColumn {
     return this._children.map((d) => d.getWidth() / w);
   }
 
-  set collapsed(value:boolean) {
-    if (this._collapsed === value) {
+  setCollapsed(value:boolean) {
+    if (this.collapsed === value) {
       return;
     }
-    this.fire(['collapseChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this._collapsed, this._collapsed = value);
+    this.fire(['collapseChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.collapsed, this.collapsed = value);
   }
 
-  get collapsed() {
-    return this._collapsed;
+  getCollapsed() {
+    return this.collapsed;
   }
 
   flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0) {
@@ -1677,8 +1700,8 @@ export class StackColumn extends CompositeColumn {
     const children = this._children;
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      var w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
-      if (!this.collapsed && !this.compressed) {
+      var w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
+      if (!this.collapsed && !this.getCompressed()) {
         w += (children.length - 1) * padding;
       }
       r.push(self = {col: this, offset: offset, width: w});
@@ -1916,28 +1939,28 @@ export class ScriptColumn extends CompositeColumn {
 
   static DEFAULT_SCRIPT = 'return d3.max(values)';
 
-  private _script = ScriptColumn.DEFAULT_SCRIPT;
-  private _f : Function = null;
+  private script = ScriptColumn.DEFAULT_SCRIPT;
+  private f : Function = null;
 
   constructor(id:string, desc:any) {
     super(id, desc);
-    this._script = desc.script || this._script;
+    this.script = desc.script || this.script;
   }
 
   createEventList() {
     return super.createEventList().concat(['scriptChanged']);
   }
 
-  set script(script: string) {
-    if (this._script === script) {
+  setScript(script: string) {
+    if (this.script === script) {
       return;
     }
-    this._f = null;
-    this.fire(['scriptChanged', 'dirtyValues', 'dirty'], this._script, this._script = script);
+    this.f = null;
+    this.fire(['scriptChanged', 'dirtyValues', 'dirty'], this.script, this.script = script);
   }
 
-  get script() {
-    return this._script;
+  getScript() {
+    return this.script;
   }
 
   dump(toDescRef:(desc:any) => any) {
@@ -1951,14 +1974,10 @@ export class ScriptColumn extends CompositeColumn {
     super.restore(dump, factory);
   }
 
-  private get f() {
-    if (this._f == null) {
-      this._f = new Function('children','values', this._script);
-    }
-    return this._f;
-  }
-
   protected compute(row: any) {
+    if (this.f == null) {
+      this.f = new Function('children','values', this.script);
+    }
     return this.f.call(this, this._children, this._children.map((d) => d.getValue(row)));
   }
 }
@@ -1982,6 +2001,10 @@ export class RankColumn extends ValueColumn<number> {
   }
 }
 
+export interface ISortCriteria {
+  col:Column;
+  asc:boolean;
+}
 
 /**
  * a ranking
@@ -1993,7 +2016,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
    * @type {null}
    * @private
    */
-  private sortBy_:Column = null;
+  private sortColumn:Column = null;
   /**
    * ascending or descending order
    * @type {boolean}
@@ -2005,18 +2028,18 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
    * @type {Array}
    * @private
    */
-  private _columns:Column[] = [];
+  private columns:Column[] = [];
 
   comparator = (a:any[], b:any[]) => {
-    if (this.sortBy_ === null) {
+    if (this.sortColumn === null) {
       return 0;
     }
-    var r = this.sortBy_.compare(a, b);
+    var r = this.sortColumn.compare(a, b);
     return this.ascending ? r : -r;
   };
 
   dirtyOrder = () => {
-    this.fire(['dirtyOrder', 'dirtyValues', 'dirty'], this.sortCriteria());
+    this.fire(['dirtyOrder', 'dirtyValues', 'dirty'], this.getSortCriteria());
   };
 
   /**
@@ -2036,7 +2059,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
 
   assignNewId(idGenerator:() => string) {
     this.id = fixCSS(idGenerator());
-    this._columns.forEach((c) => c.assignNewId(idGenerator));
+    this.columns.forEach((c) => c.assignNewId(idGenerator));
   }
 
   setOrder(order:number[]) {
@@ -2049,12 +2072,12 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
 
   dump(toDescRef:(desc:any) => any) {
     var r : any = {};
-    r.columns = this._columns.map((d) => d.dump(toDescRef));
-    r.sortCriteria = {
+    r.columns = this.columns.map((d) => d.dump(toDescRef));
+    r.sortColumn = {
       asc: this.ascending
     };
-    if (this.sortBy_) {
-      r.sortCriteria.sortBy = this.sortBy_.id; //store the index not the object
+    if (this.sortColumn) {
+      r.sortCriteria.sortBy = this.sortColumn.id; //store the index not the object
     }
     return r;
   }
@@ -2067,11 +2090,11 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
         this.push(c);
       }
     });
-    if (dump.sortCriteria) {
-      this.ascending = dump.sortCriteria.asc;
-      if (dump.sortCriteria.sortBy) {
-        let help = this._columns.filter((d) => d.id === dump.sortCriteria.sortBy);
-        this.sortBy(help.length === 0 ? null : help[0], dump.sortCriteria.asc);
+    if (dump.sortColumn) {
+      this.ascending = dump.sortColumn.asc;
+      if (dump.sortColumn.sortBy) {
+        let help = this.columns.filter((d) => d.id === dump.sortColumn.sortBy);
+        this.sortBy(help.length === 0 ? null : help[0], dump.sortColumn.asc);
       }
     }
   }
@@ -2079,57 +2102,61 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0) {
     var acc = offset; // + this.getWidth() + padding;
     if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      this._columns.forEach((c) => {
+      this.columns.forEach((c) => {
         acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
       });
     }
     return acc - offset;
   }
 
-  sortCriteria() {
+  getSortCriteria(): ISortCriteria {
     return {
-      col: this.sortBy_,
+      col: this.sortColumn,
       asc: this.ascending
     };
   }
 
   toggleSorting(col:Column) {
-    if (this.sortBy_ === col) {
+    if (this.sortColumn === col) {
       return this.sortBy(col, !this.ascending);
     }
     return this.sortBy(col);
   }
 
+  setSortCriteria(value: ISortCriteria) {
+    return this.sortBy(value.col, value.asc);
+  }
+  
   sortBy(col:Column, ascending = false) {
     if (col !== null && col.findMyRanker() !== this) {
       return false; //not one of mine
     }
-    if (this.sortBy_ === col && this.ascending === ascending) {
+    if (this.sortColumn === col && this.ascending === ascending) {
       return true; //already in this order
     }
-    if (this.sortBy_) { //disable dirty listening
-      this.sortBy_.on('dirtyValues.order', null);
+    if (this.sortColumn) { //disable dirty listening
+      this.sortColumn.on('dirtyValues.order', null);
     }
-    var bak = this.sortCriteria();
-    this.sortBy_ = col;
-    if (this.sortBy_) { //enable dirty listening
-      this.sortBy_.on('dirtyValues.order', this.dirtyOrder);
+    var bak = this.getSortCriteria();
+    this.sortColumn = col;
+    if (this.sortColumn) { //enable dirty listening
+      this.sortColumn.on('dirtyValues.order', this.dirtyOrder);
     }
     this.ascending = ascending;
-    this.fire(['sortCriteriaChanged', 'dirtyOrder', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, this.sortCriteria());
+    this.fire(['sortCriteriaChanged', 'dirtyOrder', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, this.getSortCriteria());
     return true;
   }
 
   get children() {
-    return this._columns.slice();
+    return this.columns.slice();
   }
 
   get length() {
-    return this._columns.length;
+    return this.columns.length;
   }
 
-  insert(col:Column, index:number = this._columns.length) {
-    this._columns.splice(index, 0, col);
+  insert(col:Column, index:number = this.columns.length) {
+    this.columns.splice(index, 0, col);
     col.parent = this;
     this.forward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
     col.on('filterChanged.order', this.dirtyOrder);
@@ -2137,14 +2164,14 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
 
     this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
 
-    if (this.sortBy_ === null && !(col instanceof RankColumn || col instanceof SelectionColumn || col instanceof DummyColumn)) {
+    if (this.sortColumn === null && !(col instanceof RankColumn || col instanceof SelectionColumn || col instanceof DummyColumn)) {
       this.sortBy(col, col instanceof StringColumn);
     }
     return col;
   }
 
   insertAfter(col:Column, ref:Column) {
-    var i = this._columns.indexOf(ref);
+    var i = this.columns.indexOf(ref);
     if (i < 0) {
       return false;
     }
@@ -2156,7 +2183,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   }
 
   remove(col:Column) {
-    var i = this._columns.indexOf(col);
+    var i = this.columns.indexOf(col);
     if (i < 0) {
       return false;
     }
@@ -2164,24 +2191,24 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
     this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
 
     col.parent = null;
-    this._columns.splice(i, 1);
-    this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col);
-    if (this.sortBy_ === col) { //was my sorting one
-      this.sortBy(this._columns.length > 0 ? this._columns[0] : null);
+    this.columns.splice(i, 1);
+    this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, i);
+    if (this.sortColumn === col) { //was my sorting one
+      this.sortBy(this.columns.length > 0 ? this.columns[0] : null);
     }
     return true;
   }
 
   clear() {
-    if (this._columns.length === 0) {
+    if (this.columns.length === 0) {
       return;
     }
-    this.sortBy_ = null;
-    this._columns.forEach((col) => {
+    this.sortColumn = null;
+    this.columns.forEach((col) => {
       this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
       col.parent = null;
     });
-    this._columns.length = 0;
+    this.columns.length = 0;
     this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], null);
   }
 
@@ -2224,7 +2251,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
       }
       return toId(s.desc);
     };
-    var id = resolve(this.sortBy_);
+    var id = resolve(this.sortColumn);
     if (id === null) {
       return null;
     }
@@ -2235,11 +2262,11 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   }
 
   isFiltered() {
-    return this._columns.some((d) => d.isFiltered());
+    return this.columns.some((d) => d.isFiltered());
   }
 
   filter(row:any) {
-    return this._columns.every((d) => d.filter(row));
+    return this.columns.every((d) => d.filter(row));
   }
 
   findMyRanker() {

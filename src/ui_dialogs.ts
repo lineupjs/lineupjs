@@ -57,7 +57,7 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
   popup.select('.ok').on('click', function () {
     var newValue = popup.select('input[type="text"]').property('value');
     var newColor = popup.select('input[type="color"]').property('value');
-    column.setMetaData(newValue, newColor);
+    column.setMetaData( { label: newValue, color: newColor});
     popup.remove();
   });
 
@@ -358,13 +358,13 @@ function openBooleanFilter(column:model.BooleanColumn, $header:d3.Selection<mode
  * @param $header the visual header element of this column
  */
 export function openEditScriptDialog(column:model.ScriptColumn, $header:d3.Selection<model.Column>) {
-  const bak = column.script;
+  const bak = column.getScript();
   const $popup = makePopup($header, 'Edit Script',
     `Parameters: <code>values: number[], children: Column[]</code><br>
-      <textarea autofocus="true" rows="5" autofocus="autofocus" style="width: 95%;">${column.script}</textarea><br>`);
+      <textarea autofocus="true" rows="5" autofocus="autofocus" style="width: 95%;">${column.getScript()}</textarea><br>`);
 
   function updateData(script) {
-    column.script = script;
+    column.setScript(script);
   }
 
   function updateImpl() {
@@ -422,7 +422,7 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
     column.setMapping(newscale);
     var val = $filterIt.property('checked');
     if (val) {
-      column.setFilter(newscale.domain[0], newscale.domain[1]);
+      column.setFilter({min: newscale.domain[0], max: newscale.domain[1]});
     } else {
       column.setFilter();
     }
@@ -500,14 +500,14 @@ function openCategoricalMappingEditor(column:model.CategoricalNumberColumn, $hea
   redraw();
 
   $popup.select('.cancel').on('click', function () {
-    column.setRange(range);
+    column.setMapping(range);
     $popup.remove();
   });
   /*$popup.select('.reset').on('click', function () {
 
    });*/
   $popup.select('.ok').on('click', function () {
-    column.setRange(children.map((d) => d.range / 100));
+    column.setMapping(children.map((d) => d.range / 100));
     $popup.remove();
   });
 }

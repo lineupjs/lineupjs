@@ -394,7 +394,7 @@ export class HeaderRenderer {
     }
 
     function countStacked(c:model.Column):number {
-      if (c instanceof model.StackColumn && !(<model.StackColumn>c).collapsed && !c.compressed) {
+      if (c instanceof model.StackColumn && !(<model.StackColumn>c).getCollapsed() && !c.getCompressed()) {
         return 1 + Math.max.apply(Math, (<model.StackColumn>c).children.map(countStacked));
       }
       return 1;
@@ -469,27 +469,27 @@ export class HeaderRenderer {
     //collapse
     $regular.append('i')
       .attr('class', 'fa')
-      .classed('fa-toggle-left', (d:model.Column) => !d.compressed)
-      .classed('fa-toggle-right', (d:model.Column) => d.compressed)
+      .classed('fa-toggle-left', (d:model.Column) => !d.getCompressed())
+      .classed('fa-toggle-right', (d:model.Column) => d.getCompressed())
       .attr('title', '(Un)Collapse')
       .on('click', function (d:model.Column) {
-        d.compressed = !d.compressed;
+        d.setCompressed(!d.getCompressed());
         d3.select(this)
-          .classed('fa-toggle-left', !d.compressed)
-          .classed('fa-toggle-right', d.compressed);
+          .classed('fa-toggle-left', !d.getCompressed())
+          .classed('fa-toggle-right', d.getCompressed());
         d3.event.stopPropagation();
       });
     //compress
     $stacked.append('i')
       .attr('class', 'fa')
-      .classed('fa-compress', (d:model.StackColumn) => !d.collapsed)
-      .classed('fa-expand', (d:model.StackColumn) => d.collapsed)
+      .classed('fa-compress', (d:model.StackColumn) => !d.getCollapsed())
+      .classed('fa-expand', (d:model.StackColumn) => d.getCollapsed())
       .attr('title', 'Compress/Expand')
       .on('click', function (d:model.StackColumn) {
-        d.collapsed = !d.collapsed;
+        d.setCollapsed(!d.getCollapsed());
         d3.select(this)
-          .classed('fa-compress', !d.collapsed)
-          .classed('fa-expand', d.collapsed);
+          .classed('fa-compress', !d.getCollapsed())
+          .classed('fa-expand', d.getCollapsed());
         d3.event.stopPropagation();
       });
     //remove
@@ -558,14 +558,14 @@ export class HeaderRenderer {
       'background-color': (d) => d.color
     });
     $headers.attr({
-      'class': (d) => `${clazz} ${d.cssClass||''} ${(d.compressed ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable': ''} ${d.isFiltered() ? 'filtered' : ''}`,
+      'class': (d) => `${clazz} ${d.cssClass||''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable': ''} ${d.isFiltered() ? 'filtered' : ''}`,
       title: (d) => d.label,
       'data-id': (d) => d.id,
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {
       var r = d.findMyRanker();
-      if (r && r.sortCriteria().col === d) {
-        return 'sort_indicator fa fa-sort-' + (r.sortCriteria().asc ? 'asc' : 'desc');
+      if (r && r.getSortCriteria().col === d) {
+        return 'sort_indicator fa fa-sort-' + (r.getSortCriteria().asc ? 'asc' : 'desc');
       }
       return 'sort_indicator fa';
     });
@@ -573,7 +573,7 @@ export class HeaderRenderer {
 
     var that = this;
     $headers.filter((d) => d instanceof model.StackColumn).each(function (col:model.StackColumn) {
-      if (col.collapsed || col.compressed) {
+      if (col.getCollapsed() || col.getCompressed()) {
         d3.select(this).selectAll('div.' + clazz + '_i').remove();
       } else {
         let s_shifts = [];
@@ -755,10 +755,10 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
         return options.rowHeight * (1 - options.rowPadding);
       },
       renderer(col:model.Column) {
-        if (col.compressed && model.isNumberColumn(col)) {
+        if (col.getCompressed() && model.isNumberColumn(col)) {
           return options.renderers.heatmap;
         }
-        if (col instanceof model.StackColumn && col.collapsed) {
+        if (col instanceof model.StackColumn && col.getCollapsed()) {
           return options.renderers.number;
         }
         var l = options.renderers[col.desc.type];
@@ -786,7 +786,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       animated: ($sel:d3.Selection<any>) => options.animation ? $sel.transition().duration(options.animationDuration) : $sel,
 
       //show mean line if option is enabled and top level
-      showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.compressed && col.parent instanceof model.Ranking,
+      showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.getCompressed() && col.parent instanceof model.Ranking,
 
       option: (key:string, default_:any) => (key in options) ? options[key] : default_
     };
@@ -1108,8 +1108,8 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
         var o2 = 0,
           shift2 = d.children.map((o) => {
             var r = o2;
-            o2 += (o.compressed ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
-            if (o instanceof model.StackColumn && !o.collapsed && !o.compressed) {
+            o2 += (o.getCompressed() ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
+            if (o instanceof model.StackColumn && !o.getCollapsed() && !o.getCompressed()) {
               o2 += this.options.columnPadding * (o.length - 1);
             }
             return r;
@@ -1218,10 +1218,10 @@ export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyR
         return options.rowHeight * (1 - options.rowPadding);
       },
       renderer(col:model.Column) {
-        if (col.compressed && model.isNumberColumn(col)) {
+        if (col.getCompressed() && model.isNumberColumn(col)) {
           return options.renderers.heatmap;
         }
-        if (col instanceof model.StackColumn && col.collapsed) {
+        if (col instanceof model.StackColumn && col.getCollapsed()) {
           return options.renderers.number;
         }
         var l = options.renderers[col.desc.type];
@@ -1242,7 +1242,7 @@ export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyR
       animated: ($sel:d3.Selection<any>) => $sel,
 
       //show mean line if option is enabled and top level
-      showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.compressed && col.parent instanceof model.Ranking,
+      showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.getCompressed() && col.parent instanceof model.Ranking,
 
       option: (key:string, default_:any) => (key in options) ? options[key] : default_
     };
@@ -1337,8 +1337,8 @@ export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyR
         var o2 = 0,
           shift2 = d.children.map((o) => {
             var r = o2;
-            o2 += (o.compressed ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
-            if (o instanceof model.StackColumn && !o.collapsed && !o.compressed) {
+            o2 += (o.getCompressed() ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
+            if (o instanceof model.StackColumn && !o.getCollapsed() && !o.getCompressed()) {
               o2 += this.options.columnPadding * (o.length - 1);
             }
             return r;
