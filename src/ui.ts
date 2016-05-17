@@ -225,9 +225,10 @@ export class HeaderRenderer {
       (<any>d3.event).sourceEvent.stopPropagation();
       (<any>d3.event).sourceEvent.preventDefault();
     })
-    .on('dragend', function () {
+    .on('dragend', function (d) {
       d3.select(this).classed('dragging', false);
       (<any>d3.event).sourceEvent.stopPropagation();
+
       (<any>d3.event).sourceEvent.preventDefault();
     });
 
@@ -246,7 +247,7 @@ export class HeaderRenderer {
       col = this.data.create(this.data.fromDescRef(desc));
     }
     if (d instanceof model.Column) {
-      return d.insertAfterMe(col);
+      return d.insertAfterMe(col) != null;
     } else {
       var r = this.data.getLastRanking();
       return r.push(col) !== null;
@@ -596,7 +597,7 @@ export class HeaderRenderer {
         var desc = JSON.parse(data['application/caleydo-lineup-column-number']);
         col = this.data.create(this.data.fromDescRef(desc));
       }
-      return d.push(col);
+      return d.push(col) != null;
     }));
 
     if (this.options.histograms) {

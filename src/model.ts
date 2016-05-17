@@ -35,9 +35,14 @@ interface IFlatColumn {
 
 export interface IColumnParent {
   remove(col:Column): boolean;
-  insertAfter(col:Column, reference:Column): boolean;
+  insert(col: Column, index?:number): Column;
+  insertAfter(col:Column, reference:Column): Column;
   findMyRanker() : Ranking;
   fqid: string;
+
+  indexOf(col: Column): number;
+  at(index: number): Column;
+  fqpath: string;
 }
 
 export interface IColumnDesc {
@@ -46,6 +51,15 @@ export interface IColumnDesc {
    * the column type
    */
   type:string;
+
+  /**
+   * color of this column
+   */
+  color?: string;
+  /**
+   * css class to append to elements of this column
+   */
+  cssClass?: string;
 }
 
 export interface IStatistics {
@@ -138,6 +152,10 @@ export class Column extends utils.AEventDispatcher {
    */
   get fqid() {
     return this.parent ? this.parent.fqid + '_' + this.id : this.id;
+  }
+
+  get fqpath() {
+    return this.parent ? this.parent.fqpath + '@' + this.parent.indexOf(this) : '';
   }
 
   /**
@@ -256,7 +274,7 @@ export class Column extends utils.AEventDispatcher {
    */
   insertAfterMe(col:Column) {
     if (this.parent) {
-      return this.parent.insertAfter(col, this);
+      return this.parent.insertAfter(col, this) != null;
     }
     return false;
   }
@@ -783,6 +801,9 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   }
 
   setFilter(value: {min: number, max: number} = {min: -Infinity, max: +Infinity}) {
+    if (this.currentFilter.min === value.min && this.currentFilter.max === value.max) {
+      return;
+    }
     const bak = this.getFilter();
     this.currentFilter.min = isNaN(value.min) ? -Infinity :value. min;
     this.currentFilter.max = isNaN(value.max) ? Infinity : value.max;
@@ -880,6 +901,9 @@ export class StringColumn extends ValueColumn<string> {
   setFilter(filter:string|RegExp) {
     if (filter === '') {
       filter = null;
+    }
+    if (this.currentFilter === filter) {
+      return;
     }
     this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
   }
@@ -1028,6 +1052,17 @@ export class AnnotateColumn extends StringColumn {
   }
 }
 
+function arrayEquals<T>(a: T[], b: T[]) {
+  const al = a != null ? a.length : 0;
+  const bl = b != null ? b.length : 0;
+  if (al !== bl) {
+    return false;
+  }
+  if (al === 0) {
+    return true;
+  }
+  return a.every((ai,i) => ai === b[i]);
+}
 
 /**
  * a checkbox column for selections
@@ -1136,6 +1171,9 @@ export class BooleanColumn extends ValueColumn<boolean> {
   }
 
   setFilter(filter:boolean) {
+    if (this.currentFilter === filter) {
+      return;
+    }
     this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
   }
 
@@ -1291,6 +1329,9 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
   }
 
   setFilter(filter:string[]) {
+    if (arrayEquals(this.currentFilter,filter)) {
+      return;
+    }
     this.fire(['filterChanged', 'dirtyValues', 'dirty'], this, this.currentFilter, this.currentFilter = filter);
   }
 
@@ -1438,7 +1479,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
       range: this.scale.range()
     };
   }
-  
+
   getMapping() {
     return this.scale.range().slice();
   }
@@ -1462,6 +1503,9 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   }
 
   setFilter(filter:string) {
+    if (this.currentFilter === filter) {
+      return;
+    }
     this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
   }
 
@@ -1562,29 +1606,25 @@ export class CompositeColumn extends Column implements IColumnParent, INumberCol
     col.parent = this;
     this.forward(col, 'dirtyHeader.combine', 'dirtyValues.combine', 'dirty.combine', 'filterChanged.combine');
     this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
-    return true;
+    return col;
   }
 
   push(col:Column) {
     return this.insert(col, this._children.length);
   }
 
+  at(index: number) {
+    return this._children[index];
+  }
+
   indexOf(col:Column) {
-    var j = -1;
-    this._children.some((d, i) => {
-      if (d === col) {
-        j = i;
-        return true;
-      }
-      return false;
-    });
-    return j;
+    return this._children.indexOf(col);
   }
 
   insertAfter(col:Column, ref:Column) {
     var i = this.indexOf(ref);
     if (i < 0) {
-      return false;
+      return null;
     }
     return this.insert(col, i + 1);
   }
@@ -1756,7 +1796,7 @@ export class StackColumn extends CompositeColumn {
   insertAfter(col:Column, ref:Column, weight = NaN) {
     const i = this.indexOf(ref);
     if (i < 0) {
-      return false;
+      return null;
     }
     return this.insert(col, i + 1, weight);
   }
@@ -1782,7 +1822,7 @@ export class StackColumn extends CompositeColumn {
         c.setWidthImpl(c.getWidth() * factor);
       }
     });
-    this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], full, full);
+    this.fire(['dirtyHeader', 'dirtyValues', 'dirty'], full, full);
   }
 
   setWeights(weights:number[]) {
@@ -2126,7 +2166,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
   setSortCriteria(value: ISortCriteria) {
     return this.sortBy(value.col, value.asc);
   }
-  
+
   sortBy(col:Column, ascending = false) {
     if (col !== null && col.findMyRanker() !== this) {
       return false; //not one of mine
@@ -2170,12 +2210,34 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
     return col;
   }
 
+  get fqpath() {
+    return '';
+  }
+
+  findByPath(fqpath: string): Column {
+    var p : IColumnParent|Column = <any>this;
+    const indices = fqpath.split('@').map(parseInt);
+    while(indices.length > 0) {
+      let i = indices.shift();
+      p = (<IColumnParent>p).at(i);
+    }
+    return <Column>p;
+  }
+
+  indexOf(col: Column) {
+    return this.columns.indexOf(col);
+  }
+
+  at(index: number) {
+    return this.columns[index];
+  }
+
   insertAfter(col:Column, ref:Column) {
     var i = this.columns.indexOf(ref);
     if (i < 0) {
-      return false;
+      return null;
     }
-    return this.insert(col, i + 1) != null;
+    return this.insert(col, i + 1);
   }
 
   push(col:Column) {

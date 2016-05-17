@@ -12,7 +12,7 @@ import d3 = require('d3');
  * @param thisCallback this argument of the callback
  * @return {function(...[any]): undefined} a function that can be called with the same interface as the callback but delayed
  */
-export function delayedCall(callback:() => void, timeToDelay = 100, thisCallback = this) {
+export function delayedCall(callback:(...args:any[]) => void, timeToDelay = 100, thisCallback = this) {
   var tm = -1;
   return (...args:any[]) => {
     if (tm >= 0) {

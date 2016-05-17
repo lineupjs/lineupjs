@@ -286,7 +286,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @returns {model.Column}
    */
   clone(col:model.Column) {
-    var dump = col.dump((d) => d);
+    var dump = this.dumpColumn(col);
     return this.restoreColumn(dump);
   }
 
@@ -297,9 +297,10 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   restoreColumn(dump:any):model.Column {
     var create = (d:any) => {
-      var type = this.columnTypes[d.desc.type];
-      this.fixDesc(d.desc);
-      var c = new type('', d.desc);
+      const desc = this.fromDescRef(d.desc);
+      var type = this.columnTypes[desc.type];
+      this.fixDesc(desc);
+      var c = new type('', desc);
       c.restore(d, create);
       c.assignNewId(this.nextId.bind(this));
       return c;

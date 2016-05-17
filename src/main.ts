@@ -11,13 +11,7 @@ import ui_ = require('./ui');
 import utils_ = require('./utils');
 import ui_dialogs_ = require('./ui_dialogs');
 import d3 = require('d3');
-import track_ = require('./track');
 
-/**
- * access to the model module
- * @type {--global-type--}
- */
-export var track = track_;
 /**
  * access to the model module
  * @type {--global-type--}
