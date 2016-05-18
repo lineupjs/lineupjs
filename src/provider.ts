@@ -134,22 +134,23 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   pushRanking(existing?:model.Ranking) : model.Ranking {
     var r = this.cloneRanking(existing);
-    this.pushRankingImpl(r);
+    this.insertRanking(r);
     return r;
   }
 
   takeSnapshot(col: model.Column): model.Ranking {
     var r = this.cloneRanking();
     r.push(this.clone(col));
-    this.pushRankingImpl(r);
+    this.insertRanking(r);
     return r;
   }
 
-  private pushRankingImpl(r:model.Ranking) {
-    this.rankings_.push(r);
+  insertRanking(r:model.Ranking, index = this.rankings_.length) {
+    this.rankings_.splice(index, 0, r);
     this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');
     r.on('dirtyOrder.provider', this.reorder);
-    this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r, this.rankings_.length);
+    this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r, index);
+    this.triggerReorder(r);
   }
 
   protected triggerReorder(ranking: model.Ranking) {
@@ -373,19 +374,34 @@ export class DataProvider extends utils.AEventDispatcher {
     return descRef;
   }
 
-  restore(dump:any) {
+  private createHelper = (d:any) => {
     //factory method for restoring a column
-    var create = (d:any) => {
-      var desc = this.fromDescRef(d.desc);
-      var c = null;
-      if (desc && desc.type) {
-        this.fixDesc(d.desc);
-        var type = this.columnTypes[desc.type];
-        c = new type(d.id, desc);
-        c.restore(d, create);
-      }
-      return c;
-    };
+    var desc = this.fromDescRef(d.desc);
+    var c = null;
+    if (desc && desc.type) {
+      this.fixDesc(d.desc);
+      var type = this.columnTypes[desc.type];
+      c = new type(d.id, desc);
+      c.restore(d, this.createHelper);
+    }
+    return c;
+  };
+
+  restoreRanking(dump: any) {
+    const ranking = this.cloneRanking();
+    ranking.restore(dump, this.createHelper);
+    //if no rank column add one
+    if (!ranking.children.some((d) => d instanceof model.RankColumn)) {
+      ranking.insert(this.create(model.RankColumn.desc()), 0);
+    }
+    const idGenerator = this.nextId.bind(this);
+    ranking.children.forEach((c) => c.assignNewId(idGenerator));
+
+    return ranking;
+  }
+
+  restore(dump:any) {
+
 
     //clean old
     this.clearRankings();
@@ -400,12 +416,13 @@ export class DataProvider extends utils.AEventDispatcher {
     //restore rankings
     if (dump.rankings) {
       dump.rankings.forEach((r) => {
-        var ranking = this.pushRanking();
-        ranking.restore(r, create);
+        var ranking = this.cloneRanking();
+        ranking.restore(r, this.createHelper);
         //if no rank column add one
         if (!ranking.children.some((d) => d instanceof model.RankColumn)) {
           ranking.insert(this.create(model.RankColumn.desc()), 0);
         }
+        this.insertRanking(ranking);
       });
     }
     if (dump.layout) { //we have the old format try to create it
@@ -445,7 +462,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param bundle
    */
   private deriveRanking(bundle:any[]) {
-    const ranking = this.pushRanking();
+    const ranking = this.cloneRanking();
     ranking.clear();
     var toCol = (column) => {
       if (column.type === 'rank') {
@@ -490,6 +507,7 @@ export class DataProvider extends utils.AEventDispatcher {
     if (!ranking.children.some((d) => d instanceof model.RankColumn)) {
       ranking.insert(this.create(model.createRankDesc()), 0);
     }
+    this.insertRanking(ranking);
     return ranking;
   }
 

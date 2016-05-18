@@ -2119,7 +2119,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
       asc: this.ascending
     };
     if (this.sortColumn) {
-      r.sortCriteria.sortBy = this.sortColumn.id; //store the index not the object
+      r.sortColumn.sortBy = this.sortColumn.id; //store the index not the object
     }
     return r;
   }
