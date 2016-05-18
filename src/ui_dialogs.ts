@@ -374,7 +374,7 @@ export function openEditScriptDialog(column:model.ScriptColumn, $header:d3.Selec
   }
 
   $popup.select('.cancel').on('click', function () {
-    $popup.select('textarea"]').property('value', bak);
+    $popup.select('textarea').property('value', bak);
     updateData(bak);
     $popup.remove();
   });
