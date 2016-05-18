@@ -138,7 +138,7 @@ export function openSearchDialog(column:model.Column, $header:d3.Selection<model
  * @param $header the visual header element of this column
  */
 export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selection<model.Column>) {
-  var weights = column.weights,
+  var weights = column.getWeights(),
     children = column.children.map((d, i) => ({col: d, weight: weights[i] * 100} ));
 
   //map weights to pixels

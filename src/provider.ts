@@ -138,6 +138,13 @@ export class DataProvider extends utils.AEventDispatcher {
     return r;
   }
 
+  takeSnapshot(col: model.Column): model.Ranking {
+    var r = this.cloneRanking();
+    r.push(this.clone(col));
+    this.pushRankingImpl(r);
+    return r;
+  }
+
   private pushRankingImpl(r:model.Ranking) {
     this.rankings_.push(r);
     this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');

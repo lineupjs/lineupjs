@@ -443,8 +443,7 @@ export class HeaderRenderer {
     });
     //clone
     $regular.append('i').attr('class', 'fa fa-code-fork').attr('title', 'Generate Snapshot').on('click', function (d) {
-      var r = provider.pushRanking();
-      r.push(provider.clone(d));
+      provider.takeSnapshot(d);
       d3.event.stopPropagation();
     });
     //edit link

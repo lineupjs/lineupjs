@@ -1716,12 +1716,7 @@ export class StackColumn extends CompositeColumn {
   }
 
   createEventList() {
-    return super.createEventList().concat(['collapseChanged']);
-  }
-
-  get weights() {
-    const w = this.getWidth();
-    return this._children.map((d) => d.getWidth() / w);
+    return super.createEventList().concat(['collapseChanged', 'weightsChanged']);
   }
 
   setCollapsed(value:boolean) {
@@ -1807,10 +1802,11 @@ export class StackColumn extends CompositeColumn {
    * @param old
    * @param new_
    */
-  private adaptWidthChange(col:Column, old, new_) {
+  private adaptWidthChange(col:Column, old: number, new_: number) {
     if (old === new_) {
       return;
     }
+    const bak = this.getWeights();
     const full = this.getWidth(),
       change = (new_ - old) / full;
     const oldWeight = old / full;
@@ -1822,10 +1818,16 @@ export class StackColumn extends CompositeColumn {
         c.setWidthImpl(c.getWidth() * factor);
       }
     });
-    this.fire(['dirtyHeader', 'dirtyValues', 'dirty'], full, full);
+    this.fire(['weightsChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, this.getWeights());
+  }
+
+  getWeights() {
+    const w = this.getWidth();
+    return this._children.map((d) => d.getWidth() / w);
   }
 
   setWeights(weights:number[]) {
+    const bak = this.getWeights();
     var s,
       delta = weights.length - this.length;
     if (delta < 0) {
@@ -1847,7 +1849,7 @@ export class StackColumn extends CompositeColumn {
     this._children.forEach((c, i) => {
       c.setWidthImpl(weights[i]);
     });
-    this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.getWidth(), this.getWidth());
+    this.fire(['weightsChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, weights);
 
   }
 
@@ -2216,7 +2218,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
 
   findByPath(fqpath: string): Column {
     var p : IColumnParent|Column = <any>this;
-    const indices = fqpath.split('@').map(parseInt);
+    const indices = fqpath.split('@').map(Number).slice(1); //ignore the first entry = ranking
     while(indices.length > 0) {
       let i = indices.shift();
       p = (<IColumnParent>p).at(i);
@@ -2252,12 +2254,15 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
 
     this.unforward(col, 'dirtyValues.ranking', 'dirtyHeader.ranking', 'dirty.ranking', 'filterChanged.ranking');
 
+    if (this.sortColumn === col) { //was my sorting one
+      let next = this.columns.filter((d) => d !== col && !(d instanceof SelectionColumn) && !(d instanceof RankColumn))[0];
+      this.sortBy(next ? next : null);
+    }
+
     col.parent = null;
     this.columns.splice(i, 1);
+
     this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, i);
-    if (this.sortColumn === col) { //was my sorting one
-      this.sortBy(this.columns.length > 0 ? this.columns[0] : null);
-    }
     return true;
   }
 
@@ -2303,7 +2308,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
         return null;
       }
       if (s instanceof StackColumn) {
-        var w = (<StackColumn>s).weights;
+        var w = (<StackColumn>s).getWeights();
         return (<StackColumn>s).children.map((child, i) => {
           return {
             weight: w[i],
