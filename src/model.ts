@@ -1332,7 +1332,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
     if (arrayEquals(this.currentFilter,filter)) {
       return;
     }
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this, this.currentFilter, this.currentFilter = filter);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
   }
 
   compare(a:any[], b:any[]) {
