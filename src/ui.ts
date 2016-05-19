@@ -298,10 +298,10 @@ export class HeaderRenderer {
       const order = ranking.getOrder();
       const cols = ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
-      cols.filter((d) => d instanceof model.NumberColumn).forEach((col:any) => {
+      cols.filter((d) => d instanceof model.NumberColumn && !d.isHidden()).forEach((col:any) => {
         this.histCache.set(col.id,histo === null ? null : histo.stats(col));
       });
-      cols.filter(model.isCategoricalColumn).forEach((col:any) => {
+      cols.filter((d) => model.isCategoricalColumn(d) && !d.isHidden()).forEach((col:any) => {
         this.histCache.set(col.id,histo === null ? null : histo.hist(col));
       });
     });
@@ -330,7 +330,7 @@ export class HeaderRenderer {
       rankings.forEach((ranking) => {
         const cols = ranking.flatColumns;
         //find all number histograms
-        cols.filter((d) => d instanceof model.NumberColumn).forEach((col:model.NumberColumn) => {
+        cols.filter((d) => d instanceof model.NumberColumn && !d.isHidden()).forEach((col:model.NumberColumn) => {
           const bars = [].slice.call(node.querySelectorAll(`div.header[data-id="${col.id}"] div.bar`));
           data.forEach((d) => {
             const v = col.getValue(d);
@@ -347,7 +347,7 @@ export class HeaderRenderer {
             }
           });
         });
-        cols.filter(model.isCategoricalColumn).forEach((col:model.CategoricalColumn) => {
+        cols.filter((d) => model.isCategoricalColumn(d) && !d.isHidden()).forEach((col:model.CategoricalColumn) => {
           const header = node.querySelector(`div.header[data-id="${col.id}"]`);
           data.forEach((d) => {
             const cats = col.getCategories(d);
@@ -855,7 +855,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       transform: (d, i) => 'translate(' + shifts[i].shift + ',0)'
     });
 
-    var $cols = $rankings.select('g.cols').selectAll('g.uchild').data((d) => d.children, (d) => d.id);
+    var $cols = $rankings.select('g.cols').selectAll('g.uchild').data((d) => d.children.filter((d) => !d.isHidden()), (d) => d.id);
     $cols.enter().append('g').attr('class', 'uchild')
       .append('g').attr({
       'class': 'child',
@@ -895,7 +895,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
 
     function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.Ranking>, index:number, ranking:model.Ranking, rankingIndex:number) {
       $row.classed('hover', true);
-      var $value_cols = $row.select('g.values').selectAll('g.uchild').data(ranking.children, (d) => d.id);
+      var $value_cols = $row.select('g.values').selectAll('g.uchild').data(ranking.children.filter((d) => !d.isHidden()), (d) => d.id);
       $value_cols.enter().append('g').attr({
         'class': 'uchild'
       }).append('g').classed('child', true);
@@ -978,7 +978,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
   }
 
   private hasAnySelectionColumn() {
-    return this.data.getRankings().some((r) => r.children.some((c) => c instanceof model.SelectionColumn));
+    return this.data.getRankings().some((r) => r.children.some((c) => c instanceof model.SelectionColumn && !c.isHidden()));
   }
 
   drawSelection() {
@@ -1106,7 +1106,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
         var r = offset;
         offset += this.options.slopeWidth;
         var o2 = 0,
-          shift2 = d.children.map((o) => {
+          shift2 = d.children.filter((d) => !d.isHidden()).map((o) => {
             var r = o2;
             o2 += (o.getCompressed() ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
             if (o instanceof model.StackColumn && !o.getCollapsed() && !o.getCompressed()) {
@@ -1335,7 +1335,7 @@ export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyR
         var r = offset;
         offset += this.options.slopeWidth;
         var o2 = 0,
-          shift2 = d.children.map((o) => {
+          shift2 = d.children.filter((d) => !d.isHidden()).map((o) => {
             var r = o2;
             o2 += (o.getCompressed() ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
             if (o instanceof model.StackColumn && !o.getCollapsed() && !o.getCompressed()) {

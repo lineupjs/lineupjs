@@ -177,6 +177,10 @@ export class Column extends utils.AEventDispatcher {
     return this.width;
   }
 
+  isHidden() {
+    return this.width <= 0;
+  }
+
   setCompressed(value:boolean) {
     if (this.compressed === value) {
       return;
@@ -1557,7 +1561,9 @@ export class CompositeColumn extends Column implements IColumnParent, INumberCol
     }
     //push children
     this._children.forEach((c) => {
-     c.flatten(r, offset, levelsToGo - 1, padding);
+      if (!c.isHidden() || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
+        c.flatten(r, offset, levelsToGo - 1, padding);
+      }
     });
     return w;
   }
@@ -1732,7 +1738,7 @@ export class StackColumn extends CompositeColumn {
 
   flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0) {
     var self = null;
-    const children = this._children;
+    const children =  levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => !c.isHidden());
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       var w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
@@ -2145,7 +2151,9 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
     var acc = offset; // + this.getWidth() + padding;
     if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       this.columns.forEach((c) => {
-        acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+        if (!c.isHidden() || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
+          acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+        }
       });
     }
     return acc - offset;
