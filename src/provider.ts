@@ -810,6 +810,33 @@ export class LocalDataProvider extends CommonDataProvider {
     };
   }
 
+  /**
+   * replaces the dataset rows with a new one
+   * @param data
+   */
+  setData(data: any[]) {
+    data.forEach((d, i) => {
+      d._rankings = {};
+      d._index = i;
+    });
+    this.data = data;
+    this.reorderall();
+  }
+
+  /**
+   * append rows to the dataset
+   * @param data
+   */
+  appendData(data: any[]) {
+    const l = this.data.length;
+    data.forEach((d, i) => {
+      d._rankings = {};
+      d._index = l+i;
+    });
+    this.data.push.apply(this.data, data);
+    this.reorderall();
+  }
+
   protected rankAccessor(row: any, id: string, desc: model.IColumnDesc, ranking: model.Ranking) {
     return (row._rankings[ranking.id] + 1) || 1;
   }
