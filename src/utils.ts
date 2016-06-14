@@ -14,12 +14,12 @@ import d3 = require('d3');
  */
 export function delayedCall(callback:(...args:any[]) => void, timeToDelay = 100, thisCallback = this) {
   var tm = -1;
-  return (...args:any[]) => {
+  return function (...args:any[]) {
     if (tm >= 0) {
       clearTimeout(tm);
       tm = -1;
     }
-    args.unshift(thisCallback);
+    args.unshift(thisCallback === null ? this : thisCallback);
     tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
   };
 }

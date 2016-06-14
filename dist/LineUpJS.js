@@ -2950,9 +2950,10 @@ var DataProvider = (function (_super) {
             return c;
         };
         var that = this;
-        this.reorder = function () {
+        //delayed reorder call
+        this.reorder = utils.delayedCall(function () {
             that.triggerReorder(this.source);
-        };
+        }, 100, null);
     }
     /**
      * events:
@@ -6214,7 +6215,7 @@ function delayedCall(callback, timeToDelay, thisCallback) {
             clearTimeout(tm);
             tm = -1;
         }
-        args.unshift(thisCallback);
+        args.unshift(thisCallback === null ? this : thisCallback);
         tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
     };
 }

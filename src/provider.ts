@@ -102,9 +102,10 @@ export class DataProvider extends utils.AEventDispatcher {
   constructor() {
     super();
     var that = this;
-    this.reorder = function () {
+    //delayed reorder call
+    this.reorder = utils.delayedCall(function () {
       that.triggerReorder(this.source);
-    };
+    }, 100, null);
   }
 
   /**
