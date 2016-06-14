@@ -180,7 +180,7 @@ export class DefaultCellRenderer implements ICellRenderer {
     var colNode = <Node>$col.node();
     var rowNode = <Node>$row.node();
     //move back
-    if (rowNode.hasChildNodes()) {
+    if (rowNode.hasChildNodes()&& colNode) {
       colNode.appendChild(rowNode.firstChild);
     }
     $row.selectAll('*').remove();
