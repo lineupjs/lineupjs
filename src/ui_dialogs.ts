@@ -204,7 +204,7 @@ function markFiltered($header: d3.Selection<model.Column>, filtered = false) {
  */
 function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Selection<model.Column>) {
   var bak = column.getFilter() || [];
-  var popup = makePopup($header, 'Edit Filter', '<div class="selectionTable"><table><thead><th></th><th>Category</th></thead><tbody></tbody></table></div>');
+  var popup = makePopup($header, 'Edit Filter', '<div class="selectionTable"><table><thead><th class="selectAll"></th><th>Category</th></thead><tbody></tbody></table></div>');
 
   // list all data rows !
   var trData = column.categories.map(function (d) {
@@ -235,6 +235,22 @@ function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Select
   }
 
   redraw();
+
+  var isCheckedAll = true;
+
+  function redrawSelectAll() {
+    popup.select('.selectAll').html((d) => '<i class="fa fa-' + ((isCheckedAll) ? 'check-' : '') + 'square-o"></i>')
+      .on('click', (d) => {
+        isCheckedAll = !isCheckedAll;
+        trData.map(function(row)  {
+          row.isChecked = isCheckedAll;
+        });
+        redraw();
+        redrawSelectAll();
+      });
+  }
+  
+  redrawSelectAll();
 
   function updateData(filter) {
     markFiltered($header, filter && filter.length > 0 && filter.length < column.categories.length);
