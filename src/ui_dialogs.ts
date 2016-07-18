@@ -209,6 +209,12 @@ function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Select
   // list all data rows !
   var trData = column.categories.map(function (d) {
     return {d: d, isChecked: bak.length === 0 || bak.indexOf(d) >= 0};
+  }).sort(function(a, b) {
+    if (a.d.toLowerCase() < b.d.toLowerCase())
+      return -1;
+    if (a.d.toLowerCase() > b.d.toLowerCase())
+      return 1;
+    return 0;
   });
 
   var trs = popup.select('tbody').selectAll('tr').data(trData);
