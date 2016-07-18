@@ -226,8 +226,8 @@ function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Select
 
   function redraw() {
     var trs = popup.select('tbody').selectAll('tr').data(trData);
-    trs.select('.checkmark').html((d) => '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>')
-      .on('click', (d) => {
+    trs.select('.checkmark').html((d) => '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>');
+    trs.on('click', (d) => {
         d.isChecked = !d.isChecked;
         redraw();
       });
@@ -239,8 +239,8 @@ function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Select
   var isCheckedAll = true;
 
   function redrawSelectAll() {
-    popup.select('.selectAll').html((d) => '<i class="fa fa-' + ((isCheckedAll) ? 'check-' : '') + 'square-o"></i>')
-      .on('click', (d) => {
+    popup.select('.selectAll').html((d) => '<i class="fa fa-' + ((isCheckedAll) ? 'check-' : '') + 'square-o"></i>');
+    popup.select('thead').on('click', (d) => {
         isCheckedAll = !isCheckedAll;
         trData.map(function(row)  {
           row.isChecked = isCheckedAll;
@@ -249,7 +249,7 @@ function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Select
         redrawSelectAll();
       });
   }
-  
+
   redrawSelectAll();
 
   function updateData(filter) {
