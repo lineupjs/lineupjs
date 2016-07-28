@@ -411,7 +411,7 @@ $lu_drag_over: #979797;
 
       font-size: 90%;
 
-      &:hover {
+      &:not(.compressed):hover {
         & > div.toolbar {
           display: block;
           padding: 7px;
@@ -445,6 +445,12 @@ $lu_drag_over: #979797;
               display: inline-block;
             }
           }
+        }
+      }
+
+      &.compressed:hover {
+        & > div.toolbar {
+          display: block;
         }
       }
 
