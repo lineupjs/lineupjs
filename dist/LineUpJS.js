@@ -4970,8 +4970,14 @@ var HeaderRenderer = (function () {
         var $headers = $base.selectAll('div.' + clazz).data(columns, function (d) { return d.id; });
         var $headers_enter = $headers.enter().append('div').attr({
             'class': clazz
+        })
+            .on('click', function (d) {
+            if (_this.options.manipulative && !d3.event.defaultPrevented && d3.event.currentTarget === d3.event.target) {
+                d.toggleMySorting();
+            }
         });
-        var $header_enter_div = $headers_enter.append('div').classed('lu-label', true).on('click', function (d) {
+        var $header_enter_div = $headers_enter.append('div').classed('lu-label', true)
+            .on('click', function (d) {
             if (_this.options.manipulative && !d3.event.defaultPrevented) {
                 d.toggleMySorting();
             }
