@@ -244,12 +244,12 @@
     font-size: 90%; }
     .lu div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu div.lu-header div.header_i.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header_i.filtered > div.toolbar i.fa-filter {
       color: darkblue; }
-    .lu div.lu-header div.header:hover > div.toolbar, .lu div.lu-header div.header_i:hover > div.toolbar, .lu-pool div.lu-header div.header:hover > div.toolbar, .lu-pool div.lu-header div.header_i:hover > div.toolbar {
+    .lu div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar {
       display: block;
       padding: 7px; }
-      .lu div.lu-header div.header:hover > div.toolbar i, .lu div.lu-header div.header_i:hover > div.toolbar i, .lu-pool div.lu-header div.header:hover > div.toolbar i, .lu-pool div.lu-header div.header_i:hover > div.toolbar i {
+      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar i {
         display: none; }
-      .lu div.lu-header div.header:hover > div.toolbar:before, .lu div.lu-header div.header_i:hover > div.toolbar:before, .lu-pool div.lu-header div.header:hover > div.toolbar:before, .lu-pool div.lu-header div.header_i:hover > div.toolbar:before {
+      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before {
         z-index: -1;
         content: '\f0c9';
         font-family: FontAwesome, sans-serif;
@@ -260,12 +260,14 @@
         right: 0;
         bottom: -5px;
         left: -5px; }
-      .lu div.lu-header div.header:hover > div.toolbar:hover, .lu div.lu-header div.header_i:hover > div.toolbar:hover, .lu-pool div.lu-header div.header:hover > div.toolbar:hover, .lu-pool div.lu-header div.header_i:hover > div.toolbar:hover {
+      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover {
         padding: 0 10px 0 5px; }
-        .lu div.lu-header div.header:hover > div.toolbar:hover:before, .lu div.lu-header div.header_i:hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header:hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header_i:hover > div.toolbar:hover:before {
+        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before {
           content: ''; }
-        .lu div.lu-header div.header:hover > div.toolbar:hover i, .lu div.lu-header div.header_i:hover > div.toolbar:hover i, .lu-pool div.lu-header div.header:hover > div.toolbar:hover i, .lu-pool div.lu-header div.header_i:hover > div.toolbar:hover i {
+        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i {
           display: inline-block; }
+    .lu div.lu-header div.header.compressed:hover > div.toolbar, .lu div.lu-header div.header_i.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header_i.compressed:hover > div.toolbar {
+      display: block; }
     .lu div.lu-header div.header.number div.histogram, .lu div.lu-header div.header.categorical div.histogram, .lu div.lu-header div.header.ordinal div.histogram, .lu div.lu-header div.header_i.number div.histogram, .lu div.lu-header div.header_i.categorical div.histogram, .lu div.lu-header div.header_i.ordinal div.histogram, .lu-pool div.lu-header div.header.number div.histogram, .lu-pool div.lu-header div.header.categorical div.histogram, .lu-pool div.lu-header div.header.ordinal div.histogram, .lu-pool div.lu-header div.header_i.number div.histogram, .lu-pool div.lu-header div.header_i.categorical div.histogram, .lu-pool div.lu-header div.header_i.ordinal div.histogram {
       display: block; }
     .lu div.lu-header div.header.rotateable, .lu div.lu-header div.header_i.rotateable, .lu-pool div.lu-header div.header.rotateable, .lu-pool div.lu-header div.header_i.rotateable {
