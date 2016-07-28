@@ -7,7 +7,6 @@ import d3 = require('d3');
 import utils = require('./utils');
 import model = require('./model');
 
-'use strict';
 
 function clamp(v:number, min:number, max:number) {
   return Math.max(Math.min(v, max), min);
