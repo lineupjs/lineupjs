@@ -913,7 +913,15 @@ export class StringColumn extends ValueColumn<string> {
   }
 
   compare(a:any[], b:any[]) {
-    return d3.ascending(this.getValue(a), this.getValue(b));
+    if(this.getValue(a) === '') {
+      return 1;
+    } else if(this.getValue(b) === '') {
+      return -1;
+    } else if(this.getValue(a) === this.getValue(b)) {
+      return 0;
+    } else {
+      return this.getValue(a) < this.getValue(b) ? -1 : 1;
+    }
   }
 }
 
