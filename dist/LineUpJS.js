@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.2.1 - 2016-07-28
+/*! LineUpJS - v0.3.0 - 2016-08-02
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -1449,7 +1449,18 @@ var StringColumn = (function (_super) {
         this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
     };
     StringColumn.prototype.compare = function (a, b) {
-        return d3.ascending(this.getValue(a), this.getValue(b));
+        if (this.getValue(a) === '') {
+            return 1;
+        }
+        else if (this.getValue(b) === '') {
+            return -1;
+        }
+        else if (this.getValue(a) === this.getValue(b)) {
+            return 0;
+        }
+        else {
+            return this.getValue(a) < this.getValue(b) ? -1 : 1;
+        }
     };
     return StringColumn;
 }(ValueColumn));
@@ -1638,6 +1649,9 @@ var SelectionColumn = (function (_super) {
         var old = this.getValue(row);
         this.setImpl(row, !old);
         return !old;
+    };
+    SelectionColumn.prototype.compare = function (a, b) {
+        return d3.ascending(this.getValue(a), this.getValue(b));
     };
     return SelectionColumn;
 }(ValueColumn));
