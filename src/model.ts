@@ -1112,6 +1112,10 @@ export class SelectionColumn extends ValueColumn<boolean> {
     this.setImpl(row, !old);
     return !old;
   }
+
+  compare(a:any[], b:any[]) {
+    return d3.ascending(this.getValue(a), this.getValue(b));
+  }
 }
 
 
