@@ -20,7 +20,7 @@ Development Dependencies
 **Installation**
 
 ```bash
-npm install -g grunt-cli bower
+npm install -g grunt-cli bower typings 
 npm install
 bower install
 typings install
