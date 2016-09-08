@@ -9,11 +9,36 @@ Dependencies
 
 LineUp.js depends on [D3](http://d3js.org) for rendering and [FontAwesome](http://fontawesome.io/) for icons in the toolbar. Both dependencies are declared as bower dependencies. 
 
-Dev Dependencies
+Development Dependencies
 ----------------
 
 [Grunt](http://gruntjs.com/) is used a the building tool. LineUp itself is written in [TypeScript](www.typescriptlang.org) and [SASS](http://sass-lang.com). 
-[Browserify](http://browserify.org/) is used for building with a modified [UMD](https://github.com/umdjs/umd) header that is prepended avoiding to include the external dependencies 
+[Browserify](http://browserify.org/) is used for building with a modified [UMD](https://github.com/umdjs/umd) header that is prepended avoiding to include the external dependencies.
+
+### Development Environment
+
+**Installation**
+
+```bash
+npm install -g grunt-cli bower
+npm install
+bower install
+typings install
+```
+
+**Watch file changes**
+
+```bash
+grunt watch_all
+```
+
+**Build distribution package**
+
+```bash
+grunt build
+```
+
+The compiled JavaScript files are located under _dist_ and the TypeScript documentation is located under _docs_.
 
 DOM Structure
 -------------
