@@ -59,11 +59,23 @@ export class LineUp extends utils_.AEventDispatcher {
    * @argument data_index:number the selected data index or <0 if no row
    */
   static EVENT_SELECTION_CHANGED = 'selectionChanged';
+
   /**
    * triggered when the user selects one or more rows
    * @argument data_indices:number[] the selected data indices
    */
   static EVENT_MULTISELECTION_CHANGED = 'multiSelectionChanged';
+
+  /**
+   * triggered when LineUpJS.update() was called
+   */
+  static EVENT_UPDATE_START = 'updateStart';
+
+  /**
+   * triggered when LineUpJS.update() was called and the rendering the body has finished
+   */
+  static EVENT_UPDATE_FINISHED = 'updateFinished';
+
   /**
    * default config of LineUp with all available options
    */
@@ -246,7 +258,7 @@ export class LineUp extends utils_.AEventDispatcher {
   }
 
   createEventList() {
-    return super.createEventList().concat([LineUp.EVENT_HOVER_CHANGED, LineUp.EVENT_SELECTION_CHANGED, LineUp.EVENT_MULTISELECTION_CHANGED]);
+    return super.createEventList().concat([LineUp.EVENT_HOVER_CHANGED, LineUp.EVENT_SELECTION_CHANGED, LineUp.EVENT_MULTISELECTION_CHANGED, LineUp.EVENT_UPDATE_START, LineUp.EVENT_UPDATE_FINISHED]);
   }
 
   /**
@@ -333,10 +345,32 @@ export class LineUp extends utils_.AEventDispatcher {
     this.changeDataStorage(this.data, dump);
   }
 
+  /**
+   * local variable that is used by update()
+   * @type {boolean}
+   */
+  private isUpdateInitialized = false;
+
   update() {
+    // HACK: when calling update for the first time the BodyRenderer
+    // fires 3x the `renderFinished` event. However, we want to wait for
+    // the last event before firing LineUp.EVENT_UPDATE_FINISHED.
+    // For any further call of update() the body render will fire the
+    // `renderFinished` event only once
+    var waitForBodyRenderer = (this.isUpdateInitialized) ? 1 : 3;
+    this.isUpdateInitialized = true;
+
+    this.fire(LineUp.EVENT_UPDATE_START);
     this.header.update();
     this.body.update();
     this.pools.forEach((p) => p.update());
+
+    this.body.on('renderFinished', () => {
+      waitForBodyRenderer -= 1;
+      if(waitForBodyRenderer === 0)   {
+        this.fire(LineUp.EVENT_UPDATE_FINISHED);
+      }
+    });
   }
 
   changeRenderingOption(option:string, value:boolean) {

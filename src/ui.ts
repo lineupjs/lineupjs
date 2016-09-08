@@ -724,7 +724,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
   }
 
   createEventList() {
-    return super.createEventList().concat(['hoverChanged']);
+    return super.createEventList().concat(['hoverChanged', 'renderFinished']);
   }
 
   get node() {
@@ -897,6 +897,11 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       } else {
         $col.selectAll('line.meanline').remove();
       }
+    });
+
+    // wait until all `context.render()` calls have finished
+    Promise.all(dataPromises).then((args) => {
+      this.fire('renderFinished');
     });
 
     function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.Ranking>, index:number, ranking:model.Ranking, rankingIndex:number) {
@@ -1140,6 +1145,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     if ($body.empty()) {
       $body = this.$node.append('g').classed('body', true);
     }
+
 
     this.renderRankings($body, rankings, orders, shifts, context, height);
     this.renderSlopeGraphs($body, rankings, orders, shifts, context);
