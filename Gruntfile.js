@@ -122,7 +122,7 @@ module.exports = function (grunt) {
           theme: 'minimal'
         },
         src: ['src/**.ts', 'demo/**.ts'],
-        reference: 'tsd.gen.d.ts'
+        reference: 'typings/tsd.gen.d.ts'
       }
     },
     ts: {
@@ -131,7 +131,7 @@ module.exports = function (grunt) {
         // The source TypeScript files, http://gruntjs.com/configuring-tasks#files
         src: ['src/**.ts', 'demo/**.ts'],
         // If specified, generate this file that to can use for reference management
-        reference: 'tsd.gen.d.ts',
+        reference: 'typings/tsd.gen.d.ts',
         // If specified, the generate JavaScript files are placed here. Only works if out is not specified
         //outDir: 'test/outputdirectory',
         // If specified, watches this directory for changes, and re-runs the current target
@@ -142,28 +142,8 @@ module.exports = function (grunt) {
       // A specific target
       dist: {
         src: ['src/**.ts', 'demo/**.ts'],
-        reference: 'tsd.gen.d.ts',
+        reference: 'typings/tsd.gen.d.ts',
         tsconfig: true
-      }
-    },
-
-    tsd: {
-      reinstall: {
-        options: {
-          // execute a command
-          command: 'reinstall',
-
-          //optional: always get from HEAD
-          latest: false,
-
-          // specify config file
-          config: 'tsd.json',
-
-          // experimental: options to pass to tsd.API
-          opts: {
-            // props from tsd.Options
-          }
-        }
       }
     }
   });
@@ -177,6 +157,7 @@ module.exports = function (grunt) {
   // Default task.
   grunt.registerTask('watch_all', ['ts:dev', 'sass:dev', 'watch']);
   grunt.registerTask('compile', ['ts:dev', 'browserify', 'wrap']);
-  grunt.registerTask('default', ['clean', 'tsd:reinstall', 'ts:dist', 'sass:dist', 'tslint', 'typedoc', 'browserify', 'wrap', 'uglify']);
+  grunt.registerTask('build', ['clean', 'ts:dist', 'sass:dist', 'tslint', 'typedoc', 'browserify', 'wrap', 'uglify']);
+  grunt.registerTask('default', ['build']);
 
 };

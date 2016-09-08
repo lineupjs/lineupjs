@@ -27,7 +27,6 @@
     "grunt-wrap": "^0.3.0",
     "grunt-sass": "^1.1.0",
     "grunt-ts": "^5.3.2",
-    "grunt-tsd": "^0.1.0",
     "grunt-tslint": "^3.0.1",
     "grunt-typedoc": "^0.2.3",
     "load-grunt-tasks": "^3.2.0",
