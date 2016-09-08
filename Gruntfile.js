@@ -157,6 +157,7 @@ module.exports = function (grunt) {
   // Default task.
   grunt.registerTask('watch_all', ['ts:dev', 'sass:dev', 'watch']);
   grunt.registerTask('compile', ['ts:dev', 'browserify', 'wrap']);
-  grunt.registerTask('default', ['clean', 'ts:dist', 'sass:dist', 'tslint', 'typedoc', 'browserify', 'wrap', 'uglify']);
+  grunt.registerTask('build', ['clean', 'ts:dist', 'sass:dist', 'tslint', 'typedoc', 'browserify', 'wrap', 'uglify']);
+  grunt.registerTask('default', ['build']);
 
 };
