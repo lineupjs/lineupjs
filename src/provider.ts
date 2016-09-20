@@ -92,15 +92,16 @@ export class DataProvider extends utils.AEventDispatcher {
   /**
    * lookup map of a column type to its column implementation
    */
-  columnTypes:any = model.models();
+  columnTypes:any = utils.merge({}, model.models());
 
   /**
    * helper function for triggering reordering
    */
   private reorder;
 
-  constructor() {
+  constructor(options : any = {}) {
     super();
+    this.columnTypes = utils.merge(model.models(), options.columnTypes || {});
     var that = this;
     //delayed reorder call
     this.reorder = utils.delayedCall(function () {
@@ -719,8 +720,8 @@ export class CommonDataProvider extends DataProvider {
   //generic accessor of the data item
   private rowGetter = (row:any, id:string, desc:any) => row[desc.column];
 
-  constructor(private columns:model.IColumnDesc[] = []) {
-    super();
+  constructor(private columns:model.IColumnDesc[] = [], options :any = {}) {
+    super(options);
     //generate the accessor
     columns.forEach((d:any) => {
       d.accessor = d.accessor || this.rowGetter;
@@ -791,7 +792,7 @@ export class LocalDataProvider extends CommonDataProvider {
   private reorderall;
 
   constructor(public data:any[], columns:model.IColumnDesc[] = [], options = {}) {
-    super(columns);
+    super(columns, options);
     utils.merge(this.options, options);
     //enhance with a magic attribute storing ranking information
     data.forEach((d, i) => {
@@ -989,8 +990,8 @@ export class RemoteDataProvider extends CommonDataProvider {
    */
   private ranks:any = {};
 
-  constructor(private server:IServerData, columns:model.IColumnDesc[] = []) {
-    super(columns);
+  constructor(private server:IServerData, columns:model.IColumnDesc[] = [], options :any = {}) {
+    super(columns, options);
   }
 
   protected rankAccessor(row: any, id: string, desc: model.IColumnDesc, ranking: model.Ranking) {

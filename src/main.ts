@@ -180,7 +180,12 @@ export class LineUp extends utils_.AEventDispatcher {
     /**
      * automatically add a column pool at the end
      */
-    pool: false
+    pool: false,
+
+    /**
+     * the renderers to use for rendering the columns
+     */
+    renderers: renderer_.renderers()
   };
 
   private $container:d3.Selection<any>;
@@ -228,7 +233,8 @@ export class LineUp extends utils_.AEventDispatcher {
       actions: this.config.body.rowActions,
       idPrefix: this.config.idPrefix,
 
-      freezeCols: this.config.body.freezeCols
+      freezeCols: this.config.body.freezeCols,
+      renderers: this.config.renderers
     });
     //share hist caches
     this.body.histCache = this.header.sharedHistCache;

@@ -127,7 +127,8 @@ export function merge(...args:any[]) {
       var keyName = keys[j];
       var value = toMerge[keyName];
 
-      if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
+      //merge just POJOs
+      if (Object.prototype.toString.call(value) === TYPE_OBJECT && (Object.getPrototypeOf(value) === Object.prototype)) { //pojo
         if (result[keyName] === undefined) {
           result[keyName] = {};
         }
