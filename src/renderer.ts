@@ -3,6 +3,7 @@
  */
 
 import model = require('./model');
+import utils = require('./utils');
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
@@ -763,6 +764,26 @@ class StackCellRenderer extends DefaultCellRenderer {
     context.cellX = ueber;
     context.option = ueberOption;
   }
+}
+
+export interface IRenderFunction {
+  render($col:d3.Selection<any>, col:model.Column, rows:any[], context:IRenderContext): void;
+}
+
+/**
+ * defines a custom renderer object
+ * @param selector d3 selector, e.g. text.my
+ * @param render render function
+ * @param extras additional functions
+ * @returns {DerivedCellRenderer}
+ */
+export function createRenderer(selector: string, render: IRenderFunction, extras : any = {}) {
+  extras.selector = selector;
+  extras.render = render;
+  extras.findRow = ($col:d3.Selection<any>, index:number) => $col.selectAll(this.selector + '[data-index="' + index + '"]');
+
+  const r = new DerivedCellRenderer(extras);
+  return r;
 }
 
 const combineRenderer = barRenderer({

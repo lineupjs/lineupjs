@@ -2366,6 +2366,27 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
 }
 
 /**
+ * defines a new column type
+ * @param name
+ * @param functions
+ * @returns {CustomColumn}
+ */
+export function defineColumn<T>(name: string, functions: any = {}) {
+  class CustomColumn extends ValueColumn<T> {
+    constructor(id:string, desc:IColumnDesc) {
+      super(id, desc);
+      if (typeof (this.init) === 'function') {
+        this.init.apply(this, [].slice.apply(arguments));
+      }
+    }
+  }
+  CustomColumn.prototype.toString = () => name;
+  CustomColumn.prototype = utils.merge(CustomColumn.prototype, functions);
+
+  return CustomColumn;
+}
+
+/**
  * utility for creating a stacked column description
  * @type {function(string=): {type: string, label: string}}
  */
