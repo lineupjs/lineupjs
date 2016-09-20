@@ -3,7 +3,6 @@
  */
 
 import model = require('./model');
-import utils = require('./utils');
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
