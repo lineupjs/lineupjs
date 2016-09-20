@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.4.0 - 2016-09-08
+/*! LineUpJS - v0.4.2 - 2016-09-20
 * https://github.com/sgratzl/lineup.js
 * Copyright (c) 2016 ; Licensed BSD */
 
@@ -191,7 +191,11 @@ var LineUp = (function (_super) {
             /**
              * automatically add a column pool at the end
              */
-            pool: false
+            pool: false,
+            /**
+             * the renderers to use for rendering the columns
+             */
+            renderers: renderer_.renderers()
         };
         this.body = null;
         this.header = null;
@@ -230,7 +234,8 @@ var LineUp = (function (_super) {
             stacked: this.config.renderingOptions.stacked,
             actions: this.config.body.rowActions,
             idPrefix: this.config.idPrefix,
-            freezeCols: this.config.body.freezeCols
+            freezeCols: this.config.body.freezeCols,
+            renderers: this.config.renderers
         });
         //share hist caches
         this.body.histCache = this.header.sharedHistCache;
@@ -2841,6 +2846,29 @@ var Ranking = (function (_super) {
 }(utils.AEventDispatcher));
 exports.Ranking = Ranking;
 /**
+ * defines a new column type
+ * @param name
+ * @param functions
+ * @returns {CustomColumn}
+ */
+function defineColumn(name, functions) {
+    if (functions === void 0) { functions = {}; }
+    var CustomColumn = (function (_super) {
+        __extends(CustomColumn, _super);
+        function CustomColumn(id, desc) {
+            _super.call(this, id, desc);
+            if (typeof (this.init) === 'function') {
+                this.init.apply(this, [].slice.apply(arguments));
+            }
+        }
+        return CustomColumn;
+    }(ValueColumn));
+    CustomColumn.prototype.toString = function () { return name; };
+    CustomColumn.prototype = utils.merge(CustomColumn.prototype, functions);
+    return CustomColumn;
+}
+exports.defineColumn = defineColumn;
+/**
  * utility for creating a stacked column description
  * @type {function(string=): {type: string, label: string}}
  */
@@ -2963,8 +2991,9 @@ function isSupportType(col) {
  */
 var DataProvider = (function (_super) {
     __extends(DataProvider, _super);
-    function DataProvider() {
+    function DataProvider(options) {
         var _this = this;
+        if (options === void 0) { options = {}; }
         _super.call(this);
         /**
          * all rankings
@@ -2981,7 +3010,7 @@ var DataProvider = (function (_super) {
         /**
          * lookup map of a column type to its column implementation
          */
-        this.columnTypes = model.models();
+        this.columnTypes = utils.merge({}, model.models());
         this.createHelper = function (d) {
             //factory method for restoring a column
             var desc = _this.fromDescRef(d.desc);
@@ -2994,6 +3023,7 @@ var DataProvider = (function (_super) {
             }
             return c;
         };
+        this.columnTypes = utils.merge(model.models(), options.columnTypes || {});
         var that = this;
         //delayed reorder call
         this.reorder = utils.delayedCall(function () {
@@ -3560,10 +3590,11 @@ exports.DataProvider = DataProvider;
  */
 var CommonDataProvider = (function (_super) {
     __extends(CommonDataProvider, _super);
-    function CommonDataProvider(columns) {
+    function CommonDataProvider(columns, options) {
         var _this = this;
         if (columns === void 0) { columns = []; }
-        _super.call(this);
+        if (options === void 0) { options = {}; }
+        _super.call(this, options);
         this.columns = columns;
         this.rankingIndex = 0;
         //generic accessor of the data item
@@ -3626,7 +3657,7 @@ var LocalDataProvider = (function (_super) {
     function LocalDataProvider(data, columns, options) {
         if (columns === void 0) { columns = []; }
         if (options === void 0) { options = {}; }
-        _super.call(this, columns);
+        _super.call(this, columns, options);
         this.data = data;
         this.options = {
             /**
@@ -3782,9 +3813,10 @@ exports.LocalDataProvider = LocalDataProvider;
  */
 var RemoteDataProvider = (function (_super) {
     __extends(RemoteDataProvider, _super);
-    function RemoteDataProvider(server, columns) {
+    function RemoteDataProvider(server, columns, options) {
         if (columns === void 0) { columns = []; }
-        _super.call(this, columns);
+        if (options === void 0) { options = {}; }
+        _super.call(this, columns, options);
         this.server = server;
         /**
          * the local ranking orders
@@ -4486,6 +4518,23 @@ var StackCellRenderer = (function (_super) {
     };
     return StackCellRenderer;
 }(DefaultCellRenderer));
+/**
+ * defines a custom renderer object
+ * @param selector d3 selector, e.g. text.my
+ * @param render render function
+ * @param extras additional functions
+ * @returns {DerivedCellRenderer}
+ */
+function createRenderer(selector, render, extras) {
+    var _this = this;
+    if (extras === void 0) { extras = {}; }
+    extras.selector = selector;
+    extras.render = render;
+    extras.findRow = function ($col, index) { return $col.selectAll(_this.selector + '[data-index="' + index + '"]'); };
+    var r = new DerivedCellRenderer(extras);
+    return r;
+}
+exports.createRenderer = createRenderer;
 var combineRenderer = barRenderer({
     colorOf: function (d, i, col) { return col.getColor(d); }
 });
@@ -6413,7 +6462,8 @@ function merge() {
         for (var j = 0; j < keys.length; j++) {
             var keyName = keys[j];
             var value = toMerge[keyName];
-            if (Object.prototype.toString.call(value) === TYPE_OBJECT) {
+            //merge just POJOs
+            if (Object.prototype.toString.call(value) === TYPE_OBJECT && (Object.getPrototypeOf(value) === Object.prototype)) {
                 if (result[keyName] === undefined) {
                     result[keyName] = {};
                 }
