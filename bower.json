@@ -24,7 +24,7 @@
     "caleydo"
   ],
   "dependencies": {
-    "d3": ">=3.4",
+    "d3": "~=3.5",
     "font-awesome": ">=4.2.0"
   },
   "license": "BSD",
