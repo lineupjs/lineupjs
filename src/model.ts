@@ -425,6 +425,7 @@ export interface INumberColumn {
 
 export interface ICategoricalColumn {
   categories: string[];
+  categoryLabels: string[];
 
   getCategories(row: any): string[];
 }
@@ -1209,6 +1210,12 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
   private colors = d3.scale.category10();
 
   /**
+   * category labels by default the category name itself
+   * @type {Array}
+     */
+  private catLabels = d3.map<string>();
+
+  /**
    * set of categories to show
    * @type {null}
    * @private
@@ -1231,15 +1238,20 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
   initCategories(desc:any) {
     if (desc.categories) {
       var cats = [],
-        cols = this.colors.range();
+        cols = this.colors.range(),
+        labels = d3.map<string>();
       desc.categories.forEach((cat, i) => {
         if (typeof cat === 'string') {
           cats.push(cat);
         } else {
           cats.push(cat.name);
+          if (cat.label) {
+            labels.set(cat.name, cat.label);
+          }
           cols[i] = cat.color;
         }
       });
+      this.catLabels = labels;
       this.colors.domain(cats).range(cols);
     }
   }
@@ -1250,6 +1262,15 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
 
   get categoryColors() {
     return this.colors.range();
+  }
+
+  get categoryLabels() {
+    //no mapping
+    if (this.catLabels === null || this.catLabels.empty()) {
+      return this.categories;
+    }
+    //label or identity mapping
+    return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c) : c);
   }
 
   colorOf(cat: string) {
@@ -1265,10 +1286,17 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
     return l.length > 0 ? l[0] : null;
   }
 
+  private mapToLabel(values: string[]) {
+    if (this.catLabels === null || this.catLabels.empty()) {
+      return values;
+    }
+    return values.map((v) => this.catLabels.has(v) ? this.catLabels.get(v) : v);
+  }
+
   getLabels(row:any) {
     var v = StringColumn.prototype.getValue.call(this, row);
     const r = v.split(this.separator);
-    return r;
+    return this.mapToLabel(r);
   }
 
   getValue(row:any) {
@@ -1371,6 +1399,13 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
  */
 export class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
   private colors = d3.scale.category10();
+
+  /**
+   * category labels by default the category name itself
+   * @type {Array}
+     */
+  private catLabels = d3.map<string>();
+
   private scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
 
   private currentFilter:string = null;
@@ -1410,6 +1445,15 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
 
   get categoryColors() {
     return this.colors.range();
+  }
+
+  get categoryLabels() {
+    //no mapping
+    if (this.catLabels === null || this.catLabels.empty()) {
+      return this.categories;
+    }
+    //label or identity mapping
+    return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c) : c);
   }
 
   colorOf(cat: string) {
