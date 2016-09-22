@@ -1278,7 +1278,11 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
   }
 
   getLabel(row:any) {
-    return '' + StringColumn.prototype.getValue.call(this, row);
+    //no mapping
+    if (this.catLabels === null || this.catLabels.empty()) {
+      return '' + StringColumn.prototype.getValue.call(this, row);
+    }
+    return this.getLabels(row).join(this.separator);
   }
 
   getFirstLabel(row:any) {
@@ -1286,17 +1290,18 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
     return l.length > 0 ? l[0] : null;
   }
 
-  private mapToLabel(values: string[]) {
-    if (this.catLabels === null || this.catLabels.empty()) {
-      return values;
-    }
-    return values.map((v) => this.catLabels.has(v) ? this.catLabels.get(v) : v);
-  }
 
   getLabels(row:any) {
     var v = StringColumn.prototype.getValue.call(this, row);
     const r = v.split(this.separator);
-    return this.mapToLabel(r);
+
+    const mapToLabel = (values: string[]) => {
+      if (this.catLabels === null || this.catLabels.empty()) {
+        return values;
+      }
+      return values.map((v) => this.catLabels.has(v) ? this.catLabels.get(v) : v);
+    };
+    return mapToLabel(r);
   }
 
   getValue(row:any) {
@@ -1315,7 +1320,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
   }
 
   getColor(row:any) {
-    var cat = this.getFirstLabel(row);
+    var cat = this.getValue(row);
     if (cat === null || cat === '') {
       return null;
     }
@@ -1323,7 +1328,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
   }
 
   getColors(row:any) {
-    return this.getLabels(row).map(this.colors);
+    return this.getValues(row).map(this.colors);
   }
 
   dump(toDescRef:(desc:any) => any):any {
