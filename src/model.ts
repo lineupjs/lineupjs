@@ -914,14 +914,15 @@ export class StringColumn extends ValueColumn<string> {
   }
 
   compare(a:any[], b:any[]) {
-    if(this.getValue(a) === '') {
+    var a_val: string, b_val: string;
+    if((a_val = this.getValue(a)) === '') {
       return 1;
-    } else if(this.getValue(b) === '') {
+    } else if((b_val = this.getValue(b)) === '') {
       return -1;
-    } else if(this.getValue(a) === this.getValue(b)) {
+    } else if(a_val === b_val) {
       return 0;
     } else {
-      return this.getValue(a) < this.getValue(b) ? -1 : 1;
+      return a_val < b_val ? -1 : 1;
     }
   }
 }
