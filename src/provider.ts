@@ -94,19 +94,11 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   columnTypes:any = utils.merge({}, model.models());
 
-  /**
-   * helper function for triggering reordering
-   */
-  private reorder;
 
   constructor(options : any = {}) {
     super();
     this.columnTypes = utils.merge(model.models(), options.columnTypes || {});
     var that = this;
-    //delayed reorder call
-    this.reorder = utils.delayedCall(function () {
-      that.triggerReorder(this.source);
-    }, 100, null);
   }
 
   /**
@@ -150,7 +142,11 @@ export class DataProvider extends utils.AEventDispatcher {
   insertRanking(r:model.Ranking, index = this.rankings_.length) {
     this.rankings_.splice(index, 0, r);
     this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');
-    r.on('dirtyOrder.provider', this.reorder);
+    const that = this;
+    //delayed reordering per ranking
+    r.on('dirtyOrder.provider', utils.delayedCall(function () {
+        that.triggerReorder(this.source);
+      }, 100, null));
     this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r, index);
     this.triggerReorder(r);
   }
@@ -821,8 +817,13 @@ export class LocalDataProvider extends CommonDataProvider {
       d._rankings = {};
       d._index = i;
     });
+
     this.data = data;
     this.reorderall();
+  }
+
+  clearData() {
+    this.setData([]);
   }
 
   /**
@@ -877,6 +878,9 @@ export class LocalDataProvider extends CommonDataProvider {
   }
 
   sort(ranking:model.Ranking):Promise<number[]> {
+    if (this.data.length === 0) {
+      return Promise.resolve([]);
+    }
     //wrap in a helper and store the initial index
     var helper = this.data.map((r, i) => ({row: r, i: i, prev: r._rankings[ranking.id] || 0}));
 
@@ -903,7 +907,12 @@ export class LocalDataProvider extends CommonDataProvider {
   }
 
   view(indices:number[]) {
-    var slice = indices.map((index) => this.data[index]);
+    if (this.data.length === 0) {
+      return Promise.resolve([]);
+    }
+    //filter invalid indices
+    const l = this.data.length;
+    var slice = indices.filter((i) => i>=0 && i<l).map((index) => this.data[index]);
 
     return Promise.resolve(slice);
   }
