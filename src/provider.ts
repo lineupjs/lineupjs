@@ -24,12 +24,12 @@ function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):m
       hist: []
     };
   }
-  var hist = d3.layout.histogram().value(acc);
+  const hist = d3.layout.histogram().value(acc);
   if (range) {
     hist.range(() => range);
   }
   const ex = d3.extent(arr, acc);
-  var hist_data = hist(arr);
+  const hist_data = hist(arr);
   return {
     min: ex[0],
     max: ex[1],
@@ -48,7 +48,7 @@ function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):m
  * @returns {{hist: {cat: string, y: number}[]}}
  */
 function computeHist(arr:any[], acc:(any) => string[], categories: string[]):model.ICategoricalStatistics {
-  var m = d3.map<number>();
+  const m = d3.map<number>();
   categories.forEach((cat) => m.set(cat, 0));
 
   arr.forEach((a) => {
@@ -98,7 +98,6 @@ export class DataProvider extends utils.AEventDispatcher {
   constructor(options : any = {}) {
     super();
     this.columnTypes = utils.merge(model.models(), options.columnTypes || {});
-    var that = this;
   }
 
   /**
@@ -127,13 +126,13 @@ export class DataProvider extends utils.AEventDispatcher {
    * @return the new ranking
    */
   pushRanking(existing?:model.Ranking) : model.Ranking {
-    var r = this.cloneRanking(existing);
+    const r = this.cloneRanking(existing);
     this.insertRanking(r);
     return r;
   }
 
   takeSnapshot(col: model.Column): model.Ranking {
-    var r = this.cloneRanking();
+    const r = this.cloneRanking();
     r.push(this.clone(col));
     this.insertRanking(r);
     return r;
@@ -161,7 +160,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @returns {boolean}
    */
   removeRanking(ranking:model.Ranking) {
-    var i = this.rankings_.indexOf(ranking);
+    const i = this.rankings_.indexOf(ranking);
     if (i < 0) {
       return false;
     }
@@ -226,7 +225,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @return {model.Column} the newly created column or null
    */
   push(ranking:model.Ranking, desc:model.IColumnDesc):model.Column {
-    var r = this.create(desc);
+    const r = this.create(desc);
     if (r) {
       ranking.push(r);
       return r;
@@ -242,7 +241,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @return {model.Column} the newly created column or null
    */
   insert(ranking:model.Ranking, index:number, desc:model.IColumnDesc) {
-    var r = this.create(desc);
+    const r = this.create(desc);
     if (r) {
       ranking.insert(r, index);
       return r;
@@ -279,7 +278,7 @@ export class DataProvider extends utils.AEventDispatcher {
   create(desc:model.IColumnDesc):model.Column {
     this.fixDesc(desc);
     //find by type and instantiate
-    var type = this.columnTypes[desc.type];
+    const type = this.columnTypes[desc.type];
     if (type) {
       return new type(this.nextId(), desc);
     }
@@ -292,7 +291,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @returns {model.Column}
    */
   clone(col:model.Column) {
-    var dump = this.dumpColumn(col);
+    const dump = this.dumpColumn(col);
     return this.restoreColumn(dump);
   }
 
@@ -302,7 +301,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @returns {model.Column}
    */
   restoreColumn(dump:any):model.Column {
-    var create = (d:any) => {
+    const create = (d:any) => {
       const desc = this.fromDescRef(d.desc);
       var type = this.columnTypes[desc.type];
       this.fixDesc(desc);
@@ -321,10 +320,10 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   find(id_or_filter:(col:model.Column) => boolean | string):model.Column {
     //convert to function
-    var filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
+    const filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
 
-    for (var i = 0; i < this.rankings_.length; ++i) {
-      var r = this.rankings_[i].find(filter);
+    for (let i = 0; i < this.rankings_.length; ++i) {
+      let r = this.rankings_[i].find(filter);
       if (r) {
         return r;
       }
@@ -374,11 +373,11 @@ export class DataProvider extends utils.AEventDispatcher {
 
   private createHelper = (d:any) => {
     //factory method for restoring a column
-    var desc = this.fromDescRef(d.desc);
+    const desc = this.fromDescRef(d.desc);
     var c = null;
     if (desc && desc.type) {
       this.fixDesc(d.desc);
-      var type = this.columnTypes[desc.type];
+      let type = this.columnTypes[desc.type];
       c = new type(d.id, desc);
       c.restore(d, this.createHelper);
     }
@@ -429,7 +428,7 @@ export class DataProvider extends utils.AEventDispatcher {
       });
     }
     //assign new ids
-    var idGenerator = this.nextId.bind(this);
+    const idGenerator = this.nextId.bind(this);
     this.rankings_.forEach((r) => {
       r.children.forEach((c) => c.assignNewId(idGenerator));
     });
@@ -447,7 +446,7 @@ export class DataProvider extends utils.AEventDispatcher {
       //no default if we have a ranking
       return;
     }
-    var r = this.pushRanking();
+    const r = this.pushRanking();
     this.getColumns().forEach((col) => {
       if (!isSupportType(col)) {
         this.push(r, col);
@@ -462,7 +461,7 @@ export class DataProvider extends utils.AEventDispatcher {
   private deriveRanking(bundle:any[]) {
     const ranking = this.cloneRanking();
     ranking.clear();
-    var toCol = (column) => {
+    const toCol = (column) => {
       if (column.type === 'rank') {
         return this.create(model.createRankDesc());
       }
@@ -478,7 +477,7 @@ export class DataProvider extends utils.AEventDispatcher {
         //create a stacked one
         let r = <model.StackColumn>this.create(model.createStackDesc(column.label || 'Combined'));
         (column.children || []).forEach((col) => {
-          var c = toCol(col);
+          let c = toCol(col);
           if (c) {
             r.push(c);
           }
@@ -496,7 +495,7 @@ export class DataProvider extends utils.AEventDispatcher {
       return null;
     };
     bundle.forEach((column) => {
-      var col = toCol(column);
+      const col = toCol(column);
       if (col) {
         ranking.push(col);
       }
@@ -685,7 +684,7 @@ export class DataProvider extends utils.AEventDispatcher {
       quote: false,
       quoteChar: '"'
     };
-    //optionaly quote not numbers
+    //optionally quote not numbers
     function quote(l: string, c?: model.Column) {
       if (op.quote && (!c || !model.isNumberColumn(c))) {
         return op.quoteChar + l + op.quoteChar;
@@ -845,13 +844,13 @@ export class LocalDataProvider extends CommonDataProvider {
   }
 
   cloneRanking(existing?:model.Ranking) {
-    var id = this.nextRankingId();
+    const id = this.nextRankingId();
 
-    var new_ = new model.Ranking(id);
+    const new_ = new model.Ranking(id);
 
     if (existing) { //copy the ranking of the other one
       this.data.forEach((row) => {
-        var r = row._rankings;
+        let r = row._rankings;
         r[id] = r[existing.id];
       });
       //TODO better cloning

@@ -1212,7 +1212,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
   /**
    * category labels by default the category name itself
    * @type {Array}
-     */
+   */
   private catLabels = d3.map<string>();
 
   /**
@@ -1408,7 +1408,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   /**
    * category labels by default the category name itself
    * @type {Array}
-     */
+   */
   private catLabels = d3.map<string>();
 
   private scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
