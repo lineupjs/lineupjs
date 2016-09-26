@@ -33,6 +33,7 @@
   "main": "dist/LineUpJS.js",
   "scripts": {
     "test": "tslint -c tslint.json src/*.ts",
+    "prepare": "npm install & bower install & typings install",
     "build": "webpack",
     "watch": "webpack --watch"
   },

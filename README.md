@@ -12,33 +12,40 @@ LineUp.js depends on [D3](http://d3js.org) for rendering and [FontAwesome](http:
 Development Dependencies
 ----------------
 
-[Grunt](http://gruntjs.com/) is used a the building tool. LineUp itself is written in [TypeScript](www.typescriptlang.org) and [SASS](http://sass-lang.com). 
-[Browserify](http://browserify.org/) is used for building with a modified [UMD](https://github.com/umdjs/umd) header that is prepended avoiding to include the external dependencies.
+[Webpack](http://webpack.github.io) is used as build tool. LineUp itself is written in [TypeScript](www.typescriptlang.org) and [SASS](http://sass-lang.com). 
 
 ### Development Environment
 
 **Installation**
 
 ```bash
-npm install -g grunt-cli bower typings 
+npm install -g webpack bower typings tslint typescript 
 npm install
 bower install
 typings install
 ```
 
+
+**Test**
+
+```bash
+npm run test
+```
+
+**Build distribution packages**
+
+```bash
+npm run build
+```
+
+
 **Watch file changes**
 
 ```bash
-grunt watch_all
+npm run watch
 ```
 
-**Build distribution package**
-
-```bash
-grunt build
-```
-
-The compiled JavaScript files are located under _dist_ and the TypeScript documentation is located under _docs_.
+The compiled JavaScript files are located under _dist_ and the TypeScript documentation is located under _dist_/_docs_.
 
 DOM Structure
 -------------
@@ -52,12 +59,12 @@ Data Model
 ----------
 
 ![Data Model](assets/data_model.png)
-![Data Model](../assets/data_model.png)
+![Data Model](../../assets/data_model.png)
 
 Documentation
 -------------
 
-[TypeDoc Docu](http://caleydo.github.io/lineup.js/docs/index.html)
+[TypeDoc Docu](http://caleydo.github.io/lineup.js/dist/docs/index.html)
 
 
 
