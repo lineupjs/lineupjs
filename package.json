@@ -32,7 +32,7 @@
   "homepage": "https://github.com/Caleydo/lineup.js",
   "main": "dist/LineUpJS.js",
   "scripts": {
-    "test": "tslint",
+    "test": "tslint -c tslint.json src/*.ts",
     "build": "webpack",
     "watch": "webpack --watch"
   },
@@ -43,7 +43,6 @@
   "devDependencies": {
     "tslint": "^3.15.1",
     "node-sass": "^3.10.0",
-    "sass-loader": "^4.0.2",
     "style-loader": "^0.13.1",
     "typedoc": "^0.4.5",
     "typedoc-webpack-plugin": "^1.0.10",
