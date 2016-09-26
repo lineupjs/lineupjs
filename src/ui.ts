@@ -741,7 +741,12 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     }
     this.data = data;
     data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this), 1));
-    data.on('selectionChanged.bodyRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
+    data.on('selectionChanged.bodyRenderer', utils.delayedCall((selection, jumpToFirst) => {
+      if (jumpToFirst && selection.length > 0) {
+        this.jumpToSelection();
+      }
+      this.drawSelection();
+    }, 1));
   }
 
   createContext(index_shift:number):renderer.IRenderContext {
@@ -981,6 +986,23 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     $rows.exit().remove();
 
     $rankings.exit().remove();
+  }
+
+  private jumpToSelection() {
+    const indices = this.data.getSelection();
+    const rankings = this.data.getRankings();
+    if (indices.length <= 0 || rankings.length <= 0) {
+      return;
+    }
+    const order = rankings[0].getOrder();
+    const visibleRange = this.slicer(0, order.length, (i) => i * this.options.rowHeight);
+    const visibleOrder = order.slice(visibleRange.from, visibleRange.to);
+    //if any of the selected indices is in the visible range - done
+    if (indices.some((d) => visibleOrder.indexOf(d) >= 0)) {
+      return;
+    }
+    //find the closest not visible one in the indices list
+    //
   }
 
   select(dataIndex:number, additional = false) {

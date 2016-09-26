@@ -215,6 +215,33 @@ export class ContentScroller extends AEventDispatcher {
     return super.createEventList().concat(['scroll', 'redraw']);
   }
 
+  scrollIntoView(start: number, length: number, index: number, row2y:(i:number) => number) {
+    const range = this.select(start, length, row2y);
+    if (range.from <= index && index <= range.to) {
+      return; //already visible
+    }
+
+    var top = this.container.scrollTop - this.shift - this.options.topShift(),
+      bottom = top + this.container.clientHeight,
+      i = 0, j;
+    if (top > 0) {
+      i = Math.round(top / this.options.rowHeight);
+      //count up till really even partial rows are visible
+      while (i >= start && row2y(i + 1) > top) {
+        i--;
+      }
+      i -= this.options.backupRows; //one more row as backup for scrolling
+    }
+    { //some parts from the bottom aren't visible
+      j = Math.round(bottom / this.options.rowHeight);
+      //count down till really even partial rows are visible
+      while (j <= length && row2y(j - 1) < bottom) {
+        j++;
+      }
+      j += this.options.backupRows; //one more row as backup for scrolling
+    }
+  }
+
   /**
    * selects a range identified by start and length and the row2y position callback returning the slice to show according to the current user scrolling position
    * @param start start of the range

@@ -588,24 +588,26 @@ export class DataProvider extends utils.AEventDispatcher {
   /**
    * also select all the given rows
    * @param indices
+   * @param jumpToSelection whether the first selected row should be visible
    */
-  selectAll(indices:number[]) {
+  selectAll(indices:number[], jumpToSelection = false) {
     indices.forEach((index) => {
       this.selection.add(String(index));
     });
-    this.fire('selectionChanged', this.selection.values().map(Number));
+    this.fire('selectionChanged', this.selection.values().map(Number), jumpToSelection);
   }
 
   /**
    * set the selection to the given rows
    * @param indices
+   * @param jumpToSelection whether the first selected row should be visible
    */
-  setSelection(indices:number[]) {
+  setSelection(indices:number[], jumpToSelection = false) {
     if (this.selection.size() === indices.length && indices.every((i) => this.selection.has(String(i)))) {
       return; //no change
     }
     this.selection = d3.set();
-    this.selectAll(indices);
+    this.selectAll(indices, jumpToSelection);
   }
 
   /**
@@ -667,7 +669,7 @@ export class DataProvider extends utils.AEventDispatcher {
    */
   clearSelection() {
     this.selection = d3.set();
-    this.fire('selectionChanged', []);
+    this.fire('selectionChanged', [], false);
   }
 
   /**
@@ -781,7 +783,12 @@ export class LocalDataProvider extends CommonDataProvider {
     /**
      * whether the filter should be applied to all rankings regardless where they are
      */
-    filterGlobally: false
+    filterGlobally: false,
+
+    /**
+     * jump to search results such that they are visible
+     */
+    jumpToSearchResult: true
   };
 
   private reorderall;
@@ -955,7 +962,7 @@ export class LocalDataProvider extends CommonDataProvider {
     const indices = this.data.filter((row) => {
       return f(col.getLabel(row));
     }).map((row) => row._index);
-    this.setSelection(indices);
+    this.setSelection(indices, this.options.jumpToSearchResult);
   }
 
 }
