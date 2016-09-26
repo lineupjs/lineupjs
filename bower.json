@@ -30,7 +30,7 @@
     "d3": "~=3.5",
     "font-awesome": ">=4.2.0"
   },
-  "license": "BSD",
+  "license": "BSD-3-Clause",
   "private": false,
   "ignore": [
     "**/.*",
