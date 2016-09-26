@@ -1,4 +1,4 @@
-LineUp.js: Visual Analysis of Multi-Attribute Rankings
+LineUp.js: Visual Analysis of Multi-Attribute Rankings [![Build Status](https://travis-ci.org/Caleydo/lineup.js.svg?branch=master)](https://travis-ci.org/Caleydo/lineup.js)
 ======================================================
 
 LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. 
