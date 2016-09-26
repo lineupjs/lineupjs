@@ -14,10 +14,10 @@ module.exports = function (grunt) {
     '<%= grunt.template.today("yyyy") %>\n' +
     '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
     '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
-    ' Licensed <%= pkg.license %> */\n' +
-    templateparts[0],
+    ' Licensed <%= pkg.license %> */\n',
+    banner_wrap_start: '<%= banner %>' + templateparts[0],
     // Task configuration.
-    endbanner: templateparts[1],
+    banner_wrap_end: templateparts[1],
 
     watch: {
       ts: {
@@ -76,7 +76,21 @@ module.exports = function (grunt) {
             //standalone: 'LineUp'
           }
         }
-        // Note: The entire `browserify-shim` config is inside `package.json`.
+      },
+      dist_bundle: {
+        src: 'src/bundle.js',
+        dest: 'dist/<%= pkg.name %>_bundle.js',
+
+        options: {
+          banner: '<%=banner%>',
+          browserifyOptions: {
+            standalone: 'LineUpJS',
+            transform: ['browserify-css']
+          },
+          alias: {
+            'd3': './bower_components/d3/d3.js'
+          }
+        }
       }
     },
 
@@ -85,7 +99,7 @@ module.exports = function (grunt) {
         src: ['tmp/<%= pkg.name %>.js'],
         dest: 'dist/<%= pkg.name %>.js',
         options: {
-          wrapper: ['<%=banner%>', '<%=endbanner%>'],
+          wrapper: ['<%=banner_wrap_start%>', '<%=banner_wrap_end%>'],
           separator: ' '
         }
       }
@@ -98,6 +112,10 @@ module.exports = function (grunt) {
       dist: {
         src: '<%= browserify.dist.dest %>',
         dest: 'dist/<%= pkg.name %>.min.js'
+      },
+      dist_bundle: {
+        src: '<%= browserify.dist_bundle.dest %>',
+        dest: 'dist/<%= pkg.name %>_bundle.min.js'
       }
     },
     clean: ['doc', 'dist', 'tmp'],
