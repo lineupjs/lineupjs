@@ -32,8 +32,9 @@
   "homepage": "https://github.com/Caleydo/lineup.js",
   "main": "dist/LineUpJS.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "grunt"
+    "test": "tslint",
+    "build": "webpack",
+    "watch": "webpack --watch"
   },
   "repository": {
     "type": "git",
