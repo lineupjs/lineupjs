@@ -32,7 +32,7 @@ function generate(bundle, min) {
       loaders: [
         {
           test: /\.scss$/,
-          loader: ['style', 'css', 'sass']
+          loader: 'style!css!sass'
         },
         {
           test: /\.ts$/,
@@ -42,27 +42,27 @@ function generate(bundle, min) {
     }
   };
   if (!bundle) {
-    var p = new ExtractTextPlugin('style.css')
+    var p = new ExtractTextPlugin('style'+(min?'.min':'')+'.css');
     base.externals = ['d3'];
-    base.plugins.push(
-      p,
-      new TypedocWebpackPlugin({
-        target: 'es5',
-        module: 'commonjs', // 'amd' (default) | 'commonjs'
-        //out: '../docs',
-        name: 'LineUp.js',
-
-        entryPoint: 'main.LineUp',
-        mode: 'modules',
-        theme: 'minimal'
-      })
-    );
+    base.plugins.push(p);
     base.module.loaders[0].loader = p.extract(['css', 'sass']);
   }
   if (min) {
     base.plugins.push(new webpack.optimize.UglifyJsPlugin());
   } else {
     base.devtool = 'source-map';
+  }
+  if (!bundle && !min) {
+    base.plugins.push(new TypedocWebpackPlugin({
+        target: 'es5',
+        module: 'commonjs', // 'amd' (default) | 'commonjs'
+        output: '../docs',
+        name: 'LineUp.js',
+
+        entryPoint: 'main.LineUp',
+        mode: 'modules',
+        theme: 'minimal'
+      }));
   }
   return base;
 }
