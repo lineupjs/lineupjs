@@ -56,7 +56,7 @@ function generate(bundle, min) {
     //generate source maps
     base.devtool = 'source-map';
   }
-  if (!bundle && !min) {
+  if (!bundle && min) {
     //generate docu
     base.plugins.push(new TypedocWebpackPlugin({
         target: 'es5',
@@ -78,4 +78,8 @@ var library_min = generate(false, true);
 var bundle = generate(true, false);
 var bundle_min = generate(true, true);
 
-module.exports = [library, library_min, bundle, bundle_min];
+if (process.argv[2] === '--watch') { //aka called as: webpack --watch
+  module.exports = library;
+} else {
+  module.exports = [library, library_min, bundle, bundle_min];
+}
