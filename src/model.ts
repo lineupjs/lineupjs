@@ -1329,7 +1329,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
   }
 
   getColors(row:any) {
-    return this.getValues(row).map(this.colors);
+    return this.getCategories(row).map(this.colors);
   }
 
   dump(toDescRef:(desc:any) => any):any {
