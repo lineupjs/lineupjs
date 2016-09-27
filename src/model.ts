@@ -1414,7 +1414,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
 
   private scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
 
-  private currentFilter:string = null;
+  private currentFilter:string[] = null;
   /**
    * separator for multi handling
    * @type {string}
@@ -1429,14 +1429,8 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
 
     this.scale.domain(this.colors.domain());
     if (desc.categories) {
-      var values = [];
-      desc.categories.forEach((d) => {
-        if (typeof d !== 'string' && typeof (d.value) === 'number') {
-          values.push(d.value);
-        } else {
-          values.push(0.5); //by default 0.5
-        }
-      });
+      //lookup value or 0.5 by default
+      let values = desc.categories.map((d) => ((typeof d !== 'string' && typeof (d.value) === 'number')) ? d.value : 0.5);
       this.scale.range(values);
     }
   }
@@ -1446,11 +1440,11 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   }
 
   get categories() {
-    return this.colors.domain();
+    return this.colors.domain().slice();
   }
 
   get categoryColors() {
-    return this.colors.range();
+    return this.colors.range().slice();
   }
 
   get categoryLabels() {
@@ -1568,7 +1562,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     return this.currentFilter;
   }
 
-  setFilter(filter:string) {
+  setFilter(filter:string[]) {
     if (this.currentFilter === filter) {
       return;
     }
