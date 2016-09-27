@@ -1,3 +1,7 @@
+/*! LineUpJS - v0.5.0 - 2016
+* https://github.com/Caleydo/lineup.js
+* Copyright (c) 2016 Caleydo Team; Licensed BSD-3-Clause*/
+
 .lugui-me {
   clear: both; }
   .lugui-me > div:first-of-type {
@@ -251,7 +255,7 @@
         display: none; }
       .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before {
         z-index: -1;
-        content: '\f0c9';
+        content: '\F0C9';
         font-family: FontAwesome, sans-serif;
         font-size: 7pt;
         padding: 1px 2px 1px 1px;
@@ -285,3 +289,5 @@
       padding: 0;
       margin: 0;
       font-size: 9pt; }
+
+/*# sourceMappingURL=style.css.map*/
