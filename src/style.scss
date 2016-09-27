@@ -133,6 +133,11 @@
       background-color: lightblue;
     }
   }
+
+  .lu-popup-title {
+    cursor: pointer;
+    cursor: -webkit-grab;
+  }
 }
 
 .lu-popup2 {

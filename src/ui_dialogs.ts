@@ -10,7 +10,7 @@ import mappingeditor = require('./mappingeditor');
 import provider = require('./provider');
 
 export function dialogForm(title, body, buttonsWithLabel = false) {
-  return '<span style="font-weight: bold">' + title + '</span>' +
+  return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
     '<form onsubmit="return false">' +
     body + '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
     '<button type = "reset" class="cancel fa fa-times" title="cancel"></button>' +
@@ -19,7 +19,7 @@ export function dialogForm(title, body, buttonsWithLabel = false) {
 
 /**
  * creates a simple popup dialog under the given attachment
- * @param attachement
+ * @param attachment
  * @param title
  * @param body
  * @returns {Selection<any>}
@@ -33,6 +33,16 @@ export function makePopup(attachement:d3.Selection<any>, title:string, body:stri
       left: pos.left + 'px',
       top: pos.top + 'px'
     }).html(dialogForm(title, body));
+  function movePopup() {
+    //.style("left", (this.parentElement.offsetLeft + (<any>d3.event).dx) + 'px')
+    //.style("top", (this.parentElement.offsetTop + d3.event.dy) + 'px');
+    //const mouse = d3.mouse(this.parentElement);
+    $popup.style({
+      left: (this.parentElement.offsetLeft + (<any>d3.event).dx) + 'px',
+      top:  (this.parentElement.offsetTop + (<any>d3.event).dy) + 'px'
+    });
+  }
+  $popup.select('span.lu-popup-title').call(d3.behavior.drag().on('drag', movePopup));
   $popup.on('keydown', () => {
     if (d3.event.which === 27) {
       $popup.remove();
