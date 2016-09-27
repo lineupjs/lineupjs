@@ -1360,7 +1360,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
     if (!this.isFiltered()) {
       return true;
     }
-    var vs = this.getValues(row),
+    var vs = this.getCategories(row),
       filter:any = this.currentFilter;
     return vs.every((v) => {
       if (Array.isArray(filter) && filter.length > 0) { //array mode
