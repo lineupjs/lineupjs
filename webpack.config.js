@@ -17,7 +17,7 @@ function generate(bundle, min) {
       filename: 'LineUpJS' + (bundle ? '_bundle' : '') + (min ? '.min' : '') + '.js',
       library: 'LineUpJS',
       libraryTarget: 'umd',
-      umdNamedDefine: true
+      umdNamedDefine: false //anonymous require module
     },
     resolve: {
       alias: {
