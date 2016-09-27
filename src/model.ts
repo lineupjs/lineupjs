@@ -828,7 +828,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     if (isNaN(v)) {
       return true;
     }
-    return !((isFinite(this.currentFilter.min) && v < this.currentFilter.min) || (isFinite(this.currentFilter.max) && v < this.currentFilter.max));
+    return !((isFinite(this.currentFilter.min) && v < this.currentFilter.min) || (isFinite(this.currentFilter.max) && v > this.currentFilter.max));
   }
 }
 
