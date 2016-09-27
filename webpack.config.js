@@ -42,17 +42,22 @@ function generate(bundle, min) {
     }
   };
   if (!bundle) {
-    var p = new ExtractTextPlugin('style'+(min?'.min':'')+'.css');
+    //don't bundle d3
     base.externals = ['d3'];
+
+    //extract the included css file to own file
+    var p = new ExtractTextPlugin('style'+(min?'.min':'')+'.css');
     base.plugins.push(p);
     base.module.loaders[0].loader = p.extract(['css', 'sass']);
   }
   if (min) {
     base.plugins.push(new webpack.optimize.UglifyJsPlugin());
   } else {
+    //generate source maps
     base.devtool = 'source-map';
   }
   if (!bundle && !min) {
+    //generate docu
     base.plugins.push(new TypedocWebpackPlugin({
         target: 'es5',
         module: 'commonjs', // 'amd' (default) | 'commonjs'
