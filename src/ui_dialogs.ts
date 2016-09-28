@@ -301,11 +301,14 @@ function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Select
  * @param $header the visual header element of this column
  */
 function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.Column>) {
-  var bak = column.getFilter() || '';
+  var bak = column.getFilter() || '', bakMissing = bak === model.StringColumn.FILTER_MISSING;
+  if (bakMissing) {
+    bak = '';
+  }
 
   var $popup = makePopup($header, 'Filter',
     `<input type="text" placeholder="containing..." autofocus="true" size="15" value="${(bak instanceof RegExp) ? bak.source : bak}" autofocus="autofocus">
-    <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
+    <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label><br><label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label>
     <br>`);
 
   function updateData(filter) {
@@ -316,9 +319,17 @@ function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.
   function updateImpl(force) {
     //get value
     var search:any = $popup.select('input[type="text"]').property('value');
+    var filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+    if (filterMissing && search === '') {
+      search = model.StringColumn.FILTER_MISSING;
+    }
+    if (search === '') { //reset
+      updateData(search);
+      return;
+    }
     if (search.length >= 3 || force) {
-      var isRegex = $popup.select('input[type="checkbox"]').property('checked');
-      if (isRegex) {
+      var isRegex = $popup.select('input[type="checkbox"]:first-of-type').property('checked');
+      if (isRegex && search !== model.StringColumn.FILTER_MISSING) {
         search = new RegExp(search);
       }
       updateData(search);
@@ -326,18 +337,19 @@ function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.
 
   }
 
-  $popup.select('input[type="checkbox"]').on('change', updateImpl);
+  $popup.selectAll('input[type="checkbox"]').on('change', updateImpl);
   $popup.select('input[type="text"]').on('input', updateImpl);
 
   $popup.select('.cancel').on('click', function () {
-    $popup.select('input[type="text"]').property('value', bak);
-    $popup.select('input[type="checkbox"]').property('checked', bak instanceof RegExp ? 'checked' : null);
+    $popup.select('input[type="text"]').property('value', bak || '');
+    $popup.select('input[type="checkbox"]:first-of-type').property('checked', bak instanceof RegExp ? 'checked' : null);
+    $popup.select('input[type="checkbox"].lu_filter_missing').property('checked', bakMissing ? 'checked' : null);
     updateData(bak);
     $popup.remove();
   });
   $popup.select('.reset').on('click', function () {
     $popup.select('input[type="text"]').property('value', '');
-    $popup.select('input[type="checkbox"]').property('checked', null);
+    $popup.selectAll('input[type="checkbox"]').property('checked', null);
     updateData(null);
   });
   $popup.select('.ok').on('click', function () {

@@ -851,6 +851,8 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
  * a string column with optional alignment
  */
 export class StringColumn extends ValueColumn<string> {
+  //magic key for filtering missing ones
+  static FILTER_MISSING = '__FILTER_MISSING';
   private currentFilter:string|RegExp = null;
 
   private _alignment:string = 'left';
@@ -905,6 +907,10 @@ export class StringColumn extends ValueColumn<string> {
     }
     var r = this.getLabel(row),
       filter = this.currentFilter;
+
+    if (filter === StringColumn.FILTER_MISSING) { //filter empty
+      return r != null && r.trim() !== '';
+    }
     if (typeof filter === 'string' && filter.length > 0) {
       return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
     }
