@@ -36,17 +36,16 @@
     "**/.*",
     "node_modules",
     "bower_components",
-    "test",
-    "tests",
+    "index.html",
     "demo",
     "src",
     "tmp",
     "typings",
-    "jsdoc.conf.json",
-    "tsd.gen.d.ts",
-    "tsd.json",
+    "typings.json",
     "tslint.json",
-    "docs",
-    "assets"
+    "tsconfig.json",
+    "webpack.config.js",
+    "assets",
+    "dist/docs"
   ]
 }
