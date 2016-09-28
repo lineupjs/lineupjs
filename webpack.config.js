@@ -51,7 +51,7 @@ function generate(bundle, min) {
     base.module.loaders[0].loader = p.extract(['css', 'sass']);
   }
   if (min) {
-    base.plugins.push(new webpack.optimize.UglifyJsPlugin());
+    base.plugins.push(new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false }}));
   } else {
     //generate source maps
     base.devtool = 'source-map';
