@@ -477,6 +477,11 @@ export interface IMappingFunction {
 
 }
 
+export interface INumberFilter {
+  min: number;
+  max: number;
+}
+
 function toScale(type = 'linear'):IScale {
   switch (type) {
     case 'log':
@@ -666,7 +671,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
    * @type {{min: number, max: number}}
    * @private
    */
-  private currentFilter = {min: -Infinity, max: Infinity};
+  private currentFilter : INumberFilter = {min: -Infinity, max: Infinity};
 
   private numberFormat : (n: number) => string = d3.format('.3n');
 
@@ -786,7 +791,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     return this.currentFilter.max;
   }
 
-  getFilter() {
+  getFilter(): INumberFilter {
     return {
       min: this.currentFilter.min,
       max: this.currentFilter.max
@@ -805,7 +810,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.currentFilter);
   }
 
-  setFilter(value: {min: number, max: number} = {min: -Infinity, max: +Infinity}) {
+  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity}) {
     if (this.currentFilter.min === value.min && this.currentFilter.max === value.max) {
       return;
     }

@@ -435,7 +435,9 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
   var pos = utils.offset($header.node()),
     bak = column.getMapping(),
     original = column.getOriginalMapping(),
-    act: model.IMappingFunction = bak.clone();
+    bakfilter = column.getFilter(),
+    act: model.IMappingFunction = bak.clone(),
+    actfilter = bakfilter;
 
   var popup = d3.select('body').append('div')
     .attr({
@@ -444,25 +446,15 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
       left: pos.left + 'px',
       top: pos.top + 'px'
     })
-    .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>' +
-      '<label><input type="checkbox" id="filterIt" value="filterIt">Filter Outliers</label><br>'));
+    .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>'));
 
-  var $filterIt = popup.select('input').on('change', function () {
-    applyMapping(act);
-  });
-  $filterIt.property('checked', column.isFiltered());
-
-  function applyMapping(newscale: model.IMappingFunction) {
+  function applyMapping(newscale: model.IMappingFunction, filter: {min: number, max: number }) {
     act = newscale;
-    markFiltered($header, !newscale.eq(original));
+    actfilter = filter;
+    markFiltered($header, !newscale.eq(original) || (bakfilter.min !== filter.min || bakfilter.max !== filter.min));
 
     column.setMapping(newscale);
-    var val = $filterIt.property('checked');
-    if (val) {
-      column.setFilter({min: newscale.domain[0], max: newscale.domain[1]});
-    } else {
-      column.setFilter();
-    }
+    column.setFilter(filter);
   }
 
   var editorOptions = {
@@ -470,11 +462,11 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
     triggerCallback: 'dragend'
   };
   var data_sample = data.mappingSample(column);
-  var editor = mappingeditor.create(<HTMLElement>popup.select('.mappingArea').node(), act, original, data_sample, editorOptions);
+  var editor = mappingeditor.create(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, data_sample, editorOptions);
 
 
   popup.select('.ok').on('click', function () {
-    applyMapping(editor.scale);
+    applyMapping(editor.scale, editor.filter);
     popup.remove();
   });
   popup.select('.cancel').on('click', function () {
@@ -485,9 +477,11 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
   popup.select('.reset').on('click', function () {
     bak = original;
     act = bak.clone();
-    applyMapping(act);
+    bakfilter = {min: -Infinity, max: +Infinity};
+    actfilter = bakfilter;
+    applyMapping(act, actfilter);
     popup.selectAll('.mappingArea *').remove();
-    editor = mappingeditor.create(<HTMLElement>popup.select('.mappingArea').node(), act, original, data_sample, editorOptions);
+    editor = mappingeditor.create(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, data_sample, editorOptions);
   });
 }
 

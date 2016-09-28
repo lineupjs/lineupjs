@@ -1,21 +1,20 @@
 //mapping editor
 .lugui-me {
-
+  margin-bottom: 5px;
   clear: both;
 
   > div:first-of-type {
     padding-bottom: 5px;
     border-bottom: 1px solid black;
   }
-  > div:nth-of-type(2) {
+  > div:nth-of-type(3) {
     padding-top: 5px;
-    border-top: 1px solid black;
     input {
       width: 4em;
     }
   }
 
-  > div:first-of-type, > div:nth-of-type(2) {
+  > div:first-of-type, > div:nth-of-type(3) {
     margin: 0 5px;
     font-size: 10pt;
     text-align: center;
@@ -31,6 +30,8 @@
   svg {
     margin-top: -5px;
     margin-bottom: -7px;
+    z-index: 1;
+    position: relative;
 
     rect {
       fill: white;
@@ -64,6 +65,41 @@
       }
     }
 
+  }
+
+  div.mapping_filter {
+    border: 1px solid black;
+    height: 20px;
+    position: relative;
+
+    div.mapping_mapping {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      background-color: #bababa;
+    }
+    div.filter_left_filter, div.filter_right_filter {
+      position: absolute;
+      height: 100%;
+      opacity: 0.5;
+      background: repeating-linear-gradient(-45deg, gray, gray 4px, white 4px, white 8px);
+    }
+
+    div.left_handle, div.right_handle {
+      position: absolute;
+      top: 5px;
+      height: 15px;
+      width: 5px;
+      cursor: ew-resize;
+      background: black;
+    }
+    div.left_handle {
+      left: 0;
+      border-radius: 0 3px 3px 0;
+    }
+    div.right_handle {
+      border-radius: 3px 0 0 3px;
+    }
   }
 
   div.script {

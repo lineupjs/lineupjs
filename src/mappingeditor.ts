@@ -14,7 +14,7 @@ function clamp(v:number, min:number, max:number) {
 
 export class MappingEditor {
   private options = {
-    width: 320,
+    width: 370,
     height: 200,
     padding_hor: 5,
     padding_ver: 5,
@@ -24,16 +24,23 @@ export class MappingEditor {
     triggerCallback: 'change' //change, dragend
   };
 
-  constructor(private parent: HTMLElement, private scale_:model.IMappingFunction, private original:model.IMappingFunction, private dataPromise:Promise<number[]>, options:any = {}) {
+  private computeFilter: ()=>model.INumberFilter;
+
+  constructor(private parent: HTMLElement, private scale_:model.IMappingFunction, private original:model.IMappingFunction, filter: model.INumberFilter, private dataPromise:Promise<number[]>, options:any = {}) {
     utils.merge(this.options, options);
     //work on a local copy
     this.scale_ = scale_.clone();
 
     this.build(d3.select(parent));
+    //this.filter = { min: filter.min, max: filter.max }; //local copy
   }
 
   get scale() {
     return this.scale_;
+  }
+
+  get filter(): model.INumberFilter {
+    return this.computeFilter();
   }
 
   private build($root: d3.Selection<any>) {
@@ -68,6 +75,13 @@ export class MappingEditor {
       </g>
     </g>
   </svg>
+  <div class="mapping_filter" style="width: ${options.width-options.padding_hor*2}px; margin-left: ${options.padding_hor}px;">
+    <div class="mapping_mapping"></div>
+    <div class="filter_left_filter"></div>
+    <div class="filter_right_filter"></div>
+    <div class="left_handle"></div>
+    <div class="right_handle"></div>
+  </div>
   <div>
     <input type="text" class="raw_min" value="0">
     <span class="center">Raw</span>
@@ -82,6 +96,8 @@ export class MappingEditor {
 
     const width = options.width - options.padding_hor*2;
     const height = options.height - options.padding_ver*2;
+
+    const $mapping_area = $root.select('div.mapping_mapping');
 
 
     const raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
@@ -141,6 +157,12 @@ export class MappingEditor {
       }).style('visibility', function (d) {
         const domain = that.scale.domain;
         return (d < domain[0] || d > domain[domain.length-1]) ? 'hidden' : null;
+      });
+
+      const minmax = d3.extent(that.scale.domain);
+      $mapping_area.style({
+        left: raw2pixel(minmax[0])+'px',
+        width: raw2pixel(minmax[1]-minmax[0])+'px'
       });
     }
 
@@ -270,8 +292,7 @@ export class MappingEditor {
       const $text = $root.select('textarea').text(sscale.code);
 
       $root.select('div.script').select('button').on('click', () => {
-        const code = $text.property('value');
-        sscale.code = code;
+        sscale.code = $text.property('value');
         updateDataLines();
         triggerUpdate();
       });
@@ -284,8 +305,34 @@ export class MappingEditor {
       if (isDragEnd && (options.triggerCallback !== 'dragend')) {
         return;
       }
-      options.callback.call(options.callbackThisArg, that.scale.clone());
+      options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
     }
+
+    $root.selectAll('div.left_handle, div.right_handle').call(createDrag(function (d) {
+      //drag normalized
+      const x = clamp(d3.event.x, 0, width-5);
+      const $this = d3.select(this).style('left', x + 'px');
+      const is_left = $this.classed('left_handle');
+      if (is_left) {
+        $root.select('div.filter_left_filter').style('width',x+'px');
+      } else {
+        $root.select('div.filter_right_filter').style('left',x+'px').style('width', (width-x)+'px');
+      }
+    }));
+    $root.select('div.right_handle').style('left',(width-5)+'px');
+
+    this.computeFilter = function() {
+      const min_p = parseFloat($root.select('div.left_handle').style('left'));
+      const min_f = raw2pixel.invert(min_p);
+
+      const max_p = parseFloat($root.select('div.right_handle').style('left'))+5;
+      const max_f = raw2pixel.invert(max_p);
+
+      return {
+        min: min_p <= 0 ? -Infinity : min_f,
+        max: max_p >= width ? Infinity : max_f
+      };
+    };
 
     function updateRaw() {
       const d = raw2pixel.domain();
@@ -325,6 +372,6 @@ export class MappingEditor {
   }
 }
 
-export function create(parent: HTMLElement, scale:model.IMappingFunction, original:model.IMappingFunction, dataPromise:Promise<number[]>, options:any = {}) {
-  return new MappingEditor(parent, scale, original, dataPromise, options);
+export function create(parent: HTMLElement, scale:model.IMappingFunction, original:model.IMappingFunction, filter: model.INumberFilter, dataPromise:Promise<number[]>, options:any = {}) {
+  return new MappingEditor(parent, scale, original, filter, dataPromise, options);
 }
