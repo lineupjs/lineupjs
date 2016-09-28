@@ -351,7 +351,7 @@ export class Column extends utils.AEventDispatcher {
    * @param b
    * @return {number}
    */
-  compare(a:any[], b:any[]) {
+  compare(a:any, b:any) {
     return 0; //can't compare
   }
 
@@ -392,7 +392,7 @@ export class ValueColumn<T> extends Column {
     return this.accessor(row, this.id, this.desc, this.findMyRanker());
   }
 
-  compare(a:any[], b:any[]) {
+  compare(a:any, b:any) {
     return 0; //can't compare
   }
 }
@@ -414,7 +414,7 @@ export class DummyColumn extends Column {
     return '';
   }
 
-  compare(a:any[], b:any[]) {
+  compare(a:any, b:any) {
     return 0; //can't compare
   }
 }
@@ -760,7 +760,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     return this.getValue(row);
   }
 
-  compare(a:any[], b:any[]) {
+  compare(a:any, b:any) {
     return numberCompare(this.getValue(a), this.getValue(b));
   }
 
@@ -918,7 +918,7 @@ export class StringColumn extends ValueColumn<string> {
     this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a:any[], b:any[]) {
+  compare(a:any, b:any) {
     var a_val: string, b_val: string;
     if((a_val = this.getValue(a)) === '') {
       return 1;
@@ -1128,7 +1128,7 @@ export class SelectionColumn extends ValueColumn<boolean> {
     return !old;
   }
 
-  compare(a:any[], b:any[]) {
+  compare(a:any, b:any) {
     return d3.ascending(this.getValue(a), this.getValue(b));
   }
 }
@@ -1390,7 +1390,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
     this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a:any[], b:any[]) {
+  compare(a:any, b:any) {
     const va = this.getValues(a);
     const vb = this.getValues(b);
     //check all categories
@@ -1574,7 +1574,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
     this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a:any[], b:any[]) {
+  compare(a:any, b:any) {
     return NumberColumn.prototype.compare.call(this, a, b);
   }
 }
@@ -1583,18 +1583,11 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
 /**
  * implementation of a combine column, standard operations how to select
  */
-export class CompositeColumn extends Column implements IColumnParent, INumberColumn {
-  public missingValue = 0;
+export class CompositeColumn extends Column implements IColumnParent {
   protected _children:Column[] = [];
-
-  private numberFormat : (n: number) => string = d3.format('.3n');
 
   constructor(id:string, desc:any) {
     super(id, desc);
-
-    if (desc.numberFormat) {
-      this.numberFormat = d3.format(desc.numberFormat);
-    }
   }
 
   assignNewId(idGenerator:() => string) {
@@ -1632,17 +1625,10 @@ export class CompositeColumn extends Column implements IColumnParent, INumberCol
   dump(toDescRef:(desc:any) => any) {
     var r = super.dump(toDescRef);
     r.children = this._children.map((d) => d.dump(toDescRef));
-    r.missingValue = this.missingValue;
     return r;
   }
 
   restore(dump:any, factory:(dump:any) => Column) {
-    if (dump.missingValue) {
-      this.missingValue = dump.missingValue;
-    }
-    if (dump.numberFormat) {
-      this.numberFormat = d3.format(dump.numberFormat);
-    }
     dump.children.map((child) => {
       var c = factory(child);
       if (c) {
@@ -1660,10 +1646,6 @@ export class CompositeColumn extends Column implements IColumnParent, INumberCol
    * @returns {any}
    */
   insert(col:Column, index:number) {
-    if (!isNumberColumn(col)) { //indicator it is a number type
-      return null;
-    }
-
     this._children.splice(index, 0, col);
     //listen and propagate events
     return this.insertImpl(col, index);
@@ -1715,6 +1697,62 @@ export class CompositeColumn extends Column implements IColumnParent, INumberCol
     return this.color;
   }
 
+  isFiltered() {
+    return this._children.some((d) => d.isFiltered());
+  }
+
+  filter(row:any) {
+    return this._children.every((d) => d.filter(row));
+  }
+}
+
+/**
+ * implementation of a combine column, standard operations how to select
+ */
+export class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
+  public missingValue = 0;
+
+  private numberFormat : (n: number) => string = d3.format('.3n');
+
+  constructor(id:string, desc:any) {
+    super(id, desc);
+
+    if (desc.numberFormat) {
+      this.numberFormat = d3.format(desc.numberFormat);
+    }
+  }
+
+
+  dump(toDescRef:(desc:any) => any) {
+    var r = super.dump(toDescRef);
+    r.missingValue = this.missingValue;
+    return r;
+  }
+
+  restore(dump:any, factory:(dump:any) => Column) {
+    if (dump.missingValue) {
+      this.missingValue = dump.missingValue;
+    }
+    if (dump.numberFormat) {
+      this.numberFormat = d3.format(dump.numberFormat);
+    }
+    super.restore(dump, factory);
+  }
+
+  /**
+   * inserts a column at a the given position
+   * @param col
+   * @param index
+   * @param weight
+   * @returns {any}
+   */
+  insert(col:Column, index:number) {
+    if (!isNumberColumn(col)) { //indicator it is a number type
+      return null;
+    }
+    return super.insert(col, index);
+  }
+
   getLabel(row: any) {
     const v = this.getValue(row);
     //keep non number if it is not a number else convert using formatter
@@ -1738,23 +1776,14 @@ export class CompositeColumn extends Column implements IColumnParent, INumberCol
     return this.getValue(row);
   }
 
-  compare(a:any[], b:any[]) {
+  compare(a:any, b:any) {
     return numberCompare(this.getValue(a), this.getValue(b));
   }
-
-  isFiltered() {
-    return this._children.some((d) => d.isFiltered());
-  }
-
-  filter(row:any) {
-    return this._children.every((d) => d.filter(row));
-  }
 }
-
 /**
  * implementation of the stacked column
  */
-export class StackColumn extends CompositeColumn {
+export class StackColumn extends CompositeNumberColumn {
   /**
    * factory for creating a description creating a stacked column
    * @param label
@@ -1944,7 +1973,7 @@ export class StackColumn extends CompositeColumn {
 /**
  * combines multiple columns by using the maximal value
  */
-export class MaxColumn extends CompositeColumn {
+export class MaxColumn extends CompositeNumberColumn {
   /**
    * factory for creating a description creating a max column
    * @param label
@@ -1980,7 +2009,7 @@ export class MaxColumn extends CompositeColumn {
   }
 }
 
-export class MinColumn extends CompositeColumn {
+export class MinColumn extends CompositeNumberColumn {
   /**
    * factory for creating a description creating a min column
    * @param label
@@ -2016,7 +2045,7 @@ export class MinColumn extends CompositeColumn {
   }
 }
 
-export class MeanColumn extends CompositeColumn {
+export class MeanColumn extends CompositeNumberColumn {
   /**
    * factory for creating a description creating a mean column
    * @param label
@@ -2035,6 +2064,43 @@ export class MeanColumn extends CompositeColumn {
   }
 }
 
+/**
+ * a nested column is a composite column where the sorting order is determined by the nested ordering of the children
+ * i.e., sort by the first child if equal sort by the second child,...
+ */
+export class NestedColumn extends CompositeColumn {
+  /**
+   * factory for creating a description creating a mean column
+   * @param label
+   * @returns {{type: string, label: string}}
+   */
+  static desc(label:string = 'Nested') {
+    return {type: 'nested', label: label};
+  }
+
+  constructor(id:string, desc:any) {
+    super(id, desc);
+  }
+
+  compare(a:any, b:any) {
+    const c = this.children;
+    for (let ci of c) {
+      let ci_result = ci.compare(a, b);
+      if (ci_result !== 0) {
+        return ci_result;
+      }
+    }
+    return 0;
+  }
+
+  getLabel(row: any) {
+    return this.children.map((d) => d.getLabel(row)).join(';');
+  }
+
+  getValue(row:any) {
+    return this.children.map((d) => d.getValue(row)).join(';');
+  }
+}
 
 export class ScriptColumn extends CompositeColumn {
   /**
@@ -2139,7 +2205,7 @@ export class Ranking extends utils.AEventDispatcher implements IColumnParent {
    */
   private columns:Column[] = [];
 
-  comparator = (a:any[], b:any[]) => {
+  comparator = (a:any, b:any) => {
     if (this.sortColumn === null) {
       return 0;
     }
@@ -2445,6 +2511,7 @@ export const createSelectionDesc = SelectionColumn.desc;
 export const createMinDesc = MinColumn.desc;
 export const createMaxDesc = MaxColumn.desc;
 export const createMeanDesc = MeanColumn.desc;
+export const createNestedDesc = NestedColumn.desc;
 export const createScriptDesc = ScriptColumn.desc;
 /**
  * utility for creating an action description with optional label
@@ -2475,6 +2542,7 @@ export function models() {
     max: MaxColumn,
     min: MinColumn,
     mean: MinColumn,
-    script: ScriptColumn
+    script: ScriptColumn,
+    nested: NestedColumn
   };
 }
