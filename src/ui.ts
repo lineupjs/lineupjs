@@ -19,6 +19,18 @@ class PoolEntry {
   }
 }
 
+/**
+ * utility function to generate the tooltip text with description
+ * @param col the column
+ */
+function toFullTooltip(col: { label: string, description?: string}) {
+  var base = col.label;
+  if (col.description != null && col.description !== '') {
+    base += '\n'+col.description;
+  }
+  return base;
+}
+
 export class PoolRenderer {
   private options = {
     layout: 'vertical',
@@ -132,7 +144,7 @@ export class PoolRenderer {
       }
     });
     $headers.attr({
-      title: (d) => d.label
+      title: (d) => toFullTooltip(d)
     });
     $headers.select('span').text((d) => d.label);
     $headers.exit().remove();
@@ -566,7 +578,7 @@ export class HeaderRenderer {
     });
     $headers.attr({
       'class': (d) => `${clazz} ${d.cssClass||''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable': ''} ${d.isFiltered() ? 'filtered' : ''}`,
-      title: (d) => d.label,
+      title: (d) => toFullTooltip(d),
       'data-id': (d) => d.id,
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {

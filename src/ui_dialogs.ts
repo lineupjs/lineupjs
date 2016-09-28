@@ -62,12 +62,16 @@ export function makePopup(attachement:d3.Selection<any>, title:string, body:stri
  * @param $header the visual header element of this column
  */
 export function openRenameDialog(column:model.Column, $header:d3.Selection<model.Column>) {
-  var popup = makePopup($header, 'Rename Column', `<input type="text" size="15" value="${column.label}" required="required" autofocus="autofocus"><br><input type="color" size="15" value="${column.color}" required="required"><br>`);
+  var popup = makePopup($header, 'Rename Column', `
+    <input type="text" size="15" value="${column.label}" required="required" autofocus="autofocus"><br>
+    <input type="color" size="15" value="${column.color}" required="required"><br>
+    <textarea rows="5">${column.description}</textarea><br>`);
 
   popup.select('.ok').on('click', function () {
     var newValue = popup.select('input[type="text"]').property('value');
     var newColor = popup.select('input[type="color"]').property('value');
-    column.setMetaData( { label: newValue, color: newColor});
+    var newDescription = popup.select('textarea').property('value');
+    column.setMetaData( { label: newValue, color: newColor, description: newDescription});
     popup.remove();
   });
 

@@ -53,6 +53,11 @@ export interface IColumnDesc {
   type:string;
 
   /**
+   * column description
+   */
+  description?: string;
+
+  /**
    * color of this column
    */
   color?: string;
@@ -78,6 +83,7 @@ export interface ICategoricalStatistics {
 
 export interface IColumnMetaData {
   label: string;
+  description: string;
   color: string;
 }
 
@@ -113,6 +119,7 @@ export class Column extends utils.AEventDispatcher {
   parent:IColumnParent = null;
 
   label:string;
+  description: string;
   color:string;
   /**
    * alternative to specifying a color is defining a css class that should be used
@@ -130,6 +137,7 @@ export class Column extends utils.AEventDispatcher {
     super();
     this.id = fixCSS(id);
     this.label = this.desc.label || this.id;
+    this.description = this.desc.description || '';
     this.cssClass = (<any>this.desc).cssClass || '';
     this.color = (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
   }
@@ -218,20 +226,22 @@ export class Column extends utils.AEventDispatcher {
   }
 
   setMetaData(value: IColumnMetaData) {
-    if (value.label === this.label && this.color === value.color) {
+    if (value.label === this.label && this.color === value.color && this.description === value.description) {
       return;
     }
     var events = this.color === value.color ? ['labelChanged', 'metaDataChanged','dirtyHeader', 'dirty'] : ['labelChanged', 'metaDataChanged','dirtyHeader', 'dirtyValues', 'dirty'];
     this.fire(events, this.getMetaData(), {
       label: this.label = value.label,
-      color: this.color = value.color
+      color: this.color = value.color,
+      description: this.description = value.description
     });
   }
 
   getMetaData() : IColumnMetaData {
     return {
       label: this.label,
-      color: this.color
+      color: this.color,
+      description: this.description
     };
   }
 
