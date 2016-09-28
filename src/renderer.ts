@@ -53,7 +53,7 @@ export interface IRenderContext {
    * internal option flags
    * @param col
    */
-  showStacked(col:model.StackColumn):boolean;
+  showStacked(col:model.Column):boolean;
 
   /**
    * prefix used for all generated id names
@@ -648,10 +648,14 @@ class CategoricalRenderer extends DefaultCellRenderer {
  * renders a stacked column using composite pattern
  */
 class StackCellRenderer extends DefaultCellRenderer {
+  constructor(private nestingPossible = true) {
+    super();
+  }
+
   renderImpl($base:d3.Selection<any>, col:model.StackColumn, context:IRenderContext, perChild:($child:d3.Selection<model.Column>, col:model.Column, i:number, context:IRenderContext) => void, rowGetter:(index:number) => any, animated = true) {
     const $group = $base.datum(col),
       children = col.children,
-      stacked = context.showStacked(col);
+      stacked = this.nestingPossible && context.showStacked(col);
     var offset = 0,
       shifts = children.map((d) => {
         var r = offset;
@@ -728,7 +732,7 @@ class StackCellRenderer extends DefaultCellRenderer {
 
   renderCanvas(ctx: CanvasRenderingContext2D, stack:model.StackColumn, rows:any[], context:IRenderContext) {
     const children = stack.children,
-      stacked = context.showStacked(stack);
+      stacked = this.nestingPossible && context.showStacked(stack);
     var offset = 0,
       shifts = children.map((d) => {
         var r = offset;
@@ -816,6 +820,7 @@ export function renderers() {
     script: combineRenderer,
     actions: new ActionCellRenderer(),
     annotate: new AnnotateCellRenderer(),
-    selection: new SelectionCellRenderer()
+    selection: new SelectionCellRenderer(),
+    nested: new StackCellRenderer(false)
   };
 }

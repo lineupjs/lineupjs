@@ -394,14 +394,14 @@ export class HeaderRenderer {
       this.renderRankingButtons(rankings, rankingOffsets);
     }
 
-    function countStacked(c:model.Column):number {
-      if (c instanceof model.StackColumn && !(<model.StackColumn>c).getCollapsed() && !c.getCompressed()) {
-        return 1 + Math.max.apply(Math, (<model.StackColumn>c).children.map(countStacked));
+    function countMultiLevel(c:model.Column):number {
+      if (model.isMultiLevelColumn(c) && !(<model.IMultiLevelColumn>c).getCollapsed() && !c.getCompressed()) {
+        return 1 + Math.max.apply(Math, (<model.IMultiLevelColumn>c).children.map(countMultiLevel));
       }
       return 1;
     }
 
-    const levels = Math.max.apply(Math, columns.map(countStacked));
+    const levels = Math.max.apply(Math, columns.map(countMultiLevel));
     var height = (this.options.histograms ? this.options.headerHistogramHeight : this.options.headerHeight) + (levels-1)*this.options.headerHeight;
 
     if (this.options.autoRotateLabels) {
@@ -429,7 +429,8 @@ export class HeaderRenderer {
       provider = this.data,
       that = this;
     var $regular = $node.filter(d=> !(d instanceof model.Ranking)),
-      $stacked = $node.filter(d=> d instanceof model.StackColumn);
+      $stacked = $node.filter(d=> d instanceof model.StackColumn),
+      $multilevel = $node.filter(d=> model.isMultiLevelColumn(d));
 
     //edit weights
     $stacked.append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
@@ -480,12 +481,12 @@ export class HeaderRenderer {
         d3.event.stopPropagation();
       });
     //compress
-    $stacked.append('i')
+    $multilevel.append('i')
       .attr('class', 'fa')
-      .classed('fa-compress', (d:model.StackColumn) => !d.getCollapsed())
-      .classed('fa-expand', (d:model.StackColumn) => d.getCollapsed())
+      .classed('fa-compress', (d:model.IMultiLevelColumn) => !d.getCollapsed())
+      .classed('fa-expand', (d:model.IMultiLevelColumn) => d.getCollapsed())
       .attr('title', 'Compress/Expand')
-      .on('click', function (d:model.StackColumn) {
+      .on('click', function (d:model.IMultiLevelColumn) {
         d.setCollapsed(!d.getCollapsed());
         d3.select(this)
           .classed('fa-compress', !d.getCollapsed())
@@ -578,7 +579,7 @@ export class HeaderRenderer {
     $headers.select('span.lu-label').text((d) => d.label);
 
     var that = this;
-    $headers.filter((d) => d instanceof model.StackColumn).each(function (col:model.StackColumn) {
+    $headers.filter((d) => model.isMultiLevelColumn(d)).each(function (col:model.IMultiLevelColumn) {
       if (col.getCollapsed() || col.getCompressed()) {
         d3.select(this).selectAll('div.' + clazz + '_i').remove();
       } else {
@@ -588,7 +589,7 @@ export class HeaderRenderer {
         let s_columns = s_shifts.map((d) => d.col);
         that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
       }
-    }).select('div.lu-label').call(utils.dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d:model.StackColumn, copy) => {
+    }).select('div.lu-label').call(utils.dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d:model.IMultiLevelColumn, copy) => {
       var col:model.Column = null;
       if ('application/caleydo-lineup-column-number-ref' in data) {
         var id = data['application/caleydo-lineup-column-number-ref'];
@@ -772,6 +773,9 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
         if (col instanceof model.StackColumn && col.getCollapsed()) {
           return options.renderers.number;
         }
+        if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
+          return options.renderers.string;
+        }
         var l = options.renderers[col.desc.type];
         return l || renderer.defaultRenderer();
       },
@@ -789,8 +793,8 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       renderCanvas(col:model.Column, ctx:CanvasRenderingContext2D, data:any[], context:renderer.IRenderContext = this) {
         //dummy impl
       },
-      showStacked(col:model.StackColumn) {
-        return options.stacked;
+      showStacked(col:model.Column) {
+        return col instanceof model.StackColumn && options.stacked;
       },
       idPrefix: options.idPrefix,
 
@@ -1142,8 +1146,8 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
           shift2 = d.children.filter((d) => !d.isHidden()).map((o) => {
             var r = o2;
             o2 += (o.getCompressed() ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
-            if (o instanceof model.StackColumn && !o.getCollapsed() && !o.getCompressed()) {
-              o2 += this.options.columnPadding * (o.length - 1);
+            if (model.isMultiLevelColumn(o) && !(<model.IMultiLevelColumn>o).getCollapsed() && !o.getCompressed()) {
+              o2 += this.options.columnPadding * ((<model.IMultiLevelColumn>o).length - 1);
             }
             return r;
           });
@@ -1258,6 +1262,9 @@ export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyR
         if (col instanceof model.StackColumn && col.getCollapsed()) {
           return options.renderers.number;
         }
+        if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
+          return options.renderers.string;
+        }
         var l = options.renderers[col.desc.type];
         return l || renderer.defaultRenderer();
       },
@@ -1268,8 +1275,8 @@ export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyR
         const act_renderer = this.renderer(col);
         act_renderer.renderCanvas(ctx, col, data, context);
       },
-      showStacked(col:model.StackColumn) {
-        return options.stacked;
+      showStacked(col:model.Column) {
+        return col instanceof model.StackColumn && options.stacked;
       },
       idPrefix: options.idPrefix,
 
