@@ -261,6 +261,10 @@ $lu_drag_over: #979797;
   text.text_center {
     text-anchor: middle;
   }
+  g.bar rect {
+    //bars nested combined with a text representation
+    opacity: 0.5;
+  }
 
   line.meanline {
     stroke: darkgray;
@@ -308,7 +312,7 @@ $lu_drag_over: #979797;
       rect.bg {
         fill: $lu_hover_color;
       }
-      rect.bar {
+      rect.bar, g.bar rect {
         opacity: 0.5;
       }
     }

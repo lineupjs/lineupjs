@@ -225,35 +225,63 @@ class DerivedCellRenderer extends DefaultCellRenderer {
  * a renderer rendering a bar for numerical columns
  */
 export class BarCellRenderer extends DefaultCellRenderer {
-  render($col:d3.Selection<any>, col:model.NumberColumn, rows:any[], context:IRenderContext) {
-    //map to bars
-    var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
+  /**
+   * flag to always render the value
+   * @type {boolean}
+   */
+  protected renderValue = false;
 
-    $rows.enter().append('rect').attr({
-      'class': 'bar ' + col.cssClass,
-      x: (d, i) => context.cellX(i),
-      y: (d, i) => context.cellPrevY(i) + context.option('rowPadding', 1),
-      width: (d) => {
-        var n = col.getWidth() * col.getValue(d);
-        return isNaN(n) ? 0 : n;
-      }
-    }).style('fill', col.color);
+  render($col:d3.Selection<any>, col:model.NumberColumn, rows:any[], context:IRenderContext) {
+    const renderValue = this.renderValue || context.option('renderBarValue', false);
+    //map to bars
+    var $rows = $col.datum(col).selectAll('.bar').data(rows, context.rowKey);
+
+    const padding = context.option('rowPadding', 1);
+    const renderBars = ($enter: d3.selection.Enter<any>, clazz: string, $update: d3.selection.Update<any>) => {
+       $enter.append('rect').attr({
+        'class': clazz,
+        x: (d, i) => context.cellX(i),
+        y: (d, i) => context.cellPrevY(i) + padding,
+        width: (d) => {
+          var n = col.getWidth() * col.getValue(d);
+          return isNaN(n) ? 0 : n;
+        }
+      }).style('fill', col.color);
+
+      $update.attr({
+        height: (d, i) => context.rowHeight(i) - context.option('rowPadding', 1) * 2
+      });
+
+      context.animated($update).attr({
+        x: (d, i) => context.cellX(i),
+        y: (d, i) => context.cellY(i) + context.option('rowPadding', 1),
+        width: (d) => {
+          var n = col.getWidth() * col.getValue(d);
+          return isNaN(n) ? 0 : n;
+        }
+      }).style({
+        fill: (d, i) => this.colorOf(d, i, col)
+      });
+    };
+
+    if (renderValue) {
+      let $rows_enter = $rows.enter().append('g').attr('class', 'bar '+this.textClass);
+      renderBars($rows_enter, '', $rows.select('rect'));
+      $rows_enter.append('text').attr({
+        'class': 'number',
+        'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+      });
+
+      context.animated($rows.select('text').text((d) => col.getLabel(d)))
+          .attr('transform', (d,i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')');
+    } else {
+      renderBars($rows.enter(), 'bar ' + this.textClass, $rows);
+    }
 
     $rows.attr({
       'data-index': (d, i) => i,
-      height: (d, i) => context.rowHeight(i) - context.option('rowPadding', 1) * 2
     });
 
-    context.animated($rows).attr({
-      x: (d, i) => context.cellX(i),
-      y: (d, i) => context.cellY(i) + context.option('rowPadding', 1),
-      width: (d) => {
-        var n = col.getWidth() * col.getValue(d);
-        return isNaN(n) ? 0 : n;
-      }
-    }).style({
-      fill: (d, i) => this.colorOf(d, i, col)
-    });
     $rows.exit().remove();
   }
 
@@ -269,10 +297,14 @@ export class BarCellRenderer extends DefaultCellRenderer {
   }
 
   findRow($col:d3.Selection<any>, index:number) {
-    return $col.selectAll('rect.bar[data-index="' + index + '"]');
+    return $col.selectAll('.bar[data-index="' + index + '"]');
   }
 
   mouseEnter($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.Column, row:any, index:number, context:IRenderContext) {
+    const renderValue = this.renderValue || context.option('renderBarValue', false);
+    if (renderValue) { //default behavior move everything
+      return super.mouseEnter($col, $row, col, row, index, context);
+    }
     var rowNode = this.findRow($col, index);
     if (!rowNode.empty()) {
       //create a text element on top
@@ -286,20 +318,30 @@ export class BarCellRenderer extends DefaultCellRenderer {
   }
 
   renderCanvas(ctx:CanvasRenderingContext2D, col:model.NumberColumn, rows:any[], context:IRenderContext) {
+    const renderValue = this.renderValue || context.option('renderBarValue', false);
+    const padding =context.option('rowPadding', 1);
     ctx.save();
     rows.forEach((d, i) => {
       const x = context.cellX(i);
-      const y = context.cellY(i) + context.option('rowPadding', 1);
+      const y = context.cellY(i) + padding;
       const n = col.getWidth() * col.getValue(d);
       const w = isNaN(n) ? 0 : n;
-      const h = context.rowHeight(i) - context.option('rowPadding', 1) * 2;
+      const h = context.rowHeight(i) - padding * 2;
       ctx.fillStyle = this.colorOf(d, i, col) || col.color || model.Column.DEFAULT_COLOR;
       ctx.fillRect(x, y, w, h);
+
+      if (renderValue) {
+        ctx.fillText(col.getLabel(d), x, y - padding, col.getWidth());
+      }
     });
     ctx.restore();
   }
 
   mouseEnterCanvas(ctx:CanvasRenderingContext2D, col:model.Column, row:any, index:number, context:IRenderContext) {
+    const renderValue = this.renderValue || context.option('renderBarValue', false);
+    if (renderValue) { //everything already rendered
+      return;
+    }
     ctx.save();
     ctx.fillText(col.getLabel(row), context.cellX(index), context.cellY(index), col.getWidth());
     ctx.restore();
@@ -813,7 +855,10 @@ export function renderers() {
     heatmap: new HeatMapCellRenderer(),
     stack: new StackCellRenderer(),
     categorical: new CategoricalRenderer(),
-    ordinal: combineRenderer,
+    ordinal: barRenderer({
+      renderValue: true,
+      colorOf: (d, i, col) => col.getColor(d)
+    }),
     max: combineRenderer,
     min: combineRenderer,
     mean: combineRenderer,
