@@ -266,7 +266,7 @@ export class BarCellRenderer extends DefaultCellRenderer {
 
     if (renderValue) {
       let $rows_enter = $rows.enter().append('g').attr('class', 'bar '+this.textClass);
-      renderBars($rows_enter, '', $rows.select('rect'));
+      renderBars($rows_enter, col.cssClass, $rows.select('rect'));
       $rows_enter.append('text').attr({
         'class': 'number',
         'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
@@ -275,7 +275,7 @@ export class BarCellRenderer extends DefaultCellRenderer {
       context.animated($rows.select('text').text((d) => col.getLabel(d)))
           .attr('transform', (d,i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')');
     } else {
-      renderBars($rows.enter(), 'bar ' + this.textClass, $rows);
+      renderBars($rows.enter(), 'bar ' + col.cssClass, $rows);
     }
 
     $rows.attr({
