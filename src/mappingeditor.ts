@@ -26,13 +26,12 @@ export class MappingEditor {
 
   private computeFilter: ()=>model.INumberFilter;
 
-  constructor(private parent: HTMLElement, private scale_:model.IMappingFunction, private original:model.IMappingFunction, filter: model.INumberFilter, private dataPromise:Promise<number[]>, options:any = {}) {
+  constructor(private parent: HTMLElement, private scale_:model.IMappingFunction, private original:model.IMappingFunction, private old_filter: model.INumberFilter, private dataPromise:Promise<number[]>, options:any = {}) {
     utils.merge(this.options, options);
     //work on a local copy
     this.scale_ = scale_.clone();
 
     this.build(d3.select(parent));
-    //this.filter = { min: filter.min, max: filter.max }; //local copy
   }
 
   get scale() {
@@ -319,7 +318,14 @@ export class MappingEditor {
         $root.select('div.filter_right_filter').style('left',x+'px').style('width', (width-x)+'px');
       }
     }));
-    $root.select('div.right_handle').style('left',(width-5)+'px');
+    {
+      let min_filter = (isFinite(this.old_filter.min)?raw2pixel(this.old_filter.min) : 0);
+      let max_filter = (isFinite(this.old_filter.max)?raw2pixel(this.old_filter.max) : width);
+      $root.select('div.right_handle').style('left',(max_filter-5)+'px');
+      $root.select('div.filter_right_filter').style('left',max_filter+'px').style('width', (width-max_filter)+'px');
+      $root.select('div.left_handle').style('left',min_filter+'px');
+      $root.select('div.filter_left_filter').style('width',min_filter+'px');
+    }
 
     this.computeFilter = function() {
       const min_p = parseFloat($root.select('div.left_handle').style('left'));
