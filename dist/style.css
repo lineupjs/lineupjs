@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.5.1 - 2016
+/*! lineupjs - v0.5.1 - 2016
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2016 Caleydo Team; Licensed BSD-3-Clause*/
 
@@ -165,6 +165,8 @@
     text-anchor: end; }
   .lu text.text_center, .lu-pool text.text_center {
     text-anchor: middle; }
+  .lu g.bar rect, .lu-pool g.bar rect {
+    opacity: 0.5; }
   .lu line.meanline, .lu-pool line.meanline {
     stroke: darkgray;
     stroke-width: 1; }
@@ -190,7 +192,7 @@
     stroke-width: 1; }
   .lu g.row.hover rect.bg, .lu-pool g.row.hover rect.bg {
     fill: #e5e5e5; }
-  .lu g.row.hover rect.bar, .lu-pool g.row.hover rect.bar {
+  .lu g.row.hover rect.bar, .lu g.row.hover g.bar rect, .lu-pool g.row.hover rect.bar, .lu-pool g.row.hover g.bar rect {
     opacity: 0.5; }
   .lu div.lu-header, .lu div.lu-pool, .lu-pool div.lu-header, .lu-pool div.lu-pool {
     position: relative;

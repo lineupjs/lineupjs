@@ -1,4 +1,4 @@
-/*! LineUpJS - v0.5.1 - 2016
+/*! lineupjs - v0.5.1 - 2016
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2016 Caleydo Team; Licensed BSD-3-Clause*/
 
@@ -100,7 +100,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".lugui-me {\n  margin-bottom: 5px;\n  clear: both; }\n  .lugui-me > div:first-of-type {\n    padding-bottom: 5px;\n    border-bottom: 1px solid black; }\n  .lugui-me > div:nth-of-type(3) {\n    padding-top: 5px; }\n    .lugui-me > div:nth-of-type(3) input {\n      width: 4em; }\n  .lugui-me > div:first-of-type, .lugui-me > div:nth-of-type(3) {\n    margin: 0 5px;\n    font-size: 10pt;\n    text-align: center; }\n    .lugui-me > div:first-of-type .raw_min, .lugui-me > div:nth-of-type(3) .raw_min {\n      float: left; }\n    .lugui-me > div:first-of-type .raw_max, .lugui-me > div:nth-of-type(3) .raw_max {\n      float: right;\n      text-align: right; }\n  .lugui-me svg {\n    margin-top: -5px;\n    margin-bottom: -7px;\n    z-index: 1;\n    position: relative; }\n    .lugui-me svg rect {\n      fill: white;\n      opacity: 0; }\n    .lugui-me svg g.samples line {\n      stroke: black;\n      opacity: 0.5; }\n    .lugui-me svg g.mapping:hover {\n      cursor: ew-resize; }\n      .lugui-me svg g.mapping:hover line {\n        stroke: #0000cf; }\n      .lugui-me svg g.mapping:hover circle {\n        fill: #0000cf; }\n    .lugui-me svg g.mapping line {\n      stroke: blue; }\n    .lugui-me svg g.mapping circle {\n      fill: blue; }\n  .lugui-me div.mapping_filter {\n    border: 1px solid black;\n    height: 20px;\n    position: relative; }\n    .lugui-me div.mapping_filter div.mapping_mapping {\n      position: absolute;\n      height: 100%;\n      width: 100%;\n      background-color: #bababa; }\n    .lugui-me div.mapping_filter div.filter_left_filter, .lugui-me div.mapping_filter div.filter_right_filter {\n      position: absolute;\n      height: 100%;\n      opacity: 0.5;\n      background: repeating-linear-gradient(-45deg, gray, gray 4px, white 4px, white 8px); }\n    .lugui-me div.mapping_filter div.left_handle, .lugui-me div.mapping_filter div.right_handle {\n      position: absolute;\n      top: 5px;\n      height: 15px;\n      width: 5px;\n      cursor: ew-resize;\n      background: black; }\n    .lugui-me div.mapping_filter div.left_handle {\n      left: 0;\n      border-radius: 0 3px 3px 0; }\n    .lugui-me div.mapping_filter div.right_handle {\n      border-radius: 3px 0 0 3px; }\n  .lugui-me div.script {\n    clear: both;\n    text-align: right; }\n    .lugui-me div.script textarea {\n      height: 4em;\n      width: 98%;\n      font-size: 8pt;\n      display: block; }\n\n.lu-popup {\n  position: absolute;\n  dominant-baseline: central;\n  text-anchor: middle; }\n  .lu-popup .ok {\n    position: absolute;\n    right: 10px; }\n\n.lu-popup, .lu-popup2 {\n  background-color: rgba(255, 255, 255, 0.9);\n  position: absolute;\n  padding: 2px;\n  box-shadow: 5px 5px 3px #888888;\n  z-index: 9;\n  font-size: 8pt;\n  clear: right; }\n  .lu-popup input, .lu-popup2 input {\n    font-size: 8pt; }\n  .lu-popup .selectionTable, .lu-popup2 .selectionTable {\n    background: white;\n    overflow-x: auto;\n    overflow-y: auto; }\n    .lu-popup .selectionTable td,\n    .lu-popup .selectionTable th, .lu-popup2 .selectionTable td,\n    .lu-popup2 .selectionTable th {\n      white-space: nowrap;\n      padding: 1px 5px 1px 3px;\n      cursor: pointer; }\n    .lu-popup .selectionTable th, .lu-popup2 .selectionTable th {\n      border-bottom: #c1c1c1 1px solid; }\n    .lu-popup .selectionTable table, .lu-popup2 .selectionTable table {\n      width: 95%;\n      border: 0; }\n    .lu-popup .selectionTable tr:hover, .lu-popup2 .selectionTable tr:hover {\n      background-color: lightblue; }\n  .lu-popup .lu-popup-title, .lu-popup2 .lu-popup-title {\n    cursor: pointer;\n    cursor: -webkit-grab; }\n\n.lu-popup2 * {\n  margin: 0; }\n\n.lu-popup2 .ok {\n  float: right; }\n\n.lu-popup2 div.bar {\n  height: 1em; }\n\n.lu-tooltip {\n  background-color: white;\n  min-width: 200px;\n  position: absolute;\n  z-index: 3;\n  font-size: 9pt;\n  text-align: left;\n  padding: 2px; }\n  .lu-tooltip table {\n    width: 100%;\n    border-collapse: collapse; }\n  .lu-tooltip tbody th {\n    width: 100px; }\n  .lu-tooltip td, .lu-tooltip th {\n    border: 1px solid black; }\n\n.lu-pool div.header {\n  border: 2px outset white;\n  position: absolute; }\n  .lu-pool div.header:hover {\n    border-color: #e5e5e5; }\n\n.lu, .lu-pool {\n  position: relative; }\n  .lu div.lu-header, .lu-pool div.lu-header {\n    position: relative; }\n  .lu text, .lu tspan, .lu-pool text, .lu-pool tspan {\n    dominant-baseline: text-before-edge; }\n  .lu text.actions tspan, .lu-pool text.actions tspan {\n    cursor: pointer; }\n    .lu text.actions tspan:hover, .lu-pool text.actions tspan:hover {\n      color: darkblue; }\n  .lu text.selection, .lu-pool text.selection {\n    cursor: pointer; }\n    .lu text.selection:hover, .lu-pool text.selection:hover {\n      color: darkblue; }\n  .lu text.rank, .lu text.text_right, .lu-pool text.rank, .lu-pool text.text_right {\n    text-anchor: end; }\n  .lu text.text_center, .lu-pool text.text_center {\n    text-anchor: middle; }\n  .lu line.meanline, .lu-pool line.meanline {\n    stroke: darkgray;\n    stroke-width: 1; }\n  .lu *[draggable], .lu-pool *[draggable] {\n    cursor: pointer;\n    cursor: -webkit-grab; }\n  .lu line.slope, .lu-pool line.slope {\n    stroke: darkgray;\n    stroke-width: 2;\n    shape-rendering: geometricPrecision; }\n    .lu line.slope.hover, .lu-pool line.slope.hover {\n      stroke: #e5e5e5; }\n    .lu line.slope.selected, .lu-pool line.slope.selected {\n      stroke: #ffa500; }\n  .lu g.cols, .lu-pool g.cols {\n    pointer-events: none; }\n  .lu g.row rect.bg, .lu-pool g.row rect.bg {\n    fill: transparent; }\n    .lu g.row rect.bg.even, .lu-pool g.row rect.bg.even {\n      fill: #f7f7f7; }\n  .lu g.row.selected rect.bg, .lu-pool g.row.selected rect.bg {\n    stroke: #ffa500;\n    stroke-width: 1; }\n  .lu g.row.hover rect.bg, .lu-pool g.row.hover rect.bg {\n    fill: #e5e5e5; }\n  .lu g.row.hover rect.bar, .lu-pool g.row.hover rect.bar {\n    opacity: 0.5; }\n  .lu div.lu-header, .lu div.lu-pool, .lu-pool div.lu-header, .lu-pool div.lu-pool {\n    position: relative;\n    background-color: white; }\n    .lu div.lu-header .drop, .lu div.lu-pool .drop, .lu-pool div.lu-header .drop, .lu-pool div.lu-pool .drop {\n      width: 100%;\n      height: 100%;\n      position: absolute; }\n      .lu div.lu-header .drop.drag_over, .lu div.lu-pool .drop.drag_over, .lu-pool div.lu-header .drop.drag_over, .lu-pool div.lu-pool .drop.drag_over {\n        background-color: #979797; }\n  .lu div.lu-header div.toolbar, .lu-pool div.lu-header div.toolbar {\n    display: none;\n    position: absolute;\n    text-align: right;\n    right: 5px;\n    top: 0;\n    border-radius: 3px 0 0 3px;\n    cursor: auto;\n    background: #6D6C6C;\n    z-index: 1; }\n  .lu div.lu-header div.header.drag_over div.lu-label, .lu-pool div.lu-header div.header.drag_over div.lu-label {\n    color: #979797; }\n  .lu div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu div.lu-header div.header.compressed div.histogram, .lu-pool div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu-pool div.lu-header div.header.compressed div.histogram {\n    display: none; }\n  .lu div.lu-header div.header div.histogram, .lu-pool div.lu-header div.header div.histogram {\n    position: absolute;\n    left: 0;\n    right: 5px;\n    top: 40%;\n    height: 60%;\n    display: none; }\n    .lu div.lu-header div.header div.histogram > div.bar, .lu-pool div.lu-header div.header div.histogram > div.bar {\n      position: absolute;\n      background-color: white;\n      opacity: 0.5; }\n      .lu div.lu-header div.header div.histogram > div.bar.selected, .lu-pool div.lu-header div.header div.histogram > div.bar.selected {\n        opacity: 1.0; }\n      .lu div.lu-header div.header div.histogram > div.bar:hover, .lu-pool div.lu-header div.header div.histogram > div.bar:hover {\n        opacity: 0.7; }\n    .lu div.lu-header div.header div.histogram div.mean, .lu-pool div.lu-header div.header div.histogram div.mean {\n      position: absolute;\n      height: 100%;\n      width: 1px;\n      border-left: 1px solid black; }\n  .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {\n    position: relative;\n    background: inherit;\n    transform-origin: left top;\n    text-overflow: ellipsis;\n    overflow-x: hidden; }\n  .lu div.lu-header div.header span.lu-label, .lu-pool div.lu-header div.header span.lu-label {\n    background: inherit; }\n  .lu div.lu-header div.header i.sort_indicator, .lu-pool div.lu-header div.header i.sort_indicator {\n    position: absolute;\n    left: 1px;\n    top: 1px;\n    font-size: 8pt; }\n  .lu div.lu-header div.header div.handle, .lu-pool div.lu-header div.header div.handle {\n    position: absolute;\n    right: 0;\n    height: 100%;\n    top: 0;\n    background-color: white;\n    display: inline-block;\n    cursor: col-resize; }\n    .lu div.lu-header div.header div.handle.drag_over, .lu-pool div.lu-header div.header div.handle.drag_over {\n      background-color: #979797; }\n  .lu div.lu-header div.toolbar i, .lu-pool div.lu-header div.toolbar i {\n    font-size: 8pt;\n    padding: 1px 2px;\n    cursor: pointer; }\n    .lu div.lu-header div.toolbar i:hover, .lu-pool div.lu-header div.toolbar i:hover {\n      color: darkblue; }\n  .lu div.lu-header div.rankingbuttons, .lu-pool div.lu-header div.rankingbuttons {\n    position: absolute;\n    display: inline-block;\n    height: 100%;\n    font-size: 90%; }\n  .lu div.lu-header div.header, .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header, .lu-pool div.lu-header div.header_i {\n    position: absolute;\n    display: inline-block;\n    overflow: hidden;\n    color: white;\n    text-align: center;\n    height: 100%;\n    font-size: 90%; }\n    .lu div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu div.lu-header div.header_i.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header_i.filtered > div.toolbar i.fa-filter {\n      color: darkblue; }\n    .lu div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar {\n      display: block;\n      padding: 7px; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar i {\n        display: none; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before {\n        z-index: -1;\n        content: '\\F0C9';\n        font-family: FontAwesome, sans-serif;\n        font-size: 7pt;\n        padding: 1px 2px 1px 1px;\n        position: absolute;\n        top: 0;\n        right: 0;\n        bottom: -5px;\n        left: -5px; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover {\n        padding: 0 10px 0 5px; }\n        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before {\n          content: ''; }\n        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i {\n          display: inline-block; }\n    .lu div.lu-header div.header.compressed:hover > div.toolbar, .lu div.lu-header div.header_i.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header_i.compressed:hover > div.toolbar {\n      display: block; }\n    .lu div.lu-header div.header.number div.histogram, .lu div.lu-header div.header.categorical div.histogram, .lu div.lu-header div.header.ordinal div.histogram, .lu div.lu-header div.header_i.number div.histogram, .lu div.lu-header div.header_i.categorical div.histogram, .lu div.lu-header div.header_i.ordinal div.histogram, .lu-pool div.lu-header div.header.number div.histogram, .lu-pool div.lu-header div.header.categorical div.histogram, .lu-pool div.lu-header div.header.ordinal div.histogram, .lu-pool div.lu-header div.header_i.number div.histogram, .lu-pool div.lu-header div.header_i.categorical div.histogram, .lu-pool div.lu-header div.header_i.ordinal div.histogram {\n      display: block; }\n    .lu div.lu-header div.header.rotateable, .lu div.lu-header div.header_i.rotateable, .lu-pool div.lu-header div.header.rotateable, .lu-pool div.lu-header div.header_i.rotateable {\n      overflow: visible;\n      white-space: nowrap; }\n  .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header_i {\n    top: 50%;\n    height: 50%; }\n  .lu svg.lu-body, .lu-pool svg.lu-body {\n    foreignObject-padding: 0;\n    foreignObject-margin: 0; }\n    .lu svg.lu-body text, .lu-pool svg.lu-body text {\n      font-size: 10pt; }\n    .lu svg.lu-body input, .lu-pool svg.lu-body input {\n      padding: 0;\n      margin: 0;\n      font-size: 9pt; }\n", ""]);
+	exports.push([module.id, ".lugui-me {\n  margin-bottom: 5px;\n  clear: both; }\n  .lugui-me > div:first-of-type {\n    padding-bottom: 5px;\n    border-bottom: 1px solid black; }\n  .lugui-me > div:nth-of-type(3) {\n    padding-top: 5px; }\n    .lugui-me > div:nth-of-type(3) input {\n      width: 4em; }\n  .lugui-me > div:first-of-type, .lugui-me > div:nth-of-type(3) {\n    margin: 0 5px;\n    font-size: 10pt;\n    text-align: center; }\n    .lugui-me > div:first-of-type .raw_min, .lugui-me > div:nth-of-type(3) .raw_min {\n      float: left; }\n    .lugui-me > div:first-of-type .raw_max, .lugui-me > div:nth-of-type(3) .raw_max {\n      float: right;\n      text-align: right; }\n  .lugui-me svg {\n    margin-top: -5px;\n    margin-bottom: -7px;\n    z-index: 1;\n    position: relative; }\n    .lugui-me svg rect {\n      fill: white;\n      opacity: 0; }\n    .lugui-me svg g.samples line {\n      stroke: black;\n      opacity: 0.5; }\n    .lugui-me svg g.mapping:hover {\n      cursor: ew-resize; }\n      .lugui-me svg g.mapping:hover line {\n        stroke: #0000cf; }\n      .lugui-me svg g.mapping:hover circle {\n        fill: #0000cf; }\n    .lugui-me svg g.mapping line {\n      stroke: blue; }\n    .lugui-me svg g.mapping circle {\n      fill: blue; }\n  .lugui-me div.mapping_filter {\n    border: 1px solid black;\n    height: 20px;\n    position: relative; }\n    .lugui-me div.mapping_filter div.mapping_mapping {\n      position: absolute;\n      height: 100%;\n      width: 100%;\n      background-color: #bababa; }\n    .lugui-me div.mapping_filter div.filter_left_filter, .lugui-me div.mapping_filter div.filter_right_filter {\n      position: absolute;\n      height: 100%;\n      opacity: 0.5;\n      background: repeating-linear-gradient(-45deg, gray, gray 4px, white 4px, white 8px); }\n    .lugui-me div.mapping_filter div.left_handle, .lugui-me div.mapping_filter div.right_handle {\n      position: absolute;\n      top: 5px;\n      height: 15px;\n      width: 5px;\n      cursor: ew-resize;\n      background: black; }\n    .lugui-me div.mapping_filter div.left_handle {\n      left: 0;\n      border-radius: 0 3px 3px 0; }\n    .lugui-me div.mapping_filter div.right_handle {\n      border-radius: 3px 0 0 3px; }\n  .lugui-me div.script {\n    clear: both;\n    text-align: right; }\n    .lugui-me div.script textarea {\n      height: 4em;\n      width: 98%;\n      font-size: 8pt;\n      display: block; }\n\n.lu-popup {\n  position: absolute;\n  dominant-baseline: central;\n  text-anchor: middle; }\n  .lu-popup .ok {\n    position: absolute;\n    right: 10px; }\n\n.lu-popup, .lu-popup2 {\n  background-color: rgba(255, 255, 255, 0.9);\n  position: absolute;\n  padding: 2px;\n  box-shadow: 5px 5px 3px #888888;\n  z-index: 9;\n  font-size: 8pt;\n  clear: right; }\n  .lu-popup input, .lu-popup2 input {\n    font-size: 8pt; }\n  .lu-popup .selectionTable, .lu-popup2 .selectionTable {\n    background: white;\n    overflow-x: auto;\n    overflow-y: auto; }\n    .lu-popup .selectionTable td,\n    .lu-popup .selectionTable th, .lu-popup2 .selectionTable td,\n    .lu-popup2 .selectionTable th {\n      white-space: nowrap;\n      padding: 1px 5px 1px 3px;\n      cursor: pointer; }\n    .lu-popup .selectionTable th, .lu-popup2 .selectionTable th {\n      border-bottom: #c1c1c1 1px solid; }\n    .lu-popup .selectionTable table, .lu-popup2 .selectionTable table {\n      width: 95%;\n      border: 0; }\n    .lu-popup .selectionTable tr:hover, .lu-popup2 .selectionTable tr:hover {\n      background-color: lightblue; }\n  .lu-popup .lu-popup-title, .lu-popup2 .lu-popup-title {\n    cursor: pointer;\n    cursor: -webkit-grab; }\n\n.lu-popup2 * {\n  margin: 0; }\n\n.lu-popup2 .ok {\n  float: right; }\n\n.lu-popup2 div.bar {\n  height: 1em; }\n\n.lu-tooltip {\n  background-color: white;\n  min-width: 200px;\n  position: absolute;\n  z-index: 3;\n  font-size: 9pt;\n  text-align: left;\n  padding: 2px; }\n  .lu-tooltip table {\n    width: 100%;\n    border-collapse: collapse; }\n  .lu-tooltip tbody th {\n    width: 100px; }\n  .lu-tooltip td, .lu-tooltip th {\n    border: 1px solid black; }\n\n.lu-pool div.header {\n  border: 2px outset white;\n  position: absolute; }\n  .lu-pool div.header:hover {\n    border-color: #e5e5e5; }\n\n.lu, .lu-pool {\n  position: relative; }\n  .lu div.lu-header, .lu-pool div.lu-header {\n    position: relative; }\n  .lu text, .lu tspan, .lu-pool text, .lu-pool tspan {\n    dominant-baseline: text-before-edge; }\n  .lu text.actions tspan, .lu-pool text.actions tspan {\n    cursor: pointer; }\n    .lu text.actions tspan:hover, .lu-pool text.actions tspan:hover {\n      color: darkblue; }\n  .lu text.selection, .lu-pool text.selection {\n    cursor: pointer; }\n    .lu text.selection:hover, .lu-pool text.selection:hover {\n      color: darkblue; }\n  .lu text.rank, .lu text.text_right, .lu-pool text.rank, .lu-pool text.text_right {\n    text-anchor: end; }\n  .lu text.text_center, .lu-pool text.text_center {\n    text-anchor: middle; }\n  .lu g.bar rect, .lu-pool g.bar rect {\n    opacity: 0.5; }\n  .lu line.meanline, .lu-pool line.meanline {\n    stroke: darkgray;\n    stroke-width: 1; }\n  .lu *[draggable], .lu-pool *[draggable] {\n    cursor: pointer;\n    cursor: -webkit-grab; }\n  .lu line.slope, .lu-pool line.slope {\n    stroke: darkgray;\n    stroke-width: 2;\n    shape-rendering: geometricPrecision; }\n    .lu line.slope.hover, .lu-pool line.slope.hover {\n      stroke: #e5e5e5; }\n    .lu line.slope.selected, .lu-pool line.slope.selected {\n      stroke: #ffa500; }\n  .lu g.cols, .lu-pool g.cols {\n    pointer-events: none; }\n  .lu g.row rect.bg, .lu-pool g.row rect.bg {\n    fill: transparent; }\n    .lu g.row rect.bg.even, .lu-pool g.row rect.bg.even {\n      fill: #f7f7f7; }\n  .lu g.row.selected rect.bg, .lu-pool g.row.selected rect.bg {\n    stroke: #ffa500;\n    stroke-width: 1; }\n  .lu g.row.hover rect.bg, .lu-pool g.row.hover rect.bg {\n    fill: #e5e5e5; }\n  .lu g.row.hover rect.bar, .lu g.row.hover g.bar rect, .lu-pool g.row.hover rect.bar, .lu-pool g.row.hover g.bar rect {\n    opacity: 0.5; }\n  .lu div.lu-header, .lu div.lu-pool, .lu-pool div.lu-header, .lu-pool div.lu-pool {\n    position: relative;\n    background-color: white; }\n    .lu div.lu-header .drop, .lu div.lu-pool .drop, .lu-pool div.lu-header .drop, .lu-pool div.lu-pool .drop {\n      width: 100%;\n      height: 100%;\n      position: absolute; }\n      .lu div.lu-header .drop.drag_over, .lu div.lu-pool .drop.drag_over, .lu-pool div.lu-header .drop.drag_over, .lu-pool div.lu-pool .drop.drag_over {\n        background-color: #979797; }\n  .lu div.lu-header div.toolbar, .lu-pool div.lu-header div.toolbar {\n    display: none;\n    position: absolute;\n    text-align: right;\n    right: 5px;\n    top: 0;\n    border-radius: 3px 0 0 3px;\n    cursor: auto;\n    background: #6D6C6C;\n    z-index: 1; }\n  .lu div.lu-header div.header.drag_over div.lu-label, .lu-pool div.lu-header div.header.drag_over div.lu-label {\n    color: #979797; }\n  .lu div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu div.lu-header div.header.compressed div.histogram, .lu-pool div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu-pool div.lu-header div.header.compressed div.histogram {\n    display: none; }\n  .lu div.lu-header div.header div.histogram, .lu-pool div.lu-header div.header div.histogram {\n    position: absolute;\n    left: 0;\n    right: 5px;\n    top: 40%;\n    height: 60%;\n    display: none; }\n    .lu div.lu-header div.header div.histogram > div.bar, .lu-pool div.lu-header div.header div.histogram > div.bar {\n      position: absolute;\n      background-color: white;\n      opacity: 0.5; }\n      .lu div.lu-header div.header div.histogram > div.bar.selected, .lu-pool div.lu-header div.header div.histogram > div.bar.selected {\n        opacity: 1.0; }\n      .lu div.lu-header div.header div.histogram > div.bar:hover, .lu-pool div.lu-header div.header div.histogram > div.bar:hover {\n        opacity: 0.7; }\n    .lu div.lu-header div.header div.histogram div.mean, .lu-pool div.lu-header div.header div.histogram div.mean {\n      position: absolute;\n      height: 100%;\n      width: 1px;\n      border-left: 1px solid black; }\n  .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {\n    position: relative;\n    background: inherit;\n    transform-origin: left top;\n    text-overflow: ellipsis;\n    overflow-x: hidden; }\n  .lu div.lu-header div.header span.lu-label, .lu-pool div.lu-header div.header span.lu-label {\n    background: inherit; }\n  .lu div.lu-header div.header i.sort_indicator, .lu-pool div.lu-header div.header i.sort_indicator {\n    position: absolute;\n    left: 1px;\n    top: 1px;\n    font-size: 8pt; }\n  .lu div.lu-header div.header div.handle, .lu-pool div.lu-header div.header div.handle {\n    position: absolute;\n    right: 0;\n    height: 100%;\n    top: 0;\n    background-color: white;\n    display: inline-block;\n    cursor: col-resize; }\n    .lu div.lu-header div.header div.handle.drag_over, .lu-pool div.lu-header div.header div.handle.drag_over {\n      background-color: #979797; }\n  .lu div.lu-header div.toolbar i, .lu-pool div.lu-header div.toolbar i {\n    font-size: 8pt;\n    padding: 1px 2px;\n    cursor: pointer; }\n    .lu div.lu-header div.toolbar i:hover, .lu-pool div.lu-header div.toolbar i:hover {\n      color: darkblue; }\n  .lu div.lu-header div.rankingbuttons, .lu-pool div.lu-header div.rankingbuttons {\n    position: absolute;\n    display: inline-block;\n    height: 100%;\n    font-size: 90%; }\n  .lu div.lu-header div.header, .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header, .lu-pool div.lu-header div.header_i {\n    position: absolute;\n    display: inline-block;\n    overflow: hidden;\n    color: white;\n    text-align: center;\n    height: 100%;\n    font-size: 90%; }\n    .lu div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu div.lu-header div.header_i.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header_i.filtered > div.toolbar i.fa-filter {\n      color: darkblue; }\n    .lu div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar {\n      display: block;\n      padding: 7px; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar i {\n        display: none; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before {\n        z-index: -1;\n        content: '\\F0C9';\n        font-family: FontAwesome, sans-serif;\n        font-size: 7pt;\n        padding: 1px 2px 1px 1px;\n        position: absolute;\n        top: 0;\n        right: 0;\n        bottom: -5px;\n        left: -5px; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover {\n        padding: 0 10px 0 5px; }\n        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before {\n          content: ''; }\n        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i {\n          display: inline-block; }\n    .lu div.lu-header div.header.compressed:hover > div.toolbar, .lu div.lu-header div.header_i.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header_i.compressed:hover > div.toolbar {\n      display: block; }\n    .lu div.lu-header div.header.number div.histogram, .lu div.lu-header div.header.categorical div.histogram, .lu div.lu-header div.header.ordinal div.histogram, .lu div.lu-header div.header_i.number div.histogram, .lu div.lu-header div.header_i.categorical div.histogram, .lu div.lu-header div.header_i.ordinal div.histogram, .lu-pool div.lu-header div.header.number div.histogram, .lu-pool div.lu-header div.header.categorical div.histogram, .lu-pool div.lu-header div.header.ordinal div.histogram, .lu-pool div.lu-header div.header_i.number div.histogram, .lu-pool div.lu-header div.header_i.categorical div.histogram, .lu-pool div.lu-header div.header_i.ordinal div.histogram {\n      display: block; }\n    .lu div.lu-header div.header.rotateable, .lu div.lu-header div.header_i.rotateable, .lu-pool div.lu-header div.header.rotateable, .lu-pool div.lu-header div.header_i.rotateable {\n      overflow: visible;\n      white-space: nowrap; }\n  .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header_i {\n    top: 50%;\n    height: 50%; }\n  .lu svg.lu-body, .lu-pool svg.lu-body {\n    foreignObject-padding: 0;\n    foreignObject-margin: 0; }\n    .lu svg.lu-body text, .lu-pool svg.lu-body text {\n      font-size: 10pt; }\n    .lu svg.lu-body input, .lu-pool svg.lu-body input {\n      padding: 0;\n      margin: 0;\n      font-size: 9pt; }\n", ""]);
 	
 	// exports
 
@@ -869,6 +869,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.compressed = false;
 	        this.id = fixCSS(id);
 	        this.label = this.desc.label || this.id;
+	        this.description = this.desc.description || '';
 	        this.cssClass = this.desc.cssClass || '';
 	        this.color = this.desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
 	    }
@@ -957,19 +958,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.width = value;
 	    };
 	    Column.prototype.setMetaData = function (value) {
-	        if (value.label === this.label && this.color === value.color) {
+	        if (value.label === this.label && this.color === value.color && this.description === value.description) {
 	            return;
 	        }
 	        var events = this.color === value.color ? ['labelChanged', 'metaDataChanged', 'dirtyHeader', 'dirty'] : ['labelChanged', 'metaDataChanged', 'dirtyHeader', 'dirtyValues', 'dirty'];
 	        this.fire(events, this.getMetaData(), {
 	            label: this.label = value.label,
-	            color: this.color = value.color
+	            color: this.color = value.color,
+	            description: this.description = value.description
 	        });
 	    };
 	    Column.prototype.getMetaData = function () {
 	        return {
 	            label: this.label,
-	            color: this.color
+	            color: this.color,
+	            description: this.description
 	        };
 	    };
 	    /**
@@ -1575,6 +1578,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return true;
 	        }
 	        var r = this.getLabel(row), filter = this.currentFilter;
+	        if (filter === StringColumn.FILTER_MISSING) {
+	            return r != null && r.trim() !== '';
+	        }
 	        if (typeof filter === 'string' && filter.length > 0) {
 	            return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
 	        }
@@ -1610,6 +1616,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return a_val < b_val ? -1 : 1;
 	        }
 	    };
+	    //magic key for filtering missing ones
+	    StringColumn.FILTER_MISSING = '__FILTER_MISSING';
 	    return StringColumn;
 	}(ValueColumn));
 	exports.StringColumn = StringColumn;
@@ -2226,12 +2234,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    __extends(CompositeColumn, _super);
 	    function CompositeColumn(id, desc) {
 	        _super.call(this, id, desc);
-	        this.missingValue = 0;
 	        this._children = [];
-	        this.numberFormat = d3.format('.3n');
-	        if (desc.numberFormat) {
-	            this.numberFormat = d3.format(desc.numberFormat);
-	        }
 	    }
 	    CompositeColumn.prototype.assignNewId = function (idGenerator) {
 	        _super.prototype.assignNewId.call(this, idGenerator);
@@ -2274,17 +2277,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    CompositeColumn.prototype.dump = function (toDescRef) {
 	        var r = _super.prototype.dump.call(this, toDescRef);
 	        r.children = this._children.map(function (d) { return d.dump(toDescRef); });
-	        r.missingValue = this.missingValue;
 	        return r;
 	    };
 	    CompositeColumn.prototype.restore = function (dump, factory) {
 	        var _this = this;
-	        if (dump.missingValue) {
-	            this.missingValue = dump.missingValue;
-	        }
-	        if (dump.numberFormat) {
-	            this.numberFormat = d3.format(dump.numberFormat);
-	        }
 	        dump.children.map(function (child) {
 	            var c = factory(child);
 	            if (c) {
@@ -2301,9 +2297,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {any}
 	     */
 	    CompositeColumn.prototype.insert = function (col, index) {
-	        if (!isNumberColumn(col)) {
-	            return null;
-	        }
 	        this._children.splice(index, 0, col);
 	        //listen and propagate events
 	        return this.insertImpl(col, index);
@@ -2347,28 +2340,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    CompositeColumn.prototype.getColor = function (row) {
 	        return this.color;
 	    };
-	    CompositeColumn.prototype.getLabel = function (row) {
-	        var v = this.getValue(row);
-	        //keep non number if it is not a number else convert using formatter
-	        return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
-	    };
-	    CompositeColumn.prototype.getValue = function (row) {
-	        //weighted sum
-	        var v = this.compute(row);
-	        if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
-	            return this.missingValue;
-	        }
-	        return v;
-	    };
-	    CompositeColumn.prototype.compute = function (row) {
-	        return NaN;
-	    };
-	    CompositeColumn.prototype.getNumber = function (row) {
-	        return this.getValue(row);
-	    };
-	    CompositeColumn.prototype.compare = function (a, b) {
-	        return numberCompare(this.getValue(a), this.getValue(b));
-	    };
 	    CompositeColumn.prototype.isFiltered = function () {
 	        return this._children.some(function (d) { return d.isFiltered(); });
 	    };
@@ -2378,6 +2349,75 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return CompositeColumn;
 	}(Column));
 	exports.CompositeColumn = CompositeColumn;
+	/**
+	 * implementation of a combine column, standard operations how to select
+	 */
+	var CompositeNumberColumn = (function (_super) {
+	    __extends(CompositeNumberColumn, _super);
+	    function CompositeNumberColumn(id, desc) {
+	        _super.call(this, id, desc);
+	        this.missingValue = 0;
+	        this.numberFormat = d3.format('.3n');
+	        if (desc.numberFormat) {
+	            this.numberFormat = d3.format(desc.numberFormat);
+	        }
+	    }
+	    CompositeNumberColumn.prototype.dump = function (toDescRef) {
+	        var r = _super.prototype.dump.call(this, toDescRef);
+	        r.missingValue = this.missingValue;
+	        return r;
+	    };
+	    CompositeNumberColumn.prototype.restore = function (dump, factory) {
+	        if (dump.missingValue) {
+	            this.missingValue = dump.missingValue;
+	        }
+	        if (dump.numberFormat) {
+	            this.numberFormat = d3.format(dump.numberFormat);
+	        }
+	        _super.prototype.restore.call(this, dump, factory);
+	    };
+	    /**
+	     * inserts a column at a the given position
+	     * @param col
+	     * @param index
+	     * @param weight
+	     * @returns {any}
+	     */
+	    CompositeNumberColumn.prototype.insert = function (col, index) {
+	        if (!isNumberColumn(col)) {
+	            return null;
+	        }
+	        return _super.prototype.insert.call(this, col, index);
+	    };
+	    CompositeNumberColumn.prototype.getLabel = function (row) {
+	        var v = this.getValue(row);
+	        //keep non number if it is not a number else convert using formatter
+	        return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
+	    };
+	    CompositeNumberColumn.prototype.getValue = function (row) {
+	        //weighted sum
+	        var v = this.compute(row);
+	        if (typeof (v) === 'undefined' || v == null || isNaN(v)) {
+	            return this.missingValue;
+	        }
+	        return v;
+	    };
+	    CompositeNumberColumn.prototype.compute = function (row) {
+	        return NaN;
+	    };
+	    CompositeNumberColumn.prototype.getNumber = function (row) {
+	        return this.getValue(row);
+	    };
+	    CompositeNumberColumn.prototype.compare = function (a, b) {
+	        return numberCompare(this.getValue(a), this.getValue(b));
+	    };
+	    return CompositeNumberColumn;
+	}(CompositeColumn));
+	exports.CompositeNumberColumn = CompositeNumberColumn;
+	function isMultiLevelColumn(col) {
+	    return typeof (col.getCollapsed) === 'function';
+	}
+	exports.isMultiLevelColumn = isMultiLevelColumn;
 	/**
 	 * implementation of the stacked column
 	 */
@@ -2550,7 +2590,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this._children.reduce(function (acc, d) { return acc + d.getValue(row) * (d.getWidth() / w); }, 0);
 	    };
 	    return StackColumn;
-	}(CompositeColumn));
+	}(CompositeNumberColumn));
 	exports.StackColumn = StackColumn;
 	/**
 	 * combines multiple columns by using the maximal value
@@ -2589,7 +2629,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return d3.max(this._children, function (d) { return d.getValue(row); });
 	    };
 	    return MaxColumn;
-	}(CompositeColumn));
+	}(CompositeNumberColumn));
 	exports.MaxColumn = MaxColumn;
 	var MinColumn = (function (_super) {
 	    __extends(MinColumn, _super);
@@ -2625,7 +2665,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return d3.min(this._children, function (d) { return d.getValue(row); });
 	    };
 	    return MinColumn;
-	}(CompositeColumn));
+	}(CompositeNumberColumn));
 	exports.MinColumn = MinColumn;
 	var MeanColumn = (function (_super) {
 	    __extends(MeanColumn, _super);
@@ -2645,8 +2685,128 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return d3.mean(this._children, function (d) { return d.getValue(row); });
 	    };
 	    return MeanColumn;
-	}(CompositeColumn));
+	}(CompositeNumberColumn));
 	exports.MeanColumn = MeanColumn;
+	var MultiLevelCompositeColumn = (function (_super) {
+	    __extends(MultiLevelCompositeColumn, _super);
+	    function MultiLevelCompositeColumn(id, desc) {
+	        _super.call(this, id, desc);
+	        /**
+	         * whether this stack column is collapsed i.e. just looks like an ordinary number column
+	         * @type {boolean}
+	         * @private
+	         */
+	        this.collapsed = false;
+	        var that = this;
+	        this.adaptChange = function (old, new_) {
+	            that.adaptWidthChange(this.source, old, new_);
+	        };
+	    }
+	    MultiLevelCompositeColumn.prototype.createEventList = function () {
+	        return _super.prototype.createEventList.call(this).concat(['collapseChanged']);
+	    };
+	    MultiLevelCompositeColumn.prototype.setCollapsed = function (value) {
+	        if (this.collapsed === value) {
+	            return;
+	        }
+	        this.fire(['collapseChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.collapsed, this.collapsed = value);
+	    };
+	    MultiLevelCompositeColumn.prototype.getCollapsed = function () {
+	        return this.collapsed;
+	    };
+	    MultiLevelCompositeColumn.prototype.dump = function (toDescRef) {
+	        var r = _super.prototype.dump.call(this, toDescRef);
+	        r.collapsed = this.collapsed;
+	        return r;
+	    };
+	    MultiLevelCompositeColumn.prototype.restore = function (dump, factory) {
+	        this.collapsed = dump.collapsed === true;
+	        _super.prototype.restore.call(this, dump, factory);
+	    };
+	    MultiLevelCompositeColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
+	        if (levelsToGo === void 0) { levelsToGo = 0; }
+	        if (padding === void 0) { padding = 0; }
+	        return StackColumn.prototype.flatten.call(this, r, offset, levelsToGo, padding);
+	    };
+	    /**
+	     * inserts a column at a the given position
+	     * @param col
+	     * @param index
+	     * @param weight
+	     * @returns {any}
+	     */
+	    MultiLevelCompositeColumn.prototype.insert = function (col, index) {
+	        col.on('widthChanged.stack', this.adaptChange);
+	        //increase my width
+	        _super.prototype.setWidth.call(this, this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
+	        return _super.prototype.insert.call(this, col, index);
+	    };
+	    /**
+	     * adapts weights according to an own width change
+	     * @param col
+	     * @param old
+	     * @param new_
+	     */
+	    MultiLevelCompositeColumn.prototype.adaptWidthChange = function (col, old, new_) {
+	        if (old === new_) {
+	            return;
+	        }
+	        _super.prototype.setWidth.call(this, this.getWidth() + (new_ - old));
+	    };
+	    MultiLevelCompositeColumn.prototype.removeImpl = function (child) {
+	        child.on('widthChanged.stack', null);
+	        _super.prototype.setWidth.call(this, this.length === 1 ? 100 : this.getWidth() - child.getWidth());
+	        return _super.prototype.removeImpl.call(this, child);
+	    };
+	    MultiLevelCompositeColumn.prototype.setWidth = function (value) {
+	        var factor = this.length / this.getWidth();
+	        this._children.forEach(function (child) {
+	            //disable since we change it
+	            child.setWidthImpl(child.getWidth() * factor);
+	        });
+	        _super.prototype.setWidth.call(this, value);
+	    };
+	    return MultiLevelCompositeColumn;
+	}(CompositeColumn));
+	exports.MultiLevelCompositeColumn = MultiLevelCompositeColumn;
+	/**
+	 * a nested column is a composite column where the sorting order is determined by the nested ordering of the children
+	 * i.e., sort by the first child if equal sort by the second child,...
+	 */
+	var NestedColumn = (function (_super) {
+	    __extends(NestedColumn, _super);
+	    function NestedColumn(id, desc) {
+	        _super.call(this, id, desc);
+	    }
+	    /**
+	     * factory for creating a description creating a mean column
+	     * @param label
+	     * @returns {{type: string, label: string}}
+	     */
+	    NestedColumn.desc = function (label) {
+	        if (label === void 0) { label = 'Nested'; }
+	        return { type: 'nested', label: label };
+	    };
+	    NestedColumn.prototype.compare = function (a, b) {
+	        var c = this.children;
+	        for (var _i = 0, c_1 = c; _i < c_1.length; _i++) {
+	            var ci = c_1[_i];
+	            var ci_result = ci.compare(a, b);
+	            if (ci_result !== 0) {
+	                return ci_result;
+	            }
+	        }
+	        return 0;
+	    };
+	    NestedColumn.prototype.getLabel = function (row) {
+	        return this.children.map(function (d) { return d.getLabel(row); }).join(';');
+	    };
+	    NestedColumn.prototype.getValue = function (row) {
+	        return this.children.map(function (d) { return d.getValue(row); }).join(';');
+	    };
+	    return NestedColumn;
+	}(MultiLevelCompositeColumn));
+	exports.NestedColumn = NestedColumn;
 	var ScriptColumn = (function (_super) {
 	    __extends(ScriptColumn, _super);
 	    function ScriptColumn(id, desc) {
@@ -2955,7 +3115,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return null;
 	    };
 	    /**
-	     * converts the sorting criteria to a json compatible notation for transfering it to the server
+	     * converts the sorting criteria to a json compatible notation for transferring it to the server
 	     * @param toId
 	     * @return {any}
 	     */
@@ -3037,6 +3197,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.createMinDesc = MinColumn.desc;
 	exports.createMaxDesc = MaxColumn.desc;
 	exports.createMeanDesc = MeanColumn.desc;
+	exports.createNestedDesc = NestedColumn.desc;
 	exports.createScriptDesc = ScriptColumn.desc;
 	/**
 	 * utility for creating an action description with optional label
@@ -3067,7 +3228,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        max: MaxColumn,
 	        min: MinColumn,
 	        mean: MinColumn,
-	        script: ScriptColumn
+	        script: ScriptColumn,
+	        nested: NestedColumn
 	    };
 	}
 	exports.models = models;
@@ -14148,33 +14310,57 @@ return /******/ (function(modules) { // webpackBootstrap
 	    __extends(BarCellRenderer, _super);
 	    function BarCellRenderer() {
 	        _super.apply(this, arguments);
+	        /**
+	         * flag to always render the value
+	         * @type {boolean}
+	         */
+	        this.renderValue = false;
 	    }
 	    BarCellRenderer.prototype.render = function ($col, col, rows, context) {
 	        var _this = this;
+	        var renderValue = this.renderValue || context.option('renderBarValue', false);
 	        //map to bars
-	        var $rows = $col.datum(col).selectAll('rect.bar').data(rows, context.rowKey);
-	        $rows.enter().append('rect').attr({
-	            'class': 'bar ' + col.cssClass,
-	            x: function (d, i) { return context.cellX(i); },
-	            y: function (d, i) { return context.cellPrevY(i) + context.option('rowPadding', 1); },
-	            width: function (d) {
-	                var n = col.getWidth() * col.getValue(d);
-	                return isNaN(n) ? 0 : n;
-	            }
-	        }).style('fill', col.color);
+	        var $rows = $col.datum(col).selectAll('.bar').data(rows, context.rowKey);
+	        var padding = context.option('rowPadding', 1);
+	        var renderBars = function ($enter, clazz, $update) {
+	            $enter.append('rect').attr({
+	                'class': clazz,
+	                x: function (d, i) { return context.cellX(i); },
+	                y: function (d, i) { return context.cellPrevY(i) + padding; },
+	                width: function (d) {
+	                    var n = col.getWidth() * col.getValue(d);
+	                    return isNaN(n) ? 0 : n;
+	                }
+	            }).style('fill', col.color);
+	            $update.attr({
+	                height: function (d, i) { return context.rowHeight(i) - context.option('rowPadding', 1) * 2; }
+	            });
+	            context.animated($update).attr({
+	                x: function (d, i) { return context.cellX(i); },
+	                y: function (d, i) { return context.cellY(i) + context.option('rowPadding', 1); },
+	                width: function (d) {
+	                    var n = col.getWidth() * col.getValue(d);
+	                    return isNaN(n) ? 0 : n;
+	                }
+	            }).style({
+	                fill: function (d, i) { return _this.colorOf(d, i, col); }
+	            });
+	        };
+	        if (renderValue) {
+	            var $rows_enter = $rows.enter().append('g').attr('class', 'bar ' + this.textClass);
+	            renderBars($rows_enter, '', $rows.select('rect'));
+	            $rows_enter.append('text').attr({
+	                'class': 'number',
+	                'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+	            });
+	            context.animated($rows.select('text').text(function (d) { return col.getLabel(d); }))
+	                .attr('transform', function (d, i) { return 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'; });
+	        }
+	        else {
+	            renderBars($rows.enter(), 'bar ' + this.textClass, $rows);
+	        }
 	        $rows.attr({
 	            'data-index': function (d, i) { return i; },
-	            height: function (d, i) { return context.rowHeight(i) - context.option('rowPadding', 1) * 2; }
-	        });
-	        context.animated($rows).attr({
-	            x: function (d, i) { return context.cellX(i); },
-	            y: function (d, i) { return context.cellY(i) + context.option('rowPadding', 1); },
-	            width: function (d) {
-	                var n = col.getWidth() * col.getValue(d);
-	                return isNaN(n) ? 0 : n;
-	            }
-	        }).style({
-	            fill: function (d, i) { return _this.colorOf(d, i, col); }
 	        });
 	        $rows.exit().remove();
 	    };
@@ -14189,9 +14375,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return col.color;
 	    };
 	    BarCellRenderer.prototype.findRow = function ($col, index) {
-	        return $col.selectAll('rect.bar[data-index="' + index + '"]');
+	        return $col.selectAll('.bar[data-index="' + index + '"]');
 	    };
 	    BarCellRenderer.prototype.mouseEnter = function ($col, $row, col, row, index, context) {
+	        var renderValue = this.renderValue || context.option('renderBarValue', false);
+	        if (renderValue) {
+	            return _super.prototype.mouseEnter.call(this, $col, $row, col, row, index, context);
+	        }
 	        var rowNode = this.findRow($col, index);
 	        if (!rowNode.empty()) {
 	            //create a text element on top
@@ -14205,19 +14395,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    BarCellRenderer.prototype.renderCanvas = function (ctx, col, rows, context) {
 	        var _this = this;
+	        var renderValue = this.renderValue || context.option('renderBarValue', false);
+	        var padding = context.option('rowPadding', 1);
 	        ctx.save();
 	        rows.forEach(function (d, i) {
 	            var x = context.cellX(i);
-	            var y = context.cellY(i) + context.option('rowPadding', 1);
+	            var y = context.cellY(i) + padding;
 	            var n = col.getWidth() * col.getValue(d);
 	            var w = isNaN(n) ? 0 : n;
-	            var h = context.rowHeight(i) - context.option('rowPadding', 1) * 2;
+	            var h = context.rowHeight(i) - padding * 2;
 	            ctx.fillStyle = _this.colorOf(d, i, col) || col.color || model.Column.DEFAULT_COLOR;
 	            ctx.fillRect(x, y, w, h);
+	            if (renderValue) {
+	                ctx.fillText(col.getLabel(d), x, y - padding, col.getWidth());
+	            }
 	        });
 	        ctx.restore();
 	    };
 	    BarCellRenderer.prototype.mouseEnterCanvas = function (ctx, col, row, index, context) {
+	        var renderValue = this.renderValue || context.option('renderBarValue', false);
+	        if (renderValue) {
+	            return;
+	        }
 	        ctx.save();
 	        ctx.fillText(col.getLabel(row), context.cellX(index), context.cellY(index), col.getWidth());
 	        ctx.restore();
@@ -14565,12 +14764,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	var StackCellRenderer = (function (_super) {
 	    __extends(StackCellRenderer, _super);
-	    function StackCellRenderer() {
-	        _super.apply(this, arguments);
+	    function StackCellRenderer(nestingPossible) {
+	        if (nestingPossible === void 0) { nestingPossible = true; }
+	        _super.call(this);
+	        this.nestingPossible = nestingPossible;
 	    }
 	    StackCellRenderer.prototype.renderImpl = function ($base, col, context, perChild, rowGetter, animated) {
 	        if (animated === void 0) { animated = true; }
-	        var $group = $base.datum(col), children = col.children, stacked = context.showStacked(col);
+	        var $group = $base.datum(col), children = col.children, stacked = this.nestingPossible && context.showStacked(col);
 	        var offset = 0, shifts = children.map(function (d) {
 	            var r = offset;
 	            offset += d.getWidth();
@@ -14638,7 +14839,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        $row.selectAll('*').remove();
 	    };
 	    StackCellRenderer.prototype.renderCanvas = function (ctx, stack, rows, context) {
-	        var children = stack.children, stacked = context.showStacked(stack);
+	        var children = stack.children, stacked = this.nestingPossible && context.showStacked(stack);
 	        var offset = 0, shifts = children.map(function (d) {
 	            var r = offset;
 	            offset += d.getWidth();
@@ -14712,14 +14913,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        heatmap: new HeatMapCellRenderer(),
 	        stack: new StackCellRenderer(),
 	        categorical: new CategoricalRenderer(),
-	        ordinal: combineRenderer,
+	        ordinal: barRenderer({
+	            renderValue: true,
+	            colorOf: function (d, i, col) { return col.getColor(d); }
+	        }),
 	        max: combineRenderer,
 	        min: combineRenderer,
 	        mean: combineRenderer,
 	        script: combineRenderer,
 	        actions: new ActionCellRenderer(),
 	        annotate: new AnnotateCellRenderer(),
-	        selection: new SelectionCellRenderer()
+	        selection: new SelectionCellRenderer(),
+	        nested: new StackCellRenderer(false)
 	    };
 	}
 	exports.renderers = renderers;
@@ -14751,6 +14956,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return PoolEntry;
 	}());
+	/**
+	 * utility function to generate the tooltip text with description
+	 * @param col the column
+	 */
+	function toFullTooltip(col) {
+	    var base = col.label;
+	    if (col.description != null && col.description !== '') {
+	        base += '\n' + col.description;
+	    }
+	    return base;
+	}
 	var PoolRenderer = (function () {
 	    function PoolRenderer(data, parent, options) {
 	        if (options === void 0) { options = {}; }
@@ -14859,7 +15075,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        });
 	        $headers.attr({
-	            title: function (d) { return d.label; }
+	            title: function (d) { return toFullTooltip(d); }
 	        });
 	        $headers.select('span').text(function (d) { return d.label; });
 	        $headers.exit().remove();
@@ -15099,13 +15315,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.options.rankingButtons !== dummyRankingButtonHook) {
 	            this.renderRankingButtons(rankings, rankingOffsets);
 	        }
-	        function countStacked(c) {
-	            if (c instanceof model.StackColumn && !c.getCollapsed() && !c.getCompressed()) {
-	                return 1 + Math.max.apply(Math, c.children.map(countStacked));
+	        function countMultiLevel(c) {
+	            if (model.isMultiLevelColumn(c) && !c.getCollapsed() && !c.getCompressed()) {
+	                return 1 + Math.max.apply(Math, c.children.map(countMultiLevel));
 	            }
 	            return 1;
 	        }
-	        var levels = Math.max.apply(Math, columns.map(countStacked));
+	        var levels = Math.max.apply(Math, columns.map(countMultiLevel));
 	        var height = (this.options.histograms ? this.options.headerHistogramHeight : this.options.headerHeight) + (levels - 1) * this.options.headerHeight;
 	        if (this.options.autoRotateLabels) {
 	            //check if we have overflows
@@ -15130,7 +15346,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    HeaderRenderer.prototype.createToolbar = function ($node) {
 	        var _this = this;
 	        var filterDialogs = this.options.filterDialogs, provider = this.data, that = this;
-	        var $regular = $node.filter(function (d) { return !(d instanceof model.Ranking); }), $stacked = $node.filter(function (d) { return d instanceof model.StackColumn; });
+	        var $regular = $node.filter(function (d) { return !(d instanceof model.Ranking); }), $stacked = $node.filter(function (d) { return d instanceof model.StackColumn; }), $multilevel = $node.filter(function (d) { return model.isMultiLevelColumn(d); });
 	        //edit weights
 	        $stacked.append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
 	            dialogs.openEditWeightsDialog(d, d3.select(this.parentNode.parentNode));
@@ -15180,7 +15396,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            d3.event.stopPropagation();
 	        });
 	        //compress
-	        $stacked.append('i')
+	        $multilevel.append('i')
 	            .attr('class', 'fa')
 	            .classed('fa-compress', function (d) { return !d.getCollapsed(); })
 	            .classed('fa-expand', function (d) { return d.getCollapsed(); })
@@ -15264,7 +15480,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	        $headers.attr({
 	            'class': function (d) { return (clazz + " " + (d.cssClass || '') + " " + (d.getCompressed() ? 'compressed' : '') + " " + d.headerCssClass + " " + (_this.options.autoRotateLabels ? 'rotateable' : '') + " " + (d.isFiltered() ? 'filtered' : '')); },
-	            title: function (d) { return d.label; },
+	            title: function (d) { return toFullTooltip(d); },
 	            'data-id': function (d) { return d.id; },
 	        });
 	        $headers.select('i.sort_indicator').attr('class', function (d) {
@@ -15276,7 +15492,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	        $headers.select('span.lu-label').text(function (d) { return d.label; });
 	        var that = this;
-	        $headers.filter(function (d) { return d instanceof model.StackColumn; }).each(function (col) {
+	        $headers.filter(function (d) { return model.isMultiLevelColumn(d); }).each(function (col) {
 	            if (col.getCollapsed() || col.getCompressed()) {
 	                d3.select(this).selectAll('div.' + clazz + '_i').remove();
 	            }
@@ -15440,6 +15656,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (col instanceof model.StackColumn && col.getCollapsed()) {
 	                    return options.renderers.number;
 	                }
+	                if (model.isMultiLevelColumn(col) && col.getCollapsed()) {
+	                    return options.renderers.string;
+	                }
 	                var l = options.renderers[col.desc.type];
 	                return l || renderer.defaultRenderer();
 	            },
@@ -15460,7 +15679,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                //dummy impl
 	            },
 	            showStacked: function (col) {
-	                return options.stacked;
+	                return col instanceof model.StackColumn && options.stacked;
 	            },
 	            idPrefix: options.idPrefix,
 	            animated: function ($sel) { return options.animation ? $sel.transition().duration(options.animationDuration) : $sel; },
@@ -15789,7 +16008,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var o2 = 0, shift2 = d.children.filter(function (d) { return !d.isHidden(); }).map(function (o) {
 	                var r = o2;
 	                o2 += (o.getCompressed() ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + _this.options.columnPadding;
-	                if (o instanceof model.StackColumn && !o.getCollapsed() && !o.getCompressed()) {
+	                if (model.isMultiLevelColumn(o) && !o.getCollapsed() && !o.getCompressed()) {
 	                    o2 += _this.options.columnPadding * (o.length - 1);
 	                }
 	                return r;
@@ -15892,6 +16111,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (col instanceof model.StackColumn && col.getCollapsed()) {
 	                    return options.renderers.number;
 	                }
+	                if (model.isMultiLevelColumn(col) && col.getCollapsed()) {
+	                    return options.renderers.string;
+	                }
 	                var l = options.renderers[col.desc.type];
 	                return l || renderer.defaultRenderer();
 	            },
@@ -15905,7 +16127,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                act_renderer.renderCanvas(ctx, col, data, context);
 	            },
 	            showStacked: function (col) {
-	                return options.stacked;
+	                return col instanceof model.StackColumn && options.stacked;
 	            },
 	            idPrefix: options.idPrefix,
 	            animated: function ($sel) { return $sel; },
@@ -16086,11 +16308,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param $header the visual header element of this column
 	 */
 	function openRenameDialog(column, $header) {
-	    var popup = makePopup($header, 'Rename Column', "<input type=\"text\" size=\"15\" value=\"" + column.label + "\" required=\"required\" autofocus=\"autofocus\"><br><input type=\"color\" size=\"15\" value=\"" + column.color + "\" required=\"required\"><br>");
+	    var popup = makePopup($header, 'Rename Column', "\n    <input type=\"text\" size=\"15\" value=\"" + column.label + "\" required=\"required\" autofocus=\"autofocus\"><br>\n    <input type=\"color\" size=\"15\" value=\"" + column.color + "\" required=\"required\"><br>\n    <textarea rows=\"5\">" + column.description + "</textarea><br>");
 	    popup.select('.ok').on('click', function () {
 	        var newValue = popup.select('input[type="text"]').property('value');
 	        var newColor = popup.select('input[type="color"]').property('value');
-	        column.setMetaData({ label: newValue, color: newColor });
+	        var newDescription = popup.select('textarea').property('value');
+	        column.setMetaData({ label: newValue, color: newColor, description: newDescription });
 	        popup.remove();
 	    });
 	    popup.select('.cancel').on('click', function () {
@@ -16289,8 +16512,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param $header the visual header element of this column
 	 */
 	function openStringFilter(column, $header) {
-	    var bak = column.getFilter() || '';
-	    var $popup = makePopup($header, 'Filter', "<input type=\"text\" placeholder=\"containing...\" autofocus=\"true\" size=\"15\" value=\"" + ((bak instanceof RegExp) ? bak.source : bak) + "\" autofocus=\"autofocus\">\n    <br><label><input type=\"checkbox\" " + ((bak instanceof RegExp) ? 'checked="checked"' : '') + ">RegExp</label>\n    <br>");
+	    var bak = column.getFilter() || '', bakMissing = bak === model.StringColumn.FILTER_MISSING;
+	    if (bakMissing) {
+	        bak = '';
+	    }
+	    var $popup = makePopup($header, 'Filter', "<input type=\"text\" placeholder=\"containing...\" autofocus=\"true\" size=\"15\" value=\"" + ((bak instanceof RegExp) ? bak.source : bak) + "\" autofocus=\"autofocus\">\n    <br><label><input type=\"checkbox\" " + ((bak instanceof RegExp) ? 'checked="checked"' : '') + ">RegExp</label><br><label><input class=\"lu_filter_missing\" type=\"checkbox\" " + (bakMissing ? 'checked="checked"' : '') + ">Filter Missing</label>\n    <br>");
 	    function updateData(filter) {
 	        markFiltered($header, (filter && filter !== ''));
 	        column.setFilter(filter);
@@ -16298,25 +16524,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function updateImpl(force) {
 	        //get value
 	        var search = $popup.select('input[type="text"]').property('value');
+	        var filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+	        if (filterMissing && search === '') {
+	            search = model.StringColumn.FILTER_MISSING;
+	        }
+	        if (search === '') {
+	            updateData(search);
+	            return;
+	        }
 	        if (search.length >= 3 || force) {
-	            var isRegex = $popup.select('input[type="checkbox"]').property('checked');
-	            if (isRegex) {
+	            var isRegex = $popup.select('input[type="checkbox"]:first-of-type').property('checked');
+	            if (isRegex && search !== model.StringColumn.FILTER_MISSING) {
 	                search = new RegExp(search);
 	            }
 	            updateData(search);
 	        }
 	    }
-	    $popup.select('input[type="checkbox"]').on('change', updateImpl);
+	    $popup.selectAll('input[type="checkbox"]').on('change', updateImpl);
 	    $popup.select('input[type="text"]').on('input', updateImpl);
 	    $popup.select('.cancel').on('click', function () {
-	        $popup.select('input[type="text"]').property('value', bak);
-	        $popup.select('input[type="checkbox"]').property('checked', bak instanceof RegExp ? 'checked' : null);
+	        $popup.select('input[type="text"]').property('value', bak || '');
+	        $popup.select('input[type="checkbox"]:first-of-type').property('checked', bak instanceof RegExp ? 'checked' : null);
+	        $popup.select('input[type="checkbox"].lu_filter_missing').property('checked', bakMissing ? 'checked' : null);
 	        updateData(bak);
 	        $popup.remove();
 	    });
 	    $popup.select('.reset').on('click', function () {
 	        $popup.select('input[type="text"]').property('value', '');
-	        $popup.select('input[type="checkbox"]').property('checked', null);
+	        $popup.selectAll('input[type="checkbox"]').property('checked', null);
 	        updateData(null);
 	    });
 	    $popup.select('.ok').on('click', function () {
