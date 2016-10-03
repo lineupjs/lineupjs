@@ -8,16 +8,17 @@ import utils = require('./utils');
 import model = require('./model');
 
 
-function clamp(v:number, min:number, max:number) {
+function clamp(v: number, min: number, max: number) {
   return Math.max(Math.min(v, max), min);
 }
 
 export class MappingEditor {
   private options = {
     width: 370,
-    height: 200,
-    padding_hor: 5,
-    padding_ver: 5,
+    height: 225,
+    padding_hor: 7,
+    padding_ver: 7,
+    filter_height: 20,
     radius: 5,
     callback: (d)=>d,
     callbackThisArg: null,
@@ -26,7 +27,7 @@ export class MappingEditor {
 
   private computeFilter: ()=>model.INumberFilter;
 
-  constructor(private parent: HTMLElement, private scale_:model.IMappingFunction, private original:model.IMappingFunction, private old_filter: model.INumberFilter, private dataPromise:Promise<number[]>, options:any = {}) {
+  constructor(private parent: HTMLElement, private scale_: model.IMappingFunction, private original: model.IMappingFunction, private old_filter: model.INumberFilter, private dataPromise: Promise<number[]>, options: any = {}) {
     utils.merge(this.options, options);
     //work on a local copy
     this.scale_ = scale_.clone();
@@ -46,9 +47,13 @@ export class MappingEditor {
     const options = this.options,
       that = this;
     $root = $root.append('div').classed('lugui-me', true);
-    (<HTMLElement>$root.node()).innerHTML = `<div>
-    <span class="raw_min">0</span>
-    <span class="center"><label><select>
+
+
+    const width = options.width - options.padding_hor * 2;
+    const height = options.height - options.padding_ver * 2 - options.filter_height;
+
+    (<HTMLElement>$root.node()).innerHTML = `<form onsubmit="return false">
+      <div style="text-align: center"><label for="mapping_type">Mapping Type: <select id="mapping_type">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>
@@ -58,55 +63,60 @@ export class MappingEditor {
         <option value="pow3">Pow 3</option>
         <option value="sqrt">Sqrt</option>
         <option value="script">Custom Script</option>
-      </select></label>
-      </span>
-    <span class="raw_max">1</span>
-  </div>
-  <svg width="${options.width}" height="${options.height}">
-    <rect width="100%" height="10"></rect>
-    <rect width="100%" height="10" y="${options.height-10}"></rect>
-    <g transform="translate(${options.padding_hor},${options.padding_ver})">
-      <g class="samples">
-
-      </g>
-      <g class="mappings">
-
-      </g>
-    </g>
-  </svg>
-  <div class="mapping_filter" style="width: ${options.width-options.padding_hor*2}px; margin-left: ${options.padding_hor}px;">
-    <div class="mapping_mapping"></div>
-    <div class="filter_left_filter"></div>
-    <div class="filter_right_filter"></div>
-    <div class="left_handle"></div>
-    <div class="right_handle"></div>
-  </div>
-  <div>
-    <input type="text" class="raw_min" value="0">
-    <span class="center">Raw</span>
-    <input type="text" class="raw_max" value="1">
-  </div>
-  <div class="script">
-    <textarea>
-
-    </textarea>
-    <button>Apply</button>
-  </div>`;
-
-    const width = options.width - options.padding_hor*2;
-    const height = options.height - options.padding_ver*2;
-
-    const $mapping_area = $root.select('div.mapping_mapping');
+      </select>
+      </label></div>
+      <div class="mapping_area">
+        <div>
+          <span>0</span>
+          <input type="text" class="raw_min" id="raw_min" value="0"><label for="raw_min">Min</label>
+        </div>
+        <svg width="${options.width}" height="${options.height}">
+          <line y1="${options.padding_ver}" y2="${options.padding_ver}" x1="${options.padding_hor}" x2="${width+options.padding_hor}" stroke="black"></line>
+          <rect class="adder" x="${options.padding_hor}" width="${width}" height="10"></rect>
+          <line y1="${options.height - options.filter_height - 5}" y2="${options.height - options.filter_height - 5}" x1="${options.padding_hor}" x2="${width+options.padding_hor}" stroke="black"></line>
+          <rect class="adder" x="${options.padding_hor}" width="${width}" height="10" y="${options.height - options.filter_height - 10}"></rect>
+          <g transform="translate(${options.padding_hor},${options.padding_ver})">
+            <g class="samples">
+      
+            </g>
+            <g class="mappings">
+      
+            </g>
+            <g class="filter" transform="translate(0,${options.height - options.filter_height - 10})">
+               <g class="left_filter" transform="translate(0,0)">
+                  <path d="M0,0L4,7L-4,7z"></path>
+                  <rect x="-4" y="7" width="40" height="13" rx="2" ry="2"></rect>
+                  <text y="10" x="4" text-anchor="start">&gt; 0</text>
+              </g>
+              <g class="right_filter" transform="translate(${width},0)">
+                  <path d="M0,0L4,7L-4,7z"></path>
+                  <rect x="-36" y="7" width="40" height="13" rx="2" ry="2"></rect>
+                  <text y="10" x="3" text-anchor="end">&lt; 1</text>
+              </g>
+            </g>
+          </g>
+        </svg>
+        <div>
+          <span>1</span>
+          <input type="text" class="raw_max" id="raw_max" value="1"><label for="raw_max">Max</label>
+        </div>
+      </div>
+      <div class="script" style="/* display: none; */">
+        <label for="script_code">Custom Script</label><button>Apply</button>
+        <textarea id="script_code">
+        </textarea>
+      </div>
+    </form>`;
 
 
     const raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
-      .range([0,width]);
+      .range([0, width]);
     const normal2pixel = d3.scale.linear().domain([0, 1])
       .range([0, width]);
 
     $root.select('input.raw_min')
       .property('value', raw2pixel.domain()[0])
-      .on('blur', function() {
+      .on('blur', function () {
         var d = raw2pixel.domain();
         d[0] = parseFloat(this.value);
         raw2pixel.domain(d);
@@ -118,12 +128,12 @@ export class MappingEditor {
       });
     $root.select('input.raw_max')
       .property('value', raw2pixel.domain()[1])
-      .on('blur', function() {
+      .on('blur', function () {
         var d = raw2pixel.domain();
         d[1] = parseFloat(this.value);
         raw2pixel.domain(d);
         var old = that.scale_.domain;
-        old[old.length-1] = d[1];
+        old[old.length - 1] = d[1];
         that.scale_.domain = old;
         updateRaw();
         triggerUpdate();
@@ -138,15 +148,15 @@ export class MappingEditor {
       datalines = datalines.data(data);
       datalines.enter()
         .append('line')
-          .attr({
-            x1: (d) => normal2pixel(that.scale.apply(d)),
-            y1: 0,
-            x2: raw2pixel,
-            y2: height
-          }).style('visibility', function (d) {
-            const domain = that.scale.domain;
-            return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
-        });
+        .attr({
+          x1: (d) => normal2pixel(that.scale.apply(d)),
+          y1: 0,
+          x2: raw2pixel,
+          y2: height
+        }).style('visibility', function (d) {
+        const domain = that.scale.domain;
+        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
+      });
     });
 
     function updateDataLines() {
@@ -155,13 +165,7 @@ export class MappingEditor {
         x2: raw2pixel
       }).style('visibility', function (d) {
         const domain = that.scale.domain;
-        return (d < domain[0] || d > domain[domain.length-1]) ? 'hidden' : null;
-      });
-
-      const minmax = d3.extent(that.scale.domain);
-      $mapping_area.style({
-        left: raw2pixel(minmax[0])+'px',
-        width: raw2pixel(minmax[1]-minmax[0])+'px'
+        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
       });
     }
 
@@ -182,6 +186,7 @@ export class MappingEditor {
     }
 
     var mapping_lines = [];
+
     function renderMappingLines() {
       if (!(that.scale instanceof model.ScaleMappingFunction)) {
         return;
@@ -197,7 +202,7 @@ export class MappingEditor {
 
       function updateScale() {
         //sort by raw value
-        mapping_lines.sort((a,b) => a.r - b.r);
+        mapping_lines.sort((a, b) => a.r - b.r);
         //update the scale
         let scale = <model.ScaleMappingFunction>that.scale;
         scale.domain = mapping_lines.map((d) => d.r);
@@ -211,7 +216,7 @@ export class MappingEditor {
         if (mapping_lines.length <= 2) {
           return; //can't remove have to have at least two
         }
-        mapping_lines.splice(i,1);
+        mapping_lines.splice(i, 1);
         updateScale();
         renderMappingLines();
       }
@@ -219,31 +224,31 @@ export class MappingEditor {
       function addPoint(x) {
         x = clamp(x, 0, width);
         mapping_lines.push({
-          n : normal2pixel.invert(x),
-          r : raw2pixel.invert(x)
+          n: normal2pixel.invert(x),
+          r: raw2pixel.invert(x)
         });
         updateScale();
         renderMappingLines();
       }
 
-      $root.selectAll('rect').on('click', () => {
+      $root.selectAll('rect.adder').on('click', () => {
         addPoint(d3.mouse($root.select('svg > g').node())[0]);
       });
 
       const $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mapping_lines);
-      const $mapping_enter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', (d,i) => {
+      const $mapping_enter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', (d, i) => {
         d3.event.preventDefault();
         d3.event.stopPropagation();
         removePoint(i);
       });
       $mapping_enter.append('line').attr({
-          y1: 0,
-          y2: height
-      }).call(createDrag(function(d) {
+        y1: 0,
+        y2: height
+      }).call(createDrag(function (d) {
         //drag the line shifts both point in parallel
         const dx = (<any>d3.event).dx;
-        const nx = clamp(normal2pixel(d.n)+dx, 0, width);
-        const rx = clamp(raw2pixel(d.r)+dx, 0, width);
+        const nx = clamp(normal2pixel(d.n) + dx, 0, width);
+        const rx = clamp(raw2pixel(d.r) + dx, 0, width);
         d.n = normal2pixel.invert(nx);
         d.r = raw2pixel.invert(rx);
         d3.select(this).attr('x1', nx).attr('x2', rx);
@@ -252,7 +257,7 @@ export class MappingEditor {
 
         updateScale();
       }));
-      $mapping_enter.append('circle').classed('normalized',true).attr('r',options.radius).call(createDrag(function(d) {
+      $mapping_enter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
         //drag normalized
         const x = clamp(d3.event.x, 0, width);
         d.n = normal2pixel.invert(x);
@@ -261,7 +266,7 @@ export class MappingEditor {
 
         updateScale();
       }));
-      $mapping_enter.append('circle').classed('raw', true).attr('r',options.radius).attr('cy',height).call(createDrag(function(d) {
+      $mapping_enter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
         //drag raw
         const x = clamp(d3.event.x, 0, width);
         d.r = raw2pixel.invert(x);
@@ -281,8 +286,8 @@ export class MappingEditor {
     }
 
     function renderScript() {
-       if (!(that.scale instanceof model.ScriptMappingFunction)) {
-       $root.select('div.script').style('display', 'none');
+      if (!(that.scale instanceof model.ScriptMappingFunction)) {
+        $root.select('div.script').style('display', 'none');
         return;
       }
       $root.select('div.script').style('display', null);
@@ -307,36 +312,29 @@ export class MappingEditor {
       options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
     }
 
-    $root.selectAll('div.left_handle, div.right_handle').call(createDrag(function (d) {
-      //drag normalized
-      const x = clamp(d3.event.x, 0, width-5);
-      const $this = d3.select(this).style('left', x + 'px');
-      const is_left = $this.classed('left_handle');
-      if (is_left) {
-        $root.select('div.filter_left_filter').style('width',x+'px');
-      } else {
-        $root.select('div.filter_right_filter').style('left',x+'px').style('width', (width-x)+'px');
-      }
-    }));
     {
-      let min_filter = (isFinite(this.old_filter.min)?raw2pixel(this.old_filter.min) : 0);
-      let max_filter = (isFinite(this.old_filter.max)?raw2pixel(this.old_filter.max) : width);
-      $root.select('div.right_handle').style('left',(max_filter-5)+'px');
-      $root.select('div.filter_right_filter').style('left',max_filter+'px').style('width', (width-max_filter)+'px');
-      $root.select('div.left_handle').style('left',min_filter+'px');
-      $root.select('div.filter_left_filter').style('width',min_filter+'px');
+      let min_filter = (isFinite(this.old_filter.min) ? raw2pixel(this.old_filter.min) : 0);
+      let max_filter = (isFinite(this.old_filter.max) ? raw2pixel(this.old_filter.max) : width);
+      let toFilterString = (d: number, i: number) => isFinite(d) ? ((i===0?'>':'<')+d.toFixed(1)) : 'any';
+      $root.selectAll('g.left_filter, g.right_filter')
+        .data([this.old_filter.min, this.old_filter.max])
+        .attr('transform', (d,i) => `translate(${i===0?min_filter:max_filter},0)`).call(createDrag(function (d,i) {
+
+          //drag normalized
+          const x = clamp(d3.event.x, 0, width);
+          const v = raw2pixel.invert(x);
+          const filter = (x <= 0 && i === 0 ? -Infinity : (x>=width && i===1 ? Infinity : v));
+          d3.select(this).datum(filter)
+            .attr('transform',`translate(${x},0)`)
+            .select('text').text(toFilterString(filter,i));
+        }))
+        .select('text').text(toFilterString);
     }
 
-    this.computeFilter = function() {
-      const min_p = parseFloat($root.select('div.left_handle').style('left'));
-      const min_f = raw2pixel.invert(min_p);
-
-      const max_p = parseFloat($root.select('div.right_handle').style('left'))+5;
-      const max_f = raw2pixel.invert(max_p);
-
+    this.computeFilter = function () {
       return {
-        min: min_p <= 0 ? -Infinity : min_f,
-        max: max_p >= width ? Infinity : max_f
+        min: parseFloat($root.select('g.left_filter').datum()),
+        max: parseFloat($root.select('g.right_filter').datum())
       };
     };
 
@@ -351,13 +349,13 @@ export class MappingEditor {
 
     updateRaw();
 
-    $root.select('select').on('change', function() {
+    $root.select('select').on('change', function () {
       const v = this.value;
       if (v === 'linear_invert') {
         that.scale_ = new model.ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);
       } else if (v === 'linear_abs') {
         let d = raw2pixel.domain();
-        that.scale_ = new model.ScaleMappingFunction([d[0], (d[1]-d[0])/2, d[1]], 'linear', [1, 0, 1]);
+        that.scale_ = new model.ScaleMappingFunction([d[0], (d[1] - d[0]) / 2, d[1]], 'linear', [1, 0, 1]);
       } else if (v === 'script') {
         that.scale_ = new model.ScriptMappingFunction(raw2pixel.domain());
       } else {
@@ -367,7 +365,7 @@ export class MappingEditor {
       renderMappingLines();
       renderScript();
       triggerUpdate();
-    }).property('selectedIndex', function() {
+    }).property('selectedIndex', function () {
       var name = 'script';
       if (that.scale_ instanceof model.ScaleMappingFunction) {
         name = (<model.ScaleMappingFunction>that.scale).scaleType;
@@ -378,6 +376,6 @@ export class MappingEditor {
   }
 }
 
-export function create(parent: HTMLElement, scale:model.IMappingFunction, original:model.IMappingFunction, filter: model.INumberFilter, dataPromise:Promise<number[]>, options:any = {}) {
+export function create(parent: HTMLElement, scale: model.IMappingFunction, original: model.IMappingFunction, filter: model.INumberFilter, dataPromise: Promise<number[]>, options: any = {}) {
   return new MappingEditor(parent, scale, original, filter, dataPromise, options);
 }

@@ -1,46 +1,44 @@
 //mapping editor
+
+$sample_color: black;
+$mapping_color: blue;
+$mapping_color_hover: #0000cf;
+
 .lugui-me {
   margin-bottom: 5px;
   clear: both;
 
-  > div:first-of-type {
-    padding-bottom: 5px;
-    border-bottom: 1px solid black;
-  }
-  > div:nth-of-type(3) {
-    padding-top: 5px;
-    input {
-      width: 4em;
-    }
+  .raw_min, .raw_max {
+    width: 3em;
+    display: block;
   }
 
-  > div:first-of-type, > div:nth-of-type(3) {
-    margin: 0 5px;
-    font-size: 10pt;
-    text-align: center;
-    .raw_min {
-      float: left;
-    }
-    .raw_max {
-      float: right;
-      text-align: right;
+  .mapping_area {
+    display: flex;
+    align-items: stretch;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+
+      > span:first-of-type {
+        flex-grow: 1;
+      }
     }
   }
 
   svg {
-    margin-top: -5px;
-    margin-bottom: -7px;
     z-index: 1;
     position: relative;
 
-    rect {
+    > rect {
       fill: white;
       opacity: 0;
     }
 
     g.samples {
       line {
-        stroke: black;
+        stroke: $sample_color;
         opacity: 0.5;
       }
     }
@@ -48,63 +46,54 @@
       &:hover {
         cursor: ew-resize;
         line {
-          stroke: #0000cf;
+          stroke: $mapping_color_hover;
         }
         circle {
-          fill: #0000cf;
+          fill: $mapping_color_hover;
         }
       }
 
       line {
-        stroke: blue;
-
+        stroke: $mapping_color;
 
       }
       circle {
-        fill: blue;
+        fill: $mapping_color;
       }
     }
 
-  }
+    g.filter {
+      text {
+        font-size: 8pt;
+        alignment-baseline: hanging;
+      }
+      path {
+        fill: gray;
+      }
+      rect {
+        fill: white;
+        stroke: gray;
+        stroke-width: 1;
+      }
 
-  div.mapping_filter {
-    border: 1px solid black;
-    height: 20px;
-    position: relative;
+      > g {
+        cursor: pointer;
+        cursor: -webkit-drag;
 
-    div.mapping_mapping {
-      position: absolute;
-      height: 100%;
-      width: 100%;
-      background-color: #bababa;
-    }
-    div.filter_left_filter, div.filter_right_filter {
-      position: absolute;
-      height: 100%;
-      opacity: 0.5;
-      background: repeating-linear-gradient(-45deg, gray, gray 4px, white 4px, white 8px);
-    }
-
-    div.left_handle, div.right_handle {
-      position: absolute;
-      top: 5px;
-      height: 15px;
-      width: 5px;
-      cursor: ew-resize;
-      background: black;
-    }
-    div.left_handle {
-      left: 0;
-      border-radius: 0 3px 3px 0;
-    }
-    div.right_handle {
-      border-radius: 3px 0 0 3px;
+        &:hover {
+          path {
+            fill: darkgray;
+          }
+          rect {
+            stroke: darkgray;
+          }
+        }
+      }
     }
   }
 
   div.script {
     clear: both;
-    text-align: right;
 
     textarea {
       height: 4em;
@@ -444,7 +433,7 @@ $lu_drag_over: #979797;
     div.header, div.header_i {
 
       &.filtered > div.toolbar i.fa-filter {
-         color: darkblue;
+        color: darkblue;
       }
 
       position: absolute;
