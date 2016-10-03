@@ -4,10 +4,10 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var pkg = require('./package.json');
 
 var year = (new Date()).getFullYear();
-var banner = '/*! '+( pkg.title || pkg.name) +' - v'+ pkg.version +' - ' + year +'\n' +
-    '* '+ pkg.homepage+'\n' +
-    '* Copyright (c) '+ year +' '+ pkg.author.name +';' +
-    ' Licensed '+ pkg.license+'*/\n';
+var banner = '/*! ' + ( pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' + year + '\n' +
+  '* ' + pkg.homepage + '\n' +
+  '* Copyright (c) ' + year + ' ' + pkg.author.name + ';' +
+  ' Licensed ' + pkg.license + '*/\n';
 
 function generate(bundle, min) {
   var base = {
@@ -20,6 +20,8 @@ function generate(bundle, min) {
       umdNamedDefine: false //anonymous require module
     },
     resolve: {
+      // Add `.ts` and `.tsx` as a resolvable extension.
+      extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
       alias: {
         d3: '../bower_components/d3/d3'
       }
@@ -35,7 +37,7 @@ function generate(bundle, min) {
           loader: 'style!css!sass'
         },
         {
-          test: /\.ts$/,
+          test: /\.tsx?$/,
           loader: 'ts-loader'
         }
       ]
@@ -46,12 +48,12 @@ function generate(bundle, min) {
     base.externals = ['d3'];
 
     //extract the included css file to own file
-    var p = new ExtractTextPlugin('style'+(min?'.min':'')+'.css');
+    var p = new ExtractTextPlugin('style' + (min ? '.min' : '') + '.css');
     base.plugins.push(p);
     base.module.loaders[0].loader = p.extract(['css', 'sass']);
   }
   if (min) {
-    base.plugins.push(new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false }}));
+    base.plugins.push(new webpack.optimize.UglifyJsPlugin({compress: {warnings: false}}));
   } else {
     //generate source maps
     base.devtool = 'source-map';
@@ -59,15 +61,15 @@ function generate(bundle, min) {
   if (!bundle && min) {
     //generate docu
     base.plugins.push(new TypedocWebpackPlugin({
-        target: 'es5',
-        module: 'commonjs', // 'amd' (default) | 'commonjs'
-        output: '../docs',
-        name: 'LineUp.js',
+      target: 'es5',
+      module: 'commonjs', // 'amd' (default) | 'commonjs'
+      output: '../docs',
+      name: 'LineUp.js',
 
-        entryPoint: 'main.LineUp',
-        mode: 'modules',
-        theme: 'minimal'
-      }));
+      entryPoint: 'main.LineUp',
+      mode: 'modules',
+      theme: 'minimal'
+    }));
   }
   return base;
 }
