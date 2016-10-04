@@ -1315,7 +1315,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
 
   getLabels(row:any) {
     var v = StringColumn.prototype.getValue.call(this, row);
-    const r = v.split(this.separator);
+    const r = v ? v.split(this.separator): [];
 
     const mapToLabel = (values: string[]) => {
       if (this.catLabels === null || this.catLabels.empty()) {
@@ -1333,7 +1333,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
 
   getValues(row:any) {
     var v = StringColumn.prototype.getValue.call(this, row);
-    const r = v.split(this.separator);
+    const r = v ? v.split(this.separator): [];
     return r;
   }
 
