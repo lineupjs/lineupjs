@@ -873,7 +873,7 @@ export class StringColumn extends ValueColumn<string> {
     if (typeof(v) === 'undefined' || v == null) {
       return '';
     }
-    return v;
+    return String(v);
   }
 
   dump(toDescRef:(desc:any) => any):any {
