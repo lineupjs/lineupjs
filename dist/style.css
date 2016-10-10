@@ -1,32 +1,25 @@
-/*! lineupjs - v0.5.1 - 2016
+/*! lineupjs - v0.5.2 - 2016
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2016 Caleydo Team; Licensed BSD-3-Clause*/
 
 .lugui-me {
   margin-bottom: 5px;
   clear: both; }
-  .lugui-me > div:first-of-type {
-    padding-bottom: 5px;
-    border-bottom: 1px solid black; }
-  .lugui-me > div:nth-of-type(3) {
-    padding-top: 5px; }
-    .lugui-me > div:nth-of-type(3) input {
-      width: 4em; }
-  .lugui-me > div:first-of-type, .lugui-me > div:nth-of-type(3) {
-    margin: 0 5px;
-    font-size: 10pt;
-    text-align: center; }
-    .lugui-me > div:first-of-type .raw_min, .lugui-me > div:nth-of-type(3) .raw_min {
-      float: left; }
-    .lugui-me > div:first-of-type .raw_max, .lugui-me > div:nth-of-type(3) .raw_max {
-      float: right;
-      text-align: right; }
+  .lugui-me .raw_min, .lugui-me .raw_max {
+    width: 3em;
+    display: block; }
+  .lugui-me .mapping_area {
+    display: flex;
+    align-items: stretch; }
+    .lugui-me .mapping_area > div {
+      display: flex;
+      flex-direction: column; }
+      .lugui-me .mapping_area > div > span:first-of-type {
+        flex-grow: 1; }
   .lugui-me svg {
-    margin-top: -5px;
-    margin-bottom: -7px;
     z-index: 1;
     position: relative; }
-    .lugui-me svg rect {
+    .lugui-me svg > rect {
       fill: white;
       opacity: 0; }
     .lugui-me svg g.samples line {
@@ -42,35 +35,24 @@
       stroke: blue; }
     .lugui-me svg g.mapping circle {
       fill: blue; }
-  .lugui-me div.mapping_filter {
-    border: 1px solid black;
-    height: 20px;
-    position: relative; }
-    .lugui-me div.mapping_filter div.mapping_mapping {
-      position: absolute;
-      height: 100%;
-      width: 100%;
-      background-color: #bababa; }
-    .lugui-me div.mapping_filter div.filter_left_filter, .lugui-me div.mapping_filter div.filter_right_filter {
-      position: absolute;
-      height: 100%;
-      opacity: 0.5;
-      background: repeating-linear-gradient(-45deg, gray, gray 4px, white 4px, white 8px); }
-    .lugui-me div.mapping_filter div.left_handle, .lugui-me div.mapping_filter div.right_handle {
-      position: absolute;
-      top: 5px;
-      height: 15px;
-      width: 5px;
-      cursor: ew-resize;
-      background: black; }
-    .lugui-me div.mapping_filter div.left_handle {
-      left: 0;
-      border-radius: 0 3px 3px 0; }
-    .lugui-me div.mapping_filter div.right_handle {
-      border-radius: 3px 0 0 3px; }
+    .lugui-me svg g.filter text {
+      font-size: 8pt;
+      alignment-baseline: hanging; }
+    .lugui-me svg g.filter path {
+      fill: gray; }
+    .lugui-me svg g.filter rect {
+      fill: white;
+      stroke: gray;
+      stroke-width: 1; }
+    .lugui-me svg g.filter > g {
+      cursor: pointer;
+      cursor: -webkit-drag; }
+      .lugui-me svg g.filter > g:hover path {
+        fill: darkgray; }
+      .lugui-me svg g.filter > g:hover rect {
+        stroke: darkgray; }
   .lugui-me div.script {
-    clear: both;
-    text-align: right; }
+    clear: both; }
     .lugui-me div.script textarea {
       height: 4em;
       width: 98%;

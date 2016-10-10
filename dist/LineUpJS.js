@@ -1,4 +1,4 @@
-/*! lineupjs - v0.5.1 - 2016
+/*! lineupjs - v0.5.2 - 2016
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2016 Caleydo Team; Licensed BSD-3-Clause*/
 
@@ -1206,7 +1206,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (typeof (v) === 'undefined' || v == null) {
 	            return '';
 	        }
-	        return v;
+	        return String(v);
 	    };
 	    StringColumn.prototype.dump = function (toDescRef) {
 	        var r = _super.prototype.dump.call(this, toDescRef);
@@ -1263,17 +1263,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    StringColumn.prototype.compare = function (a, b) {
 	        var a_val, b_val;
 	        if ((a_val = this.getValue(a)) === '') {
-	            return 1;
+	            return this.getValue(b) === '' ? 0 : +1; //same = 0
 	        }
 	        else if ((b_val = this.getValue(b)) === '') {
 	            return -1;
 	        }
-	        else if (a_val === b_val) {
-	            return 0;
-	        }
-	        else {
-	            return a_val < b_val ? -1 : 1;
-	        }
+	        return a_val.localeCompare(b_val);
 	    };
 	    //magic key for filtering missing ones
 	    StringColumn.FILTER_MISSING = '__FILTER_MISSING';
@@ -1629,7 +1624,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    CategoricalColumn.prototype.getLabels = function (row) {
 	        var _this = this;
 	        var v = StringColumn.prototype.getValue.call(this, row);
-	        var r = v.split(this.separator);
+	        var r = v ? v.split(this.separator) : [];
 	        var mapToLabel = function (values) {
 	            if (_this.catLabels === null || _this.catLabels.empty()) {
 	                return values;
@@ -1644,7 +1639,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    CategoricalColumn.prototype.getValues = function (row) {
 	        var v = StringColumn.prototype.getValue.call(this, row);
-	        var r = v.split(this.separator);
+	        var r = v ? v.split(this.separator) : [];
 	        return r;
 	    };
 	    CategoricalColumn.prototype.getCategories = function (row) {
@@ -2892,7 +2887,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	}
 	exports.models = models;
-	//# sourceMappingURL=model.js.map
+
 
 /***/ },
 /* 5 */
@@ -3308,7 +3303,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	}
 	exports.dropAble = dropAble;
-	//# sourceMappingURL=utils.js.map
+
 
 /***/ },
 /* 7 */
@@ -4289,7 +4284,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return RemoteDataProvider;
 	}(CommonDataProvider));
 	exports.RemoteDataProvider = RemoteDataProvider;
-	//# sourceMappingURL=provider.js.map
+
 
 /***/ },
 /* 8 */
@@ -4454,7 +4449,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 	        if (renderValue) {
 	            var $rows_enter = $rows.enter().append('g').attr('class', 'bar ' + this.textClass);
-	            renderBars($rows_enter, '', $rows.select('rect'));
+	            renderBars($rows_enter, col.cssClass, $rows.select('rect'));
 	            $rows_enter.append('text').attr({
 	                'class': 'number',
 	                'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
@@ -4463,7 +4458,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                .attr('transform', function (d, i) { return 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'; });
 	        }
 	        else {
-	            renderBars($rows.enter(), 'bar ' + this.textClass, $rows);
+	            renderBars($rows.enter(), 'bar ' + col.cssClass, $rows);
 	        }
 	        $rows.attr({
 	            'data-index': function (d, i) { return i; },
@@ -5034,7 +5029,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	}
 	exports.renderers = renderers;
-	//# sourceMappingURL=renderer.js.map
+
 
 /***/ },
 /* 9 */
@@ -6346,7 +6341,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return BodyCanvasRenderer;
 	}(utils.AEventDispatcher));
 	exports.BodyCanvasRenderer = BodyCanvasRenderer;
-	//# sourceMappingURL=ui.js.map
+
 
 /***/ },
 /* 10 */
@@ -6870,7 +6865,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	}
 	exports.filterDialogs = filterDialogs;
-	//# sourceMappingURL=ui_dialogs.js.map
+
 
 /***/ },
 /* 11 */
@@ -6897,9 +6892,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.dataPromise = dataPromise;
 	        this.options = {
 	            width: 370,
-	            height: 200,
-	            padding_hor: 5,
-	            padding_ver: 5,
+	            height: 225,
+	            padding_hor: 7,
+	            padding_ver: 7,
+	            filter_height: 20,
 	            radius: 5,
 	            callback: function (d) { return d; },
 	            callbackThisArg: null,
@@ -6927,10 +6923,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    MappingEditor.prototype.build = function ($root) {
 	        var options = this.options, that = this;
 	        $root = $root.append('div').classed('lugui-me', true);
-	        $root.node().innerHTML = "<div>\n    <span class=\"raw_min\">0</span>\n    <span class=\"center\"><label><select>\n        <option value=\"linear\">Linear</option>\n        <option value=\"linear_invert\">Invert</option>\n        <option value=\"linear_abs\">Absolute</option>\n        <option value=\"log\">Log</option>\n        <option value=\"pow1.1\">Pow 1.1</option>\n        <option value=\"pow2\">Pow 2</option>\n        <option value=\"pow3\">Pow 3</option>\n        <option value=\"sqrt\">Sqrt</option>\n        <option value=\"script\">Custom Script</option>\n      </select></label>\n      </span>\n    <span class=\"raw_max\">1</span>\n  </div>\n  <svg width=\"" + options.width + "\" height=\"" + options.height + "\">\n    <rect width=\"100%\" height=\"10\"></rect>\n    <rect width=\"100%\" height=\"10\" y=\"" + (options.height - 10) + "\"></rect>\n    <g transform=\"translate(" + options.padding_hor + "," + options.padding_ver + ")\">\n      <g class=\"samples\">\n\n      </g>\n      <g class=\"mappings\">\n\n      </g>\n    </g>\n  </svg>\n  <div class=\"mapping_filter\" style=\"width: " + (options.width - options.padding_hor * 2) + "px; margin-left: " + options.padding_hor + "px;\">\n    <div class=\"mapping_mapping\"></div>\n    <div class=\"filter_left_filter\"></div>\n    <div class=\"filter_right_filter\"></div>\n    <div class=\"left_handle\"></div>\n    <div class=\"right_handle\"></div>\n  </div>\n  <div>\n    <input type=\"text\" class=\"raw_min\" value=\"0\">\n    <span class=\"center\">Raw</span>\n    <input type=\"text\" class=\"raw_max\" value=\"1\">\n  </div>\n  <div class=\"script\">\n    <textarea>\n\n    </textarea>\n    <button>Apply</button>\n  </div>";
 	        var width = options.width - options.padding_hor * 2;
-	        var height = options.height - options.padding_ver * 2;
-	        var $mapping_area = $root.select('div.mapping_mapping');
+	        var height = options.height - options.padding_ver * 2 - options.filter_height;
+	        $root.node().innerHTML = "<form onsubmit=\"return false\">\n      <div style=\"text-align: center\"><label for=\"mapping_type\">Mapping Type: <select id=\"mapping_type\">\n        <option value=\"linear\">Linear</option>\n        <option value=\"linear_invert\">Invert</option>\n        <option value=\"linear_abs\">Absolute</option>\n        <option value=\"log\">Log</option>\n        <option value=\"pow1.1\">Pow 1.1</option>\n        <option value=\"pow2\">Pow 2</option>\n        <option value=\"pow3\">Pow 3</option>\n        <option value=\"sqrt\">Sqrt</option>\n        <option value=\"script\">Custom Script</option>\n      </select>\n      </label></div>\n      <div class=\"mapping_area\">\n        <div>\n          <span>0</span>\n          <input type=\"text\" class=\"raw_min\" id=\"raw_min\" value=\"0\"><label for=\"raw_min\">Min</label>\n        </div>\n        <svg width=\"" + options.width + "\" height=\"" + options.height + "\">\n          <line y1=\"" + options.padding_ver + "\" y2=\"" + options.padding_ver + "\" x1=\"" + options.padding_hor + "\" x2=\"" + (width + options.padding_hor) + "\" stroke=\"black\"></line>\n          <rect class=\"adder\" x=\"" + options.padding_hor + "\" width=\"" + width + "\" height=\"10\"></rect>\n          <line y1=\"" + (options.height - options.filter_height - 5) + "\" y2=\"" + (options.height - options.filter_height - 5) + "\" x1=\"" + options.padding_hor + "\" x2=\"" + (width + options.padding_hor) + "\" stroke=\"black\"></line>\n          <rect class=\"adder\" x=\"" + options.padding_hor + "\" width=\"" + width + "\" height=\"10\" y=\"" + (options.height - options.filter_height - 10) + "\"></rect>\n          <g transform=\"translate(" + options.padding_hor + "," + options.padding_ver + ")\">\n            <g class=\"samples\">\n      \n            </g>\n            <g class=\"mappings\">\n      \n            </g>\n            <g class=\"filter\" transform=\"translate(0," + (options.height - options.filter_height - 10) + ")\">\n               <g class=\"left_filter\" transform=\"translate(0,0)\">\n                  <path d=\"M0,0L4,7L-4,7z\"></path>\n                  <rect x=\"-4\" y=\"7\" width=\"40\" height=\"13\" rx=\"2\" ry=\"2\"></rect>\n                  <text y=\"10\" x=\"4\" text-anchor=\"start\">&gt; 0</text>\n              </g>\n              <g class=\"right_filter\" transform=\"translate(" + width + ",0)\">\n                  <path d=\"M0,0L4,7L-4,7z\"></path>\n                  <rect x=\"-36\" y=\"7\" width=\"40\" height=\"13\" rx=\"2\" ry=\"2\"></rect>\n                  <text y=\"10\" x=\"3\" text-anchor=\"end\">&lt; 1</text>\n              </g>\n            </g>\n          </g>\n        </svg>\n        <div>\n          <span>1</span>\n          <input type=\"text\" class=\"raw_max\" id=\"raw_max\" value=\"1\"><label for=\"raw_max\">Max</label>\n        </div>\n      </div>\n      <div class=\"script\" style=\"/* display: none; */\">\n        <label for=\"script_code\">Custom Script</label><button>Apply</button>\n        <textarea id=\"script_code\">\n        </textarea>\n      </div>\n    </form>";
 	        var raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
 	            .range([0, width]);
 	        var normal2pixel = d3.scale.linear().domain([0, 1])
@@ -6984,11 +6979,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }).style('visibility', function (d) {
 	                var domain = that.scale.domain;
 	                return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
-	            });
-	            var minmax = d3.extent(that.scale.domain);
-	            $mapping_area.style({
-	                left: raw2pixel(minmax[0]) + 'px',
-	                width: raw2pixel(minmax[1] - minmax[0]) + 'px'
 	            });
 	        }
 	        function createDrag(move) {
@@ -7044,7 +7034,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                updateScale();
 	                renderMappingLines();
 	            }
-	            $root.selectAll('rect').on('click', function () {
+	            $root.selectAll('rect.adder').on('click', function () {
 	                addPoint(d3.mouse($root.select('svg > g').node())[0]);
 	            });
 	            var $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mapping_lines);
@@ -7115,34 +7105,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
 	        }
-	        $root.selectAll('div.left_handle, div.right_handle').call(createDrag(function (d) {
-	            //drag normalized
-	            var x = clamp(d3.event.x, 0, width - 5);
-	            var $this = d3.select(this).style('left', x + 'px');
-	            var is_left = $this.classed('left_handle');
-	            if (is_left) {
-	                $root.select('div.filter_left_filter').style('width', x + 'px');
-	            }
-	            else {
-	                $root.select('div.filter_right_filter').style('left', x + 'px').style('width', (width - x) + 'px');
-	            }
-	        }));
 	        {
-	            var min_filter = (isFinite(this.old_filter.min) ? raw2pixel(this.old_filter.min) : 0);
-	            var max_filter = (isFinite(this.old_filter.max) ? raw2pixel(this.old_filter.max) : width);
-	            $root.select('div.right_handle').style('left', (max_filter - 5) + 'px');
-	            $root.select('div.filter_right_filter').style('left', max_filter + 'px').style('width', (width - max_filter) + 'px');
-	            $root.select('div.left_handle').style('left', min_filter + 'px');
-	            $root.select('div.filter_left_filter').style('width', min_filter + 'px');
+	            var min_filter_1 = (isFinite(this.old_filter.min) ? raw2pixel(this.old_filter.min) : 0);
+	            var max_filter_1 = (isFinite(this.old_filter.max) ? raw2pixel(this.old_filter.max) : width);
+	            var toFilterString_1 = function (d, i) { return isFinite(d) ? ((i === 0 ? '>' : '<') + d.toFixed(1)) : 'any'; };
+	            $root.selectAll('g.left_filter, g.right_filter')
+	                .data([this.old_filter.min, this.old_filter.max])
+	                .attr('transform', function (d, i) { return ("translate(" + (i === 0 ? min_filter_1 : max_filter_1) + ",0)"); }).call(createDrag(function (d, i) {
+	                //drag normalized
+	                var x = clamp(d3.event.x, 0, width);
+	                var v = raw2pixel.invert(x);
+	                var filter = (x <= 0 && i === 0 ? -Infinity : (x >= width && i === 1 ? Infinity : v));
+	                d3.select(this).datum(filter)
+	                    .attr('transform', "translate(" + x + ",0)")
+	                    .select('text').text(toFilterString_1(filter, i));
+	            }))
+	                .select('text').text(toFilterString_1);
 	        }
 	        this.computeFilter = function () {
-	            var min_p = parseFloat($root.select('div.left_handle').style('left'));
-	            var min_f = raw2pixel.invert(min_p);
-	            var max_p = parseFloat($root.select('div.right_handle').style('left')) + 5;
-	            var max_f = raw2pixel.invert(max_p);
 	            return {
-	                min: min_p <= 0 ? -Infinity : min_f,
-	                max: max_p >= width ? Infinity : max_f
+	                min: parseFloat($root.select('g.left_filter').datum()),
+	                max: parseFloat($root.select('g.right_filter').datum())
 	            };
 	        };
 	        function updateRaw() {
@@ -7189,7 +7172,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return new MappingEditor(parent, scale, original, filter, dataPromise, options);
 	}
 	exports.create = create;
-	//# sourceMappingURL=mappingeditor.js.map
+
 
 /***/ }
 /******/ ])

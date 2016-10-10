@@ -1,4 +1,4 @@
-/*! lineupjs - v0.5.1 - 2016
+/*! lineupjs - v0.5.2 - 2016
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2016 Caleydo Team; Licensed BSD-3-Clause*/
 
@@ -100,7 +100,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".lugui-me {\n  margin-bottom: 5px;\n  clear: both; }\n  .lugui-me > div:first-of-type {\n    padding-bottom: 5px;\n    border-bottom: 1px solid black; }\n  .lugui-me > div:nth-of-type(3) {\n    padding-top: 5px; }\n    .lugui-me > div:nth-of-type(3) input {\n      width: 4em; }\n  .lugui-me > div:first-of-type, .lugui-me > div:nth-of-type(3) {\n    margin: 0 5px;\n    font-size: 10pt;\n    text-align: center; }\n    .lugui-me > div:first-of-type .raw_min, .lugui-me > div:nth-of-type(3) .raw_min {\n      float: left; }\n    .lugui-me > div:first-of-type .raw_max, .lugui-me > div:nth-of-type(3) .raw_max {\n      float: right;\n      text-align: right; }\n  .lugui-me svg {\n    margin-top: -5px;\n    margin-bottom: -7px;\n    z-index: 1;\n    position: relative; }\n    .lugui-me svg rect {\n      fill: white;\n      opacity: 0; }\n    .lugui-me svg g.samples line {\n      stroke: black;\n      opacity: 0.5; }\n    .lugui-me svg g.mapping:hover {\n      cursor: ew-resize; }\n      .lugui-me svg g.mapping:hover line {\n        stroke: #0000cf; }\n      .lugui-me svg g.mapping:hover circle {\n        fill: #0000cf; }\n    .lugui-me svg g.mapping line {\n      stroke: blue; }\n    .lugui-me svg g.mapping circle {\n      fill: blue; }\n  .lugui-me div.mapping_filter {\n    border: 1px solid black;\n    height: 20px;\n    position: relative; }\n    .lugui-me div.mapping_filter div.mapping_mapping {\n      position: absolute;\n      height: 100%;\n      width: 100%;\n      background-color: #bababa; }\n    .lugui-me div.mapping_filter div.filter_left_filter, .lugui-me div.mapping_filter div.filter_right_filter {\n      position: absolute;\n      height: 100%;\n      opacity: 0.5;\n      background: repeating-linear-gradient(-45deg, gray, gray 4px, white 4px, white 8px); }\n    .lugui-me div.mapping_filter div.left_handle, .lugui-me div.mapping_filter div.right_handle {\n      position: absolute;\n      top: 5px;\n      height: 15px;\n      width: 5px;\n      cursor: ew-resize;\n      background: black; }\n    .lugui-me div.mapping_filter div.left_handle {\n      left: 0;\n      border-radius: 0 3px 3px 0; }\n    .lugui-me div.mapping_filter div.right_handle {\n      border-radius: 3px 0 0 3px; }\n  .lugui-me div.script {\n    clear: both;\n    text-align: right; }\n    .lugui-me div.script textarea {\n      height: 4em;\n      width: 98%;\n      font-size: 8pt;\n      display: block; }\n\n.lu-popup {\n  position: absolute;\n  dominant-baseline: central;\n  text-anchor: middle; }\n  .lu-popup .ok {\n    position: absolute;\n    right: 10px; }\n\n.lu-popup, .lu-popup2 {\n  background-color: rgba(255, 255, 255, 0.9);\n  position: absolute;\n  padding: 2px;\n  box-shadow: 5px 5px 3px #888888;\n  z-index: 9;\n  font-size: 8pt;\n  clear: right; }\n  .lu-popup input, .lu-popup2 input {\n    font-size: 8pt; }\n  .lu-popup .selectionTable, .lu-popup2 .selectionTable {\n    background: white;\n    overflow-x: auto;\n    overflow-y: auto; }\n    .lu-popup .selectionTable td,\n    .lu-popup .selectionTable th, .lu-popup2 .selectionTable td,\n    .lu-popup2 .selectionTable th {\n      white-space: nowrap;\n      padding: 1px 5px 1px 3px;\n      cursor: pointer; }\n    .lu-popup .selectionTable th, .lu-popup2 .selectionTable th {\n      border-bottom: #c1c1c1 1px solid; }\n    .lu-popup .selectionTable table, .lu-popup2 .selectionTable table {\n      width: 95%;\n      border: 0; }\n    .lu-popup .selectionTable tr:hover, .lu-popup2 .selectionTable tr:hover {\n      background-color: lightblue; }\n  .lu-popup .lu-popup-title, .lu-popup2 .lu-popup-title {\n    cursor: pointer;\n    cursor: -webkit-grab; }\n\n.lu-popup2 * {\n  margin: 0; }\n\n.lu-popup2 .ok {\n  float: right; }\n\n.lu-popup2 div.bar {\n  height: 1em; }\n\n.lu-tooltip {\n  background-color: white;\n  min-width: 200px;\n  position: absolute;\n  z-index: 3;\n  font-size: 9pt;\n  text-align: left;\n  padding: 2px; }\n  .lu-tooltip table {\n    width: 100%;\n    border-collapse: collapse; }\n  .lu-tooltip tbody th {\n    width: 100px; }\n  .lu-tooltip td, .lu-tooltip th {\n    border: 1px solid black; }\n\n.lu-pool div.header {\n  border: 2px outset white;\n  position: absolute; }\n  .lu-pool div.header:hover {\n    border-color: #e5e5e5; }\n\n.lu, .lu-pool {\n  position: relative; }\n  .lu div.lu-header, .lu-pool div.lu-header {\n    position: relative; }\n  .lu text, .lu tspan, .lu-pool text, .lu-pool tspan {\n    dominant-baseline: text-before-edge; }\n  .lu text.actions tspan, .lu-pool text.actions tspan {\n    cursor: pointer; }\n    .lu text.actions tspan:hover, .lu-pool text.actions tspan:hover {\n      color: darkblue; }\n  .lu text.selection, .lu-pool text.selection {\n    cursor: pointer; }\n    .lu text.selection:hover, .lu-pool text.selection:hover {\n      color: darkblue; }\n  .lu text.rank, .lu text.text_right, .lu-pool text.rank, .lu-pool text.text_right {\n    text-anchor: end; }\n  .lu text.text_center, .lu-pool text.text_center {\n    text-anchor: middle; }\n  .lu g.bar rect, .lu-pool g.bar rect {\n    opacity: 0.5; }\n  .lu line.meanline, .lu-pool line.meanline {\n    stroke: darkgray;\n    stroke-width: 1; }\n  .lu *[draggable], .lu-pool *[draggable] {\n    cursor: pointer;\n    cursor: -webkit-grab; }\n  .lu line.slope, .lu-pool line.slope {\n    stroke: darkgray;\n    stroke-width: 2;\n    shape-rendering: geometricPrecision; }\n    .lu line.slope.hover, .lu-pool line.slope.hover {\n      stroke: #e5e5e5; }\n    .lu line.slope.selected, .lu-pool line.slope.selected {\n      stroke: #ffa500; }\n  .lu g.cols, .lu-pool g.cols {\n    pointer-events: none; }\n  .lu g.row rect.bg, .lu-pool g.row rect.bg {\n    fill: transparent; }\n    .lu g.row rect.bg.even, .lu-pool g.row rect.bg.even {\n      fill: #f7f7f7; }\n  .lu g.row.selected rect.bg, .lu-pool g.row.selected rect.bg {\n    stroke: #ffa500;\n    stroke-width: 1; }\n  .lu g.row.hover rect.bg, .lu-pool g.row.hover rect.bg {\n    fill: #e5e5e5; }\n  .lu g.row.hover rect.bar, .lu g.row.hover g.bar rect, .lu-pool g.row.hover rect.bar, .lu-pool g.row.hover g.bar rect {\n    opacity: 0.5; }\n  .lu div.lu-header, .lu div.lu-pool, .lu-pool div.lu-header, .lu-pool div.lu-pool {\n    position: relative;\n    background-color: white; }\n    .lu div.lu-header .drop, .lu div.lu-pool .drop, .lu-pool div.lu-header .drop, .lu-pool div.lu-pool .drop {\n      width: 100%;\n      height: 100%;\n      position: absolute; }\n      .lu div.lu-header .drop.drag_over, .lu div.lu-pool .drop.drag_over, .lu-pool div.lu-header .drop.drag_over, .lu-pool div.lu-pool .drop.drag_over {\n        background-color: #979797; }\n  .lu div.lu-header div.toolbar, .lu-pool div.lu-header div.toolbar {\n    display: none;\n    position: absolute;\n    text-align: right;\n    right: 5px;\n    top: 0;\n    border-radius: 3px 0 0 3px;\n    cursor: auto;\n    background: #6D6C6C;\n    z-index: 1; }\n  .lu div.lu-header div.header.drag_over div.lu-label, .lu-pool div.lu-header div.header.drag_over div.lu-label {\n    color: #979797; }\n  .lu div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu div.lu-header div.header.compressed div.histogram, .lu-pool div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu-pool div.lu-header div.header.compressed div.histogram {\n    display: none; }\n  .lu div.lu-header div.header div.histogram, .lu-pool div.lu-header div.header div.histogram {\n    position: absolute;\n    left: 0;\n    right: 5px;\n    top: 40%;\n    height: 60%;\n    display: none; }\n    .lu div.lu-header div.header div.histogram > div.bar, .lu-pool div.lu-header div.header div.histogram > div.bar {\n      position: absolute;\n      background-color: white;\n      opacity: 0.5; }\n      .lu div.lu-header div.header div.histogram > div.bar.selected, .lu-pool div.lu-header div.header div.histogram > div.bar.selected {\n        opacity: 1.0; }\n      .lu div.lu-header div.header div.histogram > div.bar:hover, .lu-pool div.lu-header div.header div.histogram > div.bar:hover {\n        opacity: 0.7; }\n    .lu div.lu-header div.header div.histogram div.mean, .lu-pool div.lu-header div.header div.histogram div.mean {\n      position: absolute;\n      height: 100%;\n      width: 1px;\n      border-left: 1px solid black; }\n  .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {\n    position: relative;\n    background: inherit;\n    transform-origin: left top;\n    text-overflow: ellipsis;\n    overflow-x: hidden; }\n  .lu div.lu-header div.header span.lu-label, .lu-pool div.lu-header div.header span.lu-label {\n    background: inherit; }\n  .lu div.lu-header div.header i.sort_indicator, .lu-pool div.lu-header div.header i.sort_indicator {\n    position: absolute;\n    left: 1px;\n    top: 1px;\n    font-size: 8pt; }\n  .lu div.lu-header div.header div.handle, .lu-pool div.lu-header div.header div.handle {\n    position: absolute;\n    right: 0;\n    height: 100%;\n    top: 0;\n    background-color: white;\n    display: inline-block;\n    cursor: col-resize; }\n    .lu div.lu-header div.header div.handle.drag_over, .lu-pool div.lu-header div.header div.handle.drag_over {\n      background-color: #979797; }\n  .lu div.lu-header div.toolbar i, .lu-pool div.lu-header div.toolbar i {\n    font-size: 8pt;\n    padding: 1px 2px;\n    cursor: pointer; }\n    .lu div.lu-header div.toolbar i:hover, .lu-pool div.lu-header div.toolbar i:hover {\n      color: darkblue; }\n  .lu div.lu-header div.rankingbuttons, .lu-pool div.lu-header div.rankingbuttons {\n    position: absolute;\n    display: inline-block;\n    height: 100%;\n    font-size: 90%; }\n  .lu div.lu-header div.header, .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header, .lu-pool div.lu-header div.header_i {\n    position: absolute;\n    display: inline-block;\n    overflow: hidden;\n    color: white;\n    text-align: center;\n    height: 100%;\n    font-size: 90%; }\n    .lu div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu div.lu-header div.header_i.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header_i.filtered > div.toolbar i.fa-filter {\n      color: darkblue; }\n    .lu div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar {\n      display: block;\n      padding: 7px; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar i {\n        display: none; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before {\n        z-index: -1;\n        content: '\\F0C9';\n        font-family: FontAwesome, sans-serif;\n        font-size: 7pt;\n        padding: 1px 2px 1px 1px;\n        position: absolute;\n        top: 0;\n        right: 0;\n        bottom: -5px;\n        left: -5px; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover {\n        padding: 0 10px 0 5px; }\n        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before {\n          content: ''; }\n        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i {\n          display: inline-block; }\n    .lu div.lu-header div.header.compressed:hover > div.toolbar, .lu div.lu-header div.header_i.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header_i.compressed:hover > div.toolbar {\n      display: block; }\n    .lu div.lu-header div.header.number div.histogram, .lu div.lu-header div.header.categorical div.histogram, .lu div.lu-header div.header.ordinal div.histogram, .lu div.lu-header div.header_i.number div.histogram, .lu div.lu-header div.header_i.categorical div.histogram, .lu div.lu-header div.header_i.ordinal div.histogram, .lu-pool div.lu-header div.header.number div.histogram, .lu-pool div.lu-header div.header.categorical div.histogram, .lu-pool div.lu-header div.header.ordinal div.histogram, .lu-pool div.lu-header div.header_i.number div.histogram, .lu-pool div.lu-header div.header_i.categorical div.histogram, .lu-pool div.lu-header div.header_i.ordinal div.histogram {\n      display: block; }\n    .lu div.lu-header div.header.rotateable, .lu div.lu-header div.header_i.rotateable, .lu-pool div.lu-header div.header.rotateable, .lu-pool div.lu-header div.header_i.rotateable {\n      overflow: visible;\n      white-space: nowrap; }\n  .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header_i {\n    top: 50%;\n    height: 50%; }\n  .lu svg.lu-body, .lu-pool svg.lu-body {\n    foreignObject-padding: 0;\n    foreignObject-margin: 0; }\n    .lu svg.lu-body text, .lu-pool svg.lu-body text {\n      font-size: 10pt; }\n    .lu svg.lu-body input, .lu-pool svg.lu-body input {\n      padding: 0;\n      margin: 0;\n      font-size: 9pt; }\n", ""]);
+	exports.push([module.id, ".lugui-me {\n  margin-bottom: 5px;\n  clear: both; }\n  .lugui-me .raw_min, .lugui-me .raw_max {\n    width: 3em;\n    display: block; }\n  .lugui-me .mapping_area {\n    display: flex;\n    align-items: stretch; }\n    .lugui-me .mapping_area > div {\n      display: flex;\n      flex-direction: column; }\n      .lugui-me .mapping_area > div > span:first-of-type {\n        flex-grow: 1; }\n  .lugui-me svg {\n    z-index: 1;\n    position: relative; }\n    .lugui-me svg > rect {\n      fill: white;\n      opacity: 0; }\n    .lugui-me svg g.samples line {\n      stroke: black;\n      opacity: 0.5; }\n    .lugui-me svg g.mapping:hover {\n      cursor: ew-resize; }\n      .lugui-me svg g.mapping:hover line {\n        stroke: #0000cf; }\n      .lugui-me svg g.mapping:hover circle {\n        fill: #0000cf; }\n    .lugui-me svg g.mapping line {\n      stroke: blue; }\n    .lugui-me svg g.mapping circle {\n      fill: blue; }\n    .lugui-me svg g.filter text {\n      font-size: 8pt;\n      alignment-baseline: hanging; }\n    .lugui-me svg g.filter path {\n      fill: gray; }\n    .lugui-me svg g.filter rect {\n      fill: white;\n      stroke: gray;\n      stroke-width: 1; }\n    .lugui-me svg g.filter > g {\n      cursor: pointer;\n      cursor: -webkit-drag; }\n      .lugui-me svg g.filter > g:hover path {\n        fill: darkgray; }\n      .lugui-me svg g.filter > g:hover rect {\n        stroke: darkgray; }\n  .lugui-me div.script {\n    clear: both; }\n    .lugui-me div.script textarea {\n      height: 4em;\n      width: 98%;\n      font-size: 8pt;\n      display: block; }\n\n.lu-popup {\n  position: absolute;\n  dominant-baseline: central;\n  text-anchor: middle; }\n  .lu-popup .ok {\n    position: absolute;\n    right: 10px; }\n\n.lu-popup, .lu-popup2 {\n  background-color: rgba(255, 255, 255, 0.9);\n  position: absolute;\n  padding: 2px;\n  box-shadow: 5px 5px 3px #888888;\n  z-index: 9;\n  font-size: 8pt;\n  clear: right; }\n  .lu-popup input, .lu-popup2 input {\n    font-size: 8pt; }\n  .lu-popup .selectionTable, .lu-popup2 .selectionTable {\n    background: white;\n    overflow-x: auto;\n    overflow-y: auto; }\n    .lu-popup .selectionTable td,\n    .lu-popup .selectionTable th, .lu-popup2 .selectionTable td,\n    .lu-popup2 .selectionTable th {\n      white-space: nowrap;\n      padding: 1px 5px 1px 3px;\n      cursor: pointer; }\n    .lu-popup .selectionTable th, .lu-popup2 .selectionTable th {\n      border-bottom: #c1c1c1 1px solid; }\n    .lu-popup .selectionTable table, .lu-popup2 .selectionTable table {\n      width: 95%;\n      border: 0; }\n    .lu-popup .selectionTable tr:hover, .lu-popup2 .selectionTable tr:hover {\n      background-color: lightblue; }\n  .lu-popup .lu-popup-title, .lu-popup2 .lu-popup-title {\n    cursor: pointer;\n    cursor: -webkit-grab; }\n\n.lu-popup2 * {\n  margin: 0; }\n\n.lu-popup2 .ok {\n  float: right; }\n\n.lu-popup2 div.bar {\n  height: 1em; }\n\n.lu-tooltip {\n  background-color: white;\n  min-width: 200px;\n  position: absolute;\n  z-index: 3;\n  font-size: 9pt;\n  text-align: left;\n  padding: 2px; }\n  .lu-tooltip table {\n    width: 100%;\n    border-collapse: collapse; }\n  .lu-tooltip tbody th {\n    width: 100px; }\n  .lu-tooltip td, .lu-tooltip th {\n    border: 1px solid black; }\n\n.lu-pool div.header {\n  border: 2px outset white;\n  position: absolute; }\n  .lu-pool div.header:hover {\n    border-color: #e5e5e5; }\n\n.lu, .lu-pool {\n  position: relative; }\n  .lu div.lu-header, .lu-pool div.lu-header {\n    position: relative; }\n  .lu text, .lu tspan, .lu-pool text, .lu-pool tspan {\n    dominant-baseline: text-before-edge; }\n  .lu text.actions tspan, .lu-pool text.actions tspan {\n    cursor: pointer; }\n    .lu text.actions tspan:hover, .lu-pool text.actions tspan:hover {\n      color: darkblue; }\n  .lu text.selection, .lu-pool text.selection {\n    cursor: pointer; }\n    .lu text.selection:hover, .lu-pool text.selection:hover {\n      color: darkblue; }\n  .lu text.rank, .lu text.text_right, .lu-pool text.rank, .lu-pool text.text_right {\n    text-anchor: end; }\n  .lu text.text_center, .lu-pool text.text_center {\n    text-anchor: middle; }\n  .lu g.bar rect, .lu-pool g.bar rect {\n    opacity: 0.5; }\n  .lu line.meanline, .lu-pool line.meanline {\n    stroke: darkgray;\n    stroke-width: 1; }\n  .lu *[draggable], .lu-pool *[draggable] {\n    cursor: pointer;\n    cursor: -webkit-grab; }\n  .lu line.slope, .lu-pool line.slope {\n    stroke: darkgray;\n    stroke-width: 2;\n    shape-rendering: geometricPrecision; }\n    .lu line.slope.hover, .lu-pool line.slope.hover {\n      stroke: #e5e5e5; }\n    .lu line.slope.selected, .lu-pool line.slope.selected {\n      stroke: #ffa500; }\n  .lu g.cols, .lu-pool g.cols {\n    pointer-events: none; }\n  .lu g.row rect.bg, .lu-pool g.row rect.bg {\n    fill: transparent; }\n    .lu g.row rect.bg.even, .lu-pool g.row rect.bg.even {\n      fill: #f7f7f7; }\n  .lu g.row.selected rect.bg, .lu-pool g.row.selected rect.bg {\n    stroke: #ffa500;\n    stroke-width: 1; }\n  .lu g.row.hover rect.bg, .lu-pool g.row.hover rect.bg {\n    fill: #e5e5e5; }\n  .lu g.row.hover rect.bar, .lu g.row.hover g.bar rect, .lu-pool g.row.hover rect.bar, .lu-pool g.row.hover g.bar rect {\n    opacity: 0.5; }\n  .lu div.lu-header, .lu div.lu-pool, .lu-pool div.lu-header, .lu-pool div.lu-pool {\n    position: relative;\n    background-color: white; }\n    .lu div.lu-header .drop, .lu div.lu-pool .drop, .lu-pool div.lu-header .drop, .lu-pool div.lu-pool .drop {\n      width: 100%;\n      height: 100%;\n      position: absolute; }\n      .lu div.lu-header .drop.drag_over, .lu div.lu-pool .drop.drag_over, .lu-pool div.lu-header .drop.drag_over, .lu-pool div.lu-pool .drop.drag_over {\n        background-color: #979797; }\n  .lu div.lu-header div.toolbar, .lu-pool div.lu-header div.toolbar {\n    display: none;\n    position: absolute;\n    text-align: right;\n    right: 5px;\n    top: 0;\n    border-radius: 3px 0 0 3px;\n    cursor: auto;\n    background: #6D6C6C;\n    z-index: 1; }\n  .lu div.lu-header div.header.drag_over div.lu-label, .lu-pool div.lu-header div.header.drag_over div.lu-label {\n    color: #979797; }\n  .lu div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu div.lu-header div.header.compressed div.histogram, .lu-pool div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu-pool div.lu-header div.header.compressed div.histogram {\n    display: none; }\n  .lu div.lu-header div.header div.histogram, .lu-pool div.lu-header div.header div.histogram {\n    position: absolute;\n    left: 0;\n    right: 5px;\n    top: 40%;\n    height: 60%;\n    display: none; }\n    .lu div.lu-header div.header div.histogram > div.bar, .lu-pool div.lu-header div.header div.histogram > div.bar {\n      position: absolute;\n      background-color: white;\n      opacity: 0.5; }\n      .lu div.lu-header div.header div.histogram > div.bar.selected, .lu-pool div.lu-header div.header div.histogram > div.bar.selected {\n        opacity: 1.0; }\n      .lu div.lu-header div.header div.histogram > div.bar:hover, .lu-pool div.lu-header div.header div.histogram > div.bar:hover {\n        opacity: 0.7; }\n    .lu div.lu-header div.header div.histogram div.mean, .lu-pool div.lu-header div.header div.histogram div.mean {\n      position: absolute;\n      height: 100%;\n      width: 1px;\n      border-left: 1px solid black; }\n  .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {\n    position: relative;\n    background: inherit;\n    transform-origin: left top;\n    text-overflow: ellipsis;\n    overflow-x: hidden; }\n  .lu div.lu-header div.header span.lu-label, .lu-pool div.lu-header div.header span.lu-label {\n    background: inherit; }\n  .lu div.lu-header div.header i.sort_indicator, .lu-pool div.lu-header div.header i.sort_indicator {\n    position: absolute;\n    left: 1px;\n    top: 1px;\n    font-size: 8pt; }\n  .lu div.lu-header div.header div.handle, .lu-pool div.lu-header div.header div.handle {\n    position: absolute;\n    right: 0;\n    height: 100%;\n    top: 0;\n    background-color: white;\n    display: inline-block;\n    cursor: col-resize; }\n    .lu div.lu-header div.header div.handle.drag_over, .lu-pool div.lu-header div.header div.handle.drag_over {\n      background-color: #979797; }\n  .lu div.lu-header div.toolbar i, .lu-pool div.lu-header div.toolbar i {\n    font-size: 8pt;\n    padding: 1px 2px;\n    cursor: pointer; }\n    .lu div.lu-header div.toolbar i:hover, .lu-pool div.lu-header div.toolbar i:hover {\n      color: darkblue; }\n  .lu div.lu-header div.rankingbuttons, .lu-pool div.lu-header div.rankingbuttons {\n    position: absolute;\n    display: inline-block;\n    height: 100%;\n    font-size: 90%; }\n  .lu div.lu-header div.header, .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header, .lu-pool div.lu-header div.header_i {\n    position: absolute;\n    display: inline-block;\n    overflow: hidden;\n    color: white;\n    text-align: center;\n    height: 100%;\n    font-size: 90%; }\n    .lu div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu div.lu-header div.header_i.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header_i.filtered > div.toolbar i.fa-filter {\n      color: darkblue; }\n    .lu div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar {\n      display: block;\n      padding: 7px; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar i {\n        display: none; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before {\n        z-index: -1;\n        content: '\\F0C9';\n        font-family: FontAwesome, sans-serif;\n        font-size: 7pt;\n        padding: 1px 2px 1px 1px;\n        position: absolute;\n        top: 0;\n        right: 0;\n        bottom: -5px;\n        left: -5px; }\n      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover {\n        padding: 0 10px 0 5px; }\n        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before {\n          content: ''; }\n        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i {\n          display: inline-block; }\n    .lu div.lu-header div.header.compressed:hover > div.toolbar, .lu div.lu-header div.header_i.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header_i.compressed:hover > div.toolbar {\n      display: block; }\n    .lu div.lu-header div.header.number div.histogram, .lu div.lu-header div.header.categorical div.histogram, .lu div.lu-header div.header.ordinal div.histogram, .lu div.lu-header div.header_i.number div.histogram, .lu div.lu-header div.header_i.categorical div.histogram, .lu div.lu-header div.header_i.ordinal div.histogram, .lu-pool div.lu-header div.header.number div.histogram, .lu-pool div.lu-header div.header.categorical div.histogram, .lu-pool div.lu-header div.header.ordinal div.histogram, .lu-pool div.lu-header div.header_i.number div.histogram, .lu-pool div.lu-header div.header_i.categorical div.histogram, .lu-pool div.lu-header div.header_i.ordinal div.histogram {\n      display: block; }\n    .lu div.lu-header div.header.rotateable, .lu div.lu-header div.header_i.rotateable, .lu-pool div.lu-header div.header.rotateable, .lu-pool div.lu-header div.header_i.rotateable {\n      overflow: visible;\n      white-space: nowrap; }\n  .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header_i {\n    top: 50%;\n    height: 50%; }\n  .lu svg.lu-body, .lu-pool svg.lu-body {\n    foreignObject-padding: 0;\n    foreignObject-margin: 0; }\n    .lu svg.lu-body text, .lu-pool svg.lu-body text {\n      font-size: 10pt; }\n    .lu svg.lu-body input, .lu-pool svg.lu-body input {\n      padding: 0;\n      margin: 0;\n      font-size: 9pt; }\n", ""]);
 	
 	// exports
 
@@ -1547,7 +1547,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (typeof (v) === 'undefined' || v == null) {
 	            return '';
 	        }
-	        return v;
+	        return String(v);
 	    };
 	    StringColumn.prototype.dump = function (toDescRef) {
 	        var r = _super.prototype.dump.call(this, toDescRef);
@@ -1604,17 +1604,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    StringColumn.prototype.compare = function (a, b) {
 	        var a_val, b_val;
 	        if ((a_val = this.getValue(a)) === '') {
-	            return 1;
+	            return this.getValue(b) === '' ? 0 : +1; //same = 0
 	        }
 	        else if ((b_val = this.getValue(b)) === '') {
 	            return -1;
 	        }
-	        else if (a_val === b_val) {
-	            return 0;
-	        }
-	        else {
-	            return a_val < b_val ? -1 : 1;
-	        }
+	        return a_val.localeCompare(b_val);
 	    };
 	    //magic key for filtering missing ones
 	    StringColumn.FILTER_MISSING = '__FILTER_MISSING';
@@ -1970,7 +1965,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    CategoricalColumn.prototype.getLabels = function (row) {
 	        var _this = this;
 	        var v = StringColumn.prototype.getValue.call(this, row);
-	        var r = v.split(this.separator);
+	        var r = v ? v.split(this.separator) : [];
 	        var mapToLabel = function (values) {
 	            if (_this.catLabels === null || _this.catLabels.empty()) {
 	                return values;
@@ -1985,7 +1980,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    CategoricalColumn.prototype.getValues = function (row) {
 	        var v = StringColumn.prototype.getValue.call(this, row);
-	        var r = v.split(this.separator);
+	        var r = v ? v.split(this.separator) : [];
 	        return r;
 	    };
 	    CategoricalColumn.prototype.getCategories = function (row) {
@@ -3233,7 +3228,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	}
 	exports.models = models;
-	//# sourceMappingURL=model.js.map
+
 
 /***/ },
 /* 7 */
@@ -13202,7 +13197,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	}
 	exports.dropAble = dropAble;
-	//# sourceMappingURL=utils.js.map
+
 
 /***/ },
 /* 9 */
@@ -14183,7 +14178,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return RemoteDataProvider;
 	}(CommonDataProvider));
 	exports.RemoteDataProvider = RemoteDataProvider;
-	//# sourceMappingURL=provider.js.map
+
 
 /***/ },
 /* 10 */
@@ -14348,7 +14343,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 	        if (renderValue) {
 	            var $rows_enter = $rows.enter().append('g').attr('class', 'bar ' + this.textClass);
-	            renderBars($rows_enter, '', $rows.select('rect'));
+	            renderBars($rows_enter, col.cssClass, $rows.select('rect'));
 	            $rows_enter.append('text').attr({
 	                'class': 'number',
 	                'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
@@ -14357,7 +14352,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                .attr('transform', function (d, i) { return 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'; });
 	        }
 	        else {
-	            renderBars($rows.enter(), 'bar ' + this.textClass, $rows);
+	            renderBars($rows.enter(), 'bar ' + col.cssClass, $rows);
 	        }
 	        $rows.attr({
 	            'data-index': function (d, i) { return i; },
@@ -14928,7 +14923,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	}
 	exports.renderers = renderers;
-	//# sourceMappingURL=renderer.js.map
+
 
 /***/ },
 /* 11 */
@@ -16240,7 +16235,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return BodyCanvasRenderer;
 	}(utils.AEventDispatcher));
 	exports.BodyCanvasRenderer = BodyCanvasRenderer;
-	//# sourceMappingURL=ui.js.map
+
 
 /***/ },
 /* 12 */
@@ -16764,7 +16759,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	}
 	exports.filterDialogs = filterDialogs;
-	//# sourceMappingURL=ui_dialogs.js.map
+
 
 /***/ },
 /* 13 */
@@ -16791,9 +16786,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.dataPromise = dataPromise;
 	        this.options = {
 	            width: 370,
-	            height: 200,
-	            padding_hor: 5,
-	            padding_ver: 5,
+	            height: 225,
+	            padding_hor: 7,
+	            padding_ver: 7,
+	            filter_height: 20,
 	            radius: 5,
 	            callback: function (d) { return d; },
 	            callbackThisArg: null,
@@ -16821,10 +16817,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    MappingEditor.prototype.build = function ($root) {
 	        var options = this.options, that = this;
 	        $root = $root.append('div').classed('lugui-me', true);
-	        $root.node().innerHTML = "<div>\n    <span class=\"raw_min\">0</span>\n    <span class=\"center\"><label><select>\n        <option value=\"linear\">Linear</option>\n        <option value=\"linear_invert\">Invert</option>\n        <option value=\"linear_abs\">Absolute</option>\n        <option value=\"log\">Log</option>\n        <option value=\"pow1.1\">Pow 1.1</option>\n        <option value=\"pow2\">Pow 2</option>\n        <option value=\"pow3\">Pow 3</option>\n        <option value=\"sqrt\">Sqrt</option>\n        <option value=\"script\">Custom Script</option>\n      </select></label>\n      </span>\n    <span class=\"raw_max\">1</span>\n  </div>\n  <svg width=\"" + options.width + "\" height=\"" + options.height + "\">\n    <rect width=\"100%\" height=\"10\"></rect>\n    <rect width=\"100%\" height=\"10\" y=\"" + (options.height - 10) + "\"></rect>\n    <g transform=\"translate(" + options.padding_hor + "," + options.padding_ver + ")\">\n      <g class=\"samples\">\n\n      </g>\n      <g class=\"mappings\">\n\n      </g>\n    </g>\n  </svg>\n  <div class=\"mapping_filter\" style=\"width: " + (options.width - options.padding_hor * 2) + "px; margin-left: " + options.padding_hor + "px;\">\n    <div class=\"mapping_mapping\"></div>\n    <div class=\"filter_left_filter\"></div>\n    <div class=\"filter_right_filter\"></div>\n    <div class=\"left_handle\"></div>\n    <div class=\"right_handle\"></div>\n  </div>\n  <div>\n    <input type=\"text\" class=\"raw_min\" value=\"0\">\n    <span class=\"center\">Raw</span>\n    <input type=\"text\" class=\"raw_max\" value=\"1\">\n  </div>\n  <div class=\"script\">\n    <textarea>\n\n    </textarea>\n    <button>Apply</button>\n  </div>";
 	        var width = options.width - options.padding_hor * 2;
-	        var height = options.height - options.padding_ver * 2;
-	        var $mapping_area = $root.select('div.mapping_mapping');
+	        var height = options.height - options.padding_ver * 2 - options.filter_height;
+	        $root.node().innerHTML = "<form onsubmit=\"return false\">\n      <div style=\"text-align: center\"><label for=\"mapping_type\">Mapping Type: <select id=\"mapping_type\">\n        <option value=\"linear\">Linear</option>\n        <option value=\"linear_invert\">Invert</option>\n        <option value=\"linear_abs\">Absolute</option>\n        <option value=\"log\">Log</option>\n        <option value=\"pow1.1\">Pow 1.1</option>\n        <option value=\"pow2\">Pow 2</option>\n        <option value=\"pow3\">Pow 3</option>\n        <option value=\"sqrt\">Sqrt</option>\n        <option value=\"script\">Custom Script</option>\n      </select>\n      </label></div>\n      <div class=\"mapping_area\">\n        <div>\n          <span>0</span>\n          <input type=\"text\" class=\"raw_min\" id=\"raw_min\" value=\"0\"><label for=\"raw_min\">Min</label>\n        </div>\n        <svg width=\"" + options.width + "\" height=\"" + options.height + "\">\n          <line y1=\"" + options.padding_ver + "\" y2=\"" + options.padding_ver + "\" x1=\"" + options.padding_hor + "\" x2=\"" + (width + options.padding_hor) + "\" stroke=\"black\"></line>\n          <rect class=\"adder\" x=\"" + options.padding_hor + "\" width=\"" + width + "\" height=\"10\"></rect>\n          <line y1=\"" + (options.height - options.filter_height - 5) + "\" y2=\"" + (options.height - options.filter_height - 5) + "\" x1=\"" + options.padding_hor + "\" x2=\"" + (width + options.padding_hor) + "\" stroke=\"black\"></line>\n          <rect class=\"adder\" x=\"" + options.padding_hor + "\" width=\"" + width + "\" height=\"10\" y=\"" + (options.height - options.filter_height - 10) + "\"></rect>\n          <g transform=\"translate(" + options.padding_hor + "," + options.padding_ver + ")\">\n            <g class=\"samples\">\n      \n            </g>\n            <g class=\"mappings\">\n      \n            </g>\n            <g class=\"filter\" transform=\"translate(0," + (options.height - options.filter_height - 10) + ")\">\n               <g class=\"left_filter\" transform=\"translate(0,0)\">\n                  <path d=\"M0,0L4,7L-4,7z\"></path>\n                  <rect x=\"-4\" y=\"7\" width=\"40\" height=\"13\" rx=\"2\" ry=\"2\"></rect>\n                  <text y=\"10\" x=\"4\" text-anchor=\"start\">&gt; 0</text>\n              </g>\n              <g class=\"right_filter\" transform=\"translate(" + width + ",0)\">\n                  <path d=\"M0,0L4,7L-4,7z\"></path>\n                  <rect x=\"-36\" y=\"7\" width=\"40\" height=\"13\" rx=\"2\" ry=\"2\"></rect>\n                  <text y=\"10\" x=\"3\" text-anchor=\"end\">&lt; 1</text>\n              </g>\n            </g>\n          </g>\n        </svg>\n        <div>\n          <span>1</span>\n          <input type=\"text\" class=\"raw_max\" id=\"raw_max\" value=\"1\"><label for=\"raw_max\">Max</label>\n        </div>\n      </div>\n      <div class=\"script\" style=\"/* display: none; */\">\n        <label for=\"script_code\">Custom Script</label><button>Apply</button>\n        <textarea id=\"script_code\">\n        </textarea>\n      </div>\n    </form>";
 	        var raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
 	            .range([0, width]);
 	        var normal2pixel = d3.scale.linear().domain([0, 1])
@@ -16878,11 +16873,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }).style('visibility', function (d) {
 	                var domain = that.scale.domain;
 	                return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
-	            });
-	            var minmax = d3.extent(that.scale.domain);
-	            $mapping_area.style({
-	                left: raw2pixel(minmax[0]) + 'px',
-	                width: raw2pixel(minmax[1] - minmax[0]) + 'px'
 	            });
 	        }
 	        function createDrag(move) {
@@ -16938,7 +16928,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                updateScale();
 	                renderMappingLines();
 	            }
-	            $root.selectAll('rect').on('click', function () {
+	            $root.selectAll('rect.adder').on('click', function () {
 	                addPoint(d3.mouse($root.select('svg > g').node())[0]);
 	            });
 	            var $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mapping_lines);
@@ -17009,34 +16999,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
 	        }
-	        $root.selectAll('div.left_handle, div.right_handle').call(createDrag(function (d) {
-	            //drag normalized
-	            var x = clamp(d3.event.x, 0, width - 5);
-	            var $this = d3.select(this).style('left', x + 'px');
-	            var is_left = $this.classed('left_handle');
-	            if (is_left) {
-	                $root.select('div.filter_left_filter').style('width', x + 'px');
-	            }
-	            else {
-	                $root.select('div.filter_right_filter').style('left', x + 'px').style('width', (width - x) + 'px');
-	            }
-	        }));
 	        {
-	            var min_filter = (isFinite(this.old_filter.min) ? raw2pixel(this.old_filter.min) : 0);
-	            var max_filter = (isFinite(this.old_filter.max) ? raw2pixel(this.old_filter.max) : width);
-	            $root.select('div.right_handle').style('left', (max_filter - 5) + 'px');
-	            $root.select('div.filter_right_filter').style('left', max_filter + 'px').style('width', (width - max_filter) + 'px');
-	            $root.select('div.left_handle').style('left', min_filter + 'px');
-	            $root.select('div.filter_left_filter').style('width', min_filter + 'px');
+	            var min_filter_1 = (isFinite(this.old_filter.min) ? raw2pixel(this.old_filter.min) : 0);
+	            var max_filter_1 = (isFinite(this.old_filter.max) ? raw2pixel(this.old_filter.max) : width);
+	            var toFilterString_1 = function (d, i) { return isFinite(d) ? ((i === 0 ? '>' : '<') + d.toFixed(1)) : 'any'; };
+	            $root.selectAll('g.left_filter, g.right_filter')
+	                .data([this.old_filter.min, this.old_filter.max])
+	                .attr('transform', function (d, i) { return ("translate(" + (i === 0 ? min_filter_1 : max_filter_1) + ",0)"); }).call(createDrag(function (d, i) {
+	                //drag normalized
+	                var x = clamp(d3.event.x, 0, width);
+	                var v = raw2pixel.invert(x);
+	                var filter = (x <= 0 && i === 0 ? -Infinity : (x >= width && i === 1 ? Infinity : v));
+	                d3.select(this).datum(filter)
+	                    .attr('transform', "translate(" + x + ",0)")
+	                    .select('text').text(toFilterString_1(filter, i));
+	            }))
+	                .select('text').text(toFilterString_1);
 	        }
 	        this.computeFilter = function () {
-	            var min_p = parseFloat($root.select('div.left_handle').style('left'));
-	            var min_f = raw2pixel.invert(min_p);
-	            var max_p = parseFloat($root.select('div.right_handle').style('left')) + 5;
-	            var max_f = raw2pixel.invert(max_p);
 	            return {
-	                min: min_p <= 0 ? -Infinity : min_f,
-	                max: max_p >= width ? Infinity : max_f
+	                min: parseFloat($root.select('g.left_filter').datum()),
+	                max: parseFloat($root.select('g.right_filter').datum())
 	            };
 	        };
 	        function updateRaw() {
@@ -17083,7 +17066,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return new MappingEditor(parent, scale, original, filter, dataPromise, options);
 	}
 	exports.create = create;
-	//# sourceMappingURL=mappingeditor.js.map
+
 
 /***/ }
 /******/ ])
