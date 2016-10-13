@@ -5,6 +5,7 @@
 import model = require('./model');
 import utils = require('./utils');
 import d3 = require('d3');
+import {IColumnDesc} from "./model";
 
 /**
  * computes the simple statistics of an array using d3 histogram
@@ -69,6 +70,15 @@ function computeHist(arr:any[], acc:(any) => string[], categories: string[]):mod
 
 function isSupportType(col: model.IColumnDesc) {
   return ['rank', 'selection', 'actions'].indexOf(col.type) >= 0;
+}
+
+export interface IExportOptions {
+  separator?: string; //'\t',
+  newline?: string; //'\n',
+  header?: boolean; //true,
+  quote?: boolean; //false,
+  quoteChar?: string; //'"',
+  filter?: (col: IColumnDesc)=>boolean //!isSupportType
 }
 
 /**
@@ -678,14 +688,16 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param options
    * @returns {Promise<string>}
    */
-  exportTable(ranking: model.Ranking, options : { separator?: string; newline?: string; header? : boolean} = {}) {
-    const op = {
+  exportTable(ranking: model.Ranking, options : IExportOptions = {}) {
+    const op: IExportOptions = {
       separator : '\t',
       newline: '\n',
       header: true,
       quote: false,
-      quoteChar: '"'
+      quoteChar: '"',
+      filter: (c) => !isSupportType(c)
     };
+    options = utils.merge(op, options);
     //optionally quote not numbers
     function quote(l: string, c?: model.Column) {
       if (op.quote && (!c || !model.isNumberColumn(c))) {
@@ -693,8 +705,7 @@ export class DataProvider extends utils.AEventDispatcher {
       }
       return l;
     }
-    utils.merge(op, options);
-    const columns = ranking.flatColumns;
+    const columns = ranking.flatColumns.filter((c) => op.filter(c.desc));
     return this.view(ranking.getOrder()).then((data) => {
       var r = [];
       if (op.header) {
