@@ -17,7 +17,7 @@ window.onload = function () {
     {label: 'C', type: 'number', column: 'c', 'domain': [0, 120], color: 'green'},
     {label: 'L', type: 'link', column: 'l'},
     {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
-    {label: 'Cat', type: 'categorical', column: 'cat', categories : ['c1','c2','c3']},
+    {label: 'Cat', type: 'categorical', column: 'cat', categories : ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19']},
     {label: 'Ord', type: 'ordinal', column: 'cat', categories : ['c1','c2','c3']},
     {label: 'Annadfas fasdf adsf asdfasd fasd', type: 'annotate', column: 'd'},
     {label: 'BB', type: 'boolean', column: 'e'},
