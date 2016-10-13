@@ -1570,14 +1570,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var cats = [], cols = this.colors.range(), labels = d3.map();
 	            desc.categories.forEach(function (cat, i) {
 	                if (typeof cat === 'string') {
+	                    //just the category value
 	                    cats.push(cat);
 	                }
 	                else {
-	                    cats.push(cat.name);
+	                    //the name or value of the category
+	                    cats.push(cat.name || cat.value);
+	                    //optional label mapping
 	                    if (cat.label) {
 	                        labels.set(cat.name, cat.label);
 	                    }
-	                    cols[i] = cat.color;
+	                    //optional color
+	                    if (cat.color) {
+	                        cols[i] = cat.color;
+	                    }
 	                }
 	            });
 	            this.catLabels = labels;
@@ -1667,13 +1673,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            range: this.colors.range(),
 	            separator: this.separator
 	        };
+	        if (this.catLabels !== null && !this.catLabels.empty()) {
+	            r.labels = this.catLabels.entries();
+	        }
 	        return r;
 	    };
 	    CategoricalColumn.prototype.restore = function (dump, factory) {
+	        var _this = this;
 	        _super.prototype.restore.call(this, dump, factory);
 	        this.currentFilter = dump.filter || null;
 	        if (dump.colors) {
 	            this.colors.domain(dump.colors.domain).range(dump.colors.range);
+	        }
+	        if (dump.labels) {
+	            this.catLabels = d3.map();
+	            dump.labels.forEach(function (e) { return _this.catLabels.set(e.key, e.value); });
 	        }
 	        this.separator = dump.separator || this.separator;
 	    };
