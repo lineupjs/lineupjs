@@ -1,4 +1,4 @@
-/*! lineupjs - v0.5.2 - 2016
+/*! lineupjs - v0.5.3 - 2016
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2016 Caleydo Team; Licensed BSD-3-Clause*/
 
@@ -80,7 +80,8 @@
   .lu-popup .selectionTable, .lu-popup2 .selectionTable {
     background: white;
     overflow-x: auto;
-    overflow-y: auto; }
+    overflow-y: auto;
+    max-height: 50vh; }
     .lu-popup .selectionTable td,
     .lu-popup .selectionTable th, .lu-popup2 .selectionTable td,
     .lu-popup2 .selectionTable th {
@@ -304,5 +305,7 @@
       padding: 0;
       margin: 0;
       font-size: 9pt; }
+    .lu svg.lu-body .cat rect, .lu-pool svg.lu-body .cat rect {
+      fill: transparent; }
 
 /*# sourceMappingURL=style.css.map*/
