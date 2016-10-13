@@ -5,7 +5,6 @@
 import model = require('./model');
 import utils = require('./utils');
 import d3 = require('d3');
-import {IColumnDesc} from "./model";
 
 /**
  * computes the simple statistics of an array using d3 histogram
@@ -73,12 +72,31 @@ function isSupportType(col: model.IColumnDesc) {
 }
 
 export interface IExportOptions {
-  separator?: string; //'\t',
-  newline?: string; //'\n',
-  header?: boolean; //true,
-  quote?: boolean; //false,
-  quoteChar?: string; //'"',
-  filter?: (col: IColumnDesc)=>boolean //!isSupportType
+  /**
+   * export separator, default: '\t'
+   */
+  separator?: string;
+  /**
+   * new line character, default: '\n'
+   */
+  newline?: string;
+  /**
+   * should a header be generated, default: true
+   */
+  header?: boolean;
+  /**
+   * quote strings, default: false
+   */
+  quote?: boolean;
+  /**
+   * quote string to use, default: '"'
+   */
+  quoteChar?: string;
+  /**
+   * filter specific column types, default: exclude all support types (selection, action, rank)
+   * @param col the column description to filter
+   */
+  filter?: (col: model.IColumnDesc)=>boolean; //!isSupportType
 }
 
 /**
@@ -971,7 +989,7 @@ export class LocalDataProvider extends CommonDataProvider {
   searchSelect(search:string|RegExp, col:model.Column) {
     //case insensitive search
     search = typeof search === 'string' ? search.toLowerCase() : search;
-    const f = typeof search === 'string' ? (v:string) => v.toLowerCase().indexOf(search) >= 0 : (v:string) => v.match(search) != null;
+    const f = typeof search === 'string' ? (v:string) => v.toLowerCase().indexOf((<string>search)) >= 0 : (<RegExp>search).test.bind(search);
     const indices = this.data.filter((row) => {
       return f(col.getLabel(row));
     }).map((row) => row._index);
