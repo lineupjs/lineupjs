@@ -958,7 +958,9 @@ export class LocalDataProvider extends CommonDataProvider {
   }
 
   searchSelect(search:string|RegExp, col:model.Column) {
-    const f = typeof search === 'string' ? (v:string) => v.indexOf(search) >= 0 : (v:string) => v.match(search) != null;
+    //case insensitive search
+    search = typeof search === 'string' ? search.toLowerCase() : search;
+    const f = typeof search === 'string' ? (v:string) => v.toLowerCase().indexOf(search) >= 0 : (v:string) => v.match(search) != null;
     const indices = this.data.filter((row) => {
       return f(col.getLabel(row));
     }).map((row) => row._index);
