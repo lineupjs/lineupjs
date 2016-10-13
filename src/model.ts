@@ -745,9 +745,13 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   }
 
   getLabel(row:any) {
+    //if a dedicated format and a number use the formatter in any case
+    if ((<any>this.desc).numberFormat) {
+      return this.numberFormat(this.getRawValue(row));
+    }
     const v = super.getValue(row);
     //keep non number if it is not a number else convert using formatter
-    return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
+    return '' + (typeof v === 'number' ? this.numberFormat(+v) : v);
   }
 
   getRawValue(row:any) {
