@@ -7,13 +7,13 @@
   }
 
   text {
-    font-size: 10pt;
+    font-size: $lu_body_font_size;
 
     &.selection {
       cursor: pointer;
 
       &:hover {
-        color: darkblue;
+        color: $lu_body_text_hover_color;
       }
     }
 
@@ -21,7 +21,7 @@
       cursor: pointer;
 
       &:hover {
-        color: darkblue;
+        color: $lu_body_text_hover_color;
       }
     }
 
@@ -49,7 +49,7 @@
   }
 
   line.slope {
-    stroke: darkgray;
+    stroke: $lu_slope_color;
     stroke-width: 2;
     shape-rendering: geometricPrecision;
 
