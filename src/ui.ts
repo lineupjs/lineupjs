@@ -762,8 +762,21 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     }, 1));
   }
 
-  createContext(index_shift:number):renderer.IRenderContext {
+  createContext(index_shift:number):renderer.IRenderContext<any> {
     var options = this.options;
+    function choose(col:model.Column) {
+      if (col.getCompressed() && model.isNumberColumn(col)) {
+        return options.renderers.heatmap;
+      }
+      if (col instanceof model.StackColumn && col.getCollapsed()) {
+        return options.renderers.number;
+      }
+      if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
+        return options.renderers.string;
+      }
+      var l = options.renderers[col.desc.type];
+      return l || renderer.defaultRenderer();
+    }
     return {
       rowKey: this.options.animation ? this.data.rowKey : undefined,
       cellY(index:number) {
@@ -778,32 +791,16 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       rowHeight(index:number) {
         return options.rowHeight * (1 - options.rowPadding);
       },
-      renderer(col:model.Column) {
-        if (col.getCompressed() && model.isNumberColumn(col)) {
-          return options.renderers.heatmap;
-        }
-        if (col instanceof model.StackColumn && col.getCollapsed()) {
-          return options.renderers.number;
-        }
-        if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
-          return options.renderers.string;
-        }
-        var l = options.renderers[col.desc.type];
-        return l || renderer.defaultRenderer();
-      },
-      render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context:renderer.IRenderContext = this) {
+      render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context:renderer.IRenderContext<renderer.IDOMRenderContext> = this) {
         //if renderers change delete old stuff
         const tthis = <any>($this.node());
         const old_renderer = tthis.__renderer__;
-        const act_renderer = this.renderer(col);
+        const act_renderer = this.choose(col);
         if (old_renderer !== act_renderer) {
           $this.selectAll('*').remove();
           tthis.__renderer__ = act_renderer;
         }
         act_renderer.render($this, col, data, context);
-      },
-      renderCanvas(col:model.Column, ctx:CanvasRenderingContext2D, data:any[], context:renderer.IRenderContext = this) {
-        //dummy impl
       },
       showStacked(col:model.Column) {
         return col instanceof model.StackColumn && options.stacked;
