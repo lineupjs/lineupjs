@@ -38,7 +38,7 @@ function generate(bundle, min) {
         },
         {
           test: /\.tsx?$/,
-          loader: 'ts-loader'
+          loader: 'awesome-typescript-loader'
         }
       ]
     }
@@ -63,7 +63,6 @@ function generate(bundle, min) {
     base.plugins.push(new TypedocWebpackPlugin({
       target: 'es5',
       module: 'commonjs', // 'amd' (default) | 'commonjs'
-      output: '../docs',
       name: 'LineUp.js',
 
       entryPoint: 'main.LineUp',
