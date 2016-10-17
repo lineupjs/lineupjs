@@ -23,7 +23,7 @@ function generate(bundle, min) {
       // Add `.ts` and `.tsx` as a resolvable extension.
       extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
       alias: {
-        d3: '../bower_components/d3/d3'
+        d3: '../node_modules/d3/d3'
       }
     },
     plugins: [

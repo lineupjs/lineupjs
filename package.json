@@ -33,7 +33,7 @@
   "main": "dist/LineUpJS.js",
   "scripts": {
     "test": "tslint -c tslint.json src/*.ts",
-    "prepare": "npm install & bower install & typings install",
+    "prepare": "npm install & typings install",
     "build": "webpack",
     "watch": "webpack --watch"
   },
@@ -56,5 +56,6 @@
     "awesome-typescript-loader": "^2.2.4"
   },
   "dependencies": {
+    "d3": "^3.5.17"
   }
 }
