@@ -698,6 +698,10 @@ export interface IBodyRenderer extends utils.AEventDispatcher {
   update();
 }
 
+function all(node: Element, selector: string) {
+  return Array.prototype.slice.call(node.querySelectorAll(selector));
+}
+
 export class BodyRenderer extends utils.AEventDispatcher implements IBodyRenderer {
   private options = {
     rowHeight: 20,
@@ -778,7 +782,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     }
     return {
       //if we use animation we use the same object, otherwise don't care
-      rowKey: this.options.animation ? this.data.rowKey : undefined,
+      rowKey: this.options.animation ? (d,i) => this.data.rowKey(d.v,i) : undefined,
 
       idPrefix: options.idPrefix,
 
@@ -862,7 +866,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
 
   renderRankings($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IDOMRenderContext, height: number) {
     const that = this;
-    const dataPromises = orders.map((r) => this.data.view(r));
+    const dataPromises : Promise<renderer.IDataRow[]>[]= orders.map((r) => this.data.view(r).then((data) => data.map((v,i) => ({v: v, dataIndex: r[i]}))));
 
     const $rankings = $body.selectAll('g.ranking').data(rankings, (d) => d.id);
     const $rankings_enter = $rankings.enter().append('g').attr({
@@ -927,8 +931,8 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       });
       $rows
         .attr('data-data-index', (d) => d.d)
-        .attr('data-visible-index', (d) => d.i)
         .classed('selected', (d) => this.data.isSelected(d.d));
+        //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
       $rows.select('rect').attr({
         y: (d) => context.cellY(d.i),
         height: (d) => context.rowHeight(d.i),
@@ -960,7 +964,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
 
   select(dataIndex:number, additional = false) {
     var selected = this.data.toggleSelection(dataIndex, additional);
-    this.$node.selectAll(`g.row[data-data-index="${dataIndex}"], line.slope[data-data-index="${dataIndex}"]`).classed('selected', selected);
+    this.$node.selectAll(`[data-data-index="${dataIndex}"`).classed('selected', selected);
   }
 
   private hasAnySelectionColumn() {
@@ -973,7 +977,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     }
     const indices = this.data.getSelection();
     if (indices.length === 0) {
-      this.$node.selectAll('g.row.selected, line.slope.selected').classed('selected', false);
+      this.$node.selectAll('.selected').classed('selected', false);
     } else {
       var s = d3.set(indices);
       this.$node.selectAll('g.row').classed('selected', (d) => s.has(String(d.d)));
@@ -983,29 +987,13 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
 
   mouseOver(dataIndex:number, hover = true) {
     this.fire('hoverChanged', hover ? dataIndex : -1);
-    const node = <Element>this.$node.node();
 
-    function all(node: Element, selector: string) {
-      return Array.prototype.slice.call(node.querySelectorAll(selector));
-    }
     function setClass(item: Element) {
       item.classList.add('hover');
     }
-    all(node, '.hover').forEach((d) => d.classList.remove('hover'));
+    all(this.node, '.hover').forEach((d) => d.classList.remove('hover'));
     if (hover) {
-      all(node, 'g.ranking').forEach(function (ranking) {
-        //per ranking since visible order changes
-        const row = <SVGGElement>ranking.querySelector(`g.row[data-data-index="${dataIndex}"]`);
-        if (row) {
-          var index = +row.getAttribute('data-visible-index');
-          setClass(row);
-          //mark all indices
-          all(ranking, `g.cols g.child [data-visible-index="${index}"]`).forEach(setClass);
-        }
-      });
-
-      //update the slope graph
-      all(node, `line.slope[data-data-index="${dataIndex}"]`).forEach(setClass);
+      all(this.node, `[data-data-index="${dataIndex}"]`).forEach(setClass);
     }
 
     //set clip path for frozen columns
