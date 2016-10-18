@@ -521,15 +521,17 @@ $lu_drag_over: #979797;
       font-size: 10pt;
     }
 
-    foreignObject: { //e.g. the input field in annotate columns
+    foreignObject { //e.g. the input field in annotate columns
       padding: 0;
       margin: 0;
+      pointer-events: all;
     }
 
     input {
       padding: 0;
       margin: 0;
       font-size: 9pt;
+      pointer-events: all;
     }
 
     .cat rect {

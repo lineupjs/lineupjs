@@ -88,7 +88,7 @@ export interface ISVGCellRenderer {
   renderSVG($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext);
 }
 
-export function animated($rows: d3.Selection<any>, context: IDOMRenderContext) {
+export function animated<T>($rows: d3.Selection<T>, context: IDOMRenderContext): d3.Selection<T> {
   if (context.animationDuration > 0) {
     return <any>$rows.transition();
   }
@@ -362,7 +362,7 @@ class AnnotateCellRenderer implements ISVGCellRenderer {
         x: (d, i) => context.cellX(i),
         width: col.getWidth(),
         height: (d,i) => context.rowHeight(i)
-      }).select('xhtml:input').style('width', col.getWidth() + 'px').property('value', (d) => col.getLabel(d.v));
+      }).select('input').style('width', col.getWidth() + 'px').property('value', (d) => col.getLabel(d.v));
 
     const $rows_animated = animated($rows, context);
     $rows_animated.select('text').attr('y', (d, i) => context.cellY(i));
