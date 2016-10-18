@@ -88,6 +88,20 @@ export interface ISVGCellRenderer {
   renderSVG($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext);
 }
 
+/**
+ * a cell renderer for rendering a cell of specific column
+ */
+export interface IHTMLCellRenderer {
+  /**
+   * render a whole column at once
+   * @param $col the column container
+   * @param col the column to render
+   * @param rows the data rows
+   * @param context render context
+   */
+  renderHTML($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext);
+}
+
 export function animated<T>($rows: d3.Selection<T>, context: IDOMRenderContext): d3.Selection<T> {
   if (context.animationDuration > 0) {
     return <any>$rows.transition();
@@ -97,7 +111,7 @@ export function animated<T>($rows: d3.Selection<T>, context: IDOMRenderContext):
 /**
  * default renderer instance rendering the value as a text
  */
-export class DefaultCellRenderer implements ISVGCellRenderer {
+export class DefaultCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
   /**
    * class to append to the text elements
    * @type {string}
@@ -135,6 +149,23 @@ export class DefaultCellRenderer implements ISVGCellRenderer {
 
     $rows.exit().remove();
   }
+
+  renderHTML($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext) {
+    var $rows = $col.datum(col).selectAll('div.' + this.textClass).data(rows, context.rowKey);
+
+    $rows.enter().append('div')
+      .attr('class',this.textClass+' '+this.align)
+      .style('top',(d, i) => context.cellPrevY(i)+'px');
+
+    $rows.attr('data-data-index',(d) => d.dataIndex)
+      .style('left', (d, i) => context.cellX(i)+'px')
+      .style('width', col.getWidth()+'px')
+      .text((d) => col.getLabel(d.v));
+
+    animated($rows, context).style('top', (d, i) => context.cellY(i)+'px');
+
+    $rows.exit().remove();
+  }
 }
 
 /**
@@ -153,7 +184,7 @@ class DerivedCellRenderer extends DefaultCellRenderer {
 /**
  * a renderer rendering a bar for numerical columns
  */
-export class BarCellRenderer implements ISVGCellRenderer {
+export class BarCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
   /**
    * flag to always render the value
    * @type {boolean}
@@ -195,6 +226,36 @@ export class BarCellRenderer implements ISVGCellRenderer {
     animated($rows.select('text').text((d) => col.getLabel(d.v)), context)
       .attr('transform', (d, i) => `translate(${context.cellX(i)},${context.cellY(i)})`);
 
+
+    $rows.exit().remove();
+  }
+
+  renderHTML($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext) {
+    var $rows = $col.datum(col).selectAll('.bar').data(rows, context.rowKey);
+
+    const padding = context.option('rowPadding', 1);
+    function barLength(d) {
+      var n = col.getWidth() * col.getValue(d.v);
+      return (isNaN(n) ? 0 : n)+'px';
+    }
+
+    $rows.enter().append('div').attr('class', 'bar')
+      .style('left', (d, i) => context.cellX(i) + 'px')
+      .style('top', (d, i) => context.cellPrevY(i) + 'px')
+      .style('width', '0px')
+      .style('height', (d, i) => (context.rowHeight(i) - padding * 2) + 'px')
+      .style('background-color', col.color)
+      .append('span');
+
+    $rows.attr('data-data-index',(d) => d.dataIndex)
+      .select('span').text((d) => col.getLabel(d.v));
+
+    animated($rows, context)
+      .style('left', (d, i) => context.cellX(i)+'px')
+      .style('top', (d, i) => (context.cellY(i)+padding)+'px')
+      .style('width', barLength)
+      .style('height',(d, i) => (context.rowHeight(i) - padding * 2)+'px')
+      .style('background-color', (d, i) => this.colorOf(d.v, i, col));
 
     $rows.exit().remove();
   }
@@ -276,7 +337,7 @@ class DerivedBarCellRenderer extends BarCellRenderer {
 /**
  * an rendering for action columns, i.e., clickable column actions
  */
-export class ActionCellRenderer implements ISVGCellRenderer {
+export class ActionCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
   renderSVG($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext) {
     //nothing to render in normal mode
     const actions = context.option('actions', []);
@@ -287,6 +348,10 @@ export class ActionCellRenderer implements ISVGCellRenderer {
       y: (d,i) => context.cellPrevY(i)
     });
     $rows.attr('data-data-index', (d) => d.dataIndex);
+    animated($rows, context).attr({
+      x: (d,i) => context.cellX(i),
+      y: (d,i) => context.cellY(i)
+    });
 
     const $actions = $rows.selectAll('tspan').data(actions);
     $actions.enter().append('tspan')
@@ -302,9 +367,39 @@ export class ActionCellRenderer implements ISVGCellRenderer {
     $rows.exit().remove();
 
   }
+
+  renderHTML($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext) {
+    //nothing to render in normal mode
+    const actions = context.option('actions', []);
+    const $rows = $col.selectAll('div.actions').data(rows, context.rowKey);
+    $rows.enter().append('div').attr('class', 'actions hoverOnly fa').style({
+      left: (d,i) => context.cellX(i)+'px',
+      top: (d,i) => context.cellPrevY(i)+'px'
+    });
+
+    $rows.attr('data-data-index', (d) => d.dataIndex);
+    animated($rows, context).style({
+      left: (d,i) => context.cellX(i)+'px',
+      top: (d,i) => context.cellY(i)+'px'
+    });
+
+    const $actions = $rows.selectAll('span').data(actions);
+    $actions.enter().append('span')
+      .on('click', (d, i, j) => {
+        d3.event.preventDefault();
+        d3.event.stopPropagation();
+        d.action(rows[j].v);
+      });
+    $actions.text((d) => d.icon)
+      .attr('title', (d) => d.name);
+
+    $actions.exit().remove();
+    $rows.exit().remove();
+
+  }
 }
 
-export class SelectionCellRenderer implements ISVGCellRenderer {
+export class SelectionCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
 
   renderSVG($col: d3.Selection<any>, col: model.SelectionColumn, rows: IDataRow[], context: IDOMRenderContext) {
     var $rows = $col.datum(col).selectAll('text.selection').data(rows, context.rowKey);
@@ -324,6 +419,22 @@ export class SelectionCellRenderer implements ISVGCellRenderer {
     });
 
     animated($rows, context).attr('y', (d, i) => context.cellY(i));
+
+    $rows.exit().remove();
+  }
+
+  renderHTML($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext) {
+    var $rows = $col.datum(col).selectAll('div.selection').data(rows, context.rowKey);
+
+    $rows.enter().append('div')
+      .attr('class','selection fa')
+      .style('top',(d, i) => context.cellPrevY(i)+'px');
+
+    $rows.attr('data-data-index',(d) => d.dataIndex)
+      .style('left', (d, i) => context.cellX(i)+'px')
+      .style('width', col.getWidth()+'px');
+
+    animated($rows, context).style('top', (d, i) => context.cellY(i)+'px');
 
     $rows.exit().remove();
   }
@@ -401,7 +512,7 @@ export function barRenderer(extraFuncs?: any) {
 /**
  * renderer of a link column, i.e. render an intermediate *a* element
  */
-class LinkCellRenderer implements ISVGCellRenderer {
+class LinkCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
   renderSVG($col: d3.Selection<any>, col: model.LinkColumn, rows: IDataRow[], context: IDOMRenderContext) {
     //wrap the text elements with an a element
     var $rows = $col.datum(col).selectAll('text.link').data(rows, context.rowKey);
@@ -420,6 +531,23 @@ class LinkCellRenderer implements ISVGCellRenderer {
 
     $rows.exit().remove();
   }
+
+  renderHTML($col: d3.Selection<any>, col: model.LinkColumn, rows: IDataRow[], context: IDOMRenderContext) {
+    //wrap the text elements with an a element
+    var $rows = $col.datum(col).selectAll('div.link').data(rows, context.rowKey);
+    $rows.enter().append('div')
+      .attr('class','text link')
+      .style('top',(d, i) => context.cellPrevY(i)+'px');
+
+    $rows.attr('data-data-index',(d) => d.dataIndex)
+      .style('left', (d, i) => context.cellX(i)+'px')
+      .style('width', col.getWidth()+'px')
+      .html((d) => col.isLink(d.v) ? `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v));
+
+    animated($rows, context).style('top', (d, i) => context.cellY(i)+'px');
+
+    $rows.exit().remove();
+  }
 }
 
 
@@ -431,6 +559,12 @@ class StringCellRenderer extends DefaultCellRenderer {
     this.align = col.alignment;
     this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
     return super.renderSVG($col, col, rows, context);
+  }
+
+  renderHTML($col: d3.Selection<any>, col: model.StringColumn, rows: IDataRow[], context: IDOMRenderContext) {
+    this.align = col.alignment;
+    this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
+    return super.renderHTML($col, col, rows, context);
   }
 }
 
