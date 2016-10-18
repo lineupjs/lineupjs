@@ -251,9 +251,21 @@ $lu_drag_over: #979797;
   text.text_center {
     text-anchor: middle;
   }
-  g.bar rect {
+
+  .hoverOnly {
+    display: none;
+  }
+
+  .hover .hoverOnly {
+    display: block;
+  }
+
+  g.hover.bar rect {
     //bars nested combined with a text representation
     opacity: 0.5;
+  }
+  .hover .notHoverOnly {
+    display: none;
   }
 
   line.meanline {
@@ -301,9 +313,6 @@ $lu_drag_over: #979797;
     &.hover {
       rect.bg {
         fill: $lu_hover_color;
-      }
-      rect.bar, g.bar rect {
-        opacity: 0.5;
       }
     }
   }

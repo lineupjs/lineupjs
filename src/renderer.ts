@@ -40,7 +40,7 @@ export interface IRenderContext<T> {
    * render a column
    * @param col
    */
-  render(col: model.Column, target: T, data: any[], context?: IRenderContext<T>);
+  render(col: model.Column, target: T, data: any[], context: IRenderContext<T>);
 
   /**
    * prefix used for all generated id names
@@ -61,12 +61,7 @@ export interface IRenderContext<T> {
   option<T>(key: string, default_: T): T;
 }
 
-export interface IDOMRenderContext extends IRenderContext<d3.Selection<any>> {
-
-}
-export interface ICanvasRenderContext extends IRenderContext<CanvasRenderingContext2D> {
-
-}
+export declare type IDOMRenderContext = IRenderContext<d3.Selection<model.Column>>;
 
 /**
  * a cell renderer for rendering a cell of specific column
@@ -82,15 +77,7 @@ export interface ISVGCellRenderer {
   renderSVG($col: d3.Selection<any>, col: model.Column, rows: any[], context: IDOMRenderContext);
 }
 
-export interface IHTMLCellRenderer {
-  renderHTML($col: d3.Selection<any>, col: model.Column, rows: any[], context: IDOMRenderContext);
-}
-
-export interface ICanvasCellRenderer {
-  renderCanvas(ctx: CanvasRenderingContext2D, col: model.Column, rows: any[], context: IRenderContext<CanvasRenderingContext2D>);
-}
-
-function animated($rows: d3.Selection<any>, context: IDOMRenderContext) {
+export function animated($rows: d3.Selection<any>, context: IDOMRenderContext) {
   if (context.animationDuration > 0) {
     return <any>$rows.transition();
   }
@@ -99,7 +86,7 @@ function animated($rows: d3.Selection<any>, context: IDOMRenderContext) {
 /**
  * default renderer instance rendering the value as a text
  */
-export class DefaultCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
+export class DefaultCellRenderer implements ISVGCellRenderer {
   /**
    * class to append to the text elements
    * @type {string}
@@ -117,7 +104,7 @@ export class DefaultCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer 
 
     $rows.enter().append('text').attr({
       'class': this.textClass,
-      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+      'clip-path': `url(#${context.idPrefix}clipCol${col.id})`,
       y: (d, i) => context.cellPrevY(i)
     });
 
@@ -130,29 +117,12 @@ export class DefaultCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer 
 
     $rows.attr({
       x: (d, i) => context.cellX(i) + alignmentShift,
-      'data-index': (d, i) => i
+      'data-visible-index': (d, i) => i
     }).text((d) => col.getLabel(d));
 
     animated($rows, context).attr({
       y: (d, i) => context.cellY(i)
     });
-
-    $rows.exit().remove();
-  }
-
-  renderHTML($col: d3.Selection<any>, col: model.Column, rows: any[], context: IDOMRenderContext) {
-    var $rows = $col.datum(col).selectAll('div.' + this.textClass).data(rows, context.rowKey);
-
-    $rows.enter().append('div')
-      .attr('class',this.textClass)
-      .style('top',(d, i) => context.cellPrevY(i)+'px');
-
-    $rows.attr('data-index',(d, i) => i).style({
-      left: (d, i) => (context.cellX(i)) +'px',
-      width: col.getWidth()+'px'
-    }).text((d) => col.getLabel(d));
-
-    animated($rows, context).style('top',(d, i) => context.cellY(i)+'px');
 
     $rows.exit().remove();
   }
@@ -187,44 +157,35 @@ export class BarCellRenderer implements ISVGCellRenderer {
     var $rows = $col.datum(col).selectAll('.bar').data(rows, context.rowKey);
 
     const padding = context.option('rowPadding', 1);
-    const renderBars = ($enter: d3.selection.Enter<any>, clazz: string, $update: d3.selection.Update<any>) => {
-      $enter.append('rect').attr({
-        'class': clazz,
-        x: (d, i) => context.cellX(i),
-        y: (d, i) => context.cellPrevY(i) + padding,
-        width: (d) => {
-          var n = col.getWidth() * col.getValue(d);
-          return isNaN(n) ? 0 : n;
-        }
-      }).style('fill', col.color);
+    function barLength(d) {
+      var n = col.getWidth() * col.getValue(d);
+      return isNaN(n) ? 0 : n;
+    }
 
-      $update.attr({
-        height: (d, i) => context.rowHeight(i) - context.option('rowPadding', 1) * 2
-      });
+    let $rows_enter = $rows.enter().append('g').attr('class', 'bar');
+    $rows_enter.append('rect').attr({
+      'class': col.cssClass,
+      x: (d, i) => context.cellX(i),
+      y: (d, i) => context.cellPrevY(i) + padding,
+      width: barLength
+    }).style('fill', col.color).append('title');
 
-      animated($update, context).attr({
-        x: (d, i) => context.cellX(i),
-        y: (d, i) => context.cellY(i) + context.option('rowPadding', 1),
-        width: (d) => {
-          var n = col.getWidth() * col.getValue(d);
-          return isNaN(n) ? 0 : n;
-        }
-      }).style({
-        fill: (d, i) => this.colorOf(d, i, col)
-      });
-    };
-
-    let $rows_enter = $rows.enter().append('g').attr('class', 'bar ' + this.textClass);
-    renderBars($rows_enter, col.cssClass, $rows.select('rect'));
     $rows_enter.append('text').attr({
-      'class': 'number',
-      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')'
+      'class': 'number '+(renderValue?'':'hoverOnly'),
+      'clip-path': `url(#${context.idPrefix}clipCol${col.id})`,
+      transform: (d, i) => `translate(${context.cellX(i)},${context.cellPrevY(i)})`
     });
 
+    $rows.attr('data-visible-index', (d, i) => i);
+    $rows.select('rect title').text((d) => col.getLabel(d));
+    animated($rows.select('rect').attr('height', (d, i) => context.rowHeight(i) - padding * 2), context).attr({
+        x: (d, i) => context.cellX(i),
+        y: (d, i) => context.cellY(i) + padding,
+        width: barLength
+      }).style('fill', (d, i) => this.colorOf(d, i, col));
     animated($rows.select('text').text((d) => col.getLabel(d)), context)
-      .attr('transform', (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')');
+      .attr('transform', (d, i) => `translate(${context.cellX(i)},${context.cellY(i)})`);
 
-    $rows.attr('data-index', (d, i) => i);
 
     $rows.exit().remove();
   }
@@ -249,31 +210,25 @@ export class HeatMapCellRenderer implements ISVGCellRenderer {
   renderSVG($col: d3.Selection<any>, col: model.NumberColumn, rows: any[], context: IDOMRenderContext) {
     var $rows = $col.datum(col).selectAll('.heatmap').data(rows, context.rowKey);
 
-    $row.append('text').datum(rowNode.datum()).attr({
-        'class': 'number',
-        'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
-        transform: 'translate(' + context.cellX(index) + ',' + context.cellY(index) + ')'
-      }).text((d) => col.getLabel(d));
-
-    $rows.enter().append('g').attr({
-      'class': 'bar ' + col.cssClass,
+    $rows.enter().append('rect').attr({
+      'class': 'heatmap ' + col.cssClass,
       x: (d, i) => context.cellX(i),
       y: (d, i) => context.cellPrevY(i) + context.option('rowPadding', 1),
       width: (d, i) => context.rowHeight(i) - context.option('rowPadding', 1) * 2
-    }).style('fill', col.color);
+    }).style('fill', col.color)
+      .append('title');
 
     $rows.attr({
-      'data-index': (d, i) => i,
+      'data-visible-index': (d, i) => i,
       width: (d, i) => context.rowHeight(i) - context.option('rowPadding', 1) * 2,
       height: (d, i) => context.rowHeight(i) - context.option('rowPadding', 1) * 2
     });
+    $rows.select('title').text((d) => col.getLabel(d));
 
     animated($rows, context).attr({
       x: (d, i) => context.cellX(i),
       y: (d, i) => context.cellY(i) + context.option('rowPadding', 1)
-    }).style({
-      fill: (d, i) => this.colorOf(d, i, col)
-    });
+    }).style('fill', (d, i) => this.colorOf(d, i, col));
     $rows.exit().remove();
   }
 
@@ -314,30 +269,32 @@ class DerivedBarCellRenderer extends BarCellRenderer {
 export class ActionCellRenderer implements ISVGCellRenderer {
   renderSVG($col: d3.Selection<any>, col: model.Column, rows: any[], context: IDOMRenderContext) {
     //nothing to render in normal mode
-  }
+    const actions = context.option('actions', []);
+    const $rows = $col.selectAll('text.actions').data(rows, context.rowKey);
+    $rows.enter().append('text').attr({
+      'class': 'actions hoverOnly fa',
+      x: (d,i) => context.cellX(i),
+      y: (d,i) => context.cellPrevY(i)
+    });
+    $rows.attr('data-visible-index', (d,i) => i);
 
-  mouseEnter($col: d3.Selection<any>, $row: d3.Selection<any>, col: model.Column, row: any, index: number, context: IRenderContext) {
-    //render all actions at tspans
-    var actions = context.option('actions', []);
-    var $actions = $row.append('text').attr({
-      'class': 'actions fa',
-      x: context.cellX(index),
-      y: context.cellPrevY(index),
-      'data-index': index
-    }).selectAll('tspan').data(actions);
+    const $actions = $rows.selectAll('tspan').data(actions);
     $actions.enter().append('tspan')
-      .text((d) => d.icon)
-      .attr('title', (d) => d.name)
-      .on('click', (d) => {
+      .on('click', (d, i, j) => {
         d3.event.preventDefault();
         d3.event.stopPropagation();
-        d.action(row);
+        d.action(rows[j]);
       });
-  }
+    $actions.text((d) => d.icon)
+      .attr('title', (d) => d.name);
 
+    $actions.exit().remove();
+    $rows.exit().remove();
+
+  }
 }
 
-export class SelectionCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
+export class SelectionCellRenderer implements ISVGCellRenderer {
 
   renderSVG($col: d3.Selection<any>, col: model.SelectionColumn, rows: any[], context: IDOMRenderContext) {
     var $rows = $col.datum(col).selectAll('text.selection').data(rows, context.rowKey);
@@ -354,7 +311,7 @@ export class SelectionCellRenderer implements ISVGCellRenderer, IHTMLCellRendere
 
     $rows.attr({
       x: (d, i) => context.cellX(i),
-      'data-index': (d, i) => i
+      'data-visible-index': (d, i) => i
     }).text((d) => col.getValue(d) === true ? '\uf046' : '\uf096');
 
     animated($rows, context).attr({
@@ -363,62 +320,47 @@ export class SelectionCellRenderer implements ISVGCellRenderer, IHTMLCellRendere
 
     $rows.exit().remove();
   }
-
-  renderHTML($col: d3.Selection<any>, col: model.SelectionColumn, rows: any[], context: IDOMRenderContext) {
-    var $rows = $col.datum(col).selectAll('i.selection').data(rows, context.rowKey);
-
-    $rows.enter().append('i').attr('class', 'selection fa')
-      .style('top', (d, i) => context.cellPrevY(i) + 'px')
-      .on('click', function (d) {
-        d3.event.preventDefault();
-        d3.event.stopPropagation();
-        const new_ = col.toggleValue(d);
-        d3.select(this).text(new_ === true ? '\uf046' : '\uf096');
-      });
-
-    $rows.attr('data-index', (d, i) => i)
-      .style('left', (d, i) => context.cellX(i) + 'px')
-      .text((d) => col.getValue(d) === true ? '\uf046' : '\uf096');
-
-    animated($rows, context).style('top', (d, i) => context.cellY(i) + 'px');
-
-    $rows.exit().remove();
-  }
 }
 
 /**
  * a renderer for annotate columns
  */
-class AnnotateCellRenderer extends DefaultCellRenderer {
-  mouseEnter($col: d3.Selection<any>, $row: d3.Selection<any>, col: model.AnnotateColumn, row: any, index: number, context: IRenderContext) {
-    //render an input field for editing
-    this.findRow($col, index).attr('display', 'none');
-    $row.append('foreignObject').attr({
-      x: context.cellX(index) - 2,
-      y: context.cellPrevY(index) - 2,
-      'data-index': index,
-      width: col.getWidth(),
-      height: context.rowHeight(index)
-    }).append('xhtml:input').attr({
-      type: 'text',
-      value: col.getValue(row)
-    }).style({
-      width: col.getWidth() + 'px'
-    }).on('change', function () {
+class AnnotateCellRenderer implements ISVGCellRenderer {
+  renderSVG($col: d3.Selection<any>, col: model.AnnotateColumn, rows: any[], context: IDOMRenderContext) {
+    //nothing to render in normal mode
+    const $rows = $col.selectAll('g.annotations').data(rows, context.rowKey);
+    const $rows_enter = $rows.enter().append('g').attr('class', 'annotations');
+    $rows_enter.append('text').attr({
+      'class': 'notHoverOnly text',
+      'clip-path': `url(#${context.idPrefix}clipCol${col.id})`,
+      y: (d,i) => context.cellPrevY(i)
+    });
+    $rows_enter.append('foreignObject').attr({
+      x: (d,i) => context.cellX(i) - 2,
+      y: (d,i) => context.cellPrevY(i) - 2,
+      'class': 'hoverOnly'
+    }).append('xhtml:input').attr('type', 'text').on('change', function (d) {
       //update the value
       var text = this.value;
-      col.setValue(row, text);
+      col.setValue(d, text);
     }).on('click', () => d3.event.stopPropagation());
-  }
 
-  mouseLeave($col: d3.Selection<any>, $row: d3.Selection<any>, col: model.AnnotateColumn, row: any, index: number, context: IRenderContext) {
-    this.findRow($col, index).attr('display', null);
-    var node = <HTMLInputElement>$row.select('input').node();
-    if (node) {
-      //update the value before removal, the change event may not have been fired
-      col.setValue(row, node.value);
-    }
-    $row.selectAll('*').remove();
+    $rows.attr('data-visible-index', (d,i) => i);
+    $rows.select('text')
+      .attr('x',(d, i) => context.cellX(i))
+      .text((d) => col.getLabel(d));
+    $rows.select('foreignObject')
+      .attr({
+        x: (d, i) => context.cellX(i),
+        width: col.getWidth(),
+        height: (d,i) => context.rowHeight(i)
+      }).select('xhtml:input').style('width', col.getWidth() + 'px').property('value', (d) => col.getLabel(d));
+
+    const $rows_animated = animated($rows, context);
+    $rows_animated.select('text').attr('y', (d, i) => context.cellY(i));
+    $rows_animated.select('foreignObject').attr('y', (d, i) => context.cellY(i)-2);
+
+    $rows.exit().remove();
   }
 }
 
@@ -452,46 +394,25 @@ export function barRenderer(extraFuncs?: any) {
 /**
  * renderer of a link column, i.e. render an intermediate *a* element
  */
-class LinkCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
+class LinkCellRenderer implements ISVGCellRenderer {
   renderSVG($col: d3.Selection<any>, col: model.LinkColumn, rows: any[], context: IDOMRenderContext) {
     //wrap the text elements with an a element
     var $rows = $col.datum(col).selectAll('text.link').data(rows, context.rowKey);
     $rows.enter().append('text').attr({
       'class': 'text link',
-      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+      'clip-path': `url(#${context.idPrefix}clipCol${col.id})`,
       y: (d, i) => context.cellPrevY(i)
     });
 
     $rows.attr({
       x: (d, i) => context.cellX(i),
-      'data-index': (d, i) => i
+      'data-visible-index': (d, i) => i
     }).html((d) => col.isLink(d) ? `<a class="link" xlink:href="${col.getValue(d)}" target="_blank">${col.getLabel(d)}</a>` : col.getLabel(d));
 
-    animated($rows, context).attr({
-      y: (d, i) => context.cellY(i)
-    });
+    animated($rows, context).attr('y', (d, i) => context.cellY(i));
 
     $rows.exit().remove();
   }
-
-  renderHTML($col: d3.Selection<any>, col: model.LinkColumn, rows: any[], context: IDOMRenderContext) {
-    //wrap the text elements with an a element
-    var $rows = $col.datum(col).selectAll('span.link').data(rows, context.rowKey);
-    $rows.enter().append('span').attr({
-      'class': 'text link'
-    }).style({
-      top: (d, i) => context.cellPrevY(i) + 'px'
-    });
-
-    $rows.attr('data-index', (d, i) => i)
-      .style('left', (d, i) => context.cellX(i) + 'px')
-      .html((d) => col.isLink(d) ? `<a class="link" href="${col.getValue(d)}" target="_blank">${col.getLabel(d)}</a>` : col.getLabel(d));
-
-    animated($rows, context).style('top', (d, i) => context.cellY(i) + 'px');
-
-    $rows.exit().remove();
-  }
-
 }
 
 
@@ -517,33 +438,25 @@ class CategoricalRenderer implements ISVGCellRenderer {
 
     var $rows_enter = $rows.enter().append('g').attr({
       'class': this.textClass,
-      'data-index': (d, i) => i,
-      transform: (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellPrevY(i) + ')'
+      'data-visible-index': (d, i) => i,
+      transform: (d, i) => `translate(${context.cellX(i)},${context.cellPrevY(i)})`
     });
     $rows_enter.append('text').attr({
-      'clip-path': 'url(#' + context.idPrefix + 'clipCol' + col.id + ')',
+      'clip-path': `url(#${context.idPrefix}clipCol${col.id})`,
       x: (d, i) => context.rowHeight(i)
     });
-    $rows_enter.append('rect').attr({
-      y: context.option('rowPadding', 1)
-    });
+    $rows_enter.append('rect').attr('y', context.option('rowPadding', 1));
     $rows.attr({
-      'data-index': (d, i) => i,
-      transform: (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'
+      'data-visible-index': (d, i) => i,
+      transform: (d, i) => `translate(${context.cellX(i)},${context.cellY(i)})`
     });
-    $rows.select('text').attr({
-      x: (d, i) => context.rowHeight(i)
-    }).text((d) => col.getLabel(d));
-    $rows.select('rect').style({
-      fill: (d) => col.getColor(d)
-    }).attr({
+    $rows.select('text').attr('x', (d, i) => context.rowHeight(i)).text((d) => col.getLabel(d));
+    $rows.select('rect').style('fill', (d) => col.getColor(d)).attr({
       height: (d, i) => Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0),
       width: (d, i) => Math.max(context.rowHeight(i) - context.option('rowPadding', 1) * 2, 0)
     });
 
-    animated($rows, context).attr({
-      transform: (d, i) => 'translate(' + context.cellX(i) + ',' + context.cellY(i) + ')'
-    });
+    animated($rows, context).attr('transform', (d, i) => `translate(${context.cellX(i)},${context.cellY(i)})`);
 
 
     $rows.exit().remove();
@@ -557,10 +470,10 @@ class StackCellRenderer implements ISVGCellRenderer {
   constructor(private nestingPossible = true) {
   }
 
-  renderImpl($base: d3.Selection<any>, col: model.StackColumn, context: IDOMRenderContext, perChild: ($child: d3.Selection<model.Column>, col: model.Column, i: number, context: IDOMRenderContext) => void, rowGetter: (index: number) => any) {
+  renderSVG($base: d3.Selection<any>, col: model.StackColumn, rows: any[], context: IDOMRenderContext) {
     const $group = $base.datum(col),
       children = col.children,
-      stacked = this.nestingPossible && context.showStacked(col);
+      stacked = this.nestingPossible && context.option('stacked', true);
     var offset = 0,
       shifts = children.map((d) => {
         var r = offset;
@@ -582,7 +495,7 @@ class StackCellRenderer implements ISVGCellRenderer {
     //shift children horizontally
     $children.enter().append('g').attr({
       'class': baseclass,
-      transform: (d, i) => 'translate(' + shifts[i] + ',0)'
+      transform: (d, i) => `translate(${shifts[i]},0)`
     });
     //for each children render the column
     $children.attr({
@@ -594,24 +507,18 @@ class StackCellRenderer implements ISVGCellRenderer {
         //if shown as stacked bar shift individual cells of a column to the left where they belong to
         context.cellX = (index) => {
           //shift by all the empty space left from the previous columns
-          return ueber(index) - preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rowGetter(index))), 0);
+          return ueber(index) - preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rows[index])), 0);
         };
       }
-      perChild(d3.select(this), d, i, context);
+      context.render(d, d3.select(this), rows, context);
     });
     animated($children, context).attr({
-      transform: (d, i) => 'translate(' + shifts[i] + ',0)'
+      transform: (d, i) => `translate(${shifts[i]},0)`
     });
     $children.exit().remove();
 
     context.cellX = ueber;
     context.option = ueberOption;
-  }
-
-  renderSVG($col: d3.Selection<any>, stack: model.StackColumn, rows: any[], context: IDOMRenderContext) {
-    this.renderImpl($col, stack, context, ($child, col, i, ccontext) => {
-      ccontext.render(col, $child, rows, ccontext);
-    }, (index) => rows[index]);
   }
 }
 

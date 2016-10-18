@@ -222,7 +222,7 @@ export class LineUp extends utils_.AEventDispatcher {
       rankingButtons: this.config.header.rankingButtons,
       linkTemplates: this.config.header.linkTemplates
     });
-    this.body = new (this.config.body.renderer === 'svg' ? ui_.BodyRenderer: ui_.BodyCanvasRenderer)(data, this.node, this.slice.bind(this), {
+    this.body = new (this.config.body.renderer === 'svg' ? ui_.BodyRenderer: ui_.BodyRenderer)(data, this.node, this.slice.bind(this), {
       rowHeight: this.config.body.rowHeight,
       rowPadding: this.config.body.rowPadding,
       rowBarPadding: this.config.body.rowBarPadding,

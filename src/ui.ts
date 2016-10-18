@@ -762,9 +762,9 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     }, 1));
   }
 
-  createContext(index_shift:number):renderer.IRenderContext<any> {
+  createContext(index_shift:number):renderer.IDOMRenderContext {
     var options = this.options;
-    function choose(col:model.Column) {
+    function choose(col:model.Column): renderer.ISVGCellRenderer {
       if (col.getCompressed() && model.isNumberColumn(col)) {
         return options.renderers.heatmap;
       }
@@ -778,7 +778,18 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       return l || renderer.defaultRenderer();
     }
     return {
+      //if we use animation we use the same object, otherwise don't care
       rowKey: this.options.animation ? this.data.rowKey : undefined,
+
+      idPrefix: options.idPrefix,
+
+      animationDuration: options.animation ? options.animationDuration : -1,
+
+      //show mean line if option is enabled and top level
+      //showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.getCompressed() && col.parent instanceof model.Ranking,
+
+      option: (key:string, default_:any) => (key in options) ? options[key] : default_,
+
       cellY(index:number) {
         return (index + index_shift) * (options.rowHeight);
       },
@@ -791,32 +802,21 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       rowHeight(index:number) {
         return options.rowHeight * (1 - options.rowPadding);
       },
-      render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context:renderer.IRenderContext<renderer.IDOMRenderContext> = this) {
+      render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context:renderer.IDOMRenderContext = this) {
         //if renderers change delete old stuff
         const tthis = <any>($this.node());
         const old_renderer = tthis.__renderer__;
-        const act_renderer = this.choose(col);
+        const act_renderer = choose(col);
         if (old_renderer !== act_renderer) {
           $this.selectAll('*').remove();
           tthis.__renderer__ = act_renderer;
         }
-        act_renderer.render($this, col, data, context);
-      },
-      showStacked(col:model.Column) {
-        return col instanceof model.StackColumn && options.stacked;
-      },
-      idPrefix: options.idPrefix,
-
-      animated: ($sel:d3.Selection<any>) => options.animation ? $sel.transition().duration(options.animationDuration) : $sel,
-
-      //show mean line if option is enabled and top level
-      showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.getCompressed() && col.parent instanceof model.Ranking,
-
-      option: (key:string, default_:any) => (key in options) ? options[key] : default_
+        act_renderer.renderSVG($this, col, data, context);
+      }
     };
   }
 
-  updateClipPathsImpl(r:model.Column[], context:renderer.IRenderContext, height:number) {
+  updateClipPathsImpl(r:model.Column[], context:renderer.IDOMRenderContext, height:number) {
     var $base = this.$node.select('defs.body');
     if ($base.empty()) {
       $base = this.$node.append('defs').classed('body', true);
@@ -825,14 +825,12 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     //generate clip paths for the text columns to avoid text overflow
     //see http://stackoverflow.com/questions/L742812/cannot-select-svg-foreignobject-element-in-d3
     //there is a bug in webkit which present camelCase selectors
-    var textClipPath = $base.selectAll(function () {
+    const textClipPath = $base.selectAll(function () {
       return this.getElementsByTagName('clipPath');
     }).data(r, (d) => d.id);
     textClipPath.enter().append('clipPath')
-      .attr('id', (d) => context.idPrefix + 'clipCol' + d.id)
-      .append('rect').attr({
-      y: 0
-    });
+      .attr('id', (d) => `${context.idPrefix}clipCol${d.id}`)
+      .append('rect').attr('y', 0);
     textClipPath.exit().remove();
     textClipPath.select('rect')
       .attr({
@@ -842,10 +840,10 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       });
   }
 
-  updateClipPaths(rankings:model.Ranking[], context:renderer.IRenderContext, height:number) {
+  updateClipPaths(rankings:model.Ranking[], context:renderer.IDOMRenderContext, height:number) {
     var shifts = [], offset = 0;
     rankings.forEach((r) => {
-      var w = r.flatten(shifts, offset, 2, this.options.columnPadding);
+      const w = r.flatten(shifts, offset, 2, this.options.columnPadding);
       offset += w + this.options.slopeWidth;
     });
     this.updateClipPathsImpl(shifts.map(s => s.col), context, height);
@@ -863,140 +861,102 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     });
   }
 
-  renderRankings($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IRenderContext, height: number) {
+  renderRankings($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IDOMRenderContext, height: number) {
     const that = this;
     const dataPromises = orders.map((r) => this.data.view(r));
 
-    var $rankings = $body.selectAll('g.ranking').data(rankings, (d) => d.id);
-    var $rankings_enter = $rankings.enter().append('g').attr({
+    const $rankings = $body.selectAll('g.ranking').data(rankings, (d) => d.id);
+    const $rankings_enter = $rankings.enter().append('g').attr({
       'class': 'ranking',
-      transform: (d, i) => 'translate(' + shifts[i].shift + ',0)'
+      transform: (d, i) => `translate(${shifts[i].shift},0)`
     });
     $rankings_enter.append('g').attr('class', 'rows');
     $rankings_enter.append('g').attr('class', 'cols');
 
-    context.animated($rankings).attr({
-      transform: (d, i) => 'translate(' + shifts[i].shift + ',0)'
-    });
+    renderer.animated($rankings, context).attr('transform',(d, i) => `translate(${shifts[i].shift},0)`);
 
-    var $cols = $rankings.select('g.cols').selectAll('g.uchild').data((d) => d.children.filter((d) => !d.isHidden()), (d) => d.id);
-    $cols.enter().append('g').attr('class', 'uchild')
-      .append('g').attr({
-      'class': 'child',
-      transform: (d, i, j?) => 'translate(' + shifts[j].shifts[i] + ',0)'
-    });
-    $cols.exit().remove();
-    $cols = $cols.select('g.child');
-    $cols.attr({
-      'data-index': (d, i) => i
-    });
-    context.animated($cols).attr({
-      transform: (d, i, j?) => {
-        return 'translate(' + shifts[j].shifts[i] + ',0)';
-      }
-    }).each(function (d, i, j?) {
-      const $col = d3.select(this);
-      dataPromises[j].then((data) => {
-        context.render(d, $col, data, context);
+    {
+      let $cols = $rankings.select('g.cols').selectAll('g.uchild').data((d) => d.children.filter((d) => !d.isHidden()), (d) => d.id);
+      $cols.enter().append('g').attr('class', 'uchild')
+        .append('g').attr({
+        'class': 'child',
+        transform: (d, i, j?) => `translate(${shifts[j].shifts[i]},0)`
       });
+      $cols.exit().remove();
 
-      if (context.showMeanLine(d)) {
-        const h = that.histCache.get(d.id);
-        if (h) {
-          h.then((stats:model.IStatistics) => {
-            const $mean = $col.selectAll('line.meanline').data([stats.mean]);
-            $mean.enter().append('line').attr('class', 'meanline');
-            $mean.exit().remove();
-            $mean.attr('x1', d.getWidth() * stats.mean)
-              .attr('x2', d.getWidth() * stats.mean)
-              .attr('y2', height);
-          });
-        }
-      } else {
-        $col.selectAll('line.meanline').remove();
-      }
-    });
+      $cols = $cols.select('g.child');
+      $cols.attr('data-index', (d, i) => i);
+
+      renderer.animated($cols, context).attr('transform', (d, i, j?) => `translate(${shifts[j].shifts[i]},0)`)
+        .each(function (d, i, j?) {
+          const $col = d3.select(this);
+          dataPromises[j].then((data) => context.render(d, $col, data, context));
+
+          if (false) { //FIXME context.showMeanLine(d)) {
+            // const h = that.histCache.get(d.id);
+            // if (h) {
+            //   h.then((stats: model.IStatistics) => {
+            //     const $mean = $col.selectAll('line.meanline').data([stats.mean]);
+            //     $mean.enter().append('line').attr('class', 'meanline');
+            //     $mean.exit().remove();
+            //     $mean.attr('x1', d.getWidth() * stats.mean)
+            //       .attr('x2', d.getWidth() * stats.mean)
+            //       .attr('y2', height);
+            //   });
+            // }
+          } else {
+            $col.selectAll('line.meanline').remove();
+          }
+        });
+    }
 
     // wait until all `context.render()` calls have finished
     Promise.all(dataPromises).then((args) => {
       this.fire('renderFinished');
     });
 
-    function mouseOverRow($row:d3.Selection<number>, $cols:d3.Selection<model.Ranking>, index:number, ranking:model.Ranking, rankingIndex:number) {
-      $row.classed('hover', true);
-      var $value_cols = $row.select('g.values').selectAll('g.uchild').data(ranking.children.filter((d) => !d.isHidden()), (d) => d.id);
-      $value_cols.enter().append('g').attr({
-        'class': 'uchild'
-      }).append('g').classed('child', true);
-
-      $value_cols.select('g.child').attr({
-        transform: (d, i) => {
-          return 'translate(' + shifts[rankingIndex].shifts[i] + ',0)';
-        }
-      }).each(function (d:model.Column, i) {
-        dataPromises[rankingIndex].then((data) => {
-          context.renderer(d).mouseEnter($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(this), d, data[index], index, context);
-
-
-        });
-      });
-      $value_cols.exit().remove();
-      //data.mouseOver(d, i);
-    }
-
-    function mouseLeaveRow($row:d3.Selection<number>, $cols:d3.Selection<model.Ranking>, index:number, ranking:model.Ranking, rankingIndex:number) {
-      $row.classed('hover', false);
-      $row.select('g.values').selectAll('g.uchild').each(function (d:model.Column, i) {
-        dataPromises[rankingIndex].then((data) => {
-          context.renderer(d).mouseLeave($cols.selectAll('g.child[data-index="' + i + '"]'), d3.select(this).select('g.child'), d, data[index], index, context);
-        });
-      }).remove();
-      //data.mouseLeave(d, i);
-    }
-
     this.mouseOverItem = function (data_index:number, hover = true) {
-      $rankings.each(function (ranking, rankingIndex) {
-        var $ranking = d3.select(this);
-        var $row = $ranking.selectAll('g.row[data-index="' + data_index + '"]');
-        var $cols = $ranking.select('g.cols');
-        if (!$row.empty()) {
-          var index = $row.datum().i;
-          if (hover) {
-            mouseOverRow($row, $cols, index, ranking, rankingIndex);
-          } else {
-            mouseLeaveRow($row, $cols, index, ranking, rankingIndex);
-          }
+      function setClass(item: Element) {
+        if (hover) {
+          item.classList.add('hover');
+        } else {
+          item.classList.remove('hover');
+        }
+      }
+      $rankings.each(function () {
+        const row = <SVGGElement>this.querySelector(`g.row[data-data-index="${data_index}"]`);
+        if (row) {
+          var index = +row.getAttribute('data-visible-index');
+          setClass(row);
+          //mark all indices
+          [].slice.call(this.querySelectorAll(`g.cols g.child [data-visible-index="${index}"]`)).forEach(setClass);
         }
       });
-
-      //set clip path for frozen columns
-      that.updateFrozenRows();
     };
-    var $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => orders[i].map((d, i) => ({d: d, i: i})));
-    var $rows_enter = $rows.enter().append('g').attr({
-      'class': 'row'
-    });
-    $rows_enter.append('rect').attr({
-      'class': 'bg'
-    });
-    $rows_enter.append('g').attr({'class': 'values'});
-    $rows_enter.on('mouseenter', (data_index) => {
-      this.mouseOver(data_index.d, true);
-    }).on('mouseleave', (data_index) => {
-      this.mouseOver(data_index.d, false);
-    }).on('click', (data_index) => {
-      this.select(data_index.d, d3.event.ctrlKey);
-    });
-    $rows.attr({
-      'data-index': (d) => d.d
-    }).classed('selected', (d) => this.data.isSelected(d.d));
-    $rows.select('rect').attr({
-      y: (d) => context.cellY(d.i),
-      height: (d) => context.rowHeight(d.i),
-      width: (d, i, j?) => shifts[j].width,
-      'class': (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd')
-    });
-    $rows.exit().remove();
+
+    {//background rows
+      let $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => orders[i].map((d, i) => ({d: d, i: i})));
+      let $rows_enter = $rows.enter().append('g').attr('class', 'row');
+      $rows_enter.append('rect').attr('class', 'bg');
+      $rows_enter.on('mouseenter', (data_index) => {
+        this.mouseOver(data_index.d, true);
+      }).on('mouseleave', (data_index) => {
+        this.mouseOver(data_index.d, false);
+      }).on('click', (data_index) => {
+        this.select(data_index.d, d3.event.ctrlKey);
+      });
+      $rows
+        .attr('data-data-index', (d) => d.d)
+        .attr('data-visible-index', (d) => d.i)
+        .classed('selected', (d) => this.data.isSelected(d.d));
+      $rows.select('rect').attr({
+        y: (d) => context.cellY(d.i),
+        height: (d) => context.rowHeight(d.i),
+        width: (d, i, j?) => shifts[j].width,
+        'class': (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd')
+      });
+      $rows.exit().remove();
+    }
 
     $rankings.exit().remove();
   }
@@ -1020,7 +980,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
 
   select(dataIndex:number, additional = false) {
     var selected = this.data.toggleSelection(dataIndex, additional);
-    this.$node.selectAll('g.row[data-index="' + dataIndex + '"], line.slope[data-index="' + dataIndex + '"]').classed('selected', selected);
+    this.$node.selectAll(`g.row[data-data-index="${dataIndex}"], line.slope[data-data-index="${dataIndex}"]`).classed('selected', selected);
   }
 
   private hasAnySelectionColumn() {
@@ -1031,7 +991,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     if (this.hasAnySelectionColumn()) {
       this.update();
     }
-    var indices = this.data.getSelection();
+    const indices = this.data.getSelection();
     if (indices.length === 0) {
       this.$node.selectAll('g.row.selected, line.slope.selected').classed('selected', false);
     } else {
@@ -1045,23 +1005,22 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     this.fire('hoverChanged', hover ? dataIndex : -1);
     this.mouseOverItem(dataIndex, hover);
     //update the slope graph
-    this.$node.selectAll('line.slope[data-index="' + dataIndex + '"]').classed('hover', hover);
+    this.$node.selectAll(`line.slope[data-data-index="${dataIndex}"]`).classed('hover', hover);
+
+    //set clip path for frozen columns
+    this.updateFrozenRows();
   }
 
-  renderSlopeGraphs($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IRenderContext) {
-    var slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i: i, right: d, right_i: i + 1}));
-    var $slopes = $body.selectAll('g.slopegraph').data(slopes);
-    $slopes.enter().append('g').attr({
-      'class': 'slopegraph'
-    });
-    $slopes.attr({
-      transform: (d, i) => 'translate(' + (shifts[i + 1].shift - this.options.slopeWidth) + ',0)'
-    });
-    var $lines = $slopes.selectAll('line.slope').data((d, i) => {
+  renderSlopeGraphs($body:d3.Selection<any>, orders:number[][], shifts:any[], context:renderer.IDOMRenderContext) {
+    const slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i: i, right: d, right_i: i + 1}));
+
+    const $slopes = $body.selectAll('g.slopegraph').data(slopes);
+    $slopes.enter().append('g').attr('class', 'slopegraph');
+    $slopes.attr('transform', (d, i) => `translate(${(shifts[i + 1].shift - this.options.slopeWidth)},0)`);
+
+    const $lines = $slopes.selectAll('line.slope').data((d) => {
       var cache = {};
-      d.right.forEach((data_index, pos) => {
-        cache[data_index] = pos;
-      });
+      d.right.forEach((data_index, pos) => cache[data_index] = pos);
       return d.left.map((data_index, pos) => ({
         data_index: data_index,
         lpos: pos,
@@ -1071,21 +1030,12 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     $lines.enter().append('line').attr({
       'class': 'slope',
       x2: this.options.slopeWidth
-    }).on('mouseenter', (d) => {
-      this.mouseOver(d.data_index, true);
-    }).on('mouseleave', (d) => {
-      this.mouseOver(d.data_index, false);
-    });
+    }).on('mouseenter', (d) => this.mouseOver(d.data_index, true))
+      .on('mouseleave', (d) => this.mouseOver(d.data_index, false));
+    $lines.attr('data-data-index', (d) => d.data_index);
     $lines.attr({
-      'data-index': (d) => d.data_index
-    });
-    $lines.attr({
-      y1: (d:any) => {
-        return context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos);
-      },
-      y2: (d:any) => {
-        return context.rowHeight(d.rpos) * 0.5 + context.cellY(d.rpos);
-      }
+      y1: (d:any) => context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos),
+      y2: (d:any) => context.rowHeight(d.rpos) * 0.5 + context.cellY(d.rpos)
     });
     $lines.exit().remove();
 
@@ -1132,18 +1082,18 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
    * render the body
    */
   update() {
-    var rankings = this.data.getRankings();
-    var maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
-    var height = this.options.rowHeight * maxElems;
-    var visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
-    var orderSlicer = (order:number[]) => {
+    const rankings = this.data.getRankings();
+    const maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
+    const height = this.options.rowHeight * maxElems;
+    const visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
+    const orderSlicer = (order:number[]) => {
       if (visibleRange.from === 0 && order.length <= visibleRange.to) {
         return order;
       }
       return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
     };
-    var orders = rankings.map((r) => orderSlicer(r.getOrder()));
-    var context = this.createContext(visibleRange.from);
+    const orders = rankings.map((r) => orderSlicer(r.getOrder()));
+    const context = this.createContext(visibleRange.from);
 
 
     //compute offsets and shifts for individual rankings and columns inside the rankings
@@ -1174,244 +1124,12 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     });
     this.updateClipPaths(rankings, context, height);
 
-
-
     var $body = this.$node.select('g.body');
     if ($body.empty()) {
       $body = this.$node.append('g').classed('body', true);
     }
 
-
     this.renderRankings($body, rankings, orders, shifts, context, height);
-    this.renderSlopeGraphs($body, rankings, orders, shifts, context);
-  }
-}
-
-
-export class BodyCanvasRenderer extends utils.AEventDispatcher implements IBodyRenderer  {
-  private options = {
-    rowHeight: 20,
-    rowPadding: 1,
-    rowBarPadding: 1,
-    idPrefix: '',
-    slopeWidth: 150,
-    columnPadding: 5,
-    stacked: true,
-
-    renderers: renderer.renderers(),
-
-    meanLine: false,
-
-    freezeCols: 0
-  };
-
-  private $node:d3.Selection<any>;
-
-  histCache = d3.map<Promise<model.IStatistics>>();
-
-  constructor(private data:provider.DataProvider, parent:Element, private slicer:ISlicer, options = {}) {
-    super();
-    //merge options
-    utils.merge(this.options, options);
-
-    this.$node = d3.select(parent).append('canvas').classed('lu-canvas.body', true);
-
-    this.changeDataStorage(data);
-  }
-
-  createEventList() {
-    return super.createEventList().concat(['hoverChanged']);
-  }
-
-  get node() {
-    return <Element>this.$node.node();
-  }
-
-  setOption(key:string, value:any) {
-    this.options[key] = value;
-  }
-
-  updateFreeze(left: number) {
-    //dummy impl
-  }
-
-  select(dataIndex:number, additional = false) {
-    //dummy impl
-  }
-
-  changeDataStorage(data:provider.DataProvider) {
-    if (this.data) {
-      this.data.on(['dirtyValues.bodyRenderer', 'selectionChanged.bodyRenderer'], null);
-    }
-    this.data = data;
-    data.on('dirtyValues.bodyRenderer', utils.delayedCall(this.update.bind(this), 1));
-    //data.on('selectionChanged.bodyRenderer', utils.delayedCall(this.drawSelection.bind(this), 1));
-  }
-
-  createContext(index_shift:number):renderer.IRenderContext {
-    var options = this.options;
-    return {
-      rowKey: undefined,
-      cellY(index:number) {
-        return (index + index_shift) * (options.rowHeight);
-      },
-      cellPrevY(index:number) {
-        return (index + index_shift) * (options.rowHeight);
-      },
-      cellX(index:number) {
-        return 0;
-      },
-      rowHeight(index:number) {
-        return options.rowHeight * (1 - options.rowPadding);
-      },
-      renderer(col:model.Column) {
-        if (col.getCompressed() && model.isNumberColumn(col)) {
-          return options.renderers.heatmap;
-        }
-        if (col instanceof model.StackColumn && col.getCollapsed()) {
-          return options.renderers.number;
-        }
-        if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
-          return options.renderers.string;
-        }
-        var l = options.renderers[col.desc.type];
-        return l || renderer.defaultRenderer();
-      },
-      render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context:renderer.IRenderContext = this) {
-        //dummy impl
-      },
-      renderCanvas(col:model.Column, ctx:CanvasRenderingContext2D, data:any[], context:renderer.IRenderContext = this) {
-        const act_renderer = this.renderer(col);
-        act_renderer.renderCanvas(ctx, col, data, context);
-      },
-      showStacked(col:model.Column) {
-        return col instanceof model.StackColumn && options.stacked;
-      },
-      idPrefix: options.idPrefix,
-
-      animated: ($sel:d3.Selection<any>) => $sel,
-
-      //show mean line if option is enabled and top level
-      showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.getCompressed() && col.parent instanceof model.Ranking,
-
-      option: (key:string, default_:any) => (key in options) ? options[key] : default_
-    };
-  }
-
-
-  renderRankings(ctx: CanvasRenderingContext2D, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IRenderContext, height: number) {
-    const dataPromises = orders.map((r) => this.data.view(r));
-    ctx.save();
-
-
-    rankings.forEach((ranking, j) => {
-
-      dataPromises[j].then((data) => {
-        ctx.save();
-        ctx.translate(shifts[j].shift, 0);
-
-        ctx.save();
-        ctx.fillStyle = '#f7f7f7';
-        orders[j].forEach((order,i) => {
-          if (i%2 === 0) {
-            ctx.fillRect(0, context.cellY(i), shifts[j].width, context.rowHeight(i));
-          }
-        });
-        ctx.restore();
-
-        ranking.children.forEach((child, i) =>  {
-          ctx.save();
-          ctx.translate(shifts[j].shifts[i], 0);
-          context.renderCanvas(child, ctx, data, context);
-          ctx.restore();
-        });
-        ctx.restore();
-      });
-    });
-    ctx.restore();
-  }
-
-  renderSlopeGraphs(ctx: CanvasRenderingContext2D, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IRenderContext) {
-    var slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i: i, right: d, right_i: i + 1}));
-    ctx.save();
-    ctx.fillStyle = 'darkgray';
-    slopes.forEach((slope, i) => {
-      ctx.save();
-      ctx.translate(shifts[i + 1].shift - this.options.slopeWidth, 0);
-
-      var cache = {};
-      slope.right.forEach((data_index, pos) => {
-        cache[data_index] = pos;
-      });
-      const lines = slope.left.map((data_index, pos) => ({
-        data_index: data_index,
-        lpos: pos,
-        rpos: cache[data_index]
-      })).filter((d) => d.rpos != null);
-
-      ctx.beginPath();
-      lines.forEach((line) => {
-        ctx.moveTo(0, context.rowHeight(line.lpos) * 0.5 + context.cellY(line.lpos));
-        ctx.lineTo(this.options.slopeWidth, context.rowHeight(line.rpos) * 0.5 + context.cellY(line.rpos));
-      });
-      ctx.stroke();
-
-      ctx.restore();
-    });
-    ctx.restore();
-  }
-
-  /**
-   * render the body
-   */
-  update() {
-    var rankings = this.data.getRankings();
-    var maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
-    var height = this.options.rowHeight * maxElems;
-    var visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
-    var orderSlicer = (order:number[]) => {
-      if (visibleRange.from === 0 && order.length <= visibleRange.to) {
-        return order;
-      }
-      return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
-    };
-    var orders = rankings.map((r) => orderSlicer(r.getOrder()));
-    var context = this.createContext(visibleRange.from);
-
-
-    //compute offsets and shifts for individual rankings and columns inside the rankings
-    var offset = 0,
-      shifts = rankings.map((d, i) => {
-        var r = offset;
-        offset += this.options.slopeWidth;
-        var o2 = 0,
-          shift2 = d.children.filter((d) => !d.isHidden()).map((o) => {
-            var r = o2;
-            o2 += (o.getCompressed() ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
-            if (o instanceof model.StackColumn && !o.getCollapsed() && !o.getCompressed()) {
-              o2 += this.options.columnPadding * (o.length - 1);
-            }
-            return r;
-          });
-        offset += o2;
-        return {
-          shift: r,
-          shifts: shift2,
-          width: o2
-        };
-      });
-
-    this.$node.attr({
-      width: offset,
-      height: height
-    });
-
-    const ctx = (<HTMLCanvasElement>this.$node.node()).getContext('2d');
-    ctx.font = '10pt Times New Roman';
-    ctx.textBaseline = 'top';
-    ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
-
-    this.renderRankings(ctx, rankings, orders, shifts, context, height);
-    this.renderSlopeGraphs(ctx, rankings, orders, shifts, context);
+    this.renderSlopeGraphs($body, orders, shifts, context);
   }
 }
