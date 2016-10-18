@@ -765,6 +765,11 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     }, 1));
   }
 
+  private showMeanLine(col: model.Column) {
+    //show mean line if option is enabled and top level
+    return this.options.meanLine && model.isNumberColumn(col) && !col.getCompressed() && col.parent instanceof model.Ranking;
+  }
+
   createContext(index_shift:number):renderer.IDOMRenderContext {
     var options = this.options;
     function choose(col:model.Column): renderer.ISVGCellRenderer {
@@ -788,8 +793,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
 
       animationDuration: options.animation ? options.animationDuration : -1,
 
-      //show mean line if option is enabled and top level
-      //showMeanLine: (col: model.Column) => options.meanLine && model.isNumberColumn(col) && !col.getCompressed() && col.parent instanceof model.Ranking,
+
 
       option: (key:string, default_:any) => (key in options) ? options[key] : default_,
 
@@ -895,21 +899,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
           const $col = d3.select(this);
           dataPromises[j].then((data) => context.render(d, $col, data, context));
 
-          if (false) { //FIXME context.showMeanLine(d)) {
-            // const h = that.histCache.get(d.id);
-            // if (h) {
-            //   h.then((stats: model.IStatistics) => {
-            //     const $mean = $col.selectAll('line.meanline').data([stats.mean]);
-            //     $mean.enter().append('line').attr('class', 'meanline');
-            //     $mean.exit().remove();
-            //     $mean.attr('x1', d.getWidth() * stats.mean)
-            //       .attr('x2', d.getWidth() * stats.mean)
-            //       .attr('y2', height);
-            //   });
-            // }
-          } else {
-            $col.selectAll('line.meanline').remove();
-          }
+          that.renderMeanline(d, $col, height);
         });
     }
 
@@ -917,32 +907,51 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     Promise.all(dataPromises).then((args) => {
       this.fire('renderFinished');
     });
-
-    {//background rows
-      let $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => orders[i].map((d, i) => ({d: d, i: i})));
-      let $rows_enter = $rows.enter().append('g').attr('class', 'row');
-      $rows_enter.append('rect').attr('class', 'bg');
-      $rows_enter.on('mouseenter', (data_index) => {
-        this.mouseOver(data_index.d, true);
-      }).on('mouseleave', (data_index) => {
-        this.mouseOver(data_index.d, false);
-      }).on('click', (data_index) => {
-        this.select(data_index.d, d3.event.ctrlKey);
-      });
-      $rows
-        .attr('data-data-index', (d) => d.d)
-        .classed('selected', (d) => this.data.isSelected(d.d));
-        //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
-      $rows.select('rect').attr({
-        y: (d) => context.cellY(d.i),
-        height: (d) => context.rowHeight(d.i),
-        width: (d, i, j?) => shifts[j].width,
-        'class': (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd')
-      });
-      $rows.exit().remove();
-    }
+    this.renderBackgroundRows($rankings, orders, shifts, context);
 
     $rankings.exit().remove();
+  }
+
+  private renderMeanline(d: model.Column, $col: d3.Selection<model.Column>, height: number) {
+    if (this.showMeanLine(d)) {
+      const h = this.histCache.get(d.id);
+      if (h) {
+        h.then((stats: model.IStatistics) => {
+          const $mean = $col.selectAll('line.meanline').data([stats.mean]);
+          $mean.enter().append('line').attr('class', 'meanline');
+          $mean.exit().remove();
+          $mean.attr('x1', d.getWidth() * stats.mean)
+            .attr('x2', d.getWidth() * stats.mean)
+            .attr('y2', height);
+        });
+      }
+    } else {
+      $col.selectAll('line.meanline').remove();
+    }
+  }
+
+  private renderBackgroundRows($rankings: d3.selection.Update<model.Ranking>, orders: number[][], shifts: any[], context: renderer.IDOMRenderContext) {
+    let $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => orders[i].map((d, i) => ({d: d, i: i})));
+    let $rows_enter = $rows.enter().append('g').attr('class', 'row');
+    $rows_enter.append('rect').attr('class', 'bg');
+    $rows_enter.on('mouseenter', (data_index) => {
+      this.mouseOver(data_index.d, true);
+    }).on('mouseleave', (data_index) => {
+      this.mouseOver(data_index.d, false);
+    }).on('click', (data_index) => {
+      this.select(data_index.d, d3.event.ctrlKey);
+    });
+    $rows
+      .attr('data-data-index', (d) => d.d)
+      .classed('selected', (d) => this.data.isSelected(d.d));
+    //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
+    $rows.select('rect').attr({
+      y: (d) => context.cellY(d.i),
+      height: (d) => context.rowHeight(d.i),
+      width: (d, i, j?) => shifts[j].width,
+      'class': (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd')
+    });
+    $rows.exit().remove();
   }
 
   private jumpToSelection() {
