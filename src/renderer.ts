@@ -275,7 +275,7 @@ export class BarCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
 /**
  * render as a heatmap cell, e.g., encode the value in color
  */
-export class HeatMapCellRenderer implements ISVGCellRenderer {
+export class HeatMapCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
 
   renderSVG($col: d3.Selection<any>, col: model.NumberColumn, rows: IDataRow[], context: IDOMRenderContext) {
     const $rows = $col.datum(col).selectAll('.heatmap').data(rows, context.rowKey);
@@ -300,6 +300,27 @@ export class HeatMapCellRenderer implements ISVGCellRenderer {
       x: (d, i) => context.cellX(i),
       y: (d, i) => context.cellY(i) + padding
     }).style('fill', (d, i) => this.colorOf(d.v, i, col));
+    $rows.exit().remove();
+  }
+
+  renderHTML($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext) {
+    var $rows = $col.datum(col).selectAll('.heatmap').data(rows, context.rowKey);
+
+    const padding = context.option('rowPadding', 1);
+    $rows.enter().append('div')
+      .attr('class','heatmap ' + col.cssClass)
+      .style('top',(d, i) => (context.cellPrevY(i)+padding)+'px');
+
+    $rows.attr('data-data-index',(d) => d.dataIndex)
+      .style('width', (d, i) => (context.rowHeight(i) - padding * 2)+'px')
+      .style('height', (d, i) => (context.rowHeight(i) - padding * 2)+'px')
+      .attr('title',(d) => col.getLabel(d.v));
+
+    animated($rows, context)
+      .style('left', (d, i) => context.cellX(i)+'px')
+      .style('top',(d, i) => (context.cellPrevY(i)+padding)+'px')
+      .style('background-color', (d, i) => this.colorOf(d.v, i, col));
+
     $rows.exit().remove();
   }
 
