@@ -699,7 +699,6 @@ export interface IBodyRenderer extends utils.AEventDispatcher {
 }
 
 export class BodyRenderer extends utils.AEventDispatcher implements IBodyRenderer {
-  private mouseOverItem:(dataIndex:number, hover:boolean) => void;
   private options = {
     rowHeight: 20,
     rowPadding: 1,
@@ -915,25 +914,6 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       this.fire('renderFinished');
     });
 
-    this.mouseOverItem = function (data_index:number, hover = true) {
-      function setClass(item: Element) {
-        if (hover) {
-          item.classList.add('hover');
-        } else {
-          item.classList.remove('hover');
-        }
-      }
-      $rankings.each(function () {
-        const row = <SVGGElement>this.querySelector(`g.row[data-data-index="${data_index}"]`);
-        if (row) {
-          var index = +row.getAttribute('data-visible-index');
-          setClass(row);
-          //mark all indices
-          [].slice.call(this.querySelectorAll(`g.cols g.child [data-visible-index="${index}"]`)).forEach(setClass);
-        }
-      });
-    };
-
     {//background rows
       let $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => orders[i].map((d, i) => ({d: d, i: i})));
       let $rows_enter = $rows.enter().append('g').attr('class', 'row');
@@ -1003,9 +983,30 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
 
   mouseOver(dataIndex:number, hover = true) {
     this.fire('hoverChanged', hover ? dataIndex : -1);
-    this.mouseOverItem(dataIndex, hover);
-    //update the slope graph
-    this.$node.selectAll(`line.slope[data-data-index="${dataIndex}"]`).classed('hover', hover);
+    const node = <Element>this.$node.node();
+
+    function all(node: Element, selector: string) {
+      return Array.prototype.slice.call(node.querySelectorAll(selector));
+    }
+    function setClass(item: Element) {
+      item.classList.add('hover');
+    }
+    all(node, '.hover').forEach((d) => d.classList.remove('hover'));
+    if (hover) {
+      all(node, 'g.ranking').forEach(function (ranking) {
+        //per ranking since visible order changes
+        const row = <SVGGElement>ranking.querySelector(`g.row[data-data-index="${dataIndex}"]`);
+        if (row) {
+          var index = +row.getAttribute('data-visible-index');
+          setClass(row);
+          //mark all indices
+          all(ranking, `g.cols g.child [data-visible-index="${index}"]`).forEach(setClass);
+        }
+      });
+
+      //update the slope graph
+      all(node, `line.slope[data-data-index="${dataIndex}"]`).forEach(setClass);
+    }
 
     //set clip path for frozen columns
     this.updateFrozenRows();
