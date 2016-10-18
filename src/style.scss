@@ -243,6 +243,24 @@ $lu_drag_over: #979797;
     &:hover {
       color: darkblue;
     }
+
+    tspan {
+      &.s_true {
+        display: none;
+      }
+      &.s_false {
+        display: block;
+      }
+    }
+
+    &.selected tspan {
+      &.s_true {
+        display: block;
+      }
+      &.s_false {
+        display: none;
+      }
+    }
   }
 
   text.rank, text.text_right {

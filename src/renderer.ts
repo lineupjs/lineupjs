@@ -315,14 +315,13 @@ export class SelectionCellRenderer implements ISVGCellRenderer {
     }).on('click', function (d) {
       d3.event.preventDefault();
       d3.event.stopPropagation();
-      const new_ = col.toggleValue(d.v);
-      d3.select(this).text(new_ === true ? '\uf046' : '\uf096');
-    });
+      col.toggleValue(d.v);
+    }).html(`<tspan class="s_true">\uf046</tspan><tspan class="s_false">\uf096</tspan>`);
 
     $rows.attr({
       x: (d, i) => context.cellX(i),
       'data-data-index': (d) => d.dataIndex
-    }).text((d) => col.getValue(d.v) === true ? '\uf046' : '\uf096');
+    });
 
     animated($rows, context).attr('y', (d, i) => context.cellY(i));
 

@@ -981,16 +981,14 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
   }
 
   drawSelection() {
-    if (this.hasAnySelectionColumn()) {
-      this.update();
-    }
     const indices = this.data.getSelection();
+
+    all(this.node, '.selected').forEach((d) => d.classList.remove('selected'));
     if (indices.length === 0) {
-      this.$node.selectAll('.selected').classed('selected', false);
+      return;
     } else {
-      var s = d3.set(indices);
-      this.$node.selectAll('g.row').classed('selected', (d) => s.has(String(d.d)));
-      this.$node.selectAll('line.slope').classed('selected', (d) => s.has(String(d.data_index)));
+      let q = indices.map((d) => `[data-data-index="${d}"]`).join(',');
+      all(this.node, q).forEach((d) => d.classList.add('selected'));
     }
   }
 
