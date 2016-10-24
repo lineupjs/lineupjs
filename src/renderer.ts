@@ -120,7 +120,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
         });
         n.textContent = col.getLabel(d.v);
       }
-    }
+    };
   }
 
   createHTML(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
@@ -132,7 +132,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
         });
         n.textContent = col.getLabel(d.v);
       }
-    }
+    };
   }
 }
 
@@ -146,7 +146,7 @@ export class BarCellRenderer implements ICellRendererFactory {
    */
   protected renderValue = false;
 
-  constructor(renderValue = false, private colorOf: (d: any, i: number, col: model.Column)=>string = (d,i,col) => col.color) {
+  constructor(renderValue = false, private colorOf: (d: any, i: number, col: model.Column)=>string = (d, i, col) => col.color) {
     this.renderValue = renderValue;
   }
 
@@ -157,29 +157,29 @@ export class BarCellRenderer implements ICellRendererFactory {
           <rect class="${col.cssClass}" y="${padding}" style="fill: ${col.color}">
             <title></title>   
           </rect>
-          <text class="number ${this.renderValue? '': 'hoverOnly'}" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
+          <text class="number ${this.renderValue ? '' : 'hoverOnly'}" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         n.querySelector('rect title').textContent = col.getLabel(d.v);
         const width = col.getWidth() * col.getValue(d.v);
 
-        attr(<SVGRectElement>n.querySelector('rect'),{
+        attr(<SVGRectElement>n.querySelector('rect'), {
           y: padding,
           width: isNaN(width) ? 0 : width,
           height: context.rowHeight(i) - padding * 2
         }, {
           fill: this.colorOf(d.v, i, col)
         });
-        attr(<SVGTextElement>n.querySelector('text'),{ }).textContent = col.getLabel(d.v);
+        attr(<SVGTextElement>n.querySelector('text'), {}).textContent = col.getLabel(d.v);
       }
-    }
+    };
   }
 
   createHTML(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<div class="bar" style="top:${padding}px; background-color: ${col.color}">
-          <span class="number ${this.renderValue? '': 'hoverOnly'}"></span>
+          <span class="number ${this.renderValue ? '' : 'hoverOnly'}"></span>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         const width = col.getWidth() * col.getValue(d.v);
@@ -193,20 +193,20 @@ export class BarCellRenderer implements ICellRendererFactory {
         });
         n.querySelector('span').textContent = col.getLabel(d.v);
       }
-    }
+    };
   }
 }
 
 function toHeatMapColor(d: any, col: model.INumberColumn & model.Column) {
-   var v = col.getNumber(d);
-   if (isNaN(v)) {
-     v = 0;
-   }
-   //hsl space encoding, encode in lightness
-   var color = d3.hsl(col.color || model.Column.DEFAULT_COLOR);
-   color.l = v;
-   return color.toString();
- }
+  var v = col.getNumber(d);
+  if (isNaN(v)) {
+    v = 0;
+  }
+  //hsl space encoding, encode in lightness
+  var color = d3.hsl(col.color || model.Column.DEFAULT_COLOR);
+  color.l = v;
+  return color.toString();
+}
 
 function createHeatmapSVG(col: model.INumberColumn & model.Column, context: IDOMRenderContext): ISVGCellRenderer {
   const padding = context.option('rowPadding', 1);
@@ -226,7 +226,7 @@ function createHeatmapSVG(col: model.INumberColumn & model.Column, context: IDOM
         fill: toHeatMapColor(d.v, col)
       });
     }
-  }
+  };
 }
 
 function createHeatmapHTML(col: model.INumberColumn & model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
@@ -244,7 +244,7 @@ function createHeatmapHTML(col: model.INumberColumn & model.Column, context: IDO
         'background-color': toHeatMapColor(d.v, col)
       });
     }
-  }
+  };
 }
 
 function createActionSVG(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
@@ -283,26 +283,26 @@ function createSelectionSVG(col: model.SelectionColumn): ISVGCellRenderer {
   return {
     template: `<text class="selection fa"><tspan class="selectionOnly">\uf046</tspan><tspan class="notSelectionOnly">\uf096</tspan></text>`,
     update: (n: SVGGElement, d: IDataRow, i: number) => {
-      n.onclick = function(event) {
+      n.onclick = function (event) {
         event.preventDefault();
         event.stopPropagation();
         col.toggleValue(d.v);
       };
     }
-  }
+  };
 }
 
 function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
   return {
     template: `<div class="selection fa"></div>`,
     update: (n: HTMLElement, d: IDataRow, i: number) => {
-      n.onclick = function(event) {
+      n.onclick = function (event) {
         event.preventDefault();
         event.stopPropagation();
         col.toggleValue(d.v);
       };
     }
-  }
+  };
 }
 
 function createAnnotateSVG(col: model.AnnotateColumn, context: IDOMRenderContext): ISVGCellRenderer {
@@ -315,13 +315,13 @@ function createAnnotateSVG(col: model.AnnotateColumn, context: IDOMRenderContext
        </g>`,
     update: (n: SVGGElement, d: IDataRow, i: number) => {
       const input: HTMLInputElement = <HTMLInputElement>n.querySelector('foreignObject *');
-      input.onchange = function(event) {
+      input.onchange = function (event) {
         col.setValue(d.v, this.value);
       };
-      input.onclick = function(event) {
+      input.onclick = function (event) {
         event.stopPropagation();
       };
-      input.style.width = col.getWidth()+'px';
+      input.style.width = col.getWidth() + 'px';
       input.value = col.getLabel(d.v);
 
       n.querySelector('text').textContent = col.getLabel(d.v);
@@ -333,20 +333,20 @@ function createAnnotateSVG(col: model.AnnotateColumn, context: IDOMRenderContext
 }
 
 function createAnnotateHTML(col: model.AnnotateColumn): IHTMLCellRenderer {
- return {
+  return {
     template: `<div class="annotations text">
         <input type="text" class="hoverOnly">
         <span class="text notHoverOnly"></span>
        </div>`,
     update: (n: HTMLElement, d: IDataRow, i: number) => {
       const input: HTMLInputElement = <HTMLInputElement>n.querySelector('input');
-      input.onchange = function(event) {
+      input.onchange = function (event) {
         col.setValue(d.v, this.value);
       };
-      input.onclick = function(event) {
+      input.onclick = function (event) {
         event.stopPropagation();
       };
-      n.style.width = input.style.width = col.getWidth()+'px';
+      n.style.width = input.style.width = col.getWidth() + 'px';
       input.value = col.getLabel(d.v);
       n.querySelector('span').textContent = col.getLabel(d.v);
     }
@@ -366,10 +366,10 @@ function createLinkHTML(col: model.LinkColumn): IHTMLCellRenderer {
   return {
     template: `<div class="link text"></div>`,
     update: (n: HTMLElement, d: IDataRow, i: number) => {
-      n.style.width = col.getWidth()+'px';
+      n.style.width = col.getWidth() + 'px';
       n.innerHTML = col.isLink(d.v) ? `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
     }
-  }
+  };
 }
 
 /**
@@ -413,17 +413,17 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
 
-        attr(<SVGRectElement>n.querySelector('rect'),{
+        attr(<SVGRectElement>n.querySelector('rect'), {
           width: cell,
           height: cell
         }, {
           fill: col.getColor(d.v)
         });
-        attr(<SVGTextElement>n.querySelector('text'),{
+        attr(<SVGTextElement>n.querySelector('text'), {
           x: context.rowHeight(i)
         }).textContent = col.getLabel(d.v);
       }
-    }
+    };
   }
 
   createHTML(col: model.CategoricalColumn, context: IDOMRenderContext): IHTMLCellRenderer {
@@ -438,14 +438,14 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
         attr(n, {}, {
           width: `${col.getWidth()}px`
         });
-        attr(<SVGRectElement>n.querySelector('div'),{}, {
-          width: cell+'px',
-          height: cell+'px',
+        attr(<SVGRectElement>n.querySelector('div'), {}, {
+          width: cell + 'px',
+          height: cell + 'px',
           'background-color': col.getColor(d.v)
         });
-        attr(<SVGTextElement>n.querySelector('span'),{}).textContent = col.getLabel(d.v);
+        attr(<SVGTextElement>n.querySelector('span'), {}).textContent = col.getLabel(d.v);
       }
-    }
+    };
   }
 }
 
@@ -467,7 +467,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
     return;
   }
 
-  function matches(c: {column: model.Column}, i: number){
+  function matches(c: {column: model.Column}, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
     return n != null && n.getAttribute('data-column-id') === c.column.id;
@@ -518,23 +518,23 @@ class StackCellRenderer implements ICellRendererFactory {
         shift: shift,
         stacked: stacked,
         renderer: context.renderer(d)
-      }
+      };
     });
   }
 
   createSVG(col: model.StackColumn, context: IDOMRenderContext): ISVGCellRenderer {
     const cols = this.createData(col, context);
     return {
-      template: `<g class="stack component${context.option('stackLevel',0)}">${cols.map((d) => d.renderer.template).join('')}</g>`,
+      template: `<g class="stack component${context.option('stackLevel', 0)}">${cols.map((d) => d.renderer.template).join('')}</g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         var stackShift = 0;
         matchColumns(n, cols);
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
-          cnode.setAttribute('transform', `translate(${col.shift-stackShift},0)`);
+          cnode.setAttribute('transform', `translate(${col.shift - stackShift},0)`);
           col.renderer.update(cnode, d, i);
           if (col.stacked) {
-            stackShift += col.column.getWidth() * (1- col.column.getValue(d.v));
+            stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v));
           }
         });
       }
@@ -544,16 +544,16 @@ class StackCellRenderer implements ICellRendererFactory {
   createHTML(col: model.StackColumn, context: IDOMRenderContext): IHTMLCellRenderer {
     const cols = this.createData(col, context);
     return {
-      template: `<div class="stack component${context.option('stackLevel',0)}">${cols.map((d) => d.renderer.template).join('')}</div>`,
+      template: `<div class="stack component${context.option('stackLevel', 0)}">${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         var stackShift = 0;
         matchColumns(n, cols, 'html');
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
-          cnode.style.transform = `translate(${col.shift-stackShift}px,0)`;
+          cnode.style.transform = `translate(${col.shift - stackShift}px,0)`;
           col.renderer.update(cnode, d, i);
           if (col.stacked) {
-            stackShift += col.column.getWidth() * (1- col.column.getValue(d.v));
+            stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v));
           }
         });
       }
@@ -562,12 +562,12 @@ class StackCellRenderer implements ICellRendererFactory {
 }
 
 const defaultCellRenderer = new DefaultCellRenderer();
-const combineCellRenderer = new BarCellRenderer(false, (d,i,col: any) => col.getColor(d));
+const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.getColor(d));
 export const renderers = {
   rank: new DefaultCellRenderer('rank', 'right'),
   boolean: new DefaultCellRenderer('boolean', 'center'),
   number: new BarCellRenderer(),
-  ordinal: new BarCellRenderer(true, (d,i,col: any) => col.getColor(d)),
+  ordinal: new BarCellRenderer(true, (d, i, col: any) => col.getColor(d)),
   string: new StringCellRenderer(),
   selection: {
     createSVG: createSelectionSVG,
@@ -598,12 +598,12 @@ export const renderers = {
   script: combineCellRenderer
 };
 
-function chooseRenderer(col: model.Column, renderers: {[key:string]:ICellRendererFactory}): ICellRendererFactory {
+function chooseRenderer(col: model.Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
   if (col.getCompressed() && model.isNumberColumn(col)) {
-     return renderers['heatmap'] || defaultCellRenderer;
+    return (<any>renderers).heatmap || defaultCellRenderer;
   }
   if (col instanceof model.StackColumn && col.getCollapsed()) {
-     return renderers['number'] || defaultCellRenderer;
+    return (<any>renderers).number || defaultCellRenderer;
   }
   if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
     return defaultCellRenderer;
@@ -612,11 +612,11 @@ function chooseRenderer(col: model.Column, renderers: {[key:string]:ICellRendere
   return r || defaultCellRenderer;
 }
 
-export function createSVG(col: model.Column, renderers: {[key:string]:ICellRendererFactory}, context: IDOMRenderContext) {
+export function createSVG(col: model.Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
   const r = chooseRenderer(col, renderers);
   return (r.createSVG ? r.createSVG.bind(r) : defaultCellRenderer.createSVG.bind(r))(col, context);
 }
-export function createHTML(col: model.Column, renderers: {[key:string]:ICellRendererFactory}, context: IDOMRenderContext) {
+export function createHTML(col: model.Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
   const r = chooseRenderer(col, renderers);
   return (r.createHTML ? r.createHTML.bind(r) : defaultCellRenderer.createHTML.bind(r))(col, context);
 }

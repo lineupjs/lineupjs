@@ -717,7 +717,7 @@ export interface IDOMMapping {
   transform<T>(sel: d3.Selection<T>, callback: (d: T, i: number) => [number,number]);
   creator(col: model.Column, renderers: {[key:string]:renderer.ICellRendererFactory}, context: renderer.IDOMRenderContext): renderer.IDOMCellRenderer<SVGElement | HTMLElement>;
 
-  bg: string,
+  bg: string;
   updateBG(sel: d3.Selection<any>, callback: (d: any, i: number, j: number) => [number, number]);
 
   meanLine: string;
@@ -986,14 +986,13 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
       $meanlines.enter().append(domMapping.meanLine).attr('class', 'meanline');
       $meanlines.each(function(d, i, j) {
         const h = that.histCache.get(d.column.id);
-        const r = data[j];
         const $mean = d3.select(this);
         if (!h) {
           return;
         }
         h.then((stats: model.IStatistics) => {
           const x_pos = d.shift + d.column.getWidth() * stats.mean;
-          domMapping.updateMeanLine($mean, isNaN(x_pos) ? 0: x_pos, height)
+          domMapping.updateMeanLine($mean, isNaN(x_pos) ? 0: x_pos, height);
         });
       });
       $meanlines.exit().remove();
@@ -1120,7 +1119,7 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
   }
 
   updateClipPaths(rankings:model.Ranking[], context:IBodyDOMRenderContext, height:number) {
-
+    //no clip paths in HTML
   }
   /**
    * render the body
