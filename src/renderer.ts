@@ -65,6 +65,11 @@ export interface ICellRenderer<T> {
 export declare type ISVGCellRenderer = ICellRenderer<SVGElement>;
 export declare type IHTMLCellRenderer = ICellRenderer<HTMLElement>;
 
+interface ICellRendererFactory {
+  createSVG(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer;
+  createHTML(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer;
+}
+
 /**
  * utility function to sets attributes and styles in a nodes
  * @param node
@@ -83,7 +88,7 @@ function forEach<T extends Element>(node: T, selector: string, callback: (d: Ele
 /**
  * default renderer instance rendering the value as a text
  */
-export class DefaultCellRenderer {
+export class DefaultCellRenderer implements ICellRendererFactory {
   /**
    * class to append to the text elements
    * @type {string}
@@ -134,7 +139,7 @@ export class DefaultCellRenderer {
 /**
  * a renderer rendering a bar for numerical columns
  */
-export class BarCellRenderer {
+export class BarCellRenderer implements ICellRendererFactory {
   /**
    * flag to always render the value
    * @type {boolean}
@@ -384,11 +389,10 @@ class StringCellRenderer extends DefaultCellRenderer {
   }
 }
 
-
 /**
  * renders categorical columns as a colored rect with label
  */
-export class CategoricalCellRenderer {
+export class CategoricalCellRenderer implements ICellRendererFactory {
   /**
    * class to append to the text elements
    * @type {string}
@@ -444,76 +448,68 @@ export class CategoricalCellRenderer {
     }
   }
 }
-//
-// /**
-//  * renders a stacked column using composite pattern
-//  */
-// class StackCellRenderer implements ISVGCellRenderer {
-//   constructor(private nestingPossible = true) {
-//   }
-//
-//   renderSVG($base: d3.Selection<any>, col: model.StackColumn, rows: IDataRow[], context: IDOMRenderContext) {
-//     const $group = $base.datum(col),
-//       children = col.children,
-//       stacked = this.nestingPossible && context.option('stacked', true);
-//     var offset = 0,
-//       shifts = children.map((d) => {
-//         var r = offset;
-//         offset += d.getWidth();
-//         offset += (!stacked ? context.option('columnPadding', 0) : 0);
-//         return r;
-//       });
-//     const baseclass = 'component' + context.option('stackLevel', '');
-//
-//     const ueber = context.cellX;
-//     const ueberOption = context.option;
-//     context.option = (option, default_) => {
-//       var r = ueberOption(option, default_);
-//       return option === 'stackLevel' ? r + 'N' : r;
-//     };
-//
-//     //map all children to g elements
-//     const $children = $group.selectAll('g.' + baseclass).data(children, (d) => d.id);
-//     //shift children horizontally
-//     $children.enter().append('g').attr({
-//       'class': baseclass,
-//       transform: (d, i) => `translate(${shifts[i]},0)`
-//     });
-//     //for each children render the column
-//     $children.attr({
-//       'class': (d) => baseclass + ' ' + d.desc.type,
-//       'data-stack': (d, i) => i
-//     }).each(function (d, i) {
-//       if (stacked) {
-//         const preChildren = children.slice(0, i);
-//         //if shown as stacked bar shift individual cells of a column to the left where they belong to
-//         context.cellX = (index) => {
-//           //shift by all the empty space left from the previous columns
-//           return ueber(index) - preChildren.reduce((prev, child) => prev + child.getWidth() * (1 - child.getValue(rows[index].v)), 0);
-//         };
-//       }
-//       context.render(d, d3.select(this), rows, context);
-//     });
-//     animated($children, context).attr({
-//       transform: (d, i) => `translate(${shifts[i]},0)`
-//     });
-//     $children.exit().remove();
-//
-//     context.cellX = ueber;
-//     context.option = ueberOption;
-//   }
-// }
-// /**
-//  * returns a map of all known renderers by type
-//  * @return
-//  */
-// export function renderers() {
-//   return {
-//     stack: new StackCellRenderer(),
-//     nested: new StackCellRenderer(false)
-//   };
-// }
 
+
+/**
+ * renders a stacked column using composite pattern
+ */
+class StackCellRenderer implements ICellRendererFactory {
+  constructor(private nestingPossible = true) {
+  }
+
+  private createData(col: model.StackColumn, context: IDOMRenderContext) {
+    const stacked = this.nestingPossible && context.option('stacked', true);
+    const padding = context.option('columnPadding', 0);
+    var offset = 0;
+    return col.children.map((d) => {
+      var shift = offset;
+      offset += d.getWidth();
+      offset += (!stacked ? padding : 0);
+      return {
+        child: d,
+        shift: shift,
+        stacked: stacked,
+        renderer: context.renderer(d, context)
+      }
+    });
+  }
+
+  createSVG(col: model.StackColumn, context: IDOMRenderContext): ISVGCellRenderer {
+    const cols = this.createData(col, context);
+    return {
+      template: `<g class="stack component${context.option('stackLevel',0)}">${cols.map((d) => d.renderer.template).join('')}</g>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        var stackShift = 0;
+        cols.forEach((col, ci) => {
+          const cnode: any = n.childNodes[ci];
+          cnode.setAttribute('transform', `translate(${col.shift-stackShift},0)`);
+          col.renderer.update(cnode, d, i);
+          if (col.stacked) {
+            stackShift += col.child.getWidth() * (1- col.child.getValue(d.v));
+          }
+        });
+      }
+    };
+  }
+
+  createHTML(col: model.StackColumn, context: IDOMRenderContext): IHTMLCellRenderer {
+    const cols = this.createData(col, context);
+    return {
+      template: `<div class="stack component${context.option('stackLevel',0)}">${cols.map((d) => d.renderer.template).join('')}</div>`,
+      update: (n: HTMLDivElement, d: IDataRow, i: number) => {
+        var stackShift = 0;
+        cols.forEach((col, ci) => {
+          const cnode: any = n.childNodes[ci];
+          cnode.style.transform = `translate(${col.shift-stackShift}px,0)`;
+          col.renderer.update(cnode, d, i);
+          if (col.stacked) {
+            stackShift += col.child.getWidth() * (1- col.child.getValue(d.v));
+          }
+        });
+      }
+    };
+  }
+}
 
 const combineCellRenderer = new BarCellRenderer(false, (d,i,col: any) => col.getColor(d));
 const renderers = {
@@ -542,6 +538,8 @@ const renderers = {
     createSVG: createActionSVG,
     createHTML: createActionHTML
   },
+  stack: new StackCellRenderer(),
+  nested: new StackCellRenderer(false),
   categorical: new CategoricalCellRenderer(),
   max: combineCellRenderer,
   min: combineCellRenderer,
@@ -557,6 +555,7 @@ export function createSVGRenderer(col: model.Column, context: IDOMRenderContext)
   }
   return renderers.default_.createSVG(col, context);
 }
+
 export function createHTMLRenderer(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
   const r = renderers[col.desc.type];
   if (r) {
