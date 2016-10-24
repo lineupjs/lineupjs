@@ -707,8 +707,73 @@ interface IBodyDOMRenderContext extends renderer.IDOMRenderContext {
   cellPrevY(index: number): number;
 }
 
-export class BodyRenderer extends utils.AEventDispatcher implements IBodyRenderer {
-  private options = {
+export interface IDOMMapping {
+  root: string;
+  g: string;
+  translate(n: SVGElement | HTMLElement, x: number, y: number);
+  transform<T>(sel: d3.Selection<T>, callback: (d: T, i: number) => [number,number]);
+  creator(col: model.Column, renderers: {[key:string]:renderer.ICellRendererFactory}, context: renderer.IDOMRenderContext): renderer.ICellRenderer<SVGElement | HTMLElement>;
+
+  bg: string,
+  updateBG(sel: d3.Selection<any>, callback: (d: any, i: number, j: number) => [number, number]);
+
+  meanLine: string;
+  updateMeanLine($mean: d3.Selection<any>, x: number, height: number);
+}
+
+const domMappings = {
+  svg: {
+    root: 'svg',
+    g: 'g',
+    bg: 'rect',
+    updateBG: (sel: d3.Selection<any>, callback: (d: any, i: number, j: number) => [number, number]) => {
+      sel.attr({
+        height: (d, i, j?) => callback(d,i,j)[1],
+        width: (d, i, j?) => callback(d,i,j)[0]
+      });
+    },
+    meanLine: 'line',
+    updateMeanLine: ($mean: d3.Selection<any>, x: number, height: number) => {
+      $mean.attr('x1', 1+x) //TODO don't know why +1 such that header and body lines are aligned
+          .attr('x2', 1+x)
+          .attr('y2', height);
+    },
+    creator: renderer.createSVG,
+    translate: (n: SVGElement, x: number, y: number) => n.setAttribute('transform', `translate(${x},${y})`),
+    transform: (sel: d3.Selection<any>, callback: (d: any, i: number)=> [number,number]) => {
+      sel.attr('transform', (d,i) => {
+        const r = callback(d,i);
+        return `translate(${r[0]},${r[1]})`;
+      });
+    }
+  },
+  html: {
+    root: 'div',
+    g: 'div',
+    bg: 'div',
+    updateBG: (sel: d3.Selection<any>, callback: (d: any, i: number, j: number) => [number, number]) => {
+      sel.style({
+        height: (d, i, j?) => callback(d,i,j)[1]+'px',
+        width: (d, i, j?) => callback(d,i,j)[0]+'px'
+      });
+    },
+    meanLine: 'div',
+    updateMeanLine: ($mean: d3.Selection<any>, x: number, height: number) => {
+      $mean.style('left', x+'px').style('height', height+'px');
+    },
+    creator: renderer.createHTML,
+    translate: (n: HTMLElement, x: number, y: number) => n.style.transform = `translate(${x}px,${y}px)`,
+    transform: (sel: d3.Selection<any>, callback: (d: any, i: number)=> [number,number]) => {
+      sel.style('transform', (d,i) => {
+        const r = callback(d,i);
+        return `translate(${r[0]}px,${r[1]}px)`;
+      });
+    }
+  }
+};
+
+export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRenderer {
+  protected options = {
     rowHeight: 20,
     rowPadding: 1,
     rowBarPadding: 1,
@@ -728,18 +793,18 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     freezeCols: 0
   };
 
-  private $node:d3.Selection<any>;
+  protected $node:d3.Selection<any>;
 
   private currentFreezeLeft = 0;
 
   histCache = d3.map<Promise<model.IStatistics>>();
 
-  constructor(private data:provider.DataProvider, parent:Element, private slicer:ISlicer, options = {}) {
+  constructor(private data:provider.DataProvider, parent:Element, private slicer:ISlicer, private domMapping: IDOMMapping, options = {}) {
     super();
     //merge options
     utils.merge(this.options, options);
 
-    this.$node = d3.select(parent).append('svg').classed('lu-body', true);
+    this.$node = d3.select(parent).append(domMapping.root).classed('lu-body', true);
 
     this.changeDataStorage(data);
   }
@@ -770,13 +835,14 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     }, 1));
   }
 
-  private showMeanLine(col: model.Column) {
+  protected showMeanLine(col: model.Column) {
     //show mean line if option is enabled and top level
     return this.options.meanLine && model.isNumberColumn(col) && !col.getCompressed() && col.parent instanceof model.Ranking;
   }
 
   createContext(index_shift:number):IBodyDOMRenderContext {
-    var options = this.options;
+    const options = this.options;
+    const creator = this.domMapping.creator;
     return {
       cellY: (index:number) => (index + index_shift) * (this.options.rowHeight),
       cellPrevY: (index:number) => (index + index_shift) * (this.options.rowHeight),
@@ -790,60 +856,13 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       },
 
       renderer(col:model.Column) {
-        return renderer.createSVG(col, options.renderers, this);
+        return creator(col, options.renderers, this);
       }
     };
   }
 
-
-
-  updateClipPathsImpl(r:model.Column[], context:IBodyDOMRenderContext, height:number) {
-    var $base = this.$node.select('defs.body');
-    if ($base.empty()) {
-      $base = this.$node.append('defs').classed('body', true);
-    }
-
-    //generate clip paths for the text columns to avoid text overflow
-    //see http://stackoverflow.com/questions/L742812/cannot-select-svg-foreignobject-element-in-d3
-    //there is a bug in webkit which present camelCase selectors
-    const textClipPath = $base.selectAll(function () {
-      return this.getElementsByTagName('clipPath');
-    }).data(r, (d) => d.id);
-    textClipPath.enter().append('clipPath')
-      .attr('id', (d) => `${context.idPrefix}clipCol${d.id}`)
-      .append('rect').attr('y', 0);
-    textClipPath.exit().remove();
-    textClipPath.select('rect')
-      .attr({
-        x: 0, //(d,i) => offsets[i],
-        width: (d) => Math.max(d.getWidth() - 5, 0),
-        height: height
-      });
-  }
-
-  updateClipPaths(rankings:model.Ranking[], context:IBodyDOMRenderContext, height:number) {
-    var shifts = [], offset = 0;
-    rankings.forEach((r) => {
-      const w = r.flatten(shifts, offset, 2, this.options.columnPadding);
-      offset += w + this.options.slopeWidth;
-    });
-    this.updateClipPathsImpl(shifts.map(s => s.col), context, height);
-
-    var $elem = this.$node.select('clipPath#c' + context.idPrefix + 'Freeze');
-    if ($elem.empty()) {
-      $elem = this.$node.append('clipPath').attr('id', 'c' + context.idPrefix + 'Freeze').append('rect').attr({
-        y: 0,
-        width: 20000,
-        height: height
-      });
-    }
-    $elem.select('rect').attr({
-      height: height
-    });
-  }
-
-  private animated<T>($rows: d3.Selection<T>): d3.Selection<T> {
-    if (this.options.animationDuration > 0) {
+  protected animated<T>($rows: d3.Selection<T>): d3.Selection<T> {
+    if (this.options.animationDuration > 0 && this.options.animation) {
       return <any>$rows.transition().duration(this.options.animationDuration);
     }
     return $rows;
@@ -851,6 +870,9 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
 
   renderRankings($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:IBodyDOMRenderContext, height: number) {
     const that = this;
+    const domMapping = this.domMapping;
+    const g = this.domMapping.g;
+
     const data = rankings.map((r,i) => {
       const cols = r.children.filter((d) => !d.isHidden());
       const s = shifts[i];
@@ -869,35 +891,37 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       };
     });
 
-    const $rankings = $body.selectAll('g.ranking').data(data, (d) => d.id);
-    const $rankings_enter = $rankings.enter().append('g').attr({
-      'class': 'ranking',
-      transform: (d) => `translate(${d.shift},0)`
-    });
-    $rankings_enter.append('g').attr('class', 'rows');
-    $rankings_enter.append('g').attr('class', 'meanlines');
+
+    const $rankings = $body.selectAll(g+'.ranking').data(data, (d) => d.id);
+    const $rankings_enter = $rankings.enter().append(g)
+      .attr('class', 'ranking')
+      .call(domMapping.transform,(d) => [d.shift, 0]);
+    $rankings_enter.append(g).attr('class', 'rows');
+    $rankings_enter.append(g).attr('class', 'meanlines');
 
     //animated shift
-    this.animated($rankings).attr('transform',(d, i) => `translate(${d.shift},0)`);
+    this.animated($rankings).call(domMapping.transform,(d, i) => [d.shift,0]);
 
     {
-      let $rows = $rankings.select('g.rows').selectAll('g.row').data((d) => d.order, String);
-      let $rows_enter = $rows.enter().append('g').attr('class', 'row');
-      $rows_enter.attr('transform', (d, i) => `translate(0,${context.cellPrevY(i)})`);
-      $rows_enter.append('rect').attr('class', 'bg');
+      let $rows = $rankings.select(g+'.rows').selectAll(g+'.row').data((d) => d.order, String);
+      let $rows_enter = $rows.enter().append(g).attr('class', 'row');
+      $rows_enter.call(domMapping.transform,(d, i) => [0,context.cellPrevY(i)]);
+
+      $rows_enter.append(domMapping.bg).attr('class', 'bg');
       $rows_enter
         .on('mouseenter', (d) => this.mouseOver(d, true))
         .on('mouseleave', (d) => this.mouseOver(d, false))
         .on('click', (d) => this.select(d, d3.event.ctrlKey));
+
       //create templates
-      $rows_enter.append('g').attr('class', 'cols').each(function (d, i, j) {
+      $rows_enter.append(g).attr('class', 'cols').each(function (d, i, j) {
         const node: SVGGElement = this;
         const r = data[j];
         renderer.matchColumns(node, r.columns);
         //set transform
         r.columns.forEach((col, ci) => {
           const cnode: any = node.childNodes[ci];
-          cnode.setAttribute('transform', `translate(${col.shift},0)`);
+          domMapping.translate(cnode, col.shift, 0);
         });
       });
 
@@ -907,16 +931,14 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
 
       //animated reordering
-      this.animated($rows).attr('transform', (d, i) => `translate(0,${context.cellY(i)})`);
+      this.animated($rows).call(domMapping.transform, (d, i) => [0,context.cellY(i)]);
 
       //update background helper
-      $rows.select('rect').attr({
-        height: (d, i) => context.rowHeight(i),
-        width: (d, i, j?) => data[j].width,
-        'class': (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd')
-      });
+      $rows.select(domMapping.bg).attr('class', (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd'))
+        .call(domMapping.updateBG, (d,i,j) => [data[j].width, context.rowHeight(i)]);
+
       //update columns
-      $rows.select('g.cols').each(function (d, i, j) {
+      $rows.select(g+'.cols').each(function (d, i, j) {
         const node: SVGGElement = this;
         //update nodes and create templates
         const r = data[j];
@@ -924,7 +946,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
         r.data.then((rows) => {
           r.columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
-            cnode.setAttribute('transform', `translate(${col.shift},0)`);
+            domMapping.translate(cnode, col.shift, 0);
             col.renderer.update(cnode, rows[i], i);
           });
         });
@@ -933,8 +955,8 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     }
 
     {
-      let $meanlines = $rankings.select('g.meanlines').selectAll('line.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
-      $meanlines.enter().append('line').attr('class', 'meanline');
+      let $meanlines = $rankings.select(g+'.meanlines').selectAll(domMapping.meanLine+'.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
+      $meanlines.enter().append(domMapping.meanLine).attr('class', 'meanline');
       $meanlines.each(function(d, i, j) {
         const h = that.histCache.get(d.column.id);
         const r = data[j];
@@ -944,9 +966,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
         }
         h.then((stats: model.IStatistics) => {
           const x_pos = d.shift + d.column.getWidth() * stats.mean;
-          $mean.attr('x1', isNaN(x_pos) ? 0: 1+x_pos) //TODO don't know why +1 such that header and body lines are aligned
-            .attr('x2', isNaN(x_pos) ? 0: 1+x_pos)
-            .attr('y2', height);
+          domMapping.updateMeanLine($mean, isNaN(x_pos) ? 0: x_pos, height)
         });
       });
       $meanlines.exit().remove();
@@ -1004,10 +1024,10 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     this.updateFrozenRows();
   }
 
-  renderSlopeGraphs($body:d3.Selection<any>, orders:number[][], shifts:any[], context:IBodyDOMRenderContext) {
+  renderSlopeGraphs($parent:d3.Selection<any>, orders:number[][], shifts:any[], context:IBodyDOMRenderContext) {
     const slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i: i, right: d, right_i: i + 1}));
 
-    const $slopes = $body.selectAll('g.slopegraph').data(slopes);
+    const $slopes = $parent.selectAll('g.slopegraph').data(slopes);
     $slopes.enter().append('g').attr('class', 'slopegraph');
     $slopes.attr('transform', (d, i) => `translate(${(shifts[i + 1].shift - this.options.slopeWidth)},0)`);
 
@@ -1071,6 +1091,9 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     });
   }
 
+  updateClipPaths(rankings:model.Ranking[], context:IBodyDOMRenderContext, height:number) {
+
+  }
   /**
    * render the body
    */
@@ -1115,14 +1138,81 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       width: Math.max(0, offset - this.options.slopeWidth), //added one to often
       height: height
     });
-    this.updateClipPaths(rankings, context, height);
 
-    var $body = this.$node.select('g.body');
+    var $body = this.$node.select(this.domMapping.g+'.body');
     if ($body.empty()) {
-      $body = this.$node.append('g').classed('body', true);
+      $body = this.$node.append(this.domMapping.g).classed('body', true);
+    }
+    this.renderSlopeGraphs($body, orders, shifts, context);
+    this.renderRankings($body, rankings, orders, shifts, context, height);
+
+    this.updateClipPaths(rankings, context, height);
+  }
+}
+
+
+export class BodySVGRenderer extends ABodyDOMRenderer {
+  constructor(data:provider.DataProvider, parent:Element, slicer:ISlicer, options = {}) {
+    super(data, parent, slicer, domMappings.svg, options);
+  }
+
+  updateClipPathsImpl(r:model.Column[], context:IBodyDOMRenderContext, height:number) {
+    var $base = this.$node.select('defs.body');
+    if ($base.empty()) {
+      $base = this.$node.append('defs').classed('body', true);
     }
 
-    this.renderRankings($body, rankings, orders, shifts, context, height);
-    this.renderSlopeGraphs($body, orders, shifts, context);
+    //generate clip paths for the text columns to avoid text overflow
+    //see http://stackoverflow.com/questions/L742812/cannot-select-svg-foreignobject-element-in-d3
+    //there is a bug in webkit which present camelCase selectors
+    const textClipPath = $base.selectAll(function () {
+      return this.getElementsByTagName('clipPath');
+    }).data(r, (d) => d.id);
+    textClipPath.enter().append('clipPath')
+      .attr('id', (d) => `${context.idPrefix}clipCol${d.id}`)
+      .append('rect').attr('y', 0);
+    textClipPath.exit().remove();
+    textClipPath.select('rect')
+      .attr({
+        x: 0, //(d,i) => offsets[i],
+        width: (d) => Math.max(d.getWidth() - 5, 0),
+        height: height
+      });
   }
+
+  updateClipPaths(rankings:model.Ranking[], context:IBodyDOMRenderContext, height:number) {
+    var shifts = [], offset = 0;
+    rankings.forEach((r) => {
+      const w = r.flatten(shifts, offset, 2, this.options.columnPadding);
+      offset += w + this.options.slopeWidth;
+    });
+    this.updateClipPathsImpl(shifts.map(s => s.col), context, height);
+
+    var $elem = this.$node.select('clipPath#c' + context.idPrefix + 'Freeze');
+    if ($elem.empty()) {
+      $elem = this.$node.append('clipPath').attr('id', 'c' + context.idPrefix + 'Freeze').append('rect').attr({
+        y: 0,
+        width: 20000,
+        height: height
+      });
+    }
+    $elem.select('rect').attr({
+      height: height
+    });
+  }
+}
+
+
+export class BodyHTMLRenderer extends ABodyDOMRenderer {
+  constructor(data:provider.DataProvider, parent:Element, slicer:ISlicer, options = {}) {
+    super(data, parent, slicer, domMappings.html, options);
+  }
+}
+
+export function createBodyRenderer(type = 'svg', data:provider.DataProvider, parent:Element, slicer:ISlicer, options = {}) {
+  switch(type) {
+    case 'svg': return new BodySVGRenderer(data, parent, slicer, options);
+    case 'html': return new BodyHTMLRenderer(data, parent, slicer, options);
+    default: return new BodySVGRenderer(data, parent, slicer, options);
+  };
 }

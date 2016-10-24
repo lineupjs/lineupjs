@@ -65,7 +65,7 @@ export interface ICellRenderer<T> {
 export declare type ISVGCellRenderer = ICellRenderer<SVGElement>;
 export declare type IHTMLCellRenderer = ICellRenderer<HTMLElement>;
 
-interface ICellRendererFactory {
+export interface ICellRendererFactory {
   createSVG?(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer;
   createHTML?(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer;
 }
@@ -187,7 +187,7 @@ export class BarCellRenderer implements ICellRendererFactory {
           title: col.getLabel(d.v)
         }, {
           width: `${isNaN(width) ? 0 : width}px`,
-          height: `${col.getWidth()-padding*2}px`,
+          height: `${context.rowHeight(i) - padding * 2}px`,
           top: `${padding}px`,
           'background-color': this.colorOf(d.v, i, col)
         });
@@ -334,7 +334,7 @@ function createAnnotateSVG(col: model.AnnotateColumn, context: IDOMRenderContext
 
 function createAnnotateHTML(col: model.AnnotateColumn): IHTMLCellRenderer {
  return {
-    template: `<div class="annotations">
+    template: `<div class="annotations text">
         <input type="text" class="hoverOnly">
         <span class="text notHoverOnly"></span>
        </div>`,
@@ -346,7 +346,7 @@ function createAnnotateHTML(col: model.AnnotateColumn): IHTMLCellRenderer {
       input.onclick = function(event) {
         event.stopPropagation();
       };
-      input.style.width = col.getWidth()+'px';
+      n.style.width = input.style.width = col.getWidth()+'px';
       input.value = col.getLabel(d.v);
       n.querySelector('span').textContent = col.getLabel(d.v);
     }
@@ -614,9 +614,9 @@ function chooseRenderer(col: model.Column, renderers: {[key:string]:ICellRendere
 
 export function createSVG(col: model.Column, renderers: {[key:string]:ICellRendererFactory}, context: IDOMRenderContext) {
   const r = chooseRenderer(col, renderers);
-  return (r.createSVG ? r.createSVG : defaultCellRenderer.createSVG)(col, context);
+  return (r.createSVG ? r.createSVG.bind(r) : defaultCellRenderer.createSVG.bind(r))(col, context);
 }
 export function createHTML(col: model.Column, renderers: {[key:string]:ICellRendererFactory}, context: IDOMRenderContext) {
   const r = chooseRenderer(col, renderers);
-  return (r.createHTML ? r.createHTML : defaultCellRenderer.createHTML)(col, context);
+  return (r.createHTML ? r.createHTML.bind(r) : defaultCellRenderer.createHTML.bind(r))(col, context);
 }

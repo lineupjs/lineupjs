@@ -225,34 +225,11 @@ $lu_drag_over: #979797;
     position: relative;
   }
 
-  text, tspan {
-    dominant-baseline: text-before-edge;
-  }
-
-  text.actions tspan {
-    cursor: pointer;
-
-    &:hover {
-      color: darkblue;
-    }
-  }
-
-  text.selection {
-    cursor: pointer;
-
-    &:hover {
-      color: darkblue;
-    }
-  }
-
-  text.rank, text.text_right {
-    text-anchor: end;
-  }
-  text.text_center {
-    text-anchor: middle;
-  }
-
   .hoverOnly {
+    display: none;
+  }
+
+  .hover .notHoverOnly {
     display: none;
   }
 
@@ -263,7 +240,6 @@ $lu_drag_over: #979797;
   .selectionOnly {
     display: none;
   }
-
   .selected .selectionOnly {
     display: block;
   }
@@ -271,61 +247,9 @@ $lu_drag_over: #979797;
     display: none;
   }
 
-  g.hover.bar rect {
-    //bars nested combined with a text representation
-    opacity: 0.5;
-  }
-  .hover .notHoverOnly {
-    display: none;
-  }
-
-  line.meanline {
-    stroke: darkgray;
-    stroke-width: 1;
-  }
-
   *[draggable] {
     cursor: pointer;
     cursor: -webkit-grab; //indicate grab able
-  }
-
-  line.slope {
-    stroke: darkgray;
-    stroke-width: 2;
-    shape-rendering: geometricPrecision;
-
-    &.hover {
-      stroke: $lu_hover_color;
-    }
-
-    &.selected {
-      stroke: $lu_selected_color;
-    }
-  }
-
-  g.meanlines {
-    pointer-events: none;
-  }
-
-  g.row {
-    rect.bg {
-      fill: transparent;
-
-      &.even {
-        fill: $lu_even_bg;
-      }
-    }
-    &.selected {
-      rect.bg {
-        stroke: $lu_selected_color;
-        stroke-width: 1;
-      }
-    }
-    &.hover {
-      rect.bg {
-        fill: $lu_hover_color;
-      }
-    }
   }
 
   div.lu-header, div.lu-pool {
@@ -527,9 +451,34 @@ $lu_drag_over: #979797;
     }
   }
 
+  .lu-body {
+    input {
+      padding: 0;
+      margin: 0;
+      font-size: 9pt;
+      pointer-events: all;
+    }
+  }
+
   svg.lu-body {
-    text {
+    text, tspan {
       font-size: 10pt;
+      dominant-baseline: text-before-edge;
+    }
+
+    text.actions tspan {
+      cursor: pointer;
+
+      &:hover {
+        color: darkblue;
+      }
+    }
+
+    text.rank, text.text_right {
+      text-anchor: end;
+    }
+    text.text_center {
+      text-anchor: middle;
     }
 
     foreignObject { //e.g. the input field in annotate columns
@@ -538,16 +487,115 @@ $lu_drag_over: #979797;
       pointer-events: all;
     }
 
-    input {
-      padding: 0;
-      margin: 0;
-      font-size: 9pt;
-      pointer-events: all;
-    }
-
     .cat rect {
       fill: transparent;
     }
+
+    line.slope {
+      stroke: darkgray;
+      stroke-width: 2;
+      shape-rendering: geometricPrecision;
+
+      &.hover {
+        stroke: $lu_hover_color;
+      }
+
+      &.selected {
+        stroke: $lu_selected_color;
+      }
+    }
+
+    g.meanlines {
+      pointer-events: none;
+
+      line {
+        stroke: darkgray;
+        stroke-width: 1;
+      }
+    }
+
+    text.selection {
+      cursor: pointer;
+
+      &:hover {
+        color: darkblue;
+      }
+    }
+
+    g.row {
+      rect.bg {
+        fill: transparent;
+
+        &.even {
+          fill: $lu_even_bg;
+        }
+      }
+      &.selected {
+        rect.bg {
+          stroke: $lu_selected_color;
+          stroke-width: 1;
+        }
+      }
+      &.hover {
+        rect.bg {
+          fill: $lu_hover_color;
+        }
+
+        .bar rect {
+          //bars nested combined with a text representation
+          opacity: 0.5;
+        }
+      }
+    }
   }
 
+  div.lu-body {
+    font-size: 10pt;
+
+    div {
+      position: absolute;
+      padding: 0;
+      margin: 0;
+    }
+
+    div.text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    div.row {
+      div.bg {
+        background-color: transparent;
+
+        &.even {
+          background-color: $lu_even_bg;
+        }
+      }
+      &.selected {
+        div.bg {
+          border: 1px solid $lu_selected_color;
+        }
+      }
+      &.hover {
+        div.bg {
+          border: 1px solid $lu_hover_color;
+        }
+
+        .bar {
+          //bars nested combined with a text representation
+          opacity: 0.5;
+
+          span {
+            opactiy: 1.0;
+          }
+        }
+      }
+
+      div.cat div {
+        position: relative;
+        display: inline-block;
+      }
+    }
+  }
 }
