@@ -29,7 +29,7 @@ export interface IRenderContext<T> {
    * render a column
    * @param col
    */
-  renderer(col: model.Column, context: IRenderContext<T>): ICellRenderer<T>;
+  renderer(col: model.Column): ICellRenderer<T>;
 
   /**
    * prefix used for all generated id names
@@ -66,8 +66,8 @@ export declare type ISVGCellRenderer = ICellRenderer<SVGElement>;
 export declare type IHTMLCellRenderer = ICellRenderer<HTMLElement>;
 
 interface ICellRendererFactory {
-  createSVG(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer;
-  createHTML(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer;
+  createSVG?(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer;
+  createHTML?(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer;
 }
 
 /**
@@ -229,11 +229,11 @@ function createHeatmapSVG(col: model.INumberColumn & model.Column, context: IDOM
   }
 }
 
-function createHeatmapHTML(col: model.INumberColumn & model.Column, context: IDOMRenderContext): ISVGCellRenderer {
+function createHeatmapHTML(col: model.INumberColumn & model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
   const padding = context.option('rowPadding', 1);
   return {
     template: `<div class="heatmap ${col.cssClass}" style="background-color: ${col.color}; top: ${padding}"></div>`,
-    update: (n: SVGGElement, d: IDataRow, i: number) => {
+    update: (n: HTMLElement, d: IDataRow, i: number) => {
       const w = context.rowHeight(i) - padding * 2;
       attr(n, {
         title: col.getLabel(d.v)
@@ -517,7 +517,7 @@ class StackCellRenderer implements ICellRendererFactory {
         column: d,
         shift: shift,
         stacked: stacked,
-        renderer: context.renderer(d, context)
+        renderer: context.renderer(d)
       }
     });
   }
@@ -561,8 +561,9 @@ class StackCellRenderer implements ICellRendererFactory {
   }
 }
 
+const defaultCellRenderer = new DefaultCellRenderer();
 const combineCellRenderer = new BarCellRenderer(false, (d,i,col: any) => col.getColor(d));
-const renderers = {
+export const renderers = {
   rank: new DefaultCellRenderer('rank', 'right'),
   boolean: new DefaultCellRenderer('boolean', 'center'),
   number: new BarCellRenderer(),
@@ -594,22 +595,28 @@ const renderers = {
   max: combineCellRenderer,
   min: combineCellRenderer,
   mean: combineCellRenderer,
-  script: combineCellRenderer,
-  default_: new DefaultCellRenderer()
+  script: combineCellRenderer
 };
 
-export function createSVGRenderer(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
-  const r = renderers[col.desc.type];
-  if (r) {
-    return r.createSVG(col, context);
+function chooseRenderer(col: model.Column, renderers: {[key:string]:ICellRendererFactory}): ICellRendererFactory {
+  if (col.getCompressed() && model.isNumberColumn(col)) {
+     return renderers['heatmap'] || defaultCellRenderer;
   }
-  return renderers.default_.createSVG(col, context);
+  if (col instanceof model.StackColumn && col.getCollapsed()) {
+     return renderers['number'] || defaultCellRenderer;
+  }
+  if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
+    return defaultCellRenderer;
+  }
+  const r = renderers[col.desc.type];
+  return r || defaultCellRenderer;
 }
 
-export function createHTMLRenderer(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
-  const r = renderers[col.desc.type];
-  if (r) {
-    return r.createHTML(col, context);
-  }
-  return renderers.default_.createHTML(col, context);
+export function createSVG(col: model.Column, renderers: {[key:string]:ICellRendererFactory}, context: IDOMRenderContext) {
+  const r = chooseRenderer(col, renderers);
+  return (r.createSVG ? r.createSVG : defaultCellRenderer.createSVG)(col, context);
+}
+export function createHTML(col: model.Column, renderers: {[key:string]:ICellRendererFactory}, context: IDOMRenderContext) {
+  const r = chooseRenderer(col, renderers);
+  return (r.createHTML ? r.createHTML : defaultCellRenderer.createHTML)(col, context);
 }

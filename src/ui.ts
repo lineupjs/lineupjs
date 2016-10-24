@@ -719,7 +719,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     animation: false, //200
     animationDuration: 1000,
 
-    //renderers: renderer.renderers(),
+    renderers: utils.merge({}, renderer.renderers),
 
     meanLine: false,
 
@@ -777,25 +777,9 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
 
   createContext(index_shift:number):IBodyDOMRenderContext {
     var options = this.options;
-    function choose(col:model.Column, context: renderer.IDOMRenderContext): renderer.ISVGCellRenderer {
-      return renderer.createSVGRenderer(col, context);
-      // if (col.getCompressed() && model.isNumberColumn(col)) {
-      //   return options.renderers.heatmap;
-      // }
-      // if (col instanceof model.StackColumn && col.getCollapsed()) {
-      //   return options.renderers.number;
-      // }
-      // if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
-      //   return options.renderers.string;
-      // }
-      // var l = options.renderers[col.desc.type];
-      // return l || renderer.defaultRenderer();
-    }
     return {
       cellY: (index:number) => (index + index_shift) * (this.options.rowHeight),
       cellPrevY: (index:number) => (index + index_shift) * (this.options.rowHeight),
-      //if we use animation we use the same object, otherwise don't care
-      //rowKey: this.options.animation ? (d,i) => this.data.rowKey(d.v,i) : undefined,
 
       idPrefix: options.idPrefix,
 
@@ -805,8 +789,8 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
         return options.rowHeight * (1 - options.rowPadding);
       },
 
-      renderer(col:model.Column, context:renderer.IDOMRenderContext = this) {
-        return choose(col, context);
+      renderer(col:model.Column) {
+        return renderer.createSVG(col, options.renderers, this);
       }
     };
   }
@@ -878,7 +862,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
         width: s.width,
         columns: cols.map((c,j) => ({
           column: c,
-          renderer: context.renderer(c, context),
+          renderer: context.renderer(c),
           shift: s.shifts[j]
         })),
         data: this.data.view(orders[i]).then((data) => data.map((v,i) => ({v: v, dataIndex: r[i]}))),
