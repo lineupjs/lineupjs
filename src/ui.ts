@@ -702,6 +702,11 @@ function all(node: Element, selector: string) {
   return Array.prototype.slice.call(node.querySelectorAll(selector));
 }
 
+interface IBodyDOMRenderContext extends renderer.IDOMRenderContext {
+  cellY(index: number): number;
+  cellPrevY(index: number): number;
+}
+
 export class BodyRenderer extends utils.AEventDispatcher implements IBodyRenderer {
   private options = {
     rowHeight: 20,
@@ -714,7 +719,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     animation: false, //200
     animationDuration: 1000,
 
-    renderers: renderer.renderers(),
+    //renderers: renderer.renderers(),
 
     meanLine: false,
 
@@ -770,60 +775,45 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     return this.options.meanLine && model.isNumberColumn(col) && !col.getCompressed() && col.parent instanceof model.Ranking;
   }
 
-  createContext(index_shift:number):renderer.IDOMRenderContext {
+  createContext(index_shift:number):IBodyDOMRenderContext {
     var options = this.options;
-    function choose(col:model.Column): renderer.ISVGCellRenderer {
-      if (col.getCompressed() && model.isNumberColumn(col)) {
-        return options.renderers.heatmap;
-      }
-      if (col instanceof model.StackColumn && col.getCollapsed()) {
-        return options.renderers.number;
-      }
-      if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
-        return options.renderers.string;
-      }
-      var l = options.renderers[col.desc.type];
-      return l || renderer.defaultRenderer();
+    function choose(col:model.Column, context: renderer.IDOMRenderContext): renderer.ISVGCellRenderer {
+      return renderer.createSVGRenderer(col, context);
+      // if (col.getCompressed() && model.isNumberColumn(col)) {
+      //   return options.renderers.heatmap;
+      // }
+      // if (col instanceof model.StackColumn && col.getCollapsed()) {
+      //   return options.renderers.number;
+      // }
+      // if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
+      //   return options.renderers.string;
+      // }
+      // var l = options.renderers[col.desc.type];
+      // return l || renderer.defaultRenderer();
     }
     return {
+      cellY: (index:number) => (index + index_shift) * (this.options.rowHeight),
+      cellPrevY: (index:number) => (index + index_shift) * (this.options.rowHeight),
       //if we use animation we use the same object, otherwise don't care
-      rowKey: this.options.animation ? (d,i) => this.data.rowKey(d.v,i) : undefined,
+      //rowKey: this.options.animation ? (d,i) => this.data.rowKey(d.v,i) : undefined,
 
       idPrefix: options.idPrefix,
 
-      animationDuration: options.animation ? options.animationDuration : -1,
-
-
-
       option: (key:string, default_:any) => (key in options) ? options[key] : default_,
 
-      cellY(index:number) {
-        return (index + index_shift) * (options.rowHeight);
-      },
-      cellPrevY(index:number) {
-        return (index + index_shift) * (options.rowHeight);
-      },
-      cellX(index:number) {
-        return 0;
-      },
       rowHeight(index:number) {
         return options.rowHeight * (1 - options.rowPadding);
       },
-      render(col:model.Column, $this:d3.Selection<model.Column>, data:any[], context:renderer.IDOMRenderContext = this) {
-        //if renderers change delete old stuff
-        const tthis = <any>($this.node());
-        const old_renderer = tthis.__renderer__;
-        const act_renderer = choose(col);
-        if (old_renderer !== act_renderer) {
-          $this.selectAll('*').remove();
-          tthis.__renderer__ = act_renderer;
-        }
-        act_renderer.renderSVG($this, col, data, context);
+
+      renderer(col:model.Column, context:renderer.IDOMRenderContext = this) {
+        return choose(col, context);
       }
     };
   }
 
-  updateClipPathsImpl(r:model.Column[], context:renderer.IDOMRenderContext, height:number) {
+
+
+  updateClipPathsImpl(r:model.Column[], context:IBodyDOMRenderContext, height:number) {
     var $base = this.$node.select('defs.body');
     if ($base.empty()) {
       $base = this.$node.append('defs').classed('body', true);
@@ -847,7 +837,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       });
   }
 
-  updateClipPaths(rankings:model.Ranking[], context:renderer.IDOMRenderContext, height:number) {
+  updateClipPaths(rankings:model.Ranking[], context:IBodyDOMRenderContext, height:number) {
     var shifts = [], offset = 0;
     rankings.forEach((r) => {
       const w = r.flatten(shifts, offset, 2, this.options.columnPadding);
@@ -868,46 +858,89 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     });
   }
 
-  renderRankings($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:renderer.IDOMRenderContext, height: number) {
-    const that = this;
-    const dataPromises : Promise<renderer.IDataRow[]>[]= orders.map((r) => this.data.view(r).then((data) => data.map((v,i) => ({v: v, dataIndex: r[i]}))));
+  private animated<T>($rows: d3.Selection<T>): d3.Selection<T> {
+    if (this.options.animationDuration > 0) {
+      return <any>$rows.transition().duration(this.options.animationDuration);
+    }
+    return $rows;
+  }
 
-    const $rankings = $body.selectAll('g.ranking').data(rankings, (d) => d.id);
+  renderRankings($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:IBodyDOMRenderContext, height: number) {
+    const that = this;
+
+    const data = rankings.map((r,i) => {
+      const cols = r.children.filter((d) => !d.isHidden());
+      const s = shifts[i];
+      return {
+        id: r.id,
+        ranking: r,
+        order: orders[i],
+        shift: s.shift,
+        width: s.width,
+        columns: cols.map((c,j) => ({
+          column: c,
+          renderer: context.renderer(c, context),
+          shift: s.shifts[j]
+        })),
+        data: this.data.view(orders[i]).then((data) => data.map((v,i) => ({v: v, dataIndex: r[i]}))),
+      };
+    });
+
+    const $rankings = $body.selectAll('g.ranking').data(data, (d) => d.id);
     const $rankings_enter = $rankings.enter().append('g').attr({
       'class': 'ranking',
-      transform: (d, i) => `translate(${shifts[i].shift},0)`
+      transform: (d) => `translate(${d.shift},0)`
     });
     $rankings_enter.append('g').attr('class', 'rows');
     $rankings_enter.append('g').attr('class', 'cols');
 
-    renderer.animated($rankings, context).attr('transform',(d, i) => `translate(${shifts[i].shift},0)`);
+    this.animated($rankings).attr('transform',(d, i) => `translate(${d.shift},0)`);
 
-    {
-      let $cols = $rankings.select('g.cols').selectAll('g.uchild').data((d) => d.children.filter((d) => !d.isHidden()), (d) => d.id);
-      $cols.enter().append('g').attr('class', 'uchild')
-        .append('g').attr({
-        'class': 'child',
-        transform: (d, i, j?) => `translate(${shifts[j].shifts[i]},0)`
-      });
-      $cols.exit().remove();
-
-      $cols = $cols.select('g.child');
-      $cols.attr('data-index', (d, i) => i);
-
-      renderer.animated($cols, context).attr('transform', (d, i, j?) => `translate(${shifts[j].shifts[i]},0)`)
-        .each(function (d, i, j?) {
-          const $col = d3.select(this);
-          dataPromises[j].then((data) => context.render(d, $col, data, context));
-
-          that.renderMeanline(d, $col, height);
-        });
-    }
-
-    // wait until all `context.render()` calls have finished
-    Promise.all(dataPromises).then((args) => {
-      this.fire('renderFinished');
+    let $rows = $rankings.select('g.rows').selectAll('g.row').data((d) => d.order, String);
+    let $rows_enter = $rows.enter().append('g').attr('class', 'row');
+    $rows_enter.attr('transform', (d, i) => `translate(0,${context.cellPrevY(i)})`);
+    $rows_enter.append('rect').attr('class', 'bg');
+    $rows_enter.on('mouseenter', (d) => {
+      this.mouseOver(d, true);
+    }).on('mouseleave', (d) => {
+      this.mouseOver(d, false);
+    }).on('click', (d) => {
+      this.select(d, d3.event.ctrlKey);
     });
-    this.renderBackgroundRows($rankings, orders, shifts, context);
+    $rows_enter.append('g').attr('class','cols').each(function(d,i,j) {
+      const node: SVGGElement = this;
+      const r = data[j];
+      //create template
+      node.innerHTML = r.columns.map((col) => col.renderer.template).join('\n');
+      //set transform
+      r.columns.forEach((col, ci) => {
+        const cnode: any = node.childNodes[ci];
+        cnode.setAttribute('transform', `translate(${col.shift},0)`);
+      });
+    });
+
+    $rows
+      .attr('data-data-index', (d) => d)
+      .classed('selected', (d) => this.data.isSelected(d));
+    //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
+    $rows.attr('transform', (d, i) => `translate(0,${context.cellY(i)})`);
+    $rows.select('rect').attr({
+      height: (d, i) => context.rowHeight(i),
+      width: (d, i, j?) => data[j].width,
+      'class': (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd')
+    });
+    $rows.select('g.cols').each(function(d,i,j) {
+      const node : SVGGElement = this;
+      const r = data[j];
+      r.data.then((rows) => {
+        r.columns.forEach((col, ci) => {
+          const cnode: any = node.childNodes[ci];
+          cnode.setAttribute('transform', `translate(${col.shift},0)`);
+          col.renderer.update(cnode, rows[i], i);
+        });
+      });
+    });
+    $rows.exit().remove();
 
     $rankings.exit().remove();
   }
@@ -930,29 +963,6 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     }
   }
 
-  private renderBackgroundRows($rankings: d3.selection.Update<model.Ranking>, orders: number[][], shifts: any[], context: renderer.IDOMRenderContext) {
-    let $rows = $rankings.select('g.rows').selectAll('g.row').data((d, i) => orders[i].map((d, i) => ({d: d, i: i})));
-    let $rows_enter = $rows.enter().append('g').attr('class', 'row');
-    $rows_enter.append('rect').attr('class', 'bg');
-    $rows_enter.on('mouseenter', (data_index) => {
-      this.mouseOver(data_index.d, true);
-    }).on('mouseleave', (data_index) => {
-      this.mouseOver(data_index.d, false);
-    }).on('click', (data_index) => {
-      this.select(data_index.d, d3.event.ctrlKey);
-    });
-    $rows
-      .attr('data-data-index', (d) => d.d)
-      .classed('selected', (d) => this.data.isSelected(d.d));
-    //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
-    $rows.select('rect').attr({
-      y: (d) => context.cellY(d.i),
-      height: (d) => context.rowHeight(d.i),
-      width: (d, i, j?) => shifts[j].width,
-      'class': (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd')
-    });
-    $rows.exit().remove();
-  }
 
   private jumpToSelection() {
     const indices = this.data.getSelection();
@@ -974,10 +984,6 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
   select(dataIndex:number, additional = false) {
     var selected = this.data.toggleSelection(dataIndex, additional);
     this.$node.selectAll(`[data-data-index="${dataIndex}"`).classed('selected', selected);
-  }
-
-  private hasAnySelectionColumn() {
-    return this.data.getRankings().some((r) => r.children.some((c) => c instanceof model.SelectionColumn && !c.isHidden()));
   }
 
   drawSelection() {
@@ -1007,7 +1013,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     this.updateFrozenRows();
   }
 
-  renderSlopeGraphs($body:d3.Selection<any>, orders:number[][], shifts:any[], context:renderer.IDOMRenderContext) {
+  renderSlopeGraphs($body:d3.Selection<any>, orders:number[][], shifts:any[], context:IBodyDOMRenderContext) {
     const slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i: i, right: d, right_i: i + 1}));
 
     const $slopes = $body.selectAll('g.slopegraph').data(slopes);

@@ -185,7 +185,7 @@ export class LineUp extends utils_.AEventDispatcher {
     /**
      * the renderers to use for rendering the columns
      */
-    renderers: renderer_.renderers()
+    //renderers: renderer_.renderers()
   };
 
   private $container:d3.Selection<any>;
@@ -234,7 +234,7 @@ export class LineUp extends utils_.AEventDispatcher {
       idPrefix: this.config.idPrefix,
 
       freezeCols: this.config.body.freezeCols,
-      renderers: this.config.renderers
+      //renderers: this.config.renderers
     });
     //share hist caches
     this.body.histCache = this.header.sharedHistCache;
