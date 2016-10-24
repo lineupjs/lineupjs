@@ -92,6 +92,11 @@ export class DefaultCellRenderer {
    */
   align: string = 'left';
 
+  constructor(textClass = 'text', align = 'left') {
+    this.textClass = textClass;
+    this.align = align;
+  }
+
   createSVG(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
     return {
       template: `<text class="${this.textClass}" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>`,
@@ -112,7 +117,7 @@ export class DefaultCellRenderer {
 
   createHTML(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
     return {
-      template: `<div class="${this.textClass} ${this.align}" style="top:0"></div>`,
+      template: `<div class="${this.textClass} ${this.align}"></div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         attr(n, {}, {
           width: `${col.getWidth()}px`
@@ -188,6 +193,17 @@ export class BarCellRenderer {
    */
   colorOf(d: any, i: number, col: model.Column) {
     return col.color;
+  }
+}
+
+class OrdinalCellRenderer extends BarCellRenderer {
+  constructor() {
+    super();
+    this.renderValue = true;
+  }
+
+  colorOf(d: any, i: number, col: model.CategoricalNumberColumn) {
+    return col.getColor(d);
   }
 }
 
@@ -395,33 +411,7 @@ function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
 //     $rows.exit().remove();
 //   }
 // }
-//
-// var defaultRendererInstance = new DefaultCellRenderer();
-// var barRendererInstance = new BarCellRenderer();
-//
-// /**
-//  * creates a new instance with optional overridden methods
-//  * @param extraFuncs
-//  * @return {DefaultCellRenderer}
-//  */
-// export function defaultRenderer(extraFuncs?: any) {
-//   if (!extraFuncs) {
-//     return defaultRendererInstance;
-//   }
-//   return new DerivedCellRenderer(extraFuncs);
-// }
-//
-// /**
-//  * creates a new instance with optional overridden methods
-//  * @param extraFuncs
-//  * @return {BarCellRenderer}
-//  */
-// export function barRenderer(extraFuncs?: any) {
-//   if (!extraFuncs) {
-//     return barRendererInstance;
-//   }
-//   return new DerivedBarCellRenderer(extraFuncs);
-// }
+
 //
 // /**
 //  * renderer of a link column, i.e. render an intermediate *a* element
@@ -465,59 +455,83 @@ function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
 // }
 //
 //
-// /**
-//  * renders a string with additional alignment behavior
-//  */
-// class StringCellRenderer extends DefaultCellRenderer {
-//   renderSVG($col: d3.Selection<any>, col: model.StringColumn, rows: IDataRow[], context: IDOMRenderContext) {
-//     this.align = col.alignment;
-//     this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
-//     return super.renderSVG($col, col, rows, context);
-//   }
-//
-//   renderHTML($col: d3.Selection<any>, col: model.StringColumn, rows: IDataRow[], context: IDOMRenderContext) {
-//     this.align = col.alignment;
-//     this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
-//     return super.renderHTML($col, col, rows, context);
-//   }
-// }
-//
-// /**
-//  * renders categorical columns as a colored rect with label
-//  */
-// class CategoricalRenderer implements ISVGCellRenderer {
-//   textClass = 'cat';
-//
-//   renderSVG($col: d3.Selection<any>, col: model.CategoricalColumn, rows: IDataRow[], context: IDOMRenderContext) {
-//     var $rows = $col.datum(col).selectAll('g.' + this.textClass).data(rows, context.rowKey);
-//
-//     const padding = context.option('rowPadding', 1);
-//     var $rows_enter = $rows.enter().append('g').attr({
-//       'class': this.textClass,
-//       'data-visible-index': (d, i) => i,
-//       transform: (d, i) => `translate(${context.cellX(i)},${context.cellPrevY(i)})`
-//     });
-//     $rows_enter.append('text').attr({
-//       'clip-path': `url(#${context.idPrefix}clipCol${col.id})`,
-//       x: (d, i) => context.rowHeight(i)
-//     });
-//     $rows_enter.append('rect').attr('y',padding);
-//     $rows.attr({
-//       'data-data-index': (d) => d.dataIndex,
-//       transform: (d, i) => `translate(${context.cellX(i)},${context.cellY(i)})`
-//     });
-//     $rows.select('text').attr('x', (d, i) => context.rowHeight(i)).text((d) => col.getLabel(d.v));
-//     $rows.select('rect').style('fill', (d) => col.getColor(d.v)).attr({
-//       height: (d, i) => Math.max(context.rowHeight(i) - padding * 2, 0),
-//       width: (d, i) => Math.max(context.rowHeight(i) - padding * 2, 0)
-//     });
-//
-//     animated($rows, context).attr('transform', (d, i) => `translate(${context.cellX(i)},${context.cellY(i)})`);
-//
-//
-//     $rows.exit().remove();
-//   }
-// }
+/**
+ * renders a string with additional alignment behavior
+ */
+class StringCellRenderer extends DefaultCellRenderer {
+  createSVG(col: model.StringColumn, context: IDOMRenderContext): ISVGCellRenderer {
+    this.align = col.alignment;
+    this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
+    return super.createSVG(col, context);
+  }
+
+  createHTML(col: model.StringColumn, context: IDOMRenderContext): IHTMLCellRenderer {
+    this.align = col.alignment;
+    this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
+    return super.createHTML(col, context);
+  }
+}
+
+
+/**
+ * renders categorical columns as a colored rect with label
+ */
+export class CategoricalCellRenderer {
+  /**
+   * class to append to the text elements
+   * @type {string}
+   */
+  textClass = 'cat';
+
+  constructor(textClass = 'cat') {
+    this.textClass = textClass;
+  }
+
+  createSVG(col: model.CategoricalColumn, context: IDOMRenderContext): ISVGCellRenderer {
+    const padding = context.option('rowPadding', 1);
+    return {
+      template: `<g class="${this.textClass}">
+        <text clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
+        <rect y="${padding}"></rect>
+      </g>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
+
+        attr(<SVGRectElement>n.querySelector('rect'),{
+          width: cell,
+          height: cell
+        }, {
+          fill: col.getColor(d.v)
+        });
+        attr(<SVGTextElement>n.querySelector('text'),{
+          x: context.rowHeight(i)
+        }).textContent = col.getLabel(d.v);
+      }
+    }
+  }
+
+  createHTML(col: model.CategoricalColumn, context: IDOMRenderContext): IHTMLCellRenderer {
+    const padding = context.option('rowPadding', 1);
+    return {
+      template: `<div class="${this.textClass}">
+        <div></div>
+        <span></span>
+      </div>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
+        const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
+        attr(n, {}, {
+          width: `${col.getWidth()}px`
+        });
+        attr(<SVGRectElement>n.querySelector('div'),{}, {
+          width: cell+'px',
+          height: cell+'px',
+          'background-color': col.getColor(d.v)
+        });
+        attr(<SVGTextElement>n.querySelector('span'),{}).textContent = col.getLabel(d.v);
+      }
+    }
+  }
+}
 //
 // /**
 //  * renders a stacked column using composite pattern
@@ -601,20 +615,9 @@ function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
 //  */
 // export function renderers() {
 //   return {
-//     string: new StringCellRenderer(),
 //     link: new LinkCellRenderer(),
-//     number: barRenderer(),
-//     rank: defaultRenderer({
-//       textClass: 'rank',
-//       align: 'right'
-//     }),
-//     boolean: defaultRenderer({
-//       textClass: 'boolean',
-//       align: 'center'
-//     }),
 //     heatmap: new HeatMapCellRenderer(),
 //     stack: new StackCellRenderer(),
-//     categorical: new CategoricalRenderer(),
 //     ordinal: barRenderer({
 //       renderValue: true,
 //       colorOf: (d, i, col) => col.getColor(d)
@@ -632,15 +635,25 @@ function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
 
 export function createSVGRenderer(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
   switch(col.desc.type) {
+    case 'rank': return new DefaultCellRenderer('rank', 'right').createSVG(col, context);
+    case 'boolean': return new DefaultCellRenderer('boolean', 'center').createSVG(col, context);
     case 'number': return new BarCellRenderer().createSVG(col, context);
+    case 'ordinal': return new OrdinalCellRenderer().createSVG(col, context);
     case 'selection': return createSelectionSVG(<model.SelectionColumn>col);
+    case 'string': return new StringCellRenderer().createSVG(<model.StringColumn>col, context);
+    case 'categorical': return new CategoricalCellRenderer().createSVG(<model.CategoricalColumn>col, context);
     default: return new DefaultCellRenderer().createSVG(col, context)
   }
 }
 export function createHTMLRenderer(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
   switch(col.desc.type) {
+    case 'rank': return new DefaultCellRenderer('rank', 'right').createHTML(col, context);
+    case 'boolean': return new DefaultCellRenderer('boolean', 'center').createHTML(col, context);
     case 'number': return new BarCellRenderer().createHTML(col, context);
+    case 'ordinal': return new OrdinalCellRenderer().createHTML(col, context);
     case 'selection': return createSelectionHTML(<model.SelectionColumn>col);
+    case 'string': return new StringCellRenderer().createHTML(<model.StringColumn>col, context);
+    case 'categorical': return new CategoricalCellRenderer().createHTML(<model.CategoricalColumn>col, context);
     default: return new DefaultCellRenderer().createHTML(col, context)
   }
 }
