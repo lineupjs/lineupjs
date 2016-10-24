@@ -1314,7 +1314,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   static CUSTOM_OPTIONS = {
     style: {
       text: 'black',
-      font: '10pt Times New Roman',
+      font: '10pt "Helvetica Neue", Helvetica, Arial, sans-serif',
       slope: 'darkgray',
       selection: 'orange',
       bg: '#f7f7f7'
