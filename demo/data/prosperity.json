@@ -21,147 +21,183 @@
     },
     {
       "column": "pi_score2012",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "pi_score2013",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "pi_score2014",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "pi_score2015",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "eco_score2012",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "eco_score2013",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "eco_score2014",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "eco_score2015",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "eo_score2012",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "eo_score2013",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "eo_score2014",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "eo_score2015",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "gov_score2012",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "gov_score2013",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "gov_score2014",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "gov_score2015",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "edu_score2012",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "edu_score2013",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "edu_score2014",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "edu_score2015",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "health_score2012",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "health_score2013",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "health_score2014",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "health_score2015",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "ss_score2012",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "ss_score2013",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "ss_score2014",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "ss_score2015",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "pf_score2012",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "pf_score2013",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "pf_score2014",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "pf_score2015",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "sk_score2012",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "sk_score2013",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "sk_score2014",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "sk_score2015",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     }
   ],
   "layout": {

@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
-  "description": "LineUp.js: Visual Analysis of Multi-Attribute Rankings ====== LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. This is a D3-based re-implementation with limited functionality relative to the original stand-alone LineUp, which you can check out at http://lineup.caleydo.org",
-  "version": "0.5.3",
+  "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
+  "version": "0.5.4",
   "author": {
     "name": "Caleydo Team",
     "email": "contact@caleydo.org",
@@ -33,7 +33,7 @@
   "main": "dist/LineUpJS.js",
   "scripts": {
     "test": "tslint -c tslint.json src/*.ts",
-    "prepare": "npm install & bower install & typings install",
+    "prepare": "npm install & typings install",
     "build": "webpack",
     "watch": "webpack --watch"
   },
@@ -43,18 +43,19 @@
   },
   "devDependencies": {
     "tslint": "^3.15.1",
-    "node-sass": "^3.10.0",
+    "node-sass": "^3.10.1",
     "style-loader": "^0.13.1",
-    "typedoc": "^0.4.5",
-    "typedoc-webpack-plugin": "^1.0.10",
+    "typedoc": "^0.5.0",
+    "typedoc-webpack-plugin": "^1.1.2",
     "webpack": "^1.13.2",
     "extract-text-webpack-plugin": "^1.0.1",
     "typescript": "^2.0.3",
     "typings": "^1.4.0",
     "css-loader": "^0.25.0",
     "sass-loader": "^4.0.2",
-    "ts-loader": "^0.8.2"
+    "awesome-typescript-loader": "^2.2.4"
   },
   "dependencies": {
+    "d3": "^3.5.17"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "lineupjs",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "homepage": "https://github.com/Caleydo/lineup.js",
   "authors": [
     "Caleydo Team <contact@caleydo.org> (https://caleydo.org)",
@@ -9,7 +9,7 @@
     "Holger Stitz <kontakt@holgerstitz.de>",
     "Hendrik Strobelt <hstrobelt@seas.harvard.edu>"
   ],
-  "description": "LineUp.js: Visual Analysis of Multi-Attribute Rankings ====== LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. This is a D3-based re-implementation with limited functionality relative to the original stand-alone LineUp, which you can check out at http://lineup.caleydo.org",
+  "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
   "repository": {
     "type": "git",
     "url": "git://github.com/Caleydo/lineup.js.git"

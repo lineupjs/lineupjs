@@ -71,6 +71,34 @@ function isSupportType(col: model.IColumnDesc) {
   return ['rank', 'selection', 'actions'].indexOf(col.type) >= 0;
 }
 
+export interface IExportOptions {
+  /**
+   * export separator, default: '\t'
+   */
+  separator?: string;
+  /**
+   * new line character, default: '\n'
+   */
+  newline?: string;
+  /**
+   * should a header be generated, default: true
+   */
+  header?: boolean;
+  /**
+   * quote strings, default: false
+   */
+  quote?: boolean;
+  /**
+   * quote string to use, default: '"'
+   */
+  quoteChar?: string;
+  /**
+   * filter specific column types, default: exclude all support types (selection, action, rank)
+   * @param col the column description to filter
+   */
+  filter?: (col: model.IColumnDesc)=>boolean; //!isSupportType
+}
+
 /**
  * a basic data provider holding the data and rankings
  */
@@ -678,14 +706,16 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param options
    * @returns {Promise<string>}
    */
-  exportTable(ranking: model.Ranking, options : { separator?: string; newline?: string; header? : boolean} = {}) {
-    const op = {
+  exportTable(ranking: model.Ranking, options : IExportOptions = {}) {
+    const op: IExportOptions = {
       separator : '\t',
       newline: '\n',
       header: true,
       quote: false,
-      quoteChar: '"'
+      quoteChar: '"',
+      filter: (c) => !isSupportType(c)
     };
+    options = utils.merge(op, options);
     //optionally quote not numbers
     function quote(l: string, c?: model.Column) {
       if (op.quote && (!c || !model.isNumberColumn(c))) {
@@ -693,8 +723,7 @@ export class DataProvider extends utils.AEventDispatcher {
       }
       return l;
     }
-    utils.merge(op, options);
-    const columns = ranking.flatColumns;
+    const columns = ranking.flatColumns.filter((c) => op.filter(c.desc));
     return this.view(ranking.getOrder()).then((data) => {
       var r = [];
       if (op.header) {
@@ -958,10 +987,9 @@ export class LocalDataProvider extends CommonDataProvider {
   }
 
   searchSelect(search:string|RegExp, col:model.Column) {
-    if (typeof search === 'string') {
-      search = (<string>search).toLowerCase();
-    }
-    const f = typeof search === 'string' ? (v:string) => v.toLowerCase().indexOf(search) >= 0 : (v:string) => v.match(search) != null;
+    //case insensitive search
+    search = typeof search === 'string' ? search.toLowerCase() : search;
+    const f = typeof search === 'string' ? (v:string) => v.toLowerCase().indexOf((<string>search)) >= 0 : (<RegExp>search).test.bind(search);
     const indices = this.data.filter((row) => {
       return f(col.getLabel(row));
     }).map((row) => row._index);

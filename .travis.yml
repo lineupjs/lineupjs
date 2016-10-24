@@ -1,5 +1,9 @@
 language: node_js
 node_js:
-  - "0.10"
+  - "4.6.0"
+before_install:
+    - export DISPLAY=:99.0
+    - sh -e /etc/init.d/xvfb start
 before_script:
-  - npm install webpack tslint typescript typings -g
+    - npm run prepare
+script: npm run test

@@ -1,4 +1,4 @@
-/*! lineupjs - v0.5.2 - 2016
+/*! lineupjs - v0.5.3 - 2016
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2016 Caleydo Team; Licensed BSD-3-Clause*/
 
@@ -1084,9 +1084,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return _super.prototype.createEventList.call(this).concat(['mappingChanged']);
 	    };
 	    NumberColumn.prototype.getLabel = function (row) {
+	        //if a dedicated format and a number use the formatter in any case
+	        if (this.desc.numberFormat) {
+	            return this.numberFormat(this.getRawValue(row));
+	        }
 	        var v = _super.prototype.getValue.call(this, row);
 	        //keep non number if it is not a number else convert using formatter
-	        return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
+	        return '' + (typeof v === 'number' ? this.numberFormat(+v) : v);
 	    };
 	    NumberColumn.prototype.getRawValue = function (row) {
 	        var v = _super.prototype.getValue.call(this, row);
@@ -1566,14 +1570,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var cats = [], cols = this.colors.range(), labels = d3.map();
 	            desc.categories.forEach(function (cat, i) {
 	                if (typeof cat === 'string') {
+	                    //just the category value
 	                    cats.push(cat);
 	                }
 	                else {
-	                    cats.push(cat.name);
+	                    //the name or value of the category
+	                    cats.push(cat.name || cat.value);
+	                    //optional label mapping
 	                    if (cat.label) {
 	                        labels.set(cat.name, cat.label);
 	                    }
-	                    cols[i] = cat.color;
+	                    //optional color
+	                    if (cat.color) {
+	                        cols[i] = cat.color;
+	                    }
 	                }
 	            });
 	            this.catLabels = labels;
@@ -1663,13 +1673,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            range: this.colors.range(),
 	            separator: this.separator
 	        };
+	        if (this.catLabels !== null && !this.catLabels.empty()) {
+	            r.labels = this.catLabels.entries();
+	        }
 	        return r;
 	    };
 	    CategoricalColumn.prototype.restore = function (dump, factory) {
+	        var _this = this;
 	        _super.prototype.restore.call(this, dump, factory);
 	        this.currentFilter = dump.filter || null;
 	        if (dump.colors) {
 	            this.colors.domain(dump.colors.domain).range(dump.colors.range);
+	        }
+	        if (dump.labels) {
+	            this.catLabels = d3.map();
+	            dump.labels.forEach(function (e) { return _this.catLabels.set(e.key, e.value); });
 	        }
 	        this.separator = dump.separator || this.separator;
 	    };
@@ -3958,8 +3976,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            newline: '\n',
 	            header: true,
 	            quote: false,
-	            quoteChar: '"'
+	            quoteChar: '"',
+	            filter: function (c) { return !isSupportType(c); }
 	        };
+	        options = utils.merge(op, options);
 	        //optionally quote not numbers
 	        function quote(l, c) {
 	            if (op.quote && (!c || !model.isNumberColumn(c))) {
@@ -3967,8 +3987,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            return l;
 	        }
-	        utils.merge(op, options);
-	        var columns = ranking.flatColumns;
+	        var columns = ranking.flatColumns.filter(function (c) { return op.filter(c.desc); });
 	        return this.view(ranking.getOrder()).then(function (data) {
 	            var r = [];
 	            if (op.header) {
@@ -4212,7 +4231,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return Promise.resolve(indices.map(function (i) { return col.getRawValue(_this.data[i]); }));
 	    };
 	    LocalDataProvider.prototype.searchSelect = function (search, col) {
-	        var f = typeof search === 'string' ? function (v) { return v.indexOf(search) >= 0; } : function (v) { return v.match(search) != null; };
+	        //case insensitive search
+	        search = typeof search === 'string' ? search.toLowerCase() : search;
+	        var f = typeof search === 'string' ? function (v) { return v.toLowerCase().indexOf(search) >= 0; } : search.test.bind(search);
 	        var indices = this.data.filter(function (row) {
 	            return f(col.getLabel(row));
 	        }).map(function (row) { return row._index; });

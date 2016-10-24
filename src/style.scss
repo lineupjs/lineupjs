@@ -138,6 +138,7 @@ $mapping_color_hover: #0000cf;
     background: white;
     overflow-x: auto;
     overflow-y: auto;
+    max-height: 50vh;
 
     td,
     th {
@@ -520,6 +521,10 @@ $lu_drag_over: #979797;
       padding: 0;
       margin: 0;
       font-size: 9pt;
+    }
+
+    .cat rect {
+      fill: transparent;
     }
   }
 

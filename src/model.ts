@@ -745,9 +745,13 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
   }
 
   getLabel(row:any) {
+    //if a dedicated format and a number use the formatter in any case
+    if ((<any>this.desc).numberFormat) {
+      return this.numberFormat(this.getRawValue(row));
+    }
     const v = super.getValue(row);
     //keep non number if it is not a number else convert using formatter
-    return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
+    return '' + (typeof v === 'number' ? this.numberFormat(+v) : v);
   }
 
   getRawValue(row:any) {
@@ -1261,13 +1265,19 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
         labels = d3.map<string>();
       desc.categories.forEach((cat, i) => {
         if (typeof cat === 'string') {
+          //just the category value
           cats.push(cat);
         } else {
-          cats.push(cat.name);
+          //the name or value of the category
+          cats.push(cat.name || cat.value);
+          //optional label mapping
           if (cat.label) {
             labels.set(cat.name, cat.label);
           }
-          cols[i] = cat.color;
+          //optional color
+          if (cat.color) {
+            cols[i] = cat.color;
+          }
         }
       });
       this.catLabels = labels;
@@ -1358,6 +1368,9 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
       range: this.colors.range(),
       separator: this.separator
     };
+    if (this.catLabels !== null && !this.catLabels.empty()) {
+      r.labels = this.catLabels.entries();
+    }
     return r;
   }
 
@@ -1366,6 +1379,10 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
     this.currentFilter = dump.filter || null;
     if (dump.colors) {
       this.colors.domain(dump.colors.domain).range(dump.colors.range);
+    }
+    if (dump.labels) {
+      this.catLabels = d3.map<string>();
+      dump.labels.forEach((e) => this.catLabels.set(e.key, e.value));
     }
     this.separator = dump.separator || this.separator;
   }

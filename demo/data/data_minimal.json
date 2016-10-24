@@ -10,33 +10,39 @@
     {
       "column": "academic",
       "type": "number",
-      "domain": [0, 100]
+      "domain": [0, 100],
+      "numberFormat": ".1f"
     },
     {
       "column": "employer",
       "type": "number",
-      "domain": [0, 100]
+      "domain": [0, 100],
+      "numberFormat": ".1f"
     },
     {
       "column": "faculty",
       "type": "number",
-      "domain": [0, 100]
+      "domain": [0, 100],
+      "numberFormat": ".1f"
     },
     {
       "column": "citations",
       "type": "number",
-      "domain": [0, 100]
+      "domain": [0, 100],
+      "numberFormat": ".1f"
     },
     {
       "column": "international",
       "type": "number",
-      "domain": [0, 100]
+      "domain": [0, 100],
+      "numberFormat": ".1f"
     },
     {
       "column": "internationalstudents",
       "label": "international students",
       "type": "number",
-      "domain": [0, 100]
+      "domain": [0, 100],
+      "numberFormat": ".1f"
     }
   ]
 }

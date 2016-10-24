@@ -23,7 +23,7 @@ function generate(bundle, min) {
       // Add `.ts` and `.tsx` as a resolvable extension.
       extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
       alias: {
-        d3: '../bower_components/d3/d3'
+        d3: '../node_modules/d3/d3'
       }
     },
     plugins: [
@@ -38,7 +38,7 @@ function generate(bundle, min) {
         },
         {
           test: /\.tsx?$/,
-          loader: 'ts-loader'
+          loader: 'awesome-typescript-loader'
         }
       ]
     }
@@ -63,7 +63,6 @@ function generate(bundle, min) {
     base.plugins.push(new TypedocWebpackPlugin({
       target: 'es5',
       module: 'commonjs', // 'amd' (default) | 'commonjs'
-      output: '../docs',
       name: 'LineUp.js',
 
       entryPoint: 'main.LineUp',

@@ -27,41 +27,49 @@
       "column": "P/E",
       "type": "number",
       "domain": [0.6899999976158142, 36.051130432667925],
-      "range" : [1, 0]
+      "range" : [1, 0],
+      "numberFormat": ".2f"
     },
     {
       "column": "P/B",
       "type": "number",
       "domain": [0.33, 2],
-      "range" : [1, 0]
+      "range" : [1, 0],
+      "numberFormat": ".2f"
     },
     {
       "column": "P/Free Cash Flow",
       "type": "number",
       "domain": [0.18, 227.72],
-      "range" : [1, 0]
+      "range" : [1, 0],
+      "numberFormat": ".2f"
     },
     {
       "column": "EPS growth this year",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "EPS growth past 5 years",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "Return on Equity",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     },
     {
       "column": "Total Debt/Equity",
       "type": "number",
       "domain": [0, 4.737391264542298],
-      "range" : [1, 0]
+      "range" : [1, 0],
+      "numberFormat": ".2f"
     },
     {
       "column": "Profit Margin",
-      "type": "number"
+      "type": "number",
+      "numberFormat": ".2f"
     }
   ],
   "sortBy": "Muhlenkamp",
