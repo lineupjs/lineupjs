@@ -10,6 +10,7 @@ import model = require('./model');
 import renderer = require('./renderer');
 import provider = require('./provider');
 import dialogs = require('./ui_dialogs');
+import {IRenderContext, IDOMRenderContext, ICanvasRenderContext} from './renderer';
 
 class PoolEntry {
   used:number = 0;
@@ -702,9 +703,23 @@ function all(node: Element, selector: string) {
   return Array.prototype.slice.call(node.querySelectorAll(selector));
 }
 
-interface IBodyDOMRenderContext extends renderer.IDOMRenderContext {
+interface IBodyRenderContext extends renderer.IRenderContext<any> {
   cellY(index: number): number;
   cellPrevY(index: number): number;
+}
+
+interface IRankingData {
+  id: string;
+  ranking: model.Ranking;
+  order: number[];
+  shift: number;
+  width: number;
+  columns: {
+    column: model.Column;
+    renderer: any;
+    shift: number;
+  }[];
+  data: Promise<{v: any, dataIndex: number}[]>;
 }
 
 export interface IDOMMapping {
@@ -799,7 +814,7 @@ const domMappings = {
   }
 };
 
-export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRenderer {
+export class ABodyRenderer extends utils.AEventDispatcher implements IBodyRenderer {
   protected options = {
     rowHeight: 20,
     rowPadding: 1,
@@ -822,16 +837,14 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
 
   protected $node:d3.Selection<any>;
 
-  private currentFreezeLeft = 0;
-
   histCache = d3.map<Promise<model.IStatistics>>();
 
-  constructor(private data:provider.DataProvider, parent:Element, private slicer:ISlicer, private domMapping: IDOMMapping, options = {}) {
+  constructor(protected data:provider.DataProvider, parent:Element, private slicer:ISlicer, root: string, options = {}) {
     super();
     //merge options
     utils.merge(this.options, options);
 
-    this.$node = d3.select(parent).append(domMapping.root).classed('lu-body', true);
+    this.$node = d3.select(parent).append(root).classed('lu-body', true);
 
     this.changeDataStorage(data);
   }
@@ -862,14 +875,30 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
     }, 1));
   }
 
+  protected jumpToSelection() {
+    const indices = this.data.getSelection();
+    const rankings = this.data.getRankings();
+    if (indices.length <= 0 || rankings.length <= 0) {
+      return;
+    }
+    const order = rankings[0].getOrder();
+    const visibleRange = this.slicer(0, order.length, (i) => i * this.options.rowHeight);
+    const visibleOrder = order.slice(visibleRange.from, visibleRange.to);
+    //if any of the selected indices is in the visible range - done
+    if (indices.some((d) => visibleOrder.indexOf(d) >= 0)) {
+      return;
+    }
+    //TODO find the closest not visible one in the indices list
+    //
+  }
+
   protected showMeanLine(col: model.Column) {
     //show mean line if option is enabled and top level
     return this.options.meanLine && model.isNumberColumn(col) && !col.getCompressed() && col.parent instanceof model.Ranking;
   }
 
-  createContext(index_shift:number):IBodyDOMRenderContext {
+  protected createContext(index_shift:number, creator: (col: model.Column, renderers: {[key:string]:renderer.ICellRendererFactory}, context: renderer.IRenderContext<any>)=> any):IBodyRenderContext {
     const options = this.options;
-    const creator = this.domMapping.creator;
     return {
       cellY: (index:number) => (index + index_shift) * (this.options.rowHeight),
       cellPrevY: (index:number) => (index + index_shift) * (this.options.rowHeight),
@@ -895,12 +924,8 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
     return $rows;
   }
 
-  renderRankings($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:IBodyDOMRenderContext, height: number) {
-    const that = this;
-    const domMapping = this.domMapping;
-    const g = this.domMapping.g;
-
-    const data = rankings.map((r,i) => {
+  private createData(rankings:model.Ranking[], orders:number[][], shifts:any[], context: IRenderContext<any>): IRankingData[] {
+    return rankings.map((r,i) => {
       const cols = r.children.filter((d) => !d.isHidden());
       const s = shifts[i];
       return {
@@ -917,7 +942,93 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
         data: this.data.view(orders[i]).then((data) => data.map((v,i) => ({v: v, dataIndex: r[i]}))),
       };
     });
+  }
 
+  select(dataIndex:number, additional = false) {
+    //hook
+  }
+
+  drawSelection() {
+    //hook
+  }
+
+  mouseOver(dataIndex:number, hover = true) {
+    this.fire('hoverChanged', hover ? dataIndex : -1);
+  }
+
+
+  updateFreeze(left:number) {
+    //hook
+  }
+
+  /**
+   * render the body
+   */
+  /**
+   * render the body
+   */
+  update() {
+    const rankings = this.data.getRankings();
+    const maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
+    const height = this.options.rowHeight * maxElems;
+    const visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
+    const orderSlicer = (order:number[]) => {
+      if (visibleRange.from === 0 && order.length <= visibleRange.to) {
+        return order;
+      }
+      return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
+    };
+    const orders = rankings.map((r) => orderSlicer(r.getOrder()));
+
+    //compute offsets and shifts for individual rankings and columns inside the rankings
+    var offset = 0,
+      shifts = rankings.map((d, i) => {
+        var r = offset;
+        offset += this.options.slopeWidth;
+        var o2 = 0,
+          shift2 = d.children.filter((d) => !d.isHidden()).map((o) => {
+            var r = o2;
+            o2 += (o.getCompressed() ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
+            if (model.isMultiLevelColumn(o) && !(<model.IMultiLevelColumn>o).getCollapsed() && !o.getCompressed()) {
+              o2 += this.options.columnPadding * ((<model.IMultiLevelColumn>o).length - 1);
+            }
+            return r;
+          });
+        offset += o2;
+        return {
+          shift: r,
+          shifts: shift2,
+          width: o2
+        };
+      });
+
+    const context = this.createContextImpl(visibleRange.from);
+    const data = this.createData(rankings, orders, shifts, context);
+    this.updateImpl(data, context, offset, height);
+  }
+
+  protected createContextImpl(index_shift: number) : IBodyRenderContext {
+    return null; //hook
+  }
+
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, offset: number, height: number) {
+    // hook
+  }
+}
+
+
+export class ABodyDOMRenderer extends ABodyRenderer {
+
+  private currentFreezeLeft = 0;
+
+  constructor(data:provider.DataProvider, parent:Element, slicer:ISlicer, private domMapping: IDOMMapping, options = {}) {
+    super(data, parent, slicer, domMapping.root, options);
+  }
+
+  renderRankings($body:d3.Selection<any>, data: IRankingData[], context:IBodyRenderContext&IDOMRenderContext, height: number) {
+    const that = this;
+    const domMapping = this.domMapping;
+    const g = this.domMapping.g;
 
     const $rankings = $body.selectAll(g+'.ranking').data(data, (d) => d.id);
     const $rankings_enter = $rankings.enter().append(g)
@@ -1001,23 +1112,6 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
     $rankings.exit().remove();
   }
 
-  private jumpToSelection() {
-    const indices = this.data.getSelection();
-    const rankings = this.data.getRankings();
-    if (indices.length <= 0 || rankings.length <= 0) {
-      return;
-    }
-    const order = rankings[0].getOrder();
-    const visibleRange = this.slicer(0, order.length, (i) => i * this.options.rowHeight);
-    const visibleOrder = order.slice(visibleRange.from, visibleRange.to);
-    //if any of the selected indices is in the visible range - done
-    if (indices.some((d) => visibleOrder.indexOf(d) >= 0)) {
-      return;
-    }
-    //find the closest not visible one in the indices list
-    //
-  }
-
   select(dataIndex:number, additional = false) {
     var selected = this.data.toggleSelection(dataIndex, additional);
     this.$node.selectAll(`[data-data-index="${dataIndex}"`).classed('selected', selected);
@@ -1036,7 +1130,7 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
   }
 
   mouseOver(dataIndex:number, hover = true) {
-    this.fire('hoverChanged', hover ? dataIndex : -1);
+    super.mouseOver(dataIndex, hover);
 
     function setClass(item: Element) {
       item.classList.add('hover');
@@ -1050,13 +1144,13 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
     this.updateFrozenRows();
   }
 
-  renderSlopeGraphs($parent:d3.Selection<any>, orders:number[][], shifts:any[], context:IBodyDOMRenderContext, height: number) {
-    const slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i: i, right: d, right_i: i + 1}));
+  renderSlopeGraphs($parent:d3.Selection<any>, data: IRankingData[], context:IBodyRenderContext&IDOMRenderContext, height: number) {
+    const slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
 
     const $slopes = $parent.selectAll(this.domMapping.slopes+'.slopegraph').data(slopes);
     $slopes.enter().append(this.domMapping.slopes).attr('class', 'slopegraph');
     //$slopes.attr('transform', (d, i) => `translate(${(shifts[i + 1].shift - this.options.slopeWidth)},0)`);
-    $slopes.call(this.domMapping.updateSlopes, this.options.slopeWidth, height, (d, i) => ((shifts[i + 1].shift - this.options.slopeWidth)));
+    $slopes.call(this.domMapping.updateSlopes, this.options.slopeWidth, height, (d, i) => ((data[i + 1].shift - this.options.slopeWidth)));
 
     const $lines = $slopes.selectAll('line.slope').data((d) => {
       var cache = {};
@@ -1118,62 +1212,30 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
     });
   }
 
-  updateClipPaths(rankings:model.Ranking[], context:IBodyDOMRenderContext, height:number) {
+  updateClipPaths(rankings:model.Ranking[], context:IBodyRenderContext&IDOMRenderContext, height:number) {
     //no clip paths in HTML
   }
-  /**
-   * render the body
-   */
-  update() {
-    const rankings = this.data.getRankings();
-    const maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
-    const height = this.options.rowHeight * maxElems;
-    const visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
-    const orderSlicer = (order:number[]) => {
-      if (visibleRange.from === 0 && order.length <= visibleRange.to) {
-        return order;
-      }
-      return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
-    };
-    const orders = rankings.map((r) => orderSlicer(r.getOrder()));
-    const context = this.createContext(visibleRange.from);
 
+  protected createContextImpl(index_shift: number) : IBodyRenderContext {
+    return this.createContext(index_shift, this.domMapping.creator);
+  }
 
-    //compute offsets and shifts for individual rankings and columns inside the rankings
-    var offset = 0,
-      shifts = rankings.map((d, i) => {
-        var r = offset;
-        offset += this.options.slopeWidth;
-        var o2 = 0,
-          shift2 = d.children.filter((d) => !d.isHidden()).map((o) => {
-            var r = o2;
-            o2 += (o.getCompressed() ? model.Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
-            if (model.isMultiLevelColumn(o) && !(<model.IMultiLevelColumn>o).getCollapsed() && !o.getCompressed()) {
-              o2 += this.options.columnPadding * ((<model.IMultiLevelColumn>o).length - 1);
-            }
-            return r;
-          });
-        offset += o2;
-        return {
-          shift: r,
-          shifts: shift2,
-          width: o2
-        };
-      });
-
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, offset: number, height: number) {
     // - ... added one to often
-    this.domMapping.setSize(this.node,  Math.max(0, offset - this.options.slopeWidth), height);
+    this.domMapping.setSize(this.node, Math.max(0, offset - this.options.slopeWidth), height);
 
-    var $body = this.$node.select(this.domMapping.g+'.body');
+    var $body = this.$node.select(this.domMapping.g + '.body');
     if ($body.empty()) {
       $body = this.$node.append(this.domMapping.g).classed('body', true);
     }
-    this.renderSlopeGraphs($body, orders, shifts, context, height);
-    this.renderRankings($body, rankings, orders, shifts, context, height);
 
-    this.updateClipPaths(rankings, context, height);
+    this.renderSlopeGraphs($body, data, context, height);
+    this.renderRankings($body, data, context, height);
+
+    this.updateClipPaths(this.data.getRankings(), context, height);
   }
 }
+
 
 
 export class BodySVGRenderer extends ABodyDOMRenderer {
@@ -1181,7 +1243,7 @@ export class BodySVGRenderer extends ABodyDOMRenderer {
     super(data, parent, slicer, domMappings.svg, options);
   }
 
-  updateClipPathsImpl(r:model.Column[], context:IBodyDOMRenderContext, height:number) {
+  updateClipPathsImpl(r:model.Column[], context:IBodyRenderContext&IDOMRenderContext, height:number) {
     var $base = this.$node.select('defs.body');
     if ($base.empty()) {
       $base = this.$node.append('defs').classed('body', true);
@@ -1205,7 +1267,7 @@ export class BodySVGRenderer extends ABodyDOMRenderer {
       });
   }
 
-  updateClipPaths(rankings:model.Ranking[], context:IBodyDOMRenderContext, height:number) {
+  updateClipPaths(rankings:model.Ranking[], context:IBodyRenderContext&IDOMRenderContext, height:number) {
     var shifts = [], offset = 0;
     rankings.forEach((r) => {
       const w = r.flatten(shifts, offset, 2, this.options.columnPadding);
@@ -1227,17 +1289,108 @@ export class BodySVGRenderer extends ABodyDOMRenderer {
   }
 }
 
-
 export class BodyHTMLRenderer extends ABodyDOMRenderer {
   constructor(data:provider.DataProvider, parent:Element, slicer:ISlicer, options = {}) {
     super(data, parent, slicer, domMappings.html, options);
   }
 }
 
-export function createBodyRenderer(type = 'svg', data:provider.DataProvider, parent:Element, slicer:ISlicer, options = {}) {
+export class BodyCanvasRenderer extends ABodyRenderer {
+  constructor(data:provider.DataProvider, parent:Element, slicer:ISlicer, options = {}) {
+    super(data, parent, slicer, 'canvas', options);
+  }
+
+
+  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context:IBodyRenderContext&ICanvasRenderContext, height: number) {
+    ctx.save();
+
+    data.forEach((ranking) => {
+      ranking.data.then((data) => {
+        ctx.save();
+        ctx.translate(ranking.shift, 0);
+
+        ranking.order.forEach((order,i) => {
+          const di = data[i];
+          ctx.translate(0,context.cellY(i));
+          if (i%2 === 0) {
+            ctx.fillStyle = '#f7f7f7';
+            ctx.fillRect(0, 0, ranking.width, context.rowHeight(i));
+            ctx.fillStyle = 'black';
+          }
+          ranking.columns.forEach((child) =>  {
+            ctx.save();
+            ctx.translate(child.shift, 0);
+            child.renderer(ctx, di, i, context);
+            ctx.restore();
+          });
+          ctx.translate(0,-context.cellY(i));
+        });
+
+        ctx.restore();
+      });
+    });
+    ctx.restore();
+  }
+
+  renderSlopeGraphs(ctx: CanvasRenderingContext2D, data: IRankingData[], context:IBodyRenderContext&ICanvasRenderContext) {
+    var slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
+    ctx.save();
+    ctx.fillStyle = 'darkgray';
+    slopes.forEach((slope, i) => {
+      ctx.save();
+      ctx.translate(data[i + 1].shift - this.options.slopeWidth, 0);
+
+      var cache = {};
+      slope.right.forEach((data_index, pos) => {
+        cache[data_index] = pos;
+      });
+      const lines = slope.left.map((data_index, pos) => ({
+        data_index: data_index,
+        lpos: pos,
+        rpos: cache[data_index]
+      })).filter((d) => d.rpos != null);
+
+      ctx.beginPath();
+      lines.forEach((line) => {
+        ctx.moveTo(0, context.rowHeight(line.lpos) * 0.5 + context.cellY(line.lpos));
+        ctx.lineTo(this.options.slopeWidth, context.rowHeight(line.rpos) * 0.5 + context.cellY(line.rpos));
+      });
+      ctx.stroke();
+
+      ctx.restore();
+    });
+    ctx.restore();
+  }
+
+
+  protected createContextImpl(index_shift: number) : IBodyRenderContext {
+    return this.createContext(index_shift, renderer.createCanvas);
+  }
+
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, offset: number, height: number) {
+    // - ... added one to often
+    this.$node.attr({
+      width: Math.max(0, offset - this.options.slopeWidth),
+      height: height
+    });
+
+
+    const ctx = (<HTMLCanvasElement>this.$node.node()).getContext('2d');
+    ctx.font = '10pt Times New Roman';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = 'black';
+    ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
+
+    this.renderSlopeGraphs(ctx, data, context);
+    this.renderRankings(ctx, data, context, height);
+  }
+}
+
+export function createBodyRenderer(type = 'svg', data:provider.DataProvider, parent:Element, slicer:ISlicer, options = {}): IBodyRenderer {
   switch(type) {
     case 'svg': return new BodySVGRenderer(data, parent, slicer, options);
     case 'html': return new BodyHTMLRenderer(data, parent, slicer, options);
+    case 'canvas': return new BodyCanvasRenderer(data, parent, slicer, options);
     default: return new BodySVGRenderer(data, parent, slicer, options);
   };
 }

@@ -29,7 +29,7 @@ export interface IRenderContext<T> {
    * render a column
    * @param col
    */
-  renderer(col: model.Column): IDOMCellRenderer<T>;
+  renderer(col: model.Column): T;
 
   /**
    * prefix used for all generated id names
@@ -44,7 +44,7 @@ export interface IRenderContext<T> {
   option<T>(key: string, default_: T): T;
 }
 
-export declare type IDOMRenderContext = IRenderContext<Element>;
+export declare type IDOMRenderContext = IRenderContext<IDOMCellRenderer<Element>>;
 
 /**
  * a cell renderer for rendering a cell of specific column
@@ -65,9 +65,16 @@ export interface IDOMCellRenderer<T> {
 export declare type ISVGCellRenderer = IDOMCellRenderer<SVGElement>;
 export declare type IHTMLCellRenderer = IDOMCellRenderer<HTMLElement>;
 
+export declare type ICanvasRenderContext = IRenderContext<CanvasRenderingContext2D>;
+
+export interface ICanvasCellRenderer {
+  (ctx: CanvasRenderingContext2D, d: IDataRow, i: number): void;
+}
+
 export interface ICellRendererFactory {
   createSVG?(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer;
   createHTML?(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer;
+  createCanvas?(col: model.Column, context: ICanvasRenderContext): ICanvasCellRenderer;
 }
 
 /**
@@ -134,6 +141,20 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       }
     };
   }
+
+  createCanvas(col: model.Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      ctx.textAlign = this.align;
+      const w = col.getWidth();
+      var shift = 0;
+      if (this.align === 'center') {
+        shift = w / 2;
+      } else if (this.align === 'right') {
+        shift = w;
+      }
+      ctx.fillText(col.getLabel(d.v), shift, 0, w);
+    };
+  }
 }
 
 /**
@@ -195,6 +216,19 @@ export class BarCellRenderer implements ICellRendererFactory {
       }
     };
   }
+
+  createCanvas(col: model.Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const padding = context.option('rowPadding', 1);
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      ctx.fillStyle = this.colorOf(d.v, i, col);
+      const width = col.getWidth() * col.getValue(d.v);
+      ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
+      if (this.renderValue || context.option('hovered', false)) {
+        ctx.fillStyle = context.option('textStyle','black');
+        ctx.fillText(col.getLabel(d.v), 1, 0, col.getWidth()-1);
+      }
+    };
+  }
 }
 
 function toHeatMapColor(d: any, col: model.INumberColumn & model.Column) {
@@ -244,6 +278,15 @@ function createHeatmapHTML(col: model.INumberColumn & model.Column, context: IDO
         'background-color': toHeatMapColor(d.v, col)
       });
     }
+  };
+}
+
+function createHeatmapCanvas(col: model.INumberColumn & model.Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  const padding = context.option('rowPadding', 1);
+  return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+    const w = context.rowHeight(i) - padding * 2;
+    ctx.fillStyle = toHeatMapColor(d.v, col);
+    ctx.fillRect(padding, padding, w, w);
   };
 }
 
@@ -302,6 +345,15 @@ function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
         col.toggleValue(d.v);
       };
     }
+  };
+}
+
+function createSelectionCanvas(col: model.SelectionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+    const bak = ctx.font;
+    ctx.font = 'FontAwesome';
+    ctx.fillText(col.getValue(d.v) ? '\uf046' : '\uf096', 0, 0);
+    ctx.font = bak;
   };
 }
 
@@ -387,6 +439,12 @@ class StringCellRenderer extends DefaultCellRenderer {
     this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
     return super.createHTML(col, context);
   }
+
+  createCanvas(col: model.StringColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+    this.align = col.alignment;
+    this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
+    return super.createCanvas(col, context);
+  }
 }
 
 /**
@@ -447,6 +505,17 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
       }
     };
   }
+
+  createCanvas(col: model.CategoricalColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const padding = context.option('rowPadding', 1);
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
+      ctx.fillStyle = col.getColor(d.v);
+      ctx.fillRect(0, 0, cell, cell);
+      ctx.fillStyle = context.option('textStyle', 'black');
+      ctx.fillText(col.getLabel(d.v), cell + 2, 0, col.getWidth() - cell - 2);
+    };
+  };
 }
 
 /**
@@ -505,7 +574,7 @@ class StackCellRenderer implements ICellRendererFactory {
   constructor(private nestingPossible = true) {
   }
 
-  private createData(col: model.StackColumn, context: IDOMRenderContext) {
+  private createData(col: model.StackColumn, context: IRenderContext<any>) {
     const stacked = this.nestingPossible && context.option('stacked', true);
     const padding = context.option('columnPadding', 0);
     var offset = 0;
@@ -559,6 +628,21 @@ class StackCellRenderer implements ICellRendererFactory {
       }
     };
   }
+
+  createCanvas(col: model.StackColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const cols = this.createData(col, context);
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      var stackShift = 0;
+      cols.forEach((col, ci) => {
+        ctx.translate(col.shift - stackShift, 0);
+        col.renderer(ctx, d, i);
+        ctx.translate(-(col.shift - stackShift), 0);
+        if (col.stacked) {
+          stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v));
+        }
+      });
+    };
+  }
 }
 
 const defaultCellRenderer = new DefaultCellRenderer();
@@ -571,11 +655,13 @@ export const renderers = {
   string: new StringCellRenderer(),
   selection: {
     createSVG: createSelectionSVG,
-    createHTML: createSelectionHTML
+    createHTML: createSelectionHTML,
+    createCanvas: createSelectionCanvas
   },
   heatmap: {
     createSVG: createHeatmapSVG,
-    createHTML: createHeatmapHTML
+    createHTML: createHeatmapHTML,
+    createCanvas: createHeatmapCanvas
   },
   link: {
     createSVG: createLinkSVG,
@@ -619,4 +705,8 @@ export function createSVG(col: model.Column, renderers: {[key: string]: ICellRen
 export function createHTML(col: model.Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
   const r = chooseRenderer(col, renderers);
   return (r.createHTML ? r.createHTML.bind(r) : defaultCellRenderer.createHTML.bind(r))(col, context);
+}
+export function createCanvas(col: model.Column, renderers: {[key: string]: ICellRendererFactory}, context: ICanvasRenderContext) {
+  const r = chooseRenderer(col, renderers);
+  return (r.createCanvas ? r.createCanvas.bind(r) : defaultCellRenderer.createCanvas.bind(r))(col, context);
 }
