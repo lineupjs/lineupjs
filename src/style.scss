@@ -552,6 +552,7 @@ $lu_drag_over: #979797;
 
   div.lu-body {
     font-size: 10pt;
+    position: relative;
 
     div, svg {
       position: absolute;
@@ -598,5 +599,13 @@ $lu_drag_over: #979797;
         display: inline-block;
       }
     }
+  }
+
+  div.lu-overlay {
+    position: absolute;
+    display: none;
+    padding: 0;
+    margin: 0;
+    z-index: 1;
   }
 }

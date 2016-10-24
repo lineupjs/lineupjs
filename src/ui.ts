@@ -1331,7 +1331,8 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   private lastShifts: {column: model.Column; shift: number}[] = [];
 
   constructor(data: provider.DataProvider, parent: Element, slicer: ISlicer, options = {}) {
-    super(data, parent, slicer, 'canvas', utils.merge({}, BodyCanvasRenderer.CUSTOM_OPTIONS, options));
+    super(data, parent, slicer, 'div', utils.merge({}, BodyCanvasRenderer.CUSTOM_OPTIONS, options));
+    this.$node.append('canvas');
 
     this.initInteraction();
   }
@@ -1346,7 +1347,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   }
   private rowUnderMouse(y: number) {
     const rowHeight =this.options.rowHeight;
-    return Math.round((y + rowHeight*0.25)/rowHeight);
+    return Math.floor((y + 1)/rowHeight);
   }
 
   private itemUnderMouse(xy: [number, number]) {
@@ -1372,6 +1373,12 @@ export class BodyCanvasRenderer extends ABodyRenderer {
       const mouse = d3.mouse(this.node);
       const pos = this.itemUnderMouse(mouse);
       this.mouseOver(pos ? pos.dataIndex : -1);
+    });
+    this.$node.on('mouseenter', () => {
+      this.mouseOver(-1, false);
+    });
+    this.$node.on('mouseleave', () => {
+      this.mouseOver(-1, false);
     });
     this.$node.on('click', () => {
       const mouse = d3.mouse(this.node);
@@ -1408,6 +1415,9 @@ export class BodyCanvasRenderer extends ABodyRenderer {
     }
     o.current.hovered = dataIndex;
     super.mouseOver(dataIndex, dataIndex >= 0);
+    if (!hover || dataIndex < 0) {
+      renderer.hideOverlays();
+    }
     this.update();
   }
 
@@ -1419,14 +1429,15 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height: number) {
     ctx.save();
 
+    var dx = 0, dy = 0;
     data.forEach((ranking) => {
       ranking.data.then((data) => {
         ctx.save();
-        ctx.translate(ranking.shift, 0);
+        ctx.translate(dx = ranking.shift, 0);
 
         ranking.order.forEach((dataIndex, i) => {
           const di = data[i];
-          ctx.translate(0, context.cellY(i));
+          ctx.translate(0, dy = context.cellY(i));
           if (i % 2 === 0) {
             ctx.fillStyle = this.style('bg');
             ctx.fillRect(0, 0, ranking.width, context.rowHeight(i));
@@ -1444,7 +1455,9 @@ export class BodyCanvasRenderer extends ABodyRenderer {
           ranking.columns.forEach((child) => {
             ctx.save();
             ctx.translate(child.shift, 0);
-            child.renderer(ctx, di, i, context);
+            dx += child.shift;
+            child.renderer(ctx, di, i, dx, dy);
+            dx -= child.shift;
             ctx.restore();
           });
           ctx.translate(0, -context.cellY(i));
@@ -1513,8 +1526,9 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   protected updateImpl(data: IRankingData[], context: IBodyRenderContext, offset: number, height: number) {
+    const $canvas = this.$node.select('canvas');
     // - ... added one to often
-    this.$node.attr({
+    $canvas.attr({
       width: Math.max(0, offset - this.options.slopeWidth),
       height: height
     });
@@ -1522,7 +1536,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
     this.lastShifts = BodyCanvasRenderer.computeShifts(data);
 
 
-    const ctx = (<HTMLCanvasElement>this.$node.node()).getContext('2d');
+    const ctx = (<HTMLCanvasElement>$canvas.node()).getContext('2d');
     ctx.font = this.style('font');
     ctx.textBaseline = 'top';
     ctx.fillStyle = this.style('text');
