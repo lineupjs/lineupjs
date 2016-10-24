@@ -449,6 +449,54 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
   }
 }
 
+/**
+ * machtes the columns and the dom nodes representing them
+ * @param node
+ * @param columns
+ * @param helperType
+ */
+export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: model.Column, renderer: ICellRenderer<any> }[], helperType = 'svg') {
+  if (node.childElementCount === 0) {
+    // initial call fast method
+    node.innerHTML = columns.map((c) => c.renderer.template).join('');
+    columns.forEach((col, i) => {
+      var cnode = <Element>node.childNodes[i];
+      //set attribute for finding again
+      cnode.setAttribute('data-column-id', col.column.id);
+    });
+    return;
+  }
+
+  function matches(c: {column: model.Column}, i: number){
+    //do both match?
+    const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
+    return n != null && n.getAttribute('data-column-id') === c.column.id;
+  }
+
+  if (columns.every(matches)) {
+    return; //nothing to do
+  }
+
+  const ids = columns.map((c) => c.column.id);
+  //remove all that are not existing anymore
+  Array.prototype.slice.call(node.childNodes).forEach((n) => {
+    const id = n.getAttribute('data-column-id');
+    if (ids.indexOf(id) < 0) {
+      node.removeChild(n);
+    }
+  });
+  const helper = helperType === 'svg' ? document.createElementNS('http://www.w3.org/2000/svg', 'g') : document.createElement('div');
+  columns.forEach((col) => {
+    var cnode = node.querySelector(`[data-column-id="${col.column.id}"]`);
+    if (!cnode) {
+      //create one
+      helper.innerHTML = col.renderer.template;
+      cnode = <Element>helper.childNodes[0];
+      cnode.setAttribute('data-column-id', col.column.id);
+    }
+    node.appendChild(cnode);
+  });
+}
 
 /**
  * renders a stacked column using composite pattern
@@ -466,7 +514,7 @@ class StackCellRenderer implements ICellRendererFactory {
       offset += d.getWidth();
       offset += (!stacked ? padding : 0);
       return {
-        child: d,
+        column: d,
         shift: shift,
         stacked: stacked,
         renderer: context.renderer(d, context)
@@ -480,12 +528,13 @@ class StackCellRenderer implements ICellRendererFactory {
       template: `<g class="stack component${context.option('stackLevel',0)}">${cols.map((d) => d.renderer.template).join('')}</g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         var stackShift = 0;
+        matchColumns(n, cols);
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
           cnode.setAttribute('transform', `translate(${col.shift-stackShift},0)`);
           col.renderer.update(cnode, d, i);
           if (col.stacked) {
-            stackShift += col.child.getWidth() * (1- col.child.getValue(d.v));
+            stackShift += col.column.getWidth() * (1- col.column.getValue(d.v));
           }
         });
       }
@@ -498,12 +547,13 @@ class StackCellRenderer implements ICellRendererFactory {
       template: `<div class="stack component${context.option('stackLevel',0)}">${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         var stackShift = 0;
+        matchColumns(n, cols, 'html');
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
           cnode.style.transform = `translate(${col.shift-stackShift}px,0)`;
           col.renderer.update(cnode, d, i);
           if (col.stacked) {
-            stackShift += col.child.getWidth() * (1- col.child.getValue(d.v));
+            stackShift += col.column.getWidth() * (1- col.column.getValue(d.v));
           }
         });
       }

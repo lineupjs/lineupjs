@@ -909,8 +909,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       $rows_enter.append('g').attr('class', 'cols').each(function (d, i, j) {
         const node: SVGGElement = this;
         const r = data[j];
-        //create template
-        node.innerHTML = r.columns.map((col) => col.renderer.template).join('');
+        renderer.matchColumns(node, r.columns);
         //set transform
         r.columns.forEach((col, ci) => {
           const cnode: any = node.childNodes[ci];
@@ -935,7 +934,9 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       //update columns
       $rows.select('g.cols').each(function (d, i, j) {
         const node: SVGGElement = this;
+        //update nodes and create templates
         const r = data[j];
+        renderer.matchColumns(node, r.columns);
         r.data.then((rows) => {
           r.columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
