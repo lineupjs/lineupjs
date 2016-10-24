@@ -77,6 +77,9 @@ function attr<T extends (HTMLElement | SVGElement & SVGStylable)>(node: T, attrs
   Object.keys(styles).forEach((attr) => node.style.setProperty(attr, styles[attr]));
   return node;
 }
+function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number)=>void) {
+  Array.prototype.slice.call(node.querySelectorAll(selector)).forEach(callback);
+}
 /**
  * default renderer instance rendering the value as a text
  */
@@ -238,72 +241,39 @@ function createHeatmapHTML(col: model.INumberColumn & model.Column, context: IDO
     }
   }
 }
-//
-// /**
-//  * an rendering for action columns, i.e., clickable column actions
-//  */
-// export class ActionCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
-//   renderSVG($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext) {
-//     //nothing to render in normal mode
-//     const actions = context.option('actions', []);
-//     const $rows = $col.selectAll('text.actions').data(rows, context.rowKey);
-//     $rows.enter().append('text').attr({
-//       'class': 'actions hoverOnly fa',
-//       x: (d,i) => context.cellX(i),
-//       y: (d,i) => context.cellPrevY(i)
-//     });
-//     $rows.attr('data-data-index', (d) => d.dataIndex);
-//     animated($rows, context).attr({
-//       x: (d,i) => context.cellX(i),
-//       y: (d,i) => context.cellY(i)
-//     });
-//
-//     const $actions = $rows.selectAll('tspan').data(actions);
-//     $actions.enter().append('tspan')
-//       .on('click', (d, i, j) => {
-//         d3.event.preventDefault();
-//         d3.event.stopPropagation();
-//         d.action(rows[j].v);
-//       });
-//     $actions.text((d) => d.icon)
-//       .attr('title', (d) => d.name);
-//
-//     $actions.exit().remove();
-//     $rows.exit().remove();
-//
-//   }
-//
-//   renderHTML($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext) {
-//     //nothing to render in normal mode
-//     const actions = context.option('actions', []);
-//     const $rows = $col.selectAll('div.actions').data(rows, context.rowKey);
-//     $rows.enter().append('div').attr('class', 'actions hoverOnly fa').style({
-//       left: (d,i) => context.cellX(i)+'px',
-//       top: (d,i) => context.cellPrevY(i)+'px'
-//     });
-//
-//     $rows.attr('data-data-index', (d) => d.dataIndex);
-//     animated($rows, context).style({
-//       left: (d,i) => context.cellX(i)+'px',
-//       top: (d,i) => context.cellY(i)+'px'
-//     });
-//
-//     const $actions = $rows.selectAll('span').data(actions);
-//     $actions.enter().append('span')
-//       .on('click', (d, i, j) => {
-//         d3.event.preventDefault();
-//         d3.event.stopPropagation();
-//         d.action(rows[j].v);
-//       });
-//     $actions.text((d) => d.icon)
-//       .attr('title', (d) => d.name);
-//
-//     $actions.exit().remove();
-//     $rows.exit().remove();
-//
-//   }
-// }
-//
+
+function createActionSVG(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
+  const actions = context.option('actions', []);
+  return {
+    template: `<text class="actions hoverOnly fa">${actions.map((a) =>`<tspan title="${a.name}">${a.icon}></tspan>`)}</text>`,
+    update: (n: SVGTextElement, d: IDataRow, i: number) => {
+      forEach(n, 'tspan', (ni: SVGTSpanElement, i) => {
+        ni.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          actions[i].action(d.v);
+        };
+      });
+    }
+  };
+}
+
+function createActionHTML(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  const actions = context.option('actions', []);
+  return {
+    template: `<div class="actions hoverOnly">${actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}></span>`)}</div>`,
+    update: (n: HTMLElement, d: IDataRow, i: number) => {
+      forEach(n, 'span', (ni: SVGTSpanElement, i) => {
+        ni.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          actions[i].action(d.v);
+        };
+      });
+    }
+  };
+}
+
 function createSelectionSVG(col: model.SelectionColumn): ISVGCellRenderer {
   return {
     template: `<text class="selection fa"><tspan class="selectionOnly">\uf046</tspan><tspan class="notSelectionOnly">\uf096</tspan></text>`,
@@ -329,48 +299,54 @@ function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
     }
   }
 }
-//
-// /**
-//  * a renderer for annotate columns
-//  */
-// class AnnotateCellRenderer implements ISVGCellRenderer {
-//   renderSVG($col: d3.Selection<any>, col: model.AnnotateColumn, rows: IDataRow[], context: IDOMRenderContext) {
-//     //nothing to render in normal mode
-//     const $rows = $col.selectAll('g.annotations').data(rows, context.rowKey);
-//     const $rows_enter = $rows.enter().append('g').attr('class', 'annotations');
-//     $rows_enter.append('text').attr({
-//       'class': 'notHoverOnly text',
-//       'clip-path': `url(#${context.idPrefix}clipCol${col.id})`,
-//       y: (d,i) => context.cellPrevY(i)
-//     });
-//     $rows_enter.append('foreignObject').attr({
-//       x: (d,i) => context.cellX(i) - 2,
-//       y: (d,i) => context.cellPrevY(i) - 2,
-//       'class': 'hoverOnly'
-//     }).append('xhtml:input').attr('type', 'text').on('change', function (d) {
-//       //update the value
-//       var text = this.value;
-//       col.setValue(d.v, text);
-//     }).on('click', () => d3.event.stopPropagation());
-//
-//     $rows.attr('data-data-index', (d) => d.dataIndex);
-//     $rows.select('text')
-//       .attr('x',(d, i) => context.cellX(i))
-//       .text((d) => col.getLabel(d.v));
-//     $rows.select('foreignObject')
-//       .attr({
-//         x: (d, i) => context.cellX(i),
-//         width: col.getWidth(),
-//         height: (d,i) => context.rowHeight(i)
-//       }).select('input').style('width', col.getWidth() + 'px').property('value', (d) => col.getLabel(d.v));
-//
-//     const $rows_animated = animated($rows, context);
-//     $rows_animated.select('text').attr('y', (d, i) => context.cellY(i));
-//     $rows_animated.select('foreignObject').attr('y', (d, i) => context.cellY(i)-2);
-//
-//     $rows.exit().remove();
-//   }
-// }
+
+function createAnnotateSVG(col: model.AnnotateColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  return {
+    template: `<g class="annotations">
+        <text class="notHoverOnly text" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
+        <foreignObject class="hoverOnly" x="-2", y="-2">
+          <input type="text">
+        </foreignObject>
+       </g>`,
+    update: (n: SVGGElement, d: IDataRow, i: number) => {
+      const input: HTMLInputElement = <HTMLInputElement>n.querySelector('foreignObject *');
+      input.onchange = function(event) {
+        col.setValue(d.v, this.value);
+      };
+      input.onclick = function(event) {
+        event.stopPropagation();
+      };
+      input.style.width = col.getWidth()+'px';
+      input.value = col.getLabel(d.v);
+
+      n.querySelector('text').textContent = col.getLabel(d.v);
+      const f = n.querySelector('foreignObject');
+      f.setAttribute('width', String(col.getWidth()));
+      f.setAttribute('height', String(context.rowHeight(i)));
+    }
+  };
+}
+
+function createAnnotateHTML(col: model.AnnotateColumn): IHTMLCellRenderer {
+ return {
+    template: `<div class="annotations">
+        <input type="text" class="hoverOnly">
+        <span class="text notHoverOnly"></span>
+       </div>`,
+    update: (n: HTMLElement, d: IDataRow, i: number) => {
+      const input: HTMLInputElement = <HTMLInputElement>n.querySelector('input');
+      input.onchange = function(event) {
+        col.setValue(d.v, this.value);
+      };
+      input.onclick = function(event) {
+        event.stopPropagation();
+      };
+      input.style.width = col.getWidth()+'px';
+      input.value = col.getLabel(d.v);
+      n.querySelector('span').textContent = col.getLabel(d.v);
+    }
+  };
+}
 
 function createLinkSVG(col: model.LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
   return {
@@ -390,8 +366,7 @@ function createLinkHTML(col: model.LinkColumn): IHTMLCellRenderer {
     }
   }
 }
-//
-//
+
 /**
  * renders a string with additional alignment behavior
  */
@@ -535,8 +510,6 @@ export class CategoricalCellRenderer {
 // export function renderers() {
 //   return {
 //     stack: new StackCellRenderer(),
-//     actions: new ActionCellRenderer(),
-//     annotate: new AnnotateCellRenderer(),
 //     nested: new StackCellRenderer(false)
 //   };
 // }
@@ -560,6 +533,14 @@ const renderers = {
   link: {
     createSVG: createLinkSVG,
     createHTML: createLinkHTML
+  },
+  annotate: {
+    createSVG: createAnnotateSVG,
+    createHTML: createAnnotateHTML
+  },
+  action: {
+    createSVG: createActionSVG,
+    createHTML: createActionHTML
   },
   categorical: new CategoricalCellRenderer(),
   max: combineCellRenderer,
