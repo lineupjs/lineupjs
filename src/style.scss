@@ -458,6 +458,20 @@ $lu_drag_over: #979797;
       font-size: 9pt;
       pointer-events: all;
     }
+
+    line.slope {
+      stroke: darkgray;
+      stroke-width: 2;
+      shape-rendering: geometricPrecision;
+
+      &.hover {
+        stroke: $lu_hover_color;
+      }
+
+      &.selected {
+        stroke: $lu_selected_color;
+      }
+    }
   }
 
   svg.lu-body {
@@ -489,20 +503,6 @@ $lu_drag_over: #979797;
 
     .cat rect {
       fill: transparent;
-    }
-
-    line.slope {
-      stroke: darkgray;
-      stroke-width: 2;
-      shape-rendering: geometricPrecision;
-
-      &.hover {
-        stroke: $lu_hover_color;
-      }
-
-      &.selected {
-        stroke: $lu_selected_color;
-      }
     }
 
     g.meanlines {
@@ -552,7 +552,7 @@ $lu_drag_over: #979797;
   div.lu-body {
     font-size: 10pt;
 
-    div {
+    div, svg {
       position: absolute;
       padding: 0;
       margin: 0;
@@ -587,7 +587,7 @@ $lu_drag_over: #979797;
           opacity: 0.5;
 
           span {
-            opactiy: 1.0;
+            opacity: 1.0;
           }
         }
       }

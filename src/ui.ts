@@ -719,6 +719,9 @@ export interface IDOMMapping {
 
   meanLine: string;
   updateMeanLine($mean: d3.Selection<any>, x: number, height: number);
+
+  slopes: string;
+  updateSlopes($slopes: d3.Selection<any>, width: number, height: number, callback: (d,i) => number);
 }
 
 const domMappings = {
@@ -737,6 +740,10 @@ const domMappings = {
       $mean.attr('x1', 1+x) //TODO don't know why +1 such that header and body lines are aligned
           .attr('x2', 1+x)
           .attr('y2', height);
+    },
+    slopes: 'g',
+    updateSlopes: ($slopes: d3.Selection<any>, width: number, height: number, callback: (d,i) => number) => {
+      $slopes.attr('transform', (d,i) => `translate(${callback(d,i)},0)`);
     },
     creator: renderer.createSVG,
     translate: (n: SVGElement, x: number, y: number) => n.setAttribute('transform', `translate(${x},${y})`),
@@ -761,6 +768,11 @@ const domMappings = {
     updateMeanLine: ($mean: d3.Selection<any>, x: number, height: number) => {
       $mean.style('left', x+'px').style('height', height+'px');
     },
+    slopes: 'svg',
+    updateSlopes: ($slopes: d3.Selection<any>, width: number, height: number, callback: (d,i) => number) => {
+      $slopes.attr('width', width).attr('height', height).style('left', (d,i)=>callback(d,i)+'px');
+    },
+
     creator: renderer.createHTML,
     translate: (n: HTMLElement, x: number, y: number) => n.style.transform = `translate(${x}px,${y}px)`,
     transform: (sel: d3.Selection<any>, callback: (d: any, i: number)=> [number,number]) => {
@@ -1024,12 +1036,13 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
     this.updateFrozenRows();
   }
 
-  renderSlopeGraphs($parent:d3.Selection<any>, orders:number[][], shifts:any[], context:IBodyDOMRenderContext) {
+  renderSlopeGraphs($parent:d3.Selection<any>, orders:number[][], shifts:any[], context:IBodyDOMRenderContext, height: number) {
     const slopes = orders.slice(1).map((d, i) => ({left: orders[i], left_i: i, right: d, right_i: i + 1}));
 
-    const $slopes = $parent.selectAll('g.slopegraph').data(slopes);
-    $slopes.enter().append('g').attr('class', 'slopegraph');
-    $slopes.attr('transform', (d, i) => `translate(${(shifts[i + 1].shift - this.options.slopeWidth)},0)`);
+    const $slopes = $parent.selectAll(this.domMapping.slopes+'.slopegraph').data(slopes);
+    $slopes.enter().append(this.domMapping.slopes).attr('class', 'slopegraph');
+    //$slopes.attr('transform', (d, i) => `translate(${(shifts[i + 1].shift - this.options.slopeWidth)},0)`);
+    $slopes.call(this.domMapping.updateSlopes, this.options.slopeWidth, height, (d, i) => ((shifts[i + 1].shift - this.options.slopeWidth)));
 
     const $lines = $slopes.selectAll('line.slope').data((d) => {
       var cache = {};
@@ -1143,7 +1156,7 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
     if ($body.empty()) {
       $body = this.$node.append(this.domMapping.g).classed('body', true);
     }
-    this.renderSlopeGraphs($body, orders, shifts, context);
+    this.renderSlopeGraphs($body, orders, shifts, context, height);
     this.renderRankings($body, rankings, orders, shifts, context, height);
 
     this.updateClipPaths(rankings, context, height);
