@@ -3,6 +3,7 @@
  */
 
 import model = require('./model');
+import {forEach, attr} from './utils';
 
 /**
  * a data row for rendering
@@ -84,29 +85,6 @@ export interface ICellRendererFactory {
   createSVG?(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer;
   createHTML?(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer;
   createCanvas?(col: model.Column, context: ICanvasRenderContext): ICanvasCellRenderer;
-}
-
-/**
- * utility function to sets attributes and styles in a nodes
- * @param node
- * @param attrs
- * @param styles
- * @return {T}
- */
-function attr<T extends (HTMLElement | SVGElement & SVGStylable)>(node: T, attrs = {}, styles = {}): T {
-  Object.keys(attrs).forEach((attr) => node.setAttribute(attr, String(attrs[attr])));
-  Object.keys(styles).forEach((attr) => node.style.setProperty(attr, styles[attr]));
-  return node;
-}
-
-/**
- * for each item matching the selector execute the callback
- * @param node
- * @param selector
- * @param callback
- */
-function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number)=>void) {
-  Array.prototype.slice.call(node.querySelectorAll(selector)).forEach(callback);
 }
 /**
  * default renderer instance rendering the value as a text
@@ -258,187 +236,191 @@ function toHeatMapColor(d: any, col: model.INumberColumn & model.Column) {
   return color.toString();
 }
 
-function createHeatmapSVG(col: model.INumberColumn & model.Column, context: IDOMRenderContext): ISVGCellRenderer {
-  const padding = context.option('rowPadding', 1);
-  return {
-    template: `<rect class="heatmap ${col.cssClass}" y="${padding}" style="fill: ${col.color}">
-          <title></title>
-        </rect>`,
-    update: (n: SVGGElement, d: IDataRow, i: number) => {
-      n.querySelector('title').textContent = col.getLabel(d.v);
+const heatmap = {
+  createSVG: function(col: model.INumberColumn & model.Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const padding = context.option('rowPadding', 1);
+    return {
+      template: `<rect class="heatmap ${col.cssClass}" y="${padding}" style="fill: ${col.color}">
+            <title></title>
+          </rect>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        n.querySelector('title').textContent = col.getLabel(d.v);
+        const w = context.rowHeight(i) - padding * 2;
+
+        attr(n, {
+          y: padding,
+          width: w,
+          height: w
+        }, {
+          fill: toHeatMapColor(d.v, col)
+        });
+      }
+    };
+  },
+  createHTML: function(col: model.INumberColumn & model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
+    const padding = context.option('rowPadding', 1);
+    return {
+      template: `<div class="heatmap ${col.cssClass}" style="background-color: ${col.color}; top: ${padding}"></div>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
+        const w = context.rowHeight(i) - padding * 2;
+        attr(n, {
+          title: col.getLabel(d.v)
+        }, {
+          width: `${w}px`,
+          height: `${w}px`,
+          top: `${padding}px`,
+          'background-color': toHeatMapColor(d.v, col)
+        });
+      }
+    };
+  },
+  createCanvas: function(col: model.INumberColumn & model.Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const padding = context.option('rowPadding', 1);
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const w = context.rowHeight(i) - padding * 2;
+      ctx.fillStyle = toHeatMapColor(d.v, col);
+      ctx.fillRect(padding, padding, w, w);
+    };
+  }
+};
 
-      attr(n, {
-        y: padding,
-        width: w,
-        height: w
-      }, {
-        fill: toHeatMapColor(d.v, col)
-      });
-    }
-  };
-}
+const action = {
+  createSVG: function (col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const actions = context.option('actions', []);
+    return {
+      template: `<text class="actions hoverOnly fa">${actions.map((a) =>`<tspan title="${a.name}">${a.icon}></tspan>`)}</text>`,
+      update: (n: SVGTextElement, d: IDataRow, i: number) => {
+        forEach(n, 'tspan', (ni: SVGTSpanElement, i) => {
+          ni.onclick = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            actions[i].action(d.v);
+          };
+        });
+      }
+    };
+  },
+  createHTML: function (col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
+    const actions = context.option('actions', []);
+    return {
+      template: `<div class="actions hoverOnly">${actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}></span>`)}</div>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
+        forEach(n, 'span', (ni: SVGTSpanElement, i) => {
+          ni.onclick = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            actions[i].action(d.v);
+          };
+        });
+      }
+    };
+  }
+};
 
-function createHeatmapHTML(col: model.INumberColumn & model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
-  const padding = context.option('rowPadding', 1);
-  return {
-    template: `<div class="heatmap ${col.cssClass}" style="background-color: ${col.color}; top: ${padding}"></div>`,
-    update: (n: HTMLElement, d: IDataRow, i: number) => {
-      const w = context.rowHeight(i) - padding * 2;
-      attr(n, {
-        title: col.getLabel(d.v)
-      }, {
-        width: `${w}px`,
-        height: `${w}px`,
-        top: `${padding}px`,
-        'background-color': toHeatMapColor(d.v, col)
-      });
-    }
-  };
-}
-
-function createHeatmapCanvas(col: model.INumberColumn & model.Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-  const padding = context.option('rowPadding', 1);
-  return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-    const w = context.rowHeight(i) - padding * 2;
-    ctx.fillStyle = toHeatMapColor(d.v, col);
-    ctx.fillRect(padding, padding, w, w);
-  };
-}
-
-function createActionSVG(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
-  const actions = context.option('actions', []);
-  return {
-    template: `<text class="actions hoverOnly fa">${actions.map((a) =>`<tspan title="${a.name}">${a.icon}></tspan>`)}</text>`,
-    update: (n: SVGTextElement, d: IDataRow, i: number) => {
-      forEach(n, 'tspan', (ni: SVGTSpanElement, i) => {
-        ni.onclick = function (event) {
+const selection = {
+  createSVG: function (col: model.SelectionColumn): ISVGCellRenderer {
+    return {
+      template: `<text class="selection fa"><tspan class="selectionOnly">\uf046</tspan><tspan class="notSelectionOnly">\uf096</tspan></text>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          actions[i].action(d.v);
+          col.toggleValue(d.v);
         };
-      });
-    }
-  };
-}
-
-function createActionHTML(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
-  const actions = context.option('actions', []);
-  return {
-    template: `<div class="actions hoverOnly">${actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}></span>`)}</div>`,
-    update: (n: HTMLElement, d: IDataRow, i: number) => {
-      forEach(n, 'span', (ni: SVGTSpanElement, i) => {
-        ni.onclick = function (event) {
+      }
+    };
+  },
+  createHTML: function (col: model.SelectionColumn): IHTMLCellRenderer {
+    return {
+      template: `<div class="selection fa"></div>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
+        n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          actions[i].action(d.v);
+          col.toggleValue(d.v);
         };
-      });
-    }
-  };
-}
+      }
+    };
+  },
+  createCanvas: function (col: model.SelectionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      const bak = ctx.font;
+      ctx.font = '10pt FontAwesome';
+      ctx.fillText(col.getValue(d.v) ? '\uf046' : '\uf096', 0, 0);
+      ctx.font = bak;
+    };
+  }
+};
 
-function createSelectionSVG(col: model.SelectionColumn): ISVGCellRenderer {
-  return {
-    template: `<text class="selection fa"><tspan class="selectionOnly">\uf046</tspan><tspan class="notSelectionOnly">\uf096</tspan></text>`,
-    update: (n: SVGGElement, d: IDataRow, i: number) => {
-      n.onclick = function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        col.toggleValue(d.v);
-      };
-    }
-  };
-}
-
-function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
-  return {
-    template: `<div class="selection fa"></div>`,
-    update: (n: HTMLElement, d: IDataRow, i: number) => {
-      n.onclick = function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        col.toggleValue(d.v);
-      };
-    }
-  };
-}
-
-function createSelectionCanvas(col: model.SelectionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-  return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-    const bak = ctx.font;
-    ctx.font = '10pt FontAwesome';
-    ctx.fillText(col.getValue(d.v) ? '\uf046' : '\uf096', 0, 0);
-    ctx.font = bak;
-  };
-}
-
-function createAnnotateSVG(col: model.AnnotateColumn, context: IDOMRenderContext): ISVGCellRenderer {
-  return {
-    template: `<g class="annotations">
+const annotate = {
+  createSVG: function (col: model.AnnotateColumn, context: IDOMRenderContext): ISVGCellRenderer {
+    return {
+      template: `<g class="annotations">
         <text class="notHoverOnly text" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
         <foreignObject class="hoverOnly" x="-2", y="-2">
           <input type="text">
         </foreignObject>
        </g>`,
-    update: (n: SVGGElement, d: IDataRow, i: number) => {
-      const input: HTMLInputElement = <HTMLInputElement>n.querySelector('foreignObject *');
-      input.onchange = function (event) {
-        col.setValue(d.v, this.value);
-      };
-      input.onclick = function (event) {
-        event.stopPropagation();
-      };
-      input.style.width = col.getWidth() + 'px';
-      input.value = col.getLabel(d.v);
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        const input: HTMLInputElement = <HTMLInputElement>n.querySelector('foreignObject *');
+        input.onchange = function (event) {
+          col.setValue(d.v, this.value);
+        };
+        input.onclick = function (event) {
+          event.stopPropagation();
+        };
+        input.style.width = col.getWidth() + 'px';
+        input.value = col.getLabel(d.v);
 
-      n.querySelector('text').textContent = col.getLabel(d.v);
-      const f = n.querySelector('foreignObject');
-      f.setAttribute('width', String(col.getWidth()));
-      f.setAttribute('height', String(context.rowHeight(i)));
-    }
-  };
-}
-
-function createAnnotateHTML(col: model.AnnotateColumn): IHTMLCellRenderer {
-  return {
-    template: `<div class="annotations text">
+        n.querySelector('text').textContent = col.getLabel(d.v);
+        const f = n.querySelector('foreignObject');
+        f.setAttribute('width', String(col.getWidth()));
+        f.setAttribute('height', String(context.rowHeight(i)));
+      }
+    };
+  },
+  createHTML: function (col: model.AnnotateColumn): IHTMLCellRenderer {
+    return {
+      template: `<div class="annotations text">
         <input type="text" class="hoverOnly">
         <span class="text notHoverOnly"></span>
        </div>`,
-    update: (n: HTMLElement, d: IDataRow, i: number) => {
-      const input: HTMLInputElement = <HTMLInputElement>n.querySelector('input');
-      input.onchange = function (event) {
-        col.setValue(d.v, this.value);
-      };
-      input.onclick = function (event) {
-        event.stopPropagation();
-      };
-      n.style.width = input.style.width = col.getWidth() + 'px';
-      input.value = col.getLabel(d.v);
-      n.querySelector('span').textContent = col.getLabel(d.v);
-    }
-  };
-}
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
+        const input: HTMLInputElement = <HTMLInputElement>n.querySelector('input');
+        input.onchange = function (event) {
+          col.setValue(d.v, this.value);
+        };
+        input.onclick = function (event) {
+          event.stopPropagation();
+        };
+        n.style.width = input.style.width = col.getWidth() + 'px';
+        input.value = col.getLabel(d.v);
+        n.querySelector('span').textContent = col.getLabel(d.v);
+      }
+    };
+  }
+};
 
-function createLinkSVG(col: model.LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
-  return {
-    template: `<text class="link text" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>`,
-    update: (n: SVGTextElement, d: IDataRow, i: number) => {
-      n.innerHTML = col.isLink(d.v) ? `<a class="link" xlink:href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
-    }
-  };
-}
-
-function createLinkHTML(col: model.LinkColumn): IHTMLCellRenderer {
-  return {
-    template: `<div class="link text"></div>`,
-    update: (n: HTMLElement, d: IDataRow, i: number) => {
-      n.style.width = col.getWidth() + 'px';
-      n.innerHTML = col.isLink(d.v) ? `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
-    }
-  };
-}
+const link = {
+  createSVG: function (col: model.LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
+    return {
+      template: `<text class="link text" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>`,
+      update: (n: SVGTextElement, d: IDataRow, i: number) => {
+        n.innerHTML = col.isLink(d.v) ? `<a class="link" xlink:href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
+      }
+    };
+  }
+  ,
+  createHTML: function (col: model.LinkColumn): IHTMLCellRenderer {
+    return {
+      template: `<div class="link text"></div>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
+        n.style.width = col.getWidth() + 'px';
+        n.innerHTML = col.isLink(d.v) ? `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
+      }
+    };
+  }
+};
 
 /**
  * renders a string with additional alignment behavior
@@ -663,34 +645,21 @@ class StackCellRenderer implements ICellRendererFactory {
 
 const defaultCellRenderer = new DefaultCellRenderer();
 const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.getColor(d));
-export const renderers = {
+
+/**
+ * default render factories
+ */
+export const renderers : {[key: string]: ICellRendererFactory} = {
   rank: new DefaultCellRenderer('rank', 'right'),
   boolean: new DefaultCellRenderer('boolean', 'center'),
   number: new BarCellRenderer(),
   ordinal: new BarCellRenderer(true, (d, i, col: any) => col.getColor(d)),
   string: new StringCellRenderer(),
-  selection: {
-    createSVG: createSelectionSVG,
-    createHTML: createSelectionHTML,
-    createCanvas: createSelectionCanvas
-  },
-  heatmap: {
-    createSVG: createHeatmapSVG,
-    createHTML: createHeatmapHTML,
-    createCanvas: createHeatmapCanvas
-  },
-  link: {
-    createSVG: createLinkSVG,
-    createHTML: createLinkHTML
-  },
-  annotate: {
-    createSVG: createAnnotateSVG,
-    createHTML: createAnnotateHTML
-  },
-  action: {
-    createSVG: createActionSVG,
-    createHTML: createActionHTML
-  },
+  selection: selection,
+  heatmap: heatmap,
+  link: link,
+  annotate: annotate,
+  action: action,
   stack: new StackCellRenderer(),
   nested: new StackCellRenderer(false),
   categorical: new CategoricalCellRenderer(),
