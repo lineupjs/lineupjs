@@ -352,7 +352,7 @@ function createSelectionCanvas(col: model.SelectionColumn, context: ICanvasRende
   return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
     const bak = ctx.font;
     ctx.font = 'FontAwesome';
-    ctx.fillText(col.getValue(d.v) ? '\uf046' : '\uf096', 0, 0);
+    ctx.fillText(col.getValue(d.v) ? '\uF046' : '\uF096', 0, 0);
     ctx.font = bak;
   };
 }

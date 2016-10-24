@@ -943,10 +943,11 @@ export class ABodyRenderer extends utils.AEventDispatcher implements IBodyRender
     return rankings.map((r, i) => {
       const cols = r.children.filter((d) => !d.isHidden());
       const s = shifts[i];
+      const order = orders[i];
       return {
         id: r.id,
         ranking: r,
-        order: orders[i],
+        order: order,
         shift: s.shift,
         width: s.width,
         columns: cols.map((c, j) => ({
@@ -954,13 +955,13 @@ export class ABodyRenderer extends utils.AEventDispatcher implements IBodyRender
           renderer: context.renderer(c),
           shift: s.shifts[j]
         })),
-        data: this.data.view(orders[i]).then((data) => data.map((v, i) => ({v: v, dataIndex: r[i]}))),
+        data: this.data.view(order).then((data) => data.map((v, i) => ({v: v, dataIndex: order[i]}))),
       };
     });
   }
 
   select(dataIndex: number, additional = false) {
-    //hook
+    return this.data.toggleSelection(dataIndex, additional);
   }
 
   drawSelection() {
@@ -1128,8 +1129,9 @@ export class ABodyDOMRenderer extends ABodyRenderer {
   }
 
   select(dataIndex: number, additional = false) {
-    var selected = this.data.toggleSelection(dataIndex, additional);
+    var selected = super.select(dataIndex, additional);
     this.$node.selectAll(`[data-data-index="${dataIndex}"`).classed('selected', selected);
+    return selected;
   }
 
   drawSelection() {
@@ -1316,16 +1318,71 @@ export class BodyCanvasRenderer extends ABodyRenderer {
       text: 'black',
       font: '10pt "Helvetica Neue", Helvetica, Arial, sans-serif',
       slope: 'darkgray',
-      selection: 'orange',
-      bg: '#f7f7f7'
+      selection: '#ffa500',
+      hover: '#e5e5e5',
+      bg: '#f7f7f7',
     },
     current: {
       hovered: -1
     }
   };
 
+  private lastShifts: {column: model.Column; shift: number}[] = [];
+
   constructor(data: provider.DataProvider, parent: Element, slicer: ISlicer, options = {}) {
     super(data, parent, slicer, 'canvas', utils.merge({}, BodyCanvasRenderer.CUSTOM_OPTIONS, options));
+
+    this.initInteraction();
+  }
+
+  private columnUnderMouse(x: number) {
+    for(let shift of this.lastShifts) {
+      if (shift.shift <= x && x < (shift.shift + shift.column.getWidth())) {
+        return shift.column;
+      }
+    }
+    return null;
+  }
+  private rowUnderMouse(y: number) {
+    const rowHeight =this.options.rowHeight;
+    return ~~((y + rowHeight*0.25)/rowHeight);
+  }
+
+  private itemUnderMouse(xy: [number, number]) {
+    const row = this.rowUnderMouse(xy[1]);
+    if (row < 0) {
+      return null;
+    }
+    const col = this.columnUnderMouse(xy[0]);
+    if (col === null) {
+      return null;
+    }
+    const order = col.findMyRanker().getOrder();
+    return {
+      dataIndex: order[row],
+      column: col
+    };
+  }
+
+  private initInteraction() {
+    const that = this;
+    const rowHeight = this.options.rowHeight;
+    //based on http://simonsarris.com/blog/510-making-html5-canvas-useful
+    this.$node.on('selectstart', () => d3.event.preventDefault());
+
+    this.$node.on('mousemove', () => {
+      const mouse = d3.mouse(this.node);
+      const pos = that.itemUnderMouse(mouse);
+      this.mouseOver(pos ? pos.dataIndex : -1);
+    });
+    this.$node.on('click', () => {
+      const mouse = d3.mouse(this.node);
+      const pos = that.itemUnderMouse(mouse);
+      if (pos) {
+        //additional if click on Selection Column
+        this.select(pos.dataIndex, d3.event.ctrlKey || pos.column instanceof model.SelectionColumn);
+      }
+    });
   }
 
   /**
@@ -1336,9 +1393,29 @@ export class BodyCanvasRenderer extends ABodyRenderer {
     return (o.style || {})[name];
   }
 
-  private setCurrent(hovered: number) {
+  select(dataIndex: number, additional = false) {
+    var selected = super.select(dataIndex, additional);
+    this.update();
+    return selected;
+  }
+
+  drawSelection() {
+    this.update(); //no shortcut so far
+  }
+
+  mouseOver(dataIndex: number, hover = true) {
     const o: any = this.options;
-    o.current.hovered = hovered;
+    if (o.current.hovered === dataIndex) {
+      return;
+    }
+    o.current.hovered = dataIndex;
+    super.mouseOver(dataIndex, dataIndex >= 0);
+    this.update();
+  }
+
+  private isHovered(dataIndex: number) {
+    const o: any = this.options;
+    return o.current.hovered === dataIndex;
   }
 
   renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height: number) {
@@ -1361,6 +1438,9 @@ export class BodyCanvasRenderer extends ABodyRenderer {
           if (isSelected) {
             ctx.strokeStyle = this.style('selection');
             ctx.strokeRect(0, 0, ranking.width, context.rowHeight(i));
+          } else if (this.isHovered(dataIndex)) {
+            ctx.strokeStyle = this.style('hover');
+            ctx.strokeRect(0, 0, ranking.width, context.rowHeight(i));
           }
 
           ranking.columns.forEach((child) => {
@@ -1381,7 +1461,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   renderSlopeGraphs(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
     var slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
     ctx.save();
-    ctx.fillStyle = this.style('slope');
+    ctx.strokeStyle = this.style('slope');
     slopes.forEach((slope, i) => {
       ctx.save();
       ctx.translate(data[i + 1].shift - this.options.slopeWidth, 0);
@@ -1397,19 +1477,23 @@ export class BodyCanvasRenderer extends ABodyRenderer {
       })).filter((d) => d.rpos != null);
 
 
-      ctx.beginPath();
       lines.forEach((line) => {
         const isSelected = this.data.isSelected(line.data_index);
+        const isHovered = this.isHovered(line.data_index);
         if (isSelected) {
-          ctx.fillStyle = this.style('selection');
+          ctx.strokeStyle = this.style('selection');
+        } else if (isHovered) {
+          ctx.strokeStyle = this.style('hover');
         }
+        ctx.beginPath();
         ctx.moveTo(0, context.rowHeight(line.lpos) * 0.5 + context.cellY(line.lpos));
         ctx.lineTo(this.options.slopeWidth, context.rowHeight(line.rpos) * 0.5 + context.cellY(line.rpos));
-        if (isSelected) {
-          ctx.fillStyle = this.style('slope');
+        ctx.stroke();
+        if (isSelected || isHovered) {
+          ctx.strokeStyle = this.style('slope');
         }
+
       });
-      ctx.stroke();
 
       ctx.restore();
     });
@@ -1421,12 +1505,23 @@ export class BodyCanvasRenderer extends ABodyRenderer {
     return this.createContext(index_shift, renderer.createCanvas);
   }
 
+  private static computeShifts(data:IRankingData[]) {
+    var r = [];
+    data.forEach((d) => {
+      const base = d.shift;
+      r.push(...d.columns.map((c) => ({column: c.column, shift: c.shift+base})));
+    });
+    return r;
+  }
+
   protected updateImpl(data: IRankingData[], context: IBodyRenderContext, offset: number, height: number) {
     // - ... added one to often
     this.$node.attr({
       width: Math.max(0, offset - this.options.slopeWidth),
       height: height
     });
+
+    this.lastShifts = BodyCanvasRenderer.computeShifts(data);
 
 
     const ctx = (<HTMLCanvasElement>this.$node.node()).getContext('2d');
@@ -1450,6 +1545,5 @@ export function createBodyRenderer(type = 'svg', data: provider.DataProvider, pa
       return new BodyCanvasRenderer(data, parent, slicer, options);
     default:
       return new BodySVGRenderer(data, parent, slicer, options);
-  }
-  ;
+  };
 }
