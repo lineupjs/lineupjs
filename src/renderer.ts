@@ -189,77 +189,55 @@ export class BarCellRenderer {
   }
 }
 
-// /**
-//  * render as a heatmap cell, e.g., encode the value in color
-//  */
-// export class HeatMapCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
-//
-//   renderSVG($col: d3.Selection<any>, col: model.NumberColumn, rows: IDataRow[], context: IDOMRenderContext) {
-//     const $rows = $col.datum(col).selectAll('.heatmap').data(rows, context.rowKey);
-//
-//     const padding = context.option('rowPadding', 1);
-//     $rows.enter().append('rect').attr({
-//       'class': 'heatmap ' + col.cssClass,
-//       x: (d, i) => context.cellX(i),
-//       y: (d, i) => context.cellPrevY(i) + padding,
-//       width: (d, i) => context.rowHeight(i) - padding * 2
-//     }).style('fill', col.color)
-//       .append('title');
-//
-//     $rows.attr({
-//       'data-data-index': (d) => d.dataIndex,
-//       width: (d, i) => context.rowHeight(i) - padding * 2,
-//       height: (d, i) => context.rowHeight(i) - padding * 2
-//     });
-//     $rows.select('title').text((d) => col.getLabel(d.v));
-//
-//     animated($rows, context).attr({
-//       x: (d, i) => context.cellX(i),
-//       y: (d, i) => context.cellY(i) + padding
-//     }).style('fill', (d, i) => this.colorOf(d.v, i, col));
-//     $rows.exit().remove();
-//   }
-//
-//   renderHTML($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext) {
-//     var $rows = $col.datum(col).selectAll('.heatmap').data(rows, context.rowKey);
-//
-//     const padding = context.option('rowPadding', 1);
-//     $rows.enter().append('div')
-//       .attr('class','heatmap ' + col.cssClass)
-//       .style('top',(d, i) => (context.cellPrevY(i)+padding)+'px');
-//
-//     $rows.attr('data-data-index',(d) => d.dataIndex)
-//       .style('width', (d, i) => (context.rowHeight(i) - padding * 2)+'px')
-//       .style('height', (d, i) => (context.rowHeight(i) - padding * 2)+'px')
-//       .attr('title',(d) => col.getLabel(d.v));
-//
-//     animated($rows, context)
-//       .style('left', (d, i) => context.cellX(i)+'px')
-//       .style('top',(d, i) => (context.cellPrevY(i)+padding)+'px')
-//       .style('background-color', (d, i) => this.colorOf(d.v, i, col));
-//
-//     $rows.exit().remove();
-//   }
-//
-//   /**
-//    * computes the color of the cell
-//    * @param d the row
-//    * @param i the data index
-//    * @param col the column
-//    * @returns {string} the computed color
-//    */
-//   colorOf(d: any, i: number, col: model.Column) {
-//     var v = col.getValue(d);
-//     if (isNaN(v)) {
-//       v = 0;
-//     }
-//     //hsl space encoding, encode in lightness
-//     var color = d3.hsl(col.color || model.Column.DEFAULT_COLOR);
-//     color.l = v;
-//     return color.toString();
-//   }
-// }
-//
+function toHeatMapColor(d: any, col: model.INumberColumn & model.Column) {
+   var v = col.getNumber(d);
+   if (isNaN(v)) {
+     v = 0;
+   }
+   //hsl space encoding, encode in lightness
+   var color = d3.hsl(col.color || model.Column.DEFAULT_COLOR);
+   color.l = v;
+   return color.toString();
+ }
+
+function createHeatmapSVG(col: model.INumberColumn & model.Column, context: IDOMRenderContext): ISVGCellRenderer {
+  const padding = context.option('rowPadding', 1);
+  return {
+    template: `<rect class="heatmap ${col.cssClass}" y="${padding}" style="fill: ${col.color}">
+          <title></title>
+        </rect>`,
+    update: (n: SVGGElement, d: IDataRow, i: number) => {
+      n.querySelector('title').textContent = col.getLabel(d.v);
+      const w = context.rowHeight(i) - padding * 2;
+
+      attr(n, {
+        y: padding,
+        width: w,
+        height: w
+      }, {
+        fill: toHeatMapColor(d.v, col)
+      });
+    }
+  }
+}
+
+function createHeatmapHTML(col: model.INumberColumn & model.Column, context: IDOMRenderContext): ISVGCellRenderer {
+  const padding = context.option('rowPadding', 1);
+  return {
+    template: `<div class="heatmap ${col.cssClass}" style="background-color: ${col.color}; top: ${padding}"></div>`,
+    update: (n: SVGGElement, d: IDataRow, i: number) => {
+      const w = context.rowHeight(i) - padding * 2;
+      attr(n, {
+        title: col.getLabel(d.v)
+      }, {
+        width: `${w}px`,
+        height: `${w}px`,
+        top: `${padding}px`,
+        'background-color': toHeatMapColor(d.v, col)
+      });
+    }
+  }
+}
 //
 // /**
 //  * an rendering for action columns, i.e., clickable column actions
@@ -394,47 +372,24 @@ function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
 //   }
 // }
 
-//
-// /**
-//  * renderer of a link column, i.e. render an intermediate *a* element
-//  */
-// class LinkCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
-//   renderSVG($col: d3.Selection<any>, col: model.LinkColumn, rows: IDataRow[], context: IDOMRenderContext) {
-//     //wrap the text elements with an a element
-//     var $rows = $col.datum(col).selectAll('text.link').data(rows, context.rowKey);
-//     $rows.enter().append('text').attr({
-//       'class': 'text link',
-//       'clip-path': `url(#${context.idPrefix}clipCol${col.id})`,
-//       y: (d, i) => context.cellPrevY(i)
-//     });
-//
-//     $rows.attr({
-//       x: (d, i) => context.cellX(i),
-//       'data-data-index': (d) => d.dataIndex
-//     }).html((d) => col.isLink(d.v) ? `<a class="link" xlink:href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v));
-//
-//     animated($rows, context).attr('y', (d, i) => context.cellY(i));
-//
-//     $rows.exit().remove();
-//   }
-//
-//   renderHTML($col: d3.Selection<any>, col: model.LinkColumn, rows: IDataRow[], context: IDOMRenderContext) {
-//     //wrap the text elements with an a element
-//     var $rows = $col.datum(col).selectAll('div.link').data(rows, context.rowKey);
-//     $rows.enter().append('div')
-//       .attr('class','text link')
-//       .style('top',(d, i) => context.cellPrevY(i)+'px');
-//
-//     $rows.attr('data-data-index',(d) => d.dataIndex)
-//       .style('left', (d, i) => context.cellX(i)+'px')
-//       .style('width', col.getWidth()+'px')
-//       .html((d) => col.isLink(d.v) ? `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v));
-//
-//     animated($rows, context).style('top', (d, i) => context.cellY(i)+'px');
-//
-//     $rows.exit().remove();
-//   }
-// }
+function createLinkSVG(col: model.LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  return {
+    template: `<text class="link text" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>`,
+    update: (n: SVGTextElement, d: IDataRow, i: number) => {
+      n.innerHTML = col.isLink(d.v) ? `<a class="link" xlink:href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
+    }
+  };
+}
+
+function createLinkHTML(col: model.LinkColumn): IHTMLCellRenderer {
+  return {
+    template: `<div class="link text"></div>`,
+    update: (n: HTMLElement, d: IDataRow, i: number) => {
+      n.style.width = col.getWidth()+'px';
+      n.innerHTML = col.isLink(d.v) ? `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
+    }
+  }
+}
 //
 //
 /**
@@ -573,37 +528,13 @@ export class CategoricalCellRenderer {
 //     context.option = ueberOption;
 //   }
 // }
-//
-//
-// /**
-//  * defines a custom renderer object
-//  * @param render render function
-//  * @param extras additional functions
-//  * @returns {DerivedCellRenderer}
-//  */
-// export function createRenderer(render: ISVGCellRenderer, extras: any = {}) {
-//   extras.render = render;
-//   const r = new DerivedCellRenderer(extras);
-//   return r;
-// }
-//
-// const combineRenderer = barRenderer({
-//   colorOf: (d, i, col) => col.getColor(d)
-// });
-//
 // /**
 //  * returns a map of all known renderers by type
 //  * @return
 //  */
 // export function renderers() {
 //   return {
-//     link: new LinkCellRenderer(),
-//     heatmap: new HeatMapCellRenderer(),
 //     stack: new StackCellRenderer(),
-//     max: combineRenderer,
-//     min: combineRenderer,
-//     mean: combineRenderer,
-//     script: combineRenderer,
 //     actions: new ActionCellRenderer(),
 //     annotate: new AnnotateCellRenderer(),
 //     nested: new StackCellRenderer(false)
@@ -621,6 +552,14 @@ const renderers = {
   selection: {
     createSVG: createSelectionSVG,
     createHTML: createSelectionHTML
+  },
+  heatmap: {
+    createSVG: createHeatmapSVG,
+    createHTML: createHeatmapHTML
+  },
+  link: {
+    createSVG: createLinkSVG,
+    createHTML: createLinkHTML
   },
   categorical: new CategoricalCellRenderer(),
   max: combineCellRenderer,
