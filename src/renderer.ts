@@ -170,7 +170,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     return {
       template: `<g class="bar">
           <rect class="${col.cssClass}" y="${padding}" style="fill: ${col.color}">
-            <title></title>   
+            <title></title>
           </rect>
           <text class="number ${this.renderValue ? '' : 'hoverOnly'}" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
         </g>`,
@@ -508,12 +508,12 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
         attr(n, {}, {
           width: `${col.getWidth()}px`
         });
-        attr(<SVGRectElement>n.querySelector('div'), {}, {
+        attr(<HTMLDivElement>n.querySelector('div'), {}, {
           width: cell + 'px',
           height: cell + 'px',
           'background-color': col.getColor(d.v)
         });
-        attr(<SVGTextElement>n.querySelector('span'), {}).textContent = col.getLabel(d.v);
+        attr(<HTMLSpanElement>n.querySelector('span'), {}).textContent = col.getLabel(d.v);
       }
     };
   }
