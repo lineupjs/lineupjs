@@ -29,7 +29,7 @@ export interface IRenderContext<T> {
    * render a column
    * @param col
    */
-  renderer(col: model.Column): ICellRenderer<T>;
+  renderer(col: model.Column): IDOMCellRenderer<T>;
 
   /**
    * prefix used for all generated id names
@@ -49,7 +49,7 @@ export declare type IDOMRenderContext = IRenderContext<Element>;
 /**
  * a cell renderer for rendering a cell of specific column
  */
-export interface ICellRenderer<T> {
+export interface IDOMCellRenderer<T> {
   /**
    * template as a basis for the update
    */
@@ -62,8 +62,8 @@ export interface ICellRenderer<T> {
    */
   update(node: T, d: IDataRow, i: number): void;
 }
-export declare type ISVGCellRenderer = ICellRenderer<SVGElement>;
-export declare type IHTMLCellRenderer = ICellRenderer<HTMLElement>;
+export declare type ISVGCellRenderer = IDOMCellRenderer<SVGElement>;
+export declare type IHTMLCellRenderer = IDOMCellRenderer<HTMLElement>;
 
 export interface ICellRendererFactory {
   createSVG?(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer;
@@ -455,7 +455,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
  * @param columns
  * @param helperType
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: model.Column, renderer: ICellRenderer<any> }[], helperType = 'svg') {
+export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: model.Column, renderer: IDOMCellRenderer<any> }[], helperType = 'svg') {
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.renderer.template).join('');

@@ -715,7 +715,7 @@ export interface IDOMMapping {
 
   translate(n: SVGElement | HTMLElement, x: number, y: number);
   transform<T>(sel: d3.Selection<T>, callback: (d: T, i: number) => [number,number]);
-  creator(col: model.Column, renderers: {[key:string]:renderer.ICellRendererFactory}, context: renderer.IDOMRenderContext): renderer.ICellRenderer<SVGElement | HTMLElement>;
+  creator(col: model.Column, renderers: {[key:string]:renderer.ICellRendererFactory}, context: renderer.IDOMRenderContext): renderer.IDOMCellRenderer<SVGElement | HTMLElement>;
 
   bg: string,
   updateBG(sel: d3.Selection<any>, callback: (d: any, i: number, j: number) => [number, number]);
