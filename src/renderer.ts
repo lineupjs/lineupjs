@@ -223,8 +223,8 @@ export class BarCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = this.colorOf(d.v, i, col);
       const width = col.getWidth() * col.getValue(d.v);
       ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
-      if (this.renderValue || context.option('hovered', false)) {
-        ctx.fillStyle = context.option('textStyle','black');
+      if (this.renderValue || context.option('current.hovered', -1) === d.dataIndex) {
+        ctx.fillStyle = context.option('style.text','black');
         ctx.fillText(col.getLabel(d.v), 1, 0, col.getWidth()-1);
       }
     };
@@ -512,7 +512,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
       const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
       ctx.fillStyle = col.getColor(d.v);
       ctx.fillRect(0, 0, cell, cell);
-      ctx.fillStyle = context.option('textStyle', 'black');
+      ctx.fillStyle = context.option('style.text', 'black');
       ctx.fillText(col.getLabel(d.v), cell + 2, 0, col.getWidth() - cell - 2);
     };
   };
