@@ -4,6 +4,9 @@
 
 import model = require('./model');
 
+/**
+ * a data row for rendering
+ */
 export interface IDataRow {
   /**
    * the value
@@ -68,6 +71,12 @@ export declare type IHTMLCellRenderer = IDOMCellRenderer<HTMLElement>;
 export declare type ICanvasRenderContext = IRenderContext<CanvasRenderingContext2D>;
 
 export interface ICanvasCellRenderer {
+  /**
+   * renders the current item
+   * @param ctx
+   * @param d
+   * @param i
+   */
   (ctx: CanvasRenderingContext2D, d: IDataRow, i: number): void;
 }
 
@@ -89,6 +98,13 @@ function attr<T extends (HTMLElement | SVGElement & SVGStylable)>(node: T, attrs
   Object.keys(styles).forEach((attr) => node.style.setProperty(attr, styles[attr]));
   return node;
 }
+
+/**
+ * for each item matching the selector execute the callback
+ * @param node
+ * @param selector
+ * @param callback
+ */
 function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number)=>void) {
   Array.prototype.slice.call(node.querySelectorAll(selector)).forEach(callback);
 }
@@ -351,8 +367,8 @@ function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
 function createSelectionCanvas(col: model.SelectionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
   return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
     const bak = ctx.font;
-    ctx.font = 'FontAwesome';
-    ctx.fillText(col.getValue(d.v) ? '\uF046' : '\uF096', 0, 0);
+    ctx.font = '10pt FontAwesome';
+    ctx.fillText(col.getValue(d.v) ? '\uf046' : '\uf096', 0, 0);
     ctx.font = bak;
   };
 }
