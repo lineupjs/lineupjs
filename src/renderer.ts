@@ -138,6 +138,10 @@ export class BarCellRenderer {
    */
   protected renderValue = false;
 
+  constructor(renderValue = false, private colorOf: (d: any, i: number, col: model.Column)=>string = (d,i,col) => col.color) {
+    this.renderValue = renderValue;
+  }
+
   createSVG(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
@@ -182,28 +186,6 @@ export class BarCellRenderer {
         n.querySelector('span').textContent = col.getLabel(d.v);
       }
     }
-  }
-
-  /**
-   * computes the color for a given row
-   * @param d the current row
-   * @param i the row index
-   * @param col the model column
-   * @returns {string}
-   */
-  colorOf(d: any, i: number, col: model.Column) {
-    return col.color;
-  }
-}
-
-class OrdinalCellRenderer extends BarCellRenderer {
-  constructor() {
-    super();
-    this.renderValue = true;
-  }
-
-  colorOf(d: any, i: number, col: model.CategoricalNumberColumn) {
-    return col.getColor(d);
   }
 }
 
@@ -618,42 +600,47 @@ export class CategoricalCellRenderer {
 //     link: new LinkCellRenderer(),
 //     heatmap: new HeatMapCellRenderer(),
 //     stack: new StackCellRenderer(),
-//     ordinal: barRenderer({
-//       renderValue: true,
-//       colorOf: (d, i, col) => col.getColor(d)
-//     }),
 //     max: combineRenderer,
 //     min: combineRenderer,
 //     mean: combineRenderer,
 //     script: combineRenderer,
 //     actions: new ActionCellRenderer(),
 //     annotate: new AnnotateCellRenderer(),
-//     selection: new SelectionCellRenderer(),
 //     nested: new StackCellRenderer(false)
 //   };
 // }
 
+
+const combineCellRenderer = new BarCellRenderer(false, (d,i,col: any) => col.getColor(d));
+const renderers = {
+  rank: new DefaultCellRenderer('rank', 'right'),
+  boolean: new DefaultCellRenderer('boolean', 'center'),
+  number: new BarCellRenderer(),
+  ordinal: new BarCellRenderer(true, (d,i,col: any) => col.getColor(d)),
+  string: new StringCellRenderer(),
+  selection: {
+    createSVG: createSelectionSVG,
+    createHTML: createSelectionHTML
+  },
+  categorical: new CategoricalCellRenderer(),
+  max: combineCellRenderer,
+  min: combineCellRenderer,
+  mean: combineCellRenderer,
+  script: combineCellRenderer,
+  default_: new DefaultCellRenderer()
+};
+
 export function createSVGRenderer(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
-  switch(col.desc.type) {
-    case 'rank': return new DefaultCellRenderer('rank', 'right').createSVG(col, context);
-    case 'boolean': return new DefaultCellRenderer('boolean', 'center').createSVG(col, context);
-    case 'number': return new BarCellRenderer().createSVG(col, context);
-    case 'ordinal': return new OrdinalCellRenderer().createSVG(col, context);
-    case 'selection': return createSelectionSVG(<model.SelectionColumn>col);
-    case 'string': return new StringCellRenderer().createSVG(<model.StringColumn>col, context);
-    case 'categorical': return new CategoricalCellRenderer().createSVG(<model.CategoricalColumn>col, context);
-    default: return new DefaultCellRenderer().createSVG(col, context)
+  const r = renderers[col.desc.type];
+  if (r) {
+    return r.createSVG(col, context);
   }
+  return renderers.default_.createSVG(col, context);
 }
 export function createHTMLRenderer(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
-  switch(col.desc.type) {
-    case 'rank': return new DefaultCellRenderer('rank', 'right').createHTML(col, context);
-    case 'boolean': return new DefaultCellRenderer('boolean', 'center').createHTML(col, context);
-    case 'number': return new BarCellRenderer().createHTML(col, context);
-    case 'ordinal': return new OrdinalCellRenderer().createHTML(col, context);
-    case 'selection': return createSelectionHTML(<model.SelectionColumn>col);
-    case 'string': return new StringCellRenderer().createHTML(<model.StringColumn>col, context);
-    case 'categorical': return new CategoricalCellRenderer().createHTML(<model.CategoricalColumn>col, context);
-    default: return new DefaultCellRenderer().createHTML(col, context)
+  const r = renderers[col.desc.type];
+  if (r) {
+    return r.createHTML(col, context);
   }
+  return renderers.default_.createHTML(col, context);
 }
