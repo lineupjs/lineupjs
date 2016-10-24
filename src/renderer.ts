@@ -409,8 +409,7 @@ const link = {
         n.innerHTML = col.isLink(d.v) ? `<a class="link" xlink:href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
       }
     };
-  }
-  ,
+  },
   createHTML: function (col: model.LinkColumn): IHTMLCellRenderer {
     return {
       template: `<div class="link text"></div>`,
@@ -418,6 +417,21 @@ const link = {
         n.style.width = col.getWidth() + 'px';
         n.innerHTML = col.isLink(d.v) ? `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
       }
+    };
+  },
+  createCanvas: function(col: model.LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      const hovered = context.option('current.hovered', -1) === d.dataIndex;
+      const isLink = col.isLink(d.v);
+      const bak = ctx.fillStyle;
+
+      if (isLink) {
+        ctx.fillStyle = context.option('style.link', context.option('style.text', 'black'));
+      }
+      ctx.fillText(col.getLabel(d.v), 0, 0, col.getWidth());
+      ctx.fillStyle = bak;
+      //TODO
+      // n.innerHTML = col.isLink(d.v) ? `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
     };
   }
 };

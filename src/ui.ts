@@ -1318,6 +1318,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
       text: 'black',
       font: '10pt "Helvetica Neue", Helvetica, Arial, sans-serif',
       slope: 'darkgray',
+      link: 'blue',
       selection: '#ffa500',
       hover: '#e5e5e5',
       bg: '#f7f7f7',
