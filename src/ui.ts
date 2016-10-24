@@ -1346,7 +1346,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   }
   private rowUnderMouse(y: number) {
     const rowHeight =this.options.rowHeight;
-    return ~~((y + rowHeight*0.25)/rowHeight);
+    return Math.round((y + rowHeight*0.25)/rowHeight);
   }
 
   private itemUnderMouse(xy: [number, number]) {
@@ -1366,19 +1366,16 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   private initInteraction() {
-    const that = this;
-    const rowHeight = this.options.rowHeight;
-    //based on http://simonsarris.com/blog/510-making-html5-canvas-useful
     this.$node.on('selectstart', () => d3.event.preventDefault());
 
     this.$node.on('mousemove', () => {
       const mouse = d3.mouse(this.node);
-      const pos = that.itemUnderMouse(mouse);
+      const pos = this.itemUnderMouse(mouse);
       this.mouseOver(pos ? pos.dataIndex : -1);
     });
     this.$node.on('click', () => {
       const mouse = d3.mouse(this.node);
-      const pos = that.itemUnderMouse(mouse);
+      const pos = this.itemUnderMouse(mouse);
       if (pos) {
         //additional if click on Selection Column
         this.select(pos.dataIndex, d3.event.ctrlKey || pos.column instanceof model.SelectionColumn);

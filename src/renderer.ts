@@ -421,7 +421,7 @@ const link = {
   },
   createCanvas: function(col: model.LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const hovered = context.option('current.hovered', -1) === d.dataIndex;
+      //const hovered = context.option('current.hovered', -1) === d.dataIndex;
       const isLink = col.isLink(d.v);
       const bak = ctx.fillStyle;
 
