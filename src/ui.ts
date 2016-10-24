@@ -866,8 +866,6 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
   }
 
   renderRankings($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:IBodyDOMRenderContext, height: number) {
-    const that = this;
-
     const data = rankings.map((r,i) => {
       const cols = r.children.filter((d) => !d.isHidden());
       const s = shifts[i];
@@ -892,7 +890,6 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       transform: (d) => `translate(${d.shift},0)`
     });
     $rankings_enter.append('g').attr('class', 'rows');
-    $rankings_enter.append('g').attr('class', 'cols');
 
     this.animated($rankings).attr('transform',(d, i) => `translate(${d.shift},0)`);
 
@@ -911,7 +908,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       const node: SVGGElement = this;
       const r = data[j];
       //create template
-      node.innerHTML = r.columns.map((col) => col.renderer.template).join('\n');
+      node.innerHTML = r.columns.map((col) => col.renderer.template).join('');
       //set transform
       r.columns.forEach((col, ci) => {
         const cnode: any = node.childNodes[ci];
@@ -923,7 +920,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       .attr('data-data-index', (d) => d)
       .classed('selected', (d) => this.data.isSelected(d));
     //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
-    $rows.attr('transform', (d, i) => `translate(0,${context.cellY(i)})`);
+    this.animated($rows).attr('transform', (d, i) => `translate(0,${context.cellY(i)})`);
     $rows.select('rect').attr({
       height: (d, i) => context.rowHeight(i),
       width: (d, i, j?) => data[j].width,
@@ -936,6 +933,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
         r.columns.forEach((col, ci) => {
           const cnode: any = node.childNodes[ci];
           cnode.setAttribute('transform', `translate(${col.shift},0)`);
+          //update column
           col.renderer.update(cnode, rows[i], i);
         });
       });
