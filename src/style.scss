@@ -243,24 +243,6 @@ $lu_drag_over: #979797;
     &:hover {
       color: darkblue;
     }
-
-    tspan {
-      &.s_true {
-        display: none;
-      }
-      &.s_false {
-        display: block;
-      }
-    }
-
-    &.selected tspan {
-      &.s_true {
-        display: block;
-      }
-      &.s_false {
-        display: none;
-      }
-    }
   }
 
   text.rank, text.text_right {
@@ -276,6 +258,17 @@ $lu_drag_over: #979797;
 
   .hover .hoverOnly {
     display: block;
+  }
+
+  .selectionOnly {
+    display: none;
+  }
+
+  .selected .selectionOnly {
+    display: block;
+  }
+  .selected .notSelectionOnly {
+    display: none;
   }
 
   g.hover.bar rect {

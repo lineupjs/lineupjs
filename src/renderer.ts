@@ -50,15 +50,28 @@ export declare type IDOMRenderContext = IRenderContext<Element>;
  * a cell renderer for rendering a cell of specific column
  */
 export interface ICellRenderer<T> {
+  /**
+   * template as a basis for the update
+   */
   template: string;
+  /**
+   * update a given node (create using the template) with the given data
+   * @param node the node to update
+   * @param d the data item
+   * @param i the order relative index
+   */
   update(node: T, d: IDataRow, i: number): void;
-}
-export interface ICellRendererFactory<T> {
-  create(col: model.Column, context: IDOMRenderContext): ICellRenderer<T>;
 }
 export declare type ISVGCellRenderer = ICellRenderer<SVGElement>;
 export declare type IHTMLCellRenderer = ICellRenderer<HTMLElement>;
 
+/**
+ * utility function to sets attributes and styles in a nodes
+ * @param node
+ * @param attrs
+ * @param styles
+ * @return {T}
+ */
 function attr<T extends (HTMLElement | SVGElement & SVGStylable)>(node: T, attrs = {}, styles = {}): T {
   Object.keys(attrs).forEach((attr) => node.setAttribute(attr, String(attrs[attr])));
   Object.keys(styles).forEach((attr) => node.style.setProperty(attr, styles[attr]));
@@ -249,17 +262,6 @@ export class BarCellRenderer {
 //   }
 // }
 //
-// /**
-//  * a bar cell renderer where individual function can be overwritten
-//  */
-// class DerivedBarCellRenderer extends BarCellRenderer {
-//   constructor(extraFuncs: any) {
-//     super();
-//     Object.keys(extraFuncs).forEach((key) => {
-//       this[key] = extraFuncs[key];
-//     });
-//   }
-// }
 //
 // /**
 //  * an rendering for action columns, i.e., clickable column actions
@@ -326,46 +328,31 @@ export class BarCellRenderer {
 //   }
 // }
 //
-// export class SelectionCellRenderer implements ISVGCellRenderer, IHTMLCellRenderer {
-//
-//   renderSVG($col: d3.Selection<any>, col: model.SelectionColumn, rows: IDataRow[], context: IDOMRenderContext) {
-//     var $rows = $col.datum(col).selectAll('text.selection').data(rows, context.rowKey);
-//
-//     $rows.enter().append('text').attr({
-//       'class': 'selection fa',
-//       y: (d, i) => context.cellPrevY(i)
-//     }).on('click', function (d) {
-//       d3.event.preventDefault();
-//       d3.event.stopPropagation();
-//       col.toggleValue(d.v);
-//     }).html(`<tspan class="s_true">\uf046</tspan><tspan class="s_false">\uf096</tspan>`);
-//
-//     $rows.attr({
-//       x: (d, i) => context.cellX(i),
-//       'data-data-index': (d) => d.dataIndex
-//     });
-//
-//     animated($rows, context).attr('y', (d, i) => context.cellY(i));
-//
-//     $rows.exit().remove();
-//   }
-//
-//   renderHTML($col: d3.Selection<any>, col: model.Column, rows: IDataRow[], context: IDOMRenderContext) {
-//     var $rows = $col.datum(col).selectAll('div.selection').data(rows, context.rowKey);
-//
-//     $rows.enter().append('div')
-//       .attr('class','selection fa')
-//       .style('top',(d, i) => context.cellPrevY(i)+'px');
-//
-//     $rows.attr('data-data-index',(d) => d.dataIndex)
-//       .style('left', (d, i) => context.cellX(i)+'px')
-//       .style('width', col.getWidth()+'px');
-//
-//     animated($rows, context).style('top', (d, i) => context.cellY(i)+'px');
-//
-//     $rows.exit().remove();
-//   }
-// }
+function createSelectionSVG(col: model.SelectionColumn): ISVGCellRenderer {
+  return {
+    template: `<text class="selection fa"><tspan class="selectionOnly">\uf046</tspan><tspan class="notSelectionOnly">\uf096</tspan></text>`,
+    update: (n: SVGGElement, d: IDataRow, i: number) => {
+      n.onclick = function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        col.toggleValue(d.v);
+      };
+    }
+  }
+}
+
+function createSelectionHTML(col: model.SelectionColumn): IHTMLCellRenderer {
+  return {
+    template: `<div class="selection fa"></div>`,
+    update: (n: HTMLElement, d: IDataRow, i: number) => {
+      n.onclick = function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        col.toggleValue(d.v);
+      };
+    }
+  }
+}
 //
 // /**
 //  * a renderer for annotate columns
@@ -644,14 +631,16 @@ export class BarCellRenderer {
 // }
 
 export function createSVGRenderer(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
-  if (col.desc.type === 'number') {
-    return new BarCellRenderer().createSVG(col, context);
+  switch(col.desc.type) {
+    case 'number': return new BarCellRenderer().createSVG(col, context);
+    case 'selection': return createSelectionSVG(<model.SelectionColumn>col);
+    default: return new DefaultCellRenderer().createSVG(col, context)
   }
-  return new DefaultCellRenderer().createSVG(col, context);
 }
 export function createHTMLRenderer(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
-  if (col.desc.type === 'number') {
-    return new BarCellRenderer().createHTML(col, context);
+  switch(col.desc.type) {
+    case 'number': return new BarCellRenderer().createHTML(col, context);
+    case 'selection': return createSelectionHTML(<model.SelectionColumn>col);
+    default: return new DefaultCellRenderer().createHTML(col, context)
   }
-  return new DefaultCellRenderer().createHTML(col, context);
 }
