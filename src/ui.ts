@@ -866,6 +866,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
   }
 
   renderRankings($body:d3.Selection<any>, rankings:model.Ranking[], orders:number[][], shifts:any[], context:IBodyDOMRenderContext, height: number) {
+    const that = this;
     const data = rankings.map((r,i) => {
       const cols = r.children.filter((d) => !d.isHidden());
       const s = shifts[i];
@@ -890,77 +891,84 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
       transform: (d) => `translate(${d.shift},0)`
     });
     $rankings_enter.append('g').attr('class', 'rows');
+    $rankings_enter.append('g').attr('class', 'meanlines');
 
+    //animated shift
     this.animated($rankings).attr('transform',(d, i) => `translate(${d.shift},0)`);
 
-    let $rows = $rankings.select('g.rows').selectAll('g.row').data((d) => d.order, String);
-    let $rows_enter = $rows.enter().append('g').attr('class', 'row');
-    $rows_enter.attr('transform', (d, i) => `translate(0,${context.cellPrevY(i)})`);
-    $rows_enter.append('rect').attr('class', 'bg');
-    $rows_enter.on('mouseenter', (d) => {
-      this.mouseOver(d, true);
-    }).on('mouseleave', (d) => {
-      this.mouseOver(d, false);
-    }).on('click', (d) => {
-      this.select(d, d3.event.ctrlKey);
-    });
-    $rows_enter.append('g').attr('class','cols').each(function(d,i,j) {
-      const node: SVGGElement = this;
-      const r = data[j];
-      //create template
-      node.innerHTML = r.columns.map((col) => col.renderer.template).join('');
-      //set transform
-      r.columns.forEach((col, ci) => {
-        const cnode: any = node.childNodes[ci];
-        cnode.setAttribute('transform', `translate(${col.shift},0)`);
-      });
-    });
-
-    $rows
-      .attr('data-data-index', (d) => d)
-      .classed('selected', (d) => this.data.isSelected(d));
-    //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
-    this.animated($rows).attr('transform', (d, i) => `translate(0,${context.cellY(i)})`);
-    $rows.select('rect').attr({
-      height: (d, i) => context.rowHeight(i),
-      width: (d, i, j?) => data[j].width,
-      'class': (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd')
-    });
-    $rows.select('g.cols').each(function(d,i,j) {
-      const node : SVGGElement = this;
-      const r = data[j];
-      r.data.then((rows) => {
+    {
+      let $rows = $rankings.select('g.rows').selectAll('g.row').data((d) => d.order, String);
+      let $rows_enter = $rows.enter().append('g').attr('class', 'row');
+      $rows_enter.attr('transform', (d, i) => `translate(0,${context.cellPrevY(i)})`);
+      $rows_enter.append('rect').attr('class', 'bg');
+      $rows_enter
+        .on('mouseenter', (d) => this.mouseOver(d, true))
+        .on('mouseleave', (d) => this.mouseOver(d, false))
+        .on('click', (d) => this.select(d, d3.event.ctrlKey));
+      //create templates
+      $rows_enter.append('g').attr('class', 'cols').each(function (d, i, j) {
+        const node: SVGGElement = this;
+        const r = data[j];
+        //create template
+        node.innerHTML = r.columns.map((col) => col.renderer.template).join('');
+        //set transform
         r.columns.forEach((col, ci) => {
           const cnode: any = node.childNodes[ci];
           cnode.setAttribute('transform', `translate(${col.shift},0)`);
-          //update column
-          col.renderer.update(cnode, rows[i], i);
         });
       });
-    });
-    $rows.exit().remove();
+
+      $rows
+        .attr('data-data-index', (d) => d)
+        .classed('selected', (d) => this.data.isSelected(d));
+      //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
+
+      //animated reordering
+      this.animated($rows).attr('transform', (d, i) => `translate(0,${context.cellY(i)})`);
+
+      //update background helper
+      $rows.select('rect').attr({
+        height: (d, i) => context.rowHeight(i),
+        width: (d, i, j?) => data[j].width,
+        'class': (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd')
+      });
+      //update columns
+      $rows.select('g.cols').each(function (d, i, j) {
+        const node: SVGGElement = this;
+        const r = data[j];
+        r.data.then((rows) => {
+          r.columns.forEach((col, ci) => {
+            const cnode: any = node.childNodes[ci];
+            cnode.setAttribute('transform', `translate(${col.shift},0)`);
+            col.renderer.update(cnode, rows[i], i);
+          });
+        });
+      });
+      $rows.exit().remove();
+    }
+
+    {
+      let $meanlines = $rankings.select('g.meanlines').selectAll('line.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
+      $meanlines.enter().append('line').attr('class', 'meanline');
+      $meanlines.each(function(d, i, j) {
+        const h = that.histCache.get(d.column.id);
+        const r = data[j];
+        const $mean = d3.select(this);
+        if (!h) {
+          return;
+        }
+        h.then((stats: model.IStatistics) => {
+          const x_pos = d.shift + d.column.getWidth() * stats.mean;
+          $mean.attr('x1', isNaN(x_pos) ? 0: 1+x_pos) //TODO don't know why +1 such that header and body lines are aligned
+            .attr('x2', isNaN(x_pos) ? 0: 1+x_pos)
+            .attr('y2', height);
+        });
+      });
+      $meanlines.exit().remove();
+    }
 
     $rankings.exit().remove();
   }
-
-  private renderMeanline(d: model.Column, $col: d3.Selection<model.Column>, height: number) {
-    if (this.showMeanLine(d)) {
-      const h = this.histCache.get(d.id);
-      if (h) {
-        h.then((stats: model.IStatistics) => {
-          const $mean = $col.selectAll('line.meanline').data([stats.mean]);
-          $mean.enter().append('line').attr('class', 'meanline');
-          $mean.exit().remove();
-          $mean.attr('x1', d.getWidth() * stats.mean)
-            .attr('x2', d.getWidth() * stats.mean)
-            .attr('y2', height);
-        });
-      }
-    } else {
-      $col.selectAll('line.meanline').remove();
-    }
-  }
-
 
   private jumpToSelection() {
     const indices = this.data.getSelection();
