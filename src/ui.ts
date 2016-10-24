@@ -710,6 +710,9 @@ interface IBodyDOMRenderContext extends renderer.IDOMRenderContext {
 export interface IDOMMapping {
   root: string;
   g: string;
+
+  setSize(n: HTMLElement, width: number, height: number);
+
   translate(n: SVGElement | HTMLElement, x: number, y: number);
   transform<T>(sel: d3.Selection<T>, callback: (d: T, i: number) => [number,number]);
   creator(col: model.Column, renderers: {[key:string]:renderer.ICellRendererFactory}, context: renderer.IDOMRenderContext): renderer.ICellRenderer<SVGElement | HTMLElement>;
@@ -728,6 +731,12 @@ const domMappings = {
   svg: {
     root: 'svg',
     g: 'g',
+
+    setSize: (n: HTMLElement, width: number, height: number) => {
+      n.setAttribute('width',String(width));
+      n.setAttribute('height',String(height));
+    },
+
     bg: 'rect',
     updateBG: (sel: d3.Selection<any>, callback: (d: any, i: number, j: number) => [number, number]) => {
       sel.attr({
@@ -757,6 +766,12 @@ const domMappings = {
   html: {
     root: 'div',
     g: 'div',
+
+    setSize: (n: HTMLElement, width: number, height: number) => {
+      n.style.width = width + 'px';
+      n.style.height = height + 'px';
+    },
+
     bg: 'div',
     updateBG: (sel: d3.Selection<any>, callback: (d: any, i: number, j: number) => [number, number]) => {
       sel.style({
@@ -826,7 +841,7 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
   }
 
   get node() {
-    return <Element>this.$node.node();
+    return <HTMLElement>this.$node.node();
   }
 
   setOption(key:string, value:any) {
@@ -1147,10 +1162,8 @@ export class ABodyDOMRenderer extends utils.AEventDispatcher implements IBodyRen
         };
       });
 
-    this.$node.attr({
-      width: Math.max(0, offset - this.options.slopeWidth), //added one to often
-      height: height
-    });
+    // - ... added one to often
+    this.domMapping.setSize(this.node,  Math.max(0, offset - this.options.slopeWidth), height);
 
     var $body = this.$node.select(this.domMapping.g+'.body');
     if ($body.empty()) {
