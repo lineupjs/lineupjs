@@ -922,7 +922,7 @@ export class ABodyRenderer extends utils.AEventDispatcher implements IBodyRender
       option: findOption,
 
       rowHeight(index: number) {
-        return options.rowHeight * (1 - options.rowPadding);
+        return options.rowHeight - options.rowPadding;
       },
 
       renderer(col: model.Column) {

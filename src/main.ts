@@ -149,8 +149,8 @@ export class LineUp extends utils_.AEventDispatcher {
      */
     body: {
       renderer: 'svg', //svg, canvas
-      rowHeight: 17,
-      rowPadding: 0.2, //padding for scale.rangeBands
+      rowHeight: 18,
+      rowPadding: 1,
       rowBarPadding: 1,
 
       /**
