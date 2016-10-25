@@ -78,7 +78,7 @@ export interface ICanvasCellRenderer {
    * @param d
    * @param i
    */
-  (ctx: CanvasRenderingContext2D, d: IDataRow, i: number): void;
+  (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number): void;
 }
 
 export interface ICellRendererFactory {
@@ -170,7 +170,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     return {
       template: `<g class="bar">
           <rect class="${col.cssClass}" y="${padding}" style="fill: ${col.color}">
-            <title></title>   
+            <title></title>
           </rect>
           <text class="number ${this.renderValue ? '' : 'hoverOnly'}" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
         </g>`,
@@ -305,7 +305,25 @@ const action = {
     return {
       template: `<div class="actions hoverOnly">${actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}></span>`)}</div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
-        forEach(n, 'span', (ni: SVGTSpanElement, i) => {
+        forEach(n, 'span', (ni: HTMLSpanElement, i) => {
+          ni.onclick = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            actions[i].action(d.v);
+          };
+        });
+      }
+    };
+  },
+  createCanvas: function(col: model.LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const actions = context.option('actions', []);
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
+      const hovered = context.option('current.hovered', -1) === d.dataIndex;
+      if (hovered) {
+        let overlay = showOverlay(context.idPrefix+col.id, dx, dy);
+        overlay.style.width = col.getWidth()+'px';
+        overlay.innerHTML = actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}></span>`).join('');
+        forEach(overlay, 'span', (ni: HTMLSpanElement, i) => {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -398,8 +416,45 @@ const annotate = {
         n.querySelector('span').textContent = col.getLabel(d.v);
       }
     };
+  },
+  createCanvas: function(col: model.AnnotateColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
+      const hovered = context.option('current.hovered', -1) === d.dataIndex;
+      if (hovered) {
+        let overlay = showOverlay(context.idPrefix+col.id, dx, dy);
+        overlay.style.width = col.getWidth()+'px';
+        overlay.innerHTML = `<input type="text" value="${col.getValue(d.v)}" style="width:${col.getWidth()}px">`;
+        const input = <HTMLInputElement>overlay.childNodes[0];
+        input.onchange = function (event) {
+          col.setValue(d.v, this.value);
+        };
+        input.onclick = function (event) {
+          event.stopPropagation();
+        };
+      } else {
+        ctx.fillText(col.getLabel(d.v), 0, 0, col.getWidth());
+      }
+    };
   }
 };
+
+function showOverlay(id: string, dx: number, dy: number) {
+  var overlay = <HTMLDivElement>document.querySelector(`div.lu-overlay#O${id}`);
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.classList.add('lu-overlay');
+    overlay.id = 'O'+id;
+    document.querySelector('.lu-body').appendChild(overlay);
+  }
+  overlay.style.display = 'block';
+  overlay.style.left = dx+'px';
+  overlay.style.top = dy+'px';
+  return overlay;
+}
+
+export function hideOverlays() {
+  forEach(document.querySelector('div.lu-body'), 'div.lu-overlay', (d: HTMLDivElement) => d.style.display = null);
+}
 
 const link = {
   createSVG: function (col: model.LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
@@ -420,18 +475,23 @@ const link = {
     };
   },
   createCanvas: function(col: model.LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      //const hovered = context.option('current.hovered', -1) === d.dataIndex;
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const isLink = col.isLink(d.v);
-      const bak = ctx.fillStyle;
-
-      if (isLink) {
-        ctx.fillStyle = context.option('style.link', context.option('style.text', 'black'));
+      if (!isLink) {
+        ctx.fillText(col.getLabel(d.v), 0, 0, col.getWidth());
+        return;
       }
-      ctx.fillText(col.getLabel(d.v), 0, 0, col.getWidth());
-      ctx.fillStyle = bak;
-      //TODO
-      // n.innerHTML = col.isLink(d.v) ? `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
+      const hovered = context.option('current.hovered', -1) === d.dataIndex;
+      if (hovered) {
+        let overlay = showOverlay(context.idPrefix+col.id, dx, dy);
+        overlay.style.width = col.getWidth()+'px';
+        overlay.innerHTML = `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>`;
+      } else {
+        const bak = ctx.fillStyle;
+        ctx.fillStyle = context.option('style.link', context.option('style.text', 'black'));
+        ctx.fillText(col.getLabel(d.v), 0, 0, col.getWidth());
+        ctx.fillStyle = bak;
+      }
     };
   }
 };
@@ -508,12 +568,12 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
         attr(n, {}, {
           width: `${col.getWidth()}px`
         });
-        attr(<SVGRectElement>n.querySelector('div'), {}, {
+        attr(<HTMLDivElement>n.querySelector('div'), {}, {
           width: cell + 'px',
           height: cell + 'px',
           'background-color': col.getColor(d.v)
         });
-        attr(<SVGTextElement>n.querySelector('span'), {}).textContent = col.getLabel(d.v);
+        attr(<HTMLSpanElement>n.querySelector('span'), {}).textContent = col.getLabel(d.v);
       }
     };
   }
@@ -643,11 +703,12 @@ class StackCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: model.StackColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const cols = this.createData(col, context);
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       var stackShift = 0;
       cols.forEach((col, ci) => {
-        ctx.translate(col.shift - stackShift, 0);
-        col.renderer(ctx, d, i);
+        var shift = 0;
+        ctx.translate(shift = col.shift - stackShift, 0);
+        col.renderer(ctx, d, i, dx+shift, dy);
         ctx.translate(-(col.shift - stackShift), 0);
         if (col.stacked) {
           stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v));
