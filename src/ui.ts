@@ -2,7 +2,6 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-
 ///<reference path='../typings/tsd.d.ts' />
 import d3 = require('d3');
 import utils = require('./utils');
@@ -11,6 +10,7 @@ import renderer = require('./renderer');
 import provider = require('./provider');
 import dialogs = require('./ui_dialogs');
 import {IRenderContext, IDOMRenderContext, ICanvasRenderContext} from './renderer';
+import {forEach} from './utils';
 
 class PoolEntry {
   used: number = 0;
@@ -699,13 +699,15 @@ export interface IBodyRenderer extends utils.AEventDispatcher {
   update();
 }
 
-function all(node: Element, selector: string) {
-  return Array.prototype.slice.call(node.querySelectorAll(selector));
-}
-
 interface IBodyRenderContext extends renderer.IRenderContext<any> {
   cellY(index: number): number;
   cellPrevY(index: number): number;
+}
+
+interface IRankingColumnData {
+  column: model.Column;
+  renderer: any;
+  shift: number;
 }
 
 interface IRankingData {
@@ -714,11 +716,8 @@ interface IRankingData {
   order: number[];
   shift: number;
   width: number;
-  columns: {
-    column: model.Column;
-    renderer: any;
-    shift: number;
-  }[];
+  frozen: IRankingColumnData[];
+  columns: IRankingColumnData[];
   data: Promise<{v: any, dataIndex: number}[]>;
 }
 
@@ -944,18 +943,21 @@ export class ABodyRenderer extends utils.AEventDispatcher implements IBodyRender
       const cols = r.children.filter((d) => !d.isHidden());
       const s = shifts[i];
       const order = orders[i];
+      const colData = cols.map((c, j) => ({
+        column: c,
+        renderer: context.renderer(c),
+        shift: s.shifts[j]
+      }));
       return {
         id: r.id,
         ranking: r,
         order: order,
         shift: s.shift,
         width: s.width,
-        columns: cols.map((c, j) => ({
-          column: c,
-          renderer: context.renderer(c),
-          shift: s.shifts[j]
-        })),
-        data: this.data.view(order).then((data) => data.map((v, i) => ({v: v, dataIndex: order[i]}))),
+        //compute frozen columns just for the first one
+        frozen: i === 0 ? colData.slice(0,this.options.freezeCols) : [],
+        columns: i === 0 ? colData.slice(this.options.freezeCols) : colData,
+        data: this.data.view(order).then((data) => data.map((v, i) => ({v: v, dataIndex: order[i]})))
       };
     });
   }
@@ -1035,7 +1037,7 @@ export class ABodyRenderer extends utils.AEventDispatcher implements IBodyRender
 
 export class ABodyDOMRenderer extends ABodyRenderer {
 
-  private currentFreezeLeft = 0;
+  protected currentFreezeLeft = 0;
 
   constructor(data: provider.DataProvider, parent: Element, slicer: ISlicer, private domMapping: IDOMMapping, options = {}) {
     super(data, parent, slicer, domMapping.root, options);
@@ -1051,7 +1053,7 @@ export class ABodyDOMRenderer extends ABodyRenderer {
       .attr('class', 'ranking')
       .call(domMapping.transform, (d) => [d.shift, 0]);
     $rankings_enter.append(g).attr('class', 'rows');
-    $rankings_enter.append(g).attr('class', 'meanlines');
+    $rankings_enter.append(g).attr('class', 'meanlines').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`);
 
     //animated shift
     this.animated($rankings).call(domMapping.transform, (d, i) => [d.shift, 0]);
@@ -1068,15 +1070,21 @@ export class ABodyDOMRenderer extends ABodyRenderer {
         .on('click', (d) => this.select(d, d3.event.ctrlKey));
 
       //create templates
-      $rows_enter.append(g).attr('class', 'cols').each(function (d, i, j) {
-        const node: SVGGElement = this;
-        const r = data[j];
-        renderer.matchColumns(node, r.columns);
+      function createTemplates(node: HTMLElement|SVGGElement, columns: IRankingColumnData[]) {
+        renderer.matchColumns(node, columns);
         //set transform
-        r.columns.forEach((col, ci) => {
+        columns.forEach((col, ci) => {
           const cnode: any = node.childNodes[ci];
           domMapping.translate(cnode, col.shift, 0);
         });
+      }
+
+      $rows_enter.append(g).attr('class', 'cols').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`).each(function (d, i, j) {
+        createTemplates(this, data[j].columns);
+      });
+
+      $rows_enter.append(g).attr('class', 'frozen').call(this.domMapping.transform,() => [this.currentFreezeLeft, 0]).each(function (d, i, j) {
+        createTemplates(this, data[j].frozen);
       });
 
       $rows
@@ -1091,19 +1099,24 @@ export class ABodyDOMRenderer extends ABodyRenderer {
       $rows.select(domMapping.bg).attr('class', (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd'))
         .call(domMapping.updateBG, (d, i, j) => [data[j].width, context.rowHeight(i)]);
 
-      //update columns
-      $rows.select(g + '.cols').each(function (d, i, j) {
-        const node: SVGGElement = this;
+      function updateColumns(node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) {
         //update nodes and create templates
-        const r = data[j];
-        renderer.matchColumns(node, r.columns);
+        renderer.matchColumns(node, columns);
         r.data.then((rows) => {
-          r.columns.forEach((col, ci) => {
+          columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
             domMapping.translate(cnode, col.shift, 0);
             col.renderer.update(cnode, rows[i], i);
           });
         });
+      }
+      //update columns
+
+      $rows.select(g + '.cols').each(function (d, i, j) {
+        updateColumns(this, data[j], i, data[j].columns);
+      });
+      $rows.select(g + '.frozen').each(function (d, i, j) {
+        updateColumns(this, data[j], i, data[j].frozen);
       });
       $rows.exit().remove();
     }
@@ -1137,12 +1150,12 @@ export class ABodyDOMRenderer extends ABodyRenderer {
   drawSelection() {
     const indices = this.data.getSelection();
 
-    all(this.node, '.selected').forEach((d) => d.classList.remove('selected'));
+    forEach(this.node, '.selected', (d) => d.classList.remove('selected'));
     if (indices.length === 0) {
       return;
     } else {
       let q = indices.map((d) => `[data-data-index="${d}"]`).join(',');
-      all(this.node, q).forEach((d) => d.classList.add('selected'));
+      forEach(this.node, q, (d) => d.classList.add('selected'));
     }
   }
 
@@ -1153,13 +1166,10 @@ export class ABodyDOMRenderer extends ABodyRenderer {
       item.classList.add('hover');
     }
 
-    all(this.node, '.hover').forEach((d) => d.classList.remove('hover'));
+    forEach(this.node, '.hover', (d) => d.classList.remove('hover'));
     if (hover) {
-      all(this.node, `[data-data-index="${dataIndex}"]`).forEach(setClass);
+      forEach(this.node, `[data-data-index="${dataIndex}"]`, setClass);
     }
-
-    //set clip path for frozen columns
-    this.updateFrozenRows();
   }
 
   renderSlopeGraphs($parent: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
@@ -1195,42 +1205,14 @@ export class ABodyDOMRenderer extends ABodyRenderer {
   }
 
   updateFreeze(left: number) {
-    const numColumns = this.options.freezeCols;
-    const $cols = this.$node.select('g.cols');
-    const $n = this.$node.select('#c' + this.options.idPrefix + 'Freeze').select('rect');
-    var $col = $cols.select(`g.child[data-index="${numColumns}"]`);
-    if ($col.empty()) {
-      //use the last one
-      $col = $cols.select('g.child:last-of-type');
-    }
-    var x = d3.transform($col.attr('transform') || '').translate[0];
-    $n.attr('x', left + x);
-    $cols.selectAll('g.uchild').attr({
-      'clip-path': (d, i) => i < numColumns ? null : 'url(#c' + this.options.idPrefix + 'Freeze)',
-      'transform': (d, i) => i < numColumns ? 'translate(' + left + ',0)' : null
+    forEach(this.node, this.domMapping.g+'.row .frozen', (row: SVGElement | HTMLElement) => {
+      this.domMapping.translate(row, left, 0);
     });
-
-
+    this.domMapping.translate(<SVGElement>this.node.querySelector(`clipPath#c${this.options.idPrefix}Freeze`), left, 0);
     this.currentFreezeLeft = left;
-    //update all mouse over rows and selected rows with
-    this.updateFrozenRows();
   }
 
-  private updateFrozenRows() {
-    const numColumns = this.options.freezeCols;
-    if (numColumns <= 0) {
-      return;
-    }
-    const left = this.currentFreezeLeft;
-    const $rows = this.$node.select('g.rows');
-
-    $rows.select('g.row.hover g.values').selectAll('g.uchild').attr({
-      'clip-path': (d, i) => i < numColumns ? null : 'url(#c' + this.options.idPrefix + 'Freeze)',
-      'transform': (d, i) => i < numColumns ? 'translate(' + left + ',0)' : null
-    });
-  }
-
-  updateClipPaths(rankings: model.Ranking[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
+  updateClipPaths(data : IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
     //no clip paths in HTML
   }
 
@@ -1250,7 +1232,7 @@ export class ABodyDOMRenderer extends ABodyRenderer {
     this.renderSlopeGraphs($body, data, context, height);
     this.renderRankings($body, data, context, height);
 
-    this.updateClipPaths(this.data.getRankings(), context, height);
+    this.updateClipPaths(data, context, height);
   }
 }
 
@@ -1284,25 +1266,31 @@ export class BodySVGRenderer extends ABodyDOMRenderer {
       });
   }
 
-  updateClipPaths(rankings: model.Ranking[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
+  updateClipPaths(data : IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
     var shifts = [], offset = 0;
-    rankings.forEach((r) => {
-      const w = r.flatten(shifts, offset, 2, this.options.columnPadding);
+    data.forEach((r) => {
+      const w = r.ranking.flatten(shifts, offset, 2, this.options.columnPadding);
       offset += w + this.options.slopeWidth;
     });
     this.updateClipPathsImpl(shifts.map(s => s.col), context, height);
 
-    var $elem = this.$node.select('clipPath#c' + context.idPrefix + 'Freeze');
-    if ($elem.empty()) {
-      $elem = this.$node.append('clipPath').attr('id', 'c' + context.idPrefix + 'Freeze').append('rect').attr({
-        y: 0,
-        width: 20000,
-        height: height
+    { //update frozen clip-path
+      let $elem = this.$node.select(`clipPath#c${context.idPrefix}Freeze`);
+      if ($elem.empty()) {
+        $elem = this.$node.append('clipPath').attr('id', `c${context.idPrefix}Freeze`).append('rect').attr({
+          y: 0,
+          width: 20000,
+          height: height
+        });
+      }
+
+      const maxColumn = data.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
+      $elem.select('rect').attr({
+        x: maxColumn,
+        height: height,
+        transform: `translate(${this.currentFreezeLeft},0)`
       });
     }
-    $elem.select('rect').attr({
-      height: height
-    });
   }
 }
 
