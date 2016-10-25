@@ -591,6 +591,13 @@ $lu_drag_over: #979797;
         }
       }
 
+      div.selection:before {
+        content: "\f096";
+      }
+      &.selected div.selection:before {
+        content: "\f046";
+      }
+
       div.frozen {
         > * {
           //background-color: white;
