@@ -1323,6 +1323,8 @@ export class BodyCanvasRenderer extends ABodyRenderer {
     }
   };
 
+  protected currentFreezeLeft = 0;
+
   private lastShifts: {column: model.Column; shift: number}[] = [];
 
   constructor(data: provider.DataProvider, parent: Element, slicer: ISlicer, options = {}) {
@@ -1403,6 +1405,11 @@ export class BodyCanvasRenderer extends ABodyRenderer {
     this.update(); //no shortcut so far
   }
 
+  updateFreeze(left: number) {
+    this.currentFreezeLeft = left;
+    this.update(); //no shortcut so far
+  }
+
   mouseOver(dataIndex: number, hover = true) {
     const o: any = this.options;
     if (o.current.hovered === dataIndex) {
@@ -1423,6 +1430,8 @@ export class BodyCanvasRenderer extends ABodyRenderer {
 
   renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height: number) {
     ctx.save();
+
+    const maxFrozen = data.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
 
     var dx = 0, dy = 0;
     data.forEach((ranking) => {
@@ -1447,6 +1456,10 @@ export class BodyCanvasRenderer extends ABodyRenderer {
             ctx.strokeRect(0, 0, ranking.width, context.rowHeight(i));
           }
 
+          //clip the remaining children
+          ctx.save();
+          ctx.rect(this.currentFreezeLeft + maxFrozen, 0, ranking.width, context.rowHeight(i));
+          ctx.clip();
           ranking.columns.forEach((child) => {
             ctx.save();
             ctx.translate(child.shift, 0);
@@ -1455,7 +1468,20 @@ export class BodyCanvasRenderer extends ABodyRenderer {
             dx -= child.shift;
             ctx.restore();
           });
-          ctx.translate(0, -context.cellY(i));
+          ctx.restore();
+
+          ctx.translate(this.currentFreezeLeft,0);
+          dx += this.currentFreezeLeft;
+          ranking.frozen.forEach((child) => {
+            ctx.save();
+            ctx.translate(child.shift, 0);
+            dx += child.shift;
+            child.renderer(ctx, di, i, dx, dy);
+            dx -= child.shift;
+            ctx.restore();
+          });
+          dx -= this.currentFreezeLeft;
+          ctx.translate(-this.currentFreezeLeft, -context.cellY(i));
         });
 
         ctx.restore();
@@ -1511,10 +1537,11 @@ export class BodyCanvasRenderer extends ABodyRenderer {
     return this.createContext(index_shift, renderer.createCanvas);
   }
 
-  private static computeShifts(data:IRankingData[]) {
+  private computeShifts(data:IRankingData[]) {
     var r = [];
     data.forEach((d) => {
       const base = d.shift;
+      r.push(...d.frozen.map((c) => ({column: c.column, shift: c.shift+base+this.currentFreezeLeft})));
       r.push(...d.columns.map((c) => ({column: c.column, shift: c.shift+base})));
     });
     return r;
@@ -1528,7 +1555,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
       height: height
     });
 
-    this.lastShifts = BodyCanvasRenderer.computeShifts(data);
+    this.lastShifts = this.computeShifts(data);
 
 
     const ctx = (<HTMLCanvasElement>$canvas.node()).getContext('2d');
