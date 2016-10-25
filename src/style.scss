@@ -526,10 +526,9 @@ $lu_drag_over: #979797;
     g.row {
       rect.bg {
         fill: transparent;
-
-        &.even {
-          fill: $lu_even_bg;
-        }
+      }
+      &.even rect.bg {
+        fill: $lu_even_bg;
       }
       &.selected {
         rect.bg {
@@ -568,10 +567,9 @@ $lu_drag_over: #979797;
     div.row {
       div.bg {
         background-color: transparent;
-
-        &.even {
-          background-color: $lu_even_bg;
-        }
+      }
+      &.even div.bg {
+        background-color: $lu_even_bg;
       }
       &.selected {
         div.bg {
@@ -591,6 +589,17 @@ $lu_drag_over: #979797;
             opacity: 1.0;
           }
         }
+      }
+
+      div.frozen {
+        > * {
+          //background-color: white;
+        }
+        z-index: 1;
+      }
+
+      &.even div.frozen > * {
+        //background-color: $lu_even_bg;
       }
 
       div.cat div {

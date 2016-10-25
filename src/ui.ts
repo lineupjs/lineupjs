@@ -1088,6 +1088,7 @@ export class ABodyDOMRenderer extends ABodyRenderer {
       });
 
       $rows
+        .attr('class', (d,i) => 'row '+(i % 2 === 0 ? 'even': ''))
         .attr('data-data-index', (d) => d)
         .classed('selected', (d) => this.data.isSelected(d));
       //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
@@ -1096,7 +1097,7 @@ export class ABodyDOMRenderer extends ABodyRenderer {
       this.animated($rows).call(domMapping.transform, (d, i) => [0, context.cellY(i)]);
 
       //update background helper
-      $rows.select(domMapping.bg).attr('class', (d, i) => 'bg ' + (i % 2 === 0 ? 'even' : 'odd'))
+      $rows.select(domMapping.bg).attr('class', 'bg')
         .call(domMapping.updateBG, (d, i, j) => [data[j].width, context.rowHeight(i)]);
 
       function updateColumns(node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) {
@@ -1115,7 +1116,10 @@ export class ABodyDOMRenderer extends ABodyRenderer {
       $rows.select(g + '.cols').each(function (d, i, j) {
         updateColumns(this, data[j], i, data[j].columns);
       });
+      //order for frozen in html + set the size in html to have a proper background instead of a clip-path
+      const maxFrozen = data.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
       $rows.select(g + '.frozen').each(function (d, i, j) {
+        domMapping.setSize(this, maxFrozen, that.options.rowHeight);
         updateColumns(this, data[j], i, data[j].frozen);
       });
       $rows.exit().remove();
@@ -1208,7 +1212,10 @@ export class ABodyDOMRenderer extends ABodyRenderer {
     forEach(this.node, this.domMapping.g+'.row .frozen', (row: SVGElement | HTMLElement) => {
       this.domMapping.translate(row, left, 0);
     });
-    this.domMapping.translate(<SVGElement>this.node.querySelector(`clipPath#c${this.options.idPrefix}Freeze`), left, 0);
+    const item = <SVGElement>this.node.querySelector(`clipPath#c${this.options.idPrefix}Freeze`);
+    if (item) {
+      this.domMapping.translate(item, left, 0);
+    }
     this.currentFreezeLeft = left;
   }
 
@@ -1284,9 +1291,9 @@ export class BodySVGRenderer extends ABodyDOMRenderer {
         });
       }
 
-      const maxColumn = data.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
+      const maxFrozen = data.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
       $elem.select('rect').attr({
-        x: maxColumn,
+        x: maxFrozen,
         height: height,
         transform: `translate(${this.currentFreezeLeft},0)`
       });
