@@ -10,7 +10,7 @@ var banner = '/*! ' + ( pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' + 
 
 function generate(bundle, min) {
   var base = {
-    entry: './src/main.ts',
+    entry: './src/index.ts',
     output: {
       path: './dist',
       filename: 'LineUpJS' + (bundle ? '_bundle' : '') + (min ? '.min' : '') + '.js',
@@ -47,7 +47,11 @@ function generate(bundle, min) {
   };
   if (!bundle) {
     //don't bundle d3
-    base.externals = ['d3'];
+    base.externals = {
+      'd3': 'd3',
+      react: 'React',
+      'react-dom': 'ReactDOM'
+    };
 
     //extract the included css file to own file
     var p = new ExtractTextPlugin('style' + (min ? '.min' : '') + '.css');

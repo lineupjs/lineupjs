@@ -51,6 +51,8 @@
   },
   "devDependencies": {
     "@types/d3": "^3.5.36",
+    "@types/react": "^0.14.42",
+    "@types/react-dom": "^0.14.18",
     "awesome-typescript-loader": "^2.2.4",
     "css-loader": "^0.25.0",
     "extract-text-webpack-plugin": "^2.0.0-beta.4",
@@ -61,6 +63,10 @@
     "typedoc": "^0.5.0",
     "typescript": "^2.0.3",
     "webpack": "^2.1.0-beta.25"
+  },
+  "optionalDependencies": {
+    "react": "^15.0.0",
+    "react-dom": "^15.0.0"
   },
   "dependencies": {
     "d3": "^3.5.17"
