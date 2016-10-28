@@ -19,10 +19,7 @@ Development Dependencies
 **Installation**
 
 ```bash
-npm install -g webpack bower typings tslint typescript 
-npm install
-bower install
-typings install
+npm run prepare
 ```
 
 

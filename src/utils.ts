@@ -2,8 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-///<reference path='../typings/tsd.d.ts' />
-import d3 = require('d3');
+import {dispatch, select, event as d3event, Dispatch} from 'd3';
 
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
@@ -41,11 +40,11 @@ export function forwardEvent(to:AEventDispatcher, event?:string) {
  * base class for event dispatching using d3 event mechanism
  */
 export class AEventDispatcher {
-  private listeners:d3.Dispatch;
+  private listeners:Dispatch;
   private forwarder = forwardEvent(this);
 
   constructor() {
-    this.listeners = d3.dispatch.apply(d3, this.createEventList());
+    this.listeners = dispatch(...this.createEventList());
   }
 
   on(type:string):(...args:any[]) => void;
@@ -195,7 +194,7 @@ export class ContentScroller extends AEventDispatcher {
   constructor(private container:Element, private content:Element, options:any = {}) {
     super();
     merge(this.options, options);
-    d3.select(container).on('scroll.scroller', () => this.onScroll());
+    select(container).on('scroll.scroller', () => this.onScroll());
 
     //keep the previous state computing whether a redraw is needed
     this.prevScrollTop = container.scrollTop;
@@ -297,7 +296,7 @@ export class ContentScroller extends AEventDispatcher {
    * removes the listeners
    */
   destroy() {
-    d3.select(this.container).on('scroll.scroller', null);
+    select(this.container).on('scroll.scroller', null);
   }
 }
 
@@ -347,31 +346,31 @@ export function updateDropEffect(e:DragEvent) {
 export function dropAble<T>(mimeTypes:string[], onDrop:(data:any, d:T, copy:boolean) => boolean) {
   return ($node) => {
     $node.on('dragenter', function () {
-      var e = <DragEvent>(<any>d3.event);
-      //var xy = d3.mouse($node.node());
+      var e = <DragEvent>(<any>d3event);
+      //var xy = mouse($node.node());
       if (hasDnDType(e, mimeTypes)) {
-        d3.select(this).classed('drag_over', true);
+        select(this).classed('drag_over', true);
         //sounds good
         return false;
       }
       //not a valid mime type
-      d3.select(this).classed('drag_over', false);
+      select(this).classed('drag_over', false);
     }).on('dragover', function () {
-      var e = <DragEvent>(<any>d3.event);
+      var e = <DragEvent>(<any>d3event);
       if (hasDnDType(e, mimeTypes)) {
         e.preventDefault();
         updateDropEffect(e);
-        d3.select(this).classed('drag_over', true);
+        select(this).classed('drag_over', true);
         return false;
       }
     }).on('dragleave', function () {
       //
-      d3.select(this).classed('drag_over', false);
+      select(this).classed('drag_over', false);
     }).on('drop', function (d:T) {
-      var e = <DragEvent>(<any>d3.event);
+      var e = <DragEvent>(<any>d3event);
       e.preventDefault();
-      d3.select(this).classed('drag_over', false);
-      //var xy = d3.mouse($node.node());
+      select(this).classed('drag_over', false);
+      //var xy = mouse($node.node());
       if (hasDnDType(e, mimeTypes)) {
         var data:any = {};
         //selects the data contained in the data transfer

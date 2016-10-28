@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import model = require('./model');
+import * as model from './model';
 import {forEach, attr} from './utils';
 
 /**

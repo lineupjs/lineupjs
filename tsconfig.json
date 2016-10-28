@@ -1,18 +1,19 @@
 {
   "compilerOptions": {
+    "module": "es6",
     "target": "es5",
-    "module": "commonjs",
-    "sourceMap": true,
-    "declaration": false,
-    "removeComments": false
+    "noImplicitAny": false,
+    "sourceMap": false,
+    "moduleResolution": "node",
+    "lib": [
+      "dom",
+      "es2015"
+    ]
   },
-  "exclude": [
-    "node_modules",
-    "docs",
-    "dist",
-    "bower_components",
-    ".tscache",
-    "tmp",
-    "src/*.d.ts"
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "index.ts",
+    "tsd.d.ts"
   ]
 }

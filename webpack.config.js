@@ -1,5 +1,4 @@
 var webpack = require('webpack');
-var TypedocWebpackPlugin = require('typedoc-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var pkg = require('./package.json');
 
@@ -11,7 +10,7 @@ var banner = '/*! ' + ( pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' + 
 
 function generate(bundle, min) {
   var base = {
-    entry: './src/bundle.js',
+    entry: './src/main.ts',
     output: {
       path: './dist',
       filename: 'LineUpJS' + (bundle ? '_bundle' : '') + (min ? '.min' : '') + '.js',
@@ -21,13 +20,16 @@ function generate(bundle, min) {
     },
     resolve: {
       // Add `.ts` and `.tsx` as a resolvable extension.
-      extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
+      extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
       alias: {
-        d3: '../bower_components/d3/d3'
+        d3: 'd3/d3'
       }
     },
     plugins: [
-      new webpack.BannerPlugin(banner, {raw: true})
+      new webpack.BannerPlugin({
+        banner: banner,
+        raw: true
+      })
       //rest depends on type
     ],
     module: {
@@ -38,7 +40,7 @@ function generate(bundle, min) {
         },
         {
           test: /\.tsx?$/,
-          loader: 'ts-loader'
+          loader: 'awesome-typescript-loader'
         }
       ]
     }
@@ -57,19 +59,6 @@ function generate(bundle, min) {
   } else {
     //generate source maps
     base.devtool = 'source-map';
-  }
-  if (!bundle && min) {
-    //generate docu
-    base.plugins.push(new TypedocWebpackPlugin({
-      target: 'es5',
-      module: 'commonjs', // 'amd' (default) | 'commonjs'
-      output: '../docs',
-      name: 'LineUp.js',
-
-      entryPoint: 'main.LineUp',
-      mode: 'modules',
-      theme: 'minimal'
-    }));
   }
   return base;
 }

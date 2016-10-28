@@ -2,9 +2,9 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import model = require('./model');
-import utils = require('./utils');
-import d3 = require('d3');
+import {IStatistics, ICategoricalStatistics, IColumnDesc, Ranking, Column, models, RankColumn, createActionDesc, createStackDesc, isNumberColumn, createRankDesc, createSelectionDesc, StackColumn, INumberColumn, ICategoricalColumn, NumberColumn} from './model';
+import {merge, AEventDispatcher, delayedCall} from './utils';
+import * as d3 from 'd3';
 
 /**
  * computes the simple statistics of an array using d3 histogram
@@ -13,7 +13,7 @@ import d3 = require('d3');
  * @param range the total value range
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  */
-function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):model.IStatistics {
+function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -47,7 +47,7 @@ function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):m
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
  */
-function computeHist(arr:any[], acc:(any) => string[], categories: string[]):model.ICategoricalStatistics {
+function computeHist(arr:any[], acc:(any) => string[], categories: string[]):ICategoricalStatistics {
   const m = d3.map<number>();
   categories.forEach((cat) => m.set(cat, 0));
 
@@ -67,7 +67,7 @@ function computeHist(arr:any[], acc:(any) => string[], categories: string[]):mod
 }
 
 
-function isSupportType(col: model.IColumnDesc) {
+function isSupportType(col: IColumnDesc) {
   return ['rank', 'selection', 'actions'].indexOf(col.type) >= 0;
 }
 
@@ -96,19 +96,19 @@ export interface IExportOptions {
    * filter specific column types, default: exclude all support types (selection, action, rank)
    * @param col the column description to filter
    */
-  filter?: (col: model.IColumnDesc)=>boolean; //!isSupportType
+  filter?: (col: IColumnDesc)=>boolean; //!isSupportType
 }
 
 /**
  * a basic data provider holding the data and rankings
  */
-export class DataProvider extends utils.AEventDispatcher {
+export class DataProvider extends AEventDispatcher {
   /**
    * all rankings
    * @type {Array}
    * @private
    */
-  private rankings_:model.Ranking[] = [];
+  private rankings_:Ranking[] = [];
   /**
    * the current selected indices
    * @type {Set}
@@ -120,12 +120,12 @@ export class DataProvider extends utils.AEventDispatcher {
   /**
    * lookup map of a column type to its column implementation
    */
-  columnTypes:any = utils.merge({}, model.models());
+  columnTypes:any = merge({}, models());
 
 
   constructor(options : any = {}) {
     super();
-    this.columnTypes = utils.merge(model.models(), options.columnTypes || {});
+    this.columnTypes = merge(models(), options.columnTypes || {});
   }
 
   /**
@@ -144,7 +144,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * returns a list of all known column descriptions
    * @returns {Array}
    */
-  getColumns():model.IColumnDesc[] {
+  getColumns():IColumnDesc[] {
     return [];
   }
 
@@ -153,32 +153,32 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param existing an optional existing ranking to clone
    * @return the new ranking
    */
-  pushRanking(existing?:model.Ranking) : model.Ranking {
+  pushRanking(existing?:Ranking) : Ranking {
     const r = this.cloneRanking(existing);
     this.insertRanking(r);
     return r;
   }
 
-  takeSnapshot(col: model.Column): model.Ranking {
+  takeSnapshot(col: Column): Ranking {
     const r = this.cloneRanking();
     r.push(this.clone(col));
     this.insertRanking(r);
     return r;
   }
 
-  insertRanking(r:model.Ranking, index = this.rankings_.length) {
+  insertRanking(r:Ranking, index = this.rankings_.length) {
     this.rankings_.splice(index, 0, r);
     this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');
     const that = this;
     //delayed reordering per ranking
-    r.on('dirtyOrder.provider', utils.delayedCall(function () {
+    r.on('dirtyOrder.provider', delayedCall(function () {
         that.triggerReorder(this.source);
       }, 100, null));
     this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r, index);
     this.triggerReorder(r);
   }
 
-  protected triggerReorder(ranking: model.Ranking) {
+  protected triggerReorder(ranking: Ranking) {
     this.sort(ranking).then((order) => ranking.setOrder(order));
   }
 
@@ -187,7 +187,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param ranking
    * @returns {boolean}
    */
-  removeRanking(ranking:model.Ranking) {
+  removeRanking(ranking:Ranking) {
     const i = this.rankings_.indexOf(ranking);
     if (i < 0) {
       return false;
@@ -215,7 +215,7 @@ export class DataProvider extends utils.AEventDispatcher {
 
   /**
    * returns a list of all current rankings
-   * @returns {model.Ranking[]}
+   * @returns {Ranking[]}
    */
   getRankings() {
     return this.rankings_.slice();
@@ -223,7 +223,7 @@ export class DataProvider extends utils.AEventDispatcher {
 
   /**
    * returns the last ranking for quicker access
-   * @returns {model.Ranking}
+   * @returns {Ranking}
    */
   getLastRanking() {
     return this.rankings_[this.rankings_.length - 1];
@@ -233,7 +233,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * hook method for cleaning up a ranking
    * @param ranking
    */
-  cleanUpRanking(ranking:model.Ranking) {
+  cleanUpRanking(ranking:Ranking) {
     //nothing to do
   }
 
@@ -242,7 +242,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param existing
    * @returns {null}
    */
-  cloneRanking(existing?:model.Ranking): model.Ranking {
+  cloneRanking(existing?:Ranking): Ranking {
     return null; //implement me
   }
 
@@ -250,9 +250,9 @@ export class DataProvider extends utils.AEventDispatcher {
    * adds a column to a ranking described by its column description
    * @param ranking the ranking to add the column to
    * @param desc the description of the column
-   * @return {model.Column} the newly created column or null
+   * @return {Column} the newly created column or null
    */
-  push(ranking:model.Ranking, desc:model.IColumnDesc):model.Column {
+  push(ranking:Ranking, desc:IColumnDesc):Column {
     const r = this.create(desc);
     if (r) {
       ranking.push(r);
@@ -266,9 +266,9 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param ranking the ranking to add the column to
    * @param index the position to insert the column
    * @param desc the description of the column
-   * @return {model.Column} the newly created column or null
+   * @return {Column} the newly created column or null
    */
-  insert(ranking:model.Ranking, index:number, desc:model.IColumnDesc) {
+  insert(ranking:Ranking, index:number, desc:IColumnDesc) {
     const r = this.create(desc);
     if (r) {
       ranking.insert(r, index);
@@ -285,11 +285,11 @@ export class DataProvider extends utils.AEventDispatcher {
     return 'col' + (this.uid++);
   }
 
-  protected rankAccessor(row: any, id: string, desc: model.IColumnDesc, ranking: model.Ranking) {
+  protected rankAccessor(row: any, id: string, desc: IColumnDesc, ranking: Ranking) {
     return 0;
   }
 
-  private fixDesc(desc: model.IColumnDesc) {
+  private fixDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors
     if (desc.type === 'rank') {
       (<any>desc).accessor = this.rankAccessor.bind(this);
@@ -301,9 +301,9 @@ export class DataProvider extends utils.AEventDispatcher {
   /**
    * creates an internal column model out of the given column description
    * @param desc
-   * @returns {model.Column] the new column or null if it can't be created
+   * @returns {Column] the new column or null if it can't be created
    */
-  create(desc:model.IColumnDesc):model.Column {
+  create(desc:IColumnDesc):Column {
     this.fixDesc(desc);
     //find by type and instantiate
     const type = this.columnTypes[desc.type];
@@ -316,9 +316,9 @@ export class DataProvider extends utils.AEventDispatcher {
   /**
    * clones a column by dumping and restoring
    * @param col
-   * @returns {model.Column}
+   * @returns {Column}
    */
-  clone(col:model.Column) {
+  clone(col:Column) {
     const dump = this.dumpColumn(col);
     return this.restoreColumn(dump);
   }
@@ -326,9 +326,9 @@ export class DataProvider extends utils.AEventDispatcher {
   /**
    * restores a column from a dump
    * @param dump
-   * @returns {model.Column}
+   * @returns {Column}
    */
-  restoreColumn(dump:any):model.Column {
+  restoreColumn(dump:any):Column {
     const create = (d:any) => {
       const desc = this.fromDescRef(d.desc);
       var type = this.columnTypes[desc.type];
@@ -344,9 +344,9 @@ export class DataProvider extends utils.AEventDispatcher {
   /**
    * finds a column in all rankings returning the first match
    * @param id_or_filter by id or by a filter function
-   * @returns {model.Column}
+   * @returns {Column}
    */
-  find(id_or_filter:(col:model.Column) => boolean | string):model.Column {
+  find(id_or_filter:(col:Column) => boolean | string):Column {
     //convert to function
     const filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
 
@@ -377,7 +377,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param col
    * @returns {any}
    */
-  dumpColumn(col:model.Column) {
+  dumpColumn(col:Column) {
     return col.dump(this.toDescRef);
   }
 
@@ -416,8 +416,8 @@ export class DataProvider extends utils.AEventDispatcher {
     const ranking = this.cloneRanking();
     ranking.restore(dump, this.createHelper);
     //if no rank column add one
-    if (!ranking.children.some((d) => d instanceof model.RankColumn)) {
-      ranking.insert(this.create(model.RankColumn.desc()), 0);
+    if (!ranking.children.some((d) => d instanceof RankColumn)) {
+      ranking.insert(this.create(RankColumn.desc()), 0);
     }
     const idGenerator = this.nextId.bind(this);
     ranking.children.forEach((c) => c.assignNewId(idGenerator));
@@ -444,8 +444,8 @@ export class DataProvider extends utils.AEventDispatcher {
         var ranking = this.cloneRanking();
         ranking.restore(r, this.createHelper);
         //if no rank column add one
-        if (!ranking.children.some((d) => d instanceof model.RankColumn)) {
-          ranking.insert(this.create(model.RankColumn.desc()), 0);
+        if (!ranking.children.some((d) => d instanceof RankColumn)) {
+          ranking.insert(this.create(RankColumn.desc()), 0);
         }
         this.insertRanking(ranking);
       });
@@ -491,19 +491,19 @@ export class DataProvider extends utils.AEventDispatcher {
     ranking.clear();
     const toCol = (column) => {
       if (column.type === 'rank') {
-        return this.create(model.createRankDesc());
+        return this.create(createRankDesc());
       }
       if (column.type === 'selection') {
-        return this.create(model.createSelectionDesc());
+        return this.create(createSelectionDesc());
       }
       if (column.type === 'actions') {
-        let r = this.create(model.createActionDesc(column.label || 'actions'));
+        let r = this.create(createActionDesc(column.label || 'actions'));
         r.restore(column, null);
         return r;
       }
       if (column.type === 'stacked') {
         //create a stacked one
-        let r = <model.StackColumn>this.create(model.createStackDesc(column.label || 'Combined'));
+        let r = <StackColumn>this.create(createStackDesc(column.label || 'Combined'));
         (column.children || []).forEach((col) => {
           let c = toCol(col);
           if (c) {
@@ -529,8 +529,8 @@ export class DataProvider extends utils.AEventDispatcher {
       }
     });
     //if no rank column add one
-    if (!ranking.children.some((d) => d instanceof model.RankColumn)) {
-      ranking.insert(this.create(model.createRankDesc()), 0);
+    if (!ranking.children.some((d) => d instanceof RankColumn)) {
+      ranking.insert(this.create(createRankDesc()), 0);
     }
     this.insertRanking(ranking);
     return ranking;
@@ -541,7 +541,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param ranking
    * @return {Promise<any>}
    */
-  sort(ranking:model.Ranking):Promise<number[]> {
+  sort(ranking:Ranking):Promise<number[]> {
     return Promise.reject('not implemented');
   }
 
@@ -559,19 +559,19 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param col
    * @return {Promise<any>}
    */
-  mappingSample(col:model.Column):Promise<number[]> {
+  mappingSample(col:Column):Promise<number[]> {
     return Promise.reject('not implemented');
   }
 
   /**
    * helper for computing statistics
    * @param indices
-   * @returns {{stats: (function(model.INumberColumn): *), hist: (function(model.ICategoricalColumn): *)}}
+   * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
   stats(indices:number[]) {
     return {
-      stats: (col:model.INumberColumn) => Promise.reject('not implemented'),
-      hist: (col:model.ICategoricalColumn) => Promise.reject('not implemented')
+      stats: (col:INumberColumn) => Promise.reject('not implemented'),
+      hist: (col:ICategoricalColumn) => Promise.reject('not implemented')
     };
   }
 
@@ -609,7 +609,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param search
    * @param col
    */
-  searchSelect(search:string|RegExp, col:model.Column) {
+  searchSelect(search:string|RegExp, col:Column) {
     //implemented by custom provider
   }
 
@@ -706,7 +706,7 @@ export class DataProvider extends utils.AEventDispatcher {
    * @param options
    * @returns {Promise<string>}
    */
-  exportTable(ranking: model.Ranking, options : IExportOptions = {}) {
+  exportTable(ranking: Ranking, options : IExportOptions = {}) {
     const op: IExportOptions = {
       separator : '\t',
       newline: '\n',
@@ -715,10 +715,10 @@ export class DataProvider extends utils.AEventDispatcher {
       quoteChar: '"',
       filter: (c) => !isSupportType(c)
     };
-    options = utils.merge(op, options);
+    options = merge(op, options);
     //optionally quote not numbers
-    function quote(l: string, c?: model.Column) {
-      if (op.quote && (!c || !model.isNumberColumn(c))) {
+    function quote(l: string, c?: Column) {
+      if (op.quote && (!c || !isNumberColumn(c))) {
         return op.quoteChar + l + op.quoteChar;
       }
       return l;
@@ -746,7 +746,7 @@ export class CommonDataProvider extends DataProvider {
   //generic accessor of the data item
   private rowGetter = (row:any, id:string, desc:any) => row[desc.column];
 
-  constructor(private columns:model.IColumnDesc[] = [], options :any = {}) {
+  constructor(private columns:IColumnDesc[] = [], options :any = {}) {
     super(options);
     //generate the accessor
     columns.forEach((d:any) => {
@@ -763,7 +763,7 @@ export class CommonDataProvider extends DataProvider {
    * adds another column description to this data provider
    * @param column
    */
-  pushDesc(column:model.IColumnDesc) {
+  pushDesc(column:IColumnDesc) {
     var d:any = column;
     d.accessor = d.accessor || this.rowGetter;
     d.label = column.label || d.column;
@@ -771,7 +771,7 @@ export class CommonDataProvider extends DataProvider {
     this.fire('addDesc', d);
   }
 
-  getColumns():model.IColumnDesc[] {
+  getColumns():IColumnDesc[] {
     return this.columns.slice();
   }
 
@@ -822,9 +822,9 @@ export class LocalDataProvider extends CommonDataProvider {
 
   private reorderall;
 
-  constructor(public data:any[], columns:model.IColumnDesc[] = [], options = {}) {
+  constructor(public data:any[], columns:IColumnDesc[] = [], options = {}) {
     super(columns, options);
-    utils.merge(this.options, options);
+    merge(this.options, options);
     //enhance with a magic attribute storing ranking information
     data.forEach((d, i) => {
       d._rankings = {};
@@ -875,14 +875,14 @@ export class LocalDataProvider extends CommonDataProvider {
     this.reorderall();
   }
 
-  protected rankAccessor(row: any, id: string, desc: model.IColumnDesc, ranking: model.Ranking) {
+  protected rankAccessor(row: any, id: string, desc: IColumnDesc, ranking: Ranking) {
     return (row._rankings[ranking.id] + 1) || 1;
   }
 
-  cloneRanking(existing?:model.Ranking) {
+  cloneRanking(existing?:Ranking) {
     const id = this.nextRankingId();
 
-    const new_ = new model.Ranking(id);
+    const new_ = new Ranking(id);
 
     if (existing) { //copy the ranking of the other one
       this.data.forEach((row) => {
@@ -894,7 +894,7 @@ export class LocalDataProvider extends CommonDataProvider {
         this.push(new_, child.desc);
       });
     } else {
-      new_.push(this.create(model.createRankDesc()));
+      new_.push(this.create(createRankDesc()));
     }
 
     if (this.options.filterGlobally) {
@@ -904,7 +904,7 @@ export class LocalDataProvider extends CommonDataProvider {
     return new_;
   }
 
-  cleanUpRanking(ranking:model.Ranking) {
+  cleanUpRanking(ranking:Ranking) {
     if (this.options.filterGlobally) {
       ranking.on('filterChanged.reorderall', null);
     }
@@ -912,7 +912,7 @@ export class LocalDataProvider extends CommonDataProvider {
     this.data.forEach((d) => delete d._rankings[ranking.id]);
   }
 
-  sort(ranking:model.Ranking):Promise<number[]> {
+  sort(ranking:Ranking):Promise<number[]> {
     if (this.data.length === 0) {
       return Promise.resolve([]);
     }
@@ -955,20 +955,20 @@ export class LocalDataProvider extends CommonDataProvider {
   /**
    * helper for computing statistics
    * @param indices
-   * @returns {{stats: (function(model.INumberColumn): *), hist: (function(model.ICategoricalColumn): *)}}
+   * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
   stats(indices:number[]) {
     var d:Promise<any[]> = null;
     const getD= () => d === null ? (d = this.view(indices)) : d;
 
     return {
-      stats: (col:model.INumberColumn) => getD().then((data) => computeStats(data, col.getNumber.bind(col), [0, 1])),
-      hist: (col:model.ICategoricalColumn) => getD().then((data) => computeHist(data, col.getCategories.bind(col), col.categories))
+      stats: (col:INumberColumn) => getD().then((data) => computeStats(data, col.getNumber.bind(col), [0, 1])),
+      hist: (col:ICategoricalColumn) => getD().then((data) => computeHist(data, col.getCategories.bind(col), col.categories))
     };
   }
 
 
-  mappingSample(col:model.NumberColumn):Promise<number[]> {
+  mappingSample(col:NumberColumn):Promise<number[]> {
     const MAX_SAMPLE = 500; //at most 500 sample lines
     const l = this.data.length;
     if (l <= MAX_SAMPLE) {
@@ -986,7 +986,7 @@ export class LocalDataProvider extends CommonDataProvider {
     return Promise.resolve(indices.map((i) => col.getRawValue(this.data[i])));
   }
 
-  searchSelect(search:string|RegExp, col:model.Column) {
+  searchSelect(search:string|RegExp, col:Column) {
     //case insensitive search
     search = typeof search === 'string' ? search.toLowerCase() : search;
     const f = typeof search === 'string' ? (v:string) => v.toLowerCase().indexOf((<string>search)) >= 0 : (<RegExp>search).test.bind(search);
@@ -1036,32 +1036,32 @@ export class RemoteDataProvider extends CommonDataProvider {
    */
   private ranks:any = {};
 
-  constructor(private server:IServerData, columns:model.IColumnDesc[] = [], options :any = {}) {
+  constructor(private server:IServerData, columns:IColumnDesc[] = [], options :any = {}) {
     super(columns, options);
   }
 
-  protected rankAccessor(row: any, id: string, desc: model.IColumnDesc, ranking: model.Ranking) {
+  protected rankAccessor(row: any, id: string, desc: IColumnDesc, ranking: Ranking) {
     return this.ranks[ranking.id][row._index] || 0;
   }
 
-  cloneRanking(existing?:model.Ranking) {
+  cloneRanking(existing?:Ranking) {
     var id = this.nextRankingId();
     if (existing) { //copy the ranking of the other one
       //copy the ranking
       this.ranks[id] = this.ranks[existing.id];
     }
-    var r = new model.Ranking(id);
-    r.push(this.create(model.createRankDesc()));
+    var r = new Ranking(id);
+    r.push(this.create(createRankDesc()));
 
     return r;
   }
 
-  cleanUpRanking(ranking:model.Ranking) {
+  cleanUpRanking(ranking:Ranking) {
     //delete all stored information
     delete this.ranks[ranking.id];
   }
 
-  sort(ranking:model.Ranking):Promise<number[]> {
+  sort(ranking:Ranking):Promise<number[]> {
     //generate a description of what to sort
     var desc = ranking.toSortingDesc((desc) => desc.column);
     //use the server side to sort
@@ -1080,11 +1080,11 @@ export class RemoteDataProvider extends CommonDataProvider {
     });
   }
 
-  mappingSample(col:model.Column):Promise<number[]> {
+  mappingSample(col:Column):Promise<number[]> {
     return this.server.mappingSample((<any>col.desc).column);
   }
 
-  searchSelect(search:string|RegExp, col:model.Column) {
+  searchSelect(search:string|RegExp, col:Column) {
     this.server.search(search, (<any>col.desc).column).then((indices) => {
       this.setSelection(indices);
     });
