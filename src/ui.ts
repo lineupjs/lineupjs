@@ -1119,7 +1119,7 @@ export class ABodyDOMRenderer extends ABodyRenderer {
         updateColumns(this, data[j], i, data[j].columns);
       });
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
-      const maxFrozen = data.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
+      const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
       $rows.select(g + '.frozen').each(function (d, i, j) {
         domMapping.setSize(this, maxFrozen, that.options.rowHeight);
         updateColumns(this, data[j], i, data[j].frozen);
@@ -1293,7 +1293,7 @@ export class BodySVGRenderer extends ABodyDOMRenderer {
         });
       }
 
-      const maxFrozen = data.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
+      const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
       $elem.select('rect').attr({
         x: maxFrozen,
         height: height,
@@ -1431,7 +1431,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height: number) {
-    const maxFrozen = data.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
+    const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
 
     return Promise.all(data.map((ranking) => {
       //asynchronous rendering!!!
@@ -1460,8 +1460,10 @@ export class BodyCanvasRenderer extends ABodyRenderer {
 
           //clip the remaining children
           ctx.save();
-          ctx.rect(this.currentFreezeLeft + maxFrozen, 0, ranking.width, context.rowHeight(i));
-          ctx.clip();
+          if (maxFrozen > 0) {
+            ctx.rect(this.currentFreezeLeft + maxFrozen, 0, ranking.width, context.rowHeight(i));
+            ctx.clip();
+          }
           ranking.columns.forEach((child) => {
             ctx.save();
             ctx.translate(child.shift, 0);
