@@ -10,7 +10,7 @@
     margin: 0;
   }
 
-  div.text {
+  div.text, div.cat {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
