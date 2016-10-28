@@ -9,6 +9,7 @@ node_modules
 /.bower.json
 /tscommand*.tmp.txt
 demo/.idea/
+*.log
 
 src/*.map
 src/*.js
