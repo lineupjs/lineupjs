@@ -2,7 +2,6 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-///<reference path='../typings/tsd.d.ts' />
 import d3 = require('d3');
 
 /**

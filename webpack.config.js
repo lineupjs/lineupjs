@@ -11,7 +11,7 @@ var banner = '/*! ' + ( pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' + 
 
 function generate(bundle, min) {
   var base = {
-    entry: './src/bundle.js',
+    entry: './src/main.ts',
     output: {
       path: './dist',
       filename: 'LineUpJS' + (bundle ? '_bundle' : '') + (min ? '.min' : '') + '.js',

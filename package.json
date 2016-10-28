@@ -33,7 +33,7 @@
   "main": "dist/LineUpJS.js",
   "scripts": {
     "test": "tslint -c tslint.json src/*.ts",
-    "prepare": "npm install & typings install",
+    "prepare": "npm install",
     "build": "webpack",
     "watch": "webpack --watch"
   },
@@ -42,18 +42,17 @@
     "url": "https://github.com/Caleydo/lineup.js.git"
   },
   "devDependencies": {
-    "tslint": "^3.15.1",
-    "node-sass": "^3.10.1",
-    "style-loader": "^0.13.1",
-    "typedoc": "^0.5.0",
-    "typedoc-webpack-plugin": "^1.1.2",
-    "webpack": "^1.13.2",
-    "extract-text-webpack-plugin": "^1.0.1",
-    "typescript": "^2.0.3",
-    "typings": "^1.4.0",
+    "@types/d3": "^3.5.36",
+    "awesome-typescript-loader": "^2.2.4",
     "css-loader": "^0.25.0",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "node-sass": "^3.10.1",
     "sass-loader": "^4.0.2",
-    "awesome-typescript-loader": "^2.2.4"
+    "style-loader": "^0.13.1",
+    "tslint": "^3.15.1",
+    "typedoc": "^0.5.0",
+    "typescript": "^2.0.3",
+    "webpack": "^1.13.2"
   },
   "dependencies": {
     "d3": "^3.5.17"

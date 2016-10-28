@@ -3,7 +3,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-///<reference path='../typings/tsd.d.ts' />
+import './style.scss';
 import model_ = require('./model');
 import provider_ = require('./provider');
 import renderer_ = require('./renderer');

@@ -1,7 +1,6 @@
 /**
  * Created by Samuel Gratzl on 06.08.2015.
  */
-///<reference path='../typings/tsd.d.ts' />
 
 import d3 = require('d3');
 import utils = require('./utils');
