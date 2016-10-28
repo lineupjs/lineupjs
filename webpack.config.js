@@ -26,7 +26,10 @@ function generate(bundle, min) {
       }
     },
     plugins: [
-      new webpack.BannerPlugin(banner, {raw: true})
+      new webpack.BannerPlugin({
+        banner: banner,
+        raw: true
+      })
       //rest depends on type
     ],
     module: {
