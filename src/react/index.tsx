@@ -2,6 +2,7 @@
  * Created by sam on 28.10.2016.
  */
 
+import '../style.scss';
 import Impl from '../lineup';
 import * as React from 'react';
 import {IColumnDesc} from '../model';
@@ -21,8 +22,6 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, ILineUpS
 private plot: Impl = null;
   private parent: HTMLDivElement = null;
 
-  private updatedByMe = false;
-
   constructor(props: ILineUpProps<T>, context?: any) {
     super(props, context);
 
@@ -32,6 +31,7 @@ private plot: Impl = null;
   }
 
   componentDidMount() {
+    console.log(this.props.children);
     //create impl
     const data = new LocalDataProvider(this.props.data, this.props.desc);
     data.deriveDefault();
@@ -40,10 +40,6 @@ private plot: Impl = null;
   }
 
   shouldComponentUpdate(nextProps: ILineUpProps<T>, nextState: ILineUpState<T>) {
-    //i changed the state to reflect the changes in the impl selection
-    if (this.updatedByMe) {
-      return false;
-    }
     //check selection changes
     const new_ = this.state.selection;
     const old = nextState.selection;
@@ -54,7 +50,6 @@ private plot: Impl = null;
   };
 
   componentDidUpdate() {
-    this.updatedByMe = false;
     this.plot.update();
   }
 
@@ -75,4 +70,5 @@ private plot: Impl = null;
   data: [],
   desc: []
 };
+
 
