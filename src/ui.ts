@@ -1431,13 +1431,13 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height: number) {
-    ctx.save();
-
     const maxFrozen = data.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
 
-    var dx = 0, dy = 0;
-    data.forEach((ranking) => {
-      ranking.data.then((data) => {
+    return Promise.all(data.map((ranking) => {
+      //asynchronous rendering!!!
+      return ranking.data.then((data) => {
+        var dx = 0, dy = 0;
+
         ctx.save();
         ctx.translate(dx = ranking.shift, 0);
 
@@ -1488,8 +1488,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
 
         ctx.restore();
       });
-    });
-    ctx.restore();
+    }));
   }
 
   renderSlopeGraphs(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
@@ -1551,23 +1550,37 @@ export class BodyCanvasRenderer extends ABodyRenderer {
 
   protected updateImpl(data: IRankingData[], context: IBodyRenderContext, offset: number, height: number) {
     const $canvas = this.$node.select('canvas');
-    // - ... added one to often
+
+    const firstLine = Math.max(context.cellY(0) - 20,0); //where to start
+    const lastLine = Math.min(context.cellY(Math.max(...data.map((d) => d.order.length))) + 20, height);
+
+    this.$node.style({
+      width: Math.max(0, offset - this.options.slopeWidth)+'px',
+      height: height+'px'
+    });
+
     $canvas.attr({
       width: Math.max(0, offset - this.options.slopeWidth),
-      height: height
-    });
+      height: lastLine-firstLine
+    }).style('margin-top', firstLine+'px');
 
     this.lastShifts = this.computeShifts(data);
 
 
     const ctx = (<HTMLCanvasElement>$canvas.node()).getContext('2d');
+    ctx.save();
     ctx.font = this.style('font');
     ctx.textBaseline = 'top';
     ctx.fillStyle = this.style('text');
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+    ctx.translate(0, -firstLine);
+
     this.renderSlopeGraphs(ctx, data, context);
-    this.renderRankings(ctx, data, context, height);
+
+    this.renderRankings(ctx, data, context, height).then(() => {
+      ctx.restore();
+    });
   }
 }
 
