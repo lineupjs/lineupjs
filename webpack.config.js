@@ -1,5 +1,4 @@
 var webpack = require('webpack');
-var TypedocWebpackPlugin = require('typedoc-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var pkg = require('./package.json');
 
@@ -57,18 +56,6 @@ function generate(bundle, min) {
   } else {
     //generate source maps
     base.devtool = 'source-map';
-  }
-  if (!bundle && min) {
-    //generate docu
-    base.plugins.push(new TypedocWebpackPlugin({
-      target: 'es5',
-      module: 'commonjs', // 'amd' (default) | 'commonjs'
-      name: 'LineUp.js',
-
-      entryPoint: 'main.LineUp',
-      mode: 'modules',
-      theme: 'minimal'
-    }));
   }
   return base;
 }

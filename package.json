@@ -32,10 +32,18 @@
   "homepage": "https://github.com/Caleydo/lineup.js",
   "main": "dist/LineUpJS.js",
   "scripts": {
-    "test": "tslint -c tslint.json src/*.ts",
-    "prepare": "npm install",
+    "compile": "tsc",
+    "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
+    "docs": "typedoc --options typedoc.json src/**.ts",
+    "prebuild": "npm run test",
+    "pretest": "npm run compile",
+    "test": "echo 'no tests'",
+    "posttest": "npm run lint",
     "build": "webpack",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "release:major": "npm version major && npm publish && git push --follow-tags",
+    "release:minor": "npm version minor && npm publish && git push --follow-tags",
+    "release:patch": "npm version patch && npm publish && git push --follow-tags"
   },
   "repository": {
     "type": "git",
