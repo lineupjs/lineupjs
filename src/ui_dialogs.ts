@@ -8,6 +8,7 @@ import model = require('./model');
 import utils = require('./utils');
 import mappingeditor = require('./mappingeditor');
 import provider = require('./provider');
+import d3 = require('d3');
 
 export function dialogForm(title, body, buttonsWithLabel = false) {
   return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
@@ -44,7 +45,7 @@ export function makePopup(attachement:d3.Selection<any>, title:string, body:stri
   }
   $popup.select('span.lu-popup-title').call(d3.behavior.drag().on('drag', movePopup));
   $popup.on('keydown', () => {
-    if (d3.event.which === 27) {
+    if ((<KeyboardEvent>d3.event).which === 27) {
       $popup.remove();
     }
   });
@@ -116,7 +117,7 @@ export function openSearchDialog(column:model.Column, $header:d3.Selection<model
   var popup = makePopup($header, 'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
 
   popup.select('input[type="text"]').on('input', function () {
-    var search:any = (<HTMLInputElement>d3.event.target).value;
+    var search:any = (<HTMLInputElement>this).value;
     if (search.length >= 3) {
       var isRegex = popup.select('input[type="checkbox"]').property('checked');
       if (isRegex) {

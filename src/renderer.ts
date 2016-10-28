@@ -3,7 +3,7 @@
  */
 
 import model = require('./model');
-
+import d3 = require('d3');
 /**
  * context for rendering, wrapped as an object for easy extensibility
  */
@@ -465,8 +465,8 @@ export class ActionCellRenderer implements ICellRenderer {
       .text((d) => d.icon)
       .attr('title', (d) => d.name)
       .on('click', (d) => {
-        d3.event.preventDefault();
-        d3.event.stopPropagation();
+        (<MouseEvent>d3.event).preventDefault();
+        (<MouseEvent>d3.event).stopPropagation();
         d.action(row);
       });
   }
@@ -491,8 +491,8 @@ export class SelectionCellRenderer extends DefaultCellRenderer {
       'class': this.textClass + ' fa',
       y: (d, i) => context.cellPrevY(i)
     }).on('click', function (d) {
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
+      (<MouseEvent>d3.event).preventDefault();
+      (<MouseEvent>d3.event).stopPropagation();
       const new_ = col.toggleValue(d);
       d3.select(this).text(new_ === true ? '\uf046' : '\uf096');
     });
@@ -543,7 +543,7 @@ class AnnotateCellRenderer extends DefaultCellRenderer {
       //update the value
       var text = this.value;
       col.setValue(row, text);
-    }).on('click', () => d3.event.stopPropagation());
+    }).on('click', () => (<MouseEvent>d3.event).stopPropagation());
   }
 
   mouseLeave($col:d3.Selection<any>, $row:d3.Selection<any>, col:model.AnnotateColumn, row:any, index:number, context:IRenderContext) {

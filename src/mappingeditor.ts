@@ -236,8 +236,8 @@ export class MappingEditor {
 
       const $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mapping_lines);
       const $mapping_enter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', (d, i) => {
-        d3.event.preventDefault();
-        d3.event.stopPropagation();
+        (<MouseEvent>d3.event).preventDefault();
+        (<MouseEvent>d3.event).stopPropagation();
         removePoint(i);
       });
       $mapping_enter.append('line').attr({
@@ -258,7 +258,7 @@ export class MappingEditor {
       }));
       $mapping_enter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
         //drag normalized
-        const x = clamp(d3.event.x, 0, width);
+        const x = clamp((<d3.DragEvent>d3.event).x, 0, width);
         d.n = normal2pixel.invert(x);
         d3.select(this).attr('cx', x);
         d3.select(this.parentElement).select('line').attr('x1', x);
@@ -267,7 +267,7 @@ export class MappingEditor {
       }));
       $mapping_enter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
         //drag raw
-        const x = clamp(d3.event.x, 0, width);
+        const x = clamp((<d3.DragEvent>d3.event).x, 0, width);
         d.r = raw2pixel.invert(x);
         d3.select(this).attr('cx', x);
         d3.select(this.parentElement).select('line').attr('x2', x);
@@ -320,7 +320,7 @@ export class MappingEditor {
         .attr('transform', (d,i) => `translate(${i===0?min_filter:max_filter},0)`).call(createDrag(function (d,i) {
 
           //drag normalized
-          const x = clamp(d3.event.x, 0, width);
+          const x = clamp((<d3.DragEvent>d3.event).x, 0, width);
           const v = raw2pixel.invert(x);
           const filter = (x <= 0 && i === 0 ? -Infinity : (x>=width && i===1 ? Infinity : v));
           d3.select(this).datum(filter)

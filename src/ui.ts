@@ -446,37 +446,37 @@ export class HeaderRenderer {
     //edit weights
     $stacked.append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
       dialogs.openEditWeightsDialog(<model.StackColumn>d, d3.select(this.parentNode.parentNode));
-      d3.event.stopPropagation();
+      (<MouseEvent>d3.event).stopPropagation();
     });
     //rename
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
       dialogs.openRenameDialog(d, d3.select(this.parentNode.parentNode));
-      d3.event.stopPropagation();
+      (<MouseEvent>d3.event).stopPropagation();
     });
     //clone
     $regular.append('i').attr('class', 'fa fa-code-fork').attr('title', 'Generate Snapshot').on('click', function (d) {
       provider.takeSnapshot(d);
-      d3.event.stopPropagation();
+      (<MouseEvent>d3.event).stopPropagation();
     });
     //edit link
     $node.filter((d) => d instanceof model.LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
       dialogs.openEditLinkDialog(<model.LinkColumn>d, d3.select(this.parentNode.parentNode), [].concat((<any>d.desc).templates || [], that.options.linkTemplates));
-      d3.event.stopPropagation();
+      (<MouseEvent>d3.event).stopPropagation();
     });
     //edit script
     $node.filter((d) => d instanceof model.ScriptColumn).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
       dialogs.openEditScriptDialog(<model.ScriptColumn>d, d3.select(this.parentNode.parentNode));
-      d3.event.stopPropagation();
+      (<MouseEvent>d3.event).stopPropagation();
     });
     //filter
     $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
       filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
-      d3.event.stopPropagation();
+      (<MouseEvent>d3.event).stopPropagation();
     });
     //search
     $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
       dialogs.openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
-      d3.event.stopPropagation();
+      (<MouseEvent>d3.event).stopPropagation();
     });
     //collapse
     $regular.append('i')
@@ -489,7 +489,7 @@ export class HeaderRenderer {
         d3.select(this)
           .classed('fa-toggle-left', !d.getCompressed())
           .classed('fa-toggle-right', d.getCompressed());
-        d3.event.stopPropagation();
+        (<MouseEvent>d3.event).stopPropagation();
       });
     //compress
     $multilevel.append('i')
@@ -502,7 +502,7 @@ export class HeaderRenderer {
         d3.select(this)
           .classed('fa-compress', !d.getCollapsed())
           .classed('fa-expand', d.getCollapsed());
-        d3.event.stopPropagation();
+        (<MouseEvent>d3.event).stopPropagation();
       });
     //remove
     $node.append('i').attr('class', 'fa fa-times').attr('title', 'Hide').on('click', (d) => {
@@ -514,7 +514,7 @@ export class HeaderRenderer {
       } else {
         d.removeMe();
       }
-      d3.event.stopPropagation();
+      (<MouseEvent>d3.event).stopPropagation();
     });
   }
 
@@ -531,13 +531,15 @@ export class HeaderRenderer {
       'class': clazz
     })
     .on('click', (d) => {
-      if (this.options.manipulative && !d3.event.defaultPrevented && d3.event.currentTarget === d3.event.target) {
+      const mevent = <MouseEvent>d3.event;
+      if (this.options.manipulative && !mevent.defaultPrevented && mevent.currentTarget === mevent.target) {
         d.toggleMySorting();
       }
     });
     var $header_enter_div = $headers_enter.append('div').classed('lu-label', true)
       .on('click', (d) => {
-        if (this.options.manipulative && !d3.event.defaultPrevented) {
+        const mevent = <MouseEvent>d3.event;
+        if (this.options.manipulative && !mevent.defaultPrevented) {
           d.toggleMySorting();
         }
       })
@@ -987,7 +989,7 @@ export class BodyRenderer extends utils.AEventDispatcher implements IBodyRendere
     }).on('mouseleave', (data_index) => {
       this.mouseOver(data_index.d, false);
     }).on('click', (data_index) => {
-      this.select(data_index.d, d3.event.ctrlKey);
+      this.select(data_index.d, (<MouseEvent>d3.event).ctrlKey);
     });
     $rows.attr({
       'data-index': (d) => d.d
