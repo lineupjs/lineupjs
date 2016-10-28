@@ -10,10 +10,13 @@ var banner = '/*! ' + ( pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' + 
 
 function generate(bundle, min) {
   var base = {
-    entry: './src/index.ts',
+    entry: {
+      'LineUpJS': './src/index.ts',
+      'LineUpJS_react': './src/react/index.tsx'
+    },
     output: {
       path: './dist',
-      filename: 'LineUpJS' + (bundle ? '_bundle' : '') + (min ? '.min' : '') + '.js',
+      filename: '[name]' + (bundle ? '_bundle' : '') + (min ? '.min' : '') + '.js',
       library: 'LineUpJS',
       libraryTarget: 'umd',
       umdNamedDefine: false //anonymous require module
@@ -32,6 +35,10 @@ function generate(bundle, min) {
       })
       //rest depends on type
     ],
+    externals: { //react always external
+      react: 'React',
+      'react-dom': 'ReactDOM'
+    },
     module: {
       loaders: [
         {
@@ -47,11 +54,7 @@ function generate(bundle, min) {
   };
   if (!bundle) {
     //don't bundle d3
-    base.externals = {
-      'd3': 'd3',
-      react: 'React',
-      'react-dom': 'ReactDOM'
-    };
+    base.externals.d3 = 'd3';
 
     //extract the included css file to own file
     var p = new ExtractTextPlugin('style' + (min ? '.min' : '') + '.css');

@@ -11,6 +11,6 @@ node_modules
 demo/.idea/
 *.log
 
-src/*.map
-src/*.js
+src/**/*.map
+src/**/*.js
 src/*.css

@@ -10,6 +10,10 @@ import {IRankingHook, dummyRankingButtonHook, PoolRenderer, IBodyRenderer, Heade
 import {AEventDispatcher, ContentScroller, merge}  from './utils';
 import {scale as d3scale, selection, select, Selection} from 'd3';
 
+export interface ILineUpConfig {
+  [key: string]: any;
+}
+
 /**
  * main LineUp class managing data and rendering
  */
