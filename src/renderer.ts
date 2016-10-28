@@ -4,6 +4,7 @@
 
 import * as model from './model';
 import {forEach, attr} from './utils';
+import {hsl} from 'd3';
 
 /**
  * a data row for rendering
@@ -231,7 +232,7 @@ function toHeatMapColor(d: any, col: model.INumberColumn & model.Column) {
     v = 0;
   }
   //hsl space encoding, encode in lightness
-  var color = d3.hsl(col.color || model.Column.DEFAULT_COLOR);
+  var color = hsl(col.color || model.Column.DEFAULT_COLOR);
   color.l = v;
   return color.toString();
 }

@@ -1069,17 +1069,17 @@ export class ABodyDOMRenderer extends ABodyRenderer {
       $rows_enter
         .on('mouseenter', (d) => this.mouseOver(d, true))
         .on('mouseleave', (d) => this.mouseOver(d, false))
-        .on('click', (d) => this.select(d, d3.event.ctrlKey));
+        .on('click', (d) => this.select(d, (<MouseEvent>d3.event).ctrlKey));
 
       //create templates
-      function createTemplates(node: HTMLElement|SVGGElement, columns: IRankingColumnData[]) {
+      const createTemplates = (node: HTMLElement|SVGGElement, columns: IRankingColumnData[]) => {
         renderer.matchColumns(node, columns);
         //set transform
         columns.forEach((col, ci) => {
           const cnode: any = node.childNodes[ci];
           domMapping.translate(cnode, col.shift, 0);
         });
-      }
+      };
 
       $rows_enter.append(g).attr('class', 'cols').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`).each(function (d, i, j) {
         createTemplates(this, data[j].columns);
@@ -1102,7 +1102,7 @@ export class ABodyDOMRenderer extends ABodyRenderer {
       $rows.select(domMapping.bg).attr('class', 'bg')
         .call(domMapping.updateBG, (d, i, j) => [data[j].width, context.rowHeight(i)]);
 
-      function updateColumns(node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) {
+      const updateColumns = (node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
         renderer.matchColumns(node, columns);
         r.data.then((rows) => {
@@ -1112,7 +1112,7 @@ export class ABodyDOMRenderer extends ABodyRenderer {
             col.renderer.update(cnode, rows[i], i);
           });
         });
-      }
+      };
       //update columns
 
       $rows.select(g + '.cols').each(function (d, i, j) {
@@ -1366,7 +1366,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   private initInteraction() {
-    this.$node.on('selectstart', () => d3.event.preventDefault());
+    this.$node.on('selectstart', () => (<UIEvent>d3.event).preventDefault());
 
     this.$node.on('mousemove', () => {
       const mouse = d3.mouse(this.node);
@@ -1384,7 +1384,7 @@ export class BodyCanvasRenderer extends ABodyRenderer {
       const pos = this.itemUnderMouse(mouse);
       if (pos) {
         //additional if click on Selection Column
-        this.select(pos.dataIndex, d3.event.ctrlKey || pos.column instanceof model.SelectionColumn);
+        this.select(pos.dataIndex, (<MouseEvent>d3.event).ctrlKey || pos.column instanceof model.SelectionColumn);
       }
     });
   }
