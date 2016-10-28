@@ -1,0 +1,105 @@
+//mapping editor
+
+$sample_color: black;
+$mapping_color: blue;
+$mapping_color_hover: #0000cf;
+
+.lugui-me {
+  margin-bottom: 5px;
+  clear: both;
+
+  .raw_min, .raw_max {
+    width: 3em;
+    display: block;
+  }
+
+  .mapping_area {
+    display: flex;
+    align-items: stretch;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+
+      > span:first-of-type {
+        flex-grow: 1;
+      }
+    }
+  }
+
+  svg {
+    z-index: 1;
+    position: relative;
+
+    > rect {
+      fill: white;
+      opacity: 0;
+    }
+
+    g.samples {
+      line {
+        stroke: $sample_color;
+        opacity: 0.5;
+      }
+    }
+    g.mapping {
+      &:hover {
+        cursor: ew-resize;
+        line {
+          stroke: $mapping_color_hover;
+        }
+        circle {
+          fill: $mapping_color_hover;
+        }
+      }
+
+      line {
+        stroke: $mapping_color;
+
+      }
+      circle {
+        fill: $mapping_color;
+      }
+    }
+
+    g.filter {
+      text {
+        font-size: 8pt;
+        alignment-baseline: hanging;
+      }
+      path {
+        fill: gray;
+      }
+      rect {
+        fill: white;
+        stroke: gray;
+        stroke-width: 1;
+      }
+
+      > g {
+        cursor: pointer;
+        cursor: -webkit-drag;
+
+        &:hover {
+          path {
+            fill: darkgray;
+          }
+          rect {
+            stroke: darkgray;
+          }
+        }
+      }
+    }
+  }
+
+  div.script {
+    clear: both;
+
+    textarea {
+      height: 4em;
+      width: 98%;
+      font-size: 8pt;
+      display: block;
+    }
+  }
+}

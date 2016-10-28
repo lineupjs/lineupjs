@@ -1,0 +1,74 @@
+
+//popups, e.g., rename dialogs,...
+
+.lu-popup {
+  position: absolute;
+
+  dominant-baseline: central;
+  text-anchor: middle;
+
+  .ok {
+    position: absolute;
+    right: 10px;
+  }
+}
+
+.lu-popup, .lu-popup2 {
+  background-color: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  padding: 2px;
+  box-shadow: 5px 5px 3px #888888;
+
+  z-index: 9;
+
+  font-size: 8pt;
+
+  clear: right;
+
+  input {
+    font-size: 8pt;
+  }
+
+  .selectionTable {
+    background: white;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 50vh;
+
+    td,
+    th {
+      white-space: nowrap;
+      padding: 1px 5px 1px 3px;
+      cursor: pointer;
+    }
+
+    th {
+      border-bottom: #c1c1c1 1px solid;
+    }
+
+    table {
+      width: 95%;
+      border: 0;
+    }
+    tr:hover {
+      background-color: lightblue;
+    }
+  }
+
+  .lu-popup-title {
+    cursor: pointer;
+    cursor: -webkit-grab;
+  }
+}
+
+.lu-popup2 {
+  * {
+    margin: 0;
+  }
+  .ok {
+    float: right;
+  }
+  div.bar {
+    height: 1em;
+  }
+}
