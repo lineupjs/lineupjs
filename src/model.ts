@@ -2,8 +2,8 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import d3 = require('d3');
-import utils = require('./utils');
+import * as d3 from 'd3';
+import {merge, AEventDispatcher} from './utils';
 /**
  * converts a given id to css compatible one
  * @param id
@@ -89,7 +89,7 @@ export interface IColumnMetaData {
 /**
  * a column in LineUp
  */
-export class Column extends utils.AEventDispatcher {
+export class Column extends AEventDispatcher {
   /**
    * default color that should be used
    * @type {string}
@@ -2314,7 +2314,7 @@ export interface ISortCriteria {
 /**
  * a ranking
  */
-export class Ranking extends utils.AEventDispatcher implements IColumnParent {
+export class Ranking extends AEventDispatcher implements IColumnParent {
 
   /**
    * the current sort criteria
@@ -2626,7 +2626,7 @@ export function defineColumn<T>(name: string, functions: any = {}) {
     }
   }
   CustomColumn.prototype.toString = () => name;
-  CustomColumn.prototype = utils.merge(CustomColumn.prototype, functions);
+  CustomColumn.prototype = merge(CustomColumn.prototype, functions);
 
   return CustomColumn;
 }

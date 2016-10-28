@@ -2,16 +2,16 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import d3 = require('d3');
-import utils = require('./utils');
-import model = require('./model');
+import * as d3 from 'd3';
+import {merge} from './utils';
+import {INumberFilter, IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model';
 
 
 function clamp(v: number, min: number, max: number) {
   return Math.max(Math.min(v, max), min);
 }
 
-export class MappingEditor {
+export default class MappingEditor {
   private options = {
     width: 370,
     height: 225,
@@ -24,10 +24,10 @@ export class MappingEditor {
     triggerCallback: 'change' //change, dragend
   };
 
-  private computeFilter: ()=>model.INumberFilter;
+  private computeFilter: ()=>INumberFilter;
 
-  constructor(private parent: HTMLElement, private scale_: model.IMappingFunction, private original: model.IMappingFunction, private old_filter: model.INumberFilter, private dataPromise: Promise<number[]>, options: any = {}) {
-    utils.merge(this.options, options);
+  constructor(private parent: HTMLElement, private scale_: IMappingFunction, private original: IMappingFunction, private old_filter: INumberFilter, private dataPromise: Promise<number[]>, options: any = {}) {
+    merge(this.options, options);
     //work on a local copy
     this.scale_ = scale_.clone();
 
@@ -38,7 +38,7 @@ export class MappingEditor {
     return this.scale_;
   }
 
-  get filter(): model.INumberFilter {
+  get filter(): INumberFilter {
     return this.computeFilter();
   }
 
@@ -187,12 +187,12 @@ export class MappingEditor {
     var mapping_lines = [];
 
     function renderMappingLines() {
-      if (!(that.scale instanceof model.ScaleMappingFunction)) {
+      if (!(that.scale instanceof ScaleMappingFunction)) {
         return;
       }
 
       {
-        let sscale = <model.ScaleMappingFunction>that.scale;
+        let sscale = <ScaleMappingFunction>that.scale;
         let domain = sscale.domain;
         let range = sscale.range;
 
@@ -203,7 +203,7 @@ export class MappingEditor {
         //sort by raw value
         mapping_lines.sort((a, b) => a.r - b.r);
         //update the scale
-        let scale = <model.ScaleMappingFunction>that.scale;
+        let scale = <ScaleMappingFunction>that.scale;
         scale.domain = mapping_lines.map((d) => d.r);
         scale.range = mapping_lines.map((d) => d.n);
 
@@ -285,13 +285,13 @@ export class MappingEditor {
     }
 
     function renderScript() {
-      if (!(that.scale instanceof model.ScriptMappingFunction)) {
+      if (!(that.scale instanceof ScriptMappingFunction)) {
         $root.select('div.script').style('display', 'none');
         return;
       }
       $root.select('div.script').style('display', null);
 
-      let sscale = <model.ScriptMappingFunction>that.scale;
+      let sscale = <ScriptMappingFunction>that.scale;
       const $text = $root.select('textarea').text(sscale.code);
 
       $root.select('div.script').select('button').on('click', () => {
@@ -351,14 +351,14 @@ export class MappingEditor {
     $root.select('select').on('change', function () {
       const v = this.value;
       if (v === 'linear_invert') {
-        that.scale_ = new model.ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);
+        that.scale_ = new ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);
       } else if (v === 'linear_abs') {
         let d = raw2pixel.domain();
-        that.scale_ = new model.ScaleMappingFunction([d[0], (d[1] - d[0]) / 2, d[1]], 'linear', [1, 0, 1]);
+        that.scale_ = new ScaleMappingFunction([d[0], (d[1] - d[0]) / 2, d[1]], 'linear', [1, 0, 1]);
       } else if (v === 'script') {
-        that.scale_ = new model.ScriptMappingFunction(raw2pixel.domain());
+        that.scale_ = new ScriptMappingFunction(raw2pixel.domain());
       } else {
-        that.scale_ = new model.ScaleMappingFunction(raw2pixel.domain(), v);
+        that.scale_ = new ScaleMappingFunction(raw2pixel.domain(), v);
       }
       updateDataLines();
       renderMappingLines();
@@ -366,15 +366,11 @@ export class MappingEditor {
       triggerUpdate();
     }).property('selectedIndex', function () {
       var name = 'script';
-      if (that.scale_ instanceof model.ScaleMappingFunction) {
-        name = (<model.ScaleMappingFunction>that.scale).scaleType;
+      if (that.scale_ instanceof ScaleMappingFunction) {
+        name = (<ScaleMappingFunction>that.scale).scaleType;
       }
       const types = ['linear', 'linear_invert', 'linear_abs', 'log', 'pow1.1', 'pow2', 'pow3', 'sqrt', 'script'];
       return types.indexOf(name);
     });
   }
-}
-
-export function create(parent: HTMLElement, scale: model.IMappingFunction, original: model.IMappingFunction, filter: model.INumberFilter, dataPromise: Promise<number[]>, options: any = {}) {
-  return new MappingEditor(parent, scale, original, filter, dataPromise, options);
 }

@@ -2,8 +2,8 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import model = require('./model');
-import d3 = require('d3');
+import * as model from './model';
+import * as d3 from 'd3';
 /**
  * context for rendering, wrapped as an object for easy extensibility
  */

@@ -4,13 +4,13 @@
  */
 
 import './style.scss';
-import model_ = require('./model');
-import provider_ = require('./provider');
-import renderer_ = require('./renderer');
-import ui_ = require('./ui');
-import utils_ = require('./utils');
-import ui_dialogs_ = require('./ui_dialogs');
-import d3 = require('d3');
+import * as model_ from './model';
+import * as provider_  from './provider';
+import * as renderer_  from './renderer';
+import * as ui_  from './ui';
+import * as utils_  from './utils';
+import * as ui_dialogs_ from './ui_dialogs';
+import * as d3 from 'd3';
 
 /**
  * access to the model module
