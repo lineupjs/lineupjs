@@ -4,7 +4,7 @@
 
 import {IStatistics, ICategoricalStatistics, IColumnDesc, Ranking, Column, models, RankColumn, createActionDesc, createStackDesc, isNumberColumn, createRankDesc, createSelectionDesc, StackColumn, INumberColumn, ICategoricalColumn, NumberColumn} from './model';
 import {merge, AEventDispatcher, delayedCall} from './utils';
-import * as d3 from 'd3';
+import {max as d3max, extent, layout, map as d3map, set as d3set, mean as d3mean} from 'd3';
 
 /**
  * computes the simple statistics of an array using d3 histogram
@@ -24,18 +24,18 @@ function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):I
       hist: []
     };
   }
-  const hist = d3.layout.histogram().value(acc);
+  const hist = layout.histogram().value(acc);
   if (range) {
     hist.range(() => range);
   }
-  const ex = d3.extent(arr, acc);
+  const ex = extent(arr, acc);
   const hist_data = hist(arr);
   return {
     min: ex[0],
     max: ex[1],
-    mean: d3.mean(arr, acc),
+    mean: d3mean(arr, acc),
     count: arr.length,
-    maxBin: d3.max(hist_data, (d) => d.y),
+    maxBin: d3max(hist_data, (d) => d.y),
     hist: hist_data
   };
 }
@@ -48,7 +48,7 @@ function computeStats(arr:any[], acc:(any) => number, range?:[number, number]):I
  * @returns {{hist: {cat: string, y: number}[]}}
  */
 function computeHist(arr:any[], acc:(any) => string[], categories: string[]):ICategoricalStatistics {
-  const m = d3.map<number>();
+  const m = d3map<number>();
   categories.forEach((cat) => m.set(cat, 0));
 
   arr.forEach((a) => {
@@ -61,7 +61,7 @@ function computeHist(arr:any[], acc:(any) => string[], categories: string[]):ICa
     });
   });
   return {
-    maxBin: d3.max(m.values()),
+    maxBin: Math.max(...m.values()),
     hist: m.entries().map((entry) => ({ cat: entry.key, y : entry.value}))
   };
 }
@@ -113,7 +113,7 @@ export class DataProvider extends AEventDispatcher {
    * the current selected indices
    * @type {Set}
    */
-  private selection = d3.set();
+  private selection = d3set();
 
   private uid = 0;
 
@@ -634,7 +634,7 @@ export class DataProvider extends AEventDispatcher {
     if (this.selection.size() === indices.length && indices.every((i) => this.selection.has(String(i)))) {
       return; //no change
     }
-    this.selection = d3.set();
+    this.selection = d3set();
     this.selectAll(indices, jumpToSelection);
   }
 
@@ -696,7 +696,7 @@ export class DataProvider extends AEventDispatcher {
    * clears the selection
    */
   clearSelection() {
-    this.selection = d3.set();
+    this.selection = d3set();
     this.fire('selectionChanged', [], false);
   }
 
@@ -797,7 +797,7 @@ export class CommonDataProvider extends DataProvider {
 
   restore(dump:any) {
     super.restore(dump);
-    this.rankingIndex = 1 + d3.max(this.getRankings(), (r) => +r.id.substring(4));
+    this.rankingIndex = 1 + d3max(this.getRankings(), (r) => +r.id.substring(4));
   }
 
   nextRankingId() {

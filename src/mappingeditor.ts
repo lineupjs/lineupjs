@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import * as d3 from 'd3';
+import {select, scale, set as d3set, behavior, Selection, event as d3event, mouse} from 'd3';
 import {merge} from './utils';
 import {INumberFilter, IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model';
 
@@ -31,7 +31,7 @@ export default class MappingEditor {
     //work on a local copy
     this.scale_ = scale_.clone();
 
-    this.build(d3.select(parent));
+    this.build(select(parent));
   }
 
   get scale() {
@@ -42,7 +42,7 @@ export default class MappingEditor {
     return this.computeFilter();
   }
 
-  private build($root: d3.Selection<any>) {
+  private build($root: Selection<any>) {
     const options = this.options,
       that = this;
     $root = $root.append('div').classed('lugui-me', true);
@@ -108,9 +108,9 @@ export default class MappingEditor {
     </form>`;
 
 
-    const raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
+    const raw2pixel = scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
       .range([0, width]);
-    const normal2pixel = d3.scale.linear().domain([0, 1])
+    const normal2pixel = scale.linear().domain([0, 1])
       .range([0, width]);
 
     $root.select('input.raw_min')
@@ -142,7 +142,7 @@ export default class MappingEditor {
     var datalines = $root.select('g.samples').selectAll('line').data([]);
     this.dataPromise.then((data) => {
       //to unique values
-      data = d3.set(data.map(String)).values().map(parseFloat);
+      data = d3set(data.map(String)).values().map(parseFloat);
 
       datalines = datalines.data(data);
       datalines.enter()
@@ -169,15 +169,15 @@ export default class MappingEditor {
     }
 
     function createDrag(move) {
-      return d3.behavior.drag()
+      return behavior.drag()
         .on('dragstart', function () {
-          d3.select(this)
+          select(this)
             .classed('dragging', true)
             .attr('r', options.radius * 1.1);
         })
         .on('drag', move)
         .on('dragend', function () {
-          d3.select(this)
+          select(this)
             .classed('dragging', false)
             .attr('r', options.radius);
           triggerUpdate(true);
@@ -231,13 +231,13 @@ export default class MappingEditor {
       }
 
       $root.selectAll('rect.adder').on('click', () => {
-        addPoint(d3.mouse($root.select('svg > g').node())[0]);
+        addPoint(mouse($root.select('svg > g').node())[0]);
       });
 
       const $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mapping_lines);
       const $mapping_enter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', (d, i) => {
-        (<MouseEvent>d3.event).preventDefault();
-        (<MouseEvent>d3.event).stopPropagation();
+        (<MouseEvent>d3event).preventDefault();
+        (<MouseEvent>d3event).stopPropagation();
         removePoint(i);
       });
       $mapping_enter.append('line').attr({
@@ -245,32 +245,32 @@ export default class MappingEditor {
         y2: height
       }).call(createDrag(function (d) {
         //drag the line shifts both point in parallel
-        const dx = (<any>d3.event).dx;
+        const dx = (<any>d3event).dx;
         const nx = clamp(normal2pixel(d.n) + dx, 0, width);
         const rx = clamp(raw2pixel(d.r) + dx, 0, width);
         d.n = normal2pixel.invert(nx);
         d.r = raw2pixel.invert(rx);
-        d3.select(this).attr('x1', nx).attr('x2', rx);
-        d3.select(this.parentElement).select('circle.normalized').attr('cx', nx);
-        d3.select(this.parentElement).select('circle.raw').attr('cx', rx);
+        select(this).attr('x1', nx).attr('x2', rx);
+        select(this.parentElement).select('circle.normalized').attr('cx', nx);
+        select(this.parentElement).select('circle.raw').attr('cx', rx);
 
         updateScale();
       }));
       $mapping_enter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
         //drag normalized
-        const x = clamp((<d3.DragEvent>d3.event).x, 0, width);
+        const x = clamp((<DragEvent>d3event).x, 0, width);
         d.n = normal2pixel.invert(x);
-        d3.select(this).attr('cx', x);
-        d3.select(this.parentElement).select('line').attr('x1', x);
+        select(this).attr('cx', x);
+        select(this.parentElement).select('line').attr('x1', x);
 
         updateScale();
       }));
       $mapping_enter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
         //drag raw
-        const x = clamp((<d3.DragEvent>d3.event).x, 0, width);
+        const x = clamp((<DragEvent>d3event).x, 0, width);
         d.r = raw2pixel.invert(x);
-        d3.select(this).attr('cx', x);
-        d3.select(this.parentElement).select('line').attr('x2', x);
+        select(this).attr('cx', x);
+        select(this.parentElement).select('line').attr('x2', x);
 
         updateScale();
       }));
@@ -320,10 +320,10 @@ export default class MappingEditor {
         .attr('transform', (d,i) => `translate(${i===0?min_filter:max_filter},0)`).call(createDrag(function (d,i) {
 
           //drag normalized
-          const x = clamp((<d3.DragEvent>d3.event).x, 0, width);
+          const x = clamp((<DragEvent>d3event).x, 0, width);
           const v = raw2pixel.invert(x);
           const filter = (x <= 0 && i === 0 ? -Infinity : (x>=width && i===1 ? Infinity : v));
-          d3.select(this).datum(filter)
+          select(this).datum(filter)
             .attr('transform',`translate(${x},0)`)
             .select('text').text(toFilterString(filter,i));
         }))

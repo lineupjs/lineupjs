@@ -8,7 +8,7 @@ import {Column, StringColumn, CategoricalColumn, LinkColumn, StackColumn, Script
 import {offset} from './utils';
 import MappingEditor from './mappingeditor';
 import {DataProvider} from './provider';
-import * as d3 from 'd3';
+import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
 
 export function dialogForm(title, body, buttonsWithLabel = false) {
   return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
@@ -25,9 +25,9 @@ export function dialogForm(title, body, buttonsWithLabel = false) {
  * @param body
  * @returns {Selection<any>}
  */
-export function makePopup(attachement:d3.Selection<any>, title:string, body:string) {
+export function makePopup(attachement:Selection<any>, title:string, body:string) {
   var pos = offset(<Element>attachement.node());
-  var $popup = d3.select('body').append('div')
+  var $popup = select('body').append('div')
     .attr({
       'class': 'lu-popup2'
     }).style({
@@ -35,17 +35,17 @@ export function makePopup(attachement:d3.Selection<any>, title:string, body:stri
       top: pos.top + 'px'
     }).html(dialogForm(title, body));
   function movePopup() {
-    //.style("left", (this.parentElement.offsetLeft + (<any>d3.event).dx) + 'px')
-    //.style("top", (this.parentElement.offsetTop + d3.event.dy) + 'px');
+    //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
+    //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
     //const mouse = d3.mouse(this.parentElement);
     $popup.style({
-      left: (this.parentElement.offsetLeft + (<any>d3.event).dx) + 'px',
-      top:  (this.parentElement.offsetTop + (<any>d3.event).dy) + 'px'
+      left: (this.parentElement.offsetLeft + (<any>d3event).dx) + 'px',
+      top:  (this.parentElement.offsetTop + (<any>d3event).dy) + 'px'
     });
   }
-  $popup.select('span.lu-popup-title').call(d3.behavior.drag().on('drag', movePopup));
+  $popup.select('span.lu-popup-title').call(behavior.drag().on('drag', movePopup));
   $popup.on('keydown', () => {
-    if ((<KeyboardEvent>d3.event).which === 27) {
+    if ((<KeyboardEvent>d3event).which === 27) {
       $popup.remove();
     }
   });
@@ -157,7 +157,7 @@ export function openEditWeightsDialog(column:StackColumn, $header:d3.Selection<C
     children = column.children.map((d, i) => ({col: d, weight: weights[i] * 100} ));
 
   //map weights to pixels
-  var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
+  var scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 
   var $popup = makePopup($header, 'Edit Weights', '<table></table>');
 
@@ -456,7 +456,7 @@ function openMappingEditor(column:NumberColumn, $header:d3.Selection<any>, data:
     act: IMappingFunction = bak.clone(),
     actfilter = bakfilter;
 
-  var popup = d3.select('body').append('div')
+  var popup = select('body').append('div')
     .attr({
       'class': 'lu-popup'
     }).style({
@@ -511,7 +511,7 @@ function openMappingEditor(column:NumberColumn, $header:d3.Selection<any>, data:
 function openCategoricalMappingEditor(column:CategoricalNumberColumn, $header:d3.Selection<any>) {
   var bak = column.getFilter() || [];
 
-  var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
+  var scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 
   var $popup = makePopup($header, 'Edit Categorical Mapping', '<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>');
 

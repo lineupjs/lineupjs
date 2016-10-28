@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import * as d3 from 'd3';
+import {scale, min as d3min, max as d3max, mean as d3mean, format, ascending, map as d3map} from 'd3';
 import {merge, AEventDispatcher} from './utils';
 /**
  * converts a given id to css compatible one
@@ -494,17 +494,17 @@ export interface INumberFilter {
 function toScale(type = 'linear'):IScale {
   switch (type) {
     case 'log':
-      return d3.scale.log().clamp(true);
+      return scale.log().clamp(true);
     case 'sqrt':
-      return d3.scale.sqrt().clamp(true);
+      return scale.sqrt().clamp(true);
     case 'pow1.1':
-      return d3.scale.pow().exponent(1.1).clamp(true);
+      return scale.pow().exponent(1.1).clamp(true);
     case 'pow2':
-      return d3.scale.pow().exponent(2).clamp(true);
+      return scale.pow().exponent(2).clamp(true);
     case 'pow3':
-      return d3.scale.pow().exponent(3).clamp(true);
+      return scale.pow().exponent(3).clamp(true);
     default:
-      return d3.scale.linear().clamp(true);
+      return scale.linear().clamp(true);
   }
 }
 
@@ -682,7 +682,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
    */
   private currentFilter : INumberFilter = {min: -Infinity, max: Infinity};
 
-  private numberFormat : (n: number) => string = d3.format('.3n');
+  private numberFormat : (n: number) => string = format('.3n');
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -695,7 +695,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
     this.original = this.mapping.clone();
 
     if (desc.numberFormat) {
-      this.numberFormat = d3.format(desc.numberFormat);
+      this.numberFormat = format(desc.numberFormat);
     }
   }
 
@@ -735,7 +735,7 @@ export class NumberColumn extends ValueColumn<number> implements INumberColumn {
       this.missingValue = dump.missingValue;
     }
     if (dump.numberFormat) {
-      this.numberFormat = d3.format(dump.numberFormat);
+      this.numberFormat = format(dump.numberFormat);
     }
   }
 
@@ -1036,7 +1036,7 @@ export class LinkColumn extends StringColumn {
  * a string column in which the values can be edited locally
  */
 export class AnnotateColumn extends StringColumn {
-  private annotations = d3.map<string>();
+  private annotations = d3map<string>();
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -1145,7 +1145,7 @@ export class SelectionColumn extends ValueColumn<boolean> {
   }
 
   compare(a:any, b:any) {
-    return d3.ascending(this.getValue(a), this.getValue(b));
+    return ascending(this.getValue(a), this.getValue(b));
   }
 }
 
@@ -1217,7 +1217,7 @@ export class BooleanColumn extends ValueColumn<boolean> {
   }
 
   compare(a:any[], b:any[]) {
-    return d3.ascending(this.getValue(a), this.getValue(b));
+    return ascending(this.getValue(a), this.getValue(b));
   }
 }
 
@@ -1229,13 +1229,13 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
    * colors for each category
    * @type {Ordinal<string, string>}
    */
-  private colors = d3.scale.category10();
+  private colors = scale.category10();
 
   /**
    * category labels by default the category name itself
    * @type {Array}
    */
-  private catLabels = d3.map<string>();
+  private catLabels = d3map<string>();
 
   /**
    * set of categories to show
@@ -1261,7 +1261,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
     if (desc.categories) {
       var cats = [],
         cols = this.colors.range(),
-        labels = d3.map<string>();
+        labels = d3map<string>();
       desc.categories.forEach((cat, i) => {
         if (typeof cat === 'string') {
           //just the category value
@@ -1380,7 +1380,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
       this.colors.domain(dump.colors.domain).range(dump.colors.range);
     }
     if (dump.labels) {
-      this.catLabels = d3.map<string>();
+      this.catLabels = d3map<string>();
       dump.labels.forEach((e) => this.catLabels.set(e.key, e.value));
     }
     this.separator = dump.separator || this.separator;
@@ -1424,7 +1424,7 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
     const vb = this.getValues(b);
     //check all categories
     for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
-      let ci = d3.ascending(va[i], vb[i]);
+      let ci = ascending(va[i], vb[i]);
       if (ci !== 0) {
         return ci;
       }
@@ -1438,15 +1438,15 @@ export class CategoricalColumn extends ValueColumn<string> implements ICategoric
  * similar to a categorical column but the categories are mapped to numbers
  */
 export class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
-  private colors = d3.scale.category10();
+  private colors = scale.category10();
 
   /**
    * category labels by default the category name itself
    * @type {Array}
    */
-  private catLabels = d3.map<string>();
+  private catLabels = d3map<string>();
 
-  private scale = d3.scale.ordinal().rangeRoundPoints([0, 1]);
+  private scale = scale.ordinal().rangeRoundPoints([0, 1]);
 
   private currentFilter:string[] = null;
   /**
@@ -1454,7 +1454,7 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
    * @type {string}
    */
   private separator = ';';
-  private combiner = d3.max;
+  private combiner = d3max;
 
   constructor(id:string, desc:any) {
     super(id, desc);
@@ -1527,13 +1527,13 @@ export class CategoricalNumberColumn extends ValueColumn<number> implements INum
   getColor(row:any) {
     const vs = this.getValues(row);
     const cs = this.getColors(row);
-    if (this.combiner === d3.max) {
+    if (this.combiner === d3max) {
       //use the max color
       return cs.slice(1).reduce((prev, act, i) => vs[i + 1] > prev.v ? {c: act, v: vs[i + 1]} : prev, {
         c: cs[0],
         v: vs[0]
       }).c;
-    } else if (this.combiner === d3.min) {
+    } else if (this.combiner === d3min) {
       //use the max color
       return cs.slice(1).reduce((prev, act, i) => vs[i + 1] < prev.v ? {c: act, v: vs[i + 1]} : prev, {
         c: cs[0],
@@ -1741,13 +1741,13 @@ export class CompositeColumn extends Column implements IColumnParent {
 export class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
   public missingValue = 0;
 
-  private numberFormat : (n: number) => string = d3.format('.3n');
+  private numberFormat : (n: number) => string = format('.3n');
 
   constructor(id:string, desc:any) {
     super(id, desc);
 
     if (desc.numberFormat) {
-      this.numberFormat = d3.format(desc.numberFormat);
+      this.numberFormat = format(desc.numberFormat);
     }
   }
 
@@ -1763,7 +1763,7 @@ export class CompositeNumberColumn extends CompositeColumn implements INumberCol
       this.missingValue = dump.missingValue;
     }
     if (dump.numberFormat) {
-      this.numberFormat = d3.format(dump.numberFormat);
+      this.numberFormat = format(dump.numberFormat);
     }
     super.restore(dump, factory);
   }
@@ -1966,7 +1966,7 @@ export class StackColumn extends CompositeNumberColumn implements IMultiLevelCol
     var s,
       delta = weights.length - this.length;
     if (delta < 0) {
-      s = d3.sum(weights);
+      s = weights.reduce((p, a) => p+a, 0);
       if (s <= 1) {
         for (var i = 0; i < -delta; ++i) {
           weights.push((1 - s) * (1 / -delta));
@@ -1978,7 +1978,7 @@ export class StackColumn extends CompositeNumberColumn implements IMultiLevelCol
       }
     }
     weights = weights.slice(0, this.length);
-    s = d3.sum(weights) / this.getWidth();
+    s = weights.reduce((p, a) => p+a, 0) / this.getWidth();
     weights = weights.map(d => d / s);
 
     this._children.forEach((c, i) => {
@@ -2044,7 +2044,7 @@ export class MaxColumn extends CompositeNumberColumn {
   }
 
   protected compute(row: any) {
-    return d3.max(this._children, (d) => d.getValue(row));
+    return d3max(this._children, (d) => d.getValue(row));
   }
 }
 
@@ -2080,7 +2080,7 @@ export class MinColumn extends CompositeNumberColumn {
   }
 
   protected compute(row: any) {
-    return d3.min(this._children, (d) => d.getValue(row));
+    return d3min(this._children, (d) => d.getValue(row));
   }
 }
 
@@ -2099,7 +2099,7 @@ export class MeanColumn extends CompositeNumberColumn {
   }
 
   protected compute(row: any) {
-    return d3.mean(this._children, (d) => d.getValue(row));
+    return d3mean(this._children, (d) => d.getValue(row));
   }
 }
 
