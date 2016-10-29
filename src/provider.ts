@@ -600,6 +600,9 @@ export class DataProvider extends AEventDispatcher {
    * @param index
    */
   select(index:number) {
+    if (this.selection.has(String(index))) {
+      return; //no change
+    }
     this.selection.add(String(index));
     this.fire('selectionChanged', this.selection.values().map(Number));
   }
@@ -619,6 +622,9 @@ export class DataProvider extends AEventDispatcher {
    * @param jumpToSelection whether the first selected row should be visible
    */
   selectAll(indices:number[], jumpToSelection = false) {
+    if (indices.every((i) => this.selection.has(String(i)))) {
+      return; //no change
+    }
     indices.forEach((index) => {
       this.selection.add(String(index));
     });
@@ -666,6 +672,9 @@ export class DataProvider extends AEventDispatcher {
    * @param index
    */
   deselect(index:number) {
+    if (!this.selection.has(String(index))) {
+      return; //no change
+    }
     this.selection.remove(String(index));
     this.fire('selectionChanged', this.selection.values().map(Number));
   }
@@ -696,6 +705,9 @@ export class DataProvider extends AEventDispatcher {
    * clears the selection
    */
   clearSelection() {
+    if (this.selection.empty()) {
+      return; //no change
+    }
     this.selection = d3set();
     this.fire('selectionChanged', [], false);
   }

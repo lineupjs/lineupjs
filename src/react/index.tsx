@@ -6,51 +6,65 @@ import '../style.scss';
 import Impl from '../lineup';
 import * as React from 'react';
 import {IColumnDesc} from '../model';
-import {LocalDataProvider} from '../provider'
+import {LocalDataProvider, DataProvider} from '../provider'
 
 export interface ILineUpProps<T> {
   data: T[];
   desc: IColumnDesc[];
+  options?: any;
+  selection?: T[];
+  onSelectionChanged?(selection:T[]): void;
 }
 
-
-export interface ILineUpState<T> {
-  selection: any[]
+function deepEqual<T>(a: T[], b: T[]) {
+  if (a === b) {
+    return true;
+  }
+  if (a != b) {
+    return false;
+  }
+  return a.every((ai,i) => ai === b[i]);
 }
 
-export default class LineUp<T> extends React.Component<ILineUpProps<T>, ILineUpState<T>> {
-private plot: Impl = null;
+export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
+  private plot: Impl = null;
   private parent: HTMLDivElement = null;
 
   constructor(props: ILineUpProps<T>, context?: any) {
     super(props, context);
+  }
 
-    this.state = {
-      selection: [] as T[]
-    };
+  item2index(item: T) {
+    return this.props.data.indexOf(item);
+  }
+
+  index2item(index: number) {
+    return this.props.data[index];
   }
 
   componentDidMount() {
-    console.log(this.props.children);
     //create impl
+    console.log('create lineup instance');
     const data = new LocalDataProvider(this.props.data, this.props.desc);
+    data.on('selectionChanged', this.onSelectionChanged.bind(this));
+    data.selectAll(this.props.selection ? this.props.selection.map((d) => this.item2index(d)): []);
     data.deriveDefault();
     this.plot = new Impl(this.parent, data, this.props);
     this.plot.update();
   }
 
-  shouldComponentUpdate(nextProps: ILineUpProps<T>, nextState: ILineUpState<T>) {
-    //check selection changes
-    const new_ = this.state.selection;
-    const old = nextState.selection;
-    if (new_.length !== old.length) {
-      return true;
+  shouldComponentUpdate?(nextProps: ILineUpProps<T>) {
+    return !deepEqual(this.props.selection, nextProps.selection);
+  }
+
+  private onSelectionChanged(indices: number[]) {
+    if (this.props.onSelectionChanged) {
+      this.props.onSelectionChanged(indices.map((d) => this.index2item(d)));
     }
-    return new_.some((d,i) => d !== old[i]);
-  };
+  }
 
   componentDidUpdate() {
-    this.plot.update();
+    this.plot.data.setSelection(this.props.selection ? this.props.selection.map((d) => this.item2index(d)): []);
   }
 
   render() {
@@ -64,6 +78,9 @@ private plot: Impl = null;
 (LineUp as any).propTypes = {
   data: React.PropTypes.array.isRequired,
   desc: React.PropTypes.array.isRequired,
+  options: React.PropTypes.any,
+  onSelectionChanged: React.PropTypes.func,
+  selection: React.PropTypes.any
 };
 
 (LineUp as any).defaultProps = {
