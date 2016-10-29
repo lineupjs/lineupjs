@@ -6,7 +6,7 @@ import '../style.scss';
 import Impl from '../lineup';
 import * as React from 'react';
 import {IColumnDesc} from '../model';
-import {LocalDataProvider, DataProvider} from '../provider'
+import {LocalDataProvider} from '../provider'
 
 export interface ILineUpProps<T> {
   data: T[];
@@ -20,7 +20,7 @@ function deepEqual<T>(a: T[], b: T[]) {
   if (a === b) {
     return true;
   }
-  if (a != b) {
+  if (a.length !== b.length) {
     return false;
   }
   return a.every((ai,i) => ai === b[i]);
