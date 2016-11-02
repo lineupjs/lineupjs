@@ -2236,7 +2236,7 @@ export class NestedColumn extends MultiLevelCompositeColumn {
   }
 }
 
-export class ScriptColumn extends CompositeColumn {
+export class ScriptColumn extends CompositeNumberColumn {
   /**
    * factory for creating a description creating a mean column
    * @param label
