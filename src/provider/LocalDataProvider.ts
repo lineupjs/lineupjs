@@ -15,8 +15,8 @@ import {
 } from '../model';
 import {merge} from '../utils';
 import * as d3 from 'd3';
-import {IStatsBuilder, IDataProviderOptions} from './DataProvider';
-import CommonDataProvider from './CommonDataProvider';
+import {IStatsBuilder, IDataProviderOptions} from './ADataProvider';
+import ACommonDataProvider from './ACommonDataProvider';
 
 /**
  * computes the simple statistics of an array using d3 histogram
@@ -93,7 +93,7 @@ export interface ILocalDataProviderOptions extends IDataProviderOptions {
 /**
  * a data provider based on an local array
  */
-export default class LocalDataProvider extends CommonDataProvider {
+export default class LocalDataProvider extends ACommonDataProvider {
   private options: ILocalDataProviderOptions = {
     /**
      * whether the filter should be applied to all rankings regardless where they are

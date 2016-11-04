@@ -3,12 +3,12 @@
  */
 
 import {IColumnDesc} from '../model';
-import DataProvider from './DataProvider';
+import ADataProvider from './ADataProvider';
 
 /**
  * common base implementation of a DataProvider with a fixed list of column descriptions
  */
-abstract class CommonDataProvider extends DataProvider {
+abstract class ACommonDataProvider extends ADataProvider {
   private rankingIndex = 0;
   //generic accessor of the data item
   private rowGetter = (row: any, id: string, desc: any) => row[desc.column];
@@ -72,4 +72,4 @@ abstract class CommonDataProvider extends DataProvider {
   }
 }
 
-export default CommonDataProvider;
+export default ACommonDataProvider;

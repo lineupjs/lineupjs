@@ -3,8 +3,8 @@
  */
 
 import {IColumnDesc, Ranking, Column, createRankDesc} from '../model';
-import {IStatsBuilder} from './DataProvider';
-import CommonDataProvider from './CommonDataProvider';
+import {IStatsBuilder} from './ADataProvider';
+import ACommonDataProvider from './ACommonDataProvider';
 /**
  * interface what the server side has to provide
  */
@@ -37,7 +37,7 @@ export interface IServerData {
 /**
  * a remote implementation of the data provider
  */
-export default class RemoteDataProvider extends CommonDataProvider {
+export default class RemoteDataProvider extends ACommonDataProvider {
 
   /**
    * the local ranking orders

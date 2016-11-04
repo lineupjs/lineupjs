@@ -68,7 +68,7 @@ export interface IDataProviderOptions {
 /**
  * a basic data provider holding the data and rankings
  */
-abstract class DataProvider extends AEventDispatcher {
+abstract class ADataProvider extends AEventDispatcher {
   /**
    * all rankings
    * @type {Array}
@@ -688,4 +688,4 @@ abstract class DataProvider extends AEventDispatcher {
 
 }
 
-export default DataProvider;
+export default ADataProvider;
