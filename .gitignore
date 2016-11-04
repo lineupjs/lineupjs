@@ -3,6 +3,7 @@
 node_modules
 /bower_components
 /libs
+/dists
 /typings/**/*.*
 !/typings/tsd.d.ts
 /tmp
