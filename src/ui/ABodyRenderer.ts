@@ -9,7 +9,7 @@ import Column, {IStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
-import RowFetcher from './RowFetcher';
+import RowFetcher from '../provider/RowFetcher';
 
 export interface ISlicer {
   (start: number, length: number, row2y: (i: number) => number): { from: number; to: number };
