@@ -221,22 +221,15 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return Promise.resolve(argsort);
   }
 
-  view(indices: number[]) {
-    if (this.data.length === 0) {
-      return Promise.resolve([]);
-    }
-    //filter invalid indices
-    const l = this.data.length;
-    const slice = indices.filter((i) => i >= 0 && i < l).map((index) => ({ v: this.data[index], dataIndex: index }));
-
-    return Promise.resolve(slice);
-  }
 
   viewRaw(indices: number[]) {
     //filter invalid indices
     const l = this.data.length;
-    const slice = indices.filter((i) => i >= 0 && i < l).map((index) => this.data[index]);
-    return slice;
+    return indices.filter((i) => i >= 0 && i < l).map((index) => this.data[index]);
+  }
+
+  view(indices: number[]) {
+    return Promise.resolve(this.viewRaw(indices));
   }
 
   /**

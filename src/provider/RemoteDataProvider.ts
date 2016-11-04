@@ -3,8 +3,9 @@
  */
 
 import {IColumnDesc, Ranking, Column, createRankDesc} from '../model';
-import {IStatsBuilder} from './ADataProvider';
+import {IStatsBuilder, IDataRow} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
+
 /**
  * interface what the server side has to provide
  */
@@ -45,6 +46,9 @@ export default class RemoteDataProvider extends ACommonDataProvider {
    */
   private ranks: any = {};
 
+  private cache = new Map<number, Promise<IDataRow>>();
+
+
   constructor(private server: IServerData, columns: IColumnDesc[] = [], options: any = {}) {
     super(columns, options);
   }
@@ -81,7 +85,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     });
   }
 
-  view(indices: number[]) {
+  private loadFromServer(indices: number[]) {
     return this.server.view(indices).then((view) => {
       //enhance with the data index
       return view.map((v, i) => {
@@ -91,6 +95,50 @@ export default class RemoteDataProvider extends ACommonDataProvider {
       });
     });
   }
+
+  view(indices: number[]): Promise<any[]> {
+    if (indices.length === 0) {
+      return Promise.resolve([]);
+    }
+    const base = this.fetch([indices])[0];
+    return Promise.all(base).then((rows) => rows.map((d) => d.v));
+  }
+
+
+  private computeMissing(orders: number[][]): number[] {
+    const union = new Set<number>();
+    const union_add = union.add.bind(union);
+    orders.forEach((order) => order.forEach(union_add));
+
+    // removed cached
+    this.cache.forEach((v,k) => union.delete(k));
+
+    // const maxLength = Math.max(...orders.map((o) => o.length));
+    var r = [];
+    union.forEach(r.push.bind(r));
+    return r;
+  }
+
+  private loadInCache(missing: number[]) {
+    if (missing.length === 0) {
+      return;
+    }
+    // load data and map to rows;
+    const v = this.loadFromServer(missing);
+    missing.forEach((m, i) => {
+      const dataIndex = missing[i];
+      this.cache.set(dataIndex, v.then((loaded) => ({v: loaded[i], dataIndex})));
+    });
+  }
+
+  fetch(orders: number[][]): Promise<IDataRow>[][] {
+    const toLoad = this.computeMissing(orders);
+    this.loadInCache(toLoad);
+
+    return orders.map((order) =>
+      order.map((dataIndex) => this.cache.get(dataIndex)));
+  }
+
 
   mappingSample(col: Column): Promise<number[]> {
     return this.server.mappingSample((<any>col.desc).column);

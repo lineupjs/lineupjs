@@ -505,7 +505,14 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param indices
    * @return {Promise<any>}
    */
-  abstract view(indices: number[]): Promise<IDataRow[]>;
+  abstract view(indices: number[]): Promise<any[]>;
+
+  fetch(orders: number[][]): Promise<IDataRow>[][] {
+    return orders.map((order) => {
+      const v = this.view(order);
+      return order.map((d, i) => v.then((rows) => ({v:rows[i], dataIndex: d})));
+    });
+  }
 
   /**
    * returns a data sample used for the mapping editor
@@ -630,7 +637,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * returns a promise containing the selected rows
    * @return {Promise<any[]>}
    */
-  selectedRows() {
+  selectedRows(): Promise<IDataRow[]> {
     if (this.selection.empty()) {
       return Promise.resolve([]);
     }

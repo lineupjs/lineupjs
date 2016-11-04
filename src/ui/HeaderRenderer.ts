@@ -16,6 +16,7 @@ import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
 import {filterDialogs, openEditWeightsDialog, openEditLinkDialog, openEditScriptDialog, openRenameDialog, openSearchDialog} from '../ui_dialogs';
+import {IDataRow} from '../provider/ADataProvider';
 
 /**
  * utility function to generate the tooltip text with description

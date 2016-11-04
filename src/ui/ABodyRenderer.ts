@@ -9,7 +9,6 @@ import Column, {IStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
-import RowFetcher from '../provider/RowFetcher';
 
 export interface ISlicer {
   (start: number, length: number, row2y: (i: number) => number): { from: number; to: number };
@@ -98,8 +97,6 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   histCache = d3.map<Promise<IStatistics>>();
 
-  private rowFetcher: RowFetcher;
-
   constructor(protected data: DataProvider, parent: Element, private slicer: ISlicer, root: string, options : IBodyRendererOptions = {}) {
     super();
     //merge options
@@ -134,8 +131,6 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       }
       this.drawSelection();
     }, 1));
-
-    this.rowFetcher = new RowFetcher(data);
   }
 
   protected jumpToSelection() {
@@ -203,7 +198,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   }
 
   private createData(rankings: Ranking[], orders: number[][], shifts: any[], context: IRenderContext<any>): IRankingData[] {
-    const data = this.rowFetcher.fetch(rankings.map((r) => r.getOrder()));
+    const data = this.data.fetch(rankings.map((r) => r.getOrder()));
 
     return rankings.map((r, i) => {
       const cols = r.children.filter((d) => !d.isHidden());
