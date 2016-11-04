@@ -385,3 +385,27 @@ export function dropAble<T>(mimeTypes:string[], onDrop:(data:any, d:T, copy:bool
     });
   };
 }
+
+
+/**
+ * utility function to sets attributes and styles in a nodes
+ * @param node
+ * @param attrs
+ * @param styles
+ * @return {T}
+ */
+export function attr<T extends (HTMLElement | SVGElement & SVGStylable)>(node: T, attrs = {}, styles = {}): T {
+  Object.keys(attrs).forEach((attr) => node.setAttribute(attr, String(attrs[attr])));
+  Object.keys(styles).forEach((attr) => node.style.setProperty(attr, styles[attr]));
+  return node;
+}
+
+/**
+ * for each item matching the selector execute the callback
+ * @param node
+ * @param selector
+ * @param callback
+ */
+export function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number)=>void) {
+  Array.prototype.slice.call(node.querySelectorAll(selector)).forEach(callback);
+}

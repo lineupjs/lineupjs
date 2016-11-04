@@ -3,6 +3,7 @@
 node_modules
 /bower_components
 /libs
+/dists
 /typings/**/*.*
 !/typings/tsd.d.ts
 /tmp
@@ -13,4 +14,4 @@ demo/.idea/
 
 src/**/*.map
 src/**/*.js
-src/*.css
+src/**/*.css

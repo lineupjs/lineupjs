@@ -29,9 +29,10 @@
     renderingOptions: {
       stacked: true,
       histograms: true,
-      animated: true
+      animation: false
     },
     svgLayout: {
+      renderer: 'canvas',
       freezeCols: 0
     }
   };

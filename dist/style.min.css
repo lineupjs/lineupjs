@@ -1,5 +1,309 @@
-/*! lineupjs - v0.5.3 - 2016
+/*! lineupjs - v0.5.4 - 2016
 * https://github.com/Caleydo/lineup.js
 * Copyright (c) 2016 Caleydo Team; Licensed BSD-3-Clause*/
 
-.lugui-me{margin-bottom:5px;clear:both}.lugui-me .raw_max,.lugui-me .raw_min{width:3em;display:block}.lugui-me .mapping_area{display:flex;align-items:stretch}.lugui-me .mapping_area>div{display:flex;flex-direction:column}.lugui-me .mapping_area>div>span:first-of-type{flex-grow:1}.lugui-me svg{z-index:1;position:relative}.lugui-me svg>rect{fill:#fff;opacity:0}.lugui-me svg g.samples line{stroke:#000;opacity:.5}.lugui-me svg g.mapping:hover{cursor:ew-resize}.lugui-me svg g.mapping:hover line{stroke:#0000cf}.lugui-me svg g.mapping:hover circle{fill:#0000cf}.lugui-me svg g.mapping line{stroke:blue}.lugui-me svg g.mapping circle{fill:blue}.lugui-me svg g.filter text{font-size:8pt;alignment-baseline:hanging}.lugui-me svg g.filter path{fill:gray}.lugui-me svg g.filter rect{fill:#fff;stroke:gray;stroke-width:1}.lugui-me svg g.filter>g{cursor:pointer;cursor:-webkit-drag}.lugui-me svg g.filter>g:hover path{fill:#a9a9a9}.lugui-me svg g.filter>g:hover rect{stroke:#a9a9a9}.lugui-me div.script{clear:both}.lugui-me div.script textarea{height:4em;width:98%;font-size:8pt;display:block}.lu-popup{position:absolute;dominant-baseline:central;text-anchor:middle}.lu-popup .ok{position:absolute;right:10px}.lu-popup,.lu-popup2{background-color:hsla(0,0%,100%,.9);position:absolute;padding:2px;box-shadow:5px 5px 3px #888;z-index:9;font-size:8pt;clear:right}.lu-popup2 input,.lu-popup input{font-size:8pt}.lu-popup2 .selectionTable,.lu-popup .selectionTable{background:#fff;overflow-x:auto;overflow-y:auto;max-height:50vh}.lu-popup2 .selectionTable td,.lu-popup2 .selectionTable th,.lu-popup .selectionTable td,.lu-popup .selectionTable th{white-space:nowrap;padding:1px 5px 1px 3px;cursor:pointer}.lu-popup2 .selectionTable th,.lu-popup .selectionTable th{border-bottom:1px solid #c1c1c1}.lu-popup2 .selectionTable table,.lu-popup .selectionTable table{width:95%;border:0}.lu-popup2 .selectionTable tr:hover,.lu-popup .selectionTable tr:hover{background-color:#add8e6}.lu-popup2 .lu-popup-title,.lu-popup .lu-popup-title{cursor:pointer;cursor:-webkit-grab}.lu-popup2 *{margin:0}.lu-popup2 .ok{float:right}.lu-popup2 div.bar{height:1em}.lu-tooltip{background-color:#fff;min-width:200px;position:absolute;z-index:3;font-size:9pt;text-align:left;padding:2px}.lu-tooltip table{width:100%;border-collapse:collapse}.lu-tooltip tbody th{width:100px}.lu-tooltip td,.lu-tooltip th{border:1px solid #000}.lu-pool div.header{border:2px outset #fff;position:absolute}.lu-pool div.header:hover{border-color:#e5e5e5}.lu,.lu-pool,.lu-pool div.lu-header,.lu div.lu-header{position:relative}.lu-pool text,.lu-pool tspan,.lu text,.lu tspan{dominant-baseline:text-before-edge}.lu-pool text.actions tspan,.lu text.actions tspan{cursor:pointer}.lu-pool text.actions tspan:hover,.lu text.actions tspan:hover{color:#00008b}.lu-pool text.selection,.lu text.selection{cursor:pointer}.lu-pool text.selection:hover,.lu text.selection:hover{color:#00008b}.lu-pool text.rank,.lu-pool text.text_right,.lu text.rank,.lu text.text_right{text-anchor:end}.lu-pool text.text_center,.lu text.text_center{text-anchor:middle}.lu-pool g.bar rect,.lu g.bar rect{opacity:.5}.lu-pool line.meanline,.lu line.meanline{stroke:#a9a9a9;stroke-width:1}.lu-pool [draggable],.lu [draggable]{cursor:pointer;cursor:-webkit-grab}.lu-pool line.slope,.lu line.slope{stroke:#a9a9a9;stroke-width:2;shape-rendering:geometricPrecision}.lu-pool line.slope.hover,.lu line.slope.hover{stroke:#e5e5e5}.lu-pool line.slope.selected,.lu line.slope.selected{stroke:orange}.lu-pool g.cols,.lu g.cols{pointer-events:none}.lu-pool g.row rect.bg,.lu g.row rect.bg{fill:transparent}.lu-pool g.row rect.bg.even,.lu g.row rect.bg.even{fill:#f7f7f7}.lu-pool g.row.selected rect.bg,.lu g.row.selected rect.bg{stroke:orange;stroke-width:1}.lu-pool g.row.hover rect.bg,.lu g.row.hover rect.bg{fill:#e5e5e5}.lu-pool g.row.hover g.bar rect,.lu-pool g.row.hover rect.bar,.lu g.row.hover g.bar rect,.lu g.row.hover rect.bar{opacity:.5}.lu-pool div.lu-header,.lu-pool div.lu-pool,.lu div.lu-header,.lu div.lu-pool{position:relative;background-color:#fff}.lu-pool div.lu-header .drop,.lu-pool div.lu-pool .drop,.lu div.lu-header .drop,.lu div.lu-pool .drop{width:100%;height:100%;position:absolute}.lu-pool div.lu-header .drop.drag_over,.lu-pool div.lu-pool .drop.drag_over,.lu div.lu-header .drop.drag_over,.lu div.lu-pool .drop.drag_over{background-color:#979797}.lu-pool div.lu-header div.toolbar,.lu div.lu-header div.toolbar{display:none;position:absolute;text-align:right;right:5px;top:0;border-radius:3px 0 0 3px;cursor:auto;background:#6d6c6c;z-index:1}.lu-pool div.lu-header div.header.drag_over div.lu-label,.lu div.lu-header div.header.drag_over div.lu-label{color:#979797}.lu-pool div.lu-header div.header.compressed div.histogram,.lu-pool div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right),.lu div.lu-header div.header.compressed div.histogram,.lu div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right){display:none}.lu-pool div.lu-header div.header div.histogram,.lu div.lu-header div.header div.histogram{position:absolute;left:0;right:5px;top:40%;height:60%;display:none}.lu-pool div.lu-header div.header div.histogram>div.bar,.lu div.lu-header div.header div.histogram>div.bar{position:absolute;background-color:#fff;opacity:.5}.lu-pool div.lu-header div.header div.histogram>div.bar.selected,.lu div.lu-header div.header div.histogram>div.bar.selected{opacity:1}.lu-pool div.lu-header div.header div.histogram>div.bar:hover,.lu div.lu-header div.header div.histogram>div.bar:hover{opacity:.7}.lu-pool div.lu-header div.header div.histogram div.mean,.lu div.lu-header div.header div.histogram div.mean{position:absolute;height:100%;width:1px;border-left:1px solid #000}.lu-pool div.lu-header div.header div.lu-label,.lu div.lu-header div.header div.lu-label{position:relative;background:inherit;transform-origin:left top;text-overflow:ellipsis;overflow-x:hidden}.lu-pool div.lu-header div.header span.lu-label,.lu div.lu-header div.header span.lu-label{background:inherit}.lu-pool div.lu-header div.header i.sort_indicator,.lu div.lu-header div.header i.sort_indicator{position:absolute;left:1px;top:1px;font-size:8pt}.lu-pool div.lu-header div.header div.handle,.lu div.lu-header div.header div.handle{position:absolute;right:0;height:100%;top:0;background-color:#fff;display:inline-block;cursor:col-resize}.lu-pool div.lu-header div.header div.handle.drag_over,.lu div.lu-header div.header div.handle.drag_over{background-color:#979797}.lu-pool div.lu-header div.toolbar i,.lu div.lu-header div.toolbar i{font-size:8pt;padding:1px 2px;cursor:pointer}.lu-pool div.lu-header div.toolbar i:hover,.lu div.lu-header div.toolbar i:hover{color:#00008b}.lu-pool div.lu-header div.rankingbuttons,.lu div.lu-header div.rankingbuttons{position:absolute;display:inline-block;height:100%;font-size:90%}.lu-pool div.lu-header div.header,.lu-pool div.lu-header div.header_i,.lu div.lu-header div.header,.lu div.lu-header div.header_i{position:absolute;display:inline-block;overflow:hidden;color:#fff;text-align:center;height:100%;font-size:90%}.lu-pool div.lu-header div.header.filtered>div.toolbar i.fa-filter,.lu-pool div.lu-header div.header_i.filtered>div.toolbar i.fa-filter,.lu div.lu-header div.header.filtered>div.toolbar i.fa-filter,.lu div.lu-header div.header_i.filtered>div.toolbar i.fa-filter{color:#00008b}.lu-pool div.lu-header div.header:not(.compressed):hover>div.toolbar,.lu-pool div.lu-header div.header_i:not(.compressed):hover>div.toolbar,.lu div.lu-header div.header:not(.compressed):hover>div.toolbar,.lu div.lu-header div.header_i:not(.compressed):hover>div.toolbar{display:block;padding:7px}.lu-pool div.lu-header div.header:not(.compressed):hover>div.toolbar i,.lu-pool div.lu-header div.header_i:not(.compressed):hover>div.toolbar i,.lu div.lu-header div.header:not(.compressed):hover>div.toolbar i,.lu div.lu-header div.header_i:not(.compressed):hover>div.toolbar i{display:none}.lu-pool div.lu-header div.header:not(.compressed):hover>div.toolbar:before,.lu-pool div.lu-header div.header_i:not(.compressed):hover>div.toolbar:before,.lu div.lu-header div.header:not(.compressed):hover>div.toolbar:before,.lu div.lu-header div.header_i:not(.compressed):hover>div.toolbar:before{z-index:-1;content:'\F0C9';font-family:FontAwesome,sans-serif;font-size:7pt;padding:1px 2px 1px 1px;position:absolute;top:0;right:0;bottom:-5px;left:-5px}.lu-pool div.lu-header div.header:not(.compressed):hover>div.toolbar:hover,.lu-pool div.lu-header div.header_i:not(.compressed):hover>div.toolbar:hover,.lu div.lu-header div.header:not(.compressed):hover>div.toolbar:hover,.lu div.lu-header div.header_i:not(.compressed):hover>div.toolbar:hover{padding:0 10px 0 5px}.lu-pool div.lu-header div.header:not(.compressed):hover>div.toolbar:hover:before,.lu-pool div.lu-header div.header_i:not(.compressed):hover>div.toolbar:hover:before,.lu div.lu-header div.header:not(.compressed):hover>div.toolbar:hover:before,.lu div.lu-header div.header_i:not(.compressed):hover>div.toolbar:hover:before{content:''}.lu-pool div.lu-header div.header:not(.compressed):hover>div.toolbar:hover i,.lu-pool div.lu-header div.header_i:not(.compressed):hover>div.toolbar:hover i,.lu div.lu-header div.header:not(.compressed):hover>div.toolbar:hover i,.lu div.lu-header div.header_i:not(.compressed):hover>div.toolbar:hover i{display:inline-block}.lu-pool div.lu-header div.header.categorical div.histogram,.lu-pool div.lu-header div.header.compressed:hover>div.toolbar,.lu-pool div.lu-header div.header.number div.histogram,.lu-pool div.lu-header div.header.ordinal div.histogram,.lu-pool div.lu-header div.header_i.categorical div.histogram,.lu-pool div.lu-header div.header_i.compressed:hover>div.toolbar,.lu-pool div.lu-header div.header_i.number div.histogram,.lu-pool div.lu-header div.header_i.ordinal div.histogram,.lu div.lu-header div.header.categorical div.histogram,.lu div.lu-header div.header.compressed:hover>div.toolbar,.lu div.lu-header div.header.number div.histogram,.lu div.lu-header div.header.ordinal div.histogram,.lu div.lu-header div.header_i.categorical div.histogram,.lu div.lu-header div.header_i.compressed:hover>div.toolbar,.lu div.lu-header div.header_i.number div.histogram,.lu div.lu-header div.header_i.ordinal div.histogram{display:block}.lu-pool div.lu-header div.header.rotateable,.lu-pool div.lu-header div.header_i.rotateable,.lu div.lu-header div.header.rotateable,.lu div.lu-header div.header_i.rotateable{overflow:visible;white-space:nowrap}.lu-pool div.lu-header div.header_i,.lu div.lu-header div.header_i{top:50%;height:50%}.lu-pool svg.lu-body,.lu svg.lu-body{foreignObject-padding:0;foreignObject-margin:0}.lu-pool svg.lu-body text,.lu svg.lu-body text{font-size:10pt}.lu-pool svg.lu-body input,.lu svg.lu-body input{padding:0;margin:0;font-size:9pt}.lu-pool svg.lu-body .cat rect,.lu svg.lu-body .cat rect{fill:transparent}
+.lugui-me {
+  margin-bottom: 5px;
+  clear: both; }
+  .lugui-me .raw_min, .lugui-me .raw_max {
+    width: 3em;
+    display: block; }
+  .lugui-me .mapping_area {
+    display: flex;
+    align-items: stretch; }
+    .lugui-me .mapping_area > div {
+      display: flex;
+      flex-direction: column; }
+      .lugui-me .mapping_area > div > span:first-of-type {
+        flex-grow: 1; }
+  .lugui-me svg {
+    z-index: 1;
+    position: relative; }
+    .lugui-me svg > rect {
+      fill: white;
+      opacity: 0; }
+    .lugui-me svg g.samples line {
+      stroke: black;
+      opacity: 0.5; }
+    .lugui-me svg g.mapping:hover {
+      cursor: ew-resize; }
+      .lugui-me svg g.mapping:hover line {
+        stroke: #0000cf; }
+      .lugui-me svg g.mapping:hover circle {
+        fill: #0000cf; }
+    .lugui-me svg g.mapping line {
+      stroke: blue; }
+    .lugui-me svg g.mapping circle {
+      fill: blue; }
+    .lugui-me svg g.filter text {
+      font-size: 8pt;
+      alignment-baseline: hanging; }
+    .lugui-me svg g.filter path {
+      fill: gray; }
+    .lugui-me svg g.filter rect {
+      fill: white;
+      stroke: gray;
+      stroke-width: 1; }
+    .lugui-me svg g.filter > g {
+      cursor: pointer;
+      cursor: -webkit-drag; }
+      .lugui-me svg g.filter > g:hover path {
+        fill: darkgray; }
+      .lugui-me svg g.filter > g:hover rect {
+        stroke: darkgray; }
+  .lugui-me div.script {
+    clear: both; }
+    .lugui-me div.script textarea {
+      height: 4em;
+      width: 98%;
+      font-size: 8pt;
+      display: block; }
+
+.lu-popup {
+  position: absolute;
+  dominant-baseline: central;
+  text-anchor: middle; }
+  .lu-popup .ok {
+    position: absolute;
+    right: 10px; }
+
+.lu-popup, .lu-popup2 {
+  background-color: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  padding: 2px;
+  box-shadow: 5px 5px 3px #888888;
+  z-index: 9;
+  font-size: 8pt;
+  clear: right; }
+  .lu-popup input, .lu-popup2 input {
+    font-size: 8pt; }
+  .lu-popup .selectionTable, .lu-popup2 .selectionTable {
+    background: white;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 50vh; }
+    .lu-popup .selectionTable td,
+    .lu-popup .selectionTable th, .lu-popup2 .selectionTable td,
+    .lu-popup2 .selectionTable th {
+      white-space: nowrap;
+      padding: 1px 5px 1px 3px;
+      cursor: pointer; }
+    .lu-popup .selectionTable th, .lu-popup2 .selectionTable th {
+      border-bottom: #c1c1c1 1px solid; }
+    .lu-popup .selectionTable table, .lu-popup2 .selectionTable table {
+      width: 95%;
+      border: 0; }
+    .lu-popup .selectionTable tr:hover, .lu-popup2 .selectionTable tr:hover {
+      background-color: lightblue; }
+  .lu-popup .lu-popup-title, .lu-popup2 .lu-popup-title {
+    cursor: pointer;
+    cursor: -webkit-grab; }
+
+.lu-popup2 * {
+  margin: 0; }
+
+.lu-popup2 .ok {
+  float: right; }
+
+.lu-popup2 div.bar {
+  height: 1em; }
+
+.lu-tooltip {
+  background-color: white;
+  min-width: 200px;
+  position: absolute;
+  z-index: 3;
+  font-size: 9pt;
+  text-align: left;
+  padding: 2px; }
+  .lu-tooltip table {
+    width: 100%;
+    border-collapse: collapse; }
+  .lu-tooltip tbody th {
+    width: 100px; }
+  .lu-tooltip td, .lu-tooltip th {
+    border: 1px solid black; }
+
+.lu-pool div.header {
+  border: 2px outset white;
+  position: absolute; }
+  .lu-pool div.header:hover {
+    border-color: #e5e5e5; }
+
+.lu, .lu-pool {
+  position: relative; }
+  .lu div.lu-header, .lu-pool div.lu-header {
+    position: relative; }
+  .lu text, .lu tspan, .lu-pool text, .lu-pool tspan {
+    dominant-baseline: text-before-edge; }
+  .lu text.actions tspan, .lu-pool text.actions tspan {
+    cursor: pointer; }
+    .lu text.actions tspan:hover, .lu-pool text.actions tspan:hover {
+      color: darkblue; }
+  .lu text.selection, .lu-pool text.selection {
+    cursor: pointer; }
+    .lu text.selection:hover, .lu-pool text.selection:hover {
+      color: darkblue; }
+  .lu text.rank, .lu text.text_right, .lu-pool text.rank, .lu-pool text.text_right {
+    text-anchor: end; }
+  .lu text.text_center, .lu-pool text.text_center {
+    text-anchor: middle; }
+  .lu g.bar rect, .lu-pool g.bar rect {
+    opacity: 0.5; }
+  .lu line.meanline, .lu-pool line.meanline {
+    stroke: darkgray;
+    stroke-width: 1; }
+  .lu *[draggable], .lu-pool *[draggable] {
+    cursor: pointer;
+    cursor: -webkit-grab; }
+  .lu line.slope, .lu-pool line.slope {
+    stroke: darkgray;
+    stroke-width: 2;
+    shape-rendering: geometricPrecision; }
+    .lu line.slope.hover, .lu-pool line.slope.hover {
+      stroke: #e5e5e5; }
+    .lu line.slope.selected, .lu-pool line.slope.selected {
+      stroke: #ffa500; }
+  .lu g.cols, .lu-pool g.cols {
+    pointer-events: none; }
+  .lu g.row rect.bg, .lu-pool g.row rect.bg {
+    fill: transparent; }
+    .lu g.row rect.bg.even, .lu-pool g.row rect.bg.even {
+      fill: #f7f7f7; }
+  .lu g.row.selected rect.bg, .lu-pool g.row.selected rect.bg {
+    stroke: #ffa500;
+    stroke-width: 1; }
+  .lu g.row.hover rect.bg, .lu-pool g.row.hover rect.bg {
+    fill: #e5e5e5; }
+  .lu g.row.hover rect.bar, .lu g.row.hover g.bar rect, .lu-pool g.row.hover rect.bar, .lu-pool g.row.hover g.bar rect {
+    opacity: 0.5; }
+  .lu div.lu-header, .lu div.lu-pool, .lu-pool div.lu-header, .lu-pool div.lu-pool {
+    position: relative;
+    background-color: white; }
+    .lu div.lu-header .drop, .lu div.lu-pool .drop, .lu-pool div.lu-header .drop, .lu-pool div.lu-pool .drop {
+      width: 100%;
+      height: 100%;
+      position: absolute; }
+      .lu div.lu-header .drop.drag_over, .lu div.lu-pool .drop.drag_over, .lu-pool div.lu-header .drop.drag_over, .lu-pool div.lu-pool .drop.drag_over {
+        background-color: #979797; }
+  .lu div.lu-header div.toolbar, .lu-pool div.lu-header div.toolbar {
+    display: none;
+    position: absolute;
+    text-align: right;
+    right: 5px;
+    top: 0;
+    border-radius: 3px 0 0 3px;
+    cursor: auto;
+    background: #6D6C6C;
+    z-index: 1; }
+  .lu div.lu-header div.header.drag_over div.lu-label, .lu-pool div.lu-header div.header.drag_over div.lu-label {
+    color: #979797; }
+  .lu div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu div.lu-header div.header.compressed div.histogram, .lu-pool div.lu-header div.header.compressed div.toolbar i:not(.fa-toggle-right), .lu-pool div.lu-header div.header.compressed div.histogram {
+    display: none; }
+  .lu div.lu-header div.header div.histogram, .lu-pool div.lu-header div.header div.histogram {
+    position: absolute;
+    left: 0;
+    right: 5px;
+    top: 40%;
+    height: 60%;
+    display: none; }
+    .lu div.lu-header div.header div.histogram > div.bar, .lu-pool div.lu-header div.header div.histogram > div.bar {
+      position: absolute;
+      background-color: white;
+      opacity: 0.5; }
+      .lu div.lu-header div.header div.histogram > div.bar.selected, .lu-pool div.lu-header div.header div.histogram > div.bar.selected {
+        opacity: 1.0; }
+      .lu div.lu-header div.header div.histogram > div.bar:hover, .lu-pool div.lu-header div.header div.histogram > div.bar:hover {
+        opacity: 0.7; }
+    .lu div.lu-header div.header div.histogram div.mean, .lu-pool div.lu-header div.header div.histogram div.mean {
+      position: absolute;
+      height: 100%;
+      width: 1px;
+      border-left: 1px solid black; }
+  .lu div.lu-header div.header div.lu-label, .lu-pool div.lu-header div.header div.lu-label {
+    position: relative;
+    background: inherit;
+    transform-origin: left top;
+    text-overflow: ellipsis;
+    overflow-x: hidden; }
+  .lu div.lu-header div.header span.lu-label, .lu-pool div.lu-header div.header span.lu-label {
+    background: inherit; }
+  .lu div.lu-header div.header i.sort_indicator, .lu-pool div.lu-header div.header i.sort_indicator {
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    font-size: 8pt; }
+  .lu div.lu-header div.header div.handle, .lu-pool div.lu-header div.header div.handle {
+    position: absolute;
+    right: 0;
+    height: 100%;
+    top: 0;
+    background-color: white;
+    display: inline-block;
+    cursor: col-resize; }
+    .lu div.lu-header div.header div.handle.drag_over, .lu-pool div.lu-header div.header div.handle.drag_over {
+      background-color: #979797; }
+  .lu div.lu-header div.toolbar i, .lu-pool div.lu-header div.toolbar i {
+    font-size: 8pt;
+    padding: 1px 2px;
+    cursor: pointer; }
+    .lu div.lu-header div.toolbar i:hover, .lu-pool div.lu-header div.toolbar i:hover {
+      color: darkblue; }
+  .lu div.lu-header div.rankingbuttons, .lu-pool div.lu-header div.rankingbuttons {
+    position: absolute;
+    display: inline-block;
+    height: 100%;
+    font-size: 90%; }
+  .lu div.lu-header div.header, .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header, .lu-pool div.lu-header div.header_i {
+    position: absolute;
+    display: inline-block;
+    overflow: hidden;
+    color: white;
+    text-align: center;
+    height: 100%;
+    font-size: 90%; }
+    .lu div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu div.lu-header div.header_i.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header.filtered > div.toolbar i.fa-filter, .lu-pool div.lu-header div.header_i.filtered > div.toolbar i.fa-filter {
+      color: darkblue; }
+    .lu div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar {
+      display: block;
+      padding: 7px; }
+      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar i {
+        display: none; }
+      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:before {
+        z-index: -1;
+        content: '\F0C9';
+        font-family: FontAwesome, sans-serif;
+        font-size: 7pt;
+        padding: 1px 2px 1px 1px;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: -5px;
+        left: -5px; }
+      .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover {
+        padding: 0 10px 0 5px; }
+        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover:before, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover:before {
+          content: ''; }
+        .lu div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header:not(.compressed):hover > div.toolbar:hover i, .lu-pool div.lu-header div.header_i:not(.compressed):hover > div.toolbar:hover i {
+          display: inline-block; }
+    .lu div.lu-header div.header.compressed:hover > div.toolbar, .lu div.lu-header div.header_i.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header.compressed:hover > div.toolbar, .lu-pool div.lu-header div.header_i.compressed:hover > div.toolbar {
+      display: block; }
+    .lu div.lu-header div.header.number div.histogram, .lu div.lu-header div.header.categorical div.histogram, .lu div.lu-header div.header.ordinal div.histogram, .lu div.lu-header div.header_i.number div.histogram, .lu div.lu-header div.header_i.categorical div.histogram, .lu div.lu-header div.header_i.ordinal div.histogram, .lu-pool div.lu-header div.header.number div.histogram, .lu-pool div.lu-header div.header.categorical div.histogram, .lu-pool div.lu-header div.header.ordinal div.histogram, .lu-pool div.lu-header div.header_i.number div.histogram, .lu-pool div.lu-header div.header_i.categorical div.histogram, .lu-pool div.lu-header div.header_i.ordinal div.histogram {
+      display: block; }
+    .lu div.lu-header div.header.rotateable, .lu div.lu-header div.header_i.rotateable, .lu-pool div.lu-header div.header.rotateable, .lu-pool div.lu-header div.header_i.rotateable {
+      overflow: visible;
+      white-space: nowrap; }
+  .lu div.lu-header div.header_i, .lu-pool div.lu-header div.header_i {
+    top: 50%;
+    height: 50%; }
+  .lu svg.lu-body, .lu-pool svg.lu-body {
+    foreignObject-padding: 0;
+    foreignObject-margin: 0; }
+    .lu svg.lu-body text, .lu-pool svg.lu-body text {
+      font-size: 10pt; }
+    .lu svg.lu-body input, .lu-pool svg.lu-body input {
+      padding: 0;
+      margin: 0;
+      font-size: 9pt; }
+    .lu svg.lu-body .cat rect, .lu-pool svg.lu-body .cat rect {
+      fill: transparent; }

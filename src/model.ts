@@ -397,8 +397,12 @@ export class ValueColumn<T> extends Column {
     return '' + this.getValue(row);
   }
 
-  getValue(row:any) {
+  getRaw(row:any) {
     return this.accessor(row, this.id, this.desc, this.findMyRanker());
+  }
+
+  getValue(row: any) {
+    return this.getRaw(row);
   }
 
   compare(a:any, b:any) {
@@ -1002,8 +1006,8 @@ export class LinkColumn extends StringColumn {
   }
 
   getLabel(row:any) {
-    var v:any = super.getValue(row);
-    if (v.alt) {
+    var v:any = super.getRaw(row);
+    if (v && v.alt) {
       return v.alt;
     }
     return '' + v;
@@ -1014,19 +1018,19 @@ export class LinkColumn extends StringColumn {
       return true;
     }
     //get original value
-    var v:any = super.getValue(row);
+    var v:any = super.getRaw(row);
     //convert to link
-    return v.href != null;
+    return v && v.href != null;
   }
 
   getValue(row:any) {
     //get original value
-    var v:any = super.getValue(row);
+    var v:any = super.getRaw(row);
     //convert to link
-    if (v.href) {
+    if (v && v.href) {
       return v.href;
     } else if (this.link) {
-      return this.link.replace(/\$1/g, v);
+      return this.link.replace(/\$1/g, v || '');
     }
     return v;
   }
@@ -2232,7 +2236,7 @@ export class NestedColumn extends MultiLevelCompositeColumn {
   }
 }
 
-export class ScriptColumn extends CompositeColumn {
+export class ScriptColumn extends CompositeNumberColumn {
   /**
    * factory for creating a description creating a mean column
    * @param label

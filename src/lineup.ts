@@ -119,8 +119,8 @@ export default class LineUp extends AEventDispatcher {
      */
     body: {
       renderer: 'svg', //svg, canvas
-      rowHeight: 17,
-      rowPadding: 0.2, //padding for scale.rangeBands
+      rowHeight: 18,
+      rowPadding: 1,
       rowBarPadding: 1,
 
       /**
@@ -155,7 +155,7 @@ export default class LineUp extends AEventDispatcher {
     /**
      * the renderers to use for rendering the columns
      */
-    renderers: renderers()
+    renderers: utils_.merge({}, renderer_.renderers)
   };
 
   private $container:Selection<any>;
@@ -192,7 +192,7 @@ export default class LineUp extends AEventDispatcher {
       rankingButtons: this.config.header.rankingButtons,
       linkTemplates: this.config.header.linkTemplates
     });
-    this.body = new (this.config.body.renderer === 'svg' ? BodyRenderer: BodyCanvasRenderer)(data, this.node, this.slice.bind(this), {
+    this.body = ui_.createBodyRenderer(this.config.body.renderer, data, this.node, this.slice.bind(this), {
       rowHeight: this.config.body.rowHeight,
       rowPadding: this.config.body.rowPadding,
       rowBarPadding: this.config.body.rowBarPadding,

@@ -25,6 +25,11 @@
       "email": "hstrobelt@seas.harvard.edu"
     }
   ],
+  "engines": {
+    "npm": ">= 3",
+    "node": ">= 6",
+    "iojs": ">= 3"
+  },
   "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/Caleydo/lineup.js/issues"
@@ -43,7 +48,9 @@
     "watch": "webpack --watch",
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
-    "release:patch": "npm version patch && npm publish && git push --follow-tags"
+    "release:patch": "npm version patch && npm publish && git push --follow-tags",
+	"predist": "npm run build",
+    "dist": "mkdirp dists && cd dist && tar cvzf ../dists/lineupjs.tar.gz *"
   },
   "repository": {
     "type": "git",
@@ -56,6 +63,7 @@
     "awesome-typescript-loader": "^2.2.4",
     "css-loader": "^0.25.0",
     "extract-text-webpack-plugin": "^2.0.0-beta.4",
+    "mkdirp": "^0.5.1",
     "node-sass": "^3.10.1",
     "sass-loader": "^4.0.2",
     "style-loader": "^0.13.1",

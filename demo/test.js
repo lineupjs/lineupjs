@@ -88,7 +88,8 @@ window.onload = function () {
       autoRotateLabels: true
     },
     body: {
-      renderer: 'svg'
+      renderer: 'canvas',
+      freezeCols: 3
     },
     header: {
       rankingButtons: function($node) {
@@ -99,7 +100,9 @@ window.onload = function () {
       linkTemplates: ['a/$1', 'b/$1']
     },
     renderingOptions: {
-      histograms: true
+      animation: false,
+      histograms: true,
+      meanLine: true
     }
   });
   body.update();
