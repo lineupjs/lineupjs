@@ -2,8 +2,8 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {IStatistics, ICategoricalStatistics, IColumnDesc, Ranking, Column, models, RankColumn, createActionDesc, createStackDesc, isNumberColumn, createRankDesc, createSelectionDesc, StackColumn, INumberColumn, ICategoricalColumn, NumberColumn} from './model';
-import {merge, AEventDispatcher, delayedCall} from './utils';
+import {IStatistics, ICategoricalStatistics, IColumnDesc, Ranking, Column, models, RankColumn, createActionDesc, createStackDesc, isNumberColumn, createRankDesc, createSelectionDesc, StackColumn, INumberColumn, ICategoricalColumn, NumberColumn} from '../model';
+import {merge, AEventDispatcher, delayedCall} from '../utils';
 import {max as d3max, extent, layout, map as d3map, set as d3set, mean as d3mean} from 'd3';
 
 

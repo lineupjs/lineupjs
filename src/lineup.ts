@@ -4,9 +4,9 @@
  */
 
 import {IColumnDesc, Column} from './model';
-import {DataProvider}  from './provider';
-import {renderers}  from './renderer';
-import {IRankingHook, dummyRankingButtonHook, PoolRenderer, IBodyRenderer, HeaderRenderer, BodyCanvasRenderer, BodyRenderer} from './ui';
+import DataProvider  from './provider/ADataProvider';
+import {renderers as defaultRenderers}  from './renderer';
+import {IRankingHook, dummyRankingButtonHook, PoolRenderer, IBodyRenderer, HeaderRenderer, createBodyRenderer} from './ui';
 import {AEventDispatcher, ContentScroller, merge}  from './utils';
 import {scale as d3scale, selection, select, Selection} from 'd3';
 
@@ -155,7 +155,7 @@ export default class LineUp extends AEventDispatcher {
     /**
      * the renderers to use for rendering the columns
      */
-    renderers: utils_.merge({}, renderer_.renderers)
+    renderers: merge({}, defaultRenderers)
   };
 
   private $container:Selection<any>;
@@ -192,7 +192,7 @@ export default class LineUp extends AEventDispatcher {
       rankingButtons: this.config.header.rankingButtons,
       linkTemplates: this.config.header.linkTemplates
     });
-    this.body = ui_.createBodyRenderer(this.config.body.renderer, data, this.node, this.slice.bind(this), {
+    this.body = createBodyRenderer(this.config.body.renderer, data, this.node, this.slice.bind(this), {
       rowHeight: this.config.body.rowHeight,
       rowPadding: this.config.body.rowPadding,
       rowBarPadding: this.config.body.rowBarPadding,
