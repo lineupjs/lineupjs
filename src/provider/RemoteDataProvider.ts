@@ -2,8 +2,9 @@
  * Created by sam on 04.11.2016.
  */
 
+import {merge} from '../utils';
 import {IColumnDesc, Ranking, Column, createRankDesc} from '../model';
-import {IStatsBuilder, IDataRow} from './ADataProvider';
+import {IStatsBuilder, IDataRow, IDataProviderOptions} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 
 /**
@@ -35,10 +36,18 @@ export interface IServerData {
   stats(indices: number[]): IStatsBuilder;
 }
 
+
+export interface IRemoteDataProviderOptions {
+
+}
+
 /**
  * a remote implementation of the data provider
  */
 export default class RemoteDataProvider extends ACommonDataProvider {
+  private options: IRemoteDataProviderOptions = {
+
+  };
 
   /**
    * the local ranking orders
@@ -49,8 +58,9 @@ export default class RemoteDataProvider extends ACommonDataProvider {
   private cache = new Map<number, Promise<IDataRow>>();
 
 
-  constructor(private server: IServerData, columns: IColumnDesc[] = [], options: any = {}) {
+  constructor(private server: IServerData, columns: IColumnDesc[] = [], options: IRemoteDataProviderOptions & IDataProviderOptions = {}) {
     super(columns, options);
+    merge(this.options, options);
   }
 
   protected rankAccessor(row: any, id: string, desc: IColumnDesc, ranking: Ranking) {

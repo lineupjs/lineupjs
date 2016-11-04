@@ -3,7 +3,7 @@
  */
 
 import {IColumnDesc} from '../model';
-import ADataProvider from './ADataProvider';
+import ADataProvider, {IDataProviderOptions} from './ADataProvider';
 
 /**
  * common base implementation of a DataProvider with a fixed list of column descriptions
@@ -13,7 +13,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   //generic accessor of the data item
   private rowGetter = (row: any, id: string, desc: any) => row[desc.column];
 
-  constructor(private columns: IColumnDesc[] = [], options: any = {}) {
+  constructor(private columns: IColumnDesc[] = [], options: IDataProviderOptions = {}) {
     super(options);
     //generate the accessor
     columns.forEach((d: any) => {

@@ -72,17 +72,17 @@ function computeHist(arr: IDataRow[], acc: (row:any) => string[], categories: st
   };
 }
 
-export interface ILocalDataProviderOptions extends IDataProviderOptions {
+export interface ILocalDataProviderOptions {
   /**
    * whether the filter should be applied to all rankings regardless where they are
    * default: false
    */
-  filterGlobally: boolean;
+  filterGlobally?: boolean;
   /**
    * jump to search results such that they are visible
    * default: false
    */
-  jumpToSearchResult: boolean;
+  jumpToSearchResult?: boolean;
 }
 /**
  * a data provider based on an local array
@@ -102,7 +102,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private reorderall;
 
-  constructor(public data: any[], columns: IColumnDesc[] = [], options = {}) {
+  constructor(public data: any[], columns: IColumnDesc[] = [], options : ILocalDataProviderOptions & IDataProviderOptions= {}) {
     super(columns, options);
     merge(this.options, options);
     //enhance with a magic attribute storing ranking information
