@@ -97,12 +97,12 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
       const updateColumns = (node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
-        matchColumns(node, columns);
-        r.data.then((rows) => {
+        r.data[i].then((row) => {
+          matchColumns(node, columns);
           columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
             domMapping.translate(cnode, col.shift, 0);
-            col.renderer.update(cnode, rows[i], i);
+            col.renderer.update(cnode, row, i);
           });
         });
       };

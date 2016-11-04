@@ -8,7 +8,8 @@ import {Ranking, isNumberColumn} from '../model';
 import Column, {IStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import DataProvider from '../provider/ADataProvider';
-import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
+import {IRenderContext, IDataRow, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
+import RowFetcher from './RowFetcher';
 
 export interface ISlicer {
   (start: number, length: number, row2y: (i: number) => number): { from: number; to: number };
@@ -49,7 +50,7 @@ export interface IRankingData {
   width: number;
   frozen: IRankingColumnData[];
   columns: IRankingColumnData[];
-  data: Promise<{v: any, dataIndex: number}[]>;
+  data: Promise<IDataRow>[];
 }
 
 export interface IBodyRendererOptions {
@@ -97,6 +98,8 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   histCache = d3.map<Promise<IStatistics>>();
 
+  private rowFetcher: RowFetcher;
+
   constructor(protected data: DataProvider, parent: Element, private slicer: ISlicer, root: string, options : IBodyRendererOptions = {}) {
     super();
     //merge options
@@ -131,6 +134,8 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       }
       this.drawSelection();
     }, 1));
+
+    this.rowFetcher = new RowFetcher(data);
   }
 
   protected jumpToSelection() {
@@ -216,7 +221,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
         //compute frozen columns just for the first one
         frozen: i === 0 ? colData.slice(0,this.options.freezeCols) : [],
         columns: i === 0 ? colData.slice(this.options.freezeCols) : colData,
-        data: this.data.view(order).then((data) => data.map((v, i) => ({v: v, dataIndex: order[i]})))
+        data: this.rowFetcher.fetch(order)
       };
     });
   }
