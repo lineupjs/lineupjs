@@ -9,7 +9,7 @@ import Ranking from '../model/Ranking';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import {merge} from '../utils';
 import * as d3 from 'd3';
-import {IStatsBuilder, IDataProviderOptions} from './ADataProvider';
+import {IStatsBuilder, IDataProviderOptions, IDataRow} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 
 /**
@@ -19,7 +19,7 @@ import ACommonDataProvider from './ACommonDataProvider';
  * @param range the total value range
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  */
-function computeStats(arr: any[], acc: (any) => number, range?: [number, number]): IStatistics {
+function computeStats(arr: any[], acc: (row:any) => number, range?: [number, number]): IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -53,7 +53,7 @@ function computeStats(arr: any[], acc: (any) => number, range?: [number, number]
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
  */
-function computeHist(arr: any[], acc: (any) => string[], categories: string[]): ICategoricalStatistics {
+function computeHist(arr: IDataRow[], acc: (row:any) => string[], categories: string[]): ICategoricalStatistics {
   const m = d3.map<number>();
   categories.forEach((cat) => m.set(cat, 0));
 
@@ -227,9 +227,16 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
     //filter invalid indices
     const l = this.data.length;
-    var slice = indices.filter((i) => i >= 0 && i < l).map((index) => this.data[index]);
+    const slice = indices.filter((i) => i >= 0 && i < l).map((index) => ({ v: this.data[index], dataIndex: index }));
 
     return Promise.resolve(slice);
+  }
+
+  viewRaw(indices: number[]) {
+    //filter invalid indices
+    const l = this.data.length;
+    const slice = indices.filter((i) => i >= 0 && i < l).map((index) => this.data[index]);
+    return slice;
   }
 
   /**
@@ -238,12 +245,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
   stats(indices: number[]): IStatsBuilder {
-    var d: Promise<any[]> = null;
-    const getD = () => d === null ? (d = this.view(indices)) : d;
+    var d: any[] = null;
+    const getD = () => d === null ? (d = this.viewRaw(indices)) : d;
 
     return {
-      stats: (col: INumberColumn) => getD().then((data) => computeStats(data, col.getNumber.bind(col), [0, 1])),
-      hist: (col: ICategoricalColumn) => getD().then((data) => computeHist(data, col.getCategories.bind(col), col.categories))
+      stats: (col: INumberColumn) => Promise.resolve(computeStats(getD(), col.getNumber.bind(col), [0, 1])),
+      hist: (col: ICategoricalColumn) => Promise.resolve(computeHist(getD(), col.getCategories.bind(col), col.categories))
     };
   }
 

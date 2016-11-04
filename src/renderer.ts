@@ -13,21 +13,7 @@ import {isNumberColumn, INumberColumn} from './model/NumberColumn';
 import {IMultiLevelColumn, isMultiLevelColumn} from './model/CompositeColumn';
 import {forEach, attr} from './utils';
 import {hsl} from 'd3';
-
-/**
- * a data row for rendering
- */
-export interface IDataRow {
-  /**
-   * the value
-   */
-  v: any;
-  /**
-   * the underlying data index
-   */
-  dataIndex: number;
-}
-
+import {IDataRow} from './provider/ADataProvider';
 /**
  * context for rendering, wrapped as an object for easy extensibility
  */

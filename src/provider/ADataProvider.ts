@@ -11,6 +11,19 @@ import {INumberColumn} from '../model/NumberColumn';
 import {merge, AEventDispatcher, delayedCall} from '../utils';
 import {set as d3set} from 'd3';
 
+/**
+ * a data row for rendering
+ */
+export interface IDataRow {
+  /**
+   * the value
+   */
+  v: any;
+  /**
+   * the underlying data index
+   */
+  dataIndex: number;
+}
 
 export interface IExportOptions {
   /**
@@ -492,7 +505,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param indices
    * @return {Promise<any>}
    */
-  abstract view(indices: number[]): Promise<any[]>;
+  abstract view(indices: number[]): Promise<IDataRow[]>;
 
   /**
    * returns a data sample used for the mapping editor

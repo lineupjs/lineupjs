@@ -7,8 +7,8 @@ import {merge, delayedCall, AEventDispatcher} from '../utils';
 import {Ranking, isNumberColumn} from '../model';
 import Column, {IStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import DataProvider from '../provider/ADataProvider';
-import {IRenderContext, IDataRow, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
+import DataProvider, {IDataRow} from '../provider/ADataProvider';
+import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
 import RowFetcher from './RowFetcher';
 
 export interface ISlicer {

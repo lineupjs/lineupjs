@@ -81,11 +81,14 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     });
   }
 
-  view(argsort: number[]) {
-    return this.server.view(argsort).then((view) => {
+  view(indices: number[]) {
+    return this.server.view(indices).then((view) => {
       //enhance with the data index
-      view.forEach((d, i) => d._index = argsort[i]);
-      return view;
+      return view.map((v, i) => {
+        const dataIndex = indices[i];
+        v._index = dataIndex;
+        return { v, dataIndex };
+      });
     });
   }
 

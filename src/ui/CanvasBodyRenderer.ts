@@ -6,8 +6,8 @@ import {max as d3max, event as d3event, mouse as d3mouse} from 'd3';
 import {merge} from '../utils';
 import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
-import {createCanvas, hideOverlays, ICanvasRenderContext, IDataRow} from '../renderer';
-import DataProvider from '../provider/ADataProvider';
+import {createCanvas, hideOverlays, ICanvasRenderContext} from '../renderer';
+import DataProvider, {IDataRow}  from '../provider/ADataProvider';
 import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext} from './ABodyRenderer';
 import Ranking from "../model/Ranking";
 
