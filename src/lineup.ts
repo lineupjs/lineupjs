@@ -6,7 +6,14 @@
 import {IColumnDesc, Column} from './model';
 import DataProvider  from './provider/ADataProvider';
 import {renderers as defaultRenderers, ICellRendererFactory}  from './renderer';
-import {IRankingHook, dummyRankingButtonHook, PoolRenderer, IBodyRenderer, HeaderRenderer, createBodyRenderer} from './ui';
+import {
+  IRankingHook,
+  dummyRankingButtonHook,
+  PoolRenderer,
+  IBodyRenderer,
+  HeaderRenderer,
+  createBodyRenderer
+} from './ui';
 import {IHeaderRendererOptions} from './ui/HeaderRenderer';
 import {IBodyRendererOptions} from './ui/ABodyRenderer';
 import {AEventDispatcher, ContentScroller, merge}  from './utils';
@@ -20,60 +27,60 @@ export interface IBodyOptions {
 
 export interface ILineUpConfig {
   /**
-     * a prefix used for all generated html ids
-     */
-    idPrefix?: string;
+   * a prefix used for all generated html ids
+   */
+  idPrefix?: string;
 
+  /**
+   * options related to the header html layout
+   */
+  header?: IHeaderRendererOptions;
+  /**
+   * old name for header
+   */
+  htmlLayout?: IHeaderRendererOptions;
+  /**
+   * visual representation options
+   */
+  renderingOptions?: {
     /**
-     * options related to the header html layout
+     * show combined bars as stacked bars
      */
-    header?: IHeaderRendererOptions;
+    stacked?: boolean;
     /**
-     * old name for header
+     * use animation for reordering
      */
-    htmlLayout?: IHeaderRendererOptions;
+    animation?: boolean;
     /**
-     * visual representation options
+     * show histograms of the headers (just settable at the beginning)
      */
-    renderingOptions?: {
-      /**
-       * show combined bars as stacked bars
-       */
-      stacked?: boolean;
-      /**
-       * use animation for reordering
-       */
-      animation?: boolean;
-      /**
-       * show histograms of the headers (just settable at the beginning)
-       */
-      histograms?: boolean;
-      /**
-       * show a mean line for single numberial columns
-       */
-      meanLine?: boolean;
-    },
+    histograms?: boolean;
     /**
-     * options related to the rendering of the body
+     * show a mean line for single numberial columns
      */
-    body?: IBodyOptions & IBodyRendererOptions;
-    /**
-     * old name for body
-     */
-    svgLayout?: IBodyOptions & IBodyRendererOptions;
-    /**
-     *  enables manipulation features, remove column, reorder,...
-     */
-    manipulative?: boolean;
-    /**
-     * automatically add a column pool at the end
-     */
-    pool?: boolean;
+    meanLine?: boolean;
+  };
+  /**
+   * options related to the rendering of the body
+   */
+  body?: IBodyOptions & IBodyRendererOptions;
+  /**
+   * old name for body
+   */
+  svgLayout?: IBodyOptions & IBodyRendererOptions;
+  /**
+   *  enables manipulation features, remove column, reorder,...
+   */
+  manipulative?: boolean;
+  /**
+   * automatically add a column pool at the end
+   */
+  pool?: boolean;
 
-    /**
-     * the renderers to use for rendering the columns
-     */
-    renderers?: {[key: string]: ICellRendererFactory};
+  /**
+   * the renderers to use for rendering the columns
+   */
+  renderers?: {[key: string]: ICellRendererFactory};
 }
 
 /**
@@ -111,7 +118,7 @@ export default class LineUp extends AEventDispatcher {
   /**
    * default config of LineUp with all available options
    */
-  config : ILineUpConfig = {
+  config: ILineUpConfig = {
     /**
      * a prefix used for all generated html ids
      */
@@ -220,14 +227,14 @@ export default class LineUp extends AEventDispatcher {
     renderers: merge({}, defaultRenderers)
   };
 
-  private $container:Selection<any>;
+  private $container: Selection<any>;
 
-  private body:IBodyRenderer = null;
-  private header:HeaderRenderer = null;
-  private pools:PoolRenderer[] = [];
-  private contentScroller:ContentScroller = null;
+  private body: IBodyRenderer = null;
+  private header: HeaderRenderer = null;
+  private pools: PoolRenderer[] = [];
+  private contentScroller: ContentScroller = null;
 
-  constructor(container:Selection<any> | Element, public data:DataProvider, config:ILineUpConfig = {}) {
+  constructor(container: Selection<any> | Element, public data: DataProvider, config: ILineUpConfig = {}) {
     super();
     this.$container = container instanceof selection ? <Selection<any>>container : select(<Element>container);
     this.$container = this.$container.append('div').classed('lu', true);
@@ -241,7 +248,7 @@ export default class LineUp extends AEventDispatcher {
 
     this.header = new HeaderRenderer(data, this.node, merge({}, this.config.header, {
       manipulative: this.config.manipulative,
-      histograms : this.config.renderingOptions.histograms,
+      histograms: this.config.renderingOptions.histograms,
       freezeCols: this.config.body.freezeCols,
     }));
     this.body = createBodyRenderer(this.config.body.renderer, data, this.node, this.slice.bind(this), merge({}, this.config.body, {
@@ -270,8 +277,8 @@ export default class LineUp extends AEventDispatcher {
         //console.log(top, left,'ss');
         this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
         if (this.config.body.freezeCols > 0) {
-         this.header.updateFreeze(left);
-         this.body.updateFreeze(left);
+          this.header.updateFreeze(left);
+          this.body.updateFreeze(left);
         }
       });
       this.contentScroller.on('redraw', this.body.update.bind(this.body));
@@ -287,9 +294,9 @@ export default class LineUp extends AEventDispatcher {
    * @param node the node element to attach
    * @param config
    */
-  addPool(node:Element, config?:any):PoolRenderer;
-  addPool(pool:PoolRenderer):PoolRenderer;
-  addPool(pool_node:Element|PoolRenderer, config = this.config) {
+  addPool(node: Element, config?: any): PoolRenderer;
+  addPool(pool: PoolRenderer): PoolRenderer;
+  addPool(pool_node: Element|PoolRenderer, config = this.config) {
     if (pool_node instanceof PoolRenderer) {
       this.pools.push(<PoolRenderer>pool_node);
     } else {
@@ -306,7 +313,7 @@ export default class LineUp extends AEventDispatcher {
     return <Element>this.$container.node();
   }
 
-  private slice(start:number, length:number, row2y:(i:number) => number) {
+  private slice(start: number, length: number, row2y: (i: number) => number) {
     if (this.contentScroller) {
       return this.contentScroller.select(start, length, row2y);
     }
@@ -330,7 +337,7 @@ export default class LineUp extends AEventDispatcher {
    * @param ascending
    * @returns {boolean}
    */
-  sortBy(column:(col:Column) => boolean | string, ascending = false) {
+  sortBy(column: (col: Column) => boolean | string, ascending = false) {
     var col = this.data.find(column);
     if (col) {
       col.sortByMe(ascending);
@@ -342,7 +349,7 @@ export default class LineUp extends AEventDispatcher {
     return this.data.dump();
   }
 
-  changeDataStorage(data:DataProvider, dump?:any) {
+  changeDataStorage(data: DataProvider, dump?: any) {
     if (this.data) {
       this.data.on('selectionChanged.main', null);
     }
@@ -357,12 +364,12 @@ export default class LineUp extends AEventDispatcher {
     this.update();
   }
 
-  private triggerSelection(data_indices:number[]) {
+  private triggerSelection(data_indices: number[]) {
     this.fire(LineUp.EVENT_SELECTION_CHANGED, data_indices.length > 0 ? data_indices[0] : -1);
     this.fire(LineUp.EVENT_MULTISELECTION_CHANGED, data_indices);
   }
 
-  restore(dump:any) {
+  restore(dump: any) {
     this.changeDataStorage(this.data, dump);
   }
 
@@ -388,13 +395,13 @@ export default class LineUp extends AEventDispatcher {
 
     this.body.on('renderFinished', () => {
       waitForBodyRenderer -= 1;
-      if(waitForBodyRenderer === 0)   {
+      if (waitForBodyRenderer === 0) {
         this.fire(LineUp.EVENT_UPDATE_FINISHED);
       }
     });
   }
 
-  changeRenderingOption(option:string, value:boolean) {
+  changeRenderingOption(option: string, value: boolean) {
     this.config.renderingOptions[option] = value;
     if (option === 'animation' || option === 'stacked') {
       this.body.setOption(option, value);
@@ -408,9 +415,9 @@ export default class LineUp extends AEventDispatcher {
  * @param columns
  * @returns {model_.IColumnDesc[]}
  */
-export function deriveColors(columns:IColumnDesc[]) {
+export function deriveColors(columns: IColumnDesc[]) {
   var colors = d3scale.category10().range().slice();
-  columns.forEach((col:any) => {
+  columns.forEach((col: any) => {
     switch (col.type) {
       case 'number':
         col.color = colors.shift();
