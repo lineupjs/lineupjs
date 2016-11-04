@@ -2,17 +2,11 @@
  * Created by sam on 04.11.2016.
  */
 
-import {
-  IStatistics,
-  ICategoricalStatistics,
-  IColumnDesc,
-  Ranking,
-  Column,
-  createRankDesc,
-  INumberColumn,
-  ICategoricalColumn,
-  NumberColumn
-} from '../model';
+import {createRankDesc} from '../model';
+import Column, {IStatistics, ICategoricalStatistics, IColumnDesc} from '../model/Column';
+import NumberColumn, {INumberColumn} from '../model/NumberColumn';
+import Ranking from '../model/Ranking';
+import {ICategoricalColumn} from '../model/CategoricalColumn';
 import {merge} from '../utils';
 import * as d3 from 'd3';
 import {IStatsBuilder, IDataProviderOptions} from './ADataProvider';

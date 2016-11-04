@@ -4,7 +4,7 @@
 
 import {select, scale, set as d3set, behavior, Selection, event as d3event, mouse} from 'd3';
 import {merge} from './utils';
-import {INumberFilter, IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model';
+import {INumberFilter, IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
 
 
 function clamp(v: number, min: number, max: number) {

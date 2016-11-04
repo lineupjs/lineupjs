@@ -4,9 +4,16 @@
 
 import * as d3 from 'd3';
 import {merge, dropAble, delayedCall} from '../utils';
-import {Ranking, Column, NumberColumn, isNumberColumn, isCategoricalColumn, IStatistics, CategoricalColumn,
-  IMultiLevelColumn, isMultiLevelColumn, RankColumn, StackColumn, LinkColumn, ScriptColumn,
-  ICategoricalStatistics, StringColumn} from '../model';
+import Column, {IStatistics, ICategoricalStatistics} from '../model/Column';
+import StringColumn from '../model/StringColumn';
+import Ranking from '../model/Ranking';
+import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
+import NumberColumn, {isNumberColumn} from '../model/NumberColumn';
+import CategoricalColumn, {isCategoricalColumn} from '../model/CategoricalColumn';
+import RankColumn from '../model/RankColumn';
+import StackColumn from '../model/StackColumn';
+import LinkColumn from '../model/LinkColumn';
+import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
 import {filterDialogs, openEditWeightsDialog, openEditLinkDialog, openEditScriptDialog, openRenameDialog, openSearchDialog} from '../ui_dialogs';
 

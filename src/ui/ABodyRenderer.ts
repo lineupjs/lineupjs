@@ -4,7 +4,9 @@
 
 import * as d3 from 'd3';
 import {merge, delayedCall, AEventDispatcher} from '../utils';
-import {IStatistics, Column, isMultiLevelColumn, IMultiLevelColumn, Ranking, isNumberColumn} from '../model';
+import {Ranking, isNumberColumn} from '../model';
+import Column, {IStatistics} from '../model/Column';
+import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import DataProvider from '../provider/ADataProvider';
 import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
 

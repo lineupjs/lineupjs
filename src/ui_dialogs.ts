@@ -4,7 +4,15 @@
  * Created by Samuel Gratzl on 24.08.2015.
  */
 
-import {Column, StringColumn, CategoricalColumn, LinkColumn, StackColumn, ScriptColumn, IMappingFunction, BooleanColumn, NumberColumn, CategoricalNumberColumn} from './model';
+import Column from './model/Column';
+import StringColumn from './model/StringColumn';
+import CategoricalColumn from './model/CategoricalColumn';
+import LinkColumn from './model/LinkColumn';
+import StackColumn from './model/StackColumn';
+import ScriptColumn from './model/ScriptColumn';
+import BooleanColumn from './model/BooleanColumn';
+import NumberColumn, {IMappingFunction} from './model/NumberColumn';
+import CategoricalNumberColumn from './model/CategoricalNumberColumn';
 import {offset} from './utils';
 import MappingEditor from './mappingeditor';
 import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';

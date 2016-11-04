@@ -2,14 +2,15 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {IStatistics, ICategoricalStatistics, IColumnDesc, Ranking, Column, models, RankColumn, createActionDesc, createStackDesc, isNumberColumn, createRankDesc, createSelectionDesc, StackColumn, INumberColumn, ICategoricalColumn, NumberColumn} from '../model';
+import {isSupportType, IColumnDesc, Ranking, Column, models, createActionDesc, isNumberColumn, createStackDesc, createRankDesc, createSelectionDesc} from '../model';
+import {IStatistics, ICategoricalStatistics} from '../model/Column';
+import RankColumn from '../model/RankColumn';
+import StackColumn from '../model/StackColumn';
+import {ICategoricalColumn} from '../model/CategoricalColumn';
+import {INumberColumn} from '../model/NumberColumn';
 import {merge, AEventDispatcher, delayedCall} from '../utils';
-import {max as d3max, extent, layout, map as d3map, set as d3set, mean as d3mean} from 'd3';
+import {set as d3set} from 'd3';
 
-
-function isSupportType(col: IColumnDesc) {
-  return ['rank', 'selection', 'actions'].indexOf(col.type) >= 0;
-}
 
 export interface IExportOptions {
   /**
@@ -362,7 +363,7 @@ abstract class ADataProvider extends AEventDispatcher {
     ranking.restore(dump, this.createHelper);
     //if no rank column add one
     if (!ranking.children.some((d) => d instanceof RankColumn)) {
-      ranking.insert(this.create(RankColumn.desc()), 0);
+      ranking.insert(this.create(createRankDesc()), 0);
     }
     const idGenerator = this.nextId.bind(this);
     ranking.children.forEach((c) => c.assignNewId(idGenerator));
@@ -390,7 +391,7 @@ abstract class ADataProvider extends AEventDispatcher {
         ranking.restore(r, this.createHelper);
         //if no rank column add one
         if (!ranking.children.some((d) => d instanceof RankColumn)) {
-          ranking.insert(this.create(RankColumn.desc()), 0);
+          ranking.insert(this.create(createRankDesc()), 0);
         }
         this.insertRanking(ranking);
       });

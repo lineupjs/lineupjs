@@ -2,7 +2,15 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import * as model from './model';
+import Column from './model/Column';
+import StringColumn from './model/StringColumn';
+import AnnotateColumn from './model/AnnotateColumn';
+import LinkColumn from './model/LinkColumn';
+import SelectionColumn from './model/SelectionColumn';
+import StackColumn from './model/StackColumn';
+import CategoricalColumn from './model/CategoricalColumn';
+import {isNumberColumn, INumberColumn} from './model/NumberColumn';
+import {IMultiLevelColumn, isMultiLevelColumn} from './model/CompositeColumn';
 import {forEach, attr} from './utils';
 import {hsl} from 'd3';
 
@@ -34,7 +42,7 @@ export interface IRenderContext<T> {
    * render a column
    * @param col
    */
-  renderer(col: model.Column): T;
+  renderer(col: Column): T;
 
   /**
    * prefix used for all generated id names
@@ -83,9 +91,9 @@ export interface ICanvasCellRenderer {
 }
 
 export interface ICellRendererFactory {
-  createSVG?(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer;
-  createHTML?(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer;
-  createCanvas?(col: model.Column, context: ICanvasRenderContext): ICanvasCellRenderer;
+  createSVG?(col: Column, context: IDOMRenderContext): ISVGCellRenderer;
+  createHTML?(col: Column, context: IDOMRenderContext): IHTMLCellRenderer;
+  createCanvas?(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer;
 }
 /**
  * default renderer instance rendering the value as a text
@@ -107,7 +115,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     this.align = align;
   }
 
-  createSVG(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     return {
       template: `<text class="${this.textClass}" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>`,
       update: (n: SVGTextElement, d: IDataRow, i: number) => {
@@ -125,7 +133,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createHTML(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
     return {
       template: `<div class="${this.textClass} ${this.align}"></div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
@@ -137,7 +145,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: model.Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.textAlign = this.align;
       const w = col.getWidth();
@@ -162,11 +170,11 @@ export class BarCellRenderer implements ICellRendererFactory {
    */
   protected renderValue = false;
 
-  constructor(renderValue = false, private colorOf: (d: any, i: number, col: model.Column)=>string = (d, i, col) => col.color) {
+  constructor(renderValue = false, private colorOf: (d: any, i: number, col: Column)=>string = (d, i, col) => col.color) {
     this.renderValue = renderValue;
   }
 
-  createSVG(col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<g class="bar">
@@ -191,7 +199,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createHTML(col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<div class="bar" style="top:${padding}px; background-color: ${col.color}">
@@ -212,7 +220,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: model.Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = this.colorOf(d.v, i, col);
@@ -226,19 +234,19 @@ export class BarCellRenderer implements ICellRendererFactory {
   }
 }
 
-function toHeatMapColor(d: any, col: model.INumberColumn & model.Column) {
+function toHeatMapColor(d: any, col: INumberColumn & Column) {
   var v = col.getNumber(d);
   if (isNaN(v)) {
     v = 0;
   }
   //hsl space encoding, encode in lightness
-  var color = hsl(col.color || model.Column.DEFAULT_COLOR);
+  var color = hsl(col.color || Column.DEFAULT_COLOR);
   color.l = v;
   return color.toString();
 }
 
 const heatmap = {
-  createSVG: function(col: model.INumberColumn & model.Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG: function(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<rect class="heatmap ${col.cssClass}" y="${padding}" style="fill: ${col.color}">
@@ -258,7 +266,7 @@ const heatmap = {
       }
     };
   },
-  createHTML: function(col: model.INumberColumn & model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML: function(col: INumberColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<div class="heatmap ${col.cssClass}" style="background-color: ${col.color}; top: ${padding}"></div>`,
@@ -275,7 +283,7 @@ const heatmap = {
       }
     };
   },
-  createCanvas: function(col: model.INumberColumn & model.Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const w = context.rowHeight(i) - padding * 2;
@@ -286,7 +294,7 @@ const heatmap = {
 };
 
 const action = {
-  createSVG: function (col: model.Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG: function (col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     const actions = context.option('actions', []);
     return {
       template: `<text class="actions hoverOnly fa">${actions.map((a) =>`<tspan title="${a.name}">${a.icon}></tspan>`)}</text>`,
@@ -301,7 +309,7 @@ const action = {
       }
     };
   },
-  createHTML: function (col: model.Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML: function (col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const actions = context.option('actions', []);
     return {
       template: `<div class="actions hoverOnly">${actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}></span>`)}</div>`,
@@ -316,7 +324,7 @@ const action = {
       }
     };
   },
-  createCanvas: function(col: model.LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function(col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const actions = context.option('actions', []);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const hovered = context.option('current.hovered', -1) === d.dataIndex;
@@ -337,7 +345,7 @@ const action = {
 };
 
 const selection = {
-  createSVG: function (col: model.SelectionColumn): ISVGCellRenderer {
+  createSVG: function (col: SelectionColumn): ISVGCellRenderer {
     return {
       template: `<text class="selection fa"><tspan class="selectionOnly">\uf046</tspan><tspan class="notSelectionOnly">\uf096</tspan></text>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
@@ -349,7 +357,7 @@ const selection = {
       }
     };
   },
-  createHTML: function (col: model.SelectionColumn): IHTMLCellRenderer {
+  createHTML: function (col: SelectionColumn): IHTMLCellRenderer {
     return {
       template: `<div class="selection fa"></div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
@@ -361,7 +369,7 @@ const selection = {
       }
     };
   },
-  createCanvas: function (col: model.SelectionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function (col: SelectionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const bak = ctx.font;
       ctx.font = '10pt FontAwesome';
@@ -372,7 +380,7 @@ const selection = {
 };
 
 const annotate = {
-  createSVG: function (col: model.AnnotateColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG: function (col: AnnotateColumn, context: IDOMRenderContext): ISVGCellRenderer {
     return {
       template: `<g class="annotations">
         <text class="notHoverOnly text" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
@@ -398,7 +406,7 @@ const annotate = {
       }
     };
   },
-  createHTML: function (col: model.AnnotateColumn): IHTMLCellRenderer {
+  createHTML: function (col: AnnotateColumn): IHTMLCellRenderer {
     return {
       template: `<div class="annotations text">
         <input type="text" class="hoverOnly">
@@ -418,7 +426,7 @@ const annotate = {
       }
     };
   },
-  createCanvas: function(col: model.AnnotateColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function(col: AnnotateColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const hovered = context.option('current.hovered', -1) === d.dataIndex;
       if (hovered) {
@@ -458,7 +466,7 @@ export function hideOverlays() {
 }
 
 const link = {
-  createSVG: function (col: model.LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG: function (col: LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
     return {
       template: `<text class="link text" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>`,
       update: (n: SVGTextElement, d: IDataRow, i: number) => {
@@ -466,7 +474,7 @@ const link = {
       }
     };
   },
-  createHTML: function (col: model.LinkColumn): IHTMLCellRenderer {
+  createHTML: function (col: LinkColumn): IHTMLCellRenderer {
     return {
       template: `<div class="link text"></div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
@@ -475,7 +483,7 @@ const link = {
       }
     };
   },
-  createCanvas: function(col: model.LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function(col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const isLink = col.isLink(d.v);
       if (!isLink) {
@@ -501,19 +509,19 @@ const link = {
  * renders a string with additional alignment behavior
  */
 class StringCellRenderer extends DefaultCellRenderer {
-  createSVG(col: model.StringColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: StringColumn, context: IDOMRenderContext): ISVGCellRenderer {
     this.align = col.alignment;
     this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
     return super.createSVG(col, context);
   }
 
-  createHTML(col: model.StringColumn, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML(col: StringColumn, context: IDOMRenderContext): IHTMLCellRenderer {
     this.align = col.alignment;
     this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
     return super.createHTML(col, context);
   }
 
-  createCanvas(col: model.StringColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: StringColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     this.align = col.alignment;
     this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
     return super.createCanvas(col, context);
@@ -534,7 +542,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
     this.textClass = textClass;
   }
 
-  createSVG(col: model.CategoricalColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: CategoricalColumn, context: IDOMRenderContext): ISVGCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<g class="${this.textClass}">
@@ -557,7 +565,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createHTML(col: model.CategoricalColumn, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML(col: CategoricalColumn, context: IDOMRenderContext): IHTMLCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<div class="${this.textClass}">
@@ -579,7 +587,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: model.CategoricalColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: CategoricalColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
@@ -597,7 +605,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
  * @param columns
  * @param helperType
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: model.Column, renderer: IDOMCellRenderer<any> }[], helperType = 'svg') {
+export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer<any> }[], helperType = 'svg') {
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.renderer.template).join('');
@@ -609,7 +617,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
     return;
   }
 
-  function matches(c: {column: model.Column}, i: number) {
+  function matches(c: {column: Column}, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
     return n != null && n.getAttribute('data-column-id') === c.column.id;
@@ -647,7 +655,7 @@ class StackCellRenderer implements ICellRendererFactory {
   constructor(private nestingPossible = true) {
   }
 
-  private createData(col: model.StackColumn, context: IRenderContext<any>) {
+  private createData(col: StackColumn, context: IRenderContext<any>) {
     const stacked = this.nestingPossible && context.option('stacked', true);
     const padding = context.option('columnPadding', 0);
     var offset = 0;
@@ -664,7 +672,7 @@ class StackCellRenderer implements ICellRendererFactory {
     });
   }
 
-  createSVG(col: model.StackColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: StackColumn, context: IDOMRenderContext): ISVGCellRenderer {
     const cols = this.createData(col, context);
     return {
       template: `<g class="stack component${context.option('stackLevel', 0)}">${cols.map((d) => d.renderer.template).join('')}</g>`,
@@ -683,7 +691,7 @@ class StackCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createHTML(col: model.StackColumn, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML(col: StackColumn, context: IDOMRenderContext): IHTMLCellRenderer {
     const cols = this.createData(col, context);
     return {
       template: `<div class="stack component${context.option('stackLevel', 0)}">${cols.map((d) => d.renderer.template).join('')}</div>`,
@@ -702,7 +710,7 @@ class StackCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: model.StackColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: StackColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const cols = this.createData(col, context);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       var stackShift = 0;
@@ -745,29 +753,29 @@ export const renderers : {[key: string]: ICellRendererFactory} = {
   script: combineCellRenderer
 };
 
-function chooseRenderer(col: model.Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
-  if (col.getCompressed() && model.isNumberColumn(col)) {
+function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
+  if (col.getCompressed() && isNumberColumn(col)) {
     return (<any>renderers).heatmap || defaultCellRenderer;
   }
-  if (col instanceof model.StackColumn && col.getCollapsed()) {
+  if (col instanceof StackColumn && col.getCollapsed()) {
     return (<any>renderers).number || defaultCellRenderer;
   }
-  if (model.isMultiLevelColumn(col) && (<model.IMultiLevelColumn>col).getCollapsed()) {
+  if (isMultiLevelColumn(col) && (<IMultiLevelColumn>col).getCollapsed()) {
     return defaultCellRenderer;
   }
   const r = renderers[col.desc.type];
   return r || defaultCellRenderer;
 }
 
-export function createSVG(col: model.Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
+export function createSVG(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
   const r = chooseRenderer(col, renderers);
   return (r.createSVG ? r.createSVG.bind(r) : defaultCellRenderer.createSVG.bind(r))(col, context);
 }
-export function createHTML(col: model.Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
+export function createHTML(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
   const r = chooseRenderer(col, renderers);
   return (r.createHTML ? r.createHTML.bind(r) : defaultCellRenderer.createHTML.bind(r))(col, context);
 }
-export function createCanvas(col: model.Column, renderers: {[key: string]: ICellRendererFactory}, context: ICanvasRenderContext) {
+export function createCanvas(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: ICanvasRenderContext) {
   const r = chooseRenderer(col, renderers);
   return (r.createCanvas ? r.createCanvas.bind(r) : defaultCellRenderer.createCanvas.bind(r))(col, context);
 }

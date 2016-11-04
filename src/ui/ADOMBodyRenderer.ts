@@ -4,7 +4,7 @@
 
 import * as d3 from 'd3';
 import {forEach} from '../utils';
-import {Column, IStatistics} from '../model';
+import Column, {IStatistics} from '../model/Column';
 import {matchColumns, IDOMCellRenderer, ICellRendererFactory} from '../renderer';
 import DataProvider from '../provider/ADataProvider';
 import {IDOMRenderContext} from '../renderer';
