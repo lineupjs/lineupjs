@@ -7,8 +7,8 @@
 import {Column, StringColumn, CategoricalColumn, LinkColumn, StackColumn, ScriptColumn, IMappingFunction, BooleanColumn, NumberColumn, CategoricalNumberColumn} from './model';
 import {offset} from './utils';
 import MappingEditor from './mappingeditor';
-import {DataProvider} from './provider';
 import * as d3 from 'd3';
+import DataProvider from './provider/ADataProvider';
 
 export function dialogForm(title, body, buttonsWithLabel = false) {
   return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
