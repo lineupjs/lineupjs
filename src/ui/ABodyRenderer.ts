@@ -50,7 +50,7 @@ export interface IRankingData {
   data: Promise<{v: any, dataIndex: number}[]>;
 }
 
-export interface ABodyRendererOptions {
+export interface IBodyRendererOptions {
   rowHeight?: number;
   rowPadding?: number;
   rowBarPadding?: number;
@@ -71,7 +71,7 @@ export interface ABodyRendererOptions {
 }
 
 abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
-  protected options : ABodyRendererOptions = {
+  protected options : IBodyRendererOptions = {
     rowHeight: 20,
     rowPadding: 1,
     rowBarPadding: 1,
@@ -95,7 +95,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   histCache = d3.map<Promise<IStatistics>>();
 
-  constructor(protected data: DataProvider, parent: Element, private slicer: ISlicer, root: string, options : ABodyRendererOptions = {}) {
+  constructor(protected data: DataProvider, parent: Element, private slicer: ISlicer, root: string, options : IBodyRendererOptions = {}) {
     super();
     //merge options
     merge(this.options, options);

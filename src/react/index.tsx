@@ -3,7 +3,7 @@
  */
 
 import '../style.scss';
-import Impl from '../lineup';
+import Impl, {ILineUpConfig} from '../lineup';
 import * as React from 'react';
 import {IColumnDesc} from '../model';
 import LocalDataProvider from '../provider/LocalDataProvider';
@@ -11,7 +11,7 @@ import LocalDataProvider from '../provider/LocalDataProvider';
 export interface ILineUpProps<T> {
   data: T[];
   desc: IColumnDesc[];
-  options?: any;
+  options?: ILineUpConfig;
   selection?: T[];
   onSelectionChanged?(selection: T[]): void;
 }

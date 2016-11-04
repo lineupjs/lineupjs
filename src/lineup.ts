@@ -5,13 +5,75 @@
 
 import {IColumnDesc, Column} from './model';
 import DataProvider  from './provider/ADataProvider';
-import {renderers as defaultRenderers}  from './renderer';
+import {renderers as defaultRenderers, ICellRendererFactory}  from './renderer';
 import {IRankingHook, dummyRankingButtonHook, PoolRenderer, IBodyRenderer, HeaderRenderer, createBodyRenderer} from './ui';
+import {IHeaderRendererOptions} from './ui/HeaderRenderer';
+import {IBodyRendererOptions} from './ui/ABodyRenderer';
 import {AEventDispatcher, ContentScroller, merge}  from './utils';
 import {scale as d3scale, selection, select, Selection} from 'd3';
 
+export interface IBodyOptions {
+  renderer?: string;
+  visibleRowsOnly?: boolean;
+  backupScrollRows?: number;
+}
+
 export interface ILineUpConfig {
-  [key: string]: any;
+  /**
+     * a prefix used for all generated html ids
+     */
+    idPrefix?: string;
+
+    /**
+     * options related to the header html layout
+     */
+    header?: IHeaderRendererOptions;
+    /**
+     * old name for header
+     */
+    htmlLayout?: IHeaderRendererOptions;
+    /**
+     * visual representation options
+     */
+    renderingOptions?: {
+      /**
+       * show combined bars as stacked bars
+       */
+      stacked?: boolean;
+      /**
+       * use animation for reordering
+       */
+      animation?: boolean;
+      /**
+       * show histograms of the headers (just settable at the beginning)
+       */
+      histograms?: boolean;
+      /**
+       * show a mean line for single numberial columns
+       */
+      meanLine?: boolean;
+    },
+    /**
+     * options related to the rendering of the body
+     */
+    body?: IBodyOptions & IBodyRendererOptions;
+    /**
+     * old name for body
+     */
+    svgLayout?: IBodyOptions & IBodyRendererOptions;
+    /**
+     *  enables manipulation features, remove column, reorder,...
+     */
+    manipulative?: boolean;
+    /**
+     * automatically add a column pool at the end
+     */
+    pool?: boolean;
+
+    /**
+     * the renderers to use for rendering the columns
+     */
+    renderers?: {[key: string]: ICellRendererFactory};
 }
 
 /**
@@ -49,7 +111,7 @@ export default class LineUp extends AEventDispatcher {
   /**
    * default config of LineUp with all available options
    */
-  config = {
+  config : ILineUpConfig = {
     /**
      * a prefix used for all generated html ids
      */
@@ -137,7 +199,7 @@ export default class LineUp extends AEventDispatcher {
       //number of cols that should be frozen on the left side
       freezeCols: 0,
 
-      rowActions: []
+      actions: []
     },
     /**
      * old name for body
@@ -165,7 +227,7 @@ export default class LineUp extends AEventDispatcher {
   private pools:PoolRenderer[] = [];
   private contentScroller:ContentScroller = null;
 
-  constructor(container:Selection<any> | Element, public data:DataProvider, config:any = {}) {
+  constructor(container:Selection<any> | Element, public data:DataProvider, config:ILineUpConfig = {}) {
     super();
     this.$container = container instanceof selection ? <Selection<any>>container : select(<Element>container);
     this.$container = this.$container.append('div').classed('lu', true);
@@ -177,35 +239,18 @@ export default class LineUp extends AEventDispatcher {
 
     this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
 
-    this.header = new HeaderRenderer(data, this.node, {
+    this.header = new HeaderRenderer(data, this.node, merge({}, this.config.header, {
       manipulative: this.config.manipulative,
-      headerHeight: this.config.header.headerHeight,
-      headerHistogramHeight: this.config.header.headerHistogramHeight,
       histograms : this.config.renderingOptions.histograms,
-
-      autoRotateLabels: this.config.header.autoRotateLabels,
-      rotationHeight: this.config.header.rotationHeight, //in px
-      rotationDegree:  this.config.header.rotationDegree, //in deg
-
       freezeCols: this.config.body.freezeCols,
-
-      rankingButtons: this.config.header.rankingButtons,
-      linkTemplates: this.config.header.linkTemplates
-    });
-    this.body = createBodyRenderer(this.config.body.renderer, data, this.node, this.slice.bind(this), {
-      rowHeight: this.config.body.rowHeight,
-      rowPadding: this.config.body.rowPadding,
-      rowBarPadding: this.config.body.rowBarPadding,
-      animationDuration: this.config.body.animationDuration,
+    }));
+    this.body = createBodyRenderer(this.config.body.renderer, data, this.node, this.slice.bind(this), merge({}, this.config.body, {
       meanLine: this.config.renderingOptions.meanLine,
       animation: this.config.renderingOptions.animation,
       stacked: this.config.renderingOptions.stacked,
-      actions: this.config.body.rowActions,
       idPrefix: this.config.idPrefix,
-
-      freezeCols: this.config.body.freezeCols,
       renderers: this.config.renderers
-    });
+    }));
     //share hist caches
     this.body.histCache = this.header.sharedHistCache;
 

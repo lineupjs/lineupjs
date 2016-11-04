@@ -30,6 +30,29 @@ export function dummyRankingButtonHook() {
   return null;
 }
 
+export interface IHeaderRendererOptions {
+  slopeWidth?: number;
+  columnPadding?: number;
+  headerHistogramHeight?: number;
+  headerHeight?: number;
+  manipulative?: boolean;
+  histograms?: boolean;
+
+  filterDialogs?: { [type: string]: (col: Column, $header: d3.Selection<Column>)=>void };
+  linkTemplates?: string[];
+  searchAble?(col: Column): boolean;
+  sortOnLabel?: boolean;
+
+  autoRotateLabels?: boolean;
+  rotationHeight?: number;
+  rotationDegree?: number;
+
+  freezeCols?: number;
+
+  rankingButtons?: IRankingHook;
+}
+
+
 export default class HeaderRenderer {
   private options = {
     slopeWidth: 150,
@@ -39,7 +62,7 @@ export default class HeaderRenderer {
     manipulative: true,
     histograms: false,
 
-    filterDialogs: filterDialogs(),
+    filterDialogs: filterDialogs,
     linkTemplates: [],
     searchAble: (col: Column) => col instanceof StringColumn,
     sortOnLabel: true,
