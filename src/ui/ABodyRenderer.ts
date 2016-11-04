@@ -203,6 +203,8 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   }
 
   private createData(rankings: Ranking[], orders: number[][], shifts: any[], context: IRenderContext<any>): IRankingData[] {
+    const data = this.rowFetcher.fetch(rankings.map((r) => r.getOrder()));
+
     return rankings.map((r, i) => {
       const cols = r.children.filter((d) => !d.isHidden());
       const s = shifts[i];
@@ -221,7 +223,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
         //compute frozen columns just for the first one
         frozen: i === 0 ? colData.slice(0,this.options.freezeCols) : [],
         columns: i === 0 ? colData.slice(this.options.freezeCols) : colData,
-        data: this.rowFetcher.fetch(order)
+        data: data[i]
       };
     });
   }
