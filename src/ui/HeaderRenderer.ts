@@ -16,7 +16,6 @@ import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
 import {filterDialogs, openEditWeightsDialog, openEditLinkDialog, openEditScriptDialog, openRenameDialog, openSearchDialog} from '../ui_dialogs';
-import {IDataRow} from '../provider/ADataProvider';
 
 /**
  * utility function to generate the tooltip text with description
@@ -86,7 +85,7 @@ export default class HeaderRenderer {
 
   $node: d3.Selection<any>;
 
-  private histCache = d3.map<Promise<any>>();
+  private histCache = new Map<string,Promise<IStatistics|ICategoricalStatistics>>();
 
   private dragHandler = d3.behavior.drag<Column>()
   //.origin((d) => d)
@@ -261,7 +260,7 @@ export default class HeaderRenderer {
     var columns = shifts.map((d) => d.col);
 
     //update all if needed
-    if (this.options.histograms && this.histCache.empty() && rankings.length > 0) {
+    if (this.options.histograms && this.histCache.size === 0 && rankings.length > 0) {
       this.updateHist();
     }
 

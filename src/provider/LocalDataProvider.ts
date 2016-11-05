@@ -54,7 +54,7 @@ function computeStats(arr: any[], acc: (row:any) => number, range?: [number, num
  * @returns {{hist: {cat: string, y: number}[]}}
  */
 function computeHist(arr: IDataRow[], acc: (row:any) => string[], categories: string[]): ICategoricalStatistics {
-  const m = d3.map<number>();
+  const m = new Map<string,number>();
   categories.forEach((cat) => m.set(cat, 0));
 
   arr.forEach((a) => {
@@ -66,9 +66,11 @@ function computeHist(arr: IDataRow[], acc: (row:any) => string[], categories: st
       m.set(v, (m.get(v) || 0) + 1);
     });
   });
+  const entries: {cat: string; y: number}[] = [];
+  m.forEach((v, k) => entries.push({cat: k, y: v}));
   return {
-    maxBin: d3.max(m.values()),
-    hist: m.entries().map((entry) => ({cat: entry.key, y: entry.value}))
+    maxBin: Math.max(...entries.map((d) => d.y)),
+    hist: entries
   };
 }
 

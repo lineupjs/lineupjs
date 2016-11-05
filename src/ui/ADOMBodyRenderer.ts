@@ -38,6 +38,13 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     super(data, parent, slicer, domMapping.root, options);
   }
 
+  protected animated<T>($rows: d3.Selection<T>): d3.Selection<T> {
+    if (this.options.animationDuration > 0 && this.options.animation) {
+      return <any>$rows.transition().duration(this.options.animationDuration);
+    }
+    return $rows;
+  }
+
   renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
     const that = this;
     const domMapping = this.domMapping;

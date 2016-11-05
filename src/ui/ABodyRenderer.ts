@@ -5,7 +5,7 @@
 import * as d3 from 'd3';
 import {merge, delayedCall, AEventDispatcher} from '../utils';
 import {Ranking, isNumberColumn} from '../model';
-import Column, {IStatistics} from '../model/Column';
+import Column, {IStatistics, ICategoricalStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
@@ -15,7 +15,7 @@ export interface ISlicer {
 }
 
 export interface IBodyRenderer extends AEventDispatcher {
-  histCache: d3.Map<Promise<IStatistics>>;
+  histCache: Map<string, Promise<IStatistics>>;
 
   node: Element;
 
@@ -95,7 +95,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   protected $node: d3.Selection<any>;
 
-  histCache = d3.map<Promise<IStatistics>>();
+  histCache = new Map<string, Promise<IStatistics|ICategoricalStatistics>>();
 
   constructor(protected data: DataProvider, parent: Element, private slicer: ISlicer, root: string, options : IBodyRendererOptions = {}) {
     super();
@@ -188,13 +188,6 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
         return creator(col, options.renderers, this);
       }
     };
-  }
-
-  protected animated<T>($rows: d3.Selection<T>): d3.Selection<T> {
-    if (this.options.animationDuration > 0 && this.options.animation) {
-      return <any>$rows.transition().duration(this.options.animationDuration);
-    }
-    return $rows;
   }
 
   private createData(rankings: Ranking[], orders: number[][], shifts: any[], context: IRenderContext<any>): IRankingData[] {
