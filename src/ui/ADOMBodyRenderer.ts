@@ -8,7 +8,7 @@ import Column, {IStatistics} from '../model/Column';
 import {matchColumns, IDOMCellRenderer, ICellRendererFactory} from '../renderer';
 import DataProvider from '../provider/ADataProvider';
 import {IDOMRenderContext} from '../renderer';
-import ABodyRenderer, {ISlicer, IRankingColumnData, IRankingData, IBodyRenderContext} from './ABodyRenderer';
+import ABodyRenderer, {ISlicer, IRankingColumnData, IRankingData, IBodyRenderContext, ERenderReason} from './ABodyRenderer';
 
 export interface IDOMMapping {
   root: string;
@@ -229,9 +229,9 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     return this.createContext(index_shift, this.domMapping.creator);
   }
 
-  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, offset: number, height: number) {
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {
     // - ... added one to often
-    this.domMapping.setSize(this.node, Math.max(0, offset - this.options.slopeWidth), height);
+    this.domMapping.setSize(this.node, Math.max(0, width), height);
 
     var $body = this.$node.select(this.domMapping.g + '.body');
     if ($body.empty()) {

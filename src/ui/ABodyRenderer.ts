@@ -27,6 +27,8 @@ export interface IBodyRenderer extends AEventDispatcher {
 
   updateFreeze(left: number);
 
+  scrolled();
+
   update();
 }
 
@@ -67,13 +69,18 @@ export interface IBodyRendererOptions {
 
   meanLine?: boolean;
 
-  actions?: { name: string, icon: string, action(v: any):void }[];
+  actions?: { name: string, icon: string, action(v: any): void }[];
 
   freezeCols?: number;
 }
 
+export enum ERenderReason {
+  DIRTY,
+  SCROLLED
+}
+
 abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
-  protected options : IBodyRendererOptions = {
+  protected options: IBodyRendererOptions = {
     rowHeight: 20,
     rowPadding: 1,
     rowBarPadding: 1,
@@ -97,7 +104,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   histCache = new Map<string, Promise<IStatistics|ICategoricalStatistics>>();
 
-  constructor(protected data: DataProvider, parent: Element, private slicer: ISlicer, root: string, options : IBodyRendererOptions = {}) {
+  constructor(protected data: DataProvider, parent: Element, private slicer: ISlicer, root: string, options: IBodyRendererOptions = {}) {
     super();
     //merge options
     merge(this.options, options);
@@ -190,32 +197,6 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     };
   }
 
-  private createData(rankings: Ranking[], orders: number[][], shifts: any[], context: IRenderContext<any>): IRankingData[] {
-    const data = this.data.fetch(rankings.map((r) => r.getOrder()));
-
-    return rankings.map((r, i) => {
-      const cols = r.children.filter((d) => !d.isHidden());
-      const s = shifts[i];
-      const order = orders[i];
-      const colData = cols.map((c, j) => ({
-        column: c,
-        renderer: context.renderer(c),
-        shift: s.shifts[j]
-      }));
-      return {
-        id: r.id,
-        ranking: r,
-        order: order,
-        shift: s.shift,
-        width: s.width,
-        //compute frozen columns just for the first one
-        frozen: i === 0 ? colData.slice(0,this.options.freezeCols) : [],
-        columns: i === 0 ? colData.slice(this.options.freezeCols) : colData,
-        data: data[i]
-      };
-    });
-  }
-
   select(dataIndex: number, additional = false) {
     return this.data.toggleSelection(dataIndex, additional);
   }
@@ -229,13 +210,14 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   abstract updateFreeze(left: number);
 
+  scrolled() {
+    return this.update(ERenderReason.SCROLLED);
+  }
+
   /**
    * render the body
    */
-  /**
-   * render the body
-   */
-  update() {
+  update(reason = ERenderReason.DIRTY) {
     const rankings = this.data.getRankings();
     const maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
     const height = this.options.rowHeight * maxElems;
@@ -246,38 +228,55 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       }
       return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
     };
-    const orders = rankings.map((r) => orderSlicer(r.getOrder()));
-
-    //compute offsets and shifts for individual rankings and columns inside the rankings
-    var offset = 0,
-      shifts = rankings.map((d, i) => {
-        var r = offset;
-        offset += this.options.slopeWidth;
-        var o2 = 0,
-          shift2 = d.children.filter((d) => !d.isHidden()).map((o) => {
-            var r = o2;
-            o2 += (o.getCompressed() ? Column.COMPRESSED_WIDTH : o.getWidth()) + this.options.columnPadding;
-            if (isMultiLevelColumn(o) && !(<IMultiLevelColumn>o).getCollapsed() && !o.getCompressed()) {
-              o2 += this.options.columnPadding * ((<IMultiLevelColumn>o).length - 1);
-            }
-            return r;
-          });
-        offset += o2;
-        return {
-          shift: r,
-          shifts: shift2,
-          width: o2
-        };
-      });
 
     const context = this.createContextImpl(visibleRange.from);
-    const data = this.createData(rankings, orders, shifts, context);
-    this.updateImpl(data, context, offset, height);
+    const orders = rankings.map((r) => orderSlicer(r.getOrder()));
+    const data = this.data.fetch(orders);
+
+    const padding = this.options.columnPadding;
+    var totalWidth = 0;
+    const rdata = rankings.map((r, i) => {
+      const cols = r.children.filter((d) => !d.isHidden());
+
+      const rankingShift = totalWidth;
+      var width = 0;
+
+      const colData = cols.map((o) => {
+        const colShift = width;
+        width += (o.getCompressed() ? Column.COMPRESSED_WIDTH : o.getWidth()) + padding;
+        if (isMultiLevelColumn(o) && !(<IMultiLevelColumn>o).getCollapsed() && !o.getCompressed()) {
+          width += padding * ((<IMultiLevelColumn>o).length - 1);
+        }
+        return {
+          column: o,
+          renderer: context.renderer(o),
+          shift: colShift
+        }
+      });
+      totalWidth += width;
+      totalWidth += this.options.slopeWidth;
+
+      return {
+        id: r.id,
+        ranking: r,
+        order: orders[i],
+        shift: rankingShift,
+        width: width,
+        //compute frozen columns just for the first one
+        frozen: i === 0 ? colData.slice(0, this.options.freezeCols) : [],
+        columns: i === 0 ? colData.slice(this.options.freezeCols) : colData,
+        data: data[i]
+      };
+    });
+    //one to often
+    totalWidth -= this.options.slopeWidth;
+
+    this.updateImpl(rdata, context, totalWidth, height, reason);
   }
 
   protected abstract createContextImpl(index_shift: number): IBodyRenderContext;
 
-  protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, offset: number, height: number);
+  protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason);
 }
 
 export default ABodyRenderer;

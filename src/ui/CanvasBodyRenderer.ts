@@ -8,8 +8,7 @@ import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {createCanvas, hideOverlays, ICanvasRenderContext} from '../renderer';
 import DataProvider, {IDataRow}  from '../provider/ADataProvider';
-import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext} from './ABodyRenderer';
-import Ranking from "../model/Ranking";
+import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext, ERenderReason} from './ABodyRenderer';
 
 export interface IStyleOptions {
   text?: string;
@@ -205,12 +204,15 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
 
     //asynchronous rendering!!!
     const all = Promise.all;
-    return all(data.map((ranking) =>
-      all(ranking.data.map((p, i) =>
-        p.then((di: IDataRow) =>
+    return all(data.map((ranking) => {
+      const toRender = ranking.data;
+      return all(toRender.map((p, i) => {
+        // TODO render loading row
+        return p.then((di: IDataRow) =>
           renderRow(ranking, di, i)
-        ))
-      )));
+        );
+      }));
+    }));
   }
 
   renderSlopeGraphs(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
@@ -270,19 +272,19 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return r;
   }
 
-  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, offset: number, height: number) {
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {
     const $canvas = this.$node.select('canvas');
 
     const firstLine = Math.max(context.cellY(0) - 20, 0); //where to start
     const lastLine = Math.min(context.cellY(Math.max(...data.map((d) => d.order.length))) + 20, height);
 
     this.$node.style({
-      width: Math.max(0, offset - this.options.slopeWidth) + 'px',
+      width: Math.max(0, width) + 'px',
       height: height + 'px'
     });
 
     $canvas.attr({
-      width: Math.max(0, offset - this.options.slopeWidth),
+      width: Math.max(0, width),
       height: lastLine - firstLine
     }).style('margin-top', firstLine + 'px');
 

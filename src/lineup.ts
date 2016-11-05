@@ -281,7 +281,7 @@ export default class LineUp extends AEventDispatcher {
           this.body.updateFreeze(left);
         }
       });
-      this.contentScroller.on('redraw', this.body.update.bind(this.body));
+      this.contentScroller.on('redraw', this.body.scrolled.bind(this.body));
     }
   }
 
