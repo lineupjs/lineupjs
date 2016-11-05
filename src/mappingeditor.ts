@@ -13,7 +13,7 @@ function clamp(v: number, min: number, max: number) {
 
 function unique(data: number[]) {
   const s = new Set<number>();
-  data.forEach((d) => s.add(s));
+  data.forEach((d) => s.add(d));
   const r = [];
   s.forEach((d) => r.push(d));
   return r;
@@ -26,7 +26,7 @@ export interface IMappingEditorOptions {
   padding_ver?: number;
   filter_height?: number;
   radius?: number;
-  callback?(d: any): void;
+  callback?(newscale: IMappingFunction, filter: {min: number, max: number }): void;
   callbackThisArg?: any;
   triggerCallback?: string;
 }
@@ -39,7 +39,7 @@ export default class MappingEditor {
     padding_ver: 7,
     filter_height: 20,
     radius: 5,
-    callback: (d)=>d,
+    callback: ()=>undefined,
     callbackThisArg: null,
     triggerCallback: 'change' //change, dragend
   };
