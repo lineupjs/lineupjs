@@ -38,7 +38,7 @@ export interface IServerData {
 
 
 export interface IRemoteDataProviderOptions {
-
+  maxCacheSize?: number;
 }
 
 /**
@@ -46,7 +46,7 @@ export interface IRemoteDataProviderOptions {
  */
 export default class RemoteDataProvider extends ACommonDataProvider {
   private options: IRemoteDataProviderOptions = {
-
+    maxCacheSize: 1000
   };
 
   /**
@@ -123,6 +123,9 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     // removed cached
     this.cache.forEach((v,k) => union.delete(k));
 
+    if ((this.cache.size + union.size) > this.options.maxCacheSize) {
+      // clean up cache
+    }
     // const maxLength = Math.max(...orders.map((o) => o.length));
     var r = [];
     union.forEach(r.push.bind(r));
