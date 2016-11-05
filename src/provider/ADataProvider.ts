@@ -9,7 +9,6 @@ import StackColumn from '../model/StackColumn';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import {INumberColumn} from '../model/NumberColumn';
 import {merge, AEventDispatcher, delayedCall} from '../utils';
-import {set as d3set} from 'd3';
 
 /**
  * a data row for rendering
@@ -77,7 +76,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * the current selected indices
    * @type {Set}
    */
-  private selection = d3set();
+  private selection = new Set<number>();
 
   private uid = 0;
 
@@ -326,7 +325,7 @@ abstract class ADataProvider extends AEventDispatcher {
   dump(): any {
     return {
       uid: this.uid,
-      selection: this.selection.values().map(Number),
+      selection: this.getSelection(),
       rankings: this.rankings_.map((r) => r.dump(this.toDescRef))
     };
   }
@@ -393,7 +392,7 @@ abstract class ADataProvider extends AEventDispatcher {
     //restore selection
     this.uid = dump.uid || 0;
     if (dump.selection) {
-      dump.selection.forEach((s) => this.selection.add(String(s)));
+      dump.selection.forEach((s) => this.selection.add(s));
     }
 
 
@@ -545,7 +544,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @return {boolean}
    */
   isSelected(index: number) {
-    return this.selection.has(String(index));
+    return this.selection.has(index);
   }
 
   /**
@@ -553,11 +552,11 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param index
    */
   select(index: number) {
-    if (this.selection.has(String(index))) {
+    if (this.selection.has(index)) {
       return; //no change
     }
-    this.selection.add(String(index));
-    this.fire('selectionChanged', this.selection.values().map(Number));
+    this.selection.add(index);
+    this.fire('selectionChanged', this.getSelection());
   }
 
   /**
@@ -575,13 +574,13 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param jumpToSelection whether the first selected row should be visible
    */
   selectAll(indices: number[], jumpToSelection = false) {
-    if (indices.every((i) => this.selection.has(String(i)))) {
+    if (indices.every((i) => this.selection.has(i))) {
       return; //no change
     }
     indices.forEach((index) => {
-      this.selection.add(String(index));
+      this.selection.add(index);
     });
-    this.fire('selectionChanged', this.selection.values().map(Number), jumpToSelection);
+    this.fire('selectionChanged', this.getSelection(), jumpToSelection);
   }
 
   /**
@@ -590,10 +589,10 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param jumpToSelection whether the first selected row should be visible
    */
   setSelection(indices: number[], jumpToSelection = false) {
-    if (this.selection.size() === indices.length && indices.every((i) => this.selection.has(String(i)))) {
+    if (this.selection.size === indices.length && indices.every((i) => this.selection.has(i))) {
       return; //no change
     }
-    this.selection = d3set();
+    this.selection = new Set<number>();
     this.selectAll(indices, jumpToSelection);
   }
 
@@ -626,11 +625,11 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param index
    */
   deselect(index: number) {
-    if (!this.selection.has(String(index))) {
+    if (!this.selection.has(index)) {
       return; //no change
     }
-    this.selection.remove(String(index));
-    this.fire('selectionChanged', this.selection.values().map(Number));
+    this.selection.delete(index);
+    this.fire('selectionChanged', this.getSelection());
   }
 
   /**
@@ -638,7 +637,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @return {Promise<any[]>}
    */
   selectedRows(): Promise<IDataRow[]> {
-    if (this.selection.empty()) {
+    if (this.selection.size == 0) {
       return Promise.resolve([]);
     }
     return this.view(this.getSelection());
@@ -650,7 +649,7 @@ abstract class ADataProvider extends AEventDispatcher {
    */
   getSelection() {
     var indices = [];
-    this.selection.forEach((s) => indices.push(+s));
+    this.selection.forEach((s) => indices.push(s));
     indices.sort();
     return indices;
   }
@@ -659,10 +658,10 @@ abstract class ADataProvider extends AEventDispatcher {
    * clears the selection
    */
   clearSelection() {
-    if (this.selection.empty()) {
+    if (this.selection.size === 0) {
       return; //no change
     }
-    this.selection = d3set();
+    this.selection = new Set<number>();
     this.fire('selectionChanged', [], false);
   }
 

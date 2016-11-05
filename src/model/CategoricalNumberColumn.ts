@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {map as d3map, max as d3max, scale, min as d3min} from 'd3';
+import {max as d3max, scale, min as d3min} from 'd3';
 import Column from './Column';
 import ValueColumn from './ValueColumn';
 import CategoricalColumn, {ICategoricalColumn} from './CategoricalColumn';
@@ -18,7 +18,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
    * category labels by default the category name itself
    * @type {Array}
    */
-  private catLabels = d3map<string>();
+  private catLabels = new Map<string, string>();
 
   private scale = scale.ordinal().rangeRoundPoints([0, 1]);
 
@@ -57,7 +57,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
 
   get categoryLabels() {
     //no mapping
-    if (this.catLabels === null || this.catLabels.empty()) {
+    if (this.catLabels === null || this.catLabels.size === 0) {
       return this.categories;
     }
     //label or identity mapping

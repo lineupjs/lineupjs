@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {map as d3map, ascending, scale} from 'd3';
+import {ascending, scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import ValueColumn from './ValueColumn';
 import StringColumn from './StringColumn';
@@ -50,7 +50,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
    * category labels by default the category name itself
    * @type {Array}
    */
-  private catLabels = d3map<string>();
+  private catLabels = new Map<string, string>();
 
   /**
    * set of categories to show
@@ -76,7 +76,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     if (desc.categories) {
       var cats = [],
         cols = this.colors.range(),
-        labels = d3map<string>();
+        labels = new Map<string, string>();
       desc.categories.forEach((cat, i) => {
         if (typeof cat === 'string') {
           //just the category value
@@ -109,7 +109,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   get categoryLabels() {
     //no mapping
-    if (this.catLabels === null || this.catLabels.empty()) {
+    if (this.catLabels === null || this.catLabels.size === 0) {
       return this.categories;
     }
     //label or identity mapping
@@ -122,7 +122,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   getLabel(row:any) {
     //no mapping
-    if (this.catLabels === null || this.catLabels.empty()) {
+    if (this.catLabels === null || this.catLabels.size === 0) {
       return '' + StringColumn.prototype.getValue.call(this, row);
     }
     return this.getLabels(row).join(this.separator);
@@ -139,7 +139,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     const r = v ? v.split(this.separator): [];
 
     const mapToLabel = (values: string[]) => {
-      if (this.catLabels === null || this.catLabels.empty()) {
+      if (this.catLabels === null || this.catLabels.size === 0) {
         return values;
       }
       return values.map((v) => this.catLabels.has(v) ? this.catLabels.get(v) : v);
@@ -182,7 +182,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       range: this.colors.range(),
       separator: this.separator
     };
-    if (this.catLabels !== null && !this.catLabels.empty()) {
+    if (this.catLabels !== null && this.catLabels.size !== 0) {
       r.labels = this.catLabels.entries();
     }
     return r;
@@ -195,7 +195,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       this.colors.domain(dump.colors.domain).range(dump.colors.range);
     }
     if (dump.labels) {
-      this.catLabels = d3map<string>();
+      this.catLabels = new Map<string, string>();
       dump.labels.forEach((e) => this.catLabels.set(e.key, e.value));
     }
     this.separator = dump.separator || this.separator;

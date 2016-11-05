@@ -2,13 +2,21 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {select, scale, set as d3set, behavior, Selection, event as d3event, mouse} from 'd3';
+import {select, scale, behavior, Selection, event as d3event, mouse} from 'd3';
 import {merge} from './utils';
 import {INumberFilter, IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
 
 
 function clamp(v: number, min: number, max: number) {
   return Math.max(Math.min(v, max), min);
+}
+
+function unique(data: number[]) {
+  const s = new Set<number>();
+  data.forEach((d) => s.add(s));
+  const r = [];
+  s.forEach((d) => r.push(d));
+  return r;
 }
 
 export default class MappingEditor {
@@ -142,7 +150,7 @@ export default class MappingEditor {
     var datalines = $root.select('g.samples').selectAll('line').data([]);
     this.dataPromise.then((data) => {
       //to unique values
-      data = d3set(data.map(String)).values().map(parseFloat);
+      data = unique(data);
 
       datalines = datalines.data(data);
       datalines.enter()
