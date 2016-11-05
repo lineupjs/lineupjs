@@ -19,8 +19,20 @@ function unique(data: number[]) {
   return r;
 }
 
+export interface IMappingEditorOptions {
+  width?: number;
+  height?: number;
+  padding_hor?: number;
+  padding_ver?: number;
+  filter_height?: number;
+  radius?: number;
+  callback?(d: any): void;
+  callbackThisArg?: any;
+  triggerCallback?: string;
+}
+
 export default class MappingEditor {
-  private options = {
+  private options : IMappingEditorOptions = {
     width: 370,
     height: 225,
     padding_hor: 7,
@@ -34,7 +46,7 @@ export default class MappingEditor {
 
   private computeFilter: ()=>INumberFilter;
 
-  constructor(private parent: HTMLElement, private scale_: IMappingFunction, private original: IMappingFunction, private old_filter: INumberFilter, private dataPromise: Promise<number[]>, options: any = {}) {
+  constructor(private parent: HTMLElement, private scale_: IMappingFunction, private original: IMappingFunction, private old_filter: INumberFilter, private dataPromise: Promise<number[]>, options: IMappingEditorOptions = {}) {
     merge(this.options, options);
     //work on a local copy
     this.scale_ = scale_.clone();
