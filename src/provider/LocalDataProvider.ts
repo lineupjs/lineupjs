@@ -232,6 +232,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return Promise.resolve(this.viewRaw(indices));
   }
 
+  fetch(orders: number[][]): Promise<IDataRow>[][] {
+    const l = this.data.length;
+    return orders.map((order) => order.filter((i) => i >= 0 && i < l).map((index) => Promise.resolve({v:this.data[index], dataIndex: index})));
+  }
+
   /**
    * helper for computing statistics
    * @param indices
