@@ -137,9 +137,9 @@
           d3.json(firstFile.raw_url, function(error, content) {
             if (error) {
               console.error('cannot load gist content at: '+firstFile.raw_url, error);
-          } else if (content) {
+            } else if (content) {
               initLineup(gistdesc.description, content, content.data);
-          }
+            }
           });
         }
       });
