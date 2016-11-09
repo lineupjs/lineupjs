@@ -205,7 +205,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     const renderRow = this.renderRow.bind(this, ctx, context, maxFrozen);
 
     //asynchronous rendering!!!
-    const all = Promise.all;
+    const all = Promise.all.bind(Promise);
     return all(data.map((ranking) => {
       const toRender = ranking.data;
       return all(toRender.map((p, i) => {
