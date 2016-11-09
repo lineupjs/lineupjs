@@ -69,7 +69,7 @@ export default class HeaderRenderer {
     manipulative: true,
     histograms: false,
 
-    filterDialogs: filterDialogs,
+    filterDialogs: filterDialogs(),
     linkTemplates: [],
     searchAble: (col: Column) => col instanceof StringColumn,
     sortOnLabel: true,
@@ -542,4 +542,3 @@ export default class HeaderRenderer {
     $headers.exit().remove();
   }
 }
-
