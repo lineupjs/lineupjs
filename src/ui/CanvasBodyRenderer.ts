@@ -151,56 +151,58 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return o.current.hovered === dataIndex;
   }
 
+  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, maxFrozen:number, ranking: IRankingData, di: IDataRow, i: number) {
+    const dataIndex = di.dataIndex;
+    var dx = 0, dy = 0;
+    ctx.translate(dx = ranking.shift, dy = context.cellY(i));
+    if (i % 2 === 0) {
+      ctx.fillStyle = this.style('bg');
+      ctx.fillRect(0, 0, ranking.width, context.rowHeight(i));
+      ctx.fillStyle = this.style('text');
+    }
+    const isSelected = this.data.isSelected(dataIndex);
+    if (isSelected) {
+      ctx.strokeStyle = this.style('selection');
+      ctx.strokeRect(0, 0, ranking.width, context.rowHeight(i));
+    } else if (this.isHovered(dataIndex)) {
+      ctx.strokeStyle = this.style('hover');
+      ctx.strokeRect(0, 0, ranking.width, context.rowHeight(i));
+    }
+
+    //clip the remaining children
+    ctx.save();
+    if (maxFrozen > 0) {
+      ctx.rect(this.currentFreezeLeft + maxFrozen, 0, ranking.width, context.rowHeight(i));
+      ctx.clip();
+    }
+    ranking.columns.forEach((child) => {
+      ctx.save();
+      ctx.translate(child.shift, 0);
+      dx += child.shift;
+      child.renderer(ctx, di, i, dx, dy);
+      dx -= child.shift;
+      ctx.restore();
+    });
+    ctx.restore();
+
+    ctx.translate(this.currentFreezeLeft, 0);
+    dx += this.currentFreezeLeft;
+    ranking.frozen.forEach((child) => {
+      ctx.save();
+      ctx.translate(child.shift, 0);
+      dx += child.shift;
+      child.renderer(ctx, di, i, dx, dy);
+      dx -= child.shift;
+      ctx.restore();
+    });
+    dx -= this.currentFreezeLeft;
+    ctx.translate(-dx, -context.cellY(i));
+  }
+
   renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height: number) {
     const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3max(data[0].frozen, (f) => f.shift + f.column.getWidth());
 
-    function renderRow(ranking: IRankingData, di: IDataRow, i: number) {
-      const dataIndex = di.dataIndex;
-      var dx = 0, dy = 0;
-      ctx.translate(dx = ranking.shift, dy = context.cellY(i));
-      if (i % 2 === 0) {
-        ctx.fillStyle = this.style('bg');
-        ctx.fillRect(0, 0, ranking.width, context.rowHeight(i));
-        ctx.fillStyle = this.style('text');
-      }
-      const isSelected = this.data.isSelected(dataIndex);
-      if (isSelected) {
-        ctx.strokeStyle = this.style('selection');
-        ctx.strokeRect(0, 0, ranking.width, context.rowHeight(i));
-      } else if (this.isHovered(dataIndex)) {
-        ctx.strokeStyle = this.style('hover');
-        ctx.strokeRect(0, 0, ranking.width, context.rowHeight(i));
-      }
-
-      //clip the remaining children
-      ctx.save();
-      if (maxFrozen > 0) {
-        ctx.rect(this.currentFreezeLeft + maxFrozen, 0, ranking.width, context.rowHeight(i));
-        ctx.clip();
-      }
-      ranking.columns.forEach((child) => {
-        ctx.save();
-        ctx.translate(child.shift, 0);
-        dx += child.shift;
-        child.renderer(ctx, di, i, dx, dy);
-        dx -= child.shift;
-        ctx.restore();
-      });
-      ctx.restore();
-
-      ctx.translate(this.currentFreezeLeft, 0);
-      dx += this.currentFreezeLeft;
-      ranking.frozen.forEach((child) => {
-        ctx.save();
-        ctx.translate(child.shift, 0);
-        dx += child.shift;
-        child.renderer(ctx, di, i, dx, dy);
-        dx -= child.shift;
-        ctx.restore();
-      });
-      dx -= this.currentFreezeLeft;
-      ctx.translate(-dx, -context.cellY(i));
-    }
+    const renderRow = this.renderRow.bind(this, ctx, context, maxFrozen);
 
     //asynchronous rendering!!!
     const all = Promise.all;
