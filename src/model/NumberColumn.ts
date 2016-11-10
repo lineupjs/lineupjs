@@ -23,8 +23,11 @@ export function isNumberColumn(col:Column|IColumnDesc) {
  * @return {number}
  */
 export function numberCompare(a:number, b:number) {
-  if (a === b || (isNaN(a) && isNaN(b))) {
-    return 0;
+  if (isNaN(a)) { //NaN are bigger
+    return isNaN(b) ? 0 : +1;
+  }
+  if (isNaN(b)) {
+    return -1;
   }
   return a - b;
 }
