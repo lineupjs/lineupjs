@@ -21,7 +21,8 @@ window.onload = function () {
     {label: 'Ord', type: 'ordinal', column: 'cat', categories : ['c1','c2','c3']},
     {label: 'Annadfas fasdf adsf asdfasd fasd', type: 'annotate', column: 'd'},
     {label: 'BB', type: 'boolean', column: 'e'},
-    {label: 'Cat Label', type: 'categorical', column: 'cat', categories : [{name: 'c1', label: 'C1', color: 'green'},{name: 'c2', label: 'C2', color: 'blue'},{name: 'c3', label: 'C3', color: 'red'}]}
+    {label: 'Cat Label', type: 'categorical', column: 'cat', categories : [{name: 'c1', label: 'C1', color: 'green'},{name: 'c2', label: 'C2', color: 'blue'},{name: 'c3', label: 'C3', color: 'red'}]},
+    {label: 'L.alt', type: 'string', column: 'l.alt' }
   ];
   //var colors = d3.scale.category10();
   //desc.forEach(function (d, i) {
@@ -52,6 +53,7 @@ window.onload = function () {
   r.push(p.create(desc[8]));
   r.push(p.create(desc[9]));
   r.push(p.create(desc[10]));
+  r.push(p.create(desc[11]));
   var rstack = p.create(LineUpJS.model.createStackDesc('Stack'));
   r.push(rstack);
   rstack.push(p.create(desc[1]));

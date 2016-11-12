@@ -5,19 +5,44 @@
 import {IColumnDesc} from '../model';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
 
+
+function isComplexAccessor(column: any) {
+  // something like a.b or a[4]
+  return typeof column === 'string' && column.indexOf('.') >= 0;
+}
+
+function resolveComplex(column: string, row: any) {
+  const resolve = (obj: any, col: string) => {
+    if (obj === undefined) {
+      return obj; // propagate invalid values
+    }
+    if (/\d+/.test(col)) { // index
+      return obj[+col];
+    }
+    return obj[col];
+  };
+  return column.split('.').reduce(resolve, row);
+}
+
+function rowGetter(row: any, id: string, desc: any) {
+  var column = desc.column;
+  if (isComplexAccessor(column)) {
+    return resolveComplex(<string>column, row);
+  }
+  return row[column];
+}
+
 /**
  * common base implementation of a DataProvider with a fixed list of column descriptions
  */
 abstract class ACommonDataProvider extends ADataProvider {
   private rankingIndex = 0;
-  //generic accessor of the data item
-  private rowGetter = (row: any, id: string, desc: any) => row[desc.column];
 
   constructor(private columns: IColumnDesc[] = [], options: IDataProviderOptions = {}) {
     super(options);
     //generate the accessor
     columns.forEach((d: any) => {
-      d.accessor = d.accessor || this.rowGetter;
+      d.accessor = d.accessor || rowGetter;
       d.label = d.label || d.column;
     });
   }
@@ -32,7 +57,7 @@ abstract class ACommonDataProvider extends ADataProvider {
    */
   pushDesc(column: IColumnDesc) {
     var d: any = column;
-    d.accessor = d.accessor || this.rowGetter;
+    d.accessor = d.accessor || rowGetter;
     d.label = column.label || d.column;
     this.columns.push(column);
     this.fire('addDesc', d);
