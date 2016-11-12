@@ -153,8 +153,9 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
 
   private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, maxFrozen:number, ranking: IRankingData, di: IDataRow, i: number) {
     const dataIndex = di.dataIndex;
-    var dx = 0, dy = 0;
-    ctx.translate(dx = ranking.shift, dy = context.cellY(i));
+    var dx = ranking.shift;
+    const dy = context.cellY(i);
+    ctx.translate(dx, dy);
     if (i % 2 === 0) {
       ctx.fillStyle = this.style('bg');
       ctx.fillRect(0, 0, ranking.width, context.rowHeight(i));
@@ -195,8 +196,8 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
       dx -= child.shift;
       ctx.restore();
     });
-    dx -= this.currentFreezeLeft;
-    ctx.translate(-dx, -context.cellY(i));
+    // dx -= this.currentFreezeLeft;
+    ctx.translate(-dx, -dy);
   }
 
   renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height: number) {
