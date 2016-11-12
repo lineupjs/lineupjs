@@ -16,6 +16,10 @@ export function isNumberColumn(col:Column|IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }
 
+function isMissingValue(v: any) {
+  return typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
+}
+
 /**
  * save number comparison
  * @param a
@@ -69,6 +73,7 @@ export interface IMappingFunction {
 export interface INumberFilter {
   min: number;
   max: number;
+  filterMissing: boolean;
 }
 
 function toScale(type = 'linear'):IScale {
@@ -249,6 +254,9 @@ export function createMappingFunction(dump: any): IMappingFunction {
  * a number column mapped from an original input scale to an output range
  */
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn {
+
+  static noFilter = () => ({min: -Infinity, max: Infinity, filterMissing: false});
+
   missingValue = 0;
 
   private mapping : IMappingFunction;
@@ -260,7 +268,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    * @type {{min: number, max: number}}
    * @private
    */
-  private currentFilter : INumberFilter = {min: -Infinity, max: Infinity};
+  private currentFilter : INumberFilter = NumberColumn.noFilter();
 
   private numberFormat : (n: number) => string = format('.3n');
 
@@ -324,18 +332,25 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   getLabel(row:any) {
-    //if a dedicated format and a number use the formatter in any case
     if ((<any>this.desc).numberFormat) {
-      return this.numberFormat(this.getRawValue(row));
+      let raw = this.getRawValue(row);
+      //if a dedicated format and a number use the formatter in any case
+      if (isNaN(raw)) {
+        return 'NaN';
+      }
+      return this.numberFormat(raw);
     }
     const v = super.getValue(row);
     //keep non number if it is not a number else convert using formatter
-    return '' + (typeof v === 'number' ? this.numberFormat(+v) : v);
+    if (typeof v === 'number') {
+      return this.numberFormat(+v);
+    }
+    return String(v);
   }
 
   getRawValue(row:any) {
     var v:any = super.getValue(row);
-    if (typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'))) {
+    if (isMissingValue(v)) {
       return this.missingValue;
     }
     return +v;
@@ -373,7 +388,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   isFiltered() {
-    return isFinite(this.currentFilter.min) || isFinite(this.currentFilter.max);
+    return this.currentFilter.filterMissing || isFinite(this.currentFilter.min) || isFinite(this.currentFilter.max);
   }
 
   get filterMin() {
@@ -384,33 +399,45 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.currentFilter.max;
   }
 
+  get filterMissing() {
+    return this.currentFilter.filterMissing;
+  }
+
   getFilter(): INumberFilter {
     return {
       min: this.currentFilter.min,
-      max: this.currentFilter.max
+      max: this.currentFilter.max,
+      filterMissing: this.currentFilter.filterMissing
     };
   }
 
   set filterMin(min:number) {
-    var bak = {min: this.currentFilter.min, max: this.currentFilter.max};
+    const bak = this.getFilter();
     this.currentFilter.min = isNaN(min) ? -Infinity : min;
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.currentFilter);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.getFilter());
   }
 
   set filterMax(max:number) {
-    var bak = {min: this.currentFilter.min, max: this.currentFilter.max};
+    const bak = this.getFilter();
     this.currentFilter.max = isNaN(max) ? Infinity : max;
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.currentFilter);
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.getFilter());
   }
 
-  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity}) {
-    if (this.currentFilter.min === value.min && this.currentFilter.max === value.max) {
+  set filterMissing(filterMissing: boolean) {
+    const bak = this.getFilter();
+    this.currentFilter.filterMissing = filterMissing;
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.getFilter());
+  }
+
+  setFilter(value: INumberFilter= {min: -Infinity, max: +Infinity, filterMissing: false}) {
+    if (this.currentFilter.min === value.min && this.currentFilter.max === value.max && this.currentFilter.filterMissing === value.filterMissing) {
       return;
     }
     const bak = this.getFilter();
     this.currentFilter.min = isNaN(value.min) ? -Infinity :value. min;
     this.currentFilter.max = isNaN(value.max) ? Infinity : value.max;
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.currentFilter);
+    this.currentFilter.filterMissing = value.filterMissing;
+    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.getFilter());
   }
 
   /**
@@ -422,10 +449,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (!this.isFiltered()) {
       return true;
     }
-    var v = this.getRawValue(row);
-    if (isNaN(v)) {
-      return true;
+    const v:any = super.getValue(row);
+    if (isMissingValue(v)) {
+      return !this.filterMissing;
     }
-    return !((isFinite(this.currentFilter.min) && v < this.currentFilter.min) || (isFinite(this.currentFilter.max) && v > this.currentFilter.max));
+    const vn = +v;
+    return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
   }
 }

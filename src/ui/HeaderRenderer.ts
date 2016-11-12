@@ -16,6 +16,7 @@ import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
 import {filterDialogs, openEditWeightsDialog, openEditLinkDialog, openEditScriptDialog, openRenameDialog, openSearchDialog} from '../ui_dialogs';
+import ADataProvider from "../provider/ADataProvider";
 
 /**
  * utility function to generate the tooltip text with description
@@ -38,6 +39,7 @@ export function dummyRankingButtonHook() {
 }
 
 export interface IHeaderRendererOptions {
+  idPrefix?: string;
   slopeWidth?: number;
   columnPadding?: number;
   headerHistogramHeight?: number;
@@ -45,7 +47,7 @@ export interface IHeaderRendererOptions {
   manipulative?: boolean;
   histograms?: boolean;
 
-  filterDialogs?: { [type: string]: (col: Column, $header: d3.Selection<Column>)=>void };
+  filterDialogs?: { [type: string]: (col: Column, $header: d3.Selection<Column>, data: ADataProvider, idPrefix: string)=>void };
   linkTemplates?: string[];
   searchAble?(col: Column): boolean;
   sortOnLabel?: boolean;
@@ -61,7 +63,8 @@ export interface IHeaderRendererOptions {
 
 
 export default class HeaderRenderer {
-  private options = {
+  private options :IHeaderRendererOptions = {
+    idPrefix: '',
     slopeWidth: 150,
     columnPadding: 5,
     headerHistogramHeight: 40,
@@ -131,7 +134,7 @@ export default class HeaderRenderer {
   });
 
 
-  constructor(private data: DataProvider, parent: Element, options: any = {}) {
+  constructor(private data: DataProvider, parent: Element, options: IHeaderRendererOptions) {
     merge(this.options, options);
 
     this.$node = d3.select(parent).append('div').classed('lu-header', true);
@@ -325,7 +328,7 @@ export default class HeaderRenderer {
     });
     //edit link
     $node.filter((d) => d instanceof LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-      openEditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), [].concat((<any>d.desc).templates || [], that.options.linkTemplates));
+      openEditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), [].concat((<any>d.desc).templates || [], that.options.linkTemplates), that.options.idPrefix);
       (<MouseEvent>d3.event).stopPropagation();
     });
     //edit script
@@ -335,7 +338,7 @@ export default class HeaderRenderer {
     });
     //filter
     $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
-      filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider);
+      filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider, that.options.idPrefix);
       (<MouseEvent>d3.event).stopPropagation();
     });
     //search

@@ -95,10 +95,10 @@ export function openRenameDialog(column:Column, $header:d3.Selection<Column>) {
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-export function openEditLinkDialog(column:LinkColumn, $header:d3.Selection<Column>, templates: string[] = []) {
-  var t = `<input type="text" size="15" value="${column.getLink()}" required="required" autofocus="autofocus" ${templates.length > 0 ? 'list="lineupPatternList"' : ''}><br>`;
+export function openEditLinkDialog(column:LinkColumn, $header:d3.Selection<Column>, templates: string[] = [], idPrefix: string) {
+  var t = `<input type="text" size="15" value="${column.getLink()}" required="required" autofocus="autofocus" ${templates.length > 0 ? 'list="ui'+idPrefix+'lineupPatternList"' : ''}><br>`;
   if (templates.length > 0) {
-    t += '<datalist id="lineupPatternList">'+templates.map((t) => `<option value="${t}">`)+'</datalist>';
+    t += '<datalist id="ui${idPrefix}lineupPatternList">'+templates.map((t) => `<option value="${t}">`)+'</datalist>';
   }
 
   var popup = makePopup($header, 'Edit Link ($ as Placeholder)', t);
@@ -456,7 +456,7 @@ export function openEditScriptDialog(column:ScriptColumn, $header:d3.Selection<C
  * @param $header the visual header element of this column
  * @param data the data provider for illustrating the mapping by example
  */
-function openMappingEditor(column:NumberColumn, $header:d3.Selection<any>, data:DataProvider) {
+function openMappingEditor(column:NumberColumn, $header:d3.Selection<any>, data:DataProvider, idPrefix: string) {
   var pos = offset($header.node()),
     bak = column.getMapping(),
     original = column.getOriginalMapping(),
@@ -473,16 +473,17 @@ function openMappingEditor(column:NumberColumn, $header:d3.Selection<any>, data:
     })
     .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>'));
 
-  function applyMapping(newscale: IMappingFunction, filter: {min: number, max: number }) {
+  function applyMapping(newscale: IMappingFunction, filter: {min: number, max: number, filterMissing: boolean }) {
     act = newscale;
     actfilter = filter;
-    markFiltered($header, !newscale.eq(original) || (bakfilter.min !== filter.min || bakfilter.max !== filter.min));
+    markFiltered($header, !newscale.eq(original) || (bakfilter.min !== filter.min || bakfilter.max !== filter.min || bakfilter.filterMissing !== filter.filterMissing));
 
     column.setMapping(newscale);
     column.setFilter(filter);
   }
 
   var editorOptions = {
+    idPrefix: idPrefix,
     callback: applyMapping,
     triggerCallback: 'dragend'
   };
@@ -502,7 +503,7 @@ function openMappingEditor(column:NumberColumn, $header:d3.Selection<any>, data:
   popup.select('.reset').on('click', function () {
     bak = original;
     act = bak.clone();
-    bakfilter = {min: -Infinity, max: +Infinity};
+    bakfilter = NumberColumn.noFilter();
     actfilter = bakfilter;
     applyMapping(act, actfilter);
     popup.selectAll('.mappingArea *').remove();

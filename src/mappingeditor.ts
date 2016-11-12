@@ -20,6 +20,7 @@ function unique(data: number[]) {
 }
 
 export interface IMappingEditorOptions {
+  idPrefix: string;
   width?: number;
   height?: number;
   padding_hor?: number;
@@ -33,6 +34,7 @@ export interface IMappingEditorOptions {
 
 export default class MappingEditor {
   private options : IMappingEditorOptions = {
+    idPrefix: '',
     width: 370,
     height: 225,
     padding_hor: 7,
@@ -46,7 +48,7 @@ export default class MappingEditor {
 
   private computeFilter: ()=>INumberFilter;
 
-  constructor(private parent: HTMLElement, private scale_: IMappingFunction, private original: IMappingFunction, private old_filter: INumberFilter, private dataPromise: Promise<number[]>, options: IMappingEditorOptions = {}) {
+  constructor(private parent: HTMLElement, private scale_: IMappingFunction, private original: IMappingFunction, private old_filter: INumberFilter, private dataPromise: Promise<number[]>, options: IMappingEditorOptions) {
     merge(this.options, options);
     //work on a local copy
     this.scale_ = scale_.clone();
@@ -72,7 +74,7 @@ export default class MappingEditor {
     const height = options.height - options.padding_ver * 2 - options.filter_height;
 
     (<HTMLElement>$root.node()).innerHTML = `<form onsubmit="return false">
-      <div style="text-align: center"><label for="mapping_type">Mapping Type: <select id="mapping_type">
+      <div style="text-align: center"><label for="me${options.idPrefix}mapping_type">Mapping Type: <select id="me${options.idPrefix}mapping_type">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>
@@ -87,7 +89,7 @@ export default class MappingEditor {
       <div class="mapping_area">
         <div>
           <span>0</span>
-          <input type="text" class="raw_min" id="raw_min" value="0"><label for="raw_min">Min</label>
+          <input type="text" class="raw_min" id="me${options.idPrefix}raw_min" value="0"><label for="me${options.idPrefix}raw_min">Min</label>
         </div>
         <svg width="${options.width}" height="${options.height}">
           <line y1="${options.padding_ver}" y2="${options.padding_ver}" x1="${options.padding_hor}" x2="${width+options.padding_hor}" stroke="black"></line>
@@ -117,12 +119,15 @@ export default class MappingEditor {
         </svg>
         <div>
           <span>1</span>
-          <input type="text" class="raw_max" id="raw_max" value="1"><label for="raw_max">Max</label>
+          <input type="text" class="raw_max" id="me${options.idPrefix}raw_max" value="1"><label for="me${options.idPrefix}raw_max">Max</label>
         </div>
       </div>
+      <div>
+         <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.old_filter.filterMissing?'checked="checked"' : ''}></label>
+      </div>
       <div class="script" style="/* display: none; */">
-        <label for="script_code">Custom Script</label><button>Apply</button>
-        <textarea id="script_code">
+        <label for="me${options.idPrefix}script_code">Custom Script</label><button>Apply</button>
+        <textarea id="me${options.idPrefix}script_code">
         </textarea>
       </div>
     </form>`;
@@ -353,7 +358,8 @@ export default class MappingEditor {
     this.computeFilter = function () {
       return {
         min: parseFloat($root.select('g.left_filter').datum()),
-        max: parseFloat($root.select('g.right_filter').datum())
+        max: parseFloat($root.select('g.right_filter').datum()),
+        filterMissing: $root.select('input[type="checkbox"]').property('checked')
       };
     };
 

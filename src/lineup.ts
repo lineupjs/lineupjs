@@ -247,6 +247,7 @@ export default class LineUp extends AEventDispatcher {
     this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
 
     this.header = new HeaderRenderer(data, this.node, merge({}, this.config.header, {
+      idPrefix: this.config.idPrefix,
       manipulative: this.config.manipulative,
       histograms: this.config.renderingOptions.histograms,
       freezeCols: this.config.body.freezeCols,
