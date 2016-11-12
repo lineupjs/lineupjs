@@ -50,6 +50,7 @@ export interface IRankingData {
   shift: number;
   width: number;
   frozen: IRankingColumnData[];
+  frozenWidth: number;
   columns: IRankingColumnData[];
   data: Promise<IDataRow>[];
 }
@@ -256,6 +257,8 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       totalWidth += width;
       totalWidth += this.options.slopeWidth;
 
+      const frozen = colData.slice(0, this.options.freezeCols);
+
       return {
         id: r.id,
         ranking: r,
@@ -263,8 +266,9 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
         shift: rankingShift,
         width: width,
         //compute frozen columns just for the first one
-        frozen: i === 0 ? colData.slice(0, this.options.freezeCols) : [],
-        columns: i === 0 ? colData.slice(this.options.freezeCols) : colData,
+        frozen: frozen,
+        frozenWidth: Math.max(...(frozen.map((d) => d.shift + d.column.getWidth()))),
+        columns: colData.slice(this.options.freezeCols),
         data: data[i]
       };
     });

@@ -151,7 +151,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return o.current.hovered === dataIndex;
   }
 
-  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, maxFrozen:number, ranking: IRankingData, di: IDataRow, i: number) {
+  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number) {
     const dataIndex = di.dataIndex;
     var dx = ranking.shift;
     const dy = context.cellY(i);
@@ -172,38 +172,34 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
 
     //clip the remaining children
     ctx.save();
-    if (maxFrozen > 0) {
-      ctx.rect(this.currentFreezeLeft + maxFrozen, 0, ranking.width, context.rowHeight(i));
+    //shift if needs to shifted and then maximal that just the shifted columns are visible
+    const frozenLeft = this.currentFreezeLeft < ranking.shift ? 0: Math.min(this.currentFreezeLeft - ranking.shift, ranking.width - ranking.frozenWidth);
+    if (ranking.frozenWidth > 0 && frozenLeft > 0) {
+      ctx.rect(dx + frozenLeft + ranking.frozenWidth, 0, ranking.width, context.rowHeight(i));
       ctx.clip();
     }
     ranking.columns.forEach((child) => {
       ctx.save();
       ctx.translate(child.shift, 0);
-      dx += child.shift;
-      child.renderer(ctx, di, i, dx, dy);
-      dx -= child.shift;
+      child.renderer(ctx, di, i, dx + child.shift, dy);
       ctx.restore();
     });
     ctx.restore();
 
-    ctx.translate(this.currentFreezeLeft, 0);
-    dx += this.currentFreezeLeft;
+    ctx.translate(frozenLeft, 0);
+    dx += frozenLeft;
     ranking.frozen.forEach((child) => {
       ctx.save();
       ctx.translate(child.shift, 0);
-      dx += child.shift;
-      child.renderer(ctx, di, i, dx, dy);
-      dx -= child.shift;
+      child.renderer(ctx, di, i, dx + child.shift, dy);
       ctx.restore();
     });
-    // dx -= this.currentFreezeLeft;
     ctx.translate(-dx, -dy);
   }
 
   renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height: number) {
-    const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3max(data[0].frozen, (f) => f.shift + f.column.getWidth());
 
-    const renderRow = this.renderRow.bind(this, ctx, context, maxFrozen);
+    const renderRow = this.renderRow.bind(this, ctx, context);
 
     //asynchronous rendering!!!
     const all = Promise.all.bind(Promise);

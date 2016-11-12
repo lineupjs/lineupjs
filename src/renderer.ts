@@ -103,7 +103,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     return {
-      template: `<text class="${this.textClass}" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>`,
+      template: `<text class="${this.textClass}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>`,
       update: (n: SVGTextElement, d: IDataRow, i: number) => {
         var alignmentShift = 2;
         if (this.align === 'right') {
@@ -167,7 +167,7 @@ export class BarCellRenderer implements ICellRendererFactory {
           <rect class="${col.cssClass}" y="${padding}" style="fill: ${col.color}">
             <title></title>
           </rect>
-          <text class="number ${this.renderValue ? '' : 'hoverOnly'}" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
+          <text class="number ${this.renderValue ? '' : 'hoverOnly'}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         n.querySelector('rect title').textContent = col.getLabel(d.v);
@@ -369,7 +369,7 @@ const annotate = {
   createSVG: function (col: AnnotateColumn, context: IDOMRenderContext): ISVGCellRenderer {
     return {
       template: `<g class="annotations">
-        <text class="notHoverOnly text" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
+        <text class="notHoverOnly text" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>
         <foreignObject class="hoverOnly" x="-2", y="-2">
           <input type="text">
         </foreignObject>
@@ -454,7 +454,7 @@ export function hideOverlays() {
 const link = {
   createSVG: function (col: LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
     return {
-      template: `<text class="link text" clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>`,
+      template: `<text class="link text" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>`,
       update: (n: SVGTextElement, d: IDataRow, i: number) => {
         n.innerHTML = col.isLink(d.v) ? `<a class="link" xlink:href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
       }
@@ -532,7 +532,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<g class="${this.textClass}">
-        <text clip-path="url(#${context.idPrefix}clipCol${col.id})"></text>
+        <text clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>
         <rect y="${padding}"></rect>
       </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
