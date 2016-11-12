@@ -123,7 +123,7 @@ export default class MappingEditor {
         </div>
       </div>
       <div>
-         <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.old_filter.filterMissing?'checked="checked"' : ''}></label>
+         Extras: <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.old_filter.filterMissing?'checked="checked"' : ''}>Filter Missing Values</label>
       </div>
       <div class="script" style="/* display: none; */">
         <label for="me${options.idPrefix}script_code">Custom Script</label><button>Apply</button>
@@ -162,6 +162,9 @@ export default class MappingEditor {
         updateRaw();
         triggerUpdate();
       });
+    $root.select('input[type="checkbox"]').on('change', () => {
+      triggerUpdate();
+    });
 
     //lines that show mapping of individual data items
     var datalines = $root.select('g.samples').selectAll('line').data([]);

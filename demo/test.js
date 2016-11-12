@@ -9,7 +9,7 @@ window.onload = function () {
     {a: 2, b: 7, c: 100, d: 'Row3', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
     {a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', e: false, l: {alt: 'Google', href: 'https://google.com'}, cat: 'c1;c3'},
     {a: 2, b: 4, c: 30, d: 'Row5', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
-    {a: 2, b: 4, c: 30, d: '', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'}];
+    {a: NaN, b: '', c: 30, d: '', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'}];
   var desc = [
     {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
     {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
@@ -82,7 +82,7 @@ window.onload = function () {
 
   var body = LineUpJS.create(p, root.node(), {
     additionalDesc : [
-      LineUpJS.model.StackColumn.desc('+ Stack')
+      LineUpJS.model.createStackDesc('+ Stack')
     ],
     htmlLayout: {
       autoRotateLabels: true
