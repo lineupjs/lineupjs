@@ -3,8 +3,8 @@
  */
 
 import * as d3 from 'd3';
-import {merge, dropAble, delayedCall} from '../utils';
-import Column, {IStatistics, ICategoricalStatistics} from '../model/Column';
+import {merge, dropAble, delayedCall, forEach} from '../utils';
+import Column, {IStatistics, ICategoricalStatistics, IFlatColumn} from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
@@ -172,7 +172,7 @@ export default class HeaderRenderer {
   }
 
   private updateHist() {
-    var rankings = this.data.getRankings();
+    const rankings = this.data.getRankings();
     rankings.forEach((ranking) => {
       const order = ranking.getOrder();
       const cols = ranking.flatColumns;
@@ -196,15 +196,15 @@ export default class HeaderRenderer {
     //highlight the bins in the histograms
     const node = <HTMLElement>this.$node.node();
 
-    [].slice.call(node.querySelectorAll('div.bar')).forEach((d) => d.classList.remove('selected'));
-    var indices = this.data.getSelection();
+    forEach(node, 'div.bar', (d) => d.classList.remove('selected'));
+    const indices = this.data.getSelection();
     if (indices.length <= 0) {
       return;
     }
     this.data.view(indices).then((data) => {
       //get the data
 
-      var rankings = this.data.getRankings();
+      const rankings = this.data.getRankings();
 
       rankings.forEach((ranking) => {
         const cols = ranking.flatColumns;
@@ -252,7 +252,7 @@ export default class HeaderRenderer {
     const that = this;
     const rankings = this.data.getRankings();
 
-    var shifts = [], offset = 0, rankingOffsets = [];
+    var shifts : IFlatColumn[] = [], offset = 0, rankingOffsets = [];
     rankings.forEach((ranking) => {
       offset += ranking.flatten(shifts, offset, 1, this.options.columnPadding) + this.options.slopeWidth;
       rankingOffsets.push(offset - this.options.slopeWidth);
@@ -393,18 +393,17 @@ export default class HeaderRenderer {
       .style('transform', (d, i) => i < numColumns ? `translate(${left}px,0)` : null);
   }
 
-  private renderColumns(columns: Column[], shifts, $base: d3.Selection<any> = this.$node, clazz: string = 'header') {
-    var $headers = $base.selectAll('div.' + clazz).data(columns, (d) => d.id);
-    var $headers_enter = $headers.enter().append('div').attr({
-      'class': clazz
-    })
+  private renderColumns(columns: Column[], shifts: IFlatColumn[], $base: d3.Selection<any> = this.$node, clazz: string = 'header') {
+    const that = this;
+    const $headers = $base.selectAll('div.' + clazz).data(columns, (d) => d.id);
+    const $headers_enter = $headers.enter().append('div').attr('class', clazz)
     .on('click', (d) => {
       const mevent = <MouseEvent>d3.event;
       if (this.options.manipulative && !mevent.defaultPrevented && mevent.currentTarget === mevent.target) {
         d.toggleMySorting();
       }
     });
-    var $header_enter_div = $headers_enter.append('div').classed('lu-label', true)
+    const $header_enter_div = $headers_enter.append('div').classed('lu-label', true)
       .on('click', (d) => {
         const mevent = <MouseEvent>d3.event;
         if (this.options.manipulative && !mevent.defaultPrevented) {
@@ -448,10 +447,10 @@ export default class HeaderRenderer {
     $headers.attr({
       'class': (d) => `${clazz} ${d.cssClass || ''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''}`,
       title: (d) => toFullTooltip(d),
-      'data-id': (d) => d.id,
+      'data-id': (d) => d.id
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {
-      var r = d.findMyRanker();
+      const r = d.findMyRanker();
       if (r && r.getSortCriteria().col === d) {
         return 'sort_indicator fa fa-sort-' + (r.getSortCriteria().asc ? 'asc' : 'desc');
       }
@@ -459,7 +458,6 @@ export default class HeaderRenderer {
     });
     $headers.select('span.lu-label').text((d) => d.label);
 
-    var that = this;
     $headers.filter((d) => isMultiLevelColumn(d)).each(function (col: IMultiLevelColumn) {
       if (col.getCollapsed() || col.getCompressed()) {
         d3.select(this).selectAll('div.' + clazz + '_i').remove();
@@ -490,8 +488,8 @@ export default class HeaderRenderer {
     if (this.options.histograms) {
 
       $headers.filter((d) => isCategoricalColumn(d)).each(function (col: CategoricalColumn) {
-        var $this = d3.select(this).select('div.histogram');
-        var hist = that.histCache.get(col.id);
+        const $this = d3.select(this).select('div.histogram');
+        const hist = that.histCache.get(col.id);
         if (hist) {
           hist.then((stats: ICategoricalStatistics) => {
             const $bars = $this.selectAll('div.bar').data(stats.hist);
@@ -513,8 +511,8 @@ export default class HeaderRenderer {
         }
       });
       $headers.filter((d) => d instanceof NumberColumn).each(function (col: Column) {
-        var $this = d3.select(this).select('div.histogram');
-        var hist = that.histCache.get(col.id);
+        const $this = d3.select(this).select('div.histogram');
+        const hist = that.histCache.get(col.id);
         if (hist) {
           hist.then((stats: IStatistics) => {
             const $bars = $this.selectAll('div.bar').data(stats.hist);
