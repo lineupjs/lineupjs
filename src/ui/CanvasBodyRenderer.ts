@@ -21,7 +21,7 @@ export interface IStyleOptions {
 }
 
 export interface ICurrentOptions {
-  hovered: number;
+  hovered: Set<number>;
 }
 
 export interface ICanvasBodyRendererOptions {
@@ -39,13 +39,11 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
       selection: '#ffa500',
       hover: '#e5e5e5',
       bg: '#f7f7f7',
-    },
-    current: {
-      hovered: -1
     }
   };
 
   protected currentFreezeLeft = 0;
+  protected currentHover = -1;
 
   private lastShifts: {column: Column; shift: number}[] = [];
 
@@ -135,10 +133,10 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
 
   mouseOver(dataIndex: number, hover = true) {
     const o: any = this.options;
-    if (o.current.hovered === dataIndex) {
+    if (hover === (this.currentHover === dataIndex)) {
       return;
     }
-    o.current.hovered = dataIndex;
+    this.currentHover = dataIndex;
     super.mouseOver(dataIndex, dataIndex >= 0);
     if (!hover || dataIndex < 0) {
       hideOverlays();
@@ -147,8 +145,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   private isHovered(dataIndex: number) {
-    const o: any = this.options;
-    return o.current.hovered === dataIndex;
+    return this.currentHover === dataIndex;
   }
 
   private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number) {
@@ -197,7 +194,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.translate(-dx, -dy);
   }
 
-  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height: number) {
+  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
 
     const renderRow = this.renderRow.bind(this, ctx, context);
 
@@ -256,9 +253,11 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.restore();
   }
 
-
-  protected createContextImpl(index_shift: number): IBodyRenderContext {
-    return this.createContext(index_shift, createCanvas);
+  protected createContextImpl(index_shift: number): ICanvasRenderContext&IBodyRenderContext {
+    const base :any = this.createContext(index_shift, createCanvas);
+    base.hovered = this.isHovered.bind(this);
+    base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);
+    return base;
   }
 
   private computeShifts(data: IRankingData[]) {
@@ -271,7 +270,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return r;
   }
 
-  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, width: number, height: number, reason: ERenderReason) {
     const $canvas = this.$node.select('canvas');
 
     const firstLine = Math.max(context.cellY(0) - 20, 0); //where to start
@@ -301,7 +300,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
 
     this.renderSlopeGraphs(ctx, data, context);
 
-    this.renderRankings(ctx, data, context, height).then(() => {
+    this.renderRankings(ctx, data, context).then(() => {
       ctx.restore();
     });
   }

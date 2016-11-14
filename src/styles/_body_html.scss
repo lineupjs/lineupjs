@@ -33,7 +33,8 @@
       div.bg {
         border: 1px solid $lu_hover_color;
       }
-
+    }
+    &.selected, &.hover {
       .bar {
         //bars nested combined with a text representation
         opacity: 0.5;

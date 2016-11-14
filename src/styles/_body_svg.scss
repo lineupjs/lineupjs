@@ -65,7 +65,9 @@
       rect.bg {
         fill: $lu_hover_color;
       }
+    }
 
+    &.selected, &.hover {
       .bar rect {
         //bars nested combined with a text representation
         opacity: 0.5;

@@ -64,7 +64,10 @@ export interface IDOMCellRenderer<T> {
 export declare type ISVGCellRenderer = IDOMCellRenderer<SVGElement>;
 export declare type IHTMLCellRenderer = IDOMCellRenderer<HTMLElement>;
 
-export declare type ICanvasRenderContext = IRenderContext<CanvasRenderingContext2D>;
+export interface ICanvasRenderContext extends IRenderContext<CanvasRenderingContext2D> {
+  hovered(dataIndex: number): boolean;
+  selected(dataIndex: number): boolean;
+}
 
 export interface ICanvasCellRenderer {
   /**
@@ -212,9 +215,9 @@ export class BarCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = this.colorOf(d.v, i, col);
       const width = col.getWidth() * col.getValue(d.v);
       ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
-      if (this.renderValue || context.option('current.hovered', -1) === d.dataIndex) {
-        ctx.fillStyle = context.option('style.text','black');
-        ctx.fillText(col.getLabel(d.v), 1, 0, col.getWidth()-1);
+      if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
+        ctx.fillStyle = context.option('style.text', 'black');
+        ctx.fillText(col.getLabel(d.v), 1, 0, col.getWidth() - 1);
       }
     };
   }
@@ -232,7 +235,7 @@ function toHeatMapColor(d: any, col: INumberColumn & Column) {
 }
 
 const heatmap = {
-  createSVG: function(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG: function (col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<rect class="heatmap ${col.cssClass}" y="${padding}" style="fill: ${col.color}">
@@ -252,7 +255,7 @@ const heatmap = {
       }
     };
   },
-  createHTML: function(col: INumberColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML: function (col: INumberColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<div class="heatmap ${col.cssClass}" style="background-color: ${col.color}; top: ${padding}"></div>`,
@@ -269,7 +272,7 @@ const heatmap = {
       }
     };
   },
-  createCanvas: function(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function (col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const w = context.rowHeight(i) - padding * 2;
@@ -310,13 +313,13 @@ const action = {
       }
     };
   },
-  createCanvas: function(col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function (col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const actions = context.option('actions', []);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
-      const hovered = context.option('current.hovered', -1) === d.dataIndex;
+      const hovered = context.hovered(d.dataIndex);
       if (hovered) {
-        let overlay = showOverlay(context.idPrefix+col.id, dx, dy);
-        overlay.style.width = col.getWidth()+'px';
+        let overlay = showOverlay(context.idPrefix + col.id, dx, dy);
+        overlay.style.width = col.getWidth() + 'px';
         overlay.innerHTML = actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}></span>`).join('');
         forEach(overlay, 'span', (ni: HTMLSpanElement, i) => {
           ni.onclick = function (event) {
@@ -412,12 +415,12 @@ const annotate = {
       }
     };
   },
-  createCanvas: function(col: AnnotateColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function (col: AnnotateColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
-      const hovered = context.option('current.hovered', -1) === d.dataIndex;
+      const hovered = context.hovered(d.dataIndex);
       if (hovered) {
-        let overlay = showOverlay(context.idPrefix+col.id, dx, dy);
-        overlay.style.width = col.getWidth()+'px';
+        let overlay = showOverlay(context.idPrefix + col.id, dx, dy);
+        overlay.style.width = col.getWidth() + 'px';
         overlay.innerHTML = `<input type="text" value="${col.getValue(d.v)}" style="width:${col.getWidth()}px">`;
         const input = <HTMLInputElement>overlay.childNodes[0];
         input.onchange = function (event) {
@@ -438,12 +441,12 @@ function showOverlay(id: string, dx: number, dy: number) {
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.classList.add('lu-overlay');
-    overlay.id = 'O'+id;
+    overlay.id = 'O' + id;
     document.querySelector('.lu-body').appendChild(overlay);
   }
   overlay.style.display = 'block';
-  overlay.style.left = dx+'px';
-  overlay.style.top = dy+'px';
+  overlay.style.left = dx + 'px';
+  overlay.style.top = dy + 'px';
   return overlay;
 }
 
@@ -469,17 +472,17 @@ const link = {
       }
     };
   },
-  createCanvas: function(col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function (col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const isLink = col.isLink(d.v);
       if (!isLink) {
         ctx.fillText(col.getLabel(d.v), 0, 0, col.getWidth());
         return;
       }
-      const hovered = context.option('current.hovered', -1) === d.dataIndex;
+      const hovered = context.hovered(d.dataIndex);
       if (hovered) {
-        let overlay = showOverlay(context.idPrefix+col.id, dx, dy);
-        overlay.style.width = col.getWidth()+'px';
+        let overlay = showOverlay(context.idPrefix + col.id, dx, dy);
+        overlay.style.width = col.getWidth() + 'px';
         overlay.innerHTML = `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>`;
       } else {
         const bak = ctx.fillStyle;
@@ -703,7 +706,7 @@ class StackCellRenderer implements ICellRendererFactory {
       cols.forEach((col, ci) => {
         var shift = 0;
         ctx.translate(shift = col.shift - stackShift, 0);
-        col.renderer(ctx, d, i, dx+shift, dy);
+        col.renderer(ctx, d, i, dx + shift, dy);
         ctx.translate(-(col.shift - stackShift), 0);
         if (col.stacked) {
           stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v));
@@ -719,7 +722,7 @@ const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.g
 /**
  * default render factories
  */
-export const renderers : {[key: string]: ICellRendererFactory} = {
+export const renderers: {[key: string]: ICellRendererFactory} = {
   rank: new DefaultCellRenderer('rank', 'right'),
   boolean: new DefaultCellRenderer('boolean', 'center'),
   number: new BarCellRenderer(),
