@@ -133,29 +133,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     }
     this.data = data;
     data.on('dirtyValues.bodyRenderer', delayedCall(this.update.bind(this), 1));
-    data.on('selectionChanged.bodyRenderer', delayedCall((selection, jumpToFirst) => {
-      if (jumpToFirst && selection.length > 0) {
-        this.jumpToSelection();
-      }
-      this.drawSelection();
-    }, 1));
-  }
-
-  protected jumpToSelection() {
-    const indices = this.data.getSelection();
-    const rankings = this.data.getRankings();
-    if (indices.length <= 0 || rankings.length <= 0) {
-      return;
-    }
-    const order = rankings[0].getOrder();
-    const visibleRange = this.slicer(0, order.length, (i) => i * this.options.rowHeight);
-    const visibleOrder = order.slice(visibleRange.from, visibleRange.to);
-    //if any of the selected indices is in the visible range - done
-    if (indices.some((d) => visibleOrder.indexOf(d) >= 0)) {
-      return;
-    }
-    //TODO find the closest not visible one in the indices list
-    //
+    data.on('selectionChanged.bodyRenderer', delayedCall(this.drawSelection.bind(this), 1));
   }
 
   protected showMeanLine(col: Column) {

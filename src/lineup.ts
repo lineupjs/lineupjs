@@ -101,7 +101,7 @@ export default class LineUp extends AEventDispatcher {
 
   /**
    * triggered when the user selects one or more rows
-   * @argument data_indices:number[] the selected data indices
+   * @argument dataIndices:number[] the selected data indices
    */
   static EVENT_MULTISELECTION_CHANGED = 'multiSelectionChanged';
 
@@ -245,6 +245,7 @@ export default class LineUp extends AEventDispatcher {
 
 
     this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
+    this.data.on('jumpToNearest.main', this.jumpToNearest.bind(this));
 
     this.header = new HeaderRenderer(data, this.node, merge({}, this.config.header, {
       idPrefix: this.config.idPrefix,
@@ -352,22 +353,39 @@ export default class LineUp extends AEventDispatcher {
 
   changeDataStorage(data: DataProvider, dump?: any) {
     if (this.data) {
-      this.data.on('selectionChanged.main', null);
+      this.data.on(['selectionChanged.main', 'jumpToNearest.main'], null);
     }
     this.data = data;
     if (dump) {
       this.data.restore(dump);
     }
     this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
+    this.data.on('jumpToNearest.main', this.jumpToNearest.bind(this));
     this.header.changeDataStorage(data);
     this.body.changeDataStorage(data);
     this.pools.forEach((p) => p.changeDataStorage(data));
     this.update();
   }
 
-  private triggerSelection(data_indices: number[]) {
-    this.fire(LineUp.EVENT_SELECTION_CHANGED, data_indices.length > 0 ? data_indices[0] : -1);
-    this.fire(LineUp.EVENT_MULTISELECTION_CHANGED, data_indices);
+  private triggerSelection(dataIndices: number[]) {
+    this.fire(LineUp.EVENT_SELECTION_CHANGED, dataIndices.length > 0 ? dataIndices[0] : -1);
+    this.fire(LineUp.EVENT_MULTISELECTION_CHANGED, dataIndices);
+  }
+
+  private jumpToNearest(dataIndices: number[]) {
+    const ranking = this.data.getRankings()[0];
+    if (dataIndices.length === 0 || ranking === undefined) {
+      return;
+    }
+    const order = ranking.getOrder();
+    //relative order
+    const indices = dataIndices.map((d) => order.indexOf(d)).sort((a,b) => a-b);
+    if (this.contentScroller) {
+      this.contentScroller.scrollIntoView(0, order.length, indices[0], (i) => i * this.config.body.rowHeight);
+    } else {
+      let container = (<HTMLElement>this.$container.node());
+      container.scrollTop = indices[0] * this.config.body.rowHeight;
+    }
   }
 
   restore(dump: any) {
