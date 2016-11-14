@@ -386,6 +386,10 @@ export default class LineUp extends AEventDispatcher {
       let container = (<HTMLElement>this.$container.node());
       container.scrollTop = indices[0] * this.config.body.rowHeight;
     }
+    //fake hover in 100ms - TODO right timing
+    setTimeout(() => {
+      this.body.fakeHover(order[indices[0]]);
+    }, 100);
   }
 
   restore(dump: any) {

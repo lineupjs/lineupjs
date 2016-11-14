@@ -30,6 +30,8 @@ export interface IBodyRenderer extends AEventDispatcher {
   scrolled();
 
   update();
+
+  fakeHover(dataIndex:number);
 }
 
 export interface IBodyRenderContext extends IRenderContext<any> {
@@ -181,6 +183,10 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   }
 
   abstract drawSelection();
+
+  fakeHover(dataIndex: number) {
+    this.mouseOver(dataIndex, true);
+  }
 
   mouseOver(dataIndex: number, hover = true) {
     this.fire('hoverChanged', hover ? dataIndex : -1);
