@@ -43,7 +43,7 @@ function generate(bundle, min) {
       loaders: [
         {
           test: /\.scss$/,
-          loader: 'style!css!sass'
+          loader: 'style-loader!css-loader!sass-loader'
         },
         {
           test: /\.tsx?$/,
@@ -59,7 +59,7 @@ function generate(bundle, min) {
     //extract the included css file to own file
     var p = new ExtractTextPlugin('style' + (min ? '.min' : '') + '.css');
     base.plugins.push(p);
-    base.module.loaders[0].loader = p.extract(['css', 'sass']);
+    base.module.loaders[0].loader = p.extract(['css-loader', 'sass-loader']);
   }
   if (min) {
     base.plugins.push(new webpack.optimize.UglifyJsPlugin({compress: {warnings: false}}));
