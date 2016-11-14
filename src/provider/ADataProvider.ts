@@ -2,7 +2,18 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {isSupportType, IColumnDesc, Ranking, Column, models, createActionDesc, isNumberColumn, createStackDesc, createRankDesc, createSelectionDesc} from '../model';
+import {
+  isSupportType,
+  IColumnDesc,
+  Ranking,
+  Column,
+  models,
+  createActionDesc,
+  isNumberColumn,
+  createStackDesc,
+  createRankDesc,
+  createSelectionDesc
+} from '../model';
 import {IStatistics, ICategoricalStatistics} from '../model/Column';
 import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
@@ -59,6 +70,12 @@ export interface IStatsBuilder {
 
 export interface IDataProviderOptions {
   columnTypes?: { [columnType: string]: Column };
+
+  /**
+   * allow multiple selected rows
+   * default: true
+   */
+  multiSelection?: boolean;
 }
 
 
@@ -85,10 +102,12 @@ abstract class ADataProvider extends AEventDispatcher {
    */
   columnTypes: any = merge({}, models());
 
+  private multiSelections = true;
 
   constructor(options: IDataProviderOptions = {}) {
     super();
     this.columnTypes = merge(models(), options.columnTypes || {});
+    this.multiSelections = options.multiSelection !== false;
   }
 
   /**
@@ -550,6 +569,9 @@ abstract class ADataProvider extends AEventDispatcher {
     if (this.selection.has(index)) {
       return; //no change
     }
+    if (!this.multiSelections && this.selection.size > 0) {
+      this.selection = new Set<number>();
+    }
     this.selection.add(index);
     this.fire('selectionChanged', this.getSelection());
   }
@@ -571,6 +593,10 @@ abstract class ADataProvider extends AEventDispatcher {
   selectAll(indices: number[], jumpToSelection = false) {
     if (indices.every((i) => this.selection.has(i))) {
       return; //no change
+    }
+    if (!this.multiSelections) {
+      this.selection = new Set<number>();
+      indices = indices.slice(0, 1); //just the first one
     }
     indices.forEach((index) => {
       this.selection.add(index);
