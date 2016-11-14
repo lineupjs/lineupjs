@@ -100,7 +100,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {string[]}
    */
   createEventList() {
-    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'orderChanged', 'selectionChanged']);
+    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'orderChanged', 'selectionChanged', 'jumpToNearest']);
   }
 
   /**
@@ -559,14 +559,18 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param search
    * @param col
    */
-  searchSelect(search: string|RegExp, col: Column) {
-    //implemented by custom provider
+  abstract searchAndJump(search: string|RegExp, col: Column);
+
+  jumpToNearest(indices: number[]) {
+    if (indices.length === 0) {
+      return;
+    }
+    this.fire('jumpToNearest', indices);
   }
 
   /**
    * also select all the given rows
    * @param indices
-   * @param jumpToSelection whether the first selected row should be visible
    */
   selectAll(indices: number[], jumpToSelection = false) {
     if (indices.every((i) => this.selection.has(i))) {
@@ -583,12 +587,12 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param indices
    * @param jumpToSelection whether the first selected row should be visible
    */
-  setSelection(indices: number[], jumpToSelection = false) {
+  setSelection(indices: number[]) {
     if (this.selection.size === indices.length && indices.every((i) => this.selection.has(i))) {
       return; //no change
     }
     this.selection = new Set<number>();
-    this.selectAll(indices, jumpToSelection);
+    this.selectAll(indices);
   }
 
   /**

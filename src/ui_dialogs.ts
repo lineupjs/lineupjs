@@ -131,7 +131,7 @@ export function openSearchDialog(column:Column, $header:d3.Selection<Column>, pr
       if (isRegex) {
         search = new RegExp(search);
       }
-      provider.searchSelect(search, column);
+      provider.searchAndJump(search, column);
     }
   });
 
@@ -142,7 +142,7 @@ export function openSearchDialog(column:Column, $header:d3.Selection<Column>, pr
       if (isRegex) {
         search = new RegExp(search);
       }
-      provider.searchSelect(search, column);
+      provider.searchAndJump(search, column);
     }
     popup.remove();
   }

@@ -157,9 +157,9 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     return this.server.mappingSample((<any>col.desc).column);
   }
 
-  searchSelect(search: string|RegExp, col: Column) {
+  searchAndJump(search: string|RegExp, col: Column) {
     this.server.search(search, (<any>col.desc).column).then((indices) => {
-      this.setSelection(indices);
+      this.jumpToNearest(indices);
     });
   }
 
