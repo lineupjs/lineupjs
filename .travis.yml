@@ -22,4 +22,4 @@ notifications:
   slack:
     secure: YvN+ArSLrGLULk8sRtpuyjWt/KiCkNEb2yCM98a1KRt2X2XXJ9e0/2Ppa8p6Al3yLK7dq9A0wpWDNjq8jBGReRV2fa6REt+v4cN3TxCkMI0j+9DN1t0sLFQoVl03xAgjg2gHF0U+y1NaaBvWoxtwdvwA5dHf6LY67mAjVenPo1U=
     on_success: change
-    on_failure: change
+    on_failure: always
