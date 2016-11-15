@@ -19,7 +19,7 @@ export function createDesc(label: string = 'Combined') {
  * implementation of the stacked column
  */
 export default class StackColumn extends CompositeNumberColumn implements IMultiLevelColumn {
-
+  static COLLAPSED_RENDERER = 'number';
 
   private adaptChange;
 
@@ -195,5 +195,12 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   protected compute(row: any) {
     const w = this.getWidth();
     return this._children.reduce((acc, d) => acc + d.getValue(row) * (d.getWidth() / w), 0);
+  }
+
+  rendererType() {
+    if (this.getCollapsed()) {
+      return StackColumn.COLLAPSED_RENDERER;
+    }
+    return super.rendererType();
   }
 }

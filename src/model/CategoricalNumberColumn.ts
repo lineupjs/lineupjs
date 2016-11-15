@@ -180,4 +180,8 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
   compare(a:any, b:any) {
     return NumberColumn.prototype.compare.call(this, a, b);
   }
+
+  rendererType(): string {
+    return NumberColumn.prototype.rendererType.call(this);
+  }
 }

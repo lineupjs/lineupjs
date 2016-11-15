@@ -368,4 +368,8 @@ export default class Column extends AEventDispatcher {
   filter(row:any) {
     return row !== null;
   }
+
+  rendererType(): string {
+    return this.desc.type;
+  }
 }

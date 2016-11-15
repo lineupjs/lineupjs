@@ -716,7 +716,7 @@ class StackCellRenderer implements ICellRendererFactory {
   }
 }
 
-const defaultCellRenderer = new DefaultCellRenderer();
+export const defaultCellRenderer = new DefaultCellRenderer();
 const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.getColor(d));
 
 /**
@@ -743,16 +743,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
-  if (col.getCompressed() && isNumberColumn(col)) {
-    return (<any>renderers).heatmap || defaultCellRenderer;
-  }
-  if (col instanceof StackColumn && col.getCollapsed()) {
-    return (<any>renderers).number || defaultCellRenderer;
-  }
-  if (isMultiLevelColumn(col) && (<IMultiLevelColumn>col).getCollapsed()) {
-    return defaultCellRenderer;
-  }
-  const r = renderers[col.desc.type];
+  const r = renderers[col.rendererType()];
   return r || defaultCellRenderer;
 }
 

@@ -7,6 +7,8 @@ import Column, {IFlatColumn} from './Column';
 import StackColumn from './StackColumn';
 
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
+  static COLLAPSED_RENDERER = 'string';
+
   private adaptChange;
 
   /**
@@ -95,5 +97,12 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
       child.setWidthImpl(child.getWidth() * factor);
     });
     super.setWidth(value);
+  }
+
+  rendererType() {
+    if (this.getCollapsed()) {
+      return MultiLevelCompositeColumn.COLLAPSED_RENDERER;
+    }
+    return super.rendererType();
   }
 }
