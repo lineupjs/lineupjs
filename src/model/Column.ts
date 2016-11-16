@@ -21,10 +21,10 @@ export interface IFlatColumn {
 }
 
 export interface IColumnParent {
-  remove(col:Column): boolean;
-  insert(col: Column, index?:number): Column;
-  insertAfter(col:Column, reference:Column): Column;
-  findMyRanker() : Ranking;
+  remove(col: Column): boolean;
+  insert(col: Column, index?: number): Column;
+  insertAfter(col: Column, reference: Column): Column;
+  findMyRanker(): Ranking;
   fqid: string;
 
   indexOf(col: Column): number;
@@ -33,11 +33,11 @@ export interface IColumnParent {
 }
 
 export interface IColumnDesc {
-  label:string;
+  label: string;
   /**
    * the column type
    */
-  type:string;
+    type: string;
 
   /**
    * column description
@@ -60,12 +60,12 @@ export interface IStatistics {
   mean: number;
   count: number;
   maxBin: number;
-  hist: { x : number; dx : number; y : number;}[];
+  hist: { x: number; dx: number; y: number;}[];
 }
 
 export interface ICategoricalStatistics {
   maxBin: number;
-  hist: { cat: string; y : number }[];
+  hist: { cat: string; y: number }[];
 }
 
 export interface IColumnMetaData {
@@ -105,24 +105,24 @@ export default class Column extends AEventDispatcher {
   static EVENT_DIRTY_HEADER = 'dirtyHeader';
   static EVENT_DIRTY_VALUES = 'dirtyValues';
 
-  id:string;
+  id: string;
 
   /**
    * width of the column
    * @type {number}
    * @private
    */
-  private width:number = 100;
+  private width: number = 100;
 
-  parent:IColumnParent = null;
+  parent: IColumnParent = null;
 
-  label:string;
+  label: string;
   description: string;
-  color:string;
+  color: string;
   /**
    * alternative to specifying a color is defining a css class that should be used
    */
-  cssClass:string;
+  cssClass: string;
 
   /**
    * whether this column is compressed i.e. just shown in a minimal version
@@ -131,7 +131,7 @@ export default class Column extends AEventDispatcher {
    */
   private compressed = false;
 
-  constructor(id:string, public desc:IColumnDesc) {
+  constructor(id: string, public desc: IColumnDesc) {
     super();
     this.id = fixCSS(id);
     this.label = this.desc.label || this.id;
@@ -144,11 +144,11 @@ export default class Column extends AEventDispatcher {
     return this.desc.type;
   }
 
-  assignNewId(idGenerator:() => string) {
+  assignNewId(idGenerator: () => string) {
     this.id = fixCSS(idGenerator());
   }
 
-  init(callback:(desc:IColumnDesc) => Promise<IStatistics>):Promise<boolean> {
+  init(callback: (desc: IColumnDesc) => Promise<IStatistics>): Promise<boolean> {
     return Promise.resolve(true);
   }
 
@@ -175,7 +175,7 @@ export default class Column extends AEventDispatcher {
    *  * dirty, dirtyHeader, dirtyValues
    * @returns {string[]}
    */
- protected createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
       Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
@@ -190,7 +190,7 @@ export default class Column extends AEventDispatcher {
     return this.width <= 0;
   }
 
-  setCompressed(value:boolean) {
+  setCompressed(value: boolean) {
     if (this.compressed === value) {
       return;
     }
@@ -209,20 +209,20 @@ export default class Column extends AEventDispatcher {
    * @param padding padding between columns
    * @returns {number} the used width by this column
    */
-  flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0):number {
+  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0): number {
     const w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
     r.push({col: this, offset: offset, width: w});
     return w;
   }
 
-  setWidth(value:number) {
+  setWidth(value: number) {
     if (this.width === value) {
       return;
     }
     this.fire([Column.EVENT_WIDTH_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.width, this.width = value);
   }
 
-  setWidthImpl(value:number) {
+  setWidthImpl(value: number) {
     this.width = value;
   }
 
@@ -240,7 +240,7 @@ export default class Column extends AEventDispatcher {
     });
   }
 
-  getMetaData() : IColumnMetaData {
+  getMetaData(): IColumnMetaData {
     return {
       label: this.label,
       color: this.color,
@@ -289,7 +289,7 @@ export default class Column extends AEventDispatcher {
    * @param col
    * @returns {boolean}
    */
-  insertAfterMe(col:Column) {
+  insertAfterMe(col: Column) {
     if (this.parent) {
       return this.parent.insertAfter(col, this) != null;
     }
@@ -300,7 +300,7 @@ export default class Column extends AEventDispatcher {
    * finds the underlying ranking column
    * @returns {Ranking}
    */
-  findMyRanker():Ranking {
+  findMyRanker(): Ranking {
     if (this.parent) {
       return this.parent.findMyRanker();
     }
@@ -312,8 +312,8 @@ export default class Column extends AEventDispatcher {
    * @param toDescRef
    * @returns {any}
    */
-  dump(toDescRef:(desc:any) => any):any {
-    var r:any = {
+  dump(toDescRef: (desc: any) => any): any {
+    var r: any = {
       id: this.id,
       desc: toDescRef(this.desc),
       width: this.width,
@@ -333,7 +333,7 @@ export default class Column extends AEventDispatcher {
    * @param dump
    * @param factory
    */
-  restore(dump:any, factory:(dump:any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column) {
     this.width = dump.width || this.width;
     this.label = dump.label || this.label;
     this.color = dump.color || this.color;
@@ -345,7 +345,7 @@ export default class Column extends AEventDispatcher {
    * @param row
    * @return {string}
    */
-  getLabel(row:any):string {
+  getLabel(row: any): string {
     return '' + this.getValue(row);
   }
 
@@ -354,7 +354,7 @@ export default class Column extends AEventDispatcher {
    * @param row
    * @return
    */
-  getValue(row:any):any {
+  getValue(row: any): any {
     return ''; //no value
   }
 
@@ -364,7 +364,7 @@ export default class Column extends AEventDispatcher {
    * @param b
    * @return {number}
    */
-  compare(a:any, b:any) {
+  compare(a: any, b: any) {
     return 0; //can't compare
   }
 
@@ -381,7 +381,7 @@ export default class Column extends AEventDispatcher {
    * @param row
    * @return {boolean}
    */
-  filter(row:any) {
+  filter(row: any) {
     return row !== null;
   }
 }

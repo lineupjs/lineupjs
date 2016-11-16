@@ -19,7 +19,7 @@ export interface ICategoricalColumn {
  * @param col
  * @returns {boolean}
  */
-export function isCategoricalColumn(col:Column|IColumnDesc) {
+export function isCategoricalColumn(col: Column|IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getCategories === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal)/) != null));
 }
 
@@ -33,7 +33,7 @@ function arrayEquals<T>(a: T[], b: T[]) {
   if (al === 0) {
     return true;
   }
-  return a.every((ai,i) => ai === b[i]);
+  return a.every((ai, i) => ai === b[i]);
 }
 
 /**
@@ -57,7 +57,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
    * @type {null}
    * @private
    */
-  private currentFilter:string[] = null;
+  private currentFilter: string[] = null;
 
   /**
    * split multiple categories
@@ -65,14 +65,14 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
    */
   private separator = ';';
 
-  constructor(id:string, desc:any) {
+  constructor(id: string, desc: any) {
     super(id, desc);
     this.separator = desc.separator || this.separator;
     this.initCategories(desc);
     //TODO infer categories from data
   }
 
-  initCategories(desc:any) {
+  initCategories(desc: any) {
     if (desc.categories) {
       var cats = [],
         cols = this.colors.range(),
@@ -120,7 +120,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.colors(cat);
   }
 
-  getLabel(row:any) {
+  getLabel(row: any) {
     //no mapping
     if (this.catLabels === null || this.catLabels.size === 0) {
       return '' + StringColumn.prototype.getValue.call(this, row);
@@ -128,15 +128,15 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.getLabels(row).join(this.separator);
   }
 
-  getFirstLabel(row:any) {
+  getFirstLabel(row: any) {
     const l = this.getLabels(row);
     return l.length > 0 ? l[0] : null;
   }
 
 
-  getLabels(row:any) {
+  getLabels(row: any) {
     var v = StringColumn.prototype.getValue.call(this, row);
-    const r = v ? v.split(this.separator): [];
+    const r = v ? v.split(this.separator) : [];
 
     const mapToLabel = (values: string[]) => {
       if (this.catLabels === null || this.catLabels.size === 0) {
@@ -147,14 +147,14 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return mapToLabel(r);
   }
 
-  getValue(row:any) {
+  getValue(row: any) {
     const r = this.getValues(row);
     return r.length > 0 ? r[0] : null;
   }
 
-  getValues(row:any) {
+  getValues(row: any) {
     var v = StringColumn.prototype.getValue.call(this, row);
-    const r = v ? v.split(this.separator): [];
+    const r = v ? v.split(this.separator) : [];
     return r;
   }
 
@@ -162,7 +162,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.getValues(row);
   }
 
-  getColor(row:any) {
+  getColor(row: any) {
     var cat = this.getValue(row);
     if (cat === null || cat === '') {
       return null;
@@ -170,11 +170,11 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.colors(cat);
   }
 
-  getColors(row:any) {
+  getColors(row: any) {
     return this.getCategories(row).map(this.colors);
   }
 
-  dump(toDescRef:(desc:any) => any):any {
+  dump(toDescRef: (desc: any) => any): any {
     var r = super.dump(toDescRef);
     r.filter = this.currentFilter;
     r.colors = {
@@ -188,7 +188,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return r;
   }
 
-  restore(dump:any, factory:(dump:any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column) {
     super.restore(dump, factory);
     this.currentFilter = dump.filter || null;
     if (dump.colors) {
@@ -205,12 +205,12 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter != null;
   }
 
-  filter(row:any):boolean {
+  filter(row: any): boolean {
     if (!this.isFiltered()) {
       return true;
     }
     var vs = this.getCategories(row),
-      filter:any = this.currentFilter;
+      filter: any = this.currentFilter;
     return vs.every((v) => {
       if (Array.isArray(filter) && filter.length > 0) { //array mode
         return filter.indexOf(v) >= 0;
@@ -227,14 +227,14 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter;
   }
 
-  setFilter(filter:string[]) {
-    if (arrayEquals(this.currentFilter,filter)) {
+  setFilter(filter: string[]) {
+    if (arrayEquals(this.currentFilter, filter)) {
       return;
     }
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a:any, b:any) {
+  compare(a: any, b: any) {
     const va = this.getValues(a);
     const vb = this.getValues(b);
     //check all categories

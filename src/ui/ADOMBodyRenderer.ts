@@ -8,7 +8,13 @@ import Column, {IStatistics} from '../model/Column';
 import {matchColumns, IDOMCellRenderer, ICellRendererFactory} from '../renderer';
 import DataProvider from '../provider/ADataProvider';
 import {IDOMRenderContext} from '../renderer';
-import ABodyRenderer, {ISlicer, IRankingColumnData, IRankingData, IBodyRenderContext, ERenderReason} from './ABodyRenderer';
+import ABodyRenderer, {
+  ISlicer,
+  IRankingColumnData,
+  IRankingData,
+  IBodyRenderContext,
+  ERenderReason
+} from './ABodyRenderer';
 
 export interface IDOMMapping {
   root: string;
@@ -87,12 +93,12 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
         createTemplates(this, data[j].columns);
       });
 
-      $rows_enter.append(g).attr('class', 'frozen').call(this.domMapping.transform,() => [this.currentFreezeLeft, 0]).each(function (d, i, j) {
+      $rows_enter.append(g).attr('class', 'frozen').call(this.domMapping.transform, () => [this.currentFreezeLeft, 0]).each(function (d, i, j) {
         createTemplates(this, data[j].frozen);
       });
 
       $rows
-        .attr('class', (d,i) => 'row '+(i % 2 === 0 ? 'even': ''))
+        .attr('class', (d, i) => 'row ' + (i % 2 === 0 ? 'even' : ''))
         .attr('data-data-index', (d) => d)
         .classed('selected', (d) => this.data.isSelected(d));
       //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
@@ -215,7 +221,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
   }
 
   updateFreeze(left: number) {
-    forEach(this.node, this.domMapping.g+'.row .frozen', (row: SVGElement | HTMLElement) => {
+    forEach(this.node, this.domMapping.g + '.row .frozen', (row: SVGElement | HTMLElement) => {
       this.domMapping.translate(row, left, 0);
     });
     const item = <SVGElement>this.node.querySelector(`clipPath#c${this.options.idPrefix}Freeze`);
@@ -225,7 +231,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     this.currentFreezeLeft = left;
   }
 
-  updateClipPaths(data : IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
+  updateClipPaths(data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
     //no clip paths in HTML
   }
 

@@ -76,7 +76,7 @@ export default class SVGBodyRenderer extends ADOMBodyRenderer {
       });
   }
 
-  updateClipPaths(data : IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
+  updateClipPaths(data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
     var shifts = [], offset = 0;
     data.forEach((r) => {
       const w = r.ranking.flatten(shifts, offset, 2, this.options.columnPadding);

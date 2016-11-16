@@ -51,11 +51,11 @@ export const ui_dialogs = ui_dialogs_;
  * @param options
  * @returns {LocalDataProvider}
  */
-export function createLocalStorage(data:any[], columns:model_.IColumnDesc[], options = {}) {
+export function createLocalStorage(data: any[], columns: model_.IColumnDesc[], options = {}) {
   return new provider_.LocalDataProvider(data, columns, options);
 }
 
-export function create(data:provider_.DataProvider, container:d3.Selection<any> | Element, config:any = {}) {
+export function create(data: provider_.DataProvider, container: d3.Selection<any> | Element, config: any = {}) {
   return new LineUp(container, data, config);
 }
 

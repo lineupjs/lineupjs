@@ -101,7 +101,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
       return view.map((v, i) => {
         const dataIndex = indices[i];
         v._index = dataIndex;
-        return { v, dataIndex };
+        return {v, dataIndex};
       });
     });
   }
@@ -121,7 +121,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     orders.forEach((order) => order.forEach(union_add));
 
     // removed cached
-    this.cache.forEach((v,k) => union.delete(k));
+    this.cache.forEach((v, k) => union.delete(k));
 
     if ((this.cache.size + union.size) > this.options.maxCacheSize) {
       // clean up cache

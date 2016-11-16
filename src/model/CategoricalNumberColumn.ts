@@ -24,7 +24,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
 
   private scale = scale.ordinal().rangeRoundPoints([0, 1]);
 
-  private currentFilter:string[] = null;
+  private currentFilter: string[] = null;
   /**
    * separator for multi handling
    * @type {string}
@@ -32,7 +32,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
   private separator = ';';
   private combiner = d3max;
 
-  constructor(id:string, desc:any) {
+  constructor(id: string, desc: any) {
     super(id, desc);
     this.separator = desc.separator || this.separator;
     CategoricalColumn.prototype.initCategories.call(this, desc);
@@ -45,7 +45,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     }
   }
 
- protected createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([CategoricalNumberColumn.EVENT_MAPPING_CHANGED]);
   }
 
@@ -70,24 +70,24 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.colors(cat);
   }
 
-  getLabel(row:any) {
+  getLabel(row: any) {
     return CategoricalColumn.prototype.getLabel.call(this, row);
   }
 
-  getFirstLabel(row:any) {
+  getFirstLabel(row: any) {
     return CategoricalColumn.prototype.getFirstLabel.call(this, row);
   }
 
-  getLabels(row:any) {
+  getLabels(row: any) {
     return CategoricalColumn.prototype.getLabels.call(this, row);
   }
 
-  getValue(row:any) {
+  getValue(row: any) {
     const r = this.getValues(row);
     return r.length > 0 ? this.combiner(r) : 0;
   }
 
-  getValues(row:any) {
+  getValues(row: any) {
     const r = CategoricalColumn.prototype.getValues.call(this, row);
     return r.map(this.scale);
   }
@@ -96,11 +96,11 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return CategoricalColumn.prototype.getValues.call(this, row);
   }
 
-  getNumber(row:any) {
+  getNumber(row: any) {
     return this.getValue(row);
   }
 
-  getColor(row:any) {
+  getColor(row: any) {
     const vs = this.getValues(row);
     const cs = this.getColors(row);
     if (this.combiner === d3max) {
@@ -125,7 +125,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return CategoricalColumn.prototype.getColors.call(this, row);
   }
 
-  dump(toDescRef:(desc:any) => any):any {
+  dump(toDescRef: (desc: any) => any): any {
     var r = CategoricalColumn.prototype.dump.call(this, toDescRef);
     r.scale = {
       domain: this.scale.domain(),
@@ -135,7 +135,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return r;
   }
 
-  restore(dump:any, factory:(dump:any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column) {
     CategoricalColumn.prototype.restore.call(this, dump, factory);
     if (dump.scale) {
       this.scale.domain(dump.scale.domain).range(dump.scale.range);
@@ -154,7 +154,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.scale.range().slice();
   }
 
-  setMapping(range:number[]) {
+  setMapping(range: number[]) {
     var bak = this.getScale();
     this.scale.range(range);
     this.fire([CategoricalNumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getScale());
@@ -164,7 +164,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.currentFilter != null;
   }
 
-  filter(row:any):boolean {
+  filter(row: any): boolean {
     return CategoricalColumn.prototype.filter.call(this, row);
   }
 
@@ -172,14 +172,14 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.currentFilter;
   }
 
-  setFilter(filter:string[]) {
+  setFilter(filter: string[]) {
     if (this.currentFilter === filter) {
       return;
     }
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a:any, b:any) {
+  compare(a: any, b: any) {
     return NumberColumn.prototype.compare.call(this, a, b);
   }
 }

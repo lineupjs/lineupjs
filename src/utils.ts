@@ -11,9 +11,9 @@ import {dispatch, select, event as d3event, Dispatch} from 'd3';
  * @param thisCallback this argument of the callback
  * @return {function(...[any]): undefined} a function that can be called with the same interface as the callback but delayed
  */
-export function delayedCall(callback:(...args:any[]) => void, timeToDelay = 100, thisCallback = this) {
+export function delayedCall(callback: (...args: any[]) => void, timeToDelay = 100, thisCallback = this) {
   var tm = -1;
-  return function (...args:any[]) {
+  return function (...args: any[]) {
     if (tm >= 0) {
       clearTimeout(tm);
       tm = -1;
@@ -27,21 +27,21 @@ export function delayedCall(callback:(...args:any[]) => void, timeToDelay = 100,
  * base class for event dispatching using d3 event mechanism
  */
 export class AEventDispatcher {
-  private listeners:Dispatch;
+  private listeners: Dispatch;
   private forwarder;
 
   constructor() {
     this.listeners = dispatch(...this.createEventList());
 
     const that = this;
-    this.forwarder = function(...args:any[]) {
+    this.forwarder = function (...args: any[]) {
       that.fire(this.type, ...args);
     }
   }
 
-  on(type:string):(...args:any[]) => void;
-  on(type:string|string[], listener:(...args:any[]) => any):AEventDispatcher;
-  on(type:string|string[], listener?:(...args:any[]) => any):any {
+  on(type: string): (...args: any[]) => void;
+  on(type: string|string[], listener: (...args: any[]) => any): AEventDispatcher;
+  on(type: string|string[], listener?: (...args: any[]) => any): any {
     if (arguments.length > 1) {
       if (Array.isArray(type)) {
         (<string[]>type).forEach((d) => this.listeners.on(d, listener));
@@ -57,11 +57,11 @@ export class AEventDispatcher {
    * return the list of events to be able to dispatch
    * @return {Array}
    */
-  protected createEventList():string[] {
+  protected createEventList(): string[] {
     return [];
   }
 
-  protected fire(type:string|string[], ...args:any[]) {
+  protected fire(type: string|string[], ...args: any[]) {
     var fireImpl = (t) => {
       //local context per event, set a this argument
       var context = {
@@ -84,7 +84,7 @@ export class AEventDispatcher {
    * @param from the event dispatcher to forward from
    * @param types the event types to forward
    */
-  protected forward(from:AEventDispatcher, ...types:string[]) {
+  protected forward(from: AEventDispatcher, ...types: string[]) {
     from.on(types, this.forwarder);
   }
 
@@ -93,7 +93,7 @@ export class AEventDispatcher {
    * @param from
    * @param types
    */
-  protected unforward(from:AEventDispatcher, ...types:string[]) {
+  protected unforward(from: AEventDispatcher, ...types: string[]) {
     from.on(types, null);
   }
 }
@@ -101,7 +101,7 @@ export class AEventDispatcher {
 const TYPE_OBJECT = '[object Object]';
 
 //credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
-export function merge(...args:any[]) {
+export function merge(...args: any[]) {
   var result = null;
 
   for (var i = 0; i < args.length; i++) {
@@ -185,7 +185,7 @@ export class ContentScroller extends AEventDispatcher {
    * @param content the content element to scroll
    * @param options options see attribute
    */
-  constructor(private container:Element, private content:Element, options:any = {}) {
+  constructor(private container: Element, private content: Element, options: any = {}) {
     super();
     merge(this.options, options);
     select(container).on('scroll.scroller', () => this.onScroll());
@@ -208,7 +208,7 @@ export class ContentScroller extends AEventDispatcher {
     return super.createEventList().concat([ContentScroller.EVENT_REDRAW, ContentScroller.EVENT_SCROLL]);
   }
 
-  scrollIntoView(start: number, length: number, index: number, row2y:(i:number) => number) {
+  scrollIntoView(start: number, length: number, index: number, row2y: (i: number) => number) {
     const range = this.select(start, length, row2y);
     if (range.from <= index && index <= range.to) {
       return; //already visible
@@ -242,7 +242,7 @@ export class ContentScroller extends AEventDispatcher {
    * @param row2y lookup for computing the y position of a given row
    * @returns {{from: number, to: number}} the slide to show
    */
-  select(start:number, length:number, row2y:(i:number) => number) {
+  select(start: number, length: number, row2y: (i: number) => number) {
     var top = this.container.scrollTop - this.shift - this.options.topShift(),
       bottom = top + this.container.clientHeight,
       i = 0, j;
@@ -297,8 +297,8 @@ export class ContentScroller extends AEventDispatcher {
 /**
  * checks whether the given DragEvent has one of the given types
  */
-export function hasDnDType(e:DragEvent, typesToCheck:string[]) {
-  var types:any = e.dataTransfer.types;
+export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
+  var types: any = e.dataTransfer.types;
   if (typeof types.indexOf === 'function') {
     return typesToCheck.some((type) => types.indexOf(type) >= 0);
   }
@@ -314,7 +314,7 @@ export function hasDnDType(e:DragEvent, typesToCheck:string[]) {
 /**
  * should it be a copy dnd operation?
  */
-export function copyDnD(e:DragEvent) {
+export function copyDnD(e: DragEvent) {
   var dT = e.dataTransfer;
   return (e.ctrlKey && dT.effectAllowed.match(/copy/gi) != null) || (dT.effectAllowed.match(/move/gi) == null);
 }
@@ -323,7 +323,7 @@ export function copyDnD(e:DragEvent) {
  * updates the drop effect according to the currently selected meta keys
  * @param e
  */
-export function updateDropEffect(e:DragEvent) {
+export function updateDropEffect(e: DragEvent) {
   var dT = e.dataTransfer;
   if (copyDnD(e)) {
     dT.dropEffect = 'copy';
@@ -337,7 +337,7 @@ export function updateDropEffect(e:DragEvent) {
  * @param mimeTypes the mime types to be dropable
  * @param onDrop: handler when an element is dropped
  */
-export function dropAble<T>(mimeTypes:string[], onDrop:(data:any, d:T, copy:boolean) => boolean) {
+export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy: boolean) => boolean) {
   return ($node) => {
     $node.on('dragenter', function () {
       var e = <DragEvent>(<any>d3event);
@@ -360,13 +360,13 @@ export function dropAble<T>(mimeTypes:string[], onDrop:(data:any, d:T, copy:bool
     }).on('dragleave', function () {
       //
       select(this).classed('drag_over', false);
-    }).on('drop', function (d:T) {
+    }).on('drop', function (d: T) {
       var e = <DragEvent>(<any>d3event);
       e.preventDefault();
       select(this).classed('drag_over', false);
       //var xy = mouse($node.node());
       if (hasDnDType(e, mimeTypes)) {
-        var data:any = {};
+        var data: any = {};
         //selects the data contained in the data transfer
         mimeTypes.forEach((mime) => {
           var value = e.dataTransfer.getData(mime);

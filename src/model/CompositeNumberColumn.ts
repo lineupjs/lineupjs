@@ -13,9 +13,9 @@ import {INumberColumn, isNumberColumn, numberCompare} from './NumberColumn';
 export default class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
   public missingValue = 0;
 
-  private numberFormat : (n: number) => string = format('.3n');
+  private numberFormat: (n: number) => string = format('.3n');
 
-  constructor(id:string, desc:any) {
+  constructor(id: string, desc: any) {
     super(id, desc);
 
     if (desc.numberFormat) {
@@ -24,13 +24,13 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
   }
 
 
-  dump(toDescRef:(desc:any) => any) {
+  dump(toDescRef: (desc: any) => any) {
     var r = super.dump(toDescRef);
     r.missingValue = this.missingValue;
     return r;
   }
 
-  restore(dump:any, factory:(dump:any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column) {
     if (dump.missingValue) {
       this.missingValue = dump.missingValue;
     }
@@ -47,7 +47,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
    * @param weight
    * @returns {any}
    */
-  insert(col:Column, index:number) {
+  insert(col: Column, index: number) {
     if (!isNumberColumn(col)) { //indicator it is a number type
       return null;
     }
@@ -60,7 +60,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
   }
 
-  getValue(row:any) {
+  getValue(row: any) {
     //weighted sum
     const v = this.compute(row);
     if (typeof(v) === 'undefined' || v == null || isNaN(v)) {
@@ -73,11 +73,11 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return NaN;
   }
 
-  getNumber(row:any) {
+  getNumber(row: any) {
     return this.getValue(row);
   }
 
-  compare(a:any, b:any) {
+  compare(a: any, b: any) {
     return numberCompare(this.getValue(a), this.getValue(b));
   }
 }

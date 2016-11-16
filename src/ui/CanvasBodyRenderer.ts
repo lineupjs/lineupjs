@@ -170,7 +170,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     //clip the remaining children
     ctx.save();
     //shift if needs to shifted and then maximal that just the shifted columns are visible
-    const frozenLeft = this.currentFreezeLeft < ranking.shift ? 0: Math.min(this.currentFreezeLeft - ranking.shift, ranking.width - ranking.frozenWidth);
+    const frozenLeft = this.currentFreezeLeft < ranking.shift ? 0 : Math.min(this.currentFreezeLeft - ranking.shift, ranking.width - ranking.frozenWidth);
     if (ranking.frozenWidth > 0 && frozenLeft > 0) {
       ctx.rect(dx + frozenLeft + ranking.frozenWidth, 0, ranking.width, context.rowHeight(i));
       ctx.clip();
@@ -254,7 +254,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   protected createContextImpl(index_shift: number): ICanvasRenderContext&IBodyRenderContext {
-    const base :any = this.createContext(index_shift, createCanvas);
+    const base: any = this.createContext(index_shift, createCanvas);
     base.hovered = this.isHovered.bind(this);
     base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);
     return base;

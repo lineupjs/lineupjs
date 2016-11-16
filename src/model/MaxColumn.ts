@@ -10,7 +10,7 @@ import CompositeNumberColumn from './CompositeNumberColumn';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label:string = 'Max') {
+export function createDesc(label: string = 'Max') {
   return {type: 'max', label: label};
 }
 /**
@@ -25,7 +25,7 @@ export default class MaxColumn extends CompositeNumberColumn {
       return this.color;
     }
     var max_i = 0, max_v = c[0].getValue(row);
-    for(let i = 1; i < c.length; ++i) {
+    for (let i = 1; i < c.length; ++i) {
       let v = c[i].getValue(row);
       if (v > max_v) {
         max_i = i;

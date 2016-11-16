@@ -13,22 +13,22 @@ export default class AnnotateColumn extends StringColumn {
 
   private annotations = new Map<number, string>();
 
-  constructor(id:string, desc:any) {
+  constructor(id: string, desc: any) {
     super(id, desc);
   }
 
- protected createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([AnnotateColumn.EVENT_VALUE_CHANGED]);
   }
 
-  getValue(row:any) {
+  getValue(row: any) {
     if (this.annotations.has(row._index)) {
       return this.annotations.get(row._index);
     }
     return super.getValue(row);
   }
 
-  dump(toDescRef:(desc:any) => any):any {
+  dump(toDescRef: (desc: any) => any): any {
     var r = super.dump(toDescRef);
     r.annotations = {};
     this.annotations.forEach((v, k) => {
@@ -37,7 +37,7 @@ export default class AnnotateColumn extends StringColumn {
     return r;
   }
 
-  restore(dump:any, factory:(dump:any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column) {
     super.restore(dump, factory);
     if (dump.annotations) {
       Object.keys(dump.annotations).forEach((k) => {
@@ -46,7 +46,7 @@ export default class AnnotateColumn extends StringColumn {
     }
   }
 
-  setValue(row:any, value:string) {
+  setValue(row: any, value: string) {
     var old = this.getValue(row);
     if (old === value) {
       return true;

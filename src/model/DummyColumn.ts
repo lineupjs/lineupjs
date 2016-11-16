@@ -8,19 +8,19 @@ import Column from './Column';
  */
 export default class DummyColumn extends Column {
 
-  constructor(id:string, desc:any) {
+  constructor(id: string, desc: any) {
     super(id, desc);
   }
 
-  getLabel(row:any) {
+  getLabel(row: any) {
     return '';
   }
 
-  getValue(row:any) {
+  getValue(row: any) {
     return '';
   }
 
-  compare(a:any, b:any) {
+  compare(a: any, b: any) {
     return 0; //can't compare
   }
 }
