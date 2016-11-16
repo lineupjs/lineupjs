@@ -94,6 +94,17 @@ export default class Column extends AEventDispatcher {
    */
   static COMPRESSED_WIDTH = 16;
 
+  static EVENT_WIDTH_CHANGED = 'widthChanged';
+  static EVENT_FILTER_CHANGED = 'filterChanged';
+  static EVENT_LABEL_CHANGED = 'labelChanged';
+  static EVENT_METADATA_CHANGED = 'metaDataChanged';
+  static EVENT_COMPRESS_CHANGED = 'compressChanged';
+  static EVENT_ADD_COLUMN = 'addColumn';
+  static EVENT_REMOVE_COLUMN = 'removeColumn';
+  static EVENT_DIRTY = 'dirty';
+  static EVENT_DIRTY_HEADER = 'dirtyHeader';
+  static EVENT_DIRTY_VALUES = 'dirtyValues';
+
   id:string;
 
   /**
@@ -165,7 +176,10 @@ export default class Column extends AEventDispatcher {
    * @returns {string[]}
    */
   createEventList() {
-    return super.createEventList().concat(['widthChanged', 'filterChanged', 'labelChanged', 'metaDataChanged', 'compressChanged', 'addColumn', 'removeColumn', 'dirty', 'dirtyHeader', 'dirtyValues']);
+    return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
+      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
+      Column.EVENT_ADD_COLUMN, Colum.EVENT_REMOVE_COLUMN,
+      Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
   }
 
   getWidth() {
@@ -180,7 +194,7 @@ export default class Column extends AEventDispatcher {
     if (this.compressed === value) {
       return;
     }
-    this.fire(['compressChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.compressed, this.compressed = value);
+    this.fire([Column.EVENT_COMPRESS_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.compressed, this.compressed = value);
   }
 
   getCompressed() {
@@ -205,7 +219,7 @@ export default class Column extends AEventDispatcher {
     if (this.width === value) {
       return;
     }
-    this.fire(['widthChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.width, this.width = value);
+    this.fire([Column.EVENT_WIDTH_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.width, this.width = value);
   }
 
   setWidthImpl(value:number) {
@@ -216,7 +230,9 @@ export default class Column extends AEventDispatcher {
     if (value.label === this.label && this.color === value.color && this.description === value.description) {
       return;
     }
-    var events = this.color === value.color ? ['labelChanged', 'metaDataChanged','dirtyHeader', 'dirty'] : ['labelChanged', 'metaDataChanged','dirtyHeader', 'dirtyValues', 'dirty'];
+    var events = this.color === value.color ?
+      [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY] :
+      [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY];
     this.fire(events, this.getMetaData(), {
       label: this.label = value.label,
       color: this.color = value.color,

@@ -9,6 +9,8 @@ import StringColumn from './StringColumn';
  * a string column in which the values can be edited locally
  */
 export default class AnnotateColumn extends StringColumn {
+  static EVENT_VALUE_CHANGED = 'valueChanged';
+
   private annotations = new Map<number, string>();
 
   constructor(id:string, desc:any) {
@@ -16,7 +18,7 @@ export default class AnnotateColumn extends StringColumn {
   }
 
   createEventList() {
-    return super.createEventList().concat(['valueChanged']);
+    return super.createEventList().concat([AnnotateColumn.EVENT_VALUE_CHANGED]);
   }
 
   getValue(row:any) {
@@ -54,7 +56,7 @@ export default class AnnotateColumn extends StringColumn {
     } else {
       this.annotations.set(row._index, value);
     }
-    this.fire(['valueChanged', 'dirtyValues', 'dirty'], row._index, old, value);
+    this.fire([AnnotateColumn.EVENT_VALUE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], row._index, old, value);
     return true;
   }
 }

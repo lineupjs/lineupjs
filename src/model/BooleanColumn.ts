@@ -69,7 +69,7 @@ export default class BooleanColumn extends ValueColumn<boolean> {
     if (this.currentFilter === filter) {
       return;
     }
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
+    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
   compare(a:any[], b:any[]) {

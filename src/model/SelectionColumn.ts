@@ -18,6 +18,7 @@ export function createDesc(label: string = 'S') {
  * a checkbox column for selections
  */
 export default class SelectionColumn extends ValueColumn<boolean> {
+  static EVENT_SELECT = 'select';
 
   constructor(id: string, desc: any) {
     super(id, desc);
@@ -25,7 +26,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
   }
 
   createEventList() {
-    return super.createEventList().concat(['select']);
+    return super.createEventList().concat([SelectionColumn.EVENT_SELECT]);
   }
 
   setValue(row: any, value: boolean) {
@@ -40,7 +41,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     if ((<any>this.desc).setter) {
       (<any>this.desc).setter(row, value);
     }
-    this.fire('select', row, value);
+    this.fire(SelectionColumn.EVENT_SELECT, row, value);
     return true;
   }
 

@@ -19,7 +19,8 @@ export function createDesc(label: string = 'Combined') {
  * implementation of the stacked column
  */
 export default class StackColumn extends CompositeNumberColumn implements IMultiLevelColumn {
-
+  static EVENT_COLLAPSE_CHANGED = 'collapseChanged';
+  static EVENT_WEIGHTS_CHANGED = 'weightsChanged';
 
   private adaptChange;
 
@@ -40,14 +41,14 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   }
 
   createEventList() {
-    return super.createEventList().concat(['collapseChanged', 'weightsChanged']);
+    return super.createEventList().concat([StackColumn.EVENT_COLLAPSE_CHANGED, StackColumn.EVENT_WEIGHTS_CHANGED]);
   }
 
   setCollapsed(value: boolean) {
     if (this.collapsed === value) {
       return;
     }
-    this.fire(['collapseChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.collapsed, this.collapsed = value);
+    this.fire([StackColumn.EVENT_COLLAPSE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.collapsed, this.collapsed = value);
   }
 
   getCollapsed() {
@@ -101,7 +102,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     if (!isNaN(weight)) {
       col.setWidth((weight / (1 - weight) * this.getWidth()));
     }
-    col.on('widthChanged.stack', this.adaptChange);
+    col.on(Column.EVENT_WIDTH_CHANGED + '.stack', this.adaptChange);
     //increase my width
     super.setWidth(this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
 
@@ -142,7 +143,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
         c.setWidthImpl(c.getWidth() * factor);
       }
     });
-    this.fire(['weightsChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, this.getWeights());
+    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getWeights());
   }
 
   getWeights() {
@@ -173,12 +174,12 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     this._children.forEach((c, i) => {
       c.setWidthImpl(weights[i]);
     });
-    this.fire(['weightsChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], bak, weights);
+    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, weights);
 
   }
 
   removeImpl(child: Column) {
-    child.on('widthChanged.stack', null);
+    child.on(Column.EVENT_WIDTH_CHANGED + '.stack', null);
     super.setWidth(this.length === 1 ? 100 : this.getWidth() - child.getWidth());
     return super.removeImpl(child);
   }

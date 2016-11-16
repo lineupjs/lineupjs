@@ -12,6 +12,8 @@ import NumberColumn, {INumberColumn} from './NumberColumn';
  * similar to a categorical column but the categories are mapped to numbers
  */
 export default class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
+  static EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+
   private colors = scale.category10();
 
   /**
@@ -44,7 +46,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
   }
 
   createEventList() {
-    return super.createEventList().concat(['mappingChanged']);
+    return super.createEventList().concat([CategoricalNumberColumn.EVENT_MAPPING_CHANGED]);
   }
 
   get categories() {
@@ -155,7 +157,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
   setMapping(range:number[]) {
     var bak = this.getScale();
     this.scale.range(range);
-    this.fire(['mappingChanged', 'dirtyValues', 'dirty'], bak, this.getScale());
+    this.fire([CategoricalNumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getScale());
   }
 
   isFiltered() {
@@ -174,7 +176,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     if (this.currentFilter === filter) {
       return;
     }
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], this.currentFilter, this.currentFilter = filter);
+    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
   compare(a:any, b:any) {

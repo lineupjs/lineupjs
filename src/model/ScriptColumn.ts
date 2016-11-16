@@ -15,7 +15,8 @@ export function createDesc(label: string = 'script') {
 }
 
 export default class ScriptColumn extends CompositeNumberColumn {
-  static DEFAULT_SCRIPT = 'return d3.max(values)';
+  static EVENT_SCRIPT_CHANGED = 'scriptChanged';
+  static DEFAULT_SCRIPT = 'return Math.max.apply(Math,values)';
 
   private script = ScriptColumn.DEFAULT_SCRIPT;
   private f: Function = null;
@@ -26,7 +27,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
   }
 
   createEventList() {
-    return super.createEventList().concat(['scriptChanged']);
+    return super.createEventList().concat([ScriptColumn.EVENT_SCRIPT_CHANGED]);
   }
 
   setScript(script: string) {
@@ -34,7 +35,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
       return;
     }
     this.f = null;
-    this.fire(['scriptChanged', 'dirtyValues', 'dirty'], this.script, this.script = script);
+    this.fire([ScriptColumn.EVENT_SCRIPT_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.script, this.script = script);
   }
 
   getScript() {

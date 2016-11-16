@@ -9,6 +9,7 @@ import StringColumn from './StringColumn';
  * a string column in which the label is a text but the value a link
  */
 export default class LinkColumn extends StringColumn {
+  static EVENT_LINK_CHANGED = 'linkChanged';
   /**
    * a pattern used for generating the link, $1 is replaced with the actual value
    * @type {null}
@@ -25,7 +26,7 @@ export default class LinkColumn extends StringColumn {
   }
 
   createEventList() {
-    return super.createEventList().concat(['linkChanged']);
+    return super.createEventList().concat([LinkColumn.EVENT_LINK_CHANGED]);
   }
 
   setLink(link: string) {
@@ -34,7 +35,7 @@ export default class LinkColumn extends StringColumn {
       return;
     }
     /* tslint:enable */
-    this.fire(['linkChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.link, this.link = link);
+    this.fire([LinkColumn.EVENT_LINK_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.link, this.link = link);
   }
 
   getLink() {

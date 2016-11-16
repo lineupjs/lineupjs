@@ -17,13 +17,13 @@ export function isMultiLevelColumn(col: Column) {
  * implementation of a combine column, standard operations how to select
  */
 export default class CompositeColumn extends Column implements IColumnParent {
-  protected _children:Column[] = [];
+  protected _children: Column[] = [];
 
-  constructor(id:string, desc:any) {
+  constructor(id: string, desc: any) {
     super(id, desc);
   }
 
-  assignNewId(idGenerator:() => string) {
+  assignNewId(idGenerator: () => string) {
     super.assignNewId(idGenerator);
     this._children.forEach((c) => c.assignNewId(idGenerator));
   }
@@ -36,7 +36,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children.length;
   }
 
-  flatten(r:IFlatColumn[], offset:number, levelsToGo = 0, padding = 0) {
+  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     var self = null;
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
@@ -55,13 +55,13 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return w;
   }
 
-  dump(toDescRef:(desc:any) => any) {
+  dump(toDescRef: (desc: any) => any) {
     var r = super.dump(toDescRef);
     r.children = this._children.map((d) => d.dump(toDescRef));
     return r;
   }
 
-  restore(dump:any, factory:(dump:any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column) {
     dump.children.map((child) => {
       var c = factory(child);
       if (c) {
@@ -78,7 +78,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
    * @param weight
    * @returns {any}
    */
-  insert(col:Column, index:number) {
+  insert(col: Column, index: number) {
     this._children.splice(index, 0, col);
     //listen and propagate events
     return this.insertImpl(col, index);
@@ -86,12 +86,12 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   protected insertImpl(col: Column, index: number) {
     col.parent = this;
-    this.forward(col, 'dirtyHeader.combine', 'dirtyValues.combine', 'dirty.combine', 'filterChanged.combine');
-    this.fire(['addColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], col, index);
+    this.forward(col, Column.EVENT_DIRTY_HEADER + '.combine', Column.EVENT_DIRTY_VALUES + '.combine', Column.EVENT_DIRTY + '.combine', Column.EVENT_FILTER_CHANGED + '.combine');
+    this.fire([Column.EVENT_ADD_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index);
     return col;
   }
 
-  push(col:Column) {
+  push(col: Column) {
     return this.insert(col, this._children.length);
   }
 
@@ -99,18 +99,19 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children[index];
   }
 
-  indexOf(col:Column) {
+  indexOf(col: Column) {
     return this._children.indexOf(col);
   }
 
-  insertAfter(col:Column, ref:Column) {
+  insertAfter(col: Column, ref: Column) {
     var i = this.indexOf(ref);
     if (i < 0) {
       return null;
     }
     return this.insert(col, i + 1);
   }
-  remove(child:Column) {
+
+  remove(child: Column) {
     var i = this._children.indexOf(child);
     if (i < 0) {
       return false;
@@ -121,8 +122,8 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   protected removeImpl(child: Column) {
     child.parent = null;
-    this.unforward(child, 'dirtyHeader.combine', 'dirtyValues.combine', 'dirty.combine', 'filterChanged.combine');
-    this.fire(['removeColumn', 'dirtyHeader', 'dirtyValues', 'dirty'], child);
+    this.unforward(child, Column.EVENT_DIRTY_HEADER + '.combine', Column.EVENT_DIRTY_VALUES + '.combine', Column.EVENT_DIRTY + '.combine', Column.EVENT_FILTER_CHANGED + '.combine');
+    this.fire([Column.EVENT_REMOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], child);
     return true;
   }
 
@@ -134,7 +135,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children.some((d) => d.isFiltered());
   }
 
-  filter(row:any) {
+  filter(row: any) {
     return this._children.every((d) => d.filter(row));
   }
 }

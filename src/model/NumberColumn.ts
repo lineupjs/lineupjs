@@ -254,6 +254,7 @@ export function createMappingFunction(dump: any): IMappingFunction {
  * a number column mapped from an original input scale to an output range
  */
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn {
+  static EVENT_MAPPING_CHANGED = 'mappingChanged';
 
   static noFilter = () => ({min: -Infinity, max: Infinity, filterMissing: false});
 
@@ -328,7 +329,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   createEventList() {
-    return super.createEventList().concat(['mappingChanged']);
+    return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED]);
   }
 
   getLabel(row:any) {
@@ -384,7 +385,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire(['mappingChanged', 'dirtyValues', 'dirty'], this.mapping.clone(), this.mapping = mapping);
+    this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
   isFiltered() {
@@ -414,19 +415,19 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   set filterMin(min:number) {
     const bak = this.getFilter();
     this.currentFilter.min = isNaN(min) ? -Infinity : min;
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.getFilter());
+    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
   set filterMax(max:number) {
     const bak = this.getFilter();
     this.currentFilter.max = isNaN(max) ? Infinity : max;
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.getFilter());
+    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
   set filterMissing(filterMissing: boolean) {
     const bak = this.getFilter();
     this.currentFilter.filterMissing = filterMissing;
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.getFilter());
+    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
   setFilter(value: INumberFilter= {min: -Infinity, max: +Infinity, filterMissing: false}) {
@@ -437,7 +438,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     this.currentFilter.min = isNaN(value.min) ? -Infinity :value. min;
     this.currentFilter.max = isNaN(value.max) ? Infinity : value.max;
     this.currentFilter.filterMissing = value.filterMissing;
-    this.fire(['filterChanged', 'dirtyValues', 'dirty'], bak, this.getFilter());
+    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
   /**

@@ -7,6 +7,8 @@ import Column, {IFlatColumn} from './Column';
 import StackColumn from './StackColumn';
 
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
+  static EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
+
   private adaptChange;
 
   /**
@@ -25,14 +27,14 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
   }
 
   createEventList() {
-    return super.createEventList().concat(['collapseChanged']);
+    return super.createEventList().concat([MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED]);
   }
 
   setCollapsed(value:boolean) {
     if (this.collapsed === value) {
       return;
     }
-    this.fire(['collapseChanged', 'dirtyHeader', 'dirtyValues', 'dirty'], this.collapsed, this.collapsed = value);
+    this.fire([StackColumn.EVENT_COLLAPSE_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.collapsed, this.collapsed = value);
   }
 
   getCollapsed() {
@@ -62,7 +64,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
    * @returns {any}
    */
   insert(col:Column, index:number) {
-    col.on('widthChanged.stack', this.adaptChange);
+    col.on(Column.EVENT_WIDTH_CHANGED + '.stack', this.adaptChange);
     //increase my width
     super.setWidth(this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
 
@@ -83,7 +85,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
   }
 
   removeImpl(child:Column) {
-    child.on('widthChanged.stack', null);
+    child.on(Column.EVENT_WIDTH_CHANGED + '.stack', null);
     super.setWidth(this.length === 1 ? 100 : this.getWidth() - child.getWidth());
     return super.removeImpl(child);
   }
