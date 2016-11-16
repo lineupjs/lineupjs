@@ -52,17 +52,19 @@ export default class PoolRenderer {
 
   changeDataStorage(data: DataProvider) {
     if (this.data) {
-      this.data.on(['addColumn.pool', 'removeColumn.pool', 'addRanking.pool', 'removeRanking.pool', 'addDesc.pool'], null);
+      this.data.on([DataProvider.EVENT_ADD_COLUMN + '.pool', DataProvider.EVENT_REMOVE_COLUMN + '.pool',
+        DataProvider.EVENT_ADD_RANKING + '.pool', DataProvider.EVENT_REMOVE_RANKING + '.pool',
+        DataProvider.EVENT_ADD_DESC + '.pool'], null);
     }
     this.data = data;
     this.entries = data.getColumns().concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
-    data.on(['addDesc.pool'], (desc) => {
+    data.on(DataProvider.EVENT_ADD_DESC + '.pool', (desc) => {
       this.entries.push(new PoolEntry(desc));
       this.update();
     });
     if (this.options.hideUsed) {
       var that = this;
-      data.on(['addColumn.pool', 'removeColumn.pool'], function (col) {
+      data.on([DataProvider.EVENT_ADD_COLUMN + '.pool', DataProvider.EVENT_REMOVE_COLUMN + '.pool'], function (col) {
         var desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
         that.entries.some((entry) => {
           if (entry.desc !== desc) {
@@ -73,7 +75,7 @@ export default class PoolRenderer {
         });
         that.update();
       });
-      data.on(['addRanking.pool', 'removeRanking.pool'], function (ranking) {
+      data.on([DataProvider.EVENT_ADD_RANKING + '.pool', DataProvider.EVENT_REMOVE_RANKING + '.pool'], function (ranking) {
         var descs = ranking.flatColumns.map((d) => d.desc), change = this.type === 'addRanking' ? 1 : -1;
         that.entries.some((entry) => {
           if (descs.indexOf(entry.desc) < 0) {
@@ -99,7 +101,7 @@ export default class PoolRenderer {
   remove() {
     this.$node.remove();
     if (this.data) {
-      this.data.on(['addColumn.pool', 'removeColumn.pool', 'addRanking.pool', 'removeRanking.pool', 'addDesc.pool'], null);
+      this.data.on([DataProvider.EVENT_ADD_COLUMN + '.pool', DataProvider.EVENT_REMOVE_COLUMN + '.pool', 'addRanking.pool', 'removeRanking.pool', 'addDesc.pool'], null);
     }
   }
 
@@ -150,7 +152,7 @@ export default class PoolRenderer {
       case 'horizontal':
         this.$node.style({
           width: (this.options.elemWidth * descToShow.length) + 'px',
-          height: (this.options.elemHeight * 1) + 'px'
+          height: (this.options.elemHeight) + 'px'
         });
         break;
       case 'grid':
@@ -163,7 +165,7 @@ export default class PoolRenderer {
       //case 'vertical':
       default:
         this.$node.style({
-          width: (this.options.elemWidth * 1) + 'px',
+          width: (this.options.elemWidth) + 'px',
           height: (this.options.elemHeight * descToShow.length) + 'px'
         });
         break;

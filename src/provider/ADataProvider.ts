@@ -5,8 +5,6 @@
 import {
   isSupportType,
   IColumnDesc,
-  Ranking,
-  Column,
   models,
   createActionDesc,
   isNumberColumn,
@@ -14,6 +12,8 @@ import {
   createRankDesc,
   createSelectionDesc
 } from '../model';
+import Column from '../model/Column';
+import Ranking from '../model/Ranking';
 import {IStatistics, ICategoricalStatistics} from '../model/Column';
 import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
@@ -83,6 +83,17 @@ export interface IDataProviderOptions {
  * a basic data provider holding the data and rankings
  */
 abstract class ADataProvider extends AEventDispatcher {
+  static EVENT_SELECTION_CHANGED = 'selectionChanged';
+  static EVENT_ADD_COLUMN = Ranking.EVENT_ADD_COLUMN;
+  static EVENT_REMOVE_COLUMN = Ranking.EVENT_REMOVE_COLUMN;
+  static EVENT_ADD_RANKING = 'addRanking';
+  static EVENT_REMOVE_RANKING = 'removeRanking';
+  static EVENT_DIRTY = Ranking.EVENT_DIRTY;
+  static EVENT_DIRTY_HEADER = Ranking.EVENT_DIRTY_HEADER;
+  static EVENT_DIRTY_VALUES = Ranking.EVENT_DIRTY_VALUES;
+  static EVENT_ORDER_CHANGED = Ranking.EVENT_ORDER_CHANGED;
+  static EVENT_ADD_DESC = 'addDesc';
+
   /**
    * all rankings
    * @type {Array}
@@ -119,7 +130,11 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {string[]}
    */
   createEventList() {
-    return super.createEventList().concat(['addColumn', 'removeColumn', 'addRanking', 'removeRanking', 'dirty', 'dirtyHeader', 'dirtyValues', 'orderChanged', 'selectionChanged']);
+    return super.createEventList().concat([
+      ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN,
+      ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
+      ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES,
+      ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED, ADataProvider.EVENT_ADD_DESC]);
   }
 
   /**
@@ -148,13 +163,15 @@ abstract class ADataProvider extends AEventDispatcher {
 
   insertRanking(r: Ranking, index = this.rankings_.length) {
     this.rankings_.splice(index, 0, r);
-    this.forward(r, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyValues.provider');
+    this.forward(r, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
+      Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
+      Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
     const that = this;
     //delayed reordering per ranking
-    r.on('dirtyOrder.provider', delayedCall(function () {
+    r.on(Ranking.EVENT_DIRTY_ORDER + '.provider', delayedCall(function () {
       that.triggerReorder(this.source);
     }, 100, null));
-    this.fire(['addRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], r, index);
+    this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
     this.triggerReorder(r);
   }
 
@@ -172,11 +189,13 @@ abstract class ADataProvider extends AEventDispatcher {
     if (i < 0) {
       return false;
     }
-    this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'orderChanged.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
+    this.unforward(ranking, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
+      Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
+      Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
     this.rankings_.splice(i, 1);
-    ranking.on('dirtyOrder.provider', null);
+    ranking.on(Ranking.EVENT_DIRTY_ORDER + '.provider', null);
     this.cleanUpRanking(ranking);
-    this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], ranking, i);
+    this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, i);
     return true;
   }
 
@@ -185,12 +204,14 @@ abstract class ADataProvider extends AEventDispatcher {
    */
   clearRankings() {
     this.rankings_.forEach((ranking) => {
-      this.unforward(ranking, 'addColumn.provider', 'removeColumn.provider', 'dirty.provider', 'dirtyHeader.provider', 'dirtyOrder.provider', 'dirtyValues.provider');
-      ranking.on('dirtyOrder.provider', null);
+      this.unforward(ranking, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
+        Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
+        Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
+      ranking.on(Ranking.EVENT_DIRTY_ORDER + '.provider', null);
       this.cleanUpRanking(ranking);
     });
     this.rankings_ = [];
-    this.fire(['removeRanking', 'dirtyHeader', 'dirtyValues', 'dirty'], null);
+    this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], null);
   }
 
   /**
@@ -573,7 +594,7 @@ abstract class ADataProvider extends AEventDispatcher {
       this.selection = new Set<number>();
     }
     this.selection.add(index);
-    this.fire('selectionChanged', this.getSelection());
+    this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
   }
 
   /**
@@ -601,7 +622,7 @@ abstract class ADataProvider extends AEventDispatcher {
     indices.forEach((index) => {
       this.selection.add(index);
     });
-    this.fire('selectionChanged', this.getSelection(), jumpToSelection);
+    this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection(), jumpToSelection);
   }
 
   /**
@@ -650,7 +671,7 @@ abstract class ADataProvider extends AEventDispatcher {
       return; //no change
     }
     this.selection.delete(index);
-    this.fire('selectionChanged', this.getSelection());
+    this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
   }
 
   /**
@@ -683,7 +704,7 @@ abstract class ADataProvider extends AEventDispatcher {
       return; //no change
     }
     this.selection = new Set<number>();
-    this.fire('selectionChanged', [], false);
+    this.fire(ADataProvider.EVENT_SELECTION_CHANGED, [], false);
   }
 
   /**

@@ -178,7 +178,7 @@ export default class Column extends AEventDispatcher {
   createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-      Column.EVENT_ADD_COLUMN, Colum.EVENT_REMOVE_COLUMN,
+      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
   }
 

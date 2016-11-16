@@ -7,7 +7,7 @@ import {merge, delayedCall, AEventDispatcher} from '../utils';
 import {Ranking, isNumberColumn} from '../model';
 import Column, {IStatistics, ICategoricalStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import DataProvider, {IDataRow} from '../provider/ADataProvider';
+import DataProvider, {IDataRow, default as ADataProvider} from '../provider/ADataProvider';
 import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
 
 export interface ISlicer {
@@ -81,6 +81,9 @@ export enum ERenderReason {
 }
 
 abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
+  static EVENT_HOVER_CHANGED = 'hoverChanged';
+  static EVENT_RENDER_FINISHED = 'renderFinished';
+
   protected options: IBodyRendererOptions = {
     rowHeight: 20,
     rowPadding: 1,
@@ -116,7 +119,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   }
 
   createEventList() {
-    return super.createEventList().concat(['hoverChanged', 'renderFinished']);
+    return super.createEventList().concat([ABodyRenderer.EVENT_HOVER_CHANGED, ABodyRenderer.EVENT_RENDER_FINISHED]);
   }
 
   get node() {
@@ -129,11 +132,11 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   changeDataStorage(data: DataProvider) {
     if (this.data) {
-      this.data.on(['dirtyValues.bodyRenderer', 'selectionChanged.bodyRenderer'], null);
+      this.data.on([DataProvider.EVENT_DIRTY_VALUES + '.bodyRenderer', DataProvider.EVENT_SELECTION_CHANGED + '.bodyRenderer'], null);
     }
     this.data = data;
-    data.on('dirtyValues.bodyRenderer', delayedCall(this.update.bind(this), 1));
-    data.on('selectionChanged.bodyRenderer', delayedCall((selection, jumpToFirst) => {
+    data.on(DataProvider.EVENT_DIRTY_VALUES + '.bodyRenderer', delayedCall(this.update.bind(this), 1));
+    data.on(DataProvider.EVENT_SELECTION_CHANGED + '.bodyRenderer', delayedCall((selection, jumpToFirst) => {
       if (jumpToFirst && selection.length > 0) {
         this.jumpToSelection();
       }
@@ -205,7 +208,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   abstract drawSelection();
 
   mouseOver(dataIndex: number, hover = true) {
-    this.fire('hoverChanged', hover ? dataIndex : -1);
+    this.fire(ABodyRenderer.EVENT_HOVER_CHANGED, hover ? dataIndex : -1);
   }
 
 

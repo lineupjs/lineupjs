@@ -36,6 +36,7 @@ function rowGetter(row: any, id: string, desc: any) {
  * common base implementation of a DataProvider with a fixed list of column descriptions
  */
 abstract class ACommonDataProvider extends ADataProvider {
+
   private rankingIndex = 0;
 
   constructor(private columns: IColumnDesc[] = [], options: IDataProviderOptions = {}) {
@@ -47,10 +48,6 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  createEventList() {
-    return super.createEventList().concat(['addDesc']);
-  }
-
   /**
    * adds another column description to this data provider
    * @param column
@@ -60,7 +57,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     d.accessor = d.accessor || rowGetter;
     d.label = column.label || d.column;
     this.columns.push(column);
-    this.fire('addDesc', d);
+    this.fire(ADataProvider.EVENT_ADD_DESC, d);
   }
 
   getColumns(): IColumnDesc[] {

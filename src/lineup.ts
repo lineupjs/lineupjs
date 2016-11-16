@@ -15,7 +15,7 @@ import {
   createBodyRenderer
 } from './ui';
 import {IHeaderRendererOptions} from './ui/HeaderRenderer';
-import {IBodyRendererOptions} from './ui/ABodyRenderer';
+import {IBodyRendererOptions, default as ABodyRenderer} from './ui/ABodyRenderer';
 import {AEventDispatcher, ContentScroller, merge}  from './utils';
 import {scale as d3scale, selection, select, Selection} from 'd3';
 
@@ -91,13 +91,13 @@ export default class LineUp extends AEventDispatcher {
    * triggered when the mouse is over a specific row
    * @argument data_index:number the selected data index or <0 if no row
    */
-  static EVENT_HOVER_CHANGED = 'hoverChanged';
+  static EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
 
   /**
    * triggered when the user click on a row
    * @argument data_index:number the selected data index or <0 if no row
    */
-  static EVENT_SELECTION_CHANGED = 'selectionChanged';
+  static EVENT_SELECTION_CHANGED = DataProvider.EVENT_SELECTION_CHANGED;
 
   /**
    * triggered when the user selects one or more rows
@@ -244,7 +244,7 @@ export default class LineUp extends AEventDispatcher {
     merge(this.config, config);
 
 
-    this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
+    this.data.on(DataProvider.EVENT_SELECTION_CHANGED + '.main', this.triggerSelection.bind(this));
 
     this.header = new HeaderRenderer(data, this.node, merge({}, this.config.header, {
       idPrefix: this.config.idPrefix,
@@ -273,7 +273,7 @@ export default class LineUp extends AEventDispatcher {
         rowHeight: this.config.body.rowHeight,
         topShift: () => this.header.currentHeight()
       });
-      this.contentScroller.on('scroll', (top, left) => {
+      this.contentScroller.on(ContentScroller.EVENT_SCROLL, (top, left) => {
         //in two svg mode propagate horizontal shift
         //console.log(top, left,'ss');
         this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
@@ -282,7 +282,7 @@ export default class LineUp extends AEventDispatcher {
           this.body.updateFreeze(left);
         }
       });
-      this.contentScroller.on('redraw', this.body.scrolled.bind(this.body));
+      this.contentScroller.on(ContentScroller.EVENT_REDRAW, this.body.scrolled.bind(this.body));
     }
   }
 
@@ -352,13 +352,13 @@ export default class LineUp extends AEventDispatcher {
 
   changeDataStorage(data: DataProvider, dump?: any) {
     if (this.data) {
-      this.data.on('selectionChanged.main', null);
+      this.data.on(DataProvider.EVENT_SELECTION_CHANGED + '.main', null);
     }
     this.data = data;
     if (dump) {
       this.data.restore(dump);
     }
-    this.data.on('selectionChanged.main', this.triggerSelection.bind(this));
+    this.data.on(DataProvider.EVENT_SELECTION_CHANGED + '.main', this.triggerSelection.bind(this));
     this.header.changeDataStorage(data);
     this.body.changeDataStorage(data);
     this.pools.forEach((p) => p.changeDataStorage(data));
@@ -394,7 +394,7 @@ export default class LineUp extends AEventDispatcher {
     this.body.update();
     this.pools.forEach((p) => p.update());
 
-    this.body.on('renderFinished', () => {
+    this.body.on(ABodyRenderer.EVENT_RENDER_FINISHED+'.main', () => {
       waitForBodyRenderer -= 1;
       if (waitForBodyRenderer === 0) {
         this.fire(LineUp.EVENT_UPDATE_FINISHED);

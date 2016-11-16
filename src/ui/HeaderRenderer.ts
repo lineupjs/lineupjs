@@ -15,7 +15,14 @@ import StackColumn from '../model/StackColumn';
 import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
-import {filterDialogs, openEditWeightsDialog, openEditLinkDialog, openEditScriptDialog, openRenameDialog, openSearchDialog} from '../ui_dialogs';
+import {
+  filterDialogs,
+  openEditWeightsDialog,
+  openEditLinkDialog,
+  openEditScriptDialog,
+  openRenameDialog,
+  openSearchDialog
+} from '../ui_dialogs';
 import ADataProvider from "../provider/ADataProvider";
 
 /**
@@ -63,7 +70,7 @@ export interface IHeaderRendererOptions {
 
 
 export default class HeaderRenderer {
-  private options :IHeaderRendererOptions = {
+  private options: IHeaderRendererOptions = {
     idPrefix: '',
     slopeWidth: 150,
     columnPadding: 5,
@@ -145,17 +152,16 @@ export default class HeaderRenderer {
 
   changeDataStorage(data: DataProvider) {
     if (this.data) {
-      this.data.on(['dirtyHeader.headerRenderer', 'orderChanged.headerRenderer', 'selectionChanged.headerRenderer'], null);
+      this.data.on([DataProvider.EVENT_DIRTY_HEADER + '.headerRenderer', DataProvider.EVENT_ORDER_CHANGED + '.headerRenderer', DataProvider.EVENT_SELECTION_CHANGED + '.headerRenderer'], null);
     }
     this.data = data;
-    data.on('dirtyHeader.headerRenderer', delayedCall(this.update.bind(this), 1));
+    data.on(DataProvider.EVENT_DIRTY_HEADER + '.headerRenderer', delayedCall(this.update.bind(this), 1));
     if (this.options.histograms) {
-      data.on('orderChanged.headerRenderer', () => {
+      data.on(DataProvider.EVENT_ORDER_CHANGED + '.headerRenderer', () => {
         this.updateHist();
         this.update();
       });
-      data.on('selectionChanged.headerRenderer', delayedCall(this.drawSelection.bind(this), 1));
-
+      data.on(DataProvider.EVENT_SELECTION_CHANGED + '.headerRenderer', delayedCall(this.drawSelection.bind(this), 1));
     }
   }
 
@@ -252,7 +258,7 @@ export default class HeaderRenderer {
     const that = this;
     const rankings = this.data.getRankings();
 
-    var shifts : IFlatColumn[] = [], offset = 0, rankingOffsets = [];
+    var shifts: IFlatColumn[] = [], offset = 0, rankingOffsets = [];
     rankings.forEach((ranking) => {
       offset += ranking.flatten(shifts, offset, 1, this.options.columnPadding) + this.options.slopeWidth;
       rankingOffsets.push(offset - this.options.slopeWidth);
@@ -397,12 +403,12 @@ export default class HeaderRenderer {
     const that = this;
     const $headers = $base.selectAll('div.' + clazz).data(columns, (d) => d.id);
     const $headers_enter = $headers.enter().append('div').attr('class', clazz)
-    .on('click', (d) => {
-      const mevent = <MouseEvent>d3.event;
-      if (this.options.manipulative && !mevent.defaultPrevented && mevent.currentTarget === mevent.target) {
-        d.toggleMySorting();
-      }
-    });
+      .on('click', (d) => {
+        const mevent = <MouseEvent>d3.event;
+        if (this.options.manipulative && !mevent.defaultPrevented && mevent.currentTarget === mevent.target) {
+          d.toggleMySorting();
+        }
+      });
     const $header_enter_div = $headers_enter.append('div').classed('lu-label', true)
       .on('click', (d) => {
         const mevent = <MouseEvent>d3.event;

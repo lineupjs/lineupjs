@@ -19,7 +19,7 @@ import ACommonDataProvider from './ACommonDataProvider';
  * @param range the total value range
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  */
-function computeStats(arr: any[], acc: (row:any) => number, range?: [number, number]): IStatistics {
+function computeStats(arr: any[], acc: (row: any) => number, range?: [number, number]): IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -53,7 +53,7 @@ function computeStats(arr: any[], acc: (row:any) => number, range?: [number, num
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
  */
-function computeHist(arr: IDataRow[], acc: (row:any) => string[], categories: string[]): ICategoricalStatistics {
+function computeHist(arr: IDataRow[], acc: (row: any) => string[], categories: string[]): ICategoricalStatistics {
   const m = new Map<string,number>();
   categories.forEach((cat) => m.set(cat, 0));
 
@@ -104,7 +104,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   private reorderall;
 
-  constructor(public data: any[], columns: IColumnDesc[] = [], options : ILocalDataProviderOptions & IDataProviderOptions= {}) {
+  constructor(public data: any[], columns: IColumnDesc[] = [], options: ILocalDataProviderOptions & IDataProviderOptions = {}) {
     super(columns, options);
     merge(this.options, options);
     //enhance with a magic attribute storing ranking information
@@ -180,7 +180,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     }
 
     if (this.options.filterGlobally) {
-      new_.on('filterChanged.reorderall', this.reorderall);
+      new_.on(Column.EVENT_FILTER_CHANGED + '.reorderall', this.reorderall);
     }
 
     return new_;
@@ -188,7 +188,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   cleanUpRanking(ranking: Ranking) {
     if (this.options.filterGlobally) {
-      ranking.on('filterChanged.reorderall', null);
+      ranking.on(Column.EVENT_FILTER_CHANGED + '.reorderall', null);
     }
     //delete all stored information
     this.data.forEach((d) => delete d._rankings[ranking.id]);
@@ -236,7 +236,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   fetch(orders: number[][]): Promise<IDataRow>[][] {
     const l = this.data.length;
-    return orders.map((order) => order.filter((i) => i >= 0 && i < l).map((index) => Promise.resolve({v:this.data[index], dataIndex: index})));
+    return orders.map((order) => order.filter((i) => i >= 0 && i < l).map((index) => Promise.resolve({
+      v: this.data[index],
+      dataIndex: index
+    })));
   }
 
   /**

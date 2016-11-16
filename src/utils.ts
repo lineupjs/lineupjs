@@ -107,7 +107,6 @@ export class AEventDispatcher {
 }
 
 const TYPE_OBJECT = '[object Object]';
-const TYPE_ARRAY = '[object Array]';
 
 //credits to https://github.com/vladmiller/dextend/blob/master/lib/dextend.js
 export function merge(...args:any[]) {
@@ -132,7 +131,7 @@ export function merge(...args:any[]) {
           result[keyName] = {};
         }
         result[keyName] = merge(result[keyName], value);
-      } else if (Object.prototype.toString.call(value) === TYPE_ARRAY) {
+      } else if (Array.isArray(value)) {
         if (result[keyName] === undefined) {
           result[keyName] = [];
         }
@@ -167,6 +166,9 @@ export function offset(element) {
  * a class for efficiently selecting a range of data items that are currently visible according to the scrolled position
  */
 export class ContentScroller extends AEventDispatcher {
+  static EVENT_SCROLL = 'scroll';
+  static EVENT_REDRAW = 'redraw';
+
   private options = {
     /**
      * shift that should be used for calculating the top position
@@ -211,7 +213,7 @@ export class ContentScroller extends AEventDispatcher {
    * @returns {string[]}
    */
   createEventList() {
-    return super.createEventList().concat(['scroll', 'redraw']);
+    return super.createEventList().concat([ContentScroller.EVENT_REDRAW, ContentScroller.EVENT_SCROLL]);
   }
 
   scrollIntoView(start: number, length: number, index: number, row2y:(i:number) => number) {
@@ -284,11 +286,11 @@ export class ContentScroller extends AEventDispatcher {
     var left = this.container.scrollLeft;
     //at least one row changed
     //console.log(top, left);
-    this.fire('scroll', top, left);
+    this.fire(ContentScroller.EVENT_SCROLL, top, left);
     if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
       //we scrolled out of our backup rows, so we have to redraw the content
       this.prevScrollTop = top;
-      this.fire('redraw');
+      this.fire(ContentScroller.EVENT_REDRAW);
     }
   }
 
