@@ -24,27 +24,19 @@ export function delayedCall(callback:(...args:any[]) => void, timeToDelay = 100,
 }
 
 /**
- * utility for AEventDispatcher to forward an event
- * @param to
- * @param event
- * @return {function(...[any]): undefined}
- */
-export function forwardEvent(to:AEventDispatcher, event?:string) {
-  return function (...args:any[]) {
-    args.unshift(event || this.type);
-    to.fire.apply(to, args);
-  };
-}
-
-/**
  * base class for event dispatching using d3 event mechanism
  */
 export class AEventDispatcher {
   private listeners:Dispatch;
-  private forwarder = forwardEvent(this);
+  private forwarder;
 
   constructor() {
     this.listeners = dispatch(...this.createEventList());
+
+    const that = this;
+    this.forwarder = function(...args:any[]) {
+      that.fire(this.type, ...args);
+    }
   }
 
   on(type:string):(...args:any[]) => void;
@@ -65,11 +57,11 @@ export class AEventDispatcher {
    * return the list of events to be able to dispatch
    * @return {Array}
    */
-  createEventList():string[] {
+  protected createEventList():string[] {
     return [];
   }
 
-  fire(type:string|string[], ...args:any[]) {
+  protected fire(type:string|string[], ...args:any[]) {
     var fireImpl = (t) => {
       //local context per event, set a this argument
       var context = {
@@ -88,11 +80,11 @@ export class AEventDispatcher {
 
   /**
    * forwards one or more events from a given dispatcher to the current one
-   * i.e. when one of the given events is fired in 'from' it will be forwared to all my listeners
+   * i.e. when one of the given events is fired in 'from' it will be forwarded to all my listeners
    * @param from the event dispatcher to forward from
    * @param types the event types to forward
    */
-  forward(from:AEventDispatcher, ...types:string[]) {
+  protected forward(from:AEventDispatcher, ...types:string[]) {
     from.on(types, this.forwarder);
   }
 
@@ -101,7 +93,7 @@ export class AEventDispatcher {
    * @param from
    * @param types
    */
-  unforward(from:AEventDispatcher, ...types:string[]) {
+  protected unforward(from:AEventDispatcher, ...types:string[]) {
     from.on(types, null);
   }
 }
@@ -212,7 +204,7 @@ export class ContentScroller extends AEventDispatcher {
    *
    * @returns {string[]}
    */
-  createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([ContentScroller.EVENT_REDRAW, ContentScroller.EVENT_SCROLL]);
   }
 

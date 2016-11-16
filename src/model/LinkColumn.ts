@@ -16,7 +16,7 @@ export default class LinkColumn extends StringColumn {
    */
   private link = null;
 
-  constructor(id:string, desc:any) {
+  constructor(id: string, desc: any) {
     super(id, desc);
     this.link = desc.link;
   }
@@ -25,7 +25,7 @@ export default class LinkColumn extends StringColumn {
     return this.link == null ? 'link' : 'link link_pattern';
   }
 
-  createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([LinkColumn.EVENT_LINK_CHANGED]);
   }
 
@@ -42,7 +42,7 @@ export default class LinkColumn extends StringColumn {
     return this.link || '';
   }
 
-  dump(toDescRef:(desc:any) => any):any {
+  dump(toDescRef: (desc: any) => any): any {
     var r = super.dump(toDescRef);
     /* tslint:disable */
     if (this.link != (<any>this.desc).link) {
@@ -52,15 +52,15 @@ export default class LinkColumn extends StringColumn {
     return r;
   }
 
-  restore(dump:any, factory:(dump:any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column) {
     super.restore(dump, factory);
     if (dump.link) {
       this.link = dump.link;
     }
   }
 
-  getLabel(row:any) {
-    var v:any = super.getRaw(row);
+  getLabel(row: any) {
+    var v: any = super.getRaw(row);
     if (v && v.alt) {
       return v.alt;
     }
@@ -72,14 +72,14 @@ export default class LinkColumn extends StringColumn {
       return true;
     }
     //get original value
-    var v:any = super.getRaw(row);
+    var v: any = super.getRaw(row);
     //convert to link
     return v && v.href != null;
   }
 
-  getValue(row:any) {
+  getValue(row: any) {
     //get original value
-    var v:any = super.getRaw(row);
+    var v: any = super.getRaw(row);
     //convert to link
     if (v && v.href) {
       return v.href;

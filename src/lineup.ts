@@ -286,7 +286,7 @@ export default class LineUp extends AEventDispatcher {
     }
   }
 
-  createEventList() {
+ protected createEventList() {
     return super.createEventList().concat([LineUp.EVENT_HOVER_CHANGED, LineUp.EVENT_SELECTION_CHANGED, LineUp.EVENT_MULTISELECTION_CHANGED, LineUp.EVENT_UPDATE_START, LineUp.EVENT_UPDATE_FINISHED]);
   }
 

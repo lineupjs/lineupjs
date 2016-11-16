@@ -12,7 +12,7 @@ import ValueColumn from './ValueColumn';
  * @param col
  * @returns {boolean}
  */
-export function isNumberColumn(col:Column|IColumnDesc) {
+export function isNumberColumn(col: Column|IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }
 
@@ -26,7 +26,7 @@ function isMissingValue(v: any) {
  * @param b
  * @return {number}
  */
-export function numberCompare(a:number, b:number) {
+export function numberCompare(a: number, b: number) {
   if (isNaN(a)) { //NaN are bigger
     return isNaN(b) ? 0 : +1;
   }
@@ -38,20 +38,20 @@ export function numberCompare(a:number, b:number) {
 
 
 export interface INumberColumn {
-  getNumber(row:any): number;
+  getNumber(row: any): number;
 }
 
 /**
  * interface of a d3 scale
  */
 export interface IScale {
-  (v:number): number;
+  (v: number): number;
 
-  domain():number[];
-  domain(domain:number[]);
+  domain(): number[];
+  domain(domain: number[]);
 
-  range():number[];
-  range(range:number[]);
+  range(): number[];
+  range(range: number[]);
 }
 
 export interface IMappingFunction {
@@ -76,7 +76,7 @@ export interface INumberFilter {
   filterMissing: boolean;
 }
 
-function toScale(type = 'linear'):IScale {
+function toScale(type = 'linear'): IScale {
   switch (type) {
     case 'log':
       return scale.log().clamp(true);
@@ -111,10 +111,10 @@ function fixDomain(domain: number[], type: string) {
  * a mapping function based on a d3 scale (linear, sqrt, log)
  */
 export class ScaleMappingFunction implements IMappingFunction {
-  private s:IScale;
+  private s: IScale;
 
-  constructor(domain:number[] = [0,1], private type = 'linear', range : number[] = [0,1]) {
-    this.s = toScale(type).domain(fixDomain(domain,this.type)).range(range);
+  constructor(domain: number[] = [0, 1], private type = 'linear', range: number[] = [0, 1]) {
+    this.s = toScale(type).domain(fixDomain(domain, this.type)).range(range);
   }
 
   get domain() {
@@ -122,7 +122,7 @@ export class ScaleMappingFunction implements IMappingFunction {
   }
 
   set domain(domain: number[]) {
-    this.s.domain(fixDomain(domain,this.type));
+    this.s.domain(fixDomain(domain, this.type));
   }
 
   get range() {
@@ -133,7 +133,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     this.s.range(range);
   }
 
-  apply(v:number):number {
+  apply(v: number): number {
     return this.s(v);
   }
 
@@ -141,7 +141,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     return this.type;
   }
 
-  dump():any {
+  dump(): any {
     return {
       type: this.type,
       domain: this.domain,
@@ -157,7 +157,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     return that.type === this.type && isSame(this.domain, that.domain) && isSame(this.range, that.range);
   }
 
-  restore(dump:any) {
+  restore(dump: any) {
     this.type = dump.type;
     this.s = toScale(dump.type).domain(dump.domain).range(dump.range);
   }
@@ -171,9 +171,9 @@ export class ScaleMappingFunction implements IMappingFunction {
  * a mapping function based on a custom user function using 'value' as the current value
  */
 export class ScriptMappingFunction implements IMappingFunction {
-  private f:Function;
+  private f: Function;
 
-  constructor(private domain_:number[] = [0,1], private code_:string = 'return this.linear(value,this.value_min,this.value_max);') {
+  constructor(private domain_: number[] = [0, 1], private code_: string = 'return this.linear(value,this.value_min,this.value_max);') {
     this.f = new Function('value', code_);
   }
 
@@ -197,15 +197,15 @@ export class ScriptMappingFunction implements IMappingFunction {
     this.f = new Function('value', code);
   }
 
-  apply(v:number):number {
+  apply(v: number): number {
     const min = this.domain_[0],
-      max = this.domain_[this.domain_.length-1];
+      max = this.domain_[this.domain_.length - 1];
     const r = this.f.call({
       value_min: min,
       value_max: max,
       value_range: max - min,
       value_domain: this.domain_.slice(),
-      linear : (v, mi, ma) => (v-mi)/(ma-mi)
+      linear: (v, mi, ma) => (v - mi) / (ma - mi)
     }, v);
 
     if (typeof r === 'number') {
@@ -214,7 +214,7 @@ export class ScriptMappingFunction implements IMappingFunction {
     return NaN;
   }
 
-  dump():any {
+  dump(): any {
     return {
       type: 'script',
       code: this.code
@@ -229,7 +229,7 @@ export class ScriptMappingFunction implements IMappingFunction {
     return that.code === this.code;
   }
 
-  restore(dump:any) {
+  restore(dump: any) {
     this.code = dump.code;
   }
 
@@ -260,26 +260,26 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   missingValue = 0;
 
-  private mapping : IMappingFunction;
+  private mapping: IMappingFunction;
 
-  private original : IMappingFunction;
+  private original: IMappingFunction;
 
   /**
    * currently active filter
    * @type {{min: number, max: number}}
    * @private
    */
-  private currentFilter : INumberFilter = NumberColumn.noFilter();
+  private currentFilter: INumberFilter = NumberColumn.noFilter();
 
-  private numberFormat : (n: number) => string = format('.3n');
+  private numberFormat: (n: number) => string = format('.3n');
 
-  constructor(id:string, desc:any) {
+  constructor(id: string, desc: any) {
     super(id, desc);
 
     if (desc.map) {
       this.mapping = createMappingFunction(desc.map);
     } else if (desc.domain) {
-      this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0,1]);
+      this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
     }
     this.original = this.mapping.clone();
 
@@ -288,7 +288,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
   }
 
-  init(callback:(desc:IColumnDesc) => Promise<IStatistics>):Promise<boolean> {
+  init(callback: (desc: IColumnDesc) => Promise<IStatistics>): Promise<boolean> {
 
     var d = this.mapping.domain;
     //if any of the values is not given use the statistics to compute them
@@ -302,7 +302,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return Promise.resolve(true);
   }
 
-  dump(toDescRef:(desc:any) => any) {
+  dump(toDescRef: (desc: any) => any) {
     var r = super.dump(toDescRef);
     r.map = this.mapping.dump();
     r.filter = this.currentFilter;
@@ -310,12 +310,12 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return r;
   }
 
-  restore(dump:any, factory:(dump:any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column) {
     super.restore(dump, factory);
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);
     } else if (dump.domain) {
-      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0,1]);
+      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
     if (dump.currentFilter) {
       this.currentFilter = dump.currentFilter;
@@ -328,11 +328,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
   }
 
-  createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED]);
   }
 
-  getLabel(row:any) {
+  getLabel(row: any) {
     if ((<any>this.desc).numberFormat) {
       let raw = this.getRawValue(row);
       //if a dedicated format and a number use the formatter in any case
@@ -349,15 +349,15 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return String(v);
   }
 
-  getRawValue(row:any) {
-    var v:any = super.getValue(row);
+  getRawValue(row: any) {
+    var v: any = super.getValue(row);
     if (isMissingValue(v)) {
       return this.missingValue;
     }
     return +v;
   }
 
-  getValue(row:any) {
+  getValue(row: any) {
     var v = this.getRawValue(row);
     if (isNaN(v)) {
       return v;
@@ -365,11 +365,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.mapping.apply(v);
   }
 
-  getNumber(row:any) {
+  getNumber(row: any) {
     return this.getValue(row);
   }
 
-  compare(a:any, b:any) {
+  compare(a: any, b: any) {
     return numberCompare(this.getValue(a), this.getValue(b));
   }
 
@@ -412,13 +412,13 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     };
   }
 
-  set filterMin(min:number) {
+  set filterMin(min: number) {
     const bak = this.getFilter();
     this.currentFilter.min = isNaN(min) ? -Infinity : min;
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
-  set filterMax(max:number) {
+  set filterMax(max: number) {
     const bak = this.getFilter();
     this.currentFilter.max = isNaN(max) ? Infinity : max;
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
@@ -430,12 +430,12 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
-  setFilter(value: INumberFilter= {min: -Infinity, max: +Infinity, filterMissing: false}) {
+  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
     if (this.currentFilter.min === value.min && this.currentFilter.max === value.max && this.currentFilter.filterMissing === value.filterMissing) {
       return;
     }
     const bak = this.getFilter();
-    this.currentFilter.min = isNaN(value.min) ? -Infinity :value. min;
+    this.currentFilter.min = isNaN(value.min) ? -Infinity : value.min;
     this.currentFilter.max = isNaN(value.max) ? Infinity : value.max;
     this.currentFilter.filterMissing = value.filterMissing;
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
@@ -446,11 +446,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    * @param row
    * @returns {boolean}
    */
-  filter(row:any) {
+  filter(row: any) {
     if (!this.isFiltered()) {
       return true;
     }
-    const v:any = super.getValue(row);
+    const v: any = super.getValue(row);
     if (isMissingValue(v)) {
       return !this.filterMissing;
     }

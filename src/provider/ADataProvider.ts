@@ -129,7 +129,7 @@ abstract class ADataProvider extends AEventDispatcher {
    *  * selectionChanged
    * @returns {string[]}
    */
-  createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([
       ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN,
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,

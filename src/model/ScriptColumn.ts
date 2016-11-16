@@ -26,7 +26,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
     this.script = desc.script || this.script;
   }
 
-  createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([ScriptColumn.EVENT_SCRIPT_CHANGED]);
   }
 

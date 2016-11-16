@@ -40,7 +40,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     };
   }
 
-  createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([StackColumn.EVENT_COLLAPSE_CHANGED, StackColumn.EVENT_WEIGHTS_CHANGED]);
   }
 

@@ -25,7 +25,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     this.setCompressed(true);
   }
 
-  createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([SelectionColumn.EVENT_SELECT]);
   }
 

@@ -118,7 +118,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     this.changeDataStorage(data);
   }
 
-  createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([ABodyRenderer.EVENT_HOVER_CHANGED, ABodyRenderer.EVENT_RENDER_FINISHED]);
   }
 

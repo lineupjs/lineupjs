@@ -45,7 +45,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     }
   }
 
-  createEventList() {
+ protected createEventList() {
     return super.createEventList().concat([CategoricalNumberColumn.EVENT_MAPPING_CHANGED]);
   }
 

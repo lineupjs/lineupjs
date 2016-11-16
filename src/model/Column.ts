@@ -175,7 +175,7 @@ export default class Column extends AEventDispatcher {
    *  * dirty, dirtyHeader, dirtyValues
    * @returns {string[]}
    */
-  createEventList() {
+ protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
       Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,

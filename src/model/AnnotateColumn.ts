@@ -17,7 +17,7 @@ export default class AnnotateColumn extends StringColumn {
     super(id, desc);
   }
 
-  createEventList() {
+ protected createEventList() {
     return super.createEventList().concat([AnnotateColumn.EVENT_VALUE_CHANGED]);
   }
 

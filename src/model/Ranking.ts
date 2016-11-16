@@ -76,7 +76,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     this.id = fixCSS(id);
   }
 
-  createEventList() {
+  protected createEventList() {
     return super.createEventList().concat([
       Ranking.EVENT_WIDTH_CHANGED, Ranking.EVENT_FILTER_CHANGED,
       Ranking.EVENT_LABEL_CHANGED, Ranking.EVENT_COMPRESS_CHANGED,
