@@ -394,7 +394,7 @@ export default class LineUp extends AEventDispatcher {
     this.body.update();
     this.pools.forEach((p) => p.update());
 
-    this.body.on(ABodyRenderer.EVENT_RENDER_FINISHED+'.main', () => {
+    this.body.on(ABodyRenderer.EVENT_RENDER_FINISHED + '.main', () => {
       waitForBodyRenderer -= 1;
       if (waitForBodyRenderer === 0) {
         this.fire(LineUp.EVENT_UPDATE_FINISHED);

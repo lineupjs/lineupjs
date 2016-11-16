@@ -300,7 +300,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
 
     this.renderSlopeGraphs(ctx, data, context);
 
-    this.renderRankings(ctx, data, context).then(() => {
+    return this.renderRankings(ctx, data, context).then(() => {
       ctx.restore();
     });
   }

@@ -166,6 +166,10 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     return this.options.meanLine && isNumberColumn(col) && !col.getCompressed() && col.parent instanceof Ranking;
   }
 
+  private fireFinished() {
+    this.fire(ABodyRenderer.EVENT_RENDER_FINISHED, this);
+  }
+
   protected createContext(index_shift: number, creator: (col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IRenderContext<any>)=> any): IBodyRenderContext {
     const options = this.options;
 
@@ -278,12 +282,12 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     //one to often
     totalWidth -= this.options.slopeWidth;
 
-    this.updateImpl(rdata, context, totalWidth, height, reason);
+    this.updateImpl(rdata, context, totalWidth, height, reason).then(this.fireFinished.bind(this));
   }
 
   protected abstract createContextImpl(index_shift: number): IBodyRenderContext;
 
-  protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason);
+  protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason): Promise<void>;
 }
 
 export default ABodyRenderer;

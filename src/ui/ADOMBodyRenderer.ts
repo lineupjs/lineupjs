@@ -45,7 +45,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     return $rows;
   }
 
-  renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
+  renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number): Promise<void> {
     const that = this;
     const domMapping = this.domMapping;
     const g = this.domMapping.g;
@@ -60,6 +60,8 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     //animated shift
     this.animated($rankings).call(domMapping.transform, (d, i) => [d.shift, 0]);
 
+
+    const toWait: Promise<any>[] = [];
     {
       let $rows = $rankings.select(g + '.rows').selectAll(g + '.row').data((d) => d.order, String);
       let $rows_enter = $rows.enter().append(g).attr('class', 'row');
@@ -104,7 +106,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
       const updateColumns = (node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
-        r.data[i].then((row) => {
+        return r.data[i].then((row) => {
           matchColumns(node, columns);
           columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
@@ -116,13 +118,13 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
       //update columns
 
       $rows.select(g + '.cols').each(function (d, i, j) {
-        updateColumns(this, data[j], i, data[j].columns);
+        toWait.push(updateColumns(this, data[j], i, data[j].columns));
       });
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
       $rows.select(g + '.frozen').each(function (d, i, j) {
         domMapping.setSize(this, maxFrozen, that.options.rowHeight);
-        updateColumns(this, data[j], i, data[j].frozen);
+        toWait.push(updateColumns(this, data[j], i, data[j].frozen));
       });
       $rows.exit().remove();
     }
@@ -145,6 +147,8 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     }
 
     $rankings.exit().remove();
+
+    return Promise.all(toWait);
   }
 
   select(dataIndex: number, additional = false) {
@@ -239,9 +243,8 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     }
 
     this.renderSlopeGraphs($body, data, context, height);
-    this.renderRankings($body, data, context, height);
-
     this.updateClipPaths(data, context, height);
+    return this.renderRankings($body, data, context, height);
   }
 }
 
