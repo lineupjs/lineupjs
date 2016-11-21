@@ -53,10 +53,10 @@ export default class ScriptColumn extends CompositeNumberColumn {
     super.restore(dump, factory);
   }
 
-  protected compute(row: any) {
+  protected compute(row: any, index: number) {
     if (this.f == null) {
       this.f = new Function('children', 'values', this.script);
     }
-    return this.f.call(this, this._children, this._children.map((d) => d.getValue(row)));
+    return this.f.call(this, this._children, this._children.map((d) => d.getValue(row, index)));
   }
 }

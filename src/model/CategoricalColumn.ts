@@ -11,7 +11,7 @@ export interface ICategoricalColumn {
   categories: string[];
   categoryLabels: string[];
 
-  getCategories(row: any): string[];
+  getCategories(row: any, index: number): string[];
 }
 
 /**
@@ -120,22 +120,22 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.colors(cat);
   }
 
-  getLabel(row: any) {
+  getLabel(row: any, index: number) {
     //no mapping
     if (this.catLabels === null || this.catLabels.size === 0) {
-      return '' + StringColumn.prototype.getValue.call(this, row);
+      return '' + StringColumn.prototype.getValue.call(this, row, index);
     }
-    return this.getLabels(row).join(this.separator);
+    return this.getLabels(row, index).join(this.separator);
   }
 
-  getFirstLabel(row: any) {
-    const l = this.getLabels(row);
+  getFirstLabel(row: any, index: number) {
+    const l = this.getLabels(row, index);
     return l.length > 0 ? l[0] : null;
   }
 
 
-  getLabels(row: any) {
-    var v = StringColumn.prototype.getValue.call(this, row);
+  getLabels(row: any, index:number) {
+    var v = StringColumn.prototype.getValue.call(this, row, index);
     const r = v ? v.split(this.separator) : [];
 
     const mapToLabel = (values: string[]) => {
@@ -147,31 +147,31 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return mapToLabel(r);
   }
 
-  getValue(row: any) {
-    const r = this.getValues(row);
+  getValue(row: any, index: number) {
+    const r = this.getValues(row, index);
     return r.length > 0 ? r[0] : null;
   }
 
-  getValues(row: any) {
-    var v = StringColumn.prototype.getValue.call(this, row);
+  getValues(row: any, index: number) {
+    var v = StringColumn.prototype.getValue.call(this, row, index);
     const r = v ? v.split(this.separator) : [];
     return r;
   }
 
-  getCategories(row: any) {
-    return this.getValues(row);
+  getCategories(row: any, index: number) {
+    return this.getValues(row, index);
   }
 
-  getColor(row: any) {
-    var cat = this.getValue(row);
+  getColor(row: any, index: number) {
+    var cat = this.getValue(row, index);
     if (cat === null || cat === '') {
       return null;
     }
     return this.colors(cat);
   }
 
-  getColors(row: any) {
-    return this.getCategories(row).map(this.colors);
+  getColors(row: any, index: number) {
+    return this.getCategories(row, index).map(this.colors);
   }
 
   dump(toDescRef: (desc: any) => any): any {
@@ -205,11 +205,11 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter != null;
   }
 
-  filter(row: any): boolean {
+  filter(row: any, index: number): boolean {
     if (!this.isFiltered()) {
       return true;
     }
-    var vs = this.getCategories(row),
+    var vs = this.getCategories(row, index),
       filter: any = this.currentFilter;
     return vs.every((v) => {
       if (Array.isArray(filter) && filter.length > 0) { //array mode
@@ -234,9 +234,9 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a: any, b: any) {
-    const va = this.getValues(a);
-    const vb = this.getValues(b);
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
+    const va = this.getValues(a, aIndex);
+    const vb = this.getValues(b, bIndex);
     //check all categories
     for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
       let ci = ascending(va[i], vb[i]);

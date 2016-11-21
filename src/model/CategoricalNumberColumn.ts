@@ -70,39 +70,39 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.colors(cat);
   }
 
-  getLabel(row: any) {
-    return CategoricalColumn.prototype.getLabel.call(this, row);
+  getLabel(row: any, index: number) {
+    return CategoricalColumn.prototype.getLabel.call(this, row, index);
   }
 
-  getFirstLabel(row: any) {
-    return CategoricalColumn.prototype.getFirstLabel.call(this, row);
+  getFirstLabel(row: any, index: number) {
+    return CategoricalColumn.prototype.getFirstLabel.call(this, row, index);
   }
 
-  getLabels(row: any) {
-    return CategoricalColumn.prototype.getLabels.call(this, row);
+  getLabels(row: any, index: number) {
+    return CategoricalColumn.prototype.getLabels.call(this, row, index);
   }
 
-  getValue(row: any) {
-    const r = this.getValues(row);
+  getValue(row: any, index: number) {
+    const r = this.getValues(row, index);
     return r.length > 0 ? this.combiner(r) : 0;
   }
 
-  getValues(row: any) {
-    const r = CategoricalColumn.prototype.getValues.call(this, row);
+  getValues(row: any, index: number) {
+    const r = CategoricalColumn.prototype.getValues.call(this, row, index);
     return r.map(this.scale);
   }
 
-  getCategories(row: any) {
-    return CategoricalColumn.prototype.getValues.call(this, row);
+  getCategories(row: any, index: number) {
+    return CategoricalColumn.prototype.getValues.call(this, row, index);
   }
 
-  getNumber(row: any) {
-    return this.getValue(row);
+  getNumber(row: any, index: number) {
+    return this.getValue(row, index);
   }
 
-  getColor(row: any) {
-    const vs = this.getValues(row);
-    const cs = this.getColors(row);
+  getColor(row: any, index: number) {
+    const vs = this.getValues(row, index);
+    const cs = this.getColors(row, index);
     if (this.combiner === d3max) {
       //use the max color
       return cs.slice(1).reduce((prev, act, i) => vs[i + 1] > prev.v ? {c: act, v: vs[i + 1]} : prev, {
@@ -121,8 +121,8 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     }
   }
 
-  getColors(row) {
-    return CategoricalColumn.prototype.getColors.call(this, row);
+  getColors(row: any, index: number) {
+    return CategoricalColumn.prototype.getColors.call(this, row, index);
   }
 
   dump(toDescRef: (desc: any) => any): any {
@@ -164,8 +164,8 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.currentFilter != null;
   }
 
-  filter(row: any): boolean {
-    return CategoricalColumn.prototype.filter.call(this, row);
+  filter(row: any, index: number): boolean {
+    return CategoricalColumn.prototype.filter.call(this, row, index);
   }
 
   getFilter() {
@@ -179,7 +179,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a: any, b: any) {
-    return NumberColumn.prototype.compare.call(this, a, b);
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
+    return NumberColumn.prototype.compare.call(this, a, b, aIndex, bIndex);
   }
 }

@@ -8,7 +8,7 @@ import Ranking from './Ranking';
  * a column having an accessor to get the cell value
  */
 export default class ValueColumn<T> extends Column {
-  protected accessor: (row: any, id: string, desc: any, ranking: Ranking) => T;
+  protected accessor: (row: any, number: number, id: string, desc: any, ranking: Ranking) => T;
 
   constructor(id: string, desc: any) {
     super(id, desc);
@@ -16,19 +16,15 @@ export default class ValueColumn<T> extends Column {
     this.accessor = desc.accessor || (() => null);
   }
 
-  getLabel(row: any) {
-    return '' + this.getValue(row);
+  getLabel(row: any, index: number) {
+    return '' + this.getValue(row, index);
   }
 
-  getRaw(row: any) {
-    return this.accessor(row, this.id, this.desc, this.findMyRanker());
+  getRaw(row: any, index: number) {
+    return this.accessor(row, index, this.id, this.desc, this.findMyRanker());
   }
 
-  getValue(row: any) {
-    return this.getRaw(row);
-  }
-
-  compare(a: any, b: any) {
-    return 0; //can't compare
+  getValue(row: any, index: number) {
+    return this.getRaw(row, index);
   }
 }

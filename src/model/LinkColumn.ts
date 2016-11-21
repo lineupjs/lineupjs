@@ -59,27 +59,27 @@ export default class LinkColumn extends StringColumn {
     }
   }
 
-  getLabel(row: any) {
-    var v: any = super.getRaw(row);
+  getLabel(row: any, index: number) {
+    var v: any = super.getRaw(row, index);
     if (v && v.alt) {
       return v.alt;
     }
     return '' + v;
   }
 
-  isLink(row: any) {
+  isLink(row: any, index: number) {
     if (this.link) {
       return true;
     }
     //get original value
-    var v: any = super.getRaw(row);
+    var v: any = super.getRaw(row, index);
     //convert to link
     return v && v.href != null;
   }
 
-  getValue(row: any) {
+  getValue(row: any, index:number) {
     //get original value
-    var v: any = super.getRaw(row);
+    var v: any = super.getRaw(row, index);
     //convert to link
     if (v && v.href) {
       return v.href;

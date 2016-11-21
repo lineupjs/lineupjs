@@ -284,15 +284,15 @@ abstract class ADataProvider extends AEventDispatcher {
     return 'col' + (this.uid++);
   }
 
-  protected abstract rankAccessor(row: any, id: string, desc: IColumnDesc, ranking: Ranking);
+  protected abstract rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking);
 
   private fixDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors
     if (desc.type === 'rank') {
       (<any>desc).accessor = this.rankAccessor.bind(this);
     } else if (desc.type === 'selection') {
-      (<any>desc).accessor = (row: any) => this.isSelected(row._index);
-      (<any>desc).setter = (row: any, value: boolean) => value ? this.select(row._index) : this.deselect(row._index);
+      (<any>desc).accessor = (row: any, index: number) => this.isSelected(index);
+      (<any>desc).setter = (row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
     }
   }
 
@@ -732,13 +732,14 @@ abstract class ADataProvider extends AEventDispatcher {
     }
 
     const columns = ranking.flatColumns.filter((c) => op.filter(c.desc));
-    return this.view(ranking.getOrder()).then((data) => {
+    const order = ranking.getOrder();
+    return this.view(order).then((data) => {
       var r = [];
       if (op.header) {
         r.push(columns.map((d) => quote(d.label)).join(op.separator));
       }
-      data.forEach((row) => {
-        r.push(columns.map((c) => quote(c.getLabel(row), c)).join(op.separator));
+      data.forEach((row, i) => {
+        r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(op.separator));
       });
       return r.join(op.newline);
     });

@@ -21,11 +21,11 @@ export default class AnnotateColumn extends StringColumn {
     return super.createEventList().concat([AnnotateColumn.EVENT_VALUE_CHANGED]);
   }
 
-  getValue(row: any) {
-    if (this.annotations.has(row._index)) {
-      return this.annotations.get(row._index);
+  getValue(row: any, index: number) {
+    if (this.annotations.has(index)) {
+      return this.annotations.get(index);
     }
-    return super.getValue(row);
+    return super.getValue(row, index);
   }
 
   dump(toDescRef: (desc: any) => any): any {
@@ -46,17 +46,17 @@ export default class AnnotateColumn extends StringColumn {
     }
   }
 
-  setValue(row: any, value: string) {
-    var old = this.getValue(row);
+  setValue(row: any, index: number, value: string) {
+    var old = this.getValue(row, index);
     if (old === value) {
       return true;
     }
     if (value === '' || value == null) {
-      this.annotations.delete(row._index);
+      this.annotations.delete(index);
     } else {
-      this.annotations.set(row._index, value);
+      this.annotations.set(index, value);
     }
-    this.fire([AnnotateColumn.EVENT_VALUE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], row._index, old, value);
+    this.fire([AnnotateColumn.EVENT_VALUE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], index, old, value);
     return true;
   }
 }

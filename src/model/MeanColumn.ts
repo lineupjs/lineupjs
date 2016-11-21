@@ -16,7 +16,7 @@ export function createDesc(label: string = 'Mean') {
 
 export default class MeanColumn extends CompositeNumberColumn {
 
-  protected compute(row: any) {
-    return d3mean(this._children, (d) => d.getValue(row));
+  protected compute(row: any, index: number) {
+    return d3mean(this._children, (d) => d.getValue(row, index));
   }
 }

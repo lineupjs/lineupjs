@@ -18,15 +18,15 @@ export function createDesc(label: string = 'Max') {
  */
 export default class MaxColumn extends CompositeNumberColumn {
 
-  getColor(row: any) {
+  getColor(row: any, index: number) {
     //compute the index of the maximal one
     const c = this._children;
     if (c.length === 0) {
       return this.color;
     }
-    var max_i = 0, max_v = c[0].getValue(row);
+    var max_i = 0, max_v = c[0].getValue(row, index);
     for (let i = 1; i < c.length; ++i) {
-      let v = c[i].getValue(row);
+      let v = c[i].getValue(row, index);
       if (v > max_v) {
         max_i = i;
         max_v = v;
@@ -35,7 +35,7 @@ export default class MaxColumn extends CompositeNumberColumn {
     return c[max_i].color;
   }
 
-  protected compute(row: any) {
-    return d3max(this._children, (d) => d.getValue(row));
+  protected compute(row: any, index: number) {
+    return d3max(this._children, (d) => d.getValue(row, index));
   }
 }

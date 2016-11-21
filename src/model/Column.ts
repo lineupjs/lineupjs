@@ -148,10 +148,6 @@ export default class Column extends AEventDispatcher {
     this.id = fixCSS(idGenerator());
   }
 
-  init(callback: (desc: IColumnDesc) => Promise<IStatistics>): Promise<boolean> {
-    return Promise.resolve(true);
-  }
-
   /**
    * returns the fully qualified id i.e. path the parent
    * @returns {string}
@@ -343,18 +339,20 @@ export default class Column extends AEventDispatcher {
   /**
    * return the label of a given row for the current column
    * @param row
+   * @param index
    * @return {string}
    */
-  getLabel(row: any): string {
-    return '' + this.getValue(row);
+  getLabel(row: any, index: number): string {
+    return '' + this.getValue(row, index);
   }
 
   /**
    * return the value of a given row for the current column
    * @param row
+   * @param index
    * @return
    */
-  getValue(row: any): any {
+  getValue(row: any, index: number): any {
     return ''; //no value
   }
 
@@ -362,9 +360,11 @@ export default class Column extends AEventDispatcher {
    * compare function used to determine the order according to the values of the current column
    * @param a
    * @param b
+   * @param aIndex,
+   * @param bIndex
    * @return {number}
    */
-  compare(a: any, b: any) {
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
     return 0; //can't compare
   }
 
@@ -381,7 +381,7 @@ export default class Column extends AEventDispatcher {
    * @param row
    * @return {boolean}
    */
-  filter(row: any) {
+  filter(row: any, index: number) {
     return row !== null;
   }
 }

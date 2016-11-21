@@ -2,7 +2,8 @@
  * Created by sam on 04.11.2016.
  */
 
-import {IColumnDesc} from '../model';
+import {IColumnDesc, createRankDesc} from '../model';
+import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
 
 
@@ -24,7 +25,7 @@ function resolveComplex(column: string, row: any) {
   return column.split('.').reduce(resolve, row);
 }
 
-function rowGetter(row: any, id: string, desc: any) {
+function rowGetter(row: any, index: number, id: string, desc: any) {
   var column = desc.column;
   if (isComplexAccessor(column)) {
     return resolveComplex(<string>column, row);
@@ -39,6 +40,12 @@ abstract class ACommonDataProvider extends ADataProvider {
 
   private rankingIndex = 0;
 
+  /**
+   * the local ranking orders
+   * @type {{}}
+   */
+  private ranks = new Map<string, number[]>();
+
   constructor(private columns: IColumnDesc[] = [], options: IDataProviderOptions = {}) {
     super(options);
     //generate the accessor
@@ -47,6 +54,44 @@ abstract class ACommonDataProvider extends ADataProvider {
       d.label = d.label || d.column;
     });
   }
+
+  protected rankAccessor(row: any, index:number, id: string, desc: IColumnDesc, ranking: Ranking) {
+    return (this.ranks[ranking.id].indexOf(index)) + 1;
+  }
+
+  cloneRanking(existing?: Ranking) {
+    var id = this.nextRankingId();
+    var new_ = new Ranking(id);
+
+    if (existing) { //copy the ranking of the other one
+      //copy the ranking
+      this.ranks[id] = this.ranks[existing.id];
+      //TODO better cloning
+      existing.children.forEach((child) => {
+        this.push(new_, child.desc);
+      });
+    } else {
+      new_.push(this.create(createRankDesc()));
+    }
+
+    return new_;
+  }
+
+  cleanUpRanking(ranking: Ranking) {
+    //delete all stored information
+    delete this.ranks[ranking.id];
+  }
+
+  sort(ranking: Ranking): Promise<number[]> {
+    //use the server side to sort
+    return this.sortImpl(ranking).then((argsort) => {
+      //store the result
+      this.ranks[ranking.id] = argsort;
+      return argsort;
+    });
+  }
+
+  protected abstract sortImpl(ranking: Ranking): Promise<number[]>;
 
   /**
    * adds another column description to this data provider
