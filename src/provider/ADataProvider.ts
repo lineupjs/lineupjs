@@ -563,17 +563,6 @@ abstract class ADataProvider extends AEventDispatcher {
   abstract stats(indices: number[]): IStatsBuilder;
 
   /**
-   * method for computing the unique key of a row
-   * @param row
-   * @param i
-   * @return {string}
-   */
-  rowKey(row: any, i: number) {
-    return typeof(row) === 'number' ? String(row) : String(row._index);
-  }
-
-
-  /**
    * is the given row selected
    * @param index
    * @return {boolean}

@@ -242,9 +242,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     //case insensitive search
     search = typeof search === 'string' ? search.toLowerCase() : search;
     const f = typeof search === 'string' ? (v: string) => v.toLowerCase().indexOf((<string>search)) >= 0 : (<RegExp>search).test.bind(search);
-    const indices = this.data.filter((row, i) => {
-      return f(col.getLabel(row, i));
-    }).map((row) => row._index);
+    const indices = d3.range(this.data.length).filter((i) => f(col.getLabel(this.data[i], i)));
     this.setSelection(indices, this.options.jumpToSearchResult);
   }
 

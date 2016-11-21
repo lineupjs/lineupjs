@@ -69,7 +69,6 @@ export default class RemoteDataProvider extends ACommonDataProvider {
       //enhance with the data index
       return view.map((v, i) => {
         const dataIndex = indices[i];
-        v._index = dataIndex;
         return {v, dataIndex};
       });
     });
