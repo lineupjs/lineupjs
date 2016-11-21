@@ -36,7 +36,7 @@ export class AEventDispatcher {
     const that = this;
     this.forwarder = function (...args: any[]) {
       that.fire(this.type, ...args);
-    }
+    };
   }
 
   on(type: string): (...args: any[]) => void;
