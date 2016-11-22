@@ -1,7 +1,0 @@
-{
-  "name": "LineUpJS",
-  "globalDependencies": {
-    "d3": "github:DefinitelyTyped/DefinitelyTyped/d3/d3.d.ts#a1226afe5c4ab96610e088d970eb4f8537b1d116",
-    "es6-promise": "github:DefinitelyTyped/DefinitelyTyped/es6-promise/es6-promise.d.ts#a1226afe5c4ab96610e088d970eb4f8537b1d116"
-  }
-}

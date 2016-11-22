@@ -1,0 +1,19 @@
+@import "colors";
+
+.lu div.lu-body {
+  div.lu-overlay {
+    position: absolute;
+    display: none;
+    padding: 0;
+    margin: 0;
+    z-index: 1;
+
+    &.actions span {
+      cursor: pointer;
+
+      &:hover {
+        color: $lu_body_text_hover_color;
+      }
+    }
+  }
+}

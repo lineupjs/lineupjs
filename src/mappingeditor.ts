@@ -2,48 +2,69 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-///<reference path='../typings/tsd.d.ts' />
-import d3 = require('d3');
-import utils = require('./utils');
-import model = require('./model');
+import {select, scale, behavior, Selection, event as d3event, mouse} from 'd3';
+import {merge} from './utils';
+import {INumberFilter, IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
 
 
 function clamp(v: number, min: number, max: number) {
   return Math.max(Math.min(v, max), min);
 }
 
-export class MappingEditor {
-  private options = {
+function unique(data: number[]) {
+  const s = new Set<number>();
+  data.forEach((d) => s.add(d));
+  const r = [];
+  s.forEach((d) => r.push(d));
+  return r;
+}
+
+export interface IMappingEditorOptions {
+  idPrefix: string;
+  width?: number;
+  height?: number;
+  padding_hor?: number;
+  padding_ver?: number;
+  filter_height?: number;
+  radius?: number;
+  callback?(newscale: IMappingFunction, filter: {min: number, max: number }): void;
+  callbackThisArg?: any;
+  triggerCallback?: string;
+}
+
+export default class MappingEditor {
+  private options : IMappingEditorOptions = {
+    idPrefix: '',
     width: 370,
     height: 225,
     padding_hor: 7,
     padding_ver: 7,
     filter_height: 20,
     radius: 5,
-    callback: (d)=>d,
+    callback: ()=>undefined,
     callbackThisArg: null,
     triggerCallback: 'change' //change, dragend
   };
 
-  private computeFilter: ()=>model.INumberFilter;
+  private computeFilter: ()=>INumberFilter;
 
-  constructor(private parent: HTMLElement, private scale_: model.IMappingFunction, private original: model.IMappingFunction, private old_filter: model.INumberFilter, private dataPromise: Promise<number[]>, options: any = {}) {
-    utils.merge(this.options, options);
+  constructor(private parent: HTMLElement, private scale_: IMappingFunction, private original: IMappingFunction, private old_filter: INumberFilter, private dataPromise: Promise<number[]>, options: IMappingEditorOptions) {
+    merge(this.options, options);
     //work on a local copy
     this.scale_ = scale_.clone();
 
-    this.build(d3.select(parent));
+    this.build(select(parent));
   }
 
   get scale() {
     return this.scale_;
   }
 
-  get filter(): model.INumberFilter {
+  get filter(): INumberFilter {
     return this.computeFilter();
   }
 
-  private build($root: d3.Selection<any>) {
+  private build($root: Selection<any>) {
     const options = this.options,
       that = this;
     $root = $root.append('div').classed('lugui-me', true);
@@ -53,7 +74,7 @@ export class MappingEditor {
     const height = options.height - options.padding_ver * 2 - options.filter_height;
 
     (<HTMLElement>$root.node()).innerHTML = `<form onsubmit="return false">
-      <div style="text-align: center"><label for="mapping_type">Mapping Type: <select id="mapping_type">
+      <div style="text-align: center"><label for="me${options.idPrefix}mapping_type">Mapping Type: <select id="me${options.idPrefix}mapping_type">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>
@@ -68,7 +89,7 @@ export class MappingEditor {
       <div class="mapping_area">
         <div>
           <span>0</span>
-          <input type="text" class="raw_min" id="raw_min" value="0"><label for="raw_min">Min</label>
+          <input type="text" class="raw_min" id="me${options.idPrefix}raw_min" value="0"><label for="me${options.idPrefix}raw_min">Min</label>
         </div>
         <svg width="${options.width}" height="${options.height}">
           <line y1="${options.padding_ver}" y2="${options.padding_ver}" x1="${options.padding_hor}" x2="${width+options.padding_hor}" stroke="black"></line>
@@ -98,20 +119,23 @@ export class MappingEditor {
         </svg>
         <div>
           <span>1</span>
-          <input type="text" class="raw_max" id="raw_max" value="1"><label for="raw_max">Max</label>
+          <input type="text" class="raw_max" id="me${options.idPrefix}raw_max" value="1"><label for="me${options.idPrefix}raw_max">Max</label>
         </div>
       </div>
+      <div>
+         Extras: <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.old_filter.filterMissing?'checked="checked"' : ''}>Filter Missing Values</label>
+      </div>
       <div class="script" style="/* display: none; */">
-        <label for="script_code">Custom Script</label><button>Apply</button>
-        <textarea id="script_code">
+        <label for="me${options.idPrefix}script_code">Custom Script</label><button>Apply</button>
+        <textarea id="me${options.idPrefix}script_code">
         </textarea>
       </div>
     </form>`;
 
 
-    const raw2pixel = d3.scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
+    const raw2pixel = scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
       .range([0, width]);
-    const normal2pixel = d3.scale.linear().domain([0, 1])
+    const normal2pixel = scale.linear().domain([0, 1])
       .range([0, width]);
 
     $root.select('input.raw_min')
@@ -138,12 +162,15 @@ export class MappingEditor {
         updateRaw();
         triggerUpdate();
       });
+    $root.select('input[type="checkbox"]').on('change', () => {
+      triggerUpdate();
+    });
 
     //lines that show mapping of individual data items
     var datalines = $root.select('g.samples').selectAll('line').data([]);
     this.dataPromise.then((data) => {
       //to unique values
-      data = d3.set(data.map(String)).values().map(parseFloat);
+      data = unique(data);
 
       datalines = datalines.data(data);
       datalines.enter()
@@ -170,15 +197,15 @@ export class MappingEditor {
     }
 
     function createDrag(move) {
-      return d3.behavior.drag()
+      return behavior.drag()
         .on('dragstart', function () {
-          d3.select(this)
+          select(this)
             .classed('dragging', true)
             .attr('r', options.radius * 1.1);
         })
         .on('drag', move)
         .on('dragend', function () {
-          d3.select(this)
+          select(this)
             .classed('dragging', false)
             .attr('r', options.radius);
           triggerUpdate(true);
@@ -188,12 +215,12 @@ export class MappingEditor {
     var mapping_lines = [];
 
     function renderMappingLines() {
-      if (!(that.scale instanceof model.ScaleMappingFunction)) {
+      if (!(that.scale instanceof ScaleMappingFunction)) {
         return;
       }
 
       {
-        let sscale = <model.ScaleMappingFunction>that.scale;
+        let sscale = <ScaleMappingFunction>that.scale;
         let domain = sscale.domain;
         let range = sscale.range;
 
@@ -204,7 +231,7 @@ export class MappingEditor {
         //sort by raw value
         mapping_lines.sort((a, b) => a.r - b.r);
         //update the scale
-        let scale = <model.ScaleMappingFunction>that.scale;
+        let scale = <ScaleMappingFunction>that.scale;
         scale.domain = mapping_lines.map((d) => d.r);
         scale.range = mapping_lines.map((d) => d.n);
 
@@ -232,13 +259,13 @@ export class MappingEditor {
       }
 
       $root.selectAll('rect.adder').on('click', () => {
-        addPoint(d3.mouse($root.select('svg > g').node())[0]);
+        addPoint(mouse($root.select('svg > g').node())[0]);
       });
 
       const $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mapping_lines);
       const $mapping_enter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', (d, i) => {
-        d3.event.preventDefault();
-        d3.event.stopPropagation();
+        (<MouseEvent>d3event).preventDefault();
+        (<MouseEvent>d3event).stopPropagation();
         removePoint(i);
       });
       $mapping_enter.append('line').attr({
@@ -246,32 +273,32 @@ export class MappingEditor {
         y2: height
       }).call(createDrag(function (d) {
         //drag the line shifts both point in parallel
-        const dx = (<any>d3.event).dx;
+        const dx = (<any>d3event).dx;
         const nx = clamp(normal2pixel(d.n) + dx, 0, width);
         const rx = clamp(raw2pixel(d.r) + dx, 0, width);
         d.n = normal2pixel.invert(nx);
         d.r = raw2pixel.invert(rx);
-        d3.select(this).attr('x1', nx).attr('x2', rx);
-        d3.select(this.parentElement).select('circle.normalized').attr('cx', nx);
-        d3.select(this.parentElement).select('circle.raw').attr('cx', rx);
+        select(this).attr('x1', nx).attr('x2', rx);
+        select(this.parentElement).select('circle.normalized').attr('cx', nx);
+        select(this.parentElement).select('circle.raw').attr('cx', rx);
 
         updateScale();
       }));
       $mapping_enter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
         //drag normalized
-        const x = clamp(d3.event.x, 0, width);
+        const x = clamp((<DragEvent>d3event).x, 0, width);
         d.n = normal2pixel.invert(x);
-        d3.select(this).attr('cx', x);
-        d3.select(this.parentElement).select('line').attr('x1', x);
+        select(this).attr('cx', x);
+        select(this.parentElement).select('line').attr('x1', x);
 
         updateScale();
       }));
       $mapping_enter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
         //drag raw
-        const x = clamp(d3.event.x, 0, width);
+        const x = clamp((<DragEvent>d3event).x, 0, width);
         d.r = raw2pixel.invert(x);
-        d3.select(this).attr('cx', x);
-        d3.select(this.parentElement).select('line').attr('x2', x);
+        select(this).attr('cx', x);
+        select(this.parentElement).select('line').attr('x2', x);
 
         updateScale();
       }));
@@ -286,13 +313,13 @@ export class MappingEditor {
     }
 
     function renderScript() {
-      if (!(that.scale instanceof model.ScriptMappingFunction)) {
+      if (!(that.scale instanceof ScriptMappingFunction)) {
         $root.select('div.script').style('display', 'none');
         return;
       }
       $root.select('div.script').style('display', null);
 
-      let sscale = <model.ScriptMappingFunction>that.scale;
+      let sscale = <ScriptMappingFunction>that.scale;
       const $text = $root.select('textarea').text(sscale.code);
 
       $root.select('div.script').select('button').on('click', () => {
@@ -321,10 +348,10 @@ export class MappingEditor {
         .attr('transform', (d,i) => `translate(${i===0?min_filter:max_filter},0)`).call(createDrag(function (d,i) {
 
           //drag normalized
-          const x = clamp(d3.event.x, 0, width);
+          const x = clamp((<DragEvent>d3event).x, 0, width);
           const v = raw2pixel.invert(x);
           const filter = (x <= 0 && i === 0 ? -Infinity : (x>=width && i===1 ? Infinity : v));
-          d3.select(this).datum(filter)
+          select(this).datum(filter)
             .attr('transform',`translate(${x},0)`)
             .select('text').text(toFilterString(filter,i));
         }))
@@ -334,7 +361,8 @@ export class MappingEditor {
     this.computeFilter = function () {
       return {
         min: parseFloat($root.select('g.left_filter').datum()),
-        max: parseFloat($root.select('g.right_filter').datum())
+        max: parseFloat($root.select('g.right_filter').datum()),
+        filterMissing: $root.select('input[type="checkbox"]').property('checked')
       };
     };
 
@@ -352,14 +380,14 @@ export class MappingEditor {
     $root.select('select').on('change', function () {
       const v = this.value;
       if (v === 'linear_invert') {
-        that.scale_ = new model.ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);
+        that.scale_ = new ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);
       } else if (v === 'linear_abs') {
         let d = raw2pixel.domain();
-        that.scale_ = new model.ScaleMappingFunction([d[0], (d[1] - d[0]) / 2, d[1]], 'linear', [1, 0, 1]);
+        that.scale_ = new ScaleMappingFunction([d[0], (d[1] - d[0]) / 2, d[1]], 'linear', [1, 0, 1]);
       } else if (v === 'script') {
-        that.scale_ = new model.ScriptMappingFunction(raw2pixel.domain());
+        that.scale_ = new ScriptMappingFunction(raw2pixel.domain());
       } else {
-        that.scale_ = new model.ScaleMappingFunction(raw2pixel.domain(), v);
+        that.scale_ = new ScaleMappingFunction(raw2pixel.domain(), v);
       }
       updateDataLines();
       renderMappingLines();
@@ -367,15 +395,11 @@ export class MappingEditor {
       triggerUpdate();
     }).property('selectedIndex', function () {
       var name = 'script';
-      if (that.scale_ instanceof model.ScaleMappingFunction) {
-        name = (<model.ScaleMappingFunction>that.scale).scaleType;
+      if (that.scale_ instanceof ScaleMappingFunction) {
+        name = (<ScaleMappingFunction>that.scale).scaleType;
       }
       const types = ['linear', 'linear_invert', 'linear_abs', 'log', 'pow1.1', 'pow2', 'pow3', 'sqrt', 'script'];
       return types.indexOf(name);
     });
   }
-}
-
-export function create(parent: HTMLElement, scale: model.IMappingFunction, original: model.IMappingFunction, filter: model.INumberFilter, dataPromise: Promise<number[]>, options: any = {}) {
-  return new MappingEditor(parent, scale, original, filter, dataPromise, options);
 }

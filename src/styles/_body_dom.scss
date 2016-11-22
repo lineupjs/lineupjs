@@ -1,0 +1,47 @@
+@import "colors";
+
+.lu .lu-body {
+  .hoverOnly {
+    display: none;
+  }
+
+  .hover .notHoverOnly {
+    display: none;
+  }
+
+  .hover .hoverOnly {
+    display: block;
+  }
+
+  .selectionOnly {
+    display: none;
+  }
+  // selected state extends hover state
+  .selected .selectionOnly, .selected .hoverOnly {
+    display: block;
+  }
+  .selected .notSelectionOnly, .selected .notHoverOnly {
+    display: none;
+  }
+
+  input {
+    padding: 0;
+    margin: 0;
+    font-size: $lu_body_font_size;
+    pointer-events: all;
+  }
+
+  line.slope {
+    stroke: $lu_slope_color;
+    stroke-width: 2;
+    shape-rendering: geometricPrecision;
+
+    &.hover {
+      stroke: $lu_hover_color;
+    }
+
+    &.selected {
+      stroke: $lu_selected_color;
+    }
+  }
+}

@@ -3,13 +3,15 @@
 node_modules
 /bower_components
 /libs
+/dists
 /typings/**/*.*
 !/typings/tsd.d.ts
 /tmp
 /.bower.json
 /tscommand*.tmp.txt
 demo/.idea/
+*.log
 
-src/*.map
-src/*.js
-src/*.css
+src/**/*.map
+src/**/*.js
+src/**/*.css

@@ -1,9 +1,25 @@
 language: node_js
+
 node_js:
-  - "4.6.0"
+- 4.6.0
+
 before_install:
-    - export DISPLAY=:99.0
-    - sh -e /etc/init.d/xvfb start
-before_script:
-    - npm run prepare
-script: npm run test
+- export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start
+- if [[ `npm -v` != 3* ]]; then npm i -g npm@3; fi
+
+script: npm run dist
+
+deploy:
+  provider: releases
+  api_key:
+    secure: TK9/P34Bi3WuppiDrBCwVcn41yCBwmILaU8hXTBzUPbT7TbeFIwsC6/4CtH85Z+ZrUve4S5pTmWRNf2dQDxWw3uYu7+bJuemV2J1LHG76mognj+TNEiYxfLQUt3Gql4W7C7FcI4Rlx5/uMN9wY1wro8TWUBMwT6jjSrUWIvK3GXoojd5bHvJx07XpjWl9wCon4D0ruZiFoM2mdeP23lbc2GckETi32oEKswnQXxkMACmxbPzoWbvkxH4aK8Bt2Rj2sl2TbPhVkN6DAkHGkGAvLI+2/aRfG27+oo3OKsaDjbuGABct8TfZccJ970CbQ8kbnCjYxstvqkg1JWjF0W67sX/flBZZOEUA5l0OLWo6HqMGMxm7/lEQhIdPMsRmvXL+HVOxkMrB2dda58QzxVwiZp+rRqUaeabPZp8Kl5xodGrVxsBvxe6zAbJ5jCtCSumG6+kLyKI00/kYlghqQNrgUw0ZsYJlQ34h3lo/24QpaeyDpQoCkGWQgtgqiXGpeKSu7bCnOqIqAy3nbT9Utwj7K8gIasTG5idosEAz/THMampNbGDuyxxc340sYGNMg9Bhm1g2ILWRdtV470p5hwBtIDTKi3/PAizEO26+Wh0zI47Sg3ao57avcbCsTmzbZUeA5J4bojmchhJCHX8su9cSCGh/2fJA/1eBIgEvOQ8LNE=
+  file: dists/lineupjs.tar.gz
+  on:
+    tags: true
+
+notifications:
+  slack:
+    secure: YvN+ArSLrGLULk8sRtpuyjWt/KiCkNEb2yCM98a1KRt2X2XXJ9e0/2Ppa8p6Al3yLK7dq9A0wpWDNjq8jBGReRV2fa6REt+v4cN3TxCkMI0j+9DN1t0sLFQoVl03xAgjg2gHF0U+y1NaaBvWoxtwdvwA5dHf6LY67mAjVenPo1U=
+    on_success: change
+    on_failure: always

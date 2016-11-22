@@ -9,7 +9,7 @@ window.onload = function () {
     {a: 2, b: 7, c: 100, d: 'Row3', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
     {a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', e: false, l: {alt: 'Google', href: 'https://google.com'}, cat: 'c1;c3'},
     {a: 2, b: 4, c: 30, d: 'Row5', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
-    {a: 2, b: 4, c: 30, d: '', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'}];
+    {a: NaN, b: '', c: 30, d: '', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'}];
   var desc = [
     {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
     {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
@@ -21,7 +21,8 @@ window.onload = function () {
     {label: 'Ord', type: 'ordinal', column: 'cat', categories : ['c1','c2','c3']},
     {label: 'Annadfas fasdf adsf asdfasd fasd', type: 'annotate', column: 'd'},
     {label: 'BB', type: 'boolean', column: 'e'},
-    {label: 'Cat Label', type: 'categorical', column: 'cat', categories : [{name: 'c1', label: 'C1', color: 'green'},{name: 'c2', label: 'C2', color: 'blue'},{name: 'c3', label: 'C3', color: 'red'}]}
+    {label: 'Cat Label', type: 'categorical', column: 'cat', categories : [{name: 'c1', label: 'C1', color: 'green'},{name: 'c2', label: 'C2', color: 'blue'},{name: 'c3', label: 'C3', color: 'red'}]},
+    {label: 'L.alt', type: 'string', column: 'l.alt' }
   ];
   //var colors = d3.scale.category10();
   //desc.forEach(function (d, i) {
@@ -52,6 +53,7 @@ window.onload = function () {
   r.push(p.create(desc[8]));
   r.push(p.create(desc[9]));
   r.push(p.create(desc[10]));
+  r.push(p.create(desc[11]));
   var rstack = p.create(LineUpJS.model.createStackDesc('Stack'));
   r.push(rstack);
   rstack.push(p.create(desc[1]));
@@ -82,13 +84,14 @@ window.onload = function () {
 
   var body = LineUpJS.create(p, root.node(), {
     additionalDesc : [
-      LineUpJS.model.StackColumn.desc('+ Stack')
+      LineUpJS.model.createStackDesc('+ Stack')
     ],
     htmlLayout: {
       autoRotateLabels: true
     },
     body: {
-      renderer: 'svg'
+      renderer: 'canvas',
+      freezeCols: 3
     },
     header: {
       rankingButtons: function($node) {
@@ -99,7 +102,9 @@ window.onload = function () {
       linkTemplates: ['a/$1', 'b/$1']
     },
     renderingOptions: {
-      histograms: true
+      animation: false,
+      histograms: true,
+      meanLine: true
     }
   });
   body.update();

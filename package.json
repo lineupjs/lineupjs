@@ -25,6 +25,11 @@
       "email": "hstrobelt@seas.harvard.edu"
     }
   ],
+  "engines": {
+    "npm": ">= 3",
+    "node": ">= 6",
+    "iojs": ">= 3"
+  },
   "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/Caleydo/lineup.js/issues"
@@ -32,28 +37,44 @@
   "homepage": "https://github.com/Caleydo/lineup.js",
   "main": "dist/LineUpJS.js",
   "scripts": {
-    "test": "tslint -c tslint.json src/*.ts",
-    "prepare": "npm install & typings install",
+    "compile": "tsc",
+    "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
+    "docs": "typedoc --options typedoc.json src/**.ts",
+    "prebuild": "npm run test",
+    "pretest": "npm run compile",
+    "test": "echo 'no tests'",
+    "posttest": "npm run lint",
     "build": "webpack",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "release:major": "npm version major && npm publish && git push --follow-tags",
+    "release:minor": "npm version minor && npm publish && git push --follow-tags",
+    "release:patch": "npm version patch && npm publish && git push --follow-tags",
+	"predist": "npm run build",
+    "dist": "mkdirp dists && cd dist && tar cvzf ../dists/lineupjs.tar.gz *"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/Caleydo/lineup.js.git"
   },
   "devDependencies": {
-    "tslint": "^3.15.1",
-    "node-sass": "^3.10.1",
-    "style-loader": "^0.13.1",
-    "typedoc": "^0.5.0",
-    "typedoc-webpack-plugin": "^1.1.2",
-    "webpack": "^1.13.2",
-    "extract-text-webpack-plugin": "^1.0.1",
-    "typescript": "^2.0.3",
-    "typings": "^1.4.0",
+    "@types/d3": "^3.5.36",
+    "@types/react": "^0.14.42",
+    "@types/react-dom": "^0.14.18",
+    "awesome-typescript-loader": "^2.2.4",
     "css-loader": "^0.25.0",
+    "extract-text-webpack-plugin": "^2.0.0-beta.4",
+    "mkdirp": "^0.5.1",
+    "node-sass": "^3.10.1",
     "sass-loader": "^4.0.2",
-    "awesome-typescript-loader": "^2.2.4"
+    "style-loader": "^0.13.1",
+    "tslint": "^3.15.1",
+    "typedoc": "^0.5.0",
+    "typescript": "^2.0.3",
+    "webpack": "^2.1.0-beta.25"
+  },
+  "optionalDependencies": {
+    "react": "^15.0.0",
+    "react-dom": "^15.0.0"
   },
   "dependencies": {
     "d3": "^3.5.17"
