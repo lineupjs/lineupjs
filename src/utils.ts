@@ -152,6 +152,12 @@ export function offset(element) {
   };
 }
 
+export interface IContentScrollerOptions {
+  topShift?(): number;
+  backupRows?: number;
+  rowHeight?: number;
+}
+
 /**
  * content scroller utility
  *
@@ -161,7 +167,7 @@ export class ContentScroller extends AEventDispatcher {
   static EVENT_SCROLL = 'scroll';
   static EVENT_REDRAW = 'redraw';
 
-  private options = {
+  private options: IContentScrollerOptions = {
     /**
      * shift that should be used for calculating the top position
      */
@@ -185,7 +191,7 @@ export class ContentScroller extends AEventDispatcher {
    * @param content the content element to scroll
    * @param options options see attribute
    */
-  constructor(private container: Element, private content: Element, options: any = {}) {
+  constructor(private container: Element, private content: Element, options: IContentScrollerOptions = {}) {
     super();
     merge(this.options, options);
     select(container).on('scroll.scroller', () => this.onScroll());
@@ -209,30 +215,17 @@ export class ContentScroller extends AEventDispatcher {
   }
 
   scrollIntoView(start: number, length: number, index: number, row2y: (i: number) => number) {
-    const range = this.select(start, length, row2y);
+    const range = this.selectImpl(start, length, row2y, 0);
     if (range.from <= index && index <= range.to) {
       return; //already visible
     }
 
-    var top = this.container.scrollTop - this.shift - this.options.topShift(),
-      bottom = top + this.container.clientHeight,
-      i = 0, j;
-    if (top > 0) {
-      i = Math.round(top / this.options.rowHeight);
-      //count up till really even partial rows are visible
-      while (i >= start && row2y(i + 1) > top) {
-        i--;
-      }
-      i -= this.options.backupRows; //one more row as backup for scrolling
-    }
-    { //some parts from the bottom aren't visible
-      j = Math.round(bottom / this.options.rowHeight);
-      //count down till really even partial rows are visible
-      while (j <= length && row2y(j - 1) < bottom) {
-        j++;
-      }
-      j += this.options.backupRows; //one more row as backup for scrolling
-    }
+    const target = row2y(index) - 10; //magic constanst shift
+
+    const min = 0;
+    const max = this.container.scrollHeight - this.container.clientHeight;
+    // clamp to valid area
+    this.container.scrollTop = Math.max(min, Math.min(max, target));
   }
 
   /**
@@ -243,6 +236,10 @@ export class ContentScroller extends AEventDispatcher {
    * @returns {{from: number, to: number}} the slide to show
    */
   select(start: number, length: number, row2y: (i: number) => number) {
+    return this.selectImpl(start, length, row2y, this.options.backupRows);
+  }
+
+  private selectImpl(start: number, length: number, row2y: (i: number) => number, backupRows: number) {
     var top = this.container.scrollTop - this.shift - this.options.topShift(),
       bottom = top + this.container.clientHeight,
       i = 0, j;

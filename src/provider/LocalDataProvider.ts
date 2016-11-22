@@ -94,12 +94,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     /**
      * whether the filter should be applied to all rankings regardless where they are
      */
-    filterGlobally: false,
-
-    /**
-     * jump to search results such that they are visible
-     */
-    jumpToSearchResult: true
+    filterGlobally: false
   };
 
   private reorderall;
@@ -276,14 +271,15 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return Promise.resolve(indices.map((i) => col.getRawValue(this.data[i])));
   }
 
-  searchSelect(search: string|RegExp, col: Column) {
+  searchAndJump(search: string|RegExp, col: Column) {
     //case insensitive search
     search = typeof search === 'string' ? search.toLowerCase() : search;
     const f = typeof search === 'string' ? (v: string) => v.toLowerCase().indexOf((<string>search)) >= 0 : (<RegExp>search).test.bind(search);
     const indices = this.data.filter((row) => {
       return f(col.getLabel(row));
     }).map((row) => row._index);
-    this.setSelection(indices, this.options.jumpToSearchResult);
+
+    this.jumpToNearest(indices);
   }
 
 }
