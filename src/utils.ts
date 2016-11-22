@@ -403,3 +403,28 @@ export function attr<T extends (HTMLElement | SVGElement & SVGStylable)>(node: T
 export function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number)=>void) {
   Array.prototype.slice.call(node.querySelectorAll(selector)).forEach(callback);
 }
+
+
+export function clipText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number) {
+  //based on http://stackoverflow.com/questions/10508988/html-canvas-text-overflow-ellipsis#10511598
+  const render = (t: string) => ctx.fillText(t, x, y, maxWidth);
+
+  var width = ctx.measureText(text).width;
+  if (width <= maxWidth) {
+    return render(text);
+  }
+
+  const ellipsis = '…';
+  const ellipsisWidth = ctx.measureText(ellipsis).width;
+
+  if (width <= ellipsisWidth) {
+    return render(text);
+  }
+
+  var len = text.length;
+  while (width >= (maxWidth - ellipsisWidth) && (len--) > 0) {
+    text = text.substring(0, len);
+    width = ctx.measureText(text).width;
+  }
+  return render(text + ellipsis);
+}
