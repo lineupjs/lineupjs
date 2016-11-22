@@ -245,7 +245,7 @@ export default class LineUp extends AEventDispatcher {
 
 
     this.data.on(DataProvider.EVENT_SELECTION_CHANGED + '.main', this.triggerSelection.bind(this));
-    this.data.on('jumpToNearest.main', this.jumpToNearest.bind(this));
+    this.data.on(DataProvider.EVENT_JUMP_TO_NEAREST + '.main', this.jumpToNearest.bind(this));
 
     this.header = new HeaderRenderer(data, this.node, merge({}, this.config.header, {
       idPrefix: this.config.idPrefix,
@@ -353,14 +353,14 @@ export default class LineUp extends AEventDispatcher {
 
   changeDataStorage(data: DataProvider, dump?: any) {
     if (this.data) {
-      this.data.on([DataProvider.EVENT_SELECTION_CHANGED + '.main', 'jumpToNearest.main'], null);
+      this.data.on([DataProvider.EVENT_SELECTION_CHANGED + '.main', DataProvider.EVENT_JUMP_TO_NEAREST + '.main'], null);
     }
     this.data = data;
     if (dump) {
       this.data.restore(dump);
     }
     this.data.on(DataProvider.EVENT_SELECTION_CHANGED + '.main', this.triggerSelection.bind(this));
-    this.data.on('jumpToNearest.main', this.jumpToNearest.bind(this));
+    this.data.on(DataProvider.EVENT_JUMP_TO_NEAREST + '.main', this.jumpToNearest.bind(this));
     this.header.changeDataStorage(data);
     this.body.changeDataStorage(data);
     this.pools.forEach((p) => p.changeDataStorage(data));

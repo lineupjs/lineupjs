@@ -93,6 +93,7 @@ abstract class ADataProvider extends AEventDispatcher {
   static EVENT_DIRTY_VALUES = Ranking.EVENT_DIRTY_VALUES;
   static EVENT_ORDER_CHANGED = Ranking.EVENT_ORDER_CHANGED;
   static EVENT_ADD_DESC = 'addDesc';
+  static EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
 
   /**
    * all rankings
@@ -134,7 +135,8 @@ abstract class ADataProvider extends AEventDispatcher {
       ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN,
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
       ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES,
-      ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED, ADataProvider.EVENT_ADD_DESC, 'jumpToNearest']);
+      ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED, ADataProvider.EVENT_ADD_DESC,
+      ADataProvider.EVENT_JUMP_TO_NEAREST]);
   }
 
   /**
@@ -608,7 +610,7 @@ abstract class ADataProvider extends AEventDispatcher {
     if (indices.length === 0) {
       return;
     }
-    this.fire('jumpToNearest', indices);
+    this.fire(ADataProvider.EVENT_JUMP_TO_NEAREST, indices);
   }
 
   /**
