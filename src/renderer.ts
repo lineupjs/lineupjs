@@ -137,6 +137,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const bak = ctx.textAlign;
+      console.log(col.label,'set align to', this.align);
       ctx.textAlign = this.align;
       const w = col.getWidth();
       var shift = 0;
@@ -322,7 +323,7 @@ const action = {
       if (hovered) {
         let overlay = showOverlay(context.idPrefix + col.id, dx, dy);
         overlay.style.width = col.getWidth() + 'px';
-        overlay.innerHTML = actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}></span>`).join('');
+        overlay.innerHTML = actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}</span>`).join('');
         forEach(overlay, 'span', (ni: HTMLSpanElement, i) => {
           ni.onclick = function (event) {
             event.preventDefault();
@@ -498,24 +499,25 @@ const link = {
 
 /**
  * renders a string with additional alignment behavior
+ * one instance factory shared among strings
  */
-class StringCellRenderer extends DefaultCellRenderer {
+class StringCellRenderer {
+  private alignments = {
+    left: new DefaultCellRenderer(),
+    right : new DefaultCellRenderer('text_right', 'right'),
+    center : new DefaultCellRenderer('text_center', 'center')
+  };
+
   createSVG(col: StringColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    this.align = col.alignment;
-    this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
-    return super.createSVG(col, context);
+    return this.alignments[col.alignment].createSVG(col, context);
   }
 
   createHTML(col: StringColumn, context: IDOMRenderContext): IHTMLCellRenderer {
-    this.align = col.alignment;
-    this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
-    return super.createHTML(col, context);
+    return this.alignments[col.alignment].createHTML(col, context);
   }
 
   createCanvas(col: StringColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    this.align = col.alignment;
-    this.textClass = 'text' + (col.alignment === 'left' ? '' : '_' + col.alignment);
-    return super.createCanvas(col, context);
+    return this.alignments[col.alignment].createCanvas(col, context);
   }
 }
 
@@ -734,7 +736,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   heatmap: heatmap,
   link: link,
   annotate: annotate,
-  action: action,
+  actions: action,
   stack: new StackCellRenderer(),
   nested: new StackCellRenderer(false),
   categorical: new CategoricalCellRenderer(),
