@@ -136,6 +136,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      const bak = ctx.textAlign;
       ctx.textAlign = this.align;
       const w = col.getWidth();
       var shift = 0;
@@ -145,6 +146,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
         shift = w;
       }
       ctx.fillText(col.getLabel(d.v), shift, 0, w);
+      ctx.textAlign = bak;
     };
   }
 }
