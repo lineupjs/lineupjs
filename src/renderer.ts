@@ -323,6 +323,7 @@ const action = {
       if (hovered) {
         let overlay = showOverlay(context.idPrefix + col.id, dx, dy);
         overlay.style.width = col.getWidth() + 'px';
+        overlay.classList.add('actions');
         overlay.innerHTML = actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}</span>`).join('');
         forEach(overlay, 'span', (ni: HTMLSpanElement, i) => {
           ni.onclick = function (event) {
