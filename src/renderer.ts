@@ -9,8 +9,7 @@ import LinkColumn from './model/LinkColumn';
 import SelectionColumn from './model/SelectionColumn';
 import StackColumn from './model/StackColumn';
 import CategoricalColumn from './model/CategoricalColumn';
-import {isNumberColumn, INumberColumn} from './model/NumberColumn';
-import {IMultiLevelColumn, isMultiLevelColumn} from './model/CompositeColumn';
+import {INumberColumn} from './model/NumberColumn';
 import {forEach, attr} from './utils';
 import {hsl} from 'd3';
 import {IDataRow} from './provider/ADataProvider';
@@ -605,8 +604,10 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
     node.innerHTML = columns.map((c) => c.renderer.template).join('');
     columns.forEach((col, i) => {
       var cnode = <Element>node.childNodes[i];
-      //set attribute for finding again
+      // set attribute for finding again
       cnode.setAttribute('data-column-id', col.column.id);
+      // store current renderer
+      cnode.setAttribute('data-renderer', col.column.rendererType());
     });
     return;
   }
@@ -614,18 +615,20 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
   function matches(c: {column: Column}, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
-    return n != null && n.getAttribute('data-column-id') === c.column.id;
+    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.rendererType();
   }
 
   if (columns.every(matches)) {
     return; //nothing to do
   }
 
-  const ids = columns.map((c) => c.column.id);
+  const idsAndRenderer = new Set(columns.map((c) => c.column.id+'@'+c.column.rendererType()));
   //remove all that are not existing anymore
   Array.prototype.slice.call(node.childNodes).forEach((n) => {
     const id = n.getAttribute('data-column-id');
-    if (ids.indexOf(id) < 0) {
+    const renderer = n.getAttribute('data-renderer');
+    const idAndRenderer = id+'@'+renderer;
+    if (!idsAndRenderer.has(idAndRenderer)) {
       node.removeChild(n);
     }
   });
@@ -637,6 +640,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
       helper.innerHTML = col.renderer.template;
       cnode = <Element>helper.childNodes[0];
       cnode.setAttribute('data-column-id', col.column.id);
+      cnode.setAttribute('data-renderer', col.column.rendererType());
     }
     node.appendChild(cnode);
   });
@@ -721,7 +725,7 @@ class StackCellRenderer implements ICellRendererFactory {
   }
 }
 
-const defaultCellRenderer = new DefaultCellRenderer();
+export const defaultCellRenderer = new DefaultCellRenderer();
 const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.getColor(d));
 
 /**
@@ -748,16 +752,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
-  if (col.getCompressed() && isNumberColumn(col)) {
-    return (<any>renderers).heatmap || defaultCellRenderer;
-  }
-  if (col instanceof StackColumn && col.getCollapsed()) {
-    return (<any>renderers).number || defaultCellRenderer;
-  }
-  if (isMultiLevelColumn(col) && (<IMultiLevelColumn>col).getCollapsed()) {
-    return defaultCellRenderer;
-  }
-  const r = renderers[col.desc.type];
+  const r = renderers[col.rendererType()];
   return r || defaultCellRenderer;
 }
 

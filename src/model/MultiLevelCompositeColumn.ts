@@ -98,4 +98,11 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     });
     super.setWidth(value);
   }
+
+  rendererType() {
+    if (this.getCollapsed()) {
+      return MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED;
+    }
+    return super.rendererType();
+  }
 }

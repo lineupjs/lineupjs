@@ -5,7 +5,7 @@
 import {format} from 'd3';
 import Column from './Column';
 import CompositeColumn from './CompositeColumn';
-import {INumberColumn, isNumberColumn, numberCompare} from './NumberColumn';
+import NumberColumn, {INumberColumn, isNumberColumn, numberCompare} from './NumberColumn';
 
 /**
  * implementation of a combine column, standard operations how to select
@@ -79,5 +79,9 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
   compare(a: any, b: any) {
     return numberCompare(this.getValue(a), this.getValue(b));
+  }
+
+  rendererType(): string {
+    return NumberColumn.prototype.rendererType.call(this);
   }
 }

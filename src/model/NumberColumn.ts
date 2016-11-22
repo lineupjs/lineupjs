@@ -255,6 +255,7 @@ export function createMappingFunction(dump: any): IMappingFunction {
  */
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn {
   static EVENT_MAPPING_CHANGED = 'mappingChanged';
+  static COMPRESSED_RENDERER = 'heatmap';
 
   static noFilter = () => ({min: -Infinity, max: Infinity, filterMissing: false});
 
@@ -456,5 +457,12 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
     const vn = +v;
     return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
+  }
+
+  rendererType(): string {
+    if (this.getCompressed()) {
+      return NumberColumn.COMPRESSED_RENDERER;
+    }
+    return super.rendererType();
   }
 }
