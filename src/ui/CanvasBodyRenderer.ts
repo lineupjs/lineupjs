@@ -3,7 +3,7 @@
  */
 
 import {max as d3max, event as d3event, mouse as d3mouse} from 'd3';
-import {merge} from '../utils';
+import {merge, createTextHints} from '../utils';
 import Column from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {createCanvas, hideOverlays, ICanvasRenderContext} from '../renderer';
@@ -20,13 +20,8 @@ export interface IStyleOptions {
   bg?: string
 }
 
-export interface ICurrentOptions {
-  hovered: Set<number>;
-}
-
 export interface ICanvasBodyRendererOptions {
   style?: IStyleOptions;
-  current?: ICurrentOptions;
 }
 
 export default class BodyCanvasRenderer extends ABodyRenderer {
@@ -295,6 +290,8 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.textBaseline = 'top';
     ctx.fillStyle = this.style('text');
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    context.textHints = createTextHints(ctx, this.style('font'));
 
     ctx.translate(0, -firstLine);
 

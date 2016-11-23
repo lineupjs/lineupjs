@@ -401,25 +401,41 @@ export function forEach<T extends Element>(node: T, selector: string, callback: 
   Array.prototype.slice.call(node.querySelectorAll(selector)).forEach(callback);
 }
 
+export interface ITextRenderHints {
+  avgLetterWidth: number;
+  ellipsisWidth: number;
+}
+const ellipsis = '…';
 
-export function clipText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number) {
+export function createTextHints(ctx: CanvasRenderingContext2D, font: string): ITextRenderHints {
+  const bak = ctx.font;
+  ctx.font = font;
+  const r = {
+    avgLetterWidth: ctx.measureText('M').width,
+    ellipsisWidth: ctx.measureText(ellipsis).width
+  };
+  ctx.font = bak;
+  return r;
+}
+
+export function clipText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, hints: ITextRenderHints) {
   //based on http://stackoverflow.com/questions/10508988/html-canvas-text-overflow-ellipsis#10511598
   const render = (t: string) => ctx.fillText(t, x, y, maxWidth);
 
+  //check if using heuristics
+  if (hints.avgLetterWidth * text.length <= maxWidth || width <= hints.ellipsisWidth) {
+    return render(text);
+  }
+
+  //check precisely
   var width = ctx.measureText(text).width;
   if (width <= maxWidth) {
     return render(text);
   }
 
-  const ellipsis = '…';
-  const ellipsisWidth = ctx.measureText(ellipsis).width;
-
-  if (width <= ellipsisWidth) {
-    return render(text);
-  }
-
   var len = text.length;
-  while (width >= (maxWidth - ellipsisWidth) && (len--) > 0) {
+  // TODO use binary search
+  while (width >= (maxWidth - hints.ellipsisWidth) && (len--) > 0) {
     text = text.substring(0, len);
     width = ctx.measureText(text).width;
   }

@@ -10,7 +10,7 @@ import SelectionColumn from './model/SelectionColumn';
 import StackColumn from './model/StackColumn';
 import CategoricalColumn from './model/CategoricalColumn';
 import {INumberColumn} from './model/NumberColumn';
-import {forEach, attr, clipText} from './utils';
+import {forEach, attr, clipText, ITextRenderHints} from './utils';
 import {hsl} from 'd3';
 import {IDataRow} from './provider/ADataProvider';
 /**
@@ -63,9 +63,12 @@ export interface IDOMCellRenderer<T> {
 export declare type ISVGCellRenderer = IDOMCellRenderer<SVGElement>;
 export declare type IHTMLCellRenderer = IDOMCellRenderer<HTMLElement>;
 
+
+
 export interface ICanvasRenderContext extends IRenderContext<CanvasRenderingContext2D> {
   hovered(dataIndex: number): boolean;
   selected(dataIndex: number): boolean;
+  textHints: ITextRenderHints;
 }
 
 export interface ICanvasCellRenderer {
@@ -144,7 +147,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       } else if (this.align === 'right') {
         shift = w;
       }
-      clipText(ctx, col.getLabel(d.v, d.dataIndex), shift, 0, w);
+      clipText(ctx, col.getLabel(d.v, d.dataIndex), shift, 0, w, context.textHints);
       ctx.textAlign = bak;
     };
   }
@@ -218,7 +221,7 @@ export class BarCellRenderer implements ICellRendererFactory {
       ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1);
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1, context.textHints);
       }
     };
   }
@@ -364,7 +367,7 @@ const selection = {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const bak = ctx.font;
       ctx.font = '10pt FontAwesome';
-      clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, col.getWidth());
+      clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, col.getWidth(), context.textHints);
       ctx.font = bak;
     };
   }
@@ -432,7 +435,7 @@ const annotate = {
           event.stopPropagation();
         };
       } else {
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth());
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth(), context.textHints);
       }
     };
   }
@@ -478,7 +481,7 @@ const link = {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const isLink = col.isLink(d.v, d.dataIndex);
       if (!isLink) {
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth());
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth(), context.textHints);
         return;
       }
       const hovered = context.hovered(d.dataIndex);
@@ -489,7 +492,7 @@ const link = {
       } else {
         const bak = ctx.fillStyle;
         ctx.fillStyle = context.option('style.link', context.option('style.text', 'black'));
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth());
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth(), context.textHints);
         ctx.fillStyle = bak;
       }
     };
@@ -586,7 +589,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = col.getColor(d.v, d.dataIndex);
       ctx.fillRect(0, 0, cell, cell);
       ctx.fillStyle = context.option('style.text', 'black');
-      clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, col.getWidth() - cell - 2);
+      clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, col.getWidth() - cell - 2, context.textHints);
     };
   };
 }
