@@ -402,6 +402,7 @@ export function forEach<T extends Element>(node: T, selector: string, callback: 
 }
 
 export interface ITextRenderHints {
+  maxLetterWidth: number;
   avgLetterWidth: number;
   ellipsisWidth: number;
 }
@@ -410,8 +411,11 @@ const ellipsis = '…';
 export function createTextHints(ctx: CanvasRenderingContext2D, font: string): ITextRenderHints {
   const bak = ctx.font;
   ctx.font = font;
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+  const testText = alphabet + (alphabet.toUpperCase()) + '0123456789';
   const r = {
-    avgLetterWidth: ctx.measureText('M').width,
+    maxLetterWidth: ctx.measureText('M').width,
+    avgLetterWidth: ctx.measureText(testText).width / testText.length,
     ellipsisWidth: ctx.measureText(ellipsis).width
   };
   ctx.font = bak;
@@ -423,21 +427,32 @@ export function clipText(ctx: CanvasRenderingContext2D, text: string, x: number,
   const render = (t: string) => ctx.fillText(t, x, y, maxWidth);
 
   //check if using heuristics
-  if (hints.avgLetterWidth * text.length <= maxWidth || width <= hints.ellipsisWidth) {
+  if (hints.maxLetterWidth * text.length <= maxWidth || maxWidth <= hints.ellipsisWidth || text.length === 0) {
     return render(text);
   }
 
   //check precisely
-  var width = ctx.measureText(text).width;
-  if (width <= maxWidth) {
+  if (ctx.measureText(text).width <= maxWidth) {
     return render(text);
   }
 
-  var len = text.length;
-  // TODO use binary search
-  while (width >= (maxWidth - hints.ellipsisWidth) && (len--) > 0) {
-    text = text.substring(0, len);
-    width = ctx.measureText(text).width;
+  const availWidth = maxWidth - hints.ellipsisWidth;
+
+  // use binary search
+  let min = 0;
+  let max = text.length - 1;
+  // guess first based on average letter width
+  let guess = Math.min(max, Math.floor(maxWidth / hints.avgLetterWidth));
+  while (min < max) {
+    let overflow = availWidth - ctx.measureText(text.substring(0, guess + 1)).width;
+    if (overflow < 0) { //less characters needed
+      max = guess - 1;
+    } else if (overflow > 0) { // more characters possible
+      min = guess + 1;
+    } else { //hit it :)
+      break;
+    }
+    guess = Math.floor((max + min) / 2); //compute next guess
   }
-  return render(text + ellipsis);
+  return render(text.substring(0, min + 1) + ellipsis);
 }
