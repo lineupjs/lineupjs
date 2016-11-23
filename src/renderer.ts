@@ -136,7 +136,6 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const bak = ctx.textAlign;
-      console.log(col.label,'set align to', this.align);
       ctx.textAlign = this.align;
       const w = col.getWidth();
       var shift = 0;
