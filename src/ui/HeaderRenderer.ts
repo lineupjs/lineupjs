@@ -217,8 +217,8 @@ export default class HeaderRenderer {
         //find all number histograms
         cols.filter((d) => d instanceof NumberColumn && !d.isHidden()).forEach((col: NumberColumn) => {
           const bars = [].slice.call(node.querySelectorAll(`div.header[data-id="${col.id}"] div.bar`));
-          data.forEach((d) => {
-            const v = col.getValue(d);
+          data.forEach((d, i) => {
+            const v = col.getValue(d, indices[i]);
             //choose the right bin
             for (let i = 1; i < bars.length; ++i) {
               let bar = bars[i];
@@ -234,8 +234,8 @@ export default class HeaderRenderer {
         });
         cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: CategoricalColumn) => {
           const header = node.querySelector(`div.header[data-id="${col.id}"]`);
-          data.forEach((d) => {
-            const cats = col.getCategories(d);
+          data.forEach((d, i) => {
+            const cats = col.getCategories(d, indices[i]);
             (cats || []).forEach((cat) => {
               header.querySelector(`div.bar[data-cat="${cat}"]`).classList.add('selected');
             });

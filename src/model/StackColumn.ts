@@ -194,9 +194,9 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     super.setWidth(value);
   }
 
-  protected compute(row: any) {
+  protected compute(row: any, index: number) {
     const w = this.getWidth();
-    return this._children.reduce((acc, d) => acc + d.getValue(row) * (d.getWidth() / w), 0);
+    return this._children.reduce((acc, d) => acc + d.getValue(row, index) * (d.getWidth() / w), 0);
   }
 
   rendererType() {

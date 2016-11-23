@@ -19,10 +19,10 @@ export function createDesc(label: string = 'Nested') {
  */
 export default class NestedColumn extends MultiLevelCompositeColumn {
 
-  compare(a: any, b: any) {
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
     const c = this.children;
     for (let ci of c) {
-      let ci_result = ci.compare(a, b);
+      let ci_result = ci.compare(a, b, aIndex, bIndex);
       if (ci_result !== 0) {
         return ci_result;
       }
@@ -30,11 +30,11 @@ export default class NestedColumn extends MultiLevelCompositeColumn {
     return 0;
   }
 
-  getLabel(row: any) {
-    return this.children.map((d) => d.getLabel(row)).join(';');
+  getLabel(row: any, index: number) {
+    return this.children.map((d) => d.getLabel(row, index)).join(';');
   }
 
-  getValue(row: any) {
-    return this.children.map((d) => d.getValue(row)).join(';');
+  getValue(row: any, index: number) {
+    return this.children.map((d) => d.getValue(row, index)).join(';');
   }
 }

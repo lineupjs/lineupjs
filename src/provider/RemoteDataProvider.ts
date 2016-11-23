@@ -3,7 +3,7 @@
  */
 
 import {merge} from '../utils';
-import {IColumnDesc, Ranking, Column, createRankDesc} from '../model';
+import {IColumnDesc, Ranking, Column} from '../model';
 import {IStatsBuilder, IDataRow, IDataProviderOptions} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 
@@ -49,12 +49,6 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     maxCacheSize: 1000
   };
 
-  /**
-   * the local ranking orders
-   * @type {{}}
-   */
-  private ranks: any = {};
-
   private cache = new Map<number, Promise<IDataRow>>();
 
 
@@ -63,36 +57,11 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     merge(this.options, options);
   }
 
-  protected rankAccessor(row: any, id: string, desc: IColumnDesc, ranking: Ranking) {
-    return this.ranks[ranking.id][row._index] || 0;
-  }
-
-  cloneRanking(existing?: Ranking) {
-    var id = this.nextRankingId();
-    if (existing) { //copy the ranking of the other one
-      //copy the ranking
-      this.ranks[id] = this.ranks[existing.id];
-    }
-    var r = new Ranking(id);
-    r.push(this.create(createRankDesc()));
-
-    return r;
-  }
-
-  cleanUpRanking(ranking: Ranking) {
-    //delete all stored information
-    delete this.ranks[ranking.id];
-  }
-
-  sort(ranking: Ranking): Promise<number[]> {
+  sortImpl(ranking: Ranking): Promise<number[]> {
     //generate a description of what to sort
-    var desc = ranking.toSortingDesc((desc) => desc.column);
+    const desc = ranking.toSortingDesc((desc) => desc.column);
     //use the server side to sort
-    return this.server.sort(desc).then((argsort) => {
-      //store the result
-      this.ranks[ranking.id] = argsort;
-      return argsort;
-    });
+    return this.server.sort(desc);
   }
 
   private loadFromServer(indices: number[]) {
@@ -100,7 +69,6 @@ export default class RemoteDataProvider extends ACommonDataProvider {
       //enhance with the data index
       return view.map((v, i) => {
         const dataIndex = indices[i];
-        v._index = dataIndex;
         return {v, dataIndex};
       });
     });

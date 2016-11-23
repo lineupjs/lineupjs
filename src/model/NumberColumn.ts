@@ -38,7 +38,7 @@ export function numberCompare(a: number, b: number) {
 
 
 export interface INumberColumn {
-  getNumber(row: any): number;
+  getNumber(row: any, index: number): number;
 }
 
 /**
@@ -289,20 +289,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
   }
 
-  init(callback: (desc: IColumnDesc) => Promise<IStatistics>): Promise<boolean> {
-
-    var d = this.mapping.domain;
-    //if any of the values is not given use the statistics to compute them
-    if (isNaN(d[0]) || isNaN(d[1])) {
-      return callback(this.desc).then((stats) => {
-        this.mapping.domain = [stats.min, stats.max];
-        this.original.domain = [stats.min, stats.max];
-        return true;
-      });
-    }
-    return Promise.resolve(true);
-  }
-
   dump(toDescRef: (desc: any) => any) {
     var r = super.dump(toDescRef);
     r.map = this.mapping.dump();
@@ -333,16 +319,16 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED]);
   }
 
-  getLabel(row: any) {
+  getLabel(row: any, index: number) {
     if ((<any>this.desc).numberFormat) {
-      let raw = this.getRawValue(row);
+      let raw = this.getRawValue(row, index);
       //if a dedicated format and a number use the formatter in any case
       if (isNaN(raw)) {
         return 'NaN';
       }
       return this.numberFormat(raw);
     }
-    const v = super.getValue(row);
+    const v = super.getValue(row, index);
     //keep non number if it is not a number else convert using formatter
     if (typeof v === 'number') {
       return this.numberFormat(+v);
@@ -350,28 +336,28 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return String(v);
   }
 
-  getRawValue(row: any) {
-    var v: any = super.getValue(row);
+  getRawValue(row: any, index: number) {
+    var v: any = super.getValue(row, index);
     if (isMissingValue(v)) {
       return this.missingValue;
     }
     return +v;
   }
 
-  getValue(row: any) {
-    var v = this.getRawValue(row);
+  getValue(row: any, index: number) {
+    var v = this.getRawValue(row, index);
     if (isNaN(v)) {
       return v;
     }
     return this.mapping.apply(v);
   }
 
-  getNumber(row: any) {
-    return this.getValue(row);
+  getNumber(row: any, index: number) {
+    return this.getValue(row, index);
   }
 
-  compare(a: any, b: any) {
-    return numberCompare(this.getValue(a), this.getValue(b));
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
+    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
   }
 
   getOriginalMapping() {
@@ -447,11 +433,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    * @param row
    * @returns {boolean}
    */
-  filter(row: any) {
+  filter(row: any, index: number) {
     if (!this.isFiltered()) {
       return true;
     }
-    const v: any = super.getValue(row);
+    const v: any = super.getValue(row, index);
     if (isMissingValue(v)) {
       return !this.filterMissing;
     }

@@ -26,8 +26,8 @@ export default class StringColumn extends ValueColumn<string> {
     return this._alignment;
   }
 
-  getValue(row: any) {
-    var v: any = super.getValue(row);
+  getValue(row: any, index: number) {
+    var v: any = super.getValue(row, index);
     if (typeof(v) === 'undefined' || v == null) {
       return '';
     }
@@ -59,11 +59,11 @@ export default class StringColumn extends ValueColumn<string> {
     return this.currentFilter != null;
   }
 
-  filter(row: any) {
+  filter(row: any, index: number) {
     if (!this.isFiltered()) {
       return true;
     }
-    var r = this.getLabel(row),
+    var r = this.getLabel(row, index),
       filter = this.currentFilter;
 
     if (filter === StringColumn.FILTER_MISSING) { //filter empty
@@ -92,11 +92,11 @@ export default class StringColumn extends ValueColumn<string> {
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a: any, b: any) {
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
     var a_val: string, b_val: string;
-    if ((a_val = this.getValue(a)) === '') {
-      return this.getValue(b) === '' ? 0 : +1; //same = 0
-    } else if ((b_val = this.getValue(b)) === '') {
+    if ((a_val = this.getValue(a, aIndex)) === '') {
+      return this.getValue(b, bIndex) === '' ? 0 : +1; //same = 0
+    } else if ((b_val = this.getValue(b, bIndex)) === '') {
       return -1;
     }
     return a_val.localeCompare(b_val);

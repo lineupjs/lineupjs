@@ -21,16 +21,16 @@ export default class BooleanColumn extends ValueColumn<boolean> {
     this.falseMarker = desc.falseMarker || this.falseMarker;
   }
 
-  getValue(row:any) {
-    var v:any = super.getValue(row);
+  getValue(row:any, index: number) {
+    var v:any = super.getValue(row, index);
     if (typeof(v) === 'undefined' || v == null) {
       return false;
     }
     return v === true || v === 'true' || v === 'yes' || v === 'x';
   }
 
-  getLabel(row: any) {
-    const v = this.getValue(row);
+  getLabel(row: any, index: number) {
+    const v = this.getValue(row, index);
     return v ? this.trueMarker : this.falseMarker;
   }
 
@@ -53,11 +53,11 @@ export default class BooleanColumn extends ValueColumn<boolean> {
     return this.currentFilter !== null;
   }
 
-  filter(row:any) {
+  filter(row:any, index:number) {
     if (!this.isFiltered()) {
       return true;
     }
-    var r = this.getValue(row);
+    var r = this.getValue(row, index);
     return r === this.currentFilter;
   }
 
@@ -72,7 +72,7 @@ export default class BooleanColumn extends ValueColumn<boolean> {
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a:any[], b:any[]) {
-    return ascending(this.getValue(a), this.getValue(b));
+  compare(a:any, b:any, aIndex: number, bIndex:number) {
+    return ascending(this.getValue(a, aIndex), this.getValue(b, bIndex));
   }
 }

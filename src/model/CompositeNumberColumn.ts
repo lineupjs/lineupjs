@@ -54,31 +54,31 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return super.insert(col, index);
   }
 
-  getLabel(row: any) {
-    const v = this.getValue(row);
+  getLabel(row: any, index: number) {
+    const v = this.getValue(row, index);
     //keep non number if it is not a number else convert using formatter
     return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
   }
 
-  getValue(row: any) {
+  getValue(row: any, index: number) {
     //weighted sum
-    const v = this.compute(row);
+    const v = this.compute(row, index);
     if (typeof(v) === 'undefined' || v == null || isNaN(v)) {
       return this.missingValue;
     }
     return v;
   }
 
-  protected compute(row: any) {
+  protected compute(row: any, index: number) {
     return NaN;
   }
 
-  getNumber(row: any) {
-    return this.getValue(row);
+  getNumber(row: any, index: number) {
+    return this.getValue(row, index);
   }
 
-  compare(a: any, b: any) {
-    return numberCompare(this.getValue(a), this.getValue(b));
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
+    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
   }
 
   rendererType(): string {

@@ -53,11 +53,11 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    */
   private columns: Column[] = [];
 
-  comparator = (a: any, b: any) => {
+  comparator = (a: any, b: any, aIndex: number, bIndex: number) => {
     if (this.sortColumn === null) {
       return 0;
     }
-    var r = this.sortColumn.compare(a, b);
+    var r = this.sortColumn.compare(a, b, aIndex, bIndex);
     return this.ascending ? r : -r;
   };
 
@@ -321,8 +321,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.columns.some((d) => d.isFiltered());
   }
 
-  filter(row: any) {
-    return this.columns.every((d) => d.filter(row));
+  filter(row: any, index: number) {
+    return this.columns.every((d) => d.filter(row, index));
   }
 
   findMyRanker() {

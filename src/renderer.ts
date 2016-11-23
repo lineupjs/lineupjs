@@ -116,7 +116,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
         attr(n, {
           x: alignmentShift
         });
-        n.textContent = col.getLabel(d.v);
+        n.textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -128,7 +128,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
         attr(n, {}, {
           width: `${col.getWidth()}px`
         });
-        n.textContent = col.getLabel(d.v);
+        n.textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -145,7 +145,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       } else if (this.align === 'right') {
         shift = w;
       }
-      clipText(ctx, col.getLabel(d.v), shift, 0, w);
+      clipText(ctx, col.getLabel(d.v, d.dataIndex), shift, 0, w);
       ctx.textAlign = bak;
     };
   }
@@ -175,8 +175,8 @@ export class BarCellRenderer implements ICellRendererFactory {
           <text class="number ${this.renderValue ? '' : 'hoverOnly'}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        n.querySelector('rect title').textContent = col.getLabel(d.v);
-        const width = col.getWidth() * col.getValue(d.v);
+        n.querySelector('rect title').textContent = col.getLabel(d.v, d.dataIndex);
+        const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
 
         attr(<SVGRectElement>n.querySelector('rect'), {
           y: padding,
@@ -185,7 +185,7 @@ export class BarCellRenderer implements ICellRendererFactory {
         }, {
           fill: this.colorOf(d.v, i, col)
         });
-        attr(<SVGTextElement>n.querySelector('text'), {}).textContent = col.getLabel(d.v);
+        attr(<SVGTextElement>n.querySelector('text'), {}).textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -197,16 +197,16 @@ export class BarCellRenderer implements ICellRendererFactory {
           <span class="number ${this.renderValue ? '' : 'hoverOnly'}"></span>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        const width = col.getWidth() * col.getValue(d.v);
+        const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
         attr(n, {
-          title: col.getLabel(d.v)
+          title: col.getLabel(d.v, d.dataIndex)
         }, {
           width: `${isNaN(width) ? 0 : width}px`,
           height: `${context.rowHeight(i) - padding * 2}px`,
           top: `${padding}px`,
           'background-color': this.colorOf(d.v, i, col)
         });
-        n.querySelector('span').textContent = col.getLabel(d.v);
+        n.querySelector('span').textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -215,18 +215,18 @@ export class BarCellRenderer implements ICellRendererFactory {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = this.colorOf(d.v, i, col);
-      const width = col.getWidth() * col.getValue(d.v);
+      const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
       ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');
-        clipText(ctx, col.getLabel(d.v), 1, 0, col.getWidth() - 1);
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1);
       }
     };
   }
 }
 
-function toHeatMapColor(d: any, col: INumberColumn & Column) {
-  var v = col.getNumber(d);
+function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
+  var v = col.getNumber(d, index);
   if (isNaN(v)) {
     v = 0;
   }
@@ -244,7 +244,7 @@ const heatmap = {
             <title></title>
           </rect>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        n.querySelector('title').textContent = col.getLabel(d.v);
+        n.querySelector('title').textContent = col.getLabel(d.v, d.dataIndex);
         const w = context.rowHeight(i) - padding * 2;
 
         attr(n, {
@@ -252,7 +252,7 @@ const heatmap = {
           width: w,
           height: w
         }, {
-          fill: toHeatMapColor(d.v, col)
+          fill: toHeatMapColor(d.v, d.dataIndex, col)
         });
       }
     };
@@ -264,12 +264,12 @@ const heatmap = {
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const w = context.rowHeight(i) - padding * 2;
         attr(n, {
-          title: col.getLabel(d.v)
+          title: col.getLabel(d.v, d.dataIndex)
         }, {
           width: `${w}px`,
           height: `${w}px`,
           top: `${padding}px`,
-          'background-color': toHeatMapColor(d.v, col)
+          'background-color': toHeatMapColor(d.v, d.dataIndex, col)
         });
       }
     };
@@ -278,7 +278,7 @@ const heatmap = {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const w = context.rowHeight(i) - padding * 2;
-      ctx.fillStyle = toHeatMapColor(d.v, col);
+      ctx.fillStyle = toHeatMapColor(d.v, d.dataIndex, col);
       ctx.fillRect(padding, padding, w, w);
     };
   }
@@ -294,7 +294,7 @@ const action = {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            actions[i].action(d.v);
+            actions[i].action(d.v, d.dataIndex);
           };
         });
       }
@@ -309,7 +309,7 @@ const action = {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            actions[i].action(d.v);
+            actions[i].action(d.v, d.dataIndex);
           };
         });
       }
@@ -328,7 +328,7 @@ const action = {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            actions[i].action(d.v);
+            actions[i].action(d.v, d.dataIndex);
           };
         });
       }
@@ -344,7 +344,7 @@ const selection = {
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          col.toggleValue(d.v);
+          col.toggleValue(d.v, d.dataIndex);
         };
       }
     };
@@ -356,7 +356,7 @@ const selection = {
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          col.toggleValue(d.v);
+          col.toggleValue(d.v, d.dataIndex);
         };
       }
     };
@@ -365,7 +365,7 @@ const selection = {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const bak = ctx.font;
       ctx.font = '10pt FontAwesome';
-      clipText(ctx, col.getValue(d.v) ? '\uf046' : '\uf096', 0, 0, col.getWidth());
+      clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, col.getWidth());
       ctx.font = bak;
     };
   }
@@ -383,15 +383,15 @@ const annotate = {
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const input: HTMLInputElement = <HTMLInputElement>n.querySelector('foreignObject *');
         input.onchange = function (event) {
-          col.setValue(d.v, this.value);
+          col.setValue(d.v, d.dataIndex, this.value);
         };
         input.onclick = function (event) {
           event.stopPropagation();
         };
         input.style.width = col.getWidth() + 'px';
-        input.value = col.getLabel(d.v);
+        input.value = col.getLabel(d.v, d.dataIndex);
 
-        n.querySelector('text').textContent = col.getLabel(d.v);
+        n.querySelector('text').textContent = col.getLabel(d.v, d.dataIndex);
         const f = n.querySelector('foreignObject');
         f.setAttribute('width', String(col.getWidth()));
         f.setAttribute('height', String(context.rowHeight(i)));
@@ -407,14 +407,14 @@ const annotate = {
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const input: HTMLInputElement = <HTMLInputElement>n.querySelector('input');
         input.onchange = function (event) {
-          col.setValue(d.v, this.value);
+          col.setValue(d.v, d.dataIndex, this.value);
         };
         input.onclick = function (event) {
           event.stopPropagation();
         };
         n.style.width = input.style.width = col.getWidth() + 'px';
-        input.value = col.getLabel(d.v);
-        n.querySelector('span').textContent = col.getLabel(d.v);
+        input.value = col.getLabel(d.v, d.dataIndex);
+        n.querySelector('span').textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   },
@@ -424,16 +424,16 @@ const annotate = {
       if (hovered) {
         let overlay = showOverlay(context.idPrefix + col.id, dx, dy);
         overlay.style.width = col.getWidth() + 'px';
-        overlay.innerHTML = `<input type="text" value="${col.getValue(d.v)}" style="width:${col.getWidth()}px">`;
+        overlay.innerHTML = `<input type="text" value="${col.getValue(d.v, d.dataIndex)}" style="width:${col.getWidth()}px">`;
         const input = <HTMLInputElement>overlay.childNodes[0];
         input.onchange = function (event) {
-          col.setValue(d.v, this.value);
+          col.setValue(d.v, d.dataIndex, this.value);
         };
         input.onclick = function (event) {
           event.stopPropagation();
         };
       } else {
-        clipText(ctx, col.getLabel(d.v), 0, 0, col.getWidth());
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth());
       }
     };
   }
@@ -462,7 +462,7 @@ const link = {
     return {
       template: `<text class="link text" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>`,
       update: (n: SVGTextElement, d: IDataRow, i: number) => {
-        n.innerHTML = col.isLink(d.v) ? `<a class="link" xlink:href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
+        n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class="link" xlink:href="${col.getValue(d.v, d.dataIndex)}" target="_blank">${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
       }
     };
   },
@@ -471,26 +471,26 @@ const link = {
       template: `<div class="link text"></div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         n.style.width = col.getWidth() + 'px';
-        n.innerHTML = col.isLink(d.v) ? `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>` : col.getLabel(d.v);
+        n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class="link" href="${col.getValue(d.v, d.dataIndex)}" target="_blank">${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
       }
     };
   },
   createCanvas: function (col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
-      const isLink = col.isLink(d.v);
+      const isLink = col.isLink(d.v, d.dataIndex);
       if (!isLink) {
-        clipText(ctx, col.getLabel(d.v), 0, 0, col.getWidth());
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth());
         return;
       }
       const hovered = context.hovered(d.dataIndex);
       if (hovered) {
         let overlay = showOverlay(context.idPrefix + col.id, dx, dy);
         overlay.style.width = col.getWidth() + 'px';
-        overlay.innerHTML = `<a class="link" href="${col.getValue(d.v)}" target="_blank">${col.getLabel(d.v)}</a>`;
+        overlay.innerHTML = `<a class="link" href="${col.getValue(d.v, d.dataIndex)}" target="_blank">${col.getLabel(d.v, d.dataIndex)}</a>`;
       } else {
         const bak = ctx.fillStyle;
         ctx.fillStyle = context.option('style.link', context.option('style.text', 'black'));
-        clipText(ctx, col.getLabel(d.v), 0, 0, col.getWidth());
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth());
         ctx.fillStyle = bak;
       }
     };
@@ -549,11 +549,11 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
           width: cell,
           height: cell
         }, {
-          fill: col.getColor(d.v)
+          fill: col.getColor(d.v, d.dataIndex)
         });
         attr(<SVGTextElement>n.querySelector('text'), {
           x: context.rowHeight(i)
-        }).textContent = col.getLabel(d.v);
+        }).textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -573,9 +573,9 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
         attr(<HTMLDivElement>n.querySelector('div'), {}, {
           width: cell + 'px',
           height: cell + 'px',
-          'background-color': col.getColor(d.v)
+          'background-color': col.getColor(d.v, d.dataIndex)
         });
-        attr(<HTMLSpanElement>n.querySelector('span'), {}).textContent = col.getLabel(d.v);
+        attr(<HTMLSpanElement>n.querySelector('span'), {}).textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -584,10 +584,10 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
-      ctx.fillStyle = col.getColor(d.v);
+      ctx.fillStyle = col.getColor(d.v, d.dataIndex);
       ctx.fillRect(0, 0, cell, cell);
       ctx.fillStyle = context.option('style.text', 'black');
-      clipText(ctx, col.getLabel(d.v), cell + 2, 0, col.getWidth() - cell - 2);
+      clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, col.getWidth() - cell - 2);
     };
   };
 }
@@ -682,7 +682,7 @@ class StackCellRenderer implements ICellRendererFactory {
           cnode.setAttribute('transform', `translate(${col.shift - stackShift},0)`);
           col.renderer.update(cnode, d, i);
           if (col.stacked) {
-            stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v));
+            stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v, d.dataIndex));
           }
         });
       }
@@ -701,7 +701,7 @@ class StackCellRenderer implements ICellRendererFactory {
           cnode.style.transform = `translate(${col.shift - stackShift}px,0)`;
           col.renderer.update(cnode, d, i);
           if (col.stacked) {
-            stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v));
+            stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v, d.dataIndex));
           }
         });
       }
@@ -718,7 +718,7 @@ class StackCellRenderer implements ICellRendererFactory {
         col.renderer(ctx, d, i, dx + shift, dy);
         ctx.translate(-(col.shift - stackShift), 0);
         if (col.stacked) {
-          stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v));
+          stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v, d.dataIndex));
         }
       });
     };

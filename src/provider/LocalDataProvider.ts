@@ -19,7 +19,7 @@ import ACommonDataProvider from './ACommonDataProvider';
  * @param range the total value range
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  */
-function computeStats(arr: any[], acc: (row: any) => number, range?: [number, number]): IStatistics {
+function computeStats(arr: any[], indices: number[], acc: (row: any, index:number) => number, range?: [number, number]): IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -30,16 +30,17 @@ function computeStats(arr: any[], acc: (row: any) => number, range?: [number, nu
       hist: []
     };
   }
-  const hist = d3.layout.histogram().value(acc);
+  const indexAccessor = (a, i) =>acc(a, indices[i]);
+  const hist = d3.layout.histogram().value(indexAccessor);
   if (range) {
     hist.range(() => range);
   }
-  const ex = d3.extent(arr, acc);
+  const ex = d3.extent(arr, indexAccessor);
   const hist_data = hist(arr);
   return {
     min: ex[0],
     max: ex[1],
-    mean: d3.mean(arr, acc),
+    mean: d3.mean(arr, indexAccessor),
     count: arr.length,
     maxBin: d3.max(hist_data, (d) => d.y),
     hist: hist_data
@@ -53,12 +54,12 @@ function computeStats(arr: any[], acc: (row: any) => number, range?: [number, nu
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
  */
-function computeHist(arr: IDataRow[], acc: (row: any) => string[], categories: string[]): ICategoricalStatistics {
+function computeHist(arr: number[], indices: number[], acc: (row: any, index:number) => string[], categories: string[]): ICategoricalStatistics {
   const m = new Map<string,number>();
   categories.forEach((cat) => m.set(cat, 0));
 
-  arr.forEach((a) => {
-    const vs = acc(a);
+  arr.forEach((a, i) => {
+    const vs = acc(a, indices[i]);
     if (vs == null) {
       return;
     }
@@ -102,11 +103,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   constructor(public data: any[], columns: IColumnDesc[] = [], options: ILocalDataProviderOptions & IDataProviderOptions = {}) {
     super(columns, options);
     merge(this.options, options);
-    //enhance with a magic attribute storing ranking information
-    data.forEach((d, i) => {
-      d._rankings = {};
-      d._index = i;
-    });
+
 
     const that = this;
     this.reorderall = function () {
@@ -125,11 +122,6 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @param data
    */
   setData(data: any[]) {
-    data.forEach((d, i) => {
-      d._rankings = {};
-      d._index = i;
-    });
-
     this.data = data;
     this.reorderall();
   }
@@ -143,36 +135,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @param data
    */
   appendData(data: any[]) {
-    const l = this.data.length;
-    data.forEach((d, i) => {
-      d._rankings = {};
-      d._index = l + i;
-    });
     this.data.push.apply(this.data, data);
     this.reorderall();
   }
 
-  protected rankAccessor(row: any, id: string, desc: IColumnDesc, ranking: Ranking) {
-    return (row._rankings[ranking.id] + 1) || 1;
-  }
-
   cloneRanking(existing?: Ranking) {
-    const id = this.nextRankingId();
-
-    const new_ = new Ranking(id);
-
-    if (existing) { //copy the ranking of the other one
-      this.data.forEach((row) => {
-        let r = row._rankings;
-        r[id] = r[existing.id];
-      });
-      //TODO better cloning
-      existing.children.forEach((child) => {
-        this.push(new_, child.desc);
-      });
-    } else {
-      new_.push(this.create(createRankDesc()));
-    }
+    const new_ = super.cloneRanking(existing);
 
     if (this.options.filterGlobally) {
       new_.on(Column.EVENT_FILTER_CHANGED + '.reorderall', this.reorderall);
@@ -185,37 +153,31 @@ export default class LocalDataProvider extends ACommonDataProvider {
     if (this.options.filterGlobally) {
       ranking.on(Column.EVENT_FILTER_CHANGED + '.reorderall', null);
     }
-    //delete all stored information
-    this.data.forEach((d) => delete d._rankings[ranking.id]);
+    super.cleanUpRanking(ranking);
   }
 
-  sort(ranking: Ranking): Promise<number[]> {
+  sortImpl(ranking: Ranking): Promise<number[]> {
     if (this.data.length === 0) {
       return Promise.resolve([]);
     }
     //wrap in a helper and store the initial index
-    var helper = this.data.map((r, i) => ({row: r, i: i, prev: r._rankings[ranking.id] || 0}));
+    var helper = this.data.map((r, i) => ({row: r, i: i}));
 
     //do the optional filtering step
     if (this.options.filterGlobally) {
       let filtered = this.getRankings().filter((d) => d.isFiltered());
       if (filtered.length > 0) {
-        helper = helper.filter((d) => filtered.every((f) => f.filter(d.row)));
+        helper = helper.filter((d) => filtered.every((f) => f.filter(d.row, d.i)));
       }
     } else if (ranking.isFiltered()) {
-      helper = helper.filter((d) => ranking.filter(d.row));
+      helper = helper.filter((d) => ranking.filter(d.row, d.i));
     }
 
     //sort by the ranking column
-    helper.sort((a, b) => ranking.comparator(a.row, b.row));
+    helper.sort((a, b) => ranking.comparator(a.row, b.row, a.i, b.i));
 
     //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-    var argsort = helper.map((r, i) => {
-      r.row._rankings[ranking.id] = i;
-      return r.i;
-    });
-
-    return Promise.resolve(argsort);
+    return Promise.resolve(helper.map((r) => r.i));
   }
 
 
@@ -247,8 +209,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const getD = () => d === null ? (d = this.viewRaw(indices)) : d;
 
     return {
-      stats: (col: INumberColumn) => Promise.resolve(computeStats(getD(), col.getNumber.bind(col), [0, 1])),
-      hist: (col: ICategoricalColumn) => Promise.resolve(computeHist(getD(), col.getCategories.bind(col), col.categories))
+      stats: (col: INumberColumn) => Promise.resolve(computeStats(getD(), indices, col.getNumber.bind(col), [0, 1])),
+      hist: (col: ICategoricalColumn) => Promise.resolve(computeHist(getD(), indices, col.getCategories.bind(col), col.categories))
     };
   }
 
@@ -260,7 +222,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
     }
     //randomly select 500 elements
-    var indices = [];
+    var indices :number[] = [];
     for (let i = 0; i < MAX_SAMPLE; ++i) {
       let j = Math.floor(Math.random() * (l - 1));
       while (indices.indexOf(j) >= 0) {
@@ -268,16 +230,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
       }
       indices.push(j);
     }
-    return Promise.resolve(indices.map((i) => col.getRawValue(this.data[i])));
+    return Promise.resolve(indices.map((i) => col.getRawValue(this.data[i], i)));
   }
 
   searchAndJump(search: string|RegExp, col: Column) {
     //case insensitive search
     search = typeof search === 'string' ? search.toLowerCase() : search;
     const f = typeof search === 'string' ? (v: string) => v.toLowerCase().indexOf((<string>search)) >= 0 : (<RegExp>search).test.bind(search);
-    const indices = this.data.filter((row) => {
-      return f(col.getLabel(row));
-    }).map((row) => row._index);
+    const indices = d3.range(this.data.length).filter((i) => f(col.getLabel(this.data[i], i)));
 
     this.jumpToNearest(indices);
   }

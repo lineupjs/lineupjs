@@ -29,29 +29,29 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     return super.createEventList().concat([SelectionColumn.EVENT_SELECT]);
   }
 
-  setValue(row: any, value: boolean) {
-    const old = this.getValue(row);
+  setValue(row: any, index: number, value: boolean) {
+    const old = this.getValue(row, index);
     if (old === value) {
       return true;
     }
-    return this.setImpl(row, value);
+    return this.setImpl(row, index, value);
   }
 
-  private setImpl(row: any, value: boolean) {
+  private setImpl(row: any, index: number, value: boolean) {
     if ((<any>this.desc).setter) {
-      (<any>this.desc).setter(row, value);
+      (<any>this.desc).setter(row, index, value);
     }
     this.fire(SelectionColumn.EVENT_SELECT, row, value);
     return true;
   }
 
-  toggleValue(row: any) {
-    const old = this.getValue(row);
-    this.setImpl(row, !old);
+  toggleValue(row: any, index: number) {
+    const old = this.getValue(row, index);
+    this.setImpl(row, index, !old);
     return !old;
   }
 
-  compare(a: any, b: any) {
-    return ascending(this.getValue(a), this.getValue(b));
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
+    return ascending(this.getValue(a, aIndex), this.getValue(b, bIndex));
   }
 }

@@ -127,7 +127,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return true;
   }
 
-  getColor(row: any) {
+  getColor(row: any, index: number) {
     return this.color;
   }
 
@@ -135,7 +135,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children.some((d) => d.isFiltered());
   }
 
-  filter(row: any) {
-    return this._children.every((d) => d.filter(row));
+  filter(row: any, index: number) {
+    return this._children.every((d) => d.filter(row, index));
   }
 }
