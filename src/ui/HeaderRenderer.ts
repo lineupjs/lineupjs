@@ -265,6 +265,10 @@ export default class HeaderRenderer {
     });
     //real width
     offset -= this.options.slopeWidth;
+    const totalWidth = offset;
+
+    // fix for #179
+    this.$node.select('div.drop').style('width', totalWidth + 'px');
 
     var columns = shifts.map((d) => d.col);
 
