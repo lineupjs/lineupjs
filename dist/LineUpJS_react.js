@@ -1579,7 +1579,6 @@ var SparklineCellRenderer = (function (_super) {
         _super.apply(this, arguments);
     }
     SparklineCellRenderer.prototype.createSVG = function (col, context) {
-        var padding = context.option('rowPadding', 1);
         var min = col.desc.sdomain[0];
         var max = col.desc.sdomain[1];
         var bins = col.desc.datalength;
@@ -1614,7 +1613,6 @@ var ThresholdCellRenderer = (function (_super) {
         _super.apply(this, arguments);
     }
     ThresholdCellRenderer.prototype.createSVG = function (col, context) {
-        var padding = context.option('rowPadding', 1);
         var bins = col.desc.datalength;
         var threshold = col.desc.threshold;
         var celldimension = (col.getWidth() / (bins));
@@ -1646,7 +1644,6 @@ var VerticalBarCellRenderer = (function (_super) {
         _super.apply(this, arguments);
     }
     VerticalBarCellRenderer.prototype.createSVG = function (col, context) {
-        var padding = context.option('rowPadding', 1);
         var bins = col.desc.datalength;
         var min = col.desc.sdomain[0];
         var max = col.desc.sdomain[1];
@@ -1763,7 +1760,6 @@ var UpsetCellRenderer = (function (_super) {
         _super.apply(this, arguments);
     }
     UpsetCellRenderer.prototype.createSVG = function (col, context) {
-        var padding = context.option('rowPadding', 1);
         var bins = col.desc.datalength;
         var windowsize = col.getWidth() / bins;
         return {

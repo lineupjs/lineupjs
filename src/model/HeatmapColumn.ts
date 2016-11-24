@@ -88,18 +88,19 @@ export class CustomSortCalculation {
 
 }
 
-export default class HeatmapColumn  extends ValueColumn<number[] > {
- private sortCriteria;
+export default class HeatmapColumn extends ValueColumn<number[] > {
+  private sortCriteria;
+
   constructor(id: string, desc: any) {
     super(id, desc);
-     this.sortCriteria = (<any>desc).sort || 'min';
+    this.sortCriteria = (<any>desc).sort || 'min';
   }
 
-   compare(a: any, b: any, aIndex: number, bIndex: number) {
-     this.sortCriteria = (<any>this.desc).sort;
-     const a_val =this.getValue(a, aIndex);
-     const b_val = this.getValue(b, bIndex);
-      var sort: any = new CustomSortCalculation(a_val, b_val);
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
+    this.sortCriteria = (<any>this.desc).sort;
+    const a_val = this.getValue(a, aIndex);
+    const b_val = this.getValue(b, bIndex);
+    var sort: any = new CustomSortCalculation(a_val, b_val);
     const f = sort[this.sortCriteria].bind(sort);
     return f();
   }

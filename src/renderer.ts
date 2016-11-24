@@ -224,7 +224,7 @@ class SparklineCellRenderer extends DefaultCellRenderer {
                 return y(d);
               });
             return line(<any>d);
-          })
+          });
         path.exit().remove();
       }
     };
@@ -254,7 +254,7 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
             width: celldimension,
             height: (d, i) => (context.rowHeight(i)) / 2,
             fill: (d) => (d < threshold) ? cat1color : cat2color
-          })
+          });
         rect.exit().remove();
       }
     };
@@ -278,7 +278,7 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
 
     function scaleheight(barheight, data) {
       scale = (min < 0) ? (scale.domain([min, max]).range([0, barheight / 2])) : (scale.domain([min, max]).range([0, barheight]));
-      return (scale(data))
+      return (scale(data));
     };
     color.domain([min, 0, max]).range([mincolor, 'white', maxcolor]);
     return {
@@ -301,7 +301,7 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
             width: celldimension,
             height: (d: any) => (d < threshold) ? (barheight / 2 - scaleheight(context.rowHeight(i), d)) : scaleheight(context.rowHeight(i), d),
             fill: color
-          })
+          });
         rect.exit().remove();
       }
     };
@@ -356,7 +356,7 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
             x: scale(q1),
             width: scale(q3) - scale(q1),
             height: (d, i) =>context.rowHeight(i)
-          })
+          });
         rect.exit().remove();
 
         const path = g.selectAll('path').data([<any>col.getValue(d.v, i)]);
@@ -377,7 +377,7 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
               'M' + (scale(q1) + scale(q3) - scale(q1)) + ',' + middle + 'L' + (right) + ',' + middle +
               'M' + right + ',' + top + 'L' + right + ',' + bottom;
 
-          })
+          });
         path.exit().remove();
 
       }
@@ -407,7 +407,7 @@ class UpsetCellRenderer extends DefaultCellRenderer {
             r: (windowsize / 4),
             class: 'upsetcircle',
             opacity: (d) =>(d === 1) ? 1 : 0.1
-          })
+          });
         circle.exit().remove();
         var catindexes = [];
         const path = g.selectAll('path').data(<any>[col.getValue(d.v, i)]);
