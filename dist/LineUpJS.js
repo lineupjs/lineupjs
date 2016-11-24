@@ -3281,25 +3281,25 @@ var StackColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__NumberColumn__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__StringColumn__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__StackColumn__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__AnnotateColumn__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__BooleanColumn__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__AnnotateColumn__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__BooleanColumn__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__CategoricalColumn__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__MinColumn__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__MaxColumn__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__MeanColumn__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__MinColumn__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__MaxColumn__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__MeanColumn__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__RankColumn__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__SelectionColumn__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__CategoricalNumberColumn__ = __webpack_require__(35);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__NestedColumn__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(36);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__LinkColumn__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__HeatmapColumn__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__SparklineColumn__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__ThresholdColumn__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__VerticalColumn__ = __webpack_require__(42);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__ = __webpack_require__(34);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__CategoricalNumberColumn__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__NestedColumn__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__LinkColumn__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__HeatmapColumn__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__SparklineColumn__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__ThresholdColumn__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__VerticalBarColumn__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__ = __webpack_require__(42);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__Ranking__ = __webpack_require__(14);
 /* harmony export (immutable) */ exports["defineColumn"] = defineColumn;
@@ -3423,7 +3423,7 @@ function models() {
         script: __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__["a" /* default */],
         nested: __WEBPACK_IMPORTED_MODULE_15__NestedColumn__["a" /* default */],
         threshold: __WEBPACK_IMPORTED_MODULE_20__ThresholdColumn__["a" /* default */],
-        verticalbar: __WEBPACK_IMPORTED_MODULE_21__VerticalColumn__["a" /* default */],
+        verticalbar: __WEBPACK_IMPORTED_MODULE_21__VerticalBarColumn__["a" /* default */],
         boxplot: __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__["a" /* default */],
         upset: __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__["a" /* default */]
     };
@@ -4534,7 +4534,7 @@ var SelectionColumn = (function (_super) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__provider_ADataProvider__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__renderer__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ui__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ui__ = __webpack_require__(31);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ui_ABodyRenderer__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3__ = __webpack_require__(0);
@@ -4898,6 +4898,196 @@ function deriveColors(columns) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
+var BoxplotColumn = (function (_super) {
+    __extends(BoxplotColumn, _super);
+    function BoxplotColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
+    }
+    BoxplotColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
+    return BoxplotColumn;
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = BoxplotColumn;
+
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
+var HeatmapColumn = (function (_super) {
+    __extends(HeatmapColumn, _super);
+    function HeatmapColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
+    }
+    HeatmapColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
+    return HeatmapColumn;
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = HeatmapColumn;
+
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__StringColumn__ = __webpack_require__(5);
 /**
@@ -4995,7 +5185,7 @@ var LinkColumn = (function (_super) {
 
 
 /***/ },
-/* 20 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5055,7 +5245,7 @@ var MaxColumn = (function (_super) {
 
 
 /***/ },
-/* 21 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5096,7 +5286,7 @@ var MeanColumn = (function (_super) {
 
 
 /***/ },
-/* 22 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5153,11 +5343,11 @@ var MinColumn = (function (_super) {
 
 
 /***/ },
-/* 23 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__MultiLevelCompositeColumn__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__MultiLevelCompositeColumn__ = __webpack_require__(41);
 /* harmony export (immutable) */ exports["b"] = createDesc;
 /**
  * Created by sam on 04.11.2016.
@@ -5209,7 +5399,292 @@ var NestedColumn = (function (_super) {
 
 
 /***/ },
-/* 24 */
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
+var SparklineColumn = (function (_super) {
+    __extends(SparklineColumn, _super);
+    function SparklineColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
+    }
+    SparklineColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
+    return SparklineColumn;
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = SparklineColumn;
+
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
+var ThresholdColumn = (function (_super) {
+    __extends(ThresholdColumn, _super);
+    function ThresholdColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
+    }
+    ThresholdColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
+    return ThresholdColumn;
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = ThresholdColumn;
+
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
+var VerticalBarColumn = (function (_super) {
+    __extends(VerticalBarColumn, _super);
+    function VerticalBarColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
+    }
+    VerticalBarColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
+    return VerticalBarColumn;
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = VerticalBarColumn;
+
+
+/***/ },
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5425,7 +5900,7 @@ var ABodyDOMRenderer = (function (_super) {
 
 
 /***/ },
-/* 25 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5440,15 +5915,25 @@ var ABodyDOMRenderer = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__model_CategoricalColumn__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__model_RankColumn__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__model_StackColumn__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__model_ScriptColumn__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ui_dialogs__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__model_HeatmapColumn__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__model_SparklineColumn__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__model_BoxplotColumn__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__model_ThresholdColumn__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__model_VerticalBarColumn__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__model_ScriptColumn__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__ui_dialogs__ = __webpack_require__(32);
 /* harmony export (immutable) */ exports["a"] = toFullTooltip;
 /* harmony export (immutable) */ exports["b"] = dummyRankingButtonHook;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
+
+
+
+
+
 
 
 
@@ -5489,7 +5974,7 @@ var HeaderRenderer = (function () {
             headerHeight: 20,
             manipulative: true,
             histograms: false,
-            filterDialogs: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["filterDialogs"])(),
+            filterDialogs: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["filterDialogs"])(),
             linkTemplates: [],
             searchAble: function (col) { return col instanceof __WEBPACK_IMPORTED_MODULE_3__model_StringColumn__["a" /* default */]; },
             sortOnLabel: true,
@@ -5550,16 +6035,16 @@ var HeaderRenderer = (function () {
     HeaderRenderer.prototype.changeDataStorage = function (data) {
         var _this = this;
         if (this.data) {
-            this.data.on([__WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_DIRTY_HEADER + '.headerRenderer', __WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_ORDER_CHANGED + '.headerRenderer', __WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED + '.headerRenderer'], null);
+            this.data.on([__WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_DIRTY_HEADER + '.headerRenderer', __WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_ORDER_CHANGED + '.headerRenderer', __WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED + '.headerRenderer'], null);
         }
         this.data = data;
-        data.on(__WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_DIRTY_HEADER + '.headerRenderer', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["delayedCall"])(this.update.bind(this), 1));
+        data.on(__WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_DIRTY_HEADER + '.headerRenderer', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["delayedCall"])(this.update.bind(this), 1));
         if (this.options.histograms) {
-            data.on(__WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_ORDER_CHANGED + '.headerRenderer', function () {
+            data.on(__WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_ORDER_CHANGED + '.headerRenderer', function () {
                 _this.updateHist();
                 _this.update();
             });
-            data.on(__WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED + '.headerRenderer', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["delayedCall"])(this.drawSelection.bind(this), 1));
+            data.on(__WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED + '.headerRenderer', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["delayedCall"])(this.drawSelection.bind(this), 1));
         }
     };
     Object.defineProperty(HeaderRenderer.prototype, "sharedHistCache", {
@@ -5707,12 +6192,12 @@ var HeaderRenderer = (function () {
         var $regular = $node.filter(function (d) { return !(d instanceof __WEBPACK_IMPORTED_MODULE_4__model_Ranking__["a" /* default */]); }), $stacked = $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_9__model_StackColumn__["a" /* default */]; }), $multilevel = $node.filter(function (d) { return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__model_CompositeColumn__["b" /* isMultiLevelColumn */])(d); });
         //edit weights
         $stacked.append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openEditWeightsDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openEditWeightsDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //rename
         $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openRenameDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openRenameDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //clone
@@ -5720,14 +6205,35 @@ var HeaderRenderer = (function () {
             provider.takeSnapshot(d);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
+        //Heatmap Sort
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_11__model_HeatmapColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogHeatmap"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
+        });
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_12__model_SparklineColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogSparkline"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
+        });
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_13__model_BoxplotColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogBoxplot"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
+        });
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_14__model_ThresholdColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogThresholdBar"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
+        });
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_15__model_VerticalBarColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogVerticalBar"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
+        });
         //edit link
         $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openEditLinkDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), [].concat(d.desc.templates || [], that.options.linkTemplates), that.options.idPrefix);
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openEditLinkDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), [].concat(d.desc.templates || [], that.options.linkTemplates), that.options.idPrefix);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //edit script
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_11__model_ScriptColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openEditScriptDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_16__model_ScriptColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openEditScriptDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //filter
@@ -5737,7 +6243,7 @@ var HeaderRenderer = (function () {
         });
         //search
         $node.filter(function (d) { return _this.options.searchAble(d); }).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openSearchDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), provider);
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openSearchDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), provider);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //collapse
@@ -5938,11 +6444,11 @@ var HeaderRenderer = (function () {
 
 
 /***/ },
-/* 26 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__ = __webpack_require__(30);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(45);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ABodyRenderer__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(46);
@@ -5981,7 +6487,7 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 
 
 /***/ },
-/* 27 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5989,13 +6495,20 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model_ScriptColumn__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mappingeditor__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mappingeditor__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_d3__);
 /* harmony export (immutable) */ exports["dialogForm"] = dialogForm;
+/* harmony export (immutable) */ exports["sortdialogForm"] = sortdialogForm;
 /* harmony export (immutable) */ exports["makePopup"] = makePopup;
+/* harmony export (immutable) */ exports["makesortPopup"] = makesortPopup;
 /* harmony export (immutable) */ exports["openRenameDialog"] = openRenameDialog;
 /* harmony export (immutable) */ exports["openEditLinkDialog"] = openEditLinkDialog;
+/* harmony export (immutable) */ exports["sortDialogHeatmap"] = sortDialogHeatmap;
+/* harmony export (immutable) */ exports["sortDialogSparkline"] = sortDialogSparkline;
+/* harmony export (immutable) */ exports["sortDialogBoxplot"] = sortDialogBoxplot;
+/* harmony export (immutable) */ exports["sortDialogVerticalBar"] = sortDialogVerticalBar;
+/* harmony export (immutable) */ exports["sortDialogThresholdBar"] = sortDialogThresholdBar;
 /* harmony export (immutable) */ exports["openSearchDialog"] = openSearchDialog;
 /* harmony export (immutable) */ exports["openEditWeightsDialog"] = openEditWeightsDialog;
 /* harmony export (immutable) */ exports["openEditScriptDialog"] = openEditScriptDialog;
@@ -6011,6 +6524,7 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 
 
 
+
 function dialogForm(title, body, buttonsWithLabel) {
     if (buttonsWithLabel === void 0) { buttonsWithLabel = false; }
     return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
@@ -6018,6 +6532,11 @@ function dialogForm(title, body, buttonsWithLabel) {
         body + '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
         '<button type = "reset" class="cancel fa fa-times" title="cancel"></button>' +
         '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
+}
+function sortdialogForm(title, body, buttonsWithLabel) {
+    if (buttonsWithLabel === void 0) { buttonsWithLabel = false; }
+    return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
+        '<form onsubmit="return false">' + body;
 }
 /**
  * creates a simple popup dialog under the given attachment
@@ -6035,6 +6554,36 @@ function makePopup(attachement, title, body) {
         left: pos.left + 'px',
         top: pos.top + 'px'
     }).html(dialogForm(title, body));
+    function movePopup() {
+        //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
+        //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
+        //const mouse = d3.mouse(this.parentElement);
+        $popup.style({
+            left: (this.parentElement.offsetLeft + __WEBPACK_IMPORTED_MODULE_5_d3__["event"].dx) + 'px',
+            top: (this.parentElement.offsetTop + __WEBPACK_IMPORTED_MODULE_5_d3__["event"].dy) + 'px'
+        });
+    }
+    $popup.select('span.lu-popup-title').call(__WEBPACK_IMPORTED_MODULE_5_d3__["behavior"].drag().on('drag', movePopup));
+    $popup.on('keydown', function () {
+        if (__WEBPACK_IMPORTED_MODULE_5_d3__["event"].which === 27) {
+            $popup.remove();
+        }
+    });
+    var auto = $popup.select('input[autofocus]').node();
+    if (auto) {
+        auto.focus();
+    }
+    return $popup;
+}
+function makesortPopup(attachement, title, body) {
+    var pos = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["offset"])(attachement.node());
+    var $popup = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5_d3__["select"])('body').append('div')
+        .attr({
+        'class': 'lu-popup2'
+    }).style({
+        left: pos.left + 'px',
+        top: pos.top + 'px'
+    }).html(sortdialogForm(title, body));
     function movePopup() {
         //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
         //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
@@ -6093,6 +6642,127 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
     });
     popup.select('.cancel').on('click', function () {
         popup.remove();
+    });
+}
+// Sort Heatmap Dialog.
+function sortDialogHeatmap(column, $header) {
+    var rank = column.desc.sort;
+    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+        return "<input type=\"radio\" name=\"heatmaprank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+    }).join('\n'));
+    function thiselement() {
+        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
+    }
+    var that;
+    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=heatmaprank]');
+    sortcontent.on('change', function () {
+        that = this;
+        rank = that.value;
+        column.desc.sort = rank;
+        column.toggleMySorting();
+    });
+    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
+        var outside = sortcontent.filter(thiselement).empty();
+        if (outside) {
+            popup.remove();
+        }
+    });
+}
+function sortDialogSparkline(column, $header) {
+    var rank = column.desc.sort;
+    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+        return "<input type=\"radio\" name=\"sparklinerank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+    }).join('\n'));
+    function thiselement() {
+        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
+    }
+    var that;
+    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=sparklinerank]');
+    sortcontent.on('change', function () {
+        that = this;
+        rank = that.value;
+        column.desc.sort = rank;
+        column.toggleMySorting();
+    });
+    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
+        var outside = sortcontent.filter(thiselement).empty();
+        if (outside) {
+            popup.remove();
+        }
+    });
+}
+function sortDialogBoxplot(column, $header) {
+    var rank = column.desc.sort;
+    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+        return "<input type=\"radio\" name=\"boxplotrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+    }).join('\n'));
+    function thiselement() {
+        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
+    }
+    var that;
+    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=boxplotrank]');
+    sortcontent.on('change', function () {
+        that = this;
+        rank = that.value;
+        column.desc.sort = rank;
+        column.toggleMySorting();
+    });
+    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
+        var outside = sortcontent.filter(thiselement).empty();
+        if (outside) {
+            popup.remove();
+        }
+    });
+}
+function sortDialogVerticalBar(column, $header) {
+    var rank = column.desc.sort;
+    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+        return "<input type=\"radio\" name=\"verticalbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+    }).join('\n'));
+    function thiselement() {
+        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
+    }
+    var that;
+    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=verticalbarrank]');
+    sortcontent.on('change', function () {
+        that = this;
+        rank = that.value;
+        column.desc.sort = rank;
+        column.toggleMySorting();
+    });
+    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
+        var outside = sortcontent.filter(thiselement).empty();
+        if (outside) {
+            popup.remove();
+        }
+    });
+}
+function sortDialogThresholdBar(column, $header) {
+    var rank = column.desc.sort;
+    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+        return "<input type=\"radio\" name=\"Thresholdbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+    }).join('\n'));
+    function thiselement() {
+        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
+    }
+    var that;
+    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=Thresholdbarrank]');
+    sortcontent.on('change', function () {
+        that = this;
+        rank = that.value;
+        column.desc.sort = rank;
+        column.toggleMySorting();
+    });
+    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
+        var outside = sortcontent.filter(thiselement).empty();
+        if (outside) {
+            popup.remove();
+        }
     });
 }
 /**
@@ -6434,7 +7104,13 @@ function openCategoricalMappingEditor(column, $header) {
     var $popup = makePopup($header, 'Edit Categorical Mapping', '<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>');
     var range = column.getScale().range, colors = column.categoryColors, labels = column.categoryLabels;
     var trData = column.categories.map(function (d, i) {
-        return { cat: d, label: labels[i], isChecked: bak.length === 0 || bak.indexOf(d) >= 0, range: range[i] * 100, color: colors[i] };
+        return {
+            cat: d,
+            label: labels[i],
+            isChecked: bak.length === 0 || bak.indexOf(d) >= 0,
+            range: range[i] * 100,
+            color: colors[i]
+        };
     }).sort(sortbyName('label'));
     var $rows = $popup.select('tbody').selectAll('tr').data(trData);
     var $rows_enter = $rows.enter().append('tr');
@@ -6516,13 +7192,13 @@ function filterDialogs() {
 
 
 /***/ },
-/* 28 */
+/* 33 */
 /***/ function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ },
-/* 29 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6662,7 +7338,7 @@ var ACommonDataProvider = (function (_super) {
 
 
 /***/ },
-/* 30 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6670,7 +7346,7 @@ var ACommonDataProvider = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ACommonDataProvider__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ACommonDataProvider__ = __webpack_require__(34);
 /**
  * Created by sam on 04.11.2016.
  */
@@ -6887,7 +7563,7 @@ var LocalDataProvider = (function (_super) {
 
 
 /***/ },
-/* 31 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7203,7 +7879,7 @@ var MappingEditor = (function () {
 
 
 /***/ },
-/* 32 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7275,7 +7951,7 @@ var AnnotateColumn = (function (_super) {
 
 
 /***/ },
-/* 33 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7360,102 +8036,7 @@ var BooleanColumn = (function (_super) {
 
 
 /***/ },
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var BoxplotColumn = (function (_super) {
-    __extends(BoxplotColumn, _super);
-    function BoxplotColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-    }
-    BoxplotColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
-    };
-    return BoxplotColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = BoxplotColumn;
-
-
-/***/ },
-/* 35 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7647,7 +8228,7 @@ var CategoricalNumberColumn = (function (_super) {
 
 
 /***/ },
-/* 36 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7684,102 +8265,7 @@ var DummyColumn = (function (_super) {
 
 
 /***/ },
-/* 37 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var HeatmapColumn = (function (_super) {
-    __extends(HeatmapColumn, _super);
-    function HeatmapColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-    }
-    HeatmapColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
-    };
-    return HeatmapColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = HeatmapColumn;
-
-
-/***/ },
-/* 38 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7889,197 +8375,7 @@ var MultiLevelCompositeColumn = (function (_super) {
 
 
 /***/ },
-/* 39 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var SparklineColumn = (function (_super) {
-    __extends(SparklineColumn, _super);
-    function SparklineColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-    }
-    SparklineColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
-    };
-    return SparklineColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = SparklineColumn;
-
-
-/***/ },
-/* 40 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var ThresholdColumn = (function (_super) {
-    __extends(ThresholdColumn, _super);
-    function ThresholdColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-    }
-    ThresholdColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
-    };
-    return ThresholdColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = ThresholdColumn;
-
-
-/***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8171,101 +8467,6 @@ var UpsetColumn = (function (_super) {
     return UpsetColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = UpsetColumn;
-
-
-/***/ },
-/* 42 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var VerticalColumn = (function (_super) {
-    __extends(VerticalColumn, _super);
-    function VerticalColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-    }
-    VerticalColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
-    };
-    return VerticalColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = VerticalColumn;
 
 
 /***/ },
@@ -8551,7 +8752,7 @@ var BodyCanvasRenderer = (function (_super) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__renderer__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ADOMBodyRenderer__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ADOMBodyRenderer__ = __webpack_require__(29);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -8614,7 +8815,7 @@ var HTMLBodyRenderer = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__provider_ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__HeaderRenderer__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__HeaderRenderer__ = __webpack_require__(30);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -8793,7 +8994,7 @@ var PoolRenderer = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__renderer__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ADOMBodyRenderer__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ADOMBodyRenderer__ = __webpack_require__(29);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -8904,7 +9105,7 @@ var SVGBodyRenderer = (function (_super) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__LocalDataProvider__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__LocalDataProvider__ = __webpack_require__(35);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__RemoteDataProvider__ = __webpack_require__(49);
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "DataProvider", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IDataProviderOptions", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["IDataProviderOptions"]; });
@@ -8928,7 +9129,7 @@ var SVGBodyRenderer = (function (_super) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ACommonDataProvider__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ACommonDataProvider__ = __webpack_require__(34);
 /**
  * Created by sam on 04.11.2016.
  */
@@ -9032,14 +9233,14 @@ var RemoteDataProvider = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss__ = __webpack_require__(33);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__style_scss__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__provider__ = __webpack_require__(47);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__renderer__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ui__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ui__ = __webpack_require__(31);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__utils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__ui_dialogs__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__ui_dialogs__ = __webpack_require__(32);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lineup__ = __webpack_require__(18);
 /* harmony export (binding) */ __webpack_require__.d(exports, "model", function() { return model; });
 /* harmony export (binding) */ __webpack_require__.d(exports, "provider", function() { return provider; });

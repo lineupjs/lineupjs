@@ -13,6 +13,11 @@ import CategoricalColumn, {isCategoricalColumn} from '../model/CategoricalColumn
 import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
 import LinkColumn from '../model/LinkColumn';
+import HeatmapColumn from '../model/HeatmapColumn';
+import SparklineColumn from '../model/SparklineColumn';
+import BoxplotColumn from   '../model/BoxplotColumn';
+import ThresholdColumn from '../model/ThresholdColumn';
+import VerticalBarColumn from '../model/VerticalBarColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
 import {
@@ -21,7 +26,13 @@ import {
   openEditLinkDialog,
   openEditScriptDialog,
   openRenameDialog,
-  openSearchDialog
+  openSearchDialog,
+  sortDialogHeatmap,
+  sortDialogSparkline,
+  sortDialogBoxplot,
+  sortDialogVerticalBar,
+  sortDialogThresholdBar
+
 } from '../ui_dialogs';
 import ADataProvider from "../provider/ADataProvider";
 
@@ -336,6 +347,37 @@ export default class HeaderRenderer {
       provider.takeSnapshot(d);
       (<MouseEvent>d3.event).stopPropagation();
     });
+
+    //Heatmap Sort
+    $node.filter((d) => d instanceof HeatmapColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+      sortDialogHeatmap(<HeatmapColumn>d, d3.select(this.parentNode.parentNode));
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+
+    $node.filter((d) => d instanceof SparklineColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+      sortDialogSparkline(<SparklineColumn>d, d3.select(this.parentNode.parentNode));
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+
+
+    $node.filter((d) => d instanceof BoxplotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+      sortDialogBoxplot(<BoxplotColumn>d, d3.select(this.parentNode.parentNode));
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+
+
+    $node.filter((d) => d instanceof ThresholdColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+      sortDialogThresholdBar(<ThresholdColumn>d, d3.select(this.parentNode.parentNode));
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+
+
+    $node.filter((d) => d instanceof VerticalBarColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+
+      sortDialogVerticalBar(<VerticalBarColumn>d, d3.select(this.parentNode.parentNode));
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+
     //edit link
     $node.filter((d) => d instanceof LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
       openEditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), [].concat((<any>d.desc).templates || [], that.options.linkTemplates), that.options.idPrefix);

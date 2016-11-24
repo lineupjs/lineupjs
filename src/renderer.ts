@@ -188,7 +188,7 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
             width: celldimension,
             height: context.rowHeight(i),
             fill: color
-          })
+          });
         rect.exit().remove();
       }
     };
@@ -200,7 +200,6 @@ class SparklineCellRenderer extends DefaultCellRenderer {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
-    const padding = context.option('rowPadding', 1);
     const min = (<any> col.desc).sdomain[0];
     const max = (<any> col.desc).sdomain[1];
     const bins = (<any> col.desc).datalength;
@@ -236,7 +235,6 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
-    const padding = context.option('rowPadding', 1);
     const bins = (<any>col.desc).datalength;
     const threshold = (<any> col.desc).threshold;
     const celldimension = (col.getWidth() / (bins));
@@ -266,7 +264,7 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
-    const padding = context.option('rowPadding', 1);
+
     const bins = (<any> col.desc).datalength;
     const min = (<any> col.desc).sdomain[0];
     const max = (<any> col.desc).sdomain[1];
@@ -391,7 +389,7 @@ class UpsetCellRenderer extends DefaultCellRenderer {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
-    const padding = context.option('rowPadding', 1);
+
     const bins = (<any> col.desc).datalength;
     const windowsize = col.getWidth() / bins;
 

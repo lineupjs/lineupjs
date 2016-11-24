@@ -24,7 +24,7 @@ import LinkColumn from './LinkColumn';
 import HeatmapColumn from './HeatmapColumn';
 import SparklineColumn from './SparklineColumn';
 import ThresholdColumn from './ThresholdColumn';
-import VerticalColumn from './VerticalColumn';
+import VerticalBarColumn from './VerticalBarColumn';
 import BoxplotColumn from './BoxplotColumn';
 import UpsetColumn from './UpsetColumn'
 
@@ -55,6 +55,7 @@ export function defineColumn<T>(name: string, functions: any = {}) {
         this.init.apply(this, [].slice.apply(arguments));
       }
     }
+
     init() {
       // dummy
     }
@@ -90,16 +91,16 @@ export function models() {
     actions: DummyColumn,
     annotate: AnnotateColumn,
     selection: SelectionColumn,
-    heatmapcustom:HeatmapColumn,
-    sparkline:SparklineColumn,
+    heatmapcustom: HeatmapColumn,
+    sparkline: SparklineColumn,
     max: MaxColumn,
     min: MinColumn,
     mean: MeanColumn,
     script: ScriptColumn,
     nested: NestedColumn,
-    threshold:ThresholdColumn,
-    verticalbar:VerticalColumn,
-    boxplot:BoxplotColumn,
-    upset:UpsetColumn
+    threshold: ThresholdColumn,
+    verticalbar: VerticalBarColumn,
+    boxplot: BoxplotColumn,
+    upset: UpsetColumn
   };
 }

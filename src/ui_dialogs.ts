@@ -13,10 +13,17 @@ import ScriptColumn from './model/ScriptColumn';
 import BooleanColumn from './model/BooleanColumn';
 import NumberColumn, {IMappingFunction} from './model/NumberColumn';
 import CategoricalNumberColumn from './model/CategoricalNumberColumn';
+import HeatmapColumn from './model/HeatmapColumn';
+import SparklineColumn from './model/SparklineColumn';
+import BoxplotColumn from   './model/BoxplotColumn';
+import ThresholdColumn from './model/ThresholdColumn';
+import VerticalBarColumn from './model/VerticalBarColumn';
 import {offset} from './utils';
 import MappingEditor from './mappingeditor';
 import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
+import * as d3 from 'd3';
 import DataProvider from './provider/ADataProvider';
+
 
 export function dialogForm(title, body, buttonsWithLabel = false) {
   return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
@@ -26,6 +33,12 @@ export function dialogForm(title, body, buttonsWithLabel = false) {
     '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
 }
 
+export function sortdialogForm(title, body, buttonsWithLabel = false) {
+  return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
+    '<form onsubmit="return false">' + body;
+}
+
+
 /**
  * creates a simple popup dialog under the given attachment
  * @param attachment
@@ -33,7 +46,7 @@ export function dialogForm(title, body, buttonsWithLabel = false) {
  * @param body
  * @returns {Selection<any>}
  */
-export function makePopup(attachement:Selection<any>, title:string, body:string) {
+export function makePopup(attachement: Selection<any>, title: string, body: string) {
   var pos = offset(<Element>attachement.node());
   var $popup = select('body').append('div')
     .attr({
@@ -42,15 +55,51 @@ export function makePopup(attachement:Selection<any>, title:string, body:string)
       left: pos.left + 'px',
       top: pos.top + 'px'
     }).html(dialogForm(title, body));
+
   function movePopup() {
     //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
     //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
     //const mouse = d3.mouse(this.parentElement);
     $popup.style({
       left: (this.parentElement.offsetLeft + (<any>d3event).dx) + 'px',
-      top:  (this.parentElement.offsetTop + (<any>d3event).dy) + 'px'
+      top: (this.parentElement.offsetTop + (<any>d3event).dy) + 'px'
     });
   }
+
+  $popup.select('span.lu-popup-title').call(behavior.drag().on('drag', movePopup));
+  $popup.on('keydown', () => {
+    if ((<KeyboardEvent>d3event).which === 27) {
+      $popup.remove();
+    }
+  });
+  var auto = <HTMLInputElement>$popup.select('input[autofocus]').node();
+  if (auto) {
+    auto.focus();
+  }
+  return $popup;
+
+}
+
+export function makesortPopup(attachement: Selection<any>, title: string, body: string) {
+  var pos = offset(<Element>attachement.node());
+  var $popup = select('body').append('div')
+    .attr({
+      'class': 'lu-popup2'
+    }).style({
+      left: pos.left + 'px',
+      top: pos.top + 'px'
+    }).html(sortdialogForm(title, body));
+
+  function movePopup() {
+    //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
+    //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
+    //const mouse = d3.mouse(this.parentElement);
+    $popup.style({
+      left: (this.parentElement.offsetLeft + (<any>d3event).dx) + 'px',
+      top: (this.parentElement.offsetTop + (<any>d3event).dy) + 'px'
+    });
+  }
+
   $popup.select('span.lu-popup-title').call(behavior.drag().on('drag', movePopup));
   $popup.on('keydown', () => {
     if ((<KeyboardEvent>d3event).which === 27) {
@@ -70,7 +119,7 @@ export function makePopup(attachement:Selection<any>, title:string, body:string)
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-export function openRenameDialog(column:Column, $header:d3.Selection<Column>) {
+export function openRenameDialog(column: Column, $header: d3.Selection<Column>) {
   var popup = makePopup($header, 'Rename Column', `
     <input type="text" size="15" value="${column.label}" required="required" autofocus="autofocus"><br>
     <input type="color" size="15" value="${column.color}" required="required"><br>
@@ -80,7 +129,7 @@ export function openRenameDialog(column:Column, $header:d3.Selection<Column>) {
     var newValue = popup.select('input[type="text"]').property('value');
     var newColor = popup.select('input[type="color"]').property('value');
     var newDescription = popup.select('textarea').property('value');
-    column.setMetaData( { label: newValue, color: newColor, description: newDescription});
+    column.setMetaData({label: newValue, color: newColor, description: newDescription});
     popup.remove();
   });
 
@@ -95,10 +144,10 @@ export function openRenameDialog(column:Column, $header:d3.Selection<Column>) {
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-export function openEditLinkDialog(column:LinkColumn, $header:d3.Selection<Column>, templates: string[] = [], idPrefix: string) {
-  var t = `<input type="text" size="15" value="${column.getLink()}" required="required" autofocus="autofocus" ${templates.length > 0 ? 'list="ui'+idPrefix+'lineupPatternList"' : ''}><br>`;
+export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Column>, templates: string[] = [], idPrefix: string) {
+  var t = `<input type="text" size="15" value="${column.getLink()}" required="required" autofocus="autofocus" ${templates.length > 0 ? 'list="ui' + idPrefix + 'lineupPatternList"' : ''}><br>`;
   if (templates.length > 0) {
-    t += '<datalist id="ui${idPrefix}lineupPatternList">'+templates.map((t) => `<option value="${t}">`)+'</datalist>';
+    t += '<datalist id="ui${idPrefix}lineupPatternList">' + templates.map((t) => `<option value="${t}">`) + '</datalist>';
   }
 
   var popup = makePopup($header, 'Edit Link ($ as Placeholder)', t);
@@ -115,17 +164,201 @@ export function openEditLinkDialog(column:LinkColumn, $header:d3.Selection<Colum
   });
 }
 
+// Sort Heatmap Dialog.
+export function sortDialogHeatmap(column: HeatmapColumn, $header: d3.Selection<HeatmapColumn>) {
+
+  var rank = (<any>column.desc).sort;
+  var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+
+  var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+    return `<input type="radio" name="heatmaprank" value=${d}  ${(rank === d) ? 'checked' : ''}>${d}<br>`;
+
+  }).join('\n'));
+
+  function thiselement() {
+
+    return this === (<any>d3.event).target;
+  }
+
+  var that;
+
+  var sortcontent = d3.selectAll('input[name=heatmaprank]');
+  sortcontent.on('change', function () {
+    that = this;
+    rank = that.value;
+    (<any>column.desc).sort = rank;
+    column.toggleMySorting();
+
+  });
+
+  d3.select('body').on('click', function () {
+    var outside = sortcontent.filter(thiselement).empty();
+    if (outside) {
+      popup.remove();
+    }
+  });
+
+
+}
+
+export function sortDialogSparkline(column: SparklineColumn, $header: d3.Selection<SparklineColumn>) {
+
+  var rank = (<any>column.desc).sort;
+  var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+
+  var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+    return `<input type="radio" name="sparklinerank" value=${d}  ${(rank === d) ? 'checked' : ''}>${d}<br>`;
+
+  }).join('\n'));
+
+  function thiselement() {
+
+    return this === (<any>d3.event).target;
+  }
+
+  var that;
+
+  var sortcontent = d3.selectAll('input[name=sparklinerank]');
+  sortcontent.on('change', function () {
+    that = this;
+    rank = that.value;
+    (<any>column.desc).sort = rank;
+    column.toggleMySorting();
+
+  });
+
+  d3.select('body').on('click', function () {
+    var outside = sortcontent.filter(thiselement).empty();
+    if (outside) {
+      popup.remove();
+    }
+  });
+
+
+}
+
+export function sortDialogBoxplot(column: BoxplotColumn, $header: d3.Selection<BoxplotColumn>) {
+
+  var rank = (<any>column.desc).sort;
+  var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+
+  var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+    return `<input type="radio" name="boxplotrank" value=${d}  ${(rank === d) ? 'checked' : ''}>${d}<br>`;
+
+  }).join('\n'));
+
+  function thiselement() {
+
+    return this === (<any>d3.event).target;
+  }
+
+  var that;
+
+  var sortcontent = d3.selectAll('input[name=boxplotrank]');
+  sortcontent.on('change', function () {
+    that = this;
+    rank = that.value;
+    (<any>column.desc).sort = rank;
+    column.toggleMySorting();
+
+  });
+
+  d3.select('body').on('click', function () {
+    var outside = sortcontent.filter(thiselement).empty();
+    if (outside) {
+      popup.remove();
+    }
+  });
+
+
+}
+
+
+export function sortDialogVerticalBar(column: VerticalBarColumn, $header: d3.Selection<VerticalBarColumn>) {
+
+  var rank = (<any>column.desc).sort;
+  var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+
+  var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+    return `<input type="radio" name="verticalbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}>${d}<br>`;
+
+  }).join('\n'));
+
+  function thiselement() {
+
+    return this === (<any>d3.event).target;
+  }
+
+  var that;
+
+  var sortcontent = d3.selectAll('input[name=verticalbarrank]');
+  sortcontent.on('change', function () {
+    that = this;
+    rank = that.value;
+    (<any>column.desc).sort = rank;
+    column.toggleMySorting();
+
+  });
+
+  d3.select('body').on('click', function () {
+    var outside = sortcontent.filter(thiselement).empty();
+    if (outside) {
+      popup.remove();
+    }
+  });
+
+
+}
+
+export function sortDialogThresholdBar(column: ThresholdColumn, $header: d3.Selection<ThresholdColumn>) {
+
+
+  var rank = (<any>column.desc).sort;
+  var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+
+  var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+    return `<input type="radio" name="Thresholdbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}>${d}<br>`;
+
+  }).join('\n'));
+
+  function thiselement() {
+
+    return this === (<any>d3.event).target;
+  }
+
+  var that;
+
+  var sortcontent = d3.selectAll('input[name=Thresholdbarrank]');
+  sortcontent.on('change', function () {
+    that = this;
+    rank = that.value;
+    (<any>column.desc).sort = rank;
+    column.toggleMySorting();
+
+  });
+
+  d3.select('body').on('click', function () {
+    var outside = sortcontent.filter(thiselement).empty();
+    if (outside) {
+      popup.remove();
+    }
+  });
+
+
+}
+
+
 /**
  * opens a search dialog for the given column
  * @param column the column to rename
  * @param $header the visual header element of this column
  * @param provider the data provider for the actual search
  */
-export function openSearchDialog(column:Column, $header:d3.Selection<Column>, provider:DataProvider) {
+export function openSearchDialog(column: Column, $header: d3.Selection<Column>, provider: DataProvider) {
   var popup = makePopup($header, 'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
 
   popup.select('input[type="text"]').on('input', function () {
-    var search:any = (<HTMLInputElement>this).value;
+    var search: any = (<HTMLInputElement>this).value;
     if (search.length >= 3) {
       var isRegex = popup.select('input[type="checkbox"]').property('checked');
       if (isRegex) {
@@ -160,7 +393,7 @@ export function openSearchDialog(column:Column, $header:d3.Selection<Column>, pr
  * @param column the column to filter
  * @param $header the visual header element of this column
  */
-export function openEditWeightsDialog(column:StackColumn, $header:d3.Selection<Column>) {
+export function openEditWeightsDialog(column: StackColumn, $header: d3.Selection<Column>) {
   var weights = column.getWeights(),
     children = column.children.map((d, i) => ({col: d, weight: weights[i] * 100} ));
 
@@ -204,7 +437,7 @@ export function openEditWeightsDialog(column:StackColumn, $header:d3.Selection<C
     children.forEach((d, i) => d.weight = weights[i] * 100);
     $rows.select('input').property('value', (d) => d.weight);
     redraw();
-   });
+  });
   $popup.select('.ok').on('click', function () {
     column.setWeights(children.map((d) => d.weight));
     $popup.remove();
@@ -221,7 +454,7 @@ function markFiltered($header: d3.Selection<Column>, filtered = false) {
 }
 
 function sortbyName(prop: string) {
-  return function(a, b) {
+  return function (a, b) {
     const av = a[prop],
       bv = b[prop];
     if (av.toLowerCase() < bv.toLowerCase()) {
@@ -239,7 +472,7 @@ function sortbyName(prop: string) {
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-function openCategoricalFilter(column:CategoricalColumn, $header:d3.Selection<Column>) {
+function openCategoricalFilter(column: CategoricalColumn, $header: d3.Selection<Column>) {
   var bak = column.getFilter() || [];
   var popup = makePopup($header, 'Edit Filter', '<div class="selectionTable"><table><thead><th class="selectAll"></th><th>Category</th></thead><tbody></tbody></table></div>');
 
@@ -255,8 +488,8 @@ function openCategoricalFilter(column:CategoricalColumn, $header:d3.Selection<Co
   $rows_enter.append('td').attr('class', 'checkmark');
   $rows_enter.append('td').attr('class', 'datalabel').text((d) => d.label);
   $rows_enter.on('click', (d) => {
-      d.isChecked = !d.isChecked;
-      redraw();
+    d.isChecked = !d.isChecked;
+    redraw();
   });
 
   function redraw() {
@@ -309,7 +542,7 @@ function openCategoricalFilter(column:CategoricalColumn, $header:d3.Selection<Co
  * @param column the column to filter
  * @param $header the visual header element of this column
  */
-function openStringFilter(column:StringColumn, $header:d3.Selection<Column>) {
+function openStringFilter(column: StringColumn, $header: d3.Selection<Column>) {
   var bak = column.getFilter() || '', bakMissing = bak === StringColumn.FILTER_MISSING;
   if (bakMissing) {
     bak = '';
@@ -327,7 +560,7 @@ function openStringFilter(column:StringColumn, $header:d3.Selection<Column>) {
 
   function updateImpl(force) {
     //get value
-    var search:any = $popup.select('input[type="text"]').property('value');
+    var search: any = $popup.select('input[type="text"]').property('value');
     var filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
     if (filterMissing && search === '') {
       search = StringColumn.FILTER_MISSING;
@@ -373,13 +606,13 @@ function openStringFilter(column:StringColumn, $header:d3.Selection<Column>) {
  * @param column the column to filter
  * @param $header the visual header element of this column
  */
-function openBooleanFilter(column:BooleanColumn, $header:d3.Selection<Column>) {
+function openBooleanFilter(column: BooleanColumn, $header: d3.Selection<Column>) {
   var bak = column.getFilter();
 
   var $popup = makePopup($header, 'Filter',
-    `<label><input type="radio" name="boolean_check" value="null" ${bak === null ? 'checked="checked"': ''}>No Filter</label><br>
-     <label><input type="radio" name="boolean_check" value="true" ${bak === true ? 'checked="checked"': ''}>True</label><br>
-     <label><input type="radio" name="boolean_check" value="false" ${bak === false ? 'checked="checked"': ''}>False</label>
+    `<label><input type="radio" name="boolean_check" value="null" ${bak === null ? 'checked="checked"' : ''}>No Filter</label><br>
+     <label><input type="radio" name="boolean_check" value="true" ${bak === true ? 'checked="checked"' : ''}>True</label><br>
+     <label><input type="radio" name="boolean_check" value="false" ${bak === false ? 'checked="checked"' : ''}>False</label>
     <br>`);
 
   function updateData(filter) {
@@ -391,7 +624,7 @@ function openBooleanFilter(column:BooleanColumn, $header:d3.Selection<Column>) {
     //get value
     const isTrue = $popup.select('input[type="radio"][value="true"]').property('checked');
     const isFalse = $popup.select('input[type="radio"][value="false"]').property('checked');
-    updateData(isTrue ? true : (isFalse ? false: null));
+    updateData(isTrue ? true : (isFalse ? false : null));
   }
 
   $popup.selectAll('input[type="radio"]').on('change', updateImpl);
@@ -401,8 +634,8 @@ function openBooleanFilter(column:BooleanColumn, $header:d3.Selection<Column>) {
     $popup.remove();
   });
   $popup.select('.reset').on('click', function () {
-    const v = bak === null ? 'null': String(bak);
-    $popup.selectAll('input[type="radio"]').property('checked', function() {
+    const v = bak === null ? 'null' : String(bak);
+    $popup.selectAll('input[type="radio"]').property('checked', function () {
       return this.value === v;
     });
     updateData(null);
@@ -419,7 +652,7 @@ function openBooleanFilter(column:BooleanColumn, $header:d3.Selection<Column>) {
  * @param column the column to edit
  * @param $header the visual header element of this column
  */
-export function openEditScriptDialog(column:ScriptColumn, $header:d3.Selection<Column>) {
+export function openEditScriptDialog(column: ScriptColumn, $header: d3.Selection<Column>) {
   const bak = column.getScript();
   const $popup = makePopup($header, 'Edit Script',
     `Parameters: <code>values: number[], children: Column[]</code><br>
@@ -456,7 +689,7 @@ export function openEditScriptDialog(column:ScriptColumn, $header:d3.Selection<C
  * @param $header the visual header element of this column
  * @param data the data provider for illustrating the mapping by example
  */
-function openMappingEditor(column:NumberColumn, $header:d3.Selection<any>, data:DataProvider, idPrefix: string) {
+function openMappingEditor(column: NumberColumn, $header: d3.Selection<any>, data: DataProvider, idPrefix: string) {
   var pos = offset($header.node()),
     bak = column.getMapping(),
     original = column.getOriginalMapping(),
@@ -517,7 +750,7 @@ function openMappingEditor(column:NumberColumn, $header:d3.Selection<any>, data:
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-function openCategoricalMappingEditor(column:CategoricalNumberColumn, $header:d3.Selection<any>) {
+function openCategoricalMappingEditor(column: CategoricalNumberColumn, $header: d3.Selection<any>) {
   var bak = column.getFilter() || [];
 
   var scale = d3scale.linear().domain([0, 100]).range([0, 120]);
@@ -529,7 +762,13 @@ function openCategoricalMappingEditor(column:CategoricalNumberColumn, $header:d3
     labels = column.categoryLabels;
 
   const trData = column.categories.map((d, i) => {
-    return {cat: d, label: labels[i], isChecked: bak.length === 0 || bak.indexOf(d) >= 0, range: range[i] * 100, color: colors[i]};
+    return {
+      cat: d,
+      label: labels[i],
+      isChecked: bak.length === 0 || bak.indexOf(d) >= 0,
+      range: range[i] * 100,
+      color: colors[i]
+    };
   }).sort(sortbyName('label'));
 
   var $rows = $popup.select('tbody').selectAll('tr').data(trData);
