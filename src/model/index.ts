@@ -21,6 +21,12 @@ import CategoricalNumberColumn from './CategoricalNumberColumn';
 import NestedColumn from './NestedColumn';
 import DummyColumn from './DummyColumn';
 import LinkColumn from './LinkColumn';
+import HeatmapColumn from './HeatmapColumn';
+import SparklineColumn from './SparklineColumn';
+import ThresholdColumn from './ThresholdColumn';
+import VerticalColumn from './ValueColumn';
+import BoxplotColumn from './BoxplotColumn';
+import UpsetColumn from './UpsetColumn'
 
 export {default as Column, IColumnDesc} from './Column';
 export {ScaleMappingFunction, ScriptMappingFunction, isNumberColumn} from './NumberColumn';
@@ -84,11 +90,16 @@ export function models() {
     actions: DummyColumn,
     annotate: AnnotateColumn,
     selection: SelectionColumn,
-
+    heatmapcustom:HeatmapColumn,
+    sparkline:SparklineColumn,
     max: MaxColumn,
     min: MinColumn,
     mean: MeanColumn,
     script: ScriptColumn,
-    nested: NestedColumn
+    nested: NestedColumn,
+    threshold:ThresholdColumn,
+    verticalbar:VerticalColumn,
+    boxplot:BoxplotColumn,
+    upset:UpsetColumn
   };
 }

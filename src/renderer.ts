@@ -13,6 +13,8 @@ import {INumberColumn} from './model/NumberColumn';
 import {forEach, attr, clipText, ITextRenderHints} from './utils';
 import {hsl} from 'd3';
 import {IDataRow} from './provider/ADataProvider';
+import * as d3 from 'd3';
+
 /**
  * context for rendering, wrapped as an object for easy extensibility
  */
@@ -62,7 +64,6 @@ export interface IDOMCellRenderer<T> {
 }
 export declare type ISVGCellRenderer = IDOMCellRenderer<SVGElement>;
 export declare type IHTMLCellRenderer = IDOMCellRenderer<HTMLElement>;
-
 
 
 export interface ICanvasRenderContext extends IRenderContext<CanvasRenderingContext2D> {
@@ -156,6 +157,285 @@ export class DefaultCellRenderer implements ICellRendererFactory {
 /**
  * a renderer rendering a bar for numerical columns
  */
+
+class HeatmapCellRenderer extends DefaultCellRenderer {
+
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+    function cell_dim(total, cells) {
+      return (total / cells);
+    }
+
+    const total_width = col.getWidth();
+    const bins = (<any>col.desc).datalength;
+    const min = (<any> col.desc).sdomain[0], max = (<any> col.desc).sdomain[1];
+    const colorrange = (<any> col.desc).colorrange;
+    const celldimension = cell_dim(total_width, bins);
+    var color: any = d3.scale.linear<number, string>();
+    color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
+      : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+    const padding = context.option('rowPadding', 1);
+    return {
+
+      template: `<g class="heatmapcell"></g>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        const g = d3.select(n);
+        const rect = g.selectAll('rect').data(col.getValue(d.v, i));
+        rect.enter().append('rect');
+        rect
+          .attr({
+            y: padding,
+            x: (d, i) => (i === null || 0) ? 0 : (i * celldimension),
+            width: celldimension,
+            height: context.rowHeight(i),
+            fill: color
+          })
+        rect.exit().remove();
+      }
+    };
+  }
+}
+
+
+class SparklineCellRenderer extends DefaultCellRenderer {
+
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+
+    const padding = context.option('rowPadding', 1);
+    const min = (<any> col.desc).sdomain[0];
+    const max = (<any> col.desc).sdomain[1];
+    const bins = (<any> col.desc).datalength;
+    var x: any = d3.scale.linear().domain([0, bins - 1]).range([0, col.getWidth()]);
+    var y: any = y = d3.scale.linear().domain([min, max]);
+    var line = d3.svg.line<number>();
+
+    return {
+
+      template: `<g class="sparklinecell"></g>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        const g = d3.select(n);
+        const path = g.selectAll('path').data([<any>col.getValue(d.v, i)]);
+        path.enter().append('path');
+        path
+          .attr('d', function (d, i) {
+            line
+              .x((d, i) => x(i))
+              .y(function (d: any, i) {
+
+                y.range([context.rowHeight(i), 0]);
+                return y(d);
+              });
+            return line(<any>d);
+          })
+        path.exit().remove();
+      }
+    };
+  }
+}
+
+class ThresholdCellRenderer extends DefaultCellRenderer {
+
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+
+    const padding = context.option('rowPadding', 1);
+    const bins = (<any>col.desc).datalength;
+    const threshold = (<any> col.desc).threshold;
+    const celldimension = (col.getWidth() / (bins));
+    const cat1color = (<any> col.desc).colorrange[0];
+    const cat2color = (<any> col.desc).colorrange[1];
+    return {
+
+      template: `<g class="thresholdcell"></g>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        const g = d3.select(n);
+        const rect = g.selectAll('rect').data(<any>col.getValue(d.v, i));
+        rect.enter().append('rect');
+        rect
+          .attr({
+            y: (d, i) => (d < threshold) ? (context.rowHeight(i) / 2) : 0,
+            x: (d, i) => (i === null || 0) ? 0 : (i * celldimension),
+            width: celldimension,
+            height: (d, i) => (context.rowHeight(i)) / 2,
+            fill: (d) => (d < threshold) ? cat1color : cat2color
+          })
+        rect.exit().remove();
+      }
+    };
+  }
+}
+class VerticalBarCellRenderer extends DefaultCellRenderer {
+
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+
+    const padding = context.option('rowPadding', 1);
+    const bins = (<any> col.desc).datalength;
+    const min = (<any> col.desc).sdomain[0];
+    const max = (<any> col.desc).sdomain[1];
+    const mincolor = (<any> col.desc).colorrange[0];
+    const maxcolor = (<any> col.desc).colorrange[1];
+    const celldimension = (col.getWidth() / bins);
+    const threshold = (<any> col.desc).threshold;
+    var barheight = 13;
+    var scale = d3.scale.linear();
+    var color: any = d3.scale.linear<number,string>();
+
+    function scaleheight(barheight, data) {
+      scale = (min < 0) ? (scale.domain([min, max]).range([0, barheight / 2])) : (scale.domain([min, max]).range([0, barheight]));
+      return (scale(data))
+    };
+    color.domain([min, 0, max]).range([mincolor, 'white', maxcolor]);
+    return {
+
+      template: `<g class="verticalbarcell"></g>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        const g = d3.select(n);
+        const rect = g.selectAll('rect').data(<any>col.getValue(d.v, i));
+        rect.enter().append('rect');
+        rect
+          .attr({
+            y: function (d: any, i) {
+              if (min < 0) {
+                return (d < threshold) ? (context.rowHeight(i) / 2) : context.rowHeight(i) / 2 - scaleheight(context.rowHeight(i), d);   // For positive and negative value
+              } else {
+                return context.rowHeight(i) - scaleheight(context.rowHeight(i), d);
+              }
+            },
+            x: (d, i) => (i === null || 0) ? 0 : (i * celldimension),
+            width: celldimension,
+            height: (d: any) => (d < threshold) ? (barheight / 2 - scaleheight(context.rowHeight(i), d)) : scaleheight(context.rowHeight(i), d),
+            fill: color
+          })
+        rect.exit().remove();
+      }
+    };
+  }
+}
+class BoxplotCellRenderer extends DefaultCellRenderer {
+
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+
+    function getPercentile(data, percentile) {
+
+      var index = (percentile / 100) * data.length;
+      var result;
+      if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+      } else {
+        result = data[Math.floor(index)];
+      }
+      return result;
+    }
+
+    function numSort(a, b) {
+      return a - b;
+    }
+
+    const padding = context.option('rowPadding', 1);
+    const min = (<any> col.desc).sdomain[0];
+    const max = (<any> col.desc).sdomain[1];
+    var scale = d3.scale.linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
+
+    return {
+
+      template: `<g class="boxplotcell"></g>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+
+        var data = col.getValue(d.v, i);
+        data.sort(numSort);
+        var mindata = Math.min.apply(Math, data);
+        var maxdata = Math.max.apply(Math, data);
+
+        var q1 = (getPercentile(data, 25));
+        var med = (getPercentile(data, 50));
+        var q3 = (getPercentile(data, 75));
+
+        const g = d3.select(n);
+        const rect = g.selectAll('rect').data([col.getValue(d.v, i)]);
+        rect.enter().append('rect');
+        rect
+          .attr('class', 'boxplotrect')
+          .attr({
+            y: padding,
+            x: scale(q1),
+            width: scale(q3) - scale(q1),
+            height: (d, i) =>context.rowHeight(i)
+          })
+        rect.exit().remove();
+
+        const path = g.selectAll('path').data([<any>col.getValue(d.v, i)]);
+        path.enter().append('path');
+        path
+          .attr('class', 'boxplotline')
+          .attr('d', function (d, i) {
+            var left = scale(mindata), right = scale(maxdata), center = scale(med);
+            var top = context.option('rowPadding', 1);
+
+            var bottom = Math.max(context.rowHeight(i) - top, 0);
+            var middle = (bottom - top) / 2;
+
+
+            return 'M' + left + ',' + middle + 'L' + scale(q1) + ',' + middle +
+              'M' + left + ',' + top + 'L' + left + ',' + bottom +
+              'M' + center + ',' + top + 'L' + center + ',' + bottom +
+              'M' + (scale(q1) + scale(q3) - scale(q1)) + ',' + middle + 'L' + (right) + ',' + middle +
+              'M' + right + ',' + top + 'L' + right + ',' + bottom;
+
+          })
+        path.exit().remove();
+
+      }
+    };
+  }
+}
+
+class UpsetCellRenderer extends DefaultCellRenderer {
+
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+
+    const padding = context.option('rowPadding', 1);
+    const bins = (<any> col.desc).datalength;
+    const windowsize = col.getWidth() / bins;
+
+
+    return {
+      template: `<g class="upsetcell"></g>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        const g = d3.select(n);
+        const circle = g.selectAll('circle').data(<any>col.getValue(d.v, i));
+        circle.enter().append('circle');
+        circle
+          .attr({
+            cy: (d: any, i) => (context.rowHeight(i) / 2),
+            cx: (d: any, i) => (i * windowsize) + (windowsize / 2),
+            r: (windowsize / 4),
+            class: 'upsetcircle',
+            opacity: (d) =>(d === 1) ? 1 : 0.1
+          })
+        circle.exit().remove();
+        var catindexes = [];
+        const path = g.selectAll('path').data(<any>[col.getValue(d.v, i)]);
+        var countcategory = col.getValue(d.v, i).filter((x) => x === 1).length;
+
+        catindexes.push(col.getValue(d.v, i).reduce(function (b, e, i) {
+          if (e === 1) {
+            b.push(i);
+          }
+          return b;
+        }, []));
+
+        if (countcategory > 1) {
+          path.enter().append('path');
+          path
+            .attr('d', function (d, i) {
+
+              return 'M' + ((d3.min(catindexes[i]) * windowsize) + (windowsize / 2)) + ',' + (context.rowHeight(i) / 2) + 'L' + ((d3.max(catindexes[i]) * windowsize) + (windowsize / 2)) + ',' + (context.rowHeight(i) / 2);
+
+            })
+            .attr('class', 'upsetpath');
+        }
+      }
+    };
+  }
+}
 export class BarCellRenderer implements ICellRendererFactory {
   /**
    * flag to always render the value
@@ -168,6 +448,7 @@ export class BarCellRenderer implements ICellRendererFactory {
   }
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+
     const padding = context.option('rowPadding', 1);
     return {
       template: `<g class="bar">
@@ -214,8 +495,10 @@ export class BarCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+
       ctx.fillStyle = this.colorOf(d.v, i, col);
       const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
       ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
@@ -506,8 +789,8 @@ const link = {
 class StringCellRenderer {
   private alignments = {
     left: new DefaultCellRenderer(),
-    right : new DefaultCellRenderer('text_right', 'right'),
-    center : new DefaultCellRenderer('text_center', 'center')
+    right: new DefaultCellRenderer('text_right', 'right'),
+    center: new DefaultCellRenderer('text_center', 'center')
   };
 
   createSVG(col: StringColumn, context: IDOMRenderContext): ISVGCellRenderer {
@@ -624,12 +907,12 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
     return; //nothing to do
   }
 
-  const idsAndRenderer = new Set(columns.map((c) => c.column.id+'@'+c.column.rendererType()));
+  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.rendererType()));
   //remove all that are not existing anymore
   Array.prototype.slice.call(node.childNodes).forEach((n) => {
     const id = n.getAttribute('data-column-id');
     const renderer = n.getAttribute('data-renderer');
-    const idAndRenderer = id+'@'+renderer;
+    const idAndRenderer = id + '@' + renderer;
     if (!idsAndRenderer.has(idAndRenderer)) {
       node.removeChild(n);
     }
@@ -750,7 +1033,13 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   max: combineCellRenderer,
   min: combineCellRenderer,
   mean: combineCellRenderer,
-  script: combineCellRenderer
+  script: combineCellRenderer,
+  heatmapcustom: new HeatmapCellRenderer(),
+  threshold: new ThresholdCellRenderer(),
+  sparkline: new SparklineCellRenderer(),
+  verticalbar: new VerticalBarCellRenderer(),
+  boxplot: new BoxplotCellRenderer(),
+  upset: new UpsetCellRenderer()
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {

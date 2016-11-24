@@ -47,6 +47,26 @@
     stroke: darkgray;
     stroke-width: 1;
   }
+  .sparklinecell{
+        stroke: black;
+      }
+   .boxplotrect {
+      stroke: black;
+      fill: #e0e0e0;
+
+    }
+    .boxplotline {
+      stroke: black;
+      fill: #e0e0e0;
+    }
+  .upsetcircle {
+      stroke: black;
+      fill: black;
+    }
+    .upsetpath {
+      stroke: black;
+      fill: black;
+    }
 
   g.row {
     rect.bg {
@@ -73,5 +93,6 @@
         opacity: 0.5;
       }
     }
+
   }
 }
