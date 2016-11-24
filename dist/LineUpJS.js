@@ -75,7 +75,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 49);
+/******/ 	return __webpack_require__(__webpack_require__.s = 50);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -3297,21 +3297,22 @@ var StackColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__HeatmapColumn__ = __webpack_require__(37);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__SparklineColumn__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__ThresholdColumn__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__BoxplotColumn__ = __webpack_require__(34);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__UpsetColumn__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__Ranking__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__VerticalColumn__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__Column__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__Ranking__ = __webpack_require__(14);
 /* harmony export (immutable) */ exports["defineColumn"] = defineColumn;
 /* harmony export (immutable) */ exports["createActionDesc"] = createActionDesc;
 /* harmony export (immutable) */ exports["models"] = models;
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_23__Column__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_23__Column__["IColumnDesc"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_24__Column__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_24__Column__["IColumnDesc"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ScaleMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["d"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ScriptMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["e"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isNumberColumn", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isCategoricalColumn", function() { return __WEBPACK_IMPORTED_MODULE_7__CategoricalColumn__["b"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_24__Ranking__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_24__Ranking__["b"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_25__Ranking__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_25__Ranking__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMinDesc", function() { return __WEBPACK_IMPORTED_MODULE_8__MinColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMaxDesc", function() { return __WEBPACK_IMPORTED_MODULE_9__MaxColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMeanDesc", function() { return __WEBPACK_IMPORTED_MODULE_10__MeanColumn__["b"]; });
@@ -3422,9 +3423,9 @@ function models() {
         script: __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__["a" /* default */],
         nested: __WEBPACK_IMPORTED_MODULE_15__NestedColumn__["a" /* default */],
         threshold: __WEBPACK_IMPORTED_MODULE_20__ThresholdColumn__["a" /* default */],
-        verticalbar: __WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */],
-        boxplot: __WEBPACK_IMPORTED_MODULE_21__BoxplotColumn__["a" /* default */],
-        upset: __WEBPACK_IMPORTED_MODULE_22__UpsetColumn__["a" /* default */]
+        verticalbar: __WEBPACK_IMPORTED_MODULE_21__VerticalColumn__["a" /* default */],
+        boxplot: __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__["a" /* default */],
+        upset: __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__["a" /* default */]
     };
 }
 
@@ -5942,11 +5943,11 @@ var HeaderRenderer = (function () {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(45);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ABodyRenderer__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(45);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__HTMLBodyRenderer__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CanvasBodyRenderer__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__HTMLBodyRenderer__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CanvasBodyRenderer__ = __webpack_require__(43);
 /* harmony export (immutable) */ exports["createBodyRenderer"] = createBodyRenderer;
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "HeaderRenderer", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["c"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IRankingHook", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["IRankingHook"]; });
@@ -7363,27 +7364,94 @@ var BooleanColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(3);
-/**
- * Created by bikramkawan on 24/11/2016.
- */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 
-/**
- * a string column in which the label is a text but the value a link
- */
-var ThresholdColumn = (function (_super) {
-    __extends(ThresholdColumn, _super);
-    function ThresholdColumn(id, desc) {
-        _super.call(this, id, desc);
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
     }
-    return ThresholdColumn;
-}(__WEBPACK_IMPORTED_MODULE_0__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = ThresholdColumn;
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
+var BoxplotColumn = (function (_super) {
+    __extends(BoxplotColumn, _super);
+    function BoxplotColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
+    }
+    BoxplotColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
+    return BoxplotColumn;
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = BoxplotColumn;
 
 
 /***/ },
@@ -7620,23 +7688,93 @@ var DummyColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 
-/**
- * a string column in which the label is a text but the value a link
- */
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
 var HeatmapColumn = (function (_super) {
     __extends(HeatmapColumn, _super);
     function HeatmapColumn(id, desc) {
         _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
     }
+    HeatmapColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
     return HeatmapColumn;
-}(__WEBPACK_IMPORTED_MODULE_0__ValueColumn__["a" /* default */]));
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = HeatmapColumn;
 
 
@@ -7755,26 +7893,93 @@ var MultiLevelCompositeColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(3);
-/**
- * Created by bikramkawan on 24/11/2016.
- */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 
-/**
- * a string column in which the label is a text but the value a link
- */
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
 var SparklineColumn = (function (_super) {
     __extends(SparklineColumn, _super);
     function SparklineColumn(id, desc) {
         _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
     }
+    SparklineColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
     return SparklineColumn;
-}(__WEBPACK_IMPORTED_MODULE_0__ValueColumn__["a" /* default */]));
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = SparklineColumn;
 
 
@@ -7783,26 +7988,93 @@ var SparklineColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(3);
-/**
- * Created by bikramkawan on 24/11/2016.
- */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 
-/**
- * a string column in which the label is a text but the value a link
- */
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
 var ThresholdColumn = (function (_super) {
     __extends(ThresholdColumn, _super);
     function ThresholdColumn(id, desc) {
         _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
     }
+    ThresholdColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
     return ThresholdColumn;
-}(__WEBPACK_IMPORTED_MODULE_0__ValueColumn__["a" /* default */]));
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = ThresholdColumn;
 
 
@@ -7811,31 +8083,193 @@ var ThresholdColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(3);
-/**
- * Created by bikramkawan on 24/11/2016.
- */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 
-/**
- * a string column in which the label is a text but the value a link
- */
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
 var UpsetColumn = (function (_super) {
     __extends(UpsetColumn, _super);
     function UpsetColumn(id, desc) {
         _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
     }
+    UpsetColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
     return UpsetColumn;
-}(__WEBPACK_IMPORTED_MODULE_0__ValueColumn__["a" /* default */]));
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = UpsetColumn;
 
 
 /***/ },
 /* 42 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+/* unused harmony export getPercentile */
+/* unused harmony export CustomSortCalculation */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+// Calculate Median, Q1 and Q1)
+function getPercentile(data, percentile) {
+    var index = (percentile / 100) * data.length;
+    var result;
+    if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+    }
+    else {
+        result = data[Math.floor(index)];
+    }
+    return result;
+}
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        this.a_val.sort(numberCompare);
+        this.b_val.sort(numberCompare);
+        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    };
+    CustomSortCalculation.prototype.countcategory = function () {
+        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
+    };
+    return CustomSortCalculation;
+}());
+var VerticalColumn = (function (_super) {
+    __extends(VerticalColumn, _super);
+    function VerticalColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
+    }
+    VerticalColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
+    return VerticalColumn;
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = VerticalColumn;
+
+
+/***/ },
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8112,7 +8546,7 @@ var BodyCanvasRenderer = (function (_super) {
 
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8171,7 +8605,7 @@ var HTMLBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8352,7 +8786,7 @@ var PoolRenderer = (function () {
 
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8465,13 +8899,13 @@ var SVGBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ADataProvider__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__LocalDataProvider__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__RemoteDataProvider__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__RemoteDataProvider__ = __webpack_require__(49);
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "DataProvider", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IDataProviderOptions", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["IDataProviderOptions"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IExportOptions", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["IExportOptions"]; });
@@ -8488,8 +8922,8 @@ var SVGBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 47 */,
-/* 48 */
+/* 48 */,
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8594,14 +9028,14 @@ var RemoteDataProvider = (function (_super) {
 
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__style_scss__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__provider__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__provider__ = __webpack_require__(47);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__renderer__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ui__ = __webpack_require__(26);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__utils__ = __webpack_require__(2);

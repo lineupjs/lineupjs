@@ -24,7 +24,7 @@ import LinkColumn from './LinkColumn';
 import HeatmapColumn from './HeatmapColumn';
 import SparklineColumn from './SparklineColumn';
 import ThresholdColumn from './ThresholdColumn';
-import VerticalColumn from './ValueColumn';
+import VerticalColumn from './VerticalColumn';
 import BoxplotColumn from './BoxplotColumn';
 import UpsetColumn from './UpsetColumn'
 

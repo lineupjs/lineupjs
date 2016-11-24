@@ -54,7 +54,7 @@ window.onload = function () {
       datalength = d3.max([datalength, tmp.length])
 
     })
-    
+
     var arr1 = [];
     newdata.reduce(function (a, b, i) {
       var arraydata = b.health_score.map(function (x) {
