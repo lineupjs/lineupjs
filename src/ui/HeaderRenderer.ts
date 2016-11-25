@@ -8,10 +8,10 @@ import Column, {IStatistics, ICategoricalStatistics, IFlatColumn} from '../model
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import NumberColumn, {isNumberColumn} from '../model/NumberColumn';
+import NumberColumn, {isNumberColumn, INumberColumn} from '../model/NumberColumn';
 import CategoricalColumn, {isCategoricalColumn} from '../model/CategoricalColumn';
 import RankColumn from '../model/RankColumn';
-import StackColumn from '../model/StackColumn';
+import StackColumn, {createDesc as createStackDesc} from '../model/StackColumn';
 import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
@@ -23,7 +23,6 @@ import {
   openRenameDialog,
   openSearchDialog
 } from '../ui_dialogs';
-import ADataProvider from "../provider/ADataProvider";
 
 /**
  * utility function to generate the tooltip text with description
@@ -54,7 +53,7 @@ export interface IHeaderRendererOptions {
   manipulative?: boolean;
   histograms?: boolean;
 
-  filterDialogs?: { [type: string]: (col: Column, $header: d3.Selection<Column>, data: ADataProvider, idPrefix: string)=>void };
+  filterDialogs?: { [type: string]: (col: Column, $header: d3.Selection<Column>, data: DataProvider, idPrefix: string)=>void };
   linkTemplates?: string[];
   searchAble?(col: Column): boolean;
   sortOnLabel?: boolean;
@@ -67,6 +66,14 @@ export interface IHeaderRendererOptions {
 
   rankingButtons?: IRankingHook;
 }
+
+function countMultiLevel(c: Column): number {
+  if (isMultiLevelColumn(c) && !(<IMultiLevelColumn>c).getCollapsed() && !c.getCompressed()) {
+    return 1 + Math.max.apply(Math, (<IMultiLevelColumn>c).children.map(countMultiLevel));
+  }
+  return 1;
+}
+
 
 
 export default class HeaderRenderer {
@@ -283,14 +290,7 @@ export default class HeaderRenderer {
       this.renderRankingButtons(rankings, rankingOffsets);
     }
 
-    function countMultiLevel(c: Column): number {
-      if (isMultiLevelColumn(c) && !(<IMultiLevelColumn>c).getCollapsed() && !c.getCompressed()) {
-        return 1 + Math.max.apply(Math, (<IMultiLevelColumn>c).children.map(countMultiLevel));
-      }
-      return 1;
-    }
-
-    const levels = Math.max.apply(Math, columns.map(countMultiLevel));
+    const levels = Math.max(...columns.map(countMultiLevel));
     var height = (this.options.histograms ? this.options.headerHistogramHeight : this.options.headerHeight) + (levels - 1) * this.options.headerHeight;
 
     if (this.options.autoRotateLabels) {
@@ -481,7 +481,7 @@ export default class HeaderRenderer {
     }).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: IMultiLevelColumn, copy) => {
       var col: Column = null;
       if ('application/caleydo-lineup-column-number-ref' in data) {
-        var id = data['application/caleydo-lineup-column-number-ref'];
+        const id = data['application/caleydo-lineup-column-number-ref'];
         col = this.data.find(id);
         if (copy) {
           col = this.data.clone(col);
@@ -489,10 +489,34 @@ export default class HeaderRenderer {
           col.removeMe();
         }
       } else {
-        var desc = JSON.parse(data['application/caleydo-lineup-column-number']);
+        const desc = JSON.parse(data['application/caleydo-lineup-column-number']);
         col = this.data.create(this.data.fromDescRef(desc));
       }
       return d.push(col) != null;
+    }));
+
+    // drag columns on top of each
+    $headers.filter((d) => d.parent instanceof Ranking && isNumberColumn(d) && !isMultiLevelColumn(d)).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: Column & INumberColumn, copy) => {
+      var col: Column = null;
+      if ('application/caleydo-lineup-column-number-ref' in data) {
+        const id = data['application/caleydo-lineup-column-number-ref'];
+        col = this.data.find(id);
+        if (copy) {
+          col = this.data.clone(col);
+        } else if (col) {
+          col.removeMe();
+        }
+      } else {
+        const desc = JSON.parse(data['application/caleydo-lineup-column-number']);
+        col = this.data.create(this.data.fromDescRef(desc));
+      }
+      const ranking = d.findMyRanker();
+      const index = ranking.indexOf(d);
+      const stack = <StackColumn>this.data.create(createStackDesc());
+      d.removeMe();
+      stack.push(d);
+      stack.push(col);
+      return ranking.insert(stack, index) != null;
     }));
 
     if (this.options.histograms) {
