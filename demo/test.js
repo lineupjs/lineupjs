@@ -90,7 +90,7 @@ window.onload = function () {
       autoRotateLabels: true
     },
     body: {
-      renderer: 'canvas',
+      renderer: 'html',
       freezeCols: 3
     },
     header: {

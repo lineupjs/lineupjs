@@ -15,6 +15,7 @@ import {hsl} from 'd3';
 import {IDataRow} from './provider/ADataProvider';
 import * as d3 from 'd3';
 
+
 /**
  * context for rendering, wrapped as an object for easy extensibility
  */
@@ -193,6 +194,69 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
       }
     };
   }
+
+
+  createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
+    function cell_dim(total, cells) {
+      return (total / cells);
+    }
+
+    const total_width = col.getWidth();
+    const bins = (<any>col.desc).datalength;
+    const min = (<any> col.desc).sdomain[0], max = (<any> col.desc).sdomain[1];
+    const colorrange = (<any> col.desc).colorrange;
+    const celldimension = cell_dim(total_width, bins);
+    var color: any = d3.scale.linear<number, string>();
+    color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
+      : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+    const padding = context.option('rowPadding', 1);
+    return {
+      template: `<div class="heatmapcell" style="top:${padding}px;">
+                                   </div>`,
+      update: (n: HTMLDivElement, d: IDataRow, i: number) => {
+        const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
+        const g = d3.select(n);
+        const div = g.selectAll('div').data(col.getValue(d.v, i));
+        div.enter().append('div')
+        div
+          .style({
+            'width': celldimension + 'px',
+            'background-color': color,
+            'height': context.rowHeight(i) + 'px',
+            'left': (d, i) => (i === null || 0) ? 0 + 'px' : (i * celldimension) + 'px'
+          })
+
+
+      }
+    };
+  }
+
+  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    function cell_dim(total, cells) {
+      return (total / cells);
+    }
+
+    const total_width = col.getWidth();
+    const bins = (<any>col.desc).datalength;
+    const min = (<any> col.desc).sdomain[0], max = (<any> col.desc).sdomain[1];
+    const colorrange = (<any> col.desc).colorrange;
+    const celldimension = cell_dim(total_width, bins);
+    var color: any = d3.scale.linear<number, string>();
+    color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
+      : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+    const padding = context.option('rowPadding', 1);
+
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      var data = col.getValue(d.v, i);
+      data.forEach(function (d, i) {
+        var x = (i === null || 0) ? 0 : (i * celldimension);
+        ctx.fillStyle = color(d);
+        ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
+      })
+    };
+  }
+
+
 }
 
 
@@ -229,6 +293,41 @@ class SparklineCellRenderer extends DefaultCellRenderer {
       }
     };
   }
+
+
+  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const min = (<any> col.desc).sdomain[0];
+    const max = (<any> col.desc).sdomain[1];
+    const bins = (<any> col.desc).datalength;
+    var x: any = d3.scale.linear().domain([0, bins - 1]).range([0, col.getWidth()]);
+    var y: any = y = d3.scale.linear().domain([min, max]);
+    var line = d3.svg.line<number>();
+    const padding = context.option('rowPadding', 0);
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      var data = col.getValue(d.v, i);
+      var xpos, ypos;
+      data.forEach(function (d, i) {
+
+        y.range([context.rowHeight(i), 0]);
+
+        if (i == 0) {
+          xpos = x(i);
+          ypos = y(d);
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(xpos, ypos);
+          xpos = x(i);
+          ypos = y(d);
+          ctx.lineTo(xpos, ypos);
+          ctx.strokeStyle = 'red';
+          ctx.stroke();
+          ctx.fillStyle = 'red';
+          ctx.fill();
+          console.log('hello' + i)
+        }
+      })
+    };
+  }
 }
 
 class ThresholdCellRenderer extends DefaultCellRenderer {
@@ -259,6 +358,26 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
       }
     };
   }
+
+  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+
+    const bins = (<any>col.desc).datalength;
+    const threshold = (<any> col.desc).threshold;
+    const celldimension = (col.getWidth() / (bins));
+    const cat1color = (<any> col.desc).colorrange[0];
+    const cat2color = (<any> col.desc).colorrange[1];
+
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      var data = col.getValue(d.v, i);
+      data.forEach(function (d, i) {
+        var xpos = (i === null || 0) ? 0 : (i * celldimension);
+        var ypos = (d < threshold) ? (context.rowHeight(i) / 2) : 0;
+        ctx.fillStyle = (d < threshold) ? cat1color : cat2color;
+        ctx.fillRect(xpos, ypos, celldimension, context.rowHeight(i) / 2);
+      })
+    };
+  }
+
 }
 class VerticalBarCellRenderer extends DefaultCellRenderer {
 
@@ -306,6 +425,45 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
       }
     };
   }
+
+  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+
+
+    const bins = (<any> col.desc).datalength;
+    const min = (<any> col.desc).sdomain[0];
+    const max = (<any> col.desc).sdomain[1];
+    const mincolor = (<any> col.desc).colorrange[0];
+    const maxcolor = (<any> col.desc).colorrange[1];
+    const celldimension = (col.getWidth() / bins);
+    const threshold = (<any> col.desc).threshold;
+    var barheight = 13;
+    var scale = d3.scale.linear();
+    var color: any = d3.scale.linear<number,string>();
+
+    function scaleheight(barheight, data) {
+      scale = (min < 0) ? (scale.domain([min, max]).range([0, barheight / 2])) : (scale.domain([min, max]).range([0, barheight]));
+      return (scale(data));
+    };
+    color.domain([min, 0, max]).range([mincolor, 'white', maxcolor]);
+
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      var data = col.getValue(d.v, i);
+      data.forEach(function (d, i) {
+        var xpos = (i === null || 0) ? 0 : (i * celldimension);
+        var ypos;
+        if (min < 0) {
+          ypos = (d < threshold) ? (context.rowHeight(i) / 2) : context.rowHeight(i) / 2 - scaleheight(context.rowHeight(i), d);   // For positive and negative value
+        } else {
+          ypos = context.rowHeight(i) - scaleheight(context.rowHeight(i), d);
+        }
+        var height = (d < threshold) ? (barheight / 2 - scaleheight(context.rowHeight(i), d)) : scaleheight(context.rowHeight(i), d);
+        ctx.fillStyle = color(d);
+        ctx.fillRect(xpos, ypos, celldimension, height);
+      })
+    };
+  }
+
+
 }
 class BoxplotCellRenderer extends DefaultCellRenderer {
 
@@ -383,6 +541,70 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
       }
     };
   }
+
+  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    function getPercentile(data, percentile) {
+
+      var index = (percentile / 100) * data.length;
+      var result;
+      if (Math.floor(index) === index) {
+        result = (data[(index - 1)] + data[index]) / 2;
+      } else {
+        result = data[Math.floor(index)];
+      }
+      return result;
+    }
+
+    function numSort(a, b) {
+      return a - b;
+    }
+
+    const padding = context.option('rowPadding', 1);
+    const min = (<any> col.desc).sdomain[0];
+    const max = (<any> col.desc).sdomain[1];
+    var scale = d3.scale.linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
+
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      // Rectangle
+      var data = col.getValue(d.v, i);
+      data.sort(numSort);
+      var mindata = Math.min.apply(Math, data);
+      var maxdata = Math.max.apply(Math, data);
+      var q1 = (getPercentile(data, 25));
+      var med = (getPercentile(data, 50));
+      var q3 = (getPercentile(data, 75));
+      ctx.beginPath();
+      ctx.fillStyle = '#e0e0e0';
+      ctx.strokeStyle = 'black';
+      ctx.rect(scale(q1), padding, (scale(q3) - scale(q1)), context.rowHeight(i));
+      ctx.fill();
+      ctx.stroke();
+
+
+      //Line
+      var left = scale(mindata), right = scale(maxdata), center = scale(med);
+      var top = context.option('rowPadding', 1);
+      var bottom = Math.max(context.rowHeight(i) - top, 0);
+      var middle = (bottom - top) / 2;
+      ctx.strokeStyle = 'black';
+      ctx.fillStyle = '#e0e0e0';
+      ctx.moveTo(left, middle);
+      ctx.lineTo(scale(q1), middle);
+      ctx.moveTo(left, top);
+      ctx.lineTo(left, bottom);
+      ctx.moveTo(center, top);
+      ctx.lineTo(center, bottom);
+      ctx.moveTo((scale(q1) + scale(q3) - scale(q1)), middle);
+      ctx.lineTo(right, middle);
+      ctx.moveTo(right, top);
+      ctx.lineTo(right, bottom);
+      ctx.stroke();
+      ctx.fill();
+
+    };
+  }
+
+
 }
 
 class UpsetCellRenderer extends DefaultCellRenderer {
@@ -433,6 +655,52 @@ class UpsetCellRenderer extends DefaultCellRenderer {
       }
     };
   }
+
+  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const bins = (<any> col.desc).datalength;
+    const windowsize = col.getWidth() / bins;
+
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      // Circle
+      var data = col.getValue(d.v, i);
+      var catindexes = [];
+      var countcategory = data.filter((x) => x === 1).length;
+      catindexes.push(data.reduce(function (b, e, i) {
+        if (e === 1) {
+          b.push(i);
+        }
+        return b;
+      }, []));
+
+      if (countcategory > 1) {
+
+        ctx.moveTo(((d3.min(catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
+        ctx.lineTo(((d3.max(catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
+        ctx.fillStyle = 'black';
+        ctx.fill();
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+
+      }
+      data.forEach(function (d, i) {
+        var posy = (context.rowHeight(i) / 2);
+        var posx = (i * windowsize) + (windowsize / 2);
+        var radius = windowsize / 4;
+        ctx.beginPath();
+        ctx.globalAlpha = (d === 1) ? 1 : 0.1;
+        ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = 'black';
+        ctx.fill();
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+
+      });
+
+
+    };
+  }
+
+
 }
 export class BarCellRenderer implements ICellRendererFactory {
   /**

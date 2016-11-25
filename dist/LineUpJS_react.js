@@ -1571,6 +1571,58 @@ var HeatmapCellRenderer = (function (_super) {
             }
         };
     };
+    HeatmapCellRenderer.prototype.createHTML = function (col, context) {
+        function cell_dim(total, cells) {
+            return (total / cells);
+        }
+        var total_width = col.getWidth();
+        var bins = col.desc.datalength;
+        var min = col.desc.sdomain[0], max = col.desc.sdomain[1];
+        var colorrange = col.desc.colorrange;
+        var celldimension = cell_dim(total_width, bins);
+        var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
+        color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
+            : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+        var padding = context.option('rowPadding', 1);
+        return {
+            template: "<div class=\"heatmapcell\" style=\"top:" + padding + "px;\">\n                                   </div>",
+            update: function (n, d, i) {
+                var width = col.getWidth() * col.getValue(d.v, d.dataIndex);
+                var g = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n);
+                var div = g.selectAll('div').data(col.getValue(d.v, i));
+                div.enter().append('div');
+                div
+                    .style({
+                    'width': celldimension + 'px',
+                    'background-color': color,
+                    'height': context.rowHeight(i) + 'px',
+                    'left': function (d, i) { return (i === null || 0) ? 0 + 'px' : (i * celldimension) + 'px'; }
+                });
+            }
+        };
+    };
+    HeatmapCellRenderer.prototype.createCanvas = function (col, context) {
+        function cell_dim(total, cells) {
+            return (total / cells);
+        }
+        var total_width = col.getWidth();
+        var bins = col.desc.datalength;
+        var min = col.desc.sdomain[0], max = col.desc.sdomain[1];
+        var colorrange = col.desc.colorrange;
+        var celldimension = cell_dim(total_width, bins);
+        var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
+        color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
+            : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+        var padding = context.option('rowPadding', 1);
+        return function (ctx, d, i) {
+            var data = col.getValue(d.v, i);
+            data.forEach(function (d, i) {
+                var x = (i === null || 0) ? 0 : (i * celldimension);
+                ctx.fillStyle = color(d);
+                ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
+            });
+        };
+    };
     return HeatmapCellRenderer;
 }(DefaultCellRenderer));
 var SparklineCellRenderer = (function (_super) {
@@ -1605,6 +1657,38 @@ var SparklineCellRenderer = (function (_super) {
             }
         };
     };
+    SparklineCellRenderer.prototype.createCanvas = function (col, context) {
+        var min = col.desc.sdomain[0];
+        var max = col.desc.sdomain[1];
+        var bins = col.desc.datalength;
+        var x = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([0, bins - 1]).range([0, col.getWidth()]);
+        var y = y = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]);
+        var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line();
+        var padding = context.option('rowPadding', 0);
+        return function (ctx, d, i) {
+            var data = col.getValue(d.v, i);
+            var xpos, ypos;
+            data.forEach(function (d, i) {
+                y.range([context.rowHeight(i), 0]);
+                if (i == 0) {
+                    xpos = x(i);
+                    ypos = y(d);
+                }
+                else {
+                    ctx.beginPath();
+                    ctx.moveTo(xpos, ypos);
+                    xpos = x(i);
+                    ypos = y(d);
+                    ctx.lineTo(xpos, ypos);
+                    ctx.strokeStyle = 'red';
+                    ctx.stroke();
+                    ctx.fillStyle = 'red';
+                    ctx.fill();
+                    console.log('hello' + i);
+                }
+            });
+        };
+    };
     return SparklineCellRenderer;
 }(DefaultCellRenderer));
 var ThresholdCellRenderer = (function (_super) {
@@ -1634,6 +1718,22 @@ var ThresholdCellRenderer = (function (_super) {
                 });
                 rect.exit().remove();
             }
+        };
+    };
+    ThresholdCellRenderer.prototype.createCanvas = function (col, context) {
+        var bins = col.desc.datalength;
+        var threshold = col.desc.threshold;
+        var celldimension = (col.getWidth() / (bins));
+        var cat1color = col.desc.colorrange[0];
+        var cat2color = col.desc.colorrange[1];
+        return function (ctx, d, i) {
+            var data = col.getValue(d.v, i);
+            data.forEach(function (d, i) {
+                var xpos = (i === null || 0) ? 0 : (i * celldimension);
+                var ypos = (d < threshold) ? (context.rowHeight(i) / 2) : 0;
+                ctx.fillStyle = (d < threshold) ? cat1color : cat2color;
+                ctx.fillRect(xpos, ypos, celldimension, context.rowHeight(i) / 2);
+            });
         };
     };
     return ThresholdCellRenderer;
@@ -1683,6 +1783,40 @@ var VerticalBarCellRenderer = (function (_super) {
                 });
                 rect.exit().remove();
             }
+        };
+    };
+    VerticalBarCellRenderer.prototype.createCanvas = function (col, context) {
+        var bins = col.desc.datalength;
+        var min = col.desc.sdomain[0];
+        var max = col.desc.sdomain[1];
+        var mincolor = col.desc.colorrange[0];
+        var maxcolor = col.desc.colorrange[1];
+        var celldimension = (col.getWidth() / bins);
+        var threshold = col.desc.threshold;
+        var barheight = 13;
+        var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
+        var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
+        function scaleheight(barheight, data) {
+            scale = (min < 0) ? (scale.domain([min, max]).range([0, barheight / 2])) : (scale.domain([min, max]).range([0, barheight]));
+            return (scale(data));
+        }
+        ;
+        color.domain([min, 0, max]).range([mincolor, 'white', maxcolor]);
+        return function (ctx, d, i) {
+            var data = col.getValue(d.v, i);
+            data.forEach(function (d, i) {
+                var xpos = (i === null || 0) ? 0 : (i * celldimension);
+                var ypos;
+                if (min < 0) {
+                    ypos = (d < threshold) ? (context.rowHeight(i) / 2) : context.rowHeight(i) / 2 - scaleheight(context.rowHeight(i), d); // For positive and negative value
+                }
+                else {
+                    ypos = context.rowHeight(i) - scaleheight(context.rowHeight(i), d);
+                }
+                var height = (d < threshold) ? (barheight / 2 - scaleheight(context.rowHeight(i), d)) : scaleheight(context.rowHeight(i), d);
+                ctx.fillStyle = color(d);
+                ctx.fillRect(xpos, ypos, celldimension, height);
+            });
         };
     };
     return VerticalBarCellRenderer;
@@ -1752,6 +1886,61 @@ var BoxplotCellRenderer = (function (_super) {
             }
         };
     };
+    BoxplotCellRenderer.prototype.createCanvas = function (col, context) {
+        function getPercentile(data, percentile) {
+            var index = (percentile / 100) * data.length;
+            var result;
+            if (Math.floor(index) === index) {
+                result = (data[(index - 1)] + data[index]) / 2;
+            }
+            else {
+                result = data[Math.floor(index)];
+            }
+            return result;
+        }
+        function numSort(a, b) {
+            return a - b;
+        }
+        var padding = context.option('rowPadding', 1);
+        var min = col.desc.sdomain[0];
+        var max = col.desc.sdomain[1];
+        var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
+        return function (ctx, d, i) {
+            // Rectangle
+            var data = col.getValue(d.v, i);
+            data.sort(numSort);
+            var mindata = Math.min.apply(Math, data);
+            var maxdata = Math.max.apply(Math, data);
+            var q1 = (getPercentile(data, 25));
+            var med = (getPercentile(data, 50));
+            var q3 = (getPercentile(data, 75));
+            ctx.beginPath();
+            ctx.fillStyle = '#e0e0e0';
+            ctx.strokeStyle = 'black';
+            ctx.rect(scale(q1), padding, (scale(q3) - scale(q1)), context.rowHeight(i));
+            ctx.fill();
+            ctx.stroke();
+            //Line
+            var left = scale(mindata), right = scale(maxdata), center = scale(med);
+            var top = context.option('rowPadding', 1);
+            var bottom = Math.max(context.rowHeight(i) - top, 0);
+            var middle = (bottom - top) / 2;
+            ctx.strokeStyle = 'black';
+            ctx.fillStyle = '#e0e0e0';
+            ctx.moveTo(left, middle);
+            ctx.lineTo(scale(q1), middle);
+            ctx.moveTo(left, top);
+            ctx.lineTo(left, bottom);
+            ctx.moveTo(center, top);
+            ctx.lineTo(center, bottom);
+            ctx.moveTo((scale(q1) + scale(q3) - scale(q1)), middle);
+            ctx.lineTo(right, middle);
+            ctx.moveTo(right, top);
+            ctx.lineTo(right, bottom);
+            ctx.stroke();
+            ctx.fill();
+        };
+    };
     return BoxplotCellRenderer;
 }(DefaultCellRenderer));
 var UpsetCellRenderer = (function (_super) {
@@ -1795,6 +1984,42 @@ var UpsetCellRenderer = (function (_super) {
                         .attr('class', 'upsetpath');
                 }
             }
+        };
+    };
+    UpsetCellRenderer.prototype.createCanvas = function (col, context) {
+        var bins = col.desc.datalength;
+        var windowsize = col.getWidth() / bins;
+        return function (ctx, d, i) {
+            // Circle
+            var data = col.getValue(d.v, i);
+            var catindexes = [];
+            var countcategory = data.filter(function (x) { return x === 1; }).length;
+            catindexes.push(data.reduce(function (b, e, i) {
+                if (e === 1) {
+                    b.push(i);
+                }
+                return b;
+            }, []));
+            if (countcategory > 1) {
+                ctx.moveTo(((__WEBPACK_IMPORTED_MODULE_2_d3__["min"](catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
+                ctx.lineTo(((__WEBPACK_IMPORTED_MODULE_2_d3__["max"](catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
+                ctx.fillStyle = 'black';
+                ctx.fill();
+                ctx.strokeStyle = 'black';
+                ctx.stroke();
+            }
+            data.forEach(function (d, i) {
+                var posy = (context.rowHeight(i) / 2);
+                var posx = (i * windowsize) + (windowsize / 2);
+                var radius = windowsize / 4;
+                ctx.beginPath();
+                ctx.globalAlpha = (d === 1) ? 1 : 0.1;
+                ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = 'black';
+                ctx.fill();
+                ctx.strokeStyle = 'black';
+                ctx.stroke();
+            });
         };
     };
     return UpsetCellRenderer;

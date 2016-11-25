@@ -133,7 +133,7 @@ window.onload = function () {
       }]
 
 
-console.log(desc1)
+
 
 
 
@@ -213,7 +213,7 @@ console.log(desc1)
   var root = d3.select('body');
   r.insert(p.create(LineUpJS.model.createSelectionDesc()), 0);
    desc1.forEach(function (d) {
-     console.log(d)
+
       r.push(p.create(d));
     })
 
@@ -256,7 +256,7 @@ console.log(desc1)
       autoRotateLabels: true
     },
     body: {
-      renderer: 'SVG',
+      renderer: 'canvas',
       freezeCols: 3
     },
     header: {
