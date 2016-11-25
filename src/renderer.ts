@@ -252,7 +252,7 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
         var x = (i === null || 0) ? 0 : (i * celldimension);
         ctx.fillStyle = color(d);
         ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
-      })
+      });
     };
   }
 
@@ -301,8 +301,6 @@ class SparklineCellRenderer extends DefaultCellRenderer {
     const bins = (<any> col.desc).datalength;
     var x: any = d3.scale.linear().domain([0, bins - 1]).range([0, col.getWidth()]);
     var y: any = y = d3.scale.linear().domain([min, max]);
-    var line = d3.svg.line<number>();
-    const padding = context.option('rowPadding', 0);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       var data = col.getValue(d.v, i);
       var xpos, ypos;
@@ -310,7 +308,7 @@ class SparklineCellRenderer extends DefaultCellRenderer {
 
         y.range([context.rowHeight(i), 0]);
 
-        if (i == 0) {
+        if (i === 0) {
           xpos = x(i);
           ypos = y(d);
         } else {
@@ -323,9 +321,9 @@ class SparklineCellRenderer extends DefaultCellRenderer {
           ctx.stroke();
           ctx.fillStyle = 'red';
           ctx.fill();
-          console.log('hello' + i)
+
         }
-      })
+      });
     };
   }
 }
@@ -374,7 +372,7 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
         var ypos = (d < threshold) ? (context.rowHeight(i) / 2) : 0;
         ctx.fillStyle = (d < threshold) ? cat1color : cat2color;
         ctx.fillRect(xpos, ypos, celldimension, context.rowHeight(i) / 2);
-      })
+      });
     };
   }
 
@@ -459,7 +457,7 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
         var height = (d < threshold) ? (barheight / 2 - scaleheight(context.rowHeight(i), d)) : scaleheight(context.rowHeight(i), d);
         ctx.fillStyle = color(d);
         ctx.fillRect(xpos, ypos, celldimension, height);
-      })
+      });
     };
   }
 
