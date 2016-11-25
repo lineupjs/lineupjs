@@ -663,6 +663,7 @@ class UpsetCellRenderer extends DefaultCellRenderer {
       var data = col.getValue(d.v, i);
       var catindexes = [];
       var countcategory = data.filter((x) => x === 1).length;
+      const radius = (context.rowHeight(i) / 3);
       catindexes.push(data.reduce(function (b, e, i) {
         if (e === 1) {
           b.push(i);
@@ -680,10 +681,11 @@ class UpsetCellRenderer extends DefaultCellRenderer {
         ctx.stroke();
 
       }
+
       data.forEach(function (d, i) {
         var posy = (context.rowHeight(i) / 2);
         var posx = (i * windowsize) + (windowsize / 2);
-        var radius = windowsize / 4;
+
         ctx.beginPath();
         ctx.globalAlpha = (d === 1) ? 1 : 0.1;
         ctx.arc(posx, posy, radius, 0, 2 * Math.PI);

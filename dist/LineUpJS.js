@@ -1663,14 +1663,12 @@ var SparklineCellRenderer = (function (_super) {
         var bins = col.desc.datalength;
         var x = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([0, bins - 1]).range([0, col.getWidth()]);
         var y = y = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]);
-        var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line();
-        var padding = context.option('rowPadding', 0);
         return function (ctx, d, i) {
             var data = col.getValue(d.v, i);
             var xpos, ypos;
             data.forEach(function (d, i) {
                 y.range([context.rowHeight(i), 0]);
-                if (i == 0) {
+                if (i === 0) {
                     xpos = x(i);
                     ypos = y(d);
                 }
@@ -1684,7 +1682,6 @@ var SparklineCellRenderer = (function (_super) {
                     ctx.stroke();
                     ctx.fillStyle = 'red';
                     ctx.fill();
-                    console.log('hello' + i);
                 }
             });
         };
@@ -1994,6 +1991,7 @@ var UpsetCellRenderer = (function (_super) {
             var data = col.getValue(d.v, i);
             var catindexes = [];
             var countcategory = data.filter(function (x) { return x === 1; }).length;
+            var radius = (context.rowHeight(i) / 3);
             catindexes.push(data.reduce(function (b, e, i) {
                 if (e === 1) {
                     b.push(i);
@@ -2011,7 +2009,6 @@ var UpsetCellRenderer = (function (_super) {
             data.forEach(function (d, i) {
                 var posy = (context.rowHeight(i) / 2);
                 var posx = (i * windowsize) + (windowsize / 2);
-                var radius = windowsize / 4;
                 ctx.beginPath();
                 ctx.globalAlpha = (d === 1) ? 1 : 0.1;
                 ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
