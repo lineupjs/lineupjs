@@ -214,7 +214,6 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
 export function sortDialogHeatmap(column: HeatmapColumn, $header: d3.Selection<HeatmapColumn>) {
 
   var rank = (<any>column.desc).sort;
-  var renderertype = (<any>column.desc).type;
   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
 
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
