@@ -85,7 +85,7 @@ window.onload = function () {
         sdomain: [min, max],
         colorrange: ['blue', 'red'],
         sort: 'min',
-        threshold: 0,
+
         datalength: datalength
        },
       {

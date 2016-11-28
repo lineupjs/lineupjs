@@ -1699,7 +1699,7 @@ var ThresholdCellRenderer = (function (_super) {
     }
     ThresholdCellRenderer.prototype.createSVG = function (col, context) {
         var bins = col.desc.datalength;
-        var threshold = col.desc.threshold;
+        var threshold = col.desc.threshold || 0;
         var celldimension = (col.getWidth() / (bins));
         var colorrange = col.desc.colorrange;
         var defaultcolor = ['blue', 'red'];
@@ -1725,7 +1725,8 @@ var ThresholdCellRenderer = (function (_super) {
     };
     ThresholdCellRenderer.prototype.createCanvas = function (col, context) {
         var bins = col.desc.datalength;
-        var threshold = col.desc.threshold;
+        var threshold = col.desc.threshold || 0;
+        console.log(threshold);
         var celldimension = (col.getWidth() / (bins));
         var colorrange = col.desc.colorrange;
         var defaultcolor = ['blue', 'red'];
@@ -1757,7 +1758,7 @@ var VerticalBarCellRenderer = (function (_super) {
         var mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
         var maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
         var celldimension = (col.getWidth() / bins);
-        var threshold = col.desc.threshold;
+        var threshold = col.desc.threshold || 0;
         var barheight = 13;
         var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
         var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
@@ -1801,7 +1802,7 @@ var VerticalBarCellRenderer = (function (_super) {
         var mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
         var maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
         var celldimension = (col.getWidth() / bins);
-        var threshold = col.desc.threshold;
+        var threshold = col.desc.threshold || 0;
         var barheight = 13;
         var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
         var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();

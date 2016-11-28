@@ -339,7 +339,8 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
     const bins = (<any>col.desc).datalength;
-    const threshold = (<any> col.desc).threshold;
+    var threshold = (<any> col.desc).threshold || 0;
+
     const celldimension = (col.getWidth() / (bins));
     const colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
@@ -369,7 +370,8 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     const bins = (<any>col.desc).datalength;
-    const threshold = (<any> col.desc).threshold;
+    var threshold = (<any> col.desc).threshold || 0;
+    console.log(threshold)
     const celldimension = (col.getWidth() / (bins));
     const colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
@@ -393,20 +395,22 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
-
     const bins = (<any> col.desc).datalength;
     const min = (<any> col.desc).sdomain[0];
     const max = (<any> col.desc).sdomain[1];
+
     const colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
+
     const mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
     const maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
 
     const celldimension = (col.getWidth() / bins);
-    const threshold = (<any> col.desc).threshold;
+    var threshold = (<any> col.desc).threshold || 0;
     var barheight = 13;
     var scale = d3.scale.linear();
     var color: any = d3.scale.linear<number,string>();
+
 
     function scaleheight(barheight, data) {
       scale = (min < 0) ? (scale.domain([min, max]).range([0, barheight / 2])) : (scale.domain([min, max]).range([0, barheight]));
@@ -453,7 +457,7 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
     const maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
 
     const celldimension = (col.getWidth() / bins);
-    const threshold = (<any> col.desc).threshold;
+    var threshold = (<any> col.desc).threshold || 0;
     var barheight = 13;
     var scale = d3.scale.linear();
     var color: any = d3.scale.linear<number,string>();
