@@ -169,7 +169,7 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 export function renderertypedialog(column: Column, $header: d3.Selection<Column>) {
 
   var renderertype = (<any>column.desc).type;
-  var label = (<any>column.desc).label;
+
   var valuestring: any = ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar', 'upset'];
 
   var popup = makesortPopup($header, 'Renderer Type', valuestring.map(function (d, i) {
@@ -190,13 +190,12 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
     renderertype = that.value;
     (<any>column.desc).type = renderertype;
     column.rendererType();
-    console.log(column.getMetaData(), column.desc)
+
     column.setMetaData({
       label: renderertype,
       description: column.getMetaData().description,
       color: column.getMetaData().color
-    })
-
+    });
 
 
   });
@@ -236,8 +235,6 @@ export function sortDialogHeatmap(column: HeatmapColumn, $header: d3.Selection<H
     rank = that.value;
     (<any>column.desc).sort = rank;
     column.toggleMySorting();
-    console.log(renderertype)
-    console.log(typeof (column.rendererType()), column.rendererType());
 
   });
 

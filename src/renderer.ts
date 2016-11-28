@@ -217,17 +217,16 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
       template: `<div class="heatmapcell" style="top:${padding}px;">
                                    </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
         const g = d3.select(n);
         const div = g.selectAll('div').data(col.getValue(d.v, i));
-        div.enter().append('div')
+        div.enter().append('div');
         div
           .style({
             'width': celldimension + 'px',
             'background-color': color,
             'height': context.rowHeight(i) + 'px',
             'left': (d, i) => (i === null || 0) ? 0 + 'px' : (i * celldimension) + 'px'
-          })
+          });
 
 
       }
@@ -371,7 +370,7 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
 
     const bins = (<any>col.desc).datalength;
     var threshold = (<any> col.desc).threshold || 0;
-    console.log(threshold)
+
     const celldimension = (col.getWidth() / (bins));
     const colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
