@@ -1548,10 +1548,12 @@ var HeatmapCellRenderer = (function (_super) {
         var bins = col.desc.datalength;
         var min = col.desc.sdomain[0], max = col.desc.sdomain[1];
         var colorrange = col.desc.colorrange;
+        var defaultcolor = ['blue', 'red'];
+        colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
         var celldimension = cell_dim(total_width, bins);
         var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
-        color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
-            : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+        color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
+            : color.domain([min, max]).range(['white', colorrange[2]]);
         var padding = context.option('rowPadding', 1);
         return {
             template: "<g class=\"heatmapcell\"></g>",
@@ -1609,10 +1611,12 @@ var HeatmapCellRenderer = (function (_super) {
         var bins = col.desc.datalength;
         var min = col.desc.sdomain[0], max = col.desc.sdomain[1];
         var colorrange = col.desc.colorrange;
+        var defaultcolor = ['blue', 'red'];
+        colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
         var celldimension = cell_dim(total_width, bins);
         var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
-        color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
-            : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+        color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
+            : color.domain([min, max]).range(['white', colorrange[2]]);
         var padding = context.option('rowPadding', 1);
         return function (ctx, d, i) {
             var data = col.getValue(d.v, i);
@@ -1697,8 +1701,10 @@ var ThresholdCellRenderer = (function (_super) {
         var bins = col.desc.datalength;
         var threshold = col.desc.threshold;
         var celldimension = (col.getWidth() / (bins));
-        var cat1color = col.desc.colorrange[0];
-        var cat2color = col.desc.colorrange[1];
+        var colorrange = col.desc.colorrange;
+        var defaultcolor = ['blue', 'red'];
+        var cat1color = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
+        var cat2color = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
         return {
             template: "<g class=\"thresholdcell\"></g>",
             update: function (n, d, i) {
@@ -1721,8 +1727,10 @@ var ThresholdCellRenderer = (function (_super) {
         var bins = col.desc.datalength;
         var threshold = col.desc.threshold;
         var celldimension = (col.getWidth() / (bins));
-        var cat1color = col.desc.colorrange[0];
-        var cat2color = col.desc.colorrange[1];
+        var colorrange = col.desc.colorrange;
+        var defaultcolor = ['blue', 'red'];
+        var cat1color = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
+        var cat2color = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
         return function (ctx, d, i) {
             var data = col.getValue(d.v, i);
             data.forEach(function (d, i) {
@@ -1744,8 +1752,10 @@ var VerticalBarCellRenderer = (function (_super) {
         var bins = col.desc.datalength;
         var min = col.desc.sdomain[0];
         var max = col.desc.sdomain[1];
-        var mincolor = col.desc.colorrange[0];
-        var maxcolor = col.desc.colorrange[1];
+        var colorrange = col.desc.colorrange;
+        var defaultcolor = ['blue', 'red'];
+        var mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
+        var maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
         var celldimension = (col.getWidth() / bins);
         var threshold = col.desc.threshold;
         var barheight = 13;
@@ -1786,8 +1796,10 @@ var VerticalBarCellRenderer = (function (_super) {
         var bins = col.desc.datalength;
         var min = col.desc.sdomain[0];
         var max = col.desc.sdomain[1];
-        var mincolor = col.desc.colorrange[0];
-        var maxcolor = col.desc.colorrange[1];
+        var colorrange = col.desc.colorrange;
+        var defaultcolor = ['blue', 'red'];
+        var mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
+        var maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
         var celldimension = (col.getWidth() / bins);
         var threshold = col.desc.threshold;
         var barheight = 13;
@@ -6444,6 +6456,11 @@ var HeaderRenderer = (function () {
             __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogVerticalBar"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
+        //Heatmap Sort
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_2__model_Column__["a" /* default */]; }).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Renderer').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["renderertypedialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
+        });
         //edit link
         $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
             __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openEditLinkDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), [].concat(d.desc.templates || [], that.options.linkTemplates), that.options.idPrefix);
@@ -6722,6 +6739,7 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 /* harmony export (immutable) */ exports["makesortPopup"] = makesortPopup;
 /* harmony export (immutable) */ exports["openRenameDialog"] = openRenameDialog;
 /* harmony export (immutable) */ exports["openEditLinkDialog"] = openEditLinkDialog;
+/* harmony export (immutable) */ exports["renderertypedialog"] = renderertypedialog;
 /* harmony export (immutable) */ exports["sortDialogHeatmap"] = sortDialogHeatmap;
 /* harmony export (immutable) */ exports["sortDialogSparkline"] = sortDialogSparkline;
 /* harmony export (immutable) */ exports["sortDialogBoxplot"] = sortDialogBoxplot;
@@ -6862,9 +6880,42 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
         popup.remove();
     });
 }
+// Renderer type change
+function renderertypedialog(column, $header) {
+    var renderertype = column.desc.type;
+    var label = column.desc.label;
+    var valuestring = ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar', 'upset'];
+    var popup = makesortPopup($header, 'Renderer Type', valuestring.map(function (d, i) {
+        return "<input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + ">" + d + "<br>";
+    }).join('\n'));
+    function thiselement() {
+        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
+    }
+    var that;
+    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=renderertype]');
+    sortcontent.on('change', function () {
+        that = this;
+        renderertype = that.value;
+        column.desc.type = renderertype;
+        column.rendererType();
+        console.log(column.getMetaData(), column.desc);
+        column.setMetaData({
+            label: renderertype,
+            description: column.getMetaData().description,
+            color: column.getMetaData().color
+        });
+    });
+    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
+        var outside = sortcontent.filter(thiselement).empty();
+        if (outside) {
+            popup.remove();
+        }
+    });
+}
 // Sort Heatmap Dialog.
 function sortDialogHeatmap(column, $header) {
     var rank = column.desc.sort;
+    var renderertype = column.desc.type;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
         return "<input type=\"radio\" name=\"heatmaprank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
@@ -6879,6 +6930,8 @@ function sortDialogHeatmap(column, $header) {
         rank = that.value;
         column.desc.sort = rank;
         column.toggleMySorting();
+        console.log(renderertype);
+        console.log(typeof (column.rendererType()), column.rendererType());
     });
     __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
         var outside = sortcontent.filter(thiselement).empty();

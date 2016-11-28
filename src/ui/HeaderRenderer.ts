@@ -20,6 +20,7 @@ import ThresholdColumn from '../model/ThresholdColumn';
 import VerticalBarColumn from '../model/VerticalBarColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
+
 import {
   filterDialogs,
   openEditWeightsDialog,
@@ -31,7 +32,8 @@ import {
   sortDialogSparkline,
   sortDialogBoxplot,
   sortDialogVerticalBar,
-  sortDialogThresholdBar
+  sortDialogThresholdBar,
+  renderertypedialog
 
 } from '../ui_dialogs';
 import ADataProvider from "../provider/ADataProvider";
@@ -377,6 +379,14 @@ export default class HeaderRenderer {
       sortDialogVerticalBar(<VerticalBarColumn>d, d3.select(this.parentNode.parentNode));
       (<MouseEvent>d3.event).stopPropagation();
     });
+
+
+    //Heatmap Sort
+    $node.filter((d) => d instanceof Column).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Renderer').on('click', function (d) {
+      renderertypedialog(<Column>d, d3.select(this.parentNode.parentNode));
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+
 
     //edit link
     $node.filter((d) => d instanceof LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {

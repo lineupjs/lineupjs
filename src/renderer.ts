@@ -169,11 +169,14 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
     const total_width = col.getWidth();
     const bins = (<any>col.desc).datalength;
     const min = (<any> col.desc).sdomain[0], max = (<any> col.desc).sdomain[1];
-    const colorrange = (<any> col.desc).colorrange;
+    var colorrange = (<any> col.desc).colorrange;
+    const defaultcolor = ['blue', 'red'];
+    colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
+
     const celldimension = cell_dim(total_width, bins);
     var color: any = d3.scale.linear<number, string>();
-    color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
-      : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+    color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
+      : color.domain([min, max]).range(['white', colorrange[2]]);
     const padding = context.option('rowPadding', 1);
     return {
 
@@ -239,11 +242,14 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
     const total_width = col.getWidth();
     const bins = (<any>col.desc).datalength;
     const min = (<any> col.desc).sdomain[0], max = (<any> col.desc).sdomain[1];
-    const colorrange = (<any> col.desc).colorrange;
+    var colorrange = (<any> col.desc).colorrange;
+    const defaultcolor = ['blue', 'red'];
+    colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
+
     const celldimension = cell_dim(total_width, bins);
     var color: any = d3.scale.linear<number, string>();
-    color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
-      : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+    color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
+      : color.domain([min, max]).range(['white', colorrange[2]]);
     const padding = context.option('rowPadding', 1);
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
@@ -335,8 +341,11 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
     const bins = (<any>col.desc).datalength;
     const threshold = (<any> col.desc).threshold;
     const celldimension = (col.getWidth() / (bins));
-    const cat1color = (<any> col.desc).colorrange[0];
-    const cat2color = (<any> col.desc).colorrange[1];
+    const colorrange = (<any> col.desc).colorrange;
+    const defaultcolor = ['blue', 'red'];
+
+    const cat1color = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
+    const cat2color = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
     return {
 
       template: `<g class="thresholdcell"></g>`,
@@ -362,8 +371,11 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
     const bins = (<any>col.desc).datalength;
     const threshold = (<any> col.desc).threshold;
     const celldimension = (col.getWidth() / (bins));
-    const cat1color = (<any> col.desc).colorrange[0];
-    const cat2color = (<any> col.desc).colorrange[1];
+    const colorrange = (<any> col.desc).colorrange;
+    const defaultcolor = ['blue', 'red'];
+
+    const cat1color = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
+    const cat2color = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       var data = col.getValue(d.v, i);
@@ -385,8 +397,11 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
     const bins = (<any> col.desc).datalength;
     const min = (<any> col.desc).sdomain[0];
     const max = (<any> col.desc).sdomain[1];
-    const mincolor = (<any> col.desc).colorrange[0];
-    const maxcolor = (<any> col.desc).colorrange[1];
+    const colorrange = (<any> col.desc).colorrange;
+    const defaultcolor = ['blue', 'red'];
+    const mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
+    const maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
+
     const celldimension = (col.getWidth() / bins);
     const threshold = (<any> col.desc).threshold;
     var barheight = 13;
@@ -430,8 +445,13 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
     const bins = (<any> col.desc).datalength;
     const min = (<any> col.desc).sdomain[0];
     const max = (<any> col.desc).sdomain[1];
-    const mincolor = (<any> col.desc).colorrange[0];
-    const maxcolor = (<any> col.desc).colorrange[1];
+
+    const colorrange = (<any> col.desc).colorrange;
+    const defaultcolor = ['blue', 'red'];
+
+    const mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
+    const maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
+
     const celldimension = (col.getWidth() / bins);
     const threshold = (<any> col.desc).threshold;
     var barheight = 13;
