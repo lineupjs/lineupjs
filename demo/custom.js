@@ -87,7 +87,7 @@ window.onload = function () {
         sort: 'min',
 
         datalength: datalength
-       },
+      },
       {
         label: 'upset',
         type: 'upset',
@@ -137,7 +137,7 @@ window.onload = function () {
       //   threshold: 0,
       //   datalength: datalength
       // },
-      ]
+    ]
 
 
     //

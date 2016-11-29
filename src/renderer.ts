@@ -255,6 +255,7 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
       var data = col.getValue(d.v, i);
       data.forEach(function (d, i) {
         var x = (i === null || 0) ? 0 : (i * celldimension);
+        ctx.beginPath();
         ctx.fillStyle = color(d);
         ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
       });
@@ -317,14 +318,14 @@ class SparklineCellRenderer extends DefaultCellRenderer {
           xpos = x(i);
           ypos = y(d);
         } else {
+          ctx.strokeStyle = 'red';
+          ctx.fillStyle = 'red';
           ctx.beginPath();
           ctx.moveTo(xpos, ypos);
           xpos = x(i);
           ypos = y(d);
           ctx.lineTo(xpos, ypos);
-          ctx.strokeStyle = 'red';
           ctx.stroke();
-          ctx.fillStyle = 'red';
           ctx.fill();
 
         }
@@ -381,6 +382,7 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       var data = col.getValue(d.v, i);
       data.forEach(function (d, i) {
+        ctx.beginPath();
         var xpos = (i === null || 0) ? 0 : (i * celldimension);
         var ypos = (d < threshold) ? (context.rowHeight(i) / 2) : 0;
         ctx.fillStyle = (d < threshold) ? cat1color : cat2color;
@@ -587,6 +589,7 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
+
       var data = col.getValue(d.v, i);
       data.sort(numSort);
       var mindata = Math.min.apply(Math, data);
@@ -594,9 +597,9 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
       var q1 = (getPercentile(data, 25));
       var med = (getPercentile(data, 50));
       var q3 = (getPercentile(data, 75));
-      ctx.beginPath();
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
+      ctx.beginPath();
       ctx.rect(scale(q1), padding, (scale(q3) - scale(q1)), context.rowHeight(i));
       ctx.fill();
       ctx.stroke();
@@ -609,6 +612,7 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
       var middle = (bottom - top) / 2;
       ctx.strokeStyle = 'black';
       ctx.fillStyle = '#e0e0e0';
+      ctx.beginPath()
       ctx.moveTo(left, middle);
       ctx.lineTo(scale(q1), middle);
       ctx.moveTo(left, top);
@@ -695,28 +699,28 @@ class UpsetCellRenderer extends DefaultCellRenderer {
       }, []));
 
       if (countcategory > 1) {
-
+        ctx.fillStyle = 'black';
+        ctx.strokeStyle = 'black';
+        ctx.beginPath();
         ctx.moveTo(((d3.min(catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
         ctx.lineTo(((d3.max(catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
-        ctx.fillStyle = 'black';
         ctx.fill();
-        ctx.strokeStyle = 'black';
         ctx.stroke();
+
 
       }
 
       data.forEach(function (d, i) {
+
         var posy = (context.rowHeight(i) / 2);
         var posx = (i * windowsize) + (windowsize / 2);
-
+        ctx.fillStyle = 'black';
+        ctx.strokeStyle = 'black';
         ctx.beginPath();
         ctx.globalAlpha = (d === 1) ? 1 : 0.1;
         ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = 'black';
         ctx.fill();
-        ctx.strokeStyle = 'black';
         ctx.stroke();
-
       });
 
 

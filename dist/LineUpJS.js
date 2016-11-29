@@ -1589,7 +1589,6 @@ var HeatmapCellRenderer = (function (_super) {
         return {
             template: "<div class=\"heatmapcell\" style=\"top:" + padding + "px;\">\n                                   </div>",
             update: function (n, d, i) {
-                var width = col.getWidth() * col.getValue(d.v, d.dataIndex);
                 var g = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n);
                 var div = g.selectAll('div').data(col.getValue(d.v, i));
                 div.enter().append('div');
@@ -1622,6 +1621,7 @@ var HeatmapCellRenderer = (function (_super) {
             var data = col.getValue(d.v, i);
             data.forEach(function (d, i) {
                 var x = (i === null || 0) ? 0 : (i * celldimension);
+                ctx.beginPath();
                 ctx.fillStyle = color(d);
                 ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
             });
@@ -1677,14 +1677,14 @@ var SparklineCellRenderer = (function (_super) {
                     ypos = y(d);
                 }
                 else {
+                    ctx.strokeStyle = 'red';
+                    ctx.fillStyle = 'red';
                     ctx.beginPath();
                     ctx.moveTo(xpos, ypos);
                     xpos = x(i);
                     ypos = y(d);
                     ctx.lineTo(xpos, ypos);
-                    ctx.strokeStyle = 'red';
                     ctx.stroke();
-                    ctx.fillStyle = 'red';
                     ctx.fill();
                 }
             });
@@ -1726,7 +1726,6 @@ var ThresholdCellRenderer = (function (_super) {
     ThresholdCellRenderer.prototype.createCanvas = function (col, context) {
         var bins = col.desc.datalength;
         var threshold = col.desc.threshold || 0;
-        console.log(threshold);
         var celldimension = (col.getWidth() / (bins));
         var colorrange = col.desc.colorrange;
         var defaultcolor = ['blue', 'red'];
@@ -1735,6 +1734,7 @@ var ThresholdCellRenderer = (function (_super) {
         return function (ctx, d, i) {
             var data = col.getValue(d.v, i);
             data.forEach(function (d, i) {
+                ctx.beginPath();
                 var xpos = (i === null || 0) ? 0 : (i * celldimension);
                 var ypos = (d < threshold) ? (context.rowHeight(i) / 2) : 0;
                 ctx.fillStyle = (d < threshold) ? cat1color : cat2color;
@@ -1924,9 +1924,9 @@ var BoxplotCellRenderer = (function (_super) {
             var q1 = (getPercentile(data, 25));
             var med = (getPercentile(data, 50));
             var q3 = (getPercentile(data, 75));
-            ctx.beginPath();
             ctx.fillStyle = '#e0e0e0';
             ctx.strokeStyle = 'black';
+            ctx.beginPath();
             ctx.rect(scale(q1), padding, (scale(q3) - scale(q1)), context.rowHeight(i));
             ctx.fill();
             ctx.stroke();
@@ -1937,6 +1937,7 @@ var BoxplotCellRenderer = (function (_super) {
             var middle = (bottom - top) / 2;
             ctx.strokeStyle = 'black';
             ctx.fillStyle = '#e0e0e0';
+            ctx.beginPath();
             ctx.moveTo(left, middle);
             ctx.lineTo(scale(q1), middle);
             ctx.moveTo(left, top);
@@ -2012,22 +2013,23 @@ var UpsetCellRenderer = (function (_super) {
                 return b;
             }, []));
             if (countcategory > 1) {
+                ctx.fillStyle = 'black';
+                ctx.strokeStyle = 'black';
+                ctx.beginPath();
                 ctx.moveTo(((__WEBPACK_IMPORTED_MODULE_2_d3__["min"](catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
                 ctx.lineTo(((__WEBPACK_IMPORTED_MODULE_2_d3__["max"](catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
-                ctx.fillStyle = 'black';
                 ctx.fill();
-                ctx.strokeStyle = 'black';
                 ctx.stroke();
             }
             data.forEach(function (d, i) {
                 var posy = (context.rowHeight(i) / 2);
                 var posx = (i * windowsize) + (windowsize / 2);
+                ctx.fillStyle = 'black';
+                ctx.strokeStyle = 'black';
                 ctx.beginPath();
                 ctx.globalAlpha = (d === 1) ? 1 : 0.1;
                 ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
-                ctx.fillStyle = 'black';
                 ctx.fill();
-                ctx.strokeStyle = 'black';
                 ctx.stroke();
             });
         };
@@ -6884,7 +6886,6 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
 // Renderer type change
 function renderertypedialog(column, $header) {
     var renderertype = column.desc.type;
-    var label = column.desc.label;
     var valuestring = ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar', 'upset'];
     var popup = makesortPopup($header, 'Renderer Type', valuestring.map(function (d, i) {
         return "<input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + ">" + d + "<br>";
@@ -6899,7 +6900,6 @@ function renderertypedialog(column, $header) {
         renderertype = that.value;
         column.desc.type = renderertype;
         column.rendererType();
-        console.log(column.getMetaData(), column.desc);
         column.setMetaData({
             label: renderertype,
             description: column.getMetaData().description,
@@ -6916,7 +6916,6 @@ function renderertypedialog(column, $header) {
 // Sort Heatmap Dialog.
 function sortDialogHeatmap(column, $header) {
     var rank = column.desc.sort;
-    var renderertype = column.desc.type;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
         return "<input type=\"radio\" name=\"heatmaprank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
@@ -6931,8 +6930,6 @@ function sortDialogHeatmap(column, $header) {
         rank = that.value;
         column.desc.sort = rank;
         column.toggleMySorting();
-        console.log(renderertype);
-        console.log(typeof (column.rendererType()), column.rendererType());
     });
     __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
         var outside = sortcontent.filter(thiselement).empty();
