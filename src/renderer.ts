@@ -612,7 +612,7 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
       var middle = (bottom - top) / 2;
       ctx.strokeStyle = 'black';
       ctx.fillStyle = '#e0e0e0';
-      ctx.beginPath()
+      ctx.beginPath();
       ctx.moveTo(left, middle);
       ctx.lineTo(scale(q1), middle);
       ctx.moveTo(left, top);
@@ -726,6 +726,55 @@ class UpsetCellRenderer extends DefaultCellRenderer {
 
 
 }
+
+class DataValueSizeCellRenderer extends DefaultCellRenderer {
+
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+
+    const min = (<any> col.desc).sdomain[0];
+    const max = (<any> col.desc).sdomain[1];
+    var radiusscale: any = d3.scale.linear().domain([min, max]);
+
+
+    return {
+
+      template: `<g class="datavaluesizecell"></g>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        const g = d3.select(n);
+        radiusscale = radiusscale.range([0, (context.rowHeight(i) / 2)]);
+        const circle = g.selectAll('circle').data([<any>col.getValue(d.v, i)]);
+        circle.enter().append('circle');
+        circle
+          .attr({
+            cy: (d: any, i) => (context.rowHeight(i) / 2),
+            cx: (d: any, i) => (col.getWidth() / 2),
+            r: radiusscale(<any>col.getValue(d.v, i)),
+            class: 'datavaluesizecircle'
+          });
+      }
+    };
+  }
+
+
+  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const min = (<any> col.desc).sdomain[0];
+    const max = (<any> col.desc).sdomain[1];
+
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      var posy = (context.rowHeight(i) / 2);
+      var posx = (col.getWidth() / 2);
+      var radiusscale: any = d3.scale.linear().domain([min, max]).range([0, (context.rowHeight(i) / 2)]);
+      ctx.fillStyle = 'black';
+      ctx.strokeStyle = 'black';
+      ctx.beginPath();
+      ctx.arc(posx, posy, radiusscale(<any>col.getValue(d.v, i)), 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+    };
+  }
+}
+
+
 export class BarCellRenderer implements ICellRendererFactory {
   /**
    * flag to always render the value
@@ -1329,7 +1378,8 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   sparkline: new SparklineCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
-  upset: new UpsetCellRenderer()
+  upset: new UpsetCellRenderer(),
+  datavaluesize: new DataValueSizeCellRenderer()
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {

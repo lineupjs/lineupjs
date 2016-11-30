@@ -26,7 +26,9 @@ import SparklineColumn from './SparklineColumn';
 import ThresholdColumn from './ThresholdColumn';
 import VerticalBarColumn from './VerticalBarColumn';
 import BoxplotColumn from './BoxplotColumn';
-import UpsetColumn from './UpsetColumn'
+import UpsetColumn from './UpsetColumn';
+import DataValueSizeColumn from './DataValueSizeColumn';
+
 
 export {default as Column, IColumnDesc} from './Column';
 export {ScaleMappingFunction, ScriptMappingFunction, isNumberColumn} from './NumberColumn';
@@ -101,6 +103,7 @@ export function models() {
     threshold: ThresholdColumn,
     verticalbar: VerticalBarColumn,
     boxplot: BoxplotColumn,
-    upset: UpsetColumn
+    upset: UpsetColumn,
+    datavaluesize: DataValueSizeColumn
   };
 }

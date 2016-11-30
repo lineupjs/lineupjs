@@ -376,6 +376,10 @@
   stroke: black;
   fill: black; }
 
+.lu svg.lu-body .datavaluesizecircle {
+  stroke: black;
+  fill: black; }
+
 .lu svg.lu-body g.row rect.bg {
   fill: transparent; }
 

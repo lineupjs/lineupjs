@@ -37,7 +37,8 @@ window.onload = function () {
         'health_score': [b.health_score2012, b.health_score2013, b.health_score2014, b.health_score2015],
         'ss_score': [b.ss_score2012, b.ss_score2013, b.ss_score2014, b.ss_score2015],
         'pf_score': [b.pf_score2012, b.pf_score2013, b.pf_score2014, b.pf_score2015],
-        'sk_score': [b.sk_score2012, b.sk_score2013, b.sk_score2014, b.sk_score2015]
+        'sk_score': [b.sk_score2012, b.sk_score2013, b.sk_score2014, b.sk_score2015],
+        'single_score': b.health_score2012
       });
 
     })
@@ -62,6 +63,7 @@ window.onload = function () {
 
       });
 
+
       return arr1.push({
         country: b.country,
         heatmapcustom: arraydata,
@@ -69,11 +71,11 @@ window.onload = function () {
         boxplot: arraydata,
         threshold: arraydata,
         verticalbar: arraydata,
+        datavaluesize: parseFloat(b.single_score),
         upset: catdata(4)
-
       })
 
-    }, 0)
+    }, 0);
 
 
     var desc1 = [
@@ -95,6 +97,15 @@ window.onload = function () {
         sdomain: [min, max],
         colorrange: ['blue', 'red'],
         sort: 'countcategory',
+        datalength: datalength
+      },
+      {
+        label: 'datavaluesize',
+        type: 'datavaluesize',
+        column: 'datavaluesize',
+        sdomain: [min, max],
+        colorrange: ['blue', 'red'],
+        sort: 'min',
         datalength: datalength
       }
       // {

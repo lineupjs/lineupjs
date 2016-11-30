@@ -170,7 +170,7 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
 
   var renderertype = (<any>column.desc).type;
 
-  var valuestring: any = ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar', 'upset'];
+  var valuestring: any = ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar'];
 
   var popup = makesortPopup($header, 'Change Visualization', valuestring.map(function (d, i) {
     return `<input type="radio" name="renderertype" value=${d}  ${(renderertype === d) ? 'checked' : ''}>${d}<br>`;

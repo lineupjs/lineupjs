@@ -11,7 +11,7 @@
 		exports["LineUpJS"] = factory(require("React"), require("d3"));
 	else
 		root["LineUpJS"] = factory(root["React"], root["d3"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_48__, __WEBPACK_EXTERNAL_MODULE_0__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_49__, __WEBPACK_EXTERNAL_MODULE_0__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -75,7 +75,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 51);
+/******/ 	return __webpack_require__(__webpack_require__.s = 52);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -2036,6 +2036,49 @@ var UpsetCellRenderer = (function (_super) {
     };
     return UpsetCellRenderer;
 }(DefaultCellRenderer));
+var DataValueSizeCellRenderer = (function (_super) {
+    __extends(DataValueSizeCellRenderer, _super);
+    function DataValueSizeCellRenderer() {
+        _super.apply(this, arguments);
+    }
+    DataValueSizeCellRenderer.prototype.createSVG = function (col, context) {
+        var min = col.desc.sdomain[0];
+        var max = col.desc.sdomain[1];
+        var radiusscale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]);
+        return {
+            template: "<g class=\"datavaluesizecell\"></g>",
+            update: function (n, d, i) {
+                var g = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n);
+                radiusscale = radiusscale.range([0, (context.rowHeight(i) / 2)]);
+                var circle = g.selectAll('circle').data([col.getValue(d.v, i)]);
+                circle.enter().append('circle');
+                circle
+                    .attr({
+                    cy: function (d, i) { return (context.rowHeight(i) / 2); },
+                    cx: function (d, i) { return (col.getWidth() / 2); },
+                    r: radiusscale(col.getValue(d.v, i)),
+                    class: 'datavaluesizecircle'
+                });
+            }
+        };
+    };
+    DataValueSizeCellRenderer.prototype.createCanvas = function (col, context) {
+        var min = col.desc.sdomain[0];
+        var max = col.desc.sdomain[1];
+        return function (ctx, d, i) {
+            var posy = (context.rowHeight(i) / 2);
+            var posx = (col.getWidth() / 2);
+            var radiusscale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, (context.rowHeight(i) / 2)]);
+            ctx.fillStyle = 'black';
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(posx, posy, radiusscale(col.getValue(d.v, i)), 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        };
+    };
+    return DataValueSizeCellRenderer;
+}(DefaultCellRenderer));
 var BarCellRenderer = (function () {
     function BarCellRenderer(renderValue, colorOf) {
         if (renderValue === void 0) { renderValue = false; }
@@ -2596,7 +2639,8 @@ var renderers = {
     sparkline: new SparklineCellRenderer(),
     verticalbar: new VerticalBarCellRenderer(),
     boxplot: new BoxplotCellRenderer(),
-    upset: new UpsetCellRenderer()
+    upset: new UpsetCellRenderer(),
+    datavaluesize: new DataValueSizeCellRenderer()
 };
 function chooseRenderer(col, renderers) {
     var r = renderers[col.rendererType()];
@@ -3525,27 +3569,28 @@ var StackColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__CategoricalNumberColumn__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__NestedColumn__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(41);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__LinkColumn__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__HeatmapColumn__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__SparklineColumn__ = __webpack_require__(26);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__ThresholdColumn__ = __webpack_require__(27);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__VerticalBarColumn__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__ = __webpack_require__(42);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__Ranking__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__DataValueSizeColumn__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__Column__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_26__Ranking__ = __webpack_require__(14);
 /* harmony export (immutable) */ exports["defineColumn"] = defineColumn;
 /* harmony export (immutable) */ exports["createActionDesc"] = createActionDesc;
 /* harmony export (immutable) */ exports["models"] = models;
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_24__Column__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_24__Column__["IColumnDesc"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_25__Column__["IColumnDesc"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_25__Column__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ScaleMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["d"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ScriptMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["e"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isNumberColumn", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isCategoricalColumn", function() { return __WEBPACK_IMPORTED_MODULE_7__CategoricalColumn__["b"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_25__Ranking__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_25__Ranking__["b"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_26__Ranking__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_26__Ranking__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMinDesc", function() { return __WEBPACK_IMPORTED_MODULE_8__MinColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMaxDesc", function() { return __WEBPACK_IMPORTED_MODULE_9__MaxColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMeanDesc", function() { return __WEBPACK_IMPORTED_MODULE_10__MeanColumn__["b"]; });
@@ -3562,6 +3607,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+
 
 
 
@@ -3658,7 +3704,8 @@ function models() {
         threshold: __WEBPACK_IMPORTED_MODULE_20__ThresholdColumn__["a" /* default */],
         verticalbar: __WEBPACK_IMPORTED_MODULE_21__VerticalBarColumn__["a" /* default */],
         boxplot: __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__["a" /* default */],
-        upset: __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__["a" /* default */]
+        upset: __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__["a" /* default */],
+        datavaluesize: __WEBPACK_IMPORTED_MODULE_24__DataValueSizeColumn__["a" /* default */]
     };
 }
 
@@ -5580,7 +5627,7 @@ var MinColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__MultiLevelCompositeColumn__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__MultiLevelCompositeColumn__ = __webpack_require__(42);
 /* harmony export (immutable) */ exports["b"] = createDesc;
 /**
  * Created by sam on 04.11.2016.
@@ -6687,11 +6734,11 @@ var HeaderRenderer = (function () {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(46);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ABodyRenderer__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(46);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__HTMLBodyRenderer__ = __webpack_require__(44);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CanvasBodyRenderer__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__HTMLBodyRenderer__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CanvasBodyRenderer__ = __webpack_require__(44);
 /* harmony export (immutable) */ exports["createBodyRenderer"] = createBodyRenderer;
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "HeaderRenderer", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["c"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IRankingHook", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["IRankingHook"]; });
@@ -6886,7 +6933,7 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
 // Renderer type change
 function renderertypedialog(column, $header) {
     var renderertype = column.desc.type;
-    var valuestring = ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar', 'upset'];
+    var valuestring = ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar'];
     var popup = makesortPopup($header, 'Change Visualization', valuestring.map(function (d, i) {
         return "<input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + ">" + d + "<br>";
     }).join('\n'));
@@ -8501,6 +8548,41 @@ var CategoricalNumberColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(3);
+/* unused harmony export numberCompare */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+var DataValueSizeColumn = (function (_super) {
+    __extends(DataValueSizeColumn, _super);
+    function DataValueSizeColumn(id, desc) {
+        _super.call(this, id, desc);
+    }
+    DataValueSizeColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
+    };
+    return DataValueSizeColumn;
+}(__WEBPACK_IMPORTED_MODULE_0__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = DataValueSizeColumn;
+
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
 /**
  * Created by sam on 04.11.2016.
@@ -8534,7 +8616,7 @@ var DummyColumn = (function (_super) {
 
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8644,7 +8726,7 @@ var MultiLevelCompositeColumn = (function (_super) {
 
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8739,7 +8821,7 @@ var UpsetColumn = (function (_super) {
 
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9016,7 +9098,7 @@ var BodyCanvasRenderer = (function (_super) {
 
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9075,7 +9157,7 @@ var HTMLBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9256,7 +9338,7 @@ var PoolRenderer = (function () {
 
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9369,23 +9451,23 @@ var SVGBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 47 */,
-/* 48 */
+/* 48 */,
+/* 49 */
 /***/ function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_48__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_49__;
 
 /***/ },
-/* 49 */,
 /* 50 */,
-/* 51 */
+/* 51 */,
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss__ = __webpack_require__(33);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__style_scss__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lineup__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__provider_LocalDataProvider__ = __webpack_require__(35);
 /**
