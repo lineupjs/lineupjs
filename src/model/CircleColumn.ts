@@ -16,7 +16,7 @@ export function numberCompare(a: number, b: number) {
   return a - b;
 }
 
-export default class DataValueSizeColumn extends ValueColumn<number> {
+export default class CircleColumn extends ValueColumn<number> {
 
   constructor(id: string, desc: any) {
     super(id, desc);

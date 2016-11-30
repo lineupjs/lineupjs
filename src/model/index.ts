@@ -27,7 +27,7 @@ import ThresholdColumn from './ThresholdColumn';
 import VerticalBarColumn from './VerticalBarColumn';
 import BoxplotColumn from './BoxplotColumn';
 import UpsetColumn from './UpsetColumn';
-import DataValueSizeColumn from './DataValueSizeColumn';
+import CircleColumn from './CircleColumn';
 
 
 export {default as Column, IColumnDesc} from './Column';
@@ -68,6 +68,7 @@ export function defineColumn<T>(name: string, functions: any = {}) {
   return CustomColumn;
 }
 
+
 /**
  * utility for creating an action description with optional label
  * @param label
@@ -104,6 +105,6 @@ export function models() {
     verticalbar: VerticalBarColumn,
     boxplot: BoxplotColumn,
     upset: UpsetColumn,
-    datavaluesize: DataValueSizeColumn
+    circle: CircleColumn
   };
 }

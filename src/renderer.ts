@@ -168,7 +168,7 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
 
     const total_width = col.getWidth();
     const bins = (<any>col.desc).datalength;
-    const min = (<any> col.desc).sdomain[0], max = (<any> col.desc).sdomain[1];
+    const min = (<any> col.desc).domain[0], max = (<any> col.desc).domain[1];
     var colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
     colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
@@ -240,7 +240,7 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
 
     const total_width = col.getWidth();
     const bins = (<any>col.desc).datalength;
-    const min = (<any> col.desc).sdomain[0], max = (<any> col.desc).sdomain[1];
+    const min = (<any> col.desc).domain[0], max = (<any> col.desc).domain[1];
     var colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
     colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
@@ -270,8 +270,8 @@ class SparklineCellRenderer extends DefaultCellRenderer {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
-    const min = (<any> col.desc).sdomain[0];
-    const max = (<any> col.desc).sdomain[1];
+    const min = (<any> col.desc).domain[0];
+    const max = (<any> col.desc).domain[1];
     const bins = (<any> col.desc).datalength;
     var x: any = d3.scale.linear().domain([0, bins - 1]).range([0, col.getWidth()]);
     var y: any = y = d3.scale.linear().domain([min, max]);
@@ -302,8 +302,8 @@ class SparklineCellRenderer extends DefaultCellRenderer {
 
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const min = (<any> col.desc).sdomain[0];
-    const max = (<any> col.desc).sdomain[1];
+    const min = (<any> col.desc).domain[0];
+    const max = (<any> col.desc).domain[1];
     const bins = (<any> col.desc).datalength;
     var x: any = d3.scale.linear().domain([0, bins - 1]).range([0, col.getWidth()]);
     var y: any = y = d3.scale.linear().domain([min, max]);
@@ -318,8 +318,8 @@ class SparklineCellRenderer extends DefaultCellRenderer {
           xpos = x(i);
           ypos = y(d);
         } else {
-          ctx.strokeStyle = 'red';
-          ctx.fillStyle = 'red';
+          ctx.strokeStyle = 'black';
+          ctx.fillStyle = 'black';
           ctx.beginPath();
           ctx.moveTo(xpos, ypos);
           xpos = x(i);
@@ -397,8 +397,8 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
     const bins = (<any> col.desc).datalength;
-    const min = (<any> col.desc).sdomain[0];
-    const max = (<any> col.desc).sdomain[1];
+    const min = (<any> col.desc).domain[0];
+    const max = (<any> col.desc).domain[1];
 
     const colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
@@ -448,8 +448,8 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
 
 
     const bins = (<any> col.desc).datalength;
-    const min = (<any> col.desc).sdomain[0];
-    const max = (<any> col.desc).sdomain[1];
+    const min = (<any> col.desc).domain[0];
+    const max = (<any> col.desc).domain[1];
 
     const colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
@@ -509,8 +509,8 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
     }
 
     const padding = context.option('rowPadding', 1);
-    const min = (<any> col.desc).sdomain[0];
-    const max = (<any> col.desc).sdomain[1];
+    const min = (<any> col.desc).domain[0];
+    const max = (<any> col.desc).domain[1];
     var scale = d3.scale.linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
 
     return {
@@ -583,8 +583,8 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
     }
 
     const padding = context.option('rowPadding', 1);
-    const min = (<any> col.desc).sdomain[0];
-    const max = (<any> col.desc).sdomain[1];
+    const min = (<any> col.desc).domain[0];
+    const max = (<any> col.desc).domain[1];
     var scale = d3.scale.linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
@@ -727,18 +727,18 @@ class UpsetCellRenderer extends DefaultCellRenderer {
 
 }
 
-class DataValueSizeCellRenderer extends DefaultCellRenderer {
+class CircleColumnCellRenderer extends DefaultCellRenderer {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
-    const min = (<any> col.desc).sdomain[0];
-    const max = (<any> col.desc).sdomain[1];
+    const min = (<any> col.desc).domain[0];
+    const max = (<any> col.desc).domain[1];
     var radiusscale: any = d3.scale.linear().domain([min, max]);
 
 
     return {
 
-      template: `<g class="datavaluesizecell"></g>`,
+      template: `<g class="circlecolumncell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const g = d3.select(n);
         radiusscale = radiusscale.range([0, (context.rowHeight(i) / 2)]);
@@ -749,7 +749,7 @@ class DataValueSizeCellRenderer extends DefaultCellRenderer {
             cy: (d: any, i) => (context.rowHeight(i) / 2),
             cx: (d: any, i) => (col.getWidth() / 2),
             r: radiusscale(<any>col.getValue(d.v, i)),
-            class: 'datavaluesizecircle'
+            class: 'circlecolumn'
           });
       }
     };
@@ -757,13 +757,15 @@ class DataValueSizeCellRenderer extends DefaultCellRenderer {
 
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const min = (<any> col.desc).sdomain[0];
-    const max = (<any> col.desc).sdomain[1];
+
+    const min = (<any> col.desc).domain[0];
+    const max = (<any> col.desc).domain[1];
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       var posy = (context.rowHeight(i) / 2);
       var posx = (col.getWidth() / 2);
       var radiusscale: any = d3.scale.linear().domain([min, max]).range([0, (context.rowHeight(i) / 2)]);
+      // console.log(radiusscale(<any>col.getValue(d.v, i)),<any>col.getValue(d.v, i));
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
@@ -1379,7 +1381,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   verticalbar: new VerticalBarCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
   upset: new UpsetCellRenderer(),
-  datavaluesize: new DataValueSizeCellRenderer()
+  circle: new CircleColumnCellRenderer()
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
