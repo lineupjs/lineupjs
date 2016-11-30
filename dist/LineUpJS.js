@@ -6887,7 +6887,7 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
 function renderertypedialog(column, $header) {
     var renderertype = column.desc.type;
     var valuestring = ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar', 'upset'];
-    var popup = makesortPopup($header, 'Renderer Type', valuestring.map(function (d, i) {
+    var popup = makesortPopup($header, 'Change Visualization', valuestring.map(function (d, i) {
         return "<input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + ">" + d + "<br>";
     }).join('\n'));
     function thiselement() {

@@ -706,12 +706,9 @@ class UpsetCellRenderer extends DefaultCellRenderer {
         ctx.lineTo(((d3.max(catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
         ctx.fill();
         ctx.stroke();
-
-
       }
 
       data.forEach(function (d, i) {
-
         var posy = (context.rowHeight(i) / 2);
         var posx = (i * windowsize) + (windowsize / 2);
         ctx.fillStyle = 'black';
