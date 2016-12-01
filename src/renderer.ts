@@ -167,7 +167,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     this.renderValue = renderValue;
   }
 
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<g class="bar">
@@ -192,7 +192,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML(col: INumberColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<div class="bar" style="top:${padding}px; background-color: ${col.color}">
@@ -213,7 +213,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = this.colorOf(d.v, i, col);
@@ -317,7 +317,7 @@ const action = {
       }
     };
   },
-  createCanvas: function (col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function (col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const actions = context.option('actions', []);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const hovered = context.hovered(d.dataIndex);
