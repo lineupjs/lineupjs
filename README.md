@@ -1,4 +1,4 @@
-LineUp.js: Visual Analysis of Multi-Attribute Rankings [![Build Status](https://travis-ci.org/Caleydo/lineup.js.svg?branch=master)](https://travis-ci.org/Caleydo/lineup.js)
+LineUp.js: Visual Analysis of Multi-Attribute Rankings [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
 ======================================================
 
 LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes. 
@@ -10,7 +10,7 @@ Dependencies
 LineUp.js depends on [D3](http://d3js.org) for rendering and [FontAwesome](http://fontawesome.io/) for icons in the toolbar. Both dependencies are declared as bower dependencies. 
 
 Development Dependencies
-----------------
+------------------------
 
 [Webpack](http://webpack.github.io) is used as build tool. LineUp itself is written in [TypeScript](www.typescriptlang.org) and [SASS](http://sass-lang.com). 
 
@@ -19,14 +19,14 @@ Development Dependencies
 **Installation**
 
 ```bash
-npm run prepare
+npm install
 ```
 
 
 **Test**
 
 ```bash
-npm run test
+npm test
 ```
 
 **Build distribution packages**
@@ -63,5 +63,12 @@ Documentation
 
 [TypeDoc Docu](http://caleydo.github.io/lineup.js/dist/docs/index.html)
 
+
+[npm-image]: https://badge.fury.io/js/lineupjs.svg
+[npm-url]: https://npmjs.org/package/lineupjs
+[travis-image]: https://travis-ci.org/caleydo/lineup.js.svg?branch=release_1.x
+[travis-url]: https://travis-ci.org/caleydo/lineup.js
+[daviddm-image]: https://david-dm.org/caleydo/lineup.js.svg?theme=shields.io
+[daviddm-url]: https://david-dm.org/caleydo/lineup.js
 
 
