@@ -74,8 +74,8 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   initCategories(desc: any) {
     if (desc.categories) {
-      var cats = [],
-        cols = this.colors.range(),
+      let cats = [],
+        cols = this.colors.range().slice(), //work on a copy since it will be manipulated
         labels = new Map<string, string>();
       desc.categories.forEach((cat, i) => {
         if (typeof cat === 'string') {
