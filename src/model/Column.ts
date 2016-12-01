@@ -33,11 +33,14 @@ export interface IColumnParent {
 }
 
 export interface IColumnDesc {
+  /**
+   * label of the column
+   */
   label: string;
   /**
    * the column type
    */
-    type: string;
+  type: string;
 
   /**
    * column description
@@ -105,7 +108,10 @@ export default class Column extends AEventDispatcher {
   static EVENT_DIRTY_HEADER = 'dirtyHeader';
   static EVENT_DIRTY_VALUES = 'dirtyValues';
 
-  id: string;
+  /**
+   * the id of this column
+   */
+  private uid: string;
 
   /**
    * width of the column
@@ -114,15 +120,18 @@ export default class Column extends AEventDispatcher {
    */
   private width: number = 100;
 
+  /**
+   * parent column of this column, set when added to a ranking or combined column
+   * @type {any}
+   */
   parent: IColumnParent = null;
 
-  label: string;
-  description: string;
-  color: string;
+  private metadata : IColumnMetaData;
+
   /**
    * alternative to specifying a color is defining a css class that should be used
    */
-  cssClass: string;
+  readonly cssClass: string;
 
   /**
    * whether this column is compressed i.e. just shown in a minimal version
@@ -133,19 +142,41 @@ export default class Column extends AEventDispatcher {
 
   constructor(id: string, public desc: IColumnDesc) {
     super();
-    this.id = fixCSS(id);
-    this.label = this.desc.label || this.id;
-    this.description = this.desc.description || '';
+    this.uid = fixCSS(id);
     this.cssClass = (<any>this.desc).cssClass || '';
-    this.color = (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
+    this.metadata = {
+      label: this.desc.label || this.id,
+      description: this.desc.description || '',
+      color: (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
+    }
   }
 
-  get headerCssClass() {
-    return this.desc.type;
+  get id() {
+    return this.uid;
   }
 
   assignNewId(idGenerator: () => string) {
-    this.id = fixCSS(idGenerator());
+    this.uid = fixCSS(idGenerator());
+  }
+
+  get label() {
+    return this.metadata.label;
+  }
+
+  get description() {
+    return this.metadata.description;
+  }
+
+  get color() {
+    return this.metadata.color;
+  }
+
+  /**
+   * return the css class to use for the header
+   * @return {string}
+   */
+  get headerCssClass() {
+    return this.desc.type;
   }
 
   /**
@@ -182,8 +213,16 @@ export default class Column extends AEventDispatcher {
     return this.width;
   }
 
+  /**
+   * a column is hidden if it has no width
+   * @return {boolean}
+   */
   isHidden() {
     return this.width <= 0;
+  }
+
+  hide() {
+    return this.setWidth(0);
   }
 
   setCompressed(value: boolean) {
@@ -200,7 +239,7 @@ export default class Column extends AEventDispatcher {
   /**
    * visitor pattern for flattening the columns
    * @param r the result array
-   * @param offset left offeset
+   * @param offset left offset
    * @param levelsToGo how many levels down
    * @param padding padding between columns
    * @returns {number} the used width by this column
@@ -229,11 +268,13 @@ export default class Column extends AEventDispatcher {
     const events = this.color === value.color ?
       [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY] :
       [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY];
-    this.fire(events, this.getMetaData(), {
-      label: this.label = value.label,
-      color: this.color = value.color,
-      description: this.description = value.description
-    });
+    const bak = this.getMetaData();
+    //copy to avoid reference
+    this.metadata.label = value.label;
+    this.metadata.color = value.color;
+    this.metadata.description = value.description;
+
+    this.fire(events, this.getMetaData(), this.getMetaData());
   }
 
   getMetaData(): IColumnMetaData {
@@ -331,8 +372,8 @@ export default class Column extends AEventDispatcher {
    */
   restore(dump: any, factory: (dump: any) => Column) {
     this.width = dump.width || this.width;
-    this.label = dump.label || this.label;
-    this.color = dump.color || this.color;
+    this.metadata.label = dump.label || this.label;
+    this.metadata.color = dump.color || this.color;
     this.compressed = dump.compressed === true;
   }
 
@@ -350,7 +391,6 @@ export default class Column extends AEventDispatcher {
    * return the value of a given row for the current column
    * @param row
    * @param index
-   * @return
    */
   getValue(row: any, index: number): any {
     return ''; //no value
@@ -358,10 +398,10 @@ export default class Column extends AEventDispatcher {
 
   /**
    * compare function used to determine the order according to the values of the current column
-   * @param a
-   * @param b
-   * @param aIndex,
-   * @param bIndex
+   * @param a first element
+   * @param b second element
+   * @param aIndex index of the first element
+   * @param bIndex index of the second element
    * @return {number}
    */
   compare(a: any, b: any, aIndex: number, bIndex: number) {
@@ -386,6 +426,10 @@ export default class Column extends AEventDispatcher {
     return row !== null;
   }
 
+  /**
+   * determines the renderer type that should be used to render this column. By default the same type as the column itself
+   * @return {string}
+   */
   rendererType(): string {
     return this.desc.type;
   }
