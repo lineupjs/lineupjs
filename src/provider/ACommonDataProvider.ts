@@ -26,7 +26,7 @@ function resolveComplex(column: string, row: any) {
 }
 
 function rowGetter(row: any, index: number, id: string, desc: any) {
-  var column = desc.column;
+  const column = desc.column;
   if (isComplexAccessor(column)) {
     return resolveComplex(<string>column, row);
   }
@@ -60,8 +60,8 @@ abstract class ACommonDataProvider extends ADataProvider {
   }
 
   cloneRanking(existing?: Ranking) {
-    var id = this.nextRankingId();
-    var new_ = new Ranking(id);
+    const id = this.nextRankingId();
+    const new_ = new Ranking(id);
 
     if (existing) { //copy the ranking of the other one
       //copy the ranking
@@ -98,7 +98,7 @@ abstract class ACommonDataProvider extends ADataProvider {
    * @param column
    */
   pushDesc(column: IColumnDesc) {
-    var d: any = column;
+    const d: any = column;
     d.accessor = d.accessor || rowGetter;
     d.label = column.label || d.column;
     this.columns.push(column);

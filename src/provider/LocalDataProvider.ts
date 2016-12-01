@@ -2,7 +2,6 @@
  * Created by sam on 04.11.2016.
  */
 
-import {createRankDesc} from '../model';
 import Column, {IStatistics, ICategoricalStatistics, IColumnDesc} from '../model/Column';
 import NumberColumn, {INumberColumn} from '../model/NumberColumn';
 import Ranking from '../model/Ranking';
@@ -15,6 +14,7 @@ import ACommonDataProvider from './ACommonDataProvider';
 /**
  * computes the simple statistics of an array using d3 histogram
  * @param arr the data array
+ * @param indices array data indices
  * @param acc accessor function
  * @param range the total value range
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
@@ -50,6 +50,7 @@ function computeStats(arr: any[], indices: number[], acc: (row: any, index:numbe
 /**
  * computes a categorical histogram
  * @param arr the data array
+ * @param indices the data array data indices
  * @param acc the accessor
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
@@ -108,7 +109,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const that = this;
     this.reorderall = function () {
       //fire for all other rankings a dirty order event, too
-      var ranking = this.source;
+      const ranking = this.source;
       that.getRankings().forEach((r) => {
         if (r !== ranking) {
           r.dirtyOrder();
@@ -161,7 +162,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return Promise.resolve([]);
     }
     //wrap in a helper and store the initial index
-    var helper = this.data.map((r, i) => ({row: r, i: i}));
+    let helper = this.data.map((r, i) => ({row: r, i: i}));
 
     //do the optional filtering step
     if (this.options.filterGlobally) {
@@ -205,7 +206,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
   stats(indices: number[]): IStatsBuilder {
-    var d: any[] = null;
+    let d: any[] = null;
     const getD = () => d === null ? (d = this.viewRaw(indices)) : d;
 
     return {
@@ -222,7 +223,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
     }
     //randomly select 500 elements
-    var indices :number[] = [];
+    let indices :number[] = [];
     for (let i = 0; i < MAX_SAMPLE; ++i) {
       let j = Math.floor(Math.random() * (l - 1));
       while (indices.indexOf(j) >= 0) {

@@ -29,7 +29,7 @@ import {
  * @param col the column
  */
 export function toFullTooltip(col: { label: string, description?: string}) {
-  var base = col.label;
+  let base = col.label;
   if (col.description != null && col.description !== '') {
     base += '\n' + col.description;
   }
@@ -113,12 +113,12 @@ export default class HeaderRenderer {
     })
     .on('drag', function (d) {
       //the new width
-      var newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
+      const newValue = Math.max(d3.mouse(this.parentNode)[0], 2);
       d.setWidth(newValue);
       (<any>d3.event).sourceEvent.stopPropagation();
       (<any>d3.event).sourceEvent.preventDefault();
     })
-    .on('dragend', function (d) {
+    .on('dragend', function () {
       d3.select(this).classed('dragging', false);
       (<any>d3.event).sourceEvent.stopPropagation();
 
@@ -126,9 +126,9 @@ export default class HeaderRenderer {
     });
 
   private dropHandler = dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d: Column, copy) => {
-    var col: Column = null;
+    let col: Column = null;
     if ('application/caleydo-lineup-column-ref' in data) {
-      var id = data['application/caleydo-lineup-column-ref'];
+      const id = data['application/caleydo-lineup-column-ref'];
       col = this.data.find(id);
       if (copy) {
         col = this.data.clone(col);
@@ -136,13 +136,13 @@ export default class HeaderRenderer {
         col.removeMe();
       }
     } else {
-      var desc = JSON.parse(data['application/caleydo-lineup-column']);
+      const desc = JSON.parse(data['application/caleydo-lineup-column']);
       col = this.data.create(this.data.fromDescRef(desc));
     }
     if (d instanceof Column) {
       return d.insertAfterMe(col) != null;
     } else {
-      var r = this.data.getLastRanking();
+      const r = this.data.getLastRanking();
       return r.push(col) !== null;
     }
   });
@@ -265,19 +265,18 @@ export default class HeaderRenderer {
     const that = this;
     const rankings = this.data.getRankings();
 
-    var shifts: IFlatColumn[] = [], offset = 0, rankingOffsets = [];
+    let shifts: IFlatColumn[] = [], totalWidth = 0, rankingOffsets = [];
     rankings.forEach((ranking) => {
-      offset += ranking.flatten(shifts, offset, 1, this.options.columnPadding) + this.options.slopeWidth;
-      rankingOffsets.push(offset - this.options.slopeWidth);
+      totalWidth += ranking.flatten(shifts, totalWidth, 1, this.options.columnPadding) + this.options.slopeWidth;
+      rankingOffsets.push(totalWidth - this.options.slopeWidth);
     });
     //real width
-    offset -= this.options.slopeWidth;
-    const totalWidth = offset;
+    totalWidth -= this.options.slopeWidth;
 
     // fix for #179
     this.$node.select('div.drop').style('width', totalWidth + 'px');
 
-    var columns = shifts.map((d) => d.col);
+    const columns = shifts.map((d) => d.col);
 
     //update all if needed
     if (this.options.histograms && this.histCache.size === 0 && rankings.length > 0) {
@@ -291,11 +290,11 @@ export default class HeaderRenderer {
     }
 
     const levels = Math.max(...columns.map(countMultiLevel));
-    var height = (this.options.histograms ? this.options.headerHistogramHeight : this.options.headerHeight) + (levels - 1) * this.options.headerHeight;
+    let height = (this.options.histograms ? this.options.headerHistogramHeight : this.options.headerHeight) + (levels - 1) * this.options.headerHeight;
 
     if (this.options.autoRotateLabels) {
       //check if we have overflows
-      var rotatedAny = false;
+      let rotatedAny = false;
       this.$node.selectAll('div.header')
         .style('height', height + 'px').select('div.lu-label').each(function (d) {
         const w = this.querySelector('span.lu-label').offsetWidth;
@@ -317,7 +316,7 @@ export default class HeaderRenderer {
     const filterDialogs = this.options.filterDialogs,
       provider = this.data,
       that = this;
-    var $regular = $node.filter(d=> !(d instanceof Ranking)),
+    const $regular = $node.filter(d=> !(d instanceof Ranking)),
       $stacked = $node.filter(d=> d instanceof StackColumn),
       $multilevel = $node.filter(d=> isMultiLevelColumn(d));
 
@@ -421,11 +420,11 @@ export default class HeaderRenderer {
         }
       })
       .on('dragstart', (d) => {
-        var e = <DragEvent>(<any>d3.event);
+        const e = <DragEvent>(<any>d3.event);
         e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
         e.dataTransfer.setData('text/plain', d.label);
         e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
-        var ref = JSON.stringify(this.data.toDescRef(d.desc));
+        const ref = JSON.stringify(this.data.toDescRef(d.desc));
         e.dataTransfer.setData('application/caleydo-lineup-column', ref);
         if (isNumberColumn(d)) {
           e.dataTransfer.setData('application/caleydo-lineup-column-number', ref);
@@ -479,7 +478,7 @@ export default class HeaderRenderer {
         that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
       }
     }).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: IMultiLevelColumn, copy) => {
-      var col: Column = null;
+      let col: Column = null;
       if ('application/caleydo-lineup-column-number-ref' in data) {
         const id = data['application/caleydo-lineup-column-number-ref'];
         col = this.data.find(id);
@@ -497,7 +496,7 @@ export default class HeaderRenderer {
 
     // drag columns on top of each
     $headers.filter((d) => d.parent instanceof Ranking && isNumberColumn(d) && !isMultiLevelColumn(d)).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: Column & INumberColumn, copy) => {
-      var col: Column = null;
+      let col: Column = null;
       if ('application/caleydo-lineup-column-number-ref' in data) {
         const id = data['application/caleydo-lineup-column-number-ref'];
         col = this.data.find(id);
@@ -564,7 +563,7 @@ export default class HeaderRenderer {
             });
             $bars.exit().remove();
 
-            var $mean = $this.select('div.mean');
+            let $mean = $this.select('div.mean');
             if ($mean.empty()) {
               $mean = $this.append('div').classed('mean', true);
             }

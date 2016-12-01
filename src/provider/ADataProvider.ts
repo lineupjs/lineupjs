@@ -331,9 +331,9 @@ abstract class ADataProvider extends AEventDispatcher {
   restoreColumn(dump: any): Column {
     const create = (d: any) => {
       const desc = this.fromDescRef(d.desc);
-      var type = this.columnTypes[desc.type];
+      const type = this.columnTypes[desc.type];
       this.fixDesc(desc);
-      var c = new type('', desc);
+      const c = new type('', desc);
       c.restore(d, create);
       c.assignNewId(this.nextId.bind(this));
       return c;
@@ -402,10 +402,10 @@ abstract class ADataProvider extends AEventDispatcher {
   private createHelper = (d: any) => {
     //factory method for restoring a column
     const desc = this.fromDescRef(d.desc);
-    var c = null;
+    let c = null;
     if (desc && desc.type) {
       this.fixDesc(d.desc);
-      let type = this.columnTypes[desc.type];
+      const type = this.columnTypes[desc.type];
       c = new type(d.id, desc);
       c.restore(d, this.createHelper);
     }
@@ -441,7 +441,7 @@ abstract class ADataProvider extends AEventDispatcher {
     //restore rankings
     if (dump.rankings) {
       dump.rankings.forEach((r) => {
-        var ranking = this.cloneRanking();
+        const ranking = this.cloneRanking();
         ranking.restore(r, this.createHelper);
         //if no rank column add one
         if (!ranking.children.some((d) => d instanceof RankColumn)) {
@@ -606,7 +606,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * also select all the given rows
    * @param indices
    */
-  selectAll(indices: number[], jumpToSelection = false) {
+  selectAll(indices: number[]) {
     if (indices.every((i) => this.selection.has(i))) {
       return; //no change
     }
@@ -617,13 +617,12 @@ abstract class ADataProvider extends AEventDispatcher {
     indices.forEach((index) => {
       this.selection.add(index);
     });
-    this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection(), jumpToSelection);
+    this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
   }
 
   /**
    * set the selection to the given rows
    * @param indices
-   * @param jumpToSelection whether the first selected row should be visible
    */
   setSelection(indices: number[]) {
     if (this.selection.size === indices.length && indices.every((i) => this.selection.has(i))) {
@@ -685,7 +684,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {Array}
    */
   getSelection() {
-    var indices = [];
+    const indices = [];
     this.selection.forEach((s) => indices.push(s));
     indices.sort();
     return indices;
@@ -709,34 +708,33 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {Promise<string>}
    */
   exportTable(ranking: Ranking, options: IExportOptions = {}) {
-    const op: IExportOptions = {
+    options = merge({
       separator: '\t',
       newline: '\n',
       header: true,
       quote: false,
       quoteChar: '"',
       filter: (c) => !isSupportType(c)
-    };
-    options = merge(op, options);
+    }, options);
     //optionally quote not numbers
     function quote(l: string, c?: Column) {
-      if (op.quote && (!c || !isNumberColumn(c))) {
-        return op.quoteChar + l + op.quoteChar;
+      if (options.quote && (!c || !isNumberColumn(c))) {
+        return options.quoteChar + l + options.quoteChar;
       }
       return l;
     }
 
-    const columns = ranking.flatColumns.filter((c) => op.filter(c.desc));
+    const columns = ranking.flatColumns.filter((c) => options.filter(c.desc));
     const order = ranking.getOrder();
     return this.view(order).then((data) => {
-      var r = [];
-      if (op.header) {
-        r.push(columns.map((d) => quote(d.label)).join(op.separator));
+      let r = [];
+      if (options.header) {
+        r.push(columns.map((d) => quote(d.label)).join(options.separator));
       }
       data.forEach((row, i) => {
-        r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(op.separator));
+        r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(options.separator));
       });
-      return r.join(op.newline);
+      return r.join(options.newline);
     });
   }
 

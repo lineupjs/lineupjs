@@ -27,7 +27,7 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   getValue(row: any, index: number) {
-    var v: any = super.getValue(row, index);
+    const v: any = super.getValue(row, index);
     if (typeof(v) === 'undefined' || v == null) {
       return '';
     }
@@ -35,7 +35,7 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   dump(toDescRef: (desc: any) => any): any {
-    var r = super.dump(toDescRef);
+    let r = super.dump(toDescRef);
     if (this.currentFilter instanceof RegExp) {
       r.filter = 'REGEX:' + (<RegExp>this.currentFilter).source;
     } else {
@@ -63,7 +63,7 @@ export default class StringColumn extends ValueColumn<string> {
     if (!this.isFiltered()) {
       return true;
     }
-    var r = this.getLabel(row, index),
+    const r = this.getLabel(row, index),
       filter = this.currentFilter;
 
     if (filter === StringColumn.FILTER_MISSING) { //filter empty
@@ -93,7 +93,7 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    var a_val: string, b_val: string;
+    let a_val: string, b_val: string;
     if ((a_val = this.getValue(a, aIndex)) === '') {
       return this.getValue(b, bIndex) === '' ? 0 : +1; //same = 0
     } else if ((b_val = this.getValue(b, bIndex)) === '') {

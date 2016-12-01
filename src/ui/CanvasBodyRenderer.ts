@@ -114,7 +114,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   select(dataIndex: number, additional = false) {
-    var selected = super.select(dataIndex, additional);
+    const selected = super.select(dataIndex, additional);
     this.update();
     return selected;
   }
@@ -146,7 +146,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
 
   private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number) {
     const dataIndex = di.dataIndex;
-    var dx = ranking.shift;
+    let dx = ranking.shift;
     const dy = context.cellY(i);
     ctx.translate(dx, dy);
     if (i % 2 === 0) {
@@ -229,21 +229,21 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   renderSlopeGraphs(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
-    var slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
+    const slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
     ctx.save();
     ctx.strokeStyle = this.style('slope');
     slopes.forEach((slope, i) => {
       ctx.save();
       ctx.translate(data[i + 1].shift - this.options.slopeWidth, 0);
 
-      var cache = {};
+      const cache = new Map<number, number>();
       slope.right.forEach((data_index, pos) => {
-        cache[data_index] = pos;
+        cache.set(data_index, pos);
       });
       const lines = slope.left.map((data_index, pos) => ({
         data_index: data_index,
         lpos: pos,
-        rpos: cache[data_index]
+        rpos: cache.get(data_index)
       })).filter((d) => d.rpos != null);
 
 
@@ -278,7 +278,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   private computeShifts(data: IRankingData[]) {
-    var r = [];
+    let r = [];
     data.forEach((d) => {
       const base = d.shift;
       r.push(...d.frozen.map((c) => ({column: c.column, shift: c.shift + base + this.currentFreezeLeft})));

@@ -7,7 +7,7 @@ import {merge, delayedCall, AEventDispatcher} from '../utils';
 import {Ranking, isNumberColumn} from '../model';
 import Column, {IStatistics, ICategoricalStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import DataProvider, {IDataRow, default as ADataProvider} from '../provider/ADataProvider';
+import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
 
 export interface ISlicer {
@@ -175,7 +175,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
       option: findOption,
 
-      rowHeight(index: number) {
+      rowHeight() {
         return options.rowHeight - options.rowPadding;
       },
 
@@ -226,12 +226,12 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     const data = this.data.fetch(orders);
 
     const padding = this.options.columnPadding;
-    var totalWidth = 0;
+    let totalWidth = 0;
     const rdata = rankings.map((r, i) => {
       const cols = r.children.filter((d) => !d.isHidden());
 
       const rankingShift = totalWidth;
-      var width = 0;
+      let width = 0;
 
       const colData = cols.map((o) => {
         const colShift = width;
