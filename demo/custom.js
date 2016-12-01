@@ -103,12 +103,13 @@ window.onload = function () {
         renderertype: ['upset']
       },
       {
-        label: 'Circle',
-        type: 'circle',
+        label: 'Number',
+        type: 'number',
         column: 'singledata',
         domain: [singldata_min, singldata_max],
         renderertype: ['number', 'circle']
-      }];
+      }
+   ];
 
     var p = new LineUpJS.provider.LocalDataProvider(arr1, desc1);
     var r = p.pushRanking();

@@ -14,7 +14,7 @@ import {forEach, attr, clipText, ITextRenderHints} from './utils';
 import {hsl} from 'd3';
 import {IDataRow} from './provider/ADataProvider';
 import * as d3 from 'd3';
-
+import ValueColumn from './model/ValueColumn';
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
@@ -741,7 +741,9 @@ class CircleColumnCellRenderer extends DefaultCellRenderer {
       template: `<g class="circlecolumncell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const g = d3.select(n);
+
         radiusscale = radiusscale.range([0, (context.rowHeight(i) / 2)]);
+
         const circle = g.selectAll('circle').data([<any>col.getValue(d.v, i)]);
         circle.enter().append('circle');
         circle
@@ -758,18 +760,21 @@ class CircleColumnCellRenderer extends DefaultCellRenderer {
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
 
+//console.log(col)
     const min = (<any> col.desc).domain[0];
     const max = (<any> col.desc).domain[1];
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+
       var posy = (context.rowHeight(i) / 2);
       var posx = (col.getWidth() / 2);
-      var radiusscale: any = d3.scale.linear().domain([min, max]).range([0, (context.rowHeight(i) / 2)]);
-      // console.log(radiusscale(<any>col.getValue(d.v, i)),<any>col.getValue(d.v, i));
+      var radiusscale: any = d3.scale.linear().domain([min, max]).range([0, 1]);
+    // console.log((<ValueColumn<number>>col).getRaw(d.v, i),d)
+     // console.log(<any>col.getValue(d.v, i), radiusscale((<any>col.getValue(d.v, i))), radiusscale(min), radiusscale(max))
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
-      ctx.arc(posx, posy, radiusscale(<any>col.getValue(d.v, i)), 0, 2 * Math.PI);
+      ctx.arc(posx, posy,(context.rowHeight(i) / 2)*col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
     };
@@ -839,8 +844,8 @@ export class BarCellRenderer implements ICellRendererFactory {
 
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-
       ctx.fillStyle = this.colorOf(d.v, i, col);
+     // console.log(col.getValue(d.v, d.dataIndex),d.v)
       const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
       ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {

@@ -370,6 +370,9 @@ var Column = (function (_super) {
         return row !== null;
     };
     Column.prototype.rendererType = function () {
+        if (this.desc.type.constructor === Array) {
+            return this.desc.type[0];
+        }
         return this.desc.type;
     };
     /**
@@ -2063,17 +2066,19 @@ var CircleColumnCellRenderer = (function (_super) {
         };
     };
     CircleColumnCellRenderer.prototype.createCanvas = function (col, context) {
+        //console.log(col)
         var min = col.desc.domain[0];
         var max = col.desc.domain[1];
         return function (ctx, d, i) {
             var posy = (context.rowHeight(i) / 2);
             var posx = (col.getWidth() / 2);
-            var radiusscale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, (context.rowHeight(i) / 2)]);
-            // console.log(radiusscale(<any>col.getValue(d.v, i)),<any>col.getValue(d.v, i));
+            var radiusscale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, 1]);
+            // console.log((<ValueColumn<number>>col).getRaw(d.v, i),d)
+            // console.log(<any>col.getValue(d.v, i), radiusscale((<any>col.getValue(d.v, i))), radiusscale(min), radiusscale(max))
             ctx.fillStyle = 'black';
             ctx.strokeStyle = 'black';
             ctx.beginPath();
-            ctx.arc(posx, posy, radiusscale(col.getValue(d.v, i)), 0, 2 * Math.PI);
+            ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
             ctx.fill();
             ctx.stroke();
         };
@@ -2135,6 +2140,7 @@ var BarCellRenderer = (function () {
         var padding = context.option('rowPadding', 1);
         return function (ctx, d, i) {
             ctx.fillStyle = _this.colorOf(d.v, i, col);
+            // console.log(col.getValue(d.v, d.dataIndex),d.v)
             var width = col.getWidth() * col.getValue(d.v, d.dataIndex);
             ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
             if (_this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
@@ -4321,6 +4327,7 @@ var Ranking = (function (_super) {
     Ranking.prototype.insert = function (col, index) {
         if (index === void 0) { index = this.columns.length; }
         this.columns.splice(index, 0, col);
+        console.log('hi', col, index);
         col.parent = this;
         this.forward(col, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES + '.ranking', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER + '.ranking', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY + '.ranking', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_FILTER_CHANGED + '.ranking');
         col.on(Ranking.EVENT_FILTER_CHANGED + '.order', this.dirtyOrder);
@@ -6934,7 +6941,6 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
 // Renderer type change
 function renderertypedialog(column, $header) {
     var renderertype = column.desc.type;
-    console.log(renderertype, column.desc.renderertype);
     var valuestring = column.desc.renderertype;
     var popup = makesortPopup($header, 'Change Visualization', valuestring.map(function (d, i) {
         return "<input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + ">" + d + "<br>";
@@ -8573,6 +8579,7 @@ var CircleColumn = (function (_super) {
         _super.call(this, id, desc);
     }
     CircleColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        console.log(this.getValue(a, aIndex));
         return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
     };
     return CircleColumn;

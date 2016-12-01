@@ -386,6 +386,9 @@ export default class Column extends AEventDispatcher {
   }
 
   rendererType(): string {
+     if(this.desc.type.constructor === Array) {
+      return this.desc.type[0];
+    }
     return this.desc.type;
   }
 }

@@ -23,7 +23,9 @@ export default class CircleColumn extends ValueColumn<number> {
 
   }
 
+
   compare(a: any, b: any, aIndex: number, bIndex: number) {
+    console.log(this.getValue(a, aIndex))
     return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
   }
 
