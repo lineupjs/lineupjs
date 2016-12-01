@@ -378,7 +378,7 @@ const annotate = {
     return {
       template: `<g class="annotations">
         <text class="notHoverOnly text" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>
-        <foreignObject class="hoverOnly" x="-2", y="-2">
+        <foreignObject class="hoverOnly" x="-2" y="-2">
           <input type="text">
         </foreignObject>
        </g>`,

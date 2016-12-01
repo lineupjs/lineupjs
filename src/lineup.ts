@@ -3,7 +3,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {IColumnDesc, Column} from './model';
+import Column, {IColumnDesc} from './model/Column';
 import DataProvider  from './provider/ADataProvider';
 import {renderers as defaultRenderers, ICellRendererFactory}  from './renderer';
 import {
@@ -340,7 +340,7 @@ export default class LineUp extends AEventDispatcher {
    * @returns {boolean}
    */
   sortBy(column: (col: Column) => boolean | string, ascending = false) {
-    var col = this.data.find(column);
+    const col = this.data.find(column);
     if (col) {
       col.sortByMe(ascending);
     }
@@ -408,7 +408,7 @@ export default class LineUp extends AEventDispatcher {
     // the last event before firing LineUp.EVENT_UPDATE_FINISHED.
     // For any further call of update() the body render will fire the
     // `renderFinished` event only once
-    var waitForBodyRenderer = (this.isUpdateInitialized) ? 1 : 3;
+    let waitForBodyRenderer = (this.isUpdateInitialized) ? 1 : 3;
     this.isUpdateInitialized = true;
 
     this.fire(LineUp.EVENT_UPDATE_START);
@@ -436,7 +436,7 @@ export default class LineUp extends AEventDispatcher {
 /**
  * assigns colors to colmns if they are numbers and not yet defined
  * @param columns
- * @returns {model_.IColumnDesc[]}
+ * @returns {IColumnDesc[]}
  */
 export function deriveColors(columns: IColumnDesc[]) {
   const colors = d3scale.category10().range().slice();

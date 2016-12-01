@@ -15,32 +15,26 @@ import LineUp from './lineup';
 export {deriveColors} from './lineup';
 /**
  * access to the model module
- * @type {--global-type--}
  */
 export const model = model_;
 /**
  * access to the provider module
- * @type {--global-type--}
  */
 export const provider = provider_;
 /**
  * access to the renderer module
- * @type {--global-type--}
  */
 export const renderer = renderer_;
 /**
  * access to the ui module
- * @type {--global-type--}
  */
 export const ui = ui_;
 /**
  * access to the utils module
- * @type {--global-type--}
  */
 export const utils = utils_;
 /**
  * access to the ui_dialogs module
- * @type {--global-type--}
  */
 export const ui_dialogs = ui_dialogs_;
 
