@@ -57,7 +57,6 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
 
   componentDidMount() {
     //create impl
-    console.log('create lineup instance');
     const data = new LocalDataProvider(this.props.data, this.props.desc);
     data.on('selectionChanged', this.onSelectionChanged.bind(this));
     data.selectAll(this.props.selection ? this.props.selection.map((d) => this.item2index(d)) : []);
