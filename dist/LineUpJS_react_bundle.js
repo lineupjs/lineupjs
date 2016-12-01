@@ -4,14 +4,14 @@
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();
+		module.exports = factory(require("React"));
 	else if(typeof define === 'function' && define.amd)
-		define([], factory);
+		define(["React"], factory);
 	else if(typeof exports === 'object')
-		exports["LineUpJS"] = factory();
+		exports["LineUpJS"] = factory(require("React"));
 	else
-		root["LineUpJS"] = factory();
-})(this, function() {
+		root["LineUpJS"] = factory(root["React"]);
+})(this, function(__WEBPACK_EXTERNAL_MODULE_45__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -75,7 +75,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 47);
+/******/ 	return __webpack_require__(__webpack_require__.s = 48);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -17974,38 +17974,27 @@ function updateLink(linkElement, obj) {
 
 
 /***/ },
-/* 44 */
-/***/ function(module, exports, __webpack_require__) {
+/* 44 */,
+/* 45 */
+/***/ function(module, exports) {
 
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__LocalDataProvider__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__RemoteDataProvider__ = __webpack_require__(46);
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "DataProvider", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "IDataProviderOptions", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["IDataProviderOptions"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "IExportOptions", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["IExportOptions"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "LocalDataProvider", function() { return __WEBPACK_IMPORTED_MODULE_1__LocalDataProvider__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "ILocalDataProviderOptions", function() { return __WEBPACK_IMPORTED_MODULE_1__LocalDataProvider__["ILocalDataProviderOptions"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "RemoteDataProvider", function() { return __WEBPACK_IMPORTED_MODULE_2__RemoteDataProvider__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "IServerData", function() { return __WEBPACK_IMPORTED_MODULE_2__RemoteDataProvider__["IServerData"]; });
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-
-
-
-
+module.exports = __WEBPACK_EXTERNAL_MODULE_45__;
 
 /***/ },
-/* 45 */,
-/* 46 */
+/* 46 */,
+/* 47 */,
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ACommonDataProvider__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__style_scss__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lineup__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_react__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__provider_LocalDataProvider__ = __webpack_require__(30);
 /**
- * Created by sam on 04.11.2016.
+ * Created by sam on 28.10.2016.
  */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -18014,179 +18003,76 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 
 
-/**
- * a remote implementation of the data provider
- */
-var RemoteDataProvider = (function (_super) {
-    __extends(RemoteDataProvider, _super);
-    function RemoteDataProvider(server, columns, options) {
-        if (columns === void 0) { columns = []; }
-        if (options === void 0) { options = {}; }
-        _super.call(this, columns, options);
-        this.server = server;
-        this.options = {
-            maxCacheSize: 1000
-        };
-        this.cache = new Map();
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__utils__["merge"])(this.options, options);
+
+
+function deepEqual(a, b) {
+    if (a === b) {
+        return true;
     }
-    RemoteDataProvider.prototype.sortImpl = function (ranking) {
-        //generate a description of what to sort
-        var desc = ranking.toSortingDesc(function (desc) { return desc.column; });
-        //use the server side to sort
-        return this.server.sort(desc);
-    };
-    RemoteDataProvider.prototype.loadFromServer = function (indices) {
-        return this.server.view(indices).then(function (view) {
-            //enhance with the data index
-            return view.map(function (v, i) {
-                var dataIndex = indices[i];
-                return { v: v, dataIndex: dataIndex };
-            });
-        });
-    };
-    RemoteDataProvider.prototype.view = function (indices) {
-        if (indices.length === 0) {
-            return Promise.resolve([]);
-        }
-        var base = this.fetch([indices])[0];
-        return Promise.all(base).then(function (rows) { return rows.map(function (d) { return d.v; }); });
-    };
-    RemoteDataProvider.prototype.computeMissing = function (orders) {
-        var union = new Set();
-        var union_add = union.add.bind(union);
-        orders.forEach(function (order) { return order.forEach(union_add); });
-        // removed cached
-        this.cache.forEach(function (v, k) { return union.delete(k); });
-        if ((this.cache.size + union.size) > this.options.maxCacheSize) {
-        }
-        // const maxLength = Math.max(...orders.map((o) => o.length));
-        var r = [];
-        union.forEach(r.push.bind(r));
-        return r;
-    };
-    RemoteDataProvider.prototype.loadInCache = function (missing) {
-        var _this = this;
-        if (missing.length === 0) {
-            return;
-        }
-        // load data and map to rows;
-        var v = this.loadFromServer(missing);
-        missing.forEach(function (m, i) {
-            var dataIndex = missing[i];
-            _this.cache.set(dataIndex, v.then(function (loaded) { return ({ v: loaded[i], dataIndex: dataIndex }); }));
-        });
-    };
-    RemoteDataProvider.prototype.fetch = function (orders) {
-        var _this = this;
-        var toLoad = this.computeMissing(orders);
-        this.loadInCache(toLoad);
-        return orders.map(function (order) {
-            return order.map(function (dataIndex) { return _this.cache.get(dataIndex); });
-        });
-    };
-    RemoteDataProvider.prototype.mappingSample = function (col) {
-        return this.server.mappingSample(col.desc.column);
-    };
-    RemoteDataProvider.prototype.searchAndJump = function (search, col) {
-        var _this = this;
-        this.server.search(search, col.desc.column).then(function (indices) {
-            _this.jumpToNearest(indices);
-        });
-    };
-    RemoteDataProvider.prototype.stats = function (indices) {
-        return this.server.stats(indices);
-    };
-    return RemoteDataProvider;
-}(__WEBPACK_IMPORTED_MODULE_1__ACommonDataProvider__["a" /* default */]));
-/* harmony default export */ exports["a"] = RemoteDataProvider;
-
-
-/***/ },
-/* 47 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__style_scss__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__provider__ = __webpack_require__(44);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__renderer__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ui__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__utils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__ui_dialogs__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lineup__ = __webpack_require__(18);
-/* harmony export (binding) */ __webpack_require__.d(exports, "model", function() { return model; });
-/* harmony export (binding) */ __webpack_require__.d(exports, "provider", function() { return provider; });
-/* harmony export (binding) */ __webpack_require__.d(exports, "renderer", function() { return renderer; });
-/* harmony export (binding) */ __webpack_require__.d(exports, "ui", function() { return ui; });
-/* harmony export (binding) */ __webpack_require__.d(exports, "utils", function() { return utils; });
-/* harmony export (binding) */ __webpack_require__.d(exports, "ui_dialogs", function() { return ui_dialogs; });
-/* harmony export (immutable) */ exports["createLocalStorage"] = createLocalStorage;
-/* harmony export (immutable) */ exports["create"] = create;
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "deriveColors", function() { return __WEBPACK_IMPORTED_MODULE_7__lineup__["a"]; });
-/**
- * main module of LineUp.js containing the main class and exposes all other modules
- * Created by Samuel Gratzl on 14.08.2015.
- */
-
-
-
-
-
-
-
-
-
-/**
- * access to the model module
- * @type {--global-type--}
- */
-var model = __WEBPACK_IMPORTED_MODULE_1__model__;
-/**
- * access to the provider module
- * @type {--global-type--}
- */
-var provider = __WEBPACK_IMPORTED_MODULE_2__provider__;
-/**
- * access to the renderer module
- * @type {--global-type--}
- */
-var renderer = __WEBPACK_IMPORTED_MODULE_3__renderer__;
-/**
- * access to the ui module
- * @type {--global-type--}
- */
-var ui = __WEBPACK_IMPORTED_MODULE_4__ui__;
-/**
- * access to the utils module
- * @type {--global-type--}
- */
-var utils = __WEBPACK_IMPORTED_MODULE_5__utils__;
-/**
- * access to the ui_dialogs module
- * @type {--global-type--}
- */
-var ui_dialogs = __WEBPACK_IMPORTED_MODULE_6__ui_dialogs__;
-/**
- * creates a local storage provider
- * @param data
- * @param columns
- * @param options
- * @returns {LocalDataProvider}
- */
-function createLocalStorage(data, columns, options) {
-    if (options === void 0) { options = {}; }
-    return new __WEBPACK_IMPORTED_MODULE_2__provider__["LocalDataProvider"](data, columns, options);
+    if (a.length !== b.length) {
+        return false;
+    }
+    return a.every(function (ai, i) { return ai === b[i]; });
 }
-function create(data, container, config) {
-    if (config === void 0) { config = {}; }
-    return new __WEBPACK_IMPORTED_MODULE_7__lineup__["b" /* default */](container, data, config);
-}
+var LineUp = (function (_super) {
+    __extends(LineUp, _super);
+    function LineUp(props, context) {
+        _super.call(this, props, context);
+        this.plot = null;
+        this.parent = null;
+    }
+    LineUp.prototype.item2index = function (item) {
+        return this.props.data.indexOf(item);
+    };
+    LineUp.prototype.index2item = function (index) {
+        return this.props.data[index];
+    };
+    LineUp.prototype.componentDidMount = function () {
+        var _this = this;
+        //create impl
+        console.log('create lineup instance');
+        var data = new __WEBPACK_IMPORTED_MODULE_3__provider_LocalDataProvider__["a" /* default */](this.props.data, this.props.desc);
+        data.on('selectionChanged', this.onSelectionChanged.bind(this));
+        data.selectAll(this.props.selection ? this.props.selection.map(function (d) { return _this.item2index(d); }) : []);
+        data.deriveDefault();
+        this.plot = new __WEBPACK_IMPORTED_MODULE_1__lineup__["b" /* default */](this.parent, data, this.props);
+        this.plot.update();
+    };
+    LineUp.prototype.shouldComponentUpdate = function (nextProps) {
+        return !deepEqual(this.props.selection, nextProps.selection);
+    };
+    LineUp.prototype.onSelectionChanged = function (indices) {
+        var _this = this;
+        if (this.props.onSelectionChanged) {
+            this.props.onSelectionChanged(indices.map(function (d) { return _this.index2item(d); }));
+        }
+    };
+    LineUp.prototype.componentDidUpdate = function () {
+        var _this = this;
+        this.plot.data.setSelection(this.props.selection ? this.props.selection.map(function (d) { return _this.item2index(d); }) : []);
+    };
+    LineUp.prototype.render = function () {
+        var _this = this;
+        return (__WEBPACK_IMPORTED_MODULE_2_react__["createElement"]("div", {className: "lu-react", ref: function (div) { return _this.parent = div; }}));
+    };
+    LineUp.propTypes = {
+        data: __WEBPACK_IMPORTED_MODULE_2_react__["PropTypes"].array.isRequired,
+        desc: __WEBPACK_IMPORTED_MODULE_2_react__["PropTypes"].array.isRequired,
+        options: __WEBPACK_IMPORTED_MODULE_2_react__["PropTypes"].any,
+        onSelectionChanged: __WEBPACK_IMPORTED_MODULE_2_react__["PropTypes"].func,
+        selection: __WEBPACK_IMPORTED_MODULE_2_react__["PropTypes"].any
+    };
+    LineUp.defaultProps = {
+        data: [],
+        desc: []
+    };
+    return LineUp;
+}(__WEBPACK_IMPORTED_MODULE_2_react__["Component"]));
+/* harmony default export */ exports["default"] = LineUp;
 
 
 /***/ }
 /******/ ])
 });
 ;
-//# sourceMappingURL=LineUpJS_bundle.js.map
+//# sourceMappingURL=LineUpJS_react_bundle.js.map
