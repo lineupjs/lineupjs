@@ -316,15 +316,8 @@ export default class HeaderRenderer {
     const filterDialogs = this.options.filterDialogs,
       provider = this.data,
       that = this;
-    const $regular = $node.filter(d=> !(d instanceof Ranking)),
-      $stacked = $node.filter(d=> d instanceof StackColumn),
-      $multilevel = $node.filter(d=> isMultiLevelColumn(d));
+    const $regular = $node.filter(d => !(d instanceof RankColumn));
 
-    //edit weights
-    $stacked.append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
-      openEditWeightsDialog(<StackColumn>d, d3.select(this.parentNode.parentNode));
-      (<MouseEvent>d3.event).stopPropagation();
-    });
     //rename
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
       openRenameDialog(d, d3.select(this.parentNode.parentNode));
@@ -355,6 +348,11 @@ export default class HeaderRenderer {
       openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
       (<MouseEvent>d3.event).stopPropagation();
     });
+    //edit weights
+    $node.filter((d) => d instanceof StackColumn).append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
+      openEditWeightsDialog(<StackColumn>d, d3.select(this.parentNode.parentNode));
+      (<MouseEvent>d3.event).stopPropagation();
+    });
     //collapse
     $regular.append('i')
       .attr('class', 'fa')
@@ -369,7 +367,7 @@ export default class HeaderRenderer {
         (<MouseEvent>d3.event).stopPropagation();
       });
     //compress
-    $multilevel.append('i')
+    $node.filter((d) => isMultiLevelColumn(d)).append('i')
       .attr('class', 'fa')
       .classed('fa-compress', (d: IMultiLevelColumn) => !d.getCollapsed())
       .classed('fa-expand', (d: IMultiLevelColumn) => d.getCollapsed())
