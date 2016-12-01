@@ -39,6 +39,9 @@ export interface IServerData {
 
 
 export interface IRemoteDataProviderOptions {
+  /**
+   * maximal cache size (unused at the moment)
+   */
   maxCacheSize?: number;
 }
 

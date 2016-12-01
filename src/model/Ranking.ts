@@ -295,16 +295,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       if (s === null) {
         return null;
       }
-      if (s instanceof StackColumn) {
-        const w = (<StackColumn>s).getWeights();
-        return (<StackColumn>s).children.map((child, i) => {
-          return {
-            weight: w[i],
-            id: resolve(child)
-          };
-        });
-      }
-      return toId(s.desc);
+      return s.toSortingDesc(toId);
     };
     const id = resolve(this.sortColumn);
     if (id === null) {

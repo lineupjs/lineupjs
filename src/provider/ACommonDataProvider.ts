@@ -42,7 +42,6 @@ abstract class ACommonDataProvider extends ADataProvider {
 
   /**
    * the local ranking orders
-   * @type {{}}
    */
   private ranks = new Map<string, number[]>();
 

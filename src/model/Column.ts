@@ -11,7 +11,7 @@ import Ranking from './Ranking';
  * @return {string|void}
  */
 export function fixCSS(id) {
-  return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_'); //replace non css stuff to _
+  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]\^`{|}~]/g, '_'); //replace non css stuff to _
 }
 
 export interface IFlatColumn {
@@ -274,7 +274,7 @@ export default class Column extends AEventDispatcher {
     this.metadata.color = value.color;
     this.metadata.description = value.description;
 
-    this.fire(events, this.getMetaData(), this.getMetaData());
+    this.fire(events, bak, this.getMetaData());
   }
 
   getMetaData(): IColumnMetaData {
@@ -432,5 +432,14 @@ export default class Column extends AEventDispatcher {
    */
   rendererType(): string {
     return this.desc.type;
+  }
+
+  /**
+   * describe the column if it is a sorting criteria
+   * @param toId helper to convert a description to an id
+   * @return {string} json compatible
+   */
+  toSortingDesc(toId: (desc: any) => string): any {
+    return toId(this.desc);
   }
 }

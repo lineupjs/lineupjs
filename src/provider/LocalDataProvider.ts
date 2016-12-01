@@ -99,7 +99,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     filterGlobally: false
   };
 
-  private reorderall;
+  private reorderAll;
 
   constructor(public data: any[], columns: IColumnDesc[] = [], options: ILocalDataProviderOptions & IDataProviderOptions = {}) {
     super(columns, options);
@@ -107,7 +107,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
 
     const that = this;
-    this.reorderall = function () {
+    this.reorderAll = function () {
       //fire for all other rankings a dirty order event, too
       const ranking = this.source;
       that.getRankings().forEach((r) => {
@@ -124,7 +124,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    */
   setData(data: any[]) {
     this.data = data;
-    this.reorderall();
+    this.reorderAll();
   }
 
   clearData() {
@@ -137,14 +137,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
    */
   appendData(data: any[]) {
     this.data.push.apply(this.data, data);
-    this.reorderall();
+    this.reorderAll();
   }
 
   cloneRanking(existing?: Ranking) {
     const new_ = super.cloneRanking(existing);
 
     if (this.options.filterGlobally) {
-      new_.on(Column.EVENT_FILTER_CHANGED + '.reorderall', this.reorderall);
+      new_.on(Column.EVENT_FILTER_CHANGED + '.reorderAll', this.reorderAll);
     }
 
     return new_;
@@ -152,7 +152,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   cleanUpRanking(ranking: Ranking) {
     if (this.options.filterGlobally) {
-      ranking.on(Column.EVENT_FILTER_CHANGED + '.reorderall', null);
+      ranking.on(Column.EVENT_FILTER_CHANGED + '.reorderAll', null);
     }
     super.cleanUpRanking(ranking);
   }
@@ -185,7 +185,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   viewRaw(indices: number[]) {
     //filter invalid indices
     const l = this.data.length;
-    return indices.filter((i) => i >= 0 && i < l).map((index) => this.data[index]);
+    return indices.map((index) => this.data[index]);
   }
 
   view(indices: number[]) {
@@ -194,7 +194,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   fetch(orders: number[][]): Promise<IDataRow>[][] {
     const l = this.data.length;
-    return orders.map((order) => order.filter((i) => i >= 0 && i < l).map((index) => Promise.resolve({
+    return orders.map((order) => order.map((index) => Promise.resolve({
       v: this.data[index],
       dataIndex: index
     })));
@@ -223,7 +223,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
     }
     //randomly select 500 elements
-    let indices :number[] = [];
+    let indices: number[] = [];
     for (let i = 0; i < MAX_SAMPLE; ++i) {
       let j = Math.floor(Math.random() * (l - 1));
       while (indices.indexOf(j) >= 0) {

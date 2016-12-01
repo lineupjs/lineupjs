@@ -205,4 +205,14 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     }
     return super.rendererType();
   }
+
+  /**
+   * describe the column if it is a sorting criteria
+   * @param toId helper to convert a description to an id
+   * @return {string} json compatible
+   */
+  toSortingDesc(toId: (desc: any) => string): any {
+    const w = this.getWeights();
+    return this._children.map((c, i) => ({weight: w[i], id: c.toSortingDesc(toId)}));
+  }
 }

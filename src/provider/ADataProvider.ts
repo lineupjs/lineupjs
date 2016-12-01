@@ -488,37 +488,38 @@ abstract class ADataProvider extends AEventDispatcher {
     const ranking = this.cloneRanking();
     ranking.clear();
     const toCol = (column) => {
-      if (column.type === 'rank') {
-        return this.create(createRankDesc());
-      }
-      if (column.type === 'selection') {
-        return this.create(createSelectionDesc());
-      }
-      if (column.type === 'actions') {
-        let r = this.create(createActionDesc(column.label || 'actions'));
-        r.restore(column, null);
-        return r;
-      }
-      if (column.type === 'stacked') {
-        //create a stacked one
-        let r = <StackColumn>this.create(createStackDesc(column.label || 'Combined'));
-        (column.children || []).forEach((col) => {
-          let c = toCol(col);
-          if (c) {
-            r.push(c);
-          }
-        });
-        return r;
-      } else {
-        let desc = this.findDesc(column.column);
-        if (desc) {
-          let r = this.create(desc);
-          column.label = column.label || desc.label || desc.column;
+      switch (column.type) {
+        case 'rank':
+          return this.create(createRankDesc());
+        case 'selection':
+          return this.create(createSelectionDesc());
+        case 'actions': {
+          let r = this.create(createActionDesc(column.label || 'actions'));
           r.restore(column, null);
           return r;
         }
+        case 'stacked': {
+          //create a stacked one
+          let r = <StackColumn>this.create(createStackDesc(column.label || 'Combined'));
+          (column.children || []).forEach((col) => {
+            let c = toCol(col);
+            if (c) {
+              r.push(c);
+            }
+          });
+          return r;
+        }
+        default: {
+          let desc = this.findDesc(column.column);
+          if (desc) {
+            let r = this.create(desc);
+            column.label = column.label || desc.label || desc.column;
+            r.restore(column, null);
+            return r;
+          }
+          return null;
+        }
       }
-      return null;
     };
     bundle.forEach((column) => {
       const col = toCol(column);
