@@ -226,7 +226,7 @@ export default class Column extends AEventDispatcher {
     if (value.label === this.label && this.color === value.color && this.description === value.description) {
       return;
     }
-    var events = this.color === value.color ?
+    const events = this.color === value.color ?
       [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY] :
       [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY];
     this.fire(events, this.getMetaData(), {
@@ -250,7 +250,7 @@ export default class Column extends AEventDispatcher {
    * @returns {any}
    */
   sortByMe(ascending = false) {
-    var r = this.findMyRanker();
+    const r = this.findMyRanker();
     if (r) {
       return r.sortBy(this, ascending);
     }
@@ -262,7 +262,7 @@ export default class Column extends AEventDispatcher {
    * @returns {any}
    */
   toggleMySorting() {
-    var r = this.findMyRanker();
+    const r = this.findMyRanker();
     if (r) {
       return r.toggleSorting(this);
     }
@@ -309,7 +309,7 @@ export default class Column extends AEventDispatcher {
    * @returns {any}
    */
   dump(toDescRef: (desc: any) => any): any {
-    var r: any = {
+    let r: any = {
       id: this.id,
       desc: toDescRef(this.desc),
       width: this.width,
@@ -379,6 +379,7 @@ export default class Column extends AEventDispatcher {
   /**
    * predicate whether the current row should be included
    * @param row
+   * @param index the row index
    * @return {boolean}
    */
   filter(row: any, index: number) {

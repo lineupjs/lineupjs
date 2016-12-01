@@ -37,10 +37,10 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
-    var self = null;
+    let self = null;
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      var w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
+      const w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
       r.push(self = {col: this, offset: offset, width: w});
       if (levelsToGo === 0) {
         return w;

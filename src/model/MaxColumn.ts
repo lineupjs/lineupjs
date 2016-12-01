@@ -24,7 +24,7 @@ export default class MaxColumn extends CompositeNumberColumn {
     if (c.length === 0) {
       return this.color;
     }
-    var max_i = 0, max_v = c[0].getValue(row, index);
+    let max_i = 0, max_v = c[0].getValue(row, index);
     for (let i = 1; i < c.length; ++i) {
       let v = c[i].getValue(row, index);
       if (v > max_v) {

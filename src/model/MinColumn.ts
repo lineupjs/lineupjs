@@ -23,7 +23,7 @@ export default class MinColumn extends CompositeNumberColumn {
     if (c.length === 0) {
       return this.color;
     }
-    var min_i = 0, min_v = c[0].getValue(row, index);
+    let min_i = 0, min_v = c[0].getValue(row, index);
     for (let i = 1; i < c.length; ++i) {
       let v = c[i].getValue(row, index);
       if (v < min_v) {

@@ -25,7 +25,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
 
   dump(toDescRef: (desc: any) => any) {
-    var r = super.dump(toDescRef);
+    let r = super.dump(toDescRef);
     r.missingValue = this.missingValue;
     return r;
   }
@@ -44,7 +44,6 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
    * inserts a column at a the given position
    * @param col
    * @param index
-   * @param weight
    * @returns {any}
    */
   insert(col: Column, index: number) {
