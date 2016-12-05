@@ -240,20 +240,26 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
 
     const total_width = col.getWidth();
     const bins = (<any>col.desc).datalength;
-    const min = (<any> col.desc).domain[0], max = (<any> col.desc).domain[1];
-    var colorrange = (<any> col.desc).colorrange;
+    const defaultdomain = [0, 100];
+    var domain = (<any> col.desc).domain;
+    domain = (domain === undefined || null) ? defaultdomain : domain;
+    const min = domain[0], max = domain[1];
+      var colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
     colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
-
+    console.log(colorrange)
     const celldimension = cell_dim(total_width, bins);
     var color: any = d3.scale.linear<number, string>();
     color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
-      : color.domain([min, max]).range(['white', colorrange[2]]);
+      : color.domain([min, max]).range(['white', colorrange[1]]);
     const padding = context.option('rowPadding', 1);
-
+     console.log(min,max,color(min),color(max),color(3))
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      var data = col.getValue(d.v, i);
+
+      var data = JSON.parse(col.getValue(d.v, i));
+      console.log(data, typeof (data),color(d),celldimension)
       data.forEach(function (d, i) {
+        console.log(d)
         var x = (i === null || 0) ? 0 : (i * celldimension);
         ctx.beginPath();
         ctx.fillStyle = color(d);
@@ -769,12 +775,12 @@ class CircleColumnCellRenderer extends DefaultCellRenderer {
       var posy = (context.rowHeight(i) / 2);
       var posx = (col.getWidth() / 2);
       var radiusscale: any = d3.scale.linear().domain([min, max]).range([0, 1]);
-    // console.log((<ValueColumn<number>>col).getRaw(d.v, i),d)
-     // console.log(<any>col.getValue(d.v, i), radiusscale((<any>col.getValue(d.v, i))), radiusscale(min), radiusscale(max))
+      // console.log((<ValueColumn<number>>col).getRaw(d.v, i),d)
+      // console.log(<any>col.getValue(d.v, i), radiusscale((<any>col.getValue(d.v, i))), radiusscale(min), radiusscale(max))
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
-      ctx.arc(posx, posy,(context.rowHeight(i) / 2)*col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
+      ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
     };
@@ -794,6 +800,7 @@ export class BarCellRenderer implements ICellRendererFactory {
   }
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+
 
     const padding = context.option('rowPadding', 1);
     return {
@@ -845,7 +852,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = this.colorOf(d.v, i, col);
-     // console.log(col.getValue(d.v, d.dataIndex),d.v)
+      // console.log(col.getValue(d.v, d.dataIndex),d.v)
       const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
       ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
