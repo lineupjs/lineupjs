@@ -237,29 +237,25 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
     function cell_dim(total, cells) {
       return (total / cells);
     }
-
+    console.log(col);
     const total_width = col.getWidth();
     const bins = (<any>col.desc).datalength;
     const defaultdomain = [0, 100];
     var domain = (<any> col.desc).domain;
     domain = (domain === undefined || null) ? defaultdomain : domain;
     const min = domain[0], max = domain[1];
-      var colorrange = (<any> col.desc).colorrange;
+    var colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
     colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
-    console.log(colorrange)
     const celldimension = cell_dim(total_width, bins);
     var color: any = d3.scale.linear<number, string>();
     color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
       : color.domain([min, max]).range(['white', colorrange[1]]);
     const padding = context.option('rowPadding', 1);
-     console.log(min,max,color(min),color(max),color(3))
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
 
       var data = JSON.parse(col.getValue(d.v, i));
-      console.log(data, typeof (data),color(d),celldimension)
       data.forEach(function (d, i) {
-        console.log(d)
         var x = (i === null || 0) ? 0 : (i * celldimension);
         ctx.beginPath();
         ctx.fillStyle = color(d);
@@ -267,7 +263,6 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
       });
     };
   }
-
 
 }
 
