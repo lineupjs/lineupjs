@@ -168,15 +168,17 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
 
     const total_width = col.getWidth();
     const bins = (<any>col.desc).datalength;
-    const min = (<any> col.desc).domain[0], max = (<any> col.desc).domain[1];
+    const defaultdomain = [0, 100];
+    var domain = (<any> col.desc).domain;
+    domain = (domain === undefined || null) ? defaultdomain : domain;
+    const min = domain[0], max = domain[1];
     var colorrange = (<any> col.desc).colorrange;
     const defaultcolor = ['blue', 'red'];
     colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
-
     const celldimension = cell_dim(total_width, bins);
     var color: any = d3.scale.linear<number, string>();
     color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
-      : color.domain([min, max]).range(['white', colorrange[2]]);
+      : color.domain([min, max]).range(['white', colorrange[1]]);
     const padding = context.option('rowPadding', 1);
     return {
 
@@ -237,7 +239,7 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
     function cell_dim(total, cells) {
       return (total / cells);
     }
-    console.log(col);
+
     const total_width = col.getWidth();
     const bins = (<any>col.desc).datalength;
     const defaultdomain = [0, 100];
