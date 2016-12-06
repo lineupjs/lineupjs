@@ -255,8 +255,7 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
       : color.domain([min, max]).range(['white', colorrange[1]]);
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-
-      var data = JSON.parse(col.getValue(d.v, i));
+      var data = col.getValue(d.v, i);
       data.forEach(function (d, i) {
         var x = (i === null || 0) ? 0 : (i * celldimension);
         ctx.beginPath();
@@ -589,11 +588,11 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
     const min = (<any> col.desc).domain[0];
     const max = (<any> col.desc).domain[1];
     var scale = d3.scale.linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
-
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
 
-      var data = col.getValue(d.v, i);
+      var data = (col.getValue(d.v, i));
+
       data.sort(numSort);
       var mindata = Math.min.apply(Math, data);
       var maxdata = Math.max.apply(Math, data);

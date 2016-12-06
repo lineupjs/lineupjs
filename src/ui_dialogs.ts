@@ -168,11 +168,10 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 // Renderer type change
 export function renderertypedialog(column: Column, $header: d3.Selection<Column>) {
 
-
   var renderertype = (<any>column.desc).type;
   var valuestring: any = (<any>column.desc).renderertype;
   var popup = makesortPopup($header, 'Change Visualization', valuestring.map(function (d, i) {
-    return `<input type="radio" name="renderertype" value=${d}  ${(renderertype === d) ? 'checked' : ''}>${d}<br>`;
+    return `<br><input type="radio" name="renderertype" value=${d}  ${(renderertype === d) ? 'checked' : ''}>${d}`;
 
   }).join('\n'));
 
