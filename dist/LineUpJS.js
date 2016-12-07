@@ -177,7 +177,7 @@ var Column = (function (_super) {
     Column.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
             Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-            Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
+            Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
             Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
     };
     Column.prototype.getWidth = function () {
@@ -375,6 +375,9 @@ var Column = (function (_super) {
         }
         return this.desc.type;
     };
+    Column.prototype.setRendererType = function (type) {
+        this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.desc.type, this.desc.type = type);
+    };
     /**
      * default color that should be used
      * @type {string}
@@ -395,6 +398,7 @@ var Column = (function (_super) {
     Column.EVENT_LABEL_CHANGED = 'labelChanged';
     Column.EVENT_METADATA_CHANGED = 'metaDataChanged';
     Column.EVENT_COMPRESS_CHANGED = 'compressChanged';
+    Column.EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
     Column.EVENT_ADD_COLUMN = 'addColumn';
     Column.EVENT_REMOVE_COLUMN = 'removeColumn';
     Column.EVENT_DIRTY = 'dirty';
@@ -1549,14 +1553,17 @@ var HeatmapCellRenderer = (function (_super) {
         }
         var total_width = col.getWidth();
         var bins = col.desc.datalength;
-        var min = col.desc.domain[0], max = col.desc.domain[1];
+        var defaultdomain = [0, 100];
+        var domain = col.desc.domain;
+        domain = (domain === undefined || null) ? defaultdomain : domain;
+        var min = domain[0], max = domain[1];
         var colorrange = col.desc.colorrange;
         var defaultcolor = ['blue', 'red'];
         colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
         var celldimension = cell_dim(total_width, bins);
         var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
         color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
-            : color.domain([min, max]).range(['white', colorrange[2]]);
+            : color.domain([min, max]).range(['white', colorrange[1]]);
         var padding = context.option('rowPadding', 1);
         return {
             template: "<g class=\"heatmapcell\"></g>",
@@ -1611,14 +1618,17 @@ var HeatmapCellRenderer = (function (_super) {
         }
         var total_width = col.getWidth();
         var bins = col.desc.datalength;
-        var min = col.desc.domain[0], max = col.desc.domain[1];
+        var defaultdomain = [0, 100];
+        var domain = col.desc.domain;
+        domain = (domain === undefined || null) ? defaultdomain : domain;
+        var min = domain[0], max = domain[1];
         var colorrange = col.desc.colorrange;
         var defaultcolor = ['blue', 'red'];
         colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
         var celldimension = cell_dim(total_width, bins);
         var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
         color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
-            : color.domain([min, max]).range(['white', colorrange[2]]);
+            : color.domain([min, max]).range(['white', colorrange[1]]);
         var padding = context.option('rowPadding', 1);
         return function (ctx, d, i) {
             var data = col.getValue(d.v, i);
@@ -1920,7 +1930,7 @@ var BoxplotCellRenderer = (function (_super) {
         var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
         return function (ctx, d, i) {
             // Rectangle
-            var data = col.getValue(d.v, i);
+            var data = (col.getValue(d.v, i));
             data.sort(numSort);
             var mindata = Math.min.apply(Math, data);
             var maxdata = Math.max.apply(Math, data);
@@ -4327,7 +4337,6 @@ var Ranking = (function (_super) {
     Ranking.prototype.insert = function (col, index) {
         if (index === void 0) { index = this.columns.length; }
         this.columns.splice(index, 0, col);
-        console.log('hi', col, index);
         col.parent = this;
         this.forward(col, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES + '.ranking', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER + '.ranking', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY + '.ranking', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_FILTER_CHANGED + '.ranking');
         col.on(Ranking.EVENT_FILTER_CHANGED + '.order', this.dirtyOrder);
@@ -6942,27 +6951,53 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
 function renderertypedialog(column, $header) {
     var renderertype = column.desc.type;
     var valuestring = column.desc.renderertype;
+    var renderername = [];
+    valuestring.forEach(function (d) {
+        if (d === 'heatmapcustom') {
+            renderername.push('Heatmap');
+        }
+        if (d === 'sparkline') {
+            renderername.push('Sparkline');
+        }
+        if (d === 'threshold') {
+            renderername.push('Threshold');
+        }
+        if (d === 'upset') {
+            renderername.push('Upset');
+        }
+        if (d === 'circle') {
+            renderername.push('Circle');
+        }
+        if (d === 'number') {
+            renderername.push('Bar');
+        }
+        if (d === 'boxplot') {
+            renderername.push('Box Plot');
+        }
+        if (d === 'verticalbar') {
+            renderername.push('Vertical Bar');
+        }
+    });
     var popup = makesortPopup($header, 'Change Visualization', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + "> " + renderername[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
     }
     var that;
-    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=renderertype]');
-    sortcontent.on('change', function () {
+    var renderercontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name="renderertype"]');
+    renderercontent.on('change', function () {
         that = this;
         renderertype = that.value;
-        column.desc.type = renderertype;
-        column.rendererType();
-        column.setMetaData({
-            label: renderertype,
-            description: column.getMetaData().description,
-            color: column.getMetaData().color
-        });
+        column.setRendererType(that.value);
+        // column.setMetaData({
+        //   label: column.getMetaData().label,
+        //   description: column.getMetaData().description,
+        //   color: column.getMetaData().color
+        // });
     });
     __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
-        var outside = sortcontent.filter(thiselement).empty();
+        var outside = renderercontent.filter(thiselement).empty();
         if (outside) {
             popup.remove();
         }
@@ -6972,8 +7007,9 @@ function renderertypedialog(column, $header) {
 function sortDialogHeatmap(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"heatmaprank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"heatmaprank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + " > " + sortlabel[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -6996,8 +7032,9 @@ function sortDialogHeatmap(column, $header) {
 function sortDialogSparkline(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"sparklinerank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"sparklinerank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -7020,8 +7057,9 @@ function sortDialogSparkline(column, $header) {
 function sortDialogBoxplot(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"boxplotrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"boxplotrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -7044,8 +7082,9 @@ function sortDialogBoxplot(column, $header) {
 function sortDialogVerticalBar(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"verticalbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"verticalbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -7068,8 +7107,9 @@ function sortDialogVerticalBar(column, $header) {
 function sortDialogThresholdBar(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"Thresholdbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"Thresholdbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;

@@ -11,7 +11,7 @@ import LinkColumn from './model/LinkColumn';
 import StackColumn from './model/StackColumn';
 import ScriptColumn from './model/ScriptColumn';
 import BooleanColumn from './model/BooleanColumn';
-import NumberColumn, {IMappingFunction} from './model/NumberColumn';
+import NumberColumn, {IMappingFunction, isNumberColumn} from './model/NumberColumn';
 import CategoricalNumberColumn from './model/CategoricalNumberColumn';
 import HeatmapColumn from './model/HeatmapColumn';
 import SparklineColumn from './model/SparklineColumn';
@@ -167,7 +167,6 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 
 // Renderer type change
 export function renderertypedialog(column: Column, $header: d3.Selection<Column>) {
-  console.log(column)
   var renderertype = (<any>column.desc).type;
   var valuestring: any = (<any>column.desc).renderertype;
   var renderername: any = [];
@@ -204,9 +203,8 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
   }).join('\n'));
 
   function thiselement() {
-
     return this === (<any>d3.event).target;
-    column.rendererType();
+
   }
 
   var that;
@@ -216,9 +214,8 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
   renderercontent.on('change', function () {
     that = this;
     renderertype = that.value;
-    (<any>column.desc).type = renderertype;
-    column.rendererType();
-    //
+    column.setRendererType(that.value)
+
     // column.setMetaData({
     //   label: column.getMetaData().label,
     //   description: column.getMetaData().description,
@@ -237,10 +234,9 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
 
 // Sort Heatmap Dialog.
 export function sortDialogHeatmap(column: HeatmapColumn, $header: d3.Selection<HeatmapColumn>) {
-
   var rank = (<any>column.desc).sort;
   const valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-  const sortlabel:any =['Min','Max','Mean','Median','Q1','Q3'];
+  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
 
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
     return `<br><input type="radio" name="heatmaprank" value=${d}  ${(rank === d) ? 'checked' : ''} > ${sortlabel[i]}`;
@@ -277,7 +273,7 @@ export function sortDialogSparkline(column: SparklineColumn, $header: d3.Selecti
 
   var rank = (<any>column.desc).sort;
   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-    const sortlabel:any =['Min','Max','Mean','Median','Q1','Q3'];
+  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
     return `<br><input type="radio" name="sparklinerank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}`;
 
@@ -313,7 +309,7 @@ export function sortDialogBoxplot(column: BoxplotColumn, $header: d3.Selection<B
 
   var rank = (<any>column.desc).sort;
   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-   const sortlabel:any =['Min','Max','Mean','Median','Q1','Q3'];
+  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
     return `<br><input type="radio" name="boxplotrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}`;
 
@@ -351,7 +347,7 @@ export function sortDialogVerticalBar(column: VerticalBarColumn, $header: d3.Sel
 
   var rank = (<any>column.desc).sort;
   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-   const sortlabel:any =['Min','Max','Mean','Median','Q1','Q3'];
+  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
     return `<br><input type="radio" name="verticalbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}`;
 
@@ -388,7 +384,7 @@ export function sortDialogThresholdBar(column: ThresholdColumn, $header: d3.Sele
 
   var rank = (<any>column.desc).sort;
   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-   const sortlabel:any =['Min','Max','Mean','Median','Q1','Q3'];
+  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
     return `<br><input type="radio" name="Thresholdbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}`;
 
