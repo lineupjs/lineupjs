@@ -51,7 +51,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     return $rows;
   }
 
-  renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number): Promise<void> {
+  private renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number): Promise<any> {
     const that = this;
     const domMapping = this.domMapping;
     const g = this.domMapping.g;
