@@ -6516,7 +6516,7 @@ function renderertypedialog(column, $header) {
         }
     });
 }
-// Sort Heatmap Dialog.
+// Sort  Dialog.
 function sortDialog(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
@@ -8343,8 +8343,6 @@ var MultiLevelCompositeColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(2);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
 /* unused harmony export CustomSortCalculation */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -8353,27 +8351,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 
 
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
 var CustomSortCalculation = (function () {
     function CustomSortCalculation(a_val, b_val) {
         this.a_val = a_val;
@@ -8394,20 +8371,13 @@ var CustomSortCalculation = (function () {
         return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
     };
     CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.a_val)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.b_val));
     };
     CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val, 0.25)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val, 0.25));
     };
     CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val, 0.75)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val, 0.75));
     };
     return CustomSortCalculation;
 }());

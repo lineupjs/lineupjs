@@ -11,7 +11,7 @@
 		exports["LineUpJS"] = factory(require("React"), require("d3"));
 	else
 		root["LineUpJS"] = factory(root["React"], root["d3"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_49__, __WEBPACK_EXTERNAL_MODULE_0__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_50__, __WEBPACK_EXTERNAL_MODULE_0__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -75,7 +75,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 52);
+/******/ 	return __webpack_require__(__webpack_require__.s = 53);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -89,7 +89,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_0__;
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils__ = __webpack_require__(3);
 /* harmony export (immutable) */ exports["b"] = fixCSS;
 /**
  * Created by Samuel Gratzl on 06.08.2015.
@@ -411,6 +411,42 @@ var Column = (function (_super) {
 
 /***/ },
 /* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+/**
+ * a column having an accessor to get the cell value
+ */
+var ValueColumn = (function (_super) {
+    __extends(ValueColumn, _super);
+    function ValueColumn(id, desc) {
+        _super.call(this, id, desc);
+        //find accessor
+        this.accessor = desc.accessor || (function () { return null; });
+    }
+    ValueColumn.prototype.getLabel = function (row, index) {
+        return '' + this.getValue(row, index);
+    };
+    ValueColumn.prototype.getRaw = function (row, index) {
+        return this.accessor(row, index, this.id, this.desc, this.findMyRanker());
+    };
+    ValueColumn.prototype.getValue = function (row, index) {
+        return this.getRaw(row, index);
+    };
+    return ValueColumn;
+}(__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */]));
+/* harmony default export */ exports["a"] = ValueColumn;
+
+
+/***/ },
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -876,42 +912,6 @@ function clipText(ctx, text, x, y, maxWidth, hints) {
 
 
 /***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-/**
- * a column having an accessor to get the cell value
- */
-var ValueColumn = (function (_super) {
-    __extends(ValueColumn, _super);
-    function ValueColumn(id, desc) {
-        _super.call(this, id, desc);
-        //find accessor
-        this.accessor = desc.accessor || (function () { return null; });
-    }
-    ValueColumn.prototype.getLabel = function (row, index) {
-        return '' + this.getValue(row, index);
-    };
-    ValueColumn.prototype.getRaw = function (row, index) {
-        return this.accessor(row, index, this.id, this.desc, this.findMyRanker());
-    };
-    ValueColumn.prototype.getValue = function (row, index) {
-        return this.getRaw(row, index);
-    };
-    return ValueColumn;
-}(__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */]));
-/* harmony default export */ exports["a"] = ValueColumn;
-
-
-/***/ },
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -919,7 +919,7 @@ var ValueColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(2);
 /* harmony export (immutable) */ exports["a"] = isNumberColumn;
 /* harmony export (immutable) */ exports["b"] = numberCompare;
 /* harmony export (binding) */ __webpack_require__.d(exports, "d", function() { return ScaleMappingFunction; });
@@ -1332,7 +1332,7 @@ var NumberColumn = (function (_super) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(2);
 /**
  * Created by sam on 04.11.2016.
  */
@@ -1445,7 +1445,7 @@ var StringColumn = (function (_super) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model_Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_d3__);
 /* harmony export (binding) */ __webpack_require__.d(exports, "DefaultCellRenderer", function() { return DefaultCellRenderer; });
@@ -2685,7 +2685,7 @@ function createCanvas(col, renderers, context) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model_Ranking__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_RankColumn__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(3);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -3570,44 +3570,40 @@ var StackColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__NumberColumn__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__StringColumn__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__StackColumn__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__AnnotateColumn__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__BooleanColumn__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__AnnotateColumn__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__BooleanColumn__ = __webpack_require__(33);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__CategoricalColumn__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__MinColumn__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__MaxColumn__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__MeanColumn__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__MinColumn__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__MaxColumn__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__MeanColumn__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__RankColumn__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__SelectionColumn__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__CategoricalNumberColumn__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__NestedColumn__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__LinkColumn__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__HeatmapColumn__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__SparklineColumn__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__ThresholdColumn__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__VerticalBarColumn__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__CircleColumn__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_26__Ranking__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__CategoricalNumberColumn__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__NestedColumn__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__LinkColumn__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__CircleColumn__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__Column__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__Ranking__ = __webpack_require__(14);
 /* harmony export (immutable) */ exports["defineColumn"] = defineColumn;
 /* harmony export (immutable) */ exports["createActionDesc"] = createActionDesc;
 /* harmony export (immutable) */ exports["models"] = models;
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_25__Column__["IColumnDesc"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_25__Column__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_21__Column__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_21__Column__["IColumnDesc"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ScaleMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["d"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "ScriptMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["e"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isNumberColumn", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "ScriptMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["e"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isCategoricalColumn", function() { return __WEBPACK_IMPORTED_MODULE_7__CategoricalColumn__["b"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_26__Ranking__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_26__Ranking__["b"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_22__Ranking__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_22__Ranking__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMinDesc", function() { return __WEBPACK_IMPORTED_MODULE_8__MinColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMaxDesc", function() { return __WEBPACK_IMPORTED_MODULE_9__MaxColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMeanDesc", function() { return __WEBPACK_IMPORTED_MODULE_10__MeanColumn__["b"]; });
@@ -3624,10 +3620,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-
-
-
-
 
 
 
@@ -3711,18 +3703,18 @@ function models() {
         actions: __WEBPACK_IMPORTED_MODULE_16__DummyColumn__["a" /* default */],
         annotate: __WEBPACK_IMPORTED_MODULE_5__AnnotateColumn__["a" /* default */],
         selection: __WEBPACK_IMPORTED_MODULE_12__SelectionColumn__["a" /* default */],
-        heatmapcustom: __WEBPACK_IMPORTED_MODULE_18__HeatmapColumn__["a" /* default */],
-        sparkline: __WEBPACK_IMPORTED_MODULE_19__SparklineColumn__["a" /* default */],
+        heatmapcustom: __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__["a" /* default */],
+        sparkline: __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__["a" /* default */],
         max: __WEBPACK_IMPORTED_MODULE_9__MaxColumn__["a" /* default */],
         min: __WEBPACK_IMPORTED_MODULE_8__MinColumn__["a" /* default */],
         mean: __WEBPACK_IMPORTED_MODULE_10__MeanColumn__["a" /* default */],
         script: __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__["a" /* default */],
         nested: __WEBPACK_IMPORTED_MODULE_15__NestedColumn__["a" /* default */],
-        threshold: __WEBPACK_IMPORTED_MODULE_20__ThresholdColumn__["a" /* default */],
-        verticalbar: __WEBPACK_IMPORTED_MODULE_21__VerticalBarColumn__["a" /* default */],
-        boxplot: __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__["a" /* default */],
-        upset: __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__["a" /* default */],
-        circle: __WEBPACK_IMPORTED_MODULE_24__CircleColumn__["a" /* default */]
+        threshold: __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__["a" /* default */],
+        verticalbar: __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__["a" /* default */],
+        boxplot: __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__["a" /* default */],
+        upset: __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__["a" /* default */],
+        circle: __WEBPACK_IMPORTED_MODULE_19__CircleColumn__["a" /* default */]
     };
 }
 
@@ -3735,7 +3727,7 @@ function models() {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__StringColumn__ = __webpack_require__(5);
 /* harmony export (immutable) */ exports["b"] = isCategoricalColumn;
 /**
@@ -4123,7 +4115,7 @@ var CompositeColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(2);
 /* harmony export (immutable) */ exports["b"] = createDesc;
 /**
  * Created by sam on 04.11.2016.
@@ -4165,7 +4157,7 @@ var RankColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__StringColumn__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__StackColumn__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(3);
 /* harmony export (immutable) */ exports["b"] = isSupportType;
 /**
  * Created by Samuel Gratzl on 06.08.2015.
@@ -4566,7 +4558,7 @@ var ScriptColumn = (function (_super) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__model_CompositeColumn__ = __webpack_require__(12);
@@ -4763,7 +4755,7 @@ var ABodyRenderer = (function (_super) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(2);
 /* harmony export (immutable) */ exports["b"] = createDesc;
 /**
  * Created by sam on 04.11.2016.
@@ -4831,9 +4823,9 @@ var SelectionColumn = (function (_super) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__provider_ADataProvider__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__renderer__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ui__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ui__ = __webpack_require__(26);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ui_ABodyRenderer__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_d3__);
 /* harmony export (immutable) */ exports["a"] = deriveColors;
@@ -5195,196 +5187,6 @@ function deriveColors(columns) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var BoxplotColumn = (function (_super) {
-    __extends(BoxplotColumn, _super);
-    function BoxplotColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-    }
-    BoxplotColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
-    };
-    return BoxplotColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = BoxplotColumn;
-
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var HeatmapColumn = (function (_super) {
-    __extends(HeatmapColumn, _super);
-    function HeatmapColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-    }
-    HeatmapColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
-    };
-    return HeatmapColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = HeatmapColumn;
-
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__StringColumn__ = __webpack_require__(5);
 /**
@@ -5482,7 +5284,7 @@ var LinkColumn = (function (_super) {
 
 
 /***/ },
-/* 22 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5542,7 +5344,7 @@ var MaxColumn = (function (_super) {
 
 
 /***/ },
-/* 23 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5583,7 +5385,7 @@ var MeanColumn = (function (_super) {
 
 
 /***/ },
-/* 24 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5640,11 +5442,11 @@ var MinColumn = (function (_super) {
 
 
 /***/ },
-/* 25 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__MultiLevelCompositeColumn__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__MultiLevelCompositeColumn__ = __webpack_require__(39);
 /* harmony export (immutable) */ exports["b"] = createDesc;
 /**
  * Created by sam on 04.11.2016.
@@ -5696,298 +5498,13 @@ var NestedColumn = (function (_super) {
 
 
 /***/ },
-/* 26 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var SparklineColumn = (function (_super) {
-    __extends(SparklineColumn, _super);
-    function SparklineColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-    }
-    SparklineColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
-    };
-    return SparklineColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = SparklineColumn;
-
-
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var ThresholdColumn = (function (_super) {
-    __extends(ThresholdColumn, _super);
-    function ThresholdColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-    }
-    ThresholdColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
-    };
-    return ThresholdColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = ThresholdColumn;
-
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var VerticalBarColumn = (function (_super) {
-    __extends(VerticalBarColumn, _super);
-    function VerticalBarColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-    }
-    VerticalBarColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
-    };
-    return VerticalBarColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = VerticalBarColumn;
-
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__renderer__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ABodyRenderer__ = __webpack_require__(16);
 /**
@@ -6197,13 +5714,13 @@ var ABodyDOMRenderer = (function (_super) {
 
 
 /***/ },
-/* 30 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_StringColumn__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__model_Ranking__ = __webpack_require__(14);
@@ -6212,24 +5729,16 @@ var ABodyDOMRenderer = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__model_CategoricalColumn__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__model_RankColumn__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__model_StackColumn__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__model_HeatmapColumn__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__model_SparklineColumn__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__model_BoxplotColumn__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__model_ThresholdColumn__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__model_VerticalBarColumn__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__model_ScriptColumn__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__ui_dialogs__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__model_ScriptColumn__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__ui_dialogs__ = __webpack_require__(27);
 /* harmony export (immutable) */ exports["a"] = toFullTooltip;
 /* harmony export (immutable) */ exports["b"] = dummyRankingButtonHook;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
-
-
-
-
 
 
 
@@ -6271,7 +5780,7 @@ var HeaderRenderer = (function () {
             headerHeight: 20,
             manipulative: true,
             histograms: false,
-            filterDialogs: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["filterDialogs"])(),
+            filterDialogs: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["filterDialogs"])(),
             linkTemplates: [],
             searchAble: function (col) { return col instanceof __WEBPACK_IMPORTED_MODULE_3__model_StringColumn__["a" /* default */]; },
             sortOnLabel: true,
@@ -6332,16 +5841,16 @@ var HeaderRenderer = (function () {
     HeaderRenderer.prototype.changeDataStorage = function (data) {
         var _this = this;
         if (this.data) {
-            this.data.on([__WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_DIRTY_HEADER + '.headerRenderer', __WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_ORDER_CHANGED + '.headerRenderer', __WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED + '.headerRenderer'], null);
+            this.data.on([__WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_DIRTY_HEADER + '.headerRenderer', __WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_ORDER_CHANGED + '.headerRenderer', __WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED + '.headerRenderer'], null);
         }
         this.data = data;
-        data.on(__WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_DIRTY_HEADER + '.headerRenderer', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["delayedCall"])(this.update.bind(this), 1));
+        data.on(__WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_DIRTY_HEADER + '.headerRenderer', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["delayedCall"])(this.update.bind(this), 1));
         if (this.options.histograms) {
-            data.on(__WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_ORDER_CHANGED + '.headerRenderer', function () {
+            data.on(__WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_ORDER_CHANGED + '.headerRenderer', function () {
                 _this.updateHist();
                 _this.update();
             });
-            data.on(__WEBPACK_IMPORTED_MODULE_17__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED + '.headerRenderer', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["delayedCall"])(this.drawSelection.bind(this), 1));
+            data.on(__WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED + '.headerRenderer', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["delayedCall"])(this.drawSelection.bind(this), 1));
         }
     };
     Object.defineProperty(HeaderRenderer.prototype, "sharedHistCache", {
@@ -6489,12 +5998,12 @@ var HeaderRenderer = (function () {
         var $regular = $node.filter(function (d) { return !(d instanceof __WEBPACK_IMPORTED_MODULE_4__model_Ranking__["a" /* default */]); }), $stacked = $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_9__model_StackColumn__["a" /* default */]; }), $multilevel = $node.filter(function (d) { return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__model_CompositeColumn__["b" /* isMultiLevelColumn */])(d); });
         //edit weights
         $stacked.append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openEditWeightsDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openEditWeightsDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //rename
         $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openRenameDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openRenameDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //clone
@@ -6503,39 +6012,47 @@ var HeaderRenderer = (function () {
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //Heatmap Sort
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_11__model_HeatmapColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogHeatmap"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["sortDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_12__model_SparklineColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogSparkline"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
-            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
-        });
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_13__model_BoxplotColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogBoxplot"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
-            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
-        });
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_14__model_ThresholdColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogThresholdBar"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
-            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
-        });
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_15__model_VerticalBarColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogVerticalBar"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
-            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
-        });
+        //
+        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+        //   sortDialogSparkline(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
+        //   (<MouseEvent>d3.event).stopPropagation();
+        // });
+        //
+        //
+        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+        //   sortDialogBoxplot(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
+        //   (<MouseEvent>d3.event).stopPropagation();
+        // });
+        //
+        //
+        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+        //   sortDialogThresholdBar(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
+        //   (<MouseEvent>d3.event).stopPropagation();
+        // });
+        //
+        //
+        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+        //
+        //   sortDialogVerticalBar(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
+        //   (<MouseEvent>d3.event).stopPropagation();
+        // });
         //Renderer Change
         $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_2__model_Column__["a" /* default */]; }).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["renderertypedialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["renderertypedialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //edit link
         $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openEditLinkDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), [].concat(d.desc.templates || [], that.options.linkTemplates), that.options.idPrefix);
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openEditLinkDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), [].concat(d.desc.templates || [], that.options.linkTemplates), that.options.idPrefix);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //edit script
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_16__model_ScriptColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openEditScriptDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_11__model_ScriptColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openEditScriptDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //filter
@@ -6545,7 +6062,7 @@ var HeaderRenderer = (function () {
         });
         //search
         $node.filter(function (d) { return _this.options.searchAble(d); }).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["openSearchDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), provider);
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openSearchDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), provider);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //collapse
@@ -6746,16 +6263,16 @@ var HeaderRenderer = (function () {
 
 
 /***/ },
-/* 31 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(47);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ABodyRenderer__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(47);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__HTMLBodyRenderer__ = __webpack_require__(45);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CanvasBodyRenderer__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__HTMLBodyRenderer__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CanvasBodyRenderer__ = __webpack_require__(45);
 /* harmony export (immutable) */ exports["createBodyRenderer"] = createBodyRenderer;
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "HeaderRenderer", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["c"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IRankingHook", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["IRankingHook"]; });
@@ -6789,15 +6306,15 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 
 
 /***/ },
-/* 32 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model_StringColumn__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model_ScriptColumn__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mappingeditor__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mappingeditor__ = __webpack_require__(31);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_d3__);
 /* harmony export (immutable) */ exports["dialogForm"] = dialogForm;
@@ -6807,11 +6324,7 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 /* harmony export (immutable) */ exports["openRenameDialog"] = openRenameDialog;
 /* harmony export (immutable) */ exports["openEditLinkDialog"] = openEditLinkDialog;
 /* harmony export (immutable) */ exports["renderertypedialog"] = renderertypedialog;
-/* harmony export (immutable) */ exports["sortDialogHeatmap"] = sortDialogHeatmap;
-/* harmony export (immutable) */ exports["sortDialogSparkline"] = sortDialogSparkline;
-/* harmony export (immutable) */ exports["sortDialogBoxplot"] = sortDialogBoxplot;
-/* harmony export (immutable) */ exports["sortDialogVerticalBar"] = sortDialogVerticalBar;
-/* harmony export (immutable) */ exports["sortDialogThresholdBar"] = sortDialogThresholdBar;
+/* harmony export (immutable) */ exports["sortDialog"] = sortDialog;
 /* harmony export (immutable) */ exports["openSearchDialog"] = openSearchDialog;
 /* harmony export (immutable) */ exports["openEditWeightsDialog"] = openEditWeightsDialog;
 /* harmony export (immutable) */ exports["openEditScriptDialog"] = openEditScriptDialog;
@@ -6978,8 +6491,8 @@ function renderertypedialog(column, $header) {
             renderername.push('Vertical Bar');
         }
     });
-    var popup = makesortPopup($header, 'Change Visualization', valuestring.map(function (d, i) {
-        return "<br><input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + "> " + renderername[i];
+    var popup = makesortPopup($header, 'Change Visualization </br>', valuestring.map(function (d, i) {
+        return "<input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + "> " + renderername[i] + "<br>";
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -7003,19 +6516,19 @@ function renderertypedialog(column, $header) {
         }
     });
 }
-// Sort Heatmap Dialog.
-function sortDialogHeatmap(column, $header) {
+// Sort  Dialog.
+function sortDialog(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
     var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-    var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<br><input type=\"radio\" name=\"heatmaprank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + " > " + sortlabel[i];
+    var popup = makesortPopup($header, 'Sort By <br>', valuestring.map(function (d, i) {
+        return "<input type=\"radio\" name=\"multivaluesort\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + " > " + sortlabel[i] + " <br>";
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
     }
     var that;
-    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=heatmaprank]');
+    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=multivaluesort]');
     sortcontent.on('change', function () {
         that = this;
         rank = that.value;
@@ -7029,106 +6542,152 @@ function sortDialogHeatmap(column, $header) {
         }
     });
 }
-function sortDialogSparkline(column, $header) {
-    var rank = column.desc.sort;
-    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-    var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<br><input type=\"radio\" name=\"sparklinerank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
-    }).join('\n'));
-    function thiselement() {
-        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
-    }
-    var that;
-    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=sparklinerank]');
-    sortcontent.on('change', function () {
-        that = this;
-        rank = that.value;
-        column.desc.sort = rank;
-        column.toggleMySorting();
-    });
-    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
-        var outside = sortcontent.filter(thiselement).empty();
-        if (outside) {
-            popup.remove();
-        }
-    });
-}
-function sortDialogBoxplot(column, $header) {
-    var rank = column.desc.sort;
-    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-    var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<br><input type=\"radio\" name=\"boxplotrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
-    }).join('\n'));
-    function thiselement() {
-        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
-    }
-    var that;
-    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=boxplotrank]');
-    sortcontent.on('change', function () {
-        that = this;
-        rank = that.value;
-        column.desc.sort = rank;
-        column.toggleMySorting();
-    });
-    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
-        var outside = sortcontent.filter(thiselement).empty();
-        if (outside) {
-            popup.remove();
-        }
-    });
-}
-function sortDialogVerticalBar(column, $header) {
-    var rank = column.desc.sort;
-    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-    var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<br><input type=\"radio\" name=\"verticalbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
-    }).join('\n'));
-    function thiselement() {
-        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
-    }
-    var that;
-    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=verticalbarrank]');
-    sortcontent.on('change', function () {
-        that = this;
-        rank = that.value;
-        column.desc.sort = rank;
-        column.toggleMySorting();
-    });
-    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
-        var outside = sortcontent.filter(thiselement).empty();
-        if (outside) {
-            popup.remove();
-        }
-    });
-}
-function sortDialogThresholdBar(column, $header) {
-    var rank = column.desc.sort;
-    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-    var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<br><input type=\"radio\" name=\"Thresholdbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
-    }).join('\n'));
-    function thiselement() {
-        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
-    }
-    var that;
-    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=Thresholdbarrank]');
-    sortcontent.on('change', function () {
-        that = this;
-        rank = that.value;
-        column.desc.sort = rank;
-        column.toggleMySorting();
-    });
-    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
-        var outside = sortcontent.filter(thiselement).empty();
-        if (outside) {
-            popup.remove();
-        }
-    });
-}
+// export function sortDialogSparkline(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
+//
+//   var rank = (<any>column.desc).sort;
+//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
+//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+//     return `<input type="radio" name="sparklinerank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
+//
+//   }).join('\n'));
+//
+//   function thiselement() {
+//
+//     return this === (<any>d3.event).target;
+//   }
+//
+//   var that;
+//
+//   var sortcontent = d3.selectAll('input[name=sparklinerank]');
+//   sortcontent.on('change', function () {
+//     that = this;
+//     rank = that.value;
+//     (<any>column.desc).sort = rank;
+//     column.toggleMySorting();
+//
+//   });
+//
+//   d3.select('body').on('click', function () {
+//     var outside = sortcontent.filter(thiselement).empty();
+//     if (outside) {
+//       popup.remove();
+//     }
+//   });
+//
+//
+// }
+//
+// export function sortDialogBoxplot(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
+//
+//   var rank = (<any>column.desc).sort;
+//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
+//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+//     return `<input type="radio" name="boxplotrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
+//
+//   }).join('\n'));
+//
+//   function thiselement() {
+//
+//     return this === (<any>d3.event).target;
+//   }
+//
+//   var that;
+//
+//   var sortcontent = d3.selectAll('input[name=boxplotrank]');
+//   sortcontent.on('change', function () {
+//     that = this;
+//     rank = that.value;
+//     (<any>column.desc).sort = rank;
+//     column.toggleMySorting();
+//
+//
+//   });
+//
+//
+//   d3.select('body').on('click', function () {
+//     var outside = sortcontent.filter(thiselement).empty();
+//     if (outside) {
+//       popup.remove();
+//     }
+//   });
+//
+// }
+//
+//
+// export function sortDialogVerticalBar(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
+//
+//   var rank = (<any>column.desc).sort;
+//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
+//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+//     return `<input type="radio" name="verticalbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
+//
+//   }).join('\n'));
+//
+//   function thiselement() {
+//
+//     return this === (<any>d3.event).target;
+//   }
+//
+//   var that;
+//
+//   var sortcontent = d3.selectAll('input[name=verticalbarrank]');
+//   sortcontent.on('change', function () {
+//     that = this;
+//     rank = that.value;
+//     (<any>column.desc).sort = rank;
+//     column.toggleMySorting();
+//
+//   });
+//
+//   d3.select('body').on('click', function () {
+//     var outside = sortcontent.filter(thiselement).empty();
+//     if (outside) {
+//       popup.remove();
+//     }
+//   });
+//
+//
+// }
+//
+// export function sortDialogThresholdBar(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
+//
+//
+//   var rank = (<any>column.desc).sort;
+//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
+//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+//     return `<input type="radio" name="Thresholdbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
+//
+//   }).join('\n'));
+//
+//   function thiselement() {
+//
+//     return this === (<any>d3.event).target;
+//   }
+//
+//   var that;
+//
+//   var sortcontent = d3.selectAll('input[name=Thresholdbarrank]');
+//   sortcontent.on('change', function () {
+//     that = this;
+//     rank = that.value;
+//     (<any>column.desc).sort = rank;
+//     column.toggleMySorting();
+//
+//   });
+//
+//   d3.select('body').on('click', function () {
+//     var outside = sortcontent.filter(thiselement).empty();
+//     if (outside) {
+//       popup.remove();
+//     }
+//   });
+//
+//
+// }
 /**
  * opens a search dialog for the given column
  * @param column the column to rename
@@ -7556,13 +7115,13 @@ function filterDialogs() {
 
 
 /***/ },
-/* 33 */
+/* 28 */
 /***/ function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ },
-/* 34 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7702,15 +7261,15 @@ var ACommonDataProvider = (function (_super) {
 
 
 /***/ },
-/* 35 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model_Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ACommonDataProvider__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ACommonDataProvider__ = __webpack_require__(29);
 /**
  * Created by sam on 04.11.2016.
  */
@@ -7927,13 +7486,13 @@ var LocalDataProvider = (function (_super) {
 
 
 /***/ },
-/* 36 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__ = __webpack_require__(4);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
@@ -8243,7 +7802,7 @@ var MappingEditor = (function () {
 
 
 /***/ },
-/* 37 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8315,14 +7874,14 @@ var AnnotateColumn = (function (_super) {
 
 
 /***/ },
-/* 38 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(2);
 /**
  * Created by sam on 04.11.2016.
  */
@@ -8400,14 +7959,15 @@ var BooleanColumn = (function (_super) {
 
 
 /***/ },
-/* 39 */
+/* 34 */,
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__CategoricalColumn__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__NumberColumn__ = __webpack_require__(4);
 /**
@@ -8592,11 +8152,11 @@ var CategoricalNumberColumn = (function (_super) {
 
 
 /***/ },
-/* 40 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(2);
 /* unused harmony export numberCompare */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -8628,7 +8188,7 @@ var CircleColumn = (function (_super) {
 
 
 /***/ },
-/* 41 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8665,7 +8225,8 @@ var DummyColumn = (function (_super) {
 
 
 /***/ },
-/* 42 */
+/* 38 */,
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8775,13 +8336,80 @@ var MultiLevelCompositeColumn = (function (_super) {
 
 
 /***/ },
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(2);
+/* unused harmony export CustomSortCalculation */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+var CustomSortCalculation = (function () {
+    function CustomSortCalculation(a_val, b_val) {
+        this.a_val = a_val;
+        this.b_val = b_val;
+        this.b_val = b_val;
+        this.a_val = a_val;
+    }
+    CustomSortCalculation.prototype.sum = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
+    };
+    CustomSortCalculation.prototype.min = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
+    };
+    CustomSortCalculation.prototype.max = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
+    };
+    CustomSortCalculation.prototype.mean = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
+    };
+    CustomSortCalculation.prototype.median = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.a_val)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.b_val));
+    };
+    CustomSortCalculation.prototype.q1 = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val, 0.25)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val, 0.25));
+    };
+    CustomSortCalculation.prototype.q3 = function () {
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val, 0.75)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val, 0.75));
+    };
+    return CustomSortCalculation;
+}());
+var MultiValueColumn = (function (_super) {
+    __extends(MultiValueColumn, _super);
+    function MultiValueColumn(id, desc) {
+        _super.call(this, id, desc);
+        this.sortCriteria = desc.sort || 'min';
+    }
+    MultiValueColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortCriteria = this.desc.sort;
+        var a_val = this.getValue(a, aIndex);
+        var b_val = this.getValue(b, bIndex);
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.sortCriteria].bind(sort);
+        return f();
+    };
+    return MultiValueColumn;
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = MultiValueColumn;
+
+
+/***/ },
+/* 41 */,
+/* 42 */,
 /* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(2);
 /* unused harmony export numberCompare */
 /* unused harmony export getPercentile */
 /* unused harmony export CustomSortCalculation */
@@ -8870,13 +8498,14 @@ var UpsetColumn = (function (_super) {
 
 
 /***/ },
-/* 44 */
+/* 44 */,
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_SelectionColumn__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__renderer__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ABodyRenderer__ = __webpack_require__(16);
@@ -9147,12 +8776,12 @@ var BodyCanvasRenderer = (function (_super) {
 
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__renderer__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ADOMBodyRenderer__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ADOMBodyRenderer__ = __webpack_require__(24);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -9206,16 +8835,16 @@ var HTMLBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__provider_ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__HeaderRenderer__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__HeaderRenderer__ = __webpack_require__(25);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -9387,14 +9016,14 @@ var PoolRenderer = (function () {
 
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__renderer__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ADOMBodyRenderer__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ADOMBodyRenderer__ = __webpack_require__(24);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -9500,25 +9129,25 @@ var SVGBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 48 */,
-/* 49 */
+/* 49 */,
+/* 50 */
 /***/ function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_49__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_50__;
 
 /***/ },
-/* 50 */,
 /* 51 */,
-/* 52 */
+/* 52 */,
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__style_scss__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lineup__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(49);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(50);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__provider_LocalDataProvider__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__provider_LocalDataProvider__ = __webpack_require__(30);
 /**
  * Created by sam on 28.10.2016.
  */
