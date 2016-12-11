@@ -13,11 +13,12 @@ import ScriptColumn from './model/ScriptColumn';
 import BooleanColumn from './model/BooleanColumn';
 import NumberColumn, {IMappingFunction, isNumberColumn} from './model/NumberColumn';
 import CategoricalNumberColumn from './model/CategoricalNumberColumn';
-import HeatmapColumn from './model/HeatmapColumn';
-import SparklineColumn from './model/SparklineColumn';
-import BoxplotColumn from   './model/BoxplotColumn';
-import ThresholdColumn from './model/ThresholdColumn';
-import VerticalBarColumn from './model/VerticalBarColumn';
+// import HeatmapColumn from './model/HeatmapColumn11';
+// import SparklineColumn from './model/SparklineColumn11';
+// import BoxplotColumn from   './model/BoxplotColumn11';
+// import ThresholdColumn from './model/ThresholdColumn11';
+// import VerticalBarColumn from './model/VerticalBarColumn11';
+import MultiValueColumn from './model/MultiValueColumn';
 import {offset} from './utils';
 import MappingEditor from './mappingeditor';
 import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
@@ -233,13 +234,13 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
 }
 
 // Sort Heatmap Dialog.
-export function sortDialogHeatmap(column: HeatmapColumn, $header: d3.Selection<HeatmapColumn>) {
+export function sortDialog(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
   var rank = (<any>column.desc).sort;
   const valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
 
   var popup = makesortPopup($header, 'Sort By <br>', valuestring.map(function (d, i) {
-    return `<input type="radio" name="heatmaprank" value=${d}  ${(rank === d) ? 'checked' : ''} > ${sortlabel[i]} <br>`;
+    return `<input type="radio" name="multivaluesort" value=${d}  ${(rank === d) ? 'checked' : ''} > ${sortlabel[i]} <br>`;
 
   }).join('\n'));
 
@@ -250,7 +251,7 @@ export function sortDialogHeatmap(column: HeatmapColumn, $header: d3.Selection<H
 
   var that;
 
-  var sortcontent = d3.selectAll('input[name=heatmaprank]');
+  var sortcontent = d3.selectAll('input[name=multivaluesort]');
   sortcontent.on('change', function () {
     that = this;
     rank = that.value;
@@ -269,152 +270,152 @@ export function sortDialogHeatmap(column: HeatmapColumn, $header: d3.Selection<H
 }
 
 
-export function sortDialogSparkline(column: SparklineColumn, $header: d3.Selection<SparklineColumn>) {
-
-  var rank = (<any>column.desc).sort;
-  var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-  var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-    return `<input type="radio" name="sparklinerank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
-
-  }).join('\n'));
-
-  function thiselement() {
-
-    return this === (<any>d3.event).target;
-  }
-
-  var that;
-
-  var sortcontent = d3.selectAll('input[name=sparklinerank]');
-  sortcontent.on('change', function () {
-    that = this;
-    rank = that.value;
-    (<any>column.desc).sort = rank;
-    column.toggleMySorting();
-
-  });
-
-  d3.select('body').on('click', function () {
-    var outside = sortcontent.filter(thiselement).empty();
-    if (outside) {
-      popup.remove();
-    }
-  });
-
-
-}
-
-export function sortDialogBoxplot(column: BoxplotColumn, $header: d3.Selection<BoxplotColumn>) {
-
-  var rank = (<any>column.desc).sort;
-  var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-  var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-    return `<input type="radio" name="boxplotrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
-
-  }).join('\n'));
-
-  function thiselement() {
-
-    return this === (<any>d3.event).target;
-  }
-
-  var that;
-
-  var sortcontent = d3.selectAll('input[name=boxplotrank]');
-  sortcontent.on('change', function () {
-    that = this;
-    rank = that.value;
-    (<any>column.desc).sort = rank;
-    column.toggleMySorting();
-
-
-  });
-
-
-  d3.select('body').on('click', function () {
-    var outside = sortcontent.filter(thiselement).empty();
-    if (outside) {
-      popup.remove();
-    }
-  });
-
-}
-
-
-export function sortDialogVerticalBar(column: VerticalBarColumn, $header: d3.Selection<VerticalBarColumn>) {
-
-  var rank = (<any>column.desc).sort;
-  var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-  var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-    return `<input type="radio" name="verticalbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
-
-  }).join('\n'));
-
-  function thiselement() {
-
-    return this === (<any>d3.event).target;
-  }
-
-  var that;
-
-  var sortcontent = d3.selectAll('input[name=verticalbarrank]');
-  sortcontent.on('change', function () {
-    that = this;
-    rank = that.value;
-    (<any>column.desc).sort = rank;
-    column.toggleMySorting();
-
-  });
-
-  d3.select('body').on('click', function () {
-    var outside = sortcontent.filter(thiselement).empty();
-    if (outside) {
-      popup.remove();
-    }
-  });
-
-
-}
-
-export function sortDialogThresholdBar(column: ThresholdColumn, $header: d3.Selection<ThresholdColumn>) {
-
-
-  var rank = (<any>column.desc).sort;
-  var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-  var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-    return `<input type="radio" name="Thresholdbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
-
-  }).join('\n'));
-
-  function thiselement() {
-
-    return this === (<any>d3.event).target;
-  }
-
-  var that;
-
-  var sortcontent = d3.selectAll('input[name=Thresholdbarrank]');
-  sortcontent.on('change', function () {
-    that = this;
-    rank = that.value;
-    (<any>column.desc).sort = rank;
-    column.toggleMySorting();
-
-  });
-
-  d3.select('body').on('click', function () {
-    var outside = sortcontent.filter(thiselement).empty();
-    if (outside) {
-      popup.remove();
-    }
-  });
-
-
-}
+// export function sortDialogSparkline(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
+//
+//   var rank = (<any>column.desc).sort;
+//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
+//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+//     return `<input type="radio" name="sparklinerank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
+//
+//   }).join('\n'));
+//
+//   function thiselement() {
+//
+//     return this === (<any>d3.event).target;
+//   }
+//
+//   var that;
+//
+//   var sortcontent = d3.selectAll('input[name=sparklinerank]');
+//   sortcontent.on('change', function () {
+//     that = this;
+//     rank = that.value;
+//     (<any>column.desc).sort = rank;
+//     column.toggleMySorting();
+//
+//   });
+//
+//   d3.select('body').on('click', function () {
+//     var outside = sortcontent.filter(thiselement).empty();
+//     if (outside) {
+//       popup.remove();
+//     }
+//   });
+//
+//
+// }
+//
+// export function sortDialogBoxplot(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
+//
+//   var rank = (<any>column.desc).sort;
+//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
+//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+//     return `<input type="radio" name="boxplotrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
+//
+//   }).join('\n'));
+//
+//   function thiselement() {
+//
+//     return this === (<any>d3.event).target;
+//   }
+//
+//   var that;
+//
+//   var sortcontent = d3.selectAll('input[name=boxplotrank]');
+//   sortcontent.on('change', function () {
+//     that = this;
+//     rank = that.value;
+//     (<any>column.desc).sort = rank;
+//     column.toggleMySorting();
+//
+//
+//   });
+//
+//
+//   d3.select('body').on('click', function () {
+//     var outside = sortcontent.filter(thiselement).empty();
+//     if (outside) {
+//       popup.remove();
+//     }
+//   });
+//
+// }
+//
+//
+// export function sortDialogVerticalBar(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
+//
+//   var rank = (<any>column.desc).sort;
+//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
+//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+//     return `<input type="radio" name="verticalbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
+//
+//   }).join('\n'));
+//
+//   function thiselement() {
+//
+//     return this === (<any>d3.event).target;
+//   }
+//
+//   var that;
+//
+//   var sortcontent = d3.selectAll('input[name=verticalbarrank]');
+//   sortcontent.on('change', function () {
+//     that = this;
+//     rank = that.value;
+//     (<any>column.desc).sort = rank;
+//     column.toggleMySorting();
+//
+//   });
+//
+//   d3.select('body').on('click', function () {
+//     var outside = sortcontent.filter(thiselement).empty();
+//     if (outside) {
+//       popup.remove();
+//     }
+//   });
+//
+//
+// }
+//
+// export function sortDialogThresholdBar(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
+//
+//
+//   var rank = (<any>column.desc).sort;
+//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
+//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
+//     return `<input type="radio" name="Thresholdbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
+//
+//   }).join('\n'));
+//
+//   function thiselement() {
+//
+//     return this === (<any>d3.event).target;
+//   }
+//
+//   var that;
+//
+//   var sortcontent = d3.selectAll('input[name=Thresholdbarrank]');
+//   sortcontent.on('change', function () {
+//     that = this;
+//     rank = that.value;
+//     (<any>column.desc).sort = rank;
+//     column.toggleMySorting();
+//
+//   });
+//
+//   d3.select('body').on('click', function () {
+//     var outside = sortcontent.filter(thiselement).empty();
+//     if (outside) {
+//       popup.remove();
+//     }
+//   });
+//
+//
+// }
 
 
 /**

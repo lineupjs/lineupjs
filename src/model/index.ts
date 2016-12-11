@@ -21,13 +21,14 @@ import CategoricalNumberColumn from './CategoricalNumberColumn';
 import NestedColumn from './NestedColumn';
 import DummyColumn from './DummyColumn';
 import LinkColumn from './LinkColumn';
-import HeatmapColumn from './HeatmapColumn';
-import SparklineColumn from './SparklineColumn';
-import ThresholdColumn from './ThresholdColumn';
-import VerticalBarColumn from './VerticalBarColumn';
-import BoxplotColumn from './BoxplotColumn';
+// import HeatmapColumn from './HeatmapColumn11';
+// import SparklineColumn from './SparklineColumn11';
+// import ThresholdColumn from './ThresholdColumn11';
+// import VerticalBarColumn from './VerticalBarColumn11';
+// import BoxplotColumn from './BoxplotColumn11';
 import UpsetColumn from './UpsetColumn';
 import CircleColumn from './CircleColumn';
+import MultiValueColumn from './MultiValueColumn';
 
 
 export {default as Column, IColumnDesc} from './Column';
@@ -94,16 +95,16 @@ export function models() {
     actions: DummyColumn,
     annotate: AnnotateColumn,
     selection: SelectionColumn,
-    heatmapcustom: HeatmapColumn,
-    sparkline: SparklineColumn,
+    heatmapcustom: MultiValueColumn,
+    sparkline: MultiValueColumn,
     max: MaxColumn,
     min: MinColumn,
     mean: MeanColumn,
     script: ScriptColumn,
     nested: NestedColumn,
-    threshold: ThresholdColumn,
-    verticalbar: VerticalBarColumn,
-    boxplot: BoxplotColumn,
+    threshold: MultiValueColumn,
+    verticalbar: MultiValueColumn,
+    boxplot: MultiValueColumn,
     upset: UpsetColumn,
     circle: CircleColumn
   };
