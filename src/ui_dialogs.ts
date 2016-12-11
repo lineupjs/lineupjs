@@ -233,7 +233,7 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
   });
 }
 
-// Sort Heatmap Dialog.
+// Sort  Dialog.
 export function sortDialog(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
   var rank = (<any>column.desc).sort;
   const valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];

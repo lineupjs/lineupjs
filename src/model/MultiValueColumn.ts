@@ -6,29 +6,6 @@ import Column, {IColumnDesc, IStatistics} from './Column';
 import ValueColumn from './ValueColumn';
 
 
-export function numberCompare(a: number, b: number) {
-  if (isNaN(a)) { //NaN are bigger
-    return isNaN(b) ? 0 : +1;
-  }
-  if (isNaN(b)) {
-    return -1;
-  }
-  return a - b;
-}
-
-// Calculate Median, Q1 and Q1)
-export function getPercentile(data, percentile) {
-
-  var index = (percentile / 100) * data.length;
-  var result;
-  if (Math.floor(index) === index) {
-    result = (data[(index - 1)] + data[index]) / 2;
-  } else {
-    result = data[Math.floor(index)];
-  }
-  return result;
-}
-
 export class CustomSortCalculation {
 
   constructor(private a_val: number[], private b_val: number []) {
@@ -57,35 +34,21 @@ export class CustomSortCalculation {
   }
 
   median() {
-    this.a_val.sort(numberCompare);
-    this.b_val.sort(numberCompare);
-    return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
+    return (d3.median(this.a_val)) - (d3.median(this.b_val));
 
   }
 
-
   q1() {
 
-    return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
+    return (d3.quantile(this.a_val, 0.25)) - (d3.quantile(this.b_val, 0.25));
 
   }
 
   q3() {
 
-    return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
+    return (d3.quantile(this.a_val, 0.75)) - (d3.quantile(this.b_val, 0.75));
 
   }
-
-  countcategory() {
-
-    const a_cat = this.a_val.filter((x)=> x === 1).length;
-
-    const b_cat = this.b_val.filter((x)=> x === 1).length;
-
-    return (a_cat - b_cat);
-
-  }
-
 }
 
 export default class MultiValueColumn extends ValueColumn<number[] > {
