@@ -155,11 +155,8 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   }
 }
 
-/**
- * a renderer rendering a bar for numerical columns
- */
 
-class HeatmapCellRenderer extends DefaultCellRenderer {
+class HeatmapCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     function cell_dim(total, cells) {
@@ -184,13 +181,12 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
 
       template: `<g class="heatmapcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const g = d3.select(n);
-        const rect = g.selectAll('rect').data(col.getValue(d.v, i));
+        const rect = d3.select(n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
         rect.enter().append('rect');
         rect
           .attr({
             y: padding,
-            x: (d, i) => (i === null || 0) ? 0 : (i * celldimension),
+            x: (d, i) => (i * celldimension),
             width: celldimension,
             height: context.rowHeight(i),
             fill: color
@@ -220,14 +216,14 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
                                    </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         const g = d3.select(n);
-        const div = g.selectAll('div').data(col.getValue(d.v, i));
+        const div = g.selectAll('div').data(col.getValue(d.v, d.dataIndex));
         div.enter().append('div');
         div
           .style({
             'width': celldimension + 'px',
             'background-color': color,
             'height': context.rowHeight(i) + 'px',
-            'left': (d, i) => (i === null || 0) ? 0 + 'px' : (i * celldimension) + 'px'
+            'left': (d, i) => (i * celldimension) + 'px'
           });
 
 
@@ -255,7 +251,7 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
       : color.domain([min, max]).range(['white', colorrange[1]]);
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      var data = col.getValue(d.v, i);
+      var data = col.getValue(d.v, d.dataIndex);
       data.forEach(function (d, i) {
         var x = (i === null || 0) ? 0 : (i * celldimension);
         ctx.beginPath();
@@ -268,7 +264,7 @@ class HeatmapCellRenderer extends DefaultCellRenderer {
 }
 
 
-class SparklineCellRenderer extends DefaultCellRenderer {
+class SparklineCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
@@ -283,8 +279,7 @@ class SparklineCellRenderer extends DefaultCellRenderer {
 
       template: `<g class="sparklinecell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const g = d3.select(n);
-        const path = g.selectAll('path').data([<any>col.getValue(d.v, i)]);
+        const path = d3.select(n).selectAll('path').data([<any>col.getValue(d.v, d.dataIndex)]);
         path.enter().append('path');
         path
           .attr('d', function (d, i) {
@@ -310,7 +305,7 @@ class SparklineCellRenderer extends DefaultCellRenderer {
     var x: any = d3.scale.linear().domain([0, bins - 1]).range([0, col.getWidth()]);
     var y: any = y = d3.scale.linear().domain([min, max]);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      var data = col.getValue(d.v, i);
+      var data = col.getValue(d.v, d.dataIndex);
       var xpos, ypos;
       data.forEach(function (d, i) {
 
@@ -336,7 +331,7 @@ class SparklineCellRenderer extends DefaultCellRenderer {
   }
 }
 
-class ThresholdCellRenderer extends DefaultCellRenderer {
+class ThresholdCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
@@ -353,13 +348,12 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
 
       template: `<g class="thresholdcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const g = d3.select(n);
-        const rect = g.selectAll('rect').data(<any>col.getValue(d.v, i));
+        const rect = d3.select(n).selectAll('rect').data(<any>col.getValue(d.v, d.dataIndex));
         rect.enter().append('rect');
         rect
           .attr({
             y: (d, i) => (d < threshold) ? (context.rowHeight(i) / 2) : 0,
-            x: (d, i) => (i === null || 0) ? 0 : (i * celldimension),
+            x: (d, i) => (i * celldimension),
             width: celldimension,
             height: (d, i) => (context.rowHeight(i)) / 2,
             fill: (d) => (d < threshold) ? cat1color : cat2color
@@ -382,10 +376,10 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
     const cat2color = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      var data = col.getValue(d.v, i);
+      var data = col.getValue(d.v, d.dataIndex);
       data.forEach(function (d, i) {
         ctx.beginPath();
-        var xpos = (i === null || 0) ? 0 : (i * celldimension);
+        var xpos = (i * celldimension);
         var ypos = (d < threshold) ? (context.rowHeight(i) / 2) : 0;
         ctx.fillStyle = (d < threshold) ? cat1color : cat2color;
         ctx.fillRect(xpos, ypos, celldimension, context.rowHeight(i) / 2);
@@ -394,7 +388,7 @@ class ThresholdCellRenderer extends DefaultCellRenderer {
   }
 
 }
-class VerticalBarCellRenderer extends DefaultCellRenderer {
+class VerticalBarCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
@@ -424,8 +418,7 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
 
       template: `<g class="verticalbarcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const g = d3.select(n);
-        const rect = g.selectAll('rect').data(<any>col.getValue(d.v, i));
+        const rect = d3.select(n).selectAll('rect').data(<any>col.getValue(d.v, d.dataIndex));
         rect.enter().append('rect');
         rect
           .attr({
@@ -436,7 +429,7 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
                 return context.rowHeight(i) - scaleheight(context.rowHeight(i), d);
               }
             },
-            x: (d, i) => (i === null || 0) ? 0 : (i * celldimension),
+            x: (d, i) => (i * celldimension),
             width: celldimension,
             height: (d: any) => (d < threshold) ? (barheight / 2 - scaleheight(context.rowHeight(i), d)) : scaleheight(context.rowHeight(i), d),
             fill: color
@@ -472,9 +465,9 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
     color.domain([min, 0, max]).range([mincolor, 'white', maxcolor]);
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      var data = col.getValue(d.v, i);
+      var data = col.getValue(d.v, d.dataIndex);
       data.forEach(function (d, i) {
-        var xpos = (i === null || 0) ? 0 : (i * celldimension);
+        var xpos = (i * celldimension);
         var ypos;
         if (min < 0) {
           ypos = (d < threshold) ? (context.rowHeight(i) / 2) : context.rowHeight(i) / 2 - scaleheight(context.rowHeight(i), d);   // For positive and negative value
@@ -490,7 +483,7 @@ class VerticalBarCellRenderer extends DefaultCellRenderer {
 
 
 }
-class BoxplotCellRenderer extends DefaultCellRenderer {
+class BoxplotCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
@@ -525,12 +518,10 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
         var mindata = Math.min.apply(Math, data);
         var maxdata = Math.max.apply(Math, data);
 
-        var q1 = (getPercentile(data, 25));
-        var med = (getPercentile(data, 50));
-        var q3 = (getPercentile(data, 75));
-
-        const g = d3.select(n);
-        const rect = g.selectAll('rect').data([col.getValue(d.v, i)]);
+        var q1 = (d3.quantile(data, 0.25));
+        var med = (d3.median(data));
+        var q3 = (d3.quantile(data, 0.75));
+        const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
         rect.enter().append('rect');
         rect
           .attr('class', 'boxplotrect')
@@ -542,7 +533,7 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
           });
         rect.exit().remove();
 
-        const path = g.selectAll('path').data([<any>col.getValue(d.v, i)]);
+        const path = d3.select(n).selectAll('path').data([<any>col.getValue(d.v, d.dataIndex)]);
         path.enter().append('path');
         path
           .attr('class', 'boxplotline')
@@ -591,14 +582,14 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
 
-      var data = (col.getValue(d.v, i));
+      var data = (col.getValue(d.v, d.dataIndex));
 
       data.sort(numSort);
       var mindata = Math.min.apply(Math, data);
       var maxdata = Math.max.apply(Math, data);
-      var q1 = (getPercentile(data, 25));
-      var med = (getPercentile(data, 50));
-      var q3 = (getPercentile(data, 75));
+      var q1 = (d3.quantile(data, 0.25));
+      var med = (d3.median(data));
+      var q3 = (d3.quantile(data, 0.75));
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
@@ -634,7 +625,7 @@ class BoxplotCellRenderer extends DefaultCellRenderer {
 
 }
 
-class UpsetCellRenderer extends DefaultCellRenderer {
+class UpsetCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
@@ -646,8 +637,7 @@ class UpsetCellRenderer extends DefaultCellRenderer {
     return {
       template: `<g class="upsetcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const g = d3.select(n);
-        const circle = g.selectAll('circle').data(<any>col.getValue(d.v, i));
+        const circle = d3.select(n).selectAll('circle').data(<any>col.getValue(d.v, d.dataIndex));
         circle.enter().append('circle');
         circle
           .attr({
@@ -659,10 +649,10 @@ class UpsetCellRenderer extends DefaultCellRenderer {
           });
         circle.exit().remove();
         var catindexes = [];
-        const path = g.selectAll('path').data(<any>[col.getValue(d.v, i)]);
-        var countcategory = col.getValue(d.v, i).filter((x) => x === 1).length;
+        const path = d3.select(n).selectAll('path').data(<any>[col.getValue(d.v, d.dataIndex)]);
+        var countcategory = col.getValue(d.v, d.dataIndex).filter((x) => x === 1).length;
 
-        catindexes.push(col.getValue(d.v, i).reduce(function (b, e, i) {
+        catindexes.push(col.getValue(d.v, d.dataIndex).reduce(function (b, e, i) {
           if (e === 1) {
             b.push(i);
           }
@@ -689,7 +679,7 @@ class UpsetCellRenderer extends DefaultCellRenderer {
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Circle
-      var data = col.getValue(d.v, i);
+      var data = col.getValue(d.v, d.dataIndex);
       var catindexes = [];
       var countcategory = data.filter((x) => x === 1).length;
       const radius = (context.rowHeight(i) / 3);
@@ -729,30 +719,24 @@ class UpsetCellRenderer extends DefaultCellRenderer {
 
 }
 
-class CircleColumnCellRenderer extends DefaultCellRenderer {
+class CircleColumnCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
     const min = (<any> col.desc).domain[0];
-    const max = (<any> col.desc).domain[1];
-    var radiusscale: any = d3.scale.linear().domain([min, max]);
-
-
+    const max = (<any> col.desc).domain[1]
     return {
 
       template: `<g class="circlecolumncell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const g = d3.select(n);
 
-        radiusscale = radiusscale.range([0, (context.rowHeight(i) / 2)]);
-
-        const circle = g.selectAll('circle').data([<any>col.getValue(d.v, i)]);
+        const circle = d3.select(n).selectAll('circle').data([<any>col.getValue(d.v, d.dataIndex)]);
         circle.enter().append('circle');
         circle
           .attr({
             cy: (d: any, i) => (context.rowHeight(i) / 2),
             cx: (d: any, i) => (col.getWidth() / 2),
-            r: radiusscale(<any>col.getValue(d.v, i)),
+            r: (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex),
             class: 'circlecolumn'
           });
       }
@@ -783,7 +767,9 @@ class CircleColumnCellRenderer extends DefaultCellRenderer {
   }
 }
 
-
+/**
+ * a renderer rendering a bar for numerical columns
+ */
 export class BarCellRenderer implements ICellRendererFactory {
   /**
    * flag to always render the value

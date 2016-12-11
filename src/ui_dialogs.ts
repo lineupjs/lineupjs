@@ -171,7 +171,10 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
   var renderertype = (<any>column.desc).type;
   var valuestring: any = (<any>column.desc).renderertype;
   var renderername: any = [];
+
+
   valuestring.forEach(function (d) {
+
     if (d === 'heatmapcustom') {
       renderername.push('Heatmap');
     }

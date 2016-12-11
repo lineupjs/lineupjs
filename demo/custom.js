@@ -82,8 +82,8 @@ window.onload = function () {
     var desc1 = [
       {label: 'Country', type: 'string', column: 'stringdata'},
       {
-        label: 'HeatMap',
-        type: 'heatmapcustom',
+        label: 'MultiValue',
+        type: 'sparkline',
         column: 'multidata',
         domain: [multidata_min, multidata_max],
         colorrange: ['blue', 'red'],
@@ -129,7 +129,7 @@ window.onload = function () {
         autoRotateLabels: true
       },
       body: {
-        renderer: 'canvas',
+        renderer: 'svg',
         freezeCols: 3
       },
       header: {
