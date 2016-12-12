@@ -1205,6 +1205,7 @@ var NumberColumn = (function (_super) {
         if (typeof v === 'number') {
             return this.numberFormat(+v);
         }
+        console.log(String(v));
         return String(v);
     };
     NumberColumn.prototype.getRawValue = function (row, index) {
@@ -1602,29 +1603,15 @@ var HeatmapCellRenderer = (function () {
         };
     };
     HeatmapCellRenderer.prototype.createCanvas = function (col, context) {
-        function cell_dim(total, cells) {
-            return (total / cells);
-        }
-        var total_width = col.getWidth();
-        var bins = col.desc.datalength;
-        var defaultdomain = [0, 100];
-        var domain = col.desc.domain;
-        domain = (domain === undefined || null) ? defaultdomain : domain;
-        var min = domain[0], max = domain[1];
-        var colorrange = col.desc.colorrange;
-        var defaultcolor = ['blue', 'red'];
-        colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
-        var celldimension = cell_dim(total_width, bins);
-        var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
-        color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
-            : color.domain([min, max]).range(['white', colorrange[1]]);
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
         var padding = context.option('rowPadding', 1);
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             data.forEach(function (d, i) {
-                var x = (i === null || 0) ? 0 : (i * celldimension);
+                var x = (i * celldimension);
                 ctx.beginPath();
-                ctx.fillStyle = color(d);
+                ctx.fillStyle = multiValueColumn.getColor(d);
                 ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
             });
         };
@@ -1661,27 +1648,22 @@ var SparklineCellRenderer = (function () {
         };
     };
     SparklineCellRenderer.prototype.createCanvas = function (col, context) {
-        var min = col.desc.domain[0];
-        var max = col.desc.domain[1];
-        var bins = col.desc.datalength;
-        var x = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([0, bins - 1]).range([0, col.getWidth()]);
-        var y = y = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]);
+        var multiValueColumn = col;
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             var xpos, ypos;
             data.forEach(function (d, i) {
-                y.range([context.rowHeight(i), 0]);
                 if (i === 0) {
-                    xpos = x(i);
-                    ypos = y(d);
+                    xpos = multiValueColumn.getxScale(i);
+                    ypos = multiValueColumn.getyScale(d);
                 }
                 else {
                     ctx.strokeStyle = 'black';
                     ctx.fillStyle = 'black';
                     ctx.beginPath();
                     ctx.moveTo(xpos, ypos);
-                    xpos = x(i);
-                    ypos = y(d);
+                    xpos = multiValueColumn.getxScale(i);
+                    ypos = multiValueColumn.getyScale(d);
                     ctx.lineTo(xpos, ypos);
                     ctx.stroke();
                     ctx.fill();
@@ -1720,20 +1702,16 @@ var ThresholdCellRenderer = (function () {
         };
     };
     ThresholdCellRenderer.prototype.createCanvas = function (col, context) {
-        var bins = col.desc.datalength;
-        var threshold = col.desc.threshold || 0;
-        var celldimension = (col.getWidth() / (bins));
-        var colorrange = col.desc.colorrange;
-        var defaultcolor = ['blue', 'red'];
-        var cat1color = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
-        var cat2color = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
+        var binaryColor = multiValueColumn.getbinaryColor();
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             data.forEach(function (d, i) {
                 ctx.beginPath();
                 var xpos = (i * celldimension);
-                var ypos = (d < threshold) ? (context.rowHeight(i) / 2) : 0;
-                ctx.fillStyle = (d < threshold) ? cat1color : cat2color;
+                var ypos = (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0;
+                ctx.fillStyle = (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1];
                 ctx.fillRect(xpos, ypos, celldimension, context.rowHeight(i) / 2);
             });
         };
@@ -1787,38 +1765,15 @@ var VerticalBarCellRenderer = (function () {
         };
     };
     VerticalBarCellRenderer.prototype.createCanvas = function (col, context) {
-        var bins = col.desc.datalength;
-        var min = col.desc.domain[0];
-        var max = col.desc.domain[1];
-        var colorrange = col.desc.colorrange;
-        var defaultcolor = ['blue', 'red'];
-        var mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
-        var maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
-        var celldimension = (col.getWidth() / bins);
-        var threshold = col.desc.threshold || 0;
-        var barheight = 13;
-        var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
-        var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
-        function scaleheight(barheight, data) {
-            scale = (min < 0) ? (scale.domain([min, max]).range([0, barheight / 2])) : (scale.domain([min, max]).range([0, barheight]));
-            return (scale(data));
-        }
-        ;
-        color.domain([min, 0, max]).range([mincolor, 'white', maxcolor]);
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             data.forEach(function (d, i) {
                 var xpos = (i * celldimension);
-                var ypos;
-                if (min < 0) {
-                    ypos = (d < threshold) ? (context.rowHeight(i) / 2) : context.rowHeight(i) / 2 - scaleheight(context.rowHeight(i), d); // For positive and negative value
-                }
-                else {
-                    ypos = context.rowHeight(i) - scaleheight(context.rowHeight(i), d);
-                }
-                var height = (d < threshold) ? (barheight / 2 - scaleheight(context.rowHeight(i), d)) : scaleheight(context.rowHeight(i), d);
-                ctx.fillStyle = color(d);
-                ctx.fillRect(xpos, ypos, celldimension, height);
+                var ypos = multiValueColumn.getyposVerticalBar(d);
+                ctx.fillStyle = multiValueColumn.getColor(d);
+                ctx.fillRect(xpos, ypos, celldimension, multiValueColumn.getVerticalBarHeight(d));
             });
         };
     };
@@ -1828,20 +1783,6 @@ var BoxplotCellRenderer = (function () {
     function BoxplotCellRenderer() {
     }
     BoxplotCellRenderer.prototype.createSVG = function (col, context) {
-        function getPercentile(data, percentile) {
-            var index = (percentile / 100) * data.length;
-            var result;
-            if (Math.floor(index) === index) {
-                result = (data[(index - 1)] + data[index]) / 2;
-            }
-            else {
-                result = data[Math.floor(index)];
-            }
-            return result;
-        }
-        function numSort(a, b) {
-            return a - b;
-        }
         var padding = context.option('rowPadding', 1);
         var min = col.desc.domain[0];
         var max = col.desc.domain[1];
@@ -1850,7 +1791,6 @@ var BoxplotCellRenderer = (function () {
             template: "<g class=\"boxplotcell\"></g>",
             update: function (n, d, i) {
                 var data = col.getValue(d.v, i);
-                data.sort(numSort);
                 var mindata = Math.min.apply(Math, data);
                 var maxdata = Math.max.apply(Math, data);
                 var q1 = (__WEBPACK_IMPORTED_MODULE_2_d3__["quantile"](data, 0.25));
@@ -1887,41 +1827,19 @@ var BoxplotCellRenderer = (function () {
         };
     };
     BoxplotCellRenderer.prototype.createCanvas = function (col, context) {
-        function getPercentile(data, percentile) {
-            var index = (percentile / 100) * data.length;
-            var result;
-            if (Math.floor(index) === index) {
-                result = (data[(index - 1)] + data[index]) / 2;
-            }
-            else {
-                result = data[Math.floor(index)];
-            }
-            return result;
-        }
-        function numSort(a, b) {
-            return a - b;
-        }
+        var multiValueColumn = col;
         var padding = context.option('rowPadding', 1);
-        var min = col.desc.domain[0];
-        var max = col.desc.domain[1];
-        var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
         return function (ctx, d, i) {
             // Rectangle
-            var data = (col.getValue(d.v, d.dataIndex));
-            data.sort(numSort);
-            var mindata = Math.min.apply(Math, data);
-            var maxdata = Math.max.apply(Math, data);
-            var q1 = (__WEBPACK_IMPORTED_MODULE_2_d3__["quantile"](data, 0.25));
-            var med = (__WEBPACK_IMPORTED_MODULE_2_d3__["median"](data));
-            var q3 = (__WEBPACK_IMPORTED_MODULE_2_d3__["quantile"](data, 0.75));
+            var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
             ctx.fillStyle = '#e0e0e0';
             ctx.strokeStyle = 'black';
             ctx.beginPath();
-            ctx.rect(scale(q1), padding, (scale(q3) - scale(q1)), context.rowHeight(i));
+            ctx.rect(boxdata.q1, padding, (boxdata.q3 - boxdata.q1), context.rowHeight(i) - padding);
             ctx.fill();
             ctx.stroke();
             //Line
-            var left = scale(mindata), right = scale(maxdata), center = scale(med);
+            var left = boxdata.min, right = boxdata.max, center = boxdata.median;
             var top = context.option('rowPadding', 1);
             var bottom = Math.max(context.rowHeight(i) - top, 0);
             var middle = (bottom - top) / 2;
@@ -1929,12 +1847,12 @@ var BoxplotCellRenderer = (function () {
             ctx.fillStyle = '#e0e0e0';
             ctx.beginPath();
             ctx.moveTo(left, middle);
-            ctx.lineTo(scale(q1), middle);
+            ctx.lineTo(boxdata.q1, middle);
             ctx.moveTo(left, top);
             ctx.lineTo(left, bottom);
             ctx.moveTo(center, top);
             ctx.lineTo(center, bottom);
-            ctx.moveTo((scale(q1) + scale(q3) - scale(q1)), middle);
+            ctx.moveTo((boxdata.q3), middle);
             ctx.lineTo(right, middle);
             ctx.moveTo(right, top);
             ctx.lineTo(right, bottom);
@@ -5463,8 +5381,64 @@ var MultiValueColumn = (function (_super) {
     __extends(MultiValueColumn, _super);
     function MultiValueColumn(id, desc) {
         _super.call(this, id, desc);
+        this.colorScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
+        this.xposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
+        this.yposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
+        this.verticalBarScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
+        this.boxPlotScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         this.sortCriteria = desc.sort || 'min';
+        this.colorrange = desc.colorrange || ['blue', 'red'];
+        this.min = __WEBPACK_IMPORTED_MODULE_0_d3__["min"](desc.domain);
+        this.max = __WEBPACK_IMPORTED_MODULE_0_d3__["max"](desc.domain);
+        this.bins = desc.datalength;
+        this.threshold = desc.threshold || 0;
+        this.rowheight = 13;
+        console.log(desc.type);
+        this.defineColor();
+        this.xScale();
+        this.yScale();
+        this.verticalBarHeight();
+        this.boxPlotWidth();
     }
+    MultiValueColumn.prototype.defineColor = function () {
+        if (this.min < 0) {
+            this.colorScale
+                .domain([this.min, 0, this.max])
+                .range([this.colorrange[0], 'white', this.colorrange[1]]);
+        }
+        else {
+            this.colorScale
+                .domain([this.min, this.max])
+                .range(['white', this.colorrange[1]]);
+        }
+    };
+    MultiValueColumn.prototype.xScale = function () {
+        this.xposScale
+            .domain([0, this.bins - 1])
+            .range([0, this.getWidth()]);
+    };
+    MultiValueColumn.prototype.yScale = function () {
+        this.yposScale
+            .domain([this.min, this.max])
+            .range([this.rowheight, 0]);
+    };
+    MultiValueColumn.prototype.verticalBarHeight = function () {
+        if (this.min < 0) {
+            this.verticalBarScale
+                .domain([this.min, this.max])
+                .range([0, this.rowheight / 2]);
+        }
+        else {
+            this.verticalBarScale
+                .domain([this.min, this.max])
+                .range([0, this.rowheight]);
+        }
+    };
+    MultiValueColumn.prototype.boxPlotWidth = function () {
+        this.boxPlotScale
+            .domain([this.min, this.max])
+            .range([0, this.getWidth()]);
+    };
     MultiValueColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         this.sortCriteria = this.desc.sort;
         var a_val = this.getValue(a, aIndex);
@@ -5472,6 +5446,64 @@ var MultiValueColumn = (function (_super) {
         var sort = new CustomSortCalculation(a_val, b_val);
         var f = sort[this.sortCriteria].bind(sort);
         return f();
+    };
+    MultiValueColumn.prototype.getLabel = function (row, index) {
+        return '' + this.getValue(row, index);
+    };
+    MultiValueColumn.prototype.getRaw = function (row, index) {
+        return this.accessor(row, index, this.id, this.desc, this.findMyRanker());
+    };
+    MultiValueColumn.prototype.getValue = function (row, index) {
+        var v = this.getRaw(row, index);
+        // console.log(v)
+        return (v);
+    };
+    MultiValueColumn.prototype.getColor = function (data) {
+        return this.colorScale(data);
+    };
+    MultiValueColumn.prototype.calculateCellDimension = function () {
+        return (this.getWidth() / this.bins);
+    };
+    MultiValueColumn.prototype.getxScale = function (data) {
+        return this.xposScale(data);
+    };
+    MultiValueColumn.prototype.getyScale = function (data) {
+        return this.yposScale(data);
+    };
+    MultiValueColumn.prototype.getbinaryColor = function () {
+        return this.colorrange;
+    };
+    MultiValueColumn.prototype.getthresholdValue = function () {
+        return this.threshold;
+    };
+    MultiValueColumn.prototype.getVerticalBarHeight = function (data) {
+        if (data < this.threshold) {
+            (this.rowheight / 2 - this.verticalBarScale(data));
+        }
+        else {
+            this.verticalBarScale(data);
+        }
+        return this.verticalBarScale(data);
+    };
+    MultiValueColumn.prototype.getyposVerticalBar = function (data) {
+        if (this.min < 0) {
+            this.ypositionVerticalBar = (data < this.threshold) ? (this.rowheight / 2) : this.rowheight / 2 - this.getVerticalBarHeight(data); // For positive and negative value
+        }
+        else {
+            this.ypositionVerticalBar = this.rowheight - this.getVerticalBarHeight(data);
+        }
+        return this.ypositionVerticalBar;
+    };
+    MultiValueColumn.prototype.getboxPlotData = function (data) {
+        var minval_arr = Math.min.apply(Math, data);
+        var maxval_arr = Math.max.apply(Math, data);
+        var q1 = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.25));
+        var median = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["median"](data));
+        var q3 = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.75));
+        var min_val = this.boxPlotScale(minval_arr);
+        var max_val = this.boxPlotScale(maxval_arr);
+        var boxdata = { min: min_val, median: median, q1: q1, q3: q3, max: max_val };
+        return (boxdata);
     };
     return MultiValueColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));

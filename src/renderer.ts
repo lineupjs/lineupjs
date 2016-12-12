@@ -14,7 +14,8 @@ import {forEach, attr, clipText, ITextRenderHints} from './utils';
 import {hsl} from 'd3';
 import {IDataRow} from './provider/ADataProvider';
 import * as d3 from 'd3';
-import ValueColumn from './model/ValueColumn';
+import MultiValueColumn from './model/MultiValueColumn';
+import {multivalue} from "../../phovea_importer/src/valuetypes";
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
@@ -173,7 +174,9 @@ class HeatmapCellRenderer implements ICellRendererFactory {
     const defaultcolor = ['blue', 'red'];
     colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
     const celldimension = cell_dim(total_width, bins);
+
     var color: any = d3.scale.linear<number, string>();
+
     color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
       : color.domain([min, max]).range(['white', colorrange[1]]);
     const padding = context.option('rowPadding', 1);
@@ -182,6 +185,7 @@ class HeatmapCellRenderer implements ICellRendererFactory {
       template: `<g class="heatmapcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const rect = d3.select(n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
+
         rect.enter().append('rect');
         rect
           .attr({
@@ -232,30 +236,18 @@ class HeatmapCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    function cell_dim(total, cells) {
-      return (total / cells);
-    }
-
-    const total_width = col.getWidth();
-    const bins = (<any>col.desc).datalength;
-    const defaultdomain = [0, 100];
-    var domain = (<any> col.desc).domain;
-    domain = (domain === undefined || null) ? defaultdomain : domain;
-    const min = domain[0], max = domain[1];
-    var colorrange = (<any> col.desc).colorrange;
-    const defaultcolor = ['blue', 'red'];
-    colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
-    const celldimension = cell_dim(total_width, bins);
-    var color: any = d3.scale.linear<number, string>();
-    color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
-      : color.domain([min, max]).range(['white', colorrange[1]]);
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+    const celldimension = multiValueColumn.calculateCellDimension();
     const padding = context.option('rowPadding', 1);
+
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+
       var data = col.getValue(d.v, d.dataIndex);
       data.forEach(function (d, i) {
-        var x = (i === null || 0) ? 0 : (i * celldimension);
+
+        var x = (i * celldimension);
         ctx.beginPath();
-        ctx.fillStyle = color(d);
+        ctx.fillStyle = multiValueColumn.getColor(d);
         ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
       });
     };
@@ -265,6 +257,7 @@ class HeatmapCellRenderer implements ICellRendererFactory {
 
 
 class SparklineCellRenderer implements ICellRendererFactory {
+
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
@@ -299,28 +292,24 @@ class SparklineCellRenderer implements ICellRendererFactory {
 
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const min = (<any> col.desc).domain[0];
-    const max = (<any> col.desc).domain[1];
-    const bins = (<any> col.desc).datalength;
-    var x: any = d3.scale.linear().domain([0, bins - 1]).range([0, col.getWidth()]);
-    var y: any = y = d3.scale.linear().domain([min, max]);
+
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       var data = col.getValue(d.v, d.dataIndex);
       var xpos, ypos;
       data.forEach(function (d, i) {
 
-        y.range([context.rowHeight(i), 0]);
-
         if (i === 0) {
-          xpos = x(i);
-          ypos = y(d);
+          xpos = multiValueColumn.getxScale(i);
+          ypos = multiValueColumn.getyScale(d);
         } else {
           ctx.strokeStyle = 'black';
           ctx.fillStyle = 'black';
           ctx.beginPath();
           ctx.moveTo(xpos, ypos);
-          xpos = x(i);
-          ypos = y(d);
+          xpos = multiValueColumn.getxScale(i);
+          ypos = multiValueColumn.getyScale(d);
           ctx.lineTo(xpos, ypos);
           ctx.stroke();
           ctx.fill();
@@ -365,23 +354,17 @@ class ThresholdCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
 
-    const bins = (<any>col.desc).datalength;
-    var threshold = (<any> col.desc).threshold || 0;
-
-    const celldimension = (col.getWidth() / (bins));
-    const colorrange = (<any> col.desc).colorrange;
-    const defaultcolor = ['blue', 'red'];
-
-    const cat1color = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
-    const cat2color = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+    const celldimension = multiValueColumn.calculateCellDimension();
+    const binaryColor = multiValueColumn.getbinaryColor();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       var data = col.getValue(d.v, d.dataIndex);
       data.forEach(function (d, i) {
         ctx.beginPath();
         var xpos = (i * celldimension);
-        var ypos = (d < threshold) ? (context.rowHeight(i) / 2) : 0;
-        ctx.fillStyle = (d < threshold) ? cat1color : cat2color;
+        var ypos = (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0;
+        ctx.fillStyle = (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1];
         ctx.fillRect(xpos, ypos, celldimension, context.rowHeight(i) / 2);
       });
     };
@@ -441,42 +424,16 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
 
-
-    const bins = (<any> col.desc).datalength;
-    const min = (<any> col.desc).domain[0];
-    const max = (<any> col.desc).domain[1];
-
-    const colorrange = (<any> col.desc).colorrange;
-    const defaultcolor = ['blue', 'red'];
-
-    const mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
-    const maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
-
-    const celldimension = (col.getWidth() / bins);
-    var threshold = (<any> col.desc).threshold || 0;
-    var barheight = 13;
-    var scale = d3.scale.linear();
-    var color: any = d3.scale.linear<number,string>();
-
-    function scaleheight(barheight, data) {
-      scale = (min < 0) ? (scale.domain([min, max]).range([0, barheight / 2])) : (scale.domain([min, max]).range([0, barheight]));
-      return (scale(data));
-    };
-    color.domain([min, 0, max]).range([mincolor, 'white', maxcolor]);
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+    const celldimension = multiValueColumn.calculateCellDimension();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       var data = col.getValue(d.v, d.dataIndex);
       data.forEach(function (d, i) {
         var xpos = (i * celldimension);
-        var ypos;
-        if (min < 0) {
-          ypos = (d < threshold) ? (context.rowHeight(i) / 2) : context.rowHeight(i) / 2 - scaleheight(context.rowHeight(i), d);   // For positive and negative value
-        } else {
-          ypos = context.rowHeight(i) - scaleheight(context.rowHeight(i), d);
-        }
-        var height = (d < threshold) ? (barheight / 2 - scaleheight(context.rowHeight(i), d)) : scaleheight(context.rowHeight(i), d);
-        ctx.fillStyle = color(d);
-        ctx.fillRect(xpos, ypos, celldimension, height);
+        var ypos = multiValueColumn.getyposVerticalBar(d);
+        ctx.fillStyle = multiValueColumn.getColor(d);
+        ctx.fillRect(xpos, ypos, celldimension, multiValueColumn.getVerticalBarHeight(d));
       });
     };
   }
@@ -486,22 +443,6 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 class BoxplotCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-
-    function getPercentile(data, percentile) {
-
-      var index = (percentile / 100) * data.length;
-      var result;
-      if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-      } else {
-        result = data[Math.floor(index)];
-      }
-      return result;
-    }
-
-    function numSort(a, b) {
-      return a - b;
-    }
 
     const padding = context.option('rowPadding', 1);
     const min = (<any> col.desc).domain[0];
@@ -514,7 +455,6 @@ class BoxplotCellRenderer implements ICellRendererFactory {
       update: (n: SVGGElement, d: IDataRow, i: number) => {
 
         var data = col.getValue(d.v, i);
-        data.sort(numSort);
         var mindata = Math.min.apply(Math, data);
         var maxdata = Math.max.apply(Math, data);
 
@@ -559,47 +499,26 @@ class BoxplotCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    function getPercentile(data, percentile) {
-
-      var index = (percentile / 100) * data.length;
-      var result;
-      if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-      } else {
-        result = data[Math.floor(index)];
-      }
-      return result;
-    }
-
-    function numSort(a, b) {
-      return a - b;
-    }
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
 
     const padding = context.option('rowPadding', 1);
-    const min = (<any> col.desc).domain[0];
-    const max = (<any> col.desc).domain[1];
-    var scale = d3.scale.linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
+
+
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
 
-      var data = (col.getValue(d.v, d.dataIndex));
+      var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
 
-      data.sort(numSort);
-      var mindata = Math.min.apply(Math, data);
-      var maxdata = Math.max.apply(Math, data);
-      var q1 = (d3.quantile(data, 0.25));
-      var med = (d3.median(data));
-      var q3 = (d3.quantile(data, 0.75));
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
-      ctx.rect(scale(q1), padding, (scale(q3) - scale(q1)), context.rowHeight(i));
+      ctx.rect(boxdata.q1, padding, (boxdata.q3 - boxdata.q1), context.rowHeight(i)-padding);
       ctx.fill();
       ctx.stroke();
 
 
       //Line
-      var left = scale(mindata), right = scale(maxdata), center = scale(med);
+      var left = boxdata.min, right = boxdata.max, center = boxdata.median;
       var top = context.option('rowPadding', 1);
       var bottom = Math.max(context.rowHeight(i) - top, 0);
       var middle = (bottom - top) / 2;
@@ -607,12 +526,12 @@ class BoxplotCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = '#e0e0e0';
       ctx.beginPath();
       ctx.moveTo(left, middle);
-      ctx.lineTo(scale(q1), middle);
+      ctx.lineTo(boxdata.q1, middle);
       ctx.moveTo(left, top);
       ctx.lineTo(left, bottom);
       ctx.moveTo(center, top);
       ctx.lineTo(center, bottom);
-      ctx.moveTo((scale(q1) + scale(q3) - scale(q1)), middle);
+      ctx.moveTo(( boxdata.q3), middle);
       ctx.lineTo(right, middle);
       ctx.moveTo(right, top);
       ctx.lineTo(right, bottom);

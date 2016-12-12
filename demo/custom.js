@@ -88,7 +88,7 @@ window.onload = function () {
         domain: [multidata_min, multidata_max],
         colorrange: ['blue', 'red'],
         sort: 'min',
-        threshold:0,
+        threshold: 0,
         datalength: multidata_length,
         renderertype: ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar']
       },
@@ -109,7 +109,7 @@ window.onload = function () {
         domain: [singldata_min, singldata_max],
         renderertype: ['number', 'circle']
       }
-   ];
+    ];
 
     var p = new LineUpJS.provider.LocalDataProvider(arr1, desc1);
     var r = p.pushRanking();
@@ -129,7 +129,7 @@ window.onload = function () {
         autoRotateLabels: true
       },
       body: {
-        renderer: 'svg',
+        renderer: 'canvas',
         freezeCols: 3
       },
       header: {

@@ -334,6 +334,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (typeof v === 'number') {
       return this.numberFormat(+v);
     }
+
+    console.log(String(v))
     return String(v);
   }
 
