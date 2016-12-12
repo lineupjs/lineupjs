@@ -160,26 +160,10 @@ export class DefaultCellRenderer implements ICellRendererFactory {
 class HeatmapCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-    function cell_dim(total, cells) {
-      return (total / cells);
-    }
-
-    const total_width = col.getWidth();
-    const bins = (<any>col.desc).datalength;
-    const defaultdomain = [0, 100];
-    var domain = (<any> col.desc).domain;
-    domain = (domain === undefined || null) ? defaultdomain : domain;
-    const min = domain[0], max = domain[1];
-    var colorrange = (<any> col.desc).colorrange;
-    const defaultcolor = ['blue', 'red'];
-    colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
-    const celldimension = cell_dim(total_width, bins);
-
-    var color: any = d3.scale.linear<number, string>();
-
-    color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
-      : color.domain([min, max]).range(['white', colorrange[1]]);
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+    const celldimension = multiValueColumn.calculateCellDimension();
     const padding = context.option('rowPadding', 1);
+
     return {
 
       template: `<g class="heatmapcell"></g>`,
@@ -193,7 +177,7 @@ class HeatmapCellRenderer implements ICellRendererFactory {
             x: (d, i) => (i * celldimension),
             width: celldimension,
             height: context.rowHeight(i),
-            fill: color
+            fill: (d, i) => multiValueColumn.getColor(d)
           });
         rect.exit().remove();
       }
@@ -202,19 +186,10 @@ class HeatmapCellRenderer implements ICellRendererFactory {
 
 
   createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
-    function cell_dim(total, cells) {
-      return (total / cells);
-    }
-
-    const total_width = col.getWidth();
-    const bins = (<any>col.desc).datalength;
-    const min = (<any> col.desc).sdomain[0], max = (<any> col.desc).sdomain[1];
-    const colorrange = (<any> col.desc).colorrange;
-    const celldimension = cell_dim(total_width, bins);
-    var color: any = d3.scale.linear<number, string>();
-    color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
-      : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+    const celldimension = multiValueColumn.calculateCellDimension();
     const padding = context.option('rowPadding', 1);
+
     return {
       template: `<div class="heatmapcell" style="top:${padding}px;">
                                    </div>`,
@@ -225,7 +200,7 @@ class HeatmapCellRenderer implements ICellRendererFactory {
         div
           .style({
             'width': celldimension + 'px',
-            'background-color': color,
+            'background-color': multiValueColumn.getColor(d),
             'height': context.rowHeight(i) + 'px',
             'left': (d, i) => (i * celldimension) + 'px'
           });
@@ -260,29 +235,19 @@ class SparklineCellRenderer implements ICellRendererFactory {
 
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-
-    const min = (<any> col.desc).domain[0];
-    const max = (<any> col.desc).domain[1];
-    const bins = (<any> col.desc).datalength;
-    var x: any = d3.scale.linear().domain([0, bins - 1]).range([0, col.getWidth()]);
-    var y: any = y = d3.scale.linear().domain([min, max]);
-    var line = d3.svg.line<number>();
-
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
     return {
 
       template: `<g class="sparklinecell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const path = d3.select(n).selectAll('path').data([<any>col.getValue(d.v, d.dataIndex)]);
+        var line = d3.svg.line<number>();
         path.enter().append('path');
         path
           .attr('d', function (d, i) {
             line
-              .x((d, i) => x(i))
-              .y(function (d: any, i) {
-
-                y.range([context.rowHeight(i), 0]);
-                return y(d);
-              });
+              .x((d, i) => multiValueColumn.getxScale(i))
+              .y((d, i) => multiValueColumn.getyScale(d));
             return line(<any>d);
           });
         path.exit().remove();
@@ -323,16 +288,10 @@ class SparklineCellRenderer implements ICellRendererFactory {
 class ThresholdCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+    const celldimension = multiValueColumn.calculateCellDimension();
+    const binaryColor = multiValueColumn.getbinaryColor();
 
-    const bins = (<any>col.desc).datalength;
-    var threshold = (<any> col.desc).threshold || 0;
-
-    const celldimension = (col.getWidth() / (bins));
-    const colorrange = (<any> col.desc).colorrange;
-    const defaultcolor = ['blue', 'red'];
-
-    const cat1color = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
-    const cat2color = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
     return {
 
       template: `<g class="thresholdcell"></g>`,
@@ -341,11 +300,11 @@ class ThresholdCellRenderer implements ICellRendererFactory {
         rect.enter().append('rect');
         rect
           .attr({
-            y: (d, i) => (d < threshold) ? (context.rowHeight(i) / 2) : 0,
+            y: (d, i) => (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0,
             x: (d, i) => (i * celldimension),
             width: celldimension,
             height: (d, i) => (context.rowHeight(i)) / 2,
-            fill: (d) => (d < threshold) ? cat1color : cat2color
+            fill: (d) => (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1]
           });
         rect.exit().remove();
       }
@@ -375,28 +334,8 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
-    const bins = (<any> col.desc).datalength;
-    const min = (<any> col.desc).domain[0];
-    const max = (<any> col.desc).domain[1];
-
-    const colorrange = (<any> col.desc).colorrange;
-    const defaultcolor = ['blue', 'red'];
-
-    const mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
-    const maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
-
-    const celldimension = (col.getWidth() / bins);
-    var threshold = (<any> col.desc).threshold || 0;
-    var barheight = 13;
-    var scale = d3.scale.linear();
-    var color: any = d3.scale.linear<number,string>();
-
-
-    function scaleheight(barheight, data) {
-      scale = (min < 0) ? (scale.domain([min, max]).range([0, barheight / 2])) : (scale.domain([min, max]).range([0, barheight]));
-      return (scale(data));
-    };
-    color.domain([min, 0, max]).range([mincolor, 'white', maxcolor]);
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+    const celldimension = multiValueColumn.calculateCellDimension();
     return {
 
       template: `<g class="verticalbarcell"></g>`,
@@ -405,17 +344,11 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
         rect.enter().append('rect');
         rect
           .attr({
-            y: function (d: any, i) {
-              if (min < 0) {
-                return (d < threshold) ? (context.rowHeight(i) / 2) : context.rowHeight(i) / 2 - scaleheight(context.rowHeight(i), d);   // For positive and negative value
-              } else {
-                return context.rowHeight(i) - scaleheight(context.rowHeight(i), d);
-              }
-            },
+            y: multiValueColumn.getyposVerticalBar(d),
             x: (d, i) => (i * celldimension),
             width: celldimension,
-            height: (d: any) => (d < threshold) ? (barheight / 2 - scaleheight(context.rowHeight(i), d)) : scaleheight(context.rowHeight(i), d),
-            fill: color
+            height: (d: any) => multiValueColumn.getVerticalBarHeight(d),
+            fill: (d, i) => multiValueColumn.getColor(d)
           });
         rect.exit().remove();
       }
@@ -442,33 +375,25 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 }
 class BoxplotCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
     const padding = context.option('rowPadding', 1);
-    const min = (<any> col.desc).domain[0];
-    const max = (<any> col.desc).domain[1];
-    var scale = d3.scale.linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
 
     return {
 
       template: `<g class="boxplotcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-
-        var data = col.getValue(d.v, i);
-        var mindata = Math.min.apply(Math, data);
-        var maxdata = Math.max.apply(Math, data);
-
-        var q1 = (d3.quantile(data, 0.25));
-        var med = (d3.median(data));
-        var q3 = (d3.quantile(data, 0.75));
+        const boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
         const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
+
         rect.enter().append('rect');
         rect
           .attr('class', 'boxplotrect')
           .attr({
             y: padding,
-            x: scale(q1),
-            width: scale(q3) - scale(q1),
+            x: boxdata.q1,
+            width: boxdata.q3 - boxdata.q1,
             height: (d, i) =>context.rowHeight(i)
           });
         rect.exit().remove();
@@ -478,18 +403,15 @@ class BoxplotCellRenderer implements ICellRendererFactory {
         path
           .attr('class', 'boxplotline')
           .attr('d', function (d, i) {
-            var left = scale(mindata), right = scale(maxdata), center = scale(med);
-            var top = context.option('rowPadding', 1);
+            const left = boxdata.min, right = boxdata.max, center = boxdata.median;
+            const bottom = Math.max(context.rowHeight(i) - padding, 0);
+            const middle = (bottom - padding) / 2;
 
-            var bottom = Math.max(context.rowHeight(i) - top, 0);
-            var middle = (bottom - top) / 2;
-
-
-            return 'M' + left + ',' + middle + 'L' + scale(q1) + ',' + middle +
-              'M' + left + ',' + top + 'L' + left + ',' + bottom +
-              'M' + center + ',' + top + 'L' + center + ',' + bottom +
-              'M' + (scale(q1) + scale(q3) - scale(q1)) + ',' + middle + 'L' + (right) + ',' + middle +
-              'M' + right + ',' + top + 'L' + right + ',' + bottom;
+            return 'M' + left + ',' + middle + 'L' + boxdata.q1 + ',' + middle +
+              'M' + left + ',' + padding + 'L' + left + ',' + bottom +
+              'M' + center + ',' + padding + 'L' + center + ',' + bottom +
+              'M' + (boxdata.q3) + ',' + middle + 'L' + (right) + ',' + middle +
+              'M' + right + ',' + padding + 'L' + right + ',' + bottom;
 
           });
         path.exit().remove();
@@ -503,37 +425,32 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
     const padding = context.option('rowPadding', 1);
 
-
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
-
-      var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
-
+      const boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
-      ctx.rect(boxdata.q1, padding, (boxdata.q3 - boxdata.q1), context.rowHeight(i)-padding);
+      ctx.rect(boxdata.q1, padding, (boxdata.q3 - boxdata.q1), context.rowHeight(i) - padding);
       ctx.fill();
       ctx.stroke();
 
-
       //Line
-      var left = boxdata.min, right = boxdata.max, center = boxdata.median;
-      var top = context.option('rowPadding', 1);
-      var bottom = Math.max(context.rowHeight(i) - top, 0);
-      var middle = (bottom - top) / 2;
+      const left = boxdata.min, right = boxdata.max, center = boxdata.median;
+      const bottom = Math.max(context.rowHeight(i) - padding, 0);
+      const middle = (bottom - padding) / 2;
       ctx.strokeStyle = 'black';
       ctx.fillStyle = '#e0e0e0';
       ctx.beginPath();
       ctx.moveTo(left, middle);
       ctx.lineTo(boxdata.q1, middle);
-      ctx.moveTo(left, top);
+      ctx.moveTo(left, padding);
       ctx.lineTo(left, bottom);
-      ctx.moveTo(center, top);
+      ctx.moveTo(center, padding);
       ctx.lineTo(center, bottom);
-      ctx.moveTo(( boxdata.q3), middle);
+      ctx.moveTo(boxdata.q3, middle);
       ctx.lineTo(right, middle);
-      ctx.moveTo(right, top);
+      ctx.moveTo(right, padding);
       ctx.lineTo(right, bottom);
       ctx.stroke();
       ctx.fill();

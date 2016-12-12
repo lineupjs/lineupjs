@@ -1539,22 +1539,8 @@ var HeatmapCellRenderer = (function () {
     function HeatmapCellRenderer() {
     }
     HeatmapCellRenderer.prototype.createSVG = function (col, context) {
-        function cell_dim(total, cells) {
-            return (total / cells);
-        }
-        var total_width = col.getWidth();
-        var bins = col.desc.datalength;
-        var defaultdomain = [0, 100];
-        var domain = col.desc.domain;
-        domain = (domain === undefined || null) ? defaultdomain : domain;
-        var min = domain[0], max = domain[1];
-        var colorrange = col.desc.colorrange;
-        var defaultcolor = ['blue', 'red'];
-        colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
-        var celldimension = cell_dim(total_width, bins);
-        var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
-        color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
-            : color.domain([min, max]).range(['white', colorrange[1]]);
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
         var padding = context.option('rowPadding', 1);
         return {
             template: "<g class=\"heatmapcell\"></g>",
@@ -1567,24 +1553,15 @@ var HeatmapCellRenderer = (function () {
                     x: function (d, i) { return (i * celldimension); },
                     width: celldimension,
                     height: context.rowHeight(i),
-                    fill: color
+                    fill: function (d, i) { return multiValueColumn.getColor(d); }
                 });
                 rect.exit().remove();
             }
         };
     };
     HeatmapCellRenderer.prototype.createHTML = function (col, context) {
-        function cell_dim(total, cells) {
-            return (total / cells);
-        }
-        var total_width = col.getWidth();
-        var bins = col.desc.datalength;
-        var min = col.desc.sdomain[0], max = col.desc.sdomain[1];
-        var colorrange = col.desc.colorrange;
-        var celldimension = cell_dim(total_width, bins);
-        var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
-        color = (min < 0) ? color.domain([min, 0, max]).range(colorrange)
-            : color.domain([min, max]).range([colorrange[1], colorrange[2]]);
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
         var padding = context.option('rowPadding', 1);
         return {
             template: "<div class=\"heatmapcell\" style=\"top:" + padding + "px;\">\n                                   </div>",
@@ -1595,7 +1572,7 @@ var HeatmapCellRenderer = (function () {
                 div
                     .style({
                     'width': celldimension + 'px',
-                    'background-color': color,
+                    'background-color': multiValueColumn.getColor(d),
                     'height': context.rowHeight(i) + 'px',
                     'left': function (d, i) { return (i * celldimension) + 'px'; }
                 });
@@ -1622,25 +1599,18 @@ var SparklineCellRenderer = (function () {
     function SparklineCellRenderer() {
     }
     SparklineCellRenderer.prototype.createSVG = function (col, context) {
-        var min = col.desc.domain[0];
-        var max = col.desc.domain[1];
-        var bins = col.desc.datalength;
-        var x = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([0, bins - 1]).range([0, col.getWidth()]);
-        var y = y = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]);
-        var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line();
+        var multiValueColumn = col;
         return {
             template: "<g class=\"sparklinecell\"></g>",
             update: function (n, d, i) {
                 var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
+                var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line();
                 path.enter().append('path');
                 path
                     .attr('d', function (d, i) {
                     line
-                        .x(function (d, i) { return x(i); })
-                        .y(function (d, i) {
-                        y.range([context.rowHeight(i), 0]);
-                        return y(d);
-                    });
+                        .x(function (d, i) { return multiValueColumn.getxScale(i); })
+                        .y(function (d, i) { return multiValueColumn.getyScale(d); });
                     return line(d);
                 });
                 path.exit().remove();
@@ -1677,13 +1647,9 @@ var ThresholdCellRenderer = (function () {
     function ThresholdCellRenderer() {
     }
     ThresholdCellRenderer.prototype.createSVG = function (col, context) {
-        var bins = col.desc.datalength;
-        var threshold = col.desc.threshold || 0;
-        var celldimension = (col.getWidth() / (bins));
-        var colorrange = col.desc.colorrange;
-        var defaultcolor = ['blue', 'red'];
-        var cat1color = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
-        var cat2color = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
+        var binaryColor = multiValueColumn.getbinaryColor();
         return {
             template: "<g class=\"thresholdcell\"></g>",
             update: function (n, d, i) {
@@ -1691,11 +1657,11 @@ var ThresholdCellRenderer = (function () {
                 rect.enter().append('rect');
                 rect
                     .attr({
-                    y: function (d, i) { return (d < threshold) ? (context.rowHeight(i) / 2) : 0; },
+                    y: function (d, i) { return (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0; },
                     x: function (d, i) { return (i * celldimension); },
                     width: celldimension,
                     height: function (d, i) { return (context.rowHeight(i)) / 2; },
-                    fill: function (d) { return (d < threshold) ? cat1color : cat2color; }
+                    fill: function (d) { return (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1]; }
                 });
                 rect.exit().remove();
             }
@@ -1722,24 +1688,8 @@ var VerticalBarCellRenderer = (function () {
     function VerticalBarCellRenderer() {
     }
     VerticalBarCellRenderer.prototype.createSVG = function (col, context) {
-        var bins = col.desc.datalength;
-        var min = col.desc.domain[0];
-        var max = col.desc.domain[1];
-        var colorrange = col.desc.colorrange;
-        var defaultcolor = ['blue', 'red'];
-        var mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
-        var maxcolor = (colorrange === undefined || null) ? defaultcolor[1] : colorrange[1];
-        var celldimension = (col.getWidth() / bins);
-        var threshold = col.desc.threshold || 0;
-        var barheight = 13;
-        var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
-        var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
-        function scaleheight(barheight, data) {
-            scale = (min < 0) ? (scale.domain([min, max]).range([0, barheight / 2])) : (scale.domain([min, max]).range([0, barheight]));
-            return (scale(data));
-        }
-        ;
-        color.domain([min, 0, max]).range([mincolor, 'white', maxcolor]);
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
         return {
             template: "<g class=\"verticalbarcell\"></g>",
             update: function (n, d, i) {
@@ -1747,18 +1697,11 @@ var VerticalBarCellRenderer = (function () {
                 rect.enter().append('rect');
                 rect
                     .attr({
-                    y: function (d, i) {
-                        if (min < 0) {
-                            return (d < threshold) ? (context.rowHeight(i) / 2) : context.rowHeight(i) / 2 - scaleheight(context.rowHeight(i), d); // For positive and negative value
-                        }
-                        else {
-                            return context.rowHeight(i) - scaleheight(context.rowHeight(i), d);
-                        }
-                    },
+                    y: multiValueColumn.getyposVerticalBar(d),
                     x: function (d, i) { return (i * celldimension); },
                     width: celldimension,
-                    height: function (d) { return (d < threshold) ? (barheight / 2 - scaleheight(context.rowHeight(i), d)) : scaleheight(context.rowHeight(i), d); },
-                    fill: color
+                    height: function (d) { return multiValueColumn.getVerticalBarHeight(d); },
+                    fill: function (d, i) { return multiValueColumn.getColor(d); }
                 });
                 rect.exit().remove();
             }
@@ -1783,27 +1726,20 @@ var BoxplotCellRenderer = (function () {
     function BoxplotCellRenderer() {
     }
     BoxplotCellRenderer.prototype.createSVG = function (col, context) {
+        var multiValueColumn = col;
         var padding = context.option('rowPadding', 1);
-        var min = col.desc.domain[0];
-        var max = col.desc.domain[1];
-        var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
         return {
             template: "<g class=\"boxplotcell\"></g>",
             update: function (n, d, i) {
-                var data = col.getValue(d.v, i);
-                var mindata = Math.min.apply(Math, data);
-                var maxdata = Math.max.apply(Math, data);
-                var q1 = (__WEBPACK_IMPORTED_MODULE_2_d3__["quantile"](data, 0.25));
-                var med = (__WEBPACK_IMPORTED_MODULE_2_d3__["median"](data));
-                var q3 = (__WEBPACK_IMPORTED_MODULE_2_d3__["quantile"](data, 0.75));
+                var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
                 var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
                 rect.enter().append('rect');
                 rect
                     .attr('class', 'boxplotrect')
                     .attr({
                     y: padding,
-                    x: scale(q1),
-                    width: scale(q3) - scale(q1),
+                    x: boxdata.q1,
+                    width: boxdata.q3 - boxdata.q1,
                     height: function (d, i) { return context.rowHeight(i); }
                 });
                 rect.exit().remove();
@@ -1812,15 +1748,14 @@ var BoxplotCellRenderer = (function () {
                 path
                     .attr('class', 'boxplotline')
                     .attr('d', function (d, i) {
-                    var left = scale(mindata), right = scale(maxdata), center = scale(med);
-                    var top = context.option('rowPadding', 1);
-                    var bottom = Math.max(context.rowHeight(i) - top, 0);
-                    var middle = (bottom - top) / 2;
-                    return 'M' + left + ',' + middle + 'L' + scale(q1) + ',' + middle +
-                        'M' + left + ',' + top + 'L' + left + ',' + bottom +
-                        'M' + center + ',' + top + 'L' + center + ',' + bottom +
-                        'M' + (scale(q1) + scale(q3) - scale(q1)) + ',' + middle + 'L' + (right) + ',' + middle +
-                        'M' + right + ',' + top + 'L' + right + ',' + bottom;
+                    var left = boxdata.min, right = boxdata.max, center = boxdata.median;
+                    var bottom = Math.max(context.rowHeight(i) - padding, 0);
+                    var middle = (bottom - padding) / 2;
+                    return 'M' + left + ',' + middle + 'L' + boxdata.q1 + ',' + middle +
+                        'M' + left + ',' + padding + 'L' + left + ',' + bottom +
+                        'M' + center + ',' + padding + 'L' + center + ',' + bottom +
+                        'M' + (boxdata.q3) + ',' + middle + 'L' + (right) + ',' + middle +
+                        'M' + right + ',' + padding + 'L' + right + ',' + bottom;
                 });
                 path.exit().remove();
             }
@@ -1840,21 +1775,20 @@ var BoxplotCellRenderer = (function () {
             ctx.stroke();
             //Line
             var left = boxdata.min, right = boxdata.max, center = boxdata.median;
-            var top = context.option('rowPadding', 1);
-            var bottom = Math.max(context.rowHeight(i) - top, 0);
-            var middle = (bottom - top) / 2;
+            var bottom = Math.max(context.rowHeight(i) - padding, 0);
+            var middle = (bottom - padding) / 2;
             ctx.strokeStyle = 'black';
             ctx.fillStyle = '#e0e0e0';
             ctx.beginPath();
             ctx.moveTo(left, middle);
             ctx.lineTo(boxdata.q1, middle);
-            ctx.moveTo(left, top);
+            ctx.moveTo(left, padding);
             ctx.lineTo(left, bottom);
-            ctx.moveTo(center, top);
+            ctx.moveTo(center, padding);
             ctx.lineTo(center, bottom);
-            ctx.moveTo((boxdata.q3), middle);
+            ctx.moveTo(boxdata.q3, middle);
             ctx.lineTo(right, middle);
-            ctx.moveTo(right, top);
+            ctx.moveTo(right, padding);
             ctx.lineTo(right, bottom);
             ctx.stroke();
             ctx.fill();
