@@ -1800,8 +1800,8 @@ var UpsetCellRenderer = (function () {
     function UpsetCellRenderer() {
     }
     UpsetCellRenderer.prototype.createSVG = function (col, context) {
-        var bins = col.desc.datalength;
-        var windowsize = col.getWidth() / bins;
+        var upsetColumn = col;
+        var celldimension = upsetColumn.cellDimension();
         return {
             template: "<g class=\"upsetcell\"></g>",
             update: function (n, d, i) {
@@ -1810,26 +1810,20 @@ var UpsetCellRenderer = (function () {
                 circle
                     .attr({
                     cy: function (d, i) { return (context.rowHeight(i) / 2); },
-                    cx: function (d, i) { return (i * windowsize) + (windowsize / 2); },
-                    r: (windowsize / 4),
+                    cx: function (d, i) { return (i * celldimension) + (celldimension / 2); },
+                    r: (celldimension / 4),
                     class: 'upsetcircle',
                     opacity: function (d) { return (d === 1) ? 1 : 0.1; }
                 });
                 circle.exit().remove();
-                var catindexes = [];
                 var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
                 var countcategory = col.getValue(d.v, d.dataIndex).filter(function (x) { return x === 1; }).length;
-                catindexes.push(col.getValue(d.v, d.dataIndex).reduce(function (b, e, i) {
-                    if (e === 1) {
-                        b.push(i);
-                    }
-                    return b;
-                }, []));
                 if (countcategory > 1) {
                     path.enter().append('path');
                     path
                         .attr('d', function (d, i) {
-                        return 'M' + ((__WEBPACK_IMPORTED_MODULE_2_d3__["min"](catindexes[i]) * windowsize) + (windowsize / 2)) + ',' + (context.rowHeight(i) / 2) + 'L' + ((__WEBPACK_IMPORTED_MODULE_2_d3__["max"](catindexes[i]) * windowsize) + (windowsize / 2)) + ',' + (context.rowHeight(i) / 2);
+                        var pathcordinate = upsetColumn.calculatePath(d);
+                        return 'M' + (pathcordinate.left) + ',' + (context.rowHeight(i) / 2) + 'L' + (pathcordinate.right) + ',' + (context.rowHeight(i) / 2);
                     })
                         .attr('class', 'upsetpath');
                 }
@@ -1837,32 +1831,27 @@ var UpsetCellRenderer = (function () {
         };
     };
     UpsetCellRenderer.prototype.createCanvas = function (col, context) {
-        var bins = col.desc.datalength;
-        var windowsize = col.getWidth() / bins;
+        var upsetColumn = col;
+        var celldimension = upsetColumn.cellDimension();
         return function (ctx, d, i) {
             // Circle
             var data = col.getValue(d.v, d.dataIndex);
             var catindexes = [];
             var countcategory = data.filter(function (x) { return x === 1; }).length;
             var radius = (context.rowHeight(i) / 3);
-            catindexes.push(data.reduce(function (b, e, i) {
-                if (e === 1) {
-                    b.push(i);
-                }
-                return b;
-            }, []));
+            var pathcordinate = upsetColumn.calculatePath(data);
             if (countcategory > 1) {
                 ctx.fillStyle = 'black';
                 ctx.strokeStyle = 'black';
                 ctx.beginPath();
-                ctx.moveTo(((__WEBPACK_IMPORTED_MODULE_2_d3__["min"](catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
-                ctx.lineTo(((__WEBPACK_IMPORTED_MODULE_2_d3__["max"](catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
+                ctx.moveTo((pathcordinate.left), (context.rowHeight(i) / 2));
+                ctx.lineTo((pathcordinate.right), (context.rowHeight(i) / 2));
                 ctx.fill();
                 ctx.stroke();
             }
             data.forEach(function (d, i) {
                 var posy = (context.rowHeight(i) / 2);
-                var posx = (i * windowsize) + (windowsize / 2);
+                var posx = (i * celldimension) + (celldimension / 2);
                 ctx.fillStyle = 'black';
                 ctx.strokeStyle = 'black';
                 ctx.beginPath();
@@ -1879,8 +1868,6 @@ var CircleColumnCellRenderer = (function () {
     function CircleColumnCellRenderer() {
     }
     CircleColumnCellRenderer.prototype.createSVG = function (col, context) {
-        var min = col.desc.domain[0];
-        var max = col.desc.domain[1];
         return {
             template: "<g class=\"circlecolumncell\"></g>",
             update: function (n, d, i) {
@@ -1897,15 +1884,9 @@ var CircleColumnCellRenderer = (function () {
         };
     };
     CircleColumnCellRenderer.prototype.createCanvas = function (col, context) {
-        //console.log(col)
-        var min = col.desc.domain[0];
-        var max = col.desc.domain[1];
         return function (ctx, d, i) {
             var posy = (context.rowHeight(i) / 2);
             var posx = (col.getWidth() / 2);
-            var radiusscale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, 1]);
-            // console.log((<ValueColumn<number>>col).getRaw(d.v, i),d)
-            // console.log(<any>col.getValue(d.v, i), radiusscale((<any>col.getValue(d.v, i))), radiusscale(min), radiusscale(max))
             ctx.fillStyle = 'black';
             ctx.strokeStyle = 'black';
             ctx.beginPath();
@@ -8382,29 +8363,6 @@ var CustomSortCalculation = (function () {
         this.b_val = b_val;
         this.a_val = a_val;
     }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        this.a_val.sort(numberCompare);
-        this.b_val.sort(numberCompare);
-        return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-    };
     CustomSortCalculation.prototype.countcategory = function () {
         var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
         var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
@@ -8417,6 +8375,7 @@ var UpsetColumn = (function (_super) {
     function UpsetColumn(id, desc) {
         _super.call(this, id, desc);
         this.sortCriteria = desc.sort || 'min';
+        this.datalength = desc.datalength;
     }
     UpsetColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         this.sortCriteria = this.desc.sort;
@@ -8425,6 +8384,22 @@ var UpsetColumn = (function (_super) {
         var sort = new CustomSortCalculation(a_val, b_val);
         var f = sort[this.sortCriteria].bind(sort);
         return f();
+    };
+    UpsetColumn.prototype.cellDimension = function () {
+        return (this.getWidth() / this.datalength);
+    };
+    UpsetColumn.prototype.calculatePath = function (data) {
+        var catindexes = [];
+        catindexes.push(data.reduce(function (b, e, i) {
+            if (e === 1) {
+                b.push(i);
+            }
+            return b;
+        }, []));
+        var left_x = ((__WEBPACK_IMPORTED_MODULE_0_d3__["min"](catindexes[0]) * this.cellDimension()) + (this.cellDimension() / 2));
+        var right_x = ((__WEBPACK_IMPORTED_MODULE_0_d3__["max"](catindexes[0]) * this.cellDimension()) + (this.cellDimension() / 2));
+        var pathdata = { left: left_x, right: right_x };
+        return pathdata;
     };
     return UpsetColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));

@@ -16,6 +16,7 @@ import {IDataRow} from './provider/ADataProvider';
 import * as d3 from 'd3';
 import MultiValueColumn from './model/MultiValueColumn';
 import {multivalue} from "../../phovea_importer/src/valuetypes";
+import UpsetColumn from "./model/UpsetColumn";
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
@@ -464,11 +465,8 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 class UpsetCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-
-
-    const bins = (<any> col.desc).datalength;
-    const windowsize = col.getWidth() / bins;
-
+    const upsetColumn: UpsetColumn = (<UpsetColumn>col);
+    const celldimension = upsetColumn.cellDimension();
 
     return {
       template: `<g class="upsetcell"></g>`,
@@ -478,29 +476,22 @@ class UpsetCellRenderer implements ICellRendererFactory {
         circle
           .attr({
             cy: (d: any, i) => (context.rowHeight(i) / 2),
-            cx: (d: any, i) => (i * windowsize) + (windowsize / 2),
-            r: (windowsize / 4),
+            cx: (d: any, i) => (i * celldimension) + (celldimension / 2),
+            r: (celldimension / 4),
             class: 'upsetcircle',
             opacity: (d) =>(d === 1) ? 1 : 0.1
           });
         circle.exit().remove();
-        var catindexes = [];
         const path = d3.select(n).selectAll('path').data(<any>[col.getValue(d.v, d.dataIndex)]);
-        var countcategory = col.getValue(d.v, d.dataIndex).filter((x) => x === 1).length;
-
-        catindexes.push(col.getValue(d.v, d.dataIndex).reduce(function (b, e, i) {
-          if (e === 1) {
-            b.push(i);
-          }
-          return b;
-        }, []));
-
+        const countcategory = col.getValue(d.v, d.dataIndex).filter((x) => x === 1).length;
         if (countcategory > 1) {
           path.enter().append('path');
           path
             .attr('d', function (d, i) {
 
-              return 'M' + ((d3.min(catindexes[i]) * windowsize) + (windowsize / 2)) + ',' + (context.rowHeight(i) / 2) + 'L' + ((d3.max(catindexes[i]) * windowsize) + (windowsize / 2)) + ',' + (context.rowHeight(i) / 2);
+              const pathcordinate = upsetColumn.calculatePath(d);
+
+              return 'M' + (pathcordinate.left) + ',' + (context.rowHeight(i) / 2) + 'L' + (pathcordinate.right) + ',' + (context.rowHeight(i) / 2);
 
             })
             .attr('class', 'upsetpath');
@@ -510,8 +501,9 @@ class UpsetCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const bins = (<any> col.desc).datalength;
-    const windowsize = col.getWidth() / bins;
+    const upsetColumn: UpsetColumn = (<UpsetColumn>col);
+    const celldimension = upsetColumn.cellDimension();
+
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Circle
@@ -519,26 +511,21 @@ class UpsetCellRenderer implements ICellRendererFactory {
       var catindexes = [];
       var countcategory = data.filter((x) => x === 1).length;
       const radius = (context.rowHeight(i) / 3);
-      catindexes.push(data.reduce(function (b, e, i) {
-        if (e === 1) {
-          b.push(i);
-        }
-        return b;
-      }, []));
+      const pathcordinate = upsetColumn.calculatePath(data);
 
       if (countcategory > 1) {
         ctx.fillStyle = 'black';
         ctx.strokeStyle = 'black';
         ctx.beginPath();
-        ctx.moveTo(((d3.min(catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
-        ctx.lineTo(((d3.max(catindexes[0]) * windowsize) + (windowsize / 2)), (context.rowHeight(i) / 2));
+        ctx.moveTo((pathcordinate.left), (context.rowHeight(i) / 2));
+        ctx.lineTo((pathcordinate.right), (context.rowHeight(i) / 2));
         ctx.fill();
         ctx.stroke();
       }
 
       data.forEach(function (d, i) {
         var posy = (context.rowHeight(i) / 2);
-        var posx = (i * windowsize) + (windowsize / 2);
+        var posx = (i * celldimension) + (celldimension / 2);
         ctx.fillStyle = 'black';
         ctx.strokeStyle = 'black';
         ctx.beginPath();
@@ -552,15 +539,12 @@ class UpsetCellRenderer implements ICellRendererFactory {
     };
   }
 
-
 }
 
 class CircleColumnCellRenderer implements ICellRendererFactory {
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
-    const min = (<any> col.desc).domain[0];
-    const max = (<any> col.desc).domain[1]
     return {
 
       template: `<g class="circlecolumncell"></g>`,
@@ -582,17 +566,12 @@ class CircleColumnCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
 
-//console.log(col)
-    const min = (<any> col.desc).domain[0];
-    const max = (<any> col.desc).domain[1];
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
 
       var posy = (context.rowHeight(i) / 2);
       var posx = (col.getWidth() / 2);
-      var radiusscale: any = d3.scale.linear().domain([min, max]).range([0, 1]);
-      // console.log((<ValueColumn<number>>col).getRaw(d.v, i),d)
-      // console.log(<any>col.getValue(d.v, i), radiusscale((<any>col.getValue(d.v, i))), radiusscale(min), radiusscale(max))
+
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'black';
       ctx.beginPath();

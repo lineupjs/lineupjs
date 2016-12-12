@@ -36,46 +36,6 @@ export class CustomSortCalculation {
     this.a_val = a_val;
   }
 
-
-  sum() {
-    return (d3.sum(this.a_val) - d3.sum(this.b_val));
-  }
-
-  min() {
-    return (d3.min(this.a_val) - d3.min(this.b_val));
-
-  }
-
-
-  max() {
-    return (d3.max(this.a_val) - d3.max(this.b_val));
-  }
-
-  mean() {
-
-    return (d3.mean(this.a_val) - d3.mean(this.b_val));
-  }
-
-  median() {
-    this.a_val.sort(numberCompare);
-    this.b_val.sort(numberCompare);
-    return (getPercentile(this.a_val, 50)) - (getPercentile(this.b_val, 50));
-
-  }
-
-
-  q1() {
-
-    return (getPercentile(this.a_val, 25)) - (getPercentile(this.b_val, 25));
-
-  }
-
-  q3() {
-
-    return (getPercentile(this.a_val, 75)) - (getPercentile(this.b_val, 75));
-
-  }
-
   countcategory() {
 
     const a_cat = this.a_val.filter((x)=> x === 1).length;
@@ -88,20 +48,51 @@ export class CustomSortCalculation {
 
 }
 
-export default class UpsetColumn  extends ValueColumn<number[] > {
- private sortCriteria;
+export default class UpsetColumn extends ValueColumn<number[] > {
+  private sortCriteria;
+  private datalength;
+
   constructor(id: string, desc: any) {
     super(id, desc);
-     this.sortCriteria = (<any>desc).sort || 'min';
+    this.sortCriteria = (<any>desc).sort || 'min';
+    this.datalength = (<any>desc.datalength);
+
   }
 
-   compare(a: any, b: any, aIndex: number, bIndex: number) {
-     this.sortCriteria = (<any>this.desc).sort;
-     const a_val =this.getValue(a, aIndex);
-     const b_val = this.getValue(b, bIndex);
-      var sort: any = new CustomSortCalculation(a_val, b_val);
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
+    this.sortCriteria = (<any>this.desc).sort;
+    const a_val = this.getValue(a, aIndex);
+    const b_val = this.getValue(b, bIndex);
+    var sort: any = new CustomSortCalculation(a_val, b_val);
     const f = sort[this.sortCriteria].bind(sort);
     return f();
   }
+
+
+  cellDimension() {
+
+    return (this.getWidth() / this.datalength);
+  }
+
+  calculatePath(data) {
+
+    var catindexes = [];
+    catindexes.push(data.reduce(function (b, e, i) {
+      if (e === 1) {
+        b.push(i);
+      }
+      return b;
+    }, []));
+
+    const left_x = ((d3.min(catindexes[0]) * this.cellDimension()) + (this.cellDimension() / 2));
+    const right_x = ((d3.max(catindexes[0]) * this.cellDimension()) + (this.cellDimension() / 2));
+
+    const pathdata = {left: left_x, right: right_x};
+
+    return pathdata;
+
+
+  }
+
 
 }

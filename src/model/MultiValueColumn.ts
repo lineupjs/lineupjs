@@ -124,15 +124,12 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   }
 
-  private boxPlotWidth(){
-     this.boxPlotScale
-       .domain([this.min, this.max])
-       .range([0, this.getWidth()])
+  private boxPlotWidth() {
+    this.boxPlotScale
+      .domain([this.min, this.max])
+      .range([0, this.getWidth()])
 
-      }
-
-
-
+  }
 
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
@@ -212,22 +209,19 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     return this.ypositionVerticalBar;
   }
 
-    getboxPlotData(data){
+  getboxPlotData(data) {
 
-      const minval_arr = Math.min.apply(Math, data);
-      const maxval_arr = Math.max.apply(Math, data);
-      const q1 = this.boxPlotScale(d3.quantile(data, 0.25));
-      const median = this.boxPlotScale(d3.median(data));
-      const q3 = this.boxPlotScale(d3.quantile(data, 0.75));
-      const min_val = this.boxPlotScale(minval_arr);
-      const max_val = this.boxPlotScale(maxval_arr);
-      const boxdata = {min:min_val,median:median,q1:q1,q3:q3,max:max_val};
-      return (boxdata);
+    const minval_arr = Math.min.apply(Math, data);
+    const maxval_arr = Math.max.apply(Math, data);
+    const q1 = this.boxPlotScale(d3.quantile(data, 0.25));
+    const median = this.boxPlotScale(d3.median(data));
+    const q3 = this.boxPlotScale(d3.quantile(data, 0.75));
+    const min_val = this.boxPlotScale(minval_arr);
+    const max_val = this.boxPlotScale(maxval_arr);
+    const boxdata = {min: min_val, median: median, q1: q1, q3: q3, max: max_val};
+    return (boxdata);
 
-}
-
-
-
+  }
 
 
 }
