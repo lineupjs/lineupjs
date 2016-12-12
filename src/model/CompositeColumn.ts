@@ -37,11 +37,10 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
-    var self = null;
+    let w = 0;
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      var w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
-      r.push(self = {col: this, offset: offset, width: w});
+      w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
       if (levelsToGo === 0) {
         return w;
       }
@@ -56,14 +55,14 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
   dump(toDescRef: (desc: any) => any) {
-    var r = super.dump(toDescRef);
+    let r = super.dump(toDescRef);
     r.children = this._children.map((d) => d.dump(toDescRef));
     return r;
   }
 
   restore(dump: any, factory: (dump: any) => Column) {
     dump.children.map((child) => {
-      var c = factory(child);
+      const c = factory(child);
       if (c) {
         this.push(c);
       }
@@ -75,7 +74,6 @@ export default class CompositeColumn extends Column implements IColumnParent {
    * inserts a column at a the given position
    * @param col
    * @param index
-   * @param weight
    * @returns {any}
    */
   insert(col: Column, index: number) {
@@ -104,7 +102,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
   insertAfter(col: Column, ref: Column) {
-    var i = this.indexOf(ref);
+    const i = this.indexOf(ref);
     if (i < 0) {
       return null;
     }
@@ -112,7 +110,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
   remove(child: Column) {
-    var i = this._children.indexOf(child);
+    const i = this._children.indexOf(child);
     if (i < 0) {
       return false;
     }
@@ -137,5 +135,14 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   filter(row: any, index: number) {
     return this._children.every((d) => d.filter(row, index));
+  }
+
+  /**
+   * describe the column if it is a sorting criteria
+   * @param toId helper to convert a description to an id
+   * @return {string} json compatible
+   */
+  toSortingDesc(toId: (desc: any) => string): any {
+    return this._children.map((c) => c.toSortingDesc(toId));
   }
 }

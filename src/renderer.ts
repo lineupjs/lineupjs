@@ -109,8 +109,8 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     return {
       template: `<text class="${this.textClass}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>`,
-      update: (n: SVGTextElement, d: IDataRow, i: number) => {
-        var alignmentShift = 2;
+      update: (n: SVGTextElement, d: IDataRow) => {
+        let alignmentShift = 2;
         if (this.align === 'right') {
           alignmentShift = col.getWidth() - 5;
         } else if (this.align === 'center') {
@@ -127,7 +127,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
     return {
       template: `<div class="${this.textClass} ${this.align}"></div>`,
-      update: (n: HTMLDivElement, d: IDataRow, i: number) => {
+      update: (n: HTMLDivElement, d: IDataRow) => {
         attr(n, {}, {
           width: `${col.getWidth()}px`
         });
@@ -137,11 +137,11 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
       const bak = ctx.textAlign;
       ctx.textAlign = this.align;
       const w = col.getWidth();
-      var shift = 0;
+      let shift = 0;
       if (this.align === 'center') {
         shift = w / 2;
       } else if (this.align === 'right') {
@@ -167,7 +167,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     this.renderValue = renderValue;
   }
 
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<g class="bar">
@@ -192,7 +192,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML(col: INumberColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const padding = context.option('rowPadding', 1);
     return {
       template: `<div class="bar" style="top:${padding}px; background-color: ${col.color}">
@@ -213,7 +213,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = this.colorOf(d.v, i, col);
@@ -228,12 +228,12 @@ export class BarCellRenderer implements ICellRendererFactory {
 }
 
 function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
-  var v = col.getNumber(d, index);
+  let v = col.getNumber(d, index);
   if (isNaN(v)) {
     v = 0;
   }
   //hsl space encoding, encode in lightness
-  var color = hsl(col.color || Column.DEFAULT_COLOR);
+  let color = hsl(col.color || Column.DEFAULT_COLOR);
   color.l = v;
   return color.toString();
 }
@@ -290,9 +290,9 @@ const action = {
   createSVG: function (col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     const actions = context.option('actions', []);
     return {
-      template: `<text class="actions hoverOnly fa">${actions.map((a) =>`<tspan title="${a.name}">${a.icon}></tspan>`)}</text>`,
-      update: (n: SVGTextElement, d: IDataRow, i: number) => {
-        forEach(n, 'tspan', (ni: SVGTSpanElement, i) => {
+      template: `<text class="actions hoverOnly fa">${actions.map((a) =>`<tspan>${a.icon}></tspan>`)}</text>`,
+      update: (n: SVGTextElement, d: IDataRow) => {
+        forEach(n, 'tspan', (ni: SVGTSpanElement, i: number) => {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -306,8 +306,8 @@ const action = {
     const actions = context.option('actions', []);
     return {
       template: `<div class="actions hoverOnly">${actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}></span>`)}</div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
-        forEach(n, 'span', (ni: HTMLSpanElement, i) => {
+      update: (n: HTMLElement, d: IDataRow) => {
+        forEach(n, 'span', (ni: HTMLSpanElement, i: number) => {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -317,7 +317,7 @@ const action = {
       }
     };
   },
-  createCanvas: function (col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas: function (col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const actions = context.option('actions', []);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const hovered = context.hovered(d.dataIndex);
@@ -342,7 +342,7 @@ const selection = {
   createSVG: function (col: SelectionColumn): ISVGCellRenderer {
     return {
       template: `<text class="selection fa"><tspan class="selectionOnly">\uf046</tspan><tspan class="notSelectionOnly">\uf096</tspan></text>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
+      update: (n: SVGGElement, d: IDataRow) => {
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
@@ -354,7 +354,7 @@ const selection = {
   createHTML: function (col: SelectionColumn): IHTMLCellRenderer {
     return {
       template: `<div class="selection fa"></div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
@@ -364,7 +364,7 @@ const selection = {
     };
   },
   createCanvas: function (col: SelectionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
       const bak = ctx.font;
       ctx.font = '10pt FontAwesome';
       clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, col.getWidth(), context.textHints);
@@ -378,13 +378,13 @@ const annotate = {
     return {
       template: `<g class="annotations">
         <text class="notHoverOnly text" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>
-        <foreignObject class="hoverOnly" x="-2", y="-2">
+        <foreignObject class="hoverOnly" x="-2" y="-2">
           <input type="text">
         </foreignObject>
        </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const input: HTMLInputElement = <HTMLInputElement>n.querySelector('foreignObject *');
-        input.onchange = function (event) {
+        input.onchange = function () {
           col.setValue(d.v, d.dataIndex, this.value);
         };
         input.onclick = function (event) {
@@ -406,9 +406,9 @@ const annotate = {
         <input type="text" class="hoverOnly">
         <span class="text notHoverOnly"></span>
        </div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         const input: HTMLInputElement = <HTMLInputElement>n.querySelector('input');
-        input.onchange = function (event) {
+        input.onchange = function () {
           col.setValue(d.v, d.dataIndex, this.value);
         };
         input.onclick = function (event) {
@@ -428,7 +428,7 @@ const annotate = {
         overlay.style.width = col.getWidth() + 'px';
         overlay.innerHTML = `<input type="text" value="${col.getValue(d.v, d.dataIndex)}" style="width:${col.getWidth()}px">`;
         const input = <HTMLInputElement>overlay.childNodes[0];
-        input.onchange = function (event) {
+        input.onchange = function () {
           col.setValue(d.v, d.dataIndex, this.value);
         };
         input.onclick = function (event) {
@@ -442,7 +442,7 @@ const annotate = {
 };
 
 function showOverlay(id: string, dx: number, dy: number) {
-  var overlay = <HTMLDivElement>document.querySelector(`div.lu-overlay#O${id}`);
+  let overlay = <HTMLDivElement>document.querySelector(`div.lu-overlay#O${id}`);
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.classList.add('lu-overlay');
@@ -463,7 +463,7 @@ const link = {
   createSVG: function (col: LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
     return {
       template: `<text class="link text" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>`,
-      update: (n: SVGTextElement, d: IDataRow, i: number) => {
+      update: (n: SVGTextElement, d: IDataRow) => {
         n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class="link" xlink:href="${col.getValue(d.v, d.dataIndex)}" target="_blank">${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
       }
     };
@@ -471,7 +471,7 @@ const link = {
   createHTML: function (col: LinkColumn): IHTMLCellRenderer {
     return {
       template: `<div class="link text"></div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         n.style.width = col.getWidth() + 'px';
         n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class="link" href="${col.getValue(d.v, d.dataIndex)}" target="_blank">${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
       }
@@ -605,7 +605,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
     // initial call fast method
     node.innerHTML = columns.map((c) => c.renderer.template).join('');
     columns.forEach((col, i) => {
-      var cnode = <Element>node.childNodes[i];
+      const cnode = <Element>node.childNodes[i];
       // set attribute for finding again
       cnode.setAttribute('data-column-id', col.column.id);
       // store current renderer
@@ -636,7 +636,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
   });
   const helper = helperType === 'svg' ? document.createElementNS('http://www.w3.org/2000/svg', 'g') : document.createElement('div');
   columns.forEach((col) => {
-    var cnode = node.querySelector(`[data-column-id="${col.column.id}"]`);
+    let cnode = node.querySelector(`[data-column-id="${col.column.id}"]`);
     if (!cnode) {
       //create one
       helper.innerHTML = col.renderer.template;
@@ -658,9 +658,9 @@ class StackCellRenderer implements ICellRendererFactory {
   private createData(col: StackColumn, context: IRenderContext<any>) {
     const stacked = this.nestingPossible && context.option('stacked', true);
     const padding = context.option('columnPadding', 0);
-    var offset = 0;
+    let offset = 0;
     return col.children.map((d) => {
-      var shift = offset;
+      const shift = offset;
       offset += d.getWidth();
       offset += (!stacked ? padding : 0);
       return {
@@ -677,7 +677,7 @@ class StackCellRenderer implements ICellRendererFactory {
     return {
       template: `<g class="stack component${context.option('stackLevel', 0)}">${cols.map((d) => d.renderer.template).join('')}</g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        var stackShift = 0;
+        let stackShift = 0;
         matchColumns(n, cols);
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
@@ -696,7 +696,7 @@ class StackCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="stack component${context.option('stackLevel', 0)}">${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        var stackShift = 0;
+        let stackShift = 0;
         matchColumns(n, cols, 'html');
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
@@ -713,12 +713,12 @@ class StackCellRenderer implements ICellRendererFactory {
   createCanvas(col: StackColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const cols = this.createData(col, context);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
-      var stackShift = 0;
-      cols.forEach((col, ci) => {
-        var shift = 0;
-        ctx.translate(shift = col.shift - stackShift, 0);
+      let stackShift = 0;
+      cols.forEach((col) => {
+        const shift = col.shift - stackShift;
+        ctx.translate(shift, 0);
         col.renderer(ctx, d, i, dx + shift, dy);
-        ctx.translate(-(col.shift - stackShift), 0);
+        ctx.translate(-shift, 0);
         if (col.stacked) {
           stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v, d.dataIndex));
         }

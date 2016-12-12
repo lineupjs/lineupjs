@@ -141,10 +141,10 @@ export default class MappingEditor {
     $root.select('input.raw_min')
       .property('value', raw2pixel.domain()[0])
       .on('blur', function () {
-        var d = raw2pixel.domain();
+        let d = raw2pixel.domain();
         d[0] = parseFloat(this.value);
         raw2pixel.domain(d);
-        var old = that.scale_.domain;
+        let old = that.scale_.domain;
         old[0] = d[0];
         that.scale_.domain = old;
         updateRaw();
@@ -153,10 +153,10 @@ export default class MappingEditor {
     $root.select('input.raw_max')
       .property('value', raw2pixel.domain()[1])
       .on('blur', function () {
-        var d = raw2pixel.domain();
+        let d = raw2pixel.domain();
         d[1] = parseFloat(this.value);
         raw2pixel.domain(d);
-        var old = that.scale_.domain;
+        let old = that.scale_.domain;
         old[old.length - 1] = d[1];
         that.scale_.domain = old;
         updateRaw();
@@ -167,7 +167,7 @@ export default class MappingEditor {
     });
 
     //lines that show mapping of individual data items
-    var datalines = $root.select('g.samples').selectAll('line').data([]);
+    let datalines = $root.select('g.samples').selectAll('line').data([]);
     this.dataPromise.then((data) => {
       //to unique values
       data = unique(data);
@@ -212,7 +212,7 @@ export default class MappingEditor {
         });
     }
 
-    var mapping_lines = [];
+    let mapping_lines = [];
 
     function renderMappingLines() {
       if (!(that.scale instanceof ScaleMappingFunction)) {
@@ -249,10 +249,10 @@ export default class MappingEditor {
       }
 
       function addPoint(x) {
-        x = clamp(x, 0, width);
+        const px = clamp(x, 0, width);
         mapping_lines.push({
-          n: normal2pixel.invert(x),
-          r: raw2pixel.invert(x)
+          n: normal2pixel.invert(px),
+          r: raw2pixel.invert(px)
         });
         updateScale();
         renderMappingLines();
@@ -286,19 +286,19 @@ export default class MappingEditor {
       }));
       $mapping_enter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
         //drag normalized
-        const x = clamp((<DragEvent>d3event).x, 0, width);
-        d.n = normal2pixel.invert(x);
-        select(this).attr('cx', x);
-        select(this.parentElement).select('line').attr('x1', x);
+        const px = clamp((<DragEvent>d3event).x, 0, width);
+        d.n = normal2pixel.invert(px);
+        select(this).attr('cx', px);
+        select(this.parentElement).select('line').attr('x1', px);
 
         updateScale();
       }));
       $mapping_enter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
         //drag raw
-        const x = clamp((<DragEvent>d3event).x, 0, width);
-        d.r = raw2pixel.invert(x);
-        select(this).attr('cx', x);
-        select(this.parentElement).select('line').attr('x2', x);
+        const px = clamp((<DragEvent>d3event).x, 0, width);
+        d.r = raw2pixel.invert(px);
+        select(this).attr('cx', px);
+        select(this.parentElement).select('line').attr('x2', px);
 
         updateScale();
       }));
@@ -348,11 +348,11 @@ export default class MappingEditor {
         .attr('transform', (d,i) => `translate(${i===0?min_filter:max_filter},0)`).call(createDrag(function (d,i) {
 
           //drag normalized
-          const x = clamp((<DragEvent>d3event).x, 0, width);
-          const v = raw2pixel.invert(x);
-          const filter = (x <= 0 && i === 0 ? -Infinity : (x>=width && i===1 ? Infinity : v));
+          const px = clamp((<DragEvent>d3event).x, 0, width);
+          const v = raw2pixel.invert(px);
+          const filter = (px <= 0 && i === 0 ? -Infinity : (px>=width && i===1 ? Infinity : v));
           select(this).datum(filter)
-            .attr('transform',`translate(${x},0)`)
+            .attr('transform',`translate(${px},0)`)
             .select('text').text(toFilterString(filter,i));
         }))
         .select('text').text(toFilterString);
@@ -394,7 +394,7 @@ export default class MappingEditor {
       renderScript();
       triggerUpdate();
     }).property('selectedIndex', function () {
-      var name = 'script';
+      let name = 'script';
       if (that.scale_ instanceof ScaleMappingFunction) {
         name = (<ScaleMappingFunction>that.scale).scaleType;
       }

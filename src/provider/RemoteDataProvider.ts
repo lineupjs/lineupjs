@@ -3,7 +3,8 @@
  */
 
 import {merge} from '../utils';
-import {IColumnDesc, Ranking, Column} from '../model';
+import Column, {IColumnDesc} from '../model/Column';
+import Ranking from '../model/Ranking';
 import {IStatsBuilder, IDataRow, IDataProviderOptions} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 
@@ -38,6 +39,9 @@ export interface IServerData {
 
 
 export interface IRemoteDataProviderOptions {
+  /**
+   * maximal cache size (unused at the moment)
+   */
   maxCacheSize?: number;
 }
 
@@ -95,7 +99,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
       // clean up cache
     }
     // const maxLength = Math.max(...orders.map((o) => o.length));
-    var r = [];
+    let r = [];
     union.forEach(r.push.bind(r));
     return r;
   }
