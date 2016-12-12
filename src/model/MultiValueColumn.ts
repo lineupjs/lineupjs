@@ -50,8 +50,26 @@ export class CustomSortCalculation {
 
   }
 }
+
+// function getPercentile(data, percentile) {
+//
+//       var index = (percentile / 100) * data.length;
+//       var result;
+//       if (Math.floor(index) === index) {
+//         result = (data[(index - 1)] + data[index]) / 2;
+//       } else {
+//         result = data[Math.floor(index)];
+//       }
+//       return result;
+//     }
+
+function numSort(a, b) {
+  return a - b;
+}
+
+
 export default class MultiValueColumn extends ValueColumn<number[] > {
-  private sortCriteria;
+  private sortBy;
   private colorrange;
   private min;
   private max;
@@ -67,7 +85,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   constructor(id: string, desc: any) {
     super(id, desc);
-    this.sortCriteria = (<any>desc).sort || 'min';
+    this.sortBy = (<any>desc).sort || 'min';
     this.colorrange = (<any>desc).colorrange || ['blue', 'red'];
     this.min = d3.min((<any>desc).domain);
     this.max = d3.max((<any>desc).domain);
@@ -95,7 +113,6 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
         .range(['white', this.colorrange[1]]);
     }
   }
-
 
   private xScale() {
     this.xposScale
@@ -129,15 +146,16 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
       .domain([this.min, this.max])
       .range([0, this.getWidth()])
 
+
   }
 
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    this.sortCriteria = (<any>this.desc).sort;
+
     const a_val = this.getValue(a, aIndex);
     const b_val = this.getValue(b, bIndex);
     const sort: any = new CustomSortCalculation(a_val, b_val);
-    const f = sort[this.sortCriteria].bind(sort);
+    const f = sort[this.sortBy].bind(sort);
     return f();
   }
 
@@ -213,12 +231,15 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
     const minval_arr = Math.min.apply(Math, data);
     const maxval_arr = Math.max.apply(Math, data);
+
+    data.sort(numSort);
     const q1 = this.boxPlotScale(d3.quantile(data, 0.25));
-    const median = this.boxPlotScale(d3.median(data));
+    const median = this.boxPlotScale(d3.quantile(data, 0.50));
     const q3 = this.boxPlotScale(d3.quantile(data, 0.75));
     const min_val = this.boxPlotScale(minval_arr);
     const max_val = this.boxPlotScale(maxval_arr);
     const boxdata = {min: min_val, median: median, q1: q1, q3: q3, max: max_val};
+
     return (boxdata);
 
   }

@@ -27,7 +27,7 @@ import LinkColumn from './LinkColumn';
 // import VerticalBarColumn from './VerticalBarColumn11';
 // import BoxplotColumn from './BoxplotColumn11';
 import UpsetColumn from './UpsetColumn';
-import CircleColumn from './CircleColumn';
+import CircleColumn from './CircleColumn11';
 import MultiValueColumn from './MultiValueColumn';
 
 
@@ -106,6 +106,6 @@ export function models() {
     verticalbar: MultiValueColumn,
     boxplot: MultiValueColumn,
     upset: UpsetColumn,
-    circle: CircleColumn
+    circle: NumberColumn
   };
 }

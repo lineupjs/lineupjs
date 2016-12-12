@@ -1697,7 +1697,7 @@ var VerticalBarCellRenderer = (function () {
                 rect.enter().append('rect');
                 rect
                     .attr({
-                    y: multiValueColumn.getyposVerticalBar(d),
+                    y: function (d, i) { return multiValueColumn.getyposVerticalBar(d); },
                     x: function (d, i) { return (i * celldimension); },
                     width: celldimension,
                     height: function (d) { return multiValueColumn.getVerticalBarHeight(d); },
@@ -1739,7 +1739,7 @@ var BoxplotCellRenderer = (function () {
                     .attr({
                     y: padding,
                     x: boxdata.q1,
-                    width: boxdata.q3 - boxdata.q1,
+                    width: (boxdata.q3 - boxdata.q1),
                     height: function (d, i) { return context.rowHeight(i); }
                 });
                 rect.exit().remove();
@@ -1767,6 +1767,7 @@ var BoxplotCellRenderer = (function () {
         return function (ctx, d, i) {
             // Rectangle
             var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
+            // console.log(boxdata,col.getValue(d.v, d.dataIndex));
             ctx.fillStyle = '#e0e0e0';
             ctx.strokeStyle = 'black';
             ctx.beginPath();
@@ -1836,7 +1837,6 @@ var UpsetCellRenderer = (function () {
         return function (ctx, d, i) {
             // Circle
             var data = col.getValue(d.v, d.dataIndex);
-            var catindexes = [];
             var countcategory = data.filter(function (x) { return x === 1; }).length;
             var radius = (context.rowHeight(i) / 3);
             var pathcordinate = upsetColumn.calculatePath(data);
@@ -3394,21 +3394,20 @@ var StackColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(37);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__LinkColumn__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__CircleColumn__ = __webpack_require__(36);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__Ranking__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__Column__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__Ranking__ = __webpack_require__(14);
 /* harmony export (immutable) */ exports["defineColumn"] = defineColumn;
 /* harmony export (immutable) */ exports["createActionDesc"] = createActionDesc;
 /* harmony export (immutable) */ exports["models"] = models;
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_21__Column__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_21__Column__["IColumnDesc"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "ScaleMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["d"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "isNumberColumn", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_20__Column__["IColumnDesc"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_20__Column__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ScriptMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["e"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "isNumberColumn", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "ScaleMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["d"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isCategoricalColumn", function() { return __WEBPACK_IMPORTED_MODULE_7__CategoricalColumn__["b"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_22__Ranking__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_22__Ranking__["b"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_21__Ranking__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_21__Ranking__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMinDesc", function() { return __WEBPACK_IMPORTED_MODULE_8__MinColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMaxDesc", function() { return __WEBPACK_IMPORTED_MODULE_9__MaxColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMeanDesc", function() { return __WEBPACK_IMPORTED_MODULE_10__MeanColumn__["b"]; });
@@ -3425,7 +3424,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-
 
 
 
@@ -3508,18 +3506,18 @@ function models() {
         actions: __WEBPACK_IMPORTED_MODULE_16__DummyColumn__["a" /* default */],
         annotate: __WEBPACK_IMPORTED_MODULE_5__AnnotateColumn__["a" /* default */],
         selection: __WEBPACK_IMPORTED_MODULE_12__SelectionColumn__["a" /* default */],
-        heatmapcustom: __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__["a" /* default */],
-        sparkline: __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__["a" /* default */],
+        heatmapcustom: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
+        sparkline: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
         max: __WEBPACK_IMPORTED_MODULE_9__MaxColumn__["a" /* default */],
         min: __WEBPACK_IMPORTED_MODULE_8__MinColumn__["a" /* default */],
         mean: __WEBPACK_IMPORTED_MODULE_10__MeanColumn__["a" /* default */],
         script: __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__["a" /* default */],
         nested: __WEBPACK_IMPORTED_MODULE_15__NestedColumn__["a" /* default */],
-        threshold: __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__["a" /* default */],
-        verticalbar: __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__["a" /* default */],
-        boxplot: __WEBPACK_IMPORTED_MODULE_20__MultiValueColumn__["a" /* default */],
+        threshold: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
+        verticalbar: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
+        boxplot: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
         upset: __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__["a" /* default */],
-        circle: __WEBPACK_IMPORTED_MODULE_19__CircleColumn__["a" /* default */]
+        circle: __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["c" /* default */]
     };
 }
 
@@ -5292,6 +5290,20 @@ var CustomSortCalculation = (function () {
     };
     return CustomSortCalculation;
 }());
+// function getPercentile(data, percentile) {
+//
+//       var index = (percentile / 100) * data.length;
+//       var result;
+//       if (Math.floor(index) === index) {
+//         result = (data[(index - 1)] + data[index]) / 2;
+//       } else {
+//         result = data[Math.floor(index)];
+//       }
+//       return result;
+//     }
+function numSort(a, b) {
+    return a - b;
+}
 var MultiValueColumn = (function (_super) {
     __extends(MultiValueColumn, _super);
     function MultiValueColumn(id, desc) {
@@ -5301,7 +5313,7 @@ var MultiValueColumn = (function (_super) {
         this.yposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         this.verticalBarScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         this.boxPlotScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
-        this.sortCriteria = desc.sort || 'min';
+        this.sortBy = desc.sort || 'min';
         this.colorrange = desc.colorrange || ['blue', 'red'];
         this.min = __WEBPACK_IMPORTED_MODULE_0_d3__["min"](desc.domain);
         this.max = __WEBPACK_IMPORTED_MODULE_0_d3__["max"](desc.domain);
@@ -5355,11 +5367,10 @@ var MultiValueColumn = (function (_super) {
             .range([0, this.getWidth()]);
     };
     MultiValueColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
         var a_val = this.getValue(a, aIndex);
         var b_val = this.getValue(b, bIndex);
         var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
+        var f = sort[this.sortBy].bind(sort);
         return f();
     };
     MultiValueColumn.prototype.getLabel = function (row, index) {
@@ -5412,8 +5423,9 @@ var MultiValueColumn = (function (_super) {
     MultiValueColumn.prototype.getboxPlotData = function (data) {
         var minval_arr = Math.min.apply(Math, data);
         var maxval_arr = Math.max.apply(Math, data);
+        data.sort(numSort);
         var q1 = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.25));
-        var median = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["median"](data));
+        var median = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.50));
         var q3 = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.75));
         var min_val = this.boxPlotScale(minval_arr);
         var max_val = this.boxPlotScale(maxval_arr);
@@ -8135,42 +8147,7 @@ var CategoricalNumberColumn = (function (_super) {
 
 
 /***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-var CircleColumn = (function (_super) {
-    __extends(CircleColumn, _super);
-    function CircleColumn(id, desc) {
-        _super.call(this, id, desc);
-    }
-    CircleColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        console.log(this.getValue(a, aIndex));
-        return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
-    };
-    return CircleColumn;
-}(__WEBPACK_IMPORTED_MODULE_0__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = CircleColumn;
-
-
-/***/ },
+/* 36 */,
 /* 37 */
 /***/ function(module, exports, __webpack_require__) {
 

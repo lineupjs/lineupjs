@@ -11,7 +11,7 @@ import LinkColumn from './model/LinkColumn';
 import StackColumn from './model/StackColumn';
 import ScriptColumn from './model/ScriptColumn';
 import BooleanColumn from './model/BooleanColumn';
-import NumberColumn, {IMappingFunction, isNumberColumn} from './model/NumberColumn';
+import NumberColumn, {IMappingFunction} from './model/NumberColumn';
 import CategoricalNumberColumn from './model/CategoricalNumberColumn';
 // import HeatmapColumn from './model/HeatmapColumn11';
 // import SparklineColumn from './model/SparklineColumn11';
@@ -218,7 +218,7 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
   renderercontent.on('change', function () {
     that = this;
     renderertype = that.value;
-    column.setRendererType(that.value)
+    column.setRendererType(that.value);
 
     // column.setMetaData({
     //   label: column.getMetaData().label,

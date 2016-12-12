@@ -15,8 +15,7 @@ import {hsl} from 'd3';
 import {IDataRow} from './provider/ADataProvider';
 import * as d3 from 'd3';
 import MultiValueColumn from './model/MultiValueColumn';
-import {multivalue} from "../../phovea_importer/src/valuetypes";
-import UpsetColumn from "./model/UpsetColumn";
+import UpsetColumn from './model/UpsetColumn';
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
@@ -345,7 +344,7 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
         rect.enter().append('rect');
         rect
           .attr({
-            y: multiValueColumn.getyposVerticalBar(d),
+            y: (d,i) => multiValueColumn.getyposVerticalBar(d),
             x: (d, i) => (i * celldimension),
             width: celldimension,
             height: (d: any) => multiValueColumn.getVerticalBarHeight(d),
@@ -394,7 +393,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
           .attr({
             y: padding,
             x: boxdata.q1,
-            width: boxdata.q3 - boxdata.q1,
+            width: (boxdata.q3 - boxdata.q1),
             height: (d, i) =>context.rowHeight(i)
           });
         rect.exit().remove();
@@ -429,6 +428,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
       const boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
+      // console.log(boxdata,col.getValue(d.v, d.dataIndex));
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
@@ -508,7 +508,6 @@ class UpsetCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Circle
       var data = col.getValue(d.v, d.dataIndex);
-      var catindexes = [];
       var countcategory = data.filter((x) => x === 1).length;
       const radius = (context.rowHeight(i) / 3);
       const pathcordinate = upsetColumn.calculatePath(data);
