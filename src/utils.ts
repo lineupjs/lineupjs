@@ -402,9 +402,9 @@ export function forEach<T extends Element>(node: T, selector: string, callback: 
 }
 
 export interface ITextRenderHints {
-  maxLetterWidth: number;
-  avgLetterWidth: number;
-  ellipsisWidth: number;
+  readonly maxLetterWidth: number;
+  readonly avgLetterWidth: number;
+  readonly ellipsisWidth: number;
 }
 const ellipsis = '…';
 

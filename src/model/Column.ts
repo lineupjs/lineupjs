@@ -15,9 +15,9 @@ export function fixCSS(id) {
 }
 
 export interface IFlatColumn {
-  col: Column;
-  offset: number;
-  width: number;
+  readonly col: Column;
+  readonly offset: number;
+  readonly width: number;
 }
 
 export interface IColumnParent {
@@ -25,56 +25,56 @@ export interface IColumnParent {
   insert(col: Column, index?: number): Column;
   insertAfter(col: Column, reference: Column): Column;
   findMyRanker(): Ranking;
-  fqid: string;
+  readonly fqid: string;
 
   indexOf(col: Column): number;
   at(index: number): Column;
-  fqpath: string;
+  readonly fqpath: string;
 }
 
 export interface IColumnDesc {
   /**
    * label of the column
    */
-  label: string;
+  readonly label: string;
   /**
    * the column type
    */
-  type: string;
+  readonly type: string;
 
   /**
    * column description
    */
-  description?: string;
+  readonly description?: string;
 
   /**
    * color of this column
    */
-  color?: string;
+  readonly color?: string;
   /**
    * css class to append to elements of this column
    */
-  cssClass?: string;
+  readonly cssClass?: string;
 }
 
 export interface IStatistics {
-  min: number;
-  max: number;
-  mean: number;
-  count: number;
-  maxBin: number;
-  hist: { x: number; dx: number; y: number;}[];
+  readonly min: number;
+  readonly max: number;
+  readonly mean: number;
+  readonly count: number;
+  readonly maxBin: number;
+  readonly hist: { x: number; dx: number; y: number;}[];
 }
 
 export interface ICategoricalStatistics {
-  maxBin: number;
-  hist: { cat: string; y: number }[];
+  readonly maxBin: number;
+  readonly hist: { cat: string; y: number }[];
 }
 
 export interface IColumnMetaData {
-  label: string;
-  description: string;
-  color: string;
+  readonly label: string;
+  readonly description: string;
+  readonly color: string;
 }
 
 /**
@@ -270,9 +270,11 @@ export default class Column extends AEventDispatcher {
       [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY];
     const bak = this.getMetaData();
     //copy to avoid reference
-    this.metadata.label = value.label;
-    this.metadata.color = value.color;
-    this.metadata.description = value.description;
+    this.metadata = {
+      label: value.label,
+      color: value.color,
+      description: value.description
+    };
 
     this.fire(events, bak, this.getMetaData());
   }
@@ -372,8 +374,11 @@ export default class Column extends AEventDispatcher {
    */
   restore(dump: any, factory: (dump: any) => Column) {
     this.width = dump.width || this.width;
-    this.metadata.label = dump.label || this.label;
-    this.metadata.color = dump.color || this.color;
+    this.metadata = {
+      label: dump.label || this.label,
+      color: dump.color || this.color,
+      description: this.description
+    };
     this.compressed = dump.compressed === true;
   }
 

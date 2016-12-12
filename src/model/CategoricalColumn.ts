@@ -8,8 +8,8 @@ import ValueColumn from './ValueColumn';
 import StringColumn from './StringColumn';
 
 export interface ICategoricalColumn {
-  categories: string[];
-  categoryLabels: string[];
+  readonly categories: string[];
+  readonly categoryLabels: string[];
 
   getCategories(row: any, index: number): string[];
 }

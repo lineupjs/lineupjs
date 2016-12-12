@@ -32,7 +32,7 @@ export interface IRenderContext<T> {
   /**
    * prefix used for all generated id names
    */
-  idPrefix: string;
+  readonly idPrefix: string;
 
   /**
    * lookup custom options by key
@@ -51,7 +51,7 @@ export interface IDOMCellRenderer<T> {
   /**
    * template as a basis for the update
    */
-  template: string;
+  readonly template: string;
   /**
    * update a given node (create using the template) with the given data
    * @param node the node to update
@@ -94,12 +94,12 @@ export class DefaultCellRenderer implements ICellRendererFactory {
    * class to append to the text elements
    * @type {string}
    */
-  textClass = 'text';
+  readonly textClass: string;
   /**
    * the text alignment: left, center, right
    * @type {string}
    */
-  align: string = 'left';
+  readonly align: string;
 
   constructor(textClass = 'text', align = 'left') {
     this.textClass = textClass;

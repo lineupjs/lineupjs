@@ -8,8 +8,8 @@ import StackColumn from './StackColumn';
 import {AEventDispatcher} from '../utils';
 
 export interface ISortCriteria {
-  col: Column;
-  asc: boolean;
+  readonly col: Column;
+  readonly asc: boolean;
 }
 
 export function isSupportType(col: IColumnDesc) {
