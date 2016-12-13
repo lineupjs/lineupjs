@@ -11,7 +11,7 @@
 		exports["LineUpJS"] = factory(require("React"), require("d3"));
 	else
 		root["LineUpJS"] = factory(root["React"], root["d3"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_45__, __WEBPACK_EXTERNAL_MODULE_0__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_44__, __WEBPACK_EXTERNAL_MODULE_0__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -75,7 +75,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 48);
+/******/ 	return __webpack_require__(__webpack_require__.s = 47);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -134,6 +134,8 @@ var Column = (function (_super) {
         this.description = this.desc.description || '';
         this.cssClass = this.desc.cssClass || '';
         this.color = this.desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
+        this.renderername = this.desc.type || 'heatmapcustom';
+        this.rendererList = [];
     }
     Object.defineProperty(Column.prototype, "headerCssClass", {
         get: function () {
@@ -177,7 +179,7 @@ var Column = (function (_super) {
     Column.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
             Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-            Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
+            Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_MULTIVALUE_SORT_CHANGED, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
             Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
     };
     Column.prototype.getWidth = function () {
@@ -370,13 +372,13 @@ var Column = (function (_super) {
         return row !== null;
     };
     Column.prototype.rendererType = function () {
-        if (this.desc.type.constructor === Array) {
-            return this.desc.type[0];
-        }
-        return this.desc.type;
+        return this.renderername;
     };
     Column.prototype.setRendererType = function (type) {
-        this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.desc.type, this.desc.type = type);
+        this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderername, this.renderername = type);
+    };
+    Column.prototype.getRendererList = function () {
+        return this.rendererList;
     };
     /**
      * default color that should be used
@@ -404,6 +406,7 @@ var Column = (function (_super) {
     Column.EVENT_DIRTY = 'dirty';
     Column.EVENT_DIRTY_HEADER = 'dirtyHeader';
     Column.EVENT_DIRTY_VALUES = 'dirtyValues';
+    Column.EVENT_MULTIVALUE_SORT_CHANGED = 'multiValueSortChanged';
     return Column;
 }(__WEBPACK_IMPORTED_MODULE_0__utils__["AEventDispatcher"]));
 /* harmony default export */ exports["a"] = Column;
@@ -1162,6 +1165,8 @@ var NumberColumn = (function (_super) {
         if (desc.numberFormat) {
             this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])(desc.numberFormat);
         }
+        this.rendererList = [{ type: 'number', label: 'Bar' },
+            { type: 'circle', label: 'Circle' }];
     }
     NumberColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
@@ -1205,7 +1210,6 @@ var NumberColumn = (function (_super) {
         if (typeof v === 'number') {
             return this.numberFormat(+v);
         }
-        console.log(String(v));
         return String(v);
     };
     NumberColumn.prototype.getRawValue = function (row, index) {
@@ -1318,6 +1322,9 @@ var NumberColumn = (function (_super) {
             return NumberColumn.COMPRESSED_RENDERER;
         }
         return _super.prototype.rendererType.call(this);
+    };
+    NumberColumn.prototype.getRendererList = function () {
+        return this.rendererList;
     };
     NumberColumn.EVENT_MAPPING_CHANGED = 'mappingChanged';
     NumberColumn.COMPRESSED_RENDERER = 'heatmap';
@@ -3391,9 +3398,9 @@ var StackColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__CategoricalNumberColumn__ = __webpack_require__(35);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__NestedColumn__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__LinkColumn__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__Ranking__ = __webpack_require__(14);
@@ -5313,14 +5320,18 @@ var MultiValueColumn = (function (_super) {
         this.yposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         this.verticalBarScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         this.boxPlotScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
-        this.sortBy = desc.sort || 'min';
         this.colorrange = desc.colorrange || ['blue', 'red'];
         this.min = __WEBPACK_IMPORTED_MODULE_0_d3__["min"](desc.domain);
         this.max = __WEBPACK_IMPORTED_MODULE_0_d3__["max"](desc.domain);
         this.bins = desc.datalength;
         this.threshold = desc.threshold || 0;
         this.rowheight = 13;
-        console.log(desc.type);
+        this.sortBy = desc.sort || 'min';
+        this.rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },
+            { type: 'boxplot', label: 'Boxplot' },
+            { type: 'sparkline', label: 'Sparkline' },
+            { type: 'threshold', label: 'Threshold' },
+            { type: 'verticalbar', label: 'VerticalBar' }];
         this.defineColor();
         this.xScale();
         this.yScale();
@@ -5367,6 +5378,7 @@ var MultiValueColumn = (function (_super) {
             .range([0, this.getWidth()]);
     };
     MultiValueColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        this.sortBy = this.getUserSortBy();
         var a_val = this.getValue(a, aIndex);
         var b_val = this.getValue(b, bIndex);
         var sort = new CustomSortCalculation(a_val, b_val);
@@ -5432,6 +5444,38 @@ var MultiValueColumn = (function (_super) {
         var boxdata = { min: min_val, median: median, q1: q1, q3: q3, max: max_val };
         return (boxdata);
     };
+    MultiValueColumn.prototype.getUserSortBy = function () {
+        return this.sortBy;
+    };
+    MultiValueColumn.prototype.setUserSortBy = function (rank) {
+        var ascending = false;
+        switch (rank) {
+            case 'min':
+                ascending = true;
+                break;
+            case 'max':
+                ascending = false;
+                break;
+            case 'mean':
+                ascending = true;
+                break;
+            case 'median':
+                ascending = false;
+                break;
+            case 'q1':
+                ascending = true;
+                break;
+            case 'q3':
+                ascending = false;
+                break;
+            default:
+                ascending = false;
+        }
+        this.sortByMe(ascending);
+    };
+    MultiValueColumn.prototype.getRendererList = function () {
+        return this.rendererList;
+    };
     return MultiValueColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = MultiValueColumn;
@@ -5442,7 +5486,7 @@ var MultiValueColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__MultiLevelCompositeColumn__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__MultiLevelCompositeColumn__ = __webpack_require__(37);
 /* harmony export (immutable) */ exports["b"] = createDesc;
 /**
  * Created by sam on 04.11.2016.
@@ -6037,7 +6081,7 @@ var HeaderRenderer = (function () {
         //   (<MouseEvent>d3.event).stopPropagation();
         // });
         //Renderer Change
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_2__model_Column__["a" /* default */]; }).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__["a" /* default */] || d instanceof __WEBPACK_IMPORTED_MODULE_6__model_NumberColumn__["c" /* default */]; }).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
             __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["renderertypedialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
@@ -6264,11 +6308,11 @@ var HeaderRenderer = (function () {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(41);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ABodyRenderer__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__HTMLBodyRenderer__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CanvasBodyRenderer__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__HTMLBodyRenderer__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CanvasBodyRenderer__ = __webpack_require__(39);
 /* harmony export (immutable) */ exports["createBodyRenderer"] = createBodyRenderer;
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "HeaderRenderer", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["c"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IRankingHook", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["IRankingHook"]; });
@@ -6458,37 +6502,10 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
 }
 // Renderer type change
 function renderertypedialog(column, $header) {
-    var renderertype = column.desc.type;
-    var valuestring = column.desc.renderertype;
-    var renderername = [];
-    valuestring.forEach(function (d) {
-        if (d === 'heatmapcustom') {
-            renderername.push('Heatmap');
-        }
-        if (d === 'sparkline') {
-            renderername.push('Sparkline');
-        }
-        if (d === 'threshold') {
-            renderername.push('Threshold');
-        }
-        if (d === 'upset') {
-            renderername.push('Upset');
-        }
-        if (d === 'circle') {
-            renderername.push('Circle');
-        }
-        if (d === 'number') {
-            renderername.push('Bar');
-        }
-        if (d === 'boxplot') {
-            renderername.push('Box Plot');
-        }
-        if (d === 'verticalbar') {
-            renderername.push('Vertical Bar');
-        }
-    });
-    var popup = makesortPopup($header, 'Change Visualization </br>', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + "> " + renderername[i] + "<br>";
+    var renderertype = column.rendererType();
+    var rendererTypelist = column.getRendererList();
+    var popup = makesortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {
+        return "<input type=\"radio\" name=\"renderertype\" value=" + d.type + "  " + ((renderertype === d.type) ? 'checked' : '') + "> " + d.label + "<br>";
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -6499,22 +6516,18 @@ function renderertypedialog(column, $header) {
         that = this;
         renderertype = that.value;
         column.setRendererType(that.value);
-        // column.setMetaData({
-        //   label: column.getMetaData().label,
-        //   description: column.getMetaData().description,
-        //   color: column.getMetaData().color
-        // });
     });
     __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
         var outside = renderercontent.filter(thiselement).empty();
         if (outside) {
             popup.remove();
+            __WEBPACK_IMPORTED_MODULE_5_d3__["select"](this).on('click', null);
         }
     });
 }
 // Sort  Dialog.
 function sortDialog(column, $header) {
-    var rank = column.desc.sort;
+    var rank = column.getUserSortBy();
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
     var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By <br>', valuestring.map(function (d, i) {
@@ -6528,13 +6541,13 @@ function sortDialog(column, $header) {
     sortcontent.on('change', function () {
         that = this;
         rank = that.value;
-        column.desc.sort = rank;
-        column.toggleMySorting();
+        column.setUserSortBy(rank);
     });
     __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
         var outside = sortcontent.filter(thiselement).empty();
         if (outside) {
             popup.remove();
+            __WEBPACK_IMPORTED_MODULE_5_d3__["select"](this).on('click', null);
         }
     });
 }
@@ -8147,8 +8160,7 @@ var CategoricalNumberColumn = (function (_super) {
 
 
 /***/ },
-/* 36 */,
-/* 37 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8185,7 +8197,7 @@ var DummyColumn = (function (_super) {
 
 
 /***/ },
-/* 38 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8295,7 +8307,7 @@ var MultiLevelCompositeColumn = (function (_super) {
 
 
 /***/ },
-/* 39 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8384,7 +8396,7 @@ var UpsetColumn = (function (_super) {
 
 
 /***/ },
-/* 40 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8661,7 +8673,7 @@ var BodyCanvasRenderer = (function (_super) {
 
 
 /***/ },
-/* 41 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8720,7 +8732,7 @@ var HTMLBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 42 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8901,7 +8913,7 @@ var PoolRenderer = (function () {
 
 
 /***/ },
-/* 43 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9014,23 +9026,23 @@ var SVGBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 44 */,
-/* 45 */
+/* 43 */,
+/* 44 */
 /***/ function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_45__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_44__;
 
 /***/ },
+/* 45 */,
 /* 46 */,
-/* 47 */,
-/* 48 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss__ = __webpack_require__(29);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__style_scss__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lineup__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(44);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__provider_LocalDataProvider__ = __webpack_require__(31);
 /**

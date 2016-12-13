@@ -2,8 +2,9 @@
  * Created by bikramkawan on 24/11/2016.
  */
 import * as d3 from 'd3';
-import Column, {IColumnDesc, IStatistics} from './Column';
+import Column  from './Column';
 import ValueColumn from './ValueColumn';
+import any = jasmine.any;
 
 
 export class CustomSortCalculation {
@@ -83,21 +84,28 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   private verticalBarScale: d3.scale.Linear<number,number> = d3.scale.linear();
   private boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();
 
+
   constructor(id: string, desc: any) {
     super(id, desc);
-    this.sortBy = (<any>desc).sort || 'min';
     this.colorrange = (<any>desc).colorrange || ['blue', 'red'];
     this.min = d3.min((<any>desc).domain);
     this.max = d3.max((<any>desc).domain);
     this.bins = (<any>desc).datalength;
     this.threshold = (<any>desc).threshold || 0;
     this.rowheight = 13;
-    console.log(desc.type)
+    this.sortBy = (<any>desc.sort) || 'min';
+    this.rendererList = [{type: 'heatmapcustom', label: 'Heatmap'},
+                        {type: 'boxplot', label: 'Boxplot'},
+                        {type: 'sparkline', label: 'Sparkline'},
+                        {type: 'threshold', label: 'Threshold'},
+                        {type: 'verticalbar', label: 'VerticalBar'}];
+
     this.defineColor();
     this.xScale();
     this.yScale();
     this.verticalBarHeight();
     this.boxPlotWidth();
+
   }
 
   private defineColor() {
@@ -151,13 +159,15 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-
+    this.sortBy = this.getUserSortBy();
     const a_val = this.getValue(a, aIndex);
     const b_val = this.getValue(b, bIndex);
     const sort: any = new CustomSortCalculation(a_val, b_val);
     const f = sort[this.sortBy].bind(sort);
+
     return f();
   }
+
 
   getLabel(row: any, index: number) {
     return '' + this.getValue(row, index);
@@ -242,6 +252,46 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
     return (boxdata);
 
+  }
+
+  getUserSortBy() {
+    return this.sortBy;
+  }
+
+  setUserSortBy(rank) {
+
+    let ascending = false;
+
+    switch (rank) {
+      case 'min':
+        ascending = true;
+        break;
+      case 'max':
+        ascending = false;
+        break;
+      case 'mean':
+        ascending = true;
+        break;
+      case 'median':
+        ascending = false;
+        break;
+      case 'q1':
+        ascending = true;
+        break;
+      case 'q3':
+        ascending = false;
+        break;
+      default:
+        ascending = false;
+    }
+
+    this.sortByMe(ascending);
+  }
+
+
+ getRendererList() {
+
+    return this.rendererList;
   }
 
 

@@ -168,43 +168,13 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 
 // Renderer type change
 export function renderertypedialog(column: Column, $header: d3.Selection<Column>) {
-  var renderertype = (<any>column.desc).type;
-  var valuestring: any = (<any>column.desc).renderertype;
-  var renderername: any = [];
-
-
-  valuestring.forEach(function (d) {
-
-    if (d === 'heatmapcustom') {
-      renderername.push('Heatmap');
-    }
-    if (d === 'sparkline') {
-      renderername.push('Sparkline');
-    }
-    if (d === 'threshold') {
-      renderername.push('Threshold');
-    }
-    if (d === 'upset') {
-      renderername.push('Upset');
-    }
-    if (d === 'circle') {
-      renderername.push('Circle');
-    }
-    if (d === 'number') {
-      renderername.push('Bar');
-    }
-    if (d === 'boxplot') {
-      renderername.push('Box Plot');
-    }
-    if (d === 'verticalbar') {
-      renderername.push('Vertical Bar');
-    }
-  });
-
-  var popup = makesortPopup($header, 'Change Visualization </br>', valuestring.map(function (d, i) {
-    return `<input type="radio" name="renderertype" value=${d}  ${(renderertype === d) ? 'checked' : ''}> ${renderername[i]}<br>`;
+  var renderertype = column.rendererType();
+  const rendererTypelist = column.getRendererList();
+  var popup = makesortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {
+    return `<input type="radio" name="renderertype" value=${d.type}  ${(renderertype === d.type) ? 'checked' : ''}> ${d.label}<br>`;
 
   }).join('\n'));
+
 
   function thiselement() {
     return this === (<any>d3.event).target;
@@ -212,19 +182,13 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
   }
 
   var that;
-
   var renderercontent = d3.selectAll('input[name="renderertype"]');
 
   renderercontent.on('change', function () {
     that = this;
     renderertype = that.value;
-    column.setRendererType(that.value);
 
-    // column.setMetaData({
-    //   label: column.getMetaData().label,
-    //   description: column.getMetaData().description,
-    //   color: column.getMetaData().color
-    // });
+    column.setRendererType(that.value);
 
   });
 
@@ -232,13 +196,16 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
     var outside = renderercontent.filter(thiselement).empty();
     if (outside) {
       popup.remove();
+      d3.select(this).on('click', null);
     }
   });
+
 }
 
 // Sort  Dialog.
 export function sortDialog(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
-  var rank = (<any>column.desc).sort;
+
+  var rank = column.getUserSortBy();
   const valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
 
@@ -248,7 +215,6 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
   }).join('\n'));
 
   function thiselement() {
-
     return this === (<any>d3.event).target;
   }
 
@@ -258,8 +224,7 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
   sortcontent.on('change', function () {
     that = this;
     rank = that.value;
-    (<any>column.desc).sort = rank;
-    column.toggleMySorting();
+    column.setUserSortBy(rank);
 
   });
 
@@ -267,6 +232,7 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
     var outside = sortcontent.filter(thiselement).empty();
     if (outside) {
       popup.remove();
+      d3.select(this).on('click', null);
     }
   });
 
