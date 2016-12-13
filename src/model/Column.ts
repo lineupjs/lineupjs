@@ -26,11 +26,11 @@ export interface IColumnParent {
   insertAfter(col: Column, reference: Column): Column;
   findMyRanker(): Ranking;
   readonly fqid: string;
-
   indexOf(col: Column): number;
   at(index: number): Column;
   readonly fqpath: string;
 }
+
 
 export interface IColumnDesc {
   /**
@@ -102,13 +102,13 @@ export default class Column extends AEventDispatcher {
   static EVENT_LABEL_CHANGED = 'labelChanged';
   static EVENT_METADATA_CHANGED = 'metaDataChanged';
   static EVENT_COMPRESS_CHANGED = 'compressChanged';
-  static EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
   static EVENT_ADD_COLUMN = 'addColumn';
   static EVENT_REMOVE_COLUMN = 'removeColumn';
   static EVENT_DIRTY = 'dirty';
   static EVENT_DIRTY_HEADER = 'dirtyHeader';
   static EVENT_DIRTY_VALUES = 'dirtyValues';
-  static EVENT_MULTIVALUE_SORT_CHANGED = 'multiValueSortChanged'
+  static EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
+
 
   /**
    * the id of this column
@@ -128,15 +128,7 @@ export default class Column extends AEventDispatcher {
    */
   parent: IColumnParent = null;
 
-<<<<<<< HEAD
-  label: string;
-  description: string;
-  color: string;
-  renderername: string;
-  protected rendererList: {type: string, label: string}[];
-=======
   private metadata : IColumnMetaData;
->>>>>>> 3411becf41d887b0374b1354cc736c1b37a28c48
 
   /**
    * alternative to specifying a color is defining a css class that should be used
@@ -149,22 +141,20 @@ export default class Column extends AEventDispatcher {
    * @private
    */
   private compressed = false;
+  renderername: string;
+  protected rendererList: {type: string, label: string}[];
 
   constructor(id: string, public desc: IColumnDesc) {
     super();
     this.uid = fixCSS(id);
     this.cssClass = (<any>this.desc).cssClass || '';
-<<<<<<< HEAD
-    this.color = (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
     this.renderername = (<any>this.desc).type || 'heatmapcustom';
     this.rendererList = [];
-=======
     this.metadata = {
       label: this.desc.label || this.id,
       description: this.desc.description || '',
       color: (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
     }
->>>>>>> 3411becf41d887b0374b1354cc736c1b37a28c48
   }
 
   get id() {
@@ -221,7 +211,7 @@ export default class Column extends AEventDispatcher {
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-      Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_MULTIVALUE_SORT_CHANGED, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
+      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,Column.EVENT_RENDERER_TYPE_CHANGED,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
   }
 
@@ -451,7 +441,7 @@ export default class Column extends AEventDispatcher {
    * determines the renderer type that should be used to render this column. By default the same type as the column itself
    * @return {string}
    */
-  rendererType(): string {
+ rendererType(): string {
 
     return this.renderername;
   }
@@ -461,14 +451,11 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderername, this.renderername = type);
   }
 
-<<<<<<< HEAD
   getRendererList() {
 
     return this.rendererList;
   }
 
-
-=======
   /**
    * describe the column if it is a sorting criteria
    * @param toId helper to convert a description to an id
@@ -477,5 +464,4 @@ export default class Column extends AEventDispatcher {
   toSortingDesc(toId: (desc: any) => string): any {
     return toId(this.desc);
   }
->>>>>>> 3411becf41d887b0374b1354cc736c1b37a28c48
 }

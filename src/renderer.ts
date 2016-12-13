@@ -594,13 +594,10 @@ export class BarCellRenderer implements ICellRendererFactory {
     this.renderValue = renderValue;
   }
 
-<<<<<<< HEAD
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
 
 
-=======
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
->>>>>>> 3411becf41d887b0374b1354cc736c1b37a28c48
+
     const padding = context.option('rowPadding', 1);
     return {
       template: `<g class="bar">
@@ -646,12 +643,8 @@ export class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-<<<<<<< HEAD
-  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
 
-=======
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
->>>>>>> 3411becf41d887b0374b1354cc736c1b37a28c48
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = this.colorOf(d.v, i, col);
