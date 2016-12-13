@@ -128,7 +128,7 @@ export default class Column extends AEventDispatcher {
    */
   parent: IColumnParent = null;
 
-  private metadata : IColumnMetaData;
+  private metadata: IColumnMetaData;
 
   /**
    * alternative to specifying a color is defining a css class that should be used
@@ -211,7 +211,7 @@ export default class Column extends AEventDispatcher {
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,Column.EVENT_RENDERER_TYPE_CHANGED,
+      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
   }
 
@@ -441,7 +441,7 @@ export default class Column extends AEventDispatcher {
    * determines the renderer type that should be used to render this column. By default the same type as the column itself
    * @return {string}
    */
- rendererType(): string {
+  rendererType(): string {
 
     return this.renderername;
   }

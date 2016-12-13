@@ -595,7 +595,6 @@ export class BarCellRenderer implements ICellRendererFactory {
   }
 
 
-
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
 
     const padding = context.option('rowPadding', 1);

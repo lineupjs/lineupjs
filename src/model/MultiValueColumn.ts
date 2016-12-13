@@ -2,9 +2,7 @@
  * Created by bikramkawan on 24/11/2016.
  */
 import * as d3 from 'd3';
-import Column  from './Column';
 import ValueColumn from './ValueColumn';
-import any = jasmine.any;
 
 
 export class CustomSortCalculation {
@@ -151,7 +149,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   getValue(row: any, index: number) {
     var v = this.getRaw(row, index);
-     return (v);
+    return (v);
   }
 
   getColor(data: any) {
