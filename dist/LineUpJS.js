@@ -675,7 +675,8 @@ var ContentScroller = (function (_super) {
         return this.selectImpl(start, length, row2y, this.options.backupRows);
     };
     ContentScroller.prototype.selectImpl = function (start, length, row2y, backupRows) {
-        var top = this.container.scrollTop - this.shift - this.options.topShift(), bottom = top + this.container.clientHeight, i = 0, j;
+        var top = this.container.scrollTop - this.shift - this.options.topShift(), bottom = top + this.container.clientHeight;
+        var i = 0, j;
         /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
          if (typeof window.matchMedia === 'function' && window.matchMedia('print').matches) {
          console.log('show all');
@@ -687,7 +688,7 @@ var ContentScroller = (function (_super) {
             while (i >= start && row2y(i + 1) > top) {
                 i--;
             }
-            i -= this.options.backupRows; //one more row as backup for scrolling
+            i -= backupRows; //one more row as backup for scrolling
         }
         {
             j = Math.round(bottom / this.options.rowHeight);
@@ -695,7 +696,7 @@ var ContentScroller = (function (_super) {
             while (j <= length && row2y(j - 1) < bottom) {
                 j++;
             }
-            j += this.options.backupRows; //one more row as backup for scrolling
+            j += backupRows; //one more row as backup for scrolling
         }
         return {
             from: Math.max(i, start),
@@ -794,15 +795,15 @@ function dropAble(mimeTypes, onDrop) {
             __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).classed('drag_over', false);
             //var xy = mouse($node.node());
             if (hasDnDType(e, mimeTypes)) {
-                var data = {};
+                var data_1 = {};
                 //selects the data contained in the data transfer
                 mimeTypes.forEach(function (mime) {
                     var value = e.dataTransfer.getData(mime);
                     if (value !== '') {
-                        data[mime] = value;
+                        data_1[mime] = value;
                     }
                 });
-                return onDrop(data, d, copyDnD(e));
+                return onDrop(data_1, d, copyDnD(e));
             }
         });
     };
@@ -1472,7 +1473,6 @@ var StringColumn = (function (_super) {
 
 
 
-
 /**
  * default renderer instance rendering the value as a text
  */
@@ -1480,16 +1480,6 @@ var DefaultCellRenderer = (function () {
     function DefaultCellRenderer(textClass, align) {
         if (textClass === void 0) { textClass = 'text'; }
         if (align === void 0) { align = 'left'; }
-        /**
-         * class to append to the text elements
-         * @type {string}
-         */
-        this.textClass = 'text';
-        /**
-         * the text alignment: left, center, right
-         * @type {string}
-         */
-        this.align = 'left';
         this.textClass = textClass;
         this.align = align;
     }
@@ -1497,7 +1487,7 @@ var DefaultCellRenderer = (function () {
         var _this = this;
         return {
             template: "<text class=\"" + this.textClass + "\" clip-path=\"url(#cp" + context.idPrefix + "clipCol" + col.id + ")\"></text>",
-            update: function (n, d, i) {
+            update: function (n, d) {
                 var alignmentShift = 2;
                 if (_this.align === 'right') {
                     alignmentShift = col.getWidth() - 5;
@@ -1515,7 +1505,7 @@ var DefaultCellRenderer = (function () {
     DefaultCellRenderer.prototype.createHTML = function (col, context) {
         return {
             template: "<div class=\"" + this.textClass + " " + this.align + "\"></div>",
-            update: function (n, d, i) {
+            update: function (n, d) {
                 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["attr"])(n, {}, {
                     width: col.getWidth() + "px"
                 });
@@ -1525,7 +1515,7 @@ var DefaultCellRenderer = (function () {
     };
     DefaultCellRenderer.prototype.createCanvas = function (col, context) {
         var _this = this;
-        return function (ctx, d, i) {
+        return function (ctx, d) {
             var bak = ctx.textAlign;
             ctx.textAlign = _this.align;
             var w = col.getWidth();
@@ -1541,368 +1531,6 @@ var DefaultCellRenderer = (function () {
         };
     };
     return DefaultCellRenderer;
-}());
-var HeatmapCellRenderer = (function () {
-    function HeatmapCellRenderer() {
-    }
-    HeatmapCellRenderer.prototype.createSVG = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
-        var padding = context.option('rowPadding', 1);
-        return {
-            template: "<g class=\"heatmapcell\"></g>",
-            update: function (n, d, i) {
-                var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
-                rect.enter().append('rect');
-                rect
-                    .attr({
-                    y: padding,
-                    x: function (d, i) { return (i * celldimension); },
-                    width: celldimension,
-                    height: context.rowHeight(i),
-                    fill: function (d, i) { return multiValueColumn.getColor(d); }
-                });
-                rect.exit().remove();
-            }
-        };
-    };
-    HeatmapCellRenderer.prototype.createHTML = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
-        var padding = context.option('rowPadding', 1);
-        return {
-            template: "<div class=\"heatmapcell\" style=\"top:" + padding + "px;\">\n                                   </div>",
-            update: function (n, d, i) {
-                var g = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n);
-                var div = g.selectAll('div').data(col.getValue(d.v, d.dataIndex));
-                div.enter().append('div');
-                div
-                    .style({
-                    'width': celldimension + 'px',
-                    'background-color': multiValueColumn.getColor(d),
-                    'height': context.rowHeight(i) + 'px',
-                    'left': function (d, i) { return (i * celldimension) + 'px'; }
-                });
-            }
-        };
-    };
-    HeatmapCellRenderer.prototype.createCanvas = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
-        var padding = context.option('rowPadding', 1);
-        return function (ctx, d, i) {
-            var data = col.getValue(d.v, d.dataIndex);
-            data.forEach(function (d, i) {
-                var x = (i * celldimension);
-                ctx.beginPath();
-                ctx.fillStyle = multiValueColumn.getColor(d);
-                ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
-            });
-        };
-    };
-    return HeatmapCellRenderer;
-}());
-var SparklineCellRenderer = (function () {
-    function SparklineCellRenderer() {
-    }
-    SparklineCellRenderer.prototype.createSVG = function (col, context) {
-        var multiValueColumn = col;
-        return {
-            template: "<g class=\"sparklinecell\"></g>",
-            update: function (n, d, i) {
-                var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
-                var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line();
-                path.enter().append('path');
-                path
-                    .attr('d', function (d, i) {
-                    line
-                        .x(function (d, i) { return multiValueColumn.getxScale(i); })
-                        .y(function (d, i) { return multiValueColumn.getyScale(d, context.rowHeight(i)); });
-                    return line(d);
-                });
-                path.exit().remove();
-            }
-        };
-    };
-    SparklineCellRenderer.prototype.createCanvas = function (col, context) {
-        var multiValueColumn = col;
-        return function (ctx, d, i) {
-            var data = col.getValue(d.v, d.dataIndex);
-            var xpos, ypos;
-            data.forEach(function (d, i) {
-                if (i === 0) {
-                    xpos = multiValueColumn.getxScale(i);
-                    ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
-                }
-                else {
-                    ctx.strokeStyle = 'black';
-                    ctx.fillStyle = 'black';
-                    ctx.beginPath();
-                    ctx.moveTo(xpos, ypos);
-                    xpos = multiValueColumn.getxScale(i);
-                    ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
-                    ctx.lineTo(xpos, ypos);
-                    ctx.stroke();
-                    ctx.fill();
-                }
-            });
-        };
-    };
-    return SparklineCellRenderer;
-}());
-var ThresholdCellRenderer = (function () {
-    function ThresholdCellRenderer() {
-    }
-    ThresholdCellRenderer.prototype.createSVG = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
-        var binaryColor = multiValueColumn.getbinaryColor();
-        return {
-            template: "<g class=\"thresholdcell\"></g>",
-            update: function (n, d, i) {
-                var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
-                rect.enter().append('rect');
-                rect
-                    .attr({
-                    y: function (d, i) { return (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0; },
-                    x: function (d, i) { return (i * celldimension); },
-                    width: celldimension,
-                    height: function (d, i) { return (context.rowHeight(i)) / 2; },
-                    fill: function (d) { return (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1]; }
-                });
-                rect.exit().remove();
-            }
-        };
-    };
-    ThresholdCellRenderer.prototype.createCanvas = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
-        var binaryColor = multiValueColumn.getbinaryColor();
-        return function (ctx, d, i) {
-            var data = col.getValue(d.v, d.dataIndex);
-            data.forEach(function (d, i) {
-                ctx.beginPath();
-                var xpos = (i * celldimension);
-                var ypos = (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0;
-                ctx.fillStyle = (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1];
-                ctx.fillRect(xpos, ypos, celldimension, context.rowHeight(i) / 2);
-            });
-        };
-    };
-    return ThresholdCellRenderer;
-}());
-var VerticalBarCellRenderer = (function () {
-    function VerticalBarCellRenderer() {
-    }
-    VerticalBarCellRenderer.prototype.createSVG = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
-        return {
-            template: "<g class=\"verticalbarcell\"></g>",
-            update: function (n, d, i) {
-                var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
-                rect.enter().append('rect');
-                rect
-                    .attr({
-                    y: function (d, i) { return multiValueColumn.getyposVerticalBar(d, context.rowHeight(i)); },
-                    x: function (d, i) { return (i * celldimension); },
-                    width: celldimension,
-                    height: function (d, i) { return multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)); },
-                    fill: function (d, i) { return multiValueColumn.getColor(d); }
-                });
-                rect.exit().remove();
-            }
-        };
-    };
-    VerticalBarCellRenderer.prototype.createCanvas = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
-        return function (ctx, d, i) {
-            var data = col.getValue(d.v, d.dataIndex);
-            data.forEach(function (d, i) {
-                var xpos = (i * celldimension);
-                var ypos = multiValueColumn.getyposVerticalBar(d, context.rowHeight(i));
-                ctx.fillStyle = multiValueColumn.getColor(d);
-                ctx.fillRect(xpos, ypos, celldimension, multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)));
-            });
-        };
-    };
-    return VerticalBarCellRenderer;
-}());
-var BoxplotCellRenderer = (function () {
-    function BoxplotCellRenderer() {
-    }
-    BoxplotCellRenderer.prototype.createSVG = function (col, context) {
-        var multiValueColumn = col;
-        var padding = context.option('rowPadding', 1);
-        return {
-            template: "<g class=\"boxplotcell\"></g>",
-            update: function (n, d, i) {
-                var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
-                var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
-                rect.enter().append('rect');
-                rect
-                    .attr('class', 'boxplotrect')
-                    .attr({
-                    y: padding,
-                    x: boxdata.q1,
-                    width: (boxdata.q3 - boxdata.q1),
-                    height: function (d, i) { return context.rowHeight(i); }
-                });
-                rect.exit().remove();
-                var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
-                path.enter().append('path');
-                path
-                    .attr('class', 'boxplotline')
-                    .attr('d', function (d, i) {
-                    var left = boxdata.min, right = boxdata.max, center = boxdata.median;
-                    var bottom = Math.max(context.rowHeight(i) - padding, 0);
-                    var middle = (bottom - padding) / 2;
-                    return 'M' + left + ',' + middle + 'L' + boxdata.q1 + ',' + middle +
-                        'M' + left + ',' + padding + 'L' + left + ',' + bottom +
-                        'M' + center + ',' + padding + 'L' + center + ',' + bottom +
-                        'M' + (boxdata.q3) + ',' + middle + 'L' + (right) + ',' + middle +
-                        'M' + right + ',' + padding + 'L' + right + ',' + bottom;
-                });
-                path.exit().remove();
-            }
-        };
-    };
-    BoxplotCellRenderer.prototype.createCanvas = function (col, context) {
-        var multiValueColumn = col;
-        var padding = context.option('rowPadding', 1);
-        return function (ctx, d, i) {
-            // Rectangle
-            var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
-            // console.log(boxdata,col.getValue(d.v, d.dataIndex));
-            ctx.fillStyle = '#e0e0e0';
-            ctx.strokeStyle = 'black';
-            ctx.beginPath();
-            ctx.rect(boxdata.q1, padding, (boxdata.q3 - boxdata.q1), context.rowHeight(i) - padding);
-            ctx.fill();
-            ctx.stroke();
-            //Line
-            var left = boxdata.min, right = boxdata.max, center = boxdata.median;
-            var bottom = Math.max(context.rowHeight(i) - padding, 0);
-            var middle = (bottom - padding) / 2;
-            ctx.strokeStyle = 'black';
-            ctx.fillStyle = '#e0e0e0';
-            ctx.beginPath();
-            ctx.moveTo(left, middle);
-            ctx.lineTo(boxdata.q1, middle);
-            ctx.moveTo(left, padding);
-            ctx.lineTo(left, bottom);
-            ctx.moveTo(center, padding);
-            ctx.lineTo(center, bottom);
-            ctx.moveTo(boxdata.q3, middle);
-            ctx.lineTo(right, middle);
-            ctx.moveTo(right, padding);
-            ctx.lineTo(right, bottom);
-            ctx.stroke();
-            ctx.fill();
-        };
-    };
-    return BoxplotCellRenderer;
-}());
-var UpsetCellRenderer = (function () {
-    function UpsetCellRenderer() {
-    }
-    UpsetCellRenderer.prototype.createSVG = function (col, context) {
-        var upsetColumn = col;
-        var celldimension = upsetColumn.cellDimension();
-        return {
-            template: "<g class=\"upsetcell\"></g>",
-            update: function (n, d, i) {
-                var circle = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('circle').data(col.getValue(d.v, d.dataIndex));
-                circle.enter().append('circle');
-                circle
-                    .attr({
-                    cy: function (d, i) { return (context.rowHeight(i) / 2); },
-                    cx: function (d, i) { return (i * celldimension) + (celldimension / 2); },
-                    r: (celldimension / 4),
-                    class: 'upsetcircle',
-                    opacity: function (d) { return (d === 1) ? 1 : 0.1; }
-                });
-                circle.exit().remove();
-                var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
-                var countcategory = col.getValue(d.v, d.dataIndex).filter(function (x) { return x === 1; }).length;
-                if (countcategory > 1) {
-                    path.enter().append('path');
-                    path
-                        .attr('d', function (d, i) {
-                        var pathcordinate = upsetColumn.calculatePath(d);
-                        return 'M' + (pathcordinate.left) + ',' + (context.rowHeight(i) / 2) + 'L' + (pathcordinate.right) + ',' + (context.rowHeight(i) / 2);
-                    })
-                        .attr('class', 'upsetpath');
-                }
-            }
-        };
-    };
-    UpsetCellRenderer.prototype.createCanvas = function (col, context) {
-        var upsetColumn = col;
-        var celldimension = upsetColumn.cellDimension();
-        return function (ctx, d, i) {
-            // Circle
-            var data = col.getValue(d.v, d.dataIndex);
-            var countcategory = data.filter(function (x) { return x === 1; }).length;
-            var radius = (context.rowHeight(i) / 3);
-            var pathcordinate = upsetColumn.calculatePath(data);
-            if (countcategory > 1) {
-                ctx.fillStyle = 'black';
-                ctx.strokeStyle = 'black';
-                ctx.beginPath();
-                ctx.moveTo((pathcordinate.left), (context.rowHeight(i) / 2));
-                ctx.lineTo((pathcordinate.right), (context.rowHeight(i) / 2));
-                ctx.fill();
-                ctx.stroke();
-            }
-            data.forEach(function (d, i) {
-                var posy = (context.rowHeight(i) / 2);
-                var posx = (i * celldimension) + (celldimension / 2);
-                ctx.fillStyle = 'black';
-                ctx.strokeStyle = 'black';
-                ctx.beginPath();
-                ctx.globalAlpha = (d === 1) ? 1 : 0.1;
-                ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.stroke();
-            });
-        };
-    };
-    return UpsetCellRenderer;
-}());
-var CircleColumnCellRenderer = (function () {
-    function CircleColumnCellRenderer() {
-    }
-    CircleColumnCellRenderer.prototype.createSVG = function (col, context) {
-        return {
-            template: "<g class=\"circlecolumncell\"></g>",
-            update: function (n, d, i) {
-                var circle = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('circle').data([col.getValue(d.v, d.dataIndex)]);
-                circle.enter().append('circle');
-                circle
-                    .attr({
-                    cy: function (d, i) { return (context.rowHeight(i) / 2); },
-                    cx: function (d, i) { return (col.getWidth() / 2); },
-                    r: (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex),
-                    class: 'circlecolumn'
-                });
-            }
-        };
-    };
-    CircleColumnCellRenderer.prototype.createCanvas = function (col, context) {
-        return function (ctx, d, i) {
-            var posy = (context.rowHeight(i) / 2);
-            var posx = (col.getWidth() / 2);
-            ctx.fillStyle = 'black';
-            ctx.strokeStyle = 'black';
-            ctx.beginPath();
-            ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
-        };
-    };
-    return CircleColumnCellRenderer;
 }());
 /**
  * a renderer rendering a bar for numerical columns
@@ -1962,7 +1590,6 @@ var BarCellRenderer = (function () {
         var padding = context.option('rowPadding', 1);
         return function (ctx, d, i) {
             ctx.fillStyle = _this.colorOf(d.v, i, col);
-            // console.log(col.getValue(d.v, d.dataIndex),d.v)
             var width = col.getWidth() * col.getValue(d.v, d.dataIndex);
             ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
             if (_this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
@@ -2031,8 +1658,8 @@ var action = {
     createSVG: function (col, context) {
         var actions = context.option('actions', []);
         return {
-            template: "<text class=\"actions hoverOnly fa\">" + actions.map(function (a) { return ("<tspan title=\"" + a.name + "\">" + a.icon + "></tspan>"); }) + "</text>",
-            update: function (n, d, i) {
+            template: "<text class=\"actions hoverOnly fa\">" + actions.map(function (a) { return ("<tspan>" + a.icon + "></tspan>"); }) + "</text>",
+            update: function (n, d) {
                 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["forEach"])(n, 'tspan', function (ni, i) {
                     ni.onclick = function (event) {
                         event.preventDefault();
@@ -2047,7 +1674,7 @@ var action = {
         var actions = context.option('actions', []);
         return {
             template: "<div class=\"actions hoverOnly\">" + actions.map(function (a) { return ("<span title=\"" + a.name + "\" class=\"fa\">" + a.icon + "></span>"); }) + "</div>",
-            update: function (n, d, i) {
+            update: function (n, d) {
                 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["forEach"])(n, 'span', function (ni, i) {
                     ni.onclick = function (event) {
                         event.preventDefault();
@@ -2082,7 +1709,7 @@ var selection = {
     createSVG: function (col) {
         return {
             template: "<text class=\"selection fa\"><tspan class=\"selectionOnly\">\uF046</tspan><tspan class=\"notSelectionOnly\">\uF096</tspan></text>",
-            update: function (n, d, i) {
+            update: function (n, d) {
                 n.onclick = function (event) {
                     event.preventDefault();
                     event.stopPropagation();
@@ -2094,7 +1721,7 @@ var selection = {
     createHTML: function (col) {
         return {
             template: "<div class=\"selection fa\"></div>",
-            update: function (n, d, i) {
+            update: function (n, d) {
                 n.onclick = function (event) {
                     event.preventDefault();
                     event.stopPropagation();
@@ -2104,7 +1731,7 @@ var selection = {
         };
     },
     createCanvas: function (col, context) {
-        return function (ctx, d, i) {
+        return function (ctx, d) {
             var bak = ctx.font;
             ctx.font = '10pt FontAwesome';
             __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["clipText"])(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, col.getWidth(), context.textHints);
@@ -2115,10 +1742,10 @@ var selection = {
 var annotate = {
     createSVG: function (col, context) {
         return {
-            template: "<g class=\"annotations\">\n        <text class=\"notHoverOnly text\" clip-path=\"url(#cp" + context.idPrefix + "clipCol" + col.id + ")\"></text>\n        <foreignObject class=\"hoverOnly\" x=\"-2\", y=\"-2\">\n          <input type=\"text\">\n        </foreignObject>\n       </g>",
+            template: "<g class=\"annotations\">\n        <text class=\"notHoverOnly text\" clip-path=\"url(#cp" + context.idPrefix + "clipCol" + col.id + ")\"></text>\n        <foreignObject class=\"hoverOnly\" x=\"-2\" y=\"-2\">\n          <input type=\"text\">\n        </foreignObject>\n       </g>",
             update: function (n, d, i) {
                 var input = n.querySelector('foreignObject *');
-                input.onchange = function (event) {
+                input.onchange = function () {
                     col.setValue(d.v, d.dataIndex, this.value);
                 };
                 input.onclick = function (event) {
@@ -2136,9 +1763,9 @@ var annotate = {
     createHTML: function (col) {
         return {
             template: "<div class=\"annotations text\">\n        <input type=\"text\" class=\"hoverOnly\">\n        <span class=\"text notHoverOnly\"></span>\n       </div>",
-            update: function (n, d, i) {
+            update: function (n, d) {
                 var input = n.querySelector('input');
-                input.onchange = function (event) {
+                input.onchange = function () {
                     col.setValue(d.v, d.dataIndex, this.value);
                 };
                 input.onclick = function (event) {
@@ -2158,7 +1785,7 @@ var annotate = {
                 overlay.style.width = col.getWidth() + 'px';
                 overlay.innerHTML = "<input type=\"text\" value=\"" + col.getValue(d.v, d.dataIndex) + "\" style=\"width:" + col.getWidth() + "px\">";
                 var input = overlay.childNodes[0];
-                input.onchange = function (event) {
+                input.onchange = function () {
                     col.setValue(d.v, d.dataIndex, this.value);
                 };
                 input.onclick = function (event) {
@@ -2191,7 +1818,7 @@ var link = {
     createSVG: function (col, context) {
         return {
             template: "<text class=\"link text\" clip-path=\"url(#cp" + context.idPrefix + "clipCol" + col.id + ")\"></text>",
-            update: function (n, d, i) {
+            update: function (n, d) {
                 n.innerHTML = col.isLink(d.v, d.dataIndex) ? "<a class=\"link\" xlink:href=\"" + col.getValue(d.v, d.dataIndex) + "\" target=\"_blank\">" + col.getLabel(d.v, d.dataIndex) + "</a>" : col.getLabel(d.v, d.dataIndex);
             }
         };
@@ -2199,7 +1826,7 @@ var link = {
     createHTML: function (col) {
         return {
             template: "<div class=\"link text\"></div>",
-            update: function (n, d, i) {
+            update: function (n, d) {
                 n.style.width = col.getWidth() + 'px';
                 n.innerHTML = col.isLink(d.v, d.dataIndex) ? "<a class=\"link\" href=\"" + col.getValue(d.v, d.dataIndex) + "\" target=\"_blank\">" + col.getLabel(d.v, d.dataIndex) + "</a>" : col.getLabel(d.v, d.dataIndex);
             }
@@ -2427,11 +2054,11 @@ var StackCellRenderer = (function () {
         var cols = this.createData(col, context);
         return function (ctx, d, i, dx, dy) {
             var stackShift = 0;
-            cols.forEach(function (col, ci) {
-                var shift = 0;
-                ctx.translate(shift = col.shift - stackShift, 0);
+            cols.forEach(function (col) {
+                var shift = col.shift - stackShift;
+                ctx.translate(shift, 0);
                 col.renderer(ctx, d, i, dx + shift, dy);
-                ctx.translate(-(col.shift - stackShift), 0);
+                ctx.translate(-shift, 0);
                 if (col.stacked) {
                     stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v, d.dataIndex));
                 }
@@ -2462,14 +2089,7 @@ var renderers = {
     max: combineCellRenderer,
     min: combineCellRenderer,
     mean: combineCellRenderer,
-    script: combineCellRenderer,
-    heatmapcustom: new HeatmapCellRenderer(),
-    threshold: new ThresholdCellRenderer(),
-    sparkline: new SparklineCellRenderer(),
-    verticalbar: new VerticalBarCellRenderer(),
-    boxplot: new BoxplotCellRenderer(),
-    upset: new UpsetCellRenderer(),
-    circle: new CircleColumnCellRenderer()
+    script: combineCellRenderer
 };
 function chooseRenderer(col, renderers) {
     var r = renderers[col.rendererType()];
@@ -2857,38 +2477,38 @@ var ADataProvider = (function (_super) {
         var ranking = this.cloneRanking();
         ranking.clear();
         var toCol = function (column) {
-            if (column.type === 'rank') {
-                return _this.create(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["createRankDesc"])());
-            }
-            if (column.type === 'selection') {
-                return _this.create(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["createSelectionDesc"])());
-            }
-            if (column.type === 'actions') {
-                var r = _this.create(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["createActionDesc"])(column.label || 'actions'));
-                r.restore(column, null);
-                return r;
-            }
-            if (column.type === 'stacked') {
-                //create a stacked one
-                var r_1 = _this.create(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["createStackDesc"])(column.label || 'Combined'));
-                (column.children || []).forEach(function (col) {
-                    var c = toCol(col);
-                    if (c) {
-                        r_1.push(c);
-                    }
-                });
-                return r_1;
-            }
-            else {
-                var desc = _this.findDesc(column.column);
-                if (desc) {
-                    var r = _this.create(desc);
-                    column.label = column.label || desc.label || desc.column;
+            switch (column.type) {
+                case 'rank':
+                    return _this.create(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["createRankDesc"])());
+                case 'selection':
+                    return _this.create(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["createSelectionDesc"])());
+                case 'actions': {
+                    var r = _this.create(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["createActionDesc"])(column.label || 'actions'));
                     r.restore(column, null);
                     return r;
                 }
+                case 'stacked': {
+                    //create a stacked one
+                    var r_1 = _this.create(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["createStackDesc"])(column.label || 'Combined'));
+                    (column.children || []).forEach(function (col) {
+                        var c = toCol(col);
+                        if (c) {
+                            r_1.push(c);
+                        }
+                    });
+                    return r_1;
+                }
+                default: {
+                    var desc = _this.findDesc(column.column);
+                    if (desc) {
+                        var r = _this.create(desc);
+                        column.label = column.label || desc.label || desc.column;
+                        r.restore(column, null);
+                        return r;
+                    }
+                    return null;
+                }
             }
-            return null;
         };
         bundle.forEach(function (column) {
             var col = toCol(column);
@@ -2935,9 +2555,8 @@ var ADataProvider = (function (_super) {
      * also select all the given rows
      * @param indices
      */
-    ADataProvider.prototype.selectAll = function (indices, jumpToSelection) {
+    ADataProvider.prototype.selectAll = function (indices) {
         var _this = this;
-        if (jumpToSelection === void 0) { jumpToSelection = false; }
         if (indices.every(function (i) { return _this.selection.has(i); })) {
             return; //no change
         }
@@ -2948,12 +2567,11 @@ var ADataProvider = (function (_super) {
         indices.forEach(function (index) {
             _this.selection.add(index);
         });
-        this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection(), jumpToSelection);
+        this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
     };
     /**
      * set the selection to the given rows
      * @param indices
-     * @param jumpToSelection whether the first selected row should be visible
      */
     ADataProvider.prototype.setSelection = function (indices) {
         var _this = this;
@@ -3039,33 +2657,32 @@ var ADataProvider = (function (_super) {
      */
     ADataProvider.prototype.exportTable = function (ranking, options) {
         if (options === void 0) { options = {}; }
-        var op = {
+        options = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["merge"])({
             separator: '\t',
             newline: '\n',
             header: true,
             quote: false,
             quoteChar: '"',
             filter: function (c) { return !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["isSupportType"])(c); }
-        };
-        options = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["merge"])(op, options);
+        }, options);
         //optionally quote not numbers
         function quote(l, c) {
-            if (op.quote && (!c || !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["isNumberColumn"])(c))) {
-                return op.quoteChar + l + op.quoteChar;
+            if (options.quote && (!c || !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["isNumberColumn"])(c))) {
+                return options.quoteChar + l + options.quoteChar;
             }
             return l;
         }
-        var columns = ranking.flatColumns.filter(function (c) { return op.filter(c.desc); });
+        var columns = ranking.flatColumns.filter(function (c) { return options.filter(c.desc); });
         var order = ranking.getOrder();
         return this.view(order).then(function (data) {
             var r = [];
-            if (op.header) {
-                r.push(columns.map(function (d) { return quote(d.label); }).join(op.separator));
+            if (options.header) {
+                r.push(columns.map(function (d) { return quote(d.label); }).join(options.separator));
             }
             data.forEach(function (row, i) {
-                r.push(columns.map(function (c) { return quote(c.getLabel(row, order[i]), c); }).join(op.separator));
+                r.push(columns.map(function (c) { return quote(c.getLabel(row, order[i]), c); }).join(options.separator));
             });
-            return r.join(op.newline);
+            return r.join(options.newline);
         });
     };
     ADataProvider.EVENT_SELECTION_CHANGED = 'selectionChanged';
@@ -4472,7 +4089,7 @@ var ABodyRenderer = (function (_super) {
             cellPrevY: function (index) { return (index + index_shift) * (_this.options.rowHeight); },
             idPrefix: options.idPrefix,
             option: findOption,
-            rowHeight: function (index) {
+            rowHeight: function () {
                 return options.rowHeight - options.rowPadding;
             },
             renderer: function (col) {
@@ -5368,7 +4985,6 @@ var MultiValueColumn = (function (_super) {
     };
     MultiValueColumn.prototype.getValue = function (row, index) {
         var v = this.getRaw(row, index);
-        // console.log(v)
         return (v);
     };
     MultiValueColumn.prototype.getColor = function (data) {
@@ -5634,7 +5250,7 @@ var ABodyDOMRenderer = (function (_super) {
         {
             var $meanlines = $rankings.select(g + '.meanlines').selectAll(domMapping.meanLine + '.meanline').data(function (d) { return d.columns.filter(function (c) { return _this.showMeanLine(c.column); }); });
             $meanlines.enter().append(domMapping.meanLine).attr('class', 'meanline');
-            $meanlines.each(function (d, i, j) {
+            $meanlines.each(function (d) {
                 var h = that.histCache.get(d.column.id);
                 var $mean = __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this);
                 if (!h) {
@@ -5686,12 +5302,12 @@ var ABodyDOMRenderer = (function (_super) {
         //$slopes.attr('transform', (d, i) => `translate(${(shifts[i + 1].shift - this.options.slopeWidth)},0)`);
         $slopes.call(this.domMapping.updateSlopes, this.options.slopeWidth, height, function (d, i) { return ((data[i + 1].shift - _this.options.slopeWidth)); });
         var $lines = $slopes.selectAll('line.slope').data(function (d) {
-            var cache = {};
-            d.right.forEach(function (data_index, pos) { return cache[data_index] = pos; });
+            var cache = new Map();
+            d.right.forEach(function (data_index, pos) { return cache.set(data_index, pos); });
             return d.left.map(function (data_index, pos) { return ({
                 data_index: data_index,
                 lpos: pos,
-                rpos: cache[data_index]
+                rpos: cache.get(data_index)
             }); }).filter(function (d) { return d.rpos != null; });
         });
         $lines.enter().append('line').attr({
@@ -5717,9 +5333,6 @@ var ABodyDOMRenderer = (function (_super) {
             this.domMapping.translate(item, left, 0);
         }
         this.currentFreezeLeft = left;
-    };
-    ABodyDOMRenderer.prototype.updateClipPaths = function (data, context, height) {
-        //no clip paths in HTML
     };
     ABodyDOMRenderer.prototype.createContextImpl = function (index_shift) {
         return this.createContext(index_shift, this.domMapping.creator);
@@ -5759,14 +5372,12 @@ var ABodyDOMRenderer = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__model_ScriptColumn__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__ui_dialogs__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ui_dialogs__ = __webpack_require__(28);
 /* harmony export (immutable) */ exports["a"] = toFullTooltip;
 /* harmony export (immutable) */ exports["b"] = dummyRankingButtonHook;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
-
 
 
 
@@ -5795,6 +5406,12 @@ function toFullTooltip(col) {
 function dummyRankingButtonHook() {
     return null;
 }
+function countMultiLevel(c) {
+    if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__model_CompositeColumn__["b" /* isMultiLevelColumn */])(c) && !c.getCollapsed() && !c.getCompressed()) {
+        return 1 + Math.max.apply(Math, c.children.map(countMultiLevel));
+    }
+    return 1;
+}
 var HeaderRenderer = (function () {
     function HeaderRenderer(data, parent, options) {
         var _this = this;
@@ -5807,7 +5424,7 @@ var HeaderRenderer = (function () {
             headerHeight: 20,
             manipulative: true,
             histograms: false,
-            filterDialogs: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["filterDialogs"])(),
+            filterDialogs: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["filterDialogs"])(),
             linkTemplates: [],
             searchAble: function (col) { return col instanceof __WEBPACK_IMPORTED_MODULE_3__model_StringColumn__["a" /* default */]; },
             sortOnLabel: true,
@@ -5831,7 +5448,7 @@ var HeaderRenderer = (function () {
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].sourceEvent.stopPropagation();
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].sourceEvent.preventDefault();
         })
-            .on('dragend', function (d) {
+            .on('dragend', function () {
             __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this).classed('dragging', false);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].sourceEvent.stopPropagation();
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].sourceEvent.preventDefault();
@@ -5972,14 +5589,13 @@ var HeaderRenderer = (function () {
         var _this = this;
         var that = this;
         var rankings = this.data.getRankings();
-        var shifts = [], offset = 0, rankingOffsets = [];
+        var shifts = [], totalWidth = 0, rankingOffsets = [];
         rankings.forEach(function (ranking) {
-            offset += ranking.flatten(shifts, offset, 1, _this.options.columnPadding) + _this.options.slopeWidth;
-            rankingOffsets.push(offset - _this.options.slopeWidth);
+            totalWidth += ranking.flatten(shifts, totalWidth, 1, _this.options.columnPadding) + _this.options.slopeWidth;
+            rankingOffsets.push(totalWidth - _this.options.slopeWidth);
         });
         //real width
-        offset -= this.options.slopeWidth;
-        var totalWidth = offset;
+        totalWidth -= this.options.slopeWidth;
         // fix for #179
         this.$node.select('div.drop').style('width', totalWidth + 'px');
         var columns = shifts.map(function (d) { return d.col; });
@@ -5991,46 +5607,35 @@ var HeaderRenderer = (function () {
         if (this.options.rankingButtons !== dummyRankingButtonHook) {
             this.renderRankingButtons(rankings, rankingOffsets);
         }
-        function countMultiLevel(c) {
-            if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__model_CompositeColumn__["b" /* isMultiLevelColumn */])(c) && !c.getCollapsed() && !c.getCompressed()) {
-                return 1 + Math.max.apply(Math, c.children.map(countMultiLevel));
-            }
-            return 1;
-        }
         var levels = Math.max.apply(Math, columns.map(countMultiLevel));
         var height = (this.options.histograms ? this.options.headerHistogramHeight : this.options.headerHeight) + (levels - 1) * this.options.headerHeight;
         if (this.options.autoRotateLabels) {
             //check if we have overflows
-            var rotatedAny = false;
+            var rotatedAny_1 = false;
             this.$node.selectAll('div.header')
                 .style('height', height + 'px').select('div.lu-label').each(function (d) {
                 var w = this.querySelector('span.lu-label').offsetWidth;
                 var actWidth = d.getWidth();
                 if (w > (actWidth + 30)) {
                     __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this).style('transform', "rotate(" + that.options.rotationDegree + "deg)");
-                    rotatedAny = true;
+                    rotatedAny_1 = true;
                 }
                 else {
                     __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this).style('transform', null);
                 }
             });
-            this.$node.selectAll('div.header').style('margin-top', rotatedAny ? this.options.rotationHeight + 'px' : null);
-            height += rotatedAny ? this.options.rotationHeight : 0;
+            this.$node.selectAll('div.header').style('margin-top', rotatedAny_1 ? this.options.rotationHeight + 'px' : null);
+            height += rotatedAny_1 ? this.options.rotationHeight : 0;
         }
         this.$node.style('height', height + 'px');
     };
     HeaderRenderer.prototype.createToolbar = function ($node) {
         var _this = this;
         var filterDialogs = this.options.filterDialogs, provider = this.data, that = this;
-        var $regular = $node.filter(function (d) { return !(d instanceof __WEBPACK_IMPORTED_MODULE_4__model_Ranking__["a" /* default */]); }), $stacked = $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_9__model_StackColumn__["a" /* default */]; }), $multilevel = $node.filter(function (d) { return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__model_CompositeColumn__["b" /* isMultiLevelColumn */])(d); });
-        //edit weights
-        $stacked.append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openEditWeightsDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
-            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
-        });
+        var $regular = $node.filter(function (d) { return !(d instanceof __WEBPACK_IMPORTED_MODULE_8__model_RankColumn__["a" /* default */]); });
         //rename
         $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openRenameDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openRenameDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //clone
@@ -6038,48 +5643,14 @@ var HeaderRenderer = (function () {
             provider.takeSnapshot(d);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
-        //Heatmap Sort
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["sortDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
-            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
-        });
-        //
-        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-        //   sortDialogSparkline(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-        //   (<MouseEvent>d3.event).stopPropagation();
-        // });
-        //
-        //
-        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-        //   sortDialogBoxplot(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-        //   (<MouseEvent>d3.event).stopPropagation();
-        // });
-        //
-        //
-        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-        //   sortDialogThresholdBar(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-        //   (<MouseEvent>d3.event).stopPropagation();
-        // });
-        //
-        //
-        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-        //
-        //   sortDialogVerticalBar(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-        //   (<MouseEvent>d3.event).stopPropagation();
-        // });
-        //Renderer Change
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__["a" /* default */] || d instanceof __WEBPACK_IMPORTED_MODULE_6__model_NumberColumn__["c" /* default */]; }).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["renderertypedialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
-            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
-        });
         //edit link
         $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openEditLinkDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), [].concat(d.desc.templates || [], that.options.linkTemplates), that.options.idPrefix);
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openEditLinkDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), [].concat(d.desc.templates || [], that.options.linkTemplates), that.options.idPrefix);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //edit script
         $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_11__model_ScriptColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openEditScriptDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openEditScriptDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //filter
@@ -6089,7 +5660,12 @@ var HeaderRenderer = (function () {
         });
         //search
         $node.filter(function (d) { return _this.options.searchAble(d); }).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openSearchDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), provider);
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openSearchDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), provider);
+            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
+        });
+        //edit weights
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_9__model_StackColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openEditWeightsDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //collapse
@@ -6106,7 +5682,7 @@ var HeaderRenderer = (function () {
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //compress
-        $multilevel.append('i')
+        $node.filter(function (d) { return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__model_CompositeColumn__["b" /* isMultiLevelColumn */])(d); }).append('i')
             .attr('class', 'fa')
             .classed('fa-compress', function (d) { return !d.getCollapsed(); })
             .classed('fa-expand', function (d) { return d.getCollapsed(); })
@@ -6230,6 +5806,31 @@ var HeaderRenderer = (function () {
             }
             return d.push(col) != null;
         }));
+        // drag columns on top of each
+        $headers.filter(function (d) { return d.parent instanceof __WEBPACK_IMPORTED_MODULE_4__model_Ranking__["a" /* default */] && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__model_NumberColumn__["a" /* isNumberColumn */])(d) && !__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__model_CompositeColumn__["b" /* isMultiLevelColumn */])(d); }).select('div.lu-label').call(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["dropAble"])(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], function (data, d, copy) {
+            var col = null;
+            if ('application/caleydo-lineup-column-number-ref' in data) {
+                var id = data['application/caleydo-lineup-column-number-ref'];
+                col = _this.data.find(id);
+                if (copy) {
+                    col = _this.data.clone(col);
+                }
+                else if (col) {
+                    col.removeMe();
+                }
+            }
+            else {
+                var desc = JSON.parse(data['application/caleydo-lineup-column-number']);
+                col = _this.data.create(_this.data.fromDescRef(desc));
+            }
+            var ranking = d.findMyRanker();
+            var index = ranking.indexOf(d);
+            var stack = _this.data.create(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_9__model_StackColumn__["b" /* createDesc */])());
+            d.removeMe();
+            stack.push(d);
+            stack.push(col);
+            return ranking.insert(stack, index) != null;
+        }));
         if (this.options.histograms) {
             $headers.filter(function (d) { return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_7__model_CategoricalColumn__["b" /* isCategoricalColumn */])(d); }).each(function (col) {
                 var $this = __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this).select('div.histogram');
@@ -6345,13 +5946,9 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_d3__);
 /* harmony export (immutable) */ exports["dialogForm"] = dialogForm;
-/* harmony export (immutable) */ exports["sortdialogForm"] = sortdialogForm;
 /* harmony export (immutable) */ exports["makePopup"] = makePopup;
-/* harmony export (immutable) */ exports["makesortPopup"] = makesortPopup;
 /* harmony export (immutable) */ exports["openRenameDialog"] = openRenameDialog;
 /* harmony export (immutable) */ exports["openEditLinkDialog"] = openEditLinkDialog;
-/* harmony export (immutable) */ exports["renderertypedialog"] = renderertypedialog;
-/* harmony export (immutable) */ exports["sortDialog"] = sortDialog;
 /* harmony export (immutable) */ exports["openSearchDialog"] = openSearchDialog;
 /* harmony export (immutable) */ exports["openEditWeightsDialog"] = openEditWeightsDialog;
 /* harmony export (immutable) */ exports["openEditScriptDialog"] = openEditScriptDialog;
@@ -6367,23 +5964,16 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 
 
 
-
-function dialogForm(title, body, buttonsWithLabel) {
-    if (buttonsWithLabel === void 0) { buttonsWithLabel = false; }
+function dialogForm(title, body) {
     return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
         '<form onsubmit="return false">' +
         body + '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
         '<button type = "reset" class="cancel fa fa-times" title="cancel"></button>' +
         '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
 }
-function sortdialogForm(title, body, buttonsWithLabel) {
-    if (buttonsWithLabel === void 0) { buttonsWithLabel = false; }
-    return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
-        '<form onsubmit="return false">' + body;
-}
 /**
  * creates a simple popup dialog under the given attachment
- * @param attachment
+ * @param attachement
  * @param title
  * @param body
  * @returns {Selection<any>}
@@ -6397,36 +5987,6 @@ function makePopup(attachement, title, body) {
         left: pos.left + 'px',
         top: pos.top + 'px'
     }).html(dialogForm(title, body));
-    function movePopup() {
-        //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
-        //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
-        //const mouse = d3.mouse(this.parentElement);
-        $popup.style({
-            left: (this.parentElement.offsetLeft + __WEBPACK_IMPORTED_MODULE_5_d3__["event"].dx) + 'px',
-            top: (this.parentElement.offsetTop + __WEBPACK_IMPORTED_MODULE_5_d3__["event"].dy) + 'px'
-        });
-    }
-    $popup.select('span.lu-popup-title').call(__WEBPACK_IMPORTED_MODULE_5_d3__["behavior"].drag().on('drag', movePopup));
-    $popup.on('keydown', function () {
-        if (__WEBPACK_IMPORTED_MODULE_5_d3__["event"].which === 27) {
-            $popup.remove();
-        }
-    });
-    var auto = $popup.select('input[autofocus]').node();
-    if (auto) {
-        auto.focus();
-    }
-    return $popup;
-}
-function makesortPopup(attachement, title, body) {
-    var pos = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["offset"])(attachement.node());
-    var $popup = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5_d3__["select"])('body').append('div')
-        .attr({
-        'class': 'lu-popup2'
-    }).style({
-        left: pos.left + 'px',
-        top: pos.top + 'px'
-    }).html(sortdialogForm(title, body));
     function movePopup() {
         //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
         //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
@@ -6470,6 +6030,8 @@ function openRenameDialog(column, $header) {
  * opens a dialog for editing the link of a column
  * @param column the column to rename
  * @param $header the visual header element of this column
+ * @param templates list of possible link templates
+ * @param idPrefix dom id prefix
  */
 function openEditLinkDialog(column, $header, templates, idPrefix) {
     if (templates === void 0) { templates = []; }
@@ -6485,57 +6047,6 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
     });
     popup.select('.cancel').on('click', function () {
         popup.remove();
-    });
-}
-// Renderer type change
-function renderertypedialog(column, $header) {
-    var renderertype = column.rendererType();
-    var rendererTypelist = column.getRendererList();
-    var popup = makesortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {
-        return "<input type=\"radio\" name=\"renderertype\" value=" + d.type + "  " + ((renderertype === d.type) ? 'checked' : '') + "> " + d.label + "<br>";
-    }).join('\n'));
-    function thiselement() {
-        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
-    }
-    var that;
-    var renderercontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name="renderertype"]');
-    renderercontent.on('change', function () {
-        that = this;
-        renderertype = that.value;
-        column.setRendererType(that.value);
-    });
-    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
-        var outside = renderercontent.filter(thiselement).empty();
-        if (outside) {
-            popup.remove();
-            __WEBPACK_IMPORTED_MODULE_5_d3__["select"](this).on('click', null);
-        }
-    });
-}
-// Sort  Dialog.
-function sortDialog(column, $header) {
-    var rank = column.getUserSortBy();
-    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-    var popup = makesortPopup($header, 'Sort By <br>', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"multivaluesort\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + " > " + sortlabel[i] + " <br>";
-    }).join('\n'));
-    function thiselement() {
-        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
-    }
-    var that;
-    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=multivaluesort]');
-    sortcontent.on('change', function () {
-        that = this;
-        rank = that.value;
-        column.setUserSortBy(rank);
-    });
-    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
-        var outside = sortcontent.filter(thiselement).empty();
-        if (outside) {
-            popup.remove();
-            __WEBPACK_IMPORTED_MODULE_5_d3__["select"](this).on('click', null);
-        }
     });
 }
 /**
@@ -6669,7 +6180,7 @@ function openCategoricalFilter(column, $header) {
     var isCheckedAll = true;
     function redrawSelectAll() {
         popup.select('.selectAll').html(function (d) { return '<i class="fa fa-' + ((isCheckedAll) ? 'check-' : '') + 'square-o"></i>'; });
-        popup.select('thead').on('click', function (d) {
+        popup.select('thead').on('click', function () {
             isCheckedAll = !isCheckedAll;
             trData.forEach(function (row) { return row.isChecked = isCheckedAll; });
             redraw();
@@ -6764,7 +6275,7 @@ function openBooleanFilter(column, $header) {
         markFiltered($header, (filter !== null));
         column.setFilter(filter);
     }
-    function updateImpl(force) {
+    function updateImpl() {
         //get value
         var isTrue = $popup.select('input[type="radio"][value="true"]').property('checked');
         var isFalse = $popup.select('input[type="radio"][value="false"]').property('checked');
@@ -6783,7 +6294,7 @@ function openBooleanFilter(column, $header) {
         updateData(null);
     });
     $popup.select('.ok').on('click', function () {
-        updateImpl(true);
+        updateImpl();
         $popup.remove();
     });
 }
@@ -6822,9 +6333,11 @@ function openEditScriptDialog(column, $header) {
  * @param column the column to rename
  * @param $header the visual header element of this column
  * @param data the data provider for illustrating the mapping by example
+ * @param idPrefix dom id prefix
  */
 function openMappingEditor(column, $header, data, idPrefix) {
-    var pos = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["offset"])($header.node()), bak = column.getMapping(), original = column.getOriginalMapping(), bakfilter = column.getFilter(), act = bak.clone(), actfilter = bakfilter;
+    var pos = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["offset"])($header.node()), original = column.getOriginalMapping();
+    var bakfilter = column.getFilter(), bak = column.getMapping(), act = bak.clone(), actfilter = bakfilter;
     var popup = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5_d3__["select"])('body').append('div')
         .attr({
         'class': 'lu-popup'
@@ -6877,13 +6390,7 @@ function openCategoricalMappingEditor(column, $header) {
     var $popup = makePopup($header, 'Edit Categorical Mapping', '<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>');
     var range = column.getScale().range, colors = column.categoryColors, labels = column.categoryLabels;
     var trData = column.categories.map(function (d, i) {
-        return {
-            cat: d,
-            label: labels[i],
-            isChecked: bak.length === 0 || bak.indexOf(d) >= 0,
-            range: range[i] * 100,
-            color: colors[i]
-        };
+        return { cat: d, label: labels[i], isChecked: bak.length === 0 || bak.indexOf(d) >= 0, range: range[i] * 100, color: colors[i] };
     }).sort(sortbyName('label'));
     var $rows = $popup.select('tbody').selectAll('tr').data(trData);
     var $rows_enter = $rows.enter().append('tr');
@@ -6913,7 +6420,7 @@ function openCategoricalMappingEditor(column, $header) {
     var isCheckedAll = true;
     function redrawSelectAll() {
         $popup.select('.selectAll').html(function (d) { return '<i class="fa fa-' + ((isCheckedAll) ? 'check-' : '') + 'square-o"></i>'; });
-        $popup.select('thead').on('click', function (d) {
+        $popup.select('thead').on('click', function () {
             isCheckedAll = !isCheckedAll;
             trData.forEach(function (row) { return row.isChecked = isCheckedAll; });
             redraw();
@@ -7135,6 +6642,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 /**
  * computes the simple statistics of an array using d3 histogram
  * @param arr the data array
+ * @param indices array data indices
  * @param acc accessor function
  * @param range the total value range
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
@@ -7169,6 +6677,7 @@ function computeStats(arr, indices, acc, range) {
 /**
  * computes a categorical histogram
  * @param arr the data array
+ * @param indices the data array data indices
  * @param acc the accessor
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
@@ -7210,7 +6719,7 @@ var LocalDataProvider = (function (_super) {
         };
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["merge"])(this.options, options);
         var that = this;
-        this.reorderall = function () {
+        this.reorderAll = function () {
             //fire for all other rankings a dirty order event, too
             var ranking = this.source;
             that.getRankings().forEach(function (r) {
@@ -7226,7 +6735,7 @@ var LocalDataProvider = (function (_super) {
      */
     LocalDataProvider.prototype.setData = function (data) {
         this.data = data;
-        this.reorderall();
+        this.reorderAll();
     };
     LocalDataProvider.prototype.clearData = function () {
         this.setData([]);
@@ -7237,18 +6746,18 @@ var LocalDataProvider = (function (_super) {
      */
     LocalDataProvider.prototype.appendData = function (data) {
         this.data.push.apply(this.data, data);
-        this.reorderall();
+        this.reorderAll();
     };
     LocalDataProvider.prototype.cloneRanking = function (existing) {
         var new_ = _super.prototype.cloneRanking.call(this, existing);
         if (this.options.filterGlobally) {
-            new_.on(__WEBPACK_IMPORTED_MODULE_0__model_Column__["a" /* default */].EVENT_FILTER_CHANGED + '.reorderall', this.reorderall);
+            new_.on(__WEBPACK_IMPORTED_MODULE_0__model_Column__["a" /* default */].EVENT_FILTER_CHANGED + '.reorderAll', this.reorderAll);
         }
         return new_;
     };
     LocalDataProvider.prototype.cleanUpRanking = function (ranking) {
         if (this.options.filterGlobally) {
-            ranking.on(__WEBPACK_IMPORTED_MODULE_0__model_Column__["a" /* default */].EVENT_FILTER_CHANGED + '.reorderall', null);
+            ranking.on(__WEBPACK_IMPORTED_MODULE_0__model_Column__["a" /* default */].EVENT_FILTER_CHANGED + '.reorderAll', null);
         }
         _super.prototype.cleanUpRanking.call(this, ranking);
     };
@@ -7277,7 +6786,7 @@ var LocalDataProvider = (function (_super) {
         var _this = this;
         //filter invalid indices
         var l = this.data.length;
-        return indices.filter(function (i) { return i >= 0 && i < l; }).map(function (index) { return _this.data[index]; });
+        return indices.map(function (index) { return _this.data[index]; });
     };
     LocalDataProvider.prototype.view = function (indices) {
         return Promise.resolve(this.viewRaw(indices));
@@ -7285,7 +6794,7 @@ var LocalDataProvider = (function (_super) {
     LocalDataProvider.prototype.fetch = function (orders) {
         var _this = this;
         var l = this.data.length;
-        return orders.map(function (order) { return order.filter(function (i) { return i >= 0 && i < l; }).map(function (index) { return Promise.resolve({
+        return orders.map(function (order) { return order.map(function (index) { return Promise.resolve({
             v: _this.data[index],
             dataIndex: index
         }); }); });
@@ -8344,7 +7853,6 @@ var BodyCanvasRenderer = (function (_super) {
     };
     BodyCanvasRenderer.prototype.mouseOver = function (dataIndex, hover) {
         if (hover === void 0) { hover = true; }
-        var o = this.options;
         if (hover === (this.currentHover === dataIndex)) {
             return;
         }
@@ -8402,7 +7910,29 @@ var BodyCanvasRenderer = (function (_super) {
         });
         ctx.translate(-dx, -dy);
     };
-    BodyCanvasRenderer.prototype.renderRankings = function (ctx, data, context) {
+    BodyCanvasRenderer.prototype.renderMeanlines = function (ctx, ranking, height) {
+        var _this = this;
+        var cols = ranking.columns.filter(function (c) { return _this.showMeanLine(c.column); });
+        return Promise.all(cols.map(function (d) {
+            var h = _this.histCache.get(d.column.id);
+            if (!h) {
+                return;
+            }
+            return h.then(function (stats) {
+                var x_pos = d.shift + d.column.getWidth() * stats.mean;
+                if (isNaN(x_pos)) {
+                    return;
+                }
+                ctx.strokeStyle = _this.style('meanLine');
+                ctx.beginPath();
+                ctx.moveTo(x_pos, 0);
+                ctx.lineTo(x_pos, height);
+                ctx.stroke();
+            });
+        }));
+    };
+    BodyCanvasRenderer.prototype.renderRankings = function (ctx, data, context, height) {
+        var _this = this;
         var renderRow = this.renderRow.bind(this, ctx, context);
         //asynchronous rendering!!!
         var all = Promise.all.bind(Promise);
@@ -8413,7 +7943,7 @@ var BodyCanvasRenderer = (function (_super) {
                 return p.then(function (di) {
                     return renderRow(ranking, di, i);
                 });
-            }));
+            })).then(function () { return _this.renderMeanlines(ctx, ranking, height); });
         }));
     };
     BodyCanvasRenderer.prototype.renderSlopeGraphs = function (ctx, data, context) {
@@ -8424,14 +7954,14 @@ var BodyCanvasRenderer = (function (_super) {
         slopes.forEach(function (slope, i) {
             ctx.save();
             ctx.translate(data[i + 1].shift - _this.options.slopeWidth, 0);
-            var cache = {};
+            var cache = new Map();
             slope.right.forEach(function (data_index, pos) {
-                cache[data_index] = pos;
+                cache.set(data_index, pos);
             });
             var lines = slope.left.map(function (data_index, pos) { return ({
                 data_index: data_index,
                 lpos: pos,
-                rpos: cache[data_index]
+                rpos: cache.get(data_index)
             }); }).filter(function (d) { return d.rpos != null; });
             lines.forEach(function (line) {
                 var isSelected = _this.data.isSelected(line.data_index);
@@ -8493,7 +8023,7 @@ var BodyCanvasRenderer = (function (_super) {
         context.textHints = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["createTextHints"])(ctx, this.style('font'));
         ctx.translate(0, -firstLine);
         this.renderSlopeGraphs(ctx, data, context);
-        return this.renderRankings(ctx, data, context).then(function () {
+        return this.renderRankings(ctx, data, context, height).then(function () {
             ctx.restore();
         });
     };
@@ -8506,6 +8036,7 @@ var BodyCanvasRenderer = (function (_super) {
             selection: '#ffa500',
             hover: '#e5e5e5',
             bg: '#f7f7f7',
+            meanLine: 'darkgray'
         }
     };
     return BodyCanvasRenderer;
@@ -8567,6 +8098,9 @@ var HTMLBodyRenderer = (function (_super) {
         if (options === void 0) { options = {}; }
         _super.call(this, data, parent, slicer, domHTMLMappings, options);
     }
+    HTMLBodyRenderer.prototype.updateClipPaths = function (data, context, height) {
+        // nothing to do
+    };
     return HTMLBodyRenderer;
 }(__WEBPACK_IMPORTED_MODULE_1__ADOMBodyRenderer__["a" /* default */]));
 /* harmony default export */ exports["a"] = HTMLBodyRenderer;
@@ -8630,32 +8164,32 @@ var PoolRenderer = (function () {
             _this.update();
         });
         if (this.options.hideUsed) {
-            var that = this;
+            var that_1 = this;
             data.on([__WEBPACK_IMPORTED_MODULE_3__provider_ADataProvider__["a" /* default */].EVENT_ADD_COLUMN + '.pool', __WEBPACK_IMPORTED_MODULE_3__provider_ADataProvider__["a" /* default */].EVENT_REMOVE_COLUMN + '.pool'], function (col) {
                 var desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
-                that.entries.some(function (entry) {
+                that_1.entries.some(function (entry) {
                     if (entry.desc !== desc) {
                         return false;
                     }
                     entry.used += change;
                     return true;
                 });
-                that.update();
+                that_1.update();
             });
             data.on([__WEBPACK_IMPORTED_MODULE_3__provider_ADataProvider__["a" /* default */].EVENT_ADD_RANKING + '.pool', __WEBPACK_IMPORTED_MODULE_3__provider_ADataProvider__["a" /* default */].EVENT_REMOVE_RANKING + '.pool'], function (ranking) {
                 var descs = ranking.flatColumns.map(function (d) { return d.desc; }), change = this.type === 'addRanking' ? 1 : -1;
-                that.entries.some(function (entry) {
+                that_1.entries.some(function (entry) {
                     if (descs.indexOf(entry.desc) < 0) {
                         return false;
                     }
                     entry.used += change;
                     return true;
                 });
-                that.update();
+                that_1.update();
             });
             data.getRankings().forEach(function (ranking) {
                 var descs = ranking.flatColumns.map(function (d) { return d.desc; }), change = +1;
-                that.entries.some(function (entry) {
+                that_1.entries.some(function (entry) {
                     if (descs.indexOf(entry.desc) < 0) {
                         return false;
                     }

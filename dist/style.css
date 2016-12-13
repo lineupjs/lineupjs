@@ -357,29 +357,6 @@
   stroke: darkgray;
   stroke-width: 1; }
 
-.lu svg.lu-body .sparklinecell {
-  stroke: black; }
-
-.lu svg.lu-body .boxplotrect {
-  stroke: black;
-  fill: #e0e0e0; }
-
-.lu svg.lu-body .boxplotline {
-  stroke: black;
-  fill: #e0e0e0; }
-
-.lu svg.lu-body .upsetcircle {
-  stroke: black;
-  fill: black; }
-
-.lu svg.lu-body .upsetpath {
-  stroke: black;
-  fill: black; }
-
-.lu svg.lu-body .circlecolumn {
-  stroke: black;
-  fill: black; }
-
 .lu svg.lu-body g.row rect.bg {
   fill: transparent; }
 

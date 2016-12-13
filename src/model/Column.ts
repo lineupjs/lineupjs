@@ -4,8 +4,6 @@
 
 import {AEventDispatcher} from '../utils';
 import Ranking from './Ranking';
-import {renderer} from "../index";
-import any = jasmine.any;
 
 /**
  * converts a given id to css compatible one
