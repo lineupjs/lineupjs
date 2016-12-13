@@ -47,16 +47,18 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
 /******/
-/******/ 	// identity function for calling harmory imports with the correct context
+/******/ 	// identity function for calling harmony imports with the correct context
 /******/ 	__webpack_require__.i = function(value) { return value; };
 /******/
-/******/ 	// define getter function for harmory exports
+/******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		Object.defineProperty(exports, name, {
-/******/ 			configurable: false,
-/******/ 			enumerable: true,
-/******/ 			get: getter
-/******/ 		});
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -75,7 +77,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 46);
+/******/ 	return __webpack_require__(__webpack_require__.s = 45);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -114,30 +116,35 @@ function fixCSS(id) {
 var Column = (function (_super) {
     __extends(Column, _super);
     function Column(id, desc) {
-        _super.call(this);
-        this.desc = desc;
+        var _this = _super.call(this) || this;
+        _this.desc = desc;
         /**
          * width of the column
          * @type {number}
          * @private
          */
-        this.width = 100;
+        _this.width = 100;
         /**
          * parent column of this column, set when added to a ranking or combined column
          * @type {any}
          */
-        this.parent = null;
+        _this.parent = null;
         /**
          * whether this column is compressed i.e. just shown in a minimal version
          * @type {boolean}
          * @private
          */
-        this.compressed = false;
-        this.uid = fixCSS(id);
-        this.cssClass = this.desc.cssClass || '';
-        this.color = this.desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
-        this.renderername = this.desc.type || 'heatmapcustom';
-        this.rendererList = [];
+        _this.compressed = false;
+        _this.uid = fixCSS(id);
+        _this.cssClass = _this.desc.cssClass || '';
+        _this.renderername = _this.desc.type || 'heatmapcustom';
+        _this.rendererList = [];
+        _this.metadata = {
+            label: _this.desc.label || _this.id,
+            description: _this.desc.description || '',
+            color: _this.desc.color || (_this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
+        };
+        return _this;
     }
     Object.defineProperty(Column.prototype, "id", {
         get: function () {
@@ -213,7 +220,7 @@ var Column = (function (_super) {
     Column.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
             Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-            Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_MULTIVALUE_SORT_CHANGED, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
+            Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED,
             Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
     };
     Column.prototype.getWidth = function () {
@@ -432,35 +439,42 @@ var Column = (function (_super) {
         return this.rendererList;
     };
     /**
-     * default color that should be used
-     * @type {string}
+     * describe the column if it is a sorting criteria
+     * @param toId helper to convert a description to an id
+     * @return {string} json compatible
      */
-    Column.DEFAULT_COLOR = '#C1C1C1';
-    /**
-     * magic variable for showing all columns
-     * @type {number}
-     */
-    Column.FLAT_ALL_COLUMNS = -1;
-    /**
-     * width of a compressed column
-     * @type {number}
-     */
-    Column.COMPRESSED_WIDTH = 16;
-    Column.EVENT_WIDTH_CHANGED = 'widthChanged';
-    Column.EVENT_FILTER_CHANGED = 'filterChanged';
-    Column.EVENT_LABEL_CHANGED = 'labelChanged';
-    Column.EVENT_METADATA_CHANGED = 'metaDataChanged';
-    Column.EVENT_COMPRESS_CHANGED = 'compressChanged';
-    Column.EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
-    Column.EVENT_ADD_COLUMN = 'addColumn';
-    Column.EVENT_REMOVE_COLUMN = 'removeColumn';
-    Column.EVENT_DIRTY = 'dirty';
-    Column.EVENT_DIRTY_HEADER = 'dirtyHeader';
-    Column.EVENT_DIRTY_VALUES = 'dirtyValues';
-    Column.EVENT_MULTIVALUE_SORT_CHANGED = 'multiValueSortChanged';
+    Column.prototype.toSortingDesc = function (toId) {
+        return toId(this.desc);
+    };
     return Column;
 }(__WEBPACK_IMPORTED_MODULE_0__utils__["AEventDispatcher"]));
 /* harmony default export */ exports["a"] = Column;
+/**
+ * default color that should be used
+ * @type {string}
+ */
+Column.DEFAULT_COLOR = '#C1C1C1';
+/**
+ * magic variable for showing all columns
+ * @type {number}
+ */
+Column.FLAT_ALL_COLUMNS = -1;
+/**
+ * width of a compressed column
+ * @type {number}
+ */
+Column.COMPRESSED_WIDTH = 16;
+Column.EVENT_WIDTH_CHANGED = 'widthChanged';
+Column.EVENT_FILTER_CHANGED = 'filterChanged';
+Column.EVENT_LABEL_CHANGED = 'labelChanged';
+Column.EVENT_METADATA_CHANGED = 'metaDataChanged';
+Column.EVENT_COMPRESS_CHANGED = 'compressChanged';
+Column.EVENT_ADD_COLUMN = 'addColumn';
+Column.EVENT_REMOVE_COLUMN = 'removeColumn';
+Column.EVENT_DIRTY = 'dirty';
+Column.EVENT_DIRTY_HEADER = 'dirtyHeader';
+Column.EVENT_DIRTY_VALUES = 'dirtyValues';
+Column.EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
 
 
 /***/ },
@@ -470,6 +484,7 @@ var Column = (function (_super) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+Object.defineProperty(exports, "__esModule", { value: true });
 /* harmony export (immutable) */ exports["delayedCall"] = delayedCall;
 /* harmony export (binding) */ __webpack_require__.d(exports, "AEventDispatcher", function() { return AEventDispatcher; });
 /* harmony export (immutable) */ exports["merge"] = merge;
@@ -665,12 +680,11 @@ var ContentScroller = (function (_super) {
      * @param options options see attribute
      */
     function ContentScroller(container, content, options) {
-        var _this = this;
         if (options === void 0) { options = {}; }
-        _super.call(this);
-        this.container = container;
-        this.content = content;
-        this.options = {
+        var _this = _super.call(this) || this;
+        _this.container = container;
+        _this.content = content;
+        _this.options = {
             /**
              * shift that should be used for calculating the top position
              */
@@ -684,14 +698,15 @@ var ContentScroller = (function (_super) {
              */
             rowHeight: 10
         };
-        this.prevScrollTop = 0;
-        this.shift = 0;
-        merge(this.options, options);
+        _this.prevScrollTop = 0;
+        _this.shift = 0;
+        merge(_this.options, options);
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(container).on('scroll.scroller', function () { return _this.onScroll(); });
         //keep the previous state computing whether a redraw is needed
-        this.prevScrollTop = container.scrollTop;
+        _this.prevScrollTop = container.scrollTop;
         //total shift to the top
-        this.shift = offset(content).top - offset(container).top;
+        _this.shift = offset(content).top - offset(container).top;
+        return _this;
     }
     /**
      * two events are fired:
@@ -772,10 +787,10 @@ var ContentScroller = (function (_super) {
     ContentScroller.prototype.destroy = function () {
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.container).on('scroll.scroller', null);
     };
-    ContentScroller.EVENT_SCROLL = 'scroll';
-    ContentScroller.EVENT_REDRAW = 'redraw';
     return ContentScroller;
 }(AEventDispatcher));
+ContentScroller.EVENT_SCROLL = 'scroll';
+ContentScroller.EVENT_REDRAW = 'redraw';
 /**
  * checks whether the given DragEvent has one of the given types
  */
@@ -941,6 +956,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+/**
+ * Created by sam on 04.11.2016.
+ */
 
 /**
  * a column having an accessor to get the cell value
@@ -948,9 +966,10 @@ var __extends = (this && this.__extends) || function (d, b) {
 var ValueColumn = (function (_super) {
     __extends(ValueColumn, _super);
     function ValueColumn(id, desc) {
-        _super.call(this, id, desc);
+        var _this = _super.call(this, id, desc) || this;
         //find accessor
-        this.accessor = desc.accessor || (function () { return null; });
+        _this.accessor = desc.accessor || (function () { return null; });
+        return _this;
     }
     ValueColumn.prototype.getLabel = function (row, index) {
         return '' + this.getValue(row, index);
@@ -971,544 +990,11 @@ var ValueColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(3);
-/* harmony export (immutable) */ exports["a"] = isNumberColumn;
-/* harmony export (immutable) */ exports["b"] = numberCompare;
-/* harmony export (binding) */ __webpack_require__.d(exports, "d", function() { return ScaleMappingFunction; });
-/* harmony export (binding) */ __webpack_require__.d(exports, "e", function() { return ScriptMappingFunction; });
-/* harmony export (immutable) */ exports["f"] = createMappingFunction;
-/**
- * Created by sam on 04.11.2016.
- */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-
-/**
- * checks whether the given column or description is a number column, i.e. the value is a number
- * @param col
- * @returns {boolean}
- */
-function isNumberColumn(col) {
-    return (col instanceof __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */] && typeof col.getNumber === 'function' || (!(col instanceof __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */]) && col.type.match(/(number|stack|ordinal)/) != null));
-}
-function isMissingValue(v) {
-    return typeof (v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof (v) === 'string' && (v.toLowerCase() === 'na'));
-}
-/**
- * save number comparison
- * @param a
- * @param b
- * @return {number}
- */
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-function toScale(type) {
-    if (type === void 0) { type = 'linear'; }
-    switch (type) {
-        case 'log':
-            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].log().clamp(true);
-        case 'sqrt':
-            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].sqrt().clamp(true);
-        case 'pow1.1':
-            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].pow().exponent(1.1).clamp(true);
-        case 'pow2':
-            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].pow().exponent(2).clamp(true);
-        case 'pow3':
-            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].pow().exponent(3).clamp(true);
-        default:
-            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear().clamp(true);
-    }
-}
-function isSame(a, b) {
-    if (a.length !== b.length) {
-        return false;
-    }
-    return a.every(function (ai, i) { return ai === b[i]; });
-}
-function fixDomain(domain, type) {
-    if (type === 'log' && domain[0] === 0) {
-        domain[0] = 0.0000001; //0 is bad
-    }
-    return domain;
-}
-/**
- * a mapping function based on a d3 scale (linear, sqrt, log)
- */
-var ScaleMappingFunction = (function () {
-    function ScaleMappingFunction(domain, type, range) {
-        if (domain === void 0) { domain = [0, 1]; }
-        if (type === void 0) { type = 'linear'; }
-        if (range === void 0) { range = [0, 1]; }
-        this.type = type;
-        this.s = toScale(type).domain(fixDomain(domain, this.type)).range(range);
-    }
-    Object.defineProperty(ScaleMappingFunction.prototype, "domain", {
-        get: function () {
-            return this.s.domain();
-        },
-        set: function (domain) {
-            this.s.domain(fixDomain(domain, this.type));
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ScaleMappingFunction.prototype, "range", {
-        get: function () {
-            return this.s.range();
-        },
-        set: function (range) {
-            this.s.range(range);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ScaleMappingFunction.prototype.apply = function (v) {
-        return this.s(v);
-    };
-    Object.defineProperty(ScaleMappingFunction.prototype, "scaleType", {
-        get: function () {
-            return this.type;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ScaleMappingFunction.prototype.dump = function () {
-        return {
-            type: this.type,
-            domain: this.domain,
-            range: this.range
-        };
-    };
-    ScaleMappingFunction.prototype.eq = function (other) {
-        if (!(other instanceof ScaleMappingFunction)) {
-            return false;
-        }
-        var that = other;
-        return that.type === this.type && isSame(this.domain, that.domain) && isSame(this.range, that.range);
-    };
-    ScaleMappingFunction.prototype.restore = function (dump) {
-        this.type = dump.type;
-        this.s = toScale(dump.type).domain(dump.domain).range(dump.range);
-    };
-    ScaleMappingFunction.prototype.clone = function () {
-        return new ScaleMappingFunction(this.domain, this.type, this.range);
-    };
-    return ScaleMappingFunction;
-}());
-/**
- * a mapping function based on a custom user function using 'value' as the current value
- */
-var ScriptMappingFunction = (function () {
-    function ScriptMappingFunction(domain_, code_) {
-        if (domain_ === void 0) { domain_ = [0, 1]; }
-        if (code_ === void 0) { code_ = 'return this.linear(value,this.value_min,this.value_max);'; }
-        this.domain_ = domain_;
-        this.code_ = code_;
-        this.f = new Function('value', code_);
-    }
-    Object.defineProperty(ScriptMappingFunction.prototype, "domain", {
-        get: function () {
-            return this.domain_;
-        },
-        set: function (domain) {
-            this.domain_ = domain;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ScriptMappingFunction.prototype, "code", {
-        get: function () {
-            return this.code_;
-        },
-        set: function (code) {
-            if (this.code_ === code) {
-                return;
-            }
-            this.code_ = code;
-            this.f = new Function('value', code);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ScriptMappingFunction.prototype.apply = function (v) {
-        var min = this.domain_[0], max = this.domain_[this.domain_.length - 1];
-        var r = this.f.call({
-            value_min: min,
-            value_max: max,
-            value_range: max - min,
-            value_domain: this.domain_.slice(),
-            linear: function (v, mi, ma) { return (v - mi) / (ma - mi); }
-        }, v);
-        if (typeof r === 'number') {
-            return Math.max(Math.min(r, 1), 0);
-        }
-        return NaN;
-    };
-    ScriptMappingFunction.prototype.dump = function () {
-        return {
-            type: 'script',
-            code: this.code
-        };
-    };
-    ScriptMappingFunction.prototype.eq = function (other) {
-        if (!(other instanceof ScriptMappingFunction)) {
-            return false;
-        }
-        var that = other;
-        return that.code === this.code;
-    };
-    ScriptMappingFunction.prototype.restore = function (dump) {
-        this.code = dump.code;
-    };
-    ScriptMappingFunction.prototype.clone = function () {
-        return new ScriptMappingFunction(this.domain, this.code);
-    };
-    return ScriptMappingFunction;
-}());
-function createMappingFunction(dump) {
-    if (dump.type === 'script') {
-        var s = new ScriptMappingFunction();
-        s.restore(dump);
-        return s;
-    }
-    else {
-        var l = new ScaleMappingFunction();
-        l.restore(dump);
-        return l;
-    }
-}
-/**
- * a number column mapped from an original input scale to an output range
- */
-var NumberColumn = (function (_super) {
-    __extends(NumberColumn, _super);
-    function NumberColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.missingValue = 0;
-        /**
-         * currently active filter
-         * @type {{min: number, max: number}}
-         * @private
-         */
-        this.currentFilter = NumberColumn.noFilter();
-        this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])('.3n');
-        if (desc.map) {
-            this.mapping = createMappingFunction(desc.map);
-        }
-        else if (desc.domain) {
-            this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
-        }
-        this.original = this.mapping.clone();
-        if (desc.numberFormat) {
-            this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])(desc.numberFormat);
-        }
-        this.rendererList = [{ type: 'number', label: 'Bar' },
-            { type: 'circle', label: 'Circle' }];
-    }
-    NumberColumn.prototype.dump = function (toDescRef) {
-        var r = _super.prototype.dump.call(this, toDescRef);
-        r.map = this.mapping.dump();
-        r.filter = this.currentFilter;
-        r.missingValue = this.missingValue;
-        return r;
-    };
-    NumberColumn.prototype.restore = function (dump, factory) {
-        _super.prototype.restore.call(this, dump, factory);
-        if (dump.map) {
-            this.mapping = createMappingFunction(dump.map);
-        }
-        else if (dump.domain) {
-            this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
-        }
-        if (dump.currentFilter) {
-            this.currentFilter = dump.currentFilter;
-        }
-        if (dump.missingValue) {
-            this.missingValue = dump.missingValue;
-        }
-        if (dump.numberFormat) {
-            this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])(dump.numberFormat);
-        }
-    };
-    NumberColumn.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat([NumberColumn.EVENT_MAPPING_CHANGED]);
-    };
-    NumberColumn.prototype.getLabel = function (row, index) {
-        if (this.desc.numberFormat) {
-            var raw = this.getRawValue(row, index);
-            //if a dedicated format and a number use the formatter in any case
-            if (isNaN(raw)) {
-                return 'NaN';
-            }
-            return this.numberFormat(raw);
-        }
-        var v = _super.prototype.getValue.call(this, row, index);
-        //keep non number if it is not a number else convert using formatter
-        if (typeof v === 'number') {
-            return this.numberFormat(+v);
-        }
-        return String(v);
-    };
-    NumberColumn.prototype.getRawValue = function (row, index) {
-        var v = _super.prototype.getValue.call(this, row, index);
-        if (isMissingValue(v)) {
-            return this.missingValue;
-        }
-        return +v;
-    };
-    NumberColumn.prototype.getValue = function (row, index) {
-        var v = this.getRawValue(row, index);
-        if (isNaN(v)) {
-            return v;
-        }
-        return this.mapping.apply(v);
-    };
-    NumberColumn.prototype.getNumber = function (row, index) {
-        return this.getValue(row, index);
-    };
-    NumberColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
-    };
-    NumberColumn.prototype.getOriginalMapping = function () {
-        return this.original.clone();
-    };
-    NumberColumn.prototype.getMapping = function () {
-        return this.mapping.clone();
-    };
-    NumberColumn.prototype.setMapping = function (mapping) {
-        if (this.mapping.eq(mapping)) {
-            return;
-        }
-        this.fire([NumberColumn.EVENT_MAPPING_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
-    };
-    NumberColumn.prototype.isFiltered = function () {
-        return this.currentFilter.filterMissing || isFinite(this.currentFilter.min) || isFinite(this.currentFilter.max);
-    };
-    Object.defineProperty(NumberColumn.prototype, "filterMin", {
-        get: function () {
-            return this.currentFilter.min;
-        },
-        set: function (min) {
-            var bak = this.getFilter();
-            this.currentFilter.min = isNaN(min) ? -Infinity : min;
-            this.fire([__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_FILTER_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, this.getFilter());
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(NumberColumn.prototype, "filterMax", {
-        get: function () {
-            return this.currentFilter.max;
-        },
-        set: function (max) {
-            var bak = this.getFilter();
-            this.currentFilter.max = isNaN(max) ? Infinity : max;
-            this.fire([__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_FILTER_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, this.getFilter());
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(NumberColumn.prototype, "filterMissing", {
-        get: function () {
-            return this.currentFilter.filterMissing;
-        },
-        set: function (filterMissing) {
-            var bak = this.getFilter();
-            this.currentFilter.filterMissing = filterMissing;
-            this.fire([__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_FILTER_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, this.getFilter());
-        },
-        enumerable: true,
-        configurable: true
-    });
-    NumberColumn.prototype.getFilter = function () {
-        return {
-            min: this.currentFilter.min,
-            max: this.currentFilter.max,
-            filterMissing: this.currentFilter.filterMissing
-        };
-    };
-    NumberColumn.prototype.setFilter = function (value) {
-        if (value === void 0) { value = { min: -Infinity, max: +Infinity, filterMissing: false }; }
-        if (this.currentFilter.min === value.min && this.currentFilter.max === value.max && this.currentFilter.filterMissing === value.filterMissing) {
-            return;
-        }
-        var bak = this.getFilter();
-        this.currentFilter.min = isNaN(value.min) ? -Infinity : value.min;
-        this.currentFilter.max = isNaN(value.max) ? Infinity : value.max;
-        this.currentFilter.filterMissing = value.filterMissing;
-        this.fire([__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_FILTER_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, this.getFilter());
-    };
-    /**
-     * filter the current row if any filter is set
-     * @param row
-     * @param index row index
-     * @returns {boolean}
-     */
-    NumberColumn.prototype.filter = function (row, index) {
-        if (!this.isFiltered()) {
-            return true;
-        }
-        var v = _super.prototype.getValue.call(this, row, index);
-        if (isMissingValue(v)) {
-            return !this.filterMissing;
-        }
-        var vn = +v;
-        return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
-    };
-    NumberColumn.prototype.rendererType = function () {
-        if (this.getCompressed()) {
-            return NumberColumn.COMPRESSED_RENDERER;
-        }
-        return _super.prototype.rendererType.call(this);
-    };
-    NumberColumn.prototype.getRendererList = function () {
-        return this.rendererList;
-    };
-    NumberColumn.EVENT_MAPPING_CHANGED = 'mappingChanged';
-    NumberColumn.COMPRESSED_RENDERER = 'heatmap';
-    NumberColumn.noFilter = function () { return ({ min: -Infinity, max: Infinity, filterMissing: false }); };
-    return NumberColumn;
-}(__WEBPACK_IMPORTED_MODULE_2__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["c"] = NumberColumn;
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/**
- * Created by sam on 04.11.2016.
- */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-
-/**
- * a string column with optional alignment
- */
-var StringColumn = (function (_super) {
-    __extends(StringColumn, _super);
-    function StringColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.currentFilter = null;
-        this._alignment = 'left';
-        this.setWidthImpl(200); //by default 200
-        this._alignment = desc.alignment || 'left';
-    }
-    Object.defineProperty(StringColumn.prototype, "alignment", {
-        //readonly
-        get: function () {
-            return this._alignment;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    StringColumn.prototype.getValue = function (row, index) {
-        var v = _super.prototype.getValue.call(this, row, index);
-        if (typeof (v) === 'undefined' || v == null) {
-            return '';
-        }
-        return String(v);
-    };
-    StringColumn.prototype.dump = function (toDescRef) {
-        var r = _super.prototype.dump.call(this, toDescRef);
-        if (this.currentFilter instanceof RegExp) {
-            r.filter = 'REGEX:' + this.currentFilter.source;
-        }
-        else {
-            r.filter = this.currentFilter;
-        }
-        r.alignment = this.alignment;
-        return r;
-    };
-    StringColumn.prototype.restore = function (dump, factory) {
-        _super.prototype.restore.call(this, dump, factory);
-        if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
-            this.currentFilter = new RegExp(dump.filter.slice(6));
-        }
-        else {
-            this.currentFilter = dump.filter || null;
-        }
-        this._alignment = dump.alignment || this._alignment;
-    };
-    StringColumn.prototype.isFiltered = function () {
-        return this.currentFilter != null;
-    };
-    StringColumn.prototype.filter = function (row, index) {
-        if (!this.isFiltered()) {
-            return true;
-        }
-        var r = this.getLabel(row, index), filter = this.currentFilter;
-        if (filter === StringColumn.FILTER_MISSING) {
-            return r != null && r.trim() !== '';
-        }
-        if (typeof filter === 'string' && filter.length > 0) {
-            return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-        }
-        if (filter instanceof RegExp) {
-            return r && filter.test(r);
-        }
-        return true;
-    };
-    StringColumn.prototype.getFilter = function () {
-        return this.currentFilter;
-    };
-    StringColumn.prototype.setFilter = function (filter) {
-        if (filter === '') {
-            filter = null;
-        }
-        if (this.currentFilter === filter) {
-            return;
-        }
-        this.fire([__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_FILTER_CHANGED, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
-    };
-    StringColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        var a_val, b_val;
-        if ((a_val = this.getValue(a, aIndex)) === '') {
-            return this.getValue(b, bIndex) === '' ? 0 : +1; //same = 0
-        }
-        else if ((b_val = this.getValue(b, bIndex)) === '') {
-            return -1;
-        }
-        return a_val.localeCompare(b_val);
-    };
-    //magic key for filtering missing ones
-    StringColumn.FILTER_MISSING = '__FILTER_MISSING';
-    return StringColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = StringColumn;
-
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model_Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_d3__);
+Object.defineProperty(exports, "__esModule", { value: true });
 /* harmony export (binding) */ __webpack_require__.d(exports, "DefaultCellRenderer", function() { return DefaultCellRenderer; });
 /* harmony export (binding) */ __webpack_require__.d(exports, "BarCellRenderer", function() { return BarCellRenderer; });
 /* harmony export (immutable) */ exports["hideOverlays"] = hideOverlays;
@@ -1522,6 +1008,7 @@ var StringColumn = (function (_super) {
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
+
 
 
 
@@ -1584,6 +1071,367 @@ var DefaultCellRenderer = (function () {
     };
     return DefaultCellRenderer;
 }());
+var HeatmapCellRenderer = (function () {
+    function HeatmapCellRenderer() {
+    }
+    HeatmapCellRenderer.prototype.createSVG = function (col, context) {
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
+        var padding = context.option('rowPadding', 1);
+        return {
+            template: "<g class=\"heatmapcell\"></g>",
+            update: function (n, d, i) {
+                var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
+                rect.enter().append('rect');
+                rect
+                    .attr({
+                    y: padding,
+                    x: function (d, i) { return (i * celldimension); },
+                    width: celldimension,
+                    height: context.rowHeight(i),
+                    fill: function (d, i) { return multiValueColumn.getColor(d); }
+                });
+                rect.exit().remove();
+            }
+        };
+    };
+    HeatmapCellRenderer.prototype.createHTML = function (col, context) {
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
+        var padding = context.option('rowPadding', 1);
+        return {
+            template: "<div class=\"heatmapcell\" style=\"top:" + padding + "px;\">\n                                   </div>",
+            update: function (n, d, i) {
+                var g = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n);
+                var div = g.selectAll('div').data(col.getValue(d.v, d.dataIndex));
+                div.enter().append('div');
+                div
+                    .style({
+                    'width': celldimension + 'px',
+                    'background-color': multiValueColumn.getColor(d),
+                    'height': context.rowHeight(i) + 'px',
+                    'left': function (d, i) { return (i * celldimension) + 'px'; }
+                });
+            }
+        };
+    };
+    HeatmapCellRenderer.prototype.createCanvas = function (col, context) {
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
+        var padding = context.option('rowPadding', 1);
+        return function (ctx, d, i) {
+            var data = col.getValue(d.v, d.dataIndex);
+            data.forEach(function (d, i) {
+                var x = (i * celldimension);
+                ctx.beginPath();
+                ctx.fillStyle = multiValueColumn.getColor(d);
+                ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
+            });
+        };
+    };
+    return HeatmapCellRenderer;
+}());
+var SparklineCellRenderer = (function () {
+    function SparklineCellRenderer() {
+    }
+    SparklineCellRenderer.prototype.createSVG = function (col, context) {
+        var multiValueColumn = col;
+        return {
+            template: "<g class=\"sparklinecell\"></g>",
+            update: function (n, d, i) {
+                var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
+                var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line();
+                path.enter().append('path');
+                path
+                    .attr('d', function (d, i) {
+                    line
+                        .x(function (d, i) { return multiValueColumn.getxScale(i); })
+                        .y(function (d, i) { return multiValueColumn.getyScale(d, context.rowHeight(i)); });
+                    return line(d);
+                });
+                path.exit().remove();
+            }
+        };
+    };
+    SparklineCellRenderer.prototype.createCanvas = function (col, context) {
+        var multiValueColumn = col;
+        return function (ctx, d, i) {
+            var data = col.getValue(d.v, d.dataIndex);
+            var xpos, ypos;
+            data.forEach(function (d, i) {
+                if (i === 0) {
+                    xpos = multiValueColumn.getxScale(i);
+                    ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
+                }
+                else {
+                    ctx.strokeStyle = 'black';
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.moveTo(xpos, ypos);
+                    xpos = multiValueColumn.getxScale(i);
+                    ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
+                    ctx.lineTo(xpos, ypos);
+                    ctx.stroke();
+                    ctx.fill();
+                }
+            });
+        };
+    };
+    return SparklineCellRenderer;
+}());
+var ThresholdCellRenderer = (function () {
+    function ThresholdCellRenderer() {
+    }
+    ThresholdCellRenderer.prototype.createSVG = function (col, context) {
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
+        var binaryColor = multiValueColumn.getbinaryColor();
+        return {
+            template: "<g class=\"thresholdcell\"></g>",
+            update: function (n, d, i) {
+                var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
+                rect.enter().append('rect');
+                rect
+                    .attr({
+                    y: function (d, i) { return (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0; },
+                    x: function (d, i) { return (i * celldimension); },
+                    width: celldimension,
+                    height: function (d, i) { return (context.rowHeight(i)) / 2; },
+                    fill: function (d) { return (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1]; }
+                });
+                rect.exit().remove();
+            }
+        };
+    };
+    ThresholdCellRenderer.prototype.createCanvas = function (col, context) {
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
+        var binaryColor = multiValueColumn.getbinaryColor();
+        return function (ctx, d, i) {
+            var data = col.getValue(d.v, d.dataIndex);
+            data.forEach(function (d, i) {
+                ctx.beginPath();
+                var xpos = (i * celldimension);
+                var ypos = (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0;
+                ctx.fillStyle = (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1];
+                ctx.fillRect(xpos, ypos, celldimension, context.rowHeight(i) / 2);
+            });
+        };
+    };
+    return ThresholdCellRenderer;
+}());
+var VerticalBarCellRenderer = (function () {
+    function VerticalBarCellRenderer() {
+    }
+    VerticalBarCellRenderer.prototype.createSVG = function (col, context) {
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
+        return {
+            template: "<g class=\"verticalbarcell\"></g>",
+            update: function (n, d, i) {
+                var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
+                rect.enter().append('rect');
+                rect
+                    .attr({
+                    y: function (d, i) { return multiValueColumn.getyposVerticalBar(d, context.rowHeight(i)); },
+                    x: function (d, i) { return (i * celldimension); },
+                    width: celldimension,
+                    height: function (d, i) { return multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)); },
+                    fill: function (d, i) { return multiValueColumn.getColor(d); }
+                });
+                rect.exit().remove();
+            }
+        };
+    };
+    VerticalBarCellRenderer.prototype.createCanvas = function (col, context) {
+        var multiValueColumn = col;
+        var celldimension = multiValueColumn.calculateCellDimension();
+        return function (ctx, d, i) {
+            var data = col.getValue(d.v, d.dataIndex);
+            data.forEach(function (d, i) {
+                var xpos = (i * celldimension);
+                var ypos = multiValueColumn.getyposVerticalBar(d, context.rowHeight(i));
+                ctx.fillStyle = multiValueColumn.getColor(d);
+                ctx.fillRect(xpos, ypos, celldimension, multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)));
+            });
+        };
+    };
+    return VerticalBarCellRenderer;
+}());
+var BoxplotCellRenderer = (function () {
+    function BoxplotCellRenderer() {
+    }
+    BoxplotCellRenderer.prototype.createSVG = function (col, context) {
+        var multiValueColumn = col;
+        var padding = context.option('rowPadding', 1);
+        return {
+            template: "<g class=\"boxplotcell\"></g>",
+            update: function (n, d, i) {
+                var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
+                var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
+                rect.enter().append('rect');
+                rect
+                    .attr('class', 'boxplotrect')
+                    .attr({
+                    y: padding,
+                    x: boxdata.q1,
+                    width: (boxdata.q3 - boxdata.q1),
+                    height: function (d, i) { return context.rowHeight(i); }
+                });
+                rect.exit().remove();
+                var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
+                path.enter().append('path');
+                path
+                    .attr('class', 'boxplotline')
+                    .attr('d', function (d, i) {
+                    var left = boxdata.min, right = boxdata.max, center = boxdata.median;
+                    var bottom = Math.max(context.rowHeight(i) - padding, 0);
+                    var middle = (bottom - padding) / 2;
+                    return 'M' + left + ',' + middle + 'L' + boxdata.q1 + ',' + middle +
+                        'M' + left + ',' + padding + 'L' + left + ',' + bottom +
+                        'M' + center + ',' + padding + 'L' + center + ',' + bottom +
+                        'M' + (boxdata.q3) + ',' + middle + 'L' + (right) + ',' + middle +
+                        'M' + right + ',' + padding + 'L' + right + ',' + bottom;
+                });
+                path.exit().remove();
+            }
+        };
+    };
+    BoxplotCellRenderer.prototype.createCanvas = function (col, context) {
+        var multiValueColumn = col;
+        var padding = context.option('rowPadding', 1);
+        return function (ctx, d, i) {
+            // Rectangle
+            var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
+            ctx.fillStyle = '#e0e0e0';
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.rect(boxdata.q1, padding, (boxdata.q3 - boxdata.q1), context.rowHeight(i) - padding);
+            ctx.fill();
+            ctx.stroke();
+            //Line
+            var left = boxdata.min, right = boxdata.max, center = boxdata.median;
+            var bottom = Math.max(context.rowHeight(i) - padding, 0);
+            var middle = (bottom - padding) / 2;
+            ctx.strokeStyle = 'black';
+            ctx.fillStyle = '#e0e0e0';
+            ctx.beginPath();
+            ctx.moveTo(left, middle);
+            ctx.lineTo(boxdata.q1, middle);
+            ctx.moveTo(left, padding);
+            ctx.lineTo(left, bottom);
+            ctx.moveTo(center, padding);
+            ctx.lineTo(center, bottom);
+            ctx.moveTo(boxdata.q3, middle);
+            ctx.lineTo(right, middle);
+            ctx.moveTo(right, padding);
+            ctx.lineTo(right, bottom);
+            ctx.stroke();
+            ctx.fill();
+        };
+    };
+    return BoxplotCellRenderer;
+}());
+var UpsetCellRenderer = (function () {
+    function UpsetCellRenderer() {
+    }
+    UpsetCellRenderer.prototype.createSVG = function (col, context) {
+        var upsetColumn = col;
+        var celldimension = upsetColumn.cellDimension();
+        return {
+            template: "<g class=\"upsetcell\"></g>",
+            update: function (n, d, i) {
+                var circle = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('circle').data(col.getValue(d.v, d.dataIndex));
+                circle.enter().append('circle');
+                circle
+                    .attr({
+                    cy: function (d, i) { return (context.rowHeight(i) / 2); },
+                    cx: function (d, i) { return (i * celldimension) + (celldimension / 2); },
+                    r: (celldimension / 4),
+                    class: 'upsetcircle',
+                    opacity: function (d) { return (d === 1) ? 1 : 0.1; }
+                });
+                circle.exit().remove();
+                var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
+                var countcategory = col.getValue(d.v, d.dataIndex).filter(function (x) { return x === 1; }).length;
+                if (countcategory > 1) {
+                    path.enter().append('path');
+                    path
+                        .attr('d', function (d, i) {
+                        var pathcordinate = upsetColumn.calculatePath(d);
+                        return 'M' + (pathcordinate.left) + ',' + (context.rowHeight(i) / 2) + 'L' + (pathcordinate.right) + ',' + (context.rowHeight(i) / 2);
+                    })
+                        .attr('class', 'upsetpath');
+                }
+            }
+        };
+    };
+    UpsetCellRenderer.prototype.createCanvas = function (col, context) {
+        var upsetColumn = col;
+        var celldimension = upsetColumn.cellDimension();
+        return function (ctx, d, i) {
+            // Circle
+            var data = col.getValue(d.v, d.dataIndex);
+            var countcategory = data.filter(function (x) { return x === 1; }).length;
+            var radius = (context.rowHeight(i) / 3);
+            var pathcordinate = upsetColumn.calculatePath(data);
+            if (countcategory > 1) {
+                ctx.fillStyle = 'black';
+                ctx.strokeStyle = 'black';
+                ctx.beginPath();
+                ctx.moveTo((pathcordinate.left), (context.rowHeight(i) / 2));
+                ctx.lineTo((pathcordinate.right), (context.rowHeight(i) / 2));
+                ctx.fill();
+                ctx.stroke();
+            }
+            data.forEach(function (d, i) {
+                var posy = (context.rowHeight(i) / 2);
+                var posx = (i * celldimension) + (celldimension / 2);
+                ctx.fillStyle = 'black';
+                ctx.strokeStyle = 'black';
+                ctx.beginPath();
+                ctx.globalAlpha = (d === 1) ? 1 : 0.1;
+                ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+            });
+        };
+    };
+    return UpsetCellRenderer;
+}());
+var CircleColumnCellRenderer = (function () {
+    function CircleColumnCellRenderer() {
+    }
+    CircleColumnCellRenderer.prototype.createSVG = function (col, context) {
+        return {
+            template: "<g class=\"circlecolumncell\"></g>",
+            update: function (n, d, i) {
+                var circle = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('circle').data([col.getValue(d.v, d.dataIndex)]);
+                circle.enter().append('circle');
+                circle
+                    .attr({
+                    cy: function (d, i) { return (context.rowHeight(i) / 2); },
+                    cx: function (d, i) { return (col.getWidth() / 2); },
+                    r: (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex),
+                    class: 'circlecolumn'
+                });
+            }
+        };
+    };
+    CircleColumnCellRenderer.prototype.createCanvas = function (col, context) {
+        return function (ctx, d, i) {
+            var posy = (context.rowHeight(i) / 2);
+            var posx = (col.getWidth() / 2);
+            ctx.fillStyle = 'black';
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        };
+    };
+    return CircleColumnCellRenderer;
+}());
 /**
  * a renderer rendering a bar for numerical columns
  */
@@ -1629,7 +1477,7 @@ var BarCellRenderer = (function () {
                     title: col.getLabel(d.v, d.dataIndex)
                 }, {
                     width: (isNaN(width) ? 0 : width) + "px",
-                    height: (context.rowHeight(i) - padding * 2) + "px",
+                    height: context.rowHeight(i) - padding * 2 + "px",
                     top: padding + "px",
                     'background-color': _this.colorOf(d.v, i, col)
                 });
@@ -1642,6 +1490,7 @@ var BarCellRenderer = (function () {
         var padding = context.option('rowPadding', 1);
         return function (ctx, d, i) {
             ctx.fillStyle = _this.colorOf(d.v, i, col);
+            // console.log(col.getValue(d.v, d.dataIndex),d.v)
             var width = col.getWidth() * col.getValue(d.v, d.dataIndex);
             ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
             if (_this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
@@ -1710,7 +1559,7 @@ var action = {
     createSVG: function (col, context) {
         var actions = context.option('actions', []);
         return {
-            template: "<text class=\"actions hoverOnly fa\">" + actions.map(function (a) { return ("<tspan>" + a.icon + "></tspan>"); }) + "</text>",
+            template: "<text class=\"actions hoverOnly fa\">" + actions.map(function (a) { return "<tspan>" + a.icon + "></tspan>"; }) + "</text>",
             update: function (n, d) {
                 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["forEach"])(n, 'tspan', function (ni, i) {
                     ni.onclick = function (event) {
@@ -1725,7 +1574,7 @@ var action = {
     createHTML: function (col, context) {
         var actions = context.option('actions', []);
         return {
-            template: "<div class=\"actions hoverOnly\">" + actions.map(function (a) { return ("<span title=\"" + a.name + "\" class=\"fa\">" + a.icon + "></span>"); }) + "</div>",
+            template: "<div class=\"actions hoverOnly\">" + actions.map(function (a) { return "<span title=\"" + a.name + "\" class=\"fa\">" + a.icon + "></span>"; }) + "</div>",
             update: function (n, d) {
                 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["forEach"])(n, 'span', function (ni, i) {
                     ni.onclick = function (event) {
@@ -1745,7 +1594,7 @@ var action = {
                 var overlay = showOverlay(context.idPrefix + col.id, dx, dy);
                 overlay.style.width = col.getWidth() + 'px';
                 overlay.classList.add('actions');
-                overlay.innerHTML = actions.map(function (a) { return ("<span title=\"" + a.name + "\" class=\"fa\">" + a.icon + "</span>"); }).join('');
+                overlay.innerHTML = actions.map(function (a) { return "<span title=\"" + a.name + "\" class=\"fa\">" + a.icon + "</span>"; }).join('');
                 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["forEach"])(overlay, 'span', function (ni, i) {
                     ni.onclick = function (event) {
                         event.preventDefault();
@@ -2141,7 +1990,14 @@ var renderers = {
     max: combineCellRenderer,
     min: combineCellRenderer,
     mean: combineCellRenderer,
-    script: combineCellRenderer
+    script: combineCellRenderer,
+    heatmapcustom: new HeatmapCellRenderer(),
+    threshold: new ThresholdCellRenderer(),
+    sparkline: new SparklineCellRenderer(),
+    verticalbar: new VerticalBarCellRenderer(),
+    boxplot: new BoxplotCellRenderer(),
+    upset: new UpsetCellRenderer(),
+    circle: new CircleColumnCellRenderer()
 };
 function chooseRenderer(col, renderers) {
     var r = renderers[col.rendererType()];
@@ -2162,13 +2018,127 @@ function createCanvas(col, renderers, context) {
 
 
 /***/ },
-/* 7 */
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
+/**
+ * Created by sam on 04.11.2016.
+ */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+/**
+ * a string column with optional alignment
+ */
+var StringColumn = (function (_super) {
+    __extends(StringColumn, _super);
+    function StringColumn(id, desc) {
+        var _this = _super.call(this, id, desc) || this;
+        _this.currentFilter = null;
+        _this._alignment = 'left';
+        _this.setWidthImpl(200); //by default 200
+        _this._alignment = desc.alignment || 'left';
+        return _this;
+    }
+    Object.defineProperty(StringColumn.prototype, "alignment", {
+        //readonly
+        get: function () {
+            return this._alignment;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    StringColumn.prototype.getValue = function (row, index) {
+        var v = _super.prototype.getValue.call(this, row, index);
+        if (typeof (v) === 'undefined' || v == null) {
+            return '';
+        }
+        return String(v);
+    };
+    StringColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        if (this.currentFilter instanceof RegExp) {
+            r.filter = 'REGEX:' + this.currentFilter.source;
+        }
+        else {
+            r.filter = this.currentFilter;
+        }
+        r.alignment = this.alignment;
+        return r;
+    };
+    StringColumn.prototype.restore = function (dump, factory) {
+        _super.prototype.restore.call(this, dump, factory);
+        if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
+            this.currentFilter = new RegExp(dump.filter.slice(6));
+        }
+        else {
+            this.currentFilter = dump.filter || null;
+        }
+        this._alignment = dump.alignment || this._alignment;
+    };
+    StringColumn.prototype.isFiltered = function () {
+        return this.currentFilter != null;
+    };
+    StringColumn.prototype.filter = function (row, index) {
+        if (!this.isFiltered()) {
+            return true;
+        }
+        var r = this.getLabel(row, index), filter = this.currentFilter;
+        if (filter === StringColumn.FILTER_MISSING) {
+            return r != null && r.trim() !== '';
+        }
+        if (typeof filter === 'string' && filter.length > 0) {
+            return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+        }
+        if (filter instanceof RegExp) {
+            return r && filter.test(r);
+        }
+        return true;
+    };
+    StringColumn.prototype.getFilter = function () {
+        return this.currentFilter;
+    };
+    StringColumn.prototype.setFilter = function (filter) {
+        if (filter === '') {
+            filter = null;
+        }
+        if (this.currentFilter === filter) {
+            return;
+        }
+        this.fire([__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_FILTER_CHANGED, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+    };
+    StringColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        var a_val, b_val;
+        if ((a_val = this.getValue(a, aIndex)) === '') {
+            return this.getValue(b, bIndex) === '' ? 0 : +1; //same = 0
+        }
+        else if ((b_val = this.getValue(b, bIndex)) === '') {
+            return -1;
+        }
+        return a_val.localeCompare(b_val);
+    };
+    return StringColumn;
+}(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = StringColumn;
+//magic key for filtering missing ones
+StringColumn.FILTER_MISSING = '__FILTER_MISSING';
+
+
+/***/ },
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model_Ranking__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_RankColumn__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model_Ranking__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_RankColumn__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(2);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
@@ -2188,27 +2158,26 @@ var __extends = (this && this.__extends) || function (d, b) {
 var ADataProvider = (function (_super) {
     __extends(ADataProvider, _super);
     function ADataProvider(options) {
-        var _this = this;
         if (options === void 0) { options = {}; }
-        _super.call(this);
+        var _this = _super.call(this) || this;
         /**
          * all rankings
          * @type {Array}
          * @private
          */
-        this.rankings_ = [];
+        _this.rankings_ = [];
         /**
          * the current selected indices
          * @type {Set}
          */
-        this.selection = new Set();
-        this.uid = 0;
+        _this.selection = new Set();
+        _this.uid = 0;
         /**
          * lookup map of a column type to its column implementation
          */
-        this.columnTypes = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["merge"])({}, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["models"])());
-        this.multiSelections = true;
-        this.createHelper = function (d) {
+        _this.columnTypes = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["merge"])({}, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["models"])());
+        _this.multiSelections = true;
+        _this.createHelper = function (d) {
             //factory method for restoring a column
             var desc = _this.fromDescRef(d.desc);
             var c = null;
@@ -2220,8 +2189,9 @@ var ADataProvider = (function (_super) {
             }
             return c;
         };
-        this.columnTypes = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["merge"])(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["models"])(), options.columnTypes || {});
-        this.multiSelections = options.multiSelection !== false;
+        _this.columnTypes = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["merge"])(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__model__["models"])(), options.columnTypes || {});
+        _this.multiSelections = options.multiSelection !== false;
+        return _this;
     }
     /**
      * events:
@@ -2237,7 +2207,8 @@ var ADataProvider = (function (_super) {
             ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
             ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES,
             ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED, ADataProvider.EVENT_ADD_DESC,
-            ADataProvider.EVENT_JUMP_TO_NEAREST]);
+            ADataProvider.EVENT_JUMP_TO_NEAREST
+        ]);
     };
     /**
      * adds a new ranking
@@ -2737,20 +2708,170 @@ var ADataProvider = (function (_super) {
             return r.join(options.newline);
         });
     };
-    ADataProvider.EVENT_SELECTION_CHANGED = 'selectionChanged';
-    ADataProvider.EVENT_ADD_COLUMN = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_ADD_COLUMN;
-    ADataProvider.EVENT_REMOVE_COLUMN = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_REMOVE_COLUMN;
-    ADataProvider.EVENT_ADD_RANKING = 'addRanking';
-    ADataProvider.EVENT_REMOVE_RANKING = 'removeRanking';
-    ADataProvider.EVENT_DIRTY = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_DIRTY;
-    ADataProvider.EVENT_DIRTY_HEADER = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_DIRTY_HEADER;
-    ADataProvider.EVENT_DIRTY_VALUES = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_DIRTY_VALUES;
-    ADataProvider.EVENT_ORDER_CHANGED = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_ORDER_CHANGED;
-    ADataProvider.EVENT_ADD_DESC = 'addDesc';
-    ADataProvider.EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
     return ADataProvider;
 }(__WEBPACK_IMPORTED_MODULE_3__utils__["AEventDispatcher"]));
+ADataProvider.EVENT_SELECTION_CHANGED = 'selectionChanged';
+ADataProvider.EVENT_ADD_COLUMN = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_ADD_COLUMN;
+ADataProvider.EVENT_REMOVE_COLUMN = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_REMOVE_COLUMN;
+ADataProvider.EVENT_ADD_RANKING = 'addRanking';
+ADataProvider.EVENT_REMOVE_RANKING = 'removeRanking';
+ADataProvider.EVENT_DIRTY = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_DIRTY;
+ADataProvider.EVENT_DIRTY_HEADER = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_DIRTY_HEADER;
+ADataProvider.EVENT_DIRTY_VALUES = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_DIRTY_VALUES;
+ADataProvider.EVENT_ORDER_CHANGED = __WEBPACK_IMPORTED_MODULE_1__model_Ranking__["a" /* default */].EVENT_ORDER_CHANGED;
+ADataProvider.EVENT_ADD_DESC = 'addDesc';
+ADataProvider.EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
 /* harmony default export */ exports["a"] = ADataProvider;
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
+/* harmony export (immutable) */ exports["b"] = isMultiLevelColumn;
+/**
+ * Created by sam on 04.11.2016.
+ */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+function isMultiLevelColumn(col) {
+    return typeof (col.getCollapsed) === 'function';
+}
+/**
+ * implementation of a combine column, standard operations how to select
+ */
+var CompositeColumn = (function (_super) {
+    __extends(CompositeColumn, _super);
+    function CompositeColumn(id, desc) {
+        var _this = _super.call(this, id, desc) || this;
+        _this._children = [];
+        return _this;
+    }
+    CompositeColumn.prototype.assignNewId = function (idGenerator) {
+        _super.prototype.assignNewId.call(this, idGenerator);
+        this._children.forEach(function (c) { return c.assignNewId(idGenerator); });
+    };
+    Object.defineProperty(CompositeColumn.prototype, "children", {
+        get: function () {
+            return this._children.slice();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(CompositeColumn.prototype, "length", {
+        get: function () {
+            return this._children.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    CompositeColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
+        if (levelsToGo === void 0) { levelsToGo = 0; }
+        if (padding === void 0) { padding = 0; }
+        var w = 0;
+        //no more levels or just this one
+        if (levelsToGo === 0 || levelsToGo <= __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].FLAT_ALL_COLUMNS) {
+            w = this.getCompressed() ? __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].COMPRESSED_WIDTH : this.getWidth();
+            if (levelsToGo === 0) {
+                return w;
+            }
+        }
+        //push children
+        this._children.forEach(function (c) {
+            if (!c.isHidden() || levelsToGo <= __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].FLAT_ALL_COLUMNS) {
+                c.flatten(r, offset, levelsToGo - 1, padding);
+            }
+        });
+        return w;
+    };
+    CompositeColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.children = this._children.map(function (d) { return d.dump(toDescRef); });
+        return r;
+    };
+    CompositeColumn.prototype.restore = function (dump, factory) {
+        var _this = this;
+        dump.children.map(function (child) {
+            var c = factory(child);
+            if (c) {
+                _this.push(c);
+            }
+        });
+        _super.prototype.restore.call(this, dump, factory);
+    };
+    /**
+     * inserts a column at a the given position
+     * @param col
+     * @param index
+     * @returns {any}
+     */
+    CompositeColumn.prototype.insert = function (col, index) {
+        this._children.splice(index, 0, col);
+        //listen and propagate events
+        return this.insertImpl(col, index);
+    };
+    CompositeColumn.prototype.insertImpl = function (col, index) {
+        col.parent = this;
+        this.forward(col, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_FILTER_CHANGED + '.combine');
+        this.fire([__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_ADD_COLUMN, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY], col, index);
+        return col;
+    };
+    CompositeColumn.prototype.push = function (col) {
+        return this.insert(col, this._children.length);
+    };
+    CompositeColumn.prototype.at = function (index) {
+        return this._children[index];
+    };
+    CompositeColumn.prototype.indexOf = function (col) {
+        return this._children.indexOf(col);
+    };
+    CompositeColumn.prototype.insertAfter = function (col, ref) {
+        var i = this.indexOf(ref);
+        if (i < 0) {
+            return null;
+        }
+        return this.insert(col, i + 1);
+    };
+    CompositeColumn.prototype.remove = function (child) {
+        var i = this._children.indexOf(child);
+        if (i < 0) {
+            return false;
+        }
+        this._children.splice(i, 1); //remove and deregister listeners
+        return this.removeImpl(child);
+    };
+    CompositeColumn.prototype.removeImpl = function (child) {
+        child.parent = null;
+        this.unforward(child, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_FILTER_CHANGED + '.combine');
+        this.fire([__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_REMOVE_COLUMN, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY], child);
+        return true;
+    };
+    CompositeColumn.prototype.getColor = function (row, index) {
+        return this.color;
+    };
+    CompositeColumn.prototype.isFiltered = function () {
+        return this._children.some(function (d) { return d.isFiltered(); });
+    };
+    CompositeColumn.prototype.filter = function (row, index) {
+        return this._children.every(function (d) { return d.filter(row, index); });
+    };
+    /**
+     * describe the column if it is a sorting criteria
+     * @param toId helper to convert a description to an id
+     * @return {string} json compatible
+     */
+    CompositeColumn.prototype.toSortingDesc = function (toId) {
+        return this._children.map(function (c) { return c.toSortingDesc(toId); });
+    };
+    return CompositeColumn;
+}(__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */]));
+/* harmony default export */ exports["a"] = CompositeColumn;
 
 
 /***/ },
@@ -2760,8 +2881,8 @@ var ADataProvider = (function (_super) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__CompositeColumn__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__NumberColumn__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__CompositeColumn__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__NumberColumn__ = __webpack_require__(9);
 /**
  * Created by sam on 04.11.2016.
  */
@@ -2779,12 +2900,13 @@ var __extends = (this && this.__extends) || function (d, b) {
 var CompositeNumberColumn = (function (_super) {
     __extends(CompositeNumberColumn, _super);
     function CompositeNumberColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.missingValue = 0;
-        this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])('.3n');
+        var _this = _super.call(this, id, desc) || this;
+        _this.missingValue = 0;
+        _this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])('.3n');
         if (desc.numberFormat) {
-            this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])(desc.numberFormat);
+            _this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])(desc.numberFormat);
         }
+        return _this;
     }
     CompositeNumberColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
@@ -2847,9 +2969,15 @@ var CompositeNumberColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__CompositeNumberColumn__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Column__ = __webpack_require__(1);
-/* harmony export (immutable) */ exports["b"] = createDesc;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(3);
+/* harmony export (immutable) */ exports["a"] = isNumberColumn;
+/* harmony export (immutable) */ exports["b"] = numberCompare;
+/* harmony export (binding) */ __webpack_require__.d(exports, "d", function() { return ScaleMappingFunction; });
+/* harmony export (binding) */ __webpack_require__.d(exports, "e", function() { return ScriptMappingFunction; });
+/* harmony export (immutable) */ exports["f"] = createMappingFunction;
 /**
  * Created by sam on 04.11.2016.
  */
@@ -2860,189 +2988,402 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 
 
+
 /**
- * factory for creating a description creating a stacked column
- * @param label
- * @returns {{type: string, label: string}}
+ * checks whether the given column or description is a number column, i.e. the value is a number
+ * @param col
+ * @returns {boolean}
  */
-function createDesc(label) {
-    if (label === void 0) { label = 'Combined'; }
-    return { type: 'stack', label: label };
+function isNumberColumn(col) {
+    return (col instanceof __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */] && typeof col.getNumber === 'function' || (!(col instanceof __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */]) && col.type.match(/(number|stack|ordinal)/) != null));
+}
+function isMissingValue(v) {
+    return typeof (v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof (v) === 'string' && (v.toLowerCase() === 'na'));
 }
 /**
- * implementation of the stacked column
+ * save number comparison
+ * @param a
+ * @param b
+ * @return {number}
  */
-var StackColumn = (function (_super) {
-    __extends(StackColumn, _super);
-    function StackColumn(id, desc) {
-        _super.call(this, id, desc);
+function numberCompare(a, b) {
+    if (isNaN(a)) {
+        return isNaN(b) ? 0 : +1;
+    }
+    if (isNaN(b)) {
+        return -1;
+    }
+    return a - b;
+}
+function toScale(type) {
+    if (type === void 0) { type = 'linear'; }
+    switch (type) {
+        case 'log':
+            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].log().clamp(true);
+        case 'sqrt':
+            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].sqrt().clamp(true);
+        case 'pow1.1':
+            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].pow().exponent(1.1).clamp(true);
+        case 'pow2':
+            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].pow().exponent(2).clamp(true);
+        case 'pow3':
+            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].pow().exponent(3).clamp(true);
+        default:
+            return __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear().clamp(true);
+    }
+}
+function isSame(a, b) {
+    if (a.length !== b.length) {
+        return false;
+    }
+    return a.every(function (ai, i) { return ai === b[i]; });
+}
+function fixDomain(domain, type) {
+    if (type === 'log' && domain[0] === 0) {
+        domain[0] = 0.0000001; //0 is bad
+    }
+    return domain;
+}
+/**
+ * a mapping function based on a d3 scale (linear, sqrt, log)
+ */
+var ScaleMappingFunction = (function () {
+    function ScaleMappingFunction(domain, type, range) {
+        if (domain === void 0) { domain = [0, 1]; }
+        if (type === void 0) { type = 'linear'; }
+        if (range === void 0) { range = [0, 1]; }
+        this.type = type;
+        this.s = toScale(type).domain(fixDomain(domain, this.type)).range(range);
+    }
+    Object.defineProperty(ScaleMappingFunction.prototype, "domain", {
+        get: function () {
+            return this.s.domain();
+        },
+        set: function (domain) {
+            this.s.domain(fixDomain(domain, this.type));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScaleMappingFunction.prototype, "range", {
+        get: function () {
+            return this.s.range();
+        },
+        set: function (range) {
+            this.s.range(range);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ScaleMappingFunction.prototype.apply = function (v) {
+        return this.s(v);
+    };
+    Object.defineProperty(ScaleMappingFunction.prototype, "scaleType", {
+        get: function () {
+            return this.type;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ScaleMappingFunction.prototype.dump = function () {
+        return {
+            type: this.type,
+            domain: this.domain,
+            range: this.range
+        };
+    };
+    ScaleMappingFunction.prototype.eq = function (other) {
+        if (!(other instanceof ScaleMappingFunction)) {
+            return false;
+        }
+        var that = other;
+        return that.type === this.type && isSame(this.domain, that.domain) && isSame(this.range, that.range);
+    };
+    ScaleMappingFunction.prototype.restore = function (dump) {
+        this.type = dump.type;
+        this.s = toScale(dump.type).domain(dump.domain).range(dump.range);
+    };
+    ScaleMappingFunction.prototype.clone = function () {
+        return new ScaleMappingFunction(this.domain, this.type, this.range);
+    };
+    return ScaleMappingFunction;
+}());
+/**
+ * a mapping function based on a custom user function using 'value' as the current value
+ */
+var ScriptMappingFunction = (function () {
+    function ScriptMappingFunction(domain_, code_) {
+        if (domain_ === void 0) { domain_ = [0, 1]; }
+        if (code_ === void 0) { code_ = 'return this.linear(value,this.value_min,this.value_max);'; }
+        this.domain_ = domain_;
+        this.code_ = code_;
+        this.f = new Function('value', code_);
+    }
+    Object.defineProperty(ScriptMappingFunction.prototype, "domain", {
+        get: function () {
+            return this.domain_;
+        },
+        set: function (domain) {
+            this.domain_ = domain;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScriptMappingFunction.prototype, "code", {
+        get: function () {
+            return this.code_;
+        },
+        set: function (code) {
+            if (this.code_ === code) {
+                return;
+            }
+            this.code_ = code;
+            this.f = new Function('value', code);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ScriptMappingFunction.prototype.apply = function (v) {
+        var min = this.domain_[0], max = this.domain_[this.domain_.length - 1];
+        var r = this.f.call({
+            value_min: min,
+            value_max: max,
+            value_range: max - min,
+            value_domain: this.domain_.slice(),
+            linear: function (v, mi, ma) { return (v - mi) / (ma - mi); }
+        }, v);
+        if (typeof r === 'number') {
+            return Math.max(Math.min(r, 1), 0);
+        }
+        return NaN;
+    };
+    ScriptMappingFunction.prototype.dump = function () {
+        return {
+            type: 'script',
+            code: this.code
+        };
+    };
+    ScriptMappingFunction.prototype.eq = function (other) {
+        if (!(other instanceof ScriptMappingFunction)) {
+            return false;
+        }
+        var that = other;
+        return that.code === this.code;
+    };
+    ScriptMappingFunction.prototype.restore = function (dump) {
+        this.code = dump.code;
+    };
+    ScriptMappingFunction.prototype.clone = function () {
+        return new ScriptMappingFunction(this.domain, this.code);
+    };
+    return ScriptMappingFunction;
+}());
+function createMappingFunction(dump) {
+    if (dump.type === 'script') {
+        var s = new ScriptMappingFunction();
+        s.restore(dump);
+        return s;
+    }
+    else {
+        var l = new ScaleMappingFunction();
+        l.restore(dump);
+        return l;
+    }
+}
+/**
+ * a number column mapped from an original input scale to an output range
+ */
+var NumberColumn = (function (_super) {
+    __extends(NumberColumn, _super);
+    function NumberColumn(id, desc) {
+        var _this = _super.call(this, id, desc) || this;
+        _this.missingValue = 0;
         /**
-         * whether this stack column is collapsed i.e. just looks like an ordinary number column
-         * @type {boolean}
+         * currently active filter
+         * @type {{min: number, max: number}}
          * @private
          */
-        this.collapsed = false;
-        var that = this;
-        this.adaptChange = function (old, new_) {
-            that.adaptWidthChange(this.source, old, new_);
-        };
+        _this.currentFilter = NumberColumn.noFilter();
+        _this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])('.3n');
+        if (desc.map) {
+            _this.mapping = createMappingFunction(desc.map);
+        }
+        else if (desc.domain) {
+            _this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
+        }
+        _this.original = _this.mapping.clone();
+        if (desc.numberFormat) {
+            _this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])(desc.numberFormat);
+        }
+        _this.rendererList = [{ type: 'number', label: 'Bar' },
+            { type: 'circle', label: 'Circle' }];
+        return _this;
     }
-    StackColumn.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat([StackColumn.EVENT_COLLAPSE_CHANGED, StackColumn.EVENT_WEIGHTS_CHANGED]);
-    };
-    StackColumn.prototype.setCollapsed = function (value) {
-        if (this.collapsed === value) {
-            return;
-        }
-        this.fire([StackColumn.EVENT_COLLAPSE_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_HEADER, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], this.collapsed, this.collapsed = value);
-    };
-    StackColumn.prototype.getCollapsed = function () {
-        return this.collapsed;
-    };
-    StackColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
-        if (levelsToGo === void 0) { levelsToGo = 0; }
-        if (padding === void 0) { padding = 0; }
-        var self = null;
-        var children = levelsToGo <= __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].FLAT_ALL_COLUMNS ? this._children : this._children.filter(function (c) { return !c.isHidden(); });
-        //no more levels or just this one
-        if (levelsToGo === 0 || levelsToGo <= __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].FLAT_ALL_COLUMNS) {
-            var w = this.getCompressed() ? __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].COMPRESSED_WIDTH : this.getWidth();
-            if (!this.collapsed && !this.getCompressed()) {
-                w += (children.length - 1) * padding;
-            }
-            r.push(self = { col: this, offset: offset, width: w });
-            if (levelsToGo === 0) {
-                return w;
-            }
-        }
-        //push children
-        var acc = offset;
-        children.forEach(function (c) {
-            acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
-        });
-        if (self) {
-            self.width = acc - offset - padding;
-        }
-        return acc - offset - padding;
-    };
-    StackColumn.prototype.dump = function (toDescRef) {
+    NumberColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
-        r.collapsed = this.collapsed;
+        r.map = this.mapping.dump();
+        r.filter = this.currentFilter;
+        r.missingValue = this.missingValue;
         return r;
     };
-    StackColumn.prototype.restore = function (dump, factory) {
-        this.collapsed = dump.collapsed === true;
+    NumberColumn.prototype.restore = function (dump, factory) {
         _super.prototype.restore.call(this, dump, factory);
-    };
-    /**
-     * inserts a column at a the given position
-     * @param col
-     * @param index
-     * @param weight
-     * @returns {any}
-     */
-    StackColumn.prototype.insert = function (col, index, weight) {
-        if (weight === void 0) { weight = NaN; }
-        if (!isNaN(weight)) {
-            col.setWidth((weight / (1 - weight) * this.getWidth()));
+        if (dump.map) {
+            this.mapping = createMappingFunction(dump.map);
         }
-        col.on(__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_WIDTH_CHANGED + '.stack', this.adaptChange);
-        //increase my width
-        _super.prototype.setWidth.call(this, this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
-        return _super.prototype.insert.call(this, col, index);
-    };
-    StackColumn.prototype.push = function (col, weight) {
-        if (weight === void 0) { weight = NaN; }
-        return this.insert(col, this.length, weight);
-    };
-    StackColumn.prototype.insertAfter = function (col, ref, weight) {
-        if (weight === void 0) { weight = NaN; }
-        var i = this.indexOf(ref);
-        if (i < 0) {
-            return null;
+        else if (dump.domain) {
+            this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
         }
-        return this.insert(col, i + 1, weight);
+        if (dump.currentFilter) {
+            this.currentFilter = dump.currentFilter;
+        }
+        if (dump.missingValue) {
+            this.missingValue = dump.missingValue;
+        }
+        if (dump.numberFormat) {
+            this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])(dump.numberFormat);
+        }
     };
-    /**
-     * adapts weights according to an own width change
-     * @param col
-     * @param old
-     * @param new_
-     */
-    StackColumn.prototype.adaptWidthChange = function (col, old, new_) {
-        if (old === new_) {
+    NumberColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat([NumberColumn.EVENT_MAPPING_CHANGED]);
+    };
+    NumberColumn.prototype.getLabel = function (row, index) {
+        if (this.desc.numberFormat) {
+            var raw = this.getRawValue(row, index);
+            //if a dedicated format and a number use the formatter in any case
+            if (isNaN(raw)) {
+                return 'NaN';
+            }
+            return this.numberFormat(raw);
+        }
+        var v = _super.prototype.getValue.call(this, row, index);
+        //keep non number if it is not a number else convert using formatter
+        if (typeof v === 'number') {
+            return this.numberFormat(+v);
+        }
+        return String(v);
+    };
+    NumberColumn.prototype.getRawValue = function (row, index) {
+        var v = _super.prototype.getValue.call(this, row, index);
+        if (isMissingValue(v)) {
+            return this.missingValue;
+        }
+        return +v;
+    };
+    NumberColumn.prototype.getValue = function (row, index) {
+        var v = this.getRawValue(row, index);
+        if (isNaN(v)) {
+            return v;
+        }
+        return this.mapping.apply(v);
+    };
+    NumberColumn.prototype.getNumber = function (row, index) {
+        return this.getValue(row, index);
+    };
+    NumberColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
+    };
+    NumberColumn.prototype.getOriginalMapping = function () {
+        return this.original.clone();
+    };
+    NumberColumn.prototype.getMapping = function () {
+        return this.mapping.clone();
+    };
+    NumberColumn.prototype.setMapping = function (mapping) {
+        if (this.mapping.eq(mapping)) {
             return;
         }
-        var bak = this.getWeights();
-        var full = this.getWidth(), change = (new_ - old) / full;
-        var oldWeight = old / full;
-        var factor = (1 - oldWeight - change) / (1 - oldWeight);
-        this._children.forEach(function (c) {
-            if (c === col) {
-            }
-            else {
-                c.setWidthImpl(c.getWidth() * factor);
-            }
-        });
-        this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_HEADER, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, this.getWeights());
+        this.fire([NumberColumn.EVENT_MAPPING_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
     };
-    StackColumn.prototype.getWeights = function () {
-        var w = this.getWidth();
-        return this._children.map(function (d) { return d.getWidth() / w; });
+    NumberColumn.prototype.isFiltered = function () {
+        return this.currentFilter.filterMissing || isFinite(this.currentFilter.min) || isFinite(this.currentFilter.max);
     };
-    StackColumn.prototype.setWeights = function (weights) {
-        var bak = this.getWeights();
-        var s, delta = weights.length - this.length;
-        if (delta < 0) {
-            s = weights.reduce(function (p, a) { return p + a; }, 0);
-            if (s <= 1) {
-                for (var i = 0; i < -delta; ++i) {
-                    weights.push((1 - s) * (1 / -delta));
-                }
-            }
-            else if (s <= 100) {
-                for (var i = 0; i < -delta; ++i) {
-                    weights.push((100 - s) * (1 / -delta));
-                }
-            }
+    Object.defineProperty(NumberColumn.prototype, "filterMin", {
+        get: function () {
+            return this.currentFilter.min;
+        },
+        set: function (min) {
+            var bak = this.getFilter();
+            this.currentFilter.min = isNaN(min) ? -Infinity : min;
+            this.fire([__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_FILTER_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, this.getFilter());
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NumberColumn.prototype, "filterMax", {
+        get: function () {
+            return this.currentFilter.max;
+        },
+        set: function (max) {
+            var bak = this.getFilter();
+            this.currentFilter.max = isNaN(max) ? Infinity : max;
+            this.fire([__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_FILTER_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, this.getFilter());
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NumberColumn.prototype, "filterMissing", {
+        get: function () {
+            return this.currentFilter.filterMissing;
+        },
+        set: function (filterMissing) {
+            var bak = this.getFilter();
+            this.currentFilter.filterMissing = filterMissing;
+            this.fire([__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_FILTER_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, this.getFilter());
+        },
+        enumerable: true,
+        configurable: true
+    });
+    NumberColumn.prototype.getFilter = function () {
+        return {
+            min: this.currentFilter.min,
+            max: this.currentFilter.max,
+            filterMissing: this.currentFilter.filterMissing
+        };
+    };
+    NumberColumn.prototype.setFilter = function (value) {
+        if (value === void 0) { value = { min: -Infinity, max: +Infinity, filterMissing: false }; }
+        if (this.currentFilter.min === value.min && this.currentFilter.max === value.max && this.currentFilter.filterMissing === value.filterMissing) {
+            return;
         }
-        weights = weights.slice(0, this.length);
-        s = weights.reduce(function (p, a) { return p + a; }, 0) / this.getWidth();
-        weights = weights.map(function (d) { return d / s; });
-        this._children.forEach(function (c, i) {
-            c.setWidthImpl(weights[i]);
-        });
-        this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_HEADER, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, weights);
+        var bak = this.getFilter();
+        this.currentFilter.min = isNaN(value.min) ? -Infinity : value.min;
+        this.currentFilter.max = isNaN(value.max) ? Infinity : value.max;
+        this.currentFilter.filterMissing = value.filterMissing;
+        this.fire([__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_FILTER_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, this.getFilter());
     };
-    StackColumn.prototype.removeImpl = function (child) {
-        child.on(__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_WIDTH_CHANGED + '.stack', null);
-        _super.prototype.setWidth.call(this, this.length === 1 ? 100 : this.getWidth() - child.getWidth());
-        return _super.prototype.removeImpl.call(this, child);
+    /**
+     * filter the current row if any filter is set
+     * @param row
+     * @param index row index
+     * @returns {boolean}
+     */
+    NumberColumn.prototype.filter = function (row, index) {
+        if (!this.isFiltered()) {
+            return true;
+        }
+        var v = _super.prototype.getValue.call(this, row, index);
+        if (isMissingValue(v)) {
+            return !this.filterMissing;
+        }
+        var vn = +v;
+        return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
     };
-    StackColumn.prototype.setWidth = function (value) {
-        var factor = value / this.getWidth();
-        this._children.forEach(function (child) {
-            //disable since we change it
-            child.setWidthImpl(child.getWidth() * factor);
-        });
-        _super.prototype.setWidth.call(this, value);
-    };
-    StackColumn.prototype.compute = function (row, index) {
-        var w = this.getWidth();
-        return this._children.reduce(function (acc, d) { return acc + d.getValue(row, index) * (d.getWidth() / w); }, 0);
-    };
-    StackColumn.prototype.rendererType = function () {
-        if (this.getCollapsed()) {
-            return StackColumn.COLLAPSED_RENDERER;
+    NumberColumn.prototype.rendererType = function () {
+        if (this.getCompressed()) {
+            return NumberColumn.COMPRESSED_RENDERER;
         }
         return _super.prototype.rendererType.call(this);
     };
-    StackColumn.EVENT_COLLAPSE_CHANGED = 'collapseChanged';
-    StackColumn.EVENT_WEIGHTS_CHANGED = 'weightsChanged';
-    StackColumn.COLLAPSED_RENDERER = 'number';
-    return StackColumn;
-}(__WEBPACK_IMPORTED_MODULE_0__CompositeNumberColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = StackColumn;
+    NumberColumn.prototype.getRendererList = function () {
+        return this.rendererList;
+    };
+    return NumberColumn;
+}(__WEBPACK_IMPORTED_MODULE_2__ValueColumn__["a" /* default */]));
+/* harmony default export */ exports["c"] = NumberColumn;
+NumberColumn.EVENT_MAPPING_CHANGED = 'mappingChanged';
+NumberColumn.COMPRESSED_RENDERER = 'heatmap';
+NumberColumn.noFilter = function () { return ({ min: -Infinity, max: Infinity, filterMissing: false }); };
 
 
 /***/ },
@@ -3052,40 +3393,38 @@ var StackColumn = (function (_super) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__NumberColumn__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__NumberColumn__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__StringColumn__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__StackColumn__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__AnnotateColumn__ = __webpack_require__(33);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__BooleanColumn__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__StackColumn__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__AnnotateColumn__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__BooleanColumn__ = __webpack_require__(33);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__CategoricalColumn__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__MinColumn__ = __webpack_require__(22);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__MaxColumn__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__MeanColumn__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__RankColumn__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__RankColumn__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__SelectionColumn__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__CategoricalNumberColumn__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__CategoricalNumberColumn__ = __webpack_require__(34);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__NestedColumn__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(35);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__LinkColumn__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__ = __webpack_require__(37);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__ = __webpack_require__(23);
+Object.defineProperty(exports, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__CompositeColumn__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__Ranking__ = __webpack_require__(14);
-/* harmony export (immutable) */ exports["defineColumn"] = defineColumn;
-/* harmony export (immutable) */ exports["createActionDesc"] = createActionDesc;
-/* harmony export (immutable) */ exports["models"] = models;
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_20__Column__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_20__Column__["IColumnDesc"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_20__Column__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__CompositeColumn__ = __webpack_require__(7);
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "CompositeColumn", function() { return __WEBPACK_IMPORTED_MODULE_21__CompositeColumn__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["f"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ScriptMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["e"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isNumberColumn", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ScaleMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["d"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isCategoricalColumn", function() { return __WEBPACK_IMPORTED_MODULE_7__CategoricalColumn__["b"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_22__Ranking__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__Ranking__ = __webpack_require__(13);
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_22__Ranking__["b"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_22__Ranking__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMinDesc", function() { return __WEBPACK_IMPORTED_MODULE_8__MinColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMaxDesc", function() { return __WEBPACK_IMPORTED_MODULE_9__MaxColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMeanDesc", function() { return __WEBPACK_IMPORTED_MODULE_10__MeanColumn__["b"]; });
@@ -3094,6 +3433,9 @@ var StackColumn = (function (_super) {
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createScriptDesc", function() { return __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createNestedDesc", function() { return __WEBPACK_IMPORTED_MODULE_15__NestedColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createStackDesc", function() { return __WEBPACK_IMPORTED_MODULE_4__StackColumn__["b"]; });
+/* harmony export (immutable) */ exports["defineColumn"] = defineColumn;
+/* harmony export (immutable) */ exports["createActionDesc"] = createActionDesc;
+/* harmony export (immutable) */ exports["models"] = models;
 /**
  * Created by Samuel Gratzl on 06.08.2015.
  */
@@ -3146,10 +3488,11 @@ function defineColumn(name, functions) {
     var CustomColumn = (function (_super) {
         __extends(CustomColumn, _super);
         function CustomColumn(id, desc) {
-            _super.call(this, id, desc);
-            if (typeof (this.init) === 'function') {
-                this.init.apply(this, [].slice.apply(arguments));
+            var _this = _super.call(this, id, desc) || this;
+            if (typeof (_this.init) === 'function') {
+                _this.init.apply(_this, [].slice.apply(arguments));
             }
+            return _this;
         }
         CustomColumn.prototype.init = function () {
             // dummy
@@ -3249,30 +3592,31 @@ function arrayEquals(a, b) {
 var CategoricalColumn = (function (_super) {
     __extends(CategoricalColumn, _super);
     function CategoricalColumn(id, desc) {
-        _super.call(this, id, desc);
+        var _this = _super.call(this, id, desc) || this;
         /**
          * colors for each category
          * @type {Ordinal<string, string>}
          */
-        this.colors = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].category10();
+        _this.colors = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].category10();
         /**
          * category labels by default the category name itself
          * @type {Array}
          */
-        this.catLabels = new Map();
+        _this.catLabels = new Map();
         /**
          * set of categories to show
          * @type {null}
          * @private
          */
-        this.currentFilter = null;
+        _this.currentFilter = null;
         /**
          * split multiple categories
          * @type {string}
          */
-        this.separator = ';';
-        this.separator = desc.separator || this.separator;
-        this.initCategories(desc);
+        _this.separator = ';';
+        _this.separator = desc.separator || _this.separator;
+        _this.initCategories(desc);
+        return _this;
         //TODO infer categories from data
     }
     CategoricalColumn.prototype.initCategories = function (desc) {
@@ -3454,155 +3798,6 @@ var CategoricalColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
-/* harmony export (immutable) */ exports["b"] = isMultiLevelColumn;
-/**
- * Created by sam on 04.11.2016.
- */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-
-function isMultiLevelColumn(col) {
-    return typeof (col.getCollapsed) === 'function';
-}
-/**
- * implementation of a combine column, standard operations how to select
- */
-var CompositeColumn = (function (_super) {
-    __extends(CompositeColumn, _super);
-    function CompositeColumn(id, desc) {
-        _super.call(this, id, desc);
-        this._children = [];
-    }
-    CompositeColumn.prototype.assignNewId = function (idGenerator) {
-        _super.prototype.assignNewId.call(this, idGenerator);
-        this._children.forEach(function (c) { return c.assignNewId(idGenerator); });
-    };
-    Object.defineProperty(CompositeColumn.prototype, "children", {
-        get: function () {
-            return this._children.slice();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(CompositeColumn.prototype, "length", {
-        get: function () {
-            return this._children.length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    CompositeColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
-        if (levelsToGo === void 0) { levelsToGo = 0; }
-        if (padding === void 0) { padding = 0; }
-        var w = 0;
-        //no more levels or just this one
-        if (levelsToGo === 0 || levelsToGo <= __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].FLAT_ALL_COLUMNS) {
-            w = this.getCompressed() ? __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].COMPRESSED_WIDTH : this.getWidth();
-            if (levelsToGo === 0) {
-                return w;
-            }
-        }
-        //push children
-        this._children.forEach(function (c) {
-            if (!c.isHidden() || levelsToGo <= __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].FLAT_ALL_COLUMNS) {
-                c.flatten(r, offset, levelsToGo - 1, padding);
-            }
-        });
-        return w;
-    };
-    CompositeColumn.prototype.dump = function (toDescRef) {
-        var r = _super.prototype.dump.call(this, toDescRef);
-        r.children = this._children.map(function (d) { return d.dump(toDescRef); });
-        return r;
-    };
-    CompositeColumn.prototype.restore = function (dump, factory) {
-        var _this = this;
-        dump.children.map(function (child) {
-            var c = factory(child);
-            if (c) {
-                _this.push(c);
-            }
-        });
-        _super.prototype.restore.call(this, dump, factory);
-    };
-    /**
-     * inserts a column at a the given position
-     * @param col
-     * @param index
-     * @returns {any}
-     */
-    CompositeColumn.prototype.insert = function (col, index) {
-        this._children.splice(index, 0, col);
-        //listen and propagate events
-        return this.insertImpl(col, index);
-    };
-    CompositeColumn.prototype.insertImpl = function (col, index) {
-        col.parent = this;
-        this.forward(col, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_FILTER_CHANGED + '.combine');
-        this.fire([__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_ADD_COLUMN, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY], col, index);
-        return col;
-    };
-    CompositeColumn.prototype.push = function (col) {
-        return this.insert(col, this._children.length);
-    };
-    CompositeColumn.prototype.at = function (index) {
-        return this._children[index];
-    };
-    CompositeColumn.prototype.indexOf = function (col) {
-        return this._children.indexOf(col);
-    };
-    CompositeColumn.prototype.insertAfter = function (col, ref) {
-        var i = this.indexOf(ref);
-        if (i < 0) {
-            return null;
-        }
-        return this.insert(col, i + 1);
-    };
-    CompositeColumn.prototype.remove = function (child) {
-        var i = this._children.indexOf(child);
-        if (i < 0) {
-            return false;
-        }
-        this._children.splice(i, 1); //remove and deregister listeners
-        return this.removeImpl(child);
-    };
-    CompositeColumn.prototype.removeImpl = function (child) {
-        child.parent = null;
-        this.unforward(child, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY + '.combine', __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_FILTER_CHANGED + '.combine');
-        this.fire([__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_REMOVE_COLUMN, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY], child);
-        return true;
-    };
-    CompositeColumn.prototype.getColor = function (row, index) {
-        return this.color;
-    };
-    CompositeColumn.prototype.isFiltered = function () {
-        return this._children.some(function (d) { return d.isFiltered(); });
-    };
-    CompositeColumn.prototype.filter = function (row, index) {
-        return this._children.every(function (d) { return d.filter(row, index); });
-    };
-    /**
-     * describe the column if it is a sorting criteria
-     * @param toId helper to convert a description to an id
-     * @return {string} json compatible
-     */
-    CompositeColumn.prototype.toSortingDesc = function (toId) {
-        return this._children.map(function (c) { return c.toSortingDesc(toId); });
-    };
-    return CompositeColumn;
-}(__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */]));
-/* harmony default export */ exports["a"] = CompositeColumn;
-
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ValueColumn__ = __webpack_require__(3);
 /* harmony export (immutable) */ exports["b"] = createDesc;
 /**
@@ -3629,8 +3824,9 @@ function createDesc(label) {
 var RankColumn = (function (_super) {
     __extends(RankColumn, _super);
     function RankColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.setWidthImpl(50);
+        var _this = _super.call(this, id, desc) || this;
+        _this.setWidthImpl(50);
+        return _this;
     }
     return RankColumn;
 }(__WEBPACK_IMPORTED_MODULE_0__ValueColumn__["a" /* default */]));
@@ -3638,7 +3834,7 @@ var RankColumn = (function (_super) {
 
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3666,42 +3862,42 @@ function isSupportType(col) {
 var Ranking = (function (_super) {
     __extends(Ranking, _super);
     function Ranking(id) {
-        var _this = this;
-        _super.call(this);
-        this.id = id;
+        var _this = _super.call(this) || this;
+        _this.id = id;
         /**
          * the current sort criteria
          * @type {null}
          * @private
          */
-        this.sortColumn = null;
+        _this.sortColumn = null;
         /**
          * ascending or descending order
          * @type {boolean}
          */
-        this.ascending = false;
+        _this.ascending = false;
         /**
          * columns of this ranking
          * @type {Array}
          * @private
          */
-        this.columns = [];
-        this.comparator = function (a, b, aIndex, bIndex) {
+        _this.columns = [];
+        _this.comparator = function (a, b, aIndex, bIndex) {
             if (_this.sortColumn === null) {
                 return 0;
             }
             var r = _this.sortColumn.compare(a, b, aIndex, bIndex);
             return _this.ascending ? r : -r;
         };
-        this.dirtyOrder = function () {
+        _this.dirtyOrder = function () {
             _this.fire([Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], _this.getSortCriteria());
         };
         /**
          * the current ordering as an sorted array of indices
          * @type {Array}
          */
-        this.order = [];
-        this.id = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__Column__["b" /* fixCSS */])(id);
+        _this.order = [];
+        _this.id = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__Column__["b" /* fixCSS */])(id);
+        return _this;
     }
     Ranking.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([
@@ -3709,7 +3905,8 @@ var Ranking = (function (_super) {
             Ranking.EVENT_LABEL_CHANGED, Ranking.EVENT_COMPRESS_CHANGED,
             Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
             Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES,
-            Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_ORDER_CHANGED]);
+            Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_ORDER_CHANGED
+        ]);
     };
     Ranking.prototype.assignNewId = function (idGenerator) {
         this.id = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__Column__["b" /* fixCSS */])(idGenerator());
@@ -3941,30 +4138,30 @@ var Ranking = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Ranking.EVENT_WIDTH_CHANGED = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_WIDTH_CHANGED;
-    Ranking.EVENT_FILTER_CHANGED = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_FILTER_CHANGED;
-    Ranking.EVENT_LABEL_CHANGED = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_LABEL_CHANGED;
-    Ranking.EVENT_COMPRESS_CHANGED = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_COMPRESS_CHANGED;
-    Ranking.EVENT_ADD_COLUMN = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_ADD_COLUMN;
-    Ranking.EVENT_REMOVE_COLUMN = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_REMOVE_COLUMN;
-    Ranking.EVENT_DIRTY = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY;
-    Ranking.EVENT_DIRTY_HEADER = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER;
-    Ranking.EVENT_DIRTY_VALUES = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES;
-    Ranking.EVENT_SORT_CRITERIA_CHANGED = 'sortCriteriaChanged';
-    Ranking.EVENT_DIRTY_ORDER = 'dirtyOrder';
-    Ranking.EVENT_ORDER_CHANGED = 'orderChanged';
     return Ranking;
 }(__WEBPACK_IMPORTED_MODULE_2__utils__["AEventDispatcher"]));
 /* harmony default export */ exports["a"] = Ranking;
+Ranking.EVENT_WIDTH_CHANGED = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_WIDTH_CHANGED;
+Ranking.EVENT_FILTER_CHANGED = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_FILTER_CHANGED;
+Ranking.EVENT_LABEL_CHANGED = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_LABEL_CHANGED;
+Ranking.EVENT_COMPRESS_CHANGED = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_COMPRESS_CHANGED;
+Ranking.EVENT_ADD_COLUMN = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_ADD_COLUMN;
+Ranking.EVENT_REMOVE_COLUMN = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_REMOVE_COLUMN;
+Ranking.EVENT_DIRTY = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY;
+Ranking.EVENT_DIRTY_HEADER = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_HEADER;
+Ranking.EVENT_DIRTY_VALUES = __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES;
+Ranking.EVENT_SORT_CRITERIA_CHANGED = 'sortCriteriaChanged';
+Ranking.EVENT_DIRTY_ORDER = 'dirtyOrder';
+Ranking.EVENT_ORDER_CHANGED = 'orderChanged';
 
 
 /***/ },
-/* 15 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__CompositeNumberColumn__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__CompositeNumberColumn__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Column__ = __webpack_require__(1);
 /* harmony export (immutable) */ exports["b"] = createDesc;
 /**
  * Created by sam on 04.11.2016.
@@ -3977,59 +4174,203 @@ var __extends = (this && this.__extends) || function (d, b) {
 
 
 /**
- * factory for creating a description creating a mean column
+ * factory for creating a description creating a stacked column
  * @param label
  * @returns {{type: string, label: string}}
  */
 function createDesc(label) {
-    if (label === void 0) { label = 'script'; }
-    return { type: 'script', label: label, script: ScriptColumn.DEFAULT_SCRIPT };
+    if (label === void 0) { label = 'Combined'; }
+    return { type: 'stack', label: label };
 }
-var ScriptColumn = (function (_super) {
-    __extends(ScriptColumn, _super);
-    function ScriptColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.script = ScriptColumn.DEFAULT_SCRIPT;
-        this.f = null;
-        this.script = desc.script || this.script;
+/**
+ * implementation of the stacked column
+ */
+var StackColumn = (function (_super) {
+    __extends(StackColumn, _super);
+    function StackColumn(id, desc) {
+        var _this = _super.call(this, id, desc) || this;
+        /**
+         * whether this stack column is collapsed i.e. just looks like an ordinary number column
+         * @type {boolean}
+         * @private
+         */
+        _this.collapsed = false;
+        var that = _this;
+        _this.adaptChange = function (old, new_) {
+            that.adaptWidthChange(this.source, old, new_);
+        };
+        return _this;
     }
-    ScriptColumn.prototype.createEventList = function () {
-        return _super.prototype.createEventList.call(this).concat([ScriptColumn.EVENT_SCRIPT_CHANGED]);
+    StackColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat([StackColumn.EVENT_COLLAPSE_CHANGED, StackColumn.EVENT_WEIGHTS_CHANGED]);
     };
-    ScriptColumn.prototype.setScript = function (script) {
-        if (this.script === script) {
+    StackColumn.prototype.setCollapsed = function (value) {
+        if (this.collapsed === value) {
             return;
         }
-        this.f = null;
-        this.fire([ScriptColumn.EVENT_SCRIPT_CHANGED, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY], this.script, this.script = script);
+        this.fire([StackColumn.EVENT_COLLAPSE_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_HEADER, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], this.collapsed, this.collapsed = value);
     };
-    ScriptColumn.prototype.getScript = function () {
-        return this.script;
+    StackColumn.prototype.getCollapsed = function () {
+        return this.collapsed;
     };
-    ScriptColumn.prototype.dump = function (toDescRef) {
+    StackColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
+        if (levelsToGo === void 0) { levelsToGo = 0; }
+        if (padding === void 0) { padding = 0; }
+        var self = null;
+        var children = levelsToGo <= __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].FLAT_ALL_COLUMNS ? this._children : this._children.filter(function (c) { return !c.isHidden(); });
+        //no more levels or just this one
+        if (levelsToGo === 0 || levelsToGo <= __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].FLAT_ALL_COLUMNS) {
+            var w = this.getCompressed() ? __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].COMPRESSED_WIDTH : this.getWidth();
+            if (!this.collapsed && !this.getCompressed()) {
+                w += (children.length - 1) * padding;
+            }
+            r.push(self = { col: this, offset: offset, width: w });
+            if (levelsToGo === 0) {
+                return w;
+            }
+        }
+        //push children
+        var acc = offset;
+        children.forEach(function (c) {
+            acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
+        });
+        if (self) {
+            self.width = acc - offset - padding;
+        }
+        return acc - offset - padding;
+    };
+    StackColumn.prototype.dump = function (toDescRef) {
         var r = _super.prototype.dump.call(this, toDescRef);
-        r.script = this.script;
+        r.collapsed = this.collapsed;
         return r;
     };
-    ScriptColumn.prototype.restore = function (dump, factory) {
-        this.script = dump.script || this.script;
+    StackColumn.prototype.restore = function (dump, factory) {
+        this.collapsed = dump.collapsed === true;
         _super.prototype.restore.call(this, dump, factory);
     };
-    ScriptColumn.prototype.compute = function (row, index) {
-        if (this.f == null) {
-            this.f = new Function('children', 'values', this.script);
+    /**
+     * inserts a column at a the given position
+     * @param col
+     * @param index
+     * @param weight
+     * @returns {any}
+     */
+    StackColumn.prototype.insert = function (col, index, weight) {
+        if (weight === void 0) { weight = NaN; }
+        if (!isNaN(weight)) {
+            col.setWidth((weight / (1 - weight) * this.getWidth()));
         }
-        return this.f.call(this, this._children, this._children.map(function (d) { return d.getValue(row, index); }));
+        col.on(__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_WIDTH_CHANGED + '.stack', this.adaptChange);
+        //increase my width
+        _super.prototype.setWidth.call(this, this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
+        return _super.prototype.insert.call(this, col, index);
     };
-    ScriptColumn.EVENT_SCRIPT_CHANGED = 'scriptChanged';
-    ScriptColumn.DEFAULT_SCRIPT = 'return Math.max.apply(Math,values)';
-    return ScriptColumn;
-}(__WEBPACK_IMPORTED_MODULE_1__CompositeNumberColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = ScriptColumn;
+    StackColumn.prototype.push = function (col, weight) {
+        if (weight === void 0) { weight = NaN; }
+        return this.insert(col, this.length, weight);
+    };
+    StackColumn.prototype.insertAfter = function (col, ref, weight) {
+        if (weight === void 0) { weight = NaN; }
+        var i = this.indexOf(ref);
+        if (i < 0) {
+            return null;
+        }
+        return this.insert(col, i + 1, weight);
+    };
+    /**
+     * adapts weights according to an own width change
+     * @param col
+     * @param old
+     * @param new_
+     */
+    StackColumn.prototype.adaptWidthChange = function (col, old, new_) {
+        if (old === new_) {
+            return;
+        }
+        var bak = this.getWeights();
+        var full = this.getWidth(), change = (new_ - old) / full;
+        var oldWeight = old / full;
+        var factor = (1 - oldWeight - change) / (1 - oldWeight);
+        this._children.forEach(function (c) {
+            if (c === col) {
+            }
+            else {
+                c.setWidthImpl(c.getWidth() * factor);
+            }
+        });
+        this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_HEADER, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, this.getWeights());
+    };
+    StackColumn.prototype.getWeights = function () {
+        var w = this.getWidth();
+        return this._children.map(function (d) { return d.getWidth() / w; });
+    };
+    StackColumn.prototype.setWeights = function (weights) {
+        var bak = this.getWeights();
+        var delta = weights.length - this.length;
+        var s;
+        if (delta < 0) {
+            s = weights.reduce(function (p, a) { return p + a; }, 0);
+            if (s <= 1) {
+                for (var i = 0; i < -delta; ++i) {
+                    weights.push((1 - s) * (1 / -delta));
+                }
+            }
+            else if (s <= 100) {
+                for (var i = 0; i < -delta; ++i) {
+                    weights.push((100 - s) * (1 / -delta));
+                }
+            }
+        }
+        weights = weights.slice(0, this.length);
+        s = weights.reduce(function (p, a) { return p + a; }, 0) / this.getWidth();
+        weights = weights.map(function (d) { return d / s; });
+        this._children.forEach(function (c, i) {
+            c.setWidthImpl(weights[i]);
+        });
+        this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_HEADER, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_DIRTY], bak, weights);
+    };
+    StackColumn.prototype.removeImpl = function (child) {
+        child.on(__WEBPACK_IMPORTED_MODULE_1__Column__["a" /* default */].EVENT_WIDTH_CHANGED + '.stack', null);
+        _super.prototype.setWidth.call(this, this.length === 1 ? 100 : this.getWidth() - child.getWidth());
+        return _super.prototype.removeImpl.call(this, child);
+    };
+    StackColumn.prototype.setWidth = function (value) {
+        var factor = value / this.getWidth();
+        this._children.forEach(function (child) {
+            //disable since we change it
+            child.setWidthImpl(child.getWidth() * factor);
+        });
+        _super.prototype.setWidth.call(this, value);
+    };
+    StackColumn.prototype.compute = function (row, index) {
+        var w = this.getWidth();
+        return this._children.reduce(function (acc, d) { return acc + d.getValue(row, index) * (d.getWidth() / w); }, 0);
+    };
+    StackColumn.prototype.rendererType = function () {
+        if (this.getCollapsed()) {
+            return StackColumn.COLLAPSED_RENDERER;
+        }
+        return _super.prototype.rendererType.call(this);
+    };
+    /**
+     * describe the column if it is a sorting criteria
+     * @param toId helper to convert a description to an id
+     * @return {string} json compatible
+     */
+    StackColumn.prototype.toSortingDesc = function (toId) {
+        var w = this.getWeights();
+        return this._children.map(function (c, i) { return ({ weight: w[i], id: c.toSortingDesc(toId) }); });
+    };
+    return StackColumn;
+}(__WEBPACK_IMPORTED_MODULE_0__CompositeNumberColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = StackColumn;
+StackColumn.EVENT_COLLAPSE_CHANGED = 'collapseChanged';
+StackColumn.EVENT_WEIGHTS_CHANGED = 'weightsChanged';
+StackColumn.COLLAPSED_RENDERER = 'number';
 
 
 /***/ },
-/* 16 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4038,9 +4379,9 @@ var ScriptColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__model_CompositeColumn__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__provider_ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__renderer__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__model_CompositeColumn__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__provider_ADataProvider__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__renderer__ = __webpack_require__(4);
 /* unused harmony export ERenderReason */
 /**
  * Created by Samuel Gratzl on 14.08.2015.
@@ -4066,10 +4407,10 @@ var ABodyRenderer = (function (_super) {
     __extends(ABodyRenderer, _super);
     function ABodyRenderer(data, parent, slicer, root, options) {
         if (options === void 0) { options = {}; }
-        _super.call(this);
-        this.data = data;
-        this.slicer = slicer;
-        this.options = {
+        var _this = _super.call(this) || this;
+        _this.data = data;
+        _this.slicer = slicer;
+        _this.options = {
             rowHeight: 20,
             rowPadding: 1,
             rowBarPadding: 1,
@@ -4084,11 +4425,12 @@ var ABodyRenderer = (function (_super) {
             actions: [],
             freezeCols: 0
         };
-        this.histCache = new Map();
+        _this.histCache = new Map();
         //merge options
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["merge"])(this.options, options);
-        this.$node = __WEBPACK_IMPORTED_MODULE_0_d3__["select"](parent).append(root).classed('lu-body', true);
-        this.changeDataStorage(data);
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["merge"])(_this.options, options);
+        _this.$node = __WEBPACK_IMPORTED_MODULE_0_d3__["select"](parent).append(root).classed('lu-body', true);
+        _this.changeDataStorage(data);
+        return _this;
     }
     ABodyRenderer.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([ABodyRenderer.EVENT_HOVER_CHANGED, ABodyRenderer.EVENT_RENDER_FINISHED]);
@@ -4218,11 +4560,93 @@ var ABodyRenderer = (function (_super) {
         totalWidth -= this.options.slopeWidth;
         this.updateImpl(rdata, context, totalWidth, height, reason).then(this.fireFinished.bind(this));
     };
-    ABodyRenderer.EVENT_HOVER_CHANGED = 'hoverChanged';
-    ABodyRenderer.EVENT_RENDER_FINISHED = 'renderFinished';
     return ABodyRenderer;
 }(__WEBPACK_IMPORTED_MODULE_1__utils__["AEventDispatcher"]));
+ABodyRenderer.EVENT_HOVER_CHANGED = 'hoverChanged';
+ABodyRenderer.EVENT_RENDER_FINISHED = 'renderFinished';
 /* harmony default export */ exports["a"] = ABodyRenderer;
+
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__CompositeNumberColumn__ = __webpack_require__(8);
+/* harmony export (immutable) */ exports["b"] = createDesc;
+/**
+ * Created by sam on 04.11.2016.
+ */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+/**
+ * factory for creating a description creating a mean column
+ * @param label
+ * @returns {{type: string, label: string}}
+ */
+function createDesc(label) {
+    if (label === void 0) { label = 'script'; }
+    return { type: 'script', label: label, script: ScriptColumn.DEFAULT_SCRIPT };
+}
+var ScriptColumn = (function (_super) {
+    __extends(ScriptColumn, _super);
+    function ScriptColumn(id, desc) {
+        var _this = _super.call(this, id, desc) || this;
+        _this.script = ScriptColumn.DEFAULT_SCRIPT;
+        _this.f = null;
+        _this.script = desc.script || _this.script;
+        return _this;
+    }
+    ScriptColumn.prototype.createEventList = function () {
+        return _super.prototype.createEventList.call(this).concat([ScriptColumn.EVENT_SCRIPT_CHANGED]);
+    };
+    ScriptColumn.prototype.setScript = function (script) {
+        if (this.script === script) {
+            return;
+        }
+        this.f = null;
+        this.fire([ScriptColumn.EVENT_SCRIPT_CHANGED, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY], this.script, this.script = script);
+    };
+    ScriptColumn.prototype.getScript = function () {
+        return this.script;
+    };
+    ScriptColumn.prototype.dump = function (toDescRef) {
+        var r = _super.prototype.dump.call(this, toDescRef);
+        r.script = this.script;
+        return r;
+    };
+    ScriptColumn.prototype.restore = function (dump, factory) {
+        this.script = dump.script || this.script;
+        _super.prototype.restore.call(this, dump, factory);
+    };
+    ScriptColumn.prototype.compute = function (row, index) {
+        if (this.f == null) {
+            this.f = new Function('children', 'values', this.script);
+        }
+        return this.f.call(this, this._children, this._children.map(function (d) { return d.getValue(row, index); }));
+    };
+    /**
+     * describe the column if it is a sorting criteria
+     * @param toId helper to convert a description to an id
+     * @return {string} json compatible
+     */
+    ScriptColumn.prototype.toSortingDesc = function (toId) {
+        return {
+            code: this.script,
+            operands: this._children.map(function (c) { return c.toSortingDesc(toId); })
+        };
+    };
+    return ScriptColumn;
+}(__WEBPACK_IMPORTED_MODULE_1__CompositeNumberColumn__["a" /* default */]));
+/* harmony default export */ exports["a"] = ScriptColumn;
+ScriptColumn.EVENT_SCRIPT_CHANGED = 'scriptChanged';
+ScriptColumn.DEFAULT_SCRIPT = 'return Math.max.apply(Math,values)';
 
 
 /***/ },
@@ -4259,8 +4683,9 @@ function createDesc(label) {
 var SelectionColumn = (function (_super) {
     __extends(SelectionColumn, _super);
     function SelectionColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.setCompressed(true);
+        var _this = _super.call(this, id, desc) || this;
+        _this.setCompressed(true);
+        return _this;
     }
     SelectionColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([SelectionColumn.EVENT_SELECT]);
@@ -4287,10 +4712,10 @@ var SelectionColumn = (function (_super) {
     SelectionColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["ascending"])(this.getValue(a, aIndex), this.getValue(b, bIndex));
     };
-    SelectionColumn.EVENT_SELECT = 'select';
     return SelectionColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = SelectionColumn;
+SelectionColumn.EVENT_SELECT = 'select';
 
 
 /***/ },
@@ -4298,10 +4723,10 @@ var SelectionColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__provider_ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__renderer__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__provider_ADataProvider__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__renderer__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ui__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ui_ABodyRenderer__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ui_ABodyRenderer__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_d3__);
@@ -4327,14 +4752,13 @@ var __extends = (this && this.__extends) || function (d, b) {
 var LineUp = (function (_super) {
     __extends(LineUp, _super);
     function LineUp(container, data, config) {
-        var _this = this;
         if (config === void 0) { config = {}; }
-        _super.call(this);
-        this.data = data;
+        var _this = _super.call(this) || this;
+        _this.data = data;
         /**
          * default config of LineUp with all available options
          */
-        this.config = {
+        _this.config = {
             idPrefix: Math.random().toString(36).slice(-8).substr(0, 3),
             header: {
                 headerHeight: 20,
@@ -4368,48 +4792,48 @@ var LineUp = (function (_super) {
             pool: false,
             renderers: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__utils__["merge"])({}, __WEBPACK_IMPORTED_MODULE_1__renderer__["renderers"])
         };
-        this.body = null;
-        this.header = null;
-        this.pools = [];
-        this.contentScroller = null;
+        _this.body = null;
+        _this.header = null;
+        _this.pools = [];
+        _this.contentScroller = null;
         /**
          * local variable that is used by update()
          * @type {boolean}
          */
-        this.isUpdateInitialized = false;
-        this.$container = container instanceof __WEBPACK_IMPORTED_MODULE_5_d3__["selection"] ? container : __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5_d3__["select"])(container);
-        this.$container = this.$container.append('div').classed('lu', true);
-        this.config.svgLayout = this.config.body;
-        this.config.htmlLayout = this.config.header;
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__utils__["merge"])(this.config, config);
-        this.data.on(__WEBPACK_IMPORTED_MODULE_0__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED + '.main', this.triggerSelection.bind(this));
-        this.data.on(__WEBPACK_IMPORTED_MODULE_0__provider_ADataProvider__["a" /* default */].EVENT_JUMP_TO_NEAREST + '.main', this.jumpToNearest.bind(this));
-        this.header = new __WEBPACK_IMPORTED_MODULE_2__ui__["HeaderRenderer"](data, this.node, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__utils__["merge"])({}, this.config.header, {
-            idPrefix: this.config.idPrefix,
-            manipulative: this.config.manipulative,
-            histograms: this.config.renderingOptions.histograms,
-            freezeCols: this.config.body.freezeCols,
+        _this.isUpdateInitialized = false;
+        _this.$container = container instanceof __WEBPACK_IMPORTED_MODULE_5_d3__["selection"] ? container : __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5_d3__["select"])(container);
+        _this.$container = _this.$container.append('div').classed('lu', true);
+        _this.config.svgLayout = _this.config.body;
+        _this.config.htmlLayout = _this.config.header;
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__utils__["merge"])(_this.config, config);
+        _this.data.on(__WEBPACK_IMPORTED_MODULE_0__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED + '.main', _this.triggerSelection.bind(_this));
+        _this.data.on(__WEBPACK_IMPORTED_MODULE_0__provider_ADataProvider__["a" /* default */].EVENT_JUMP_TO_NEAREST + '.main', _this.jumpToNearest.bind(_this));
+        _this.header = new __WEBPACK_IMPORTED_MODULE_2__ui__["HeaderRenderer"](data, _this.node, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__utils__["merge"])({}, _this.config.header, {
+            idPrefix: _this.config.idPrefix,
+            manipulative: _this.config.manipulative,
+            histograms: _this.config.renderingOptions.histograms,
+            freezeCols: _this.config.body.freezeCols,
         }));
-        this.body = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__ui__["createBodyRenderer"])(this.config.body.renderer, data, this.node, this.slice.bind(this), __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__utils__["merge"])({}, this.config.body, {
-            meanLine: this.config.renderingOptions.meanLine,
-            animation: this.config.renderingOptions.animation,
-            stacked: this.config.renderingOptions.stacked,
-            idPrefix: this.config.idPrefix,
-            renderers: this.config.renderers
+        _this.body = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__ui__["createBodyRenderer"])(_this.config.body.renderer, data, _this.node, _this.slice.bind(_this), __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__utils__["merge"])({}, _this.config.body, {
+            meanLine: _this.config.renderingOptions.meanLine,
+            animation: _this.config.renderingOptions.animation,
+            stacked: _this.config.renderingOptions.stacked,
+            idPrefix: _this.config.idPrefix,
+            renderers: _this.config.renderers
         }));
         //share hist caches
-        this.body.histCache = this.header.sharedHistCache;
-        this.forward(this.body, LineUp.EVENT_HOVER_CHANGED);
-        if (this.config.pool && this.config.manipulative) {
-            this.addPool(new __WEBPACK_IMPORTED_MODULE_2__ui__["PoolRenderer"](data, this.node, this.config));
+        _this.body.histCache = _this.header.sharedHistCache;
+        _this.forward(_this.body, LineUp.EVENT_HOVER_CHANGED);
+        if (_this.config.pool && _this.config.manipulative) {
+            _this.addPool(new __WEBPACK_IMPORTED_MODULE_2__ui__["PoolRenderer"](data, _this.node, _this.config));
         }
-        if (this.config.body.visibleRowsOnly) {
-            this.contentScroller = new __WEBPACK_IMPORTED_MODULE_4__utils__["ContentScroller"](this.$container.node(), this.body.node, {
-                backupRows: this.config.body.backupScrollRows,
-                rowHeight: this.config.body.rowHeight,
+        if (_this.config.body.visibleRowsOnly) {
+            _this.contentScroller = new __WEBPACK_IMPORTED_MODULE_4__utils__["ContentScroller"](_this.$container.node(), _this.body.node, {
+                backupRows: _this.config.body.backupScrollRows,
+                rowHeight: _this.config.body.rowHeight,
                 topShift: function () { return _this.header.currentHeight(); }
             });
-            this.contentScroller.on(__WEBPACK_IMPORTED_MODULE_4__utils__["ContentScroller"].EVENT_SCROLL, function (top, left) {
+            _this.contentScroller.on(__WEBPACK_IMPORTED_MODULE_4__utils__["ContentScroller"].EVENT_SCROLL, function (top, left) {
                 //in two svg mode propagate horizontal shift
                 //console.log(top, left,'ss');
                 _this.header.$node.style('transform', "translate(0px, " + top + "px)");
@@ -4418,8 +4842,9 @@ var LineUp = (function (_super) {
                     _this.body.updateFreeze(left);
                 }
             });
-            this.contentScroller.on(__WEBPACK_IMPORTED_MODULE_4__utils__["ContentScroller"].EVENT_REDRAW, this.body.scrolled.bind(this.body));
+            _this.contentScroller.on(__WEBPACK_IMPORTED_MODULE_4__utils__["ContentScroller"].EVENT_REDRAW, _this.body.scrolled.bind(_this.body));
         }
+        return _this;
     }
     LineUp.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([LineUp.EVENT_HOVER_CHANGED, LineUp.EVENT_SELECTION_CHANGED, LineUp.EVENT_MULTISELECTION_CHANGED, LineUp.EVENT_UPDATE_START, LineUp.EVENT_UPDATE_FINISHED]);
@@ -4548,32 +4973,32 @@ var LineUp = (function (_super) {
             this.body.update();
         }
     };
-    /**
-     * triggered when the mouse is over a specific row
-     * @argument data_index:number the selected data index or <0 if no row
-     */
-    LineUp.EVENT_HOVER_CHANGED = __WEBPACK_IMPORTED_MODULE_3__ui_ABodyRenderer__["a" /* default */].EVENT_HOVER_CHANGED;
-    /**
-     * triggered when the user click on a row
-     * @argument data_index:number the selected data index or <0 if no row
-     */
-    LineUp.EVENT_SELECTION_CHANGED = __WEBPACK_IMPORTED_MODULE_0__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED;
-    /**
-     * triggered when the user selects one or more rows
-     * @argument dataIndices:number[] the selected data indices
-     */
-    LineUp.EVENT_MULTISELECTION_CHANGED = 'multiSelectionChanged';
-    /**
-     * triggered when LineUpJS.update() was called
-     */
-    LineUp.EVENT_UPDATE_START = 'updateStart';
-    /**
-     * triggered when LineUpJS.update() was called and the rendering the body has finished
-     */
-    LineUp.EVENT_UPDATE_FINISHED = 'updateFinished';
     return LineUp;
 }(__WEBPACK_IMPORTED_MODULE_4__utils__["AEventDispatcher"]));
 /* harmony default export */ exports["b"] = LineUp;
+/**
+ * triggered when the mouse is over a specific row
+ * @argument data_index:number the selected data index or <0 if no row
+ */
+LineUp.EVENT_HOVER_CHANGED = __WEBPACK_IMPORTED_MODULE_3__ui_ABodyRenderer__["a" /* default */].EVENT_HOVER_CHANGED;
+/**
+ * triggered when the user click on a row
+ * @argument data_index:number the selected data index or <0 if no row
+ */
+LineUp.EVENT_SELECTION_CHANGED = __WEBPACK_IMPORTED_MODULE_0__provider_ADataProvider__["a" /* default */].EVENT_SELECTION_CHANGED;
+/**
+ * triggered when the user selects one or more rows
+ * @argument dataIndices:number[] the selected data indices
+ */
+LineUp.EVENT_MULTISELECTION_CHANGED = 'multiSelectionChanged';
+/**
+ * triggered when LineUpJS.update() was called
+ */
+LineUp.EVENT_UPDATE_START = 'updateStart';
+/**
+ * triggered when LineUpJS.update() was called and the rendering the body has finished
+ */
+LineUp.EVENT_UPDATE_FINISHED = 'updateFinished';
 /**
  * assigns colors to columns if they are numbers and not yet defined
  * @param columns
@@ -4615,13 +5040,14 @@ var __extends = (this && this.__extends) || function (d, b) {
 var LinkColumn = (function (_super) {
     __extends(LinkColumn, _super);
     function LinkColumn(id, desc) {
-        _super.call(this, id, desc);
+        var _this = _super.call(this, id, desc) || this;
         /**
          * a pattern used for generating the link, $1 is replaced with the actual value
          * @type {null}
          */
-        this.link = null;
-        this.link = desc.link;
+        _this.link = null;
+        _this.link = desc.link;
+        return _this;
     }
     Object.defineProperty(LinkColumn.prototype, "headerCssClass", {
         get: function () {
@@ -4687,10 +5113,10 @@ var LinkColumn = (function (_super) {
         }
         return v;
     };
-    LinkColumn.EVENT_LINK_CHANGED = 'linkChanged';
     return LinkColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__StringColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = LinkColumn;
+LinkColumn.EVENT_LINK_CHANGED = 'linkChanged';
 
 
 /***/ },
@@ -4727,7 +5153,7 @@ function createDesc(label) {
 var MaxColumn = (function (_super) {
     __extends(MaxColumn, _super);
     function MaxColumn() {
-        _super.apply(this, arguments);
+        return _super.apply(this, arguments) || this;
     }
     MaxColumn.prototype.getColor = function (row, index) {
         //compute the index of the maximal one
@@ -4795,7 +5221,7 @@ function createDesc(label) {
 var MeanColumn = (function (_super) {
     __extends(MeanColumn, _super);
     function MeanColumn() {
-        _super.apply(this, arguments);
+        return _super.apply(this, arguments) || this;
     }
     MeanColumn.prototype.compute = function (row, index) {
         return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["mean"])(this._children, function (d) { return d.getValue(row, index); });
@@ -4847,7 +5273,7 @@ function createDesc(label) {
 var MinColumn = (function (_super) {
     __extends(MinColumn, _super);
     function MinColumn() {
-        _super.apply(this, arguments);
+        return _super.apply(this, arguments) || this;
     }
     MinColumn.prototype.getColor = function (row, index) {
         //compute the index of the maximal one
@@ -4868,6 +5294,17 @@ var MinColumn = (function (_super) {
     MinColumn.prototype.compute = function (row, index) {
         return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["min"])(this._children, function (d) { return d.getValue(row, index); });
     };
+    /**
+     * describe the column if it is a sorting criteria
+     * @param toId helper to convert a description to an id
+     * @return {string} json compatible
+     */
+    MinColumn.prototype.toSortingDesc = function (toId) {
+        return {
+            operation: 'min',
+            operands: this._children.map(function (c) { return c.toSortingDesc(toId); })
+        };
+    };
     return MinColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__CompositeNumberColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = MinColumn;
@@ -4887,6 +5324,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+/**
+ * Created by bikramkawan on 24/11/2016.
+ */
 
 
 var CustomSortCalculation = (function () {
@@ -4936,26 +5376,27 @@ function numSort(a, b) {
 var MultiValueColumn = (function (_super) {
     __extends(MultiValueColumn, _super);
     function MultiValueColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.colorScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
-        this.xposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
-        this.yposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
-        this.verticalBarScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
-        this.boxPlotScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
-        this.colorrange = desc.colorrange || ['blue', 'red'];
-        this.min = __WEBPACK_IMPORTED_MODULE_0_d3__["min"](desc.domain);
-        this.max = __WEBPACK_IMPORTED_MODULE_0_d3__["max"](desc.domain);
-        this.bins = desc.datalength;
-        this.threshold = desc.threshold || 0;
-        this.sortBy = desc.sort || 'min';
-        this.verticalBarHeight = 13;
-        this.rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },
+        var _this = _super.call(this, id, desc) || this;
+        _this.colorScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
+        _this.xposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
+        _this.yposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
+        _this.verticalBarScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
+        _this.boxPlotScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
+        _this.colorrange = desc.colorrange || ['blue', 'red'];
+        _this.min = __WEBPACK_IMPORTED_MODULE_0_d3__["min"](desc.domain);
+        _this.max = __WEBPACK_IMPORTED_MODULE_0_d3__["max"](desc.domain);
+        _this.bins = desc.datalength;
+        _this.threshold = desc.threshold || 0;
+        _this.sortBy = desc.sort || 'min';
+        _this.verticalBarHeight = 13;
+        _this.rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },
             { type: 'boxplot', label: 'Boxplot' },
             { type: 'sparkline', label: 'Sparkline' },
             { type: 'threshold', label: 'Threshold' },
             { type: 'verticalbar', label: 'VerticalBar' }];
-        this.defineColor();
-        this.boxPlotWidth();
+        _this.defineColor();
+        _this.boxPlotWidth();
+        return _this;
     }
     MultiValueColumn.prototype.defineColor = function () {
         if (this.min < 0) {
@@ -5094,7 +5535,7 @@ var MultiValueColumn = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__MultiLevelCompositeColumn__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__MultiLevelCompositeColumn__ = __webpack_require__(36);
 /* harmony export (immutable) */ exports["b"] = createDesc;
 /**
  * Created by sam on 04.11.2016.
@@ -5121,7 +5562,7 @@ function createDesc(label) {
 var NestedColumn = (function (_super) {
     __extends(NestedColumn, _super);
     function NestedColumn() {
-        _super.apply(this, arguments);
+        return _super.apply(this, arguments) || this;
     }
     NestedColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         var c = this.children;
@@ -5153,8 +5594,8 @@ var NestedColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__renderer__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ABodyRenderer__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__renderer__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ABodyRenderer__ = __webpack_require__(15);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -5171,9 +5612,10 @@ var ABodyDOMRenderer = (function (_super) {
     __extends(ABodyDOMRenderer, _super);
     function ABodyDOMRenderer(data, parent, slicer, domMapping, options) {
         if (options === void 0) { options = {}; }
-        _super.call(this, data, parent, slicer, domMapping.root, options);
-        this.domMapping = domMapping;
-        this.currentFreezeLeft = 0;
+        var _this = _super.call(this, data, parent, slicer, domMapping.root, options) || this;
+        _this.domMapping = domMapping;
+        _this.currentFreezeLeft = 0;
+        return _this;
     }
     ABodyDOMRenderer.prototype.animated = function ($rows) {
         if (this.options.animationDuration > 0 && this.options.animation) {
@@ -5284,7 +5726,7 @@ var ABodyDOMRenderer = (function (_super) {
             return;
         }
         else {
-            var q = indices.map(function (d) { return ("[data-data-index=\"" + d + "\"]"); }).join(',');
+            var q = indices.map(function (d) { return "[data-data-index=\"" + d + "\"]"; }).join(',');
             __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["forEach"])(this.node, q, function (d) { return d.classList.add('selected'); });
         }
     };
@@ -5368,16 +5810,17 @@ var ABodyDOMRenderer = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__model_StringColumn__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__model_Ranking__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__model_CompositeColumn__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__model_NumberColumn__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__model_Ranking__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__model_CompositeColumn__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__model_NumberColumn__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__model_CategoricalColumn__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__model_RankColumn__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__model_StackColumn__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__model_RankColumn__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__model_StackColumn__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__model_ScriptColumn__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__ui_dialogs__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__model_ScriptColumn__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__provider_ADataProvider__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__ui_dialogs__ = __webpack_require__(28);
 /* harmony export (immutable) */ exports["a"] = toFullTooltip;
 /* harmony export (immutable) */ exports["b"] = dummyRankingButtonHook;
 /**
@@ -5393,6 +5836,12 @@ var ABodyDOMRenderer = (function (_super) {
 
 
 
+
+// import HeatmapColumn from '../model/HeatmapColumn11';
+// import SparklineColumn from '../model/SparklineColumn11';
+// import BoxplotColumn from   '../model/BoxplotColumn11';
+// import ThresholdColumn from '../model/ThresholdColumn11';
+// import VerticalBarColumn from '../model/VerticalBarColumn11';
 
 
 
@@ -5429,7 +5878,7 @@ var HeaderRenderer = (function () {
             headerHeight: 20,
             manipulative: true,
             histograms: false,
-            filterDialogs: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["filterDialogs"])(),
+            filterDialogs: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["filterDialogs"])(),
             linkTemplates: [],
             searchAble: function (col) { return col instanceof __WEBPACK_IMPORTED_MODULE_3__model_StringColumn__["a" /* default */]; },
             sortOnLabel: true,
@@ -5640,7 +6089,7 @@ var HeaderRenderer = (function () {
         var $regular = $node.filter(function (d) { return !(d instanceof __WEBPACK_IMPORTED_MODULE_8__model_RankColumn__["a" /* default */]); });
         //rename
         $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openRenameDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openRenameDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //clone
@@ -5648,14 +6097,48 @@ var HeaderRenderer = (function () {
             provider.takeSnapshot(d);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
+        //Heatmap Sort
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["sortDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
+        });
+        //
+        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+        //   sortDialogSparkline(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
+        //   (<MouseEvent>d3.event).stopPropagation();
+        // });
+        //
+        //
+        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+        //   sortDialogBoxplot(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
+        //   (<MouseEvent>d3.event).stopPropagation();
+        // });
+        //
+        //
+        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+        //   sortDialogThresholdBar(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
+        //   (<MouseEvent>d3.event).stopPropagation();
+        // });
+        //
+        //
+        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+        //
+        //   sortDialogVerticalBar(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
+        //   (<MouseEvent>d3.event).stopPropagation();
+        // });
+        //Renderer Change
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__["a" /* default */] || d instanceof __WEBPACK_IMPORTED_MODULE_6__model_NumberColumn__["c" /* default */]; }).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["renderertypedialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
+        });
         //edit link
         $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_10__model_LinkColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openEditLinkDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), [].concat(d.desc.templates || [], that.options.linkTemplates), that.options.idPrefix);
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openEditLinkDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), [].concat(d.desc.templates || [], that.options.linkTemplates), that.options.idPrefix);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //edit script
         $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_11__model_ScriptColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openEditScriptDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openEditScriptDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //filter
@@ -5665,12 +6148,12 @@ var HeaderRenderer = (function () {
         });
         //search
         $node.filter(function (d) { return _this.options.searchAble(d); }).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openSearchDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), provider);
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openSearchDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode), provider);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //edit weights
         $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_9__model_StackColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_13__ui_dialogs__["openEditWeightsDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["openEditWeightsDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //collapse
@@ -5771,7 +6254,7 @@ var HeaderRenderer = (function () {
             'background-color': function (d) { return d.color; }
         });
         $headers.attr({
-            'class': function (d) { return (clazz + " " + (d.cssClass || '') + " " + (d.getCompressed() ? 'compressed' : '') + " " + d.headerCssClass + " " + (_this.options.autoRotateLabels ? 'rotateable' : '') + " " + (d.isFiltered() ? 'filtered' : '')); },
+            'class': function (d) { return clazz + " " + (d.cssClass || '') + " " + (d.getCompressed() ? 'compressed' : '') + " " + d.headerCssClass + " " + (_this.options.autoRotateLabels ? 'rotateable' : '') + " " + (d.isFiltered() ? 'filtered' : ''); },
             title: function (d) { return toFullTooltip(d); },
             'data-id': function (d) { return d.id; }
         });
@@ -5853,7 +6336,7 @@ var HeaderRenderer = (function () {
                             height: function (d) { return sy(d.y) + '%'; },
                             'background-color': function (d) { return col.colorOf(d.cat); }
                         }).attr({
-                            title: function (d) { return (d.cat + ": " + d.y); },
+                            title: function (d) { return d.cat + ": " + d.y; },
                             'data-cat': function (d) { return d.cat; }
                         });
                         $bars.exit().remove();
@@ -5875,7 +6358,7 @@ var HeaderRenderer = (function () {
                             top: function (d) { return (100 - sy(d.y)) + '%'; },
                             height: function (d) { return sy(d.y) + '%'; }
                         }).attr({
-                            title: function (d, i) { return ("Bin " + i + ": " + d.y); },
+                            title: function (d, i) { return "Bin " + i + ": " + d.y; },
                             'data-x': function (d) { return d.x; }
                         });
                         $bars.exit().remove();
@@ -5901,18 +6384,19 @@ var HeaderRenderer = (function () {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ABodyRenderer__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(42);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__HTMLBodyRenderer__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CanvasBodyRenderer__ = __webpack_require__(39);
-/* harmony export (immutable) */ exports["createBodyRenderer"] = createBodyRenderer;
+Object.defineProperty(exports, "__esModule", { value: true });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "HeaderRenderer", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["c"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IRankingHook", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["IRankingHook"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "dummyRankingButtonHook", function() { return __WEBPACK_IMPORTED_MODULE_3__HeaderRenderer__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "PoolRenderer", function() { return __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__PoolRenderer__ = __webpack_require__(40);
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IBodyRenderer", function() { return __WEBPACK_IMPORTED_MODULE_5__ABodyRenderer__["IBodyRenderer"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ISlicer", function() { return __WEBPACK_IMPORTED_MODULE_5__ABodyRenderer__["ISlicer"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ABodyRenderer__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SVGBodyRenderer__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__HTMLBodyRenderer__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CanvasBodyRenderer__ = __webpack_require__(38);
+/* harmony export (immutable) */ exports["createBodyRenderer"] = createBodyRenderer;
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -5944,16 +6428,21 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model_StringColumn__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model_ScriptColumn__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model_ScriptColumn__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mappingeditor__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__mappingeditor__ = __webpack_require__(48);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_d3__);
+Object.defineProperty(exports, "__esModule", { value: true });
 /* harmony export (immutable) */ exports["dialogForm"] = dialogForm;
+/* harmony export (immutable) */ exports["sortdialogForm"] = sortdialogForm;
 /* harmony export (immutable) */ exports["makePopup"] = makePopup;
+/* harmony export (immutable) */ exports["makesortPopup"] = makesortPopup;
 /* harmony export (immutable) */ exports["openRenameDialog"] = openRenameDialog;
 /* harmony export (immutable) */ exports["openEditLinkDialog"] = openEditLinkDialog;
+/* harmony export (immutable) */ exports["renderertypedialog"] = renderertypedialog;
+/* harmony export (immutable) */ exports["sortDialog"] = sortDialog;
 /* harmony export (immutable) */ exports["openSearchDialog"] = openSearchDialog;
 /* harmony export (immutable) */ exports["openEditWeightsDialog"] = openEditWeightsDialog;
 /* harmony export (immutable) */ exports["openEditScriptDialog"] = openEditScriptDialog;
@@ -5969,12 +6458,18 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 
 
 
+
 function dialogForm(title, body) {
     return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
         '<form onsubmit="return false">' +
         body + '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
         '<button type = "reset" class="cancel fa fa-times" title="cancel"></button>' +
         '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
+}
+function sortdialogForm(title, body, buttonsWithLabel) {
+    if (buttonsWithLabel === void 0) { buttonsWithLabel = false; }
+    return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
+        '<form onsubmit="return false">' + body;
 }
 /**
  * creates a simple popup dialog under the given attachment
@@ -6013,13 +6508,43 @@ function makePopup(attachement, title, body) {
     }
     return $popup;
 }
+function makesortPopup(attachement, title, body) {
+    var pos = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["offset"])(attachement.node());
+    var $popup = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5_d3__["select"])('body').append('div')
+        .attr({
+        'class': 'lu-popup2'
+    }).style({
+        left: pos.left + 'px',
+        top: pos.top + 'px'
+    }).html(sortdialogForm(title, body));
+    function movePopup() {
+        //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
+        //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
+        //const mouse = d3.mouse(this.parentElement);
+        $popup.style({
+            left: (this.parentElement.offsetLeft + __WEBPACK_IMPORTED_MODULE_5_d3__["event"].dx) + 'px',
+            top: (this.parentElement.offsetTop + __WEBPACK_IMPORTED_MODULE_5_d3__["event"].dy) + 'px'
+        });
+    }
+    $popup.select('span.lu-popup-title').call(__WEBPACK_IMPORTED_MODULE_5_d3__["behavior"].drag().on('drag', movePopup));
+    $popup.on('keydown', function () {
+        if (__WEBPACK_IMPORTED_MODULE_5_d3__["event"].which === 27) {
+            $popup.remove();
+        }
+    });
+    var auto = $popup.select('input[autofocus]').node();
+    if (auto) {
+        auto.focus();
+    }
+    return $popup;
+}
 /**
  * opens a rename dialog for the given column
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
 function openRenameDialog(column, $header) {
-    var popup = makePopup($header, 'Rename Column', "\n    <input type=\"text\" size=\"15\" value=\"" + column.label + "\" required=\"required\" autofocus=\"autofocus\"><br>\n    <input type=\"color\" size=\"15\" value=\"" + column.color + "\" required=\"required\"><br>\n    <textarea rows=\"5\">" + column.description + "</textarea><br>");
+    var popup = makePopup($header, 'Rename Column', "\n\n    <input type=\"text\" size=\"15\" value=\"" + column.label + "\" required=\"required\" autofocus=\"autofocus\"><br>\n    <input type=\"color\" size=\"15\" value=\"" + column.color + "\" required=\"required\"><br>\n    <textarea rows=\"5\">" + column.description + "</textarea><br>");
     popup.select('.ok').on('click', function () {
         var newValue = popup.select('input[type="text"]').property('value');
         var newColor = popup.select('input[type="color"]').property('value');
@@ -6042,7 +6567,7 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
     if (templates === void 0) { templates = []; }
     var t = "<input type=\"text\" size=\"15\" value=\"" + column.getLink() + "\" required=\"required\" autofocus=\"autofocus\" " + (templates.length > 0 ? 'list="ui' + idPrefix + 'lineupPatternList"' : '') + "><br>";
     if (templates.length > 0) {
-        t += '<datalist id="ui${idPrefix}lineupPatternList">' + templates.map(function (t) { return ("<option value=\"" + t + "\">"); }) + '</datalist>';
+        t += '<datalist id="ui${idPrefix}lineupPatternList">' + templates.map(function (t) { return "<option value=\"" + t + "\">"; }) + '</datalist>';
     }
     var popup = makePopup($header, 'Edit Link ($ as Placeholder)', t);
     popup.select('.ok').on('click', function () {
@@ -6052,6 +6577,57 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
     });
     popup.select('.cancel').on('click', function () {
         popup.remove();
+    });
+}
+// Renderer type change
+function renderertypedialog(column, $header) {
+    var renderertype = column.rendererType();
+    var rendererTypelist = column.getRendererList();
+    var popup = makesortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {
+        return "<input type=\"radio\" name=\"renderertype\" value=" + d.type + "  " + ((renderertype === d.type) ? 'checked' : '') + "> " + d.label + "<br>";
+    }).join('\n'));
+    function thiselement() {
+        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
+    }
+    var that;
+    var renderercontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name="renderertype"]');
+    renderercontent.on('change', function () {
+        that = this;
+        renderertype = that.value;
+        column.setRendererType(that.value);
+    });
+    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
+        var outside = renderercontent.filter(thiselement).empty();
+        if (outside) {
+            popup.remove();
+            __WEBPACK_IMPORTED_MODULE_5_d3__["select"](this).on('click', null);
+        }
+    });
+}
+// Sort  Dialog.
+function sortDialog(column, $header) {
+    var rank = column.getUserSortBy();
+    var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
+    var popup = makesortPopup($header, 'Sort By <br>', valuestring.map(function (d, i) {
+        return "<input type=\"radio\" name=\"multivaluesort\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + " > " + sortlabel[i] + " <br>";
+    }).join('\n'));
+    function thiselement() {
+        return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
+    }
+    var that;
+    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=multivaluesort]');
+    sortcontent.on('change', function () {
+        that = this;
+        rank = that.value;
+        column.setUserSortBy(rank);
+    });
+    __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
+        var outside = sortcontent.filter(thiselement).empty();
+        if (outside) {
+            popup.remove();
+            __WEBPACK_IMPORTED_MODULE_5_d3__["select"](this).on('click', null);
+        }
     });
 }
 /**
@@ -6275,7 +6851,7 @@ function openStringFilter(column, $header) {
  */
 function openBooleanFilter(column, $header) {
     var bak = column.getFilter();
-    var $popup = makePopup($header, 'Filter', "<label><input type=\"radio\" name=\"boolean_check\" value=\"null\" " + (bak === null ? 'checked="checked"' : '') + ">No Filter</label><br>\n     <label><input type=\"radio\" name=\"boolean_check\" value=\"true\" " + (bak === true ? 'checked="checked"' : '') + ">True</label><br>\n     <label><input type=\"radio\" name=\"boolean_check\" value=\"false\" " + (bak === false ? 'checked="checked"' : '') + ">False</label>\n    <br>");
+    var $popup = makePopup($header, 'Filter', "<label><input type=\"radio\" name=\"boolean_check\" value=\"null\" " + (bak === null ? 'checked="checked"' : '') + ">No Filter</label><br>\n     <label><input type=\"radio\" name=\"boolean_check\" value=\"true\" " + (bak === true ? 'checked="checked"' : '') + ">True</label><br>\n     <label><input type=\"radio\" name=\"boolean_check\" value=\"false\" " + (bak === false ? 'checked="checked"' : '') + ">False</label>\n\n    <br>");
     function updateData(filter) {
         markFiltered($header, (filter !== null));
         column.setFilter(filter);
@@ -6395,7 +6971,13 @@ function openCategoricalMappingEditor(column, $header) {
     var $popup = makePopup($header, 'Edit Categorical Mapping', '<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>');
     var range = column.getScale().range, colors = column.categoryColors, labels = column.categoryLabels;
     var trData = column.categories.map(function (d, i) {
-        return { cat: d, label: labels[i], isChecked: bak.length === 0 || bak.indexOf(d) >= 0, range: range[i] * 100, color: colors[i] };
+        return {
+            cat: d,
+            label: labels[i],
+            isChecked: bak.length === 0 || bak.indexOf(d) >= 0,
+            range: range[i] * 100,
+            color: colors[i]
+        };
     }).sort(sortbyName('label'));
     var $rows = $popup.select('tbody').selectAll('tr').data(trData);
     var $rows_enter = $rows.enter().append('tr');
@@ -6488,8 +7070,8 @@ function filterDialogs() {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__model__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model_Ranking__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ADataProvider__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model_Ranking__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ADataProvider__ = __webpack_require__(6);
 /**
  * Created by sam on 04.11.2016.
  */
@@ -6532,19 +7114,19 @@ var ACommonDataProvider = (function (_super) {
     function ACommonDataProvider(columns, options) {
         if (columns === void 0) { columns = []; }
         if (options === void 0) { options = {}; }
-        _super.call(this, options);
-        this.columns = columns;
-        this.rankingIndex = 0;
+        var _this = _super.call(this, options) || this;
+        _this.columns = columns;
+        _this.rankingIndex = 0;
         /**
          * the local ranking orders
-         * @type {{}}
          */
-        this.ranks = new Map();
+        _this.ranks = new Map();
         //generate the accessor
         columns.forEach(function (d) {
             d.accessor = d.accessor || rowGetter;
             d.label = d.label || d.column;
         });
+        return _this;
     }
     ACommonDataProvider.prototype.rankAccessor = function (row, index, id, desc, ranking) {
         return (this.ranks[ranking.id].indexOf(index)) + 1;
@@ -6714,17 +7296,17 @@ var LocalDataProvider = (function (_super) {
     function LocalDataProvider(data, columns, options) {
         if (columns === void 0) { columns = []; }
         if (options === void 0) { options = {}; }
-        _super.call(this, columns, options);
-        this.data = data;
-        this.options = {
+        var _this = _super.call(this, columns, options) || this;
+        _this.data = data;
+        _this.options = {
             /**
              * whether the filter should be applied to all rankings regardless where they are
              */
             filterGlobally: false
         };
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["merge"])(this.options, options);
-        var that = this;
-        this.reorderAll = function () {
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["merge"])(_this.options, options);
+        var that = _this;
+        _this.reorderAll = function () {
             //fire for all other rankings a dirty order event, too
             var ranking = this.source;
             that.getRankings().forEach(function (r) {
@@ -6733,6 +7315,7 @@ var LocalDataProvider = (function (_super) {
                 }
             });
         };
+        return _this;
     }
     /**
      * replaces the dataset rows with a new one
@@ -6854,322 +7437,6 @@ var LocalDataProvider = (function (_super) {
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__ = __webpack_require__(4);
-/**
- * Created by Samuel Gratzl on 14.08.2015.
- */
-
-
-
-function clamp(v, min, max) {
-    return Math.max(Math.min(v, max), min);
-}
-function unique(data) {
-    var s = new Set();
-    data.forEach(function (d) { return s.add(d); });
-    var r = [];
-    s.forEach(function (d) { return r.push(d); });
-    return r;
-}
-var MappingEditor = (function () {
-    function MappingEditor(parent, scale_, original, old_filter, dataPromise, options) {
-        this.parent = parent;
-        this.scale_ = scale_;
-        this.original = original;
-        this.old_filter = old_filter;
-        this.dataPromise = dataPromise;
-        this.options = {
-            idPrefix: '',
-            width: 370,
-            height: 225,
-            padding_hor: 7,
-            padding_ver: 7,
-            filter_height: 20,
-            radius: 5,
-            callback: function () { return undefined; },
-            callbackThisArg: null,
-            triggerCallback: 'change' //change, dragend
-        };
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["merge"])(this.options, options);
-        //work on a local copy
-        this.scale_ = scale_.clone();
-        this.build(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(parent));
-    }
-    Object.defineProperty(MappingEditor.prototype, "scale", {
-        get: function () {
-            return this.scale_;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(MappingEditor.prototype, "filter", {
-        get: function () {
-            return this.computeFilter();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    MappingEditor.prototype.build = function ($root) {
-        var options = this.options, that = this;
-        $root = $root.append('div').classed('lugui-me', true);
-        var width = options.width - options.padding_hor * 2;
-        var height = options.height - options.padding_ver * 2 - options.filter_height;
-        $root.node().innerHTML = "<form onsubmit=\"return false\">\n      <div style=\"text-align: center\"><label for=\"me" + options.idPrefix + "mapping_type\">Mapping Type: <select id=\"me" + options.idPrefix + "mapping_type\">\n        <option value=\"linear\">Linear</option>\n        <option value=\"linear_invert\">Invert</option>\n        <option value=\"linear_abs\">Absolute</option>\n        <option value=\"log\">Log</option>\n        <option value=\"pow1.1\">Pow 1.1</option>\n        <option value=\"pow2\">Pow 2</option>\n        <option value=\"pow3\">Pow 3</option>\n        <option value=\"sqrt\">Sqrt</option>\n        <option value=\"script\">Custom Script</option>\n      </select>\n      </label></div>\n      <div class=\"mapping_area\">\n        <div>\n          <span>0</span>\n          <input type=\"text\" class=\"raw_min\" id=\"me" + options.idPrefix + "raw_min\" value=\"0\"><label for=\"me" + options.idPrefix + "raw_min\">Min</label>\n        </div>\n        <svg width=\"" + options.width + "\" height=\"" + options.height + "\">\n          <line y1=\"" + options.padding_ver + "\" y2=\"" + options.padding_ver + "\" x1=\"" + options.padding_hor + "\" x2=\"" + (width + options.padding_hor) + "\" stroke=\"black\"></line>\n          <rect class=\"adder\" x=\"" + options.padding_hor + "\" width=\"" + width + "\" height=\"10\"></rect>\n          <line y1=\"" + (options.height - options.filter_height - 5) + "\" y2=\"" + (options.height - options.filter_height - 5) + "\" x1=\"" + options.padding_hor + "\" x2=\"" + (width + options.padding_hor) + "\" stroke=\"black\"></line>\n          <rect class=\"adder\" x=\"" + options.padding_hor + "\" width=\"" + width + "\" height=\"10\" y=\"" + (options.height - options.filter_height - 10) + "\"></rect>\n          <g transform=\"translate(" + options.padding_hor + "," + options.padding_ver + ")\">\n            <g class=\"samples\">\n      \n            </g>\n            <g class=\"mappings\">\n      \n            </g>\n            <g class=\"filter\" transform=\"translate(0," + (options.height - options.filter_height - 10) + ")\">\n               <g class=\"left_filter\" transform=\"translate(0,0)\">\n                  <path d=\"M0,0L4,7L-4,7z\"></path>\n                  <rect x=\"-4\" y=\"7\" width=\"40\" height=\"13\" rx=\"2\" ry=\"2\"></rect>\n                  <text y=\"10\" x=\"4\" text-anchor=\"start\">&gt; 0</text>\n              </g>\n              <g class=\"right_filter\" transform=\"translate(" + width + ",0)\">\n                  <path d=\"M0,0L4,7L-4,7z\"></path>\n                  <rect x=\"-36\" y=\"7\" width=\"40\" height=\"13\" rx=\"2\" ry=\"2\"></rect>\n                  <text y=\"10\" x=\"3\" text-anchor=\"end\">&lt; 1</text>\n              </g>\n            </g>\n          </g>\n        </svg>\n        <div>\n          <span>1</span>\n          <input type=\"text\" class=\"raw_max\" id=\"me" + options.idPrefix + "raw_max\" value=\"1\"><label for=\"me" + options.idPrefix + "raw_max\">Max</label>\n        </div>\n      </div>\n      <div>\n         Extras: <label><input type=\"checkbox\" id=\"me" + options.idPrefix + "filterMissing\" " + (this.old_filter.filterMissing ? 'checked="checked"' : '') + ">Filter Missing Values</label>\n      </div>\n      <div class=\"script\" style=\"/* display: none; */\">\n        <label for=\"me" + options.idPrefix + "script_code\">Custom Script</label><button>Apply</button>\n        <textarea id=\"me" + options.idPrefix + "script_code\">\n        </textarea>\n      </div>\n    </form>";
-        var raw2pixel = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
-            .range([0, width]);
-        var normal2pixel = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear().domain([0, 1])
-            .range([0, width]);
-        $root.select('input.raw_min')
-            .property('value', raw2pixel.domain()[0])
-            .on('blur', function () {
-            var d = raw2pixel.domain();
-            d[0] = parseFloat(this.value);
-            raw2pixel.domain(d);
-            var old = that.scale_.domain;
-            old[0] = d[0];
-            that.scale_.domain = old;
-            updateRaw();
-            triggerUpdate();
-        });
-        $root.select('input.raw_max')
-            .property('value', raw2pixel.domain()[1])
-            .on('blur', function () {
-            var d = raw2pixel.domain();
-            d[1] = parseFloat(this.value);
-            raw2pixel.domain(d);
-            var old = that.scale_.domain;
-            old[old.length - 1] = d[1];
-            that.scale_.domain = old;
-            updateRaw();
-            triggerUpdate();
-        });
-        $root.select('input[type="checkbox"]').on('change', function () {
-            triggerUpdate();
-        });
-        //lines that show mapping of individual data items
-        var datalines = $root.select('g.samples').selectAll('line').data([]);
-        this.dataPromise.then(function (data) {
-            //to unique values
-            data = unique(data);
-            datalines = datalines.data(data);
-            datalines.enter()
-                .append('line')
-                .attr({
-                x1: function (d) { return normal2pixel(that.scale.apply(d)); },
-                y1: 0,
-                x2: raw2pixel,
-                y2: height
-            }).style('visibility', function (d) {
-                var domain = that.scale.domain;
-                return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
-            });
-        });
-        function updateDataLines() {
-            datalines.attr({
-                x1: function (d) { return normal2pixel(that.scale.apply(d)); },
-                x2: raw2pixel
-            }).style('visibility', function (d) {
-                var domain = that.scale.domain;
-                return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
-            });
-        }
-        function createDrag(move) {
-            return __WEBPACK_IMPORTED_MODULE_0_d3__["behavior"].drag()
-                .on('dragstart', function () {
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this)
-                    .classed('dragging', true)
-                    .attr('r', options.radius * 1.1);
-            })
-                .on('drag', move)
-                .on('dragend', function () {
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this)
-                    .classed('dragging', false)
-                    .attr('r', options.radius);
-                triggerUpdate(true);
-            });
-        }
-        var mapping_lines = [];
-        function renderMappingLines() {
-            if (!(that.scale instanceof __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["d" /* ScaleMappingFunction */])) {
-                return;
-            }
-            {
-                var sscale = that.scale;
-                var domain = sscale.domain;
-                var range_1 = sscale.range;
-                mapping_lines = domain.map(function (d, i) { return ({ r: d, n: range_1[i] }); });
-            }
-            function updateScale() {
-                //sort by raw value
-                mapping_lines.sort(function (a, b) { return a.r - b.r; });
-                //update the scale
-                var scale = that.scale;
-                scale.domain = mapping_lines.map(function (d) { return d.r; });
-                scale.range = mapping_lines.map(function (d) { return d.n; });
-                //console.log(sscale.domain, sscale.range);
-                updateDataLines();
-            }
-            function removePoint(i) {
-                if (mapping_lines.length <= 2) {
-                    return; //can't remove have to have at least two
-                }
-                mapping_lines.splice(i, 1);
-                updateScale();
-                renderMappingLines();
-            }
-            function addPoint(x) {
-                var px = clamp(x, 0, width);
-                mapping_lines.push({
-                    n: normal2pixel.invert(px),
-                    r: raw2pixel.invert(px)
-                });
-                updateScale();
-                renderMappingLines();
-            }
-            $root.selectAll('rect.adder').on('click', function () {
-                addPoint(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["mouse"])($root.select('svg > g').node())[0]);
-            });
-            var $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mapping_lines);
-            var $mapping_enter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', function (d, i) {
-                __WEBPACK_IMPORTED_MODULE_0_d3__["event"].preventDefault();
-                __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
-                removePoint(i);
-            });
-            $mapping_enter.append('line').attr({
-                y1: 0,
-                y2: height
-            }).call(createDrag(function (d) {
-                //drag the line shifts both point in parallel
-                var dx = __WEBPACK_IMPORTED_MODULE_0_d3__["event"].dx;
-                var nx = clamp(normal2pixel(d.n) + dx, 0, width);
-                var rx = clamp(raw2pixel(d.r) + dx, 0, width);
-                d.n = normal2pixel.invert(nx);
-                d.r = raw2pixel.invert(rx);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).attr('x1', nx).attr('x2', rx);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('circle.normalized').attr('cx', nx);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('circle.raw').attr('cx', rx);
-                updateScale();
-            }));
-            $mapping_enter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
-                //drag normalized
-                var px = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
-                d.n = normal2pixel.invert(px);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).attr('cx', px);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('line').attr('x1', px);
-                updateScale();
-            }));
-            $mapping_enter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
-                //drag raw
-                var px = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
-                d.r = raw2pixel.invert(px);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).attr('cx', px);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('line').attr('x2', px);
-                updateScale();
-            }));
-            $mapping.select('line').attr({
-                x1: function (d) { return normal2pixel(d.n); },
-                x2: function (d) { return raw2pixel(d.r); }
-            });
-            $mapping.select('circle.normalized').attr('cx', function (d) { return normal2pixel(d.n); });
-            $mapping.select('circle.raw').attr('cx', function (d) { return raw2pixel(d.r); });
-            $mapping.exit().remove();
-        }
-        function renderScript() {
-            if (!(that.scale instanceof __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["e" /* ScriptMappingFunction */])) {
-                $root.select('div.script').style('display', 'none');
-                return;
-            }
-            $root.select('div.script').style('display', null);
-            var sscale = that.scale;
-            var $text = $root.select('textarea').text(sscale.code);
-            $root.select('div.script').select('button').on('click', function () {
-                sscale.code = $text.property('value');
-                updateDataLines();
-                triggerUpdate();
-            });
-        }
-        renderMappingLines();
-        renderScript();
-        function triggerUpdate(isDragEnd) {
-            if (isDragEnd === void 0) { isDragEnd = false; }
-            if (isDragEnd && (options.triggerCallback !== 'dragend')) {
-                return;
-            }
-            options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
-        }
-        {
-            var min_filter_1 = (isFinite(this.old_filter.min) ? raw2pixel(this.old_filter.min) : 0);
-            var max_filter_1 = (isFinite(this.old_filter.max) ? raw2pixel(this.old_filter.max) : width);
-            var toFilterString_1 = function (d, i) { return isFinite(d) ? ((i === 0 ? '>' : '<') + d.toFixed(1)) : 'any'; };
-            $root.selectAll('g.left_filter, g.right_filter')
-                .data([this.old_filter.min, this.old_filter.max])
-                .attr('transform', function (d, i) { return ("translate(" + (i === 0 ? min_filter_1 : max_filter_1) + ",0)"); }).call(createDrag(function (d, i) {
-                //drag normalized
-                var px = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
-                var v = raw2pixel.invert(px);
-                var filter = (px <= 0 && i === 0 ? -Infinity : (px >= width && i === 1 ? Infinity : v));
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).datum(filter)
-                    .attr('transform', "translate(" + px + ",0)")
-                    .select('text').text(toFilterString_1(filter, i));
-            }))
-                .select('text').text(toFilterString_1);
-        }
-        this.computeFilter = function () {
-            return {
-                min: parseFloat($root.select('g.left_filter').datum()),
-                max: parseFloat($root.select('g.right_filter').datum()),
-                filterMissing: $root.select('input[type="checkbox"]').property('checked')
-            };
-        };
-        function updateRaw() {
-            var d = raw2pixel.domain();
-            $root.select('input.raw_min').property('value', d[0]);
-            $root.select('input.raw_max').property('value', d[1]);
-            updateDataLines();
-            renderMappingLines();
-        }
-        updateRaw();
-        $root.select('select').on('change', function () {
-            var v = this.value;
-            if (v === 'linear_invert') {
-                that.scale_ = new __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["d" /* ScaleMappingFunction */](raw2pixel.domain(), 'linear', [1, 0]);
-            }
-            else if (v === 'linear_abs') {
-                var d = raw2pixel.domain();
-                that.scale_ = new __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["d" /* ScaleMappingFunction */]([d[0], (d[1] - d[0]) / 2, d[1]], 'linear', [1, 0, 1]);
-            }
-            else if (v === 'script') {
-                that.scale_ = new __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["e" /* ScriptMappingFunction */](raw2pixel.domain());
-            }
-            else {
-                that.scale_ = new __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["d" /* ScaleMappingFunction */](raw2pixel.domain(), v);
-            }
-            updateDataLines();
-            renderMappingLines();
-            renderScript();
-            triggerUpdate();
-        }).property('selectedIndex', function () {
-            var name = 'script';
-            if (that.scale_ instanceof __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["d" /* ScaleMappingFunction */]) {
-                name = that.scale.scaleType;
-            }
-            var types = ['linear', 'linear_invert', 'linear_abs', 'log', 'pow1.1', 'pow2', 'pow3', 'sqrt', 'script'];
-            return types.indexOf(name);
-        });
-    };
-    return MappingEditor;
-}());
-/* harmony default export */ exports["a"] = MappingEditor;
-
-
-/***/ },
-/* 33 */
-/***/ function(module, exports, __webpack_require__) {
-
-"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__StringColumn__ = __webpack_require__(5);
 /**
@@ -7188,8 +7455,9 @@ var __extends = (this && this.__extends) || function (d, b) {
 var AnnotateColumn = (function (_super) {
     __extends(AnnotateColumn, _super);
     function AnnotateColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.annotations = new Map();
+        var _this = _super.call(this, id, desc) || this;
+        _this.annotations = new Map();
+        return _this;
     }
     AnnotateColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([AnnotateColumn.EVENT_VALUE_CHANGED]);
@@ -7231,14 +7499,14 @@ var AnnotateColumn = (function (_super) {
         this.fire([AnnotateColumn.EVENT_VALUE_CHANGED, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].EVENT_DIRTY], index, old, value);
         return true;
     };
-    AnnotateColumn.EVENT_VALUE_CHANGED = 'valueChanged';
     return AnnotateColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__StringColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = AnnotateColumn;
+AnnotateColumn.EVENT_VALUE_CHANGED = 'valueChanged';
 
 
 /***/ },
-/* 34 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7263,13 +7531,14 @@ var __extends = (this && this.__extends) || function (d, b) {
 var BooleanColumn = (function (_super) {
     __extends(BooleanColumn, _super);
     function BooleanColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.currentFilter = null;
-        this.trueMarker = 'X';
-        this.falseMarker = '';
-        this.setWidthImpl(30);
-        this.trueMarker = desc.trueMarker || this.trueMarker;
-        this.falseMarker = desc.falseMarker || this.falseMarker;
+        var _this = _super.call(this, id, desc) || this;
+        _this.currentFilter = null;
+        _this.trueMarker = 'X';
+        _this.falseMarker = '';
+        _this.setWidthImpl(30);
+        _this.trueMarker = desc.trueMarker || _this.trueMarker;
+        _this.falseMarker = desc.falseMarker || _this.falseMarker;
+        return _this;
     }
     BooleanColumn.prototype.getValue = function (row, index) {
         var v = _super.prototype.getValue.call(this, row, index);
@@ -7323,7 +7592,7 @@ var BooleanColumn = (function (_super) {
 
 
 /***/ },
-/* 35 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7332,7 +7601,7 @@ var BooleanColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ValueColumn__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__CategoricalColumn__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__NumberColumn__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__NumberColumn__ = __webpack_require__(9);
 /**
  * Created by sam on 04.11.2016.
  */
@@ -7352,29 +7621,30 @@ var __extends = (this && this.__extends) || function (d, b) {
 var CategoricalNumberColumn = (function (_super) {
     __extends(CategoricalNumberColumn, _super);
     function CategoricalNumberColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.colors = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].category10();
+        var _this = _super.call(this, id, desc) || this;
+        _this.colors = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].category10();
         /**
          * category labels by default the category name itself
          * @type {Array}
          */
-        this.catLabels = new Map();
-        this.scale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].ordinal().rangeRoundPoints([0, 1]);
-        this.currentFilter = null;
+        _this.catLabels = new Map();
+        _this.scale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].ordinal().rangeRoundPoints([0, 1]);
+        _this.currentFilter = null;
         /**
          * separator for multi handling
          * @type {string}
          */
-        this.separator = ';';
-        this.combiner = __WEBPACK_IMPORTED_MODULE_0_d3__["max"];
-        this.separator = desc.separator || this.separator;
-        __WEBPACK_IMPORTED_MODULE_3__CategoricalColumn__["a" /* default */].prototype.initCategories.call(this, desc);
-        this.scale.domain(this.colors.domain());
+        _this.separator = ';';
+        _this.combiner = __WEBPACK_IMPORTED_MODULE_0_d3__["max"];
+        _this.separator = desc.separator || _this.separator;
+        __WEBPACK_IMPORTED_MODULE_3__CategoricalColumn__["a" /* default */].prototype.initCategories.call(_this, desc);
+        _this.scale.domain(_this.colors.domain());
         if (desc.categories) {
             //lookup value or 0.5 by default
             var values = desc.categories.map(function (d) { return ((typeof d !== 'string' && typeof (d.value) === 'number')) ? d.value : 0.5; });
-            this.scale.range(values);
+            _this.scale.range(values);
         }
+        return _this;
     }
     CategoricalNumberColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([CategoricalNumberColumn.EVENT_MAPPING_CHANGED]);
@@ -7508,14 +7778,14 @@ var CategoricalNumberColumn = (function (_super) {
     CategoricalNumberColumn.prototype.rendererType = function () {
         return __WEBPACK_IMPORTED_MODULE_4__NumberColumn__["c" /* default */].prototype.rendererType.call(this);
     };
-    CategoricalNumberColumn.EVENT_MAPPING_CHANGED = __WEBPACK_IMPORTED_MODULE_4__NumberColumn__["c" /* default */].EVENT_MAPPING_CHANGED;
     return CategoricalNumberColumn;
 }(__WEBPACK_IMPORTED_MODULE_2__ValueColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = CategoricalNumberColumn;
+CategoricalNumberColumn.EVENT_MAPPING_CHANGED = __WEBPACK_IMPORTED_MODULE_4__NumberColumn__["c" /* default */].EVENT_MAPPING_CHANGED;
 
 
 /***/ },
-/* 36 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7535,7 +7805,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 var DummyColumn = (function (_super) {
     __extends(DummyColumn, _super);
     function DummyColumn(id, desc) {
-        _super.call(this, id, desc);
+        return _super.call(this, id, desc) || this;
     }
     DummyColumn.prototype.getLabel = function (row) {
         return '';
@@ -7552,13 +7822,13 @@ var DummyColumn = (function (_super) {
 
 
 /***/ },
-/* 37 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__CompositeColumn__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__CompositeColumn__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__StackColumn__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__StackColumn__ = __webpack_require__(14);
 /**
  * Created by sam on 04.11.2016.
  */
@@ -7573,17 +7843,18 @@ var __extends = (this && this.__extends) || function (d, b) {
 var MultiLevelCompositeColumn = (function (_super) {
     __extends(MultiLevelCompositeColumn, _super);
     function MultiLevelCompositeColumn(id, desc) {
-        _super.call(this, id, desc);
+        var _this = _super.call(this, id, desc) || this;
         /**
          * whether this stack column is collapsed i.e. just looks like an ordinary number column
          * @type {boolean}
          * @private
          */
-        this.collapsed = false;
-        var that = this;
-        this.adaptChange = function (old, new_) {
-            that.adaptWidthChange(this.source, old, new_);
+        _this.collapsed = false;
+        var that = _this;
+        _this.adaptChange = function (old, new_) {
+            that.adaptWidthChange(old, new_);
         };
+        return _this;
     }
     MultiLevelCompositeColumn.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED]);
@@ -7615,7 +7886,6 @@ var MultiLevelCompositeColumn = (function (_super) {
      * inserts a column at a the given position
      * @param col
      * @param index
-     * @param weight
      * @returns {any}
      */
     MultiLevelCompositeColumn.prototype.insert = function (col, index) {
@@ -7626,11 +7896,10 @@ var MultiLevelCompositeColumn = (function (_super) {
     };
     /**
      * adapts weights according to an own width change
-     * @param col
      * @param old
      * @param new_
      */
-    MultiLevelCompositeColumn.prototype.adaptWidthChange = function (col, old, new_) {
+    MultiLevelCompositeColumn.prototype.adaptWidthChange = function (old, new_) {
         if (old === new_) {
             return;
         }
@@ -7655,14 +7924,14 @@ var MultiLevelCompositeColumn = (function (_super) {
         }
         return _super.prototype.rendererType.call(this);
     };
-    MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED = __WEBPACK_IMPORTED_MODULE_2__StackColumn__["a" /* default */].EVENT_COLLAPSE_CHANGED;
     return MultiLevelCompositeColumn;
 }(__WEBPACK_IMPORTED_MODULE_0__CompositeColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = MultiLevelCompositeColumn;
+MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED = __WEBPACK_IMPORTED_MODULE_2__StackColumn__["a" /* default */].EVENT_COLLAPSE_CHANGED;
 
 
 /***/ },
-/* 38 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7677,6 +7946,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+/**
+ * Created by bikramkawan on 24/11/2016.
+ */
 
 
 function numberCompare(a, b) {
@@ -7717,9 +7989,10 @@ var CustomSortCalculation = (function () {
 var UpsetColumn = (function (_super) {
     __extends(UpsetColumn, _super);
     function UpsetColumn(id, desc) {
-        _super.call(this, id, desc);
-        this.sortCriteria = desc.sort || 'min';
-        this.datalength = desc.datalength;
+        var _this = _super.call(this, id, desc) || this;
+        _this.sortCriteria = desc.sort || 'min';
+        _this.datalength = desc.datalength;
+        return _this;
     }
     UpsetColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         this.sortCriteria = this.desc.sort;
@@ -7751,7 +8024,7 @@ var UpsetColumn = (function (_super) {
 
 
 /***/ },
-/* 39 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7759,8 +8032,8 @@ var UpsetColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_SelectionColumn__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__renderer__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ABodyRenderer__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__renderer__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ABodyRenderer__ = __webpack_require__(15);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
  */
@@ -7778,12 +8051,13 @@ var BodyCanvasRenderer = (function (_super) {
     __extends(BodyCanvasRenderer, _super);
     function BodyCanvasRenderer(data, parent, slicer, options) {
         if (options === void 0) { options = {}; }
-        _super.call(this, data, parent, slicer, 'div', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["merge"])({}, BodyCanvasRenderer.CUSTOM_OPTIONS, options));
-        this.currentFreezeLeft = 0;
-        this.currentHover = -1;
-        this.lastShifts = [];
-        this.$node.append('canvas');
-        this.initInteraction();
+        var _this = _super.call(this, data, parent, slicer, 'div', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["merge"])({}, BodyCanvasRenderer.CUSTOM_OPTIONS, options)) || this;
+        _this.currentFreezeLeft = 0;
+        _this.currentHover = -1;
+        _this.lastShifts = [];
+        _this.$node.append('canvas');
+        _this.initInteraction();
+        return _this;
     }
     BodyCanvasRenderer.prototype.columnUnderMouse = function (x) {
         for (var _i = 0, _a = this.lastShifts; _i < _a.length; _i++) {
@@ -8032,29 +8306,29 @@ var BodyCanvasRenderer = (function (_super) {
             ctx.restore();
         });
     };
-    BodyCanvasRenderer.CUSTOM_OPTIONS = {
-        style: {
-            text: 'black',
-            font: '10pt "Helvetica Neue", Helvetica, Arial, sans-serif',
-            slope: 'darkgray',
-            link: 'blue',
-            selection: '#ffa500',
-            hover: '#e5e5e5',
-            bg: '#f7f7f7',
-            meanLine: 'darkgray'
-        }
-    };
     return BodyCanvasRenderer;
 }(__WEBPACK_IMPORTED_MODULE_4__ABodyRenderer__["a" /* default */]));
 /* harmony default export */ exports["a"] = BodyCanvasRenderer;
+BodyCanvasRenderer.CUSTOM_OPTIONS = {
+    style: {
+        text: 'black',
+        font: '10pt "Helvetica Neue", Helvetica, Arial, sans-serif',
+        slope: 'darkgray',
+        link: 'blue',
+        selection: '#ffa500',
+        hover: '#e5e5e5',
+        bg: '#f7f7f7',
+        meanLine: 'darkgray'
+    }
+};
 
 
 /***/ },
-/* 40 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__renderer__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__renderer__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ADOMBodyRenderer__ = __webpack_require__(25);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
@@ -8101,7 +8375,7 @@ var HTMLBodyRenderer = (function (_super) {
     __extends(HTMLBodyRenderer, _super);
     function HTMLBodyRenderer(data, parent, slicer, options) {
         if (options === void 0) { options = {}; }
-        _super.call(this, data, parent, slicer, domHTMLMappings, options);
+        return _super.call(this, data, parent, slicer, domHTMLMappings, options) || this;
     }
     HTMLBodyRenderer.prototype.updateClipPaths = function (data, context, height) {
         // nothing to do
@@ -8112,7 +8386,7 @@ var HTMLBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 41 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8120,7 +8394,7 @@ var HTMLBodyRenderer = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__provider_ADataProvider__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__provider_ADataProvider__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__HeaderRenderer__ = __webpack_require__(26);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
@@ -8235,7 +8509,7 @@ var PoolRenderer = (function () {
             });
         }
         $headers_enter.append('span').classed('label', true).text(function (d) { return d.label; });
-        $headers.attr('class', function (d) { return ("header " + (d.cssClass || '') + " " + d.type); });
+        $headers.attr('class', function (d) { return "header " + (d.cssClass || '') + " " + d.type; });
         $headers.style({
             'transform': function (d, i) {
                 var pos = _this.layout(i);
@@ -8293,13 +8567,13 @@ var PoolRenderer = (function () {
 
 
 /***/ },
-/* 42 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__renderer__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__renderer__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ADOMBodyRenderer__ = __webpack_require__(25);
 /**
  * Created by Samuel Gratzl on 14.08.2015.
@@ -8335,7 +8609,7 @@ var domMappings = {
         },
         slopes: 'g',
         updateSlopes: function ($slopes, width, height, callback) {
-            $slopes.attr('transform', function (d, i) { return ("translate(" + callback(d, i) + ",0)"); });
+            $slopes.attr('transform', function (d, i) { return "translate(" + callback(d, i) + ",0)"; });
         },
         creator: __WEBPACK_IMPORTED_MODULE_1__renderer__["createSVG"],
         translate: function (n, x, y) { return n.setAttribute('transform', "translate(" + x + "," + y + ")"); },
@@ -8351,7 +8625,7 @@ var SVGBodyRenderer = (function (_super) {
     __extends(SVGBodyRenderer, _super);
     function SVGBodyRenderer(data, parent, slicer, options) {
         if (options === void 0) { options = {}; }
-        _super.call(this, data, parent, slicer, domMappings.svg, options);
+        return _super.call(this, data, parent, slicer, domMappings.svg, options) || this;
     }
     SVGBodyRenderer.prototype.updateClipPathsImpl = function (r, context, height) {
         var $base = this.$node.select('defs.body');
@@ -8365,7 +8639,7 @@ var SVGBodyRenderer = (function (_super) {
             return this.getElementsByTagName('clipPath');
         }).data(r, function (d) { return d.id; });
         textClipPath.enter().append('clipPath')
-            .attr('id', function (d) { return ("cp" + context.idPrefix + "clipCol" + d.id); })
+            .attr('id', function (d) { return "cp" + context.idPrefix + "clipCol" + d.id; })
             .append('rect').attr('y', 0);
         textClipPath.exit().remove();
         textClipPath.select('rect')
@@ -8406,18 +8680,19 @@ var SVGBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 43 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ADataProvider__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__LocalDataProvider__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__RemoteDataProvider__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ADataProvider__ = __webpack_require__(6);
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "DataProvider", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IDataProviderOptions", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["IDataProviderOptions"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IExportOptions", function() { return __WEBPACK_IMPORTED_MODULE_0__ADataProvider__["IExportOptions"]; });
+Object.defineProperty(exports, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__LocalDataProvider__ = __webpack_require__(31);
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "LocalDataProvider", function() { return __WEBPACK_IMPORTED_MODULE_1__LocalDataProvider__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ILocalDataProviderOptions", function() { return __WEBPACK_IMPORTED_MODULE_1__LocalDataProvider__["ILocalDataProviderOptions"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__RemoteDataProvider__ = __webpack_require__(44);
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "RemoteDataProvider", function() { return __WEBPACK_IMPORTED_MODULE_2__RemoteDataProvider__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "IServerData", function() { return __WEBPACK_IMPORTED_MODULE_2__RemoteDataProvider__["IServerData"]; });
 /**
@@ -8429,8 +8704,8 @@ var SVGBodyRenderer = (function (_super) {
 
 
 /***/ },
-/* 44 */,
-/* 45 */
+/* 43 */,
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8454,13 +8729,14 @@ var RemoteDataProvider = (function (_super) {
     function RemoteDataProvider(server, columns, options) {
         if (columns === void 0) { columns = []; }
         if (options === void 0) { options = {}; }
-        _super.call(this, columns, options);
-        this.server = server;
-        this.options = {
+        var _this = _super.call(this, columns, options) || this;
+        _this.server = server;
+        _this.options = {
             maxCacheSize: 1000
         };
-        this.cache = new Map();
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__utils__["merge"])(this.options, options);
+        _this.cache = new Map();
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__utils__["merge"])(_this.options, options);
+        return _this;
     }
     RemoteDataProvider.prototype.sortImpl = function (ranking) {
         //generate a description of what to sort
@@ -8535,19 +8811,22 @@ var RemoteDataProvider = (function (_super) {
 
 
 /***/ },
-/* 46 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss__ = __webpack_require__(29);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__style_scss__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__model__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__provider__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__renderer__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__provider__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__renderer__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ui__ = __webpack_require__(27);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__utils__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__ui_dialogs__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__ui_dialogs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6__ui_dialogs__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lineup__ = __webpack_require__(18);
+Object.defineProperty(exports, "__esModule", { value: true });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "deriveColors", function() { return __WEBPACK_IMPORTED_MODULE_7__lineup__["a"]; });
 /* harmony export (binding) */ __webpack_require__.d(exports, "model", function() { return model; });
 /* harmony export (binding) */ __webpack_require__.d(exports, "provider", function() { return provider; });
 /* harmony export (binding) */ __webpack_require__.d(exports, "renderer", function() { return renderer; });
@@ -8556,7 +8835,6 @@ var RemoteDataProvider = (function (_super) {
 /* harmony export (binding) */ __webpack_require__.d(exports, "ui_dialogs", function() { return ui_dialogs; });
 /* harmony export (immutable) */ exports["createLocalStorage"] = createLocalStorage;
 /* harmony export (immutable) */ exports["create"] = create;
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "deriveColors", function() { return __WEBPACK_IMPORTED_MODULE_7__lineup__["a"]; });
 /**
  * main module of LineUp.js containing the main class and exposes all other modules
  * Created by Samuel Gratzl on 14.08.2015.
@@ -8609,6 +8887,324 @@ function create(data, container, config) {
     if (config === void 0) { config = {}; }
     return new __WEBPACK_IMPORTED_MODULE_7__lineup__["b" /* default */](container, data, config);
 }
+
+
+/***/ },
+/* 46 */,
+/* 47 */,
+/* 48 */
+/***/ function(module, exports, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__ = __webpack_require__(9);
+/**
+ * Created by Samuel Gratzl on 14.08.2015.
+ */
+
+
+
+function clamp(v, min, max) {
+    return Math.max(Math.min(v, max), min);
+}
+function unique(data) {
+    var s = new Set();
+    data.forEach(function (d) { return s.add(d); });
+    var r = [];
+    s.forEach(function (d) { return r.push(d); });
+    return r;
+}
+var MappingEditor = (function () {
+    function MappingEditor(parent, scale_, original, old_filter, dataPromise, options) {
+        this.parent = parent;
+        this.scale_ = scale_;
+        this.original = original;
+        this.old_filter = old_filter;
+        this.dataPromise = dataPromise;
+        this.options = {
+            idPrefix: '',
+            width: 370,
+            height: 225,
+            padding_hor: 7,
+            padding_ver: 7,
+            filter_height: 20,
+            radius: 5,
+            callback: function () { return undefined; },
+            callbackThisArg: null,
+            triggerCallback: 'change' //change, dragend
+        };
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utils__["merge"])(this.options, options);
+        //work on a local copy
+        this.scale_ = scale_.clone();
+        this.build(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(parent));
+    }
+    Object.defineProperty(MappingEditor.prototype, "scale", {
+        get: function () {
+            return this.scale_;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(MappingEditor.prototype, "filter", {
+        get: function () {
+            return this.computeFilter();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    MappingEditor.prototype.build = function ($root) {
+        var options = this.options, that = this;
+        $root = $root.append('div').classed('lugui-me', true);
+        var width = options.width - options.padding_hor * 2;
+        var height = options.height - options.padding_ver * 2 - options.filter_height;
+        $root.node().innerHTML = "<form onsubmit=\"return false\">\n      <div style=\"text-align: center\"><label for=\"me" + options.idPrefix + "mapping_type\">Mapping Type: <select id=\"me" + options.idPrefix + "mapping_type\">\n        <option value=\"linear\">Linear</option>\n        <option value=\"linear_invert\">Invert</option>\n        <option value=\"linear_abs\">Absolute</option>\n        <option value=\"log\">Log</option>\n        <option value=\"pow1.1\">Pow 1.1</option>\n        <option value=\"pow2\">Pow 2</option>\n        <option value=\"pow3\">Pow 3</option>\n        <option value=\"sqrt\">Sqrt</option>\n        <option value=\"script\">Custom Script</option>\n      </select>\n      </label></div>\n      <div class=\"mapping_area\">\n        <div>\n          <span>0</span>\n          <input type=\"text\" class=\"raw_min\" id=\"me" + options.idPrefix + "raw_min\" value=\"0\"><label for=\"me" + options.idPrefix + "raw_min\">Min</label>\n        </div>\n        <svg width=\"" + options.width + "\" height=\"" + options.height + "\">\n          <line y1=\"" + options.padding_ver + "\" y2=\"" + options.padding_ver + "\" x1=\"" + options.padding_hor + "\" x2=\"" + (width + options.padding_hor) + "\" stroke=\"black\"></line>\n          <rect class=\"adder\" x=\"" + options.padding_hor + "\" width=\"" + width + "\" height=\"10\"></rect>\n          <line y1=\"" + (options.height - options.filter_height - 5) + "\" y2=\"" + (options.height - options.filter_height - 5) + "\" x1=\"" + options.padding_hor + "\" x2=\"" + (width + options.padding_hor) + "\" stroke=\"black\"></line>\n          <rect class=\"adder\" x=\"" + options.padding_hor + "\" width=\"" + width + "\" height=\"10\" y=\"" + (options.height - options.filter_height - 10) + "\"></rect>\n          <g transform=\"translate(" + options.padding_hor + "," + options.padding_ver + ")\">\n            <g class=\"samples\">\n      \n            </g>\n            <g class=\"mappings\">\n      \n            </g>\n            <g class=\"filter\" transform=\"translate(0," + (options.height - options.filter_height - 10) + ")\">\n               <g class=\"left_filter\" transform=\"translate(0,0)\">\n                  <path d=\"M0,0L4,7L-4,7z\"></path>\n                  <rect x=\"-4\" y=\"7\" width=\"40\" height=\"13\" rx=\"2\" ry=\"2\"></rect>\n                  <text y=\"10\" x=\"4\" text-anchor=\"start\">&gt; 0</text>\n              </g>\n              <g class=\"right_filter\" transform=\"translate(" + width + ",0)\">\n                  <path d=\"M0,0L4,7L-4,7z\"></path>\n                  <rect x=\"-36\" y=\"7\" width=\"40\" height=\"13\" rx=\"2\" ry=\"2\"></rect>\n                  <text y=\"10\" x=\"3\" text-anchor=\"end\">&lt; 1</text>\n              </g>\n            </g>\n          </g>\n        </svg>\n        <div>\n          <span>1</span>\n          <input type=\"text\" class=\"raw_max\" id=\"me" + options.idPrefix + "raw_max\" value=\"1\"><label for=\"me" + options.idPrefix + "raw_max\">Max</label>\n        </div>\n      </div>\n      <div>\n         Extras: <label><input type=\"checkbox\" id=\"me" + options.idPrefix + "filterMissing\" " + (this.old_filter.filterMissing ? 'checked="checked"' : '') + ">Filter Missing Values</label>\n      </div>\n      <div class=\"script\" style=\"/* display: none; */\">\n        <label for=\"me" + options.idPrefix + "script_code\">Custom Script</label><button>Apply</button>\n        <textarea id=\"me" + options.idPrefix + "script_code\">\n        </textarea>\n      </div>\n    </form>";
+        var raw2pixel = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
+            .range([0, width]);
+        var normal2pixel = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear().domain([0, 1])
+            .range([0, width]);
+        $root.select('input.raw_min')
+            .property('value', raw2pixel.domain()[0])
+            .on('blur', function () {
+            var d = raw2pixel.domain();
+            d[0] = parseFloat(this.value);
+            raw2pixel.domain(d);
+            var old = that.scale_.domain;
+            old[0] = d[0];
+            that.scale_.domain = old;
+            updateRaw();
+            triggerUpdate();
+        });
+        $root.select('input.raw_max')
+            .property('value', raw2pixel.domain()[1])
+            .on('blur', function () {
+            var d = raw2pixel.domain();
+            d[1] = parseFloat(this.value);
+            raw2pixel.domain(d);
+            var old = that.scale_.domain;
+            old[old.length - 1] = d[1];
+            that.scale_.domain = old;
+            updateRaw();
+            triggerUpdate();
+        });
+        $root.select('input[type="checkbox"]').on('change', function () {
+            triggerUpdate();
+        });
+        //lines that show mapping of individual data items
+        var datalines = $root.select('g.samples').selectAll('line').data([]);
+        this.dataPromise.then(function (data) {
+            //to unique values
+            data = unique(data);
+            datalines = datalines.data(data);
+            datalines.enter()
+                .append('line')
+                .attr({
+                x1: function (d) { return normal2pixel(that.scale.apply(d)); },
+                y1: 0,
+                x2: raw2pixel,
+                y2: height
+            }).style('visibility', function (d) {
+                var domain = that.scale.domain;
+                return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
+            });
+        });
+        function updateDataLines() {
+            datalines.attr({
+                x1: function (d) { return normal2pixel(that.scale.apply(d)); },
+                x2: raw2pixel
+            }).style('visibility', function (d) {
+                var domain = that.scale.domain;
+                return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
+            });
+        }
+        function createDrag(move) {
+            return __WEBPACK_IMPORTED_MODULE_0_d3__["behavior"].drag()
+                .on('dragstart', function () {
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this)
+                    .classed('dragging', true)
+                    .attr('r', options.radius * 1.1);
+            })
+                .on('drag', move)
+                .on('dragend', function () {
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this)
+                    .classed('dragging', false)
+                    .attr('r', options.radius);
+                triggerUpdate(true);
+            });
+        }
+        var mapping_lines = [];
+        function renderMappingLines() {
+            if (!(that.scale instanceof __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["d" /* ScaleMappingFunction */])) {
+                return;
+            }
+            {
+                var sscale = that.scale;
+                var domain = sscale.domain;
+                var range_1 = sscale.range;
+                mapping_lines = domain.map(function (d, i) { return ({ r: d, n: range_1[i] }); });
+            }
+            function updateScale() {
+                //sort by raw value
+                mapping_lines.sort(function (a, b) { return a.r - b.r; });
+                //update the scale
+                var scale = that.scale;
+                scale.domain = mapping_lines.map(function (d) { return d.r; });
+                scale.range = mapping_lines.map(function (d) { return d.n; });
+                //console.log(sscale.domain, sscale.range);
+                updateDataLines();
+            }
+            function removePoint(i) {
+                if (mapping_lines.length <= 2) {
+                    return; //can't remove have to have at least two
+                }
+                mapping_lines.splice(i, 1);
+                updateScale();
+                renderMappingLines();
+            }
+            function addPoint(x) {
+                var px = clamp(x, 0, width);
+                mapping_lines.push({
+                    n: normal2pixel.invert(px),
+                    r: raw2pixel.invert(px)
+                });
+                updateScale();
+                renderMappingLines();
+            }
+            $root.selectAll('rect.adder').on('click', function () {
+                addPoint(__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["mouse"])($root.select('svg > g').node())[0]);
+            });
+            var $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mapping_lines);
+            var $mapping_enter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', function (d, i) {
+                __WEBPACK_IMPORTED_MODULE_0_d3__["event"].preventDefault();
+                __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
+                removePoint(i);
+            });
+            $mapping_enter.append('line').attr({
+                y1: 0,
+                y2: height
+            }).call(createDrag(function (d) {
+                //drag the line shifts both point in parallel
+                var dx = __WEBPACK_IMPORTED_MODULE_0_d3__["event"].dx;
+                var nx = clamp(normal2pixel(d.n) + dx, 0, width);
+                var rx = clamp(raw2pixel(d.r) + dx, 0, width);
+                d.n = normal2pixel.invert(nx);
+                d.r = raw2pixel.invert(rx);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).attr('x1', nx).attr('x2', rx);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('circle.normalized').attr('cx', nx);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('circle.raw').attr('cx', rx);
+                updateScale();
+            }));
+            $mapping_enter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
+                //drag normalized
+                var px = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
+                d.n = normal2pixel.invert(px);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).attr('cx', px);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('line').attr('x1', px);
+                updateScale();
+            }));
+            $mapping_enter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
+                //drag raw
+                var px = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
+                d.r = raw2pixel.invert(px);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).attr('cx', px);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('line').attr('x2', px);
+                updateScale();
+            }));
+            $mapping.select('line').attr({
+                x1: function (d) { return normal2pixel(d.n); },
+                x2: function (d) { return raw2pixel(d.r); }
+            });
+            $mapping.select('circle.normalized').attr('cx', function (d) { return normal2pixel(d.n); });
+            $mapping.select('circle.raw').attr('cx', function (d) { return raw2pixel(d.r); });
+            $mapping.exit().remove();
+        }
+        function renderScript() {
+            if (!(that.scale instanceof __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["e" /* ScriptMappingFunction */])) {
+                $root.select('div.script').style('display', 'none');
+                return;
+            }
+            $root.select('div.script').style('display', null);
+            var sscale = that.scale;
+            var $text = $root.select('textarea').text(sscale.code);
+            $root.select('div.script').select('button').on('click', function () {
+                sscale.code = $text.property('value');
+                updateDataLines();
+                triggerUpdate();
+            });
+        }
+        renderMappingLines();
+        renderScript();
+        function triggerUpdate(isDragEnd) {
+            if (isDragEnd === void 0) { isDragEnd = false; }
+            if (isDragEnd && (options.triggerCallback !== 'dragend')) {
+                return;
+            }
+            options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
+        }
+        {
+            var min_filter_1 = (isFinite(this.old_filter.min) ? raw2pixel(this.old_filter.min) : 0);
+            var max_filter_1 = (isFinite(this.old_filter.max) ? raw2pixel(this.old_filter.max) : width);
+            var toFilterString_1 = function (d, i) { return isFinite(d) ? ((i === 0 ? '>' : '<') + d.toFixed(1)) : 'any'; };
+            $root.selectAll('g.left_filter, g.right_filter')
+                .data([this.old_filter.min, this.old_filter.max])
+                .attr('transform', function (d, i) { return "translate(" + (i === 0 ? min_filter_1 : max_filter_1) + ",0)"; }).call(createDrag(function (d, i) {
+                //drag normalized
+                var px = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
+                var v = raw2pixel.invert(px);
+                var filter = (px <= 0 && i === 0 ? -Infinity : (px >= width && i === 1 ? Infinity : v));
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).datum(filter)
+                    .attr('transform', "translate(" + px + ",0)")
+                    .select('text').text(toFilterString_1(filter, i));
+            }))
+                .select('text').text(toFilterString_1);
+        }
+        this.computeFilter = function () {
+            return {
+                min: parseFloat($root.select('g.left_filter').datum()),
+                max: parseFloat($root.select('g.right_filter').datum()),
+                filterMissing: $root.select('input[type="checkbox"]').property('checked')
+            };
+        };
+        function updateRaw() {
+            var d = raw2pixel.domain();
+            $root.select('input.raw_min').property('value', d[0]);
+            $root.select('input.raw_max').property('value', d[1]);
+            updateDataLines();
+            renderMappingLines();
+        }
+        updateRaw();
+        $root.select('select').on('change', function () {
+            var v = this.value;
+            if (v === 'linear_invert') {
+                that.scale_ = new __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["d" /* ScaleMappingFunction */](raw2pixel.domain(), 'linear', [1, 0]);
+            }
+            else if (v === 'linear_abs') {
+                var d = raw2pixel.domain();
+                that.scale_ = new __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["d" /* ScaleMappingFunction */]([d[0], (d[1] - d[0]) / 2, d[1]], 'linear', [1, 0, 1]);
+            }
+            else if (v === 'script') {
+                that.scale_ = new __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["e" /* ScriptMappingFunction */](raw2pixel.domain());
+            }
+            else {
+                that.scale_ = new __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["d" /* ScaleMappingFunction */](raw2pixel.domain(), v);
+            }
+            updateDataLines();
+            renderMappingLines();
+            renderScript();
+            triggerUpdate();
+        }).property('selectedIndex', function () {
+            var name = 'script';
+            if (that.scale_ instanceof __WEBPACK_IMPORTED_MODULE_2__model_NumberColumn__["d" /* ScaleMappingFunction */]) {
+                name = that.scale.scaleType;
+            }
+            var types = ['linear', 'linear_invert', 'linear_abs', 'log', 'pow1.1', 'pow2', 'pow3', 'sqrt', 'script'];
+            return types.indexOf(name);
+        });
+    };
+    return MappingEditor;
+}());
+/* harmony default export */ exports["a"] = MappingEditor;
 
 
 /***/ }
