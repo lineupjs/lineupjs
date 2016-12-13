@@ -187,8 +187,9 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   insert(col: Column, index: number = this.columns.length) {
+
     this.columns.splice(index, 0, col);
-    col.parent = this;
+      col.parent = this;
     this.forward(col, Column.EVENT_DIRTY_VALUES + '.ranking', Column.EVENT_DIRTY_HEADER + '.ranking', Column.EVENT_DIRTY + '.ranking', Column.EVENT_FILTER_CHANGED + '.ranking');
     col.on(Ranking.EVENT_FILTER_CHANGED + '.order', this.dirtyOrder);
 

@@ -11,7 +11,7 @@ import LinkColumn from './model/LinkColumn';
 import StackColumn from './model/StackColumn';
 import ScriptColumn from './model/ScriptColumn';
 import BooleanColumn from './model/BooleanColumn';
-import NumberColumn, {IMappingFunction} from './model/NumberColumn';
+import NumberColumn, {IMappingFunction, isNumberColumn} from './model/NumberColumn';
 import CategoricalNumberColumn from './model/CategoricalNumberColumn';
 import HeatmapColumn from './model/HeatmapColumn';
 import SparklineColumn from './model/SparklineColumn';
@@ -167,57 +167,79 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 
 // Renderer type change
 export function renderertypedialog(column: Column, $header: d3.Selection<Column>) {
-
   var renderertype = (<any>column.desc).type;
-
-  var valuestring: any = ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar'];
+  var valuestring: any = (<any>column.desc).renderertype;
+  var renderername: any = [];
+  valuestring.forEach(function (d) {
+    if (d === 'heatmapcustom') {
+      renderername.push('Heatmap');
+    }
+    if (d === 'sparkline') {
+      renderername.push('Sparkline');
+    }
+    if (d === 'threshold') {
+      renderername.push('Threshold');
+    }
+    if (d === 'upset') {
+      renderername.push('Upset');
+    }
+    if (d === 'circle') {
+      renderername.push('Circle');
+    }
+    if (d === 'number') {
+      renderername.push('Bar');
+    }
+    if (d === 'boxplot') {
+      renderername.push('Box Plot');
+    }
+    if (d === 'verticalbar') {
+      renderername.push('Vertical Bar');
+    }
+  });
 
   var popup = makesortPopup($header, 'Change Visualization', valuestring.map(function (d, i) {
-    return `<input type="radio" name="renderertype" value=${d}  ${(renderertype === d) ? 'checked' : ''}>${d}<br>`;
+    return `<br><input type="radio" name="renderertype" value=${d}  ${(renderertype === d) ? 'checked' : ''}> ${renderername[i]}`;
 
   }).join('\n'));
 
   function thiselement() {
-
     return this === (<any>d3.event).target;
+
   }
 
   var that;
 
-  var sortcontent = d3.selectAll('input[name=renderertype]');
-  sortcontent.on('change', function () {
+  var renderercontent = d3.selectAll('input[name="renderertype"]');
+
+  renderercontent.on('change', function () {
     that = this;
     renderertype = that.value;
-    (<any>column.desc).type = renderertype;
-    column.rendererType();
+    column.setRendererType(that.value)
 
-    column.setMetaData({
-      label: renderertype,
-      description: column.getMetaData().description,
-      color: column.getMetaData().color
-    });
-
+    // column.setMetaData({
+    //   label: column.getMetaData().label,
+    //   description: column.getMetaData().description,
+    //   color: column.getMetaData().color
+    // });
 
   });
 
   d3.select('body').on('click', function () {
-    var outside = sortcontent.filter(thiselement).empty();
+    var outside = renderercontent.filter(thiselement).empty();
     if (outside) {
       popup.remove();
     }
   });
-
-
 }
 
 // Sort Heatmap Dialog.
 export function sortDialogHeatmap(column: HeatmapColumn, $header: d3.Selection<HeatmapColumn>) {
-
   var rank = (<any>column.desc).sort;
-  var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+  const valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
 
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-    return `<input type="radio" name="heatmaprank" value=${d}  ${(rank === d) ? 'checked' : ''}>${d}<br>`;
+    return `<br><input type="radio" name="heatmaprank" value=${d}  ${(rank === d) ? 'checked' : ''} > ${sortlabel[i]}`;
 
   }).join('\n'));
 
@@ -244,7 +266,6 @@ export function sortDialogHeatmap(column: HeatmapColumn, $header: d3.Selection<H
     }
   });
 
-
 }
 
 
@@ -252,9 +273,9 @@ export function sortDialogSparkline(column: SparklineColumn, $header: d3.Selecti
 
   var rank = (<any>column.desc).sort;
   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-
+  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-    return `<input type="radio" name="sparklinerank" value=${d}  ${(rank === d) ? 'checked' : ''}>${d}<br>`;
+    return `<br><input type="radio" name="sparklinerank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}`;
 
   }).join('\n'));
 
@@ -288,9 +309,9 @@ export function sortDialogBoxplot(column: BoxplotColumn, $header: d3.Selection<B
 
   var rank = (<any>column.desc).sort;
   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-
+  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-    return `<input type="radio" name="boxplotrank" value=${d}  ${(rank === d) ? 'checked' : ''}>${d}<br>`;
+    return `<br><input type="radio" name="boxplotrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}`;
 
   }).join('\n'));
 
@@ -319,7 +340,6 @@ export function sortDialogBoxplot(column: BoxplotColumn, $header: d3.Selection<B
     }
   });
 
-
 }
 
 
@@ -327,9 +347,9 @@ export function sortDialogVerticalBar(column: VerticalBarColumn, $header: d3.Sel
 
   var rank = (<any>column.desc).sort;
   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-
+  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-    return `<input type="radio" name="verticalbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}>${d}<br>`;
+    return `<br><input type="radio" name="verticalbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}`;
 
   }).join('\n'));
 
@@ -364,9 +384,9 @@ export function sortDialogThresholdBar(column: ThresholdColumn, $header: d3.Sele
 
   var rank = (<any>column.desc).sort;
   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-
+  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-    return `<input type="radio" name="Thresholdbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}>${d}<br>`;
+    return `<br><input type="radio" name="Thresholdbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}`;
 
   }).join('\n'));
 

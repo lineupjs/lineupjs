@@ -177,7 +177,7 @@ var Column = (function (_super) {
     Column.prototype.createEventList = function () {
         return _super.prototype.createEventList.call(this).concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
             Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-            Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
+            Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
             Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
     };
     Column.prototype.getWidth = function () {
@@ -370,7 +370,13 @@ var Column = (function (_super) {
         return row !== null;
     };
     Column.prototype.rendererType = function () {
+        if (this.desc.type.constructor === Array) {
+            return this.desc.type[0];
+        }
         return this.desc.type;
+    };
+    Column.prototype.setRendererType = function (type) {
+        this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.desc.type, this.desc.type = type);
     };
     /**
      * default color that should be used
@@ -392,6 +398,7 @@ var Column = (function (_super) {
     Column.EVENT_LABEL_CHANGED = 'labelChanged';
     Column.EVENT_METADATA_CHANGED = 'metaDataChanged';
     Column.EVENT_COMPRESS_CHANGED = 'compressChanged';
+    Column.EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
     Column.EVENT_ADD_COLUMN = 'addColumn';
     Column.EVENT_REMOVE_COLUMN = 'removeColumn';
     Column.EVENT_DIRTY = 'dirty';
@@ -1546,14 +1553,17 @@ var HeatmapCellRenderer = (function (_super) {
         }
         var total_width = col.getWidth();
         var bins = col.desc.datalength;
-        var min = col.desc.sdomain[0], max = col.desc.sdomain[1];
+        var defaultdomain = [0, 100];
+        var domain = col.desc.domain;
+        domain = (domain === undefined || null) ? defaultdomain : domain;
+        var min = domain[0], max = domain[1];
         var colorrange = col.desc.colorrange;
         var defaultcolor = ['blue', 'red'];
         colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
         var celldimension = cell_dim(total_width, bins);
         var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
         color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
-            : color.domain([min, max]).range(['white', colorrange[2]]);
+            : color.domain([min, max]).range(['white', colorrange[1]]);
         var padding = context.option('rowPadding', 1);
         return {
             template: "<g class=\"heatmapcell\"></g>",
@@ -1608,14 +1618,17 @@ var HeatmapCellRenderer = (function (_super) {
         }
         var total_width = col.getWidth();
         var bins = col.desc.datalength;
-        var min = col.desc.sdomain[0], max = col.desc.sdomain[1];
+        var defaultdomain = [0, 100];
+        var domain = col.desc.domain;
+        domain = (domain === undefined || null) ? defaultdomain : domain;
+        var min = domain[0], max = domain[1];
         var colorrange = col.desc.colorrange;
         var defaultcolor = ['blue', 'red'];
         colorrange = (colorrange === undefined || null) ? defaultcolor : colorrange;
         var celldimension = cell_dim(total_width, bins);
         var color = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear();
         color = (min < 0) ? color.domain([min, 0, max]).range([colorrange[0], 'white', colorrange[1]])
-            : color.domain([min, max]).range(['white', colorrange[2]]);
+            : color.domain([min, max]).range(['white', colorrange[1]]);
         var padding = context.option('rowPadding', 1);
         return function (ctx, d, i) {
             var data = col.getValue(d.v, i);
@@ -1635,8 +1648,8 @@ var SparklineCellRenderer = (function (_super) {
         _super.apply(this, arguments);
     }
     SparklineCellRenderer.prototype.createSVG = function (col, context) {
-        var min = col.desc.sdomain[0];
-        var max = col.desc.sdomain[1];
+        var min = col.desc.domain[0];
+        var max = col.desc.domain[1];
         var bins = col.desc.datalength;
         var x = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([0, bins - 1]).range([0, col.getWidth()]);
         var y = y = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]);
@@ -1662,8 +1675,8 @@ var SparklineCellRenderer = (function (_super) {
         };
     };
     SparklineCellRenderer.prototype.createCanvas = function (col, context) {
-        var min = col.desc.sdomain[0];
-        var max = col.desc.sdomain[1];
+        var min = col.desc.domain[0];
+        var max = col.desc.domain[1];
         var bins = col.desc.datalength;
         var x = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([0, bins - 1]).range([0, col.getWidth()]);
         var y = y = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]);
@@ -1677,8 +1690,8 @@ var SparklineCellRenderer = (function (_super) {
                     ypos = y(d);
                 }
                 else {
-                    ctx.strokeStyle = 'red';
-                    ctx.fillStyle = 'red';
+                    ctx.strokeStyle = 'black';
+                    ctx.fillStyle = 'black';
                     ctx.beginPath();
                     ctx.moveTo(xpos, ypos);
                     xpos = x(i);
@@ -1751,8 +1764,8 @@ var VerticalBarCellRenderer = (function (_super) {
     }
     VerticalBarCellRenderer.prototype.createSVG = function (col, context) {
         var bins = col.desc.datalength;
-        var min = col.desc.sdomain[0];
-        var max = col.desc.sdomain[1];
+        var min = col.desc.domain[0];
+        var max = col.desc.domain[1];
         var colorrange = col.desc.colorrange;
         var defaultcolor = ['blue', 'red'];
         var mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
@@ -1795,8 +1808,8 @@ var VerticalBarCellRenderer = (function (_super) {
     };
     VerticalBarCellRenderer.prototype.createCanvas = function (col, context) {
         var bins = col.desc.datalength;
-        var min = col.desc.sdomain[0];
-        var max = col.desc.sdomain[1];
+        var min = col.desc.domain[0];
+        var max = col.desc.domain[1];
         var colorrange = col.desc.colorrange;
         var defaultcolor = ['blue', 'red'];
         var mincolor = (colorrange === undefined || null) ? defaultcolor[0] : colorrange[0];
@@ -1852,8 +1865,8 @@ var BoxplotCellRenderer = (function (_super) {
             return a - b;
         }
         var padding = context.option('rowPadding', 1);
-        var min = col.desc.sdomain[0];
-        var max = col.desc.sdomain[1];
+        var min = col.desc.domain[0];
+        var max = col.desc.domain[1];
         var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
         return {
             template: "<g class=\"boxplotcell\"></g>",
@@ -1912,12 +1925,12 @@ var BoxplotCellRenderer = (function (_super) {
             return a - b;
         }
         var padding = context.option('rowPadding', 1);
-        var min = col.desc.sdomain[0];
-        var max = col.desc.sdomain[1];
+        var min = col.desc.domain[0];
+        var max = col.desc.domain[1];
         var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, col.getWidth()]); // Constraint the window width
         return function (ctx, d, i) {
             // Rectangle
-            var data = col.getValue(d.v, i);
+            var data = (col.getValue(d.v, i));
             data.sort(numSort);
             var mindata = Math.min.apply(Math, data);
             var maxdata = Math.max.apply(Math, data);
@@ -2036,17 +2049,17 @@ var UpsetCellRenderer = (function (_super) {
     };
     return UpsetCellRenderer;
 }(DefaultCellRenderer));
-var DataValueSizeCellRenderer = (function (_super) {
-    __extends(DataValueSizeCellRenderer, _super);
-    function DataValueSizeCellRenderer() {
+var CircleColumnCellRenderer = (function (_super) {
+    __extends(CircleColumnCellRenderer, _super);
+    function CircleColumnCellRenderer() {
         _super.apply(this, arguments);
     }
-    DataValueSizeCellRenderer.prototype.createSVG = function (col, context) {
-        var min = col.desc.sdomain[0];
-        var max = col.desc.sdomain[1];
+    CircleColumnCellRenderer.prototype.createSVG = function (col, context) {
+        var min = col.desc.domain[0];
+        var max = col.desc.domain[1];
         var radiusscale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]);
         return {
-            template: "<g class=\"datavaluesizecell\"></g>",
+            template: "<g class=\"circlecolumncell\"></g>",
             update: function (n, d, i) {
                 var g = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n);
                 radiusscale = radiusscale.range([0, (context.rowHeight(i) / 2)]);
@@ -2057,27 +2070,30 @@ var DataValueSizeCellRenderer = (function (_super) {
                     cy: function (d, i) { return (context.rowHeight(i) / 2); },
                     cx: function (d, i) { return (col.getWidth() / 2); },
                     r: radiusscale(col.getValue(d.v, i)),
-                    class: 'datavaluesizecircle'
+                    class: 'circlecolumn'
                 });
             }
         };
     };
-    DataValueSizeCellRenderer.prototype.createCanvas = function (col, context) {
-        var min = col.desc.sdomain[0];
-        var max = col.desc.sdomain[1];
+    CircleColumnCellRenderer.prototype.createCanvas = function (col, context) {
+        //console.log(col)
+        var min = col.desc.domain[0];
+        var max = col.desc.domain[1];
         return function (ctx, d, i) {
             var posy = (context.rowHeight(i) / 2);
             var posx = (col.getWidth() / 2);
-            var radiusscale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, (context.rowHeight(i) / 2)]);
+            var radiusscale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([min, max]).range([0, 1]);
+            // console.log((<ValueColumn<number>>col).getRaw(d.v, i),d)
+            // console.log(<any>col.getValue(d.v, i), radiusscale((<any>col.getValue(d.v, i))), radiusscale(min), radiusscale(max))
             ctx.fillStyle = 'black';
             ctx.strokeStyle = 'black';
             ctx.beginPath();
-            ctx.arc(posx, posy, radiusscale(col.getValue(d.v, i)), 0, 2 * Math.PI);
+            ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
             ctx.fill();
             ctx.stroke();
         };
     };
-    return DataValueSizeCellRenderer;
+    return CircleColumnCellRenderer;
 }(DefaultCellRenderer));
 var BarCellRenderer = (function () {
     function BarCellRenderer(renderValue, colorOf) {
@@ -2134,6 +2150,7 @@ var BarCellRenderer = (function () {
         var padding = context.option('rowPadding', 1);
         return function (ctx, d, i) {
             ctx.fillStyle = _this.colorOf(d.v, i, col);
+            // console.log(col.getValue(d.v, d.dataIndex),d.v)
             var width = col.getWidth() * col.getValue(d.v, d.dataIndex);
             ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
             if (_this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
@@ -2640,7 +2657,7 @@ var renderers = {
     verticalbar: new VerticalBarCellRenderer(),
     boxplot: new BoxplotCellRenderer(),
     upset: new UpsetCellRenderer(),
-    datavaluesize: new DataValueSizeCellRenderer()
+    circle: new CircleColumnCellRenderer()
 };
 function chooseRenderer(col, renderers) {
     var r = renderers[col.rendererType()];
@@ -3577,7 +3594,7 @@ var StackColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__VerticalBarColumn__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__DataValueSizeColumn__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__CircleColumn__ = __webpack_require__(40);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_26__Ranking__ = __webpack_require__(14);
 /* harmony export (immutable) */ exports["defineColumn"] = defineColumn;
@@ -3705,7 +3722,7 @@ function models() {
         verticalbar: __WEBPACK_IMPORTED_MODULE_21__VerticalBarColumn__["a" /* default */],
         boxplot: __WEBPACK_IMPORTED_MODULE_22__BoxplotColumn__["a" /* default */],
         upset: __WEBPACK_IMPORTED_MODULE_23__UpsetColumn__["a" /* default */],
-        datavaluesize: __WEBPACK_IMPORTED_MODULE_24__DataValueSizeColumn__["a" /* default */]
+        circle: __WEBPACK_IMPORTED_MODULE_24__CircleColumn__["a" /* default */]
     };
 }
 
@@ -6506,8 +6523,8 @@ var HeaderRenderer = (function () {
             __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["sortDialogVerticalBar"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
-        //Heatmap Sort
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_2__model_Column__["a" /* default */]; }).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Renderer').on('click', function (d) {
+        //Renderer Change
+        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_2__model_Column__["a" /* default */]; }).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
             __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_18__ui_dialogs__["renderertypedialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
@@ -6933,28 +6950,54 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
 // Renderer type change
 function renderertypedialog(column, $header) {
     var renderertype = column.desc.type;
-    var valuestring = ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar'];
+    var valuestring = column.desc.renderertype;
+    var renderername = [];
+    valuestring.forEach(function (d) {
+        if (d === 'heatmapcustom') {
+            renderername.push('Heatmap');
+        }
+        if (d === 'sparkline') {
+            renderername.push('Sparkline');
+        }
+        if (d === 'threshold') {
+            renderername.push('Threshold');
+        }
+        if (d === 'upset') {
+            renderername.push('Upset');
+        }
+        if (d === 'circle') {
+            renderername.push('Circle');
+        }
+        if (d === 'number') {
+            renderername.push('Bar');
+        }
+        if (d === 'boxplot') {
+            renderername.push('Box Plot');
+        }
+        if (d === 'verticalbar') {
+            renderername.push('Vertical Bar');
+        }
+    });
     var popup = makesortPopup($header, 'Change Visualization', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"renderertype\" value=" + d + "  " + ((renderertype === d) ? 'checked' : '') + "> " + renderername[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
     }
     var that;
-    var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=renderertype]');
-    sortcontent.on('change', function () {
+    var renderercontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name="renderertype"]');
+    renderercontent.on('change', function () {
         that = this;
         renderertype = that.value;
-        column.desc.type = renderertype;
-        column.rendererType();
-        column.setMetaData({
-            label: renderertype,
-            description: column.getMetaData().description,
-            color: column.getMetaData().color
-        });
+        column.setRendererType(that.value);
+        // column.setMetaData({
+        //   label: column.getMetaData().label,
+        //   description: column.getMetaData().description,
+        //   color: column.getMetaData().color
+        // });
     });
     __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
-        var outside = sortcontent.filter(thiselement).empty();
+        var outside = renderercontent.filter(thiselement).empty();
         if (outside) {
             popup.remove();
         }
@@ -6964,8 +7007,9 @@ function renderertypedialog(column, $header) {
 function sortDialogHeatmap(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"heatmaprank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"heatmaprank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + " > " + sortlabel[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -6988,8 +7032,9 @@ function sortDialogHeatmap(column, $header) {
 function sortDialogSparkline(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"sparklinerank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"sparklinerank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -7012,8 +7057,9 @@ function sortDialogSparkline(column, $header) {
 function sortDialogBoxplot(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"boxplotrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"boxplotrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -7036,8 +7082,9 @@ function sortDialogBoxplot(column, $header) {
 function sortDialogVerticalBar(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"verticalbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"verticalbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -7060,8 +7107,9 @@ function sortDialogVerticalBar(column, $header) {
 function sortDialogThresholdBar(column, $header) {
     var rank = column.desc.sort;
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
+    var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
     var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-        return "<input type=\"radio\" name=\"Thresholdbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + ">" + d + "<br>";
+        return "<br><input type=\"radio\" name=\"Thresholdbarrank\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + "> " + sortlabel[i];
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
@@ -8565,17 +8613,18 @@ function numberCompare(a, b) {
     }
     return a - b;
 }
-var DataValueSizeColumn = (function (_super) {
-    __extends(DataValueSizeColumn, _super);
-    function DataValueSizeColumn(id, desc) {
+var CircleColumn = (function (_super) {
+    __extends(CircleColumn, _super);
+    function CircleColumn(id, desc) {
         _super.call(this, id, desc);
     }
-    DataValueSizeColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+    CircleColumn.prototype.compare = function (a, b, aIndex, bIndex) {
+        console.log(this.getValue(a, aIndex));
         return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
     };
-    return DataValueSizeColumn;
+    return CircleColumn;
 }(__WEBPACK_IMPORTED_MODULE_0__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = DataValueSizeColumn;
+/* harmony default export */ exports["a"] = CircleColumn;
 
 
 /***/ },

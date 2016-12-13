@@ -114,6 +114,7 @@ export class ScaleMappingFunction implements IMappingFunction {
   private s: IScale;
 
   constructor(domain: number[] = [0, 1], private type = 'linear', range: number[] = [0, 1]) {
+
     this.s = toScale(type).domain(fixDomain(domain, this.type)).range(range);
   }
 

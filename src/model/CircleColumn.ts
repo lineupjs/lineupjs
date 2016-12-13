@@ -16,14 +16,16 @@ export function numberCompare(a: number, b: number) {
   return a - b;
 }
 
-export default class DataValueSizeColumn extends ValueColumn<number> {
+export default class CircleColumn extends ValueColumn<number> {
 
   constructor(id: string, desc: any) {
     super(id, desc);
 
   }
 
+
   compare(a: any, b: any, aIndex: number, bIndex: number) {
+    console.log(this.getValue(a, aIndex))
     return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
   }
 

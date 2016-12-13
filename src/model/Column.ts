@@ -99,6 +99,7 @@ export default class Column extends AEventDispatcher {
   static EVENT_LABEL_CHANGED = 'labelChanged';
   static EVENT_METADATA_CHANGED = 'metaDataChanged';
   static EVENT_COMPRESS_CHANGED = 'compressChanged';
+  static EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
   static EVENT_ADD_COLUMN = 'addColumn';
   static EVENT_REMOVE_COLUMN = 'removeColumn';
   static EVENT_DIRTY = 'dirty';
@@ -174,7 +175,7 @@ export default class Column extends AEventDispatcher {
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
+      Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
   }
 
@@ -386,6 +387,13 @@ export default class Column extends AEventDispatcher {
   }
 
   rendererType(): string {
+     if(this.desc.type.constructor === Array) {
+      return this.desc.type[0];
+    }
     return this.desc.type;
+  }
+
+  setRendererType(type:string) {
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.desc.type, this.desc.type = type);
   }
 }
