@@ -4,8 +4,8 @@
 
 import {Selection} from 'd3';
 import DataProvider from '../provider/ADataProvider';
-import {createHTML} from '../renderer';
-import {ISlicer} from './ABodyRenderer';
+import {createHTML, IDOMRenderContext} from '../renderer';
+import {ISlicer, IRankingData, IBodyRenderContext} from './ABodyRenderer';
 import ADOMBodyRenderer, {} from './ADOMBodyRenderer';
 
 const domHTMLMappings = {
@@ -46,5 +46,9 @@ const domHTMLMappings = {
 export default class HTMLBodyRenderer extends ADOMBodyRenderer {
   constructor(data: DataProvider, parent: Element, slicer: ISlicer, options = {}) {
     super(data, parent, slicer, domHTMLMappings, options);
+  }
+
+  protected updateClipPaths(data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
+    // nothing to do
   }
 }

@@ -26,7 +26,8 @@ import MultiValueColumn from './MultiValueColumn';
 
 
 export {default as Column, IColumnDesc} from './Column';
-export {ScaleMappingFunction, ScriptMappingFunction, isNumberColumn} from './NumberColumn';
+export {default as CompositeColumn} from './CompositeColumn';
+export {createMappingFunction, ScaleMappingFunction, ScriptMappingFunction, isNumberColumn} from './NumberColumn';
 export {isCategoricalColumn} from './CategoricalColumn';
 export {default as Ranking, isSupportType} from './Ranking';
 export {createDesc as createMinDesc} from './MinColumn';

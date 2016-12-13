@@ -106,7 +106,7 @@ var __extends = (this && this.__extends) || function (d, b) {
  * @return {string|void}
  */
 function fixCSS(id) {
-    return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_'); //replace non css stuff to _
+    return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]\^`{|}~]/g, '_'); //replace non css stuff to _
 }
 /**
  * a column in LineUp
@@ -122,6 +122,10 @@ var Column = (function (_super) {
          * @private
          */
         this.width = 100;
+        /**
+         * parent column of this column, set when added to a ranking or combined column
+         * @type {any}
+         */
         this.parent = null;
         /**
          * whether this column is compressed i.e. just shown in a minimal version
@@ -129,24 +133,54 @@ var Column = (function (_super) {
          * @private
          */
         this.compressed = false;
-        this.id = fixCSS(id);
-        this.label = this.desc.label || this.id;
-        this.description = this.desc.description || '';
+        this.uid = fixCSS(id);
         this.cssClass = this.desc.cssClass || '';
         this.color = this.desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
         this.renderername = this.desc.type || 'heatmapcustom';
         this.rendererList = [];
     }
+    Object.defineProperty(Column.prototype, "id", {
+        get: function () {
+            return this.uid;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Column.prototype.assignNewId = function (idGenerator) {
+        this.uid = fixCSS(idGenerator());
+    };
+    Object.defineProperty(Column.prototype, "label", {
+        get: function () {
+            return this.metadata.label;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Column.prototype, "description", {
+        get: function () {
+            return this.metadata.description;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Column.prototype, "color", {
+        get: function () {
+            return this.metadata.color;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Column.prototype, "headerCssClass", {
+        /**
+         * return the css class to use for the header
+         * @return {string}
+         */
         get: function () {
             return this.desc.type;
         },
         enumerable: true,
         configurable: true
     });
-    Column.prototype.assignNewId = function (idGenerator) {
-        this.id = fixCSS(idGenerator());
-    };
     Object.defineProperty(Column.prototype, "fqid", {
         /**
          * returns the fully qualified id i.e. path the parent
@@ -185,8 +219,15 @@ var Column = (function (_super) {
     Column.prototype.getWidth = function () {
         return this.width;
     };
+    /**
+     * a column is hidden if it has no width
+     * @return {boolean}
+     */
     Column.prototype.isHidden = function () {
         return this.width <= 0;
+    };
+    Column.prototype.hide = function () {
+        return this.setWidth(0);
     };
     Column.prototype.setCompressed = function (value) {
         if (this.compressed === value) {
@@ -200,7 +241,7 @@ var Column = (function (_super) {
     /**
      * visitor pattern for flattening the columns
      * @param r the result array
-     * @param offset left offeset
+     * @param offset left offset
      * @param levelsToGo how many levels down
      * @param padding padding between columns
      * @returns {number} the used width by this column
@@ -228,11 +269,14 @@ var Column = (function (_super) {
         var events = this.color === value.color ?
             [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY] :
             [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY];
-        this.fire(events, this.getMetaData(), {
-            label: this.label = value.label,
-            color: this.color = value.color,
-            description: this.description = value.description
-        });
+        var bak = this.getMetaData();
+        //copy to avoid reference
+        this.metadata = {
+            label: value.label,
+            color: value.color,
+            description: value.description
+        };
+        this.fire(events, bak, this.getMetaData());
     };
     Column.prototype.getMetaData = function () {
         return {
@@ -323,8 +367,11 @@ var Column = (function (_super) {
      */
     Column.prototype.restore = function (dump, factory) {
         this.width = dump.width || this.width;
-        this.label = dump.label || this.label;
-        this.color = dump.color || this.color;
+        this.metadata = {
+            label: dump.label || this.label,
+            color: dump.color || this.color,
+            description: this.description
+        };
         this.compressed = dump.compressed === true;
     };
     /**
@@ -340,17 +387,16 @@ var Column = (function (_super) {
      * return the value of a given row for the current column
      * @param row
      * @param index
-     * @return
      */
     Column.prototype.getValue = function (row, index) {
         return ''; //no value
     };
     /**
      * compare function used to determine the order according to the values of the current column
-     * @param a
-     * @param b
-     * @param aIndex,
-     * @param bIndex
+     * @param a first element
+     * @param b second element
+     * @param aIndex index of the first element
+     * @param bIndex index of the second element
      * @return {number}
      */
     Column.prototype.compare = function (a, b, aIndex, bIndex) {
@@ -366,11 +412,16 @@ var Column = (function (_super) {
     /**
      * predicate whether the current row should be included
      * @param row
+     * @param index the row index
      * @return {boolean}
      */
     Column.prototype.filter = function (row, index) {
         return row !== null;
     };
+    /**
+     * determines the renderer type that should be used to render this column. By default the same type as the column itself
+     * @return {string}
+     */
     Column.prototype.rendererType = function () {
         return this.renderername;
     };
@@ -928,7 +979,7 @@ var ValueColumn = (function (_super) {
 /* harmony export (immutable) */ exports["b"] = numberCompare;
 /* harmony export (binding) */ __webpack_require__.d(exports, "d", function() { return ScaleMappingFunction; });
 /* harmony export (binding) */ __webpack_require__.d(exports, "e", function() { return ScriptMappingFunction; });
-/* unused harmony export createMappingFunction */
+/* harmony export (immutable) */ exports["f"] = createMappingFunction;
 /**
  * Created by sam on 04.11.2016.
  */
@@ -1305,6 +1356,7 @@ var NumberColumn = (function (_super) {
     /**
      * filter the current row if any filter is set
      * @param row
+     * @param index row index
      * @returns {boolean}
      */
     NumberColumn.prototype.filter = function (row, index) {
@@ -2752,7 +2804,6 @@ var CompositeNumberColumn = (function (_super) {
      * inserts a column at a the given position
      * @param col
      * @param index
-     * @param weight
      * @returns {any}
      */
     CompositeNumberColumn.prototype.insert = function (col, index) {
@@ -3020,18 +3071,21 @@ var StackColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__Column__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__Ranking__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__CompositeColumn__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__Ranking__ = __webpack_require__(14);
 /* harmony export (immutable) */ exports["defineColumn"] = defineColumn;
 /* harmony export (immutable) */ exports["createActionDesc"] = createActionDesc;
 /* harmony export (immutable) */ exports["models"] = models;
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_20__Column__["IColumnDesc"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "Column", function() { return __WEBPACK_IMPORTED_MODULE_20__Column__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "IColumnDesc", function() { return __WEBPACK_IMPORTED_MODULE_20__Column__["IColumnDesc"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "CompositeColumn", function() { return __WEBPACK_IMPORTED_MODULE_21__CompositeColumn__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "createMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["f"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ScriptMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["e"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isNumberColumn", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "ScaleMappingFunction", function() { return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["d"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "isCategoricalColumn", function() { return __WEBPACK_IMPORTED_MODULE_7__CategoricalColumn__["b"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_21__Ranking__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_21__Ranking__["b"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "Ranking", function() { return __WEBPACK_IMPORTED_MODULE_22__Ranking__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(exports, "isSupportType", function() { return __WEBPACK_IMPORTED_MODULE_22__Ranking__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMinDesc", function() { return __WEBPACK_IMPORTED_MODULE_8__MinColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMaxDesc", function() { return __WEBPACK_IMPORTED_MODULE_9__MaxColumn__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(exports, "createMeanDesc", function() { return __WEBPACK_IMPORTED_MODULE_10__MeanColumn__["b"]; });
@@ -3048,6 +3102,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+
 
 
 
@@ -3222,27 +3277,28 @@ var CategoricalColumn = (function (_super) {
     }
     CategoricalColumn.prototype.initCategories = function (desc) {
         if (desc.categories) {
-            var cats = [], cols = this.colors.range(), labels = new Map();
+            var cats_1 = [], cols_1 = this.colors.range().slice(), //work on a copy since it will be manipulated
+            labels_1 = new Map();
             desc.categories.forEach(function (cat, i) {
                 if (typeof cat === 'string') {
                     //just the category value
-                    cats.push(cat);
+                    cats_1.push(cat);
                 }
                 else {
                     //the name or value of the category
-                    cats.push(cat.name || cat.value);
+                    cats_1.push(cat.name || cat.value);
                     //optional label mapping
                     if (cat.label) {
-                        labels.set(cat.name, cat.label);
+                        labels_1.set(cat.name, cat.label);
                     }
                     //optional color
                     if (cat.color) {
-                        cols[i] = cat.color;
+                        cols_1[i] = cat.color;
                     }
                 }
             });
-            this.catLabels = labels;
-            this.colors.domain(cats).range(cols);
+            this.catLabels = labels_1;
+            this.colors.domain(cats_1).range(cols_1);
         }
     };
     Object.defineProperty(CategoricalColumn.prototype, "categories", {
@@ -3304,8 +3360,7 @@ var CategoricalColumn = (function (_super) {
     };
     CategoricalColumn.prototype.getValues = function (row, index) {
         var v = __WEBPACK_IMPORTED_MODULE_3__StringColumn__["a" /* default */].prototype.getValue.call(this, row, index);
-        var r = v ? v.split(this.separator) : [];
-        return r;
+        return v ? v.split(this.separator) : [];
     };
     CategoricalColumn.prototype.getCategories = function (row, index) {
         return this.getValues(row, index);
@@ -3443,11 +3498,10 @@ var CompositeColumn = (function (_super) {
     CompositeColumn.prototype.flatten = function (r, offset, levelsToGo, padding) {
         if (levelsToGo === void 0) { levelsToGo = 0; }
         if (padding === void 0) { padding = 0; }
-        var self = null;
+        var w = 0;
         //no more levels or just this one
         if (levelsToGo === 0 || levelsToGo <= __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].FLAT_ALL_COLUMNS) {
-            var w = this.getCompressed() ? __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].COMPRESSED_WIDTH : this.getWidth();
-            r.push(self = { col: this, offset: offset, width: w });
+            w = this.getCompressed() ? __WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */].COMPRESSED_WIDTH : this.getWidth();
             if (levelsToGo === 0) {
                 return w;
             }
@@ -3479,7 +3533,6 @@ var CompositeColumn = (function (_super) {
      * inserts a column at a the given position
      * @param col
      * @param index
-     * @param weight
      * @returns {any}
      */
     CompositeColumn.prototype.insert = function (col, index) {
@@ -3532,6 +3585,14 @@ var CompositeColumn = (function (_super) {
     CompositeColumn.prototype.filter = function (row, index) {
         return this._children.every(function (d) { return d.filter(row, index); });
     };
+    /**
+     * describe the column if it is a sorting criteria
+     * @param toId helper to convert a description to an id
+     * @return {string} json compatible
+     */
+    CompositeColumn.prototype.toSortingDesc = function (toId) {
+        return this._children.map(function (c) { return c.toSortingDesc(toId); });
+    };
     return CompositeColumn;
 }(__WEBPACK_IMPORTED_MODULE_0__Column__["a" /* default */]));
 /* harmony default export */ exports["a"] = CompositeColumn;
@@ -3583,8 +3644,7 @@ var RankColumn = (function (_super) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Column__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__StringColumn__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__StackColumn__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils__ = __webpack_require__(2);
 /* harmony export (immutable) */ exports["b"] = isSupportType;
 /**
  * Created by Samuel Gratzl on 06.08.2015.
@@ -3594,7 +3654,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-
 
 
 
@@ -3855,16 +3914,7 @@ var Ranking = (function (_super) {
             if (s === null) {
                 return null;
             }
-            if (s instanceof __WEBPACK_IMPORTED_MODULE_2__StackColumn__["a" /* default */]) {
-                var w = s.getWeights();
-                return s.children.map(function (child, i) {
-                    return {
-                        weight: w[i],
-                        id: resolve(child)
-                    };
-                });
-            }
-            return toId(s.desc);
+            return s.toSortingDesc(toId);
         };
         var id = resolve(this.sortColumn);
         if (id === null) {
@@ -3904,7 +3954,7 @@ var Ranking = (function (_super) {
     Ranking.EVENT_DIRTY_ORDER = 'dirtyOrder';
     Ranking.EVENT_ORDER_CHANGED = 'orderChanged';
     return Ranking;
-}(__WEBPACK_IMPORTED_MODULE_3__utils__["AEventDispatcher"]));
+}(__WEBPACK_IMPORTED_MODULE_2__utils__["AEventDispatcher"]));
 /* harmony default export */ exports["a"] = Ranking;
 
 
@@ -4285,104 +4335,37 @@ var LineUp = (function (_super) {
          * default config of LineUp with all available options
          */
         this.config = {
-            /**
-             * a prefix used for all generated html ids
-             */
             idPrefix: Math.random().toString(36).slice(-8).substr(0, 3),
-            /**
-             * options related to the header html layout
-             */
             header: {
-                /**
-                 * standard height of the header
-                 */
                 headerHeight: 20,
-                /**
-                 * height of the header including histogram
-                 */
                 headerHistogramHeight: 40,
-                /**
-                 * should labels be automatically rotated if they doesn't fit?
-                 */
                 autoRotateLabels: false,
-                /**
-                 * space reserved if a label is rotated
-                 */
                 rotationHeight: 50,
-                /**
-                 * the degrees to rotate a label
-                 */
                 rotationDegree: -20,
-                /**
-                 * hook for adding buttons to rankings in the header
-                 */
                 rankingButtons: __WEBPACK_IMPORTED_MODULE_2__ui__["dummyRankingButtonHook"],
-                /**
-                 * templates for link patterns
-                 */
                 linkTemplates: []
             },
-            /**
-             * old name for header
-             */
             htmlLayout: {},
-            /**
-             * visual representation options
-             */
             renderingOptions: {
-                /**
-                 * show combined bars as stacked bars
-                 */
                 stacked: true,
-                /**
-                 * use animation for reordering
-                 */
                 animation: true,
-                /**
-                 * show histograms of the headers (just settable at the beginning)
-                 */
                 histograms: false,
-                /**
-                 * show a mean line for single numberial columns
-                 */
                 meanLine: false,
             },
-            /**
-             * options related to the rendering of the body
-             */
             body: {
                 renderer: 'svg',
                 rowHeight: 18,
                 rowPadding: 1,
                 rowBarPadding: 1,
-                /**
-                 * whether just the visible rows or all rows should be rendered - rendering performance (default: true)
-                 */
                 visibleRowsOnly: true,
-                /**
-                 * number of backup rows to keep to avoid updating on every small scroll thing
-                 */
                 backupScrollRows: 4,
                 animationDuration: 1000,
-                //number of cols that should be frozen on the left side
                 freezeCols: 0,
                 actions: []
             },
-            /**
-             * old name for body
-             */
             svgLayout: {},
-            /**
-             *  enables manipulation features, remove column, reorder,...
-             */
             manipulative: true,
-            /**
-             * automatically add a column pool at the end
-             */
             pool: false,
-            /**
-             * the renderers to use for rendering the columns
-             */
             renderers: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__utils__["merge"])({}, __WEBPACK_IMPORTED_MODULE_1__renderer__["renderers"])
         };
         this.body = null;
@@ -4429,7 +4412,7 @@ var LineUp = (function (_super) {
             this.contentScroller.on(__WEBPACK_IMPORTED_MODULE_4__utils__["ContentScroller"].EVENT_SCROLL, function (top, left) {
                 //in two svg mode propagate horizontal shift
                 //console.log(top, left,'ss');
-                _this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
+                _this.header.$node.style('transform', "translate(0px, " + top + "px)");
                 if (_this.config.body.freezeCols > 0) {
                     _this.header.updateFreeze(left);
                     _this.body.updateFreeze(left);
@@ -4592,9 +4575,9 @@ var LineUp = (function (_super) {
 }(__WEBPACK_IMPORTED_MODULE_4__utils__["AEventDispatcher"]));
 /* harmony default export */ exports["b"] = LineUp;
 /**
- * assigns colors to colmns if they are numbers and not yet defined
+ * assigns colors to columns if they are numbers and not yet defined
  * @param columns
- * @returns {model_.IColumnDesc[]}
+ * @returns {IColumnDesc[]}
  */
 function deriveColors(columns) {
     var colors = __WEBPACK_IMPORTED_MODULE_5_d3__["scale"].category10().range().slice();
@@ -4765,6 +4748,17 @@ var MaxColumn = (function (_super) {
     MaxColumn.prototype.compute = function (row, index) {
         return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["max"])(this._children, function (d) { return d.getValue(row, index); });
     };
+    /**
+     * describe the column if it is a sorting criteria
+     * @param toId helper to convert a description to an id
+     * @return {string} json compatible
+     */
+    MaxColumn.prototype.toSortingDesc = function (toId) {
+        return {
+            operation: 'max',
+            operands: this._children.map(function (c) { return c.toSortingDesc(toId); })
+        };
+    };
     return MaxColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__CompositeNumberColumn__["a" /* default */]));
 /* harmony default export */ exports["a"] = MaxColumn;
@@ -4805,6 +4799,17 @@ var MeanColumn = (function (_super) {
     }
     MeanColumn.prototype.compute = function (row, index) {
         return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["mean"])(this._children, function (d) { return d.getValue(row, index); });
+    };
+    /**
+     * describe the column if it is a sorting criteria
+     * @param toId helper to convert a description to an id
+     * @return {string} json compatible
+     */
+    MeanColumn.prototype.toSortingDesc = function (toId) {
+        return {
+            operation: 'avg',
+            operands: this._children.map(function (c) { return c.toSortingDesc(toId); })
+        };
     };
     return MeanColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__CompositeNumberColumn__["a" /* default */]));
@@ -7016,10 +7021,10 @@ var MappingEditor = (function () {
                 renderMappingLines();
             }
             function addPoint(x) {
-                x = clamp(x, 0, width);
+                var px = clamp(x, 0, width);
                 mapping_lines.push({
-                    n: normal2pixel.invert(x),
-                    r: raw2pixel.invert(x)
+                    n: normal2pixel.invert(px),
+                    r: raw2pixel.invert(px)
                 });
                 updateScale();
                 renderMappingLines();
@@ -7050,18 +7055,18 @@ var MappingEditor = (function () {
             }));
             $mapping_enter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
                 //drag normalized
-                var x = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
-                d.n = normal2pixel.invert(x);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).attr('cx', x);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('line').attr('x1', x);
+                var px = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
+                d.n = normal2pixel.invert(px);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).attr('cx', px);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('line').attr('x1', px);
                 updateScale();
             }));
             $mapping_enter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
                 //drag raw
-                var x = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
-                d.r = raw2pixel.invert(x);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).attr('cx', x);
-                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('line').attr('x2', x);
+                var px = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
+                d.r = raw2pixel.invert(px);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).attr('cx', px);
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this.parentElement).select('line').attr('x2', px);
                 updateScale();
             }));
             $mapping.select('line').attr({
@@ -7103,11 +7108,11 @@ var MappingEditor = (function () {
                 .data([this.old_filter.min, this.old_filter.max])
                 .attr('transform', function (d, i) { return ("translate(" + (i === 0 ? min_filter_1 : max_filter_1) + ",0)"); }).call(createDrag(function (d, i) {
                 //drag normalized
-                var x = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
-                var v = raw2pixel.invert(x);
-                var filter = (x <= 0 && i === 0 ? -Infinity : (x >= width && i === 1 ? Infinity : v));
+                var px = clamp(__WEBPACK_IMPORTED_MODULE_0_d3__["event"].x, 0, width);
+                var v = raw2pixel.invert(px);
+                var filter = (px <= 0 && i === 0 ? -Infinity : (px >= width && i === 1 ? Infinity : v));
                 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["select"])(this).datum(filter)
-                    .attr('transform', "translate(" + x + ",0)")
+                    .attr('transform', "translate(" + px + ",0)")
                     .select('text').text(toFilterString_1(filter, i));
             }))
                 .select('text').text(toFilterString_1);
@@ -8567,32 +8572,26 @@ var RemoteDataProvider = (function (_super) {
 
 /**
  * access to the model module
- * @type {--global-type--}
  */
 var model = __WEBPACK_IMPORTED_MODULE_1__model__;
 /**
  * access to the provider module
- * @type {--global-type--}
  */
 var provider = __WEBPACK_IMPORTED_MODULE_2__provider__;
 /**
  * access to the renderer module
- * @type {--global-type--}
  */
 var renderer = __WEBPACK_IMPORTED_MODULE_3__renderer__;
 /**
  * access to the ui module
- * @type {--global-type--}
  */
 var ui = __WEBPACK_IMPORTED_MODULE_4__ui__;
 /**
  * access to the utils module
- * @type {--global-type--}
  */
 var utils = __WEBPACK_IMPORTED_MODULE_5__utils__;
 /**
  * access to the ui_dialogs module
- * @type {--global-type--}
  */
 var ui_dialogs = __WEBPACK_IMPORTED_MODULE_6__ui_dialogs__;
 /**

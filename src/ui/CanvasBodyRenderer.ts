@@ -2,9 +2,9 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {max as d3max, event as d3event, mouse as d3mouse} from 'd3';
+import {event as d3event, mouse as d3mouse} from 'd3';
 import {merge, createTextHints} from '../utils';
-import Column from '../model/Column';
+import Column, {IStatistics} from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {createCanvas, hideOverlays, ICanvasRenderContext} from '../renderer';
 import DataProvider, {IDataRow}  from '../provider/ADataProvider';
@@ -12,12 +12,13 @@ import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext, ERenderReason}
 
 export interface IStyleOptions {
   text?: string;
-  font?: string
-  slope?: string
-  link?: string
-  selection?: string
-  hover?: string
-  bg?: string
+  font?: string;
+  slope?: string;
+  link?: string;
+  selection?: string;
+  hover?: string;
+  bg?: string;
+  meanLine?: string;
 }
 
 export interface ICanvasBodyRendererOptions {
@@ -34,6 +35,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
       selection: '#ffa500',
       hover: '#e5e5e5',
       bg: '#f7f7f7',
+      meanLine: 'darkgray'
     }
   };
 
@@ -112,7 +114,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   select(dataIndex: number, additional = false) {
-    var selected = super.select(dataIndex, additional);
+    const selected = super.select(dataIndex, additional);
     this.update();
     return selected;
   }
@@ -127,7 +129,6 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   mouseOver(dataIndex: number, hover = true) {
-    const o: any = this.options;
     if (hover === (this.currentHover === dataIndex)) {
       return;
     }
@@ -145,7 +146,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
 
   private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number) {
     const dataIndex = di.dataIndex;
-    var dx = ranking.shift;
+    let dx = ranking.shift;
     const dy = context.cellY(i);
     ctx.translate(dx, dy);
     if (i % 2 === 0) {
@@ -189,7 +190,28 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.translate(-dx, -dy);
   }
 
-  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
+  private renderMeanlines(ctx: CanvasRenderingContext2D, ranking: IRankingData, height: number) {
+    const cols = ranking.columns.filter((c) => this.showMeanLine(c.column));
+    return Promise.all(cols.map((d) => {
+      const h = this.histCache.get(d.column.id);
+      if (!h) {
+        return;
+      }
+      return h.then((stats: IStatistics) => {
+        const x_pos = d.shift + d.column.getWidth() * stats.mean;
+        if (isNaN(x_pos)) {
+          return;
+        }
+        ctx.strokeStyle = this.style('meanLine');
+        ctx.beginPath();
+        ctx.moveTo(x_pos, 0);
+        ctx.lineTo(x_pos, height);
+        ctx.stroke();
+      });
+    }));
+  }
+
+  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height) {
 
     const renderRow = this.renderRow.bind(this, ctx, context);
 
@@ -202,26 +224,26 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
         return p.then((di: IDataRow) =>
           renderRow(ranking, di, i)
         );
-      }));
+      })).then(() => this.renderMeanlines(ctx, ranking, height));
     }));
   }
 
   renderSlopeGraphs(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
-    var slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
+    const slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
     ctx.save();
     ctx.strokeStyle = this.style('slope');
     slopes.forEach((slope, i) => {
       ctx.save();
       ctx.translate(data[i + 1].shift - this.options.slopeWidth, 0);
 
-      var cache = {};
+      const cache = new Map<number, number>();
       slope.right.forEach((data_index, pos) => {
-        cache[data_index] = pos;
+        cache.set(data_index, pos);
       });
       const lines = slope.left.map((data_index, pos) => ({
         data_index: data_index,
         lpos: pos,
-        rpos: cache[data_index]
+        rpos: cache.get(data_index)
       })).filter((d) => d.rpos != null);
 
 
@@ -256,7 +278,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   private computeShifts(data: IRankingData[]) {
-    var r = [];
+    let r = [];
     data.forEach((d) => {
       const base = d.shift;
       r.push(...d.frozen.map((c) => ({column: c.column, shift: c.shift + base + this.currentFreezeLeft})));
@@ -297,7 +319,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
 
     this.renderSlopeGraphs(ctx, data, context);
 
-    return this.renderRankings(ctx, data, context).then(() => {
+    return this.renderRankings(ctx, data, context, height).then(() => {
       ctx.restore();
     });
   }

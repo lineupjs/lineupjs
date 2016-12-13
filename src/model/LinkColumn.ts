@@ -43,7 +43,7 @@ export default class LinkColumn extends StringColumn {
   }
 
   dump(toDescRef: (desc: any) => any): any {
-    var r = super.dump(toDescRef);
+    let r = super.dump(toDescRef);
     /* tslint:disable */
     if (this.link != (<any>this.desc).link) {
       r.link = this.link;
@@ -60,7 +60,7 @@ export default class LinkColumn extends StringColumn {
   }
 
   getLabel(row: any, index: number) {
-    var v: any = super.getRaw(row, index);
+    const v: any = super.getRaw(row, index);
     if (v && v.alt) {
       return v.alt;
     }
@@ -72,14 +72,14 @@ export default class LinkColumn extends StringColumn {
       return true;
     }
     //get original value
-    var v: any = super.getRaw(row, index);
+    const v: any = super.getRaw(row, index);
     //convert to link
     return v && v.href != null;
   }
 
   getValue(row: any, index:number) {
     //get original value
-    var v: any = super.getRaw(row, index);
+    const v: any = super.getRaw(row, index);
     //convert to link
     if (v && v.href) {
       return v.href;

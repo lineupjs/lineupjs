@@ -5,8 +5,7 @@
   <title>React LineUp Test</title>
 
 
-  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet"
-        type='text/css'>
+  <link href="../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
   <link href="../dist/style.css" rel="stylesheet">
 </head>
 <body>
@@ -16,9 +15,9 @@
 
 <section>
 </section>
-<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.14/d3.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.2/react.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.2/react-dom.js"></script>
+<script src="../node_modules/d3/d3.js"></script>
+<script src="../node_modules/react/dist/react.js"></script>
+<script src="../node_modules/react-dom/dist/react-dom.js"></script>
 <script src="../dist/LineUpJS_react.js"></script>
 <script>
   (function () {
@@ -69,66 +68,6 @@
       d.color = colors('' + i);
     });
 
-//  var p = new LineUpJS.provider.LocalDataProvider(arr, desc);
-//  var r = p.pushRanking();
-//
-//  var root = d3.select('body');
-//  r.insert(p.create(LineUpJS.model.createSelectionDesc()),0);
-//  r.push(p.create(desc[0]));
-//  r.push(p.create(desc[1]));
-//  r.push(p.create(desc[8]));
-//  r.push(p.create(desc[9]));
-//  r.push(p.create(desc[10]));
-//  var rstack = p.create(LineUpJS.model.createStackDesc('Stack'));
-//  r.push(rstack);
-//  rstack.push(p.create(desc[1]));
-//  rstack.push(p.create(desc[2]));
-//  rstack.push(p.create(desc[3]));
-//  rstack.setWeights([0.2, 0.4]);
-//  r.push(p.create(desc[4]));
-//  var rscript = p.create(LineUpJS.model.createScriptDesc('Script'));
-//  r.push(p.create(desc[1]));
-//  r.push(p.create(desc[2]));
-//  r.push(p.create(desc[3]));
-//  r.push(rscript);
-//  rscript.push(p.create(desc[1]));
-//  rscript.push(p.create(desc[2]));
-//  rscript.push(p.create(desc[3]));
-//  var rnested = p.create(LineUpJS.model.createNestedDesc('Nested'));
-//  r.push(rnested);
-//  rnested.push(p.create(desc[1]));
-//  rnested.push(p.create(desc[2]));
-//  rscript.push(p.create(desc[0]));
-//
-//  var r2 = p.pushRanking();
-//  r2.push(p.create(desc[1]));
-//  r2.push(p.create(desc[0]));
-//  r2.push(p.create(desc[5]));
-//  r2.push(p.create(desc[6]));
-//  r2.push(p.create(desc[7]));
-
-//  var body = LineUpJS.create(p, root.node(), {
-//    additionalDesc : [
-//      LineUpJS.model.StackColumn.desc('+ Stack')
-//    ],
-//    htmlLayout: {
-//      autoRotateLabels: true
-//    },
-//    body: {
-//      renderer: 'svg'
-//    },
-//    header: {
-//      rankingButtons: function($node) {
-//        $node.append('button').text('+').on('click', function(d) {
-//          console.log(d);
-//        });
-//      },
-//      linkTemplates: ['a/$1', 'b/$1']
-//    },
-//    renderingOptions: {
-//      histograms: true
-//    }
-//  });
     ReactDOM.render(
       React.createElement(LineUpJS.default, {
         data: arr,

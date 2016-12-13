@@ -40,16 +40,16 @@
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
     "docs": "typedoc --options typedoc.json src/**.ts",
-    "prebuild": "npm run test",
     "pretest": "npm run compile",
     "test": "echo 'no tests'",
     "posttest": "npm run lint",
+    "prebuild": "npm run test",
     "build": "webpack",
     "watch": "webpack --watch",
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
-	"predist": "npm run build",
+    "predist": "npm run build",
     "dist": "mkdirp dists && cd dist && tar cvzf ../dists/lineupjs.tar.gz *"
   },
   "repository": {
@@ -57,9 +57,6 @@
     "url": "https://github.com/Caleydo/lineup.js.git"
   },
   "devDependencies": {
-    "@types/d3": "^3.5.36",
-    "@types/react": "^0.14.42",
-    "@types/react-dom": "^0.14.18",
     "awesome-typescript-loader": "^2.2.4",
     "css-loader": "^0.25.0",
     "extract-text-webpack-plugin": "^2.0.0-beta.4",
@@ -69,14 +66,18 @@
     "style-loader": "^0.13.1",
     "tslint": "^3.15.1",
     "typedoc": "^0.5.0",
-    "typescript": "^2.0.3",
+    "typescript": "2.1.1",
     "webpack": "^2.1.0-beta.25"
   },
   "optionalDependencies": {
+    "@types/react": "^0.14.42",
+    "@types/react-dom": "^0.14.18",
     "react": "^15.0.0",
     "react-dom": "^15.0.0"
   },
   "dependencies": {
-    "d3": "^3.5.17"
+    "@types/d3": "^3.5.36",
+    "d3": "^3.5.17",
+    "font-awesome": "^4.6.3"
   }
 }

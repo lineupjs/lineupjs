@@ -5,12 +5,11 @@
 import Column, {IColumnParent, fixCSS, IFlatColumn, IColumnDesc} from './Column';
 import StringColumn from './StringColumn';
 import StackColumn from './StackColumn';
-import SelectionColumn from './SelectionColumn';
 import {AEventDispatcher} from '../utils';
 
 export interface ISortCriteria {
-  col: Column;
-  asc: boolean;
+  readonly col: Column;
+  readonly asc: boolean;
 }
 
 export function isSupportType(col: IColumnDesc) {
@@ -57,7 +56,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (this.sortColumn === null) {
       return 0;
     }
-    var r = this.sortColumn.compare(a, b, aIndex, bIndex);
+    const r = this.sortColumn.compare(a, b, aIndex, bIndex);
     return this.ascending ? r : -r;
   };
 
@@ -99,7 +98,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   dump(toDescRef: (desc: any) => any) {
-    var r: any = {};
+    let r: any = {};
     r.columns = this.columns.map((d) => d.dump(toDescRef));
     r.sortColumn = {
       asc: this.ascending
@@ -113,7 +112,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   restore(dump: any, factory: (dump: any) => Column) {
     this.clear();
     dump.columns.map((child) => {
-      var c = factory(child);
+      const c = factory(child);
       if (c) {
         this.push(c);
       }
@@ -128,7 +127,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
-    var acc = offset; // + this.getWidth() + padding;
+    let acc = offset; // + this.getWidth() + padding;
     if (levelsToGo > 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
       this.columns.forEach((c) => {
         if (!c.isHidden() || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
@@ -167,7 +166,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (this.sortColumn) { //disable dirty listening
       this.sortColumn.on(Column.EVENT_DIRTY_VALUES + '.order', null);
     }
-    var bak = this.getSortCriteria();
+    const bak = this.getSortCriteria();
     this.sortColumn = col;
     if (this.sortColumn) { //enable dirty listening
       this.sortColumn.on(Column.EVENT_DIRTY_VALUES + '.order', this.dirtyOrder);
@@ -207,7 +206,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   findByPath(fqpath: string): Column {
-    var p: IColumnParent|Column = <any>this;
+    let p: IColumnParent|Column = <any>this;
     const indices = fqpath.split('@').map(Number).slice(1); //ignore the first entry = ranking
     while (indices.length > 0) {
       let i = indices.shift();
@@ -225,7 +224,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   insertAfter(col: Column, ref: Column) {
-    var i = this.columns.indexOf(ref);
+    const i = this.columns.indexOf(ref);
     if (i < 0) {
       return null;
     }
@@ -237,7 +236,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   remove(col: Column) {
-    var i = this.columns.indexOf(col);
+    const i = this.columns.indexOf(col);
     if (i < 0) {
       return false;
     }
@@ -270,15 +269,15 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   get flatColumns() {
-    var r: IFlatColumn[] = [];
+    let r: IFlatColumn[] = [];
     this.flatten(r, 0, Column.FLAT_ALL_COLUMNS);
     return r.map((d) => d.col);
   }
 
   find(id_or_filter: (col: Column) => boolean | string) {
-    var filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
-    var r = this.flatColumns;
-    for (var i = 0; i < r.length; ++i) {
+    const filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
+    const r = this.flatColumns;
+    for (let i = 0; i < r.length; ++i) {
       if (filter(r[i])) {
         return r[i];
       }
@@ -293,22 +292,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    */
   toSortingDesc(toId: (desc: any) => string) {
     //TODO describe also all the filter settings
-    var resolve = (s: Column): any => {
+    const resolve = (s: Column): any => {
       if (s === null) {
         return null;
       }
-      if (s instanceof StackColumn) {
-        var w = (<StackColumn>s).getWeights();
-        return (<StackColumn>s).children.map((child, i) => {
-          return {
-            weight: w[i],
-            id: resolve(child)
-          };
-        });
-      }
-      return toId(s.desc);
+      return s.toSortingDesc(toId);
     };
-    var id = resolve(this.sortColumn);
+    const id = resolve(this.sortColumn);
     if (id === null) {
       return null;
     }

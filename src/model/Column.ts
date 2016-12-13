@@ -11,13 +11,13 @@ import Ranking from './Ranking';
  * @return {string|void}
  */
 export function fixCSS(id) {
-  return id.replace(/[\s!#$%&'\(\)\*\+,\.\/:;<=>\?@\[\\\]\^`\{\|}~]/g, '_'); //replace non css stuff to _
+  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]\^`{|}~]/g, '_'); //replace non css stuff to _
 }
 
 export interface IFlatColumn {
-  col: Column;
-  offset: number;
-  width: number;
+  readonly col: Column;
+  readonly offset: number;
+  readonly width: number;
 }
 
 export interface IColumnParent {
@@ -25,53 +25,56 @@ export interface IColumnParent {
   insert(col: Column, index?: number): Column;
   insertAfter(col: Column, reference: Column): Column;
   findMyRanker(): Ranking;
-  fqid: string;
+  readonly fqid: string;
 
   indexOf(col: Column): number;
   at(index: number): Column;
-  fqpath: string;
+  readonly fqpath: string;
 }
 
 export interface IColumnDesc {
-  label: string;
+  /**
+   * label of the column
+   */
+  readonly label: string;
   /**
    * the column type
    */
-    type: string;
+  readonly type: string;
 
   /**
    * column description
    */
-  description?: string;
+  readonly description?: string;
 
   /**
    * color of this column
    */
-  color?: string;
+  readonly color?: string;
   /**
    * css class to append to elements of this column
    */
-  cssClass?: string;
+  readonly cssClass?: string;
 }
 
 export interface IStatistics {
-  min: number;
-  max: number;
-  mean: number;
-  count: number;
-  maxBin: number;
-  hist: { x: number; dx: number; y: number;}[];
+  readonly min: number;
+  readonly max: number;
+  readonly mean: number;
+  readonly count: number;
+  readonly maxBin: number;
+  readonly hist: { x: number; dx: number; y: number;}[];
 }
 
 export interface ICategoricalStatistics {
-  maxBin: number;
-  hist: { cat: string; y: number }[];
+  readonly maxBin: number;
+  readonly hist: { cat: string; y: number }[];
 }
 
 export interface IColumnMetaData {
-  label: string;
-  description: string;
-  color: string;
+  readonly label: string;
+  readonly description: string;
+  readonly color: string;
 }
 
 /**
@@ -107,7 +110,10 @@ export default class Column extends AEventDispatcher {
   static EVENT_DIRTY_VALUES = 'dirtyValues';
   static EVENT_MULTIVALUE_SORT_CHANGED = 'multiValueSortChanged'
 
-  id: string;
+  /**
+   * the id of this column
+   */
+  private uid: string;
 
   /**
    * width of the column
@@ -116,18 +122,26 @@ export default class Column extends AEventDispatcher {
    */
   private width: number = 100;
 
+  /**
+   * parent column of this column, set when added to a ranking or combined column
+   * @type {any}
+   */
   parent: IColumnParent = null;
 
+<<<<<<< HEAD
   label: string;
   description: string;
   color: string;
   renderername: string;
   protected rendererList: {type: string, label: string}[];
+=======
+  private metadata : IColumnMetaData;
+>>>>>>> 3411becf41d887b0374b1354cc736c1b37a28c48
 
   /**
    * alternative to specifying a color is defining a css class that should be used
    */
-  cssClass: string;
+  readonly cssClass: string;
 
   /**
    * whether this column is compressed i.e. just shown in a minimal version
@@ -138,21 +152,47 @@ export default class Column extends AEventDispatcher {
 
   constructor(id: string, public desc: IColumnDesc) {
     super();
-    this.id = fixCSS(id);
-    this.label = this.desc.label || this.id;
-    this.description = this.desc.description || '';
+    this.uid = fixCSS(id);
     this.cssClass = (<any>this.desc).cssClass || '';
+<<<<<<< HEAD
     this.color = (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
     this.renderername = (<any>this.desc).type || 'heatmapcustom';
     this.rendererList = [];
+=======
+    this.metadata = {
+      label: this.desc.label || this.id,
+      description: this.desc.description || '',
+      color: (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
+    }
+>>>>>>> 3411becf41d887b0374b1354cc736c1b37a28c48
   }
 
-  get headerCssClass() {
-    return this.desc.type;
+  get id() {
+    return this.uid;
   }
 
   assignNewId(idGenerator: () => string) {
-    this.id = fixCSS(idGenerator());
+    this.uid = fixCSS(idGenerator());
+  }
+
+  get label() {
+    return this.metadata.label;
+  }
+
+  get description() {
+    return this.metadata.description;
+  }
+
+  get color() {
+    return this.metadata.color;
+  }
+
+  /**
+   * return the css class to use for the header
+   * @return {string}
+   */
+  get headerCssClass() {
+    return this.desc.type;
   }
 
   /**
@@ -189,8 +229,16 @@ export default class Column extends AEventDispatcher {
     return this.width;
   }
 
+  /**
+   * a column is hidden if it has no width
+   * @return {boolean}
+   */
   isHidden() {
     return this.width <= 0;
+  }
+
+  hide() {
+    return this.setWidth(0);
   }
 
   setCompressed(value: boolean) {
@@ -207,7 +255,7 @@ export default class Column extends AEventDispatcher {
   /**
    * visitor pattern for flattening the columns
    * @param r the result array
-   * @param offset left offeset
+   * @param offset left offset
    * @param levelsToGo how many levels down
    * @param padding padding between columns
    * @returns {number} the used width by this column
@@ -233,14 +281,18 @@ export default class Column extends AEventDispatcher {
     if (value.label === this.label && this.color === value.color && this.description === value.description) {
       return;
     }
-    var events = this.color === value.color ?
+    const events = this.color === value.color ?
       [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY] :
       [Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY];
-    this.fire(events, this.getMetaData(), {
-      label: this.label = value.label,
-      color: this.color = value.color,
-      description: this.description = value.description
-    });
+    const bak = this.getMetaData();
+    //copy to avoid reference
+    this.metadata = {
+      label: value.label,
+      color: value.color,
+      description: value.description
+    };
+
+    this.fire(events, bak, this.getMetaData());
   }
 
   getMetaData(): IColumnMetaData {
@@ -257,7 +309,7 @@ export default class Column extends AEventDispatcher {
    * @returns {any}
    */
   sortByMe(ascending = false) {
-    var r = this.findMyRanker();
+    const r = this.findMyRanker();
     if (r) {
       return r.sortBy(this, ascending);
     }
@@ -269,7 +321,7 @@ export default class Column extends AEventDispatcher {
    * @returns {any}
    */
   toggleMySorting() {
-    var r = this.findMyRanker();
+    const r = this.findMyRanker();
     if (r) {
       return r.toggleSorting(this);
     }
@@ -316,7 +368,7 @@ export default class Column extends AEventDispatcher {
    * @returns {any}
    */
   dump(toDescRef: (desc: any) => any): any {
-    var r: any = {
+    let r: any = {
       id: this.id,
       desc: toDescRef(this.desc),
       width: this.width,
@@ -338,8 +390,11 @@ export default class Column extends AEventDispatcher {
    */
   restore(dump: any, factory: (dump: any) => Column) {
     this.width = dump.width || this.width;
-    this.label = dump.label || this.label;
-    this.color = dump.color || this.color;
+    this.metadata = {
+      label: dump.label || this.label,
+      color: dump.color || this.color,
+      description: this.description
+    };
     this.compressed = dump.compressed === true;
   }
 
@@ -357,7 +412,6 @@ export default class Column extends AEventDispatcher {
    * return the value of a given row for the current column
    * @param row
    * @param index
-   * @return
    */
   getValue(row: any, index: number): any {
     return ''; //no value
@@ -365,10 +419,10 @@ export default class Column extends AEventDispatcher {
 
   /**
    * compare function used to determine the order according to the values of the current column
-   * @param a
-   * @param b
-   * @param aIndex,
-   * @param bIndex
+   * @param a first element
+   * @param b second element
+   * @param aIndex index of the first element
+   * @param bIndex index of the second element
    * @return {number}
    */
   compare(a: any, b: any, aIndex: number, bIndex: number) {
@@ -386,12 +440,17 @@ export default class Column extends AEventDispatcher {
   /**
    * predicate whether the current row should be included
    * @param row
+   * @param index the row index
    * @return {boolean}
    */
   filter(row: any, index: number) {
     return row !== null;
   }
 
+  /**
+   * determines the renderer type that should be used to render this column. By default the same type as the column itself
+   * @return {string}
+   */
   rendererType(): string {
 
     return this.renderername;
@@ -402,10 +461,21 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderername, this.renderername = type);
   }
 
+<<<<<<< HEAD
   getRendererList() {
 
     return this.rendererList;
   }
 
 
+=======
+  /**
+   * describe the column if it is a sorting criteria
+   * @param toId helper to convert a description to an id
+   * @return {string} json compatible
+   */
+  toSortingDesc(toId: (desc: any) => string): any {
+    return toId(this.desc);
+  }
+>>>>>>> 3411becf41d887b0374b1354cc736c1b37a28c48
 }

@@ -3,7 +3,7 @@
  */
 
 import {scale, format} from 'd3';
-import Column, {IColumnDesc, IStatistics} from './Column';
+import Column, {IColumnDesc} from './Column';
 import ValueColumn from './ValueColumn';
 
 
@@ -296,7 +296,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   dump(toDescRef: (desc: any) => any) {
-    var r = super.dump(toDescRef);
+    let r = super.dump(toDescRef);
     r.map = this.mapping.dump();
     r.filter = this.currentFilter;
     r.missingValue = this.missingValue;
@@ -343,7 +343,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   getRawValue(row: any, index: number) {
-    var v: any = super.getValue(row, index);
+    const v: any = super.getValue(row, index);
     if (isMissingValue(v)) {
       return this.missingValue;
     }
@@ -351,7 +351,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   getValue(row: any, index: number) {
-    var v = this.getRawValue(row, index);
+    const v = this.getRawValue(row, index);
     if (isNaN(v)) {
       return v;
     }
@@ -437,6 +437,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   /**
    * filter the current row if any filter is set
    * @param row
+   * @param index row index
    * @returns {boolean}
    */
   filter(row: any, index: number) {
