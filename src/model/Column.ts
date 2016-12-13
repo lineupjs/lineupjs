@@ -4,6 +4,8 @@
 
 import {AEventDispatcher} from '../utils';
 import Ranking from './Ranking';
+import {renderer} from "../index";
+import any = jasmine.any;
 
 /**
  * converts a given id to css compatible one
@@ -105,6 +107,7 @@ export default class Column extends AEventDispatcher {
   static EVENT_DIRTY = 'dirty';
   static EVENT_DIRTY_HEADER = 'dirtyHeader';
   static EVENT_DIRTY_VALUES = 'dirtyValues';
+  static EVENT_MULTIVALUE_SORT_CHANGED = 'multiValueSortChanged'
 
   id: string;
 
@@ -120,6 +123,9 @@ export default class Column extends AEventDispatcher {
   label: string;
   description: string;
   color: string;
+  renderername:string;
+  protected rendererList:{type:string, label:string}[];
+
   /**
    * alternative to specifying a color is defining a css class that should be used
    */
@@ -139,6 +145,8 @@ export default class Column extends AEventDispatcher {
     this.description = this.desc.description || '';
     this.cssClass = (<any>this.desc).cssClass || '';
     this.color = (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR);
+    this.renderername = (<any>this.desc).type || 'heatmapcustom';
+    this.rendererList = [];
   }
 
   get headerCssClass() {
@@ -175,7 +183,7 @@ export default class Column extends AEventDispatcher {
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-      Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
+      Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_MULTIVALUE_SORT_CHANGED,Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
   }
 
@@ -387,13 +395,20 @@ export default class Column extends AEventDispatcher {
   }
 
   rendererType(): string {
-     if(this.desc.type.constructor === Array) {
-      return this.desc.type[0];
-    }
-    return this.desc.type;
+
+    return this.renderername;
   }
 
   setRendererType(type:string) {
-    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.desc.type, this.desc.type = type);
+
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderername, this.renderername = type);
   }
+
+    getRendererList() {
+
+    return this.rendererList;
+  }
+
+
+
 }

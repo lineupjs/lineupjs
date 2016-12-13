@@ -383,7 +383,7 @@ export default class HeaderRenderer {
 
 
     //Renderer Change
-    $node.filter((d) => d instanceof Column).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
+    $node.filter((d) => d instanceof MultiValueColumn || d instanceof NumberColumn).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
       renderertypedialog(<Column>d, d3.select(this.parentNode.parentNode));
       (<MouseEvent>d3.event).stopPropagation();
     });
