@@ -21,13 +21,7 @@ import CategoricalNumberColumn from './CategoricalNumberColumn';
 import NestedColumn from './NestedColumn';
 import DummyColumn from './DummyColumn';
 import LinkColumn from './LinkColumn';
-// import HeatmapColumn from './HeatmapColumn11';
-// import SparklineColumn from './SparklineColumn11';
-// import ThresholdColumn from './ThresholdColumn11';
-// import VerticalBarColumn from './VerticalBarColumn11';
-// import BoxplotColumn from './BoxplotColumn11';
 import UpsetColumn from './UpsetColumn';
-import CircleColumn from './CircleColumn11';
 import MultiValueColumn from './MultiValueColumn';
 
 

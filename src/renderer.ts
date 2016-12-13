@@ -247,7 +247,7 @@ class SparklineCellRenderer implements ICellRendererFactory {
           .attr('d', function (d, i) {
             line
               .x((d, i) => multiValueColumn.getxScale(i))
-              .y((d, i) => multiValueColumn.getyScale(d));
+              .y((d, i) => multiValueColumn.getyScale(d, context.rowHeight(i)));
             return line(<any>d);
           });
         path.exit().remove();
@@ -267,14 +267,14 @@ class SparklineCellRenderer implements ICellRendererFactory {
 
         if (i === 0) {
           xpos = multiValueColumn.getxScale(i);
-          ypos = multiValueColumn.getyScale(d);
+          ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
         } else {
           ctx.strokeStyle = 'black';
           ctx.fillStyle = 'black';
           ctx.beginPath();
           ctx.moveTo(xpos, ypos);
           xpos = multiValueColumn.getxScale(i);
-          ypos = multiValueColumn.getyScale(d);
+          ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
           ctx.lineTo(xpos, ypos);
           ctx.stroke();
           ctx.fill();
@@ -344,10 +344,10 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
         rect.enter().append('rect');
         rect
           .attr({
-            y: (d,i) => multiValueColumn.getyposVerticalBar(d),
+            y: (d, i) => multiValueColumn.getyposVerticalBar(d, context.rowHeight(i)),
             x: (d, i) => (i * celldimension),
             width: celldimension,
-            height: (d: any) => multiValueColumn.getVerticalBarHeight(d),
+            height: (d, i) => multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)),
             fill: (d, i) => multiValueColumn.getColor(d)
           });
         rect.exit().remove();
@@ -364,9 +364,9 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
       var data = col.getValue(d.v, d.dataIndex);
       data.forEach(function (d, i) {
         var xpos = (i * celldimension);
-        var ypos = multiValueColumn.getyposVerticalBar(d);
+        var ypos = multiValueColumn.getyposVerticalBar(d, context.rowHeight(i));
         ctx.fillStyle = multiValueColumn.getColor(d);
-        ctx.fillRect(xpos, ypos, celldimension, multiValueColumn.getVerticalBarHeight(d));
+        ctx.fillRect(xpos, ypos, celldimension, multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)));
       });
     };
   }
@@ -428,7 +428,6 @@ class BoxplotCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
       const boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
-      // console.log(boxdata,col.getValue(d.v, d.dataIndex));
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();

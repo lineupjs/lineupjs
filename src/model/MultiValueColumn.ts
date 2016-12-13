@@ -76,8 +76,9 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   private max;
   private bins;
   private threshold;
-  private rowheight;
+
   private ypositionVerticalBar;
+  private verticalBarHeight;
   private colorScale: d3.scale.Linear<number, string> = d3.scale.linear<number, string>();
   private xposScale: d3.scale.Linear<number, number> = d3.scale.linear();
   private yposScale: d3.scale.Linear<number, number> = d3.scale.linear();
@@ -92,18 +93,16 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     this.max = d3.max((<any>desc).domain);
     this.bins = (<any>desc).datalength;
     this.threshold = (<any>desc).threshold || 0;
-    this.rowheight = 13;
+
     this.sortBy = (<any>desc.sort) || 'min';
+    this.verticalBarHeight = 13;
     this.rendererList = [{type: 'heatmapcustom', label: 'Heatmap'},
-                        {type: 'boxplot', label: 'Boxplot'},
-                        {type: 'sparkline', label: 'Sparkline'},
-                        {type: 'threshold', label: 'Threshold'},
-                        {type: 'verticalbar', label: 'VerticalBar'}];
+      {type: 'boxplot', label: 'Boxplot'},
+      {type: 'sparkline', label: 'Sparkline'},
+      {type: 'threshold', label: 'Threshold'},
+      {type: 'verticalbar', label: 'VerticalBar'}];
 
     this.defineColor();
-    this.xScale();
-    this.yScale();
-    this.verticalBarHeight();
     this.boxPlotWidth();
 
   }
@@ -122,38 +121,11 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     }
   }
 
-  private xScale() {
-    this.xposScale
-      .domain([0, this.bins - 1])
-      .range([0, this.getWidth()]);
-  }
-
-
-  private yScale() {
-    this.yposScale
-      .domain([this.min, this.max])
-      .range([this.rowheight, 0])
-  }
-
-
-  private verticalBarHeight() {
-    if (this.min < 0) {
-      this.verticalBarScale
-        .domain([this.min, this.max])
-        .range([0, this.rowheight / 2])
-    } else {
-      this.verticalBarScale
-        .domain([this.min, this.max])
-        .range([0, this.rowheight])
-    }
-
-  }
 
   private boxPlotWidth() {
     this.boxPlotScale
       .domain([this.min, this.max])
       .range([0, this.getWidth()])
-
 
   }
 
@@ -179,8 +151,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   getValue(row: any, index: number) {
     var v = this.getRaw(row, index);
-    // console.log(v)
-    return (v);
+     return (v);
   }
 
   getColor(data: any) {
@@ -194,11 +165,16 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   }
 
   getxScale(data) {
-
+    this.xposScale
+      .domain([0, this.bins - 1])
+      .range([0, this.getWidth()]);
     return this.xposScale(data);
   }
 
-  getyScale(data) {
+  getyScale(data, rowheight) {
+    this.yposScale
+      .domain([this.min, this.max])
+      .range([rowheight, 0]);
     return this.yposScale(data);
   }
 
@@ -213,25 +189,33 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     return this.threshold;
   }
 
-  getVerticalBarHeight(data) {
+  getVerticalBarHeight(data, rowheight) {
 
-    if (data < this.threshold) {
-      (this.rowheight / 2 - this.verticalBarScale(data));
+    if (this.min < this.threshold) {
+      this.verticalBarScale
+        .domain([this.min, this.max])
+        .range([0, rowheight / 2]);
+
+      this.verticalBarHeight = (rowheight / 2 - this.verticalBarScale(data));
+
     } else {
+      this.verticalBarScale
+        .domain([this.min, this.max])
+        .range([0, rowheight]);
 
-      this.verticalBarScale(data);
+      this.verticalBarHeight = this.verticalBarScale(data);
     }
 
-    return this.verticalBarScale(data);
+    return this.verticalBarHeight;
 
   }
 
-  getyposVerticalBar(data) {
+  getyposVerticalBar(data, rowheight) {
 
-    if (this.min < 0) {
-      this.ypositionVerticalBar = (data < this.threshold) ? (this.rowheight / 2) : this.rowheight / 2 - this.getVerticalBarHeight(data);   // For positive and negative value
+    if (this.min < this.threshold) {
+      this.ypositionVerticalBar = (data < this.threshold) ? (rowheight / 2) : rowheight / 2 - this.getVerticalBarHeight(data, rowheight);   // For positive and negative value
     } else {
-      this.ypositionVerticalBar = this.rowheight - this.getVerticalBarHeight(data);
+      this.ypositionVerticalBar = rowheight - this.getVerticalBarHeight(data, rowheight);
     }
 
     return this.ypositionVerticalBar;
@@ -289,7 +273,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   }
 
 
- getRendererList() {
+  getRendererList() {
 
     return this.rendererList;
   }

@@ -1617,7 +1617,7 @@ var SparklineCellRenderer = (function () {
                     .attr('d', function (d, i) {
                     line
                         .x(function (d, i) { return multiValueColumn.getxScale(i); })
-                        .y(function (d, i) { return multiValueColumn.getyScale(d); });
+                        .y(function (d, i) { return multiValueColumn.getyScale(d, context.rowHeight(i)); });
                     return line(d);
                 });
                 path.exit().remove();
@@ -1632,7 +1632,7 @@ var SparklineCellRenderer = (function () {
             data.forEach(function (d, i) {
                 if (i === 0) {
                     xpos = multiValueColumn.getxScale(i);
-                    ypos = multiValueColumn.getyScale(d);
+                    ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
                 }
                 else {
                     ctx.strokeStyle = 'black';
@@ -1640,7 +1640,7 @@ var SparklineCellRenderer = (function () {
                     ctx.beginPath();
                     ctx.moveTo(xpos, ypos);
                     xpos = multiValueColumn.getxScale(i);
-                    ypos = multiValueColumn.getyScale(d);
+                    ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
                     ctx.lineTo(xpos, ypos);
                     ctx.stroke();
                     ctx.fill();
@@ -1704,10 +1704,10 @@ var VerticalBarCellRenderer = (function () {
                 rect.enter().append('rect');
                 rect
                     .attr({
-                    y: function (d, i) { return multiValueColumn.getyposVerticalBar(d); },
+                    y: function (d, i) { return multiValueColumn.getyposVerticalBar(d, context.rowHeight(i)); },
                     x: function (d, i) { return (i * celldimension); },
                     width: celldimension,
-                    height: function (d) { return multiValueColumn.getVerticalBarHeight(d); },
+                    height: function (d, i) { return multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)); },
                     fill: function (d, i) { return multiValueColumn.getColor(d); }
                 });
                 rect.exit().remove();
@@ -1721,9 +1721,9 @@ var VerticalBarCellRenderer = (function () {
             var data = col.getValue(d.v, d.dataIndex);
             data.forEach(function (d, i) {
                 var xpos = (i * celldimension);
-                var ypos = multiValueColumn.getyposVerticalBar(d);
+                var ypos = multiValueColumn.getyposVerticalBar(d, context.rowHeight(i));
                 ctx.fillStyle = multiValueColumn.getColor(d);
-                ctx.fillRect(xpos, ypos, celldimension, multiValueColumn.getVerticalBarHeight(d));
+                ctx.fillRect(xpos, ypos, celldimension, multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)));
             });
         };
     };
@@ -5325,17 +5325,14 @@ var MultiValueColumn = (function (_super) {
         this.max = __WEBPACK_IMPORTED_MODULE_0_d3__["max"](desc.domain);
         this.bins = desc.datalength;
         this.threshold = desc.threshold || 0;
-        this.rowheight = 13;
         this.sortBy = desc.sort || 'min';
+        this.verticalBarHeight = 13;
         this.rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },
             { type: 'boxplot', label: 'Boxplot' },
             { type: 'sparkline', label: 'Sparkline' },
             { type: 'threshold', label: 'Threshold' },
             { type: 'verticalbar', label: 'VerticalBar' }];
         this.defineColor();
-        this.xScale();
-        this.yScale();
-        this.verticalBarHeight();
         this.boxPlotWidth();
     }
     MultiValueColumn.prototype.defineColor = function () {
@@ -5348,28 +5345,6 @@ var MultiValueColumn = (function (_super) {
             this.colorScale
                 .domain([this.min, this.max])
                 .range(['white', this.colorrange[1]]);
-        }
-    };
-    MultiValueColumn.prototype.xScale = function () {
-        this.xposScale
-            .domain([0, this.bins - 1])
-            .range([0, this.getWidth()]);
-    };
-    MultiValueColumn.prototype.yScale = function () {
-        this.yposScale
-            .domain([this.min, this.max])
-            .range([this.rowheight, 0]);
-    };
-    MultiValueColumn.prototype.verticalBarHeight = function () {
-        if (this.min < 0) {
-            this.verticalBarScale
-                .domain([this.min, this.max])
-                .range([0, this.rowheight / 2]);
-        }
-        else {
-            this.verticalBarScale
-                .domain([this.min, this.max])
-                .range([0, this.rowheight]);
         }
     };
     MultiValueColumn.prototype.boxPlotWidth = function () {
@@ -5403,9 +5378,15 @@ var MultiValueColumn = (function (_super) {
         return (this.getWidth() / this.bins);
     };
     MultiValueColumn.prototype.getxScale = function (data) {
+        this.xposScale
+            .domain([0, this.bins - 1])
+            .range([0, this.getWidth()]);
         return this.xposScale(data);
     };
-    MultiValueColumn.prototype.getyScale = function (data) {
+    MultiValueColumn.prototype.getyScale = function (data, rowheight) {
+        this.yposScale
+            .domain([this.min, this.max])
+            .range([rowheight, 0]);
         return this.yposScale(data);
     };
     MultiValueColumn.prototype.getbinaryColor = function () {
@@ -5414,21 +5395,27 @@ var MultiValueColumn = (function (_super) {
     MultiValueColumn.prototype.getthresholdValue = function () {
         return this.threshold;
     };
-    MultiValueColumn.prototype.getVerticalBarHeight = function (data) {
-        if (data < this.threshold) {
-            (this.rowheight / 2 - this.verticalBarScale(data));
+    MultiValueColumn.prototype.getVerticalBarHeight = function (data, rowheight) {
+        if (this.min < this.threshold) {
+            this.verticalBarScale
+                .domain([this.min, this.max])
+                .range([0, rowheight / 2]);
+            this.verticalBarHeight = (rowheight / 2 - this.verticalBarScale(data));
         }
         else {
-            this.verticalBarScale(data);
+            this.verticalBarScale
+                .domain([this.min, this.max])
+                .range([0, rowheight]);
+            this.verticalBarHeight = this.verticalBarScale(data);
         }
-        return this.verticalBarScale(data);
+        return this.verticalBarHeight;
     };
-    MultiValueColumn.prototype.getyposVerticalBar = function (data) {
-        if (this.min < 0) {
-            this.ypositionVerticalBar = (data < this.threshold) ? (this.rowheight / 2) : this.rowheight / 2 - this.getVerticalBarHeight(data); // For positive and negative value
+    MultiValueColumn.prototype.getyposVerticalBar = function (data, rowheight) {
+        if (this.min < this.threshold) {
+            this.ypositionVerticalBar = (data < this.threshold) ? (rowheight / 2) : rowheight / 2 - this.getVerticalBarHeight(data, rowheight); // For positive and negative value
         }
         else {
-            this.ypositionVerticalBar = this.rowheight - this.getVerticalBarHeight(data);
+            this.ypositionVerticalBar = rowheight - this.getVerticalBarHeight(data, rowheight);
         }
         return this.ypositionVerticalBar;
     };
@@ -6551,152 +6538,6 @@ function sortDialog(column, $header) {
         }
     });
 }
-// export function sortDialogSparkline(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
-//
-//   var rank = (<any>column.desc).sort;
-//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-//     return `<input type="radio" name="sparklinerank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
-//
-//   }).join('\n'));
-//
-//   function thiselement() {
-//
-//     return this === (<any>d3.event).target;
-//   }
-//
-//   var that;
-//
-//   var sortcontent = d3.selectAll('input[name=sparklinerank]');
-//   sortcontent.on('change', function () {
-//     that = this;
-//     rank = that.value;
-//     (<any>column.desc).sort = rank;
-//     column.toggleMySorting();
-//
-//   });
-//
-//   d3.select('body').on('click', function () {
-//     var outside = sortcontent.filter(thiselement).empty();
-//     if (outside) {
-//       popup.remove();
-//     }
-//   });
-//
-//
-// }
-//
-// export function sortDialogBoxplot(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
-//
-//   var rank = (<any>column.desc).sort;
-//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-//     return `<input type="radio" name="boxplotrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
-//
-//   }).join('\n'));
-//
-//   function thiselement() {
-//
-//     return this === (<any>d3.event).target;
-//   }
-//
-//   var that;
-//
-//   var sortcontent = d3.selectAll('input[name=boxplotrank]');
-//   sortcontent.on('change', function () {
-//     that = this;
-//     rank = that.value;
-//     (<any>column.desc).sort = rank;
-//     column.toggleMySorting();
-//
-//
-//   });
-//
-//
-//   d3.select('body').on('click', function () {
-//     var outside = sortcontent.filter(thiselement).empty();
-//     if (outside) {
-//       popup.remove();
-//     }
-//   });
-//
-// }
-//
-//
-// export function sortDialogVerticalBar(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
-//
-//   var rank = (<any>column.desc).sort;
-//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-//     return `<input type="radio" name="verticalbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
-//
-//   }).join('\n'));
-//
-//   function thiselement() {
-//
-//     return this === (<any>d3.event).target;
-//   }
-//
-//   var that;
-//
-//   var sortcontent = d3.selectAll('input[name=verticalbarrank]');
-//   sortcontent.on('change', function () {
-//     that = this;
-//     rank = that.value;
-//     (<any>column.desc).sort = rank;
-//     column.toggleMySorting();
-//
-//   });
-//
-//   d3.select('body').on('click', function () {
-//     var outside = sortcontent.filter(thiselement).empty();
-//     if (outside) {
-//       popup.remove();
-//     }
-//   });
-//
-//
-// }
-//
-// export function sortDialogThresholdBar(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
-//
-//
-//   var rank = (<any>column.desc).sort;
-//   var valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-//   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-//   var popup = makesortPopup($header, 'Sort By', valuestring.map(function (d, i) {
-//     return `<input type="radio" name="Thresholdbarrank" value=${d}  ${(rank === d) ? 'checked' : ''}> ${sortlabel[i]}<br>`;
-//
-//   }).join('\n'));
-//
-//   function thiselement() {
-//
-//     return this === (<any>d3.event).target;
-//   }
-//
-//   var that;
-//
-//   var sortcontent = d3.selectAll('input[name=Thresholdbarrank]');
-//   sortcontent.on('change', function () {
-//     that = this;
-//     rank = that.value;
-//     (<any>column.desc).sort = rank;
-//     column.toggleMySorting();
-//
-//   });
-//
-//   d3.select('body').on('click', function () {
-//     var outside = sortcontent.filter(thiselement).empty();
-//     if (outside) {
-//       popup.remove();
-//     }
-//   });
-//
-//
-// }
 /**
  * opens a search dialog for the given column
  * @param column the column to rename

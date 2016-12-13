@@ -458,7 +458,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return super.rendererType();
   }
 
- getRendererList() {
+  getRendererList() {
 
     return this.rendererList;
   }

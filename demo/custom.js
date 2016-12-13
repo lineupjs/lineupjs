@@ -83,7 +83,7 @@ window.onload = function () {
       {label: 'Country', type: 'string', column: 'stringdata'},
       {
         label: 'MultiValue',
-        type: 'heatmapcustom',
+        type: 'verticalbar',
         column: 'multidata',
         domain: [multidata_min, multidata_max],
         colorrange: ['blue', 'red'],
@@ -129,7 +129,7 @@ window.onload = function () {
         autoRotateLabels: true
       },
       body: {
-        renderer: 'canvas',
+        renderer: 'svg',
         freezeCols: 3
       },
       header: {

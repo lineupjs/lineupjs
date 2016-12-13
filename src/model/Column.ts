@@ -123,8 +123,8 @@ export default class Column extends AEventDispatcher {
   label: string;
   description: string;
   color: string;
-  renderername:string;
-  protected rendererList:{type:string, label:string}[];
+  renderername: string;
+  protected rendererList: {type: string, label: string}[];
 
   /**
    * alternative to specifying a color is defining a css class that should be used
@@ -183,7 +183,7 @@ export default class Column extends AEventDispatcher {
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-      Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_MULTIVALUE_SORT_CHANGED,Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
+      Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_MULTIVALUE_SORT_CHANGED, Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
   }
 
@@ -399,16 +399,15 @@ export default class Column extends AEventDispatcher {
     return this.renderername;
   }
 
-  setRendererType(type:string) {
+  setRendererType(type: string) {
 
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderername, this.renderername = type);
   }
 
-    getRendererList() {
+  getRendererList() {
 
     return this.rendererList;
   }
-
 
 
 }
