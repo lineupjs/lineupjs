@@ -1616,6 +1616,7 @@ var HeatmapCellRenderer = (function () {
     }
     HeatmapCellRenderer.prototype.createSVG = function (col, context) {
         var cellDimension = col.calculateCellDimension();
+        var colorScale = col.getColor();
         var padding = context.option('rowPadding', 1);
         return {
             template: "<g class=\"heatmapcell\"></g>",
@@ -1628,16 +1629,16 @@ var HeatmapCellRenderer = (function () {
                     x: function (d, i) { return (i * cellDimension); },
                     width: cellDimension,
                     height: context.rowHeight(i),
-                    fill: function (d, i) { return col.getColor(d); }
+                    fill: function (d, i) { return colorScale(d); }
                 });
                 rect.exit().remove();
             }
         };
     };
     HeatmapCellRenderer.prototype.createHTML = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
+        var cellDimension = col.calculateCellDimension();
         var padding = context.option('rowPadding', 1);
+        var colorScale = col.getColor();
         return {
             template: "<div class=\"heatmapcell\" style=\"top:" + padding + "px;\">\n                                   </div>",
             update: function (n, d, i) {
@@ -1646,25 +1647,25 @@ var HeatmapCellRenderer = (function () {
                 div.enter().append('div');
                 div
                     .style({
-                    'width': celldimension + 'px',
-                    'background-color': multiValueColumn.getColor(d),
+                    'width': cellDimension + 'px',
+                    'background-color': function (d, i) { return colorScale(d); },
                     'height': context.rowHeight(i) + 'px',
-                    'left': function (d, i) { return (i * celldimension) + 'px'; }
+                    'left': function (d, i) { return (i * cellDimension) + 'px'; }
                 });
             }
         };
     };
     HeatmapCellRenderer.prototype.createCanvas = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
+        var cellDimension = col.calculateCellDimension();
         var padding = context.option('rowPadding', 1);
+        var colorScale = col.getColor();
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             data.forEach(function (d, i) {
-                var x = (i * celldimension);
+                var x = (i * cellDimension);
                 ctx.beginPath();
-                ctx.fillStyle = multiValueColumn.getColor(d);
-                ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
+                ctx.fillStyle = colorScale(d);
+                ctx.fillRect(x, padding, cellDimension, context.rowHeight(i));
             });
         };
     };
@@ -1674,7 +1675,6 @@ var SparklineCellRenderer = (function () {
     function SparklineCellRenderer() {
     }
     SparklineCellRenderer.prototype.createSVG = function (col, context) {
-        var multiValueColumn = col;
         return {
             template: "<g class=\"sparklinecell\"></g>",
             update: function (n, d, i) {
@@ -1684,8 +1684,8 @@ var SparklineCellRenderer = (function () {
                 path
                     .attr('d', function (d, i) {
                     line
-                        .x(function (d, i) { return multiValueColumn.getxScale(i); })
-                        .y(function (d, i) { return multiValueColumn.getyScale(d, context.rowHeight(i)); });
+                        .x(function (d, i) { return col.getxScale(i); })
+                        .y(function (d, i) { return col.getyScale(d, context.rowHeight(i)); });
                     return line(d);
                 });
                 path.exit().remove();
@@ -1693,22 +1693,21 @@ var SparklineCellRenderer = (function () {
         };
     };
     SparklineCellRenderer.prototype.createCanvas = function (col, context) {
-        var multiValueColumn = col;
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             var xpos, ypos;
             data.forEach(function (d, i) {
                 if (i === 0) {
-                    xpos = multiValueColumn.getxScale(i);
-                    ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
+                    xpos = col.getxScale(i);
+                    ypos = col.getyScale(d, context.rowHeight(i));
                 }
                 else {
                     ctx.strokeStyle = 'black';
                     ctx.fillStyle = 'black';
                     ctx.beginPath();
                     ctx.moveTo(xpos, ypos);
-                    xpos = multiValueColumn.getxScale(i);
-                    ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
+                    xpos = col.getxScale(i);
+                    ypos = col.getyScale(d, context.rowHeight(i));
                     ctx.lineTo(xpos, ypos);
                     ctx.stroke();
                     ctx.fill();
@@ -1722,9 +1721,8 @@ var ThresholdCellRenderer = (function () {
     function ThresholdCellRenderer() {
     }
     ThresholdCellRenderer.prototype.createSVG = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
-        var binaryColor = multiValueColumn.getbinaryColor();
+        var cellDimension = col.calculateCellDimension();
+        var binaryColor = col.getbinaryColor();
         return {
             template: "<g class=\"thresholdcell\"></g>",
             update: function (n, d, i) {
@@ -1732,28 +1730,27 @@ var ThresholdCellRenderer = (function () {
                 rect.enter().append('rect');
                 rect
                     .attr({
-                    y: function (d, i) { return (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0; },
-                    x: function (d, i) { return (i * celldimension); },
-                    width: celldimension,
+                    y: function (d, i) { return (d < col.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0; },
+                    x: function (d, i) { return (i * cellDimension); },
+                    width: cellDimension,
                     height: function (d, i) { return (context.rowHeight(i)) / 2; },
-                    fill: function (d) { return (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1]; }
+                    fill: function (d) { return (d < col.getthresholdValue()) ? binaryColor[0] : binaryColor[1]; }
                 });
                 rect.exit().remove();
             }
         };
     };
     ThresholdCellRenderer.prototype.createCanvas = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
-        var binaryColor = multiValueColumn.getbinaryColor();
+        var cellDimension = col.calculateCellDimension();
+        var binaryColor = col.getbinaryColor();
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             data.forEach(function (d, i) {
                 ctx.beginPath();
-                var xpos = (i * celldimension);
-                var ypos = (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0;
-                ctx.fillStyle = (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1];
-                ctx.fillRect(xpos, ypos, celldimension, context.rowHeight(i) / 2);
+                var xpos = (i * cellDimension);
+                var ypos = (d < col.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0;
+                ctx.fillStyle = (d < col.getthresholdValue()) ? binaryColor[0] : binaryColor[1];
+                ctx.fillRect(xpos, ypos, cellDimension, context.rowHeight(i) / 2);
             });
         };
     };
@@ -1763,8 +1760,8 @@ var VerticalBarCellRenderer = (function () {
     function VerticalBarCellRenderer() {
     }
     VerticalBarCellRenderer.prototype.createSVG = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
+        var colorScale = col.getColor();
+        var cellDimension = col.calculateCellDimension();
         return {
             template: "<g class=\"verticalbarcell\"></g>",
             update: function (n, d, i) {
@@ -1772,26 +1769,26 @@ var VerticalBarCellRenderer = (function () {
                 rect.enter().append('rect');
                 rect
                     .attr({
-                    y: function (d, i) { return multiValueColumn.getyposVerticalBar(d, context.rowHeight(i)); },
-                    x: function (d, i) { return (i * celldimension); },
-                    width: celldimension,
-                    height: function (d, i) { return multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)); },
-                    fill: function (d, i) { return multiValueColumn.getColor(d); }
+                    y: function (d, i) { return col.getyposVerticalBar(d, context.rowHeight(i)); },
+                    x: function (d, i) { return (i * cellDimension); },
+                    width: cellDimension,
+                    height: function (d, i) { return col.getVerticalBarHeight(d, context.rowHeight(i)); },
+                    fill: function (d, i) { return colorScale(d); }
                 });
                 rect.exit().remove();
             }
         };
     };
     VerticalBarCellRenderer.prototype.createCanvas = function (col, context) {
-        var multiValueColumn = col;
-        var celldimension = multiValueColumn.calculateCellDimension();
+        var colorScale = col.getColor();
+        var cellDimension = col.calculateCellDimension();
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             data.forEach(function (d, i) {
-                var xpos = (i * celldimension);
-                var ypos = multiValueColumn.getyposVerticalBar(d, context.rowHeight(i));
-                ctx.fillStyle = multiValueColumn.getColor(d);
-                ctx.fillRect(xpos, ypos, celldimension, multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)));
+                var xpos = (i * cellDimension);
+                var ypos = col.getyposVerticalBar(d, context.rowHeight(i));
+                ctx.fillStyle = colorScale(d);
+                ctx.fillRect(xpos, ypos, cellDimension, col.getVerticalBarHeight(d, context.rowHeight(i)));
             });
         };
     };
@@ -1801,12 +1798,11 @@ var BoxplotCellRenderer = (function () {
     function BoxplotCellRenderer() {
     }
     BoxplotCellRenderer.prototype.createSVG = function (col, context) {
-        var multiValueColumn = col;
         var padding = context.option('rowPadding', 1);
         return {
             template: "<g class=\"boxplotcell\"></g>",
             update: function (n, d, i) {
-                var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
+                var boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex));
                 var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
                 rect.enter().append('rect');
                 rect
@@ -1837,11 +1833,10 @@ var BoxplotCellRenderer = (function () {
         };
     };
     BoxplotCellRenderer.prototype.createCanvas = function (col, context) {
-        var multiValueColumn = col;
         var padding = context.option('rowPadding', 1);
         return function (ctx, d, i) {
             // Rectangle
-            var boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
+            var boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex));
             ctx.fillStyle = '#e0e0e0';
             ctx.strokeStyle = 'black';
             ctx.beginPath();
@@ -5408,37 +5403,22 @@ var MultiValueColumn = (function (_super) {
             .range([0, this.getWidth()]);
     };
     MultiValueColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortBy = this.getUserSortBy();
-        var a_val = this.getValue(a, aIndex);
-        var b_val = this.getValue(b, bIndex);
+        var a_val = (this.getValue(a, aIndex)).sort(numSort);
+        var b_val = (this.getValue(b, bIndex)).sort(numSort);
         var sort = new CustomSortCalculation(a_val, b_val);
         var f = sort[this.sortBy].bind(sort);
         return f();
     };
-    //
-    // getLabel(row: any, index: number) {
-    //   return '' + this.getValue(row, index);
-    // }
-    //
-    // getRaw(row: any, index: number) {
-    //   return this.accessor(row, index, this.id, this.desc, this.findMyRanker());
-    // }
-    //
-    // getValue(row: any, index: number) {
-    //   var v = this.getRaw(row, index);
-    //   return (v);
-    // }
-    MultiValueColumn.prototype.getColor = function (data) {
-        return this.colorScale(data);
+    MultiValueColumn.prototype.getColor = function () {
+        return this.colorScale;
     };
     MultiValueColumn.prototype.calculateCellDimension = function () {
-        console.log(this.dataLength);
-        return (this.getWidth() / this.dataLength);
+        return (this.getWidth() * 1 / this.dataLength);
     };
     MultiValueColumn.prototype.getxScale = function (data) {
         this.xposScale
             .domain([0, this.dataLength - 1])
-            .range([0, this.getWidth()]);
+            .range([0, this.getWidth() * 1]);
         return this.xposScale(data);
     };
     MultiValueColumn.prototype.getyScale = function (data, rowheight) {

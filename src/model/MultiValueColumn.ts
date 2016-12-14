@@ -116,44 +116,30 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    this.sortBy = this.getUserSortBy();
-    const a_val = this.getValue(a, aIndex);
-    const b_val = this.getValue(b, bIndex);
+
+    const a_val = (this.getValue(a, aIndex)).sort(numSort);
+    const b_val = (this.getValue(b, bIndex)).sort(numSort);
     const sort: any = new CustomSortCalculation(a_val, b_val);
     const f = sort[this.sortBy].bind(sort);
 
     return f();
   }
 
-  //
-  // getLabel(row: any, index: number) {
-  //   return '' + this.getValue(row, index);
-  // }
-  //
-  // getRaw(row: any, index: number) {
-  //   return this.accessor(row, index, this.id, this.desc, this.findMyRanker());
-  // }
-  //
-  // getValue(row: any, index: number) {
-  //   var v = this.getRaw(row, index);
-  //   return (v);
-  // }
+  getColor() {
 
-  getColor(data: any) {
-
-    return this.colorScale(data);
+    return this.colorScale;
   }
 
   calculateCellDimension() {
 
-    console.log(this.dataLength)
-    return (this.getWidth() / this.dataLength);
+
+    return (this.getWidth()*1 / this.dataLength);
   }
 
   getxScale(data) {
     this.xposScale
       .domain([0, this.dataLength - 1])
-      .range([0, this.getWidth()]);
+      .range([0, this.getWidth()*1]);
     return this.xposScale(data);
   }
 

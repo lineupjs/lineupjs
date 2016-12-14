@@ -162,6 +162,7 @@ class HeatmapCellRenderer implements ICellRendererFactory {
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
 
     const cellDimension = col.calculateCellDimension();
+    const colorScale = col.getColor();
     const padding = context.option('rowPadding', 1);
 
     return {
@@ -177,7 +178,7 @@ class HeatmapCellRenderer implements ICellRendererFactory {
             x: (d, i) => (i * cellDimension),
             width: cellDimension,
             height: context.rowHeight(i),
-            fill: (d, i) => col.getColor(d)
+            fill: (d, i) => colorScale(d)
           });
         rect.exit().remove();
       }
@@ -185,10 +186,11 @@ class HeatmapCellRenderer implements ICellRendererFactory {
   }
 
 
-  createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
-    const celldimension = multiValueColumn.calculateCellDimension();
+  createHTML(col: MultiValueColumn, context: IDOMRenderContext): IHTMLCellRenderer {
+
+    const cellDimension = col.calculateCellDimension();
     const padding = context.option('rowPadding', 1);
+    const colorScale = col.getColor();
 
     return {
       template: `<div class="heatmapcell" style="top:${padding}px;">
@@ -199,10 +201,10 @@ class HeatmapCellRenderer implements ICellRendererFactory {
         div.enter().append('div');
         div
           .style({
-            'width': celldimension + 'px',
-            'background-color': multiValueColumn.getColor(d),
+            'width': cellDimension + 'px',
+            'background-color': (d, i) => colorScale(d),
             'height': context.rowHeight(i) + 'px',
-            'left': (d, i) => (i * celldimension) + 'px'
+            'left': (d, i) => (i * cellDimension) + 'px'
           });
 
 
@@ -210,20 +212,20 @@ class HeatmapCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
-    const celldimension = multiValueColumn.calculateCellDimension();
-    const padding = context.option('rowPadding', 1);
+  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
+    const cellDimension = col.calculateCellDimension();
+    const padding = context.option('rowPadding', 1);
+    const colorScale = col.getColor();
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
 
       var data = col.getValue(d.v, d.dataIndex);
       data.forEach(function (d, i) {
 
-        var x = (i * celldimension);
+        var x = (i * cellDimension);
         ctx.beginPath();
-        ctx.fillStyle = multiValueColumn.getColor(d);
-        ctx.fillRect(x, padding, celldimension, context.rowHeight(i));
+        ctx.fillStyle = colorScale(d);
+        ctx.fillRect(x, padding, cellDimension, context.rowHeight(i));
       });
     };
   }
@@ -234,8 +236,8 @@ class HeatmapCellRenderer implements ICellRendererFactory {
 class SparklineCellRenderer implements ICellRendererFactory {
 
 
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+  createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
+
     return {
 
       template: `<g class="sparklinecell"></g>`,
@@ -246,8 +248,8 @@ class SparklineCellRenderer implements ICellRendererFactory {
         path
           .attr('d', function (d, i) {
             line
-              .x((d, i) => multiValueColumn.getxScale(i))
-              .y((d, i) => multiValueColumn.getyScale(d, context.rowHeight(i)));
+              .x((d, i) => col.getxScale(i))
+              .y((d, i) => col.getyScale(d, context.rowHeight(i)));
             return line(<any>d);
           });
         path.exit().remove();
@@ -256,9 +258,7 @@ class SparklineCellRenderer implements ICellRendererFactory {
   }
 
 
-  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       var data = col.getValue(d.v, d.dataIndex);
@@ -266,15 +266,15 @@ class SparklineCellRenderer implements ICellRendererFactory {
       data.forEach(function (d, i) {
 
         if (i === 0) {
-          xpos = multiValueColumn.getxScale(i);
-          ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
+          xpos = col.getxScale(i);
+          ypos = col.getyScale(d, context.rowHeight(i));
         } else {
           ctx.strokeStyle = 'black';
           ctx.fillStyle = 'black';
           ctx.beginPath();
           ctx.moveTo(xpos, ypos);
-          xpos = multiValueColumn.getxScale(i);
-          ypos = multiValueColumn.getyScale(d, context.rowHeight(i));
+          xpos = col.getxScale(i);
+          ypos = col.getyScale(d, context.rowHeight(i));
           ctx.lineTo(xpos, ypos);
           ctx.stroke();
           ctx.fill();
@@ -287,10 +287,10 @@ class SparklineCellRenderer implements ICellRendererFactory {
 
 class ThresholdCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
-    const celldimension = multiValueColumn.calculateCellDimension();
-    const binaryColor = multiValueColumn.getbinaryColor();
+  createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
+
+    const cellDimension = col.calculateCellDimension();
+    const binaryColor = col.getbinaryColor();
 
     return {
 
@@ -300,31 +300,31 @@ class ThresholdCellRenderer implements ICellRendererFactory {
         rect.enter().append('rect');
         rect
           .attr({
-            y: (d, i) => (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0,
-            x: (d, i) => (i * celldimension),
-            width: celldimension,
+            y: (d, i) => (d < col.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0,
+            x: (d, i) => (i * cellDimension),
+            width: cellDimension,
             height: (d, i) => (context.rowHeight(i)) / 2,
-            fill: (d) => (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1]
+            fill: (d) => (d < col.getthresholdValue()) ? binaryColor[0] : binaryColor[1]
           });
         rect.exit().remove();
       }
     };
   }
 
-  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
-    const celldimension = multiValueColumn.calculateCellDimension();
-    const binaryColor = multiValueColumn.getbinaryColor();
+
+    const cellDimension = col.calculateCellDimension();
+    const binaryColor = col.getbinaryColor();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       var data = col.getValue(d.v, d.dataIndex);
       data.forEach(function (d, i) {
         ctx.beginPath();
-        var xpos = (i * celldimension);
-        var ypos = (d < multiValueColumn.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0;
-        ctx.fillStyle = (d < multiValueColumn.getthresholdValue()) ? binaryColor[0] : binaryColor[1];
-        ctx.fillRect(xpos, ypos, celldimension, context.rowHeight(i) / 2);
+        var xpos = (i * cellDimension);
+        var ypos = (d < col.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0;
+        ctx.fillStyle = (d < col.getthresholdValue()) ? binaryColor[0] : binaryColor[1];
+        ctx.fillRect(xpos, ypos, cellDimension, context.rowHeight(i) / 2);
       });
     };
   }
@@ -332,10 +332,9 @@ class ThresholdCellRenderer implements ICellRendererFactory {
 }
 class VerticalBarCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
-    const celldimension = multiValueColumn.calculateCellDimension();
+  createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
+    const colorScale = col.getColor();
+    const cellDimension = col.calculateCellDimension();
     return {
 
       template: `<g class="verticalbarcell"></g>`,
@@ -344,29 +343,29 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
         rect.enter().append('rect');
         rect
           .attr({
-            y: (d, i) => multiValueColumn.getyposVerticalBar(d, context.rowHeight(i)),
-            x: (d, i) => (i * celldimension),
-            width: celldimension,
-            height: (d, i) => multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)),
-            fill: (d, i) => multiValueColumn.getColor(d)
+            y: (d, i) => col.getyposVerticalBar(d, context.rowHeight(i)),
+            x: (d, i) => (i * cellDimension),
+            width: cellDimension,
+            height:(d, i) => col.getVerticalBarHeight(d, context.rowHeight(i)),
+            fill: (d, i) => colorScale(d)
           });
         rect.exit().remove();
       }
     };
   }
 
-  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
-    const celldimension = multiValueColumn.calculateCellDimension();
+    const colorScale = col.getColor();
+    const cellDimension = col.calculateCellDimension();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       var data = col.getValue(d.v, d.dataIndex);
       data.forEach(function (d, i) {
-        var xpos = (i * celldimension);
-        var ypos = multiValueColumn.getyposVerticalBar(d, context.rowHeight(i));
-        ctx.fillStyle = multiValueColumn.getColor(d);
-        ctx.fillRect(xpos, ypos, celldimension, multiValueColumn.getVerticalBarHeight(d, context.rowHeight(i)));
+        var xpos = (i * cellDimension);
+        var ypos = col.getyposVerticalBar(d, context.rowHeight(i));
+        ctx.fillStyle = colorScale(d);
+        ctx.fillRect(xpos, ypos, cellDimension, col.getVerticalBarHeight(d, context.rowHeight(i)));
       });
     };
   }
@@ -376,15 +375,15 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 class BoxplotCellRenderer implements ICellRendererFactory {
 
 
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+  createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
+
     const padding = context.option('rowPadding', 1);
 
     return {
 
       template: `<g class="boxplotcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
+        const boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex));
         const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
 
         rect.enter().append('rect');
@@ -420,14 +419,13 @@ class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
+  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     const padding = context.option('rowPadding', 1);
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
-      const boxdata = multiValueColumn.getboxPlotData(col.getValue(d.v, d.dataIndex));
+      const boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex));
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
