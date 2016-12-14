@@ -178,7 +178,7 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 
 // Renderer type change
 export function renderertypedialog(column: Column, $header: d3.Selection<Column>) {
-  var renderertype = column.rendererType();
+  var renderertype = column.getrendererType();
   const rendererTypelist = column.getRendererList();
 
   var popup = makesortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {

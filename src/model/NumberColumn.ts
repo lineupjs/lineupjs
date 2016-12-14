@@ -289,7 +289,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.numberFormat = format(desc.numberFormat);
     }
 
-    this.rendererList = [{type: 'number', label: 'Bar'},
+    this.rendererInfo.rendererList = [{type: 'number', label: 'Bar'},
       {type: 'circle', label: 'Circle'}];
 
 
@@ -452,16 +452,16 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
   }
 
-  rendererType(): string {
+  getrendererType(): string {
     if (this.getCompressed()) {
       return NumberColumn.COMPRESSED_RENDERER;
     }
-    return super.rendererType();
+    return super.getrendererType();
   }
 
   getRendererList() {
 
-    return this.rendererList;
+    return this.rendererInfo.rendererList;
   }
 
 }

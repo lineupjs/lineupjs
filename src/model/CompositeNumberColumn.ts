@@ -80,7 +80,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
   }
 
-  rendererType(): string {
-    return NumberColumn.prototype.rendererType.call(this);
+  getrendererType(): string {
+    return NumberColumn.prototype.getrendererType.call(this);
   }
 }

@@ -55,7 +55,7 @@ export default class UpsetColumn extends ValueColumn<number[] > {
   constructor(id: string, desc: any) {
     super(id, desc);
     this.sortCriteria = (<any>desc).sort || 'min';
-    this.datalength = (<any>desc.datalength);
+    this.datalength = (<any>desc.dataLength);
 
   }
 

@@ -55,6 +55,11 @@ export interface IColumnDesc {
    * css class to append to elements of this column
    */
   readonly cssClass?: string;
+
+  /**
+   * Default RendererType
+   */
+  rendererType?: string;
 }
 
 export interface IStatistics {
@@ -76,6 +81,14 @@ export interface IColumnMetaData {
   readonly description: string;
   readonly color: string;
 }
+
+
+export interface IRendererInfo {
+
+  rendererType: string  ; // Name of the current Renderer
+  rendererList: {type: string, label: string}[]; // Possible RendererList
+}
+
 
 /**
  * a column in LineUp
@@ -141,15 +154,22 @@ export default class Column extends AEventDispatcher {
    * @private
    */
   private compressed = false;
-  renderername: string;
-  protected rendererList: {type: string, label: string}[];
+
+
+  protected rendererInfo: IRendererInfo;
+
 
   constructor(id: string, public desc: IColumnDesc) {
     super();
     this.uid = fixCSS(id);
     this.cssClass = (<any>this.desc).cssClass || '';
-    this.renderername = (<any>this.desc).type || 'heatmapcustom';
-    this.rendererList = [];
+    this.desc.rendererType = this.desc.type;
+
+    this.rendererInfo = {
+      rendererType: this.desc.rendererType,
+      rendererList: []
+    };
+
     this.metadata = {
       label: this.desc.label || this.id,
       description: this.desc.description || '',
@@ -441,19 +461,20 @@ export default class Column extends AEventDispatcher {
    * determines the renderer type that should be used to render this column. By default the same type as the column itself
    * @return {string}
    */
-  rendererType(): string {
+  getrendererType(): string {
 
-    return this.renderername;
+    return this.rendererInfo.rendererType;
   }
 
   setRendererType(type: string) {
 
-    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderername, this.renderername = type);
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.rendererType, this.rendererInfo.rendererType = type);
   }
 
   getRendererList() {
+    console.log(this.rendererInfo.rendererList)
 
-    return this.rendererList;
+    return this.rendererInfo.rendererList;
   }
 
   /**

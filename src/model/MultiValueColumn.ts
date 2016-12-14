@@ -50,18 +50,6 @@ export class CustomSortCalculation {
   }
 }
 
-// function getPercentile(data, percentile) {
-//
-//       var index = (percentile / 100) * data.length;
-//       var result;
-//       if (Math.floor(index) === index) {
-//         result = (data[(index - 1)] + data[index]) / 2;
-//       } else {
-//         result = data[Math.floor(index)];
-//       }
-//       return result;
-//     }
-
 function numSort(a, b) {
   return a - b;
 }
@@ -69,10 +57,10 @@ function numSort(a, b) {
 
 export default class MultiValueColumn extends ValueColumn<number[] > {
   private sortBy;
-  private colorrange;
+  private colorRange;
   private min;
   private max;
-  private bins;
+  private dataLength;
   private threshold;
 
   private ypositionVerticalBar;
@@ -86,15 +74,15 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   constructor(id: string, desc: any) {
     super(id, desc);
-    this.colorrange = (<any>desc).colorrange || ['blue', 'red'];
+    this.colorRange = (<any>desc).colorRange || ['blue', 'red'];
     this.min = d3.min((<any>desc).domain);
     this.max = d3.max((<any>desc).domain);
-    this.bins = (<any>desc).datalength;
+    this.dataLength = (<any>desc).dataLength;
     this.threshold = (<any>desc).threshold || 0;
 
     this.sortBy = (<any>desc.sort) || 'min';
     this.verticalBarHeight = 13;
-    this.rendererList = [{type: 'heatmapcustom', label: 'Heatmap'},
+    this.rendererInfo.rendererList = [{type: 'heatmapcustom', label: 'Heatmap'},
       {type: 'boxplot', label: 'Boxplot'},
       {type: 'sparkline', label: 'Sparkline'},
       {type: 'threshold', label: 'Threshold'},
@@ -110,15 +98,14 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     if (this.min < 0) {
       this.colorScale
         .domain([this.min, 0, this.max])
-        .range([this.colorrange[0], 'white', this.colorrange[1]]);
+        .range([this.colorRange[0], 'white', this.colorRange[1]]);
 
     } else {
       this.colorScale
         .domain([this.min, this.max])
-        .range(['white', this.colorrange[1]]);
+        .range(['white', this.colorRange[1]]);
     }
   }
-
 
   private boxPlotWidth() {
     this.boxPlotScale
@@ -138,19 +125,19 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     return f();
   }
 
-
-  getLabel(row: any, index: number) {
-    return '' + this.getValue(row, index);
-  }
-
-  getRaw(row: any, index: number) {
-    return this.accessor(row, index, this.id, this.desc, this.findMyRanker());
-  }
-
-  getValue(row: any, index: number) {
-    var v = this.getRaw(row, index);
-    return (v);
-  }
+  //
+  // getLabel(row: any, index: number) {
+  //   return '' + this.getValue(row, index);
+  // }
+  //
+  // getRaw(row: any, index: number) {
+  //   return this.accessor(row, index, this.id, this.desc, this.findMyRanker());
+  // }
+  //
+  // getValue(row: any, index: number) {
+  //   var v = this.getRaw(row, index);
+  //   return (v);
+  // }
 
   getColor(data: any) {
 
@@ -159,12 +146,13 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   calculateCellDimension() {
 
-    return (this.getWidth() / this.bins);
+    console.log(this.dataLength)
+    return (this.getWidth() / this.dataLength);
   }
 
   getxScale(data) {
     this.xposScale
-      .domain([0, this.bins - 1])
+      .domain([0, this.dataLength - 1])
       .range([0, this.getWidth()]);
     return this.xposScale(data);
   }
@@ -179,7 +167,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   getbinaryColor() {
 
-    return this.colorrange;
+    return this.colorRange;
   }
 
   getthresholdValue() {
@@ -271,9 +259,11 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   }
 
 
+
+
   getRendererList() {
 
-    return this.rendererList;
+    return this.rendererInfo.rendererList;
   }
 
 

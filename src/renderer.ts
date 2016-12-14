@@ -159,9 +159,9 @@ export class DefaultCellRenderer implements ICellRendererFactory {
 
 class HeatmapCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const multiValueColumn: MultiValueColumn = (<MultiValueColumn>col);
-    const celldimension = multiValueColumn.calculateCellDimension();
+  createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
+
+    const cellDimension = col.calculateCellDimension();
     const padding = context.option('rowPadding', 1);
 
     return {
@@ -174,10 +174,10 @@ class HeatmapCellRenderer implements ICellRendererFactory {
         rect
           .attr({
             y: padding,
-            x: (d, i) => (i * celldimension),
-            width: celldimension,
+            x: (d, i) => (i * cellDimension),
+            width: cellDimension,
             height: context.rowHeight(i),
-            fill: (d, i) => multiValueColumn.getColor(d)
+            fill: (d, i) => col.getColor(d)
           });
         rect.exit().remove();
       }
@@ -1040,7 +1040,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
       // set attribute for finding again
       cnode.setAttribute('data-column-id', col.column.id);
       // store current renderer
-      cnode.setAttribute('data-renderer', col.column.rendererType());
+      cnode.setAttribute('data-renderer', col.column.getrendererType());
     });
     return;
   }
@@ -1048,14 +1048,14 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
   function matches(c: {column: Column}, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
-    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.rendererType();
+    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getrendererType();
   }
 
   if (columns.every(matches)) {
     return; //nothing to do
   }
 
-  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.rendererType()));
+  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.getrendererType()));
   //remove all that are not existing anymore
   Array.prototype.slice.call(node.childNodes).forEach((n) => {
     const id = n.getAttribute('data-column-id');
@@ -1073,7 +1073,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
       helper.innerHTML = col.renderer.template;
       cnode = <Element>helper.childNodes[0];
       cnode.setAttribute('data-column-id', col.column.id);
-      cnode.setAttribute('data-renderer', col.column.rendererType());
+      cnode.setAttribute('data-renderer', col.column.getrendererType());
     }
     node.appendChild(cnode);
   });
@@ -1192,7 +1192,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
-  const r = renderers[col.rendererType()];
+  const r = renderers[col.getrendererType()];
   return r || defaultCellRenderer;
 }
 
