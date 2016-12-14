@@ -61,10 +61,11 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   private min;
   private max;
   private dataLength;
-  private threshold;
-
+  private dataInfo;
+  private cellWidth;
   private ypositionVerticalBar;
-  private verticalBarHeight;
+  private rowHeight;
+  private threshold;
   private colorScale: d3.scale.Linear<number, string> = d3.scale.linear<number, string>();
   private xposScale: d3.scale.Linear<number, number> = d3.scale.linear();
   private yposScale: d3.scale.Linear<number, number> = d3.scale.linear();
@@ -79,21 +80,25 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     this.max = d3.max((<any>desc).domain);
     this.dataLength = (<any>desc).dataLength;
     this.threshold = (<any>desc).threshold || 0;
-
     this.sortBy = (<any>desc.sort) || 'min';
-    this.verticalBarHeight = 13;
+    this.cellWidth = this.getWidth()|| 100;
+    this.rowHeight = 13;
+    this.dataInfo ={min:this.min,
+                    max:this.max,
+                    threshold:this.threshold,
+                    sort:this.sortBy};
     this.rendererInfo.rendererList = [{type: 'heatmapcustom', label: 'Heatmap'},
       {type: 'boxplot', label: 'Boxplot'},
       {type: 'sparkline', label: 'Sparkline'},
       {type: 'threshold', label: 'Threshold'},
       {type: 'verticalbar', label: 'VerticalBar'}];
 
-    this.defineColor();
+    this.defineColorRange();
     this.boxPlotWidth();
 
   }
 
-  private defineColor() {
+  private defineColorRange() {
 
     if (this.min < 0) {
       this.colorScale
@@ -110,7 +115,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   private boxPlotWidth() {
     this.boxPlotScale
       .domain([this.min, this.max])
-      .range([0, this.getWidth()])
+      .range([0, 1*this.getWidth()])
 
   }
 
@@ -130,75 +135,58 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     return this.colorScale;
   }
 
-  calculateCellDimension() {
+  calculateCellDimension(width) {
 
 
-    return (this.getWidth()*1 / this.dataLength);
+    return (width*1 / this.dataLength);
   }
 
-  getxScale(data) {
+  getSparkLineXScale() {
     this.xposScale
       .domain([0, this.dataLength - 1])
-      .range([0, this.getWidth()*1]);
-    return this.xposScale(data);
+      .range([0, this.cellWidth]);
+    return this.xposScale;
   }
 
-  getyScale(data, rowheight) {
+  getSparkLineYScale() {
     this.yposScale
       .domain([this.min, this.max])
-      .range([rowheight, 0]);
-    return this.yposScale(data);
+      .range([this.rowHeight, 0]);
+    return this.yposScale;
   }
 
+  getDataLength(){
+
+    return this.dataLength;
+  }
 
   getbinaryColor() {
 
+    console.log(this.colorRange)
     return this.colorRange;
   }
 
-  getthresholdValue() {
-
-    return this.threshold;
+  getDataInfo() {
+    console.log(this.dataInfo)
+    return this.dataInfo;
   }
 
-  getVerticalBarHeight(data, rowheight) {
-
-    if (this.min < this.threshold) {
-      this.verticalBarScale
-        .domain([this.min, this.max])
-        .range([0, rowheight / 2]);
-
-      this.verticalBarHeight = (rowheight / 2 - this.verticalBarScale(data));
-
-    } else {
-      this.verticalBarScale
-        .domain([this.min, this.max])
-        .range([0, rowheight]);
-
-      this.verticalBarHeight = this.verticalBarScale(data);
-    }
-
-    return this.verticalBarHeight;
-
+  getVerticalBarScale ()
+  {
+     this.verticalBarScale
+        .domain([this.min, this.max]);
+    return this.verticalBarScale;
   }
 
-  getyposVerticalBar(data, rowheight) {
 
-    if (this.min < this.threshold) {
-      this.ypositionVerticalBar = (data < this.threshold) ? (rowheight / 2) : rowheight / 2 - this.getVerticalBarHeight(data, rowheight);   // For positive and negative value
-    } else {
-      this.ypositionVerticalBar = rowheight - this.getVerticalBarHeight(data, rowheight);
-    }
 
-    return this.ypositionVerticalBar;
-  }
 
   getboxPlotData(data) {
 
     const minval_arr = Math.min.apply(Math, data);
     const maxval_arr = Math.max.apply(Math, data);
 
-    data.sort(numSort);
+    data.slice(0).sort(numSort);
     const q1 = this.boxPlotScale(d3.quantile(data, 0.25));
     const median = this.boxPlotScale(d3.quantile(data, 0.50));
     const q3 = this.boxPlotScale(d3.quantile(data, 0.75));

@@ -1615,7 +1615,7 @@ var HeatmapCellRenderer = (function () {
     function HeatmapCellRenderer() {
     }
     HeatmapCellRenderer.prototype.createSVG = function (col, context) {
-        var cellDimension = col.calculateCellDimension();
+        var cellDimension = col.calculateCellDimension(col.getWidth());
         var colorScale = col.getColor();
         var padding = context.option('rowPadding', 1);
         return {
@@ -1636,7 +1636,7 @@ var HeatmapCellRenderer = (function () {
         };
     };
     HeatmapCellRenderer.prototype.createHTML = function (col, context) {
-        var cellDimension = col.calculateCellDimension();
+        var cellDimension = col.calculateCellDimension(col.getWidth());
         var padding = context.option('rowPadding', 1);
         var colorScale = col.getColor();
         return {
@@ -1656,7 +1656,7 @@ var HeatmapCellRenderer = (function () {
         };
     };
     HeatmapCellRenderer.prototype.createCanvas = function (col, context) {
-        var cellDimension = col.calculateCellDimension();
+        var cellDimension = col.calculateCellDimension(col.getWidth());
         var padding = context.option('rowPadding', 1);
         var colorScale = col.getColor();
         return function (ctx, d, i) {
@@ -1675,17 +1675,21 @@ var SparklineCellRenderer = (function () {
     function SparklineCellRenderer() {
     }
     SparklineCellRenderer.prototype.createSVG = function (col, context) {
+        var xScale = col.getSparkLineXScale();
+        var yScale = col.getSparkLineYScale();
         return {
             template: "<g class=\"sparklinecell\"></g>",
             update: function (n, d, i) {
                 var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
                 var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line();
+                xScale.range([0, col.getWidth()]);
+                yScale.range([context.rowHeight(i), 0]);
                 path.enter().append('path');
                 path
                     .attr('d', function (d, i) {
                     line
-                        .x(function (d, i) { return col.getxScale(i); })
-                        .y(function (d, i) { return col.getyScale(d, context.rowHeight(i)); });
+                        .x(function (d, i) { return xScale(i); })
+                        .y(function (d, i) { return yScale(d); });
                     return line(d);
                 });
                 path.exit().remove();
@@ -1693,21 +1697,25 @@ var SparklineCellRenderer = (function () {
         };
     };
     SparklineCellRenderer.prototype.createCanvas = function (col, context) {
+        var xScale = col.getSparkLineXScale();
+        var yScale = col.getSparkLineYScale();
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             var xpos, ypos;
+            xScale.range([0, col.getWidth()]);
+            yScale.range([context.rowHeight(i), 0]);
             data.forEach(function (d, i) {
                 if (i === 0) {
-                    xpos = col.getxScale(i);
-                    ypos = col.getyScale(d, context.rowHeight(i));
+                    xpos = xScale(i);
+                    ypos = xScale(d);
                 }
                 else {
                     ctx.strokeStyle = 'black';
                     ctx.fillStyle = 'black';
                     ctx.beginPath();
                     ctx.moveTo(xpos, ypos);
-                    xpos = col.getxScale(i);
-                    ypos = col.getyScale(d, context.rowHeight(i));
+                    xpos = xScale(i);
+                    ypos = yScale(d);
                     ctx.lineTo(xpos, ypos);
                     ctx.stroke();
                     ctx.fill();
@@ -1721,58 +1729,81 @@ var ThresholdCellRenderer = (function () {
     function ThresholdCellRenderer() {
     }
     ThresholdCellRenderer.prototype.createSVG = function (col, context) {
-        var cellDimension = col.calculateCellDimension();
+        var cellDimension = col.calculateCellDimension(col.getWidth());
         var binaryColor = col.getbinaryColor();
         return {
             template: "<g class=\"thresholdcell\"></g>",
             update: function (n, d, i) {
                 var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
+                var dataInfo = col.getDataInfo();
                 rect.enter().append('rect');
                 rect
                     .attr({
-                    y: function (d, i) { return (d < col.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0; },
+                    y: function (d, i) { return (d < dataInfo.threshold) ? (context.rowHeight(i) / 2) : 0; },
                     x: function (d, i) { return (i * cellDimension); },
                     width: cellDimension,
                     height: function (d, i) { return (context.rowHeight(i)) / 2; },
-                    fill: function (d) { return (d < col.getthresholdValue()) ? binaryColor[0] : binaryColor[1]; }
+                    fill: function (d) { return (d < dataInfo.threshold) ? binaryColor[0] : binaryColor[1]; }
                 });
                 rect.exit().remove();
             }
         };
     };
     ThresholdCellRenderer.prototype.createCanvas = function (col, context) {
-        var cellDimension = col.calculateCellDimension();
+        var cellDimension = col.calculateCellDimension(col.getWidth());
         var binaryColor = col.getbinaryColor();
+        var dataInfo = col.getDataInfo();
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             data.forEach(function (d, i) {
                 ctx.beginPath();
                 var xpos = (i * cellDimension);
-                var ypos = (d < col.getthresholdValue()) ? (context.rowHeight(i) / 2) : 0;
-                ctx.fillStyle = (d < col.getthresholdValue()) ? binaryColor[0] : binaryColor[1];
+                var ypos = (d < dataInfo.threshold) ? (context.rowHeight(i) / 2) : 0;
+                ctx.fillStyle = (d < dataInfo.threshold) ? binaryColor[0] : binaryColor[1];
                 ctx.fillRect(xpos, ypos, cellDimension, context.rowHeight(i) / 2);
             });
         };
     };
     return ThresholdCellRenderer;
 }());
+function verticalBarScale(dataInfo, scale, rowHeight) {
+    var scale = (dataInfo.min < dataInfo.threshold) ? (scale.range([0, rowHeight / 2])) : scale.range([0, rowHeight]);
+    return (scale);
+}
+function verticalBarHeight(dataInfo, cellData, scale, rowHeight) {
+    return (dataInfo.min < dataInfo.threshold) ? (rowHeight / 2 - scale(cellData)) : scale(cellData);
+}
+function verticalBarYpos(dataInfo, cellData, scale, rowHeight) {
+    var verticalBarYpos;
+    if (dataInfo.min < dataInfo.threshold) {
+        verticalBarYpos = (cellData < dataInfo.threshold) ? (rowHeight / 2) : rowHeight / 2 - scale(cellData); // For positive and negative value
+    }
+    else {
+        verticalBarYpos = rowHeight - scale(cellData);
+    }
+    return verticalBarYpos;
+}
 var VerticalBarCellRenderer = (function () {
     function VerticalBarCellRenderer() {
     }
     VerticalBarCellRenderer.prototype.createSVG = function (col, context) {
         var colorScale = col.getColor();
-        var cellDimension = col.calculateCellDimension();
+        var cellDimension = col.calculateCellDimension(col.getWidth());
+        var defaultScale = col.getVerticalBarScale();
+        var dataInfo = col.getDataInfo();
+        console.log(dataInfo.threshold, dataInfo.min);
         return {
             template: "<g class=\"verticalbarcell\"></g>",
             update: function (n, d, i) {
+                var scale = verticalBarScale(dataInfo, defaultScale, context.rowHeight(i));
                 var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
                 rect.enter().append('rect');
                 rect
                     .attr({
-                    y: function (d, i) { return col.getyposVerticalBar(d, context.rowHeight(i)); },
-                    x: function (d, i) { return (i * cellDimension); },
+                    y: function (d, k) { return verticalBarYpos(dataInfo, d, scale, context.rowHeight(i)); },
+                    x: function (d, k) { return (k * cellDimension); },
                     width: cellDimension,
-                    height: function (d, i) { return col.getVerticalBarHeight(d, context.rowHeight(i)); },
+                    height: function (d, k) { return verticalBarHeight(dataInfo, d, scale, context.rowHeight(i)); },
                     fill: function (d, i) { return colorScale(d); }
                 });
                 rect.exit().remove();
@@ -1781,14 +1812,17 @@ var VerticalBarCellRenderer = (function () {
     };
     VerticalBarCellRenderer.prototype.createCanvas = function (col, context) {
         var colorScale = col.getColor();
-        var cellDimension = col.calculateCellDimension();
+        var cellDimension = col.calculateCellDimension(col.getWidth());
+        var defaultScale = col.getVerticalBarScale();
+        var dataInfo = col.getDataInfo();
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
+            var scale = verticalBarScale(dataInfo, defaultScale, context.rowHeight(i));
             data.forEach(function (d, i) {
                 var xpos = (i * cellDimension);
-                var ypos = col.getyposVerticalBar(d, context.rowHeight(i));
+                var ypos = verticalBarYpos(dataInfo, d, scale, context.rowHeight(i));
                 ctx.fillStyle = colorScale(d);
-                ctx.fillRect(xpos, ypos, cellDimension, col.getVerticalBarHeight(d, context.rowHeight(i)));
+                ctx.fillRect(xpos, ypos, cellDimension, verticalBarHeight(dataInfo, d, scale, context.rowHeight(i)));
             });
         };
     };
@@ -5375,17 +5409,22 @@ var MultiValueColumn = (function (_super) {
         _this.dataLength = desc.dataLength;
         _this.threshold = desc.threshold || 0;
         _this.sortBy = desc.sort || 'min';
-        _this.verticalBarHeight = 13;
+        _this.cellWidth = _this.getWidth() || 100;
+        _this.rowHeight = 13;
+        _this.dataInfo = { min: _this.min,
+            max: _this.max,
+            threshold: _this.threshold,
+            sort: _this.sortBy };
         _this.rendererInfo.rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },
             { type: 'boxplot', label: 'Boxplot' },
             { type: 'sparkline', label: 'Sparkline' },
             { type: 'threshold', label: 'Threshold' },
             { type: 'verticalbar', label: 'VerticalBar' }];
-        _this.defineColor();
+        _this.defineColorRange();
         _this.boxPlotWidth();
         return _this;
     }
-    MultiValueColumn.prototype.defineColor = function () {
+    MultiValueColumn.prototype.defineColorRange = function () {
         if (this.min < 0) {
             this.colorScale
                 .domain([this.min, 0, this.max])
@@ -5400,7 +5439,7 @@ var MultiValueColumn = (function (_super) {
     MultiValueColumn.prototype.boxPlotWidth = function () {
         this.boxPlotScale
             .domain([this.min, this.max])
-            .range([0, this.getWidth()]);
+            .range([0, 1 * this.getWidth()]);
     };
     MultiValueColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         var a_val = (this.getValue(a, aIndex)).sort(numSort);
@@ -5412,55 +5451,41 @@ var MultiValueColumn = (function (_super) {
     MultiValueColumn.prototype.getColor = function () {
         return this.colorScale;
     };
-    MultiValueColumn.prototype.calculateCellDimension = function () {
-        return (this.getWidth() * 1 / this.dataLength);
+    MultiValueColumn.prototype.calculateCellDimension = function (width) {
+        return (width * 1 / this.dataLength);
     };
-    MultiValueColumn.prototype.getxScale = function (data) {
+    MultiValueColumn.prototype.getSparkLineXScale = function () {
         this.xposScale
             .domain([0, this.dataLength - 1])
-            .range([0, this.getWidth() * 1]);
-        return this.xposScale(data);
+            .range([0, this.cellWidth]);
+        return this.xposScale;
     };
-    MultiValueColumn.prototype.getyScale = function (data, rowheight) {
+    MultiValueColumn.prototype.getSparkLineYScale = function () {
         this.yposScale
             .domain([this.min, this.max])
-            .range([rowheight, 0]);
-        return this.yposScale(data);
+            .range([this.rowHeight, 0]);
+        return this.yposScale;
+    };
+    MultiValueColumn.prototype.getDataLength = function () {
+        return this.dataLength;
     };
     MultiValueColumn.prototype.getbinaryColor = function () {
+        console.log(this.colorRange);
         return this.colorRange;
     };
-    MultiValueColumn.prototype.getthresholdValue = function () {
-        return this.threshold;
+    MultiValueColumn.prototype.getDataInfo = function () {
+        console.log(this.dataInfo);
+        return this.dataInfo;
     };
-    MultiValueColumn.prototype.getVerticalBarHeight = function (data, rowheight) {
-        if (this.min < this.threshold) {
-            this.verticalBarScale
-                .domain([this.min, this.max])
-                .range([0, rowheight / 2]);
-            this.verticalBarHeight = (rowheight / 2 - this.verticalBarScale(data));
-        }
-        else {
-            this.verticalBarScale
-                .domain([this.min, this.max])
-                .range([0, rowheight]);
-            this.verticalBarHeight = this.verticalBarScale(data);
-        }
-        return this.verticalBarHeight;
-    };
-    MultiValueColumn.prototype.getyposVerticalBar = function (data, rowheight) {
-        if (this.min < this.threshold) {
-            this.ypositionVerticalBar = (data < this.threshold) ? (rowheight / 2) : rowheight / 2 - this.getVerticalBarHeight(data, rowheight); // For positive and negative value
-        }
-        else {
-            this.ypositionVerticalBar = rowheight - this.getVerticalBarHeight(data, rowheight);
-        }
-        return this.ypositionVerticalBar;
+    MultiValueColumn.prototype.getVerticalBarScale = function () {
+        this.verticalBarScale
+            .domain([this.min, this.max]);
+        return this.verticalBarScale;
     };
     MultiValueColumn.prototype.getboxPlotData = function (data) {
         var minval_arr = Math.min.apply(Math, data);
         var maxval_arr = Math.max.apply(Math, data);
-        data.sort(numSort);
+        data.slice(0).sort(numSort);
         var q1 = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.25));
         var median = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.50));
         var q3 = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.75));
