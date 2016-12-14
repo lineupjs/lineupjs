@@ -1675,21 +1675,20 @@ var SparklineCellRenderer = (function () {
     function SparklineCellRenderer() {
     }
     SparklineCellRenderer.prototype.createSVG = function (col, context) {
-        var xScale = col.getSparkLineXScale();
+        var xScale = col.getSparkLineXScale().range([0, col.getWidth()]);
         var yScale = col.getSparkLineYScale();
         return {
             template: "<g class=\"sparklinecell\"></g>",
             update: function (n, d, i) {
                 var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
                 var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line();
-                xScale.range([0, col.getWidth()]);
                 yScale.range([context.rowHeight(i), 0]);
                 path.enter().append('path');
                 path
                     .attr('d', function (d, i) {
                     line
-                        .x(function (d, i) { return xScale(i); })
-                        .y(function (d, i) { return yScale(d); });
+                        .x(function (d, j) { return xScale(j); })
+                        .y(function (d, j) { return yScale(d); });
                     return line(d);
                 });
                 path.exit().remove();
@@ -1731,11 +1730,11 @@ var ThresholdCellRenderer = (function () {
     ThresholdCellRenderer.prototype.createSVG = function (col, context) {
         var cellDimension = col.calculateCellDimension(col.getWidth());
         var binaryColor = col.getbinaryColor();
+        var dataInfo = col.getDataInfo();
         return {
             template: "<g class=\"thresholdcell\"></g>",
             update: function (n, d, i) {
                 var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
-                var dataInfo = col.getDataInfo();
                 rect.enter().append('rect');
                 rect
                     .attr({
@@ -1905,8 +1904,8 @@ var UpsetCellRenderer = (function () {
     function UpsetCellRenderer() {
     }
     UpsetCellRenderer.prototype.createSVG = function (col, context) {
-        var upsetColumn = col;
-        var celldimension = upsetColumn.cellDimension();
+        var celldimension = col.cellDimension();
+        var binaryValue = col.getBinaryValue();
         return {
             template: "<g class=\"upsetcell\"></g>",
             update: function (n, d, i) {
@@ -1918,7 +1917,7 @@ var UpsetCellRenderer = (function () {
                     cx: function (d, i) { return (i * celldimension) + (celldimension / 2); },
                     r: (celldimension / 4),
                     class: 'upsetcircle',
-                    opacity: function (d) { return (d === 1) ? 1 : 0.1; }
+                    opacity: function (d) { return (d === binaryValue) ? 1 : 0.1; }
                 });
                 circle.exit().remove();
                 var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
@@ -1927,7 +1926,7 @@ var UpsetCellRenderer = (function () {
                     path.enter().append('path');
                     path
                         .attr('d', function (d, i) {
-                        var pathcordinate = upsetColumn.calculatePath(d);
+                        var pathcordinate = col.calculatePath(d);
                         return 'M' + (pathcordinate.left) + ',' + (context.rowHeight(i) / 2) + 'L' + (pathcordinate.right) + ',' + (context.rowHeight(i) / 2);
                     })
                         .attr('class', 'upsetpath');
@@ -1936,14 +1935,14 @@ var UpsetCellRenderer = (function () {
         };
     };
     UpsetCellRenderer.prototype.createCanvas = function (col, context) {
-        var upsetColumn = col;
-        var celldimension = upsetColumn.cellDimension();
+        var celldimension = col.cellDimension();
+        var binaryValue = col.getBinaryValue();
         return function (ctx, d, i) {
             // Circle
             var data = col.getValue(d.v, d.dataIndex);
             var countcategory = data.filter(function (x) { return x === 1; }).length;
             var radius = (context.rowHeight(i) / 3);
-            var pathcordinate = upsetColumn.calculatePath(data);
+            var pathcordinate = col.calculatePath(data);
             if (countcategory > 1) {
                 ctx.fillStyle = 'black';
                 ctx.strokeStyle = 'black';
@@ -1959,7 +1958,7 @@ var UpsetCellRenderer = (function () {
                 ctx.fillStyle = 'black';
                 ctx.strokeStyle = 'black';
                 ctx.beginPath();
-                ctx.globalAlpha = (d === 1) ? 1 : 0.1;
+                ctx.globalAlpha = (d === binaryValue) ? 1 : 0.1;
                 ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
                 ctx.fill();
                 ctx.stroke();
@@ -1979,8 +1978,8 @@ var CircleColumnCellRenderer = (function () {
                 circle.enter().append('circle');
                 circle
                     .attr({
-                    cy: function (d, i) { return (context.rowHeight(i) / 2); },
-                    cx: function (d, i) { return (col.getWidth() / 2); },
+                    cy: (context.rowHeight(i) / 2),
+                    cx: (col.getWidth() / 2),
                     r: (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex),
                     class: 'circlecolumn'
                 });
@@ -5461,14 +5460,12 @@ var MultiValueColumn = (function (_super) {
     };
     MultiValueColumn.prototype.getSparkLineXScale = function () {
         this.xposScale
-            .domain([0, this.dataLength - 1])
-            .range([0, this.cellWidth]);
+            .domain([0, this.dataLength - 1]);
         return this.xposScale;
     };
     MultiValueColumn.prototype.getSparkLineYScale = function () {
         this.yposScale
-            .domain([this.min, this.max])
-            .range([this.rowHeight, 0]);
+            .domain([this.min, this.max]);
         return this.yposScale;
     };
     MultiValueColumn.prototype.getDataLength = function () {
@@ -5854,11 +5851,6 @@ var ABodyDOMRenderer = (function (_super) {
 
 
 
-// import HeatmapColumn from '../model/HeatmapColumn11';
-// import SparklineColumn from '../model/SparklineColumn11';
-// import BoxplotColumn from   '../model/BoxplotColumn11';
-// import ThresholdColumn from '../model/ThresholdColumn11';
-// import VerticalBarColumn from '../model/VerticalBarColumn11';
 
 
 
@@ -6114,38 +6106,14 @@ var HeaderRenderer = (function () {
             provider.takeSnapshot(d);
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
-        //Heatmap Sort
+        //MultiValue Sort
         $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__["a" /* default */]; }).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
             __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["sortDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
-        //
-        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-        //   sortDialogSparkline(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-        //   (<MouseEvent>d3.event).stopPropagation();
-        // });
-        //
-        //
-        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-        //   sortDialogBoxplot(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-        //   (<MouseEvent>d3.event).stopPropagation();
-        // });
-        //
-        //
-        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-        //   sortDialogThresholdBar(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-        //   (<MouseEvent>d3.event).stopPropagation();
-        // });
-        //
-        //
-        // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-        //
-        //   sortDialogVerticalBar(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-        //   (<MouseEvent>d3.event).stopPropagation();
-        // });
         //Renderer Change
-        $node.filter(function (d) { return d instanceof __WEBPACK_IMPORTED_MODULE_13__model_MultiValueColumn__["a" /* default */] || d instanceof __WEBPACK_IMPORTED_MODULE_6__model_NumberColumn__["c" /* default */]; }).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
-            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["renderertypedialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
+        $node.filter(function (d) { return d.getRendererList().length > 1; }).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_14__ui_dialogs__["rendererTypeDialog"])(d, __WEBPACK_IMPORTED_MODULE_0_d3__["select"](this.parentNode.parentNode));
             __WEBPACK_IMPORTED_MODULE_0_d3__["event"].stopPropagation();
         });
         //edit link
@@ -6455,10 +6423,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* harmony export (immutable) */ exports["dialogForm"] = dialogForm;
 /* harmony export (immutable) */ exports["sortdialogForm"] = sortdialogForm;
 /* harmony export (immutable) */ exports["makePopup"] = makePopup;
-/* harmony export (immutable) */ exports["makesortPopup"] = makesortPopup;
+/* harmony export (immutable) */ exports["makeSortPopup"] = makeSortPopup;
 /* harmony export (immutable) */ exports["openRenameDialog"] = openRenameDialog;
 /* harmony export (immutable) */ exports["openEditLinkDialog"] = openEditLinkDialog;
-/* harmony export (immutable) */ exports["renderertypedialog"] = renderertypedialog;
+/* harmony export (immutable) */ exports["rendererTypeDialog"] = rendererTypeDialog;
 /* harmony export (immutable) */ exports["sortDialog"] = sortDialog;
 /* harmony export (immutable) */ exports["openSearchDialog"] = openSearchDialog;
 /* harmony export (immutable) */ exports["openEditWeightsDialog"] = openEditWeightsDialog;
@@ -6525,7 +6493,7 @@ function makePopup(attachement, title, body) {
     }
     return $popup;
 }
-function makesortPopup(attachement, title, body) {
+function makeSortPopup(attachement, title, body) {
     var pos = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_3__utils__["offset"])(attachement.node());
     var $popup = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5_d3__["select"])('body').append('div')
         .attr({
@@ -6597,20 +6565,19 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
     });
 }
 // Renderer type change
-function renderertypedialog(column, $header) {
-    var renderertype = column.getrendererType();
+function rendererTypeDialog(column, $header) {
+    var rendererType = column.getrendererType();
     var rendererTypelist = column.getRendererList();
-    var popup = makesortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {
-        return "<input type=\"radio\" name=\"renderertype\" value=" + d.type + "  " + ((renderertype === d.type) ? 'checked' : '') + "> " + d.label + "<br>";
+    var popup = makeSortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {
+        return "<input type=\"radio\" name=\"renderertype\" value=" + d.type + "  " + ((rendererType === d.type) ? 'checked' : '') + "> " + d.label + "<br>";
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
     }
-    var that;
     var renderercontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name="renderertype"]');
     renderercontent.on('change', function () {
-        that = this;
-        renderertype = that.value;
+        var that = this;
+        rendererType = that.value;
         column.setRendererType(that.value);
     });
     __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
@@ -6626,16 +6593,15 @@ function sortDialog(column, $header) {
     var rank = column.getUserSortBy();
     var valuestring = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
     var sortlabel = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
-    var popup = makesortPopup($header, 'Sort By <br>', valuestring.map(function (d, i) {
+    var popup = makeSortPopup($header, 'Sort By <br>', valuestring.map(function (d, i) {
         return "<input type=\"radio\" name=\"multivaluesort\" value=" + d + "  " + ((rank === d) ? 'checked' : '') + " > " + sortlabel[i] + " <br>";
     }).join('\n'));
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
     }
-    var that;
     var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=multivaluesort]');
     sortcontent.on('change', function () {
-        that = this;
+        var that = this;
         rank = that.value;
         column.setUserSortBy(rank);
     });
@@ -8325,6 +8291,7 @@ var UpsetColumn = (function (_super) {
         var _this = _super.call(this, id, desc) || this;
         _this.sortCriteria = desc.sort || 'min';
         _this.datalength = desc.dataLength;
+        _this.setBinary = 1;
         return _this;
     }
     UpsetColumn.prototype.compare = function (a, b, aIndex, bIndex) {
@@ -8350,6 +8317,9 @@ var UpsetColumn = (function (_super) {
         var right_x = ((__WEBPACK_IMPORTED_MODULE_0_d3__["max"](catindexes[0]) * this.cellDimension()) + (this.cellDimension() / 2));
         var pathdata = { left: left_x, right: right_x };
         return pathdata;
+    };
+    UpsetColumn.prototype.getBinaryValue = function () {
+        return this.setBinary;
     };
     return UpsetColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));

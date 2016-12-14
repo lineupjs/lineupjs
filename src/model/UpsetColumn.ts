@@ -51,11 +51,13 @@ export class CustomSortCalculation {
 export default class UpsetColumn extends ValueColumn<number[] > {
   private sortCriteria;
   private datalength;
+  private setBinary;
 
   constructor(id: string, desc: any) {
     super(id, desc);
     this.sortCriteria = (<any>desc).sort || 'min';
     this.datalength = (<any>desc.dataLength);
+    this.setBinary = 1;
 
   }
 
@@ -91,6 +93,11 @@ export default class UpsetColumn extends ValueColumn<number[] > {
 
     return pathdata;
 
+
+  }
+
+  getBinaryValue() {
+    return this.setBinary;
 
   }
 

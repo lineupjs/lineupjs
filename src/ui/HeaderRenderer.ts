@@ -13,11 +13,6 @@ import CategoricalColumn, {isCategoricalColumn} from '../model/CategoricalColumn
 import RankColumn from '../model/RankColumn';
 import StackColumn, {createDesc as createStackDesc} from '../model/StackColumn';
 import LinkColumn from '../model/LinkColumn';
-// import HeatmapColumn from '../model/HeatmapColumn11';
-// import SparklineColumn from '../model/SparklineColumn11';
-// import BoxplotColumn from   '../model/BoxplotColumn11';
-// import ThresholdColumn from '../model/ThresholdColumn11';
-// import VerticalBarColumn from '../model/VerticalBarColumn11';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
 import MultiValueColumn from '../model/MultiValueColumn';
@@ -30,11 +25,7 @@ import {
   openRenameDialog,
   openSearchDialog,
   sortDialog,
-  // sortDialogSparkline,
-  // sortDialogBoxplot,
-  // sortDialogVerticalBar,
-  // sortDialogThresholdBar,
-  renderertypedialog
+  rendererTypeDialog
 
 } from '../ui_dialogs';
 
@@ -87,7 +78,6 @@ function countMultiLevel(c: Column): number {
   }
   return 1;
 }
-
 
 
 export default class HeaderRenderer {
@@ -343,40 +333,15 @@ export default class HeaderRenderer {
       (<MouseEvent>d3.event).stopPropagation();
     });
 
-    //Heatmap Sort
+    //MultiValue Sort
     $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
       sortDialog(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
       (<MouseEvent>d3.event).stopPropagation();
     });
-    //
-    // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-    //   sortDialogSparkline(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-    //   (<MouseEvent>d3.event).stopPropagation();
-    // });
-    //
-    //
-    // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-    //   sortDialogBoxplot(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-    //   (<MouseEvent>d3.event).stopPropagation();
-    // });
-    //
-    //
-    // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-    //   sortDialogThresholdBar(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-    //   (<MouseEvent>d3.event).stopPropagation();
-    // });
-    //
-    //
-    // $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-    //
-    //   sortDialogVerticalBar(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
-    //   (<MouseEvent>d3.event).stopPropagation();
-    // });
-
 
     //Renderer Change
-    $node.filter((d) => d instanceof MultiValueColumn || d instanceof NumberColumn).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
-      renderertypedialog(<Column>d, d3.select(this.parentNode.parentNode));
+    $node.filter((d) => d.getRendererList().length > 1).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
+      rendererTypeDialog(<Column>d, d3.select(this.parentNode.parentNode));
       (<MouseEvent>d3.event).stopPropagation();
     });
 

@@ -83,7 +83,7 @@ export function makePopup(attachement: Selection<any>, title: string, body: stri
 
 }
 
-export function makesortPopup(attachement: Selection<any>, title: string, body: string) {
+export function makeSortPopup(attachement: Selection<any>, title: string, body: string) {
   var pos = offset(<Element>attachement.node());
   var $popup = select('body').append('div')
     .attr({
@@ -177,12 +177,12 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 
 
 // Renderer type change
-export function renderertypedialog(column: Column, $header: d3.Selection<Column>) {
-  var renderertype = column.getrendererType();
+export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>) {
+  var rendererType = column.getrendererType();
   const rendererTypelist = column.getRendererList();
 
-  var popup = makesortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {
-    return `<input type="radio" name="renderertype" value=${d.type}  ${(renderertype === d.type) ? 'checked' : ''}> ${d.label}<br>`;
+  var popup = makeSortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {
+    return `<input type="radio" name="renderertype" value=${d.type}  ${(rendererType === d.type) ? 'checked' : ''}> ${d.label}<br>`;
 
   }).join('\n'));
 
@@ -192,12 +192,12 @@ export function renderertypedialog(column: Column, $header: d3.Selection<Column>
 
   }
 
-  var that;
+
   var renderercontent = d3.selectAll('input[name="renderertype"]');
 
   renderercontent.on('change', function () {
-    that = this;
-    renderertype = that.value;
+    var that = this;
+    rendererType = that.value;
     column.setRendererType(that.value);
 
   });
@@ -219,7 +219,7 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
   const valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
   const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
 
-  var popup = makesortPopup($header, 'Sort By <br>', valuestring.map(function (d, i) {
+  var popup = makeSortPopup($header, 'Sort By <br>', valuestring.map(function (d, i) {
     return `<input type="radio" name="multivaluesort" value=${d}  ${(rank === d) ? 'checked' : ''} > ${sortlabel[i]} <br>`;
 
   }).join('\n'));
@@ -228,11 +228,9 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
     return this === (<any>d3.event).target;
   }
 
-  var that;
-
   var sortcontent = d3.selectAll('input[name=multivaluesort]');
   sortcontent.on('change', function () {
-    that = this;
+    var that = this;
     rank = that.value;
     column.setUserSortBy(rank);
 

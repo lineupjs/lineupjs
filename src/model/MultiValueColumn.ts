@@ -151,15 +151,13 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   getSparkLineXScale() {
     this.xposScale
-      .domain([0, this.dataLength - 1])
-      .range([0, this.cellWidth]);
+      .domain([0, this.dataLength - 1]);
     return this.xposScale;
   }
 
   getSparkLineYScale() {
     this.yposScale
-      .domain([this.min, this.max])
-      .range([this.rowHeight, 0]);
+      .domain([this.min, this.max]);
     return this.yposScale;
   }
 
