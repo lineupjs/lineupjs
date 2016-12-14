@@ -54,6 +54,20 @@ function numSort(a, b) {
   return a - b;
 }
 
+enum Sort {
+
+  min, max, median, q1, q3
+}
+
+
+interface boxPlotData {
+
+  min: number;
+  max: number;
+  median: number;
+  q1: number;
+  q3: number;
+}
 
 export default class MultiValueColumn extends ValueColumn<number[] > {
   private sortBy;
@@ -81,12 +95,14 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     this.dataLength = (<any>desc).dataLength;
     this.threshold = (<any>desc).threshold || 0;
     this.sortBy = (<any>desc.sort) || 'min';
-    this.cellWidth = this.getWidth()|| 100;
+    this.cellWidth = this.getWidth() || 100;
     this.rowHeight = 13;
-    this.dataInfo ={min:this.min,
-                    max:this.max,
-                    threshold:this.threshold,
-                    sort:this.sortBy};
+    this.dataInfo = {
+      min: this.min,
+      max: this.max,
+      threshold: this.threshold,
+      sort: this.sortBy
+    };
     this.rendererInfo.rendererList = [{type: 'heatmapcustom', label: 'Heatmap'},
       {type: 'boxplot', label: 'Boxplot'},
       {type: 'sparkline', label: 'Sparkline'},
@@ -94,7 +110,6 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
       {type: 'verticalbar', label: 'VerticalBar'}];
 
     this.defineColorRange();
-    this.boxPlotWidth();
 
   }
 
@@ -110,13 +125,6 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
         .domain([this.min, this.max])
         .range(['white', this.colorRange[1]]);
     }
-  }
-
-  private boxPlotWidth() {
-    this.boxPlotScale
-      .domain([this.min, this.max])
-      .range([0, 1*this.getWidth()])
-
   }
 
 
@@ -138,7 +146,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   calculateCellDimension(width) {
 
 
-    return (width*1 / this.dataLength);
+    return (width * 1 / this.dataLength);
   }
 
   getSparkLineXScale() {
@@ -155,44 +163,58 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     return this.yposScale;
   }
 
-  getDataLength(){
+  getDataLength() {
 
     return this.dataLength;
   }
 
   getbinaryColor() {
 
-    console.log(this.colorRange)
+
     return this.colorRange;
   }
 
   getDataInfo() {
-    console.log(this.dataInfo)
+
     return this.dataInfo;
   }
 
-  getVerticalBarScale ()
-  {
-     this.verticalBarScale
-        .domain([this.min, this.max]);
+  getVerticalBarScale() {
+    this.verticalBarScale
+      .domain([this.min, this.max]);
     return this.verticalBarScale;
   }
 
+  getboxPlotScale(width) {
+    this.boxPlotScale
+      .domain([this.min, this.max])
+      .range([0, 1 * width])
+
+    return this.boxPlotScale;
+  }
 
 
+  getboxPlotData(data, scale) {
 
-  getboxPlotData(data) {
+    var boxPlotData = <boxPlotData>{};
 
     const minval_arr = Math.min.apply(Math, data);
     const maxval_arr = Math.max.apply(Math, data);
+    let sorteddata = data.slice().sort(numSort);
 
-    data.slice(0).sort(numSort);
-    const q1 = this.boxPlotScale(d3.quantile(data, 0.25));
-    const median = this.boxPlotScale(d3.quantile(data, 0.50));
-    const q3 = this.boxPlotScale(d3.quantile(data, 0.75));
-    const min_val = this.boxPlotScale(minval_arr);
-    const max_val = this.boxPlotScale(maxval_arr);
-    const boxdata = {min: min_val, median: median, q1: q1, q3: q3, max: max_val};
+    boxPlotData.q1 = scale(d3.quantile(sorteddata, 0.25));
+    boxPlotData.median = scale(d3.quantile(sorteddata, 0.50));
+    boxPlotData.q3 = scale(d3.quantile(sorteddata, 0.75));
+    boxPlotData.min = scale(minval_arr);
+    boxPlotData.max = scale(maxval_arr);
+
+    let boxdata = {
+      min: boxPlotData.min,
+      median: boxPlotData.median,
+      q1: boxPlotData.q1,
+      q3: boxPlotData.q3,
+      max: boxPlotData.max
+    };
 
     return (boxdata);
 
@@ -231,8 +253,6 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
     this.sortByMe(ascending);
   }
-
-
 
 
   getRendererList() {

@@ -377,7 +377,7 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
     const cellDimension = col.calculateCellDimension(col.getWidth());
     const defaultScale = col.getVerticalBarScale();
     const dataInfo = col.getDataInfo();
-    console.log(dataInfo.threshold,dataInfo.min)
+
     return {
 
       template: `<g class="verticalbarcell"></g>`,
@@ -426,12 +426,13 @@ class BoxplotCellRenderer implements ICellRendererFactory {
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
 
     const padding = context.option('rowPadding', 1);
+    const scale = col.getboxPlotScale(col.getWidth());
 
     return {
 
       template: `<g class="boxplotcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex));
+        const boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex),scale);
         const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
 
         rect.enter().append('rect');
@@ -470,10 +471,11 @@ class BoxplotCellRenderer implements ICellRendererFactory {
   createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     const padding = context.option('rowPadding', 1);
+    const scale = col.getboxPlotScale(col.getWidth());
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
-      const boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex));
+      const boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex),scale);
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();

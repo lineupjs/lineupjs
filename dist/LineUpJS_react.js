@@ -1791,7 +1791,6 @@ var VerticalBarCellRenderer = (function () {
         var cellDimension = col.calculateCellDimension(col.getWidth());
         var defaultScale = col.getVerticalBarScale();
         var dataInfo = col.getDataInfo();
-        console.log(dataInfo.threshold, dataInfo.min);
         return {
             template: "<g class=\"verticalbarcell\"></g>",
             update: function (n, d, i) {
@@ -1833,10 +1832,11 @@ var BoxplotCellRenderer = (function () {
     }
     BoxplotCellRenderer.prototype.createSVG = function (col, context) {
         var padding = context.option('rowPadding', 1);
+        var scale = col.getboxPlotScale(col.getWidth());
         return {
             template: "<g class=\"boxplotcell\"></g>",
             update: function (n, d, i) {
-                var boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex));
+                var boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex), scale);
                 var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
                 rect.enter().append('rect');
                 rect
@@ -1868,9 +1868,10 @@ var BoxplotCellRenderer = (function () {
     };
     BoxplotCellRenderer.prototype.createCanvas = function (col, context) {
         var padding = context.option('rowPadding', 1);
+        var scale = col.getboxPlotScale(col.getWidth());
         return function (ctx, d, i) {
             // Rectangle
-            var boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex));
+            var boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex), scale);
             ctx.fillStyle = '#e0e0e0';
             ctx.strokeStyle = 'black';
             ctx.beginPath();
@@ -3560,13 +3561,13 @@ function models() {
         actions: __WEBPACK_IMPORTED_MODULE_16__DummyColumn__["a" /* default */],
         annotate: __WEBPACK_IMPORTED_MODULE_5__AnnotateColumn__["a" /* default */],
         selection: __WEBPACK_IMPORTED_MODULE_12__SelectionColumn__["a" /* default */],
-        heatmapcustom: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
-        sparkline: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
         max: __WEBPACK_IMPORTED_MODULE_9__MaxColumn__["a" /* default */],
         min: __WEBPACK_IMPORTED_MODULE_8__MinColumn__["a" /* default */],
         mean: __WEBPACK_IMPORTED_MODULE_10__MeanColumn__["a" /* default */],
         script: __WEBPACK_IMPORTED_MODULE_13__ScriptColumn__["a" /* default */],
         nested: __WEBPACK_IMPORTED_MODULE_15__NestedColumn__["a" /* default */],
+        heatmapcustom: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
+        sparkline: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
         threshold: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
         verticalbar: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
         boxplot: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
@@ -5394,6 +5395,14 @@ var CustomSortCalculation = (function () {
 function numSort(a, b) {
     return a - b;
 }
+var Sort;
+(function (Sort) {
+    Sort[Sort["min"] = 0] = "min";
+    Sort[Sort["max"] = 1] = "max";
+    Sort[Sort["median"] = 2] = "median";
+    Sort[Sort["q1"] = 3] = "q1";
+    Sort[Sort["q3"] = 4] = "q3";
+})(Sort || (Sort = {}));
 var MultiValueColumn = (function (_super) {
     __extends(MultiValueColumn, _super);
     function MultiValueColumn(id, desc) {
@@ -5411,17 +5420,18 @@ var MultiValueColumn = (function (_super) {
         _this.sortBy = desc.sort || 'min';
         _this.cellWidth = _this.getWidth() || 100;
         _this.rowHeight = 13;
-        _this.dataInfo = { min: _this.min,
+        _this.dataInfo = {
+            min: _this.min,
             max: _this.max,
             threshold: _this.threshold,
-            sort: _this.sortBy };
+            sort: _this.sortBy
+        };
         _this.rendererInfo.rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },
             { type: 'boxplot', label: 'Boxplot' },
             { type: 'sparkline', label: 'Sparkline' },
             { type: 'threshold', label: 'Threshold' },
             { type: 'verticalbar', label: 'VerticalBar' }];
         _this.defineColorRange();
-        _this.boxPlotWidth();
         return _this;
     }
     MultiValueColumn.prototype.defineColorRange = function () {
@@ -5435,11 +5445,6 @@ var MultiValueColumn = (function (_super) {
                 .domain([this.min, this.max])
                 .range(['white', this.colorRange[1]]);
         }
-    };
-    MultiValueColumn.prototype.boxPlotWidth = function () {
-        this.boxPlotScale
-            .domain([this.min, this.max])
-            .range([0, 1 * this.getWidth()]);
     };
     MultiValueColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         var a_val = (this.getValue(a, aIndex)).sort(numSort);
@@ -5470,11 +5475,9 @@ var MultiValueColumn = (function (_super) {
         return this.dataLength;
     };
     MultiValueColumn.prototype.getbinaryColor = function () {
-        console.log(this.colorRange);
         return this.colorRange;
     };
     MultiValueColumn.prototype.getDataInfo = function () {
-        console.log(this.dataInfo);
         return this.dataInfo;
     };
     MultiValueColumn.prototype.getVerticalBarScale = function () {
@@ -5482,16 +5485,29 @@ var MultiValueColumn = (function (_super) {
             .domain([this.min, this.max]);
         return this.verticalBarScale;
     };
-    MultiValueColumn.prototype.getboxPlotData = function (data) {
+    MultiValueColumn.prototype.getboxPlotScale = function (width) {
+        this.boxPlotScale
+            .domain([this.min, this.max])
+            .range([0, 1 * width]);
+        return this.boxPlotScale;
+    };
+    MultiValueColumn.prototype.getboxPlotData = function (data, scale) {
+        var boxPlotData = {};
         var minval_arr = Math.min.apply(Math, data);
         var maxval_arr = Math.max.apply(Math, data);
-        data.slice(0).sort(numSort);
-        var q1 = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.25));
-        var median = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.50));
-        var q3 = this.boxPlotScale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](data, 0.75));
-        var min_val = this.boxPlotScale(minval_arr);
-        var max_val = this.boxPlotScale(maxval_arr);
-        var boxdata = { min: min_val, median: median, q1: q1, q3: q3, max: max_val };
+        var sorteddata = data.slice().sort(numSort);
+        boxPlotData.q1 = scale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](sorteddata, 0.25));
+        boxPlotData.median = scale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](sorteddata, 0.50));
+        boxPlotData.q3 = scale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](sorteddata, 0.75));
+        boxPlotData.min = scale(minval_arr);
+        boxPlotData.max = scale(maxval_arr);
+        var boxdata = {
+            min: boxPlotData.min,
+            median: boxPlotData.median,
+            q1: boxPlotData.q1,
+            q3: boxPlotData.q3,
+            max: boxPlotData.max
+        };
         return (boxdata);
     };
     MultiValueColumn.prototype.getUserSortBy = function () {
