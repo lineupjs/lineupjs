@@ -452,11 +452,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
   }
 
-  getrendererType(): string {
+  getRendererType(): string {
     if (this.getCompressed()) {
       return NumberColumn.COMPRESSED_RENDERER;
     }
-    return super.getrendererType();
+    return super.getRendererType();
   }
 
 

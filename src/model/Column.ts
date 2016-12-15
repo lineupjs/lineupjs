@@ -460,7 +460,7 @@ export default class Column extends AEventDispatcher {
    * determines the renderer type that should be used to render this column. By default the same type as the column itself
    * @return {string}
    */
-  getrendererType(): string {
+  getRendererType(): string {
 
     return this.rendererInfo.rendererType;
   }

@@ -178,7 +178,7 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 
 // Renderer type change
 export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>) {
-  var rendererType = column.getrendererType();
+  var rendererType = column.getRendererType();
   const rendererTypelist = column.getRendererList();
 
   var popup = makeSortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {
@@ -229,6 +229,7 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
     return this === (<any>d3.event).target;
   }
 
+   // To detect if the mouse click event is triggered outside the sort dialog
   var sortcontent = d3.selectAll('input[name=multivaluesort]');
   sortcontent.on('change', function () {
     var that = this;
@@ -237,7 +238,7 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
 
   });
 
-    // To detect if the mouse click event is triggered outside the sort dialog
+  // To detect if the mouse click event is triggered outside the sort dialog
   d3.select('body').on('click', function () {
     var outside = sortcontent.filter(thiselement).empty();
     if (outside) {

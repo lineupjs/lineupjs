@@ -431,7 +431,7 @@ var Column = (function (_super) {
      * determines the renderer type that should be used to render this column. By default the same type as the column itself
      * @return {string}
      */
-    Column.prototype.getrendererType = function () {
+    Column.prototype.getRendererType = function () {
         return this.rendererInfo.rendererType;
     };
     Column.prototype.setRendererType = function (type) {
@@ -1396,11 +1396,11 @@ var NumberColumn = (function (_super) {
         var vn = +v;
         return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
     };
-    NumberColumn.prototype.getrendererType = function () {
+    NumberColumn.prototype.getRendererType = function () {
         if (this.getCompressed()) {
             return NumberColumn.COMPRESSED_RENDERER;
         }
-        return _super.prototype.getrendererType.call(this);
+        return _super.prototype.getRendererType.call(this);
     };
     return NumberColumn;
 }(__WEBPACK_IMPORTED_MODULE_2__ValueColumn__["a" /* default */]));
@@ -1695,17 +1695,16 @@ var SparklineCellRenderer = (function () {
         };
     };
     SparklineCellRenderer.prototype.createCanvas = function (col, context) {
-        var xScale = col.getSparkLineXScale();
+        var xScale = col.getSparkLineXScale().range([0, col.getWidth()]);
         var yScale = col.getSparkLineYScale();
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             var xpos, ypos;
-            xScale.range([0, col.getWidth()]);
             yScale.range([context.rowHeight(i), 0]);
             data.forEach(function (d, i) {
                 if (i === 0) {
                     xpos = xScale(i);
-                    ypos = xScale(d);
+                    ypos = yScale(d);
                 }
                 else {
                     ctx.strokeStyle = 'black';
@@ -2423,19 +2422,19 @@ function matchColumns(node, columns, helperType) {
             // set attribute for finding again
             cnode.setAttribute('data-column-id', col.column.id);
             // store current renderer
-            cnode.setAttribute('data-renderer', col.column.getrendererType());
+            cnode.setAttribute('data-renderer', col.column.getRendererType());
         });
         return;
     }
     function matches(c, i) {
         //do both match?
         var n = (node.childElementCount <= i ? null : node.childNodes[i]);
-        return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getrendererType();
+        return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getRendererType();
     }
     if (columns.every(matches)) {
         return; //nothing to do
     }
-    var idsAndRenderer = new Set(columns.map(function (c) { return c.column.id + '@' + c.column.getrendererType(); }));
+    var idsAndRenderer = new Set(columns.map(function (c) { return c.column.id + '@' + c.column.getRendererType(); }));
     //remove all that are not existing anymore
     Array.prototype.slice.call(node.childNodes).forEach(function (n) {
         var id = n.getAttribute('data-column-id');
@@ -2453,7 +2452,7 @@ function matchColumns(node, columns, helperType) {
             helper.innerHTML = col.renderer.template;
             cnode = helper.childNodes[0];
             cnode.setAttribute('data-column-id', col.column.id);
-            cnode.setAttribute('data-renderer', col.column.getrendererType());
+            cnode.setAttribute('data-renderer', col.column.getRendererType());
         }
         node.appendChild(cnode);
     });
@@ -2567,7 +2566,7 @@ var renderers = {
     circle: new CircleColumnCellRenderer()
 };
 function chooseRenderer(col, renderers) {
-    var r = renderers[col.getrendererType()];
+    var r = renderers[col.getRendererType()];
     return r || defaultCellRenderer;
 }
 function createSVG(col, renderers, context) {
@@ -3409,8 +3408,8 @@ var CompositeNumberColumn = (function (_super) {
     CompositeNumberColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__NumberColumn__["b" /* numberCompare */])(this.getValue(a, aIndex), this.getValue(b, bIndex));
     };
-    CompositeNumberColumn.prototype.getrendererType = function () {
-        return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["c" /* default */].prototype.getrendererType.call(this);
+    CompositeNumberColumn.prototype.getRendererType = function () {
+        return __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["c" /* default */].prototype.getRendererType.call(this);
     };
     return CompositeNumberColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__CompositeColumn__["a" /* default */]));
@@ -4463,7 +4462,7 @@ var StackColumn = (function (_super) {
         if (this.getCollapsed()) {
             return StackColumn.COLLAPSED_RENDERER;
         }
-        return _super.prototype.getrendererType.call(this);
+        return _super.prototype.getRendererType.call(this);
     };
     /**
      * describe the column if it is a sorting criteria
@@ -6552,7 +6551,7 @@ function openEditLinkDialog(column, $header, templates, idPrefix) {
 }
 // Renderer type change
 function rendererTypeDialog(column, $header) {
-    var rendererType = column.getrendererType();
+    var rendererType = column.getRendererType();
     var rendererTypelist = column.getRendererList();
     var popup = makeSortPopup($header, 'Change Visualization </br>', rendererTypelist.map(function (d, i) {
         return "<input type=\"radio\" name=\"renderertype\" value=" + d.type + "  " + ((rendererType === d.type) ? 'checked' : '') + "> " + d.label + "<br>";
@@ -6586,6 +6585,7 @@ function sortDialog(column, $header) {
     function thiselement() {
         return this === __WEBPACK_IMPORTED_MODULE_5_d3__["event"].target;
     }
+    // To detect if the mouse click event is triggered outside the sort dialog
     var sortcontent = __WEBPACK_IMPORTED_MODULE_5_d3__["selectAll"]('input[name=multivaluesort]');
     sortcontent.on('change', function () {
         var that = this;
@@ -8062,8 +8062,8 @@ var CategoricalNumberColumn = (function (_super) {
     CategoricalNumberColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         return __WEBPACK_IMPORTED_MODULE_4__NumberColumn__["c" /* default */].prototype.compare.call(this, a, b, aIndex, bIndex);
     };
-    CategoricalNumberColumn.prototype.getrendererType = function () {
-        return __WEBPACK_IMPORTED_MODULE_4__NumberColumn__["c" /* default */].prototype.getrendererType.call(this);
+    CategoricalNumberColumn.prototype.getRendererType = function () {
+        return __WEBPACK_IMPORTED_MODULE_4__NumberColumn__["c" /* default */].prototype.getRendererType.call(this);
     };
     return CategoricalNumberColumn;
 }(__WEBPACK_IMPORTED_MODULE_2__ValueColumn__["a" /* default */]));
@@ -8209,7 +8209,7 @@ var MultiLevelCompositeColumn = (function (_super) {
         if (this.getCollapsed()) {
             return MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED;
         }
-        return _super.prototype.getrendererType.call(this);
+        return _super.prototype.getRendererType.call(this);
     };
     return MultiLevelCompositeColumn;
 }(__WEBPACK_IMPORTED_MODULE_0__CompositeColumn__["a" /* default */]));

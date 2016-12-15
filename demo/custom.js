@@ -86,7 +86,7 @@ window.onload = function () {
         sort: 'min',
         threshold: 0,
         dataLength: multidata_length,
-        rendererType:'heatmapcustom'
+        rendererType: 'heatmapcustom'
       },
       {
         label: 'upset',

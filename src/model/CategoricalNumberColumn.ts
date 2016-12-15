@@ -183,7 +183,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return NumberColumn.prototype.compare.call(this, a, b, aIndex, bIndex);
   }
 
-  getrendererType(): string {
-    return NumberColumn.prototype.getrendererType.call(this);
+  getRendererType(): string {
+    return NumberColumn.prototype.getRendererType.call(this);
   }
 }

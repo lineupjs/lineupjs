@@ -57,7 +57,7 @@ function numSort(a, b) {
 
 enum Sort {
 
-  min , max , median, q1 , q3 , mean
+  min, max, median, q1, q3, mean
 }
 
 
@@ -157,7 +157,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     return this.colorScale;
   }
 
-  calculateCellDimension(width:number) {
+  calculateCellDimension(width: number) {
 
     return (width * 1 / this.data.dataLength);
   }

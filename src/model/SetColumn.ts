@@ -35,7 +35,7 @@ export default class SetColumn extends ValueColumn<number[] > {
 
   calculatePath(data) {
 
-    var catindexes = [];
+    var catindexes =[];
     catindexes.push(data.reduce(function (b, e, i) {
       if (e === 1) {
         b.push(i);

@@ -265,19 +265,18 @@ class SparklineCellRenderer implements ICellRendererFactory {
   createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
 
-    var xScale: any = col.getSparkLineXScale();
+    var xScale: any = col.getSparkLineXScale().range([0, col.getWidth()]);
     var yScale: any = col.getSparkLineYScale();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const data = col.getValue(d.v, d.dataIndex);
       var xpos, ypos;
-      xScale.range([0, col.getWidth()]);
       yScale.range([context.rowHeight(i), 0]);
       data.forEach((d, i) => {
 
         if (i === 0) {
           xpos = xScale(i);
-          ypos = xScale(d);
+          ypos = yScale(d);
         } else {
           ctx.strokeStyle = 'black';
           ctx.fillStyle = 'black';
@@ -1086,7 +1085,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
       // set attribute for finding again
       cnode.setAttribute('data-column-id', col.column.id);
       // store current renderer
-      cnode.setAttribute('data-renderer', col.column.getrendererType());
+      cnode.setAttribute('data-renderer', col.column.getRendererType());
     });
     return;
   }
@@ -1094,14 +1093,14 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
   function matches(c: {column: Column}, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
-    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getrendererType();
+    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getRendererType();
   }
 
   if (columns.every(matches)) {
     return; //nothing to do
   }
 
-  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.getrendererType()));
+  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.getRendererType()));
   //remove all that are not existing anymore
   Array.prototype.slice.call(node.childNodes).forEach((n) => {
     const id = n.getAttribute('data-column-id');
@@ -1119,7 +1118,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
       helper.innerHTML = col.renderer.template;
       cnode = <Element>helper.childNodes[0];
       cnode.setAttribute('data-column-id', col.column.id);
-      cnode.setAttribute('data-renderer', col.column.getrendererType());
+      cnode.setAttribute('data-renderer', col.column.getRendererType());
     }
     node.appendChild(cnode);
   });
@@ -1238,7 +1237,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
-  const r = renderers[col.getrendererType()];
+  const r = renderers[col.getRendererType()];
   return r || defaultCellRenderer;
 }
 

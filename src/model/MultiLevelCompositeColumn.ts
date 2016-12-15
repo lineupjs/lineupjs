@@ -101,6 +101,6 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     if (this.getCollapsed()) {
       return MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED;
     }
-    return super.getrendererType();
+    return super.getRendererType();
   }
 }
