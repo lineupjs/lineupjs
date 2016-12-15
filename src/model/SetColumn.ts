@@ -12,7 +12,7 @@ export default class SetColumn extends ValueColumn<number[] > {
 
   constructor(id: string, desc: any) {
     super(id, desc);
-   this.datalength = (<any>desc.dataLength);
+    this.datalength = (<any>desc.dataLength);
     this.Constant = 1;
 
   }
@@ -35,16 +35,13 @@ export default class SetColumn extends ValueColumn<number[] > {
 
   calculatePath(data) {
 
-    var catindexes =[];
-    catindexes.push(data.reduce(function (b, e, i) {
-      if (e === 1) {
-        b.push(i);
-      }
-      return b;
-    }, []));
 
-    const left_x = ((d3.min(catindexes[0]) * this.cellDimension()) + (this.cellDimension() / 2));
-    const right_x = ((d3.max(catindexes[0]) * this.cellDimension()) + (this.cellDimension() / 2));
+    var catindexes = [];
+    data.forEach((d, i) => (d === this.Constant) ? catindexes.push(i) : -1);
+
+
+    const left_x = ((d3.min(catindexes) * this.cellDimension()) + (this.cellDimension() / 2));
+    const right_x = ((d3.max(catindexes) * this.cellDimension()) + (this.cellDimension() / 2));
 
     const pathdata = {left: left_x, right: right_x};
 

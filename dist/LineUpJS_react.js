@@ -8254,15 +8254,11 @@ var SetColumn = (function (_super) {
         return (this.getWidth() / this.datalength);
     };
     SetColumn.prototype.calculatePath = function (data) {
+        var _this = this;
         var catindexes = [];
-        catindexes.push(data.reduce(function (b, e, i) {
-            if (e === 1) {
-                b.push(i);
-            }
-            return b;
-        }, []));
-        var left_x = ((__WEBPACK_IMPORTED_MODULE_0_d3__["min"](catindexes[0]) * this.cellDimension()) + (this.cellDimension() / 2));
-        var right_x = ((__WEBPACK_IMPORTED_MODULE_0_d3__["max"](catindexes[0]) * this.cellDimension()) + (this.cellDimension() / 2));
+        data.forEach(function (d, i) { return (d === _this.Constant) ? catindexes.push(i) : -1; });
+        var left_x = ((__WEBPACK_IMPORTED_MODULE_0_d3__["min"](catindexes) * this.cellDimension()) + (this.cellDimension() / 2));
+        var right_x = ((__WEBPACK_IMPORTED_MODULE_0_d3__["max"](catindexes) * this.cellDimension()) + (this.cellDimension() / 2));
         var pathdata = { left: left_x, right: right_x };
         return pathdata;
     };
