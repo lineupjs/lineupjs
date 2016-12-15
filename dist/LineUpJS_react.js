@@ -1727,7 +1727,6 @@ var ThresholdCellRenderer = (function () {
     }
     ThresholdCellRenderer.prototype.createSVG = function (col, context) {
         var cellDimension = col.calculateCellDimension(col.getWidth());
-        var binaryColor = col.getbinaryColor();
         var dataInfo = col.getDataInfo();
         return {
             template: "<g class=\"thresholdcell\"></g>",
@@ -1740,7 +1739,7 @@ var ThresholdCellRenderer = (function () {
                     x: function (d, i) { return (i * cellDimension); },
                     width: cellDimension,
                     height: function (d, i) { return (context.rowHeight(i)) / 2; },
-                    fill: function (d) { return (d < dataInfo.threshold) ? binaryColor[0] : binaryColor[1]; }
+                    fill: function (d) { return (d < dataInfo.threshold) ? dataInfo.colorRange[0] : dataInfo.colorRange[1]; }
                 });
                 rect.exit().remove();
             }
@@ -1748,7 +1747,6 @@ var ThresholdCellRenderer = (function () {
     };
     ThresholdCellRenderer.prototype.createCanvas = function (col, context) {
         var cellDimension = col.calculateCellDimension(col.getWidth());
-        var binaryColor = col.getbinaryColor();
         var dataInfo = col.getDataInfo();
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
@@ -1756,7 +1754,7 @@ var ThresholdCellRenderer = (function () {
                 ctx.beginPath();
                 var xpos = (i * cellDimension);
                 var ypos = (d < dataInfo.threshold) ? (context.rowHeight(i) / 2) : 0;
-                ctx.fillStyle = (d < dataInfo.threshold) ? binaryColor[0] : binaryColor[1];
+                ctx.fillStyle = (d < dataInfo.threshold) ? dataInfo.colorRange[0] : dataInfo.colorRange[1];
                 ctx.fillRect(xpos, ypos, cellDimension, context.rowHeight(i) / 2);
             });
         };
@@ -5465,12 +5463,6 @@ var MultiValueColumn = (function (_super) {
     };
     MultiValueColumn.prototype.getSparkLineYScale = function () {
         return this.yposScale;
-    };
-    MultiValueColumn.prototype.getDataLength = function () {
-        return this.data.dataLength;
-    };
-    MultiValueColumn.prototype.getbinaryColor = function () {
-        return this.data.colorRange;
     };
     MultiValueColumn.prototype.getDataInfo = function () {
         return this.data;

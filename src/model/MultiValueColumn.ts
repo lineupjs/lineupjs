@@ -172,20 +172,9 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     return this.yposScale;
   }
 
-  getDataLength() {
-
-    return this.data.dataLength;
-  }
-
-  getbinaryColor() {
-
-
-    return this.data.colorRange;
-  }
-
   getDataInfo() {
 
-    return this.data;
+   return this.data;
   }
 
   getVerticalBarScale() {

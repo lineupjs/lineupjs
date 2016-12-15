@@ -299,7 +299,6 @@ class ThresholdCellRenderer implements ICellRendererFactory {
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
 
     const cellDimension = col.calculateCellDimension(col.getWidth());
-    const binaryColor = col.getbinaryColor();
     const dataInfo = col.getDataInfo();
     return {
 
@@ -314,7 +313,7 @@ class ThresholdCellRenderer implements ICellRendererFactory {
             x: (d, i) => (i * cellDimension),
             width: cellDimension,
             height: (d, i) => (context.rowHeight(i)) / 2,
-            fill: (d) => (d < dataInfo.threshold) ? binaryColor[0] : binaryColor[1]
+            fill: (d) => (d < dataInfo.threshold) ? dataInfo.colorRange[0] : dataInfo.colorRange[1]
           });
         rect.exit().remove();
       }
@@ -325,7 +324,6 @@ class ThresholdCellRenderer implements ICellRendererFactory {
 
 
     const cellDimension = col.calculateCellDimension(col.getWidth());
-    const binaryColor = col.getbinaryColor();
     const dataInfo = col.getDataInfo();
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const data = col.getValue(d.v, d.dataIndex);
@@ -333,7 +331,7 @@ class ThresholdCellRenderer implements ICellRendererFactory {
         ctx.beginPath();
         var xpos = (i * cellDimension);
         var ypos = (d < dataInfo.threshold) ? (context.rowHeight(i) / 2) : 0;
-        ctx.fillStyle = (d < dataInfo.threshold) ? binaryColor[0] : binaryColor[1];
+        ctx.fillStyle = (d < dataInfo.threshold) ? dataInfo.colorRange[0] : dataInfo.colorRange[1];
         ctx.fillRect(xpos, ypos, cellDimension, context.rowHeight(i) / 2);
       });
     };
