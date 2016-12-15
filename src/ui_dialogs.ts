@@ -35,7 +35,7 @@ export function dialogForm(title: string, body: string) {
     '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
 }
 
-export function sortdialogForm(title, body, buttonsWithLabel = false) {
+export function sortDialogForm(title, body, buttonsWithLabel = false) {
   return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
     '<form onsubmit="return false">' + body;
 }
@@ -91,7 +91,7 @@ export function makeSortPopup(attachement: Selection<any>, title: string, body: 
     }).style({
       left: pos.left + 'px',
       top: pos.top + 'px'
-    }).html(sortdialogForm(title, body));
+    }).html(sortDialogForm(title, body));
 
   function movePopup() {
     //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')

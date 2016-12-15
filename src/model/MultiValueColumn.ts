@@ -2,7 +2,9 @@
  * Created by bikramkawan on 24/11/2016.
  */
 import * as d3 from 'd3';
+import Column, {IColumnDesc} from './Column';
 import ValueColumn from './ValueColumn';
+import data from "../../../lineup_demos_source/src/datasets";
 
 
 export class CustomSortCalculation {
@@ -33,7 +35,8 @@ export class CustomSortCalculation {
   }
 
   median() {
-    return (d3.median(this.a_val)) - (d3.median(this.b_val));
+
+    return (d3.median(this.a_val.sort(numSort))) - (d3.median(this.b_val.sort(numSort)));
 
   }
 
@@ -45,7 +48,7 @@ export class CustomSortCalculation {
 
   q3() {
 
-    return (d3.quantile(this.a_val, 0.75)) - (d3.quantile(this.b_val, 0.75));
+    return (d3.quantile(this.a_val.sort(numSort), 0.75)) - (d3.quantile(this.b_val.sort(numSort), 0.75));
 
   }
 }
@@ -56,11 +59,11 @@ function numSort(a, b) {
 
 enum Sort {
 
-  min, max, median, q1, q3
+  min, max, median, q1, q3, mean
 }
 
 
-interface boxPlotData {
+interface IBoxPlotData {
 
   min: number;
   max: number;
@@ -69,17 +72,20 @@ interface boxPlotData {
   q3: number;
 }
 
+interface IDataStat {
+  min: number,
+  max: number,
+  sort: string,
+  threshold: number,
+  dataLength: number,
+  colorRange: any
+}
+
+
 export default class MultiValueColumn extends ValueColumn<number[] > {
-  private sortBy;
-  private colorRange;
-  private min;
-  private max;
-  private dataLength;
-  private dataInfo;
-  private cellWidth;
-  private ypositionVerticalBar;
-  private rowHeight;
-  private threshold;
+
+  private data: IDataStat;
+
   private colorScale: d3.scale.Linear<number, string> = d3.scale.linear<number, string>();
   private xposScale: d3.scale.Linear<number, number> = d3.scale.linear();
   private yposScale: d3.scale.Linear<number, number> = d3.scale.linear();
@@ -89,20 +95,16 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   constructor(id: string, desc: any) {
     super(id, desc);
-    this.colorRange = (<any>desc).colorRange || ['blue', 'red'];
-    this.min = d3.min((<any>desc).domain);
-    this.max = d3.max((<any>desc).domain);
-    this.dataLength = (<any>desc).dataLength;
-    this.threshold = (<any>desc).threshold || 0;
-    this.sortBy = (<any>desc.sort) || 'min';
-    this.cellWidth = this.getWidth() || 100;
-    this.rowHeight = 13;
-    this.dataInfo = {
-      min: this.min,
-      max: this.max,
-      threshold: this.threshold,
-      sort: this.sortBy
+
+    this.data = {
+      min: d3.min((<any>desc).domain),
+      max: d3.max((<any>desc).domain),
+      dataLength: (<any>desc).dataLength,
+      threshold: (<any>desc).threshold || 0,
+      sort: (<any>desc.sort) || 'min',
+      colorRange: (<any>desc).colorRange || ['blue', 'red']
     };
+
     this.rendererInfo.rendererList = [{type: 'heatmapcustom', label: 'Heatmap'},
       {type: 'boxplot', label: 'Boxplot'},
       {type: 'sparkline', label: 'Sparkline'},
@@ -115,25 +117,25 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   private defineColorRange() {
 
-    if (this.min < 0) {
+    if (this.data.min < 0) {
       this.colorScale
-        .domain([this.min, 0, this.max])
-        .range([this.colorRange[0], 'white', this.colorRange[1]]);
+        .domain([this.data.min, 0, this.data.max])
+        .range([this.data.colorRange[0], 'white', this.data.colorRange[1]]);
 
     } else {
       this.colorScale
-        .domain([this.min, this.max])
-        .range(['white', this.colorRange[1]]);
+        .domain([this.data.min, this.data.max])
+        .range(['white', this.data.colorRange[1]]);
     }
   }
 
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
 
-    const a_val = (this.getValue(a, aIndex)).sort(numSort);
-    const b_val = (this.getValue(b, bIndex)).sort(numSort);
+    const a_val = (this.getValue(a, aIndex));
+    const b_val = (this.getValue(b, bIndex));
     const sort: any = new CustomSortCalculation(a_val, b_val);
-    const f = sort[this.sortBy].bind(sort);
+    const f = sort[this.data.sort].bind(sort);
 
     return f();
   }
@@ -146,46 +148,46 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   calculateCellDimension(width) {
 
 
-    return (width * 1 / this.dataLength);
+    return (width * 1 / this.data.dataLength);
   }
 
   getSparkLineXScale() {
     this.xposScale
-      .domain([0, this.dataLength - 1]);
+      .domain([0, this.data.dataLength - 1]);
     return this.xposScale;
   }
 
   getSparkLineYScale() {
     this.yposScale
-      .domain([this.min, this.max]);
+      .domain([this.data.min, this.data.max]);
     return this.yposScale;
   }
 
   getDataLength() {
 
-    return this.dataLength;
+    return this.data.dataLength;
   }
 
   getbinaryColor() {
 
 
-    return this.colorRange;
+    return this.data.colorRange;
   }
 
   getDataInfo() {
 
-    return this.dataInfo;
+    return this.data;
   }
 
   getVerticalBarScale() {
     this.verticalBarScale
-      .domain([this.min, this.max]);
+      .domain([this.data.min, this.data.max]);
     return this.verticalBarScale;
   }
 
   getboxPlotScale(width) {
     this.boxPlotScale
-      .domain([this.min, this.max])
+      .domain([this.data.min, this.data.max])
       .range([0, 1 * width])
 
     return this.boxPlotScale;
@@ -194,11 +196,11 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   getboxPlotData(data, scale) {
 
-    var boxPlotData = <boxPlotData>{};
+    var boxPlotData = <IBoxPlotData>{};
 
     const minval_arr = Math.min.apply(Math, data);
     const maxval_arr = Math.max.apply(Math, data);
-    let sorteddata = data.slice().sort(numSort);
+    const sorteddata = data.slice().sort(numSort);
 
     boxPlotData.q1 = scale(d3.quantile(sorteddata, 0.25));
     boxPlotData.median = scale(d3.quantile(sorteddata, 0.50));
@@ -206,7 +208,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     boxPlotData.min = scale(minval_arr);
     boxPlotData.max = scale(maxval_arr);
 
-    let boxdata = {
+    const boxdata = {
       min: boxPlotData.min,
       median: boxPlotData.median,
       q1: boxPlotData.q1,
@@ -219,7 +221,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   }
 
   getUserSortBy() {
-    return this.sortBy;
+    return this.data.sort;
   }
 
   setUserSortBy(rank) {
@@ -227,22 +229,22 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     let ascending = false;
 
     switch (rank) {
-      case 'min':
+      case Sort.min:
         ascending = true;
         break;
-      case 'max':
+      case Sort.max:
         ascending = false;
         break;
-      case 'mean':
+      case Sort.mean:
         ascending = true;
         break;
-      case 'median':
+      case Sort.median:
         ascending = false;
         break;
-      case 'q1':
+      case Sort.q1:
         ascending = true;
         break;
-      case 'q3':
+      case Sort.q3:
         ascending = false;
         break;
       default:
@@ -252,11 +254,7 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     this.sortByMe(ascending);
   }
 
-
-  getRendererList() {
-
-    return this.rendererInfo.rendererList;
-  }
+  //setRendererList(this.rendererInfo.rendererList);
 
 
 }

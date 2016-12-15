@@ -137,9 +137,8 @@ var Column = (function (_super) {
         _this.compressed = false;
         _this.uid = fixCSS(id);
         _this.cssClass = _this.desc.cssClass || '';
-        _this.desc.rendererType = _this.desc.type;
         _this.rendererInfo = {
-            rendererType: _this.desc.rendererType,
+            rendererType: _this.desc.rendererType || _this.desc.type,
             rendererList: []
         };
         _this.metadata = {
@@ -439,8 +438,10 @@ var Column = (function (_super) {
         this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.rendererType, this.rendererInfo.rendererType = type);
     };
     Column.prototype.getRendererList = function () {
-        console.log(this.rendererInfo.rendererList);
         return this.rendererInfo.rendererList;
+    };
+    Column.prototype.setRendererList = function (rendererList) {
+        this.rendererInfo.rendererList = rendererList;
     };
     /**
      * describe the column if it is a sorting criteria
@@ -1766,8 +1767,8 @@ var ThresholdCellRenderer = (function () {
     return ThresholdCellRenderer;
 }());
 function verticalBarScale(dataInfo, scale, rowHeight) {
-    var scale = (dataInfo.min < dataInfo.threshold) ? (scale.range([0, rowHeight / 2])) : scale.range([0, rowHeight]);
-    return (scale);
+    var Scale = (dataInfo.min < dataInfo.threshold) ? (scale.range([0, rowHeight / 2])) : scale.range([0, rowHeight]);
+    return (Scale);
 }
 function verticalBarHeight(dataInfo, cellData, scale, rowHeight) {
     return (dataInfo.min < dataInfo.threshold) ? (rowHeight / 2 - scale(cellData)) : scale(cellData);
@@ -1900,12 +1901,12 @@ var BoxplotCellRenderer = (function () {
     };
     return BoxplotCellRenderer;
 }());
-var UpsetCellRenderer = (function () {
-    function UpsetCellRenderer() {
+var SetCellRenderer = (function () {
+    function SetCellRenderer() {
     }
-    UpsetCellRenderer.prototype.createSVG = function (col, context) {
+    SetCellRenderer.prototype.createSVG = function (col, context) {
         var celldimension = col.cellDimension();
-        var binaryValue = col.getBinaryValue();
+        var binaryValue = col.getConstantValue();
         return {
             template: "<g class=\"upsetcell\"></g>",
             update: function (n, d, i) {
@@ -1934,9 +1935,9 @@ var UpsetCellRenderer = (function () {
             }
         };
     };
-    UpsetCellRenderer.prototype.createCanvas = function (col, context) {
+    SetCellRenderer.prototype.createCanvas = function (col, context) {
         var celldimension = col.cellDimension();
-        var binaryValue = col.getBinaryValue();
+        var binaryValue = col.getConstantValue();
         return function (ctx, d, i) {
             // Circle
             var data = col.getValue(d.v, d.dataIndex);
@@ -1965,7 +1966,7 @@ var UpsetCellRenderer = (function () {
             });
         };
     };
-    return UpsetCellRenderer;
+    return SetCellRenderer;
 }());
 var CircleColumnCellRenderer = (function () {
     function CircleColumnCellRenderer() {
@@ -2564,7 +2565,7 @@ var renderers = {
     sparkline: new SparklineCellRenderer(),
     verticalbar: new VerticalBarCellRenderer(),
     boxplot: new BoxplotCellRenderer(),
-    upset: new UpsetCellRenderer(),
+    set: new SetCellRenderer(),
     circle: new CircleColumnCellRenderer()
 };
 function chooseRenderer(col, renderers) {
@@ -3441,7 +3442,7 @@ var CompositeNumberColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__NestedColumn__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__DummyColumn__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__LinkColumn__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__SetColumn__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__ = __webpack_require__(23);
 Object.defineProperty(exports, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__Column__ = __webpack_require__(1);
@@ -3570,7 +3571,7 @@ function models() {
         threshold: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
         verticalbar: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
         boxplot: __WEBPACK_IMPORTED_MODULE_19__MultiValueColumn__["a" /* default */],
-        upset: __WEBPACK_IMPORTED_MODULE_18__UpsetColumn__["a" /* default */],
+        set: __WEBPACK_IMPORTED_MODULE_18__SetColumn__["a" /* default */],
         circle: __WEBPACK_IMPORTED_MODULE_2__NumberColumn__["c" /* default */]
     };
 }
@@ -5381,13 +5382,13 @@ var CustomSortCalculation = (function () {
         return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
     };
     CustomSortCalculation.prototype.median = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.a_val)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.b_val));
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.a_val.sort(numSort))) - (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.b_val.sort(numSort)));
     };
     CustomSortCalculation.prototype.q1 = function () {
         return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val, 0.25)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val, 0.25));
     };
     CustomSortCalculation.prototype.q3 = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val, 0.75)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val, 0.75));
+        return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val.sort(numSort), 0.75)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val.sort(numSort), 0.75));
     };
     return CustomSortCalculation;
 }());
@@ -5401,6 +5402,7 @@ var Sort;
     Sort[Sort["median"] = 2] = "median";
     Sort[Sort["q1"] = 3] = "q1";
     Sort[Sort["q3"] = 4] = "q3";
+    Sort[Sort["mean"] = 5] = "mean";
 })(Sort || (Sort = {}));
 var MultiValueColumn = (function (_super) {
     __extends(MultiValueColumn, _super);
@@ -5411,19 +5413,13 @@ var MultiValueColumn = (function (_super) {
         _this.yposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         _this.verticalBarScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         _this.boxPlotScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
-        _this.colorRange = desc.colorRange || ['blue', 'red'];
-        _this.min = __WEBPACK_IMPORTED_MODULE_0_d3__["min"](desc.domain);
-        _this.max = __WEBPACK_IMPORTED_MODULE_0_d3__["max"](desc.domain);
-        _this.dataLength = desc.dataLength;
-        _this.threshold = desc.threshold || 0;
-        _this.sortBy = desc.sort || 'min';
-        _this.cellWidth = _this.getWidth() || 100;
-        _this.rowHeight = 13;
-        _this.dataInfo = {
-            min: _this.min,
-            max: _this.max,
-            threshold: _this.threshold,
-            sort: _this.sortBy
+        _this.data = {
+            min: __WEBPACK_IMPORTED_MODULE_0_d3__["min"](desc.domain),
+            max: __WEBPACK_IMPORTED_MODULE_0_d3__["max"](desc.domain),
+            dataLength: desc.dataLength,
+            threshold: desc.threshold || 0,
+            sort: desc.sort || 'min',
+            colorRange: desc.colorRange || ['blue', 'red']
         };
         _this.rendererInfo.rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },
             { type: 'boxplot', label: 'Boxplot' },
@@ -5434,57 +5430,57 @@ var MultiValueColumn = (function (_super) {
         return _this;
     }
     MultiValueColumn.prototype.defineColorRange = function () {
-        if (this.min < 0) {
+        if (this.data.min < 0) {
             this.colorScale
-                .domain([this.min, 0, this.max])
-                .range([this.colorRange[0], 'white', this.colorRange[1]]);
+                .domain([this.data.min, 0, this.data.max])
+                .range([this.data.colorRange[0], 'white', this.data.colorRange[1]]);
         }
         else {
             this.colorScale
-                .domain([this.min, this.max])
-                .range(['white', this.colorRange[1]]);
+                .domain([this.data.min, this.data.max])
+                .range(['white', this.data.colorRange[1]]);
         }
     };
     MultiValueColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        var a_val = (this.getValue(a, aIndex)).sort(numSort);
-        var b_val = (this.getValue(b, bIndex)).sort(numSort);
+        var a_val = (this.getValue(a, aIndex));
+        var b_val = (this.getValue(b, bIndex));
         var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortBy].bind(sort);
+        var f = sort[this.data.sort].bind(sort);
         return f();
     };
     MultiValueColumn.prototype.getColor = function () {
         return this.colorScale;
     };
     MultiValueColumn.prototype.calculateCellDimension = function (width) {
-        return (width * 1 / this.dataLength);
+        return (width * 1 / this.data.dataLength);
     };
     MultiValueColumn.prototype.getSparkLineXScale = function () {
         this.xposScale
-            .domain([0, this.dataLength - 1]);
+            .domain([0, this.data.dataLength - 1]);
         return this.xposScale;
     };
     MultiValueColumn.prototype.getSparkLineYScale = function () {
         this.yposScale
-            .domain([this.min, this.max]);
+            .domain([this.data.min, this.data.max]);
         return this.yposScale;
     };
     MultiValueColumn.prototype.getDataLength = function () {
-        return this.dataLength;
+        return this.data.dataLength;
     };
     MultiValueColumn.prototype.getbinaryColor = function () {
-        return this.colorRange;
+        return this.data.colorRange;
     };
     MultiValueColumn.prototype.getDataInfo = function () {
-        return this.dataInfo;
+        return this.data;
     };
     MultiValueColumn.prototype.getVerticalBarScale = function () {
         this.verticalBarScale
-            .domain([this.min, this.max]);
+            .domain([this.data.min, this.data.max]);
         return this.verticalBarScale;
     };
     MultiValueColumn.prototype.getboxPlotScale = function (width) {
         this.boxPlotScale
-            .domain([this.min, this.max])
+            .domain([this.data.min, this.data.max])
             .range([0, 1 * width]);
         return this.boxPlotScale;
     };
@@ -5508,36 +5504,33 @@ var MultiValueColumn = (function (_super) {
         return (boxdata);
     };
     MultiValueColumn.prototype.getUserSortBy = function () {
-        return this.sortBy;
+        return this.data.sort;
     };
     MultiValueColumn.prototype.setUserSortBy = function (rank) {
         var ascending = false;
         switch (rank) {
-            case 'min':
+            case Sort.min:
                 ascending = true;
                 break;
-            case 'max':
+            case Sort.max:
                 ascending = false;
                 break;
-            case 'mean':
+            case Sort.mean:
                 ascending = true;
                 break;
-            case 'median':
+            case Sort.median:
                 ascending = false;
                 break;
-            case 'q1':
+            case Sort.q1:
                 ascending = true;
                 break;
-            case 'q3':
+            case Sort.q3:
                 ascending = false;
                 break;
             default:
                 ascending = false;
         }
         this.sortByMe(ascending);
-    };
-    MultiValueColumn.prototype.getRendererList = function () {
-        return this.rendererInfo.rendererList;
     };
     return MultiValueColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
@@ -6421,7 +6414,7 @@ function createBodyRenderer(type, data, parent, slicer, options) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_d3__);
 Object.defineProperty(exports, "__esModule", { value: true });
 /* harmony export (immutable) */ exports["dialogForm"] = dialogForm;
-/* harmony export (immutable) */ exports["sortdialogForm"] = sortdialogForm;
+/* harmony export (immutable) */ exports["sortDialogForm"] = sortDialogForm;
 /* harmony export (immutable) */ exports["makePopup"] = makePopup;
 /* harmony export (immutable) */ exports["makeSortPopup"] = makeSortPopup;
 /* harmony export (immutable) */ exports["openRenameDialog"] = openRenameDialog;
@@ -6451,7 +6444,7 @@ function dialogForm(title, body) {
         '<button type = "reset" class="cancel fa fa-times" title="cancel"></button>' +
         '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
 }
-function sortdialogForm(title, body, buttonsWithLabel) {
+function sortDialogForm(title, body, buttonsWithLabel) {
     if (buttonsWithLabel === void 0) { buttonsWithLabel = false; }
     return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
         '<form onsubmit="return false">' + body;
@@ -6501,7 +6494,7 @@ function makeSortPopup(attachement, title, body) {
     }).style({
         left: pos.left + 'px',
         top: pos.top + 'px'
-    }).html(sortdialogForm(title, body));
+    }).html(sortDialogForm(title, body));
     function movePopup() {
         //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
         //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
@@ -8237,9 +8230,6 @@ MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED = __WEBPACK_IMPORTED_MODULE_2__
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* unused harmony export numberCompare */
-/* unused harmony export getPercentile */
-/* unused harmony export CustomSortCalculation */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -8250,62 +8240,25 @@ var __extends = (this && this.__extends) || function (d, b) {
  */
 
 
-function numberCompare(a, b) {
-    if (isNaN(a)) {
-        return isNaN(b) ? 0 : +1;
-    }
-    if (isNaN(b)) {
-        return -1;
-    }
-    return a - b;
-}
-// Calculate Median, Q1 and Q1)
-function getPercentile(data, percentile) {
-    var index = (percentile / 100) * data.length;
-    var result;
-    if (Math.floor(index) === index) {
-        result = (data[(index - 1)] + data[index]) / 2;
-    }
-    else {
-        result = data[Math.floor(index)];
-    }
-    return result;
-}
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.countcategory = function () {
-        var a_cat = this.a_val.filter(function (x) { return x === 1; }).length;
-        var b_cat = this.b_val.filter(function (x) { return x === 1; }).length;
-        return (a_cat - b_cat);
-    };
-    return CustomSortCalculation;
-}());
-var UpsetColumn = (function (_super) {
-    __extends(UpsetColumn, _super);
-    function UpsetColumn(id, desc) {
+var SetColumn = (function (_super) {
+    __extends(SetColumn, _super);
+    function SetColumn(id, desc) {
         var _this = _super.call(this, id, desc) || this;
-        _this.sortCriteria = desc.sort || 'min';
         _this.datalength = desc.dataLength;
-        _this.setBinary = 1;
+        _this.Constant = 1;
         return _this;
     }
-    UpsetColumn.prototype.compare = function (a, b, aIndex, bIndex) {
-        this.sortCriteria = this.desc.sort;
+    SetColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         var a_val = this.getValue(a, aIndex);
         var b_val = this.getValue(b, bIndex);
-        var sort = new CustomSortCalculation(a_val, b_val);
-        var f = sort[this.sortCriteria].bind(sort);
-        return f();
+        var a_cat = a_val.filter(function (x) { return x === 1; }).length;
+        var b_cat = b_val.filter(function (x) { return x === 1; }).length;
+        return (a_cat - b_cat);
     };
-    UpsetColumn.prototype.cellDimension = function () {
+    SetColumn.prototype.cellDimension = function () {
         return (this.getWidth() / this.datalength);
     };
-    UpsetColumn.prototype.calculatePath = function (data) {
+    SetColumn.prototype.calculatePath = function (data) {
         var catindexes = [];
         catindexes.push(data.reduce(function (b, e, i) {
             if (e === 1) {
@@ -8318,12 +8271,12 @@ var UpsetColumn = (function (_super) {
         var pathdata = { left: left_x, right: right_x };
         return pathdata;
     };
-    UpsetColumn.prototype.getBinaryValue = function () {
-        return this.setBinary;
+    SetColumn.prototype.getConstantValue = function () {
+        return this.Constant;
     };
-    return UpsetColumn;
+    return SetColumn;
 }(__WEBPACK_IMPORTED_MODULE_1__ValueColumn__["a" /* default */]));
-/* harmony default export */ exports["a"] = UpsetColumn;
+/* harmony default export */ exports["a"] = SetColumn;
 
 
 /***/ },

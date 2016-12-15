@@ -21,7 +21,7 @@ import CategoricalNumberColumn from './CategoricalNumberColumn';
 import NestedColumn from './NestedColumn';
 import DummyColumn from './DummyColumn';
 import LinkColumn from './LinkColumn';
-import UpsetColumn from './UpsetColumn';
+import SetColumn from './SetColumn';
 import MultiValueColumn from './MultiValueColumn';
 
 
@@ -100,7 +100,7 @@ export function models() {
     threshold: MultiValueColumn,
     verticalbar: MultiValueColumn,
     boxplot: MultiValueColumn,
-    upset: UpsetColumn,
+    set: SetColumn,
     circle: NumberColumn
   };
 }

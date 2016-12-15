@@ -85,11 +85,12 @@ window.onload = function () {
         colorRange: ['blue', 'red'],
         sort: 'min',
         threshold: 0,
-        dataLength: multidata_length
+        dataLength: multidata_length,
+        rendererType:'heatmapcustom'
       },
       {
         label: 'upset',
-        type: 'upset',
+        type: 'set',
         column: 'upsetdata',
         sdomain: [multidata_min, multidata_max],
         colorrange: ['blue', 'red'],

@@ -15,7 +15,7 @@ import {hsl} from 'd3';
 import {IDataRow} from './provider/ADataProvider';
 import * as d3 from 'd3';
 import MultiValueColumn from './model/MultiValueColumn';
-import UpsetColumn from './model/UpsetColumn';
+import SetColumn from './model/SetColumn';
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
@@ -509,11 +509,11 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
 }
 
-class UpsetCellRenderer implements ICellRendererFactory {
+class SetCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: UpsetColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: SetColumn, context: IDOMRenderContext): ISVGCellRenderer {
     const celldimension = col.cellDimension();
-    const binaryValue = col.getBinaryValue();
+    const binaryValue = col.getConstantValue();
     return {
       template: `<g class="upsetcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
@@ -546,10 +546,10 @@ class UpsetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: UpsetColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: SetColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     const celldimension = col.cellDimension();
-    const binaryValue = col.getBinaryValue();
+    const binaryValue = col.getConstantValue();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Circle
@@ -1233,7 +1233,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   sparkline: new SparklineCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
-  upset: new UpsetCellRenderer(),
+  set: new SetCellRenderer(),
   circle: new CircleColumnCellRenderer()
 };
 

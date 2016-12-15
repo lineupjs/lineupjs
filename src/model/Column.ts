@@ -59,7 +59,7 @@ export interface IColumnDesc {
   /**
    * Default RendererType
    */
-  rendererType?: string;
+  readonly rendererType?: string;
 }
 
 export interface IStatistics {
@@ -85,7 +85,7 @@ export interface IColumnMetaData {
 
 export interface IRendererInfo {
 
-  rendererType: string  ; // Name of the current Renderer
+  rendererType?: string  ; // Name of the current Renderer
   rendererList: {type: string, label: string}[]; // Possible RendererList
 }
 
@@ -163,10 +163,9 @@ export default class Column extends AEventDispatcher {
     super();
     this.uid = fixCSS(id);
     this.cssClass = (<any>this.desc).cssClass || '';
-    this.desc.rendererType = this.desc.type;
 
     this.rendererInfo = {
-      rendererType: this.desc.rendererType,
+      rendererType: this.desc.rendererType || this.desc.type,
       rendererList: []
     };
 
@@ -472,10 +471,16 @@ export default class Column extends AEventDispatcher {
   }
 
   getRendererList() {
-    console.log(this.rendererInfo.rendererList)
 
     return this.rendererInfo.rendererList;
   }
+
+  setRendererList(rendererList) {
+
+    this.rendererInfo.rendererList = rendererList;
+
+  }
+
 
   /**
    * describe the column if it is a sorting criteria
