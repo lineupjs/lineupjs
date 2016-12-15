@@ -289,10 +289,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.numberFormat = format(desc.numberFormat);
     }
 
-    this.rendererInfo.rendererList = [{type: 'number', label: 'Bar'},
+    const rendererList = [{type: 'number', label: 'Bar'},
       {type: 'circle', label: 'Circle'}];
 
-
+    this.setRendererList(rendererList);
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -459,9 +459,5 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return super.getrendererType();
   }
 
-  getRendererList() {
-
-    return this.rendererInfo.rendererList;
-  }
 
 }

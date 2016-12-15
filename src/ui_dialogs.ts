@@ -202,6 +202,7 @@ export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>
 
   });
 
+  // To detect if the mouse click event is triggered outside the sort dialog
   d3.select('body').on('click', function () {
     var outside = renderercontent.filter(thiselement).empty();
     if (outside) {
@@ -236,6 +237,7 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
 
   });
 
+    // To detect if the mouse click event is triggered outside the sort dialog
   d3.select('body').on('click', function () {
     var outside = sortcontent.filter(thiselement).empty();
     if (outside) {

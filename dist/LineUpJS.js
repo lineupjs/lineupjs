@@ -1241,8 +1241,9 @@ var NumberColumn = (function (_super) {
         if (desc.numberFormat) {
             _this.numberFormat = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_d3__["format"])(desc.numberFormat);
         }
-        _this.rendererInfo.rendererList = [{ type: 'number', label: 'Bar' },
+        var rendererList = [{ type: 'number', label: 'Bar' },
             { type: 'circle', label: 'Circle' }];
+        _this.setRendererList(rendererList);
         return _this;
     }
     NumberColumn.prototype.dump = function (toDescRef) {
@@ -1400,9 +1401,6 @@ var NumberColumn = (function (_super) {
             return NumberColumn.COMPRESSED_RENDERER;
         }
         return _super.prototype.getrendererType.call(this);
-    };
-    NumberColumn.prototype.getRendererList = function () {
-        return this.rendererInfo.rendererList;
     };
     return NumberColumn;
 }(__WEBPACK_IMPORTED_MODULE_2__ValueColumn__["a" /* default */]));
@@ -5421,11 +5419,20 @@ var MultiValueColumn = (function (_super) {
             sort: desc.sort || 'min',
             colorRange: desc.colorRange || ['blue', 'red']
         };
-        _this.rendererInfo.rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },
+        _this.xposScale
+            .domain([0, _this.data.dataLength - 1]);
+        _this.yposScale
+            .domain([_this.data.min, _this.data.max]);
+        _this.boxPlotScale
+            .domain([_this.data.min, _this.data.max]);
+        _this.verticalBarScale
+            .domain([_this.data.min, _this.data.max]);
+        var rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },
             { type: 'boxplot', label: 'Boxplot' },
             { type: 'sparkline', label: 'Sparkline' },
             { type: 'threshold', label: 'Threshold' },
             { type: 'verticalbar', label: 'VerticalBar' }];
+        _this.setRendererList(rendererList);
         _this.defineColorRange();
         return _this;
     }
@@ -5455,13 +5462,9 @@ var MultiValueColumn = (function (_super) {
         return (width * 1 / this.data.dataLength);
     };
     MultiValueColumn.prototype.getSparkLineXScale = function () {
-        this.xposScale
-            .domain([0, this.data.dataLength - 1]);
         return this.xposScale;
     };
     MultiValueColumn.prototype.getSparkLineYScale = function () {
-        this.yposScale
-            .domain([this.data.min, this.data.max]);
         return this.yposScale;
     };
     MultiValueColumn.prototype.getDataLength = function () {
@@ -5474,32 +5477,22 @@ var MultiValueColumn = (function (_super) {
         return this.data;
     };
     MultiValueColumn.prototype.getVerticalBarScale = function () {
-        this.verticalBarScale
-            .domain([this.data.min, this.data.max]);
         return this.verticalBarScale;
     };
     MultiValueColumn.prototype.getboxPlotScale = function (width) {
-        this.boxPlotScale
-            .domain([this.data.min, this.data.max])
-            .range([0, 1 * width]);
+        this.boxPlotScale.range([0, 1 * width]);
         return this.boxPlotScale;
     };
     MultiValueColumn.prototype.getboxPlotData = function (data, scale) {
-        var boxPlotData = {};
         var minval_arr = Math.min.apply(Math, data);
         var maxval_arr = Math.max.apply(Math, data);
         var sorteddata = data.slice().sort(numSort);
-        boxPlotData.q1 = scale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](sorteddata, 0.25));
-        boxPlotData.median = scale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](sorteddata, 0.50));
-        boxPlotData.q3 = scale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](sorteddata, 0.75));
-        boxPlotData.min = scale(minval_arr);
-        boxPlotData.max = scale(maxval_arr);
         var boxdata = {
-            min: boxPlotData.min,
-            median: boxPlotData.median,
-            q1: boxPlotData.q1,
-            q3: boxPlotData.q3,
-            max: boxPlotData.max
+            min: scale(minval_arr),
+            median: scale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](sorteddata, 0.50)),
+            q1: scale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](sorteddata, 0.25)),
+            q3: scale(__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](sorteddata, 0.75)),
+            max: scale(maxval_arr)
         };
         return (boxdata);
     };
@@ -5509,22 +5502,22 @@ var MultiValueColumn = (function (_super) {
     MultiValueColumn.prototype.setUserSortBy = function (rank) {
         var ascending = false;
         switch (rank) {
-            case Sort.min:
+            case Sort[Sort.min]:
                 ascending = true;
                 break;
-            case Sort.max:
+            case Sort[Sort.max]:
                 ascending = false;
                 break;
-            case Sort.mean:
+            case Sort[Sort.mean]:
                 ascending = true;
                 break;
-            case Sort.median:
+            case Sort[Sort.median]:
                 ascending = false;
                 break;
-            case Sort.q1:
+            case Sort[Sort.q1]:
                 ascending = true;
                 break;
-            case Sort.q3:
+            case Sort[Sort.q3]:
                 ascending = false;
                 break;
             default:
@@ -6573,6 +6566,7 @@ function rendererTypeDialog(column, $header) {
         rendererType = that.value;
         column.setRendererType(that.value);
     });
+    // To detect if the mouse click event is triggered outside the sort dialog
     __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
         var outside = renderercontent.filter(thiselement).empty();
         if (outside) {
@@ -6598,6 +6592,7 @@ function sortDialog(column, $header) {
         rank = that.value;
         column.setUserSortBy(rank);
     });
+    // To detect if the mouse click event is triggered outside the sort dialog
     __WEBPACK_IMPORTED_MODULE_5_d3__["select"]('body').on('click', function () {
         var outside = sortcontent.filter(thiselement).empty();
         if (outside) {

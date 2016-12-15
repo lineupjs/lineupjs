@@ -2,9 +2,7 @@
  * Created by bikramkawan on 24/11/2016.
  */
 import * as d3 from 'd3';
-import Column, {IColumnDesc} from './Column';
 import ValueColumn from './ValueColumn';
-import data from "../../../lineup_demos_source/src/datasets";
 
 
 export class CustomSortCalculation {
@@ -59,26 +57,26 @@ function numSort(a, b) {
 
 enum Sort {
 
-  min, max, median, q1, q3, mean
+  min , max , median, q1 , q3 , mean
 }
 
 
 interface IBoxPlotData {
 
-  min: number;
-  max: number;
-  median: number;
-  q1: number;
-  q3: number;
+  readonly min: number;
+  readonly max: number;
+  readonly median: number;
+  readonly q1: number;
+  readonly q3: number;
 }
 
 interface IDataStat {
-  min: number,
-  max: number,
-  sort: string,
-  threshold: number,
-  dataLength: number,
-  colorRange: any
+  readonly min: number,
+  readonly max: number,
+  readonly sort: string,
+  readonly threshold: number,
+  readonly dataLength: number,
+  readonly colorRange: any
 }
 
 
@@ -105,11 +103,25 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
       colorRange: (<any>desc).colorRange || ['blue', 'red']
     };
 
-    this.rendererInfo.rendererList = [{type: 'heatmapcustom', label: 'Heatmap'},
+    this.xposScale
+      .domain([0, this.data.dataLength - 1]);
+
+    this.yposScale
+      .domain([this.data.min, this.data.max]);
+
+    this.boxPlotScale
+      .domain([this.data.min, this.data.max]);
+
+    this.verticalBarScale
+      .domain([this.data.min, this.data.max]);
+
+    const rendererList = [{type: 'heatmapcustom', label: 'Heatmap'},
       {type: 'boxplot', label: 'Boxplot'},
       {type: 'sparkline', label: 'Sparkline'},
       {type: 'threshold', label: 'Threshold'},
       {type: 'verticalbar', label: 'VerticalBar'}];
+
+    this.setRendererList(rendererList);
 
     this.defineColorRange();
 
@@ -145,21 +157,18 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     return this.colorScale;
   }
 
-  calculateCellDimension(width) {
-
+  calculateCellDimension(width:number) {
 
     return (width * 1 / this.data.dataLength);
   }
 
   getSparkLineXScale() {
-    this.xposScale
-      .domain([0, this.data.dataLength - 1]);
+
     return this.xposScale;
   }
 
   getSparkLineYScale() {
-    this.yposScale
-      .domain([this.data.min, this.data.max]);
+
     return this.yposScale;
   }
 
@@ -180,40 +189,29 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
   }
 
   getVerticalBarScale() {
-    this.verticalBarScale
-      .domain([this.data.min, this.data.max]);
     return this.verticalBarScale;
   }
 
-  getboxPlotScale(width) {
-    this.boxPlotScale
-      .domain([this.data.min, this.data.max])
-      .range([0, 1 * width])
+  getboxPlotScale(width: number) {
+
+    this.boxPlotScale.range([0, 1 * width]);
 
     return this.boxPlotScale;
   }
 
 
-  getboxPlotData(data, scale) {
-
-    var boxPlotData = <IBoxPlotData>{};
+  getboxPlotData(data: number[], scale: d3.scale.Linear<number,number>) {
 
     const minval_arr = Math.min.apply(Math, data);
     const maxval_arr = Math.max.apply(Math, data);
     const sorteddata = data.slice().sort(numSort);
 
-    boxPlotData.q1 = scale(d3.quantile(sorteddata, 0.25));
-    boxPlotData.median = scale(d3.quantile(sorteddata, 0.50));
-    boxPlotData.q3 = scale(d3.quantile(sorteddata, 0.75));
-    boxPlotData.min = scale(minval_arr);
-    boxPlotData.max = scale(maxval_arr);
-
-    const boxdata = {
-      min: boxPlotData.min,
-      median: boxPlotData.median,
-      q1: boxPlotData.q1,
-      q3: boxPlotData.q3,
-      max: boxPlotData.max
+    const boxdata = <IBoxPlotData>{
+      min: scale(minval_arr),
+      median: scale(d3.quantile(sorteddata, 0.50)),
+      q1: scale(d3.quantile(sorteddata, 0.25)),
+      q3: scale(d3.quantile(sorteddata, 0.75)),
+      max: scale(maxval_arr)
     };
 
     return (boxdata);
@@ -224,37 +222,34 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     return this.data.sort;
   }
 
-  setUserSortBy(rank) {
+  setUserSortBy(rank: string) {
 
     let ascending = false;
 
     switch (rank) {
-      case Sort.min:
+      case Sort[Sort.min]:
         ascending = true;
         break;
-      case Sort.max:
+      case Sort[Sort.max]:
         ascending = false;
         break;
-      case Sort.mean:
+      case Sort[Sort.mean]:
         ascending = true;
         break;
-      case Sort.median:
+      case Sort[Sort.median]:
         ascending = false;
         break;
-      case Sort.q1:
+      case Sort[Sort.q1]:
         ascending = true;
         break;
-      case Sort.q3:
+      case Sort[Sort.q3]:
         ascending = false;
         break;
       default:
         ascending = false;
     }
-
     this.sortByMe(ascending);
   }
-
-  //setRendererList(this.rendererInfo.rendererList);
 
 
 }

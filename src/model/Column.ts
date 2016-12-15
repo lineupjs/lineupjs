@@ -156,7 +156,7 @@ export default class Column extends AEventDispatcher {
   private compressed = false;
 
 
-  protected rendererInfo: IRendererInfo;
+  private rendererInfo: IRendererInfo;
 
 
   constructor(id: string, public desc: IColumnDesc) {
@@ -475,7 +475,7 @@ export default class Column extends AEventDispatcher {
     return this.rendererInfo.rendererList;
   }
 
-  setRendererList(rendererList) {
+  protected setRendererList(rendererList) {
 
     this.rendererInfo.rendererList = rendererList;
 
