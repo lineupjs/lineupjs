@@ -237,26 +237,24 @@ class SparklineCellRenderer implements ICellRendererFactory {
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
 
     var xScale: any = col.getSparkLineXScale().range([0, col.getWidth()]);
-
     var yScale: any = col.getSparkLineYScale();
 
     return {
 
       template: `<g class="sparklinecell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const path = d3.select(n).selectAll('path').data([<any>col.getValue(d.v, d.dataIndex)]);
-
-        var line = d3.svg.line<number>();
+        const data = col.getValue(d.v, d.dataIndex);
         yScale.range([context.rowHeight(i), 0]);
-        path.enter().append('path');
-        path
-          .attr('d', function (d, i) {
-            line
-              .x((d, j) => xScale(j))
-              .y((d, j) => yScale(d));
-            return line(<any>d);
-          });
-        path.exit().remove();
+        var line = d3.svg.line<number>()
+          .x((d, j) => xScale(j))
+          .y((d, j) => yScale(d))
+          .interpolate('linear');
+
+        let path = d3.select(n).select('path');
+        if (path.size() === 0) {
+          path = d3.select(n).append('path');
+        }
+        path.attr('d', line(data));
       }
     };
   }
@@ -364,7 +362,6 @@ function verticalBarYpos(dataInfo, cellData, scale, rowHeight) {
 
   return verticalBarYpos;
 }
-
 
 class VerticalBarCellRenderer implements ICellRendererFactory {
 

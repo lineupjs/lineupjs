@@ -1679,18 +1679,17 @@ var SparklineCellRenderer = (function () {
         return {
             template: "<g class=\"sparklinecell\"></g>",
             update: function (n, d, i) {
-                var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
-                var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line();
+                var data = col.getValue(d.v, d.dataIndex);
                 yScale.range([context.rowHeight(i), 0]);
-                path.enter().append('path');
-                path
-                    .attr('d', function (d, i) {
-                    line
-                        .x(function (d, j) { return xScale(j); })
-                        .y(function (d, j) { return yScale(d); });
-                    return line(d);
-                });
-                path.exit().remove();
+                var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line()
+                    .x(function (d, j) { return xScale(j); })
+                    .y(function (d, j) { return yScale(d); })
+                    .interpolate("linear");
+                var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).select('path');
+                if (path.size() === 0) {
+                    path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).append('path');
+                }
+                path.attr('d', line(data));
             }
         };
     };

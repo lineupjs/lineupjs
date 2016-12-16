@@ -79,14 +79,14 @@ window.onload = function () {
       {label: 'Country', type: 'string', column: 'stringdata'},
       {
         label: 'MultiValue',
-        type: 'heatmapcustom',
+        type: 'sparkline',
         column: 'multidata',
         domain: [multidata_min, multidata_max],
         colorRange: ['blue', 'red'],
         sort: 'min',
         threshold: 0,
         dataLength: multidata_length,
-        rendererType: 'heatmapcustom'
+        rendererType: 'sparkline'
       },
       {
         label: 'upset',
