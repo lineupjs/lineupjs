@@ -241,20 +241,15 @@ class SparklineCellRenderer implements ICellRendererFactory {
 
     return {
 
-      template: `<g class="sparklinecell"></g>`,
+      template: `<path class="sparklinecell"></path>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const data = col.getValue(d.v, d.dataIndex);
         yScale.range([context.rowHeight(i), 0]);
         var line = d3.svg.line<number>()
           .x((d, j) => xScale(j))
           .y((d, j) => yScale(d))
           .interpolate('linear');
+        d3.select(n).attr('d', line(col.getValue(d.v, d.dataIndex)));
 
-        let path = d3.select(n).select('path');
-        if (path.size() === 0) {
-          path = d3.select(n).append('path');
-        }
-        path.attr('d', line(data));
       }
     };
   }

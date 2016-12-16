@@ -1677,19 +1677,14 @@ var SparklineCellRenderer = (function () {
         var xScale = col.getSparkLineXScale().range([0, col.getWidth()]);
         var yScale = col.getSparkLineYScale();
         return {
-            template: "<g class=\"sparklinecell\"></g>",
+            template: "<path class=\"sparklinecell\"></path>",
             update: function (n, d, i) {
-                var data = col.getValue(d.v, d.dataIndex);
                 yScale.range([context.rowHeight(i), 0]);
                 var line = __WEBPACK_IMPORTED_MODULE_2_d3__["svg"].line()
                     .x(function (d, j) { return xScale(j); })
                     .y(function (d, j) { return yScale(d); })
-                    .interpolate("linear");
-                var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).select('path');
-                if (path.size() === 0) {
-                    path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).append('path');
-                }
-                path.attr('d', line(data));
+                    .interpolate('linear');
+                __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).attr('d', line(col.getValue(d.v, d.dataIndex)));
             }
         };
     };
