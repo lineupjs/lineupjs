@@ -36,6 +36,10 @@
   },
   "homepage": "https://github.com/Caleydo/lineup.js",
   "main": "dist/LineUpJS.js",
+  "files": [
+    "src",
+    "build"
+  ],
   "scripts": {
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
