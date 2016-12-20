@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+var path = require("path");
+var tsconfigPath = path.resolve(process.cwd(), "tsconfig.json");
+var tsconfig = require(tsconfigPath);
+if (tsconfig.compilerOptions && tsconfig.compilerOptions.lib) {
+    tsconfig.compilerOptions.lib.forEach(function(lib) {
+        process.argv.push("node_modules/typescript/lib/lib." + lib + ".d.ts");
+    });
+}
+var td = require('../lib/cli.js');
+new td.CliApplication();

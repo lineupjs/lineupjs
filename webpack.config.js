@@ -15,7 +15,7 @@ function generate(bundle, min) {
       'LineUpJS_react': './src/react/index.tsx'
     },
     output: {
-      path: './dist',
+      path: './build',
       filename: '[name]' + (bundle ? '_bundle' : '') + (min ? '.min' : '') + '.js',
       library: 'LineUpJS',
       libraryTarget: 'umd',
