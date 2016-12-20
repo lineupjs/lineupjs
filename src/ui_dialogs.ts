@@ -4,12 +4,21 @@
  * Created by Samuel Gratzl on 24.08.2015.
  */
 
-import model = require('./model');
-import utils = require('./utils');
-import mappingeditor = require('./mappingeditor');
-import provider = require('./provider');
+import Column from './model/Column';
+import StringColumn from './model/StringColumn';
+import CategoricalColumn from './model/CategoricalColumn';
+import LinkColumn from './model/LinkColumn';
+import StackColumn from './model/StackColumn';
+import ScriptColumn from './model/ScriptColumn';
+import BooleanColumn from './model/BooleanColumn';
+import NumberColumn, {IMappingFunction} from './model/NumberColumn';
+import CategoricalNumberColumn from './model/CategoricalNumberColumn';
+import {offset} from './utils';
+import MappingEditor from './mappingeditor';
+import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
+import DataProvider from './provider/ADataProvider';
 
-export function dialogForm(title, body, buttonsWithLabel = false) {
+export function dialogForm(title: string, body: string) {
   return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
     '<form onsubmit="return false">' +
     body + '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
@@ -19,14 +28,14 @@ export function dialogForm(title, body, buttonsWithLabel = false) {
 
 /**
  * creates a simple popup dialog under the given attachment
- * @param attachment
+ * @param attachement
  * @param title
  * @param body
  * @returns {Selection<any>}
  */
-export function makePopup(attachement:d3.Selection<any>, title:string, body:string) {
-  var pos = utils.offset(<Element>attachement.node());
-  var $popup = d3.select('body').append('div')
+export function makePopup(attachement:Selection<any>, title:string, body:string) {
+  const pos = offset(<Element>attachement.node());
+  const $popup = select('body').append('div')
     .attr({
       'class': 'lu-popup2'
     }).style({
@@ -34,21 +43,21 @@ export function makePopup(attachement:d3.Selection<any>, title:string, body:stri
       top: pos.top + 'px'
     }).html(dialogForm(title, body));
   function movePopup() {
-    //.style("left", (this.parentElement.offsetLeft + (<any>d3.event).dx) + 'px')
-    //.style("top", (this.parentElement.offsetTop + d3.event.dy) + 'px');
+    //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
+    //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
     //const mouse = d3.mouse(this.parentElement);
     $popup.style({
-      left: (this.parentElement.offsetLeft + (<any>d3.event).dx) + 'px',
-      top:  (this.parentElement.offsetTop + (<any>d3.event).dy) + 'px'
+      left: (this.parentElement.offsetLeft + (<any>d3event).dx) + 'px',
+      top:  (this.parentElement.offsetTop + (<any>d3event).dy) + 'px'
     });
   }
-  $popup.select('span.lu-popup-title').call(d3.behavior.drag().on('drag', movePopup));
+  $popup.select('span.lu-popup-title').call(behavior.drag().on('drag', movePopup));
   $popup.on('keydown', () => {
-    if (d3.event.which === 27) {
+    if ((<KeyboardEvent>d3event).which === 27) {
       $popup.remove();
     }
   });
-  var auto = <HTMLInputElement>$popup.select('input[autofocus]').node();
+  const auto = <HTMLInputElement>$popup.select('input[autofocus]').node();
   if (auto) {
     auto.focus();
   }
@@ -61,16 +70,16 @@ export function makePopup(attachement:d3.Selection<any>, title:string, body:stri
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-export function openRenameDialog(column:model.Column, $header:d3.Selection<model.Column>) {
-  var popup = makePopup($header, 'Rename Column', `
+export function openRenameDialog(column:Column, $header:d3.Selection<Column>) {
+  const popup = makePopup($header, 'Rename Column', `
     <input type="text" size="15" value="${column.label}" required="required" autofocus="autofocus"><br>
     <input type="color" size="15" value="${column.color}" required="required"><br>
     <textarea rows="5">${column.description}</textarea><br>`);
 
   popup.select('.ok').on('click', function () {
-    var newValue = popup.select('input[type="text"]').property('value');
-    var newColor = popup.select('input[type="color"]').property('value');
-    var newDescription = popup.select('textarea').property('value');
+    const newValue = popup.select('input[type="text"]').property('value');
+    const newColor = popup.select('input[type="color"]').property('value');
+    const newDescription = popup.select('textarea').property('value');
     column.setMetaData( { label: newValue, color: newColor, description: newDescription});
     popup.remove();
   });
@@ -85,17 +94,19 @@ export function openRenameDialog(column:model.Column, $header:d3.Selection<model
  * opens a dialog for editing the link of a column
  * @param column the column to rename
  * @param $header the visual header element of this column
+ * @param templates list of possible link templates
+ * @param idPrefix dom id prefix
  */
-export function openEditLinkDialog(column:model.LinkColumn, $header:d3.Selection<model.Column>, templates: string[] = []) {
-  var t = `<input type="text" size="15" value="${column.getLink()}" required="required" autofocus="autofocus" ${templates.length > 0 ? 'list="lineupPatternList"' : ''}><br>`;
+export function openEditLinkDialog(column:LinkColumn, $header:d3.Selection<Column>, templates: string[] = [], idPrefix: string) {
+  let t = `<input type="text" size="15" value="${column.getLink()}" required="required" autofocus="autofocus" ${templates.length > 0 ? 'list="ui'+idPrefix+'lineupPatternList"' : ''}><br>`;
   if (templates.length > 0) {
-    t += '<datalist id="lineupPatternList">'+templates.map((t) => `<option value="${t}">`)+'</datalist>';
+    t += '<datalist id="ui${idPrefix}lineupPatternList">'+templates.map((t) => `<option value="${t}">`)+'</datalist>';
   }
 
-  var popup = makePopup($header, 'Edit Link ($ as Placeholder)', t);
+  const popup = makePopup($header, 'Edit Link ($ as Placeholder)', t);
 
   popup.select('.ok').on('click', function () {
-    var newValue = popup.select('input[type="text"]').property('value');
+    const newValue = popup.select('input[type="text"]').property('value');
     column.setLink(newValue);
 
     popup.remove();
@@ -112,28 +123,28 @@ export function openEditLinkDialog(column:model.LinkColumn, $header:d3.Selection
  * @param $header the visual header element of this column
  * @param provider the data provider for the actual search
  */
-export function openSearchDialog(column:model.Column, $header:d3.Selection<model.Column>, provider:provider.DataProvider) {
-  var popup = makePopup($header, 'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
+export function openSearchDialog(column:Column, $header:d3.Selection<Column>, provider:DataProvider) {
+  const popup = makePopup($header, 'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
 
   popup.select('input[type="text"]').on('input', function () {
-    var search:any = (<HTMLInputElement>d3.event.target).value;
+    let search:any = (<HTMLInputElement>this).value;
     if (search.length >= 3) {
-      var isRegex = popup.select('input[type="checkbox"]').property('checked');
+      const isRegex = popup.select('input[type="checkbox"]').property('checked');
       if (isRegex) {
         search = new RegExp(search);
       }
-      provider.searchSelect(search, column);
+      provider.searchAndJump(search, column);
     }
   });
 
   function updateImpl() {
-    var search = popup.select('input[type="text"]').property('value');
-    var isRegex = popup.select('input[type="text"]').property('checked');
+    let search = popup.select('input[type="text"]').property('value');
+    const isRegex = popup.select('input[type="text"]').property('checked');
     if (search.length > 0) {
       if (isRegex) {
         search = new RegExp(search);
       }
-      provider.searchSelect(search, column);
+      provider.searchAndJump(search, column);
     }
     popup.remove();
   }
@@ -151,18 +162,18 @@ export function openSearchDialog(column:model.Column, $header:d3.Selection<model
  * @param column the column to filter
  * @param $header the visual header element of this column
  */
-export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selection<model.Column>) {
-  var weights = column.getWeights(),
+export function openEditWeightsDialog(column:StackColumn, $header:d3.Selection<Column>) {
+  const weights = column.getWeights(),
     children = column.children.map((d, i) => ({col: d, weight: weights[i] * 100} ));
 
   //map weights to pixels
-  var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
+  const scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 
-  var $popup = makePopup($header, 'Edit Weights', '<table></table>');
+  const $popup = makePopup($header, 'Edit Weights', '<table></table>');
 
   //show as a table with inputs and bars
-  var $rows = $popup.select('table').selectAll('tr').data(children);
-  var $rows_enter = $rows.enter().append('tr');
+  const $rows = $popup.select('table').selectAll('tr').data(children);
+  const $rows_enter = $rows.enter().append('tr');
   $rows_enter.append('td')
     .append('input').attr({
     type: 'number',
@@ -207,7 +218,7 @@ export function openEditWeightsDialog(column:model.StackColumn, $header:d3.Selec
  * @param $header
  * @param filtered
  */
-function markFiltered($header: d3.Selection<model.Column>, filtered = false) {
+function markFiltered($header: d3.Selection<Column>, filtered = false) {
   $header.classed('filtered', filtered);
 }
 
@@ -230,14 +241,14 @@ function sortbyName(prop: string) {
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Selection<model.Column>) {
-  var bak = column.getFilter() || [];
-  var popup = makePopup($header, 'Edit Filter', '<div class="selectionTable"><table><thead><th class="selectAll"></th><th>Category</th></thead><tbody></tbody></table></div>');
+function openCategoricalFilter(column:CategoricalColumn, $header:d3.Selection<Column>) {
+  const bak = column.getFilter() || [];
+  const popup = makePopup($header, 'Edit Filter', '<div class="selectionTable"><table><thead><th class="selectAll"></th><th>Category</th></thead><tbody></tbody></table></div>');
 
   // list all data rows !
   const colors = column.categoryColors,
     labels = column.categoryLabels;
-  var trData = column.categories.map(function (d, i) {
+  const trData = column.categories.map(function (d, i) {
     return {cat: d, label: labels[i], isChecked: bak.length === 0 || bak.indexOf(d) >= 0, color: colors[i]};
   }).sort(sortbyName('label'));
 
@@ -257,11 +268,11 @@ function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Select
 
   redraw();
 
-  var isCheckedAll = true;
+  let isCheckedAll = true;
 
   function redrawSelectAll() {
     popup.select('.selectAll').html((d) => '<i class="fa fa-' + ((isCheckedAll) ? 'check-' : '') + 'square-o"></i>');
-    popup.select('thead').on('click', (d) => {
+    popup.select('thead').on('click', () => {
       isCheckedAll = !isCheckedAll;
       trData.forEach((row) => row.isChecked = isCheckedAll);
       redraw();
@@ -286,7 +297,7 @@ function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Select
     updateData(null);
   });
   popup.select('.ok').on('click', function () {
-    var f = trData.filter((d) => d.isChecked).map(d => d.cat);
+    let f = trData.filter((d) => d.isChecked).map(d => d.cat);
     if (f.length === trData.length) {
       f = [];
     }
@@ -300,13 +311,13 @@ function openCategoricalFilter(column:model.CategoricalColumn, $header:d3.Select
  * @param column the column to filter
  * @param $header the visual header element of this column
  */
-function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.Column>) {
-  var bak = column.getFilter() || '', bakMissing = bak === model.StringColumn.FILTER_MISSING;
+function openStringFilter(column:StringColumn, $header:d3.Selection<Column>) {
+  let bak = column.getFilter() || '', bakMissing = bak === StringColumn.FILTER_MISSING;
   if (bakMissing) {
     bak = '';
   }
 
-  var $popup = makePopup($header, 'Filter',
+  const $popup = makePopup($header, 'Filter',
     `<input type="text" placeholder="containing..." autofocus="true" size="15" value="${(bak instanceof RegExp) ? bak.source : bak}" autofocus="autofocus">
     <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label><br><label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label>
     <br>`);
@@ -318,18 +329,18 @@ function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.
 
   function updateImpl(force) {
     //get value
-    var search:any = $popup.select('input[type="text"]').property('value');
-    var filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+    let search:any = $popup.select('input[type="text"]').property('value');
+    const filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
     if (filterMissing && search === '') {
-      search = model.StringColumn.FILTER_MISSING;
+      search = StringColumn.FILTER_MISSING;
     }
     if (search === '') { //reset
       updateData(search);
       return;
     }
     if (search.length >= 3 || force) {
-      var isRegex = $popup.select('input[type="checkbox"]:first-of-type').property('checked');
-      if (isRegex && search !== model.StringColumn.FILTER_MISSING) {
+      const isRegex = $popup.select('input[type="checkbox"]:first-of-type').property('checked');
+      if (isRegex && search !== StringColumn.FILTER_MISSING) {
         search = new RegExp(search);
       }
       updateData(search);
@@ -364,10 +375,10 @@ function openStringFilter(column:model.StringColumn, $header:d3.Selection<model.
  * @param column the column to filter
  * @param $header the visual header element of this column
  */
-function openBooleanFilter(column:model.BooleanColumn, $header:d3.Selection<model.Column>) {
-  var bak = column.getFilter();
+function openBooleanFilter(column:BooleanColumn, $header:d3.Selection<Column>) {
+  const bak = column.getFilter();
 
-  var $popup = makePopup($header, 'Filter',
+  const $popup = makePopup($header, 'Filter',
     `<label><input type="radio" name="boolean_check" value="null" ${bak === null ? 'checked="checked"': ''}>No Filter</label><br>
      <label><input type="radio" name="boolean_check" value="true" ${bak === true ? 'checked="checked"': ''}>True</label><br>
      <label><input type="radio" name="boolean_check" value="false" ${bak === false ? 'checked="checked"': ''}>False</label>
@@ -378,7 +389,7 @@ function openBooleanFilter(column:model.BooleanColumn, $header:d3.Selection<mode
     column.setFilter(filter);
   }
 
-  function updateImpl(force) {
+  function updateImpl() {
     //get value
     const isTrue = $popup.select('input[type="radio"][value="true"]').property('checked');
     const isFalse = $popup.select('input[type="radio"][value="false"]').property('checked');
@@ -399,7 +410,7 @@ function openBooleanFilter(column:model.BooleanColumn, $header:d3.Selection<mode
     updateData(null);
   });
   $popup.select('.ok').on('click', function () {
-    updateImpl(true);
+    updateImpl();
     $popup.remove();
   });
 }
@@ -410,7 +421,7 @@ function openBooleanFilter(column:model.BooleanColumn, $header:d3.Selection<mode
  * @param column the column to edit
  * @param $header the visual header element of this column
  */
-export function openEditScriptDialog(column:model.ScriptColumn, $header:d3.Selection<model.Column>) {
+export function openEditScriptDialog(column:ScriptColumn, $header:d3.Selection<Column>) {
   const bak = column.getScript();
   const $popup = makePopup($header, 'Edit Script',
     `Parameters: <code>values: number[], children: Column[]</code><br>
@@ -422,7 +433,7 @@ export function openEditScriptDialog(column:model.ScriptColumn, $header:d3.Selec
 
   function updateImpl() {
     //get value
-    var script = $popup.select('textarea').property('value');
+    const script = $popup.select('textarea').property('value');
     updateData(script);
   }
 
@@ -432,8 +443,8 @@ export function openEditScriptDialog(column:model.ScriptColumn, $header:d3.Selec
     $popup.remove();
   });
   $popup.select('.reset').on('click', function () {
-    $popup.select('textarea').property('value', model.ScriptColumn.DEFAULT_SCRIPT);
-    updateData(model.ScriptColumn.DEFAULT_SCRIPT);
+    $popup.select('textarea').property('value', ScriptColumn.DEFAULT_SCRIPT);
+    updateData(ScriptColumn.DEFAULT_SCRIPT);
   });
   $popup.select('.ok').on('click', function () {
     updateImpl();
@@ -446,16 +457,17 @@ export function openEditScriptDialog(column:model.ScriptColumn, $header:d3.Selec
  * @param column the column to rename
  * @param $header the visual header element of this column
  * @param data the data provider for illustrating the mapping by example
+ * @param idPrefix dom id prefix
  */
-function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>, data:provider.DataProvider) {
-  var pos = utils.offset($header.node()),
+function openMappingEditor(column:NumberColumn, $header:d3.Selection<any>, data:DataProvider, idPrefix: string) {
+  const pos = offset($header.node()),
+    original = column.getOriginalMapping();
+  let bakfilter = column.getFilter(),
     bak = column.getMapping(),
-    original = column.getOriginalMapping(),
-    bakfilter = column.getFilter(),
-    act: model.IMappingFunction = bak.clone(),
+    act: IMappingFunction = bak.clone(),
     actfilter = bakfilter;
 
-  var popup = d3.select('body').append('div')
+  const popup = select('body').append('div')
     .attr({
       'class': 'lu-popup'
     }).style({
@@ -464,21 +476,22 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
     })
     .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>'));
 
-  function applyMapping(newscale: model.IMappingFunction, filter: {min: number, max: number }) {
+  function applyMapping(newscale: IMappingFunction, filter: {min: number, max: number, filterMissing: boolean }) {
     act = newscale;
     actfilter = filter;
-    markFiltered($header, !newscale.eq(original) || (bakfilter.min !== filter.min || bakfilter.max !== filter.min));
+    markFiltered($header, !newscale.eq(original) || (bakfilter.min !== filter.min || bakfilter.max !== filter.min || bakfilter.filterMissing !== filter.filterMissing));
 
     column.setMapping(newscale);
     column.setFilter(filter);
   }
 
-  var editorOptions = {
+  const editorOptions = {
+    idPrefix: idPrefix,
     callback: applyMapping,
     triggerCallback: 'dragend'
   };
-  var data_sample = data.mappingSample(column);
-  var editor = mappingeditor.create(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, data_sample, editorOptions);
+  const data_sample = data.mappingSample(column);
+  let editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, data_sample, editorOptions);
 
 
   popup.select('.ok').on('click', function () {
@@ -493,11 +506,11 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
   popup.select('.reset').on('click', function () {
     bak = original;
     act = bak.clone();
-    bakfilter = {min: -Infinity, max: +Infinity};
+    bakfilter = NumberColumn.noFilter();
     actfilter = bakfilter;
     applyMapping(act, actfilter);
     popup.selectAll('.mappingArea *').remove();
-    editor = mappingeditor.create(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, data_sample, editorOptions);
+    editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, data_sample, editorOptions);
   });
 }
 
@@ -507,12 +520,12 @@ function openMappingEditor(column:model.NumberColumn, $header:d3.Selection<any>,
  * @param column the column to rename
  * @param $header the visual header element of this column
  */
-function openCategoricalMappingEditor(column:model.CategoricalNumberColumn, $header:d3.Selection<any>) {
-  var bak = column.getFilter() || [];
+function openCategoricalMappingEditor(column:CategoricalNumberColumn, $header:d3.Selection<any>) {
+  const bak = column.getFilter() || [];
 
-  var scale = d3.scale.linear().domain([0, 100]).range([0, 120]);
+  const scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 
-  var $popup = makePopup($header, 'Edit Categorical Mapping', '<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>');
+  const $popup = makePopup($header, 'Edit Categorical Mapping', '<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>');
 
   const range = column.getScale().range,
     colors = column.categoryColors,
@@ -522,8 +535,8 @@ function openCategoricalMappingEditor(column:model.CategoricalNumberColumn, $hea
     return {cat: d, label: labels[i], isChecked: bak.length === 0 || bak.indexOf(d) >= 0, range: range[i] * 100, color: colors[i]};
   }).sort(sortbyName('label'));
 
-  var $rows = $popup.select('tbody').selectAll('tr').data(trData);
-  var $rows_enter = $rows.enter().append('tr');
+  const $rows = $popup.select('tbody').selectAll('tr').data(trData);
+  const $rows_enter = $rows.enter().append('tr');
   $rows_enter.append('td').attr('class', 'checkmark').on('click', (d) => {
     d.isChecked = !d.isChecked;
     redraw();
@@ -550,11 +563,11 @@ function openCategoricalMappingEditor(column:model.CategoricalNumberColumn, $hea
 
   redraw();
 
-  var isCheckedAll = true;
+  let isCheckedAll = true;
 
   function redrawSelectAll() {
     $popup.select('.selectAll').html((d) => '<i class="fa fa-' + ((isCheckedAll) ? 'check-' : '') + 'square-o"></i>');
-    $popup.select('thead').on('click', (d) => {
+    $popup.select('thead').on('click', () => {
       isCheckedAll = !isCheckedAll;
       trData.forEach((row) => row.isChecked = isCheckedAll);
       redraw();
@@ -584,7 +597,7 @@ function openCategoricalMappingEditor(column:model.CategoricalNumberColumn, $hea
     column.setMapping(trData.map(() => 1));
   });
   $popup.select('.ok').on('click', function () {
-    var f = trData.filter((d) => d.isChecked).map(d => d.cat);
+    let f = trData.filter((d) => d.isChecked).map(d => d.cat);
     if (f.length === trData.length) {
       f = [];
     }

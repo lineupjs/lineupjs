@@ -1,0 +1,76 @@
+@import "colors";
+
+.lu div.lu-body {
+  font-size: $lu_body_font_size;
+  position: relative;
+
+  div, svg {
+    position: absolute;
+    padding: 0;
+    margin: 0;
+  }
+
+  div.text, div.cat {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  div.row {
+    div.bg {
+      background-color: transparent;
+      border: 1px solid transparent;
+    }
+    &.even div.bg {
+      background-color: $lu_even_bg;
+    }
+    &.selected {
+      div.bg {
+        border: 1px solid $lu_selected_color;
+      }
+    }
+    &.hover {
+      div.bg {
+        border: 1px solid $lu_hover_color;
+      }
+    }
+    &.selected, &.hover {
+      .bar {
+        //bars nested combined with a text representation
+        opacity: 0.5;
+
+        span {
+          opacity: 1.0;
+        }
+      }
+    }
+
+    div.selection:before {
+      content: "\f096";
+    }
+    &.selected div.selection:before {
+      content: "\f046";
+    }
+
+    //div.frozen {
+    //  background-color: white;
+    //  z-index: 1;
+    //}
+    //&.even div.frozen {
+    //  background-color: $lu_even_bg;
+    //}
+    //&.selected div.frozen {
+    //  border-top: 1px solid $lu_selected_color;
+    //  border-bottom: 1px solid $lu_selected_color;
+    //}
+    //&.hover div.frozen {
+    //  border-top: 1px solid $lu_hover_color;
+    //  border-bottom: 1px solid $lu_hover_color;
+    //}
+
+    div.cat div {
+      position: relative;
+      display: inline-block;
+    }
+  }
+}

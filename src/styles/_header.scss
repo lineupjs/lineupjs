@@ -16,6 +16,7 @@
 
   div.lu-header {
     position: relative;
+    z-index: 1;
   }
 
   *[draggable] {
@@ -26,12 +27,11 @@
   div.lu-header, div.lu-pool {
     position: relative;
 
-    background-color: white;
-
     .drop {
       width: 100%;
       height: 100%;
       position: absolute;
+      background-color: white;
 
       &.drag_over {
         background-color: $lu_drag_over;

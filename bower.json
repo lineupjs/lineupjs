@@ -34,18 +34,13 @@
   "private": false,
   "ignore": [
     "**/.*",
-    "node_modules",
-    "bower_components",
-    "index.html",
-    "demo",
-    "src",
-    "tmp",
-    "typings",
-    "typings.json",
-    "tslint.json",
-    "tsconfig.json",
-    "webpack.config.js",
     "assets",
-    "dist/docs"
+    "demo",
+    "dist/docs",
+    "node_modules",
+    "tsconfig.json",
+    "tslint.json",
+    "typedoc.json",
+    "webpack.config.js"
   ]
 }

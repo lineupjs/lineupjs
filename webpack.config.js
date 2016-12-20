@@ -1,5 +1,4 @@
 var webpack = require('webpack');
-var TypedocWebpackPlugin = require('typedoc-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var pkg = require('./package.json');
 
@@ -11,30 +10,40 @@ var banner = '/*! ' + ( pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' + 
 
 function generate(bundle, min) {
   var base = {
-    entry: './src/bundle.js',
+    entry: {
+      'LineUpJS': './src/index.ts',
+      'LineUpJS_react': './src/react/index.tsx'
+    },
     output: {
       path: './dist',
-      filename: 'LineUpJS' + (bundle ? '_bundle' : '') + (min ? '.min' : '') + '.js',
+      filename: '[name]' + (bundle ? '_bundle' : '') + (min ? '.min' : '') + '.js',
       library: 'LineUpJS',
       libraryTarget: 'umd',
       umdNamedDefine: false //anonymous require module
     },
     resolve: {
       // Add `.ts` and `.tsx` as a resolvable extension.
-      extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
+      extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
       alias: {
-        d3: '../node_modules/d3/d3'
+        d3: 'd3/d3'
       }
     },
     plugins: [
-      new webpack.BannerPlugin(banner, {raw: true})
+      new webpack.BannerPlugin({
+        banner: banner,
+        raw: true
+      })
       //rest depends on type
     ],
+    externals: { //react always external
+      react: 'React',
+      'react-dom': 'ReactDOM'
+    },
     module: {
       loaders: [
         {
           test: /\.scss$/,
-          loader: 'style!css!sass'
+          loader: 'style-loader!css-loader!sass-loader'
         },
         {
           test: /\.tsx?$/,
@@ -45,30 +54,18 @@ function generate(bundle, min) {
   };
   if (!bundle) {
     //don't bundle d3
-    base.externals = ['d3'];
+    base.externals.d3 = 'd3';
 
     //extract the included css file to own file
     var p = new ExtractTextPlugin('style' + (min ? '.min' : '') + '.css');
     base.plugins.push(p);
-    base.module.loaders[0].loader = p.extract(['css', 'sass']);
+    base.module.loaders[0].loader = p.extract(['css-loader', 'sass-loader']);
   }
   if (min) {
     base.plugins.push(new webpack.optimize.UglifyJsPlugin({compress: {warnings: false}}));
   } else {
     //generate source maps
     base.devtool = 'source-map';
-  }
-  if (!bundle && min) {
-    //generate docu
-    base.plugins.push(new TypedocWebpackPlugin({
-      target: 'es5',
-      module: 'commonjs', // 'amd' (default) | 'commonjs'
-      name: 'LineUp.js',
-
-      entryPoint: 'main.LineUp',
-      mode: 'modules',
-      theme: 'minimal'
-    }));
   }
   return base;
 }
