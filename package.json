@@ -39,7 +39,7 @@
   "scripts": {
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
-    "docs": "typedoc --options typedoc.json src/**.ts",
+    "docs": "cp -r typedoc_hacked ./node_modules/typedoc/bin/typedoc && typedoc --options typedoc.json src",
     "pretest": "npm run compile",
     "test": "echo 'no tests'",
     "posttest": "npm run lint",
@@ -65,7 +65,7 @@
     "sass-loader": "^4.0.2",
     "style-loader": "^0.13.1",
     "tslint": "^3.15.1",
-    "typedoc": "^0.5.0",
+    "typedoc": "^0.5.1",
     "typescript": "2.1.1",
     "webpack": "^2.1.0-beta.25"
   },
