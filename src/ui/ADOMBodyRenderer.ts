@@ -51,7 +51,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     return $rows;
   }
 
-  renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number): Promise<void> {
+  private renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number): Promise<any> {
     const that = this;
     const domMapping = this.domMapping;
     const g = this.domMapping.g;
@@ -138,7 +138,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     {
       let $meanlines = $rankings.select(g + '.meanlines').selectAll(domMapping.meanLine + '.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
       $meanlines.enter().append(domMapping.meanLine).attr('class', 'meanline');
-      $meanlines.each(function (d, i, j) {
+      $meanlines.each(function (d) {
         const h = that.histCache.get(d.column.id);
         const $mean = d3.select(this);
         if (!h) {
@@ -158,7 +158,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
   }
 
   select(dataIndex: number, additional = false) {
-    var selected = super.select(dataIndex, additional);
+    const selected = super.select(dataIndex, additional);
     this.$node.selectAll(`[data-data-index="${dataIndex}"`).classed('selected', selected);
     return selected;
   }
@@ -197,12 +197,12 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     $slopes.call(this.domMapping.updateSlopes, this.options.slopeWidth, height, (d, i) => ((data[i + 1].shift - this.options.slopeWidth)));
 
     const $lines = $slopes.selectAll('line.slope').data((d) => {
-      var cache = {};
-      d.right.forEach((data_index, pos) => cache[data_index] = pos);
+      const cache = new Map<number,number>();
+      d.right.forEach((data_index, pos) => cache.set(data_index, pos));
       return d.left.map((data_index, pos) => ({
         data_index: data_index,
         lpos: pos,
-        rpos: cache[data_index]
+        rpos: cache.get(data_index)
       })).filter((d) => d.rpos != null);
     });
     $lines.enter().append('line').attr({
@@ -231,9 +231,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     this.currentFreezeLeft = left;
   }
 
-  updateClipPaths(data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
-    //no clip paths in HTML
-  }
+  protected abstract updateClipPaths(data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number);
 
   protected createContextImpl(index_shift: number): IBodyRenderContext {
     return this.createContext(index_shift, this.domMapping.creator);
@@ -243,7 +241,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     // - ... added one to often
     this.domMapping.setSize(this.node, Math.max(0, width), height);
 
-    var $body = this.$node.select(this.domMapping.g + '.body');
+    let $body = this.$node.select(this.domMapping.g + '.body');
     if ($body.empty()) {
       $body = this.$node.append(this.domMapping.g).classed('body', true);
     }

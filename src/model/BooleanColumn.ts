@@ -22,7 +22,7 @@ export default class BooleanColumn extends ValueColumn<boolean> {
   }
 
   getValue(row:any, index: number) {
-    var v:any = super.getValue(row, index);
+    const v:any = super.getValue(row, index);
     if (typeof(v) === 'undefined' || v == null) {
       return false;
     }
@@ -35,7 +35,7 @@ export default class BooleanColumn extends ValueColumn<boolean> {
   }
 
   dump(toDescRef:(desc:any) => any):any {
-    var r = super.dump(toDescRef);
+    let r = super.dump(toDescRef);
     if (this.currentFilter !== null) {
       r.filter = this.currentFilter;
     }
@@ -57,7 +57,7 @@ export default class BooleanColumn extends ValueColumn<boolean> {
     if (!this.isFiltered()) {
       return true;
     }
-    var r = this.getValue(row, index);
+    const r = this.getValue(row, index);
     return r === this.currentFilter;
   }
 

@@ -7,7 +7,7 @@ import {merge, delayedCall, AEventDispatcher} from '../utils';
 import {Ranking, isNumberColumn} from '../model';
 import Column, {IStatistics, ICategoricalStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import DataProvider, {IDataRow, default as ADataProvider} from '../provider/ADataProvider';
+import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
 
 export interface ISlicer {
@@ -17,7 +17,7 @@ export interface ISlicer {
 export interface IBodyRenderer extends AEventDispatcher {
   histCache: Map<string, Promise<IStatistics>>;
 
-  node: Element;
+  readonly node: Element;
 
   setOption(key: string, value: any);
 
@@ -40,21 +40,21 @@ export interface IBodyRenderContext extends IRenderContext<any> {
 }
 
 export interface IRankingColumnData {
-  column: Column;
-  renderer: any;
-  shift: number;
+  readonly column: Column;
+  readonly renderer: any;
+  readonly shift: number;
 }
 
 export interface IRankingData {
-  id: string;
-  ranking: Ranking;
-  order: number[];
-  shift: number;
-  width: number;
-  frozen: IRankingColumnData[];
-  frozenWidth: number;
-  columns: IRankingColumnData[];
-  data: Promise<IDataRow>[];
+  readonly id: string;
+  readonly ranking: Ranking;
+  readonly order: number[];
+  readonly shift: number;
+  readonly width: number;
+  readonly frozen: IRankingColumnData[];
+  readonly frozenWidth: number;
+  readonly columns: IRankingColumnData[];
+  readonly data: Promise<IDataRow>[];
 }
 
 export interface IBodyRendererOptions {
@@ -175,7 +175,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
       option: findOption,
 
-      rowHeight(index: number) {
+      rowHeight() {
         return options.rowHeight - options.rowPadding;
       },
 
@@ -226,12 +226,12 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     const data = this.data.fetch(orders);
 
     const padding = this.options.columnPadding;
-    var totalWidth = 0;
+    let totalWidth = 0;
     const rdata = rankings.map((r, i) => {
       const cols = r.children.filter((d) => !d.isHidden());
 
       const rankingShift = totalWidth;
-      var width = 0;
+      let width = 0;
 
       const colData = cols.map((o) => {
         const colShift = width;

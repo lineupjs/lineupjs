@@ -57,11 +57,11 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   }
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
-    var self = null;
+    let self = null;
     const children = levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => !c.isHidden());
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      var w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
+      let w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
       if (!this.collapsed && !this.getCompressed()) {
         w += (children.length - 1) * padding;
       }
@@ -71,7 +71,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       }
     }
     //push children
-    var acc = offset;
+    let acc = offset;
     children.forEach((c) => {
       acc += c.flatten(r, acc, levelsToGo - 1, padding) + padding;
     });
@@ -154,16 +154,16 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
 
   setWeights(weights: number[]) {
     const bak = this.getWeights();
-    var s,
-      delta = weights.length - this.length;
+    const delta = weights.length - this.length;
+    let s: number;
     if (delta < 0) {
       s = weights.reduce((p, a) => p + a, 0);
       if (s <= 1) {
-        for (var i = 0; i < -delta; ++i) {
+        for (let i = 0; i < -delta; ++i) {
           weights.push((1 - s) * (1 / -delta));
         }
       } else if (s <= 100) {
-        for (var i = 0; i < -delta; ++i) {
+        for (let i = 0; i < -delta; ++i) {
           weights.push((100 - s) * (1 / -delta));
         }
       }
@@ -203,6 +203,16 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     if (this.getCollapsed()) {
       return StackColumn.COLLAPSED_RENDERER;
     }
-    return super.rendererType();
+    return super.getRendererType();
+  }
+
+  /**
+   * describe the column if it is a sorting criteria
+   * @param toId helper to convert a description to an id
+   * @return {string} json compatible
+   */
+  toSortingDesc(toId: (desc: any) => string): any {
+    const w = this.getWeights();
+    return this._children.map((c, i) => ({weight: w[i], id: c.toSortingDesc(toId)}));
   }
 }

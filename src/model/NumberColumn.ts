@@ -3,7 +3,7 @@
  */
 
 import {scale, format} from 'd3';
-import Column, {IColumnDesc, IStatistics} from './Column';
+import Column, {IColumnDesc} from './Column';
 import ValueColumn from './ValueColumn';
 
 
@@ -288,10 +288,15 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
+
+    const rendererList = [{type: 'number', label: 'Bar'},
+      {type: 'circle', label: 'Circle'}];
+
+    this.setRendererList(rendererList);
   }
 
   dump(toDescRef: (desc: any) => any) {
-    var r = super.dump(toDescRef);
+    let r = super.dump(toDescRef);
     r.map = this.mapping.dump();
     r.filter = this.currentFilter;
     r.missingValue = this.missingValue;
@@ -338,7 +343,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   getRawValue(row: any, index: number) {
-    var v: any = super.getValue(row, index);
+    const v: any = super.getValue(row, index);
     if (isMissingValue(v)) {
       return this.missingValue;
     }
@@ -346,7 +351,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   getValue(row: any, index: number) {
-    var v = this.getRawValue(row, index);
+    const v = this.getRawValue(row, index);
     if (isNaN(v)) {
       return v;
     }
@@ -432,6 +437,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   /**
    * filter the current row if any filter is set
    * @param row
+   * @param index row index
    * @returns {boolean}
    */
   filter(row: any, index: number) {
@@ -446,10 +452,12 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
   }
 
-  rendererType(): string {
+  getRendererType(): string {
     if (this.getCompressed()) {
       return NumberColumn.COMPRESSED_RENDERER;
     }
-    return super.rendererType();
+    return super.getRendererType();
   }
+
+
 }

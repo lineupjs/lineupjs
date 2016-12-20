@@ -40,16 +40,16 @@
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
     "docs": "typedoc --options typedoc.json src/**.ts",
-    "prebuild": "npm run test",
     "pretest": "npm run compile",
     "test": "echo 'no tests'",
     "posttest": "npm run lint",
+    "prebuild": "npm run test",
     "build": "webpack",
     "watch": "webpack --watch",
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
-	"predist": "npm run build",
+    "predist": "npm run build",
     "dist": "mkdirp dists && cd dist && tar cvzf ../dists/lineupjs.tar.gz *"
   },
   "repository": {
@@ -66,7 +66,7 @@
     "style-loader": "^0.13.1",
     "tslint": "^3.15.1",
     "typedoc": "^0.5.0",
-    "typescript": "^2.0.3",
+    "typescript": "2.1.1",
     "webpack": "^2.1.0-beta.25"
   },
   "optionalDependencies": {

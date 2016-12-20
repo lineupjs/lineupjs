@@ -57,59 +57,57 @@ window.onload = function () {
       singldata_max = d3.max([singldata_max, parseFloat(d.single_score)])
 
 
-    })
+    });
 
 
     var arr1 = [];
-    newdata.reduce(function (a, b, i) {
-      var arraydata = b.health_score.map(function (x) {
-        return parseFloat(x);
-
-      });
-
-
+    newdata.map(function (x) {
+      var arraydata = x.health_score.map(Number);
       return arr1.push({
-        stringdata: b.country,
+        stringdata: x.country,
         multidata: arraydata,
-        singledata: parseFloat(b.single_score),
+        singledata: parseFloat(x.single_score),
         upsetdata: catdata(4)
       })
 
-    }, 0);
+    });
+
 
     console.log(arr1)
 
     var desc1 = [
       {label: 'Country', type: 'string', column: 'stringdata'},
       {
-        label: 'HeatMap',
-        type: 'heatmapcustom',
+        label: 'MultiValue',
+        type: 'sparkline',
         column: 'multidata',
         domain: [multidata_min, multidata_max],
-        colorrange: ['blue', 'red'],
+        colorRange: ['blue', 'red'],
         sort: 'min',
-        threshold:0,
-        datalength: multidata_length,
-        renderertype: ['heatmapcustom', 'boxplot', 'sparkline', 'threshold', 'verticalbar']
+        threshold: 0,
+        dataLength: multidata_length,
+        rendererType: 'sparkline'
       },
       {
         label: 'upset',
-        type: 'upset',
+        type: 'set',
         column: 'upsetdata',
         sdomain: [multidata_min, multidata_max],
         colorrange: ['blue', 'red'],
         sort: 'countcategory',
-        datalength: multidata_length,
-        renderertype: ['upset']
+        dataLength: multidata_length
+
       },
       {
         label: 'Number',
         type: 'number',
         column: 'singledata',
-        domain: [singldata_min, singldata_max],
-        renderertype: ['number', 'circle']
+        domain: [singldata_min, singldata_max]
+
       }
-   ];
+    ];
+
+    console.log(desc1)
 
     var p = new LineUpJS.provider.LocalDataProvider(arr1, desc1);
     var r = p.pushRanking();
@@ -129,7 +127,7 @@ window.onload = function () {
         autoRotateLabels: true
       },
       body: {
-        renderer: 'canvas',
+        renderer: 'svg',
         freezeCols: 3
       },
       header: {

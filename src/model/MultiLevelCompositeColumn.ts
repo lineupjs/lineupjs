@@ -22,7 +22,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     super(id, desc);
     const that = this;
     this.adaptChange = function (old, new_) {
-      that.adaptWidthChange(this.source, old, new_);
+      that.adaptWidthChange(old, new_);
     };
   }
 
@@ -60,7 +60,6 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
    * inserts a column at a the given position
    * @param col
    * @param index
-   * @param weight
    * @returns {any}
    */
   insert(col: Column, index: number) {
@@ -73,11 +72,10 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
 
   /**
    * adapts weights according to an own width change
-   * @param col
    * @param old
    * @param new_
    */
-  private adaptWidthChange(col: Column, old: number, new_: number) {
+  private adaptWidthChange(old: number, new_: number) {
     if (old === new_) {
       return;
     }
@@ -99,10 +97,10 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     super.setWidth(value);
   }
 
-  rendererType() {
+  getrendererType() {
     if (this.getCollapsed()) {
       return MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED;
     }
-    return super.rendererType();
+    return super.getRendererType();
   }
 }

@@ -21,17 +21,13 @@ import CategoricalNumberColumn from './CategoricalNumberColumn';
 import NestedColumn from './NestedColumn';
 import DummyColumn from './DummyColumn';
 import LinkColumn from './LinkColumn';
-import HeatmapColumn from './HeatmapColumn';
-import SparklineColumn from './SparklineColumn';
-import ThresholdColumn from './ThresholdColumn';
-import VerticalBarColumn from './VerticalBarColumn';
-import BoxplotColumn from './BoxplotColumn';
-import UpsetColumn from './UpsetColumn';
-import CircleColumn from './CircleColumn';
+import SetColumn from './SetColumn';
+import MultiValueColumn from './MultiValueColumn';
 
 
 export {default as Column, IColumnDesc} from './Column';
-export {ScaleMappingFunction, ScriptMappingFunction, isNumberColumn} from './NumberColumn';
+export {default as CompositeColumn} from './CompositeColumn';
+export {createMappingFunction, ScaleMappingFunction, ScriptMappingFunction, isNumberColumn} from './NumberColumn';
 export {isCategoricalColumn} from './CategoricalColumn';
 export {default as Ranking, isSupportType} from './Ranking';
 export {createDesc as createMinDesc} from './MinColumn';
@@ -94,17 +90,17 @@ export function models() {
     actions: DummyColumn,
     annotate: AnnotateColumn,
     selection: SelectionColumn,
-    heatmapcustom: HeatmapColumn,
-    sparkline: SparklineColumn,
     max: MaxColumn,
     min: MinColumn,
     mean: MeanColumn,
     script: ScriptColumn,
     nested: NestedColumn,
-    threshold: ThresholdColumn,
-    verticalbar: VerticalBarColumn,
-    boxplot: BoxplotColumn,
-    upset: UpsetColumn,
-    circle: CircleColumn
+    heatmapcustom: MultiValueColumn,
+    sparkline: MultiValueColumn,
+    threshold: MultiValueColumn,
+    verticalbar: MultiValueColumn,
+    boxplot: MultiValueColumn,
+    set: SetColumn,
+    circle: NumberColumn
   };
 }

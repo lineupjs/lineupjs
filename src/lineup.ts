@@ -3,7 +3,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {IColumnDesc, Column} from './model';
+import Column, {IColumnDesc} from './model/Column';
 import DataProvider  from './provider/ADataProvider';
 import {renderers as defaultRenderers, ICellRendererFactory}  from './renderer';
 import {
@@ -119,111 +119,38 @@ export default class LineUp extends AEventDispatcher {
    * default config of LineUp with all available options
    */
   config: ILineUpConfig = {
-    /**
-     * a prefix used for all generated html ids
-     */
     idPrefix: Math.random().toString(36).slice(-8).substr(0, 3), //generate a random string with length3
-
-    /**
-     * options related to the header html layout
-     */
     header: {
-      /**
-       * standard height of the header
-       */
       headerHeight: 20,
-      /**
-       * height of the header including histogram
-       */
       headerHistogramHeight: 40,
-      /**
-       * should labels be automatically rotated if they doesn't fit?
-       */
       autoRotateLabels: false,
-      /**
-       * space reserved if a label is rotated
-       */
       rotationHeight: 50, //in px
-      /**
-       * the degrees to rotate a label
-       */
       rotationDegree: -20, //in deg
-      /**
-       * hook for adding buttons to rankings in the header
-       */
       rankingButtons: <IRankingHook>dummyRankingButtonHook,
-
-      /**
-       * templates for link patterns
-       */
       linkTemplates: []
     },
-    /**
-     * old name for header
-     */
     htmlLayout: {},
-    /**
-     * visual representation options
-     */
     renderingOptions: {
-      /**
-       * show combined bars as stacked bars
-       */
       stacked: true,
-      /**
-       * use animation for reordering
-       */
       animation: true,
-      /**
-       * show histograms of the headers (just settable at the beginning)
-       */
       histograms: false,
-      /**
-       * show a mean line for single numberial columns
-       */
       meanLine: false,
     },
-    /**
-     * options related to the rendering of the body
-     */
     body: {
-      renderer: 'svg', //svg, canvas
+      renderer: 'svg', //svg, canvas, html
       rowHeight: 18,
       rowPadding: 1,
       rowBarPadding: 1,
-
-      /**
-       * whether just the visible rows or all rows should be rendered - rendering performance (default: true)
-       */
       visibleRowsOnly: true,
-
-      /**
-       * number of backup rows to keep to avoid updating on every small scroll thing
-       */
       backupScrollRows: 4,
       animationDuration: 1000,
-
-      //number of cols that should be frozen on the left side
       freezeCols: 0,
 
       actions: []
     },
-    /**
-     * old name for body
-     */
     svgLayout: {},
-    /**
-     *  enables manipulation features, remove column, reorder,...
-     */
     manipulative: true,
-    /**
-     * automatically add a column pool at the end
-     */
     pool: false,
-
-    /**
-     * the renderers to use for rendering the columns
-     */
     renderers: merge({}, defaultRenderers)
   };
 
@@ -277,7 +204,7 @@ export default class LineUp extends AEventDispatcher {
       this.contentScroller.on(ContentScroller.EVENT_SCROLL, (top, left) => {
         //in two svg mode propagate horizontal shift
         //console.log(top, left,'ss');
-        this.header.$node.style('transform', 'translate(' + 0 + 'px,' + top + 'px)');
+        this.header.$node.style('transform', `translate(0px, ${top}px)`);
         if (this.config.body.freezeCols > 0) {
           this.header.updateFreeze(left);
           this.body.updateFreeze(left);
@@ -340,7 +267,7 @@ export default class LineUp extends AEventDispatcher {
    * @returns {boolean}
    */
   sortBy(column: (col: Column) => boolean | string, ascending = false) {
-    var col = this.data.find(column);
+    const col = this.data.find(column);
     if (col) {
       col.sortByMe(ascending);
     }
@@ -408,7 +335,7 @@ export default class LineUp extends AEventDispatcher {
     // the last event before firing LineUp.EVENT_UPDATE_FINISHED.
     // For any further call of update() the body render will fire the
     // `renderFinished` event only once
-    var waitForBodyRenderer = (this.isUpdateInitialized) ? 1 : 3;
+    let waitForBodyRenderer = (this.isUpdateInitialized) ? 1 : 3;
     this.isUpdateInitialized = true;
 
     this.fire(LineUp.EVENT_UPDATE_START);
@@ -434,9 +361,9 @@ export default class LineUp extends AEventDispatcher {
 }
 
 /**
- * assigns colors to colmns if they are numbers and not yet defined
+ * assigns colors to columns if they are numbers and not yet defined
  * @param columns
- * @returns {model_.IColumnDesc[]}
+ * @returns {IColumnDesc[]}
  */
 export function deriveColors(columns: IColumnDesc[]) {
   const colors = d3scale.category10().range().slice();
