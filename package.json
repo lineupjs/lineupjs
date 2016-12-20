@@ -56,7 +56,8 @@
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "predist": "npm run build && npm run docs",
-    "dist": "mkdirp dist && cd build && tar cvzf ../dist/lineupjs.tar.gz *"
+    "dist": "mkdirp dist && cd build && tar cvzf ../dist/lineupjs.tar.gz *",
+	"prepublish": "npm run dist"
   },
   "repository": {
     "type": "git",
