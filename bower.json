@@ -12,7 +12,7 @@
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
   "repository": {
     "type": "git",
-    "url": "git://github.com/Caleydo/lineup.js.git"
+    "url": "git://github.com/Caleydo/lineupjs.git"
   },
   "main": [
     "build/LineUpJS.js"
@@ -34,11 +34,13 @@
   "private": false,
   "ignore": [
     "**/.*",
-    "assets",
+    "media",
     "demo",
-    "dist/docs",
+    "dist",
+    "build/docs",
     "node_modules",
     "tsconfig.json",
+    "tsd.d.ts",
     "tslint.json",
     "typedoc.json",
     "webpack.config.js"
