@@ -37,9 +37,10 @@
   "homepage": "https://github.com/Caleydo/lineup.js",
   "main": "dist/LineUpJS.js",
   "files": [
-    "src",
     "build",
-	"!build/docs"
+	"!build/docs",
+	"src/**/*.ts",
+	"src/**/*.scss"
   ],
   "scripts": {
     "compile": "tsc",

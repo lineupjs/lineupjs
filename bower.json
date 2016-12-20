@@ -43,6 +43,9 @@
     "tsd.d.ts",
     "tslint.json",
     "typedoc.json",
-    "webpack.config.js"
+    "webpack.config.js",
+	"src/**/*.js",
+	"src/**/*.map",
+	"src/**/*.css"
   ]
 }
