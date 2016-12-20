@@ -1,6 +1,6 @@
 {
   "mode": "modules",
-  "out": "./dist/docs",
+  "out": "./build/docs",
   "theme": "minimal",
   "name": "LineUp.js",
   "module": "commonjs",

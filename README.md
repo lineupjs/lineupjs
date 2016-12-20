@@ -42,7 +42,7 @@ npm run build
 npm run watch
 ```
 
-The compiled JavaScript files are located under _dist_ and the TypeScript documentation is located under _dist_/_docs_.
+The compiled JavaScript files are located under _build_ and the TypeScript documentation is located under _build_/_docs_.
 
 DOM Structure
 -------------

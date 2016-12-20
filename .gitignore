@@ -1,13 +1,12 @@
 /.tscache
 /.idea
 node_modules
-/dist
+/build
 /tmp
+/dist
 /.bower.json
 /tscommand*.tmp.txt
-demo/.idea/
 *.log
-
 *.map
 src/**/*.js
 src/**/*.css

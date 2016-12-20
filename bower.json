@@ -15,7 +15,7 @@
     "url": "git://github.com/Caleydo/lineup.js.git"
   },
   "main": [
-    "dist/LineUpJS.js"
+    "build/LineUpJS.js"
   ],
   "moduleType": [
     "amd"
