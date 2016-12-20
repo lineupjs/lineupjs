@@ -38,7 +38,8 @@
   "main": "dist/LineUpJS.js",
   "files": [
     "src",
-    "build"
+    "build",
+	"!build/docs"
   ],
   "scripts": {
     "compile": "tsc",
