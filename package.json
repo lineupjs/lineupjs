@@ -35,7 +35,7 @@
     "url": "https://github.com/Caleydo/lineup.js/issues"
   },
   "homepage": "https://github.com/Caleydo/lineup.js",
-  "main": "dist/LineUpJS.js",
+  "main": "build/LineUpJS.js",
   "files": [
     "build",
 	"!build/docs",
