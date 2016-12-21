@@ -59,62 +59,136 @@ window.onload = function () {
 
     });
 
+    //
+    // var arr1 = [];
+    // newdata.map(function (x) {
+    //   var arraydata = x.health_score.map(Number);
+    //   return arr1.push({
+    //     stringdata: x.country,
+    //     multidata: arraydata,
+    //     singledata: parseFloat(x.single_score),
+    //     upsetdata: catdata(4)
+    //   })
+    //
+    // });
+    //
 
-    var arr1 = [];
-    newdata.map(function (x) {
-      var arraydata = x.health_score.map(Number);
-      return arr1.push({
-        stringdata: x.country,
-        multidata: arraydata,
-        singledata: parseFloat(x.single_score),
-        upsetdata: catdata(4)
-      })
 
+
+
+
+    var boxplottestdata = [
+      {"q1": 16.228708744,
+      "q3": 40.6764354706,
+      "min": 1.14364,
+      "max": 112.859,
+      "median": 21.1322345734,
+      "id": "ENSG00000000003"
+    },
+      {"q1": 1.0,
+        "q3": 1.0,
+        "min": 1.0,
+        "max": 1.52861,
+        "median": 1.0,
+        "id": "ENSG00000000005"}, {
+      "q1": 72.3565235138,
+      "q3": 128.727273941,
+      "min": 43.9317,
+      "max": 372.435,
+      "median": 101.8650360107,
+      "id": "ENSG00000000419"
+    }, {
+      "q1": 6.9767802954,
+      "q3": 16.3615880013,
+      "min": 4.04306,
+      "max": 31.0283,
+      "median": 12.0053138733,
+      "id": "ENSG00000000457"
+    }, {
+      "q1": 13.5131280422,
+      "q3": 22.8681511879,
+      "min": 2.55096,
+      "max": 37.0075,
+      "median": 17.4877376556,
+      "id": "ENSG00000000460"
+    }, {
+      "q1": 1.0209952593,
+      "q3": 1.1256016791,
+      "min": 1.0,
+      "max": 2.68057,
+      "median": 1.0507785678,
+      "id": "ENSG00000000938"
+    }];
+
+    var boxdata_minval,boxdata_maxval;
+
+    boxplottestdata.forEach(function (d) {
+
+      boxdata_minval = d3.min([boxdata_minval,d.min]);
+      boxdata_maxval = d3.max([boxdata_maxval,d.max]);
     });
 
+       var arr2 = [];
+    boxplottestdata.map(function (x) {
 
-    console.log(arr1)
+      console.log(x);
+return arr2.push({boxdata:x});
 
-    var desc1 = [
-      {label: 'Country', type: 'string', column: 'stringdata'},
-      {
-        label: 'MultiValue',
-        type: 'sparkline',
-        column: 'multidata',
-        domain: [multidata_min, multidata_max],
-        colorRange: ['blue', 'red'],
-        sort: 'min',
-        threshold: 0,
-        dataLength: multidata_length,
-        rendererType: 'sparkline'
-      },
-      {
-        label: 'upset',
-        type: 'set',
-        column: 'upsetdata',
-        sdomain: [multidata_min, multidata_max],
-        colorrange: ['blue', 'red'],
-        sort: 'countcategory',
-        dataLength: multidata_length
 
-      },
-      {
-        label: 'Number',
-        type: 'number',
-        column: 'singledata',
-        domain: [singldata_min, singldata_max]
+      })
+
+
+    //  var desc1 = [
+    //   {label: 'Country', type: 'string', column: 'stringdata'},
+    //   {
+    //     label: 'MultiValue',
+    //     type: 'sparkline',
+    //     column: 'multidata',
+    //     domain: [multidata_min, multidata_max],
+    //     colorRange: ['blue', 'red'],
+    //     sort: 'min',
+    //     threshold: 0,
+    //     dataLength: multidata_length,
+    //     rendererType: 'boxplot'
+    //   },
+    //   {
+    //     label: 'upset',
+    //     type: 'set',
+    //     column: 'upsetdata',
+    //     sdomain: [multidata_min, multidata_max],
+    //     colorrange: ['blue', 'red'],
+    //     sort: 'countcategory',
+    //     dataLength: multidata_length
+    //
+    //   },
+    //   {
+    //     label: 'Number',
+    //     type: 'number',
+    //     column: 'singledata',
+    //     domain: [singldata_min, singldata_max]
+    //
+    //   }
+    // ];
+    //
+
+        var desc2 = [
+            {
+        label: 'BoxPlot',
+        type: 'boxplotcustom',
+        column: 'boxdata',
+        domain: [boxdata_minval, boxdata_maxval]
 
       }
     ];
 
-    console.log(desc1)
 
-    var p = new LineUpJS.provider.LocalDataProvider(arr1, desc1);
+
+    var p = new LineUpJS.provider.LocalDataProvider(arr2, desc2);
     var r = p.pushRanking();
 
     var root = d3.select('body');
     r.insert(p.create(LineUpJS.model.createSelectionDesc()), 0);
-    desc1.forEach(function (d) {
+    desc2.forEach(function (d) {
 
       r.push(p.create(d));
     });
