@@ -3,7 +3,8 @@
  */
 import * as d3 from 'd3';
 import ValueColumn from './ValueColumn';
-
+import Column from './Column';
+import {IDataStat} from './MultiValueColumn';
 
 export class CustomSortCalculation {
 
@@ -60,8 +61,21 @@ enum Sort {
   min, max, median, q1, q3, mean
 }
 
+export interface IBoxPlotColumn {
+  getBoxPlotData(row: any, index: number, scale: any): IBoxPlotData;
+  getDataInfo(): IDataStat;
 
-interface IBoxPlotData {
+}
+
+
+interface IBoxPlotDataStat extends IDataStat {
+  min: number,
+  max: number,
+  readonly sort: string
+
+}
+
+export  interface IBoxPlotData {
 
   readonly min: number;
   readonly max: number;
@@ -70,18 +84,12 @@ interface IBoxPlotData {
   readonly q3: number;
 }
 
-interface IDataStat {
-  readonly min: number,
-  readonly max: number,
-  readonly sort: string
-}
 
+export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implements IBoxPlotColumn {
 
-export default class BoxPlotColumn extends ValueColumn<number[] > {
-
-  private data: IDataStat;
-
-  private boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();
+  private data: IBoxPlotDataStat;
+  private userSort;
+  protected boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();
 
 
   constructor(id: string, desc: any) {
@@ -94,16 +102,35 @@ export default class BoxPlotColumn extends ValueColumn<number[] > {
 
     };
 
+    this.userSort = this.data.sort;
+
   }
 
-    compare(a: any, b: any, aIndex: number, bIndex: number) {
+  public setDomain(domain: number[]) {
+    const bak = this.boxPlotScale.domain();
+
+    this.data.min = domain[0];
+    this.data.max = domain[1];
+
+    this.boxPlotScale.domain(domain);
+
+    this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
+  }
+
+  compare(a: any, b: any, aIndex: number, bIndex: number) {
+
 
     const a_val = (this.getValue(a, aIndex));
-    const b_val = (this.getValue(b, bIndex));
-    const sort: any = new CustomSortCalculation(a_val, b_val);
-    const f = sort[this.data.sort].bind(sort);
+    if (a_val === null) {
+      return;
+    }
 
-    return f();
+    const b_val = (this.getValue(b, bIndex));
+    const boxSort = this.userSort;
+
+    return (numSort((<any>a_val)[boxSort], (<any>b_val)[boxSort]));
+
+
   }
 
 
@@ -113,16 +140,35 @@ export default class BoxPlotColumn extends ValueColumn<number[] > {
   }
 
 
+  getBoxPlotData(row: any, index: number, scale: any) {
+    const data = this.getValue(row, index);
+
+    if (data === null) {
+      return;
+    }
+    const boxdata: IBoxPlotData = {
+      min: scale((<any>data).min),
+      median: scale((<any>data).median),
+      q1: scale((<any>data).q1),
+      q3: scale((<any>data).q3),
+      max: scale((<any>data).max)
+    };
+    console.log(boxdata)
+
+    return boxdata;
+
+  }
 
   getUserSortBy() {
     return this.data.sort;
   }
 
   setUserSortBy(rank: string) {
-
+    this.userSort = rank;
     let ascending = false;
 
     switch (rank) {
+
       case Sort[Sort.min]:
         ascending = true;
         break;

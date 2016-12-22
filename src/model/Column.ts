@@ -90,6 +90,7 @@ export interface IRendererInfo {
 }
 
 
+
 /**
  * a column in LineUp
  */
