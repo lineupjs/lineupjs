@@ -111,7 +111,6 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
 
     this.data.min = domain[0];
     this.data.max = domain[1];
-
     this.boxPlotScale.domain(domain);
 
     this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
@@ -129,7 +128,6 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
     const boxSort = this.userSort;
 
     return (numSort((<any>a_val)[boxSort], (<any>b_val)[boxSort]));
-
 
   }
 
@@ -153,7 +151,7 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
       q3: scale((<any>data).q3),
       max: scale((<any>data).max)
     };
-    console.log(boxdata)
+
 
     return boxdata;
 

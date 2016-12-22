@@ -11383,7 +11383,6 @@ var BoxplotCellRenderer = (function () {
                 if ((boxdata) === null || undefined) {
                     return;
                 }
-                console.log(boxdata);
                 var rect = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
                 rect.enter().append('rect');
                 rect
@@ -14709,7 +14708,6 @@ var BoxPlotColumn = (function (_super) {
             q3: scale(data.q3),
             max: scale(data.max)
         };
-        console.log(boxdata);
         return boxdata;
     };
     BoxPlotColumn.prototype.getUserSortBy = function () {

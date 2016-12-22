@@ -428,7 +428,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
         if ((boxdata) === null || undefined) {
           return;
         }
-        console.log(boxdata);
+
         const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
 
         rect.enter().append('rect');
@@ -464,7 +464,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     const padding = context.option('rowPadding', 1);
     const dataInfo = col.getDataInfo();
