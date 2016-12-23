@@ -208,7 +208,7 @@ window.onload = function () {
           autoRotateLabels: true
         },
         body: {
-          renderer: 'svg',
+          renderer: 'canvas',
           freezeCols: 3
         },
         header: {
