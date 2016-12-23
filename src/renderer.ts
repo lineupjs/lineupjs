@@ -416,7 +416,8 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
   createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
 
-    const padding = context.option('rowPadding', 1);
+    const topPadding = Math.max(context.option('rowPadding', 1), 2);
+    const bottomPadding = Math.max(context.option('rowPadding', 1), 2);
     const dataInfo = col.getDataInfo();
     const scale = d3.scale.linear().domain([dataInfo.min, dataInfo.max]).range([0, col.getWidth()]);
     return {
@@ -430,15 +431,14 @@ class BoxplotCellRenderer implements ICellRendererFactory {
         }
 
         const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
-
         rect.enter().append('rect');
         rect
           .attr('class', 'boxplotrect')
           .attr({
-            y: padding,
+            y: topPadding,
             x: (boxdata.q1),
             width: ((boxdata.q3) - (boxdata.q1)),
-            height: (d, i) =>context.rowHeight(i)
+            height: (d, i) => (context.rowHeight(i) - (topPadding + bottomPadding))
           });
         rect.exit().remove();
 
@@ -447,15 +447,15 @@ class BoxplotCellRenderer implements ICellRendererFactory {
         path
           .attr('class', 'boxplotline')
           .attr('d', function (d, i) {
-            const left = (boxdata.min), right = (boxdata.max), center = (boxdata.median);
-            const bottom = Math.max(context.rowHeight(i) - padding, 0);
-            const middle = (bottom - padding) / 2;
+            const leftPos = (boxdata.min), rightPos = (boxdata.max), centerPos = (boxdata.median);
+            const bottomPos = (context.rowHeight(i) - bottomPadding);
+            const middlePos = (context.rowHeight(i)) / 2;
 
-            return 'M' + left + ',' + middle + 'L' + (boxdata.q1) + ',' + middle +
-              'M' + left + ',' + padding + 'L' + left + ',' + bottom +
-              'M' + center + ',' + padding + 'L' + center + ',' + bottom +
-              'M' + ((boxdata.q3)) + ',' + middle + 'L' + (right) + ',' + middle +
-              'M' + right + ',' + padding + 'L' + right + ',' + bottom;
+            return 'M' + leftPos + ',' + middlePos + 'L' + (boxdata.q1) + ',' + middlePos +
+              'M' + leftPos + ',' + topPadding + 'L' + leftPos + ',' + (bottomPos) +
+              'M' + centerPos + ',' + topPadding + 'L' + centerPos + ',' + bottomPos +
+              'M' + ((boxdata.q3)) + ',' + middlePos + 'L' + (rightPos) + ',' + middlePos +
+              'M' + rightPos + ',' + topPadding + 'L' + rightPos + ',' + bottomPos;
 
           });
         path.exit().remove();
@@ -466,7 +466,8 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
 
-    const padding = context.option('rowPadding', 1);
+    const topPadding = Math.max(context.option('rowPadding', 1), 2);
+    const bottomPadding = Math.max(context.option('rowPadding', 1), 2);
     const dataInfo = col.getDataInfo();
     const scale = d3.scale.linear().domain([dataInfo.min, dataInfo.max]).range([0, col.getWidth()]);
 
@@ -476,33 +477,33 @@ class BoxplotCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
-      ctx.rect((boxdata.q1), padding, ((boxdata.q3) - (boxdata.q1)), context.rowHeight(i) - padding);
+      ctx.rect((boxdata.q1), topPadding, ((boxdata.q3) - (boxdata.q1)), (context.rowHeight(i) - (topPadding + bottomPadding)));
       ctx.fill();
       ctx.stroke();
 
       //Line
-      const left = (boxdata.min), right = (boxdata.max), center = (boxdata.median);
-      const bottom = Math.max(context.rowHeight(i) - padding, 0);
-      const middle = (bottom - padding) / 2;
+      const leftPos = (boxdata.min), rightPos = (boxdata.max), centerPos = (boxdata.median);
+      const bottomPos = (context.rowHeight(i) - bottomPadding);
+      const middlePos = (context.rowHeight(i)) / 2;
+
       ctx.strokeStyle = 'black';
       ctx.fillStyle = '#e0e0e0';
       ctx.beginPath();
-      ctx.moveTo(left, middle);
-      ctx.lineTo((boxdata.q1), middle);
-      ctx.moveTo(left, padding);
-      ctx.lineTo(left, bottom);
-      ctx.moveTo(center, padding);
-      ctx.lineTo(center, bottom);
-      ctx.moveTo((boxdata.q3), middle);
-      ctx.lineTo(right, middle);
-      ctx.moveTo(right, padding);
-      ctx.lineTo(right, bottom);
+      ctx.moveTo(leftPos, middlePos);
+      ctx.lineTo((boxdata.q1), middlePos);
+      ctx.moveTo(leftPos, topPadding);
+      ctx.lineTo(leftPos, bottomPos);
+      ctx.moveTo(centerPos, topPadding);
+      ctx.lineTo(centerPos, bottomPos);
+      ctx.moveTo((boxdata.q3), middlePos);
+      ctx.lineTo(rightPos, middlePos);
+      ctx.moveTo(rightPos, topPadding);
+      ctx.lineTo(rightPos, bottomPos);
       ctx.stroke();
       ctx.fill();
 
     };
   }
-
 
 }
 

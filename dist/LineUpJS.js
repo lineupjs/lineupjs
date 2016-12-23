@@ -1820,7 +1820,8 @@ var BoxplotCellRenderer = (function () {
     function BoxplotCellRenderer() {
     }
     BoxplotCellRenderer.prototype.createSVG = function (col, context) {
-        var padding = context.option('rowPadding', 1);
+        var topPadding = Math.max(context.option('rowPadding', 1), 2);
+        var bottomPadding = Math.max(context.option('rowPadding', 1), 2);
         var dataInfo = col.getDataInfo();
         var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([dataInfo.min, dataInfo.max]).range([0, col.getWidth()]);
         return {
@@ -1835,10 +1836,10 @@ var BoxplotCellRenderer = (function () {
                 rect
                     .attr('class', 'boxplotrect')
                     .attr({
-                    y: padding,
+                    y: topPadding,
                     x: (boxdata.q1),
                     width: ((boxdata.q3) - (boxdata.q1)),
-                    height: function (d, i) { return context.rowHeight(i); }
+                    height: function (d, i) { return (context.rowHeight(i) - (topPadding + bottomPadding)); }
                 });
                 rect.exit().remove();
                 var path = __WEBPACK_IMPORTED_MODULE_2_d3__["select"](n).selectAll('path').data([col.getValue(d.v, d.dataIndex)]);
@@ -1846,21 +1847,22 @@ var BoxplotCellRenderer = (function () {
                 path
                     .attr('class', 'boxplotline')
                     .attr('d', function (d, i) {
-                    var left = (boxdata.min), right = (boxdata.max), center = (boxdata.median);
-                    var bottom = Math.max(context.rowHeight(i) - padding, 0);
-                    var middle = (bottom - padding) / 2;
-                    return 'M' + left + ',' + middle + 'L' + (boxdata.q1) + ',' + middle +
-                        'M' + left + ',' + padding + 'L' + left + ',' + bottom +
-                        'M' + center + ',' + padding + 'L' + center + ',' + bottom +
-                        'M' + ((boxdata.q3)) + ',' + middle + 'L' + (right) + ',' + middle +
-                        'M' + right + ',' + padding + 'L' + right + ',' + bottom;
+                    var leftPos = (boxdata.min), rightPos = (boxdata.max), centerPos = (boxdata.median);
+                    var bottomPos = (context.rowHeight(i) - bottomPadding);
+                    var middlePos = (context.rowHeight(i)) / 2;
+                    return 'M' + leftPos + ',' + middlePos + 'L' + (boxdata.q1) + ',' + middlePos +
+                        'M' + leftPos + ',' + topPadding + 'L' + leftPos + ',' + (bottomPos) +
+                        'M' + centerPos + ',' + topPadding + 'L' + centerPos + ',' + bottomPos +
+                        'M' + ((boxdata.q3)) + ',' + middlePos + 'L' + (rightPos) + ',' + middlePos +
+                        'M' + rightPos + ',' + topPadding + 'L' + rightPos + ',' + bottomPos;
                 });
                 path.exit().remove();
             }
         };
     };
     BoxplotCellRenderer.prototype.createCanvas = function (col, context) {
-        var padding = context.option('rowPadding', 1);
+        var topPadding = Math.max(context.option('rowPadding', 1), 2);
+        var bottomPadding = Math.max(context.option('rowPadding', 1), 2);
         var dataInfo = col.getDataInfo();
         var scale = __WEBPACK_IMPORTED_MODULE_2_d3__["scale"].linear().domain([dataInfo.min, dataInfo.max]).range([0, col.getWidth()]);
         return function (ctx, d, i) {
@@ -1869,26 +1871,26 @@ var BoxplotCellRenderer = (function () {
             ctx.fillStyle = '#e0e0e0';
             ctx.strokeStyle = 'black';
             ctx.beginPath();
-            ctx.rect((boxdata.q1), padding, ((boxdata.q3) - (boxdata.q1)), context.rowHeight(i) - padding);
+            ctx.rect((boxdata.q1), topPadding, ((boxdata.q3) - (boxdata.q1)), (context.rowHeight(i) - (topPadding + bottomPadding)));
             ctx.fill();
             ctx.stroke();
             //Line
-            var left = (boxdata.min), right = (boxdata.max), center = (boxdata.median);
-            var bottom = Math.max(context.rowHeight(i) - padding, 0);
-            var middle = (bottom - padding) / 2;
+            var leftPos = (boxdata.min), rightPos = (boxdata.max), centerPos = (boxdata.median);
+            var bottomPos = (context.rowHeight(i) - bottomPadding);
+            var middlePos = (context.rowHeight(i)) / 2;
             ctx.strokeStyle = 'black';
             ctx.fillStyle = '#e0e0e0';
             ctx.beginPath();
-            ctx.moveTo(left, middle);
-            ctx.lineTo((boxdata.q1), middle);
-            ctx.moveTo(left, padding);
-            ctx.lineTo(left, bottom);
-            ctx.moveTo(center, padding);
-            ctx.lineTo(center, bottom);
-            ctx.moveTo((boxdata.q3), middle);
-            ctx.lineTo(right, middle);
-            ctx.moveTo(right, padding);
-            ctx.lineTo(right, bottom);
+            ctx.moveTo(leftPos, middlePos);
+            ctx.lineTo((boxdata.q1), middlePos);
+            ctx.moveTo(leftPos, topPadding);
+            ctx.lineTo(leftPos, bottomPos);
+            ctx.moveTo(centerPos, topPadding);
+            ctx.lineTo(centerPos, bottomPos);
+            ctx.moveTo((boxdata.q3), middlePos);
+            ctx.lineTo(rightPos, middlePos);
+            ctx.moveTo(rightPos, topPadding);
+            ctx.lineTo(rightPos, bottomPos);
             ctx.stroke();
             ctx.fill();
         };
