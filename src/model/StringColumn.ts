@@ -10,7 +10,7 @@ import ValueColumn from './ValueColumn';
  */
 export default class StringColumn extends ValueColumn<string> {
   //magic key for filtering missing ones
-  static FILTER_MISSING = '__FILTER_MISSING';
+  static readonly FILTER_MISSING = '__FILTER_MISSING';
   private currentFilter: string|RegExp = null;
 
   private _alignment: string = 'left';

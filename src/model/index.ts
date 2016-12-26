@@ -50,6 +50,7 @@ export function defineColumn<T>(name: string, functions: any = {}) {
         this.init.apply(this, [].slice.apply(arguments));
       }
     }
+
     init() {
       // dummy
     }

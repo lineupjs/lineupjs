@@ -30,12 +30,12 @@ const domHTMLMappings = {
   },
   slopes: 'svg',
   updateSlopes: ($slopes: Selection<any>, width: number, height: number, callback: (d, i) => number) => {
-    $slopes.attr('width', width).attr('height', height).style('left', (d, i)=>callback(d, i) + 'px');
+    $slopes.attr('width', width).attr('height', height).style('left', (d, i) => callback(d, i) + 'px');
   },
 
   creator: createHTML,
   translate: (n: HTMLElement, x: number, y: number) => n.style.transform = `translate(${x}px,${y}px)`,
-  transform: (sel: Selection<any>, callback: (d: any, i: number)=> [number,number]) => {
+  transform: (sel: Selection<any>, callback: (d: any, i: number) => [number, number]) => {
     sel.style('transform', (d, i) => {
       const r = callback(d, i);
       return `translate(${r[0]}px,${r[1]}px)`;

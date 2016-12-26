@@ -134,7 +134,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
 
-  getLabels(row: any, index:number) {
+  getLabels(row: any, index: number) {
     const v = StringColumn.prototype.getValue.call(this, row, index);
     const r = v ? v.split(this.separator) : [];
 

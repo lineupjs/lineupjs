@@ -64,11 +64,10 @@ export declare type ISVGCellRenderer = IDOMCellRenderer<SVGElement>;
 export declare type IHTMLCellRenderer = IDOMCellRenderer<HTMLElement>;
 
 
-
 export interface ICanvasRenderContext extends IRenderContext<CanvasRenderingContext2D> {
   hovered(dataIndex: number): boolean;
   selected(dataIndex: number): boolean;
-  textHints: ITextRenderHints;
+  readonly textHints: ITextRenderHints;
 }
 
 export interface ICanvasCellRenderer {
@@ -161,9 +160,9 @@ export class BarCellRenderer implements ICellRendererFactory {
    * flag to always render the value
    * @type {boolean}
    */
-  protected renderValue = false;
+  private readonly renderValue;
 
-  constructor(renderValue = false, private colorOf: (d: any, i: number, col: Column)=>string = (d, i, col) => col.color) {
+  constructor(renderValue = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {
     this.renderValue = renderValue;
   }
 
@@ -290,7 +289,7 @@ const action = {
   createSVG: function (col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     const actions = context.option('actions', []);
     return {
-      template: `<text class="actions hoverOnly fa">${actions.map((a) =>`<tspan>${a.icon}></tspan>`)}</text>`,
+      template: `<text class="actions hoverOnly fa">${actions.map((a) => `<tspan>${a.icon}></tspan>`)}</text>`,
       update: (n: SVGTextElement, d: IDataRow) => {
         forEach(n, 'tspan', (ni: SVGTSpanElement, i: number) => {
           ni.onclick = function (event) {
@@ -305,7 +304,7 @@ const action = {
   createHTML: function (col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const actions = context.option('actions', []);
     return {
-      template: `<div class="actions hoverOnly">${actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}></span>`)}</div>`,
+      template: `<div class="actions hoverOnly">${actions.map((a) => `<span title="${a.name}" class="fa">${a.icon}></span>`)}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         forEach(n, 'span', (ni: HTMLSpanElement, i: number) => {
           ni.onclick = function (event) {
@@ -325,7 +324,7 @@ const action = {
         let overlay = showOverlay(context.idPrefix + col.id, dx, dy);
         overlay.style.width = col.getWidth() + 'px';
         overlay.classList.add('actions');
-        overlay.innerHTML = actions.map((a) =>`<span title="${a.name}" class="fa">${a.icon}</span>`).join('');
+        overlay.innerHTML = actions.map((a) => `<span title="${a.name}" class="fa">${a.icon}</span>`).join('');
         forEach(overlay, 'span', (ni: HTMLSpanElement, i) => {
           ni.onclick = function (event) {
             event.preventDefault();
@@ -506,8 +505,8 @@ const link = {
 class StringCellRenderer {
   private alignments = {
     left: new DefaultCellRenderer(),
-    right : new DefaultCellRenderer('text_right', 'right'),
-    center : new DefaultCellRenderer('text_center', 'center')
+    right: new DefaultCellRenderer('text_right', 'right'),
+    center: new DefaultCellRenderer('text_center', 'center')
   };
 
   createSVG(col: StringColumn, context: IDOMRenderContext): ISVGCellRenderer {
@@ -531,7 +530,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
    * class to append to the text elements
    * @type {string}
    */
-  textClass = 'cat';
+  readonly textClass;
 
   constructor(textClass = 'cat') {
     this.textClass = textClass;
@@ -600,7 +599,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
  * @param columns
  * @param helperType
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer<any> }[], helperType = 'svg') {
+export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer<any>}[], helperType = 'svg') {
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.renderer.template).join('');
@@ -624,12 +623,12 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
     return; //nothing to do
   }
 
-  const idsAndRenderer = new Set(columns.map((c) => c.column.id+'@'+c.column.rendererType()));
+  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.rendererType()));
   //remove all that are not existing anymore
   Array.prototype.slice.call(node.childNodes).forEach((n) => {
     const id = n.getAttribute('data-column-id');
     const renderer = n.getAttribute('data-renderer');
-    const idAndRenderer = id+'@'+renderer;
+    const idAndRenderer = id + '@' + renderer;
     if (!idsAndRenderer.has(idAndRenderer)) {
       node.removeChild(n);
     }
@@ -652,7 +651,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
  * renders a stacked column using composite pattern
  */
 class StackCellRenderer implements ICellRendererFactory {
-  constructor(private nestingPossible = true) {
+  constructor(private readonly nestingPossible = true) {
   }
 
   private createData(col: StackColumn, context: IRenderContext<any>) {

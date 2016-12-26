@@ -7,7 +7,7 @@ import Column, {IFlatColumn} from './Column';
 import StackColumn from './StackColumn';
 
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
-  static EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
+  static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
 
   private adaptChange;
 

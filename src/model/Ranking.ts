@@ -20,18 +20,18 @@ export function isSupportType(col: IColumnDesc) {
  * a ranking
  */
 export default class Ranking extends AEventDispatcher implements IColumnParent {
-  static EVENT_WIDTH_CHANGED = Column.EVENT_WIDTH_CHANGED;
-  static EVENT_FILTER_CHANGED = Column.EVENT_FILTER_CHANGED;
-  static EVENT_LABEL_CHANGED = Column.EVENT_LABEL_CHANGED;
-  static EVENT_COMPRESS_CHANGED = Column.EVENT_COMPRESS_CHANGED;
-  static EVENT_ADD_COLUMN = Column.EVENT_ADD_COLUMN;
-  static EVENT_REMOVE_COLUMN = Column.EVENT_REMOVE_COLUMN;
-  static EVENT_DIRTY = Column.EVENT_DIRTY;
-  static EVENT_DIRTY_HEADER = Column.EVENT_DIRTY_HEADER;
-  static EVENT_DIRTY_VALUES = Column.EVENT_DIRTY_VALUES;
-  static EVENT_SORT_CRITERIA_CHANGED = 'sortCriteriaChanged';
-  static EVENT_DIRTY_ORDER = 'dirtyOrder';
-  static EVENT_ORDER_CHANGED = 'orderChanged';
+  static readonly EVENT_WIDTH_CHANGED = Column.EVENT_WIDTH_CHANGED;
+  static readonly EVENT_FILTER_CHANGED = Column.EVENT_FILTER_CHANGED;
+  static readonly EVENT_LABEL_CHANGED = Column.EVENT_LABEL_CHANGED;
+  static readonly EVENT_COMPRESS_CHANGED = Column.EVENT_COMPRESS_CHANGED;
+  static readonly EVENT_ADD_COLUMN = Column.EVENT_ADD_COLUMN;
+  static readonly EVENT_REMOVE_COLUMN = Column.EVENT_REMOVE_COLUMN;
+  static readonly EVENT_DIRTY = Column.EVENT_DIRTY;
+  static readonly EVENT_DIRTY_HEADER = Column.EVENT_DIRTY_HEADER;
+  static readonly EVENT_DIRTY_VALUES = Column.EVENT_DIRTY_VALUES;
+  static readonly EVENT_SORT_CRITERIA_CHANGED = 'sortCriteriaChanged';
+  static readonly EVENT_DIRTY_ORDER = 'dirtyOrder';
+  static readonly EVENT_ORDER_CHANGED = 'orderChanged';
 
   /**
    * the current sort criteria

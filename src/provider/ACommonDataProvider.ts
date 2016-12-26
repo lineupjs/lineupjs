@@ -54,7 +54,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  protected rankAccessor(row: any, index:number, id: string, desc: IColumnDesc, ranking: Ranking) {
+  protected rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking) {
     return (this.ranks[ranking.id].indexOf(index)) + 1;
   }
 

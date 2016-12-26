@@ -26,7 +26,7 @@ export interface ICanvasBodyRendererOptions {
 }
 
 export default class BodyCanvasRenderer extends ABodyRenderer {
-  static CUSTOM_OPTIONS = {
+  static readonly CUSTOM_OPTIONS = {
     style: {
       text: 'black',
       font: '10pt "Helvetica Neue", Helvetica, Arial, sans-serif',

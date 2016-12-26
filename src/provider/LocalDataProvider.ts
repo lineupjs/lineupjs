@@ -19,7 +19,7 @@ import ACommonDataProvider from './ACommonDataProvider';
  * @param range the total value range
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  */
-function computeStats(arr: any[], indices: number[], acc: (row: any, index:number) => number, range?: [number, number]): IStatistics {
+function computeStats(arr: any[], indices: number[], acc: (row: any, index: number) => number, range?: [number, number]): IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -30,7 +30,7 @@ function computeStats(arr: any[], indices: number[], acc: (row: any, index:numbe
       hist: []
     };
   }
-  const indexAccessor = (a, i) =>acc(a, indices[i]);
+  const indexAccessor = (a, i) => acc(a, indices[i]);
   const hist = d3.layout.histogram().value(indexAccessor);
   if (range) {
     hist.range(() => range);
@@ -55,7 +55,7 @@ function computeStats(arr: any[], indices: number[], acc: (row: any, index:numbe
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
  */
-function computeHist(arr: number[], indices: number[], acc: (row: any, index:number) => string[], categories: string[]): ICategoricalStatistics {
+function computeHist(arr: number[], indices: number[], acc: (row: any, index: number) => string[], categories: string[]): ICategoricalStatistics {
   const m = new Map<string,number>();
   categories.forEach((cat) => m.set(cat, 0));
 
@@ -207,7 +207,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    */
   stats(indices: number[]): IStatsBuilder {
     let d: any[] = null;
-    const getD = () => d === null ? (d = this.viewRaw(indices)) : d;
+    const getD = () => d === null ? (d = this.viewRaw(indices)): d;
 
     return {
       stats: (col: INumberColumn) => Promise.resolve(computeStats(getD(), indices, col.getNumber.bind(col), [0, 1])),

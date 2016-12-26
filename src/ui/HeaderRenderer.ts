@@ -28,7 +28,7 @@ import {
  * utility function to generate the tooltip text with description
  * @param col the column
  */
-export function toFullTooltip(col: { label: string, description?: string}) {
+export function toFullTooltip(col: {label: string, description?: string}) {
   let base = col.label;
   if (col.description != null && col.description !== '') {
     base += '\n' + col.description;
@@ -53,7 +53,7 @@ export interface IHeaderRendererOptions {
   manipulative?: boolean;
   histograms?: boolean;
 
-  filterDialogs?: { [type: string]: (col: Column, $header: d3.Selection<Column>, data: DataProvider, idPrefix: string)=>void };
+  filterDialogs?: {[type: string]: (col: Column, $header: d3.Selection<Column>, data: DataProvider, idPrefix: string) => void};
   linkTemplates?: string[];
   searchAble?(col: Column): boolean;
   sortOnLabel?: boolean;
@@ -73,7 +73,6 @@ function countMultiLevel(c: Column): number {
   }
   return 1;
 }
-
 
 
 export default class HeaderRenderer {

@@ -164,8 +164,8 @@ export interface IContentScrollerOptions {
  * a class for efficiently selecting a range of data items that are currently visible according to the scrolled position
  */
 export class ContentScroller extends AEventDispatcher {
-  static EVENT_SCROLL = 'scroll';
-  static EVENT_REDRAW = 'redraw';
+  static readonly EVENT_SCROLL = 'scroll';
+  static readonly EVENT_REDRAW = 'redraw';
 
   private options: IContentScrollerOptions = {
     /**
@@ -397,7 +397,7 @@ export function attr<T extends (HTMLElement | SVGElement & SVGStylable)>(node: T
  * @param selector
  * @param callback
  */
-export function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number)=>void) {
+export function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number) => void) {
   Array.prototype.slice.call(node.querySelectorAll(selector)).forEach(callback);
 }
 

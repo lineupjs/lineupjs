@@ -60,7 +60,7 @@ export interface IExportOptions {
    * filter specific column types, default: exclude all support types (selection, action, rank)
    * @param col the column description to filter
    */
-  filter?: (col: IColumnDesc)=>boolean; //!isSupportType
+  filter?: (col: IColumnDesc) => boolean; //!isSupportType
 }
 
 export interface IStatsBuilder {
@@ -69,7 +69,7 @@ export interface IStatsBuilder {
 }
 
 export interface IDataProviderOptions {
-  columnTypes?: { [columnType: string]: Column };
+  columnTypes?: {[columnType: string]: Column};
 
   /**
    * allow multiple selected rows
@@ -83,17 +83,17 @@ export interface IDataProviderOptions {
  * a basic data provider holding the data and rankings
  */
 abstract class ADataProvider extends AEventDispatcher {
-  static EVENT_SELECTION_CHANGED = 'selectionChanged';
-  static EVENT_ADD_COLUMN = Ranking.EVENT_ADD_COLUMN;
-  static EVENT_REMOVE_COLUMN = Ranking.EVENT_REMOVE_COLUMN;
-  static EVENT_ADD_RANKING = 'addRanking';
-  static EVENT_REMOVE_RANKING = 'removeRanking';
-  static EVENT_DIRTY = Ranking.EVENT_DIRTY;
-  static EVENT_DIRTY_HEADER = Ranking.EVENT_DIRTY_HEADER;
-  static EVENT_DIRTY_VALUES = Ranking.EVENT_DIRTY_VALUES;
-  static EVENT_ORDER_CHANGED = Ranking.EVENT_ORDER_CHANGED;
-  static EVENT_ADD_DESC = 'addDesc';
-  static EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
+  static readonly EVENT_SELECTION_CHANGED = 'selectionChanged';
+  static readonly EVENT_ADD_COLUMN = Ranking.EVENT_ADD_COLUMN;
+  static readonly EVENT_REMOVE_COLUMN = Ranking.EVENT_REMOVE_COLUMN;
+  static readonly EVENT_ADD_RANKING = 'addRanking';
+  static readonly EVENT_REMOVE_RANKING = 'removeRanking';
+  static readonly EVENT_DIRTY = Ranking.EVENT_DIRTY;
+  static readonly EVENT_DIRTY_HEADER = Ranking.EVENT_DIRTY_HEADER;
+  static readonly EVENT_DIRTY_VALUES = Ranking.EVENT_DIRTY_VALUES;
+  static readonly EVENT_ORDER_CHANGED = Ranking.EVENT_ORDER_CHANGED;
+  static readonly EVENT_ADD_DESC = 'addDesc';
+  static readonly EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
 
   /**
    * all rankings

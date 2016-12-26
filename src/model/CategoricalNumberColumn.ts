@@ -12,7 +12,7 @@ import NumberColumn, {INumberColumn} from './NumberColumn';
  * similar to a categorical column but the categories are mapped to numbers
  */
 export default class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
-  static EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 
   private colors = scale.category10();
 
