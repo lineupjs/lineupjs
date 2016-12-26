@@ -34,4 +34,5 @@ node {
  stage('Cleanup') {
    sh 'npm prune'
    sh 'rm node_modules -rf'
+ }
 }
