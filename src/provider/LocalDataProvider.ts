@@ -99,9 +99,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
     filterGlobally: false
   };
 
-  private reorderAll;
+  private readonly reorderAll;
 
-  constructor(public data: any[], columns: IColumnDesc[] = [], options: ILocalDataProviderOptions & IDataProviderOptions = {}) {
+  constructor(private _data: any[], columns: IColumnDesc[] = [], options: ILocalDataProviderOptions & IDataProviderOptions = {}) {
     super(columns, options);
     merge(this.options, options);
 
@@ -118,12 +118,16 @@ export default class LocalDataProvider extends ACommonDataProvider {
     };
   }
 
+  get data() {
+    return this._data;
+  }
+
   /**
    * replaces the dataset rows with a new one
    * @param data
    */
   setData(data: any[]) {
-    this.data = data;
+    this._data = data;
     this.reorderAll();
   }
 
@@ -136,7 +140,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @param data
    */
   appendData(data: any[]) {
-    this.data.push.apply(this.data, data);
+    this._data.push(...data);
     this.reorderAll();
   }
 
@@ -158,11 +162,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   sortImpl(ranking: Ranking): Promise<number[]> {
-    if (this.data.length === 0) {
+    if (this._data.length === 0) {
       return Promise.resolve([]);
     }
     //wrap in a helper and store the initial index
-    let helper = this.data.map((r, i) => ({row: r, i: i}));
+    let helper = this._data.map((r, i) => ({row: r, i: i}));
 
     //do the optional filtering step
     if (this.options.filterGlobally) {
@@ -184,8 +188,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   viewRaw(indices: number[]) {
     //filter invalid indices
-    const l = this.data.length;
-    return indices.map((index) => this.data[index]);
+    const l = this._data.length;
+    return indices.map((index) => this._data[index]);
   }
 
   view(indices: number[]) {
@@ -193,9 +197,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   fetch(orders: number[][]): Promise<IDataRow>[][] {
-    const l = this.data.length;
+    const l = this._data.length;
     return orders.map((order) => order.map((index) => Promise.resolve({
-      v: this.data[index],
+      v: this._data[index],
       dataIndex: index
     })));
   }
@@ -207,7 +211,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    */
   stats(indices: number[]): IStatsBuilder {
     let d: any[] = null;
-    const getD = () => d === null ? (d = this.viewRaw(indices)): d;
+    const getD = () => (d === null ? (d = this.viewRaw(indices)): d);
 
     return {
       stats: (col: INumberColumn) => Promise.resolve(computeStats(getD(), indices, col.getNumber.bind(col), [0, 1])),
@@ -218,9 +222,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   mappingSample(col: NumberColumn): Promise<number[]> {
     const MAX_SAMPLE = 500; //at most 500 sample lines
-    const l = this.data.length;
+    const l = this._data.length;
     if (l <= MAX_SAMPLE) {
-      return Promise.resolve(this.data.map(col.getRawValue.bind(col)));
+      return Promise.resolve(this._data.map(col.getRawValue.bind(col)));
     }
     //randomly select 500 elements
     let indices: number[] = [];
@@ -238,7 +242,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     //case insensitive search
     search = typeof search === 'string' ? search.toLowerCase() : search;
     const f = typeof search === 'string' ? (v: string) => v.toLowerCase().indexOf((<string>search)) >= 0 : (<RegExp>search).test.bind(search);
-    const indices = d3.range(this.data.length).filter((i) => f(col.getLabel(this.data[i], i)));
+    const indices = d3.range(this._data.length).filter((i) => f(col.getLabel(this._data[i], i)));
 
     this.jumpToNearest(indices);
   }

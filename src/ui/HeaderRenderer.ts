@@ -76,7 +76,7 @@ function countMultiLevel(c: Column): number {
 
 
 export default class HeaderRenderer {
-  private options: IHeaderRendererOptions = {
+  private readonly options: IHeaderRendererOptions = {
     idPrefix: '',
     slopeWidth: 150,
     columnPadding: 5,
@@ -99,11 +99,11 @@ export default class HeaderRenderer {
     rankingButtons: <IRankingHook>dummyRankingButtonHook
   };
 
-  $node: d3.Selection<any>;
+  readonly $node: d3.Selection<any>;
 
   private histCache = new Map<string,Promise<IStatistics|ICategoricalStatistics>>();
 
-  private dragHandler = d3.behavior.drag<Column>()
+  private readonly dragHandler = d3.behavior.drag<Column>()
   //.origin((d) => d)
     .on('dragstart', function () {
       d3.select(this).classed('dragging', true);
@@ -124,7 +124,7 @@ export default class HeaderRenderer {
       (<any>d3.event).sourceEvent.preventDefault();
     });
 
-  private dropHandler = dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d: Column, copy) => {
+  private readonly dropHandler = dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d: Column, copy) => {
     let col: Column = null;
     if ('application/caleydo-lineup-column-ref' in data) {
       const id = data['application/caleydo-lineup-column-ref'];

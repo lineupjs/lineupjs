@@ -9,7 +9,7 @@ import StackColumn from './StackColumn';
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
 
-  private adaptChange;
+  private readonly adaptChange;
 
   /**
    * whether this stack column is collapsed i.e. just looks like an ordinary number column

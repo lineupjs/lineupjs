@@ -50,9 +50,9 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    * @type {Array}
    * @private
    */
-  private columns: Column[] = [];
+  private readonly columns: Column[] = [];
 
-  comparator = (a: any, b: any, aIndex: number, bIndex: number) => {
+  readonly comparator = (a: any, b: any, aIndex: number, bIndex: number) => {
     if (this.sortColumn === null) {
       return 0;
     }
@@ -60,7 +60,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.ascending ? r : -r;
   };
 
-  dirtyOrder = () => {
+  readonly dirtyOrder = () => {
     this.fire([Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], this.getSortCriteria());
   };
 

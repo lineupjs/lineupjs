@@ -43,7 +43,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   /**
    * the local ranking orders
    */
-  private ranks = new Map<string, number[]>();
+  private readonly ranks = new Map<string, number[]>();
 
   constructor(private columns: IColumnDesc[] = [], options: IDataProviderOptions = {}) {
     super(options);

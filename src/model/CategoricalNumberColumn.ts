@@ -22,7 +22,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
    */
   private catLabels = new Map<string, string>();
 
-  private scale = scale.ordinal().rangeRoundPoints([0, 1]);
+  private readonly scale = scale.ordinal().rangeRoundPoints([0, 1]);
 
   private currentFilter: string[] = null;
   /**

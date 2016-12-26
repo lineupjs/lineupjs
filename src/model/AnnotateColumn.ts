@@ -11,7 +11,7 @@ import StringColumn from './StringColumn';
 export default class AnnotateColumn extends StringColumn {
   static readonly EVENT_VALUE_CHANGED = 'valueChanged';
 
-  private annotations = new Map<number, string>();
+  private readonly annotations = new Map<number, string>();
 
   constructor(id: string, desc: any) {
     super(id, desc);

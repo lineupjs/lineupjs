@@ -49,11 +49,11 @@ export interface IRemoteDataProviderOptions {
  * a remote implementation of the data provider
  */
 export default class RemoteDataProvider extends ACommonDataProvider {
-  private options: IRemoteDataProviderOptions = {
+  private readonly options: IRemoteDataProviderOptions = {
     maxCacheSize: 1000
   };
 
-  private cache = new Map<number, Promise<IDataRow>>();
+  private readonly cache = new Map<number, Promise<IDataRow>>();
 
 
   constructor(private server: IServerData, columns: IColumnDesc[] = [], options: IRemoteDataProviderOptions & IDataProviderOptions = {}) {

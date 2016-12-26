@@ -69,7 +69,7 @@ export interface IStatsBuilder {
 }
 
 export interface IDataProviderOptions {
-  columnTypes?: {[columnType: string]: Column};
+  columnTypes?: {[columnType: string]: typeof Column};
 
   /**
    * allow multiple selected rows
@@ -112,9 +112,9 @@ abstract class ADataProvider extends AEventDispatcher {
   /**
    * lookup map of a column type to its column implementation
    */
-  columnTypes: any = merge({}, models());
+  readonly columnTypes: {[columnType: string]: typeof Column};
 
-  private multiSelections = true;
+  private readonly multiSelections;
 
   constructor(options: IDataProviderOptions = {}) {
     super();

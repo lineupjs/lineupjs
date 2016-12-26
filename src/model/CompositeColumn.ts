@@ -17,7 +17,7 @@ export function isMultiLevelColumn(col: Column) {
  * implementation of a combine column, standard operations how to select
  */
 export default class CompositeColumn extends Column implements IColumnParent {
-  protected _children: Column[] = [];
+  protected readonly _children: Column[] = [];
 
   constructor(id: string, desc: any) {
     super(id, desc);

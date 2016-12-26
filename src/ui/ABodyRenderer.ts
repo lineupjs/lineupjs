@@ -86,7 +86,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
   static readonly EVENT_RENDER_FINISHED = 'renderFinished';
 
-  protected options: IBodyRendererOptions = {
+  protected readonly options: IBodyRendererOptions = {
     rowHeight: 20,
     rowPadding: 1,
     rowBarPadding: 1,
@@ -106,7 +106,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     freezeCols: 0
   };
 
-  protected $node: d3.Selection<any>;
+  protected readonly $node: d3.Selection<any>;
 
   histCache = new Map<string, Promise<IStatistics|ICategoricalStatistics>>();
 

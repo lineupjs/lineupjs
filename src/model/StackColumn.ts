@@ -23,7 +23,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';
   static readonly COLLAPSED_RENDERER = 'number';
 
-  private adaptChange;
+  private readonly adaptChange;
 
   /**
    * whether this stack column is collapsed i.e. just looks like an ordinary number column
