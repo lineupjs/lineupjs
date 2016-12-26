@@ -651,7 +651,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
  * renders a stacked column using composite pattern
  */
 class StackCellRenderer implements ICellRendererFactory {
-  constructor(private readonly nestingPossible = true) {
+  constructor(private readonly nestingPossible : boolean = true) {
   }
 
   private createData(col: StackColumn, context: IRenderContext<any>) {
