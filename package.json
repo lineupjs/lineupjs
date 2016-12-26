@@ -32,10 +32,10 @@
   },
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/Caleydo/lineup.js/issues"
+    "url": "https://github.com/Caleydo/lineupjs/issues"
   },
-  "homepage": "https://github.com/Caleydo/lineup.js",
-  "main": "dist/LineUpJS.js",
+  "homepage": "https://github.com/Caleydo/lineupjs",
+  "main": "build/LineUpJS.js",
   "files": [
     "build",
 	"!build/docs",
@@ -61,7 +61,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Caleydo/lineup.js.git"
+    "url": "https://github.com/Caleydo/lineupjs.git"
   },
   "devDependencies": {
     "awesome-typescript-loader": "^2.2.4",
