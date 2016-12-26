@@ -16,6 +16,8 @@ import {IDataRow} from './provider/ADataProvider';
 import * as d3 from 'd3';
 import MultiValueColumn from './model/MultiValueColumn';
 import SetColumn from './model/SetColumn';
+import {IBoxPlotColumn} from './model/BoxPlotColumn';
+
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
@@ -412,16 +414,21 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 class BoxplotCellRenderer implements ICellRendererFactory {
 
 
-  createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
 
     const padding = context.option('rowPadding', 1);
-    const scale = col.getboxPlotScale(col.getWidth());
-
+    const dataInfo = col.getDataInfo();
+    const scale = d3.scale.linear().domain([dataInfo.min, dataInfo.max]).range([0, col.getWidth()]);
     return {
 
       template: `<g class="boxplotcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex), scale);
+
+        const boxdata = col.getBoxPlotData(d.v, d.dataIndex, scale);
+        if ((boxdata) === null || undefined) {
+          return;
+        }
+
         const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
 
         rect.enter().append('rect');
@@ -429,8 +436,8 @@ class BoxplotCellRenderer implements ICellRendererFactory {
           .attr('class', 'boxplotrect')
           .attr({
             y: padding,
-            x: boxdata.q1,
-            width: (boxdata.q3 - boxdata.q1),
+            x: (boxdata.q1),
+            width: ((boxdata.q3) - (boxdata.q1)),
             height: (d, i) =>context.rowHeight(i)
           });
         rect.exit().remove();
@@ -440,14 +447,14 @@ class BoxplotCellRenderer implements ICellRendererFactory {
         path
           .attr('class', 'boxplotline')
           .attr('d', function (d, i) {
-            const left = boxdata.min, right = boxdata.max, center = boxdata.median;
+            const left = (boxdata.min), right = (boxdata.max), center = (boxdata.median);
             const bottom = Math.max(context.rowHeight(i) - padding, 0);
             const middle = (bottom - padding) / 2;
 
-            return 'M' + left + ',' + middle + 'L' + boxdata.q1 + ',' + middle +
+            return 'M' + left + ',' + middle + 'L' + (boxdata.q1) + ',' + middle +
               'M' + left + ',' + padding + 'L' + left + ',' + bottom +
               'M' + center + ',' + padding + 'L' + center + ',' + bottom +
-              'M' + (boxdata.q3) + ',' + middle + 'L' + (right) + ',' + middle +
+              'M' + ((boxdata.q3)) + ',' + middle + 'L' + (right) + ',' + middle +
               'M' + right + ',' + padding + 'L' + right + ',' + bottom;
 
           });
@@ -457,35 +464,36 @@ class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     const padding = context.option('rowPadding', 1);
-    const scale = col.getboxPlotScale(col.getWidth());
+    const dataInfo = col.getDataInfo();
+    const scale = d3.scale.linear().domain([dataInfo.min, dataInfo.max]).range([0, col.getWidth()]);
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
-      const boxdata = col.getboxPlotData(col.getValue(d.v, d.dataIndex), scale);
+      const boxdata = col.getBoxPlotData(d.v, d.dataIndex, scale);
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
-      ctx.rect(boxdata.q1, padding, (boxdata.q3 - boxdata.q1), context.rowHeight(i) - padding);
+      ctx.rect((boxdata.q1), padding, ((boxdata.q3) - (boxdata.q1)), context.rowHeight(i) - padding);
       ctx.fill();
       ctx.stroke();
 
       //Line
-      const left = boxdata.min, right = boxdata.max, center = boxdata.median;
+      const left = (boxdata.min), right = (boxdata.max), center = (boxdata.median);
       const bottom = Math.max(context.rowHeight(i) - padding, 0);
       const middle = (bottom - padding) / 2;
       ctx.strokeStyle = 'black';
       ctx.fillStyle = '#e0e0e0';
       ctx.beginPath();
       ctx.moveTo(left, middle);
-      ctx.lineTo(boxdata.q1, middle);
+      ctx.lineTo((boxdata.q1), middle);
       ctx.moveTo(left, padding);
       ctx.lineTo(left, bottom);
       ctx.moveTo(center, padding);
       ctx.lineTo(center, bottom);
-      ctx.moveTo(boxdata.q3, middle);
+      ctx.moveTo((boxdata.q3), middle);
       ctx.lineTo(right, middle);
       ctx.moveTo(right, padding);
       ctx.lineTo(right, bottom);
@@ -614,6 +622,7 @@ class CircleColumnCellRenderer implements ICellRendererFactory {
     };
   }
 }
+
 
 /**
  * a renderer rendering a bar for numerical columns
@@ -1223,7 +1232,8 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   verticalbar: new VerticalBarCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
   set: new SetCellRenderer(),
-  circle: new CircleColumnCellRenderer()
+  circle: new CircleColumnCellRenderer(),
+  boxplotcustom: new BoxplotCellRenderer()
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {

@@ -16,6 +16,7 @@ import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
 import MultiValueColumn from '../model/MultiValueColumn';
+import BoxPlotColumn from '../model/BoxPlotColumn';
 
 import {
   filterDialogs,
@@ -334,10 +335,11 @@ export default class HeaderRenderer {
     });
 
     //MultiValue Sort
-    $node.filter((d) => d instanceof MultiValueColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+    $node.filter((d) => d instanceof MultiValueColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
       sortDialog(<MultiValueColumn>d, d3.select(this.parentNode.parentNode));
       (<MouseEvent>d3.event).stopPropagation();
     });
+
 
     //Renderer Change
     $node.filter((d) => d.getRendererList().length > 1).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {

@@ -229,7 +229,7 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
     return this === (<any>d3.event).target;
   }
 
-   // To detect if the mouse click event is triggered outside the sort dialog
+  // To detect if the mouse click event is triggered outside the sort dialog
   var sortcontent = d3.selectAll('input[name=multivaluesort]');
   sortcontent.on('change', function () {
     var that = this;

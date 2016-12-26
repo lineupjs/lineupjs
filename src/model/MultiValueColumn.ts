@@ -3,7 +3,8 @@
  */
 import * as d3 from 'd3';
 import ValueColumn from './ValueColumn';
-
+import Column from './Column';
+import {IBoxPlotColumn, IBoxPlotData} from './BoxPlotColumn';
 
 export class CustomSortCalculation {
 
@@ -18,21 +19,23 @@ export class CustomSortCalculation {
   }
 
   min() {
+
     return (d3.min(this.a_val) - d3.min(this.b_val));
 
   }
 
 
   max() {
+
     return (d3.max(this.a_val) - d3.max(this.b_val));
   }
 
   mean() {
-
     return (d3.mean(this.a_val) - d3.mean(this.b_val));
   }
 
   median() {
+
 
     return (d3.median(this.a_val.sort(numSort))) - (d3.median(this.b_val.sort(numSort)));
 
@@ -46,12 +49,14 @@ export class CustomSortCalculation {
 
   q3() {
 
+
     return (d3.quantile(this.a_val.sort(numSort), 0.75)) - (d3.quantile(this.b_val.sort(numSort), 0.75));
 
   }
 }
 
 function numSort(a, b) {
+
   return a - b;
 }
 
@@ -60,30 +65,26 @@ enum Sort {
   min, max, median, q1, q3, mean
 }
 
-
-interface IBoxPlotData {
-
-  readonly min: number;
-  readonly max: number;
-  readonly median: number;
-  readonly q1: number;
-  readonly q3: number;
-}
-
-interface IDataStat {
+export interface IDataStat {
   readonly min: number,
   readonly max: number,
-  readonly sort: string,
+  readonly sort: string
+}
+
+interface IMultiValueDataStat extends IDataStat {
+
   readonly threshold: number,
   readonly dataLength: number,
   readonly colorRange: any
 }
 
 
-export default class MultiValueColumn extends ValueColumn<number[] > {
+export default class MultiValueColumn extends ValueColumn<number [] > implements IBoxPlotColumn {
 
-  private data: IDataStat;
-
+  private data: IMultiValueDataStat;
+  private userSort;
+  private min;
+  private max;
   private colorScale: d3.scale.Linear<number, string> = d3.scale.linear<number, string>();
   private xposScale: d3.scale.Linear<number, number> = d3.scale.linear();
   private yposScale: d3.scale.Linear<number, number> = d3.scale.linear();
@@ -103,6 +104,9 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
       colorRange: (<any>desc).colorRange || ['blue', 'red']
     };
 
+    this.userSort = this.data.sort;
+    this.min = this.data.min;
+    this.max = this.max;
     this.xposScale
       .domain([0, this.data.dataLength - 1]);
 
@@ -144,12 +148,20 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
 
+
     const a_val = (this.getValue(a, aIndex));
     const b_val = (this.getValue(b, bIndex));
-    const sort: any = new CustomSortCalculation(a_val, b_val);
-    const f = sort[this.data.sort].bind(sort);
+    const boxSort = this.userSort;
+    if (Array.isArray(a_val)) {
+      const sort: any = new CustomSortCalculation(a_val, b_val);
+      const f = sort[this.userSort].bind(sort);
+      return f();
+    } else {
 
-    return f();
+      return (numSort((<any>a_val)[boxSort], (<any>b_val)[boxSort]));
+    }
+
+
   }
 
   getColor() {
@@ -174,34 +186,28 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
 
   getDataInfo() {
 
-   return this.data;
+    return this.data;
   }
 
   getVerticalBarScale() {
     return this.verticalBarScale;
   }
 
-  getboxPlotScale(width: number) {
 
-    this.boxPlotScale.range([0, 1 * width]);
-
-    return this.boxPlotScale;
-  }
-
-
-  getboxPlotData(data: number[], scale: d3.scale.Linear<number,number>) {
-
+  getBoxPlotData(row: any, index: number, scale: any) {
+    const data = this.getValue(row, index);
     const minval_arr = Math.min.apply(Math, data);
     const maxval_arr = Math.max.apply(Math, data);
     const sorteddata = data.slice().sort(numSort);
 
-    const boxdata = <IBoxPlotData>{
+    const boxdata: IBoxPlotData = {
       min: scale(minval_arr),
       median: scale(d3.quantile(sorteddata, 0.50)),
       q1: scale(d3.quantile(sorteddata, 0.25)),
       q3: scale(d3.quantile(sorteddata, 0.75)),
       max: scale(maxval_arr)
     };
+
 
     return (boxdata);
 
@@ -211,10 +217,22 @@ export default class MultiValueColumn extends ValueColumn<number[] > {
     return this.data.sort;
   }
 
+  public setDomain(domain: number[]) {
+    const bak = this.boxPlotScale.domain();
+
+    this.min = domain[0];
+    this.max = domain[1];
+
+    this.boxPlotScale.domain(domain);
+
+    this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
+  }
+
+
   setUserSortBy(rank: string) {
-
+    this.userSort = rank;
+    console.log(this.userSort)
     let ascending = false;
-
     switch (rank) {
       case Sort[Sort.min]:
         ascending = true;

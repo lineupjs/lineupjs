@@ -23,6 +23,7 @@ import DummyColumn from './DummyColumn';
 import LinkColumn from './LinkColumn';
 import SetColumn from './SetColumn';
 import MultiValueColumn from './MultiValueColumn';
+import BoxPlotColumn from './BoxPlotColumn';
 
 
 export {default as Column, IColumnDesc} from './Column';
@@ -101,6 +102,7 @@ export function models() {
     verticalbar: MultiValueColumn,
     boxplot: MultiValueColumn,
     set: SetColumn,
-    circle: NumberColumn
+    circle: NumberColumn,
+    boxplotcustom:BoxPlotColumn
   };
 }
