@@ -1,6 +1,5 @@
 * Release number or git hash: 
 * Web browser version and OS: 
-* Environment (local or deployed): 
 
 ### Steps to reproduce
 
@@ -14,4 +13,4 @@
 * Static or animated images showing the UI behavior
 
 ### Expected behavior
-*
+* 
