@@ -19,20 +19,19 @@ node {
      wrap([$class: 'Xvfb']) {
        sh 'npm run dist'
      }
+     currentBuild.result = "SUCCESS"
    } catch (e) {
      // if any exception occurs, mark the build as failed
      currentBuild.result = 'FAILURE'
      throw e
+   } finally {
+     // always clean up
+     sh 'npm prune'
+     sh 'rm node_modules -rf'
    }
-   currentBuild.result = "SUCCESS"
  }
 
  stage('Post Build') {
-   archiveArtifacts artifacts: 'build/*.(js|css|map)'
- }
-
- stage('Cleanup') {
-   sh 'npm prune'
-   sh 'rm node_modules -rf'
+   archiveArtifacts artifacts: 'build/*'
  }
 }
