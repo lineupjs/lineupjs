@@ -43,7 +43,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   /**
    * the local ranking orders
    */
-  private ranks = new Map<string, number[]>();
+  private readonly ranks = new Map<string, number[]>();
 
   constructor(private columns: IColumnDesc[] = [], options: IDataProviderOptions = {}) {
     super(options);
@@ -54,7 +54,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  protected rankAccessor(row: any, index:number, id: string, desc: IColumnDesc, ranking: Ranking) {
+  protected rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking) {
     return (this.ranks[ranking.id].indexOf(index)) + 1;
   }
 

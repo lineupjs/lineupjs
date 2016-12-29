@@ -9,9 +9,9 @@ import StringColumn from './StringColumn';
  * a string column in which the values can be edited locally
  */
 export default class AnnotateColumn extends StringColumn {
-  static EVENT_VALUE_CHANGED = 'valueChanged';
+  static readonly EVENT_VALUE_CHANGED = 'valueChanged';
 
-  private annotations = new Map<number, string>();
+  private readonly annotations = new Map<number, string>();
 
   constructor(id: string, desc: any) {
     super(id, desc);

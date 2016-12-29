@@ -19,11 +19,11 @@ export function createDesc(label: string = 'Combined') {
  * implementation of the stacked column
  */
 export default class StackColumn extends CompositeNumberColumn implements IMultiLevelColumn {
-  static EVENT_COLLAPSE_CHANGED = 'collapseChanged';
-  static EVENT_WEIGHTS_CHANGED = 'weightsChanged';
-  static COLLAPSED_RENDERER = 'number';
+  static readonly EVENT_COLLAPSE_CHANGED = 'collapseChanged';
+  static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';
+  static readonly COLLAPSED_RENDERER = 'number';
 
-  private adaptChange;
+  private readonly adaptChange;
 
   /**
    * whether this stack column is collapsed i.e. just looks like an ordinary number column

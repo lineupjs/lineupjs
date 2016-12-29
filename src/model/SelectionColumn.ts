@@ -18,7 +18,7 @@ export function createDesc(label: string = 'S') {
  * a checkbox column for selections
  */
 export default class SelectionColumn extends ValueColumn<boolean> {
-  static EVENT_SELECT = 'select';
+  static readonly EVENT_SELECT = 'select';
 
   constructor(id: string, desc: any) {
     super(id, desc);

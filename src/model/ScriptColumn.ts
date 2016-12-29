@@ -15,8 +15,8 @@ export function createDesc(label: string = 'script') {
 }
 
 export default class ScriptColumn extends CompositeNumberColumn {
-  static EVENT_SCRIPT_CHANGED = 'scriptChanged';
-  static DEFAULT_SCRIPT = 'return Math.max.apply(Math,values)';
+  static readonly EVENT_SCRIPT_CHANGED = 'scriptChanged';
+  static readonly DEFAULT_SCRIPT = 'return Math.max.apply(Math,values)';
 
   private script = ScriptColumn.DEFAULT_SCRIPT;
   private f: Function = null;

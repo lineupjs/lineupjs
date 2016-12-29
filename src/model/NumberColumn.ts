@@ -254,10 +254,10 @@ export function createMappingFunction(dump: any): IMappingFunction {
  * a number column mapped from an original input scale to an output range
  */
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn {
-  static EVENT_MAPPING_CHANGED = 'mappingChanged';
-  static COMPRESSED_RENDERER = 'heatmap';
+  static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
+  static readonly COMPRESSED_RENDERER = 'heatmap';
 
-  static noFilter = () => ({min: -Infinity, max: Infinity, filterMissing: false});
+  static readonly noFilter = () => ({min: -Infinity, max: Infinity, filterMissing: false});
 
   missingValue = 0;
 

@@ -8,7 +8,7 @@ import Ranking from './Ranking';
  * a column having an accessor to get the cell value
  */
 export default class ValueColumn<T> extends Column {
-  protected accessor: (row: any, number: number, id: string, desc: any, ranking: Ranking) => T;
+  private readonly accessor: (row: any, number: number, id: string, desc: any, ranking: Ranking) => T;
 
   constructor(id: string, desc: any) {
     super(id, desc);

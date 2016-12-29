@@ -11,7 +11,7 @@ import {toFullTooltip} from './HeaderRenderer';
 class PoolEntry {
   used: number = 0;
 
-  constructor(public desc: IColumnDesc) {
+  constructor(public readonly desc: IColumnDesc) {
 
   }
 }
@@ -28,7 +28,7 @@ export interface IPoolRendererOptions {
 }
 
 export default class PoolRenderer {
-  private options: IPoolRendererOptions = {
+  private readonly options: IPoolRendererOptions = {
     layout: 'vertical',
     elemWidth: 100,
     elemHeight: 40,
@@ -39,7 +39,7 @@ export default class PoolRenderer {
     addAtEndOnClick: false
   };
 
-  private $node: Selection<any>;
+  private readonly $node: Selection<any>;
   private entries: PoolEntry[];
 
   constructor(private data: DataProvider, parent: Element, options: IPoolRendererOptions = {}) {

@@ -26,7 +26,7 @@ export interface ICanvasBodyRendererOptions {
 }
 
 export default class BodyCanvasRenderer extends ABodyRenderer {
-  static CUSTOM_OPTIONS = {
+  static readonly CUSTOM_OPTIONS = {
     style: {
       text: 'black',
       font: '10pt "Helvetica Neue", Helvetica, Arial, sans-serif',
@@ -313,7 +313,8 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.fillStyle = this.style('text');
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    context.textHints = createTextHints(ctx, this.style('font'));
+    //hacky to set to since I'm creating the context, okish
+    (<any>context).textHints = createTextHints(ctx, this.style('font'));
 
     ctx.translate(0, -firstLine);
 

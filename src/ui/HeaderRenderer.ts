@@ -28,7 +28,7 @@ import {
  * utility function to generate the tooltip text with description
  * @param col the column
  */
-export function toFullTooltip(col: { label: string, description?: string}) {
+export function toFullTooltip(col: {label: string, description?: string}) {
   let base = col.label;
   if (col.description != null && col.description !== '') {
     base += '\n' + col.description;
@@ -53,7 +53,7 @@ export interface IHeaderRendererOptions {
   manipulative?: boolean;
   histograms?: boolean;
 
-  filterDialogs?: { [type: string]: (col: Column, $header: d3.Selection<Column>, data: DataProvider, idPrefix: string)=>void };
+  filterDialogs?: {[type: string]: (col: Column, $header: d3.Selection<Column>, data: DataProvider, idPrefix: string) => void};
   linkTemplates?: string[];
   searchAble?(col: Column): boolean;
   sortOnLabel?: boolean;
@@ -75,9 +75,8 @@ function countMultiLevel(c: Column): number {
 }
 
 
-
 export default class HeaderRenderer {
-  private options: IHeaderRendererOptions = {
+  private readonly options: IHeaderRendererOptions = {
     idPrefix: '',
     slopeWidth: 150,
     columnPadding: 5,
@@ -100,11 +99,11 @@ export default class HeaderRenderer {
     rankingButtons: <IRankingHook>dummyRankingButtonHook
   };
 
-  $node: d3.Selection<any>;
+  readonly $node: d3.Selection<any>;
 
   private histCache = new Map<string,Promise<IStatistics|ICategoricalStatistics>>();
 
-  private dragHandler = d3.behavior.drag<Column>()
+  private readonly dragHandler = d3.behavior.drag<Column>()
   //.origin((d) => d)
     .on('dragstart', function () {
       d3.select(this).classed('dragging', true);
@@ -125,7 +124,7 @@ export default class HeaderRenderer {
       (<any>d3.event).sourceEvent.preventDefault();
     });
 
-  private dropHandler = dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d: Column, copy) => {
+  private readonly dropHandler = dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d: Column, copy) => {
     let col: Column = null;
     if ('application/caleydo-lineup-column-ref' in data) {
       const id = data['application/caleydo-lineup-column-ref'];

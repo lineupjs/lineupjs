@@ -63,12 +63,12 @@ export interface IStatistics {
   readonly mean: number;
   readonly count: number;
   readonly maxBin: number;
-  readonly hist: { x: number; dx: number; y: number;}[];
+  readonly hist: {x: number; dx: number; y: number;}[];
 }
 
 export interface ICategoricalStatistics {
   readonly maxBin: number;
-  readonly hist: { cat: string; y: number }[];
+  readonly hist: {cat: string; y: number}[];
 }
 
 export interface IColumnMetaData {
@@ -85,28 +85,28 @@ export default class Column extends AEventDispatcher {
    * default color that should be used
    * @type {string}
    */
-  static DEFAULT_COLOR = '#C1C1C1';
+  static readonly DEFAULT_COLOR = '#C1C1C1';
   /**
    * magic variable for showing all columns
    * @type {number}
    */
-  static FLAT_ALL_COLUMNS = -1;
+  static readonly FLAT_ALL_COLUMNS = -1;
   /**
    * width of a compressed column
    * @type {number}
    */
-  static COMPRESSED_WIDTH = 16;
+  static readonly COMPRESSED_WIDTH = 16;
 
-  static EVENT_WIDTH_CHANGED = 'widthChanged';
-  static EVENT_FILTER_CHANGED = 'filterChanged';
-  static EVENT_LABEL_CHANGED = 'labelChanged';
-  static EVENT_METADATA_CHANGED = 'metaDataChanged';
-  static EVENT_COMPRESS_CHANGED = 'compressChanged';
-  static EVENT_ADD_COLUMN = 'addColumn';
-  static EVENT_REMOVE_COLUMN = 'removeColumn';
-  static EVENT_DIRTY = 'dirty';
-  static EVENT_DIRTY_HEADER = 'dirtyHeader';
-  static EVENT_DIRTY_VALUES = 'dirtyValues';
+  static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
+  static readonly EVENT_FILTER_CHANGED = 'filterChanged';
+  static readonly EVENT_LABEL_CHANGED = 'labelChanged';
+  static readonly EVENT_METADATA_CHANGED = 'metaDataChanged';
+  static readonly EVENT_COMPRESS_CHANGED = 'compressChanged';
+  static readonly EVENT_ADD_COLUMN = 'addColumn';
+  static readonly EVENT_REMOVE_COLUMN = 'removeColumn';
+  static readonly EVENT_DIRTY = 'dirty';
+  static readonly EVENT_DIRTY_HEADER = 'dirtyHeader';
+  static readonly EVENT_DIRTY_VALUES = 'dirtyValues';
 
   /**
    * the id of this column
@@ -126,7 +126,7 @@ export default class Column extends AEventDispatcher {
    */
   parent: IColumnParent = null;
 
-  private metadata : IColumnMetaData;
+  private metadata: IColumnMetaData;
 
   /**
    * alternative to specifying a color is defining a css class that should be used

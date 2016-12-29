@@ -91,34 +91,34 @@ export default class LineUp extends AEventDispatcher {
    * triggered when the mouse is over a specific row
    * @argument data_index:number the selected data index or <0 if no row
    */
-  static EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
+  static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
 
   /**
    * triggered when the user click on a row
    * @argument data_index:number the selected data index or <0 if no row
    */
-  static EVENT_SELECTION_CHANGED = DataProvider.EVENT_SELECTION_CHANGED;
+  static readonly EVENT_SELECTION_CHANGED = DataProvider.EVENT_SELECTION_CHANGED;
 
   /**
    * triggered when the user selects one or more rows
    * @argument dataIndices:number[] the selected data indices
    */
-  static EVENT_MULTISELECTION_CHANGED = 'multiSelectionChanged';
+  static readonly EVENT_MULTISELECTION_CHANGED = 'multiSelectionChanged';
 
   /**
    * triggered when LineUpJS.update() was called
    */
-  static EVENT_UPDATE_START = 'updateStart';
+  static readonly EVENT_UPDATE_START = 'updateStart';
 
   /**
    * triggered when LineUpJS.update() was called and the rendering the body has finished
    */
-  static EVENT_UPDATE_FINISHED = 'updateFinished';
+  static readonly EVENT_UPDATE_FINISHED = 'updateFinished';
 
   /**
    * default config of LineUp with all available options
    */
-  config: ILineUpConfig = {
+  readonly config: ILineUpConfig = {
     idPrefix: Math.random().toString(36).slice(-8).substr(0, 3), //generate a random string with length3
     header: {
       headerHeight: 20,
@@ -306,7 +306,7 @@ export default class LineUp extends AEventDispatcher {
     }
     const order = ranking.getOrder();
     //relative order
-    const indices = dataIndices.map((d) => order.indexOf(d)).sort((a,b) => a-b);
+    const indices = dataIndices.map((d) => order.indexOf(d)).sort((a, b) => a - b);
     if (this.contentScroller) {
       this.contentScroller.scrollIntoView(0, order.length, indices[0], (i) => i * this.config.body.rowHeight);
     } else {

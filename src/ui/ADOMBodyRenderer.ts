@@ -23,7 +23,7 @@ export interface IDOMMapping {
   setSize(n: HTMLElement, width: number, height: number);
 
   translate(n: SVGElement | HTMLElement, x: number, y: number);
-  transform<T>(sel: d3.Selection<T>, callback: (d: T, i: number) => [number,number]);
+  transform<T>(sel: d3.Selection<T>, callback: (d: T, i: number) => [number, number]);
   creator(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext): IDOMCellRenderer<SVGElement | HTMLElement>;
 
   bg: string;
