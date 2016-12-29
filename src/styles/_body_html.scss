@@ -17,8 +17,13 @@
   }
 
   div.text {
-    &.loading, &.text_center {
+    &.text_center {
       text-align: center;
+    }
+  }
+  div.loading {
+    div {
+      display: inline;
     }
   }
 

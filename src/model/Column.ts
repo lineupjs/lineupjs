@@ -162,7 +162,7 @@ export default class Column extends AEventDispatcher {
       description: desc.description || '',
       color: desc.color || (desc.cssClass !== '' ? null : Column.DEFAULT_COLOR)
     };
-    this.loaded = desc.lazyLoaded !== false;
+    this.loaded = desc.lazyLoaded !== true;
   }
 
   get id() {

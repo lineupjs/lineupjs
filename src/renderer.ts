@@ -730,25 +730,30 @@ class StackCellRenderer implements ICellRendererFactory {
 const loading = {
   createSVG: function (col: Column): ISVGCellRenderer {
     return {
-      template: `<text class="loading fa fa-spinner">\uf110</text>`,
-      update: ()=> undefined
+      template: `<text class="loading"><tspan class="fa">\uf110</tspan>Loading…</text>`,
+      update: () => undefined // TODO svg animation
     };
   },
   createHTML: function (col: Column): IHTMLCellRenderer {
     return {
-      template: `<div class="loading fa fa-spinner fa-pulse"></div>`,
+      template: `<div class="loading"><i class="fa fa-spinner fa-pulse"></i><div>Loading…</div></div>`,
       update: () => undefined
     };
   },
   createCanvas: function (col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const base = Date.now()%360;
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const bak = ctx.font;
-      const angle = (i*20)%360;
+      clipText(ctx, 'Loading…', 10, 0, col.getWidth() - 10, context.textHints);
+      const angle = (base + i * 45) * (Math.PI / 180);
+      ctx.save();
       ctx.font = '10pt FontAwesome';
+      ctx.textAlign = 'center';
+      const shift = (context.rowHeight(i) - context.textHints.spinnerWidth) * 0.5;
+      ctx.translate(2, shift + context.textHints.spinnerWidth * 0.5);
       ctx.rotate(angle);
-      clipText(ctx, '\uf110', 0, 0, col.getWidth(), context.textHints);
-      ctx.rotate(-angle);
-      ctx.font = bak;
+      ctx.translate(0, -context.textHints.spinnerWidth * 0.5);
+      ctx.fillText('\uf110', 0, 0);
+      ctx.restore();
     };
   }
 };
