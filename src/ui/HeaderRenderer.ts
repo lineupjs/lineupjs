@@ -465,6 +465,22 @@ export default class HeaderRenderer {
     });
     $headers.select('span.lu-label').text((d) => d.label);
 
+    const resolveDrop = (data: string[], copy: boolean) => {
+      if ('application/caleydo-lineup-column-number-ref' in data) {
+        const id = data['application/caleydo-lineup-column-number-ref'];
+        let col: Column = this.data.find(id);
+        if (copy) {
+          col = this.data.clone(col);
+        } else if (col) {
+          col.removeMe();
+        }
+        return col;
+      } else {
+        const desc = JSON.parse(data['application/caleydo-lineup-column-number']);
+        return this.data.create(this.data.fromDescRef(desc));
+      }
+    };
+
     $headers.filter((d) => isMultiLevelColumn(d)).each(function (col: IMultiLevelColumn) {
       if (col.getCollapsed() || col.getCompressed()) {
         d3.select(this).selectAll('div.' + clazz + '_i').remove();
@@ -476,37 +492,13 @@ export default class HeaderRenderer {
         that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
       }
     }).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: IMultiLevelColumn, copy) => {
-      let col: Column = null;
-      if ('application/caleydo-lineup-column-number-ref' in data) {
-        const id = data['application/caleydo-lineup-column-number-ref'];
-        col = this.data.find(id);
-        if (copy) {
-          col = this.data.clone(col);
-        } else if (col) {
-          col.removeMe();
-        }
-      } else {
-        const desc = JSON.parse(data['application/caleydo-lineup-column-number']);
-        col = this.data.create(this.data.fromDescRef(desc));
-      }
+      let col: Column = resolveDrop(data, copy);
       return d.push(col) != null;
     }));
 
     // drag columns on top of each
     $headers.filter((d) => d.parent instanceof Ranking && isNumberColumn(d) && !isMultiLevelColumn(d)).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: Column & INumberColumn, copy) => {
-      let col: Column = null;
-      if ('application/caleydo-lineup-column-number-ref' in data) {
-        const id = data['application/caleydo-lineup-column-number-ref'];
-        col = this.data.find(id);
-        if (copy) {
-          col = this.data.clone(col);
-        } else if (col) {
-          col.removeMe();
-        }
-      } else {
-        const desc = JSON.parse(data['application/caleydo-lineup-column-number']);
-        col = this.data.create(this.data.fromDescRef(desc));
-      }
+      let col: Column = resolveDrop(data, copy);
       const ranking = d.findMyRanker();
       const index = ranking.indexOf(d);
       const stack = <StackColumn>this.data.create(createStackDesc());
