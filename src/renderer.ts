@@ -726,6 +726,33 @@ class StackCellRenderer implements ICellRendererFactory {
   }
 }
 
+
+const loading = {
+  createSVG: function (col: Column): ISVGCellRenderer {
+    return {
+      template: `<text class="loading fa fa-spinner">\uf110</text>`,
+      update: ()=> undefined
+    };
+  },
+  createHTML: function (col: Column): IHTMLCellRenderer {
+    return {
+      template: `<div class="loading fa fa-spinner fa-pulse"></div>`,
+      update: () => undefined
+    };
+  },
+  createCanvas: function (col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      const bak = ctx.font;
+      const angle = (i*20)%360;
+      ctx.font = '10pt FontAwesome';
+      ctx.rotate(angle);
+      clipText(ctx, '\uf110', 0, 0, col.getWidth(), context.textHints);
+      ctx.rotate(-angle);
+      ctx.font = bak;
+    };
+  }
+};
+
 export const defaultCellRenderer = new DefaultCellRenderer();
 const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.getColor(d));
 
@@ -749,7 +776,8 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   max: combineCellRenderer,
   min: combineCellRenderer,
   mean: combineCellRenderer,
-  script: combineCellRenderer
+  script: combineCellRenderer,
+  loading: loading
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {

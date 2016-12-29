@@ -55,6 +55,12 @@ export interface IColumnDesc {
    * css class to append to elements of this column
    */
   readonly cssClass?: string;
+
+  /**
+   * true if the data of this column is not yet loaded by default
+   * @default false
+   */
+  readonly lazyLoaded?: boolean;
 }
 
 export interface IStatistics {
@@ -86,6 +92,7 @@ export default class Column extends AEventDispatcher {
    * @type {string}
    */
   static readonly DEFAULT_COLOR = '#C1C1C1';
+  static readonly RENDERER_LOADING = 'loading';
   /**
    * magic variable for showing all columns
    * @type {number}
@@ -140,15 +147,22 @@ export default class Column extends AEventDispatcher {
    */
   private compressed = false;
 
+  /**
+   * is the data available
+   * @type {boolean}
+   */
+  private loaded = true;
+
   constructor(id: string, public desc: IColumnDesc) {
     super();
     this.uid = fixCSS(id);
-    this.cssClass = (<any>this.desc).cssClass || '';
+    this.cssClass = (<any>desc).cssClass || '';
     this.metadata = {
-      label: this.desc.label || this.id,
-      description: this.desc.description || '',
-      color: (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
-    }
+      label: desc.label || this.id,
+      description: desc.description || '',
+      color: desc.color || (desc.cssClass !== '' ? null : Column.DEFAULT_COLOR)
+    };
+    this.loaded = desc.lazyLoaded !== false;
   }
 
   get id() {
@@ -234,6 +248,17 @@ export default class Column extends AEventDispatcher {
 
   getCompressed() {
     return this.compressed;
+  }
+
+  isLoaded() {
+    return this.loaded;
+  }
+
+  setLoaded(loaded: boolean) {
+    if (this.loaded === loaded) {
+      return;
+    }
+    this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.loaded, this.loaded = loaded);
   }
 
   /**
@@ -436,6 +461,9 @@ export default class Column extends AEventDispatcher {
    * @return {string}
    */
   rendererType(): string {
+    if (!this.loaded) {
+      return Column.RENDERER_LOADING;
+    }
     return this.desc.type;
   }
 

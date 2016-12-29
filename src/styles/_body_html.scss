@@ -16,6 +16,12 @@
     white-space: nowrap;
   }
 
+  div.text {
+    &.loading, &.text_center {
+      text-align: center;
+    }
+  }
+
   div.row {
     div.bg {
       background-color: transparent;
