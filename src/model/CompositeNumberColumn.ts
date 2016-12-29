@@ -54,18 +54,28 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
   }
 
   getLabel(row: any, index: number) {
+    if (!this.isLoaded()) {
+      return '';
+    }
     const v = this.getValue(row, index);
     //keep non number if it is not a number else convert using formatter
     return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
   }
 
   getValue(row: any, index: number) {
+    if (!this.isLoaded()) {
+      return null;
+    }
     //weighted sum
     const v = this.compute(row, index);
     if (typeof(v) === 'undefined' || v == null || isNaN(v)) {
       return this.missingValue;
     }
     return v;
+  }
+
+  isLoaded() {
+    return this._children.every((c) => (<INumberColumn><any>c).isLoaded());
   }
 
   protected compute(row: any, index: number) {
