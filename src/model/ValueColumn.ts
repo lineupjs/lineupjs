@@ -23,7 +23,6 @@ export default class ValueColumn<T> extends Column {
     //find accessor
     this.accessor = desc.accessor || (() => null);
     this.loaded = desc.lazyLoaded !== true;
-    console.log(this.loaded, desc.lazyLoaded, desc.lazyLoaded !== true);
   }
 
   getLabel(row: any, index: number) {
@@ -57,7 +56,6 @@ export default class ValueColumn<T> extends Column {
 
   rendererType(): string {
     if (!this.isLoaded()) {
-      console.log(this.desc.label, 'loading');
       return ValueColumn.RENDERER_LOADING;
     }
     return super.rendererType();

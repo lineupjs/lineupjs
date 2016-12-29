@@ -100,14 +100,14 @@
       r.push(p.create(desc[9]));
       r.push(p.create(desc[10]));
       r.push(p.create(desc[11]));
-      r.push(lazy);
 
       r.push((function () {
         const rstack = p.create(LineUpJS.model.createStackDesc('Stack'));
         rstack.push(p.create(desc[1]));
         rstack.push(p.create(desc[2]));
         rstack.push(p.create(desc[3]));
-        rstack.setWeights([0.2, 0.4]);
+        rstack.push(lazy);
+        rstack.setWeights([0.2, 0.4, 0.1]);
         return rstack;
       })());
 
