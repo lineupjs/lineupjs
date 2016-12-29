@@ -38,14 +38,14 @@
   "main": "build/LineUpJS.js",
   "files": [
     "build",
-	"!build/docs",
-	"src/**/*.ts",
-	"src/**/*.scss"
+    "!build/docs",
+    "src/**/*.ts",
+    "src/**/*.scss"
   ],
   "scripts": {
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
-    "docs": "cp -r typedoc_hacked ./node_modules/typedoc/bin/typedoc && typedoc --options typedoc.json src",
+    "docs": "typedoc --options typedoc.json src",
     "pretest": "npm run compile",
     "test": "echo 'no tests'",
     "posttest": "npm run lint",
@@ -57,7 +57,7 @@
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "predist": "npm run build && npm run docs",
     "dist": "mkdirp dist && cd build && tar cvzf ../dist/lineupjs.tar.gz --exclude \"docs\" * && cd ..",
-	"prepublish": "npm run dist"
+    "prepublish": "npm run dist"
   },
   "repository": {
     "type": "git",
@@ -72,7 +72,7 @@
     "sass-loader": "^4.0.2",
     "style-loader": "^0.13.1",
     "tslint": "^3.15.1",
-    "typedoc": "^0.5.1",
+    "typedoc": "^0.5.3",
     "typescript": "2.1.1",
     "webpack": "^2.1.0-beta.25"
   },
