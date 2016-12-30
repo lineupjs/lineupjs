@@ -5059,7 +5059,6 @@ function deriveColors(columns) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Column__ = __webpack_require__(1);
-/* unused harmony export CustomSortCalculation */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -5071,36 +5070,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 
 
 
-var CustomSortCalculation = (function () {
-    function CustomSortCalculation(a_val, b_val) {
-        this.a_val = a_val;
-        this.b_val = b_val;
-        this.b_val = b_val;
-        this.a_val = a_val;
-    }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.a_val.sort(numSort))) - (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.b_val.sort(numSort)));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val, 0.25)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val, 0.25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val.sort(numSort), 0.75)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val.sort(numSort), 0.75));
-    };
-    return CustomSortCalculation;
-}());
 function numSort(a, b) {
     return a - b;
 }
@@ -5164,29 +5133,15 @@ var BoxPlotColumn = (function (_super) {
     };
     BoxPlotColumn.prototype.setUserSortBy = function (rank) {
         this.userSort = rank;
-        var ascending = false;
-        switch (rank) {
-            case Sort[Sort.min]:
-                ascending = true;
-                break;
-            case Sort[Sort.max]:
-                ascending = false;
-                break;
-            case Sort[Sort.mean]:
-                ascending = true;
-                break;
-            case Sort[Sort.median]:
-                ascending = false;
-                break;
-            case Sort[Sort.q1]:
-                ascending = true;
-                break;
-            case Sort[Sort.q3]:
-                ascending = false;
-                break;
-            default:
-                ascending = false;
-        }
+        var sortAscending = {};
+        sortAscending[Sort[Sort.min]] = true;
+        sortAscending[Sort[Sort.max]] = false;
+        sortAscending[Sort[Sort.mean]] = true;
+        sortAscending[Sort[Sort.median]] = false;
+        sortAscending[Sort[Sort.q1]] = true;
+        sortAscending[Sort[Sort.q3]] = false;
+        var ascending = sortAscending[this.userSort];
+        console.log(this.userSort, ascending);
         this.sortByMe(ascending);
     };
     return BoxPlotColumn;
@@ -5550,13 +5505,13 @@ var Sort;
 })(Sort || (Sort = {}));
 var MultiValueColumn = (function (_super) {
     __extends(MultiValueColumn, _super);
+    //private boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();
     function MultiValueColumn(id, desc) {
         var _this = _super.call(this, id, desc) || this;
         _this.colorScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         _this.xposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         _this.yposScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         _this.verticalBarScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
-        _this.boxPlotScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
         _this.data = {
             min: __WEBPACK_IMPORTED_MODULE_0_d3__["min"](desc.domain),
             max: __WEBPACK_IMPORTED_MODULE_0_d3__["max"](desc.domain),
@@ -5568,8 +5523,6 @@ var MultiValueColumn = (function (_super) {
         _this.userSort = _this.data.sort;
         _this.min = _this.data.min;
         _this.max = _this.data.max;
-        _this.verticalBarScale
-            .domain([_this.data.min, _this.data.max]);
         var rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },
             { type: 'boxplot', label: 'Boxplot' },
             { type: 'sparkline', label: 'Sparkline' },
@@ -5594,15 +5547,9 @@ var MultiValueColumn = (function (_super) {
     MultiValueColumn.prototype.compare = function (a, b, aIndex, bIndex) {
         var a_val = (this.getValue(a, aIndex));
         var b_val = (this.getValue(b, bIndex));
-        var boxSort = this.userSort;
-        if (Array.isArray(a_val)) {
-            var sort = new CustomSortCalculation(a_val, b_val);
-            var f = sort[this.userSort].bind(sort);
-            return f();
-        }
-        else {
-            return (numSort(a_val[boxSort], b_val[boxSort]));
-        }
+        var sort = new CustomSortCalculation(a_val, b_val);
+        var f = sort[this.userSort].bind(sort);
+        return f();
     };
     MultiValueColumn.prototype.getColor = function () {
         return this.colorScale;
@@ -5626,7 +5573,8 @@ var MultiValueColumn = (function (_super) {
         return this.data;
     };
     MultiValueColumn.prototype.getVerticalBarScale = function () {
-        return this.verticalBarScale;
+        var vScale = this.verticalBarScale.domain([this.data.min, this.data.max]);
+        return vScale;
     };
     MultiValueColumn.prototype.getBoxPlotData = function (row, index, scale) {
         var data = this.getValue(row, index);
@@ -5657,30 +5605,15 @@ var MultiValueColumn = (function (_super) {
     // }
     MultiValueColumn.prototype.setUserSortBy = function (rank) {
         this.userSort = rank;
-        console.log(this.userSort);
-        var ascending = false;
-        switch (rank) {
-            case Sort[Sort.min]:
-                ascending = true;
-                break;
-            case Sort[Sort.max]:
-                ascending = false;
-                break;
-            case Sort[Sort.mean]:
-                ascending = true;
-                break;
-            case Sort[Sort.median]:
-                ascending = false;
-                break;
-            case Sort[Sort.q1]:
-                ascending = true;
-                break;
-            case Sort[Sort.q3]:
-                ascending = false;
-                break;
-            default:
-                ascending = false;
-        }
+        var sortAscending = {};
+        sortAscending[Sort[Sort.min]] = true;
+        sortAscending[Sort[Sort.max]] = false;
+        sortAscending[Sort[Sort.mean]] = true;
+        sortAscending[Sort[Sort.median]] = false;
+        sortAscending[Sort[Sort.q1]] = true;
+        sortAscending[Sort[Sort.q3]] = false;
+        var ascending = sortAscending[this.userSort];
+        console.log(this.userSort, ascending);
         this.sortByMe(ascending);
     };
     return MultiValueColumn;

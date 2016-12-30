@@ -6,53 +6,9 @@ import ValueColumn from './ValueColumn';
 import Column from './Column';
 import {IDataStat} from './MultiValueColumn';
 
-export class CustomSortCalculation {
-
-  constructor(private a_val: number[], private b_val: number []) {
-    this.b_val = b_val;
-    this.a_val = a_val;
-  }
-
-
-  sum() {
-    return (d3.sum(this.a_val) - d3.sum(this.b_val));
-  }
-
-  min() {
-    return (d3.min(this.a_val) - d3.min(this.b_val));
-
-  }
-
-
-  max() {
-    return (d3.max(this.a_val) - d3.max(this.b_val));
-  }
-
-  mean() {
-
-    return (d3.mean(this.a_val) - d3.mean(this.b_val));
-  }
-
-  median() {
-
-    return (d3.median(this.a_val.sort(numSort))) - (d3.median(this.b_val.sort(numSort)));
-
-  }
-
-  q1() {
-
-    return (d3.quantile(this.a_val, 0.25)) - (d3.quantile(this.b_val, 0.25));
-
-  }
-
-  q3() {
-
-    return (d3.quantile(this.a_val.sort(numSort), 0.75)) - (d3.quantile(this.b_val.sort(numSort), 0.75));
-
-  }
-}
 
 function numSort(a, b) {
+
   return a - b;
 }
 
@@ -119,12 +75,11 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
 
-
     const a_val = (this.getValue(a, aIndex));
+
     if (a_val === null) {
       return;
     }
-
     const b_val = (this.getValue(b, bIndex));
     const boxSort = this.userSort;
 
@@ -162,35 +117,24 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
     return this.data.sort;
   }
 
+
   setUserSortBy(rank: string) {
     this.userSort = rank;
-    let ascending = false;
 
-    switch (rank) {
+    var sortAscending = {};
+    sortAscending[Sort[Sort.min]] = true;
+    sortAscending[Sort[Sort.max]] = false;
+    sortAscending[Sort[Sort.mean]] = true;
+    sortAscending[Sort[Sort.median]] = false;
+    sortAscending[Sort[Sort.q1]] = true;
+    sortAscending[Sort[Sort.q3]] = false;
 
-      case Sort[Sort.min]:
-        ascending = true;
-        break;
-      case Sort[Sort.max]:
-        ascending = false;
-        break;
-      case Sort[Sort.mean]:
-        ascending = true;
-        break;
-      case Sort[Sort.median]:
-        ascending = false;
-        break;
-      case Sort[Sort.q1]:
-        ascending = true;
-        break;
-      case Sort[Sort.q3]:
-        ascending = false;
-        break;
-      default:
-        ascending = false;
-    }
+    let ascending = sortAscending[this.userSort];
+  console.log(this.userSort,ascending)
     this.sortByMe(ascending);
+
   }
+
 
 
 }

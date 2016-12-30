@@ -43,6 +43,7 @@ export class CustomSortCalculation {
 
   q1() {
 
+
     return (d3.quantile(this.a_val, 0.25)) - (d3.quantile(this.b_val, 0.25));
 
   }
@@ -89,7 +90,7 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
   private xposScale: d3.scale.Linear<number, number> = d3.scale.linear();
   private yposScale: d3.scale.Linear<number, number> = d3.scale.linear();
   private verticalBarScale: d3.scale.Linear<number,number> = d3.scale.linear();
-  private boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();
+  //private boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();
 
 
   constructor(id: string, desc: any) {
@@ -104,14 +105,10 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
       colorRange: (<any>desc).colorRange || ['blue', 'red']
     };
 
-
     this.userSort = this.data.sort;
     this.min = this.data.min;
     this.max = this.data.max;
 
-
-    this.verticalBarScale
-      .domain([this.data.min, this.data.max]);
 
     const rendererList = [{type: 'heatmapcustom', label: 'Heatmap'},
       {type: 'boxplot', label: 'Boxplot'},
@@ -145,15 +142,9 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
 
     const a_val = (this.getValue(a, aIndex));
     const b_val = (this.getValue(b, bIndex));
-    const boxSort = this.userSort;
-    if (Array.isArray(a_val)) {
-      const sort: any = new CustomSortCalculation(a_val, b_val);
-      const f = sort[this.userSort].bind(sort);
-      return f();
-    } else {
-
-      return (numSort((<any>a_val)[boxSort], (<any>b_val)[boxSort]));
-    }
+    const sort: any = new CustomSortCalculation(a_val, b_val);
+    const f = sort[this.userSort].bind(sort);
+    return f();
 
 
   }
@@ -191,7 +182,9 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
   }
 
   getVerticalBarScale() {
-    return this.verticalBarScale;
+
+    const vScale = this.verticalBarScale.domain([this.data.min, this.data.max]);
+    return vScale;
   }
 
 
@@ -232,31 +225,19 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
 
   setUserSortBy(rank: string) {
     this.userSort = rank;
-    console.log(this.userSort)
-    let ascending = false;
-    switch (rank) {
-      case Sort[Sort.min]:
-        ascending = true;
-        break;
-      case Sort[Sort.max]:
-        ascending = false;
-        break;
-      case Sort[Sort.mean]:
-        ascending = true;
-        break;
-      case Sort[Sort.median]:
-        ascending = false;
-        break;
-      case Sort[Sort.q1]:
-        ascending = true;
-        break;
-      case Sort[Sort.q3]:
-        ascending = false;
-        break;
-      default:
-        ascending = false;
-    }
+
+    var sortAscending = {};
+    sortAscending[Sort[Sort.min]] = true;
+    sortAscending[Sort[Sort.max]] = false;
+    sortAscending[Sort[Sort.mean]] = true;
+    sortAscending[Sort[Sort.median]] = false;
+    sortAscending[Sort[Sort.q1]] = true;
+    sortAscending[Sort[Sort.q3]] = false;
+
+    let ascending = sortAscending[this.userSort];
+    console.log(this.userSort,ascending)
     this.sortByMe(ascending);
+
   }
 
 
