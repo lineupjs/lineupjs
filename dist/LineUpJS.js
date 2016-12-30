@@ -5141,7 +5141,6 @@ var BoxPlotColumn = (function (_super) {
         sortAscending[Sort[Sort.q1]] = true;
         sortAscending[Sort[Sort.q3]] = false;
         var ascending = sortAscending[this.userSort];
-        console.log(this.userSort, ascending);
         this.sortByMe(ascending);
     };
     return BoxPlotColumn;
@@ -5468,27 +5467,13 @@ var CustomSortCalculation = (function () {
         this.b_val = b_val;
         this.a_val = a_val;
     }
-    CustomSortCalculation.prototype.sum = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val));
-    };
-    CustomSortCalculation.prototype.min = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val));
-    };
-    CustomSortCalculation.prototype.max = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val));
-    };
-    CustomSortCalculation.prototype.mean = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val));
-    };
-    CustomSortCalculation.prototype.median = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.a_val.sort(numSort))) - (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.b_val.sort(numSort)));
-    };
-    CustomSortCalculation.prototype.q1 = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val, 0.25)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val, 0.25));
-    };
-    CustomSortCalculation.prototype.q3 = function () {
-        return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val.sort(numSort), 0.75)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val.sort(numSort), 0.75));
-    };
+    CustomSortCalculation.prototype.sum = function () { return (__WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["sum"](this.b_val)); };
+    CustomSortCalculation.prototype.min = function () { return (__WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["min"](this.b_val)); };
+    CustomSortCalculation.prototype.max = function () { return (__WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["max"](this.b_val)); };
+    CustomSortCalculation.prototype.mean = function () { return (__WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.a_val) - __WEBPACK_IMPORTED_MODULE_0_d3__["mean"](this.b_val)); };
+    CustomSortCalculation.prototype.median = function () { return (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.a_val.sort(numSort))) - (__WEBPACK_IMPORTED_MODULE_0_d3__["median"](this.b_val.sort(numSort))); };
+    CustomSortCalculation.prototype.q1 = function () { return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val, 0.25)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val, 0.25)); };
+    CustomSortCalculation.prototype.q3 = function () { return (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.a_val.sort(numSort), 0.75)) - (__WEBPACK_IMPORTED_MODULE_0_d3__["quantile"](this.b_val.sort(numSort), 0.75)); };
     return CustomSortCalculation;
 }());
 function numSort(a, b) {
@@ -5505,7 +5490,6 @@ var Sort;
 })(Sort || (Sort = {}));
 var MultiValueColumn = (function (_super) {
     __extends(MultiValueColumn, _super);
-    //private boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();
     function MultiValueColumn(id, desc) {
         var _this = _super.call(this, id, desc) || this;
         _this.colorScale = __WEBPACK_IMPORTED_MODULE_0_d3__["scale"].linear();
@@ -5564,11 +5548,6 @@ var MultiValueColumn = (function (_super) {
         };
         return sparklineScale;
     };
-    // getSparkLineYScale() {
-    //
-    //   const yScale = this.yposScale.domain([this.data.min, this.data.max]);
-    //   return yScale;
-    // }
     MultiValueColumn.prototype.getDataInfo = function () {
         return this.data;
     };
@@ -5593,16 +5572,6 @@ var MultiValueColumn = (function (_super) {
     MultiValueColumn.prototype.getUserSortBy = function () {
         return this.data.sort;
     };
-    // public setDomain(domain: number[]) {
-    //   const bak = this.boxPlotScale.domain();
-    //
-    //   this.min = domain[0];
-    //   this.max = domain[1];
-    //
-    //   this.boxPlotScale.domain(domain);
-    //
-    //   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
-    // }
     MultiValueColumn.prototype.setUserSortBy = function (rank) {
         this.userSort = rank;
         var sortAscending = {};
@@ -5613,7 +5582,6 @@ var MultiValueColumn = (function (_super) {
         sortAscending[Sort[Sort.q1]] = true;
         sortAscending[Sort[Sort.q3]] = false;
         var ascending = sortAscending[this.userSort];
-        console.log(this.userSort, ascending);
         this.sortByMe(ascending);
     };
     return MultiValueColumn;

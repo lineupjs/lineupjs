@@ -12,7 +12,6 @@ function numSort(a, b) {
   return a - b;
 }
 
-
 enum Sort {
 
   min, max, median, q1, q3, mean
@@ -23,7 +22,6 @@ export interface IBoxPlotColumn {
   getDataInfo(): IDataStat;
 
 }
-
 
 interface IBoxPlotDataStat extends IDataStat {
   min: number,
@@ -87,12 +85,10 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
 
   }
 
-
   getDataInfo() {
 
     return this.data;
   }
-
 
   getBoxPlotData(row: any, index: number, scale: any) {
     const data = this.getValue(row, index);
@@ -108,9 +104,7 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
       max: scale((<any>data).max)
     };
 
-
     return boxdata;
-
   }
 
   getUserSortBy() {
@@ -130,11 +124,10 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
     sortAscending[Sort[Sort.q3]] = false;
 
     let ascending = sortAscending[this.userSort];
-  console.log(this.userSort,ascending)
+
     this.sortByMe(ascending);
 
   }
-
 
 
 }

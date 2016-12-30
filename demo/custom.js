@@ -73,9 +73,6 @@ window.onload = function () {
     });
 
 
-
-
-
     var boxplottestdata = [
       {
         "q1": 16.228708744,
@@ -127,7 +124,6 @@ window.onload = function () {
 
       boxplottestdata = d;
 
-
       var boxdata_minval, boxdata_maxval;
 
       boxdata_minval = d3.min(boxplottestdata, function (d) {
@@ -141,11 +137,9 @@ window.onload = function () {
       var arr2 = [];
       boxplottestdata.map(function (x) {
 
-
         return arr2.push({boxdata: x});
 
-
-      })
+      });
 
 
       var desc1 = [

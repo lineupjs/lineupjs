@@ -13,48 +13,22 @@ export class CustomSortCalculation {
     this.a_val = a_val;
   }
 
+  sum() { return (d3.sum(this.a_val) - d3.sum(this.b_val));}
 
-  sum() {
-    return (d3.sum(this.a_val) - d3.sum(this.b_val));
-  }
+  min() { return (d3.min(this.a_val) - d3.min(this.b_val)); }
 
-  min() {
+  max() { return (d3.max(this.a_val) - d3.max(this.b_val)); }
 
-    return (d3.min(this.a_val) - d3.min(this.b_val));
+  mean() { return (d3.mean(this.a_val) - d3.mean(this.b_val)); }
 
-  }
+  median() { return (d3.median(this.a_val.sort(numSort))) - (d3.median(this.b_val.sort(numSort))); }
 
+  q1() { return (d3.quantile(this.a_val, 0.25)) - (d3.quantile(this.b_val, 0.25)); }
 
-  max() {
+  q3() { return (d3.quantile(this.a_val.sort(numSort), 0.75)) - (d3.quantile(this.b_val.sort(numSort), 0.75)); }
 
-    return (d3.max(this.a_val) - d3.max(this.b_val));
-  }
-
-  mean() {
-    return (d3.mean(this.a_val) - d3.mean(this.b_val));
-  }
-
-  median() {
-
-
-    return (d3.median(this.a_val.sort(numSort))) - (d3.median(this.b_val.sort(numSort)));
-
-  }
-
-  q1() {
-
-
-    return (d3.quantile(this.a_val, 0.25)) - (d3.quantile(this.b_val, 0.25));
-
-  }
-
-  q3() {
-
-
-    return (d3.quantile(this.a_val.sort(numSort), 0.75)) - (d3.quantile(this.b_val.sort(numSort), 0.75));
-
-  }
 }
+
 
 function numSort(a, b) {
 
@@ -90,7 +64,6 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
   private xposScale: d3.scale.Linear<number, number> = d3.scale.linear();
   private yposScale: d3.scale.Linear<number, number> = d3.scale.linear();
   private verticalBarScale: d3.scale.Linear<number,number> = d3.scale.linear();
-  //private boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();
 
 
   constructor(id: string, desc: any) {
@@ -122,6 +95,7 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
 
   }
 
+
   private defineColorRange() {
 
     if (this.data.min < 0) {
@@ -139,13 +113,11 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
 
-
     const a_val = (this.getValue(a, aIndex));
     const b_val = (this.getValue(b, bIndex));
     const sort: any = new CustomSortCalculation(a_val, b_val);
     const f = sort[this.userSort].bind(sort);
     return f();
-
 
   }
 
@@ -162,7 +134,6 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
   getSparklineScale() {
 
     const sparklineScale = {
-
       xScale: this.xposScale.domain([0, this.data.dataLength - 1]),
       yScale: this.yposScale.domain([this.data.min, this.data.max])
     };
@@ -170,16 +141,12 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
     return sparklineScale;
   }
 
-  // getSparkLineYScale() {
-  //
-  //   const yScale = this.yposScale.domain([this.data.min, this.data.max]);
-  //   return yScale;
-  // }
 
   getDataInfo() {
 
     return this.data;
   }
+
 
   getVerticalBarScale() {
 
@@ -211,17 +178,6 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
     return this.data.sort;
   }
 
-  // public setDomain(domain: number[]) {
-  //   const bak = this.boxPlotScale.domain();
-  //
-  //   this.min = domain[0];
-  //   this.max = domain[1];
-  //
-  //   this.boxPlotScale.domain(domain);
-  //
-  //   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
-  // }
-
 
   setUserSortBy(rank: string) {
     this.userSort = rank;
@@ -235,7 +191,6 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
     sortAscending[Sort[Sort.q3]] = false;
 
     let ascending = sortAscending[this.userSort];
-    console.log(this.userSort,ascending)
     this.sortByMe(ascending);
 
   }
