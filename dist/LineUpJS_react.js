@@ -5568,8 +5568,6 @@ var MultiValueColumn = (function (_super) {
         _this.userSort = _this.data.sort;
         _this.min = _this.data.min;
         _this.max = _this.data.max;
-        _this.boxPlotScale
-            .domain([_this.data.min, _this.data.max]);
         _this.verticalBarScale
             .domain([_this.data.min, _this.data.max]);
         var rendererList = [{ type: 'heatmapcustom', label: 'Heatmap' },

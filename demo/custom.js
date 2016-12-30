@@ -149,14 +149,14 @@ window.onload = function () {
         {label: 'Country', type: 'string', column: 'stringdata'},
         {
           label: 'MultiValue',
-          type: 'sparkline',
+          type: 'boxplot',
           column: 'multidata',
           domain: [multidata_min, multidata_max],
           colorRange: ['blue', 'red'],
           sort: 'min',
           threshold: 0,
           dataLength: multidata_length,
-          rendererType: 'sparkline'
+          rendererType: 'boxplot'
         },
         {
           label: 'upset',
@@ -208,7 +208,7 @@ window.onload = function () {
           autoRotateLabels: true
         },
         body: {
-          renderer: 'canvas',
+          renderer: 'svg',
           freezeCols: 3
         },
         header: {

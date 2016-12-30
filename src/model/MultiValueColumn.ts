@@ -110,9 +110,6 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
     this.max = this.data.max;
 
 
-    this.boxPlotScale
-      .domain([this.data.min, this.data.max]);
-
     this.verticalBarScale
       .domain([this.data.min, this.data.max]);
 
