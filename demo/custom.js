@@ -149,14 +149,14 @@ window.onload = function () {
         {label: 'Country', type: 'string', column: 'stringdata'},
         {
           label: 'MultiValue',
-          type: 'boxplot',
+          type: 'sparkline',
           column: 'multidata',
           domain: [multidata_min, multidata_max],
           colorRange: ['blue', 'red'],
           sort: 'min',
           threshold: 0,
           dataLength: multidata_length,
-          rendererType: 'boxplot'
+          rendererType: 'sparkline'
         },
         {
           label: 'upset',
@@ -190,12 +190,12 @@ window.onload = function () {
       ];
 
 
-      var p = new LineUpJS.provider.LocalDataProvider(arr2, desc2);
+      var p = new LineUpJS.provider.LocalDataProvider(arr1, desc1);
       var r = p.pushRanking();
 
       var root = d3.select('body');
       r.insert(p.create(LineUpJS.model.createSelectionDesc()), 0);
-      desc2.forEach(function (d) {
+      desc1.forEach(function (d) {
 
         r.push(p.create(d));
       });

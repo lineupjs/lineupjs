@@ -238,8 +238,8 @@ class SparklineCellRenderer implements ICellRendererFactory {
 
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
 
-    var xScale: any = col.getSparkLineXScale().range([0, col.getWidth()]);
-    var yScale: any = col.getSparkLineYScale();
+    const xScale: any = col.getSparklineScale().xScale.range([0, col.getWidth()]);
+    var yScale: any = col.getSparklineScale().yScale;
 
     return {
 
@@ -260,8 +260,8 @@ class SparklineCellRenderer implements ICellRendererFactory {
   createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
 
-    var xScale: any = col.getSparkLineXScale().range([0, col.getWidth()]);
-    var yScale: any = col.getSparkLineYScale();
+    const xScale: any = col.getSparklineScale().xScale.range([0, col.getWidth()]);
+    var yScale: any = col.getSparklineScale().yScale;
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const data = col.getValue(d.v, d.dataIndex);

@@ -104,14 +104,11 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
       colorRange: (<any>desc).colorRange || ['blue', 'red']
     };
 
+
     this.userSort = this.data.sort;
     this.min = this.data.min;
-    this.max = this.max;
-    this.xposScale
-      .domain([0, this.data.dataLength - 1]);
+    this.max = this.data.max;
 
-    this.yposScale
-      .domain([this.data.min, this.data.max]);
 
     this.boxPlotScale
       .domain([this.data.min, this.data.max]);
@@ -174,15 +171,22 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
     return (width * 1 / this.data.dataLength);
   }
 
-  getSparkLineXScale() {
+  getSparklineScale() {
 
-    return this.xposScale;
+    const sparklineScale = {
+
+      xScale: this.xposScale.domain([0, this.data.dataLength - 1]),
+      yScale: this.yposScale.domain([this.data.min, this.data.max])
+    };
+
+    return sparklineScale;
   }
 
-  getSparkLineYScale() {
-
-    return this.yposScale;
-  }
+  // getSparkLineYScale() {
+  //
+  //   const yScale = this.yposScale.domain([this.data.min, this.data.max]);
+  //   return yScale;
+  // }
 
   getDataInfo() {
 
@@ -217,16 +221,16 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
     return this.data.sort;
   }
 
-  public setDomain(domain: number[]) {
-    const bak = this.boxPlotScale.domain();
-
-    this.min = domain[0];
-    this.max = domain[1];
-
-    this.boxPlotScale.domain(domain);
-
-    this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
-  }
+  // public setDomain(domain: number[]) {
+  //   const bak = this.boxPlotScale.domain();
+  //
+  //   this.min = domain[0];
+  //   this.max = domain[1];
+  //
+  //   this.boxPlotScale.domain(domain);
+  //
+  //   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
+  // }
 
 
   setUserSortBy(rank: string) {

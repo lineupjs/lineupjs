@@ -1674,8 +1674,8 @@ var SparklineCellRenderer = (function () {
     function SparklineCellRenderer() {
     }
     SparklineCellRenderer.prototype.createSVG = function (col, context) {
-        var xScale = col.getSparkLineXScale().range([0, col.getWidth()]);
-        var yScale = col.getSparkLineYScale();
+        var xScale = col.getSparklineScale().xScale.range([0, col.getWidth()]);
+        var yScale = col.getSparklineScale().yScale;
         return {
             template: "<path class=\"sparklinecell\"></path>",
             update: function (n, d, i) {
@@ -1689,8 +1689,8 @@ var SparklineCellRenderer = (function () {
         };
     };
     SparklineCellRenderer.prototype.createCanvas = function (col, context) {
-        var xScale = col.getSparkLineXScale().range([0, col.getWidth()]);
-        var yScale = col.getSparkLineYScale();
+        var xScale = col.getSparklineScale().xScale.range([0, col.getWidth()]);
+        var yScale = col.getSparklineScale().yScale;
         return function (ctx, d, i) {
             var data = col.getValue(d.v, d.dataIndex);
             var xpos, ypos;
@@ -5495,7 +5495,6 @@ var MinColumn = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ValueColumn__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Column__ = __webpack_require__(1);
 /* unused harmony export CustomSortCalculation */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -5505,7 +5504,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-
 
 
 var CustomSortCalculation = (function () {
@@ -5569,11 +5567,7 @@ var MultiValueColumn = (function (_super) {
         };
         _this.userSort = _this.data.sort;
         _this.min = _this.data.min;
-        _this.max = _this.max;
-        _this.xposScale
-            .domain([0, _this.data.dataLength - 1]);
-        _this.yposScale
-            .domain([_this.data.min, _this.data.max]);
+        _this.max = _this.data.max;
         _this.boxPlotScale
             .domain([_this.data.min, _this.data.max]);
         _this.verticalBarScale
@@ -5618,12 +5612,18 @@ var MultiValueColumn = (function (_super) {
     MultiValueColumn.prototype.calculateCellDimension = function (width) {
         return (width * 1 / this.data.dataLength);
     };
-    MultiValueColumn.prototype.getSparkLineXScale = function () {
-        return this.xposScale;
+    MultiValueColumn.prototype.getSparklineScale = function () {
+        var sparklineScale = {
+            xScale: this.xposScale.domain([0, this.data.dataLength - 1]),
+            yScale: this.yposScale.domain([this.data.min, this.data.max])
+        };
+        return sparklineScale;
     };
-    MultiValueColumn.prototype.getSparkLineYScale = function () {
-        return this.yposScale;
-    };
+    // getSparkLineYScale() {
+    //
+    //   const yScale = this.yposScale.domain([this.data.min, this.data.max]);
+    //   return yScale;
+    // }
     MultiValueColumn.prototype.getDataInfo = function () {
         return this.data;
     };
@@ -5647,13 +5647,16 @@ var MultiValueColumn = (function (_super) {
     MultiValueColumn.prototype.getUserSortBy = function () {
         return this.data.sort;
     };
-    MultiValueColumn.prototype.setDomain = function (domain) {
-        var bak = this.boxPlotScale.domain();
-        this.min = domain[0];
-        this.max = domain[1];
-        this.boxPlotScale.domain(domain);
-        this.fire([__WEBPACK_IMPORTED_MODULE_2__Column__["a" /* default */].EVENT_DIRTY_VALUES, __WEBPACK_IMPORTED_MODULE_2__Column__["a" /* default */].EVENT_DIRTY], bak, domain);
-    };
+    // public setDomain(domain: number[]) {
+    //   const bak = this.boxPlotScale.domain();
+    //
+    //   this.min = domain[0];
+    //   this.max = domain[1];
+    //
+    //   this.boxPlotScale.domain(domain);
+    //
+    //   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
+    // }
     MultiValueColumn.prototype.setUserSortBy = function (rank) {
         this.userSort = rank;
         console.log(this.userSort);
