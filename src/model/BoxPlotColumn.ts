@@ -56,6 +56,7 @@ function numSort(a, b) {
   return a - b;
 }
 
+
 enum Sort {
 
   min, max, median, q1, q3, mean
