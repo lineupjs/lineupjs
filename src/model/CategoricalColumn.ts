@@ -4,7 +4,7 @@
 
 import {ascending, scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
-import ValueColumn from './ValueColumn';
+import ValueColumn,{IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
 
 export interface ICategoricalColumn {
@@ -13,6 +13,36 @@ export interface ICategoricalColumn {
 
   getCategories(row: any, index: number): string[];
 }
+
+export interface ICategory {
+  name: string;
+
+  /**
+   * optional label of this category (the one to render)
+   */
+  label?: string;
+  /**
+   * associated value with this category
+   */
+  value?: any;
+  /**
+   * category color
+   * @default next in d3 color 10 range
+   */
+  color?: string;
+}
+
+export interface IBaseCategoricalDesc {
+  /**
+   * separator to split  multi value
+   * @defualt ;
+   */
+  separator?: string;
+
+  categories: (string|ICategory)[];
+}
+
+export declare type ICategoricalDesc = IValueColumnDesc<string> & IBaseCategoricalDesc;
 
 /**
  * checks whether the given column or description is a categorical column, i.e. the value is a list of categories
@@ -65,14 +95,14 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
    */
   private separator = ';';
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: ICategoricalDesc) {
     super(id, desc);
     this.separator = desc.separator || this.separator;
     this.initCategories(desc);
     //TODO infer categories from data
   }
 
-  initCategories(desc: any) {
+  initCategories(desc: IBaseCategoricalDesc) {
     if (desc.categories) {
       let cats = [],
         cols = this.colors.range().slice(), //work on a copy since it will be manipulated

@@ -4,7 +4,20 @@
 
 import {ascending} from 'd3';
 import Column from './Column';
-import ValueColumn from './ValueColumn';
+import ValueColumn,{IValueColumnDesc} from './ValueColumn';
+
+export interface IBooleanColumnDesc extends IValueColumnDesc<boolean> {
+  /**
+   * string to show for true
+   * @default X
+   */
+  trueMarker?: string;
+  /**
+   * strint to show for false
+   * @default (empty)
+   */
+  falseMarker?: string;
+}
 
 /**
  * a string column with optional alignment
@@ -14,7 +27,7 @@ export default class BooleanColumn extends ValueColumn<boolean> {
   private trueMarker = 'X';
   private falseMarker = '';
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: IBooleanColumnDesc) {
     super(id, desc);
     this.setWidthImpl(30);
     this.trueMarker = desc.trueMarker || this.trueMarker;
