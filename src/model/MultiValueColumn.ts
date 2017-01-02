@@ -175,7 +175,7 @@ export default class MultiValueColumn extends ValueColumn<number [] > implements
   }
 
   getUserSortBy() {
-    return this.data.sort;
+    return this.userSort;
   }
 
 

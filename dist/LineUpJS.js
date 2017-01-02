@@ -1,6 +1,6 @@
-/*! lineupjs - v0.5.4 - 2016
+/*! lineupjs - v0.5.4 - 2017
 * https://github.com/Caleydo/lineup.js
-* Copyright (c) 2016 Caleydo Team; Licensed BSD-3-Clause*/
+* Copyright (c) 2017 Caleydo Team; Licensed BSD-3-Clause*/
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -1820,6 +1820,8 @@ var BoxplotCellRenderer = (function () {
     function BoxplotCellRenderer() {
     }
     BoxplotCellRenderer.prototype.createSVG = function (col, context) {
+        var userSort = col.getUserSortBy();
+        console.log(userSort);
         var topPadding = Math.max(context.option('rowPadding', 1), 2);
         var bottomPadding = Math.max(context.option('rowPadding', 1), 2);
         var dataInfo = col.getDataInfo();
@@ -5570,7 +5572,7 @@ var MultiValueColumn = (function (_super) {
         return (boxdata);
     };
     MultiValueColumn.prototype.getUserSortBy = function () {
-        return this.data.sort;
+        return this.userSort;
     };
     MultiValueColumn.prototype.setUserSortBy = function (rank) {
         this.userSort = rank;

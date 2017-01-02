@@ -415,7 +415,8 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
 
   createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-
+    const userSort = col.getUserSortBy();
+    console.log(userSort);
     const topPadding = Math.max(context.option('rowPadding', 1), 2);
     const bottomPadding = Math.max(context.option('rowPadding', 1), 2);
     const dataInfo = col.getDataInfo();
@@ -459,6 +460,9 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
           });
         path.exit().remove();
+
+
+
 
       }
     };
