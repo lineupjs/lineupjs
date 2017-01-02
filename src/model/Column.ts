@@ -29,6 +29,7 @@ export interface IColumnParent {
   indexOf(col: Column): number;
   at(index: number): Column;
   readonly fqpath: string;
+
 }
 
 
@@ -88,7 +89,6 @@ export interface IRendererInfo {
   rendererType?: string  ; // Name of the current Renderer
   rendererList: {type: string, label: string}[]; // Possible RendererList
 }
-
 
 
 /**
@@ -370,6 +370,8 @@ export default class Column extends AEventDispatcher {
     }
     return null;
   }
+
+
 
   /**
    * dumps this column to JSON compatible format

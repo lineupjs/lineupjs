@@ -206,8 +206,8 @@ export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>
 export function sortDialog(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
 
   var rank = column.getUserSortBy();
-  const valuestring: any = ['min', 'max', 'mean', 'median', 'q1', 'q3'];
-  const sortlabel: any = ['Min', 'Max', 'Mean', 'Median', 'Q1', 'Q3'];
+  const valuestring: any = ['min', 'max', 'median', 'q1', 'q3'];
+  const sortlabel: any = ['Min', 'Max','Median', 'Q1', 'Q3'];
 
   var popup = makeSortPopup($header, 'Sort By <br>', valuestring.map(function (d, i) {
     return `<input type="radio" name="multivaluesort" value=${d}  ${(rank === d) ? 'checked' : ''} > ${sortlabel[i]} <br>`;

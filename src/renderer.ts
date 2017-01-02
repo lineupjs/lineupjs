@@ -235,14 +235,10 @@ class HeatmapCellRenderer implements ICellRendererFactory {
 
 class SparklineCellRenderer implements ICellRendererFactory {
 
-
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
-
     const xScale: any = col.getSparklineScale().xScale.range([0, col.getWidth()]);
     var yScale: any = col.getSparklineScale().yScale;
-
     return {
-
       template: `<path class="sparklinecell"></path>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         yScale.range([context.rowHeight(i), 0]);
@@ -316,7 +312,6 @@ class ThresholdCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-
 
     const cellDimension = col.calculateCellDimension(col.getWidth());
     const dataInfo = col.getDataInfo();
@@ -409,12 +404,13 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
     };
   }
 
-
 }
+
 class BoxplotCellRenderer implements ICellRendererFactory {
 
   createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const userSort = col.getUserSortBy();
+
     const topPadding = Math.max(context.option('rowPadding', 1), 2);
     const bottomPadding = Math.max(context.option('rowPadding', 1), 2);
     const dataInfo = col.getDataInfo();
@@ -428,7 +424,6 @@ class BoxplotCellRenderer implements ICellRendererFactory {
         if ((boxdata) === null || undefined) {
           return;
         }
-
         const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
         rect.enter().append('rect');
         rect
@@ -441,22 +436,35 @@ class BoxplotCellRenderer implements ICellRendererFactory {
           });
         rect.exit().remove();
 
-        const path = d3.select(n).selectAll('path').data([<any>col.getValue(d.v, d.dataIndex)]);
+        const path = d3.select(n).selectAll('path.boxplotallpath').data([<any>col.getValue(d.v, d.dataIndex)]);
         path.enter().append('path');
+        const minPos = (boxdata.min), maxPos = (boxdata.max), medianPos = (boxdata.median), q3pos = (boxdata.q3), q1pos = (boxdata.q1);
+        const bottomPos = (context.rowHeight(i) - bottomPadding);
+        const middlePos = (context.rowHeight(i)) / 2;
         path
-          .attr('class', 'boxplotline')
+          .attr('class', 'boxplotallpath')
           .attr('d', function (d, i) {
-            const leftPos = (boxdata.min), rightPos = (boxdata.max), centerPos = (boxdata.median);
-            const bottomPos = (context.rowHeight(i) - bottomPadding);
-            const middlePos = (context.rowHeight(i)) / 2;
-
-            return 'M' + leftPos + ',' + middlePos + 'L' + (boxdata.q1) + ',' + middlePos +
-              'M' + leftPos + ',' + topPadding + 'L' + leftPos + ',' + (bottomPos) +
-              'M' + centerPos + ',' + topPadding + 'L' + centerPos + ',' + bottomPos +
-              'M' + ((boxdata.q3)) + ',' + middlePos + 'L' + (rightPos) + ',' + middlePos +
-              'M' + rightPos + ',' + topPadding + 'L' + rightPos + ',' + bottomPos;
+            return 'M' + minPos + ',' + middlePos + 'L' + (boxdata.q1) + ',' + middlePos +
+              'M' + minPos + ',' + topPadding + 'L' + minPos + ',' + (bottomPos) +   //minimum line
+              'M' + medianPos + ',' + topPadding + 'L' + medianPos + ',' + bottomPos +   //median line
+              'M' + ((boxdata.q3)) + ',' + middlePos + 'L' + (maxPos) + ',' + middlePos +
+              'M' + maxPos + ',' + topPadding + 'L' + maxPos + ',' + bottomPos;   // maximum line
 
           });
+
+        if ((col.findMyRanker().getCurrentSortColumn()) instanceof MultiValueColumn) {
+
+          const sortPosition = {min: minPos, max: maxPos, median: medianPos, q1: q1pos, q3: q3pos};
+          path.enter().append('path')
+            .attr('class', 'boxplotsortpath')
+            .attr('d', function (d) {
+
+              return 'M' + (sortPosition[userSort]) + ',' + topPadding + 'L' + (sortPosition[userSort]) + ',' + bottomPos;  // minimum
+            });
+
+        } else {
+
+        }
         path.exit().remove();
 
 
