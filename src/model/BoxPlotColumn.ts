@@ -20,7 +20,7 @@ enum Sort {
 export interface IBoxPlotColumn {
   getBoxPlotData(row: any, index: number, scale: any): IBoxPlotData;
   getDataInfo(): IDataStat;
-   getUserSortBy():string;
+  getUserSortBy(): string;
 
 }
 

@@ -96,6 +96,19 @@ export function makeSortPopup(attachement: Selection<any>, title: string, body: 
     });
   }
 
+  $popup.select('span.lu-popup-title').call(behavior.drag().on('drag', movePopup));
+  $popup.on('keydown', () => {
+    if ((<KeyboardEvent>d3event).which === 27) {
+      $popup.remove();
+    }
+  });
+  const auto = <HTMLInputElement>$popup.select('input[autofocus]').node();
+  if (auto) {
+    auto.focus();
+  }
+  return $popup;
+
+}
 
 /**
  * opens a rename dialog for the given column

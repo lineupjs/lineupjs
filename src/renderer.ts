@@ -413,10 +413,8 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 }
 class BoxplotCellRenderer implements ICellRendererFactory {
 
-
   createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const userSort = col.getUserSortBy();
-    console.log(userSort);
     const topPadding = Math.max(context.option('rowPadding', 1), 2);
     const bottomPadding = Math.max(context.option('rowPadding', 1), 2);
     const dataInfo = col.getDataInfo();
@@ -460,8 +458,6 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
           });
         path.exit().remove();
-
-
 
 
       }
@@ -1132,7 +1128,10 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
  * renders a stacked column using composite pattern
  */
 class StackCellRenderer implements ICellRendererFactory {
-  constructor(private readonly nestingPossible: boolean = true) {
+  private readonly nestingPossible: boolean; //Readonly inside constructor was not working for me.
+
+  constructor(nestingPossible = true) {
+    this.nestingPossible = nestingPossible;
   }
 
   private createData(col: StackColumn, context: IRenderContext<any>) {

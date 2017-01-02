@@ -3,7 +3,6 @@
  */
 import * as d3 from 'd3';
 import ValueColumn from './ValueColumn';
-import Column from './Column';
 import {IBoxPlotColumn, IBoxPlotData} from './BoxPlotColumn';
 
 export class CustomSortCalculation {
