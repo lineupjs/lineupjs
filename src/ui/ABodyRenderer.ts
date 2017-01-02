@@ -11,7 +11,7 @@ import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
 
 export interface ISlicer {
-  (start: number, length: number, row2y: (i: number) => number): { from: number; to: number };
+  (start: number, length: number, row2y: (i: number) => number): {from: number; to: number};
 }
 
 export interface IBodyRenderer extends AEventDispatcher {
@@ -31,7 +31,7 @@ export interface IBodyRenderer extends AEventDispatcher {
 
   update();
 
-  fakeHover(dataIndex:number);
+  fakeHover(dataIndex: number);
 }
 
 export interface IBodyRenderContext extends IRenderContext<any> {
@@ -72,7 +72,7 @@ export interface IBodyRendererOptions {
 
   meanLine?: boolean;
 
-  actions?: { name: string, icon: string, action(v: any): void }[];
+  actions?: {name: string, icon: string, action(v: any): void}[];
 
   freezeCols?: number;
 }
@@ -83,10 +83,10 @@ export enum ERenderReason {
 }
 
 abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
-  static EVENT_HOVER_CHANGED = 'hoverChanged';
-  static EVENT_RENDER_FINISHED = 'renderFinished';
+  static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
+  static readonly EVENT_RENDER_FINISHED = 'renderFinished';
 
-  protected options: IBodyRendererOptions = {
+  protected readonly options: IBodyRendererOptions = {
     rowHeight: 20,
     rowPadding: 1,
     rowBarPadding: 1,
@@ -106,7 +106,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     freezeCols: 0
   };
 
-  protected $node: d3.Selection<any>;
+  protected readonly $node: d3.Selection<any>;
 
   histCache = new Map<string, Promise<IStatistics|ICategoricalStatistics>>();
 
@@ -150,7 +150,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     this.fire(ABodyRenderer.EVENT_RENDER_FINISHED, this);
   }
 
-  protected createContext(index_shift: number, creator: (col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IRenderContext<any>)=> any): IBodyRenderContext {
+  protected createContext(index_shift: number, creator: (col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IRenderContext<any>) => any): IBodyRenderContext {
     const options = this.options;
 
     function findOption(key: string, default_: any) {

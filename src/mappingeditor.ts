@@ -27,13 +27,13 @@ export interface IMappingEditorOptions {
   padding_ver?: number;
   filter_height?: number;
   radius?: number;
-  callback?(newscale: IMappingFunction, filter: {min: number, max: number }): void;
+  callback?(newscale: IMappingFunction, filter: {min: number, max: number}): void;
   callbackThisArg?: any;
   triggerCallback?: string;
 }
 
 export default class MappingEditor {
-  private options : IMappingEditorOptions = {
+  private options: IMappingEditorOptions = {
     idPrefix: '',
     width: 370,
     height: 225,
@@ -41,12 +41,12 @@ export default class MappingEditor {
     padding_ver: 7,
     filter_height: 20,
     radius: 5,
-    callback: ()=>undefined,
+    callback: () => undefined,
     callbackThisArg: null,
     triggerCallback: 'change' //change, dragend
   };
 
-  private computeFilter: ()=>INumberFilter;
+  private computeFilter: () => INumberFilter;
 
   constructor(private parent: HTMLElement, private scale_: IMappingFunction, private original: IMappingFunction, private old_filter: INumberFilter, private dataPromise: Promise<number[]>, options: IMappingEditorOptions) {
     merge(this.options, options);
@@ -92,9 +92,9 @@ export default class MappingEditor {
           <input type="text" class="raw_min" id="me${options.idPrefix}raw_min" value="0"><label for="me${options.idPrefix}raw_min">Min</label>
         </div>
         <svg width="${options.width}" height="${options.height}">
-          <line y1="${options.padding_ver}" y2="${options.padding_ver}" x1="${options.padding_hor}" x2="${width+options.padding_hor}" stroke="black"></line>
+          <line y1="${options.padding_ver}" y2="${options.padding_ver}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
           <rect class="adder" x="${options.padding_hor}" width="${width}" height="10"></rect>
-          <line y1="${options.height - options.filter_height - 5}" y2="${options.height - options.filter_height - 5}" x1="${options.padding_hor}" x2="${width+options.padding_hor}" stroke="black"></line>
+          <line y1="${options.height - options.filter_height - 5}" y2="${options.height - options.filter_height - 5}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
           <rect class="adder" x="${options.padding_hor}" width="${width}" height="10" y="${options.height - options.filter_height - 10}"></rect>
           <g transform="translate(${options.padding_hor},${options.padding_ver})">
             <g class="samples">
@@ -123,7 +123,7 @@ export default class MappingEditor {
         </div>
       </div>
       <div>
-         Extras: <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.old_filter.filterMissing?'checked="checked"' : ''}>Filter Missing Values</label>
+         Extras: <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.old_filter.filterMissing ? 'checked="checked"' : ''}>Filter Missing Values</label>
       </div>
       <div class="script" style="/* display: none; */">
         <label for="me${options.idPrefix}script_code">Custom Script</label><button>Apply</button>
@@ -342,19 +342,19 @@ export default class MappingEditor {
     {
       let min_filter = (isFinite(this.old_filter.min) ? raw2pixel(this.old_filter.min) : 0);
       let max_filter = (isFinite(this.old_filter.max) ? raw2pixel(this.old_filter.max) : width);
-      let toFilterString = (d: number, i: number) => isFinite(d) ? ((i===0?'>':'<')+d.toFixed(1)) : 'any';
+      let toFilterString = (d: number, i: number) => isFinite(d) ? ((i === 0 ? '>' : '<') + d.toFixed(1)) : 'any';
       $root.selectAll('g.left_filter, g.right_filter')
         .data([this.old_filter.min, this.old_filter.max])
-        .attr('transform', (d,i) => `translate(${i===0?min_filter:max_filter},0)`).call(createDrag(function (d,i) {
+        .attr('transform', (d, i) => `translate(${i === 0 ? min_filter : max_filter},0)`).call(createDrag(function (d, i) {
 
-          //drag normalized
-          const px = clamp((<DragEvent>d3event).x, 0, width);
-          const v = raw2pixel.invert(px);
-          const filter = (px <= 0 && i === 0 ? -Infinity : (px>=width && i===1 ? Infinity : v));
-          select(this).datum(filter)
-            .attr('transform',`translate(${px},0)`)
-            .select('text').text(toFilterString(filter,i));
-        }))
+        //drag normalized
+        const px = clamp((<DragEvent>d3event).x, 0, width);
+        const v = raw2pixel.invert(px);
+        const filter = (px <= 0 && i === 0 ? -Infinity : (px >= width && i === 1 ? Infinity : v));
+        select(this).datum(filter)
+          .attr('transform', `translate(${px},0)`)
+          .select('text').text(toFilterString(filter, i));
+      }))
         .select('text').text(toFilterString);
     }
 

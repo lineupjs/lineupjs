@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
-  "version": "0.5.4",
+  "version": "1.0.1-SNAPSHOT",
   "author": {
     "name": "Caleydo Team",
     "email": "contact@caleydo.org",
@@ -32,14 +32,20 @@
   },
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/Caleydo/lineup.js/issues"
+    "url": "https://github.com/Caleydo/lineupjs/issues"
   },
-  "homepage": "https://github.com/Caleydo/lineup.js",
-  "main": "dist/LineUpJS.js",
+  "homepage": "https://github.com/Caleydo/lineupjs",
+  "main": "build/LineUpJS.js",
+  "files": [
+    "build",
+    "!build/docs",
+    "src/**/*.ts",
+    "src/**/*.scss"
+  ],
   "scripts": {
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
-    "docs": "typedoc --options typedoc.json src/**.ts",
+    "docs": "typedoc --options typedoc.json src",
     "pretest": "npm run compile",
     "test": "echo 'no tests'",
     "posttest": "npm run lint",
@@ -49,12 +55,12 @@
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
-    "predist": "npm run build",
-    "dist": "mkdirp dists && cd dist && tar cvzf ../dists/lineupjs.tar.gz *"
+    "predist": "npm run build && npm run docs",
+    "dist": "mkdirp dist && cd build && tar cvzf ../dist/lineupjs.tar.gz --exclude \"docs\" * && cd .."
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Caleydo/lineup.js.git"
+    "url": "https://github.com/Caleydo/lineupjs.git"
   },
   "devDependencies": {
     "awesome-typescript-loader": "^2.2.4",
@@ -65,7 +71,7 @@
     "sass-loader": "^4.0.2",
     "style-loader": "^0.13.1",
     "tslint": "^3.15.1",
-    "typedoc": "^0.5.0",
+    "typedoc": "^0.5.3",
     "typescript": "2.1.1",
     "webpack": "^2.1.0-beta.25"
   },

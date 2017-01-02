@@ -38,7 +38,7 @@ const domMappings = {
     },
     creator: createSVG,
     translate: (n: SVGElement, x: number, y: number) => n.setAttribute('transform', `translate(${x},${y})`),
-    transform: (sel: Selection<any>, callback: (d: any, i: number)=> [number,number]) => {
+    transform: (sel: Selection<any>, callback: (d: any, i: number) => [number, number]) => {
       sel.attr('transform', (d, i) => {
         const r = callback(d, i);
         return `translate(${r[0]},${r[1]})`;

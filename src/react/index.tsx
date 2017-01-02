@@ -27,7 +27,7 @@ function deepEqual<T>(a: T[], b: T[]) {
 }
 
 export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
-  static propTypes = {
+  static readonly propTypes = {
     data: React.PropTypes.array.isRequired,
     desc: React.PropTypes.array.isRequired,
     options: React.PropTypes.any,
@@ -35,7 +35,7 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
     selection: React.PropTypes.any
   };
 
-  static defaultProps = {
+  static readonly defaultProps = {
     data: [],
     desc: []
   };

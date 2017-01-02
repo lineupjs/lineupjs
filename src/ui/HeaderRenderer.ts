@@ -34,7 +34,7 @@ import {
  * utility function to generate the tooltip text with description
  * @param col the column
  */
-export function toFullTooltip(col: { label: string, description?: string}) {
+export function toFullTooltip(col: {label: string, description?: string}) {
   let base = col.label;
   if (col.description != null && col.description !== '') {
     base += '\n' + col.description;
@@ -59,7 +59,7 @@ export interface IHeaderRendererOptions {
   manipulative?: boolean;
   histograms?: boolean;
 
-  filterDialogs?: { [type: string]: (col: Column, $header: d3.Selection<Column>, data: DataProvider, idPrefix: string)=>void };
+  filterDialogs?: {[type: string]: (col: Column, $header: d3.Selection<Column>, data: DataProvider, idPrefix: string) => void};
   linkTemplates?: string[];
   searchAble?(col: Column): boolean;
   sortOnLabel?: boolean;
@@ -82,7 +82,7 @@ function countMultiLevel(c: Column): number {
 
 
 export default class HeaderRenderer {
-  private options: IHeaderRendererOptions = {
+  private readonly options: IHeaderRendererOptions = {
     idPrefix: '',
     slopeWidth: 150,
     columnPadding: 5,
@@ -105,11 +105,11 @@ export default class HeaderRenderer {
     rankingButtons: <IRankingHook>dummyRankingButtonHook
   };
 
-  $node: d3.Selection<any>;
+  readonly $node: d3.Selection<any>;
 
   private histCache = new Map<string,Promise<IStatistics|ICategoricalStatistics>>();
 
-  private dragHandler = d3.behavior.drag<Column>()
+  private readonly dragHandler = d3.behavior.drag<Column>()
   //.origin((d) => d)
     .on('dragstart', function () {
       d3.select(this).classed('dragging', true);
@@ -130,7 +130,7 @@ export default class HeaderRenderer {
       (<any>d3.event).sourceEvent.preventDefault();
     });
 
-  private dropHandler = dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d: Column, copy) => {
+  private readonly dropHandler = dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d: Column, copy) => {
     let col: Column = null;
     if ('application/caleydo-lineup-column-ref' in data) {
       const id = data['application/caleydo-lineup-column-ref'];
@@ -485,6 +485,22 @@ export default class HeaderRenderer {
     });
     $headers.select('span.lu-label').text((d) => d.label);
 
+    const resolveDrop = (data: string[], copy: boolean) => {
+      if ('application/caleydo-lineup-column-number-ref' in data) {
+        const id = data['application/caleydo-lineup-column-number-ref'];
+        let col: Column = this.data.find(id);
+        if (copy) {
+          col = this.data.clone(col);
+        } else if (col) {
+          col.removeMe();
+        }
+        return col;
+      } else {
+        const desc = JSON.parse(data['application/caleydo-lineup-column-number']);
+        return this.data.create(this.data.fromDescRef(desc));
+      }
+    };
+
     $headers.filter((d) => isMultiLevelColumn(d)).each(function (col: IMultiLevelColumn) {
       if (col.getCollapsed() || col.getCompressed()) {
         d3.select(this).selectAll('div.' + clazz + '_i').remove();
@@ -496,37 +512,13 @@ export default class HeaderRenderer {
         that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
       }
     }).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: IMultiLevelColumn, copy) => {
-      let col: Column = null;
-      if ('application/caleydo-lineup-column-number-ref' in data) {
-        const id = data['application/caleydo-lineup-column-number-ref'];
-        col = this.data.find(id);
-        if (copy) {
-          col = this.data.clone(col);
-        } else if (col) {
-          col.removeMe();
-        }
-      } else {
-        const desc = JSON.parse(data['application/caleydo-lineup-column-number']);
-        col = this.data.create(this.data.fromDescRef(desc));
-      }
+      let col: Column = resolveDrop(data, copy);
       return d.push(col) != null;
     }));
 
     // drag columns on top of each
     $headers.filter((d) => d.parent instanceof Ranking && isNumberColumn(d) && !isMultiLevelColumn(d)).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: Column & INumberColumn, copy) => {
-      let col: Column = null;
-      if ('application/caleydo-lineup-column-number-ref' in data) {
-        const id = data['application/caleydo-lineup-column-number-ref'];
-        col = this.data.find(id);
-        if (copy) {
-          col = this.data.clone(col);
-        } else if (col) {
-          col.removeMe();
-        }
-      } else {
-        const desc = JSON.parse(data['application/caleydo-lineup-column-number']);
-        col = this.data.create(this.data.fromDescRef(desc));
-      }
+      let col: Column = resolveDrop(data, copy);
       const ranking = d.findMyRanker();
       const index = ranking.indexOf(d);
       const stack = <StackColumn>this.data.create(createStackDesc());

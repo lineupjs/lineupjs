@@ -9,7 +9,7 @@ import StringColumn from './StringColumn';
  * a string column in which the label is a text but the value a link
  */
 export default class LinkColumn extends StringColumn {
-  static EVENT_LINK_CHANGED = 'linkChanged';
+  static readonly EVENT_LINK_CHANGED = 'linkChanged';
   /**
    * a pattern used for generating the link, $1 is replaced with the actual value
    * @type {null}
@@ -77,7 +77,7 @@ export default class LinkColumn extends StringColumn {
     return v && v.href != null;
   }
 
-  getValue(row: any, index:number) {
+  getValue(row: any, index: number) {
     //get original value
     const v: any = super.getRaw(row, index);
     //convert to link

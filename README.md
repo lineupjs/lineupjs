@@ -42,7 +42,7 @@ npm run build
 npm run watch
 ```
 
-The compiled JavaScript files are located under _dist_ and the TypeScript documentation is located under _dist_/_docs_.
+The compiled JavaScript files are located under _build_ and the TypeScript documentation is located under _build_/_docs_.
 
 DOM Structure
 -------------
@@ -55,20 +55,19 @@ Column groups are used for efficient use of D3 for rendering individual columns.
 Data Model
 ----------
 
-![Data Model](assets/data_model.png)
-![Data Model](../../assets/data_model.png)
+![Data Model](media/data_model.png)
 
 Documentation
 -------------
 
-[TypeDoc Docu](http://caleydo.github.io/lineup.js/dist/docs/index.html)
+[TypeDoc Docu](http://lineup-releases.s3-website.eu-central-1.amazonaws.com/latest/docs/)
 
 
 [npm-image]: https://badge.fury.io/js/lineupjs.svg
 [npm-url]: https://npmjs.org/package/lineupjs
-[travis-image]: https://travis-ci.org/caleydo/lineup.js.svg?branch=release_1.x
-[travis-url]: https://travis-ci.org/caleydo/lineup.js
-[daviddm-image]: https://david-dm.org/caleydo/lineup.js.svg?theme=shields.io
-[daviddm-url]: https://david-dm.org/caleydo/lineup.js
+[travis-image]: https://travis-ci.org/Caleydo/lineupjs.svg
+[travis-url]: https://travis-ci.org/Caleydo/lineupjs
+[daviddm-image]: https://david-dm.org/Caleydo/lineupjs.svg?theme=shields.io
+[daviddm-url]: https://david-dm.org/Caleydo/lineupjs
 
 
