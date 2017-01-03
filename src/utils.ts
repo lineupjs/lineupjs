@@ -405,18 +405,26 @@ export interface ITextRenderHints {
   readonly maxLetterWidth: number;
   readonly avgLetterWidth: number;
   readonly ellipsisWidth: number;
+  readonly spinnerWidth: number;
 }
 const ellipsis = '…';
 
+function measureFontAweSomeSpinner(ctx: CanvasRenderingContext2D) {
+  ctx.font = '10pt FontAwesome';
+  return ctx.measureText('\uf110').width;
+}
+
 export function createTextHints(ctx: CanvasRenderingContext2D, font: string): ITextRenderHints {
   const bak = ctx.font;
+  const spinnerWidth = measureFontAweSomeSpinner(ctx);
   ctx.font = font;
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
   const testText = alphabet + (alphabet.toUpperCase()) + '0123456789';
   const r = {
     maxLetterWidth: ctx.measureText('M').width,
     avgLetterWidth: ctx.measureText(testText).width / testText.length,
-    ellipsisWidth: ctx.measureText(ellipsis).width
+    ellipsisWidth: ctx.measureText(ellipsis).width,
+    spinnerWidth: spinnerWidth
   };
   ctx.font = bak;
   return r;

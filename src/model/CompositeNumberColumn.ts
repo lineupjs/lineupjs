@@ -3,10 +3,18 @@
  */
 
 import {format} from 'd3';
-import Column from './Column';
+import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
 import NumberColumn, {INumberColumn, isNumberColumn, numberCompare} from './NumberColumn';
 
+
+export interface ICompositeNumberDesc extends IColumnDesc {
+  /**
+   * d3 format number Format
+   * @default 0.3n
+   */
+  numberFormat?: string;
+}
 /**
  * implementation of a combine column, standard operations how to select
  */
@@ -15,7 +23,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
   private numberFormat: (n: number) => string = format('.3n');
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: ICompositeNumberDesc) {
     super(id, desc);
 
     if (desc.numberFormat) {
@@ -54,18 +62,28 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
   }
 
   getLabel(row: any, index: number) {
+    if (!this.isLoaded()) {
+      return '';
+    }
     const v = this.getValue(row, index);
     //keep non number if it is not a number else convert using formatter
     return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
   }
 
   getValue(row: any, index: number) {
+    if (!this.isLoaded()) {
+      return null;
+    }
     //weighted sum
     const v = this.compute(row, index);
     if (typeof(v) === 'undefined' || v == null || isNaN(v)) {
       return this.missingValue;
     }
     return v;
+  }
+
+  isLoaded() {
+    return this._children.every((c) => (<INumberColumn><any>c).isLoaded());
   }
 
   protected compute(row: any, index: number) {

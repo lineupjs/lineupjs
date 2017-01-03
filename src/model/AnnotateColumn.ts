@@ -3,7 +3,7 @@
  */
 
 import Column from './Column';
-import StringColumn from './StringColumn';
+import StringColumn, {IStringColumnDesc}from './StringColumn';
 
 /**
  * a string column in which the values can be edited locally
@@ -13,7 +13,7 @@ export default class AnnotateColumn extends StringColumn {
 
   private readonly annotations = new Map<number, string>();
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: IStringColumnDesc) {
     super(id, desc);
   }
 

@@ -4,9 +4,11 @@
 
 import {max as d3max, scale, min as d3min} from 'd3';
 import Column from './Column';
-import ValueColumn from './ValueColumn';
-import CategoricalColumn, {ICategoricalColumn} from './CategoricalColumn';
+import ValueColumn,{IValueColumnDesc} from './ValueColumn';
+import CategoricalColumn, {ICategoricalColumn, IBaseCategoricalDesc} from './CategoricalColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
+
+export declare type ICategoricalNumberColumnDesc = IBaseCategoricalDesc & IValueColumnDesc<number>;
 
 /**
  * similar to a categorical column but the categories are mapped to numbers
@@ -32,7 +34,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
   private separator = ';';
   private combiner = d3max;
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: ICategoricalNumberColumnDesc) {
     super(id, desc);
     this.separator = desc.separator || this.separator;
     CategoricalColumn.prototype.initCategories.call(this, desc);

@@ -9,7 +9,7 @@ import LinkColumn from './model/LinkColumn';
 import SelectionColumn from './model/SelectionColumn';
 import StackColumn from './model/StackColumn';
 import CategoricalColumn from './model/CategoricalColumn';
-import {INumberColumn, default as NumberColumn} from './model/NumberColumn';
+import {INumberColumn} from './model/NumberColumn';
 import {forEach, attr, clipText, ITextRenderHints} from './utils';
 import {hsl} from 'd3';
 import {IDataRow} from './provider/ADataProvider';
@@ -670,9 +670,7 @@ export class BarCellRenderer implements ICellRendererFactory {
     this.renderValue = renderValue;
   }
 
-
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-
     const padding = context.option('rowPadding', 1);
     return {
       template: `<g class="bar">
@@ -718,12 +716,10 @@ export class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = this.colorOf(d.v, i, col);
-      // console.log(col.getValue(d.v, d.dataIndex),d.v)
       const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
       ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
@@ -1237,6 +1233,38 @@ class StackCellRenderer implements ICellRendererFactory {
   }
 }
 
+
+const loading = {
+  createSVG: function (col: Column): ISVGCellRenderer {
+    return {
+      template: `<text class="loading"><tspan class="fa">\uf110</tspan>Loading…</text>`,
+      update: () => undefined // TODO svg animation
+    };
+  },
+  createHTML: function (col: Column): IHTMLCellRenderer {
+    return {
+      template: `<div class="loading"><i class="fa fa-spinner fa-pulse"></i><div>Loading…</div></div>`,
+      update: () => undefined
+    };
+  },
+  createCanvas: function (col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const base = Date.now()%360;
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      clipText(ctx, 'Loading…', 10, 0, col.getWidth() - 10, context.textHints);
+      const angle = (base + i * 45) * (Math.PI / 180);
+      ctx.save();
+      ctx.font = '10pt FontAwesome';
+      ctx.textAlign = 'center';
+      const shift = (context.rowHeight(i) - context.textHints.spinnerWidth) * 0.5;
+      ctx.translate(2, shift + context.textHints.spinnerWidth * 0.5);
+      ctx.rotate(angle);
+      ctx.translate(0, -context.textHints.spinnerWidth * 0.5);
+      ctx.fillText('\uf110', 0, 0);
+      ctx.restore();
+    };
+  }
+};
+
 export const defaultCellRenderer = new DefaultCellRenderer();
 const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.getColor(d));
 
@@ -1269,6 +1297,8 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   set: new SetCellRenderer(),
   circle: new CircleColumnCellRenderer(),
   boxplotcustom: new BoxplotCellRenderer()
+  script: combineCellRenderer,
+  loading: loading
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {

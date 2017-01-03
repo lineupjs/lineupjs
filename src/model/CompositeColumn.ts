@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import Column, {IColumnParent, IFlatColumn} from './Column';
+import Column, {IColumnParent, IFlatColumn, IColumnDesc} from './Column';
 
 export interface IMultiLevelColumn extends CompositeColumn {
   getCollapsed(): boolean;
@@ -19,7 +19,7 @@ export function isMultiLevelColumn(col: Column) {
 export default class CompositeColumn extends Column implements IColumnParent {
   protected readonly _children: Column[] = [];
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: IColumnDesc) {
     super(id, desc);
   }
 

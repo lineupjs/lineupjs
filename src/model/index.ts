@@ -3,8 +3,7 @@
  */
 
 import {merge} from '../utils';
-import {IColumnDesc} from './Column';
-import ValueColumn from './ValueColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import NumberColumn from './NumberColumn';
 import StringColumn from './StringColumn';
 import StackColumn from './StackColumn';
@@ -48,7 +47,7 @@ export {createDesc as createStackDesc} from './StackColumn';
  */
 export function defineColumn<T>(name: string, functions: any = {}) {
   class CustomColumn extends ValueColumn<T> {
-    constructor(id: string, desc: IColumnDesc) {
+    constructor(id: string, desc: IValueColumnDesc<T>) {
       super(id, desc);
       if (typeof (this.init) === 'function') {
         this.init.apply(this, [].slice.apply(arguments));

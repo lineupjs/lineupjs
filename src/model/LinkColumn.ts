@@ -3,8 +3,15 @@
  */
 
 import Column from './Column';
-import StringColumn from './StringColumn';
+import StringColumn, {IStringColumnDesc} from './StringColumn';
 
+
+export interface ILinkColumnDesc extends IStringColumnDesc {
+  /**
+   * link pattern to use, where $1 will be replaced with the actual value
+   */
+  link?: string;
+}
 /**
  * a string column in which the label is a text but the value a link
  */

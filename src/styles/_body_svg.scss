@@ -28,7 +28,7 @@
       text-anchor: end;
     }
 
-    &.text_center {
+    &.text_center, &.loading {
       text-anchor: middle;
     }
   }

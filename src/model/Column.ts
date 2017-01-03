@@ -158,22 +158,21 @@ export default class Column extends AEventDispatcher {
 
   private rendererInfo: IRendererInfo;
 
-
-  constructor(id: string, public desc: IColumnDesc) {
+  
+  constructor(id: string, public readonly desc: IColumnDesc) {
     super();
     this.uid = fixCSS(id);
-    this.cssClass = (<any>this.desc).cssClass || '';
-
-    this.rendererInfo = {
+      this.rendererInfo = {
       rendererType: this.desc.rendererType || this.desc.type,
       rendererList: []
     };
 
+    this.cssClass = desc.cssClass || '';
     this.metadata = {
-      label: this.desc.label || this.id,
-      description: this.desc.description || '',
-      color: (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
-    }
+      label: desc.label || this.id,
+      description: desc.description || '',
+      color: desc.color || (desc.cssClass !== '' ? null : Column.DEFAULT_COLOR)
+    };
   }
 
   get id() {
@@ -370,8 +369,6 @@ export default class Column extends AEventDispatcher {
     }
     return null;
   }
-
-
 
   /**
    * dumps this column to JSON compatible format
