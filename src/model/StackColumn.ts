@@ -200,7 +200,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   }
 
   rendererType() {
-    if (this.getCollapsed()) {
+    if (this.getCollapsed() && this.isLoaded()) {
       return StackColumn.COLLAPSED_RENDERER;
     }
     return super.rendererType();

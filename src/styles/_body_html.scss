@@ -16,6 +16,17 @@
     white-space: nowrap;
   }
 
+  div.text {
+    &.text_center {
+      text-align: center;
+    }
+  }
+  div.loading {
+    div {
+      display: inline;
+    }
+  }
+
   div.row {
     div.bg {
       background-color: transparent;

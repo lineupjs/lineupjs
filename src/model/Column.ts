@@ -143,12 +143,12 @@ export default class Column extends AEventDispatcher {
   constructor(id: string, public desc: IColumnDesc) {
     super();
     this.uid = fixCSS(id);
-    this.cssClass = (<any>this.desc).cssClass || '';
+    this.cssClass = (<any>desc).cssClass || '';
     this.metadata = {
-      label: this.desc.label || this.id,
-      description: this.desc.description || '',
-      color: (<any>this.desc).color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
-    }
+      label: desc.label || this.id,
+      description: desc.description || '',
+      color: desc.color || (desc.cssClass !== '' ? null : Column.DEFAULT_COLOR)
+    };
   }
 
   get id() {

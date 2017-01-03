@@ -45,12 +45,20 @@
 <script>
   (function () {
     const arr = [
-    {a: 10, b: 20, c: 30, d: 'Row1', e: false, l: {alt: 'Google', href: 'https://google.com'}, cat: 'c2'},
-    {a: 5, b: 14, c: 2, d: 'Row2', e: true, l: {alt: 'ORF', href: 'https://orf.at'}, cat: 'c3'},
-    {a: 2, b: 7, c: 100, d: 'Row3', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
-    {a: 7, b: 1, c: 60, d: 'Row4dasfa dsfasdf  adsf asdf asdf', e: false, l: {alt: 'Google', href: 'https://google.com'}, cat: 'c1;c3'},
-    {a: 2, b: 4, c: 30, d: 'Row5', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
-    {a: NaN, b: '', c: 30, d: '', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'}];
+      {a: 10, b: 20, c: 30, d: 'Row1', e: false, l: {alt: 'Google', href: 'https://google.com'}, cat: 'c2'},
+      {a: 5, b: 14, c: 2, d: 'Row2', e: true, l: {alt: 'ORF', href: 'https://orf.at'}, cat: 'c3'},
+      {a: 2, b: 7, c: 100, d: 'Row3', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
+      {
+        a: 7,
+        b: 1,
+        c: 60,
+        d: 'Row4dasfa dsfasdf  adsf asdf asdf',
+        e: false,
+        l: {alt: 'Google', href: 'https://google.com'},
+        cat: 'c1;c3'
+      },
+      {a: 2, b: 4, c: 30, d: 'Row5', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
+      {a: NaN, b: '', c: 30, d: '', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'}];
     const desc = [
       {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
       {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
@@ -58,15 +66,31 @@
       {label: 'C', type: 'number', column: 'c', 'domain': [0, 120], color: 'green'},
       {label: 'L', type: 'link', column: 'l'},
       {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
-      {label: 'Cat', type: 'categorical', column: 'cat', categories : ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19']},
-      {label: 'Ord', type: 'ordinal', column: 'cat', categories : ['c1','c2','c3']},
+      {
+        label: 'Cat',
+        type: 'categorical',
+        column: 'cat',
+        categories: ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17', 'c18', 'c19']
+      },
+      {label: 'Ord', type: 'ordinal', column: 'cat', categories: ['c1', 'c2', 'c3']},
       {label: 'Annadfas fasdf adsf asdfasd fasd', type: 'annotate', column: 'd'},
       {label: 'BB', type: 'boolean', column: 'e'},
-      {label: 'Cat Label', type: 'categorical', column: 'cat', categories : [{name: 'c1', label: 'C1', color: 'green'},{name: 'c2', label: 'C2', color: 'blue'},{name: 'c3', label: 'C3', color: 'red'}]},
-      {label: 'L.alt', type: 'string', column: 'l.alt' }
+      {
+        label: 'Cat Label',
+        type: 'categorical',
+        column: 'cat',
+        categories: [{name: 'c1', label: 'C1', color: 'green'}, {name: 'c2', label: 'C2', color: 'blue'}, {
+          name: 'c3',
+          label: 'C3',
+          color: 'red'
+        }]
+      },
+      {label: 'L.alt', type: 'string', column: 'l.alt'},
+      {label: 'Lazy', type: 'number', column: 'a', 'domain': [0, 10], lazyLoaded: true}
     ];
 
     const p = new LineUpJS.provider.LocalDataProvider(arr, desc);
+    const lazy = p.create(desc[12]);
     {
       const r = p.pushRanking();
       r.insert(p.create(LineUpJS.model.createSelectionDesc()), 0);
@@ -82,7 +106,8 @@
         rstack.push(p.create(desc[1]));
         rstack.push(p.create(desc[2]));
         rstack.push(p.create(desc[3]));
-        rstack.setWeights([0.2, 0.4]);
+        rstack.push(lazy);
+        rstack.setWeights([0.2, 0.4, 0.1]);
         return rstack;
       })());
 
@@ -118,7 +143,7 @@
     }
 
     const instance = LineUpJS.create(p, document.body, {
-      additionalDesc : [
+      additionalDesc: [
         LineUpJS.model.createStackDesc('+ Stack')
       ],
       htmlLayout: {
@@ -129,8 +154,8 @@
         freezeCols: 3
       },
       header: {
-        rankingButtons: function($node) {
-          $node.append('button').text('+').on('click', function(d) {
+        rankingButtons: function ($node) {
+          $node.append('button').text('+').on('click', function (d) {
             console.log(d);
           });
         },
@@ -143,6 +168,13 @@
       }
     });
     instance.update();
+
+    // load in 5 sec
+    var update = setInterval(instance.update.bind(instance), 200);
+    setTimeout(function () {
+      lazy.setLoaded(true);
+      clearInterval(update);
+    }, 5000);
   })();
 </script>
 
