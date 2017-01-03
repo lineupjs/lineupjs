@@ -16,7 +16,7 @@ import {IDataRow} from './provider/ADataProvider';
 import * as d3 from 'd3';
 import MultiValueColumn from './model/MultiValueColumn';
 import SetColumn from './model/SetColumn';
-import {IBoxPlotColumn, default as BoxPlotColumn} from './model/BoxPlotColumn';
+import {IBoxPlotColumn} from './model/BoxPlotColumn';
 
 
 /**
@@ -443,11 +443,11 @@ class BoxplotCellRenderer implements ICellRendererFactory {
           });
         rect.exit().remove();
 
-        const path = d3.select(n).selectAll('path.boxplotallpath').data([<any>col.getValue(d.v, d.dataIndex)]);
-        path.enter().append('path');
+        const pathAll = d3.select(n).selectAll('path.boxplotallpath').data([<any>col.getValue(d.v, d.dataIndex)]);
+        pathAll.enter().append('path');
         const bottomPos = (context.rowHeight(i) - bottomPadding);
         const middlePos = (context.rowHeight(i)) / 2;
-        path
+        pathAll
           .attr('class', 'boxplotallpath')
           .attr('d', () =>
             'M' + minPos + ',' + middlePos + 'L' + (q1Pos) + ',' + middlePos +
@@ -457,14 +457,15 @@ class BoxplotCellRenderer implements ICellRendererFactory {
             'M' + maxPos + ',' + topPadding + 'L' + maxPos + ',' + bottomPos   // maximum line
           );
 
-        if ((col.findMyRanker().getCurrentSortColumn()) instanceof MultiValueColumn) {
-          path.enter().append('path')
+        if ((col.findMyRanker().getCurrentSortColumn()) === col) {
+          const pathSort = d3.select(n).selectAll('path.boxplotsortpath').data([<any>col.getValue(d.v, d.dataIndex)]);
+          pathSort.enter().append('path')
             .attr('class', 'boxplotsortpath')
             .attr('d', () => 'M' + (sortPosition[userSort]) + ',' + topPadding + 'L' + (sortPosition[userSort]) + ',' + bottomPos);
         } else {
-          return;
+          d3.select(n).select('.boxplotsortpath').remove();
         }
-        path.exit().remove();
+        pathAll.exit().remove();
 
       }
     };
@@ -518,7 +519,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
       ctx.fill();
 
 
-      if ((col.findMyRanker().getCurrentSortColumn()) instanceof MultiValueColumn) {
+      if ((col.findMyRanker().getCurrentSortColumn()) === col) {
 
         ctx.strokeStyle = 'red';
         ctx.fillStyle = '#ff0700';
