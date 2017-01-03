@@ -140,10 +140,10 @@ export default class Column extends AEventDispatcher {
    */
   private compressed = false;
 
-  constructor(id: string, public desc: IColumnDesc) {
+  constructor(id: string, public readonly desc: IColumnDesc) {
     super();
     this.uid = fixCSS(id);
-    this.cssClass = (<any>desc).cssClass || '';
+    this.cssClass = desc.cssClass || '';
     this.metadata = {
       label: desc.label || this.id,
       description: desc.description || '',

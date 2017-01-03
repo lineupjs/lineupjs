@@ -4,7 +4,7 @@
 
 import {scale, format} from 'd3';
 import Column, {IColumnDesc} from './Column';
-import ValueColumn from './ValueColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 
 /**
@@ -251,6 +251,26 @@ export function createMappingFunction(dump: any): IMappingFunction {
   }
 }
 
+export interface INumberColumnDesc extends IValueColumnDesc<number> {
+  /**
+   * dump of mapping function
+   */
+  map?: any;
+  /**
+   * either map or domain should be available
+   */
+  domain?: [number, number];
+  /**
+   * @default [0,1]
+   */
+  range?: [number, number];
+  /**
+   * d3 formatting option
+   * @default .3n
+   */
+  numberFormat?: string;
+}
+
 /**
  * a number column mapped from an original input scale to an output range
  */
@@ -275,7 +295,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   private numberFormat: (n: number) => string = format('.3n');
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: INumberColumnDesc) {
     super(id, desc);
 
     if (desc.map) {

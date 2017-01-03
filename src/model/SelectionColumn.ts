@@ -3,7 +3,7 @@
  */
 
 import {ascending} from 'd3';
-import ValueColumn from './ValueColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 /**
  * factory for creating a description creating a rank column
@@ -14,13 +14,19 @@ export function createDesc(label: string = 'S') {
   return {type: 'selection', label: label};
 }
 
+export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
+  /**
+   * setter for selecting/deselecting the given row
+   */
+  setter(row: any, index: number, value: boolean): void;
+}
 /**
  * a checkbox column for selections
  */
 export default class SelectionColumn extends ValueColumn<boolean> {
   static readonly EVENT_SELECT = 'select';
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: ISelectionColumnDesc) {
     super(id, desc);
     this.setCompressed(true);
   }
@@ -38,8 +44,8 @@ export default class SelectionColumn extends ValueColumn<boolean> {
   }
 
   private setImpl(row: any, index: number, value: boolean) {
-    if ((<any>this.desc).setter) {
-      (<any>this.desc).setter(row, index, value);
+    if ((<ISelectionColumnDesc>this.desc).setter) {
+      (<ISelectionColumnDesc>this.desc).setter(row, index, value);
     }
     this.fire(SelectionColumn.EVENT_SELECT, row, value);
     return true;

@@ -3,7 +3,15 @@
  */
 
 import Column from './Column';
-import ValueColumn from './ValueColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+
+export interface IStringColumnDesc extends IValueColumnDesc<string> {
+  /**
+   * column alignment: left, center, right
+   * @default left
+   */
+  readonly alignment?: string;
+}
 
 /**
  * a string column with optional alignment
@@ -15,7 +23,7 @@ export default class StringColumn extends ValueColumn<string> {
 
   private _alignment: string = 'left';
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: IStringColumnDesc) {
     super(id, desc);
     this.setWidthImpl(200); //by default 200
     this._alignment = desc.alignment || 'left';

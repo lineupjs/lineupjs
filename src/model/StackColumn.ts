@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import CompositeNumberColumn from './CompositeNumberColumn';
+import CompositeNumberColumn,{ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IMultiLevelColumn} from './CompositeColumn';
 import Column, {IFlatColumn} from './Column';
 
@@ -32,7 +32,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
    */
   private collapsed = false;
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: ICompositeNumberDesc) {
     super(id, desc);
 
     const that = this;

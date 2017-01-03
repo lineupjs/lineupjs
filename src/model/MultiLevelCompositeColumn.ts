@@ -3,7 +3,7 @@
  */
 
 import CompositeColumn, {IMultiLevelColumn} from './CompositeColumn';
-import Column, {IFlatColumn} from './Column';
+import Column, {IFlatColumn, IColumnDesc} from './Column';
 import StackColumn from './StackColumn';
 
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
@@ -18,7 +18,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
    */
   private collapsed = false;
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: IColumnDesc) {
     super(id, desc);
     const that = this;
     this.adaptChange = function (old, new_) {
