@@ -147,7 +147,7 @@ export default class Column extends AEventDispatcher {
     this.metadata = {
       label: desc.label || this.id,
       description: desc.description || '',
-      color: desc.color || (desc.cssClass !== '' ? null : Column.DEFAULT_COLOR)
+      color: desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
     };
   }
 
