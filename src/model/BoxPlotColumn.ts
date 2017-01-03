@@ -107,13 +107,13 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
   }
 
   getUserSortBy() {
-    return this.data.sort;
+    return this.userSort;
   }
 
 
   setUserSortBy(rank: string) {
     this.userSort = rank;
-    //this.data.sort = rank;  // Only for Targid for highlighting
+   // this.data.sort = rank;  // Only for Targid for highlighting
     var sortAscending = {};
     sortAscending[Sort[Sort.min]] = true;
     sortAscending[Sort[Sort.max]] = false;
