@@ -169,8 +169,9 @@
     });
     instance.update();
 
-    // load in 5 sec
+    // create animation in canvas case through regular updates
     var update = setInterval(instance.update.bind(instance), 200);
+    // load in 5 sec
     setTimeout(function () {
       lazy.setLoaded(true);
       clearInterval(update);
