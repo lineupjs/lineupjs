@@ -186,7 +186,6 @@ window.onload = function () {
         }
       ];
 
-
       var p = new LineUpJS.provider.LocalDataProvider(arr1, desc1);
       var r = p.pushRanking();
 

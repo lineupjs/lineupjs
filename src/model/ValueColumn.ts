@@ -73,10 +73,10 @@ export default class ValueColumn<T> extends Column {
     this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.loaded, this.loaded = loaded);
   }
 
-  rendererType(): string {
+  getRendererType(): string {
     if (!this.isLoaded()) {
       return ValueColumn.RENDERER_LOADING;
     }
-    return super.rendererType();
+    return super.getRendererType();
   }
 }

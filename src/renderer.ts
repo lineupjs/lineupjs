@@ -18,7 +18,6 @@ import MultiValueColumn from './model/MultiValueColumn';
 import SetColumn from './model/SetColumn';
 import {IBoxPlotColumn} from './model/BoxPlotColumn';
 
-
 /**
  * context for rendering, wrapped as an object for easy extensibility
  */
@@ -457,13 +456,12 @@ class BoxplotCellRenderer implements ICellRendererFactory {
             'M' + maxPos + ',' + topPadding + 'L' + maxPos + ',' + bottomPos   // maximum line
           );
 
+        d3.select(n).select('.boxplotsortpath').remove();
         if ((col.findMyRanker().getCurrentSortColumn()) === col) {
           const pathSort = d3.select(n).selectAll('path.boxplotsortpath').data([<any>col.getValue(d.v, d.dataIndex)]);
           pathSort.enter().append('path')
             .attr('class', 'boxplotsortpath')
             .attr('d', () => 'M' + (sortPosition[userSort]) + ',' + topPadding + 'L' + (sortPosition[userSort]) + ',' + bottomPos);
-        } else {
-          d3.select(n).select('.boxplotsortpath').remove();
         }
         pathAll.exit().remove();
 
@@ -617,7 +615,7 @@ class SetCellRenderer implements ICellRendererFactory {
 
 class CircleColumnCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: NumberColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
 
     return {
 
@@ -638,7 +636,7 @@ class CircleColumnCellRenderer implements ICellRendererFactory {
   }
 
 
-  createCanvas(col: NumberColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
 
@@ -1248,7 +1246,7 @@ const loading = {
     };
   },
   createCanvas: function (col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const base = Date.now()%360;
+    const base = Date.now() % 360;
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       clipText(ctx, 'Loading…', 10, 0, col.getWidth() - 10, context.textHints);
       const angle = (base + i * 45) * (Math.PI / 180);
@@ -1296,8 +1294,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   boxplot: new BoxplotCellRenderer(),
   set: new SetCellRenderer(),
   circle: new CircleColumnCellRenderer(),
-  boxplotcustom: new BoxplotCellRenderer()
-  script: combineCellRenderer,
+  boxplotcustom: new BoxplotCellRenderer(),
   loading: loading
 };
 

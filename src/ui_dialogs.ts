@@ -19,6 +19,7 @@ import MappingEditor from './mappingeditor';
 import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
 import * as d3 from 'd3';
 import DataProvider from './provider/ADataProvider';
+import {Sort} from './model/BoxPlotColumn';
 
 
 export function dialogForm(title: string, body: string) {
@@ -204,7 +205,7 @@ export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>
 export function sortDialog(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
 
   var rank = column.getUserSortBy();
-  const valueString: any = ['min', 'max', 'median', 'q1', 'q3'];
+  const valueString: any = [Sort[Sort.min], Sort[Sort.max],Sort[Sort.median], Sort[Sort.q1], Sort[Sort.q3]];
   const sortLabel: any = ['Min', 'Max', 'Median', 'Q1', 'Q3'];
 
   var popup = makeSortPopup($header, 'Sort By <br>', valueString.map(function (d, i) {

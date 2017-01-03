@@ -12,10 +12,11 @@ function numSort(a, b) {
   return a - b;
 }
 
-enum Sort {
+export enum Sort {
 
   min, max, median, q1, q3, mean
 }
+
 
 export interface IBoxPlotColumn {
   getBoxPlotData(row: any, index: number, scale: any): IBoxPlotData;
@@ -113,7 +114,9 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
 
   setUserSortBy(rank: string) {
     this.userSort = rank;
-   // this.data.sort = rank;  // Only for Targid for highlighting
+    // this.data.sort = rank;  // Only for Targid for highlighting
+
+
     var sortAscending = {};
     sortAscending[Sort[Sort.min]] = true;
     sortAscending[Sort[Sort.max]] = false;
@@ -123,8 +126,8 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
     sortAscending[Sort[Sort.q3]] = false;
 
     let ascending = sortAscending[this.userSort];
+    this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.sortByMe(this.findMyRanker().getAscending()), this.sortByMe(ascending));
 
-    this.sortByMe(ascending);
 
   }
 
