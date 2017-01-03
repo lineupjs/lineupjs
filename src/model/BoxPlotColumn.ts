@@ -62,13 +62,12 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
 
   }
 
+  // Only For Targid
   public setDomain(domain: number[]) {
     const bak = this.boxPlotScale.domain();
-
     this.data.min = domain[0];
     this.data.max = domain[1];
     this.boxPlotScale.domain(domain);
-
     this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
   }
 
@@ -81,7 +80,6 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
     }
     const b_val = (this.getValue(b, bIndex));
     const boxSort = this.userSort;
-
     return (numSort((<any>a_val)[boxSort], (<any>b_val)[boxSort]));
 
   }
@@ -115,7 +113,7 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
 
   setUserSortBy(rank: string) {
     this.userSort = rank;
-
+    //this.data.sort = rank;  // Only for Targid for highlighting
     var sortAscending = {};
     sortAscending[Sort[Sort.min]] = true;
     sortAscending[Sort[Sort.max]] = false;

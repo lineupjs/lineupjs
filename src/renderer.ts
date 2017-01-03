@@ -16,7 +16,7 @@ import {IDataRow} from './provider/ADataProvider';
 import * as d3 from 'd3';
 import MultiValueColumn from './model/MultiValueColumn';
 import SetColumn from './model/SetColumn';
-import {IBoxPlotColumn} from './model/BoxPlotColumn';
+import {IBoxPlotColumn, default as BoxPlotColumn} from './model/BoxPlotColumn';
 
 
 /**
@@ -220,8 +220,8 @@ class HeatmapCellRenderer implements ICellRendererFactory {
     const colorScale = col.getColor();
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
 
-      var data = col.getValue(d.v, d.dataIndex);
-      data.forEach(function (d, i) {
+      const data = col.getValue(d.v, d.dataIndex);
+      data.forEach((d: number, i: number) => {
         var x = (i * cellDimension);
         ctx.beginPath();
         ctx.fillStyle = colorScale(d);
@@ -254,7 +254,6 @@ class SparklineCellRenderer implements ICellRendererFactory {
 
 
   createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-
 
     const xScale: any = col.getSparklineScale().xScale.range([0, col.getWidth()]);
     var yScale: any = col.getSparklineScale().yScale;
@@ -392,10 +391,10 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
     const dataInfo = col.getDataInfo();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      var data = col.getValue(d.v, d.dataIndex);
+      const data = col.getValue(d.v, d.dataIndex);
       var scale = verticalBarScale(dataInfo, defaultScale, context.rowHeight(i));
 
-      data.forEach(function (d, i) {
+      data.forEach((d, i) => {
         var xpos = (i * cellDimension);
         var ypos = verticalBarYpos(dataInfo, d, scale, context.rowHeight(i));
         ctx.fillStyle = colorScale(d);
@@ -410,7 +409,6 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
   createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const userSort = col.getUserSortBy();
-
     const topPadding = Math.max(context.option('rowPadding', 1), 2);
     const bottomPadding = Math.max(context.option('rowPadding', 1), 2);
     const dataInfo = col.getDataInfo();
@@ -424,56 +422,56 @@ class BoxplotCellRenderer implements ICellRendererFactory {
         if ((boxdata) === null || undefined) {
           return;
         }
+        const sortPosition = {
+          min: boxdata.min,
+          max: boxdata.max,
+          median: boxdata.median,
+          q1: boxdata.q1,
+          q3: boxdata.q3
+        };
+
+        const minPos = sortPosition.min, maxPos = sortPosition.max, medianPos = sortPosition.median, q3Pos = sortPosition.q3, q1Pos = sortPosition.q1;
         const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
         rect.enter().append('rect');
         rect
           .attr('class', 'boxplotrect')
           .attr({
             y: topPadding,
-            x: (boxdata.q1),
-            width: ((boxdata.q3) - (boxdata.q1)),
+            x: (q1Pos),
+            width: (q3Pos - q1Pos),
             height: (d, i) => (context.rowHeight(i) - (topPadding + bottomPadding))
           });
         rect.exit().remove();
 
         const path = d3.select(n).selectAll('path.boxplotallpath').data([<any>col.getValue(d.v, d.dataIndex)]);
         path.enter().append('path');
-        const minPos = (boxdata.min), maxPos = (boxdata.max), medianPos = (boxdata.median), q3pos = (boxdata.q3), q1pos = (boxdata.q1);
         const bottomPos = (context.rowHeight(i) - bottomPadding);
         const middlePos = (context.rowHeight(i)) / 2;
         path
           .attr('class', 'boxplotallpath')
-          .attr('d', function (d, i) {
-            return 'M' + minPos + ',' + middlePos + 'L' + (boxdata.q1) + ',' + middlePos +
-              'M' + minPos + ',' + topPadding + 'L' + minPos + ',' + (bottomPos) +   //minimum line
-              'M' + medianPos + ',' + topPadding + 'L' + medianPos + ',' + bottomPos +   //median line
-              'M' + ((boxdata.q3)) + ',' + middlePos + 'L' + (maxPos) + ',' + middlePos +
-              'M' + maxPos + ',' + topPadding + 'L' + maxPos + ',' + bottomPos;   // maximum line
-
-          });
+          .attr('d', () =>
+            'M' + minPos + ',' + middlePos + 'L' + (q1Pos) + ',' + middlePos +
+            'M' + minPos + ',' + topPadding + 'L' + minPos + ',' + (bottomPos) +   //minimum line
+            'M' + medianPos + ',' + topPadding + 'L' + medianPos + ',' + bottomPos +   //median line
+            'M' + (q3Pos) + ',' + middlePos + 'L' + (maxPos) + ',' + middlePos +
+            'M' + maxPos + ',' + topPadding + 'L' + maxPos + ',' + bottomPos   // maximum line
+          );
 
         if ((col.findMyRanker().getCurrentSortColumn()) instanceof MultiValueColumn) {
-
-          const sortPosition = {min: minPos, max: maxPos, median: medianPos, q1: q1pos, q3: q3pos};
           path.enter().append('path')
             .attr('class', 'boxplotsortpath')
-            .attr('d', function (d) {
-
-              return 'M' + (sortPosition[userSort]) + ',' + topPadding + 'L' + (sortPosition[userSort]) + ',' + bottomPos;  // minimum
-            });
-
+            .attr('d', () => 'M' + (sortPosition[userSort]) + ',' + topPadding + 'L' + (sortPosition[userSort]) + ',' + bottomPos);
         } else {
-
+          return;
         }
         path.exit().remove();
-
 
       }
     };
   }
 
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-
+    const userSort = col.getUserSortBy();
     const topPadding = Math.max(context.option('rowPadding', 1), 2);
     const bottomPadding = Math.max(context.option('rowPadding', 1), 2);
     const dataInfo = col.getDataInfo();
@@ -482,6 +480,15 @@ class BoxplotCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
       const boxdata = col.getBoxPlotData(d.v, d.dataIndex, scale);
+
+      const sortPosition = {
+        min: boxdata.min,
+        max: boxdata.max,
+        median: boxdata.median,
+        q1: boxdata.q1,
+        q3: boxdata.q3
+      };
+
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
@@ -490,25 +497,40 @@ class BoxplotCellRenderer implements ICellRendererFactory {
       ctx.stroke();
 
       //Line
-      const leftPos = (boxdata.min), rightPos = (boxdata.max), centerPos = (boxdata.median);
+      const minPos = sortPosition.min, maxPos = sortPosition.max, medianPos = sortPosition.median, q3Pos = sortPosition.q3, q1Pos = sortPosition.q1;
       const bottomPos = (context.rowHeight(i) - bottomPadding);
       const middlePos = (context.rowHeight(i)) / 2;
 
       ctx.strokeStyle = 'black';
       ctx.fillStyle = '#e0e0e0';
       ctx.beginPath();
-      ctx.moveTo(leftPos, middlePos);
-      ctx.lineTo((boxdata.q1), middlePos);
-      ctx.moveTo(leftPos, topPadding);
-      ctx.lineTo(leftPos, bottomPos);
-      ctx.moveTo(centerPos, topPadding);
-      ctx.lineTo(centerPos, bottomPos);
-      ctx.moveTo((boxdata.q3), middlePos);
-      ctx.lineTo(rightPos, middlePos);
-      ctx.moveTo(rightPos, topPadding);
-      ctx.lineTo(rightPos, bottomPos);
+      ctx.moveTo(minPos, middlePos);
+      ctx.lineTo((q1Pos), middlePos);
+      ctx.moveTo(minPos, topPadding);
+      ctx.lineTo(minPos, bottomPos);
+      ctx.moveTo(medianPos, topPadding);
+      ctx.lineTo(medianPos, bottomPos);
+      ctx.moveTo((q3Pos), middlePos);
+      ctx.lineTo(maxPos, middlePos);
+      ctx.moveTo(maxPos, topPadding);
+      ctx.lineTo(maxPos, bottomPos);
       ctx.stroke();
       ctx.fill();
+
+
+      if ((col.findMyRanker().getCurrentSortColumn()) instanceof MultiValueColumn) {
+
+        ctx.strokeStyle = 'red';
+        ctx.fillStyle = '#ff0700';
+        ctx.beginPath();
+        ctx.moveTo(sortPosition[userSort], topPadding);
+        ctx.lineTo(sortPosition[userSort], bottomPos);
+        ctx.stroke();
+        ctx.fill();
+      } else {
+        return;
+      }
+
 
     };
   }
@@ -518,7 +540,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 class SetCellRenderer implements ICellRendererFactory {
 
   createSVG(col: SetColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const celldimension = col.cellDimension();
+    const cellDimension = col.cellDimension();
     const binaryValue = col.getConstantValue();
     return {
       template: `<g class="upsetcell"></g>`,
@@ -528,22 +550,22 @@ class SetCellRenderer implements ICellRendererFactory {
         circle
           .attr({
             cy: (d: any, i) => (context.rowHeight(i) / 2),
-            cx: (d: any, i) => (i * celldimension) + (celldimension / 2),
-            r: (celldimension / 4),
+            cx: (d: any, i) => (i * cellDimension) + (cellDimension / 2),
+            r: (cellDimension / 4),
             class: 'upsetcircle',
             opacity: (d) =>(d === binaryValue) ? 1 : 0.1
           });
         circle.exit().remove();
         const path = d3.select(n).selectAll('path').data(<any>[col.getValue(d.v, d.dataIndex)]);
-        const countcategory = col.getValue(d.v, d.dataIndex).filter((x) => x === 1).length;
-        if (countcategory > 1) {
+        const countCategory = col.getValue(d.v, d.dataIndex).filter((x) => x === 1).length;
+        if (countCategory > 1) {
           path.enter().append('path');
           path
             .attr('d', function (d, i) {
 
-              const pathcordinate = col.calculatePath(d);
+              const pathCordinate = col.calculatePath(d);
 
-              return 'M' + (pathcordinate.left) + ',' + (context.rowHeight(i) / 2) + 'L' + (pathcordinate.right) + ',' + (context.rowHeight(i) / 2);
+              return 'M' + (pathCordinate.left) + ',' + (context.rowHeight(i) / 2) + 'L' + (pathCordinate.right) + ',' + (context.rowHeight(i) / 2);
 
             })
             .attr('class', 'upsetpath');
@@ -554,29 +576,29 @@ class SetCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: SetColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
-    const celldimension = col.cellDimension();
+    const cellDimension = col.cellDimension();
     const binaryValue = col.getConstantValue();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Circle
-      var data = col.getValue(d.v, d.dataIndex);
-      var countcategory = data.filter((x) => x === 1).length;
+      const data = col.getValue(d.v, d.dataIndex);
+      var countCategory = data.filter((x) => x === 1).length;
       const radius = (context.rowHeight(i) / 3);
-      const pathcordinate = col.calculatePath(data);
+      const pathCordinate = col.calculatePath(data);
 
-      if (countcategory > 1) {
+      if (countCategory > 1) {
         ctx.fillStyle = 'black';
         ctx.strokeStyle = 'black';
         ctx.beginPath();
-        ctx.moveTo((pathcordinate.left), (context.rowHeight(i) / 2));
-        ctx.lineTo((pathcordinate.right), (context.rowHeight(i) / 2));
+        ctx.moveTo((pathCordinate.left), (context.rowHeight(i) / 2));
+        ctx.lineTo((pathCordinate.right), (context.rowHeight(i) / 2));
         ctx.fill();
         ctx.stroke();
       }
 
       data.forEach((d, i) => {
         var posy = (context.rowHeight(i) / 2);
-        var posx = (i * celldimension) + (celldimension / 2);
+        var posx = (i * cellDimension) + (cellDimension / 2);
         ctx.fillStyle = 'black';
         ctx.strokeStyle = 'black';
         ctx.beginPath();

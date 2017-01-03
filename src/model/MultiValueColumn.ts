@@ -12,19 +12,33 @@ export class CustomSortCalculation {
     this.a_val = a_val;
   }
 
-  sum() { return (d3.sum(this.a_val) - d3.sum(this.b_val));}
+  sum() {
+    return (d3.sum(this.a_val) - d3.sum(this.b_val));
+  }
 
-  min() { return (d3.min(this.a_val) - d3.min(this.b_val)); }
+  min() {
+    return (d3.min(this.a_val) - d3.min(this.b_val));
+  }
 
-  max() { return (d3.max(this.a_val) - d3.max(this.b_val)); }
+  max() {
+    return (d3.max(this.a_val) - d3.max(this.b_val));
+  }
 
-  mean() { return (d3.mean(this.a_val) - d3.mean(this.b_val)); }
+  mean() {
+    return (d3.mean(this.a_val) - d3.mean(this.b_val));
+  }
 
-  median() { return (d3.median(this.a_val.sort(numSort))) - (d3.median(this.b_val.sort(numSort))); }
+  median() {
+    return (d3.median(this.a_val.sort(numSort))) - (d3.median(this.b_val.sort(numSort)));
+  }
 
-  q1() { return (d3.quantile(this.a_val, 0.25)) - (d3.quantile(this.b_val, 0.25)); }
+  q1() {
+    return (d3.quantile(this.a_val, 0.25)) - (d3.quantile(this.b_val, 0.25));
+  }
 
-  q3() { return (d3.quantile(this.a_val.sort(numSort), 0.75)) - (d3.quantile(this.b_val.sort(numSort), 0.75)); }
+  q3() {
+    return (d3.quantile(this.a_val.sort(numSort), 0.75)) - (d3.quantile(this.b_val.sort(numSort), 0.75));
+  }
 
 }
 
