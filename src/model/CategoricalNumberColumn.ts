@@ -42,7 +42,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     this.scale.domain(this.colors.domain());
     if (desc.categories) {
       //lookup value or 0.5 by default
-      let values = desc.categories.map((d) => ((typeof d !== 'string' && typeof (d.value) === 'number')) ? d.value : 0.5);
+      const values = desc.categories.map((d) => ((typeof d !== 'string' && typeof (d.value) === 'number')) ? d.value : 0.5);
       this.scale.range(values);
     }
   }
@@ -128,7 +128,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
   }
 
   dump(toDescRef: (desc: any) => any): any {
-    let r = CategoricalColumn.prototype.dump.call(this, toDescRef);
+    const r = CategoricalColumn.prototype.dump.call(this, toDescRef);
     r.scale = {
       domain: this.scale.domain(),
       range: this.scale.range(),

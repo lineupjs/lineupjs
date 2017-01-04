@@ -1,5 +1,6 @@
 {
   "rules": {
+    "arrow-parens": true,
     "ban": [
       true,
       [
@@ -27,7 +28,6 @@
     "interface-name": true,
     "jsdoc-format": true,
     "label-position": true,
-    "label-undefined": true,
     "max-line-length": false,
     "member-ordering": [
       false,
@@ -35,6 +35,7 @@
       "static-before-instance",
       "variables-before-functions"
     ],
+    "new-parens": true,
     "no-arg": true,
     "no-bitwise": true,
     "no-console": [
@@ -46,20 +47,21 @@
       "trace"
     ],
     "no-construct": true,
-    "no-constructor-vars": false,
     "no-debugger": true,
-    "no-duplicate-key": true,
     "no-duplicate-variable": true,
     "no-empty": true,
+    "no-empty-interface": true,
     "no-eval": true,
+    "no-reference": true,
     "no-string-literal": true,
+    "no-string-throw": true,
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": true,
     "no-unused-expression": true,
-    "no-unused-variable": true,
-    "no-unreachable": true,
     "no-use-before-declare": true,
+    "no-unsafe-finally": true,
     "no-var-requires": true,
+    "no-var-keyword": true,
     "one-line": [
       true,
       "check-open-brace",
@@ -67,12 +69,19 @@
       "check-else",
       "check-whitespace"
     ],
+    "object-literal-shorthand": true,
+    "prefer-for-of": true,
+    "prefer-const": true,
     "quotemark": [
       true,
-      "single"
+      "single",
+      "jsx-double"
     ],
     "radix": true,
-    "semicolon": true,
+    "semicolon": [
+      true,
+      "always"
+    ],
     "triple-equals": [
       true,
       "allow-null-check"
@@ -100,12 +109,13 @@
         "space"
       ]
     ],
-    "use-strict": [
-      false,
-      "check-module",
-      "check-function"
+    "use-isnan": true,
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-leading-underscore"
     ],
-    "variable-name": false,
     "whitespace": [
       false,
       "check-branch",

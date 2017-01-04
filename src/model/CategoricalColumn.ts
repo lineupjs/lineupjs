@@ -104,7 +104,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   initCategories(desc: IBaseCategoricalDesc) {
     if (desc.categories) {
-      let cats = [],
+      const cats = [],
         cols = this.colors.range().slice(), //work on a copy since it will be manipulated
         labels = new Map<string, string>();
       desc.categories.forEach((cat, i) => {
@@ -204,7 +204,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   dump(toDescRef: (desc: any) => any): any {
-    let r = super.dump(toDescRef);
+    const r = super.dump(toDescRef);
     r.filter = this.currentFilter;
     r.colors = {
       domain: this.colors.domain(),
@@ -268,7 +268,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     const vb = this.getValues(b, bIndex);
     //check all categories
     for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
-      let ci = ascending(va[i], vb[i]);
+      const ci = ascending(va[i], vb[i]);
       if (ci !== 0) {
         return ci;
       }

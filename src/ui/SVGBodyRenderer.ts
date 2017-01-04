@@ -72,17 +72,18 @@ export default class SVGBodyRenderer extends ADOMBodyRenderer {
       .attr({
         x: 0, //(d,i) => offsets[i],
         width: (d) => Math.max(d.getWidth() - 5, 0),
-        height: height
+        height
       });
   }
 
   updateClipPaths(data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
-    let shifts = [], offset = 0;
+    const shifts = [];
+    let offset = 0;
     data.forEach((r) => {
       const w = r.ranking.flatten(shifts, offset, 2, this.options.columnPadding);
       offset += w + this.options.slopeWidth;
     });
-    this.updateClipPathsImpl(shifts.map(s => s.col), context, height);
+    this.updateClipPathsImpl(shifts.map((s) => s.col), context, height);
 
     { //update frozen clip-path
       let $elem = this.$node.select(`clipPath#c${context.idPrefix}Freeze`);
@@ -90,14 +91,14 @@ export default class SVGBodyRenderer extends ADOMBodyRenderer {
         $elem = this.$node.append('clipPath').attr('id', `c${context.idPrefix}Freeze`).append('rect').attr({
           y: 0,
           width: 20000,
-          height: height
+          height
         });
       }
 
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3max(data[0].frozen, (f) => f.shift + f.column.getWidth());
       $elem.select('rect').attr({
         x: maxFrozen,
-        height: height,
+        height,
         transform: `translate(${this.currentFreezeLeft},0)`
       });
     }

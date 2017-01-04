@@ -89,8 +89,8 @@ export default class RemoteDataProvider extends ACommonDataProvider {
 
   private computeMissing(orders: number[][]): number[] {
     const union = new Set<number>();
-    const union_add = union.add.bind(union);
-    orders.forEach((order) => order.forEach(union_add));
+    const unionAdd = union.add.bind(union);
+    orders.forEach((order) => order.forEach(unionAdd));
 
     // removed cached
     this.cache.forEach((v, k) => union.delete(k));
@@ -99,7 +99,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
       // clean up cache
     }
     // const maxLength = Math.max(...orders.map((o) => o.length));
-    let r = [];
+    const r = [];
     union.forEach(r.push.bind(r));
     return r;
   }
@@ -125,7 +125,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
   }
 
 
-  mappingSample(col: Column): Promise<number[]> {
+  async mappingSample(col: Column): Promise<number[]> {
     return this.server.mappingSample((<any>col.desc).column);
   }
 

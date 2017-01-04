@@ -6,7 +6,6 @@ related issues:
 * [ ] internal code review by requester is done:
   * [ ] code is formatted
   * [ ] removed debug output `console.log`, ...
-  * [ ] use of `const` whenever possible otherwise `let` to declare variables
   * [ ] use of `readonly` for readonly fields and interfaces fields
   * [ ] parameters, fields, variables that are not initialized are typed, e.g.,  `function f(a)` => `function f(a: number)` 
   * [ ] optional options objects are typed using option interfaces, see e.g. `ILineUpConfig`

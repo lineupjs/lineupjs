@@ -20,6 +20,8 @@ import StackColumn from '../model/StackColumn';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import {INumberColumn} from '../model/NumberColumn';
 import {merge, AEventDispatcher, delayedCall} from '../utils';
+import {IValueColumnDesc} from '../model/ValueColumn';
+import {ISelectionColumnDesc} from '../model/SelectionColumn';
 
 /**
  * a data row for rendering
@@ -100,7 +102,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @type {Array}
    * @private
    */
-  private rankings_: Ranking[] = [];
+  private rankings: Ranking[] = [];
   /**
    * the current selected indices
    * @type {Set}
@@ -163,8 +165,8 @@ abstract class ADataProvider extends AEventDispatcher {
     return r;
   }
 
-  insertRanking(r: Ranking, index = this.rankings_.length) {
-    this.rankings_.splice(index, 0, r);
+  insertRanking(r: Ranking, index = this.rankings.length) {
+    this.rankings.splice(index, 0, r);
     this.forward(r, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
       Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
       Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
@@ -187,14 +189,14 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {boolean}
    */
   removeRanking(ranking: Ranking) {
-    const i = this.rankings_.indexOf(ranking);
+    const i = this.rankings.indexOf(ranking);
     if (i < 0) {
       return false;
     }
     this.unforward(ranking, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
       Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
       Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
-    this.rankings_.splice(i, 1);
+    this.rankings.splice(i, 1);
     ranking.on(Ranking.EVENT_DIRTY_ORDER + '.provider', null);
     this.cleanUpRanking(ranking);
     this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, i);
@@ -205,14 +207,14 @@ abstract class ADataProvider extends AEventDispatcher {
    * removes all rankings
    */
   clearRankings() {
-    this.rankings_.forEach((ranking) => {
+    this.rankings.forEach((ranking) => {
       this.unforward(ranking, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
         Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
         Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
       ranking.on(Ranking.EVENT_DIRTY_ORDER + '.provider', null);
       this.cleanUpRanking(ranking);
     });
-    this.rankings_ = [];
+    this.rankings = [];
     this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], null);
   }
 
@@ -221,7 +223,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {Ranking[]}
    */
   getRankings() {
-    return this.rankings_.slice();
+    return this.rankings.slice();
   }
 
   /**
@@ -229,7 +231,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {Ranking}
    */
   getLastRanking() {
-    return this.rankings_[this.rankings_.length - 1];
+    return this.rankings[this.rankings.length - 1];
   }
 
   /**
@@ -291,10 +293,10 @@ abstract class ADataProvider extends AEventDispatcher {
   private fixDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors
     if (desc.type === 'rank') {
-      (<any>desc).accessor = this.rankAccessor.bind(this);
+      (<IValueColumnDesc<number>>desc).accessor = this.rankAccessor.bind(this);
     } else if (desc.type === 'selection') {
-      (<any>desc).accessor = (row: any, index: number) => this.isSelected(index);
-      (<any>desc).setter = (row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
+      (<ISelectionColumnDesc>desc).accessor = (row: any, index: number) => this.isSelected(index);
+      (<ISelectionColumnDesc>desc).setter = (row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
     }
   }
 
@@ -343,15 +345,15 @@ abstract class ADataProvider extends AEventDispatcher {
 
   /**
    * finds a column in all rankings returning the first match
-   * @param id_or_filter by id or by a filter function
+   * @param idOrFilter by id or by a filter function
    * @returns {Column}
    */
-  find(id_or_filter: (col: Column) => boolean | string): Column {
+  find(idOrFilter: (col: Column) => boolean | string): Column {
     //convert to function
-    const filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
+    const filter = typeof(idOrFilter) === 'string' ? (col) => col.id === idOrFilter : idOrFilter;
 
-    for (let i = 0; i < this.rankings_.length; ++i) {
-      let r = this.rankings_[i].find(filter);
+    for (const ranking of this.rankings) {
+      const r = ranking.find(filter);
       if (r) {
         return r;
       }
@@ -368,14 +370,12 @@ abstract class ADataProvider extends AEventDispatcher {
     return {
       uid: this.uid,
       selection: this.getSelection(),
-      rankings: this.rankings_.map((r) => r.dump(this.toDescRef))
+      rankings: this.rankings.map((r) => r.dump(this.toDescRef))
     };
   }
 
   /**
    * dumps a specific column
-   * @param col
-   * @returns {any}
    */
   dumpColumn(col: Column) {
     return col.dump(this.toDescRef);
@@ -383,8 +383,6 @@ abstract class ADataProvider extends AEventDispatcher {
 
   /**
    * for better dumping describe reference, by default just return the description
-   * @param desc
-   * @returns {any}
    */
   toDescRef(desc: any): any {
     return desc;
@@ -392,8 +390,6 @@ abstract class ADataProvider extends AEventDispatcher {
 
   /**
    * inverse operation of toDescRef
-   * @param descRef
-   * @returns {any}
    */
   fromDescRef(descRef: any): any {
     return descRef;
@@ -410,7 +406,7 @@ abstract class ADataProvider extends AEventDispatcher {
       c.restore(d, this.createHelper);
     }
     return c;
-  };
+  }
 
   restoreRanking(dump: any) {
     const ranking = this.cloneRanking();
@@ -457,7 +453,7 @@ abstract class ADataProvider extends AEventDispatcher {
     }
     //assign new ids
     const idGenerator = this.nextId.bind(this);
-    this.rankings_.forEach((r) => {
+    this.rankings.forEach((r) => {
       r.children.forEach((c) => c.assignNewId(idGenerator));
     });
   }
@@ -468,7 +464,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * generates a default ranking by using all column descriptions ones
    */
   deriveDefault() {
-    if (this.rankings_.length > 0) {
+    if (this.rankings.length > 0) {
       //no default if we have a ranking
       return;
     }
@@ -493,26 +489,24 @@ abstract class ADataProvider extends AEventDispatcher {
           return this.create(createRankDesc());
         case 'selection':
           return this.create(createSelectionDesc());
-        case 'actions': {
-          let r = this.create(createActionDesc(column.label || 'actions'));
-          r.restore(column, null);
-          return r;
-        }
-        case 'stacked': {
+        case 'actions':
+          const actions = this.create(createActionDesc(column.label || 'actions'));
+          actions.restore(column, null);
+          return actions;
+        case 'stacked':
           //create a stacked one
-          let r = <StackColumn>this.create(createStackDesc(column.label || 'Combined'));
+          const stacked = <StackColumn>this.create(createStackDesc(column.label || 'Combined'));
           (column.children || []).forEach((col) => {
-            let c = toCol(col);
+            const c = toCol(col);
             if (c) {
-              r.push(c);
+              stacked.push(c);
             }
           });
-          return r;
-        }
+          return stacked;
         default: {
-          let desc = this.findDesc(column.column);
+          const desc = this.findDesc(column.column);
           if (desc) {
-            let r = this.create(desc);
+            const r = this.create(desc);
             column.label = column.label || desc.label || desc.column;
             r.restore(column, null);
             return r;
@@ -673,8 +667,8 @@ abstract class ADataProvider extends AEventDispatcher {
    * returns a promise containing the selected rows
    * @return {Promise<any[]>}
    */
-  selectedRows(): Promise<IDataRow[]> {
-    if (this.selection.size == 0) {
+  async selectedRows(): Promise<IDataRow[]> {
+    if (this.selection.size === 0) {
       return Promise.resolve([]);
     }
     return this.view(this.getSelection());
@@ -708,7 +702,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param options
    * @returns {Promise<string>}
    */
-  exportTable(ranking: Ranking, options: IExportOptions = {}) {
+  async exportTable(ranking: Ranking, options: IExportOptions = {}) {
     options = merge({
       separator: '\t',
       newline: '\n',
@@ -727,16 +721,16 @@ abstract class ADataProvider extends AEventDispatcher {
 
     const columns = ranking.flatColumns.filter((c) => options.filter(c.desc));
     const order = ranking.getOrder();
-    return this.view(order).then((data) => {
-      let r = [];
-      if (options.header) {
-        r.push(columns.map((d) => quote(d.label)).join(options.separator));
-      }
-      data.forEach((row, i) => {
-        r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(options.separator));
-      });
-      return r.join(options.newline);
+    const data = await this.view(order);
+
+    const r = [];
+    if (options.header) {
+      r.push(columns.map((d) => quote(d.label)).join(options.separator));
+    }
+    data.forEach((row, i) => {
+      r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(options.separator));
     });
+    return r.join(options.newline);
   }
 
 }

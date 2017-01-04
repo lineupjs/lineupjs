@@ -68,7 +68,7 @@ export interface IBodyRendererOptions {
   animation?: boolean;
   animationDuration?: number;
 
-  renderers?: {[key: string]: ICellRendererFactory},
+  renderers?: {[key: string]: ICellRendererFactory};
 
   meanLine?: boolean;
 
@@ -150,34 +150,32 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     this.fire(ABodyRenderer.EVENT_RENDER_FINISHED, this);
   }
 
-  protected createContext(index_shift: number, creator: (col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IRenderContext<any>) => any): IBodyRenderContext {
+  protected createContext(indexShift: number, creator: (col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IRenderContext<any>) => any): IBodyRenderContext {
     const options = this.options;
 
-    function findOption(key: string, default_: any) {
+    function findOption(key: string, defaultValue: any) {
       if (key in options) {
         return options[key];
       }
       if (key.indexOf('.') > 0) {
-        let p = key.substring(0, key.indexOf('.'));
+        const p = key.substring(0, key.indexOf('.'));
         key = key.substring(key.indexOf('.') + 1);
         if (p in options && key in options[p]) {
           return options[p][key];
         }
       }
-      return default_;
+      return defaultValue;
     }
 
     return {
-      cellY: (index: number) => (index + index_shift) * (this.options.rowHeight),
-      cellPrevY: (index: number) => (index + index_shift) * (this.options.rowHeight),
+      cellY: (index: number) => (index + indexShift) * (this.options.rowHeight),
+      cellPrevY: (index: number) => (index + indexShift) * (this.options.rowHeight),
 
       idPrefix: options.idPrefix,
 
       option: findOption,
 
-      rowHeight() {
-        return options.rowHeight - options.rowPadding;
-      },
+      rowHeight: () => options.rowHeight - options.rowPadding,
 
       renderer(col: Column) {
         return creator(col, options.renderers, this);
@@ -209,7 +207,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   /**
    * render the body
    */
-  update(reason = ERenderReason.DIRTY) {
+  async update(reason = ERenderReason.DIRTY) {
     const rankings = this.data.getRankings();
     const maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
     const height = this.options.rowHeight * maxElems;
@@ -243,7 +241,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
           column: o,
           renderer: context.renderer(o),
           shift: colShift
-        }
+        };
       });
       totalWidth += width;
       totalWidth += this.options.slopeWidth;
@@ -255,9 +253,9 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
         ranking: r,
         order: orders[i],
         shift: rankingShift,
-        width: width,
+        width,
         //compute frozen columns just for the first one
-        frozen: frozen,
+        frozen,
         frozenWidth: Math.max(...(frozen.map((d) => d.shift + d.column.getWidth()))),
         columns: colData.slice(this.options.freezeCols),
         data: data[i]
@@ -266,12 +264,12 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     //one to often
     totalWidth -= this.options.slopeWidth;
 
-    this.updateImpl(rdata, context, totalWidth, height, reason).then(this.fireFinished.bind(this));
+    return this.updateImpl(rdata, context, totalWidth, height, reason).then(this.fireFinished.bind(this));
   }
 
-  protected abstract createContextImpl(index_shift: number): IBodyRenderContext;
+  protected abstract createContextImpl(indexShift: number): IBodyRenderContext;
 
-  protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason): Promise<void>;
+  protected abstract async updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason): Promise<void>;
 }
 
 export default ABodyRenderer;

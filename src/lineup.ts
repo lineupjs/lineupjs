@@ -10,6 +10,7 @@ import {
   IRankingHook,
   dummyRankingButtonHook,
   PoolRenderer,
+  IPoolRendererOptions,
   IBodyRenderer,
   HeaderRenderer,
   createBodyRenderer
@@ -223,13 +224,13 @@ export default class LineUp extends AEventDispatcher {
    * @param node the node element to attach
    * @param config
    */
-  addPool(node: Element, config?: any): PoolRenderer;
+  addPool(node: Element, config?: IPoolRendererOptions): PoolRenderer;
   addPool(pool: PoolRenderer): PoolRenderer;
-  addPool(pool_node: Element|PoolRenderer, config = this.config) {
-    if (pool_node instanceof PoolRenderer) {
-      this.pools.push(<PoolRenderer>pool_node);
+  addPool(poolOrNode: Element|PoolRenderer, config = this.config) {
+    if (poolOrNode instanceof PoolRenderer) {
+      this.pools.push(<PoolRenderer>poolOrNode);
     } else {
-      this.pools.push(new PoolRenderer(this.data, <Element>pool_node, config));
+      this.pools.push(new PoolRenderer(this.data, <Element>poolOrNode, config));
     }
     return this.pools[this.pools.length - 1];
   }
@@ -310,7 +311,7 @@ export default class LineUp extends AEventDispatcher {
     if (this.contentScroller) {
       this.contentScroller.scrollIntoView(0, order.length, indices[0], (i) => i * this.config.body.rowHeight);
     } else {
-      let container = (<HTMLElement>this.$container.node());
+      const container = (<HTMLElement>this.$container.node());
       container.scrollTop = indices[0] * this.config.body.rowHeight;
     }
     //fake hover in 100ms - TODO right timing

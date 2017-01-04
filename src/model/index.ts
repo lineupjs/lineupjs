@@ -66,7 +66,7 @@ export function defineColumn<T>(name: string, functions: any = {}) {
  * @returns {{type: string, label: string}}
  */
 export function createActionDesc(label = 'actions') {
-  return {type: 'actions', label: label};
+  return {type: 'actions', label};
 }
 
 /**
