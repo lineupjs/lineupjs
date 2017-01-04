@@ -95,11 +95,7 @@ export function models() {
     mean: MeanColumn,
     script: ScriptColumn,
     nested: NestedColumn,
-    heatmapcustom: MultiValueColumn,
-    sparkline: MultiValueColumn,
-    threshold: MultiValueColumn,
-    verticalbar: MultiValueColumn,
-    boxplot: MultiValueColumn,
+    multiValue:MultiValueColumn,
     set: SetColumn,
     circle: NumberColumn,
     boxplotcustom:BoxPlotColumn

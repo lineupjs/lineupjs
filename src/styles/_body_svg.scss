@@ -63,13 +63,18 @@
     stroke: black;
     fill: #e0e0e0;
   }
-   .boxplotsortpath {
+  .boxplotsortpath {
     stroke: #ff0700;
     fill: #e0e0e0;
   }
-  .upsetcircle {
+  .setcircle {
     stroke: black;
     fill: black;
+  }
+  .setcircleOpacity {
+    stroke: black;
+    fill: black;
+    opacity: 0.1;
   }
   .upsetpath {
     stroke: black;

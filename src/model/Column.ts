@@ -86,8 +86,14 @@ export interface IColumnMetaData {
 
 export interface IRendererInfo {
 
-  rendererType?: string  ; // Name of the current Renderer
-  rendererList: {type: string, label: string}[]; // Possible RendererList
+  /*
+  Name of the current Renderer
+  */
+  rendererType?: string  ;
+  /*
+  * Possible RendererList
+   */
+  rendererList: {type: string, label: string}[];
 }
 
 
@@ -162,8 +168,8 @@ export default class Column extends AEventDispatcher {
   constructor(id: string, public readonly desc: IColumnDesc) {
     super();
     this.uid = fixCSS(id);
-      this.rendererInfo = {
-      rendererType: this.desc.rendererType || this.desc.type,
+    this.rendererInfo = {
+      rendererType: this.desc.rendererType || this.desc.type || 'heatmapcustom',
       rendererList: []
     };
 
@@ -474,7 +480,7 @@ export default class Column extends AEventDispatcher {
     return this.rendererInfo.rendererList;
   }
 
-  protected setRendererList(rendererList) {
+  protected setRendererList(rendererList:{type: string, label: string}[]) {
 
     this.rendererInfo.rendererList = rendererList;
 

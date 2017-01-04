@@ -4,13 +4,8 @@
 import * as d3 from 'd3';
 import ValueColumn from './ValueColumn';
 import Column from './Column';
-import {IDataStat} from './MultiValueColumn';
-
-
-function numSort(a, b) {
-
-  return a - b;
-}
+import {IValueColumnDesc} from "./ValueColumn";
+import {numSort} from './MultiValueColumn';
 
 export enum Sort {
 
@@ -19,69 +14,94 @@ export enum Sort {
 
 
 export interface IBoxPlotColumn {
-  getBoxPlotData(row: any, index: number, scale: any): IBoxPlotData;
-  getDataInfo(): IDataStat;
+  getBoxPlotData(row: any, index: number): IBoxPlotData;
+  getDataInfo(): IBoxPlotColumnDesc;
   getUserSortBy(): string;
+  setUserSortBy(sortCriteria:string):void
 
 }
 
-interface IBoxPlotDataStat extends IDataStat {
-  min: number,
-  max: number,
-  readonly sort: string
+/*
+ This was created only for targid purpose to set the domain I
+
+ interface IBoxPlotDataStat extends IDataStat {
+ min: number,
+ max: number,
+ readonly sort: string
+
+ }
+
+ */
+
+export interface IBoxPlotColumnDesc extends IValueColumnDesc < IBoxPlotData > {
+
+  readonly domain?: number [];
+  readonly sort?: string;
+  readonly colorRange?: any;
+  readonly min?: number;
+  readonly max?: number;
 
 }
 
 export  interface IBoxPlotData {
 
-  readonly min: number;
-  readonly max: number;
-  readonly median: number;
-  readonly q1: number;
-  readonly q3: number;
+  min: number;
+  max: number;
+  median: number;
+  q1: number;
+  q3: number;
 }
 
 
 export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implements IBoxPlotColumn {
 
-  private data: IBoxPlotDataStat;
+  private data;
+  private min;
+  private max;
+  private sort;
+  private colorRange;
   private userSort;
   protected boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();
 
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: IBoxPlotColumnDesc) {
     super(id, desc);
+    this.min = d3.min(desc.domain);
+    this.max = d3.max(desc.domain);
+    this.sort = desc.sort || 'min';
+    this.colorRange = desc.colorRange || ['blue', 'red'];
 
     this.data = {
-      min: d3.min((<any>desc).domain),
-      max: d3.max((<any>desc).domain),
-      sort: (<any>desc.sort) || 'min',
+      min: this.min,
+      max: this.max,
+      sort: this.sort,
+      colorRange: this.colorRange
 
     };
 
-    this.userSort = this.data.sort;
+    this.userSort = this.sort;
 
   }
 
-  // Only For Targid
-  public setDomain(domain: number[]) {
-    const bak = this.boxPlotScale.domain();
-    this.data.min = domain[0];
-    this.data.max = domain[1];
-    this.boxPlotScale.domain(domain);
-    this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
-  }
+  /*
+   // Only For Targid
+   public setDomain(domain: number[]) {
+   const bak = this.boxPlotScale.domain();
+   this.data.min = domain[0];
+   this.data.max = domain[1];
+   this.boxPlotScale.domain(domain);
+   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
+   }
 
+   */
   compare(a: any, b: any, aIndex: number, bIndex: number) {
 
     const a_val = (this.getValue(a, aIndex));
-
-    if (a_val === null) {
+    const b_val = (this.getValue(b, bIndex));
+    if (a_val === null || b_val === null) {
       return;
     }
-    const b_val = (this.getValue(b, bIndex));
-    const boxSort = this.userSort;
-    return (numSort((<any>a_val)[boxSort], (<any>b_val)[boxSort]));
+    return (numSort((<any>a_val)[this.userSort], (<any>b_val)[this.userSort]));
 
   }
 
@@ -90,18 +110,18 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
     return this.data;
   }
 
-  getBoxPlotData(row: any, index: number, scale: any) {
+  getBoxPlotData(row: any, index: number) {
     const data = this.getValue(row, index);
 
     if (data === null) {
       return;
     }
     const boxdata: IBoxPlotData = {
-      min: scale((<any>data).min),
-      median: scale((<any>data).median),
-      q1: scale((<any>data).q1),
-      q3: scale((<any>data).q3),
-      max: scale((<any>data).max)
+      min: ((<any>data).min),
+      median: ((<any>data).median),
+      q1: ((<any>data).q1),
+      q3: ((<any>data).q3),
+      max: ((<any>data).max)
     };
 
     return boxdata;
@@ -111,24 +131,9 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
     return this.userSort;
   }
 
-
-  setUserSortBy(rank: string) {
-    this.userSort = rank;
-    // this.data.sort = rank;  // Only for Targid for highlighting
-
-
-    var sortAscending = {};
-    sortAscending[Sort[Sort.min]] = true;
-    sortAscending[Sort[Sort.max]] = false;
-    sortAscending[Sort[Sort.mean]] = true;
-    sortAscending[Sort[Sort.median]] = false;
-    sortAscending[Sort[Sort.q1]] = true;
-    sortAscending[Sort[Sort.q3]] = false;
-
-    let ascending = sortAscending[this.userSort];
-    this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.sortByMe(this.findMyRanker().getAscending()), this.sortByMe(ascending));
-
-
+  setUserSortBy(sort: string) {
+    this.userSort = sort;
+    this.sortByMe();
   }
 
 

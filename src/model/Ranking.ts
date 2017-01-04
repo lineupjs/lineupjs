@@ -320,15 +320,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this;
   }
 
-  getCurrentSortColumn() {
-
-    return this.sortColumn;
-  }
-
-  getAscending(){
-    return this.ascending;
-  }
-
   get fqid() {
     return this.id;
   }
