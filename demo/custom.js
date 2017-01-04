@@ -149,11 +149,11 @@ window.onload = function () {
           type: 'multiValue',
           column: 'multidata',
           domain: [multidata_min, multidata_max],
-          colorRange: ['blue','white','red'],
+          colorRange: ['blue', 'white', 'red'],
           sort: 'min',
           threshold: 0,
           dataLength: multidata_length,
-          rendererType: 'multiValueBoxplot'
+          rendererType: 'boxplot'
         },
         {
           label: 'upset',
@@ -178,10 +178,11 @@ window.onload = function () {
       var desc2 = [
         {
           label: 'BoxPlot',
-          type: 'boxplotcustom',
+          type: 'boxplot',
           column: 'boxdata',
           sort: 'min',
-          domain: [boxdata_minval, boxdata_maxval]
+          domain: [boxdata_minval, boxdata_maxval],
+          rendererType: 'boxplot'
 
         }
       ];

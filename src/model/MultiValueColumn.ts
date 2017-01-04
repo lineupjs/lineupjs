@@ -122,7 +122,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     this.userSort = this.sort;
 
     const rendererList = [{type: 'multiValueHeatmap', label: 'Heatmap'},
-      {type: 'multiValueBoxplot', label: 'Boxplot'},
+      {type: 'boxplot', label: 'Boxplot'},
       {type: 'sparkline', label: 'Sparkline'},
       {type: 'threshold', label: 'Threshold'},
       {type: 'verticalbar', label: 'VerticalBar'}];

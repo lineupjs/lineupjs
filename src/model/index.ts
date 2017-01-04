@@ -98,6 +98,6 @@ export function models() {
     multiValue:MultiValueColumn,
     set: SetColumn,
     circle: NumberColumn,
-    boxplotcustom:BoxPlotColumn
+    boxplot:BoxPlotColumn
   };
 }

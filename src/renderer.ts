@@ -642,8 +642,8 @@ class CircleColumnCellRenderer implements ICellRendererFactory {
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
 
-      var posy = (context.rowHeight(i) / 2);
-      var posx = (col.getWidth() / 2);
+      let posy = (context.rowHeight(i) / 2);
+      let posx = (col.getWidth() / 2);
 
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'black';
@@ -1293,10 +1293,9 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   threshold: new ThresholdCellRenderer(),
   sparkline: new SparklineCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
-  multiValueBoxplot: new BoxplotCellRenderer(),
   set: new SetCellRenderer(),
   circle: new CircleColumnCellRenderer(),
-  boxplotcustom: new BoxplotCellRenderer(),
+  boxplot: new BoxplotCellRenderer(),
   loading: loading
 };
 
