@@ -48,7 +48,7 @@ export default class BooleanColumn extends ValueColumn<boolean> {
   }
 
   dump(toDescRef: (desc: any) => any): any {
-    let r = super.dump(toDescRef);
+    const r = super.dump(toDescRef);
     if (this.currentFilter !== null) {
       r.filter = this.currentFilter;
     }

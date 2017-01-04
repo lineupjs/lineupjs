@@ -109,7 +109,7 @@ export default class PoolRenderer {
     const data = this.data;
     const descToShow = this.entries.filter((e) => e.used === 0).map((d) => d.desc);
     const $headers = this.$node.selectAll('div.header').data(descToShow);
-    const $headers_enter = $headers.enter().append('div').attr({
+    const $headerEnter = $headers.enter().append('div').attr({
       'class': 'header',
       'draggable': true
     }).on('dragstart', (d) => {
@@ -125,11 +125,11 @@ export default class PoolRenderer {
       height: this.options.elemHeight + 'px'
     });
     if (this.options.addAtEndOnClick) {
-      $headers_enter.on('click', (d) => {
+      $headerEnter.on('click', (d) => {
         this.data.push(this.data.getLastRanking(), d);
       });
     }
-    $headers_enter.append('span').classed('label', true).text((d) => d.label);
+    $headerEnter.append('span').classed('label', true).text((d) => d.label);
     $headers.attr('class', (d) => `header ${((<any>d).cssClass || '')} ${d.type}`);
     $headers.style({
       'transform': (d, i) => {

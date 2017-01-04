@@ -72,7 +72,6 @@
     "object-literal-shorthand": true,
     "prefer-for-of": true,
     "prefer-const": true,
-    "promise-function-async": true,
     "quotemark": [
       true,
       "single",

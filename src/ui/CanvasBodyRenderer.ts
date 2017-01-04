@@ -52,7 +52,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   private columnUnderMouse(x: number) {
-    for (let shift of this.lastShifts) {
+    for (const shift of this.lastShifts) {
       if (shift.shift <= x && x < (shift.shift + shift.column.getWidth())) {
         return shift.column;
       }
@@ -190,7 +190,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.translate(-dx, -dy);
   }
 
-  private renderMeanlines(ctx: CanvasRenderingContext2D, ranking: IRankingData, height: number) {
+  private async renderMeanlines(ctx: CanvasRenderingContext2D, ranking: IRankingData, height: number) {
     const cols = ranking.columns.filter((c) => this.showMeanLine(c.column));
     return Promise.all(cols.map((d) => {
       const h = this.histCache.get(d.column.id);
@@ -198,20 +198,20 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
         return;
       }
       return h.then((stats: IStatistics) => {
-        const x_pos = d.shift + d.column.getWidth() * stats.mean;
-        if (isNaN(x_pos)) {
+        const xPos = d.shift + d.column.getWidth() * stats.mean;
+        if (isNaN(xPos)) {
           return;
         }
         ctx.strokeStyle = this.style('meanLine');
         ctx.beginPath();
-        ctx.moveTo(x_pos, 0);
-        ctx.lineTo(x_pos, height);
+        ctx.moveTo(xPos, 0);
+        ctx.lineTo(xPos, height);
         ctx.stroke();
       });
     }));
   }
 
-  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height) {
+  async renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height) {
 
     const renderRow = this.renderRow.bind(this, ctx, context);
 
@@ -237,19 +237,19 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
       ctx.translate(data[i + 1].shift - this.options.slopeWidth, 0);
 
       const cache = new Map<number, number>();
-      slope.right.forEach((data_index, pos) => {
-        cache.set(data_index, pos);
+      slope.right.forEach((dataIndex, pos) => {
+        cache.set(dataIndex, pos);
       });
-      const lines = slope.left.map((data_index, pos) => ({
-        data_index: data_index,
+      const lines = slope.left.map((dataIndex, pos) => ({
+        dataIndex,
         lpos: pos,
-        rpos: cache.get(data_index)
+        rpos: cache.get(dataIndex)
       })).filter((d) => d.rpos != null);
 
 
       lines.forEach((line) => {
-        const isSelected = this.data.isSelected(line.data_index);
-        const isHovered = this.isHovered(line.data_index);
+        const isSelected = this.data.isSelected(line.dataIndex);
+        const isHovered = this.isHovered(line.dataIndex);
         if (isSelected) {
           ctx.strokeStyle = this.style('selection');
         } else if (isHovered) {
@@ -270,15 +270,15 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.restore();
   }
 
-  protected createContextImpl(index_shift: number): ICanvasRenderContext&IBodyRenderContext {
-    const base: any = this.createContext(index_shift, createCanvas);
+  protected createContextImpl(indexShift: number): ICanvasRenderContext&IBodyRenderContext {
+    const base: any = this.createContext(indexShift, createCanvas);
     base.hovered = this.isHovered.bind(this);
     base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);
     return base;
   }
 
   private computeShifts(data: IRankingData[]) {
-    let r = [];
+    const r = [];
     data.forEach((d) => {
       const base = d.shift;
       r.push(...d.frozen.map((c) => ({column: c.column, shift: c.shift + base + this.currentFreezeLeft})));
@@ -287,7 +287,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return r;
   }
 
-  protected updateImpl(data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, width: number, height: number, reason: ERenderReason) {
+  protected async updateImpl(data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, width: number, height: number, reason: ERenderReason) {
     const $canvas = this.$node.select('canvas');
 
     const firstLine = Math.max(context.cellY(0) - 20, 0); //where to start

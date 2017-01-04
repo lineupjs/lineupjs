@@ -10,7 +10,7 @@ import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
  * @returns {{type: string, label: string}}
  */
 export function createDesc(label: string = 'Nested') {
-  return {type: 'nested', label: label};
+  return {type: 'nested', label};
 }
 
 /**
@@ -21,10 +21,10 @@ export default class NestedColumn extends MultiLevelCompositeColumn {
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
     const c = this.children;
-    for (let ci of c) {
-      let ci_result = ci.compare(a, b, aIndex, bIndex);
-      if (ci_result !== 0) {
-        return ci_result;
+    for (const ci of c) {
+      const ciResult = ci.compare(a, b, aIndex, bIndex);
+      if (ciResult !== 0) {
+        return ciResult;
       }
     }
     return 0;

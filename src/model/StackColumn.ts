@@ -12,7 +12,7 @@ import Column, {IFlatColumn} from './Column';
  * @returns {{type: string, label: string}}
  */
 export function createDesc(label: string = 'Combined') {
-  return {type: 'stack', label: label};
+  return {type: 'stack', label};
 }
 
 /**
@@ -36,8 +36,8 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     super(id, desc);
 
     const that = this;
-    this.adaptChange = function (old, new_) {
-      that.adaptWidthChange(this.source, old, new_);
+    this.adaptChange = function (oldValue, newValue) {
+      that.adaptWidthChange(this.source, oldValue, newValue);
     };
   }
 
@@ -65,7 +65,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       if (!this.collapsed && !this.getCompressed()) {
         w += (children.length - 1) * padding;
       }
-      r.push(self = {col: this, offset: offset, width: w});
+      r.push(self = {col: this, offset, width: w});
       if (levelsToGo === 0) {
         return w;
       }
@@ -94,10 +94,6 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
 
   /**
    * inserts a column at a the given position
-   * @param col
-   * @param index
-   * @param weight
-   * @returns {any}
    */
   insert(col: Column, index: number, weight = NaN) {
     if (!isNaN(weight)) {
@@ -125,17 +121,17 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   /**
    * adapts weights according to an own width change
    * @param col
-   * @param old
-   * @param new_
+   * @param oldValue
+   * @param newValue
    */
-  private adaptWidthChange(col: Column, old: number, new_: number) {
-    if (old === new_) {
+  private adaptWidthChange(col: Column, oldValue: number, newValue: number) {
+    if (oldValue === newValue) {
       return;
     }
     const bak = this.getWeights();
     const full = this.getWidth(),
-      change = (new_ - old) / full;
-    const oldWeight = old / full;
+      change = (newValue - oldValue) / full;
+    const oldWeight = oldValue / full;
     const factor = (1 - oldWeight - change) / (1 - oldWeight);
     this._children.forEach((c) => {
       if (c === col) {
@@ -170,7 +166,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     }
     weights = weights.slice(0, this.length);
     s = weights.reduce((p, a) => p + a, 0) / this.getWidth();
-    weights = weights.map(d => d / s);
+    weights = weights.map((d) => d / s);
 
     this._children.forEach((c, i) => {
       c.setWidthImpl(weights[i]);

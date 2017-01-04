@@ -50,7 +50,7 @@ export default class LinkColumn extends StringColumn {
   }
 
   dump(toDescRef: (desc: any) => any): any {
-    let r = super.dump(toDescRef);
+    const r = super.dump(toDescRef);
     /* tslint:disable */
     if (this.link != (<any>this.desc).link) {
       r.link = this.link;

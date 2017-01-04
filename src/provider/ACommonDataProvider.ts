@@ -60,20 +60,20 @@ abstract class ACommonDataProvider extends ADataProvider {
 
   cloneRanking(existing?: Ranking) {
     const id = this.nextRankingId();
-    const new_ = new Ranking(id);
+    const clone = new Ranking(id);
 
     if (existing) { //copy the ranking of the other one
       //copy the ranking
       this.ranks[id] = this.ranks[existing.id];
       //TODO better cloning
       existing.children.forEach((child) => {
-        this.push(new_, child.desc);
+        this.push(clone, child.desc);
       });
     } else {
-      new_.push(this.create(createRankDesc()));
+      clone.push(this.create(createRankDesc()));
     }
 
-    return new_;
+    return clone;
   }
 
   cleanUpRanking(ranking: Ranking) {
@@ -81,7 +81,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     delete this.ranks[ranking.id];
   }
 
-  sort(ranking: Ranking): Promise<number[]> {
+  async sort(ranking: Ranking): Promise<number[]> {
     //use the server side to sort
     return this.sortImpl(ranking).then((argsort) => {
       //store the result

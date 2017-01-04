@@ -43,7 +43,7 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   dump(toDescRef: (desc: any) => any): any {
-    let r = super.dump(toDescRef);
+    const r = super.dump(toDescRef);
     if (this.currentFilter instanceof RegExp) {
       r.filter = 'REGEX:' + (<RegExp>this.currentFilter).source;
     } else {
@@ -101,12 +101,12 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    let a_val: string, b_val: string;
-    if ((a_val = this.getValue(a, aIndex)) === '') {
+    let aValue: string, bValue: string;
+    if ((aValue = this.getValue(a, aIndex)) === '') {
       return this.getValue(b, bIndex) === '' ? 0 : +1; //same = 0
-    } else if ((b_val = this.getValue(b, bIndex)) === '') {
+    } else if ((bValue = this.getValue(b, bIndex)) === '') {
       return -1;
     }
-    return a_val.localeCompare(b_val);
+    return aValue.localeCompare(bValue);
   }
 }

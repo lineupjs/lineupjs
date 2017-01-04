@@ -11,7 +11,7 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
  * @returns {{type: string, label: string}}
  */
 export function createDesc(label: string = 'Rank') {
-  return {type: 'rank', label: label};
+  return {type: 'rank', label};
 }
 
 /**

@@ -29,7 +29,7 @@ export default class AnnotateColumn extends StringColumn {
   }
 
   dump(toDescRef: (desc: any) => any): any {
-    let r = super.dump(toDescRef);
+    const r = super.dump(toDescRef);
     r.annotations = {};
     this.annotations.forEach((v, k) => {
       r.annotations[k] = v;

@@ -36,14 +36,14 @@ function computeStats(arr: any[], indices: number[], acc: (row: any, index: numb
     hist.range(() => range);
   }
   const ex = d3.extent(arr, indexAccessor);
-  const hist_data = hist(arr);
+  const histData = hist(arr);
   return {
     min: ex[0],
     max: ex[1],
     mean: d3.mean(arr, indexAccessor),
     count: arr.length,
-    maxBin: d3.max(hist_data, (d) => d.y),
-    hist: hist_data
+    maxBin: d3.max(histData, (d) => d.y),
+    hist: histData
   };
 }
 
@@ -145,13 +145,13 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
   cloneRanking(existing?: Ranking) {
-    const new_ = super.cloneRanking(existing);
+    const clone = super.cloneRanking(existing);
 
     if (this.options.filterGlobally) {
-      new_.on(Column.EVENT_FILTER_CHANGED + '.reorderAll', this.reorderAll);
+      clone.on(Column.EVENT_FILTER_CHANGED + '.reorderAll', this.reorderAll);
     }
 
-    return new_;
+    return clone;
   }
 
   cleanUpRanking(ranking: Ranking) {
@@ -161,16 +161,16 @@ export default class LocalDataProvider extends ACommonDataProvider {
     super.cleanUpRanking(ranking);
   }
 
-  sortImpl(ranking: Ranking): Promise<number[]> {
+  async sortImpl(ranking: Ranking): Promise<number[]> {
     if (this._data.length === 0) {
       return Promise.resolve([]);
     }
     //wrap in a helper and store the initial index
-    let helper = this._data.map((r, i) => ({row: r, i: i}));
+    let helper = this._data.map((r, i) => ({row: r, i}));
 
     //do the optional filtering step
     if (this.options.filterGlobally) {
-      let filtered = this.getRankings().filter((d) => d.isFiltered());
+      const filtered = this.getRankings().filter((d) => d.isFiltered());
       if (filtered.length > 0) {
         helper = helper.filter((d) => filtered.every((f) => f.filter(d.row, d.i)));
       }
@@ -192,7 +192,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return indices.map((index) => this._data[index]);
   }
 
-  view(indices: number[]) {
+  async view(indices: number[]) {
     return Promise.resolve(this.viewRaw(indices));
   }
 
@@ -211,7 +211,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
    */
   stats(indices: number[]): IStatsBuilder {
     let d: any[] = null;
-    const getD = () => (d === null ? (d = this.viewRaw(indices)): d);
+    const getD = () => {
+      if (d === null) {
+        d = this.viewRaw(indices);
+      }
+      return d;
+    };
 
     return {
       stats: (col: INumberColumn) => Promise.resolve(computeStats(getD(), indices, col.getNumber.bind(col), [0, 1])),
@@ -220,14 +225,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
 
-  mappingSample(col: NumberColumn): Promise<number[]> {
+  async mappingSample(col: NumberColumn): Promise<number[]> {
     const MAX_SAMPLE = 500; //at most 500 sample lines
     const l = this._data.length;
     if (l <= MAX_SAMPLE) {
-      return Promise.resolve(this._data.map(col.getRawValue.bind(col)));
+      return Promise.resolve(<number[]>this._data.map(col.getRawValue.bind(col)));
     }
     //randomly select 500 elements
-    let indices: number[] = [];
+    const indices: number[] = [];
     for (let i = 0; i < MAX_SAMPLE; ++i) {
       let j = Math.floor(Math.random() * (l - 1));
       while (indices.indexOf(j) >= 0) {

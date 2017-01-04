@@ -11,7 +11,7 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
  * @returns {{type: string, label: string}}
  */
 export function createDesc(label: string = 'S') {
-  return {type: 'selection', label: label};
+  return {type: 'selection', label};
 }
 
 export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
