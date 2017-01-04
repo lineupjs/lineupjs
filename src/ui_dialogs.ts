@@ -146,6 +146,17 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 }
 
 
+function removePop(popup, rendererContent, currentElement) {
+
+  d3.select('body').on('click', function () {
+    let outside = rendererContent.filter(currentElement).empty();
+    if (outside) {
+      popup.remove();
+      d3.select(this).on('click', null);
+    }
+  });
+}
+
 // Renderer type change
 export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>) {
   let rendererType = column.getRendererType();
@@ -170,14 +181,8 @@ export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>
 
   });
 
-  // To detect if the mouse click event is triggered outside the sort dialog
-  d3.select('body').on('click', function () {
-    let outside = rendererContent.filter(thiselement).empty();
-    if (outside) {
-      popup.remove();
-      d3.select(this).on('click', null);
-    }
-  });
+//  To detect if the mouse click event is triggered outside the sort dialog
+  removePop(popup, rendererContent, thiselement);
 
 }
 
@@ -207,13 +212,7 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
   });
 
   // To detect if the mouse click event is triggered outside the sort dialog
-  d3.select('body').on('click', function () {
-    let outside = sortContent.filter(thiselement).empty();
-    if (outside) {
-      popup.remove();
-      d3.select(this).on('click', null);
-    }
-  });
+  removePop(popup, sortContent, thiselement);
 
 }
 
