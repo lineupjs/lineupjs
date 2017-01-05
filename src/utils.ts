@@ -67,7 +67,7 @@ export class AEventDispatcher {
       const context = {
         source: this, //who is sending this event
         type: t, //the event type
-        args: args //the arguments to the listener
+        args //the arguments to the listener
       };
       this.listeners[<string>t].apply(context, args);
     };
@@ -104,17 +104,15 @@ const TYPE_OBJECT = '[object Object]';
 export function merge(...args: any[]) {
   let result = null;
 
-  for (let i = 0; i < args.length; i++) {
-    const toMerge = args[i],
-      keys = Object.keys(toMerge);
+  for (const toMerge of args) {
+    const keys = Object.keys(toMerge);
 
     if (result === null) {
       result = toMerge;
       continue;
     }
 
-    for (let j = 0; j < keys.length; j++) {
-      const keyName = keys[j];
+    for (const keyName of keys) {
       const value = toMerge[keyName];
 
       //merge just POJOs
@@ -424,7 +422,7 @@ export function createTextHints(ctx: CanvasRenderingContext2D, font: string): IT
     maxLetterWidth: ctx.measureText('M').width,
     avgLetterWidth: ctx.measureText(testText).width / testText.length,
     ellipsisWidth: ctx.measureText(ellipsis).width,
-    spinnerWidth: spinnerWidth
+    spinnerWidth
   };
   ctx.font = bak;
   return r;
@@ -452,7 +450,7 @@ export function clipText(ctx: CanvasRenderingContext2D, text: string, x: number,
   // guess first based on average letter width
   let guess = Math.min(max, Math.floor(maxWidth / hints.avgLetterWidth));
   while (min < max) {
-    let overflow = availWidth - ctx.measureText(text.substring(0, guess + 1)).width;
+    const overflow = availWidth - ctx.measureText(text.substring(0, guess + 1)).width;
     if (overflow < 0) { //less characters needed
       max = guess - 1;
     } else if (overflow > 0) { // more characters possible

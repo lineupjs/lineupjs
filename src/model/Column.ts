@@ -143,7 +143,6 @@ export default class Column extends AEventDispatcher {
 
   /**
    * parent column of this column, set when added to a ranking or combined column
-   * @type {any}
    */
   parent: IColumnParent = null;
 
@@ -276,7 +275,7 @@ export default class Column extends AEventDispatcher {
    */
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0): number {
     const w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
-    r.push({col: this, offset: offset, width: w});
+    r.push({col: this, offset, width: w});
     return w;
   }
 
@@ -382,7 +381,7 @@ export default class Column extends AEventDispatcher {
    * @returns {any}
    */
   dump(toDescRef: (desc: any) => any): any {
-    let r: any = {
+    const r: any = {
       id: this.id,
       desc: toDescRef(this.desc),
       width: this.width,

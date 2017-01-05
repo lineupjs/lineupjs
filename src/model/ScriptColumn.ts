@@ -11,7 +11,7 @@ import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColu
  * @returns {{type: string, label: string}}
  */
 export function createDesc(label: string = 'script') {
-  return {type: 'script', label: label, script: ScriptColumn.DEFAULT_SCRIPT};
+  return {type: 'script', label, script: ScriptColumn.DEFAULT_SCRIPT};
 }
 
 export interface IScriptColumnDesc extends ICompositeNumberDesc {

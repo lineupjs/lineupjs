@@ -8,8 +8,6 @@ import * as model_ from './model';
 import * as provider_  from './provider';
 import * as renderer_  from './renderer';
 import * as ui_  from './ui';
-import * as utils_  from './utils';
-import * as ui_dialogs_ from './ui_dialogs';
 import LineUp from './lineup';
 
 export {deriveColors} from './lineup';
@@ -29,14 +27,6 @@ export const renderer = renderer_;
  * access to the ui module
  */
 export const ui = ui_;
-/**
- * access to the utils module
- */
-export const utils = utils_;
-/**
- * access to the ui_dialogs module
- */
-export const ui_dialogs = ui_dialogs_;
 
 /**
  * creates a local storage provider

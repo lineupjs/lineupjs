@@ -44,7 +44,7 @@
   ],
   "scripts": {
     "compile": "tsc",
-    "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
+    "lint": "tslint --project tsconfig.json --type-check -c tslint.json",
     "docs": "typedoc --options typedoc.json src",
     "pretest": "npm run compile",
     "test": "echo 'no tests'",
@@ -63,23 +63,23 @@
     "url": "https://github.com/Caleydo/lineupjs.git"
   },
   "devDependencies": {
-    "awesome-typescript-loader": "^2.2.4",
-    "css-loader": "^0.25.0",
+    "awesome-typescript-loader": "^3.0.0-beta.17",
+    "css-loader": "^0.26.1",
     "extract-text-webpack-plugin": "^2.0.0-beta.4",
     "mkdirp": "^0.5.1",
-    "node-sass": "^3.10.1",
-    "sass-loader": "^4.0.2",
+    "node-sass": "^4.1.1",
+    "sass-loader": "^4.1.1",
     "style-loader": "^0.13.1",
-    "tslint": "^3.15.1",
+    "tslint": "^4.2.0",
     "typedoc": "^0.5.3",
     "typescript": "2.1.1",
-    "webpack": "^2.1.0-beta.25"
+    "webpack": "^2.1.0-beta.28"
   },
   "optionalDependencies": {
-    "@types/react": "^0.14.42",
-    "@types/react-dom": "^0.14.18",
-    "react": "^15.0.0",
-    "react-dom": "^15.0.0"
+    "@types/react": "^0.14.55",
+    "@types/react-dom": "^0.14.20",
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1"
   },
   "dependencies": {
     "@types/d3": "^3.5.36",

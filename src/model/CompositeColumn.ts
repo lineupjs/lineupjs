@@ -55,7 +55,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
   dump(toDescRef: (desc: any) => any) {
-    let r = super.dump(toDescRef);
+    const r = super.dump(toDescRef);
     r.children = this._children.map((d) => d.dump(toDescRef));
     return r;
   }

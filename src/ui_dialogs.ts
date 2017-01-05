@@ -273,8 +273,8 @@ export function openEditWeightsDialog(column: StackColumn, $header: d3.Selection
 
   //show as a table with inputs and bars
   const $rows = $popup.select('table').selectAll('tr').data(children);
-  const $rows_enter = $rows.enter().append('tr');
-  $rows_enter.append('td')
+  const $rowsEnter = $rows.enter().append('tr');
+  $rowsEnter.append('td')
     .append('input').attr({
     type: 'number',
     value: (d) => d.weight,
@@ -286,11 +286,11 @@ export function openEditWeightsDialog(column: StackColumn, $header: d3.Selection
     redraw();
   });
 
-  $rows_enter.append('td').append('div')
+  $rowsEnter.append('td').append('div')
     .attr('class', (d) => 'bar ' + d.col.cssClass)
     .style('background-color', (d) => d.col.color);
 
-  $rows_enter.append('td').text((d) => d.col.label);
+  $rowsEnter.append('td').text((d) => d.col.label);
 
   function redraw() {
     $rows.select('.bar').transition().style('width', (d) => scale(d.weight) + 'px');
@@ -353,10 +353,10 @@ function openCategoricalFilter(column: CategoricalColumn, $header: d3.Selection<
   }).sort(sortbyName('label'));
 
   const $rows = popup.select('tbody').selectAll('tr').data(trData);
-  const $rows_enter = $rows.enter().append('tr');
-  $rows_enter.append('td').attr('class', 'checkmark');
-  $rows_enter.append('td').attr('class', 'datalabel').text((d) => d.label);
-  $rows_enter.on('click', (d) => {
+  const $rowsEnter = $rows.enter().append('tr');
+  $rowsEnter.append('td').attr('class', 'checkmark');
+  $rowsEnter.append('td').attr('class', 'datalabel').text((d) => d.label);
+  $rowsEnter.on('click', (d) => {
     d.isChecked = !d.isChecked;
     redraw();
   });
@@ -392,12 +392,12 @@ function openCategoricalFilter(column: CategoricalColumn, $header: d3.Selection<
     popup.remove();
   });
   popup.select('.reset').on('click', function () {
-    trData.forEach(d => d.isChecked = true);
+    trData.forEach((d) => d.isChecked = true);
     redraw();
     updateData(null);
   });
   popup.select('.ok').on('click', function () {
-    let f = trData.filter((d) => d.isChecked).map(d => d.cat);
+    let f = trData.filter((d) => d.isChecked).map((d) => d.cat);
     if (f.length === trData.length) {
       f = [];
     }
@@ -412,8 +412,8 @@ function openCategoricalFilter(column: CategoricalColumn, $header: d3.Selection<
  * @param $header the visual header element of this column
  */
 function openStringFilter(column: StringColumn, $header: d3.Selection<Column>) {
-  let bak = column.getFilter() || '', bakMissing = bak === StringColumn.FILTER_MISSING;
-
+  let bak = column.getFilter() || '';
+  const bakMissing = bak === StringColumn.FILTER_MISSING;
   if (bakMissing) {
     bak = '';
   }
@@ -588,12 +588,12 @@ function openMappingEditor(column: NumberColumn, $header: d3.Selection<any>, dat
   }
 
   const editorOptions = {
-    idPrefix: idPrefix,
+    idPrefix,
     callback: applyMapping,
     triggerCallback: 'dragend'
   };
-  const data_sample = data.mappingSample(column);
-  let editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, data_sample, editorOptions);
+  const dataSample = data.mappingSample(column);
+  let editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
 
 
   popup.select('.ok').on('click', function () {
@@ -612,7 +612,7 @@ function openMappingEditor(column: NumberColumn, $header: d3.Selection<any>, dat
     actfilter = bakfilter;
     applyMapping(act, actfilter);
     popup.selectAll('.mappingArea *').remove();
-    editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, data_sample, editorOptions);
+    editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
   });
 }
 
@@ -645,12 +645,12 @@ function openCategoricalMappingEditor(column: CategoricalNumberColumn, $header: 
   }).sort(sortbyName('label'));
 
   const $rows = $popup.select('tbody').selectAll('tr').data(trData);
-  const $rows_enter = $rows.enter().append('tr');
-  $rows_enter.append('td').attr('class', 'checkmark').on('click', (d) => {
+  const $rowsEnter = $rows.enter().append('tr');
+  $rowsEnter.append('td').attr('class', 'checkmark').on('click', (d) => {
     d.isChecked = !d.isChecked;
     redraw();
   });
-  $rows_enter.append('td')
+  $rowsEnter.append('td')
     .append('input').attr({
     type: 'number',
     value: (d) => d.range,
@@ -661,8 +661,8 @@ function openCategoricalMappingEditor(column: CategoricalNumberColumn, $header: 
     d.range = +this.value;
     redraw();
   });
-  $rows_enter.append('td').append('div').attr('class', 'bar').style('background-color', (d) => d.color);
-  $rows_enter.append('td').attr('class', 'datalabel').text((d) => d.label);
+  $rowsEnter.append('td').append('div').attr('class', 'bar').style('background-color', (d) => d.color);
+  $rowsEnter.append('td').attr('class', 'datalabel').text((d) => d.label);
 
   function redraw() {
     $rows.select('.checkmark').html((d) => '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>');
@@ -697,7 +697,7 @@ function openCategoricalMappingEditor(column: CategoricalNumberColumn, $header: 
     $popup.remove();
   });
   $popup.select('.reset').on('click', function () {
-    trData.forEach(d => {
+    trData.forEach((d) => {
       d.isChecked = true;
       d.range = 50;
     });
@@ -706,7 +706,7 @@ function openCategoricalMappingEditor(column: CategoricalNumberColumn, $header: 
     column.setMapping(trData.map(() => 1));
   });
   $popup.select('.ok').on('click', function () {
-    let f = trData.filter((d) => d.isChecked).map(d => d.cat);
+    let f = trData.filter((d) => d.isChecked).map((d) => d.cat);
     if (f.length === trData.length) {
       f = [];
     }

@@ -13,8 +13,7 @@ import ABodyRenderer, {
   IRankingColumnData,
   IRankingData,
   IBodyRenderContext,
-  ERenderReason
-} from './ABodyRenderer';
+  ERenderReason} from './ABodyRenderer';
 
 export interface IDOMMapping {
   root: string;
@@ -57,11 +56,11 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     const g = this.domMapping.g;
 
     const $rankings = $body.selectAll(g + '.ranking').data(data, (d) => d.id);
-    const $rankings_enter = $rankings.enter().append(g)
+    const $rankingsEnter = $rankings.enter().append(g)
       .attr('class', 'ranking')
       .call(domMapping.transform, (d) => [d.shift, 0]);
-    $rankings_enter.append(g).attr('class', 'rows');
-    $rankings_enter.append(g).attr('class', 'meanlines').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`);
+    $rankingsEnter.append(g).attr('class', 'rows');
+    $rankingsEnter.append(g).attr('class', 'meanlines').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`);
 
     //animated shift
     this.animated($rankings).call(domMapping.transform, (d, i) => [d.shift, 0]);
@@ -69,12 +68,12 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
     const toWait: Promise<any>[] = [];
     {
-      let $rows = $rankings.select(g + '.rows').selectAll(g + '.row').data((d) => d.order, String);
-      let $rows_enter = $rows.enter().append(g).attr('class', 'row');
-      $rows_enter.call(domMapping.transform, (d, i) => [0, context.cellPrevY(i)]);
+      const $rows = $rankings.select(g + '.rows').selectAll(g + '.row').data((d) => d.order, String);
+      const $rowsEnter = $rows.enter().append(g).attr('class', 'row');
+      $rowsEnter.call(domMapping.transform, (d, i) => [0, context.cellPrevY(i)]);
 
-      $rows_enter.append(domMapping.bg).attr('class', 'bg');
-      $rows_enter
+      $rowsEnter.append(domMapping.bg).attr('class', 'bg');
+      $rowsEnter
         .on('mouseenter', (d) => this.mouseOver(d, true))
         .on('mouseleave', (d) => this.mouseOver(d, false))
         .on('click', (d) => this.select(d, (<MouseEvent>d3.event).ctrlKey));
@@ -89,11 +88,11 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
         });
       };
 
-      $rows_enter.append(g).attr('class', 'cols').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`).each(function (d, i, j) {
+      $rowsEnter.append(g).attr('class', 'cols').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`).each(function (d, i, j) {
         createTemplates(this, data[j].columns);
       });
 
-      $rows_enter.append(g).attr('class', 'frozen').call(this.domMapping.transform, () => [this.currentFreezeLeft, 0]).each(function (d, i, j) {
+      $rowsEnter.append(g).attr('class', 'frozen').call(this.domMapping.transform, () => [this.currentFreezeLeft, 0]).each(function (d, i, j) {
         createTemplates(this, data[j].frozen);
       });
 
@@ -136,7 +135,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     }
 
     {
-      let $meanlines = $rankings.select(g + '.meanlines').selectAll(domMapping.meanLine + '.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
+      const $meanlines = $rankings.select(g + '.meanlines').selectAll(domMapping.meanLine + '.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
       $meanlines.enter().append(domMapping.meanLine).attr('class', 'meanline');
       $meanlines.each(function (d) {
         const h = that.histCache.get(d.column.id);
@@ -145,8 +144,8 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
           return;
         }
         h.then((stats: IStatistics) => {
-          const x_pos = d.shift + d.column.getWidth() * stats.mean;
-          domMapping.updateMeanLine($mean, isNaN(x_pos) ? 0 : x_pos, height);
+          const xPos = d.shift + d.column.getWidth() * stats.mean;
+          domMapping.updateMeanLine($mean, isNaN(xPos) ? 0 : xPos, height);
         });
       });
       $meanlines.exit().remove();
@@ -170,7 +169,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     if (indices.length === 0) {
       return;
     } else {
-      let q = indices.map((d) => `[data-data-index="${d}"]`).join(',');
+      const q = indices.map((d) => `[data-data-index="${d}"]`).join(',');
       forEach(this.node, q, (d) => d.classList.add('selected'));
     }
   }
@@ -198,19 +197,19 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
     const $lines = $slopes.selectAll('line.slope').data((d) => {
       const cache = new Map<number,number>();
-      d.right.forEach((data_index, pos) => cache.set(data_index, pos));
-      return d.left.map((data_index, pos) => ({
-        data_index: data_index,
+      d.right.forEach((dataIndex, pos) => cache.set(dataIndex, pos));
+      return d.left.map((dataIndex, pos) => ({
+        dataIndex,
         lpos: pos,
-        rpos: cache.get(data_index)
+        rpos: cache.get(dataIndex)
       })).filter((d) => d.rpos != null);
     });
     $lines.enter().append('line').attr({
       'class': 'slope',
       x2: this.options.slopeWidth
-    }).on('mouseenter', (d) => this.mouseOver(d.data_index, true))
-      .on('mouseleave', (d) => this.mouseOver(d.data_index, false));
-    $lines.attr('data-data-index', (d) => d.data_index);
+    }).on('mouseenter', (d) => this.mouseOver(d.dataIndex, true))
+      .on('mouseleave', (d) => this.mouseOver(d.dataIndex, false));
+    $lines.attr('data-data-index', (d) => d.dataIndex);
     $lines.attr({
       y1: (d: any) => context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos),
       y2: (d: any) => context.rowHeight(d.rpos) * 0.5 + context.cellY(d.rpos)
@@ -233,11 +232,11 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
   protected abstract updateClipPaths(data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number);
 
-  protected createContextImpl(index_shift: number): IBodyRenderContext {
-    return this.createContext(index_shift, this.domMapping.creator);
+  protected createContextImpl(indexShift: number): IBodyRenderContext {
+    return this.createContext(indexShift, this.domMapping.creator);
   }
 
-  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {
+  protected async updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {
     // - ... added one to often
     this.domMapping.setSize(this.node, Math.max(0, width), height);
 

@@ -11,7 +11,7 @@ import CompositeNumberColumn from './CompositeNumberColumn';
  * @returns {{type: string, label: string}}
  */
 export function createDesc(label: string = 'Min') {
-  return {type: 'min', label: label};
+  return {type: 'min', label};
 }
 
 
@@ -23,15 +23,16 @@ export default class MinColumn extends CompositeNumberColumn {
     if (c.length === 0) {
       return this.color;
     }
-    let min_i = 0, min_v = c[0].getValue(row, index);
+    let minIndex = 0, minValue = c[0].getValue(row, index);
     for (let i = 1; i < c.length; ++i) {
-      let v = c[i].getValue(row, index);
-      if (v < min_v) {
-        min_i = i;
-        min_v = v;
+      const v = c[i].getValue(row, index);
+      if (v < minValue) {
+        minIndex = i;
+        minValue = v;
       }
+      i++;
     }
-    return c[min_i].color;
+    return c[minIndex].color;
   }
 
   protected compute(row: any, index: number) {

@@ -233,7 +233,7 @@ export default class HeaderRenderer {
             const v = col.getValue(d, indices[i]);
             //choose the right bin
             for (let i = 1; i < bars.length; ++i) {
-              let bar = bars[i];
+              const bar = bars[i];
               if (bar.dataset.x > v) { //previous bin
                 bars[i - 1].classList.add('selected');
                 break;
@@ -270,7 +270,8 @@ export default class HeaderRenderer {
     const that = this;
     const rankings = this.data.getRankings();
 
-    let shifts: IFlatColumn[] = [], totalWidth = 0, rankingOffsets = [];
+    const shifts: IFlatColumn[] = [], rankingOffsets = [];
+    let totalWidth = 0;
     rankings.forEach((ranking) => {
       totalWidth += ranking.flatten(shifts, totalWidth, 1, this.options.columnPadding) + this.options.slopeWidth;
       rankingOffsets.push(totalWidth - this.options.slopeWidth);
@@ -321,7 +322,7 @@ export default class HeaderRenderer {
     const filterDialogs = this.options.filterDialogs,
       provider = this.data,
       that = this;
-    const $regular = $node.filter(d => !(d instanceof RankColumn));
+    const $regular = $node.filter((d) => !(d instanceof RankColumn));
 
     //rename
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
@@ -423,14 +424,14 @@ export default class HeaderRenderer {
   private renderColumns(columns: Column[], shifts: IFlatColumn[], $base: d3.Selection<any> = this.$node, clazz: string = 'header') {
     const that = this;
     const $headers = $base.selectAll('div.' + clazz).data(columns, (d) => d.id);
-    const $headers_enter = $headers.enter().append('div').attr('class', clazz)
+    const $headersEnter = $headers.enter().append('div').attr('class', clazz)
       .on('click', (d) => {
         const mevent = <MouseEvent>d3.event;
         if (this.options.manipulative && !mevent.defaultPrevented && mevent.currentTarget === mevent.target) {
           d.toggleMySorting();
         }
       });
-    const $header_enter_div = $headers_enter.append('div').classed('lu-label', true)
+    const $headersEnterDiv = $headersEnter.append('div').classed('lu-label', true)
       .on('click', (d) => {
         const mevent = <MouseEvent>d3.event;
         if (this.options.manipulative && !mevent.defaultPrevented) {
@@ -449,21 +450,21 @@ export default class HeaderRenderer {
           e.dataTransfer.setData('application/caleydo-lineup-column-number-ref', d.id);
         }
       });
-    $header_enter_div.append('i').attr('class', 'fa fa sort_indicator');
-    $header_enter_div.append('span').classed('lu-label', true).attr({
+    $headersEnterDiv.append('i').attr('class', 'fa fa sort_indicator');
+    $headersEnterDiv.append('span').classed('lu-label', true).attr({
       'draggable': this.options.manipulative
     });
 
     if (this.options.manipulative) {
-      $headers_enter.append('div').classed('handle', true)
+      $headersEnter.append('div').classed('handle', true)
         .call(this.dragHandler)
         .style('width', this.options.columnPadding + 'px')
         .call(this.dropHandler);
-      $headers_enter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
+      $headersEnter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
     }
 
     if (this.options.histograms) {
-      $headers_enter.append('div').classed('histogram', true);
+      $headersEnter.append('div').classed('histogram', true);
     }
 
     $headers.style({
@@ -505,20 +506,20 @@ export default class HeaderRenderer {
       if (col.getCollapsed() || col.getCompressed()) {
         d3.select(this).selectAll('div.' + clazz + '_i').remove();
       } else {
-        let s_shifts = [];
-        col.flatten(s_shifts, 0, 1, that.options.columnPadding);
+        const sShifts = [];
+        col.flatten(sShifts, 0, 1, that.options.columnPadding);
 
-        let s_columns = s_shifts.map((d) => d.col);
-        that.renderColumns(s_columns, s_shifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
+        const sColumns = sShifts.map((d) => d.col);
+        that.renderColumns(sColumns, sShifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
       }
     }).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: IMultiLevelColumn, copy) => {
-      let col: Column = resolveDrop(data, copy);
+      const col: Column = resolveDrop(data, copy);
       return d.push(col) != null;
     }));
 
     // drag columns on top of each
     $headers.filter((d) => d.parent instanceof Ranking && isNumberColumn(d) && !isMultiLevelColumn(d)).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: Column & INumberColumn, copy) => {
-      let col: Column = resolveDrop(data, copy);
+      const col: Column = resolveDrop(data, copy);
       const ranking = d.findMyRanker();
       const index = ranking.indexOf(d);
       const stack = <StackColumn>this.data.create(createStackDesc());

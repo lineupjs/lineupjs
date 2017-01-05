@@ -58,11 +58,11 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     }
     const r = this.sortColumn.compare(a, b, aIndex, bIndex);
     return this.ascending ? r : -r;
-  };
+  }
 
   readonly dirtyOrder = () => {
     this.fire([Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], this.getSortCriteria());
-  };
+  }
 
   /**
    * the current ordering as an sorted array of indices
@@ -98,7 +98,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   dump(toDescRef: (desc: any) => any) {
-    let r: any = {};
+    const r: any = {};
     r.columns = this.columns.map((d) => d.dump(toDescRef));
     r.sortColumn = {
       asc: this.ascending
@@ -120,7 +120,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (dump.sortColumn) {
       this.ascending = dump.sortColumn.asc;
       if (dump.sortColumn.sortBy) {
-        let help = this.columns.filter((d) => d.id === dump.sortColumn.sortBy);
+        const help = this.columns.filter((d) => d.id === dump.sortColumn.sortBy);
         this.sortBy(help.length === 0 ? null : help[0], dump.sortColumn.asc);
       }
     }
@@ -214,7 +214,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     let p: IColumnParent|Column = <any>this;
     const indices = fqpath.split('@').map(Number).slice(1); //ignore the first entry = ranking
     while (indices.length > 0) {
-      let i = indices.shift();
+      const i = indices.shift();
       p = (<IColumnParent>p).at(i);
     }
     return <Column>p;
@@ -249,7 +249,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     this.unforward(col, Column.EVENT_DIRTY_VALUES + '.ranking', Column.EVENT_DIRTY_HEADER + '.ranking', Column.EVENT_DIRTY + '.ranking', Column.EVENT_FILTER_CHANGED + '.ranking');
 
     if (this.sortColumn === col) { //was my sorting one
-      let next = this.columns.filter((d) => d !== col && !isSupportType(d.desc))[0];
+      const next = this.columns.filter((d) => d !== col && !isSupportType(d.desc))[0];
       this.sortBy(next ? next : null);
     }
 
@@ -274,17 +274,17 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   get flatColumns() {
-    let r: IFlatColumn[] = [];
+    const r: IFlatColumn[] = [];
     this.flatten(r, 0, Column.FLAT_ALL_COLUMNS);
     return r.map((d) => d.col);
   }
 
-  find(id_or_filter: (col: Column) => boolean | string) {
-    const filter = typeof(id_or_filter) === 'string' ? (col) => col.id === id_or_filter : id_or_filter;
+  find(idOrFilter: (col: Column) => boolean | string) {
+    const filter = typeof(idOrFilter) === 'string' ? (col) => col.id === idOrFilter : idOrFilter;
     const r = this.flatColumns;
-    for (let i = 0; i < r.length; ++i) {
-      if (filter(r[i])) {
-        return r[i];
+    for (const v of r) {
+      if (filter(v)) {
+        return v;
       }
     }
     return null;
@@ -293,7 +293,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   /**
    * converts the sorting criteria to a json compatible notation for transferring it to the server
    * @param toId
-   * @return {any}
    */
   toSortingDesc(toId: (desc: any) => string) {
     //TODO describe also all the filter settings
@@ -308,7 +307,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return null;
     }
     return {
-      id: id,
+      id,
       asc: this.ascending
     };
   }

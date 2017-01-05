@@ -11,7 +11,7 @@ import CompositeNumberColumn from './CompositeNumberColumn';
  * @returns {{type: string, label: string}}
  */
 export function createDesc(label: string = 'Max') {
-  return {type: 'max', label: label};
+  return {type: 'max', label};
 }
 /**
  * combines multiple columns by using the maximal value
@@ -24,15 +24,15 @@ export default class MaxColumn extends CompositeNumberColumn {
     if (c.length === 0) {
       return this.color;
     }
-    let max_i = 0, max_v = c[0].getValue(row, index);
+    let maxIndex = 0, maxValue = c[0].getValue(row, index);
     for (let i = 1; i < c.length; ++i) {
-      let v = c[i].getValue(row, index);
-      if (v > max_v) {
-        max_i = i;
-        max_v = v;
+      const v = c[i].getValue(row, index);
+      if (v > maxValue) {
+        maxIndex = i;
+        maxValue = v;
       }
     }
-    return c[max_i].color;
+    return c[maxIndex].color;
   }
 
   protected compute(row: any, index: number) {

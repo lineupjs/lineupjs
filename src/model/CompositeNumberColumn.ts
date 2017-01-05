@@ -33,7 +33,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
 
   dump(toDescRef: (desc: any) => any) {
-    let r = super.dump(toDescRef);
+    const r = super.dump(toDescRef);
     r.missingValue = this.missingValue;
     return r;
   }
