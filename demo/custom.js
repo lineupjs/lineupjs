@@ -187,13 +187,13 @@ window.onload = function () {
       ];
 
 
-      var p = new LineUpJS.provider.LocalDataProvider(arr2, desc2);
+      var p = new LineUpJS.provider.LocalDataProvider(arr1, desc1);
 
       var r = p.pushRanking();
 
       var root = d3.select('body');
       r.insert(p.create(LineUpJS.model.createSelectionDesc()), 0);
-      desc2.forEach(function (d) {
+      desc1.forEach(function (d) {
 
         r.push(p.create(d));
       });

@@ -17,32 +17,29 @@ export class CustomSortCalculation {
     this.aVal = aVal;
   }
 
-  sum() {
-    return (d3.sum(this.aVal) - d3.sum(this.bVal));
-  }
-
   min() {
+
     return (d3.min(this.aVal) - d3.min(this.bVal));
   }
 
   max() {
+
     return (d3.max(this.aVal) - d3.max(this.bVal));
   }
 
-  mean() {
-    return (d3.mean(this.aVal) - d3.mean(this.bVal));
-  }
-
   median() {
-    return (d3.median(this.aVal.sort(numSort))) - (d3.median(this.bVal.sort(numSort)));
+
+    return (d3.median(this.aVal.slice().sort(numSort))) - (d3.median(this.bVal.slice().sort(numSort)));
   }
 
   q1() {
-    return (d3.quantile(this.aVal, 0.25)) - (d3.quantile(this.bVal, 0.25));
+
+    return (d3.quantile(this.aVal.slice().sort(numSort), 0.25)) - (d3.quantile(this.bVal.slice().sort(numSort), 0.25));
   }
 
   q3() {
-    return (d3.quantile(this.aVal.sort(numSort), 0.75)) - (d3.quantile(this.bVal.sort(numSort), 0.75));
+
+    return (d3.quantile(this.aVal.slice().sort(numSort), 0.75)) - (d3.quantile(this.bVal.slice().sort(numSort), 0.75));
   }
 
 }

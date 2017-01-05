@@ -46,7 +46,7 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
   private sort;
   private colorRange;
   private sortMethodChanged: string;
-  // protected boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();  For targid only
+  protected boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear(); // For targid only
 
 
   constructor(id: string, desc: IBoxPlotColumnDesc) {
@@ -58,17 +58,16 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
 
   }
 
-  /*
-   // Only For Targid
-   // public setDomain(domain: number[]) {
-   //   const bak = this.boxPlotScale.domain();
-   //   this.min = domain[0];
-   //   this.max = domain[1];
-   //   console.log(domain);
-   //   this.boxPlotScale.domain(domain);
-   //   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
-   // }
-   */
+
+  // // Only For Targid
+  // public setDomain(domain: number[]) {
+  //   this.domain = domain;
+  //   const bak = this.boxPlotScale.domain();
+  //   console.log(domain);
+  //   this.boxPlotScale.domain(domain);
+  //   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
+  // }
+
 
   compare(a: any, b: any, aIndex: number, bIndex: number): number {
 

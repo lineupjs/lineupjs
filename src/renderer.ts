@@ -171,7 +171,6 @@ class HeatmapCellRenderer implements ICellRendererFactory {
       template: `<g class="heatmapcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const rect = d3.select(n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
-
         rect.enter().append('rect');
         rect
           .attr({
@@ -180,6 +179,7 @@ class HeatmapCellRenderer implements ICellRendererFactory {
             width: cellDimension,
             height: context.rowHeight(i),
             fill: (d: number, i: number) => colorScale(d)
+
           });
         rect.exit().remove();
       }
@@ -408,12 +408,18 @@ class BoxplotCellRenderer implements ICellRendererFactory {
     const domain = col.getDomain();
     const scale = d3.scale.linear().domain(domain).range([0, col.getWidth()]);
     const currentSortColumn = col.findMyRanker().getSortCriteria().col;
-
     return {
 
       template: `<g class="boxplotcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const boxdata = col.getBoxPlotData(d.v, d.dataIndex,);
+        /*
+         Just for targid case only when the data is not loaded fully.
+         // if(boxdata === null || undefined){
+         //   return;
+         // }
+         */
+
         boxdata.min = scale(boxdata.min);
         boxdata.max = scale(boxdata.max);
         boxdata.median = scale(boxdata.median);
