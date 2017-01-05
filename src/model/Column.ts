@@ -69,12 +69,12 @@ export interface IStatistics {
   readonly mean: number;
   readonly count: number;
   readonly maxBin: number;
-  readonly hist: { x: number; dx: number; y: number;}[];
+  readonly hist: {x: number; dx: number; y: number;}[];
 }
 
 export interface ICategoricalStatistics {
   readonly maxBin: number;
-  readonly hist: { cat: string; y: number }[];
+  readonly hist: {cat: string; y: number}[];
 }
 
 export interface IColumnMetaData {
@@ -87,11 +87,11 @@ export interface IColumnMetaData {
 export interface IRendererInfo {
 
   /*
-  Name of the current Renderer
-  */
+   Name of the current Renderer
+   */
   rendererType?: string  ;
   /*
-  * Possible RendererList
+   * Possible RendererList
    */
   rendererList: {type: string, label: string}[];
 }
@@ -479,7 +479,7 @@ export default class Column extends AEventDispatcher {
     return this.rendererInfo.rendererList;
   }
 
-  protected setRendererList(rendererList:{type: string, label: string}[]) {
+  protected setRendererList(rendererList: {type: string, label: string}[]) {
 
     this.rendererInfo.rendererList = rendererList;
 

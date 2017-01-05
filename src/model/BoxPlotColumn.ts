@@ -17,7 +17,7 @@ export interface IBoxPlotColumn {
   getBoxPlotData(row: any, index: number): IBoxPlotData;
   getDataInfo(): IBoxPlotColumnDesc;
   getUserSortBy(): string;
-  setUserSortBy(sortCriteria:string):void;
+  setUserSortBy(sortCriteria: string): void;
 
 }
 

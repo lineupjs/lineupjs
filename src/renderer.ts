@@ -557,7 +557,7 @@ class SetCellRenderer implements ICellRendererFactory {
             cy: (d: any, j) => (context.rowHeight(j) / 2),
             cx: (d: any, j) => (j * cellDimension) + (cellDimension / 2),
             r: (cellDimension / 4),
-            class: (d) =>(d === binaryValue) ? 'setcircle' : 'setcircleOpacity'
+            class: (d) => (d === binaryValue) ? 'setcircle' : 'setcircleOpacity'
           });
         circle.exit().remove();
         const path = d3.select(n).selectAll('path').data(<any>[col.getValue(d.v, d.dataIndex)]);
@@ -1155,10 +1155,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
  * renders a stacked column using composite pattern
  */
 class StackCellRenderer implements ICellRendererFactory {
-  private readonly nestingPossible: boolean; //Readonly inside constructor was not working for me.
-
-  constructor(nestingPossible = true) {
-    this.nestingPossible = nestingPossible;
+  constructor(private readonly nestingPossible: boolean = true) {
   }
 
   private createData(col: StackColumn, context: IRenderContext<any>) {
@@ -1248,7 +1245,7 @@ const loading = {
     };
   },
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const base = Date.now()%360;
+    const base = Date.now() % 360;
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       clipText(ctx, 'Loading…', 10, 0, col.getWidth() - 10, context.textHints);
       const angle = (base + i * 45) * (Math.PI / 180);
@@ -1278,7 +1275,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   ordinal: new BarCellRenderer(true, (d, i, col: any) => col.getColor(d)),
   string: new StringCellRenderer(),
   selection,
-   heatmap,
+  heatmap,
   link,
   annotate,
   actions: action,

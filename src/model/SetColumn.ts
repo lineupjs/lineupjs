@@ -35,8 +35,8 @@ export default class SetColumn extends ValueColumn<number[]> implements ISetColu
     if (aVal === null || bVal === null) {
       return;
     }
-    const aCat = aVal.filter((x)=> x === SetColumn.IN_GROUP).length;
-    const bCat = bVal.filter((x)=> x === SetColumn.IN_GROUP).length;
+    const aCat = aVal.filter((x) => x === SetColumn.IN_GROUP).length;
+    const bCat = bVal.filter((x) => x === SetColumn.IN_GROUP).length;
     return (aCat - bCat);
 
   }
