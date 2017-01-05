@@ -69,7 +69,7 @@ export function makePopup(attachement: Selection<any>, title: string, body: stri
       $popup.remove();
     }
   });
-  var auto = <HTMLInputElement>$popup.select('input[autofocus]').node();
+  const auto = <HTMLInputElement>$popup.select('input[autofocus]').node();
   if (auto) {
     auto.focus();
   }
@@ -78,8 +78,8 @@ export function makePopup(attachement: Selection<any>, title: string, body: stri
 }
 
 export function makeSortPopup(attachement: Selection<any>, title: string, body: string) {
-  let pos = offset(<Element>attachement.node());
-  let $popup = select('body').append('div')
+  const pos = offset(<Element>attachement.node());
+  const $popup = select('body').append('div')
     .attr({
       'class': 'lu-popup2'
     }).style({
@@ -149,7 +149,7 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 function removePop(popup, rendererContent, currentElement) {
 
   d3.select('body').on('click', function () {
-    let outside = rendererContent.filter(currentElement).empty();
+    const outside = rendererContent.filter(currentElement).empty();
     if (outside) {
       popup.remove();
       d3.select(this).on('click', null);
@@ -162,7 +162,7 @@ export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>
   let rendererType = column.getRendererType();
   const rendererTypeList = column.getRendererList();
 
-  let popup = makeSortPopup($header, 'Change Visualization </br>', rendererTypeList.map(function (d, i) {
+  const popup = makeSortPopup($header, 'Change Visualization </br>', rendererTypeList.map(function (d, i) {
     return `<input type="radio" name="renderertype" value=${d.type}  ${(rendererType === d.type) ? 'checked' : ''}> ${d.label}<br>`;
 
   }).join('\n'));
@@ -173,9 +173,9 @@ export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>
 
   }
 
-  let rendererContent = d3.selectAll('input[name="renderertype"]');
+  const rendererContent = d3.selectAll('input[name="renderertype"]');
   rendererContent.on('change', function () {
-    let that = this;
+    const that = this;
     rendererType = that.value;
     column.setRendererType(that.value);
 
@@ -193,7 +193,7 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
   const valueString: any = [Sort[Sort.min], Sort[Sort.max], Sort[Sort.median], Sort[Sort.q1], Sort[Sort.q3]];
   const sortLabel: any = ['Min', 'Max', 'Median', 'Q1', 'Q3'];
 
-  let popup = makeSortPopup($header, 'Sort By <br>', valueString.map(function (d, i) {
+  const popup = makeSortPopup($header, 'Sort By <br>', valueString.map(function (d, i) {
     return `<input type="radio" name="multivaluesort" value=${d}  ${(rank === d) ? 'checked' : ''} > ${sortLabel[i]} <br>`;
 
   }).join('\n'));
@@ -203,9 +203,9 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
   }
 
   // To detect if the mouse click event is triggered outside the sort dialog
-  let sortContent = d3.selectAll('input[name=multivaluesort]');
+  const sortContent = d3.selectAll('input[name=multivaluesort]');
   sortContent.on('change', function () {
-    let that = this;
+    const that = this;
     rank = that.value;
     column.setUserSortBy(rank);
 

@@ -237,12 +237,12 @@ class SparklineCellRenderer implements ICellRendererFactory {
 
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
     const xScale: d3.scale.Linear<number, number> = col.getSparklineScale().xScale.range([0, col.getWidth()]);
-    let yScale: d3.scale.Linear<number, number> = col.getSparklineScale().yScale;
+    const yScale: d3.scale.Linear<number, number> = col.getSparklineScale().yScale;
     return {
       template: `<path class="sparklinecell"></path>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         yScale.range([context.rowHeight(i), 0]);
-        let line = d3.svg.line<number>()
+        const line = d3.svg.line<number>()
           .x((d, j) => xScale(j))
           .y((d, j) => yScale(d))
           .interpolate('linear');
@@ -255,7 +255,7 @@ class SparklineCellRenderer implements ICellRendererFactory {
   createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     const xScale: d3.scale.Linear<number, number> = col.getSparklineScale().xScale.range([0, col.getWidth()]);
-    let yScale: d3.scale.Linear<number, number> = col.getSparklineScale().yScale;
+    const yScale: d3.scale.Linear<number, number> = col.getSparklineScale().yScale;
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const data = col.getValue(d.v, d.dataIndex);
@@ -317,8 +317,8 @@ class ThresholdCellRenderer implements ICellRendererFactory {
       const data = col.getValue(d.v, d.dataIndex);
       data.forEach((d, j) => {
         ctx.beginPath();
-        let xpos = (j * cellDimension);
-        let ypos = (d < dataInfo.threshold) ? (context.rowHeight(j) / 2) : 0;
+        const xpos = (j * cellDimension);
+        const ypos = (d < dataInfo.threshold) ? (context.rowHeight(j) / 2) : 0;
         ctx.fillStyle = (d < dataInfo.threshold) ? dataInfo.colorRange[0] : dataInfo.colorRange[2];
         ctx.fillRect(xpos, ypos, cellDimension, context.rowHeight(j) / 2);
       });
@@ -330,7 +330,7 @@ class ThresholdCellRenderer implements ICellRendererFactory {
 
 function verticalBarScale(dataInfo: IMultiValueColumnDesc, scale: d3.scale.Linear<number,number>, rowHeight: number) {
 
-  let vBarScale = (dataInfo.min < dataInfo.threshold) ? (scale.range([0, rowHeight / 2])) : scale.range([0, rowHeight]);
+  const vBarScale = (dataInfo.min < dataInfo.threshold) ? (scale.range([0, rowHeight / 2])) : scale.range([0, rowHeight]);
   return (vBarScale);
 }
 
@@ -365,7 +365,7 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 
       template: `<g class="verticalbarcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        let scale: d3.scale.Linear<number,number> = verticalBarScale(dataInfo, defaultScale, context.rowHeight(i));
+        const scale: d3.scale.Linear<number,number> = verticalBarScale(dataInfo, defaultScale, context.rowHeight(i));
         const rect = d3.select(n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
         rect.enter().append('rect');
         rect
@@ -390,11 +390,11 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const data = col.getValue(d.v, d.dataIndex);
-      let scale = verticalBarScale(dataInfo, defaultScale, context.rowHeight(i));
+      const scale = verticalBarScale(dataInfo, defaultScale, context.rowHeight(i));
 
       data.forEach((d, j) => {
-        let xpos = (j * cellDimension);
-        let ypos = verticalBarYpos(dataInfo, d, scale, context.rowHeight(j));
+        const xpos = (j * cellDimension);
+        const ypos = verticalBarYpos(dataInfo, d, scale, context.rowHeight(j));
         ctx.fillStyle = colorScale(d);
         ctx.fillRect(xpos, ypos, cellDimension, verticalBarHeight(dataInfo, d, scale, context.rowHeight(j)));
       });
@@ -410,14 +410,14 @@ class BoxplotCellRenderer implements ICellRendererFactory {
     const topPadding = 2.5 * (context.option('rowPadding', 1));
     const dataInfo = col.getDataInfo();
     const scale = d3.scale.linear().domain([dataInfo.min, dataInfo.max]).range([0, col.getWidth()]);
-    let currentSortColumn = col.findMyRanker().getSortCriteria().col;
+    const currentSortColumn = col.findMyRanker().getSortCriteria().col;
 
     return {
 
       template: `<g class="boxplotcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
 
-        let boxdata = col.getBoxPlotData(d.v, d.dataIndex,);
+        const boxdata = col.getBoxPlotData(d.v, d.dataIndex,);
         boxdata.min = scale(boxdata.min);
         boxdata.max = scale(boxdata.max);
         boxdata.median = scale(boxdata.median);
@@ -469,10 +469,10 @@ class BoxplotCellRenderer implements ICellRendererFactory {
     const topPadding = 2.5 * (context.option('rowPadding', 1));
     const dataInfo = col.getDataInfo();
     const scale = d3.scale.linear().domain([dataInfo.min, dataInfo.max]).range([0, col.getWidth()]);
-    let currentSortColumn = col.findMyRanker().getSortCriteria().col;
+    const currentSortColumn = col.findMyRanker().getSortCriteria().col;
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
-      let boxdata = col.getBoxPlotData(d.v, d.dataIndex,);
+      const boxdata = col.getBoxPlotData(d.v, d.dataIndex,);
       boxdata.min = scale(boxdata.min);
       boxdata.max = scale(boxdata.max);
       boxdata.median = scale(boxdata.median);
@@ -528,14 +528,14 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
 function setPathCalculate(setData, cellDimension) {
 
-  var catindexes = [];
+  const catindexes = [];
   setData.forEach((d, i) => (d === SetColumn.IN_GROUP) ? catindexes.push(i) : -1);
 
 
-  const left_x = ((d3.min(catindexes) * cellDimension) + (cellDimension / 2));
-  const right_x = ((d3.max(catindexes) * cellDimension) + (cellDimension / 2));
+  const leftX = ((d3.min(catindexes) * cellDimension) + (cellDimension / 2));
+  const rightX = ((d3.max(catindexes) * cellDimension) + (cellDimension / 2));
 
-  const pathdata = {left: left_x, right: right_x};
+  const pathdata = {left: leftX, right: rightX};
 
   return pathdata;
 
@@ -583,7 +583,7 @@ class SetCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Circle
       const data = col.getValue(d.v, d.dataIndex);
-      let countCategory = data.filter((x) => x === 1).length;
+      const countCategory = data.filter((x) => x === 1).length;
       const radius = (context.rowHeight(i) / 3);
       const pathCordinate = setPathCalculate(data, cellDimension);
 
@@ -598,8 +598,8 @@ class SetCellRenderer implements ICellRendererFactory {
       }
 
       data.forEach((d, j) => {
-        let posy = (context.rowHeight(j) / 2);
-        let posx = (j * cellDimension) + (cellDimension / 2);
+        const posy = (context.rowHeight(j) / 2);
+        const posx = (j * cellDimension) + (cellDimension / 2);
         ctx.fillStyle = 'black';
         ctx.strokeStyle = 'black';
         ctx.beginPath();
@@ -642,8 +642,8 @@ class CircleColumnCellRenderer implements ICellRendererFactory {
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
 
-      let posy = (context.rowHeight(i) / 2);
-      let posx = (col.getWidth() / 2);
+      const posy = (context.rowHeight(i) / 2);
+      const posx = (col.getWidth() / 2);
 
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'black';
@@ -1296,7 +1296,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   set: new SetCellRenderer(),
   circle: new CircleColumnCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
-  loading: loading
+  loading
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {

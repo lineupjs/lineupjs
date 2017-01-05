@@ -170,7 +170,6 @@ window.onload = function () {
           type: 'number',
           column: 'singledata',
           domain: [singldata_min, singldata_max]
-
         }
       ];
 
@@ -188,6 +187,7 @@ window.onload = function () {
       ];
 
       var p = new LineUpJS.provider.LocalDataProvider(arr1, desc1);
+
       var r = p.pushRanking();
 
       var root = d3.select('body');
@@ -222,6 +222,7 @@ window.onload = function () {
         }
       });
       body.update();
+
     });
 
   })
