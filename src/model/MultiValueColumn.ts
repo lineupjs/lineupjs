@@ -69,14 +69,6 @@ export interface IMultiValueColumnDesc extends IValueColumnDesc <number[]> {
 }
 
 
-// interface IMultiValueColumnDesc extends IDataStat {
-//
-//   readonly threshold: number,
-//   readonly dataLength: number,
-//   readonly colorRange: any
-// }
-
-
 export default class MultiValueColumn extends ValueColumn<number[]> implements IBoxPlotColumn,IMultiValueColumn {
 
   private domain;
@@ -110,8 +102,6 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
 
     this.setRendererList(rendererList);
 
-    //  this.defineColorRange();
-
   }
 
 
@@ -132,12 +122,6 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     }
   }
 
-  //
-  // private defineColorRange() {
-  //
-  // }
-
-
   compare(a: any, b: any, aIndex: number, bIndex: number) {
 
     const aVal = (this.getValue(a, aIndex));
@@ -150,7 +134,6 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     const sort: any = new CustomSortCalculation(aVal, bVal);
     const f = sort[this.sortMethodChanged].bind(sort);
     return f();
-
   }
 
   getColorScale() {

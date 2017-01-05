@@ -21,17 +21,6 @@ export interface IBoxPlotColumn {
 
 }
 
-/*
- This was created only for targid purpose to set the domain I
-
- interface IBoxPlotDataStat extends IDataStat {
- min: number,
- max: number,
- readonly sort: string
-
- }
-
- */
 
 export interface IBoxPlotColumnDesc extends IValueColumnDesc < IBoxPlotData > {
 
@@ -65,14 +54,6 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
     this.domain = d3.extent(desc.domain) || [1, 100];
     this.sort = desc.sort || 'min';
     this.colorRange = desc.colorRange || ['blue', 'red'];
-    //  this.data = {
-    //   min: d3.min(this.domain),
-    //   max: d3.max(this.domain),
-    //   sort: this.sort,
-    //   colorRange: this.colorRange
-    //
-    // };
-
     this.sortMethodChanged = this.sort;
 
   }
@@ -88,6 +69,7 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
    //   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
    // }
    */
+
   compare(a: any, b: any, aIndex: number, bIndex: number): number {
 
     const aVal = (this.getValue(a, aIndex));
