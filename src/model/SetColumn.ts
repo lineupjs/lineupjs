@@ -33,7 +33,7 @@ export default class SetColumn extends ValueColumn<number[]> implements ISetColu
     const aVal = this.getValue(a, aIndex);
     const bVal = this.getValue(b, bIndex);
     if (aVal === null || bVal === null) {
-      return;
+      return -1;
     }
     const aCat = aVal.filter((x) => x === SetColumn.IN_GROUP).length;
     const bCat = bVal.filter((x) => x === SetColumn.IN_GROUP).length;
@@ -50,11 +50,6 @@ export default class SetColumn extends ValueColumn<number[]> implements ISetColu
 
   getNumber(row: any, index: number) {
     return this.getValue(row, index);
-  }
-
-  getConstantValue() {
-    return SetColumn.IN_GROUP;
-
   }
 
 

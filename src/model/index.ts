@@ -97,7 +97,6 @@ export function models() {
     nested: NestedColumn,
     multiValue:MultiValueColumn,
     set: SetColumn,
-    circle: NumberColumn,
     boxplot:BoxPlotColumn
   };
 }

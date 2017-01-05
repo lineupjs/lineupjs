@@ -30,7 +30,7 @@ export function dialogForm(title: string, body: string) {
     '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
 }
 
-export function sortDialogForm(title, body, buttonsWithLabel = false) {
+export function sortDialogForm(title:string, body:string) {
   return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
     '<form onsubmit="return false">' + body;
 }
@@ -146,7 +146,7 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 }
 
 
-function removePop(popup, rendererContent, currentElement) {
+function hidePopClickedOutsideMe(popup, rendererContent, currentElement) {
 
   d3.select('body').on('click', function () {
     const outside = rendererContent.filter(currentElement).empty();
@@ -175,21 +175,21 @@ export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>
 
   const rendererContent = d3.selectAll('input[name="renderertype"]');
   rendererContent.on('change', function () {
-    const that = this;
-    rendererType = that.value;
-    column.setRendererType(that.value);
+    const selectedRenderer = this;
+    rendererType = selectedRenderer.value;
+    column.setRendererType(selectedRenderer.value);
 
   });
 
 //  To detect if the mouse click event is triggered outside the sort dialog
-  removePop(popup, rendererContent, thiselement);
+  hidePopClickedOutsideMe(popup, rendererContent, thiselement);
 
 }
 
 // Sort  Dialog.
 export function sortDialog(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
 
-  let rank = column.getUserSortBy();
+  let rank = column.getSortMethod();
   const valueString: any = [Sort[Sort.min], Sort[Sort.max], Sort[Sort.median], Sort[Sort.q1], Sort[Sort.q3]];
   const sortLabel: any = ['Min', 'Max', 'Median', 'Q1', 'Q3'];
 
@@ -205,14 +205,14 @@ export function sortDialog(column: MultiValueColumn, $header: d3.Selection<Multi
   // To detect if the mouse click event is triggered outside the sort dialog
   const sortContent = d3.selectAll('input[name=multivaluesort]');
   sortContent.on('change', function () {
-    const that = this;
-    rank = that.value;
-    column.setUserSortBy(rank);
+    const selectedSortMethod = this;
+    rank = selectedSortMethod.value;
+    column.setSortMethod(rank);
 
   });
 
   // To detect if the mouse click event is triggered outside the sort dialog
-  removePop(popup, sortContent, thiselement);
+  hidePopClickedOutsideMe(popup, sortContent, thiselement);
 
 }
 

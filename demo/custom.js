@@ -186,6 +186,7 @@ window.onload = function () {
         }
       ];
 
+
       var p = new LineUpJS.provider.LocalDataProvider(arr1, desc1);
 
       var r = p.pushRanking();
@@ -205,7 +206,7 @@ window.onload = function () {
           autoRotateLabels: true
         },
         body: {
-          renderer: 'canvas',
+          renderer: 'svg',
           freezeCols: 3
         },
         header: {

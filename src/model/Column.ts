@@ -128,6 +128,7 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_DIRTY_HEADER = 'dirtyHeader';
   static readonly EVENT_DIRTY_VALUES = 'dirtyValues';
   static readonly EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
+  static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
 
   /**
    * the id of this column
@@ -168,7 +169,7 @@ export default class Column extends AEventDispatcher {
     super();
     this.uid = fixCSS(id);
     this.rendererInfo = {
-      rendererType: this.desc.rendererType || this.desc.type || 'heatmapcustom',
+      rendererType: this.desc.rendererType || this.desc.type,
       rendererList: []
     };
 
@@ -234,7 +235,7 @@ export default class Column extends AEventDispatcher {
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED,
+      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
   }
 

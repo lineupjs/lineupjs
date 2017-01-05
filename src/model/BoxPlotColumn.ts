@@ -15,9 +15,9 @@ export enum Sort {
 
 export interface IBoxPlotColumn {
   getBoxPlotData(row: any, index: number): IBoxPlotData;
-  getDataInfo(): IBoxPlotColumnDesc;
-  getUserSortBy(): string;
-  setUserSortBy(sortCriteria: string): void;
+  getDomain(): number[];
+  getSortMethod(): string;
+  setSortMethod(sortCriteria: string): void;
 
 }
 
@@ -37,9 +37,7 @@ export interface IBoxPlotColumnDesc extends IValueColumnDesc < IBoxPlotData > {
 
   readonly domain?: number [];
   readonly sort?: string;
-  readonly colorRange?: any;
-  readonly min?: number;
-  readonly max?: number;
+  readonly colorRange?: string[];
 
 }
 
@@ -55,85 +53,81 @@ export  interface IBoxPlotData {
 
 export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implements IBoxPlotColumn {
 
-  private data;
-  private min;
-  private max;
+  private domain;
   private sort;
   private colorRange;
-  private userSort;
-  protected boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();
+  private sortMethodChanged: string;
+  // protected boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear();  For targid only
 
 
   constructor(id: string, desc: IBoxPlotColumnDesc) {
     super(id, desc);
-    this.min = d3.min(desc.domain);
-    this.max = d3.max(desc.domain);
+    this.domain = d3.extent(desc.domain) || [1, 100];
     this.sort = desc.sort || 'min';
     this.colorRange = desc.colorRange || ['blue', 'red'];
+    //  this.data = {
+    //   min: d3.min(this.domain),
+    //   max: d3.max(this.domain),
+    //   sort: this.sort,
+    //   colorRange: this.colorRange
+    //
+    // };
 
-    this.data = {
-      min: this.min,
-      max: this.max,
-      sort: this.sort,
-      colorRange: this.colorRange
-
-    };
-
-    this.userSort = this.sort;
+    this.sortMethodChanged = this.sort;
 
   }
 
   /*
    // Only For Targid
-   public setDomain(domain: number[]) {
-   const bak = this.boxPlotScale.domain();
-   this.data.min = domain[0];
-   this.data.max = domain[1];
-   this.boxPlotScale.domain(domain);
-   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
-   }
-
+   // public setDomain(domain: number[]) {
+   //   const bak = this.boxPlotScale.domain();
+   //   this.min = domain[0];
+   //   this.max = domain[1];
+   //   console.log(domain);
+   //   this.boxPlotScale.domain(domain);
+   //   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
+   // }
    */
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
+  compare(a: any, b: any, aIndex: number, bIndex: number): number {
 
     const aVal = (this.getValue(a, aIndex));
     const bVal = (this.getValue(b, bIndex));
     if (aVal === null || bVal === null) {
-      return;
+      return -1;
     }
-    return (numSort((<any>aVal)[this.userSort], (<any>bVal)[this.userSort]));
+    return (numSort(aVal[this.sortMethodChanged], (bVal[this.sortMethodChanged])));
 
   }
 
-  getDataInfo() {
-
-    return this.data;
+  getDomain() {
+    return this.domain;
   }
 
-  getBoxPlotData(row: any, index: number) {
+  getBoxPlotData(row: any, index: number): IBoxPlotData {
     const data = this.getValue(row, index);
 
     if (data === null) {
-      return;
+      return null;
     }
     const boxdata: IBoxPlotData = {
-      min: ((<any>data).min),
-      median: ((<any>data).median),
-      q1: ((<any>data).q1),
-      q3: ((<any>data).q3),
-      max: ((<any>data).max)
+      min: (data.min),
+      median: (data.median),
+      q1: (data.q1),
+      q3: (data.q3),
+      max: (data.max)
     };
 
     return boxdata;
   }
 
-  getUserSortBy() {
-    return this.userSort;
+  getSortMethod() {
+    return this.sortMethodChanged;
   }
 
-  setUserSortBy(sort: string) {
-    this.userSort = sort;
-    this.sortByMe();
+  setSortMethod(sort: string) {
+    this.sortMethodChanged = sort;
+    const bak = this.sortByMe();
+    this.fire([Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.sortByMe());
   }
 
 
