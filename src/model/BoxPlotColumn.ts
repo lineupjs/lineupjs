@@ -4,7 +4,7 @@
 import * as d3 from 'd3';
 import ValueColumn from './ValueColumn';
 import Column from './Column';
-import {IValueColumnDesc} from "./ValueColumn";
+import {IValueColumnDesc} from './ValueColumn';
 import {numSort} from './MultiValueColumn';
 
 export enum Sort {
@@ -17,7 +17,7 @@ export interface IBoxPlotColumn {
   getBoxPlotData(row: any, index: number): IBoxPlotData;
   getDataInfo(): IBoxPlotColumnDesc;
   getUserSortBy(): string;
-  setUserSortBy(sortCriteria:string):void
+  setUserSortBy(sortCriteria:string):void;
 
 }
 
@@ -96,12 +96,12 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
    */
   compare(a: any, b: any, aIndex: number, bIndex: number) {
 
-    const a_val = (this.getValue(a, aIndex));
-    const b_val = (this.getValue(b, bIndex));
-    if (a_val === null || b_val === null) {
+    const aVal = (this.getValue(a, aIndex));
+    const bVal = (this.getValue(b, bIndex));
+    if (aVal === null || bVal === null) {
       return;
     }
-    return (numSort((<any>a_val)[this.userSort], (<any>b_val)[this.userSort]));
+    return (numSort((<any>aVal)[this.userSort], (<any>bVal)[this.userSort]));
 
   }
 

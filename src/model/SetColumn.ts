@@ -4,7 +4,7 @@
 import * as d3 from 'd3';
 import Column, {IColumnDesc, IStatistics} from './Column';
 import ValueColumn from './ValueColumn';
-import {IValueColumnDesc} from "./ValueColumn";
+import {IValueColumnDesc} from './ValueColumn';
 
 
 export interface ISetColumn {
@@ -30,14 +30,14 @@ export default class SetColumn extends ValueColumn<number[]> implements ISetColu
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
 
-    const a_val = this.getValue(a, aIndex);
-    const b_val = this.getValue(b, bIndex);
-    if (a_val === null || b_val === null) {
+    const aVal = this.getValue(a, aIndex);
+    const bVal = this.getValue(b, bIndex);
+    if (aVal === null || bVal === null) {
       return;
     }
-    const a_cat = a_val.filter((x)=> x === SetColumn.IN_GROUP).length;
-    const b_cat = b_val.filter((x)=> x === SetColumn.IN_GROUP).length;
-    return (a_cat - b_cat);
+    const aCat = aVal.filter((x)=> x === SetColumn.IN_GROUP).length;
+    const bCat = bVal.filter((x)=> x === SetColumn.IN_GROUP).length;
+    return (aCat - bCat);
 
   }
 

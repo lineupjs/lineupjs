@@ -9,40 +9,40 @@ import {IValueColumnDesc} from './ValueColumn';
 
 
 export class CustomSortCalculation {
-  private readonly a_val: number[];
-  private readonly b_val: number[];
+  private readonly aVal: number[];
+  private readonly bVal: number[];
 
-  constructor(a_val, b_val) {
-    this.b_val = b_val;
-    this.a_val = a_val;
+  constructor(aVal, bVal) {
+    this.bVal = bVal;
+    this.aVal = aVal;
   }
 
   sum() {
-    return (d3.sum(this.a_val) - d3.sum(this.b_val));
+    return (d3.sum(this.aVal) - d3.sum(this.bVal));
   }
 
   min() {
-    return (d3.min(this.a_val) - d3.min(this.b_val));
+    return (d3.min(this.aVal) - d3.min(this.bVal));
   }
 
   max() {
-    return (d3.max(this.a_val) - d3.max(this.b_val));
+    return (d3.max(this.aVal) - d3.max(this.bVal));
   }
 
   mean() {
-    return (d3.mean(this.a_val) - d3.mean(this.b_val));
+    return (d3.mean(this.aVal) - d3.mean(this.bVal));
   }
 
   median() {
-    return (d3.median(this.a_val.sort(numSort))) - (d3.median(this.b_val.sort(numSort)));
+    return (d3.median(this.aVal.sort(numSort))) - (d3.median(this.bVal.sort(numSort)));
   }
 
   q1() {
-    return (d3.quantile(this.a_val, 0.25)) - (d3.quantile(this.b_val, 0.25));
+    return (d3.quantile(this.aVal, 0.25)) - (d3.quantile(this.bVal, 0.25));
   }
 
   q3() {
-    return (d3.quantile(this.a_val.sort(numSort), 0.75)) - (d3.quantile(this.b_val.sort(numSort), 0.75));
+    return (d3.quantile(this.aVal.sort(numSort), 0.75)) - (d3.quantile(this.bVal.sort(numSort), 0.75));
   }
 
 }
@@ -139,7 +139,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
       const minColor = this.data.colorRange[0];
       const zeroColor = this.data.colorRange[1];
       const maxColor = this.data.colorRange[2];
-      const colorRange = [minColor, zeroColor, maxColor]
+      const colorRange = [minColor, zeroColor, maxColor];
       return colorRange;
 
     } else {
@@ -171,14 +171,14 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
 
-    const a_val = (this.getValue(a, aIndex));
-    const b_val = (this.getValue(b, bIndex));
+    const aVal = (this.getValue(a, aIndex));
+    const bVal = (this.getValue(b, bIndex));
 
-    if (a_val === null || b_val === null) {
+    if (aVal === null || bVal === null) {
       return;
     }
 
-    const sort: any = new CustomSortCalculation(a_val, b_val);
+    const sort: any = new CustomSortCalculation(aVal, bVal);
     const f = sort[this.userSort].bind(sort);
     return f();
 
@@ -225,16 +225,16 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   getBoxPlotData(row: any, index: number) {
 
     const data = this.getValue(row, index);
-    const minval_arr = Math.min(...data);
-    const maxval_arr = Math.max(...data);
+    const minVal = Math.min(...data);
+    const maxVal = Math.max(...data);
     const sorteddata = data.slice().sort(numSort);
 
     const boxdata: IBoxPlotData = {
-      min: (minval_arr),
+      min: (minVal),
       median: (d3.quantile(sorteddata, 0.50)),
       q1: (d3.quantile(sorteddata, 0.25)),
       q3: (d3.quantile(sorteddata, 0.75)),
-      max: (maxval_arr)
+      max: (maxVal)
     };
 
 
