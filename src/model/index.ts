@@ -23,6 +23,7 @@ import LinkColumn from './LinkColumn';
 import SetColumn from './SetColumn';
 import MultiValueColumn from './MultiValueColumn';
 import BoxPlotColumn from './BoxPlotColumn';
+import SmileColumn from './SmileColumn';
 
 
 export {default as Column, IColumnDesc} from './Column';
@@ -95,8 +96,9 @@ export function models() {
     mean: MeanColumn,
     script: ScriptColumn,
     nested: NestedColumn,
-    multiValue:MultiValueColumn,
+    multiValue: MultiValueColumn,
     set: SetColumn,
-    boxplot:BoxPlotColumn
+    boxplot: BoxPlotColumn,
+    smile: SmileColumn
   };
 }

@@ -18,6 +18,7 @@ import MultiValueColumn from './model/MultiValueColumn';
 import SetColumn from './model/SetColumn';
 import {IBoxPlotColumn} from './model/BoxPlotColumn';
 import {IMultiValueColumnDesc} from './model/MultiValueColumn';
+import SmileColumn from './model/SmileColumn';
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
@@ -612,6 +613,42 @@ class SetCellRenderer implements ICellRendererFactory {
   }
 
 }
+
+class SmileColumnCellRenderer implements ICellRendererFactory {
+
+  createSVG(col: SmileColumn, context: IDOMRenderContext): ISVGCellRenderer {
+
+    return {
+      template: `<image class="smilecell"></image>`,
+      update: (n: SVGGElement, d: IDataRow, i: number) => {
+
+        const image = d3.select(n);
+        image.attr('xlink:href', <any>col.getValue(d.v, d.dataIndex))
+          .attr('height', '17')
+          .attr('width', '100');
+
+      }
+    };
+  }
+
+
+  createCanvas(col: SmileColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      const img = new Image();
+      img.onload = function () {
+        ctx.drawImage(img, 1, 1, 100, 17);
+      };
+      img.src = <any>col.getValue(d.v, d.dataIndex);
+
+    };
+  }
+
+
+}
+
+
+
 
 class CircleColumnCellRenderer implements ICellRendererFactory {
 
@@ -1291,6 +1328,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   set: new SetCellRenderer(),
   circle: new CircleColumnCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
+  smile: new SmileColumnCellRenderer(),
   loading
 };
 
