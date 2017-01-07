@@ -413,21 +413,22 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
       template: `<g class="boxplotcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const boxdata = col.getBoxPlotData(d.v, d.dataIndex,);
+        const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
         /*
          Just for targid case only when the data is not loaded fully.
          // if(boxdata === null || undefined){
          //   return;
          // }
          */
+        const scaledBoxdata = {
+          min: scale(rawBoxdata.min),
+          median: scale(rawBoxdata.median),
+          q1: scale(rawBoxdata.q1),
+          q3: scale(rawBoxdata.q3),
+          max: scale(rawBoxdata.max)
+        };
 
-        boxdata.min = scale(boxdata.min);
-        boxdata.max = scale(boxdata.max);
-        boxdata.median = scale(boxdata.median);
-        boxdata.q1 = scale(boxdata.q1);
-        boxdata.q3 = scale(boxdata.q3);
-
-        const minPos = boxdata.min, maxPos = boxdata.max, medianPos = boxdata.median, q3Pos = boxdata.q3, q1Pos = boxdata.q1;
+        const minPos = scaledBoxdata.min, maxPos = scaledBoxdata.max, medianPos = scaledBoxdata.median, q3Pos = scaledBoxdata.q3, q1Pos = scaledBoxdata.q1;
         const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
         rect.enter().append('rect');
         rect
@@ -459,7 +460,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
           const pathSort = d3.select(n).selectAll('path.boxplotsortpath').data([col.getValue(d.v, d.dataIndex)]);
           pathSort.enter().append('path')
             .attr('class', 'boxplotsortpath')
-            .attr('d', () => 'M' + (boxdata[userSort]) + ',' + topPadding + 'L' + (boxdata[userSort]) + ',' + bottomPos);
+            .attr('d', () => 'M' + (scaledBoxdata[userSort]) + ',' + topPadding + 'L' + (scaledBoxdata[userSort]) + ',' + bottomPos);
         }
         pathAll.exit().remove();
 
@@ -476,13 +477,15 @@ class BoxplotCellRenderer implements ICellRendererFactory {
     const currentSortColumn = col.findMyRanker().getSortCriteria().col;
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Rectangle
-      const boxdata = col.getBoxPlotData(d.v, d.dataIndex,);
-      boxdata.min = scale(boxdata.min);
-      boxdata.max = scale(boxdata.max);
-      boxdata.median = scale(boxdata.median);
-      boxdata.q1 = scale(boxdata.q1);
-      boxdata.q3 = scale(boxdata.q3);
-      const minPos = boxdata.min, maxPos = boxdata.max, medianPos = boxdata.median, q3Pos = boxdata.q3, q1Pos = boxdata.q1;
+      const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
+      const scaledBoxdata = {
+        min: scale(rawBoxdata.min),
+        median: scale(rawBoxdata.median),
+        q1: scale(rawBoxdata.q1),
+        q3: scale(rawBoxdata.q3),
+        max: scale(rawBoxdata.max)
+      };
+      const minPos = scaledBoxdata.min, maxPos = scaledBoxdata.max, medianPos = scaledBoxdata.median, q3Pos = scaledBoxdata.q3, q1Pos = scaledBoxdata.q1;
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
@@ -516,8 +519,8 @@ class BoxplotCellRenderer implements ICellRendererFactory {
         ctx.strokeStyle = 'red';
         ctx.fillStyle = '#ff0700';
         ctx.beginPath();
-        ctx.moveTo(boxdata[userSort], topPadding);
-        ctx.lineTo(boxdata[userSort], bottomPos);
+        ctx.moveTo(scaledBoxdata[userSort], topPadding);
+        ctx.lineTo(scaledBoxdata[userSort], bottomPos);
         ctx.stroke();
         ctx.fill();
       }

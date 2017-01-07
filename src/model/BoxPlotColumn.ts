@@ -32,11 +32,11 @@ export interface IBoxPlotColumnDesc extends IValueColumnDesc < IBoxPlotData > {
 
 export  interface IBoxPlotData {
 
-  min: number;
-  max: number;
-  median: number;
-  q1: number;
-  q3: number;
+  readonly min: number;
+  readonly max: number;
+  readonly median: number;
+  readonly q1: number;
+  readonly q3: number;
 }
 
 
