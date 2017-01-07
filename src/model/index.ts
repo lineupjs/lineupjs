@@ -23,7 +23,6 @@ import LinkColumn from './LinkColumn';
 import SetColumn from './SetColumn';
 import MultiValueColumn from './MultiValueColumn';
 import BoxPlotColumn from './BoxPlotColumn';
-import SmileColumn from './SmileColumn';
 
 
 export {default as Column, IColumnDesc} from './Column';
@@ -98,7 +97,6 @@ export function models() {
     nested: NestedColumn,
     multiValue: MultiValueColumn,
     set: SetColumn,
-    boxplot: BoxPlotColumn,
-    smile: SmileColumn
+    boxplot: BoxPlotColumn
   };
 }

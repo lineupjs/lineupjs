@@ -59,17 +59,6 @@ window.onload = function () {
 
     });
 
-    var smiles_bm = [], smiles_cpd = [];
-    d3.tsv('smiles.txt', function (smiles) {
-      var smiles_data = smiles;
-      // console.log(smiles)
-
-      for (var i = 0; i < newdata.length; i++) {
-
-        smiles_bm.push('../SMILES_BM/SMILES_BM_' + (i + 1) + '.png');
-
-      }
-
       //  console.log(smiles_bm)
 
       var arr1 = [];
@@ -79,8 +68,7 @@ window.onload = function () {
           stringdata: x.country,
           multidata: arraydata,
           singledata: parseFloat(x.single_score),
-          upsetdata: catdata(4),
-          smiles_bm: smiles_bm[i]
+          upsetdata: catdata(4)
         })
 
       });
@@ -183,12 +171,6 @@ window.onload = function () {
             type: 'number',
             column: 'singledata',
             domain: [singldata_min, singldata_max]
-          }, {
-            label: 'Smiles',
-            type: 'smile',
-            column: 'smiles_bm',
-            domain: [singldata_min, singldata_max]
-
           }
         ];
 
@@ -226,7 +208,7 @@ window.onload = function () {
             autoRotateLabels: true
           },
           body: {
-            renderer: 'svg',
+            renderer: 'canvas',
             freezeCols: 3
           },
           header: {
@@ -245,8 +227,6 @@ window.onload = function () {
         body.update();
 
       });  // Cancer data
-
-    }) //Smiles.txt
 
   })// Data.json
 };
