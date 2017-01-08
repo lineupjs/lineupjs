@@ -7,20 +7,16 @@ import ValueColumn from './ValueColumn';
 import {IValueColumnDesc} from './ValueColumn';
 
 
-export interface ISetColumn {
-  isLoaded(): boolean;
-  getNumber(row: any, index: number): number[];
-}
-interface ISetColumnDesc extends IValueColumnDesc < number[]> {
-
+interface ISetColumnDesc extends IValueColumnDesc <number[]> {
   readonly dataLength?: number;
 
 }
 
 
-export default class SetColumn extends ValueColumn<number[]> implements ISetColumn {
-  private dataLength;
-  public static readonly IN_GROUP = 1;
+export default class SetColumn extends ValueColumn<number[]> {
+  static readonly IN_GROUP = 1;
+
+  private readonly dataLength;
 
   constructor(id: string, desc: ISetColumnDesc) {
     super(id, desc);
@@ -30,27 +26,31 @@ export default class SetColumn extends ValueColumn<number[]> implements ISetColu
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
 
-    const aVal = this.getValue(a, aIndex);
-    const bVal = this.getValue(b, bIndex);
-    if (aVal === null || bVal === null) {
+    const aVal = this.getBinaryValue(a, aIndex);
+    const bVal = this.getBinaryValue(b, bIndex);
+    if (aVal === null) {
+      return bVal === null ? 0 : +1;
+    }
+    if (bVal === null) {
       return -1;
     }
-    const aCat = aVal.filter((x) => x === SetColumn.IN_GROUP).length;
-    const bCat = bVal.filter((x) => x === SetColumn.IN_GROUP).length;
-    return (aCat - bCat);
 
+    const aCat = aVal.filter((x) => x).length;
+    const bCat = bVal.filter((x) => x).length;
+    return (aCat - bCat);
   }
 
 
   cellDimension() {
-
     return (this.getWidth() / this.dataLength);
   }
 
+  getBinaryValue(row: any, index: number): boolean[] {
+    return this.getValue(row, index).map((d) => d === SetColumn.IN_GROUP);
+  }
 
   getNumber(row: any, index: number) {
     return this.getValue(row, index);
   }
-
 
 }

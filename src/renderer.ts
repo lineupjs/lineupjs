@@ -162,7 +162,6 @@ export class DefaultCellRenderer implements ICellRendererFactory {
 class HeatmapCellRenderer implements ICellRendererFactory {
 
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
-
     const cellDimension = col.calculateCellDimension(col.getWidth());
     const colorScale = col.getColorScale();
     const padding = context.option('rowPadding', 1);
@@ -171,16 +170,15 @@ class HeatmapCellRenderer implements ICellRendererFactory {
       template: `<g class="heatmapcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const rect = d3.select(n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
-        rect.enter().append('rect');
-        rect
-          .attr({
-            y: padding,
-            x: (d: number, i: number) => (i * cellDimension),
-            width: cellDimension,
-            height: context.rowHeight(i),
-            fill: (d: number, i: number) => colorScale(d)
-
-          });
+        rect.enter().append('rect').attr({
+          y: padding,
+          width: cellDimension,
+          height: context.rowHeight(i)
+        });
+        rect.attr({
+          x: (d, i) => i * cellDimension,
+          fill: colorScale
+        });
         rect.exit().remove();
       }
     };
@@ -188,44 +186,40 @@ class HeatmapCellRenderer implements ICellRendererFactory {
 
 
   createHTML(col: MultiValueColumn, context: IDOMRenderContext): IHTMLCellRenderer {
-
     const cellDimension = col.calculateCellDimension(col.getWidth());
     const padding = context.option('rowPadding', 1);
     const colorScale = col.getColorScale();
 
     return {
-      template: `<div class="heatmapcell" style="top:${padding}px;">
-                                   </div>`,
+      template: `<div class="heatmapcell" style="top:${padding}px;"></div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         const g = d3.select(n);
         const div = g.selectAll('div').data(col.getValue(d.v, d.dataIndex));
-        div.enter().append('div');
-        div
-          .style({
-            'width': cellDimension + 'px',
-            'background-color': (d: number, i: number) => colorScale(d),
-            'height': context.rowHeight(i) + 'px',
-            'left': (d: number, i: number) => (i * cellDimension) + 'px'
-          });
-
-
+        div.enter().append('div').style({
+          widht: cellDimension + 'px',
+          height: context.rowHeight(i) + 'px'
+        });
+        div.style({
+          'background-color': colorScale,
+          'left': (d, i) => (i * cellDimension) + 'px'
+        });
       }
     };
   }
 
   createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-
     const cellDimension = col.calculateCellDimension(col.getWidth());
     const padding = context.option('rowPadding', 1);
     const colorScale = col.getColorScale();
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
 
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const data = col.getValue(d.v, d.dataIndex);
+      const rowHeight = context.rowHeight(i);
       data.forEach((d: number, j: number) => {
         const x = (j * cellDimension);
         ctx.beginPath();
         ctx.fillStyle = colorScale(d);
-        ctx.fillRect(x, padding, cellDimension, context.rowHeight(j));
+        ctx.fillRect(x, padding, cellDimension, rowHeight);
       });
     };
   }
@@ -236,35 +230,37 @@ class HeatmapCellRenderer implements ICellRendererFactory {
 class SparklineCellRenderer implements ICellRendererFactory {
 
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const xScale: d3.scale.Linear<number, number> = col.getSparklineScale().xScale.range([0, col.getWidth()]);
-    const yScale: d3.scale.Linear<number, number> = col.getSparklineScale().yScale;
-    const line = d3.svg.line<number>();
+    const scales = col.getSparklineScale();
+    const xScale = scales.xScale.range([0, col.getWidth()]);
+    const yScale = scales.yScale;
+    const line = d3.svg.line<number>()
+      .x((d, j) => xScale(j))
+      .y(yScale)
+      .interpolate('linear');
     return {
       template: `<path class="sparklinecell"></path>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         yScale.range([context.rowHeight(i), 0]);
-        line
-          .x((d: number, j: number) => xScale(j))
-          .y((d: number, j: number) => yScale(d))
-          .interpolate('linear');
-        d3.select(n).attr('d', line(col.getValue(d.v, d.dataIndex)));
-
+        attr(n, {
+          d: line(col.getValue(d.v, d.dataIndex))
+        });
       }
     };
   }
 
   createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-
-    const xScale: d3.scale.Linear<number, number> = col.getSparklineScale().xScale.range([0, col.getWidth()]);
-    const yScale: d3.scale.Linear<number, number> = col.getSparklineScale().yScale;
+    const scales = col.getSparklineScale();
+    const xScale = scales.xScale.range([0, col.getWidth()]);
+    const yScale = scales.yScale;
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const data = col.getValue(d.v, d.dataIndex);
       let xpos: number, ypos: number;
       yScale.range([context.rowHeight(i), 0]);
+
       ctx.strokeStyle = 'black';
       ctx.fillStyle = 'black';
-      data.forEach((d: number, i: number) => {
+      data.forEach((d, i) => {
         ctx.beginPath();
         ctx.moveTo(xpos, ypos);
         xpos = xScale(i);
@@ -282,20 +278,21 @@ class ThresholdCellRenderer implements ICellRendererFactory {
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
     const cellDimension = col.calculateCellDimension(col.getWidth());
     const threshold = col.getThreshold();
-    const colorValues = col.getColorValues();
+    const colorValues = col.getColorScale().range();
 
     return {
       template: `<g class="thresholdcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
+        const rowHeight = context.rowHeight(i);
         const rect = d3.select(n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
         rect.enter().append('rect');
         rect
           .attr({
-            y: (d: number, j: number) => (d < threshold) ? (context.rowHeight(j) / 2) : 0,
-            x: (d: number, j: number) => (j * cellDimension),
+            y: (d, j) => (d < threshold) ? (rowHeight / 2) : 0,
+            x: (d, j) => (j * cellDimension),
             width: cellDimension,
-            height: (d: number, j: number) => (context.rowHeight(j) / 2),
-            fill: (d: number) => (d < threshold) ? colorValues[0] : colorValues[2]
+            height: (d, j) => (rowHeight / 2),
+            fill: (d) => (d < threshold) ? colorValues[0] : colorValues[2]
           });
         rect.exit().remove();
       }
@@ -306,16 +303,17 @@ class ThresholdCellRenderer implements ICellRendererFactory {
 
     const cellDimension = col.calculateCellDimension(col.getWidth());
     const threshold = col.getThreshold();
-    const colorValues = col.getColorValues();
+    const colorValues = col.getColorScale().range();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const data = col.getValue(d.v, d.dataIndex);
-      data.forEach((d: number, j: number) => {
+      const rowHeight = context.rowHeight(i);
+      data.forEach((d, j) => {
         ctx.beginPath();
         const xpos = (j * cellDimension);
-        const ypos = (d < threshold) ? (context.rowHeight(j) / 2) : 0;
+        const ypos = (d < threshold) ? (rowHeight / 2) : 0;
         ctx.fillStyle = (d < threshold) ? colorValues[0] : colorValues[2];
-        ctx.fillRect(xpos, ypos, cellDimension, context.rowHeight(j) / 2);
+        ctx.fillRect(xpos, ypos, cellDimension, rowHeight / 2);
       });
     };
   }
@@ -324,32 +322,23 @@ class ThresholdCellRenderer implements ICellRendererFactory {
 
 
 function verticalBarScale(domain: number[], threshold: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
-
-  const vBarScale = (domain[0] < threshold) ? (scale.range([0, rowHeight / 2])) : scale.range([0, rowHeight]);
-  return (vBarScale);
+  return (domain[0] < threshold) ? (scale.range([0, rowHeight / 2])) : scale.range([0, rowHeight]);
 }
 
 function verticalBarHeight(domain: number[], threshold: number, cellData: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
-
   return (domain[0] < threshold) ? (rowHeight / 2 - scale(cellData)) : scale(cellData);
 
 }
 
 function verticalBarYpos(domain: number[], threshold: number, cellData: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
-
-  let verticalBarYpos;
   if (domain[0] < threshold) {
-
-    verticalBarYpos = (cellData < threshold) ? (rowHeight / 2) : rowHeight / 2 - scale(cellData);   // For positive and negative value
+    return (cellData < threshold) ? (rowHeight / 2) : rowHeight / 2 - scale(cellData);   // For positive and negative value
   } else {
-    verticalBarYpos = rowHeight - scale(cellData);
+    return rowHeight - scale(cellData);
   }
-
-  return verticalBarYpos;
 }
 
 class VerticalBarCellRenderer implements ICellRendererFactory {
-
 
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
     const colorScale = col.getColorScale();
@@ -357,21 +346,20 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
     const defaultScale = col.getVerticalBarScale();
     const threshold = col.getThreshold();
     const domain = col.getDomain();
-    return {
 
+    return {
       template: `<g class="verticalbarcell"></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const scale: d3.scale.Linear<number,number> = verticalBarScale(domain, threshold, defaultScale, context.rowHeight(i));
+        const rowHeight = context.rowHeight(i);
+        const scale = verticalBarScale(domain, threshold, defaultScale, rowHeight);
         const rect = d3.select(n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
-        rect.enter().append('rect');
-        rect
-          .attr({
-            y: (d: number, j: number) => verticalBarYpos(domain, threshold, d, scale, context.rowHeight(j)),
-            x: (d: number, j: number) => (j * cellDimension),
-            width: cellDimension,
-            height: (d: number, j: number) => verticalBarHeight(domain, threshold, d, scale, context.rowHeight(j)),
-            fill: (d: number) => colorScale(d)
-          });
+        rect.enter().append('rect').attr('width', cellDimension);
+        rect.attr({
+          y: (d) => verticalBarYpos(domain, threshold, d, scale, rowHeight),
+          x: (d, j) => (j * cellDimension),
+          height: (d: number) => verticalBarHeight(domain, threshold, d, scale, rowHeight),
+          fill: colorScale
+        });
         rect.exit().remove();
       }
     };
@@ -387,13 +375,14 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const data = col.getValue(d.v, d.dataIndex);
-      const scale: d3.scale.Linear<number,number> = verticalBarScale(domain, threshold, defaultScale, context.rowHeight(i));
+      const rowHeight = context.rowHeight(i);
+      const scale = verticalBarScale(domain, threshold, defaultScale, rowHeight);
 
-      data.forEach((d: number, j: number) => {
+      data.forEach((d, j) => {
         const xpos = (j * cellDimension);
-        const ypos = verticalBarYpos(domain, threshold, d, scale, context.rowHeight(j));
+        const ypos = verticalBarYpos(domain, threshold, d, scale, rowHeight);
         ctx.fillStyle = colorScale(d);
-        ctx.fillRect(xpos, ypos, cellDimension, verticalBarHeight(domain, threshold, d, scale, context.rowHeight(j)));
+        ctx.fillRect(xpos, ypos, cellDimension, verticalBarHeight(domain, threshold, d, scale, rowHeight));
       });
     };
   }
@@ -403,98 +392,84 @@ class VerticalBarCellRenderer implements ICellRendererFactory {
 class BoxplotCellRenderer implements ICellRendererFactory {
 
   createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const userSort = col.getSortMethod();
+    const sortMethod = col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowPadding', 1));
     const domain = col.getDomain();
     const scale = d3.scale.linear().domain(domain).range([0, col.getWidth()]);
-    const currentSortColumn = col.findMyRanker().getSortCriteria().col;
+    const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
     return {
 
-      template: `<g class="boxplotcell"></g>`,
+      template: `<g class="boxplotcell">
+            <rect class="boxplotrect" y="${topPadding}"></rect>
+            <path class="boxplotallpath"></path>
+            <path class="boxplotsortpath" style="display: none"></path>
+        </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
-        /*
-         Just for targid case only when the data is not loaded fully.
-         // if(boxdata === null || undefined){
-         //   return;
-         // }
-         */
-        const scaledBoxdata = {
+        const rowHeight = context.rowHeight(i);
+
+        const scaled = {
           min: scale(rawBoxdata.min),
           median: scale(rawBoxdata.median),
           q1: scale(rawBoxdata.q1),
           q3: scale(rawBoxdata.q3),
           max: scale(rawBoxdata.max)
         };
+        attr(n.querySelector('rect'), {
+          x: scaled.q1,
+          width: (scaled.q3 - scaled.q1),
+          height: (rowHeight - (topPadding * 2))
+        });
+        const bottomPos = (rowHeight - topPadding);
+        const middlePos = (rowHeight - topPadding) / 2;
+        const path = `M${scaled.min},${scaled.median}L${scaled.q1},${scaled.median}M${scaled.min},${topPadding}L${scaled.min},${bottomPos}` +   //minimum line
+          `M${scaled.median},${topPadding}L${scaled.median},${bottomPos}` +   //median line
+          `M${scaled.q3},${middlePos}L${scaled.max},${middlePos}` +
+          `M${scaled.max},${topPadding}L${scaled.max},${bottomPos}`;   // maximum line
 
-        const minPos = scaledBoxdata.min, maxPos = scaledBoxdata.max, medianPos = scaledBoxdata.median, q3Pos = scaledBoxdata.q3, q1Pos = scaledBoxdata.q1;
-        const rect = d3.select(n).selectAll('rect').data([col.getValue(d.v, d.dataIndex)]);
-        rect.enter().append('rect');
-        rect
-          .attr('class', 'boxplotrect')
-          .attr({
-            y: topPadding,
-            x: (q1Pos),
-            width: (q3Pos - q1Pos),
-            height: (d: number, j: number) => (context.rowHeight(j) - (topPadding * 2))
-          });
-        rect.exit().remove();
-
-        const pathAll = d3.select(n).selectAll('path.boxplotallpath').data([col.getValue(d.v, d.dataIndex)]);
-        pathAll.enter().append('path');
-        const bottomPos = (context.rowHeight(i) - topPadding);
-        const middlePos = (context.rowHeight(i) - topPadding) / 2;
-        pathAll
-          .attr('class', 'boxplotallpath')
-          .attr('d', () =>
-            'M' + minPos + ',' + middlePos + 'L' + (q1Pos) + ',' + middlePos +
-            'M' + minPos + ',' + topPadding + 'L' + minPos + ',' + (bottomPos) +   //minimum line
-            'M' + medianPos + ',' + topPadding + 'L' + medianPos + ',' + bottomPos +   //median line
-            'M' + (q3Pos) + ',' + middlePos + 'L' + (maxPos) + ',' + middlePos +
-            'M' + maxPos + ',' + topPadding + 'L' + maxPos + ',' + bottomPos   // maximum line
-          );
-
-        d3.select(n).select('.boxplotsortpath').remove();
-        if (currentSortColumn === col) {
-          const pathSort = d3.select(n).selectAll('path.boxplotsortpath').data([col.getValue(d.v, d.dataIndex)]);
-          pathSort.enter().append('path')
-            .attr('class', 'boxplotsortpath')
-            .attr('d', () => 'M' + (scaledBoxdata[userSort]) + ',' + topPadding + 'L' + (scaledBoxdata[userSort]) + ',' + bottomPos);
-        }
-        pathAll.exit().remove();
-
+        attr(<SVGPathElement>n.querySelector('path.boxplotallpath'), {
+          d: path
+        });
+        attr(<SVGPathElement>n.querySelector('path.boxplotsortpath'), {
+          d: `M${scaled[sortMethod]},${topPadding}L${scaled[sortMethod]},${bottomPos}`
+        }, {
+          display: sortedByMe ? null : 'none'
+        });
       }
     };
   }
 
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const userSort = col.getSortMethod();
+    const sortMethod = col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowPadding', 1));
     const domain = col.getDomain();
 
     const scale = d3.scale.linear().domain([d3.min(domain), d3.max(domain)]).range([0, col.getWidth()]);
-    const currentSortColumn = col.findMyRanker().getSortCriteria().col;
+    const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
+
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      const rowHeight = context.rowHeight(i);
+
       // Rectangle
       const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
-      const scaledBoxdata = {
+      const scaled = {
         min: scale(rawBoxdata.min),
         median: scale(rawBoxdata.median),
         q1: scale(rawBoxdata.q1),
         q3: scale(rawBoxdata.q3),
         max: scale(rawBoxdata.max)
       };
-      const minPos = scaledBoxdata.min, maxPos = scaledBoxdata.max, medianPos = scaledBoxdata.median, q3Pos = scaledBoxdata.q3, q1Pos = scaledBoxdata.q1;
+      const minPos = scaled.min, maxPos = scaled.max, medianPos = scaled.median, q3Pos = scaled.q3, q1Pos = scaled.q1;
       ctx.fillStyle = '#e0e0e0';
       ctx.strokeStyle = 'black';
       ctx.beginPath();
-      ctx.rect((q1Pos), topPadding, ((q3Pos) - (q1Pos)), (context.rowHeight(i) - (topPadding * 2)));
+      ctx.rect((q1Pos), topPadding, ((q3Pos) - (q1Pos)), (rowHeight - (topPadding * 2)));
       ctx.fill();
       ctx.stroke();
 
       //Line
-      const bottomPos = (context.rowHeight(i) - topPadding);
-      const middlePos = (context.rowHeight(i) - topPadding) / 2;
+      const bottomPos = (rowHeight - topPadding);
+      const middlePos = (rowHeight - topPadding) / 2;
 
       ctx.strokeStyle = 'black';
       ctx.fillStyle = '#e0e0e0';
@@ -513,33 +488,29 @@ class BoxplotCellRenderer implements ICellRendererFactory {
       ctx.fill();
 
 
-      if (currentSortColumn === col) {
-
+      if (sortedByMe) {
         ctx.strokeStyle = 'red';
         ctx.fillStyle = '#ff0700';
         ctx.beginPath();
-        ctx.moveTo(scaledBoxdata[userSort], topPadding);
-        ctx.lineTo(scaledBoxdata[userSort], bottomPos);
+        ctx.moveTo(scaled[sortMethod], topPadding);
+        ctx.lineTo(scaled[sortMethod], bottomPos);
         ctx.stroke();
         ctx.fill();
       }
 
-
     };
   }
-
 }
 
-function setPathCalculate(setData: number[], cellDimension: number) {
+function setPathCalculate(setData: boolean[], cellDimension: number) {
 
   const catindexes = [];
-  setData.forEach((d: number, i: number) => (d === SetColumn.IN_GROUP) ? catindexes.push(i) : -1);
-  const leftX = ((d3.min(catindexes) * cellDimension) + (cellDimension / 2));
-  const rightX = ((d3.max(catindexes) * cellDimension) + (cellDimension / 2));
-  const pathdata = {left: leftX, right: rightX};
+  setData.forEach((d: boolean, i: number) => (d) ? catindexes.push(i) : -1);
 
-  return pathdata;
+  const left = (catindexes[0] * cellDimension) + (cellDimension / 2);
+  const right = (catindexes[catindexes.length - 1] * cellDimension) + (cellDimension / 2);
 
+  return {left, right};
 }
 
 
@@ -547,31 +518,32 @@ class SetCellRenderer implements ICellRendererFactory {
 
   createSVG(col: SetColumn, context: IDOMRenderContext): ISVGCellRenderer {
     const cellDimension = col.cellDimension();
-    const binaryValue = SetColumn.IN_GROUP;
     return {
-      template: `<g class="upsetcell"></g>`,
+      template: `<g class="upsetcell"><path class="upsetpath"></path></g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const circle = d3.select(n).selectAll('circle').data(col.getValue(d.v, d.dataIndex));
+        const rowHeight = context.rowHeight(i);
+        const value = col.getBinaryValue(d.v, d.dataIndex);
+        const hasTrueValues = value.some((d) => d); //some values are true?
+
+        const circle = d3.select(n).selectAll('circle').data(value);
         circle.enter().append('circle');
         circle
           .attr({
-            cy: (d: number, j: number) => (context.rowHeight(j) / 2),
-            cx: (d: number, j: number) => (j * cellDimension) + (cellDimension / 2),
+            cy: (d, j) => (rowHeight / 2),
+            cx: (d, j) => (j * cellDimension) + (cellDimension / 2),
             r: (cellDimension / 4),
-            class: (d: number) => (d === binaryValue) ? 'setcircle' : 'setcircleOpacity'
+            class: (d) => d ? 'setcircle' : 'setcircleOpacity'
           });
         circle.exit().remove();
-        const path = d3.select(n).selectAll('path').data(<any>[col.getValue(d.v, d.dataIndex)]);
-        const countCategory = col.getValue(d.v, d.dataIndex).filter((x) => x === binaryValue).length;
-        if (countCategory > 1) {
-          path.enter().append('path');
-          path
-            .attr('d', (d: number[], j: number) => {
-              const pathCordinate = setPathCalculate(d, cellDimension);
-              return 'M' + (pathCordinate.left) + ',' + (context.rowHeight(j) / 2) + 'L' + (pathCordinate.right) + ',' + (context.rowHeight(j) / 2);
-            })
-            .attr('class', 'upsetpath');
+
+        let path = '';
+        if (hasTrueValues) {
+          const pathCordinate = setPathCalculate(value, cellDimension);
+          path = `M${pathCordinate.left},${rowHeight / 2}L${pathCordinate.right},${rowHeight / 2}`;
         }
+        attr(n.querySelector('path'), {
+          d: path
+        });
       }
     };
   }
@@ -583,34 +555,34 @@ class SetCellRenderer implements ICellRendererFactory {
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Circle
-      const data = col.getValue(d.v, d.dataIndex);
-      const countCategory = data.filter((x) => x === binaryValue).length;
-      const radius = (context.rowHeight(i) / 3);
-      const pathCordinate = setPathCalculate(data, cellDimension);
+      const data = col.getBinaryValue(d.v, d.dataIndex);
+      const hasTrueValues = data.some((d) => d); //some values are true?
+      const rowHeight = context.rowHeight(i);
+      const radius = (rowHeight / 3);
 
-      if (countCategory > 1) {
-        ctx.fillStyle = 'black';
-        ctx.strokeStyle = 'black';
+      ctx.save();
+      ctx.fillStyle = 'black';
+      ctx.strokeStyle = 'black';
+      if (hasTrueValues) {
+        const pathCordinate = hasTrueValues ? setPathCalculate(data, cellDimension): null;
         ctx.beginPath();
-        ctx.moveTo((pathCordinate.left), (context.rowHeight(i) / 2));
-        ctx.lineTo((pathCordinate.right), (context.rowHeight(i) / 2));
+        ctx.moveTo((pathCordinate.left), (rowHeight/ 2));
+        ctx.lineTo((pathCordinate.right), (rowHeight / 2));
         ctx.fill();
         ctx.stroke();
       }
 
-      data.forEach((d: number, j: number) => {
-        const posy = (context.rowHeight(j) / 2);
+      data.forEach((d: boolean, j: number) => {
+        const posy = (rowHeight / 2);
         const posx = (j * cellDimension) + (cellDimension / 2);
-        ctx.fillStyle = 'black';
-        ctx.strokeStyle = 'black';
         ctx.beginPath();
-        ctx.globalAlpha = (d === binaryValue) ? 1 : 0.1;
+        ctx.globalAlpha = d ? 1 : 0.1;
         ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
         ctx.fill();
         ctx.stroke();
       });
 
-
+      ctx.restore();
     };
   }
 
@@ -619,30 +591,22 @@ class SetCellRenderer implements ICellRendererFactory {
 class CircleCellRenderer implements ICellRendererFactory {
 
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-
     return {
-
-      template: `<g class="circlecolumncell"></g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-
-        const circle = d3.select(n).selectAll('circle').data([col.getValue(d.v, d.dataIndex)]);
-        circle.enter().append('circle');
-        circle
-          .attr({
-            cy: (context.rowHeight(i) / 2),
-            cx: (col.getWidth() / 2),
-            r: (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex),
-            class: 'circlecolumn'
-          });
+      template: `<circle class="circlecolumn"></circle>`,
+      update: (n: SVGCircleElement, d: IDataRow, i: number) => {
+        const v = col.getValue(d.v, d.dataIndex);
+        attr(n, {
+          cy: (context.rowHeight(i) / 2),
+          cx: (col.getWidth() / 2),
+          r: (context.rowHeight(i) / 2) * v
+        });
       }
     };
   }
 
 
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-
       const posy = (context.rowHeight(i) / 2);
       const posx = (col.getWidth() / 2);
 
