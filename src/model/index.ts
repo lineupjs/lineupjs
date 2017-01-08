@@ -20,6 +20,10 @@ import CategoricalNumberColumn from './CategoricalNumberColumn';
 import NestedColumn from './NestedColumn';
 import DummyColumn from './DummyColumn';
 import LinkColumn from './LinkColumn';
+import SetColumn from './SetColumn';
+import MultiValueColumn from './MultiValueColumn';
+import BoxPlotColumn from './BoxPlotColumn';
+
 
 export {default as Column, IColumnDesc} from './Column';
 export {default as CompositeColumn} from './CompositeColumn';
@@ -60,6 +64,7 @@ export function defineColumn<T>(name: string, functions: any = {}) {
   return CustomColumn;
 }
 
+
 /**
  * utility for creating an action description with optional label
  * @param label
@@ -85,11 +90,13 @@ export function models() {
     actions: DummyColumn,
     annotate: AnnotateColumn,
     selection: SelectionColumn,
-
     max: MaxColumn,
     min: MinColumn,
     mean: MeanColumn,
     script: ScriptColumn,
-    nested: NestedColumn
+    nested: NestedColumn,
+    multiValue: MultiValueColumn,
+    set: SetColumn,
+    boxplot: BoxPlotColumn
   };
 }

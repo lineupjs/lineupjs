@@ -153,7 +153,9 @@ abstract class ADataProvider extends AEventDispatcher {
    * @return the new ranking
    */
   pushRanking(existing?: Ranking): Ranking {
+
     const r = this.cloneRanking(existing);
+
     this.insertRanking(r);
     return r;
   }

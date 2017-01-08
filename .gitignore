@@ -1,6 +1,5 @@
 /.tscache
 /.idea
-node_modules
 /build
 /tmp
 /dist
@@ -10,3 +9,4 @@ node_modules
 *.map
 src/**/*.js
 src/**/*.css
+/node_modules/

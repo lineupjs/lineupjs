@@ -13,10 +13,14 @@ import ScriptColumn from './model/ScriptColumn';
 import BooleanColumn from './model/BooleanColumn';
 import NumberColumn, {IMappingFunction} from './model/NumberColumn';
 import CategoricalNumberColumn from './model/CategoricalNumberColumn';
+import MultiValueColumn from './model/MultiValueColumn';
 import {offset} from './utils';
 import MappingEditor from './mappingeditor';
 import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
+import * as d3 from 'd3';
 import DataProvider from './provider/ADataProvider';
+import {Sort} from './model/BoxPlotColumn';
+
 
 export function dialogForm(title: string, body: string) {
   return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
@@ -25,6 +29,12 @@ export function dialogForm(title: string, body: string) {
     '<button type = "reset" class="cancel fa fa-times" title="cancel"></button>' +
     '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
 }
+
+export function sortDialogForm(title:string, body:string) {
+  return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
+    '<form onsubmit="return false">' + body;
+}
+
 
 /**
  * creates a simple popup dialog under the given attachment
@@ -67,6 +77,20 @@ export function makePopup(attachement: Selection<any>, title: string, body: stri
 
 }
 
+export function makeSortPopup(attachement: Selection<any>, title: string, body: string) {
+  const pos = offset(<Element>attachement.node());
+  const $popup = select('body').append('div')
+    .attr({
+      'class': 'lu-popup2'
+    }).style({
+      left: pos.left + 'px',
+      top: pos.top + 'px'
+    }).html(sortDialogForm(title, body));
+
+  return $popup;
+
+}
+
 /**
  * opens a rename dialog for the given column
  * @param column the column to rename
@@ -74,11 +98,13 @@ export function makePopup(attachement: Selection<any>, title: string, body: stri
  */
 export function openRenameDialog(column: Column, $header: d3.Selection<Column>) {
   const popup = makePopup($header, 'Rename Column', `
+
     <input type="text" size="15" value="${column.label}" required="required" autofocus="autofocus"><br>
     <input type="color" size="15" value="${column.color}" required="required"><br>
     <textarea rows="5">${column.description}</textarea><br>`);
 
   popup.select('.ok').on('click', function () {
+
     const newValue = popup.select('input[type="text"]').property('value');
     const newColor = popup.select('input[type="color"]').property('value');
     const newDescription = popup.select('textarea').property('value');
@@ -118,6 +144,78 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
     popup.remove();
   });
 }
+
+
+function hidePopClickedOutsideMe(popup, rendererContent, currentElement) {
+
+  d3.select('body').on('click', function () {
+    const outside = rendererContent.filter(currentElement).empty();
+    if (outside) {
+      popup.remove();
+      d3.select(this).on('click', null);
+    }
+  });
+}
+
+// Renderer type change
+export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>) {
+  let rendererType = column.getRendererType();
+  const rendererTypeList = column.getRendererList();
+
+  const popup = makeSortPopup($header, 'Change Visualization </br>', rendererTypeList.map(function (d, i) {
+    return `<input type="radio" name="renderertype" value=${d.type}  ${(rendererType === d.type) ? 'checked' : ''}> ${d.label}<br>`;
+
+  }).join('\n'));
+
+
+  function thiselement() {
+    return this === (<any>d3.event).target;
+
+  }
+
+  const rendererContent = d3.selectAll('input[name="renderertype"]');
+  rendererContent.on('change', function () {
+    const selectedRenderer = this;
+    rendererType = selectedRenderer.value;
+    column.setRendererType(selectedRenderer.value);
+
+  });
+
+//  To detect if the mouse click event is triggered outside the sort dialog
+  hidePopClickedOutsideMe(popup, rendererContent, thiselement);
+
+}
+
+// Sort  Dialog.
+export function sortDialog(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
+
+  let rank = column.getSortMethod();
+  const valueString: any = [Sort[Sort.min], Sort[Sort.max], Sort[Sort.median], Sort[Sort.q1], Sort[Sort.q3]];
+  const sortLabel: any = ['Min', 'Max', 'Median', 'Q1', 'Q3'];
+
+  const popup = makeSortPopup($header, 'Sort By <br>', valueString.map(function (d, i) {
+    return `<input type="radio" name="multivaluesort" value=${d}  ${(rank === d) ? 'checked' : ''} > ${sortLabel[i]} <br>`;
+
+  }).join('\n'));
+
+  function thiselement() {
+    return this === (<any>d3.event).target;
+  }
+
+  // To detect if the mouse click event is triggered outside the sort dialog
+  const sortContent = d3.selectAll('input[name=multivaluesort]');
+  sortContent.on('change', function () {
+    const selectedSortMethod = this;
+    rank = selectedSortMethod.value;
+    column.setSortMethod(rank);
+
+  });
+
+  // To detect if the mouse click event is triggered outside the sort dialog
+  hidePopClickedOutsideMe(popup, sortContent, thiselement);
+
+}
+
 
 /**
  * opens a search dialog for the given column
@@ -334,6 +432,7 @@ function openStringFilter(column: StringColumn, $header: d3.Selection<Column>) {
     //get value
     let search: any = $popup.select('input[type="text"]').property('value');
     const filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+
     if (filterMissing && search === '') {
       search = StringColumn.FILTER_MISSING;
     }
@@ -525,6 +624,7 @@ function openMappingEditor(column: NumberColumn, $header: d3.Selection<any>, dat
  */
 function openCategoricalMappingEditor(column: CategoricalNumberColumn, $header: d3.Selection<any>) {
   const bak = column.getFilter() || [];
+
 
   const scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 

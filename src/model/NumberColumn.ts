@@ -115,6 +115,7 @@ export class ScaleMappingFunction implements IMappingFunction {
   private s: IScale;
 
   constructor(domain: number[] = [0, 1], private type = 'linear', range: number[] = [0, 1]) {
+
     this.s = toScale(type).domain(fixDomain(domain, this.type)).range(range);
   }
 
@@ -300,6 +301,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
     }
+
+    const rendererList = [{type: 'number', label: 'Bar'},
+      {type: 'circle', label: 'Circle'}];
+
+    this.setRendererList(rendererList);
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -459,10 +465,12 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
   }
 
-  rendererType(): string {
+  getRendererType(): string {
     if (this.getCompressed()) {
       return NumberColumn.COMPRESSED_RENDERER;
     }
-    return super.rendererType();
+    return super.getRendererType();
   }
+
+
 }

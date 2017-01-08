@@ -26,11 +26,12 @@ export interface IColumnParent {
   insertAfter(col: Column, reference: Column): Column;
   findMyRanker(): Ranking;
   readonly fqid: string;
-
   indexOf(col: Column): number;
   at(index: number): Column;
   readonly fqpath: string;
+
 }
+
 
 export interface IColumnDesc {
   /**
@@ -55,6 +56,11 @@ export interface IColumnDesc {
    * css class to append to elements of this column
    */
   readonly cssClass?: string;
+
+  /**
+   * Default RendererType
+   */
+  readonly rendererType?: string;
 }
 
 export interface IStatistics {
@@ -76,6 +82,20 @@ export interface IColumnMetaData {
   readonly description: string;
   readonly color: string;
 }
+
+
+export interface IRendererInfo {
+
+  /*
+   Name of the current Renderer
+   */
+  rendererType?: string  ;
+  /*
+   * Possible RendererList
+   */
+  rendererList: {type: string, label: string}[];
+}
+
 
 /**
  * a column in LineUp
@@ -107,6 +127,8 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_DIRTY = 'dirty';
   static readonly EVENT_DIRTY_HEADER = 'dirtyHeader';
   static readonly EVENT_DIRTY_VALUES = 'dirtyValues';
+  static readonly EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
+  static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
 
   /**
    * the id of this column
@@ -139,9 +161,18 @@ export default class Column extends AEventDispatcher {
    */
   private compressed = false;
 
+
+  private rendererInfo: IRendererInfo;
+
+
   constructor(id: string, public readonly desc: IColumnDesc) {
     super();
     this.uid = fixCSS(id);
+    this.rendererInfo = {
+      rendererType: this.desc.rendererType || this.desc.type,
+      rendererList: []
+    };
+
     this.cssClass = desc.cssClass || '';
     this.metadata = {
       label: desc.label || this.id,
@@ -204,7 +235,7 @@ export default class Column extends AEventDispatcher {
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
-      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN,
+      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
   }
 
@@ -434,9 +465,27 @@ export default class Column extends AEventDispatcher {
    * determines the renderer type that should be used to render this column. By default the same type as the column itself
    * @return {string}
    */
-  rendererType(): string {
-    return this.desc.type;
+  getRendererType(): string {
+
+    return this.rendererInfo.rendererType;
   }
+
+  setRendererType(type: string) {
+
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.rendererType, this.rendererInfo.rendererType = type);
+  }
+
+  getRendererList() {
+
+    return this.rendererInfo.rendererList;
+  }
+
+  protected setRendererList(rendererList: {type: string, label: string}[]) {
+
+    this.rendererInfo.rendererList = rendererList;
+
+  }
+
 
   /**
    * describe the column if it is a sorting criteria
