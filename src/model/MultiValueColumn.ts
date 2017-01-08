@@ -184,6 +184,10 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     }
     this.sort = sort;
     this.fire([Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.sort, this.sort = sort);
+    // sort by me if not already sorted by me
+    if (this.findMyRanker().getSortCriteria().col !== this) {
+      this.sortByMe();
+    }
   }
 }
 

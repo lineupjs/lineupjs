@@ -160,21 +160,20 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (col !== null && col.findMyRanker() !== this) {
       return false; //not one of mine
     }
-    const bak = this.getSortCriteria();
     if (this.sortColumn === col && this.ascending === ascending) {
-
-      this.fire([Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,
-        Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], bak, this.getSortCriteria());
       return true; //already in this order
     }
     if (this.sortColumn) { //disable dirty listening
-
       this.sortColumn.on(Column.EVENT_DIRTY_VALUES + '.order', null);
+      this.sortColumn.on(Column.EVENT_SORTMETHOD_CHANGED + '.order', null);
     }
-    // const bak = this.getSortCriteria();
+    const bak = this.getSortCriteria();
+
     this.sortColumn = col;
     if (this.sortColumn) { //enable dirty listening
       this.sortColumn.on(Column.EVENT_DIRTY_VALUES + '.order', this.dirtyOrder);
+      // order is dirty if the sort method has changed
+      this.sortColumn.on(Column.EVENT_SORTMETHOD_CHANGED + '.order', this.dirtyOrder);
     }
     this.ascending = ascending;
     this.fire([Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,

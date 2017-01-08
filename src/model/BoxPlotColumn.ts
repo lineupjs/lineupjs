@@ -79,6 +79,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     }
     this.sort = sort;
     this.fire([Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.sort, this.sort = sort);
+    // sort by me if not already sorted by me
+    if (this.findMyRanker().getSortCriteria().col !== this) {
+      this.sortByMe();
+    }
   }
 
 }
