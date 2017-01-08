@@ -151,7 +151,9 @@ function hidePopClickedOutsideMe(popup: d3.Selection<any>, rendererContent: d3.S
   d3.select('body').on('click', function () {
     const target = (<MouseEvent>d3.event).target;
     // is none of the content element clicked?
-    const outside = rendererContent.filter((d) => d === target).empty();
+    const outside = rendererContent.filter(function () {
+      return this === target;
+    }).empty();
     if (outside) {
       popup.remove();
       d3.select(this).on('click', null);
@@ -185,7 +187,7 @@ export function sortDialog(column: IBoxPlotColumn, $header: d3.Selection<IBoxPlo
   const valueString = Object.keys(SORT_METHOD);
 
   const popup = makeSortPopup($header, 'Sort By <br>', valueString.map((d) => {
-    return `<input type="radio" name="multivaluesort" value=${d}  ${(bak === d) ? 'checked' : ''} > ${d.slice(0).toUpperCase() + d.slice(1)} <br>`;
+    return `<input type="radio" name="multivaluesort" value=${d}  ${(bak === d) ? 'checked' : ''} > ${d.slice(0,1).toUpperCase() + d.slice(1)} <br>`;
 
   }).join('\n'));
 
