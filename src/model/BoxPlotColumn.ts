@@ -20,6 +20,7 @@ export interface IBoxPlotColumn {
   getBoxPlotData(row: any, index: number): IBoxPlotData;
   getDomain(): number[];
   getSortMethod(): string;
+  setSortMethod(sortMethod: string);
 }
 
 

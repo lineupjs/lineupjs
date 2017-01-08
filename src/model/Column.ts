@@ -470,6 +470,10 @@ export default class Column extends AEventDispatcher {
   }
 
   setRendererType(renderer: string) {
+    if (renderer === this.rendererInfo.rendererType) {
+      // nothing changes
+      return;
+    }
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.rendererType, this.rendererInfo.rendererType = renderer);
   }
 
