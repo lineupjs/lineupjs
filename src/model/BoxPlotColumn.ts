@@ -1,37 +1,34 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import * as d3 from 'd3';
-import ValueColumn from './ValueColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
-import {IValueColumnDesc} from './ValueColumn';
-import {numSort} from './MultiValueColumn';
 
-export enum Sort {
-
-  min, max, median, q1, q3, mean
-}
+export const SORT_METHOD = {
+  min: 'min',
+  max: 'max',
+  median: 'median',
+  q1: 'q1',
+  q3: 'q3',
+  mean: 'mean'
+};
+// till it can be more spcific
+export declare type SortMethod = string;
 
 
 export interface IBoxPlotColumn {
   getBoxPlotData(row: any, index: number): IBoxPlotData;
   getDomain(): number[];
   getSortMethod(): string;
-  setSortMethod(sortCriteria: string): void;
-
 }
 
 
-export interface IBoxPlotColumnDesc extends IValueColumnDesc < IBoxPlotData > {
-
+export interface IBoxPlotColumnDesc extends IValueColumnDesc<IBoxPlotData> {
   readonly domain?: number [];
   readonly sort?: string;
-  readonly colorRange?: string[];
-
 }
 
 export  interface IBoxPlotData {
-
   readonly min: number;
   readonly max: number;
   readonly median: number;
@@ -40,44 +37,28 @@ export  interface IBoxPlotData {
 }
 
 
-export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implements IBoxPlotColumn {
-
-  private domain;
-  private sort;
-  private colorRange;
-  private sortMethodChanged: string;
-  protected boxPlotScale: d3.scale.Linear<number,number> = d3.scale.linear(); // For targid only
-
+export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
+  private readonly domain;
+  private sort: SortMethod;
 
   constructor(id: string, desc: IBoxPlotColumnDesc) {
     super(id, desc);
-    this.domain = d3.extent(desc.domain) || [1, 100];
-    this.sort = desc.sort || 'min';
-    this.colorRange = desc.colorRange || ['blue', 'red'];
-    this.sortMethodChanged = this.sort;
+    this.domain = desc.domain || [0, 100];
+    this.sort = desc.sort || SORT_METHOD.min;
 
   }
 
 
-  // // Only For Targid
-  // public setDomain(domain: number[]) {
-  //   this.domain = domain;
-  //   const bak = this.boxPlotScale.domain();
-  //   console.log(domain);
-  //   this.boxPlotScale.domain(domain);
-  //   this.fire([Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, domain);
-  // }
-
-
   compare(a: any, b: any, aIndex: number, bIndex: number): number {
-
     const aVal = (this.getValue(a, aIndex));
     const bVal = (this.getValue(b, bIndex));
-    if (aVal === null || bVal === null) {
+    if (aVal === null) {
+      return bVal === null ? 0 : +1;
+    }
+    if (bVal === null) {
       return -1;
     }
-    return (numSort(aVal[this.sortMethodChanged], (bVal[this.sortMethodChanged])));
-
+    return aVal[this.sort] - bVal[this.sort];
   }
 
   getDomain() {
@@ -85,32 +66,20 @@ export default class BoxPlotColumn extends ValueColumn< IBoxPlotData > implement
   }
 
   getBoxPlotData(row: any, index: number): IBoxPlotData {
-    const data = this.getValue(row, index);
-
-    if (data === null) {
-      return null;
-    }
-    const boxdata: IBoxPlotData = {
-      min: (data.min),
-      median: (data.median),
-      q1: (data.q1),
-      q3: (data.q3),
-      max: (data.max)
-    };
-
-    return boxdata;
+    return this.getValue(row, index);
   }
 
   getSortMethod() {
-    return this.sortMethodChanged;
+    return this.sort;
   }
 
   setSortMethod(sort: string) {
-    this.sortMethodChanged = sort;
-    const bak = this.sortByMe();
-    this.fire([Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.sortByMe());
+    if (this.sort === sort) {
+      return;
+    }
+    this.sort = sort;
+    this.fire([Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.sort, this.sort = sort);
   }
-
 
 }
 
