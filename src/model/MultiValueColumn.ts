@@ -81,7 +81,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     this.colorRange = desc.colorRange || ['blue', 'red'];
     this.sort = desc.sort || SORT_METHOD.min;
 
-    const rendererList = [{type: 'multiValueHeatmap', label: 'Heatmap'},
+    const rendererList = [{type: 'multiValue', label: 'Heatmap'},
       {type: 'boxplot', label: 'Boxplot'},
       {type: 'sparkline', label: 'Sparkline'},
       {type: 'threshold', label: 'Threshold'},

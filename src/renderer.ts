@@ -616,7 +616,7 @@ class SetCellRenderer implements ICellRendererFactory {
 
 }
 
-class CircleColumnCellRenderer implements ICellRendererFactory {
+class CircleCellRenderer implements ICellRendererFactory {
 
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
 
@@ -1287,12 +1287,12 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   min: combineCellRenderer,
   mean: combineCellRenderer,
   script: combineCellRenderer,
-  multiValueHeatmap: new HeatmapCellRenderer(),
+  multiValue: new HeatmapCellRenderer(),
   threshold: new ThresholdCellRenderer(),
   sparkline: new SparklineCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
   set: new SetCellRenderer(),
-  circle: new CircleColumnCellRenderer(),
+  circle: new CircleCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
   loading
 };
