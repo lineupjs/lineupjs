@@ -422,7 +422,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
         });
         const bottomPos = (rowHeight - topPadding);
         const middlePos = (rowHeight - topPadding) / 2;
-        const path = `M${scaled.min},${scaled.median}L${scaled.q1},${scaled.median}M${scaled.min},${topPadding}L${scaled.min},${bottomPos}` +   //minimum line
+        const path = `M${scaled.min},${middlePos}L${scaled.q1},${middlePos}M${scaled.min},${topPadding}L${scaled.min},${bottomPos}` +   //minimum line
           `M${scaled.median},${topPadding}L${scaled.median},${bottomPos}` +   //median line
           `M${scaled.q3},${middlePos}L${scaled.max},${middlePos}` +
           `M${scaled.max},${topPadding}L${scaled.max},${bottomPos}`;   // maximum line
