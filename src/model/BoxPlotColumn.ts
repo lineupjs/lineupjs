@@ -75,6 +75,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   }
 
   getSortMethod() {
+
     return this.sort;
   }
 

@@ -409,7 +409,6 @@ class BoxplotCellRenderer implements ICellRendererFactory {
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
         const rowHeight = context.rowHeight(i);
-        //console.log(rawBoxdata)
         const scaled = {
           min: scale(rawBoxdata.min),
           median: scale(rawBoxdata.median),
@@ -553,8 +552,6 @@ class SetCellRenderer implements ICellRendererFactory {
   createCanvas(col: SetColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     const cellDimension = col.cellDimension();
-    const binaryValue = SetColumn.IN_GROUP;
-
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Circle
       const data = col.getBinaryValue(d.v, d.dataIndex);
@@ -591,17 +588,29 @@ class SetCellRenderer implements ICellRendererFactory {
 }
 
 class CircleCellRenderer implements ICellRendererFactory {
+  private readonly renderValue;
+
+  constructor(renderValue = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {
+    this.renderValue = renderValue;
+  }
 
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const padding = context.option('rowPadding', 1);
     return {
-      template: `<circle class="circlecolumn"></circle>`,
-      update: (n: SVGCircleElement, d: IDataRow, i: number) => {
+      template: `<g class="bar">
+          <circle class="${col.cssClass}" style="fill: ${col.color}">
+            <title></title>
+          </circle>
+          <text class="number ${this.renderValue ? '' : 'hoverOnly'}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>
+        </g>`,
+      update: (n: SVGElement, d: IDataRow, i: number) => {
         const v = col.getValue(d.v, d.dataIndex);
-        attr(n, {
+        attr(<SVGCircleElement>n.querySelector('circle'), {
           cy: (context.rowHeight(i) / 2),
           cx: (col.getWidth() / 2),
           r: (context.rowHeight(i) / 2) * v
         });
+        attr(<SVGTextElement>n.querySelector('text'), {}).textContent = v;
       }
     };
   }
@@ -611,13 +620,16 @@ class CircleCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const posy = (context.rowHeight(i) / 2);
       const posx = (col.getWidth() / 2);
-
-      ctx.fillStyle = 'black';
-      ctx.strokeStyle = 'black';
+      ctx.fillStyle = this.colorOf(d.v, i, col);
+      ctx.strokeStyle = this.colorOf(d.v, i, col);
       ctx.beginPath();
       ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
+      if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
+        ctx.fillStyle = context.option('style.text', 'black');
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1, context.textHints);
+      }
     };
   }
 }

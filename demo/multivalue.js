@@ -41,7 +41,7 @@ window.onload = function () {
         'single_score': b.health_score2012
       });
 
-    })
+    });
 
     var multidata_min, multidata_max, multidata_length, singldata_min, singldata_max;
     newdata.forEach(function (d) {
@@ -57,7 +57,6 @@ window.onload = function () {
       singldata_max = d3.max([singldata_max, parseFloat(d.single_score)])
     });
 
-    //  console.log(smiles_bm)
 
     var arr1 = [];
     newdata.map(function (x, i) {
@@ -122,7 +121,7 @@ window.onload = function () {
         autoRotateLabels: true
       },
       body: {
-        renderer: 'svg',
+        renderer: 'canvas',
         freezeCols: 3
       },
       header: {
