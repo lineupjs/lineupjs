@@ -1228,7 +1228,7 @@ const loading = {
 };
 
 export const defaultCellRenderer = new DefaultCellRenderer();
-const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.getColorScale(d));
+const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.getColor(d));
 
 /**
  * default render factories
@@ -1237,7 +1237,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   rank: new DefaultCellRenderer('rank', 'right'),
   boolean: new DefaultCellRenderer('boolean', 'center'),
   number: new BarCellRenderer(),
-  ordinal: new BarCellRenderer(true, (d, i, col: any) => col.getColorScale(d)),
+  ordinal: new BarCellRenderer(true, (d, i, col: any) => col.getColor(d)),
   string: new StringCellRenderer(),
   selection,
   heatmap,
