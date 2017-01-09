@@ -18,7 +18,7 @@ import MultiValueColumn from './model/MultiValueColumn';
 import SetColumn from './model/SetColumn';
 import {IBoxPlotColumn} from './model/BoxPlotColumn';
 import CategoricalNumberColumn from './model/CategoricalNumberColumn';
-import CompositeNumberColumn from "./model/CompositeNumberColumn";
+import CompositeNumberColumn from './model/CompositeNumberColumn';
 
 
 /**
