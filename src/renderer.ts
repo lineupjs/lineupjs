@@ -17,6 +17,8 @@ import * as d3 from 'd3';
 import MultiValueColumn from './model/MultiValueColumn';
 import SetColumn from './model/SetColumn';
 import {IBoxPlotColumn} from './model/BoxPlotColumn';
+import CategoricalNumberColumn from './model/CategoricalNumberColumn';
+import CompositeNumberColumn from "./model/CompositeNumberColumn";
 
 
 /**
@@ -1228,7 +1230,7 @@ const loading = {
 };
 
 export const defaultCellRenderer = new DefaultCellRenderer();
-const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.getColor(d));
+const combineCellRenderer = new BarCellRenderer(false, (d, i, col: CompositeNumberColumn) => col.getColor(d, i));
 
 /**
  * default render factories
@@ -1237,7 +1239,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   rank: new DefaultCellRenderer('rank', 'right'),
   boolean: new DefaultCellRenderer('boolean', 'center'),
   number: new BarCellRenderer(),
-  ordinal: new BarCellRenderer(true, (d, i, col: any) => col.getColor(d)),
+  ordinal: new BarCellRenderer(true, (d, i, col: CategoricalNumberColumn) => col.getColor(d, i)),
   string: new StringCellRenderer(),
   selection,
   heatmap,
