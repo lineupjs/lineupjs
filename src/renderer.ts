@@ -407,7 +407,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
         const rowHeight = context.rowHeight(i);
-
+        //console.log(rawBoxdata)
         const scaled = {
           min: scale(rawBoxdata.min),
           median: scale(rawBoxdata.median),
@@ -564,9 +564,9 @@ class SetCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'black';
       if (hasTrueValues) {
-        const pathCordinate = hasTrueValues ? setPathCalculate(data, cellDimension): null;
+        const pathCordinate = hasTrueValues ? setPathCalculate(data, cellDimension) : null;
         ctx.beginPath();
-        ctx.moveTo((pathCordinate.left), (rowHeight/ 2));
+        ctx.moveTo((pathCordinate.left), (rowHeight / 2));
         ctx.lineTo((pathCordinate.right), (rowHeight / 2));
         ctx.fill();
         ctx.stroke();

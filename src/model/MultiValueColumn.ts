@@ -9,10 +9,18 @@ import {IBoxPlotColumn, IBoxPlotData, SORT_METHOD, SortMethod, compareBoxPlot} f
 /**
  * helper class to lazily compute box plotdata out of a given number array
  */
+
+
+export function numSort(a, b) {
+
+  return a - b;
+}
+
 class LazyBoxPlotData implements IBoxPlotData {
   private _sorted: number[] = null;
 
   constructor(private readonly values: number[]) {
+
 
   }
 
@@ -21,11 +29,16 @@ class LazyBoxPlotData implements IBoxPlotData {
    * @returns {number[]}
    */
   private get sorted() {
+
     if (this._sorted === null) {
-      this._sorted = this.values.slice().sort();
+
+      this._sorted = this.values.slice().sort(numSort);
+
     }
+
     return this._sorted;
   }
+
 
   get min() {
     return Math.min(...this.values);
@@ -36,10 +49,12 @@ class LazyBoxPlotData implements IBoxPlotData {
   }
 
   get median() {
+
     return median(this.sorted);
   }
 
   get q1() {
+
     return quantile(this.sorted, 0.25);
   }
 
@@ -159,6 +174,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     if (data === null) {
       return null;
     }
+    //console.log(data)
     return new LazyBoxPlotData(data);
   }
 
