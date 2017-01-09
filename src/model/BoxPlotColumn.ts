@@ -25,7 +25,7 @@ export interface IBoxPlotColumn {
 
 
 export interface IBoxPlotColumnDesc extends IValueColumnDesc<IBoxPlotData> {
-  readonly domain?: number [];
+  readonly domain?: number[];
   readonly sort?: string;
 }
 
@@ -35,6 +35,19 @@ export  interface IBoxPlotData {
   readonly median: number;
   readonly q1: number;
   readonly q3: number;
+}
+
+export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: number, bIndex: number) {
+  const aVal = (col.getBoxPlotData(a, aIndex));
+  const bVal = (col.getBoxPlotData(b, bIndex));
+  if (aVal === null) {
+    return bVal === null ? 0 : +1;
+  }
+  if (bVal === null) {
+    return -1;
+  }
+  const method = col.getSortMethod();
+  return aVal[method] - bVal[method];
 }
 
 
@@ -49,17 +62,8 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   }
 
-
   compare(a: any, b: any, aIndex: number, bIndex: number): number {
-    const aVal = (this.getValue(a, aIndex));
-    const bVal = (this.getValue(b, bIndex));
-    if (aVal === null) {
-      return bVal === null ? 0 : +1;
-    }
-    if (bVal === null) {
-      return -1;
-    }
-    return aVal[this.sort] - bVal[this.sort];
+    return compareBoxPlot(this, a, b, aIndex, bIndex);
   }
 
   getDomain() {
@@ -78,7 +82,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.sort === sort) {
       return;
     }
-    this.fire([Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.sort, this.sort = sort);
+    this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
     // sort by me if not already sorted by me
     if (this.findMyRanker().getSortCriteria().col !== this) {
       this.sortByMe();

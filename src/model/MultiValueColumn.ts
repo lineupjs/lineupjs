@@ -4,7 +4,7 @@
 import {median, quantile, mean, scale as d3scale} from 'd3';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
-import {IBoxPlotColumn, IBoxPlotData, SORT_METHOD, SortMethod} from './BoxPlotColumn';
+import {IBoxPlotColumn, IBoxPlotData, SORT_METHOD, SortMethod, compareBoxPlot} from './BoxPlotColumn';
 
 /**
  * helper class to lazily compute box plotdata out of a given number array
@@ -60,7 +60,7 @@ export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
   readonly domain?: number[];
   readonly sort?: string;
   readonly threshold?: number;
-  readonly dataLength?: number;
+  readonly dataLength: number;
   readonly colorRange?: string[];
 
 }
@@ -68,7 +68,7 @@ export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
 
 export default class MultiValueColumn extends ValueColumn<number[]> implements IBoxPlotColumn,IMultiValueColumn {
   private readonly domain;
-  private sort;
+  private sort: SortMethod;
   private readonly threshold;
   private readonly dataLength;
   private readonly colorRange;
@@ -103,18 +103,9 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     }
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    const aVal = this.getBoxPlotData(a, aIndex);
-    const bVal = this.getBoxPlotData(b, bIndex);
 
-    if (aVal === null) {
-      return bVal === null ? 0 : +1;
-    }
-    if (bVal === null) {
-      return -1;
-    }
-
-    return aVal[this.sort] - bVal[this.sort];
+  compare(a: any, b: any, aIndex: number, bIndex: number): number {
+    return compareBoxPlot(this, a, b, aIndex, bIndex);
   }
 
   getColorScale() {
@@ -144,12 +135,10 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   getSparklineScale() {
     const xposScale = d3scale.linear();
     const yposScale = d3scale.linear();
-    const sparklineScale = {
+    return {
       xScale: xposScale.domain([0, this.dataLength - 1]),
       yScale: yposScale.domain(this.domain)
     };
-
-    return sparklineScale;
   }
 
 
@@ -164,7 +153,6 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   getVerticalBarScale() {
     return d3scale.linear().domain(this.domain);
   }
-
 
   getBoxPlotData(row: any, index: number): IBoxPlotData {
     const data = this.getValue(row, index);
@@ -182,7 +170,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     if (this.sort === sort) {
       return;
     }
-    this.fire([Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.sort, this.sort = sort);
+    this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
     // sort by me if not already sorted by me
     if (this.findMyRanker().getSortCriteria().col !== this) {
       this.sortByMe();
