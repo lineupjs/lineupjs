@@ -18,13 +18,14 @@ import DataProvider from '../provider/ADataProvider';
 import MultiValueColumn from '../model/MultiValueColumn';
 import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
 
+import SearchDialog from '../dialogs/SearchDialog';
+import RenameDialog from '../dialogs/RenameDialog';
+
 import {
   filterDialogs,
   openEditWeightsDialog,
   openEditLinkDialog,
   openEditScriptDialog,
-  openRenameDialog,
-  openSearchDialog,
   sortDialog,
   rendererTypeDialog
 } from '../ui_dialogs';
@@ -325,7 +326,7 @@ export default class HeaderRenderer {
 
     //rename
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
-      openRenameDialog(d, d3.select(this.parentNode.parentNode));
+      new RenameDialog(d, d3.select(this.parentNode.parentNode));
       (<MouseEvent>d3.event).stopPropagation();
     });
     //clone
@@ -365,7 +366,7 @@ export default class HeaderRenderer {
     });
     //search
     $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
-      openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
+      new SearchDialog(d, d3.select(this.parentNode.parentNode), provider);
       (<MouseEvent>d3.event).stopPropagation();
     });
     //edit weights

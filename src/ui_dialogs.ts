@@ -21,6 +21,71 @@ import DataProvider from './provider/ADataProvider';
 import {IBoxPlotColumn, SORT_METHOD} from './model/BoxPlotColumn';
 
 
+abstract class ADialog {
+
+  private readonly column: Column;
+  private readonly attachment;
+  private readonly title: string;
+
+
+  constructor(column, $header, title) {
+    this.column = column;
+    this.attachment = $header;
+    this.title = title;
+  }
+
+  abstract openDialog();
+
+  getColumn() {
+    return this.column;
+  }
+
+  /**
+   * creates a simple popup dialog under the given attachment
+   * @param attachment
+   * @param title
+   * @param body
+   * @returns {Selection<any>}
+   */
+  makePopup(body: string) {
+      const pos = offset(<Element>this.attachment.node());
+      const $popup = select('body').append('div')
+        .attr({
+          'class': 'lu-popup2'
+        }).style({
+          left: pos.left + 'px',
+          top: pos.top + 'px'
+        }).html(dialogForm(this.title, body));
+
+      function movePopup() {
+        //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
+        //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
+        //const mouse = d3.mouse(this.parentElement);
+        $popup.style({
+          left: (this.parentElement.offsetLeft + (<any>d3event).dx) + 'px',
+          top: (this.parentElement.offsetTop + (<any>d3event).dy) + 'px'
+        });
+      }
+
+      $popup.select('span.lu-popup-title').call(behavior.drag().on('drag', movePopup));
+      $popup.on('keydown', () => {
+        if ((<KeyboardEvent>d3event).which === 27) {
+          $popup.remove();
+        }
+      });
+      const auto = <HTMLInputElement>$popup.select('input[autofocus]').node();
+      if (auto) {
+        auto.focus();
+      }
+      return $popup;
+  }
+
+
+}
+
+export default ADialog;
+
+
 export function dialogForm(title: string, body: string, addCloseButtons = true) {
   return `<span style="font-weight: bold" class="lu-popup-title">${title}</span>
             <form onsubmit="return false">
@@ -39,13 +104,13 @@ export function sortDialogForm(title: string, body: string) {
 
 /**
  * creates a simple popup dialog under the given attachment
- * @param attachement
+ * @param attachment
  * @param title
  * @param body
  * @returns {Selection<any>}
  */
-export function makePopup(attachement: Selection<any>, title: string, body: string) {
-  const pos = offset(<Element>attachement.node());
+export function makePopup(attachment: Selection<any>, title: string, body: string) {
+  const pos = offset(<Element>attachment.node());
   const $popup = select('body').append('div')
     .attr({
       'class': 'lu-popup2'
@@ -91,33 +156,6 @@ export function makeSortPopup(attachement: Selection<any>, title: string, body: 
   return $popup;
 
 }
-
-/**
- * opens a rename dialog for the given column
- * @param column the column to rename
- * @param $header the visual header element of this column
- */
-export function openRenameDialog(column: Column, $header: d3.Selection<Column>) {
-  const popup = makePopup($header, 'Rename Column', `
-
-    <input type="text" size="15" value="${column.label}" required="required" autofocus="autofocus"><br>
-    <input type="color" size="15" value="${column.color}" required="required"><br>
-    <textarea rows="5">${column.description}</textarea><br>`);
-
-  popup.select('.ok').on('click', function () {
-
-    const newValue = popup.select('input[type="text"]').property('value');
-    const newColor = popup.select('input[type="color"]').property('value');
-    const newDescription = popup.select('textarea').property('value');
-    column.setMetaData({label: newValue, color: newColor, description: newDescription});
-    popup.remove();
-  });
-
-  popup.select('.cancel').on('click', function () {
-    popup.remove();
-  });
-}
-
 
 /**
  * opens a dialog for editing the link of a column
@@ -198,47 +236,6 @@ export function sortDialog(column: IBoxPlotColumn, $header: d3.Selection<IBoxPlo
 
   hidePopClickedOutsideMe(popup, sortContent);
 
-}
-
-
-/**
- * opens a search dialog for the given column
- * @param column the column to rename
- * @param $header the visual header element of this column
- * @param provider the data provider for the actual search
- */
-export function openSearchDialog(column: Column, $header: d3.Selection<Column>, provider: DataProvider) {
-  const popup = makePopup($header, 'Search', '<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
-
-  popup.select('input[type="text"]').on('input', function () {
-    let search: any = (<HTMLInputElement>this).value;
-    if (search.length >= 3) {
-      const isRegex = popup.select('input[type="checkbox"]').property('checked');
-      if (isRegex) {
-        search = new RegExp(search);
-      }
-      provider.searchAndJump(search, column);
-    }
-  });
-
-  function updateImpl() {
-    let search = popup.select('input[type="text"]').property('value');
-    const isRegex = popup.select('input[type="text"]').property('checked');
-    if (search.length > 0) {
-      if (isRegex) {
-        search = new RegExp(search);
-      }
-      provider.searchAndJump(search, column);
-    }
-    popup.remove();
-  }
-
-  popup.select('input[type="checkbox"]').on('change', updateImpl);
-  popup.select('.ok').on('click', updateImpl);
-
-  popup.select('.cancel').on('click', function () {
-    popup.remove();
-  });
 }
 
 /**
