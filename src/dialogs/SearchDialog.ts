@@ -1,5 +1,5 @@
 import Column from '../model/Column';
-import ADialog from '../ui_dialogs'
+import ADialog from '../ui_dialogs';
 import DataProvider from '../provider/ADataProvider';
 
 
