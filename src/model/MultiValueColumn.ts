@@ -1,97 +1,86 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import * as d3 from 'd3';
-import ValueColumn from './ValueColumn';
+import {median, quantile, mean, scale as d3scale, ascending} from 'd3';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
-import {IBoxPlotColumn, IBoxPlotData, Sort, default as BoxPlotColumn} from './BoxPlotColumn';
-import {IValueColumnDesc} from './ValueColumn';
+import {IBoxPlotColumn, IBoxPlotData, SORT_METHOD, SortMethod, compareBoxPlot} from './BoxPlotColumn';
 
+/**
+ * helper class to lazily compute box plotdata out of a given number array
+ */
+class LazyBoxPlotData implements IBoxPlotData {
+  private _sorted: number[] = null;
 
-export class CustomSortCalculation {
-  private readonly aVal: number[];
-  private readonly bVal: number[];
-
-  constructor(aVal: number[], bVal: number[]) {
-    this.bVal = bVal;
-    this.aVal = aVal;
+  constructor(private readonly values: number[]) {
   }
 
-  min() {
-
-    return (d3.min(this.aVal) - d3.min(this.bVal));
+  /**
+   * lazy compute sorted array
+   * @returns {number[]}
+   */
+  private get sorted() {
+    if (this._sorted === null) {
+      this._sorted = this.values.slice().sort(ascending);
+    }
+    return this._sorted;
   }
 
-  max() {
 
-    return (d3.max(this.aVal) - d3.max(this.bVal));
+  get min() {
+    return Math.min(...this.values);
   }
 
-  median() {
-
-    return (d3.median(this.aVal.slice().sort(numSort))) - (d3.median(this.bVal.slice().sort(numSort)));
+  get max() {
+    return Math.max(...this.values);
   }
 
-  q1() {
-
-    return (d3.quantile(this.aVal.slice().sort(numSort), 0.25)) - (d3.quantile(this.bVal.slice().sort(numSort), 0.25));
+  get median() {
+    return median(this.sorted);
   }
 
-  q3() {
-
-    return (d3.quantile(this.aVal.slice().sort(numSort), 0.75)) - (d3.quantile(this.bVal.slice().sort(numSort), 0.75));
+  get q1() {
+    return quantile(this.sorted, 0.25);
   }
 
-}
+  get q3() {
+    return quantile(this.sorted, 0.75);
+  }
 
-
-export function numSort(a, b) {
-
-  return a - b;
+  get mean() {
+    return mean(this.values);
+  }
 }
 
 export interface IMultiValueColumn {
-  isLoaded(): boolean;
   getNumber(row: any, index: number): number[];
 }
 
-export interface IMultiValueColumnDesc extends IValueColumnDesc <number[]> {
-
-  readonly domain?: number [];
+export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
+  readonly domain?: number[];
   readonly sort?: string;
   readonly threshold?: number;
-  readonly dataLength?: number;
-  readonly colorRange?: any;
-
+  readonly dataLength: number;
+  readonly colorRange?: string[];
 }
 
 
 export default class MultiValueColumn extends ValueColumn<number[]> implements IBoxPlotColumn,IMultiValueColumn {
-
-  private domain;
-  private sort;
-  private threshold;
-  private dataLength;
-  private colorRange;
-  private sortMethodChanged;
-
-  private colorScale: d3.scale.Linear<number, string> = d3.scale.linear<number, string>();
-  private xposScale: d3.scale.Linear<number, number> = d3.scale.linear();
-  private yposScale: d3.scale.Linear<number, number> = d3.scale.linear();
-  private verticalBarScale: d3.scale.Linear<number,number> = d3.scale.linear();
-
+  private readonly domain;
+  private sort: SortMethod;
+  private readonly threshold;
+  private readonly dataLength;
+  private readonly colorRange;
 
   constructor(id: string, desc: IMultiValueColumnDesc) {
     super(id, desc);
-    this.domain = d3.extent(desc.domain);
+    this.domain = desc.domain || [0, 100];
     this.dataLength = desc.dataLength;
     this.threshold = desc.threshold || 0;
     this.colorRange = desc.colorRange || ['blue', 'red'];
-    this.sort = desc.sort || Sort[Sort.min];
+    this.sort = desc.sort || SORT_METHOD.min;
 
-    this.sortMethodChanged = this.sort;
-
-    const rendererList = [{type: 'multiValueHeatmap', label: 'Heatmap'},
+    const rendererList = [{type: 'multiValue', label: 'Heatmap'},
       {type: 'boxplot', label: 'Boxplot'},
       {type: 'sparkline', label: 'Sparkline'},
       {type: 'threshold', label: 'Threshold'},
@@ -102,50 +91,36 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   }
 
 
-  getColorValues(): string[] {
+  private getColorValues(): string[] {
     if (this.colorRange.length > 2) {
-      const minColor = this.colorRange[0];
-      const zeroColor = this.colorRange[1];
-      const maxColor = this.colorRange[2];
-      const colorRange = [minColor, zeroColor, maxColor];
-      return colorRange;
-
+      return this.colorRange.slice();
     } else {
       const minColor = this.colorRange[0];
       const zeroColor = 'white';
       const maxColor = this.colorRange[1];
-      const colorRange = [minColor, zeroColor, maxColor];
-      return colorRange;
+      return [minColor, zeroColor, maxColor];
     }
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
 
-    const aVal = (this.getValue(a, aIndex));
-    const bVal = (this.getValue(b, bIndex));
-
-    if (aVal === null || bVal === null) {
-      return -1;
-    }
-
-    const sort: any = new CustomSortCalculation(aVal, bVal);
-    const f = sort[this.sortMethodChanged].bind(sort);
-    return f();
+  compare(a: any, b: any, aIndex: number, bIndex: number): number {
+    return compareBoxPlot(this, a, b, aIndex, bIndex);
   }
 
   getColorScale() {
-    const colorValues: any = this.getColorValues();
+    const colorScale = d3scale.linear<string, number>();
+    const colorValues = this.getColorValues();
     if (this.domain[0] < 0) {
-      this.colorScale
+      colorScale
         .domain([this.domain[0], 0, this.domain[1]])
         .range(colorValues);
 
     } else {
-      this.colorScale
+      colorScale
         .domain([this.domain[0], this.domain[1]])
         .range(colorValues);
     }
-    return this.colorScale;
+    return colorScale;
   }
 
   getNumber(row: any, index: number) {
@@ -153,62 +128,53 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   }
 
   calculateCellDimension(width: number) {
-
-    return (width * 1 / this.dataLength);
+    return (width / this.dataLength);
   }
 
   getSparklineScale() {
-
-    const sparklineScale = {
-      xScale: this.xposScale.domain([0, this.dataLength - 1]),
-      yScale: this.yposScale.domain(this.domain)
+    const xposScale = d3scale.linear();
+    const yposScale = d3scale.linear();
+    return {
+      xScale: xposScale.domain([0, this.dataLength - 1]),
+      yScale: yposScale.domain(this.domain)
     };
-
-    return sparklineScale;
   }
 
 
-  getDomain(): number[] {
+  getDomain() {
     return this.domain;
   }
 
-  getThreshold(): number {
+  getThreshold() {
     return this.threshold;
   }
 
   getVerticalBarScale() {
-
-    const vScale = this.verticalBarScale.domain(this.domain);
-    return vScale;
+    return d3scale.linear().domain(this.domain);
   }
-
 
   getBoxPlotData(row: any, index: number): IBoxPlotData {
     const data = this.getValue(row, index);
-    const minVal = Math.min(...data);
-    const maxVal = Math.max(...data);
-    const sorteddata = data.slice().sort(numSort);
-
-    const boxdata: IBoxPlotData = {
-      min: (minVal),
-      median: (d3.quantile(sorteddata, 0.50)),
-      q1: (d3.quantile(sorteddata, 0.25)),
-      q3: (d3.quantile(sorteddata, 0.75)),
-      max: (maxVal)
-    };
-    return (boxdata);
+    if (data === null) {
+      return null;
+    }
+    //console.log(data)
+    return new LazyBoxPlotData(data);
   }
 
   getSortMethod() {
-    return this.sortMethodChanged;
+    return this.sort;
   }
 
   setSortMethod(sort: string) {
-    this.sortMethodChanged = sort;
-    const bak = this.sortByMe();
-    this.fire([Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.sortByMe());
-
+    if (this.sort === sort) {
+      return;
+    }
+    this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
+    // sort by me if not already sorted by me
+    if (this.findMyRanker().getSortCriteria().col !== this) {
+      this.sortByMe();
+    }
   }
-
 }
 

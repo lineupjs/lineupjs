@@ -58,7 +58,7 @@ export interface IColumnDesc {
   readonly cssClass?: string;
 
   /**
-   * Default RendererType
+   * default renderer to use
    */
   readonly rendererType?: string;
 }
@@ -89,7 +89,7 @@ export interface IRendererInfo {
   /*
    Name of the current Renderer
    */
-  rendererType?: string  ;
+  rendererType: string;
   /*
    * Possible RendererList
    */
@@ -162,7 +162,7 @@ export default class Column extends AEventDispatcher {
   private compressed = false;
 
 
-  private rendererInfo: IRendererInfo;
+  private readonly rendererInfo: IRendererInfo;
 
 
   constructor(id: string, public readonly desc: IColumnDesc) {
@@ -466,24 +466,23 @@ export default class Column extends AEventDispatcher {
    * @return {string}
    */
   getRendererType(): string {
-
     return this.rendererInfo.rendererType;
   }
 
-  setRendererType(type: string) {
-
-    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.rendererType, this.rendererInfo.rendererType = type);
+  setRendererType(renderer: string) {
+    if (renderer === this.rendererInfo.rendererType) {
+      // nothing changes
+      return;
+    }
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.rendererType, this.rendererInfo.rendererType = renderer);
   }
 
   getRendererList() {
-
     return this.rendererInfo.rendererList;
   }
 
   protected setRendererList(rendererList: {type: string, label: string}[]) {
-
     this.rendererInfo.rendererList = rendererList;
-
   }
 
 

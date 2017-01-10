@@ -13,26 +13,27 @@ import ScriptColumn from './model/ScriptColumn';
 import BooleanColumn from './model/BooleanColumn';
 import NumberColumn, {IMappingFunction} from './model/NumberColumn';
 import CategoricalNumberColumn from './model/CategoricalNumberColumn';
-import MultiValueColumn from './model/MultiValueColumn';
 import {offset} from './utils';
 import MappingEditor from './mappingeditor';
 import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
 import * as d3 from 'd3';
 import DataProvider from './provider/ADataProvider';
-import {Sort} from './model/BoxPlotColumn';
+import {IBoxPlotColumn, SORT_METHOD} from './model/BoxPlotColumn';
 
 
-export function dialogForm(title: string, body: string) {
-  return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
-    '<form onsubmit="return false">' +
-    body + '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
-    '<button type = "reset" class="cancel fa fa-times" title="cancel"></button>' +
-    '<button type = "button" class="reset fa fa-undo" title="reset"></button></form>';
+export function dialogForm(title: string, body: string, addCloseButtons = true) {
+  return `<span style="font-weight: bold" class="lu-popup-title">${title}</span>
+            <form onsubmit="return false">
+                ${body}
+                ${addCloseButtons ?
+    '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
+    '<button type = "reset" class="cancel fa fa-times" title="cancel">' +
+    '</button><button type = "button" class="reset fa fa-undo" title="reset"></button></form>' : ''}
+            </form>`;
 }
 
-export function sortDialogForm(title:string, body:string) {
-  return '<span style="font-weight: bold" class="lu-popup-title">' + title + '</span>' +
-    '<form onsubmit="return false">' + body;
+export function sortDialogForm(title: string, body: string) {
+  return dialogForm(title, body, false);
 }
 
 
@@ -146,10 +147,13 @@ export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Col
 }
 
 
-function hidePopClickedOutsideMe(popup, rendererContent, currentElement) {
-
+function hidePopClickedOutsideMe(popup: d3.Selection<any>, rendererContent: d3.Selection<any>) {
   d3.select('body').on('click', function () {
-    const outside = rendererContent.filter(currentElement).empty();
+    const target = (<MouseEvent>d3.event).target;
+    // is none of the content element clicked?
+    const outside = rendererContent.filter(function () {
+      return this === target;
+    }).empty();
     if (outside) {
       popup.remove();
       d3.select(this).on('click', null);
@@ -159,60 +163,40 @@ function hidePopClickedOutsideMe(popup, rendererContent, currentElement) {
 
 // Renderer type change
 export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>) {
-  let rendererType = column.getRendererType();
+  const bak = column.getRendererType();
   const rendererTypeList = column.getRendererList();
 
-  const popup = makeSortPopup($header, 'Change Visualization </br>', rendererTypeList.map(function (d, i) {
-    return `<input type="radio" name="renderertype" value=${d.type}  ${(rendererType === d.type) ? 'checked' : ''}> ${d.label}<br>`;
-
+  const popup = makeSortPopup($header, 'Change Visualization </br>', rendererTypeList.map((d) => {
+    return `<input type="radio" name="renderertype" value=${d.type}  ${(bak === d.type) ? 'checked' : ''}> ${d.label}<br>`;
   }).join('\n'));
 
 
-  function thiselement() {
-    return this === (<any>d3.event).target;
-
-  }
-
   const rendererContent = d3.selectAll('input[name="renderertype"]');
   rendererContent.on('change', function () {
-    const selectedRenderer = this;
-    rendererType = selectedRenderer.value;
-    column.setRendererType(selectedRenderer.value);
+    column.setRendererType(this.value);
 
   });
 
-//  To detect if the mouse click event is triggered outside the sort dialog
-  hidePopClickedOutsideMe(popup, rendererContent, thiselement);
+  hidePopClickedOutsideMe(popup, rendererContent);
 
 }
 
 // Sort  Dialog.
-export function sortDialog(column: MultiValueColumn, $header: d3.Selection<MultiValueColumn>) {
+export function sortDialog(column: IBoxPlotColumn, $header: d3.Selection<IBoxPlotColumn>) {
+  const bak = column.getSortMethod();
+  const valueString = Object.keys(SORT_METHOD);
 
-  let rank = column.getSortMethod();
-  const valueString: any = [Sort[Sort.min], Sort[Sort.max], Sort[Sort.median], Sort[Sort.q1], Sort[Sort.q3]];
-  const sortLabel: any = ['Min', 'Max', 'Median', 'Q1', 'Q3'];
-
-  const popup = makeSortPopup($header, 'Sort By <br>', valueString.map(function (d, i) {
-    return `<input type="radio" name="multivaluesort" value=${d}  ${(rank === d) ? 'checked' : ''} > ${sortLabel[i]} <br>`;
+  const popup = makeSortPopup($header, 'Sort By <br>', valueString.map((d) => {
+    return `<input type="radio" name="multivaluesort" value=${d}  ${(bak === d) ? 'checked' : ''} > ${d.slice(0,1).toUpperCase() + d.slice(1)} <br>`;
 
   }).join('\n'));
 
-  function thiselement() {
-    return this === (<any>d3.event).target;
-  }
-
-  // To detect if the mouse click event is triggered outside the sort dialog
   const sortContent = d3.selectAll('input[name=multivaluesort]');
   sortContent.on('change', function () {
-    const selectedSortMethod = this;
-    rank = selectedSortMethod.value;
-    column.setSortMethod(rank);
-
+    column.setSortMethod(this.value);
   });
 
-  // To detect if the mouse click event is triggered outside the sort dialog
-  hidePopClickedOutsideMe(popup, sortContent, thiselement);
+  hidePopClickedOutsideMe(popup, sortContent);
 
 }
 
