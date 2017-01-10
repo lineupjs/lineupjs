@@ -20,11 +20,11 @@ import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
 
 import SearchDialog from '../dialogs/SearchDialog';
 import RenameDialog from '../dialogs/RenameDialog';
+import EditLinkDialog from '../dialogs/EditLinkDialog';
 
 import {
   filterDialogs,
   openEditWeightsDialog,
-  openEditLinkDialog,
   openEditScriptDialog,
   sortDialog,
   rendererTypeDialog
@@ -351,7 +351,7 @@ export default class HeaderRenderer {
 
     //edit link
     $node.filter((d) => d instanceof LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-      openEditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), [].concat((<any>d.desc).templates || [], that.options.linkTemplates), that.options.idPrefix);
+      new EditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), [].concat((<any>d.desc).templates || [], that.options.linkTemplates), that.options.idPrefix);
       (<MouseEvent>d3.event).stopPropagation();
     });
     //edit script
