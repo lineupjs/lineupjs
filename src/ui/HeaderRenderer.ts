@@ -21,7 +21,7 @@ import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
 import SearchDialog from '../dialogs/SearchDialog';
 import RenameDialog from '../dialogs/RenameDialog';
 import EditLinkDialog from '../dialogs/EditLinkDialog';
-import RendererTypeDialog from '../dialogs/RendererTypeDialog'
+import RendererTypeDialog from '../dialogs/RendererTypeDialog';
 
 import {
   filterDialogs,

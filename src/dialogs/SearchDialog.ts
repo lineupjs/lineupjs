@@ -4,7 +4,6 @@ import DataProvider from '../provider/ADataProvider';
 import * as d3 from 'd3';
 
 
-
 export default class SearchDialog extends ADialog {
 
   /**
@@ -22,7 +21,8 @@ export default class SearchDialog extends ADialog {
     const popup = this.makePopup('<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
 
     popup.select('input[type="text"]').on('input', () => {
-      let search: any = (<HTMLInputElement>(<Event>d3.event).target).value;
+      const target = (<Event>d3.event).target;
+      let search: any = (<HTMLInputElement>target).value;
       if (search.length >= 3) {
         const isRegex = popup.select('input[type="checkbox"]').property('checked');
         if (isRegex) {

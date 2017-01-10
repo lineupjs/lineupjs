@@ -3,7 +3,6 @@ import ADialog from '../ui_dialogs';
 import * as d3 from 'd3';
 
 
-
 export default class RedererTypeDialog extends ADialog {
   constructor(private readonly column: Column, $header: d3.Selection<Column>, title: string = 'Change Visualization') {
     super($header, title);
