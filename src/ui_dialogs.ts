@@ -42,7 +42,7 @@ abstract class ADialog {
         }).style({
           left: pos.left + 'px',
           top: pos.top + 'px'
-        }).html(dialogForm(this.title, body));
+        }).html(this.dialogForm(this.title, body));
 
       function movePopup() {
         //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
@@ -67,7 +67,48 @@ abstract class ADialog {
       return $popup;
   }
 
+  makeSortPopup(body: string) {
+    const pos = offset(<Element>this.attachment.node());
+    const $popup = select('body').append('div')
+      .attr({
+        'class': 'lu-popup2'
+      }).style({
+        left: pos.left + 'px',
+        top: pos.top + 'px'
+      }).html(this.sortDialogForm(this.title, body));
 
+    return $popup;
+
+  }
+
+  dialogForm(title: string, body: string, addCloseButtons = true) {
+    return `<span style="font-weight: bold" class="lu-popup-title">${title}</span>
+            <form onsubmit="return false">
+                ${body}
+                ${addCloseButtons ?
+      '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
+      '<button type = "reset" class="cancel fa fa-times" title="cancel">' +
+      '</button><button type = "button" class="reset fa fa-undo" title="reset"></button></form>' : ''}
+            </form>`;
+  }
+
+  sortDialogForm(title: string, body: string) {
+    return this.dialogForm(title, body, false);
+  }
+
+  hidePopupOnClickOutside(popup: d3.Selection<any>, rendererContent: d3.Selection<any>) {
+    d3.select('body').on('click', function () {
+      const target = (<MouseEvent>d3.event).target;
+      // is none of the content element clicked?
+      const outside = rendererContent.filter(function () {
+        return this === target;
+      }).empty();
+      if (outside) {
+        popup.remove();
+        d3.select(this).on('click', null);
+      }
+    });
+  }
 }
 
 export default ADialog;
@@ -144,34 +185,6 @@ export function makeSortPopup(attachement: Selection<any>, title: string, body: 
 
 }
 
-/**
- * opens a dialog for editing the link of a column
- * @param column the column to rename
- * @param $header the visual header element of this column
- * @param templates list of possible link templates
- * @param idPrefix dom id prefix
- */
-export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Column>, templates: string[] = [], idPrefix: string) {
-  let t = `<input type="text" size="15" value="${column.getLink()}" required="required" autofocus="autofocus" ${templates.length > 0 ? 'list="ui' + idPrefix + 'lineupPatternList"' : ''}><br>`;
-  if (templates.length > 0) {
-    t += '<datalist id="ui${idPrefix}lineupPatternList">' + templates.map((t) => `<option value="${t}">`) + '</datalist>';
-  }
-
-  const popup = makePopup($header, 'Edit Link ($ as Placeholder)', t);
-
-  popup.select('.ok').on('click', function () {
-    const newValue = popup.select('input[type="text"]').property('value');
-    column.setLink(newValue);
-
-    popup.remove();
-  });
-
-  popup.select('.cancel').on('click', function () {
-    popup.remove();
-  });
-}
-
-
 function hidePopClickedOutsideMe(popup: d3.Selection<any>, rendererContent: d3.Selection<any>) {
   d3.select('body').on('click', function () {
     const target = (<MouseEvent>d3.event).target;
@@ -184,26 +197,6 @@ function hidePopClickedOutsideMe(popup: d3.Selection<any>, rendererContent: d3.S
       d3.select(this).on('click', null);
     }
   });
-}
-
-// Renderer type change
-export function rendererTypeDialog(column: Column, $header: d3.Selection<Column>) {
-  const bak = column.getRendererType();
-  const rendererTypeList = column.getRendererList();
-
-  const popup = makeSortPopup($header, 'Change Visualization </br>', rendererTypeList.map((d) => {
-    return `<input type="radio" name="renderertype" value=${d.type}  ${(bak === d.type) ? 'checked' : ''}> ${d.label}<br>`;
-  }).join('\n'));
-
-
-  const rendererContent = d3.selectAll('input[name="renderertype"]');
-  rendererContent.on('change', function () {
-    column.setRendererType(this.value);
-
-  });
-
-  hidePopClickedOutsideMe(popup, rendererContent);
-
 }
 
 // Sort  Dialog.

@@ -21,13 +21,13 @@ import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
 import SearchDialog from '../dialogs/SearchDialog';
 import RenameDialog from '../dialogs/RenameDialog';
 import EditLinkDialog from '../dialogs/EditLinkDialog';
+import RendererTypeDialog from '../dialogs/RendererTypeDialog'
 
 import {
   filterDialogs,
   openEditWeightsDialog,
   openEditScriptDialog,
-  sortDialog,
-  rendererTypeDialog
+  sortDialog
 } from '../ui_dialogs';
 
 /**
@@ -345,7 +345,8 @@ export default class HeaderRenderer {
 
     //Renderer Change
     $node.filter((d) => d.getRendererList().length > 1).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
-      rendererTypeDialog(d, d3.select(this.parentNode.parentNode));
+      const dialog = new RendererTypeDialog(d, d3.select(this.parentNode.parentNode));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
 
