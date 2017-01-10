@@ -22,10 +22,10 @@ import SearchDialog from '../dialogs/SearchDialog';
 import RenameDialog from '../dialogs/RenameDialog';
 import EditLinkDialog from '../dialogs/EditLinkDialog';
 import RendererTypeDialog from '../dialogs/RendererTypeDialog';
+import WeightsEditDialog from '../dialogs/WeightsEditDialog';
 
 import {
   filterDialogs,
-  openEditWeightsDialog,
   openEditScriptDialog,
   sortDialog
 } from '../ui_dialogs';
@@ -375,7 +375,8 @@ export default class HeaderRenderer {
     });
     //edit weights
     $node.filter((d) => d instanceof StackColumn).append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
-      openEditWeightsDialog(<StackColumn>d, d3.select(this.parentNode.parentNode));
+      const dialog = new WeightsEditDialog(<StackColumn>d, d3.select(this.parentNode.parentNode));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //collapse
