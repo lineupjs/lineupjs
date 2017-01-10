@@ -23,22 +23,9 @@ import {IBoxPlotColumn, SORT_METHOD} from './model/BoxPlotColumn';
 
 abstract class ADialog {
 
-  private readonly column: Column;
-  private readonly attachment;
-  private readonly title: string;
-
-
-  constructor(column, $header, title) {
-    this.column = column;
-    this.attachment = $header;
-    this.title = title;
-  }
+  constructor(private readonly attachment, private readonly title: string) {}
 
   abstract openDialog();
-
-  getColumn() {
-    return this.column;
-  }
 
   /**
    * creates a simple popup dialog under the given attachment

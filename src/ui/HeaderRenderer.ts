@@ -326,7 +326,8 @@ export default class HeaderRenderer {
 
     //rename
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
-      new RenameDialog(d, d3.select(this.parentNode.parentNode));
+      const dialog = new RenameDialog(d, d3.select(this.parentNode.parentNode));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //clone
@@ -351,7 +352,8 @@ export default class HeaderRenderer {
 
     //edit link
     $node.filter((d) => d instanceof LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-      new EditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), [].concat((<any>d.desc).templates || [], that.options.linkTemplates), that.options.idPrefix);
+      const dialog = new EditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), that.options.idPrefix, [].concat((<any>d.desc).templates || [], that.options.linkTemplates));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //edit script
@@ -366,7 +368,8 @@ export default class HeaderRenderer {
     });
     //search
     $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
-      new SearchDialog(d, d3.select(this.parentNode.parentNode), provider);
+      const dialog = new SearchDialog(d, d3.select(this.parentNode.parentNode), provider);
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //edit weights

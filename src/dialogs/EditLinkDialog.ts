@@ -4,9 +4,6 @@ import ADialog from '../ui_dialogs';
 
 export default class EditLinkDialog extends ADialog {
 
-  private readonly templates;
-  private readonly idPrefix;
-
   /**
    * opens a dialog for editing the link of a column
    * @param column the column to rename
@@ -15,20 +12,15 @@ export default class EditLinkDialog extends ADialog {
    * @param idPrefix dom id prefix
    * @param title optional title
    */
-  constructor(column: LinkColumn, $header: d3.Selection<Column>, templates: string[] = [], idPrefix: string, title: string = 'Edit Link ($ as Placeholder)') {
-    super(column, $header, title);
-
-    this.templates = templates;
-    this.idPrefix = idPrefix;
-
-    this.openDialog();
+  constructor(private readonly column: LinkColumn, $header: d3.Selection<Column>, private readonly idPrefix: string, private readonly templates: string[] = [], title: string = 'Edit Link ($ as Placeholder)') {
+    super($header, title);
   }
 
   openDialog() {
     let t = `<input 
         type="text"
         size="15"
-        value="${(<LinkColumn>this.getColumn()).getLink()}"
+        value="${(<LinkColumn>this.column).getLink()}"
         required="required"
         autofocus="autofocus"
         ${this.templates.length > 0 ? 'list="ui' + this.idPrefix + 'lineupPatternList"' : ''}
@@ -42,7 +34,7 @@ export default class EditLinkDialog extends ADialog {
     const that = this;
     popup.select('.ok').on('click', function () {
       const newValue = popup.select('input[type="text"]').property('value');
-      (<LinkColumn>that.getColumn()).setLink(newValue);
+      (<LinkColumn>that.column).setLink(newValue);
       popup.remove();
     });
 
