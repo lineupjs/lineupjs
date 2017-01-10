@@ -7,6 +7,14 @@ export default class EditLinkDialog extends ADialog {
   private readonly templates;
   private readonly idPrefix;
 
+  /**
+   * opens a dialog for editing the link of a column
+   * @param column the column to rename
+   * @param $header the visual header element of this column
+   * @param templates list of possible link templates
+   * @param idPrefix dom id prefix
+   * @param title optional title
+   */
   constructor(column: LinkColumn, $header: d3.Selection<Column>, templates: string[] = [], idPrefix: string, title: string = 'Edit Link ($ as Placeholder)') {
     super(column, $header, title);
 
@@ -43,15 +51,3 @@ export default class EditLinkDialog extends ADialog {
     });
   }
 }
-
-
-/**
- * opens a dialog for editing the link of a column
- * @param column the column to rename
- * @param $header the visual header element of this column
- * @param templates list of possible link templates
- * @param idPrefix dom id prefix
- */
-// export function openEditLinkDialog(column: LinkColumn, $header: d3.Selection<Column>, templates: string[] = [], idPrefix: string) {
-//
-// }
