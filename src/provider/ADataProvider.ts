@@ -723,16 +723,16 @@ abstract class ADataProvider extends AEventDispatcher {
 
     const columns = ranking.flatColumns.filter((c) => options.filter(c.desc));
     const order = ranking.getOrder();
-    const data = await this.view(order);
-
-    const r = [];
-    if (options.header) {
-      r.push(columns.map((d) => quote(d.label)).join(options.separator));
-    }
-    data.forEach((row, i) => {
-      r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(options.separator));
+    return this.view(order).then((data) => {
+      const r = [];
+      if (options.header) {
+        r.push(columns.map((d) => quote(d.label)).join(options.separator));
+      }
+      data.forEach((row, i) => {
+        r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(options.separator));
+      });
+      return r.join(options.newline);
     });
-    return r.join(options.newline);
   }
 
 }
