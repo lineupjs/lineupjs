@@ -1027,7 +1027,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
         <rect y="${padding}"></rect>
       </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
+        const cell = Math.min(col.getWidth()*0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
 
         attr(<SVGRectElement>n.querySelector('rect'), {
           width: cell,
@@ -1036,7 +1036,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
           fill: col.getColor(d.v, d.dataIndex)
         });
         attr(<SVGTextElement>n.querySelector('text'), {
-          x: context.rowHeight(i)
+          x: cell + padding*2
         }).textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
@@ -1050,7 +1050,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
         <span></span>
       </div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
-        const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
+        const cell = Math.min(col.getWidth()*0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
         attr(n, {}, {
           width: `${col.getWidth()}px`
         });
@@ -1067,7 +1067,7 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
   createCanvas(col: CategoricalColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
+      const cell = Math.min(col.getWidth()*0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
       ctx.fillStyle = col.getColor(d.v, d.dataIndex);
       ctx.fillRect(0, 0, cell, cell);
       ctx.fillStyle = context.option('style.text', 'black');
