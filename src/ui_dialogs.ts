@@ -7,8 +7,6 @@
 import Column from './model/Column';
 import StringColumn from './model/StringColumn';
 import CategoricalColumn from './model/CategoricalColumn';
-import LinkColumn from './model/LinkColumn';
-import StackColumn from './model/StackColumn';
 import ScriptColumn from './model/ScriptColumn';
 import BooleanColumn from './model/BooleanColumn';
 import NumberColumn, {IMappingFunction} from './model/NumberColumn';
@@ -18,7 +16,6 @@ import MappingEditor from './mappingeditor';
 import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
 import * as d3 from 'd3';
 import DataProvider from './provider/ADataProvider';
-import {IBoxPlotColumn, SORT_METHOD} from './model/BoxPlotColumn';
 
 
 abstract class ADialog {
@@ -169,34 +166,6 @@ export function makePopup(attachment: Selection<any>, title: string, body: strin
   }
   return $popup;
 
-}
-
-export function makeSortPopup(attachement: Selection<any>, title: string, body: string) {
-  const pos = offset(<Element>attachement.node());
-  const $popup = select('body').append('div')
-    .attr({
-      'class': 'lu-popup2'
-    }).style({
-      left: pos.left + 'px',
-      top: pos.top + 'px'
-    }).html(sortDialogForm(title, body));
-
-  return $popup;
-
-}
-
-function hidePopClickedOutsideMe(popup: d3.Selection<any>, rendererContent: d3.Selection<any>) {
-  d3.select('body').on('click', function () {
-    const target = (<MouseEvent>d3.event).target;
-    // is none of the content element clicked?
-    const outside = rendererContent.filter(function () {
-      return this === target;
-    }).empty();
-    if (outside) {
-      popup.remove();
-      d3.select(this).on('click', null);
-    }
-  });
 }
 
 /**
