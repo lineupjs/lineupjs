@@ -236,7 +236,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     return this.createContext(indexShift, this.domMapping.creator);
   }
 
-  protected async updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {
     // - ... added one to often
     this.domMapping.setSize(this.node, Math.max(0, width), height);
 

@@ -161,7 +161,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     super.cleanUpRanking(ranking);
   }
 
-  async sortImpl(ranking: Ranking): Promise<number[]> {
+  sortImpl(ranking: Ranking): Promise<number[]> {
     if (this._data.length === 0) {
       return Promise.resolve([]);
     }
@@ -192,7 +192,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return indices.map((index) => this._data[index]);
   }
 
-  async view(indices: number[]) {
+  view(indices: number[]) {
     return Promise.resolve(this.viewRaw(indices));
   }
 
@@ -225,7 +225,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
 
-  async mappingSample(col: NumberColumn): Promise<number[]> {
+  mappingSample(col: NumberColumn): Promise<number[]> {
     const MAX_SAMPLE = 500; //at most 500 sample lines
     const l = this._data.length;
     if (l <= MAX_SAMPLE) {

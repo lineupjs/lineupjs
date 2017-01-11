@@ -81,7 +81,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     delete this.ranks[ranking.id];
   }
 
-  async sort(ranking: Ranking): Promise<number[]> {
+  sort(ranking: Ranking): Promise<number[]> {
     //use the server side to sort
     return this.sortImpl(ranking).then((argsort) => {
       //store the result

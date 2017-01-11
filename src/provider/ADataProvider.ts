@@ -669,7 +669,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * returns a promise containing the selected rows
    * @return {Promise<any[]>}
    */
-  async selectedRows(): Promise<IDataRow[]> {
+  selectedRows(): Promise<IDataRow[]> {
     if (this.selection.size === 0) {
       return Promise.resolve([]);
     }
@@ -704,7 +704,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param options
    * @returns {Promise<string>}
    */
-  async exportTable(ranking: Ranking, options: IExportOptions = {}) {
+  exportTable(ranking: Ranking, options: IExportOptions = {}) {
     options = merge({
       separator: '\t',
       newline: '\n',

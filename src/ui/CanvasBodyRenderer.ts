@@ -190,7 +190,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.translate(-dx, -dy);
   }
 
-  private async renderMeanlines(ctx: CanvasRenderingContext2D, ranking: IRankingData, height: number) {
+  private renderMeanlines(ctx: CanvasRenderingContext2D, ranking: IRankingData, height: number) {
     const cols = ranking.columns.filter((c) => this.showMeanLine(c.column));
     return Promise.all(cols.map((d) => {
       const h = this.histCache.get(d.column.id);
@@ -211,7 +211,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     }));
   }
 
-  async renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height) {
+  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height) {
 
     const renderRow = this.renderRow.bind(this, ctx, context);
 
@@ -287,7 +287,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return r;
   }
 
-  protected async updateImpl(data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, width: number, height: number, reason: ERenderReason) {
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, width: number, height: number, reason: ERenderReason) {
     const $canvas = this.$node.select('canvas');
 
     const firstLine = Math.max(context.cellY(0) - 20, 0); //where to start

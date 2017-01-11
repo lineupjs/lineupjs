@@ -125,7 +125,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
   }
 
 
-  async mappingSample(col: Column): Promise<number[]> {
+  mappingSample(col: Column): Promise<number[]> {
     return this.server.mappingSample((<any>col.desc).column);
   }
 
