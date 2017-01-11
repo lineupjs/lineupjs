@@ -23,11 +23,11 @@ import RenameDialog from '../dialogs/RenameDialog';
 import EditLinkDialog from '../dialogs/EditLinkDialog';
 import RendererTypeDialog from '../dialogs/RendererTypeDialog';
 import WeightsEditDialog from '../dialogs/WeightsEditDialog';
+import SortDialog from '../dialogs/SortDialog';
 
 import {
   filterDialogs,
-  openEditScriptDialog,
-  sortDialog
+  openEditScriptDialog
 } from '../ui_dialogs';
 
 /**
@@ -338,7 +338,8 @@ export default class HeaderRenderer {
 
     //MultiValue Sort
     $node.filter((d) => d instanceof MultiValueColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-      sortDialog(<IBoxPlotColumn><any>d, d3.select(this.parentNode.parentNode));
+      const dialog = new SortDialog(<IBoxPlotColumn><any>d, d3.select(this.parentNode.parentNode));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
 
