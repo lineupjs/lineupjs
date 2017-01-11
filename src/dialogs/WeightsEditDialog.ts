@@ -5,6 +5,12 @@ import {scale as d3scale} from 'd3';
 
 
 export default class WeightsEditDialog extends ADialog {
+  /**
+   * opens a dialog for editing the weights of a stack column
+   * @param column the column to filter
+   * @param $header the visual header element of this column
+   * @param title optional title
+   */
   constructor(private readonly column: StackColumn, $header: d3.Selection<Column>, title: string = 'Edit Weights') {
     super($header, title);
   }
