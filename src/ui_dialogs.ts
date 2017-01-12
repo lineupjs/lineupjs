@@ -100,6 +100,7 @@ function sortbyName(prop: string) {
  * @param column the column to edit
  * @param $header the visual header element of this column
  */
+// TODO: A refactored version of this function is in src/dialogs/ScriptEditDialog.ts. Delete the following function after the refactored version has been tested.
 export function openEditScriptDialog(column: ScriptColumn, $header: d3.Selection<Column>) {
   const bak = column.getScript();
   const $popup = makePopup($header, 'Edit Script',
