@@ -1,6 +1,6 @@
 import LinkColumn from '../model/LinkColumn';
 import Column from '../model/Column';
-import ADialog from '../ui_dialogs';
+import ADialog from './ADialog';
 
 export default class EditLinkDialog extends ADialog {
 

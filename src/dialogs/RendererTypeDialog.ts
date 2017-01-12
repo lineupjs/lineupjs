@@ -1,5 +1,5 @@
 import Column from '../model/Column';
-import ADialog from '../ui_dialogs';
+import ADialog from './ADialog';
 import * as d3 from 'd3';
 
 

@@ -1,6 +1,6 @@
 import Column from '../model/Column';
 import StackColumn from '../model/StackColumn';
-import ADialog from '../ui_dialogs';
+import ADialog from './ADialog';
 import {scale as d3scale} from 'd3';
 
 

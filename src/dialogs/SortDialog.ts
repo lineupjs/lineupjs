@@ -1,5 +1,5 @@
 import Column from '../model/Column';
-import ADialog from '../ui_dialogs';
+import ADialog from './ADialog';
 import {IBoxPlotColumn, SORT_METHOD} from '../model/BoxPlotColumn';
 import { event as d3event, selectAll } from 'd3';
 
