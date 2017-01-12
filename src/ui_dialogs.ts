@@ -165,117 +165,6 @@ function openCategoricalFilter(column: CategoricalColumn, $header: d3.Selection<
   });
 }
 
-/**
- * opens a dialog for filtering a string column
- * @param column the column to filter
- * @param $header the visual header element of this column
- */
-function openStringFilter(column: StringColumn, $header: d3.Selection<Column>) {
-  let bak = column.getFilter() || '';
-  const bakMissing = bak === StringColumn.FILTER_MISSING;
-  if (bakMissing) {
-    bak = '';
-  }
-
-  const $popup = makePopup($header, 'Filter',
-    `<input type="text" placeholder="containing..." autofocus="true" size="15" value="${(bak instanceof RegExp) ? bak.source : bak}" autofocus="autofocus">
-    <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label><br><label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label>
-    <br>`);
-
-  function updateData(filter) {
-    markFiltered($header, (filter && filter !== ''));
-    column.setFilter(filter);
-  }
-
-  function updateImpl(force) {
-    //get value
-    let search: any = $popup.select('input[type="text"]').property('value');
-    const filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
-
-    if (filterMissing && search === '') {
-      search = StringColumn.FILTER_MISSING;
-    }
-    if (search === '') { //reset
-      updateData(search);
-      return;
-    }
-    if (search.length >= 3 || force) {
-      const isRegex = $popup.select('input[type="checkbox"]:first-of-type').property('checked');
-      if (isRegex && search !== StringColumn.FILTER_MISSING) {
-        search = new RegExp(search);
-      }
-      updateData(search);
-    }
-
-  }
-
-  $popup.selectAll('input[type="checkbox"]').on('change', updateImpl);
-  $popup.select('input[type="text"]').on('input', updateImpl);
-
-  $popup.select('.cancel').on('click', function () {
-    $popup.select('input[type="text"]').property('value', bak || '');
-    $popup.select('input[type="checkbox"]:first-of-type').property('checked', bak instanceof RegExp ? 'checked' : null);
-    $popup.select('input[type="checkbox"].lu_filter_missing').property('checked', bakMissing ? 'checked' : null);
-    updateData(bak);
-    $popup.remove();
-  });
-  $popup.select('.reset').on('click', function () {
-    $popup.select('input[type="text"]').property('value', '');
-    $popup.selectAll('input[type="checkbox"]').property('checked', null);
-    updateData(null);
-  });
-  $popup.select('.ok').on('click', function () {
-    updateImpl(true);
-    $popup.remove();
-  });
-}
-
-
-/**
- * opens a dialog for filtering a boolean column
- * @param column the column to filter
- * @param $header the visual header element of this column
- */
-function openBooleanFilter(column: BooleanColumn, $header: d3.Selection<Column>) {
-  const bak = column.getFilter();
-
-  const $popup = makePopup($header, 'Filter',
-    `<label><input type="radio" name="boolean_check" value="null" ${bak === null ? 'checked="checked"' : ''}>No Filter</label><br>
-     <label><input type="radio" name="boolean_check" value="true" ${bak === true ? 'checked="checked"' : ''}>True</label><br>
-     <label><input type="radio" name="boolean_check" value="false" ${bak === false ? 'checked="checked"' : ''}>False</label>
-    <br>`);
-
-  function updateData(filter) {
-    markFiltered($header, (filter !== null));
-    column.setFilter(filter);
-  }
-
-  function updateImpl() {
-    //get value
-    const isTrue = $popup.select('input[type="radio"][value="true"]').property('checked');
-    const isFalse = $popup.select('input[type="radio"][value="false"]').property('checked');
-    updateData(isTrue ? true : (isFalse ? false : null));
-  }
-
-  $popup.selectAll('input[type="radio"]').on('change', updateImpl);
-
-  $popup.select('.cancel').on('click', function () {
-    updateData(bak);
-    $popup.remove();
-  });
-  $popup.select('.reset').on('click', function () {
-    const v = bak === null ? 'null' : String(bak);
-    $popup.selectAll('input[type="radio"]').property('checked', function () {
-      return this.value === v;
-    });
-    updateData(null);
-  });
-  $popup.select('.ok').on('click', function () {
-    updateImpl();
-    $popup.remove();
-  });
-}
-
 
 /**
  * opens a dialog for editing the script code
@@ -481,10 +370,8 @@ function openCategoricalMappingEditor(column: CategoricalNumberColumn, $header: 
  */
 export function filterDialogs() {
   return {
-    string: openStringFilter,
     categorical: openCategoricalFilter,
     number: openMappingEditor,
-    ordinal: openCategoricalMappingEditor,
-    boolean: openBooleanFilter
+    ordinal: openCategoricalMappingEditor
   };
 }
