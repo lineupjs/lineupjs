@@ -1,13 +1,17 @@
 import {offset} from '../utils';
 import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
-import * as d3 from 'd3';
+import Column from '../model/Column';
 
 
 abstract class ADialog {
 
-  constructor(private readonly attachment, private readonly title: string) {}
+  constructor(private readonly _attachment: Selection<Column>, private readonly title: string) {}
 
   abstract openDialog();
+
+  get attachment() {
+    return this._attachment
+  }
 
   /**
    * creates a simple popup dialog under the given attachment
@@ -17,7 +21,7 @@ abstract class ADialog {
    * @returns {Selection<any>}
    */
   makePopup(body: string) {
-      const pos = offset(<Element>this.attachment.node());
+      const pos = offset(<Element>this._attachment.node());
       const $popup = select('body').append('div')
         .attr({
           'class': 'lu-popup2'
@@ -50,7 +54,7 @@ abstract class ADialog {
   }
 
   makeSortPopup(body: string) {
-    const pos = offset(<Element>this.attachment.node());
+    const pos = offset(<Element>this._attachment.node());
     const $popup = select('body').append('div')
       .attr({
         'class': 'lu-popup2'
@@ -78,16 +82,16 @@ abstract class ADialog {
     return this.dialogForm(title, body, false);
   }
 
-  hidePopupOnClickOutside(popup: d3.Selection<any>, rendererContent: d3.Selection<any>) {
-    d3.select('body').on('click', function () {
-      const target = (<MouseEvent>d3.event).target;
+  hidePopupOnClickOutside(popup: Selection<any>, rendererContent: Selection<any>) {
+    select('body').on('click', function () {
+      const target = (<MouseEvent>d3event).target;
       // is none of the content element clicked?
       const outside = rendererContent.filter(function () {
         return this === target;
       }).empty();
       if (outside) {
         popup.remove();
-        d3.select(this).on('click', null);
+        select(this).on('click', null);
       }
     });
   }
