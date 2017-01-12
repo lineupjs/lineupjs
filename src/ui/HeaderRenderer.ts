@@ -28,6 +28,7 @@ import SortDialog from '../dialogs/SortDialog';
 import StringFilterDialog from '../dialogs/StringFilterDialog';
 import BooleanFilterDialog from '../dialogs/BooleanFilterDialog';
 import CategoricalFilterDialog from '../dialogs/CategoricalFilterDialog';
+import MappingsFilterDialog from '../dialogs/MappingsFilterDialog';
 
 
 import {
@@ -324,15 +325,15 @@ export default class HeaderRenderer {
   }
 
   private createToolbar($node: d3.Selection<Column>) {
-    const filterDialogs = this.options.filterDialogs,
-      provider = this.data,
+    const provider = this.data,
       that = this;
     const $regular = $node.filter((d) => !(d instanceof RankColumn));
 
     const filters = {
       'string': StringFilterDialog,
       'boolean': BooleanFilterDialog,
-      'categorical': CategoricalFilterDialog
+      'categorical': CategoricalFilterDialog,
+      'number': MappingsFilterDialog
     };
 
     //rename

@@ -5,17 +5,11 @@
  */
 
 import Column from './model/Column';
-import StringColumn from './model/StringColumn';
-import CategoricalColumn from './model/CategoricalColumn';
 import ScriptColumn from './model/ScriptColumn';
-import BooleanColumn from './model/BooleanColumn';
-import NumberColumn, {IMappingFunction} from './model/NumberColumn';
 import CategoricalNumberColumn from './model/CategoricalNumberColumn';
 import {offset} from './utils';
-import MappingEditor from './mappingeditor';
 import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
 import * as d3 from 'd3';
-import DataProvider from './provider/ADataProvider';
 
 
 export function dialogForm(title: string, body: string, addCloseButtons = true) {
@@ -132,67 +126,7 @@ export function openEditScriptDialog(column: ScriptColumn, $header: d3.Selection
   });
 }
 
-/**
- * opens the mapping editor for a given NumberColumn
- * @param column the column to rename
- * @param $header the visual header element of this column
- * @param data the data provider for illustrating the mapping by example
- * @param idPrefix dom id prefix
- */
-function openMappingEditor(column: NumberColumn, $header: d3.Selection<any>, data: DataProvider, idPrefix: string) {
-  const pos = offset($header.node()),
-    original = column.getOriginalMapping();
-  let bakfilter = column.getFilter(),
-    bak = column.getMapping(),
-    act: IMappingFunction = bak.clone(),
-    actfilter = bakfilter;
 
-  const popup = select('body').append('div')
-    .attr({
-      'class': 'lu-popup'
-    }).style({
-      left: pos.left + 'px',
-      top: pos.top + 'px'
-    })
-    .html(dialogForm('Change Mapping', '<div class="mappingArea"></div>'));
-
-  function applyMapping(newscale: IMappingFunction, filter: {min: number, max: number, filterMissing: boolean}) {
-    act = newscale;
-    actfilter = filter;
-    markFiltered($header, !newscale.eq(original) || (bakfilter.min !== filter.min || bakfilter.max !== filter.min || bakfilter.filterMissing !== filter.filterMissing));
-
-    column.setMapping(newscale);
-    column.setFilter(filter);
-  }
-
-  const editorOptions = {
-    idPrefix,
-    callback: applyMapping,
-    triggerCallback: 'dragend'
-  };
-  const dataSample = data.mappingSample(column);
-  let editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
-
-
-  popup.select('.ok').on('click', function () {
-    applyMapping(editor.scale, editor.filter);
-    popup.remove();
-  });
-  popup.select('.cancel').on('click', function () {
-    column.setMapping(bak);
-    markFiltered($header, !bak.eq(original));
-    popup.remove();
-  });
-  popup.select('.reset').on('click', function () {
-    bak = original;
-    act = bak.clone();
-    bakfilter = NumberColumn.noFilter();
-    actfilter = bakfilter;
-    applyMapping(act, actfilter);
-    popup.selectAll('.mappingArea *').remove();
-    editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
-  });
-}
 
 
 /**
@@ -300,7 +234,6 @@ function openCategoricalMappingEditor(column: CategoricalNumberColumn, $header: 
  */
 export function filterDialogs() {
   return {
-    number: openMappingEditor,
     ordinal: openCategoricalMappingEditor
   };
 }
