@@ -25,6 +25,11 @@ import RendererTypeDialog from '../dialogs/RendererTypeDialog';
 import WeightsEditDialog from '../dialogs/WeightsEditDialog';
 import SortDialog from '../dialogs/SortDialog';
 
+import StringFilterDialog from '../dialogs/StringFilterDialog';
+import BooleanFilterDialog from '../dialogs/BooleanFilterDialog';
+import CategoricalFilterDialog from '../dialogs/CategoricalFilterDialog';
+
+
 import {
   filterDialogs,
   openEditScriptDialog
@@ -324,6 +329,12 @@ export default class HeaderRenderer {
       that = this;
     const $regular = $node.filter((d) => !(d instanceof RankColumn));
 
+    const filters = {
+      'string': StringFilterDialog,
+      'boolean': BooleanFilterDialog,
+      'categorical': CategoricalFilterDialog
+    };
+
     //rename
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
       const dialog = new RenameDialog(d, d3.select(this.parentNode.parentNode));
@@ -364,8 +375,9 @@ export default class HeaderRenderer {
       (<MouseEvent>d3.event).stopPropagation();
     });
     //filter
-    $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
-      filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider, that.options.idPrefix);
+    $node.filter((d) => filters.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
+      const dialog = new filters[d.desc.type](d, d3.select(this.parentNode.parentNode), '', provider, that.options.idPrefix);
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //search
