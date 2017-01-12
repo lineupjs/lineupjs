@@ -13,6 +13,20 @@ abstract class ADialog {
     return this._attachment;
   }
 
+  sortByName(prop: string) {
+    return function (a, b) {
+      const av = a[prop],
+        bv = b[prop];
+      if (av.toLowerCase() < bv.toLowerCase()) {
+        return -1;
+      }
+      if (av.toLowerCase() > bv.toLowerCase()) {
+        return 1;
+      }
+      return 0;
+    };
+  }
+
   /**
    * creates a simple popup dialog under the given attachment
    * @param attachment
