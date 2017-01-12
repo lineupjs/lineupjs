@@ -11,7 +11,7 @@ export default class StringFilterDialog extends AFilter {
    * @param $header the visual header element of this column
    * @param title optional title
    */
-  constructor(private readonly column: StringColumn, $header: Selection<Column>, title: string = 'Edit Link ($ as Placeholder)') {
+  constructor(private readonly column: StringColumn, $header: Selection<Column>, title: string = 'Filter') {
     super($header, title);
   }
 
