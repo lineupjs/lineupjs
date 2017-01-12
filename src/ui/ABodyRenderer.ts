@@ -61,6 +61,8 @@ export interface IBodyRendererOptions {
   rowHeight?: number;
   rowPadding?: number;
   rowBarPadding?: number;
+  rowBarTopPadding?: number;
+  rowBarBottomPadding?: number;
   idPrefix?: string;
   slopeWidth?: number;
   columnPadding?: number;
