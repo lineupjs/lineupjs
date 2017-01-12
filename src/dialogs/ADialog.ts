@@ -10,7 +10,7 @@ abstract class ADialog {
   abstract openDialog();
 
   get attachment() {
-    return this._attachment
+    return this._attachment;
   }
 
   /**

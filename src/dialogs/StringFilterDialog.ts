@@ -29,7 +29,7 @@ export default class StringFilterDialog extends AFilter {
     const updateData = (filter) => {
       this.markFiltered((filter && filter !== ''));
       this.column.setFilter(filter);
-    }
+    };
 
     function updateImpl(force) {
       //get value
