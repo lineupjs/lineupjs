@@ -42,7 +42,7 @@ abstract class ADialog {
         }).style({
           left: pos.left + 'px',
           top: pos.top + 'px'
-        }).html(this.dialogForm(this.title, body));
+        }).html(this.dialogForm(body));
 
       function movePopup() {
         //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
@@ -75,14 +75,14 @@ abstract class ADialog {
       }).style({
         left: pos.left + 'px',
         top: pos.top + 'px'
-      }).html(this.sortDialogForm(this.title, body));
+      }).html(this.sortDialogForm(body));
 
     return $popup;
 
   }
 
-  dialogForm(title: string, body: string, addCloseButtons = true) {
-    return `<span style="font-weight: bold" class="lu-popup-title">${title}</span>
+  dialogForm(body: string, addCloseButtons = true) {
+    return `<span style="font-weight: bold" class="lu-popup-title">${this.title}</span>
             <form onsubmit="return false">
                 ${body}
                 ${addCloseButtons ?
@@ -92,8 +92,8 @@ abstract class ADialog {
             </form>`;
   }
 
-  sortDialogForm(title: string, body: string) {
-    return this.dialogForm(title, body, false);
+  sortDialogForm(body: string) {
+    return this.dialogForm(body, false);
   }
 
   hidePopupOnClickOutside(popup: Selection<any>, rendererContent: Selection<any>) {

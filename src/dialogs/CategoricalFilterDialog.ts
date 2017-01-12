@@ -59,7 +59,7 @@ export default class CategoricalFilterDialog extends AFilter {
     const updateData = (filter) => {
       this.markFiltered(filter && filter.length > 0 && filter.length < trData.length);
       this.column.setFilter(filter);
-    }
+    };
 
     popup.select('.cancel').on('click', function () {
       updateData(bak);
