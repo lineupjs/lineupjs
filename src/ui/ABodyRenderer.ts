@@ -61,6 +61,8 @@ export interface IBodyRendererOptions {
   rowHeight?: number;
   rowPadding?: number;
   rowBarPadding?: number;
+  rowBarTopPadding?: number;
+  rowBarBottomPadding?: number;
   idPrefix?: string;
   slopeWidth?: number;
   columnPadding?: number;
@@ -207,7 +209,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   /**
    * render the body
    */
-  async update(reason = ERenderReason.DIRTY) {
+  update(reason = ERenderReason.DIRTY) {
     const rankings = this.data.getRankings();
     const maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
     const height = this.options.rowHeight * maxElems;
@@ -269,7 +271,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   protected abstract createContextImpl(indexShift: number): IBodyRenderContext;
 
-  protected abstract async updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason): Promise<void>;
+  protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason): Promise<void>;
 }
 
 export default ABodyRenderer;

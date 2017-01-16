@@ -17,6 +17,8 @@ import * as d3 from 'd3';
 import MultiValueColumn from './model/MultiValueColumn';
 import SetColumn from './model/SetColumn';
 import {IBoxPlotColumn} from './model/BoxPlotColumn';
+import CategoricalNumberColumn from './model/CategoricalNumberColumn';
+import CompositeNumberColumn from './model/CompositeNumberColumn';
 
 
 /**
@@ -164,7 +166,7 @@ class HeatmapCellRenderer implements ICellRendererFactory {
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
     const cellDimension = col.calculateCellDimension(col.getWidth());
     const colorScale = col.getColorScale();
-    const padding = context.option('rowPadding', 1);
+    const padding = context.option('rowBarPadding', 1);
     return {
 
       template: `<g class="heatmapcell"></g>`,
@@ -187,7 +189,7 @@ class HeatmapCellRenderer implements ICellRendererFactory {
 
   createHTML(col: MultiValueColumn, context: IDOMRenderContext): IHTMLCellRenderer {
     const cellDimension = col.calculateCellDimension(col.getWidth());
-    const padding = context.option('rowPadding', 1);
+    const padding = context.option('rowBarPadding', 1);
     const colorScale = col.getColorScale();
 
     return {
@@ -209,7 +211,7 @@ class HeatmapCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const cellDimension = col.calculateCellDimension(col.getWidth());
-    const padding = context.option('rowPadding', 1);
+    const padding = context.option('rowBarPadding', 1);
     const colorScale = col.getColorScale();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
@@ -393,7 +395,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
   createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const sortMethod = col.getSortMethod();
-    const topPadding = 2.5 * (context.option('rowPadding', 1));
+    const topPadding = 2.5 * (context.option('rowBarPadding', 1));
     const domain = col.getDomain();
     const scale = d3.scale.linear().domain(domain).range([0, col.getWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
@@ -407,7 +409,6 @@ class BoxplotCellRenderer implements ICellRendererFactory {
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
         const rowHeight = context.rowHeight(i);
-
         const scaled = {
           min: scale(rawBoxdata.min),
           median: scale(rawBoxdata.median),
@@ -441,7 +442,7 @@ class BoxplotCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const sortMethod = col.getSortMethod();
-    const topPadding = 2.5 * (context.option('rowPadding', 1));
+    const topPadding = 2.5 * (context.option('rowBarPadding', 1));
     const domain = col.getDomain();
 
     const scale = d3.scale.linear().domain([d3.min(domain), d3.max(domain)]).range([0, col.getWidth()]);
@@ -551,8 +552,6 @@ class SetCellRenderer implements ICellRendererFactory {
   createCanvas(col: SetColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
 
     const cellDimension = col.cellDimension();
-    const binaryValue = SetColumn.IN_GROUP;
-
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Circle
       const data = col.getBinaryValue(d.v, d.dataIndex);
@@ -564,9 +563,9 @@ class SetCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'black';
       if (hasTrueValues) {
-        const pathCordinate = hasTrueValues ? setPathCalculate(data, cellDimension): null;
+        const pathCordinate = hasTrueValues ? setPathCalculate(data, cellDimension) : null;
         ctx.beginPath();
-        ctx.moveTo((pathCordinate.left), (rowHeight/ 2));
+        ctx.moveTo((pathCordinate.left), (rowHeight / 2));
         ctx.lineTo((pathCordinate.right), (rowHeight / 2));
         ctx.fill();
         ctx.stroke();
@@ -589,17 +588,29 @@ class SetCellRenderer implements ICellRendererFactory {
 }
 
 class CircleCellRenderer implements ICellRendererFactory {
+  private readonly renderValue;
+
+  constructor(renderValue = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {
+    this.renderValue = renderValue;
+  }
 
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const padding = context.option('rowBarPadding', 1);
     return {
-      template: `<circle class="circlecolumn"></circle>`,
-      update: (n: SVGCircleElement, d: IDataRow, i: number) => {
+      template: `<g class="bar">
+          <circle class="${col.cssClass}" style="fill: ${col.color}">
+            <title></title>
+          </circle>
+          <text class="number ${this.renderValue ? '' : 'hoverOnly'}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>
+        </g>`,
+      update: (n: SVGElement, d: IDataRow, i: number) => {
         const v = col.getValue(d.v, d.dataIndex);
-        attr(n, {
+        attr(<SVGCircleElement>n.querySelector('circle'), {
           cy: (context.rowHeight(i) / 2),
           cx: (col.getWidth() / 2),
           r: (context.rowHeight(i) / 2) * v
         });
+        attr(<SVGTextElement>n.querySelector('text'), {}).textContent = v;
       }
     };
   }
@@ -609,13 +620,16 @@ class CircleCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const posy = (context.rowHeight(i) / 2);
       const posx = (col.getWidth() / 2);
-
-      ctx.fillStyle = 'black';
-      ctx.strokeStyle = 'black';
+      ctx.fillStyle = this.colorOf(d.v, i, col);
+      ctx.strokeStyle = this.colorOf(d.v, i, col);
       ctx.beginPath();
       ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
+      if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
+        ctx.fillStyle = context.option('style.text', 'black');
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1, context.textHints);
+      }
     };
   }
 }
@@ -636,10 +650,11 @@ export class BarCellRenderer implements ICellRendererFactory {
   }
 
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const padding = context.option('rowPadding', 1);
+    const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
+    const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return {
       template: `<g class="bar">
-          <rect class="${col.cssClass}" y="${padding}" style="fill: ${col.color}">
+          <rect class="${col.cssClass}" y="${paddingTop}" style="fill: ${col.color}">
             <title></title>
           </rect>
           <text class="number ${this.renderValue ? '' : 'hoverOnly'}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>
@@ -649,9 +664,9 @@ export class BarCellRenderer implements ICellRendererFactory {
         const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
 
         attr(<SVGRectElement>n.querySelector('rect'), {
-          y: padding,
+          y: paddingTop,
           width: isNaN(width) ? 0 : width,
-          height: context.rowHeight(i) - padding * 2
+          height: context.rowHeight(i) - (paddingTop + paddingBottom)
         }, {
           fill: this.colorOf(d.v, i, col)
         });
@@ -661,9 +676,10 @@ export class BarCellRenderer implements ICellRendererFactory {
   }
 
   createHTML(col: INumberColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
-    const padding = context.option('rowPadding', 1);
+    const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
+    const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return {
-      template: `<div class="bar" style="top:${padding}px; background-color: ${col.color}">
+      template: `<div class="bar" style="top:${paddingTop}px; background-color: ${col.color}">
           <span class="number ${this.renderValue ? '' : 'hoverOnly'}"></span>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
@@ -672,8 +688,8 @@ export class BarCellRenderer implements ICellRendererFactory {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
           width: `${isNaN(width) ? 0 : width}px`,
-          height: `${context.rowHeight(i) - padding * 2}px`,
-          top: `${padding}px`,
+          height: `${context.rowHeight(i) - (paddingTop + paddingBottom)}px`,
+          top: `${paddingTop}px`,
           'background-color': this.colorOf(d.v, i, col)
         });
         n.querySelector('span').textContent = col.getLabel(d.v, d.dataIndex);
@@ -682,11 +698,12 @@ export class BarCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const padding = context.option('rowPadding', 1);
+    const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
+    const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = this.colorOf(d.v, i, col);
       const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
-      ctx.fillRect(padding, padding, isNaN(width) ? 0 : width, context.rowHeight(i) - padding * 2);
+      ctx.fillRect(0, paddingTop, isNaN(width) ? 0 : width, context.rowHeight(i) - (paddingTop + paddingBottom));
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');
         clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1, context.textHints);
@@ -708,7 +725,7 @@ function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
 
 const heatmap = {
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const padding = context.option('rowPadding', 1);
+    const padding = context.option('rowBarPadding', 1);
     return {
       template: `<rect class="heatmap ${col.cssClass}" y="${padding}" style="fill: ${col.color}">
             <title></title>
@@ -728,7 +745,7 @@ const heatmap = {
     };
   },
   createHTML(col: INumberColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
-    const padding = context.option('rowPadding', 1);
+    const padding = context.option('rowBarPadding', 1);
     return {
       template: `<div class="heatmap ${col.cssClass}" style="background-color: ${col.color}; top: ${padding}"></div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
@@ -745,7 +762,7 @@ const heatmap = {
     };
   },
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const padding = context.option('rowPadding', 1);
+    const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const w = context.rowHeight(i) - padding * 2;
       ctx.fillStyle = toHeatMapColor(d.v, d.dataIndex, col);
@@ -1006,14 +1023,14 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
   }
 
   createSVG(col: CategoricalColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const padding = context.option('rowPadding', 1);
+    const padding = context.option('rowBarPadding', 1);
     return {
       template: `<g class="${this.textClass}">
         <text clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>
         <rect y="${padding}"></rect>
       </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
+        const cell = Math.min(col.getWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
 
         attr(<SVGRectElement>n.querySelector('rect'), {
           width: cell,
@@ -1022,21 +1039,21 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
           fill: col.getColor(d.v, d.dataIndex)
         });
         attr(<SVGTextElement>n.querySelector('text'), {
-          x: context.rowHeight(i)
+          x: cell + padding * 2
         }).textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
 
   createHTML(col: CategoricalColumn, context: IDOMRenderContext): IHTMLCellRenderer {
-    const padding = context.option('rowPadding', 1);
+    const padding = context.option('rowBarPadding', 1);
     return {
       template: `<div class="${this.textClass}">
         <div></div>
         <span></span>
       </div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
-        const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
+        const cell = Math.min(col.getWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
         attr(n, {}, {
           width: `${col.getWidth()}px`
         });
@@ -1051,9 +1068,9 @@ export class CategoricalCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: CategoricalColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const padding = context.option('rowPadding', 1);
+    const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const cell = Math.max(context.rowHeight(i) - padding * 2, 0);
+      const cell = Math.min(col.getWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
       ctx.fillStyle = col.getColor(d.v, d.dataIndex);
       ctx.fillRect(0, 0, cell, cell);
       ctx.fillStyle = context.option('style.text', 'black');
@@ -1228,7 +1245,7 @@ const loading = {
 };
 
 export const defaultCellRenderer = new DefaultCellRenderer();
-const combineCellRenderer = new BarCellRenderer(false, (d, i, col: any) => col.getColor(d));
+const combineCellRenderer = new BarCellRenderer(false, (d, i, col: CompositeNumberColumn) => col.getColor(d, i));
 
 /**
  * default render factories
@@ -1237,7 +1254,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   rank: new DefaultCellRenderer('rank', 'right'),
   boolean: new DefaultCellRenderer('boolean', 'center'),
   number: new BarCellRenderer(),
-  ordinal: new BarCellRenderer(true, (d, i, col: any) => col.getColor(d)),
+  ordinal: new BarCellRenderer(true, (d, i, col: CategoricalNumberColumn) => col.getColor(d, i)),
   string: new StringCellRenderer(),
   selection,
   heatmap,

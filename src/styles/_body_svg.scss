@@ -28,7 +28,7 @@
       text-anchor: end;
     }
 
-    &.text_center, &.loading {
+    &.text_center {
       text-anchor: middle;
     }
   }
@@ -80,11 +80,6 @@
     stroke: black;
     fill: black;
   }
-  .circlecolumn {
-    stroke: black;
-    fill: black;
-  }
-
   g.row {
     rect.bg {
       fill: transparent;

@@ -1,7 +1,7 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import {median, quantile, mean, scale as d3scale} from 'd3';
+import {median, quantile, mean, scale as d3scale, ascending} from 'd3';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {IBoxPlotColumn, IBoxPlotData, SORT_METHOD, SortMethod, compareBoxPlot} from './BoxPlotColumn';
@@ -13,7 +13,6 @@ class LazyBoxPlotData implements IBoxPlotData {
   private _sorted: number[] = null;
 
   constructor(private readonly values: number[]) {
-
   }
 
   /**
@@ -22,10 +21,11 @@ class LazyBoxPlotData implements IBoxPlotData {
    */
   private get sorted() {
     if (this._sorted === null) {
-      this._sorted = this.values.slice().sort();
+      this._sorted = this.values.slice().sort(ascending);
     }
     return this._sorted;
   }
+
 
   get min() {
     return Math.min(...this.values);
@@ -62,7 +62,6 @@ export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
   readonly threshold?: number;
   readonly dataLength: number;
   readonly colorRange?: string[];
-
 }
 
 
@@ -159,6 +158,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     if (data === null) {
       return null;
     }
+    //console.log(data)
     return new LazyBoxPlotData(data);
   }
 
