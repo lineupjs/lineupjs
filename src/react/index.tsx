@@ -7,6 +7,7 @@ import Impl, {ILineUpConfig} from '../lineup';
 import * as React from 'react';
 import {IColumnDesc} from '../model';
 import LocalDataProvider from '../provider/LocalDataProvider';
+import ADataProvider from '../provider/ADataProvider';
 
 export interface ILineUpProps<T> {
   data: T[];
@@ -14,6 +15,7 @@ export interface ILineUpProps<T> {
   options?: ILineUpConfig;
   selection?: T[];
   onSelectionChanged?(selection: T[]): void;
+  defineLineUp?(data: ADataProvider): void;
 }
 
 function deepEqual<T>(a: T[], b: T[]) {
@@ -32,7 +34,8 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
     desc: React.PropTypes.array.isRequired,
     options: React.PropTypes.any,
     onSelectionChanged: React.PropTypes.func,
-    selection: React.PropTypes.any
+    selection: React.PropTypes.any,
+    defineLineUp: React.PropTypes.func
   };
 
   static readonly defaultProps = {
@@ -60,7 +63,11 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
     const data = new LocalDataProvider(this.props.data, this.props.desc);
     data.on('selectionChanged', this.onSelectionChanged.bind(this));
     data.selectAll(this.props.selection ? this.props.selection.map((d) => this.item2index(d)) : []);
-    data.deriveDefault();
+    if (this.props.defineLineUp) {
+      this.props.defineLineUp(data);
+    } else {
+      data.deriveDefault();
+    }
     this.plot = new Impl(this.parent, data, this.props);
     this.plot.update();
   }
