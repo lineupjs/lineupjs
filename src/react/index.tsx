@@ -84,6 +84,7 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
 
   componentDidUpdate() {
     this.plot.data.setSelection(this.props.selection ? this.props.selection.map((d) => this.item2index(d)) : []);
+    this.plot.update();
   }
 
   render() {
