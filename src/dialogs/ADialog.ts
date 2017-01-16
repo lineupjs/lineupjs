@@ -4,13 +4,9 @@ import {Selection, select, event as d3event, behavior} from 'd3';
 
 abstract class ADialog {
 
-  constructor(private readonly _attachment: Selection<any>, private readonly title: string) {}
+  constructor(readonly attachment: Selection<any>, private readonly title: string) {}
 
   abstract openDialog();
-
-  get attachment() {
-    return this._attachment;
-  }
 
   sortByName(prop: string) {
     return function (a, b) {
@@ -34,7 +30,7 @@ abstract class ADialog {
    * @returns {Selection<any>}
    */
   makePopup(body: string) {
-      const pos = offset(<Element>this._attachment.node());
+      const pos = offset(<Element>this.attachment.node());
       const $popup = select('body').append('div')
         .attr({
           'class': 'lu-popup2'
@@ -67,7 +63,7 @@ abstract class ADialog {
   }
 
   makeSortPopup(body: string) {
-    const pos = offset(<Element>this._attachment.node());
+    const pos = offset(<Element>this.attachment.node());
     const $popup = select('body').append('div')
       .attr({
         'class': 'lu-popup2'
@@ -80,7 +76,7 @@ abstract class ADialog {
 
   }
 
-  dialogForm(body: string, addCloseButtons = true) {
+  dialogForm(body: string, addCloseButtons: boolean = true) {
     return `<span style="font-weight: bold" class="lu-popup-title">${this.title}</span>
             <form onsubmit="return false">
                 ${body}
