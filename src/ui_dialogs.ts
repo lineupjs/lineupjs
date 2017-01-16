@@ -6,7 +6,6 @@
 
 import Column from './model/Column';
 import ScriptColumn from './model/ScriptColumn';
-import CategoricalNumberColumn from './model/CategoricalNumberColumn';
 import {offset} from './utils';
 import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
 import * as d3 from 'd3';
@@ -66,30 +65,6 @@ export function makePopup(attachment: Selection<any>, title: string, body: strin
 }
 
 /**
- * flags the header to be filtered
- * @param $header
- * @param filtered
- */
-function markFiltered($header: d3.Selection<Column>, filtered = false) {
-  $header.classed('filtered', filtered);
-}
-
-function sortbyName(prop: string) {
-  return function (a, b) {
-    const av = a[prop],
-      bv = b[prop];
-    if (av.toLowerCase() < bv.toLowerCase()) {
-      return -1;
-    }
-    if (av.toLowerCase() > bv.toLowerCase()) {
-      return 1;
-    }
-    return 0;
-  };
-}
-
-
-/**
  * opens a dialog for editing the script code
  * @param column the column to edit
  * @param $header the visual header element of this column
@@ -124,14 +99,4 @@ export function openEditScriptDialog(column: ScriptColumn, $header: d3.Selection
     updateImpl();
     $popup.remove();
   });
-}
-
-/**
- * returns all known filter dialogs mappings by type
- * @return
- */
-export function filterDialogs() {
-  return {
-
-  };
 }
