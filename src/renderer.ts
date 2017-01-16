@@ -775,7 +775,7 @@ const action = {
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     const actions = context.option('actions', []);
     return {
-      template: `<text class="actions hoverOnly fa">${actions.map((a) => `<tspan>${a.icon}></tspan>`)}</text>`,
+      template: `<text class="actions hoverOnly fa">${actions.map((a) => `<tspan>${a.icon}</tspan>`).join('')}</text>`,
       update: (n: SVGTextElement, d: IDataRow) => {
         forEach(n, 'tspan', (ni: SVGTSpanElement, i: number) => {
           ni.onclick = function (event) {
@@ -790,7 +790,7 @@ const action = {
   createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const actions = context.option('actions', []);
     return {
-      template: `<div class="actions hoverOnly">${actions.map((a) => `<span title="${a.name}" class="fa">${a.icon}></span>`)}</div>`,
+      template: `<div class="actions hoverOnly">${actions.map((a) => `<span title="${a.name}" class="fa">${a.icon}</span>`).join('')}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         forEach(n, 'span', (ni: HTMLSpanElement, i: number) => {
           ni.onclick = function (event) {
