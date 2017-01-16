@@ -176,5 +176,18 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
       this.sortByMe();
     }
   }
+
+  dump(toDescRef: (desc: any) => any): any {
+    const r = super.dump(toDescRef);
+    r.sortMethod = this.getSortMethod();
+    return r;
+  }
+
+  restore(dump: any, factory: (dump: any) => Column) {
+    super.restore(dump, factory);
+    if (dump.sortMethod) {
+      this.sort = dump.sortMethod;
+    }
+  }
 }
 

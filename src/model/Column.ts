@@ -394,6 +394,9 @@ export default class Column extends AEventDispatcher {
     if (this.color !== ((<any>this.desc).color || Column.DEFAULT_COLOR) && this.color) {
       r.color = this.color;
     }
+    if (this.getRendererType() !== this.desc.type) {
+      r.rendererType = this.getRendererType();
+    }
     return r;
   }
 
@@ -410,6 +413,9 @@ export default class Column extends AEventDispatcher {
       description: this.description
     };
     this.compressed = dump.compressed === true;
+    if (dump.rendererType) {
+      this.rendererInfo.rendererType = dump.rendererType;
+    }
   }
 
   /**
