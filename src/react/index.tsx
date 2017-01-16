@@ -68,7 +68,7 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
     } else {
       data.deriveDefault();
     }
-    this.plot = new Impl(this.parent, data, this.props);
+    this.plot = new Impl(this.parent, data, this.props.options);
     this.plot.update();
   }
 
