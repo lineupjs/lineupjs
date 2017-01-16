@@ -18,16 +18,21 @@ import DataProvider from '../provider/ADataProvider';
 import MultiValueColumn from '../model/MultiValueColumn';
 import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
 
-import {
-  filterDialogs,
-  openEditWeightsDialog,
-  openEditLinkDialog,
-  openEditScriptDialog,
-  openRenameDialog,
-  openSearchDialog,
-  sortDialog,
-  rendererTypeDialog
-} from '../ui_dialogs';
+import SearchDialog from '../dialogs/SearchDialog';
+import RenameDialog from '../dialogs/RenameDialog';
+import EditLinkDialog from '../dialogs/EditLinkDialog';
+import RendererTypeDialog from '../dialogs/RendererTypeDialog';
+import WeightsEditDialog from '../dialogs/WeightsEditDialog';
+import SortDialog from '../dialogs/SortDialog';
+
+import StringFilterDialog from '../dialogs/StringFilterDialog';
+import BooleanFilterDialog from '../dialogs/BooleanFilterDialog';
+import CategoricalFilterDialog from '../dialogs/CategoricalFilterDialog';
+import MappingsFilterDialog from '../dialogs/MappingsFilterDialog';
+import CategoricalMappingFilterDialog from '../dialogs/CategoricalMappingFilterDialog';
+
+import {IFilterDialog} from '../dialogs/AFilterDialog';
+import ScriptEditDialog from '../dialogs/ScriptEditDialog';
 
 /**
  * utility function to generate the tooltip text with description
@@ -58,7 +63,7 @@ export interface IHeaderRendererOptions {
   manipulative?: boolean;
   histograms?: boolean;
 
-  filterDialogs?: {[type: string]: (col: Column, $header: d3.Selection<Column>, data: DataProvider, idPrefix: string) => void};
+  filters?: {[type: string]: IFilterDialog};
   linkTemplates?: string[];
   searchAble?(col: Column): boolean;
   sortOnLabel?: boolean;
@@ -89,8 +94,13 @@ export default class HeaderRenderer {
     headerHeight: 20,
     manipulative: true,
     histograms: false,
-
-    filterDialogs: filterDialogs(),
+    filters:  <{[type: string]: IFilterDialog}>{
+      'string': StringFilterDialog,
+      'boolean': BooleanFilterDialog,
+      'categorical': CategoricalFilterDialog,
+      'number': MappingsFilterDialog,
+      'ordinal': CategoricalMappingFilterDialog
+    },
     linkTemplates: [],
     searchAble: (col: Column) => col instanceof StringColumn,
     sortOnLabel: true,
@@ -318,14 +328,14 @@ export default class HeaderRenderer {
   }
 
   private createToolbar($node: d3.Selection<Column>) {
-    const filterDialogs = this.options.filterDialogs,
-      provider = this.data,
+    const provider = this.data,
       that = this;
     const $regular = $node.filter((d) => !(d instanceof RankColumn));
 
     //rename
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
-      openRenameDialog(d, d3.select(this.parentNode.parentNode));
+      const dialog = new RenameDialog(d, d3.select(this.parentNode.parentNode));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //clone
@@ -336,41 +346,49 @@ export default class HeaderRenderer {
 
     //MultiValue Sort
     $node.filter((d) => d instanceof MultiValueColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
-      sortDialog(<IBoxPlotColumn><any>d, d3.select(this.parentNode.parentNode));
+      const dialog = new SortDialog(<IBoxPlotColumn><any>d, d3.select(this.parentNode.parentNode));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
 
 
     //Renderer Change
     $node.filter((d) => d.getRendererList().length > 1).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
-      rendererTypeDialog(d, d3.select(this.parentNode.parentNode));
+      const dialog = new RendererTypeDialog(d, d3.select(this.parentNode.parentNode));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
 
 
     //edit link
     $node.filter((d) => d instanceof LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-      openEditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), [].concat((<any>d.desc).templates || [], that.options.linkTemplates), that.options.idPrefix);
+      const dialog = new EditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), that.options.idPrefix, [].concat((<any>d.desc).templates || [], that.options.linkTemplates));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //edit script
     $node.filter((d) => d instanceof ScriptColumn).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
-      openEditScriptDialog(<ScriptColumn>d, d3.select(this.parentNode.parentNode));
+      const dialog = new ScriptEditDialog(<ScriptColumn>d, d3.select(this.parentNode.parentNode));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //filter
-    $node.filter((d) => filterDialogs.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
-      filterDialogs[d.desc.type](d, d3.select(this.parentNode.parentNode), provider, that.options.idPrefix);
+    $node.filter((d) => this.options.filters.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', (d) => {
+      const target = (<MouseEvent>d3.event).target;
+      const dialog = new this.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode), '', provider, that.options.idPrefix);
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //search
     $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (d) {
-      openSearchDialog(d, d3.select(this.parentNode.parentNode), provider);
+      const dialog = new SearchDialog(d, d3.select(this.parentNode.parentNode), provider);
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //edit weights
     $node.filter((d) => d instanceof StackColumn).append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (d) {
-      openEditWeightsDialog(<StackColumn>d, d3.select(this.parentNode.parentNode));
+      const dialog = new WeightsEditDialog(<StackColumn>d, d3.select(this.parentNode.parentNode));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //collapse
