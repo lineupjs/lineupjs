@@ -23,7 +23,7 @@ export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
      <label><input type="radio" name="boolean_check" value="false" ${bak === false ? 'checked="checked"' : ''}>False</label>
     <br>`);
 
-    const updateData = (filter) => {
+    const updateData = (filter: boolean) => {
       this.markFiltered((filter !== null));
       this.column.setFilter(filter);
     };

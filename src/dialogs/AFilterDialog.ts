@@ -13,7 +13,7 @@ abstract class AFilterDialog<T extends Column> extends ADialog {
     super(attachment, title);
   }
 
-  markFiltered(filtered = false) {
+  markFiltered(filtered: boolean = false) {
     this.attachment.classed('filtered', filtered);
   }
 }
