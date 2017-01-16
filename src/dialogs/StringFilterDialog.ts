@@ -1,18 +1,17 @@
 import StringColumn from '../model/StringColumn';
-import Column from '../model/Column';
-import AFilter from './AFilter';
+import AFilterDialog from './AFilterDialog';
 import {Selection} from 'd3';
 
 
-export default class StringFilterDialog extends AFilter {
+export default class StringFilterDialog extends AFilterDialog<StringColumn> {
   /**
    * opens a dialog for filtering a string column
    * @param column the column to filter
    * @param $header the visual header element of this column
    * @param title optional title
    */
-  constructor(private readonly column: StringColumn, $header: Selection<Column>, title: string = 'Filter') {
-    super($header, title);
+  constructor(column: StringColumn, $header: Selection<StringColumn>, title: string = 'Filter') {
+    super(column, $header, title);
   }
 
   openDialog() {

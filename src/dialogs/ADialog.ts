@@ -1,11 +1,10 @@
 import {offset} from '../utils';
-import {Selection, select, event as d3event, scale as d3scale, behavior} from 'd3';
-import Column from '../model/Column';
+import {Selection, select, event as d3event, behavior} from 'd3';
 
 
 abstract class ADialog {
 
-  constructor(private readonly _attachment: Selection<Column>, private readonly title: string) {}
+  constructor(private readonly _attachment: Selection<any>, private readonly title: string) {}
 
   abstract openDialog();
 

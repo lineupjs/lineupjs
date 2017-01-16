@@ -1,9 +1,9 @@
 import BooleanColumn from '../model/BooleanColumn';
 import Column from '../model/Column';
-import AFilter from './AFilter';
+import AFilterDialog from './AFilterDialog';
 import {Selection} from 'd3';
 
-export default class BooleanFilterDialog extends AFilter {
+export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
 
   /**
    * opens a dialog for filtering a boolean column
@@ -11,8 +11,8 @@ export default class BooleanFilterDialog extends AFilter {
    * @param $header the visual header element of this column
    * @param title optional title
    */
-  constructor(private readonly column: BooleanColumn, $header: Selection<Column>, title: string = 'Filter') {
-    super($header, title);
+  constructor(column: BooleanColumn, $header: Selection<BooleanColumn>, title: string = 'Filter') {
+    super(column, $header, title);
   }
 
   openDialog() {

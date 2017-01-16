@@ -29,12 +29,13 @@ import StringFilterDialog from '../dialogs/StringFilterDialog';
 import BooleanFilterDialog from '../dialogs/BooleanFilterDialog';
 import CategoricalFilterDialog from '../dialogs/CategoricalFilterDialog';
 import MappingsFilterDialog from '../dialogs/MappingsFilterDialog';
+import CategoricalMappingFilterDialog from '../dialogs/CategoricalMappingFilterDialog';
 
 
 import {
-  filterDialogs,
   openEditScriptDialog
 } from '../ui_dialogs';
+import {IFilterDialog} from '../dialogs/AFilterDialog';
 
 /**
  * utility function to generate the tooltip text with description
@@ -65,7 +66,7 @@ export interface IHeaderRendererOptions {
   manipulative?: boolean;
   histograms?: boolean;
 
-  filterDialogs?: {[type: string]: (col: Column, $header: d3.Selection<Column>, data: DataProvider, idPrefix: string) => void};
+  filters?: {[type: string]: IFilterDialog};
   linkTemplates?: string[];
   searchAble?(col: Column): boolean;
   sortOnLabel?: boolean;
@@ -96,8 +97,13 @@ export default class HeaderRenderer {
     headerHeight: 20,
     manipulative: true,
     histograms: false,
-
-    filterDialogs: filterDialogs(),
+    filters:  <{[type: string]: IFilterDialog}>{
+      'string': StringFilterDialog,
+      'boolean': BooleanFilterDialog,
+      'categorical': CategoricalFilterDialog,
+      'number': MappingsFilterDialog,
+      'ordinal': CategoricalMappingFilterDialog
+    },
     linkTemplates: [],
     searchAble: (col: Column) => col instanceof StringColumn,
     sortOnLabel: true,
@@ -329,13 +335,6 @@ export default class HeaderRenderer {
       that = this;
     const $regular = $node.filter((d) => !(d instanceof RankColumn));
 
-    const filters = {
-      'string': StringFilterDialog,
-      'boolean': BooleanFilterDialog,
-      'categorical': CategoricalFilterDialog,
-      'number': MappingsFilterDialog
-    };
-
     //rename
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
       const dialog = new RenameDialog(d, d3.select(this.parentNode.parentNode));
@@ -376,8 +375,9 @@ export default class HeaderRenderer {
       (<MouseEvent>d3.event).stopPropagation();
     });
     //filter
-    $node.filter((d) => filters.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', function (d) {
-      const dialog = new filters[d.desc.type](d, d3.select(this.parentNode.parentNode), '', provider, that.options.idPrefix);
+    $node.filter((d) => this.options.filters.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', (d) => {
+      const target = (<MouseEvent>d3.event).target;
+      const dialog = new this.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode), '', provider, that.options.idPrefix);
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });

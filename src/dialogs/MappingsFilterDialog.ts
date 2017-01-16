@@ -1,12 +1,11 @@
-import Column from '../model/Column';
-import AFilter from './AFilter';
+import AFilterDialog from './AFilterDialog';
 import NumberColumn, {IMappingFunction} from '../model/NumberColumn';
 import {offset} from '../utils';
 import {select} from 'd3';
 import DataProvider from '../provider/ADataProvider';
 import MappingEditor from '../mappingeditor';
 
-export default class MappingsFilterDialog extends AFilter {
+export default class MappingsFilterDialog extends AFilterDialog<NumberColumn> {
 
   /**
    * opens the mapping editor for a given NumberColumn
@@ -16,8 +15,8 @@ export default class MappingsFilterDialog extends AFilter {
    * @param data the data provider for illustrating the mapping by example
    * @param idPrefix dom id prefix
    */
-  constructor(private readonly column: NumberColumn, $header: d3.Selection<Column>, title: string = 'Change Mapping', private readonly data: DataProvider, private readonly idPrefix: string) {
-    super($header, title);
+  constructor(column: NumberColumn, $header: d3.Selection<NumberColumn>, title: string = 'Change Mapping', private readonly data: DataProvider, private readonly idPrefix: string) {
+    super(column, $header, title);
   }
 
   openDialog() {

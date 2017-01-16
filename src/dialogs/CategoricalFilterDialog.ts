@@ -1,9 +1,8 @@
 import CategoricalColumn from '../model/CategoricalColumn';
-import Column from '../model/Column';
-import AFilter from './AFilter';
+import AFilterDialog from './AFilterDialog';
 import {Selection} from 'd3';
 
-export default class CategoricalFilterDialog extends AFilter {
+export default class CategoricalFilterDialog extends AFilterDialog<CategoricalColumn> {
 
   /**
    * opens a dialog for filtering a categorical column
@@ -11,8 +10,8 @@ export default class CategoricalFilterDialog extends AFilter {
    * @param $header the visual header element of this column
    * @param title optional title
    */
-  constructor(private readonly column: CategoricalColumn, $header: Selection<Column>, title: string = 'Filter') {
-    super($header, title);
+  constructor(column: CategoricalColumn, $header: Selection<CategoricalColumn>, title: string = 'Filter') {
+    super(column, $header, title);
   }
 
   openDialog() {
