@@ -31,11 +31,8 @@ import CategoricalFilterDialog from '../dialogs/CategoricalFilterDialog';
 import MappingsFilterDialog from '../dialogs/MappingsFilterDialog';
 import CategoricalMappingFilterDialog from '../dialogs/CategoricalMappingFilterDialog';
 
-
-import {
-  openEditScriptDialog
-} from '../ui_dialogs';
 import {IFilterDialog} from '../dialogs/AFilterDialog';
+import ScriptEditDialog from '../dialogs/ScriptEditDialog';
 
 /**
  * utility function to generate the tooltip text with description
@@ -371,7 +368,8 @@ export default class HeaderRenderer {
     });
     //edit script
     $node.filter((d) => d instanceof ScriptColumn).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (d) {
-      openEditScriptDialog(<ScriptColumn>d, d3.select(this.parentNode.parentNode));
+      const dialog = new ScriptEditDialog(<ScriptColumn>d, d3.select(this.parentNode.parentNode));
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //filter
