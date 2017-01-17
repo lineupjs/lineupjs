@@ -4,8 +4,9 @@ import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {showOverlay, clipText} from '../utils';
+import ICellRendererFactory from './ICellRendererFactory';
 
-export default class AnnotationRenderer {
+export default class AnnotationRenderer implements ICellRendererFactory {
   createSVG(col: AnnotateColumn, context: IDOMRenderContext): ISVGCellRenderer {
     return {
       template: `<g class='annotations'>

@@ -9,7 +9,7 @@ import {select as d3select} from 'd3';
 
 
 export default class SetCellRenderer implements ICellRendererFactory {
-  private readonly setPathCalculate = function (setData: boolean[], cellDimension: number) {
+  private static setPathCalculate(setData: boolean[], cellDimension: number) {
 
     const catindexes = [];
     setData.forEach((d: boolean, i: number) => (d) ? catindexes.push(i) : -1);
@@ -43,7 +43,7 @@ export default class SetCellRenderer implements ICellRendererFactory {
 
         let path = '';
         if (hasTrueValues) {
-          const pathCordinate = this.setPathCalculate(value, cellDimension);
+          const pathCordinate = SetCellRenderer.setPathCalculate(value, cellDimension);
           path = `M${pathCordinate.left},${rowHeight / 2}L${pathCordinate.right},${rowHeight / 2}`;
         }
         attr(n.querySelector('path'), {
@@ -67,7 +67,7 @@ export default class SetCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = 'black';
       ctx.strokeStyle = 'black';
       if (hasTrueValues) {
-        const pathCordinate = hasTrueValues ? this.setPathCalculate(data, cellDimension) : null;
+        const pathCordinate = hasTrueValues ? SetCellRenderer.setPathCalculate(data, cellDimension) : null;
         ctx.beginPath();
         ctx.moveTo((pathCordinate.left), (rowHeight / 2));
         ctx.lineTo((pathCordinate.right), (rowHeight / 2));

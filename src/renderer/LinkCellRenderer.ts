@@ -4,8 +4,10 @@ import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {clipText, showOverlay} from '../utils';
+import ICellRendererFactory from './ICellRendererFactory';
 
-export default class LinkCellRenderer {
+
+export default class LinkCellRenderer implements ICellRendererFactory {
   createSVG(col: LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
     return {
       template: `<text class='link text' clip-path='url(#cp${context.idPrefix}clipCol${col.id})'></text>`,

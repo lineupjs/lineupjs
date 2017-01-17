@@ -7,7 +7,7 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {select as d3select} from 'd3';
 
 
-export default class HeatmapCellRenderer implements ICellRendererFactory {
+export default class MultiValueCellRenderer implements ICellRendererFactory {
 
   createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
     const cellDimension = col.calculateCellDimension(col.getWidth());

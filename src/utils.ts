@@ -4,7 +4,7 @@
 
 import {dispatch, select, event as d3event, Dispatch} from 'd3';
 import Column from './model/Column';
-import {IDOMCellRenderer} from './renderers/IDOMCellRenderers';
+import {IDOMCellRenderer} from './renderer/IDOMCellRenderers';
 
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed

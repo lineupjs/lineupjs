@@ -4,8 +4,10 @@ import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {forEach, showOverlay} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
+import ICellRendererFactory from './ICellRendererFactory';
 
-export default class ActionRenderer {
+
+export default class ActionRenderer implements ICellRendererFactory {
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     const actions = context.option('actions', []);
     return {

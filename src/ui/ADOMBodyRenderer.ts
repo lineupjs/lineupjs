@@ -6,15 +6,15 @@ import * as d3 from 'd3';
 import {forEach, matchColumns} from '../utils';
 import Column, {IStatistics} from '../model/Column';
 import DataProvider from '../provider/ADataProvider';
-import {IDOMRenderContext} from '../renderers/RendererContexts';
+import {IDOMRenderContext} from '../renderer/RendererContexts';
 import ABodyRenderer, {
   ISlicer,
   IRankingColumnData,
   IRankingData,
   IBodyRenderContext,
   ERenderReason} from './ABodyRenderer';
-import ICellRendererFactory from '../renderers/ICellRendererFactory';
-import {IDOMCellRenderer} from '../renderers/IDOMCellRenderers';
+import ICellRendererFactory from '../renderer/ICellRendererFactory';
+import {IDOMCellRenderer} from '../renderer/IDOMCellRenderers';
 
 export interface IDOMMapping {
   root: string;
@@ -159,7 +159,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
   select(dataIndex: number, additional = false) {
     const selected = super.select(dataIndex, additional);
-    this.$node.selectAll(`[data-data-index='${dataIndex}'`).classed('selected', selected);
+    this.$node.selectAll(`[data-data-index="${dataIndex}"]`).classed('selected', selected);
     return selected;
   }
 

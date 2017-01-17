@@ -4,8 +4,10 @@ import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
 import {clipText} from '../utils';
+import ICellRendererFactory from './ICellRendererFactory';
 
-export default class LoadingCellRenderer {
+
+export default class LoadingCellRenderer implements ICellRendererFactory {
   createSVG(col: Column): ISVGCellRenderer {
     return {
       template: `<text class='loading'><tspan class='fa'>\uf110</tspan>Loading…</text>`,

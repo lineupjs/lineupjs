@@ -2,30 +2,30 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import Column from './model/Column';
-import CategoricalNumberColumn from './model/CategoricalNumberColumn';
-import CompositeNumberColumn from './model/CompositeNumberColumn';
+import Column from '../model/Column';
+import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
+import CompositeNumberColumn from '../model/CompositeNumberColumn';
 
-import ICellRendererFactory from './renderers/ICellRendererFactory';
-import BarCellRenderer from './renderers/BarCellRenderer';
-import {DefaultCellRenderer} from './renderers/DefaultCellRenderer';
-import StringCellRenderer from './renderers/StringCellRenderer';
-import SelectionRenderer from './renderers/SelectionRenderer';
-import LinkCellRenderer from './renderers/LinkCellRenderer';
-import AnnotationRenderer from './renderers/AnnotationRenderer';
-import ActionRenderer from './renderers/ActionRenderer';
-import StackCellRenderer from './renderers/StackCellRenderer';
-import CategoricalCellRenderer from './renderers/CategoricalCellRenderer';
-import HeatmapCellRenderer from './renderers/HeatmapCellRenderer';
-import SparklineCellRenderer from './renderers/SparklineCellRenderer';
-import VerticalBarCellRenderer from './renderers/VerticalBarCellRenderer';
-import SetCellRenderer from './renderers/SetCellRenderer';
-import CircleCellRenderer from './renderers/CircleCellRenderer';
-import BoxplotCellRenderer from './renderers/BoxplotCellRenderer';
-import LoadingCellRenderer from './renderers/LoadingCellRenderer';
-import ThresholdCellRenderer from './renderers/ThresholdCellRenderer';
-import Heatmap from './renderers/Heatmap';
-import {IDOMRenderContext, ICanvasRenderContext} from './renderers/RendererContexts';
+import ICellRendererFactory from './ICellRendererFactory';
+import BarCellRenderer from './BarCellRenderer';
+import {DefaultCellRenderer} from './DefaultCellRenderer';
+import StringCellRenderer from './StringCellRenderer';
+import SelectionRenderer from './SelectionRenderer';
+import LinkCellRenderer from './LinkCellRenderer';
+import AnnotationRenderer from './AnnotationRenderer';
+import ActionRenderer from './ActionRenderer';
+import StackCellRenderer from './StackCellRenderer';
+import CategoricalCellRenderer from './CategoricalCellRenderer';
+import MultiValueCellRenderer from './MultiValueCellRenderer';
+import SparklineCellRenderer from './SparklineCellRenderer';
+import VerticalBarCellRenderer from './VerticalBarCellRenderer';
+import SetCellRenderer from './SetCellRenderer';
+import CircleCellRenderer from './CircleCellRenderer';
+import BoxplotCellRenderer from './BoxplotCellRenderer';
+import LoadingCellRenderer from './LoadingCellRenderer';
+import ThresholdCellRenderer from './ThresholdCellRenderer';
+import Heatmap from './Heatmap';
+import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -52,7 +52,7 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   min: combineCellRenderer,
   mean: combineCellRenderer,
   script: combineCellRenderer,
-  multiValue: new HeatmapCellRenderer(),
+  multiValue: new MultiValueCellRenderer(),
   threshold: new ThresholdCellRenderer(),
   sparkline: new SparklineCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),

@@ -14,9 +14,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
    * class to append to the text elements
    * @type {string}
    */
-  readonly textClass;
 
-  constructor(textClass = 'cat') {
+  constructor(private readonly textClass: string = 'cat') {
     this.textClass = textClass;
   }
 

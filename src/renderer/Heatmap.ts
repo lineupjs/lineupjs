@@ -6,9 +6,11 @@ import {IDataRow} from '../provider/ADataProvider';
 import {attr} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
+import ICellRendererFactory from './ICellRendererFactory';
 
-export default class Heatmap {
-  private toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
+
+export default class Heatmap implements ICellRendererFactory {
+  private static toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
     let v = col.getNumber(d, index);
     if (isNaN(v)) {
       v = 0;
@@ -34,7 +36,7 @@ export default class Heatmap {
           width: w,
           height: w
         }, {
-          fill: this.toHeatMapColor(d.v, d.dataIndex, col)
+          fill: Heatmap.toHeatMapColor(d.v, d.dataIndex, col)
         });
       }
     };
@@ -52,7 +54,7 @@ export default class Heatmap {
           width: `${w}px`,
           height: `${w}px`,
           top: `${padding}px`,
-          'background-color': this.toHeatMapColor(d.v, d.dataIndex, col)
+          'background-color': Heatmap.toHeatMapColor(d.v, d.dataIndex, col)
         });
       }
     };
@@ -62,7 +64,7 @@ export default class Heatmap {
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const w = context.rowHeight(i) - padding * 2;
-      ctx.fillStyle = this.toHeatMapColor(d.v, d.dataIndex, col);
+      ctx.fillStyle = Heatmap.toHeatMapColor(d.v, d.dataIndex, col);
       ctx.fillRect(padding, padding, w, w);
     };
   }

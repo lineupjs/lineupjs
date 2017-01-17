@@ -8,9 +8,8 @@ import {attr, clipText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
-  private readonly renderValue;
 
-  constructor(renderValue = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {
+  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {
     this.renderValue = renderValue;
   }
 

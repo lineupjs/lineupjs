@@ -5,7 +5,7 @@
 
 import Column, {IColumnDesc} from './model/Column';
 import DataProvider  from './provider/ADataProvider';
-import {renderers as defaultRenderers}  from './renderer';
+import {renderers as defaultRenderers}  from './renderer/index';
 import {
   IRankingHook,
   dummyRankingButtonHook,
@@ -19,7 +19,7 @@ import {IHeaderRendererOptions} from './ui/HeaderRenderer';
 import {IBodyRendererOptions, default as ABodyRenderer} from './ui/ABodyRenderer';
 import {AEventDispatcher, ContentScroller, merge}  from './utils';
 import {scale as d3scale, selection, select, Selection} from 'd3';
-import ICellRendererFactory from './renderers/ICellRendererFactory';
+import ICellRendererFactory from './renderer/ICellRendererFactory';
 
 export interface IBodyOptions {
   renderer?: string;
@@ -80,7 +80,7 @@ export interface ILineUpConfig {
   pool?: boolean;
 
   /**
-   * the renderers to use for rendering the columns
+   * the renderer to use for rendering the columns
    */
   renderers?: {[key: string]: ICellRendererFactory};
 }

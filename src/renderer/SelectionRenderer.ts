@@ -4,8 +4,9 @@ import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {clipText} from '../utils';
+import ICellRendererFactory from './ICellRendererFactory';
 
-export default class SelectionRenderer {
+export default class SelectionRenderer implements ICellRendererFactory {
   createSVG(col: SelectionColumn): ISVGCellRenderer {
     return {
       template: `<text class='selection fa'><tspan class='selectionOnly'>\uf046</tspan><tspan class='notSelectionOnly'>\uf096</tspan></text>`,

@@ -10,18 +10,12 @@ import {attr, clipText} from '../utils';
  * default renderer instance rendering the value as a text
  */
 export class DefaultCellRenderer implements ICellRendererFactory {
-  /**
-   * class to append to the text elements
-   * @type {string}
-   */
-  readonly textClass: string;
-  /**
-   * the text alignment: left, center, right
-   * @type {string}
-   */
-  readonly align: string;
 
-  constructor(textClass = 'text', align = 'left') {
+  /**
+   * @param textClass {string} class to append to the text elements
+   * @param align {string} the text alignment: left, center, right
+   */
+  constructor(private readonly textClass: string = 'text', private readonly align: string = 'left') {
     this.textClass = textClass;
     this.align = align;
   }

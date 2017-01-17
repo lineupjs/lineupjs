@@ -6,7 +6,7 @@
 import './style.scss';
 import * as model_ from './model';
 import * as provider_  from './provider';
-import * as renderer_  from './renderer';
+import * as renderer_  from './renderer/index';
 import * as ui_  from './ui';
 import LineUp from './lineup';
 
