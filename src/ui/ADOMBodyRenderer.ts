@@ -3,17 +3,18 @@
  */
 
 import * as d3 from 'd3';
-import {forEach} from '../utils';
+import {forEach, matchColumns} from '../utils';
 import Column, {IStatistics} from '../model/Column';
-import {matchColumns, IDOMCellRenderer, ICellRendererFactory} from '../renderer';
 import DataProvider from '../provider/ADataProvider';
-import {IDOMRenderContext} from '../renderer';
+import {IDOMRenderContext} from '../renderers/RendererContexts';
 import ABodyRenderer, {
   ISlicer,
   IRankingColumnData,
   IRankingData,
   IBodyRenderContext,
   ERenderReason} from './ABodyRenderer';
+import ICellRendererFactory from '../renderers/ICellRendererFactory';
+import {IDOMCellRenderer} from '../renderers/IDOMCellRenderers';
 
 export interface IDOMMapping {
   root: string;
@@ -158,7 +159,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
   select(dataIndex: number, additional = false) {
     const selected = super.select(dataIndex, additional);
-    this.$node.selectAll(`[data-data-index="${dataIndex}"`).classed('selected', selected);
+    this.$node.selectAll(`[data-data-index='${dataIndex}'`).classed('selected', selected);
     return selected;
   }
 
@@ -169,7 +170,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     if (indices.length === 0) {
       return;
     } else {
-      const q = indices.map((d) => `[data-data-index="${d}"]`).join(',');
+      const q = indices.map((d) => `[data-data-index='${d}']`).join(',');
       forEach(this.node, q, (d) => d.classList.add('selected'));
     }
   }
@@ -183,7 +184,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
     forEach(this.node, '.hover', (d) => d.classList.remove('hover'));
     if (hover) {
-      forEach(this.node, `[data-data-index="${dataIndex}"]`, setClass);
+      forEach(this.node, `[data-data-index='${dataIndex}']`, setClass);
     }
   }
 

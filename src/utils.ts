@@ -3,6 +3,8 @@
  */
 
 import {dispatch, select, event as d3event, Dispatch} from 'd3';
+import Column from './model/Column';
+import {IDOMCellRenderer} from './renderers/IDOMCellRenderers';
 
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
@@ -461,4 +463,77 @@ export function clipText(ctx: CanvasRenderingContext2D, text: string, x: number,
     guess = Math.floor((max + min) / 2); //compute next guess
   }
   return render(text.substring(0, min + 1) + ellipsis);
+}
+
+export function showOverlay(id: string, dx: number, dy: number) {
+  let overlay = <HTMLDivElement>document.querySelector(`div.lu-overlay#O${id}`);
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.classList.add('lu-overlay');
+    overlay.id = 'O' + id;
+    document.querySelector('.lu-body').appendChild(overlay);
+  }
+  overlay.style.display = 'block';
+  overlay.style.left = dx + 'px';
+  overlay.style.top = dy + 'px';
+  return overlay;
+}
+
+export function hideOverlays() {
+  forEach(document.querySelector('div.lu-body'), 'div.lu-overlay', (d: HTMLDivElement) => d.style.display = null);
+}
+
+
+/**
+ * machtes the columns and the dom nodes representing them
+ * @param node
+ * @param columns
+ * @param helperType
+ */
+export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer<any>}[], helperType = 'svg') {
+  if (node.childElementCount === 0) {
+    // initial call fast method
+    node.innerHTML = columns.map((c) => c.renderer.template).join('');
+    columns.forEach((col, i) => {
+      const cnode = <Element>node.childNodes[i];
+      // set attribute for finding again
+      cnode.setAttribute('data-column-id', col.column.id);
+      // store current renderer
+      cnode.setAttribute('data-renderer', col.column.getRendererType());
+    });
+    return;
+  }
+
+  function matches(c: {column: Column}, i: number) {
+    //do both match?
+    const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
+    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getRendererType();
+  }
+
+  if (columns.every(matches)) {
+    return; //nothing to do
+  }
+
+  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.getRendererType()));
+  //remove all that are not existing anymore
+  Array.prototype.slice.call(node.childNodes).forEach((n) => {
+    const id = n.getAttribute('data-column-id');
+    const renderer = n.getAttribute('data-renderer');
+    const idAndRenderer = id + '@' + renderer;
+    if (!idsAndRenderer.has(idAndRenderer)) {
+      node.removeChild(n);
+    }
+  });
+  const helper = helperType === 'svg' ? document.createElementNS('http://www.w3.org/2000/svg', 'g') : document.createElement('div');
+  columns.forEach((col) => {
+    let cnode = node.querySelector(`[data-column-id="${col.column.id}"]`);
+    if (!cnode) {
+      //create one
+      helper.innerHTML = col.renderer.template;
+      cnode = <Element>helper.childNodes[0];
+      cnode.setAttribute('data-column-id', col.column.id);
+      cnode.setAttribute('data-renderer', col.column.getRendererType());
+    }
+    node.appendChild(cnode);
+  });
 }

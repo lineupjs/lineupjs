@@ -5,9 +5,10 @@
 import {Selection, max as d3max} from 'd3';
 import DataProvider from '../provider/ADataProvider';
 import Column from '../model/Column';
-import {createSVG, IDOMRenderContext} from '../renderer';
+import {createSVG} from '../renderer';
 import {ISlicer, IBodyRenderContext, IRankingData} from './ABodyRenderer';
 import ADOMBodyRenderer from './ADOMBodyRenderer';
+import {IDOMRenderContext} from '../renderers/RendererContexts';
 
 const domMappings = {
   svg: {

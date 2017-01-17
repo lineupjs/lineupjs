@@ -8,7 +8,9 @@ import {Ranking, isNumberColumn} from '../model';
 import Column, {IStatistics, ICategoricalStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
-import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
+import IRenderContext from '../renderers/IRenderContext';
+import ICellRendererFactory from '../renderers/ICellRendererFactory';
+//import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
 
 export interface ISlicer {
   (start: number, length: number, row2y: (i: number) => number): {from: number; to: number};
@@ -99,7 +101,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     animation: false, //200
     animationDuration: 1000,
 
-    renderers: merge({}, defaultRenderers),
+    //renderers: merge({}, defaultRenderers),
 
     meanLine: false,
 
