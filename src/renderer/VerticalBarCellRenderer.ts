@@ -63,7 +63,7 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
       data.forEach((d, j) => {
         const xpos = (j * cellDimension);
         const ypos = VerticalBarCellRenderer.verticalBarYpos(domain, threshold, d, scale, rowHeight);
-        ctx.fillStyle = colorScale(d);
+        ctx.fillStyle = String(colorScale(d));
         ctx.fillRect(xpos, ypos, cellDimension, VerticalBarCellRenderer.verticalBarHeight(domain, threshold, d, scale, rowHeight));
       });
     };
