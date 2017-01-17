@@ -8,7 +8,9 @@ import {Ranking, isNumberColumn} from '../model';
 import Column, {IStatistics, ICategoricalStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
-import {IRenderContext, renderers as defaultRenderers, ICellRendererFactory} from '../renderer';
+import IRenderContext from '../renderer/IRenderContext';
+import ICellRendererFactory from '../renderer/ICellRendererFactory';
+import {renderers as defaultRenderers} from '../renderer/index';
 
 export interface ISlicer {
   (start: number, length: number, row2y: (i: number) => number): {from: number; to: number};

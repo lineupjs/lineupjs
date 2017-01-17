@@ -3,12 +3,13 @@
  */
 
 import {event as d3event, mouse as d3mouse} from 'd3';
-import {merge, createTextHints} from '../utils';
+import {merge, createTextHints, hideOverlays} from '../utils';
 import Column, {IStatistics} from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
-import {createCanvas, hideOverlays, ICanvasRenderContext} from '../renderer';
+import {createCanvas} from '../renderer/index';
 import DataProvider, {IDataRow}  from '../provider/ADataProvider';
 import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext, ERenderReason} from './ABodyRenderer';
+import {ICanvasRenderContext} from '../renderer/RendererContexts';
 
 export interface IStyleOptions {
   text?: string;

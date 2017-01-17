@@ -4,9 +4,10 @@
 
 import {Selection} from 'd3';
 import DataProvider from '../provider/ADataProvider';
-import {createHTML, IDOMRenderContext} from '../renderer';
+import {createHTML} from '../renderer/index';
 import {ISlicer, IRankingData, IBodyRenderContext} from './ABodyRenderer';
 import ADOMBodyRenderer, {} from './ADOMBodyRenderer';
+import {IDOMRenderContext} from '../renderer/RendererContexts';
 
 const domHTMLMappings = {
   root: 'div',
