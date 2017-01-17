@@ -65,7 +65,7 @@ export default class MultiValueCellRenderer implements ICellRendererFactory {
       data.forEach((d: number, j: number) => {
         const x = (j * cellDimension);
         ctx.beginPath();
-        ctx.fillStyle = colorScale(d);
+        ctx.fillStyle = String(colorScale(d));
         ctx.fillRect(x, padding, cellDimension, rowHeight);
       });
     };
