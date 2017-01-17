@@ -18,7 +18,7 @@ export default class AnnotationRenderer implements ICellRendererFactory {
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const input: HTMLInputElement = <HTMLInputElement>n.querySelector('foreignObject *');
         input.onchange = function () {
-          col.setValue(d.v, d.dataIndex, this.value);
+          col.setValue(d.v, d.dataIndex, input.value);
         };
         input.onclick = function (event) {
           event.stopPropagation();
@@ -43,7 +43,7 @@ export default class AnnotationRenderer implements ICellRendererFactory {
       update: (n: HTMLElement, d: IDataRow) => {
         const input: HTMLInputElement = <HTMLInputElement>n.querySelector('input');
         input.onchange = function () {
-          col.setValue(d.v, d.dataIndex, this.value);
+          col.setValue(d.v, d.dataIndex, input.value);
         };
         input.onclick = function (event) {
           event.stopPropagation();
@@ -64,7 +64,7 @@ export default class AnnotationRenderer implements ICellRendererFactory {
         overlay.innerHTML = `<input type='text' value='${col.getValue(d.v, d.dataIndex)}' style='width:${col.getWidth()}px'>`;
         const input = <HTMLInputElement>overlay.childNodes[0];
         input.onchange = function () {
-          col.setValue(d.v, d.dataIndex, this.value);
+          col.setValue(d.v, d.dataIndex, input.value);
         };
         input.onclick = function (event) {
           event.stopPropagation();
