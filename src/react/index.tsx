@@ -72,8 +72,8 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
     this.plot.update();
   }
 
-  shouldComponentUpdate?(nextProps: ILineUpProps<T>) {
-    return !deepEqual(this.props.selection, nextProps.selection);
+  shouldComponentUpdate(nextProps: ILineUpProps<T>) {
+    return !deepEqual(this.props.selection, nextProps.selection) || !deepEqual(this.props.data, nextProps.data);
   }
 
   private onSelectionChanged(indices: number[]) {
@@ -83,7 +83,20 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
   }
 
   componentDidUpdate() {
-    this.plot.data.setSelection(this.props.selection ? this.props.selection.map((d) => this.item2index(d)) : []);
+    const provider = (this.plot.data as LocalDataProvider);
+    if (!deepEqual(provider.data, this.props.data)) {
+      const data = new LocalDataProvider(this.props.data, this.props.desc);
+      data.on('selectionChanged', this.onSelectionChanged.bind(this));
+      data.selectAll(this.props.selection ? this.props.selection.map((d) => this.item2index(d)) : []);
+      if (this.props.defineLineUp) {
+        this.props.defineLineUp(data);
+      } else {
+        data.deriveDefault();
+      }
+      this.plot.changeDataStorage(data);
+    } else {
+      this.plot.data.setSelection(this.props.selection ? this.props.selection.map((d) => this.item2index(d)) : []);
+    }
     this.plot.update();
   }
 
