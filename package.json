@@ -66,14 +66,14 @@
   "devDependencies": {
     "awesome-typescript-loader": "^3.0.0-beta.17",
     "css-loader": "^0.26.1",
-    "extract-text-webpack-plugin": "^2.0.0-beta.4",
+    "extract-text-webpack-plugin": "^2.0.0-rc.2",
     "mkdirp": "^0.5.1",
     "node-sass": "^4.1.1",
     "sass-loader": "^4.1.1",
     "style-loader": "^0.13.1",
     "tslint": "^4.2.0",
-    "typedoc": "^0.5.3",
-    "typescript": "2.1.1",
+    "typedoc": "^0.5.5",
+    "typescript": "2.1.5",
     "webpack": "^2.2.0"
   },
   "optionalDependencies": {
