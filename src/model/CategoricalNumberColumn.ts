@@ -5,7 +5,7 @@
 import {max as d3max, scale, min as d3min} from 'd3';
 import Column from './Column';
 import ValueColumn,{IValueColumnDesc} from './ValueColumn';
-import CategoricalColumn, {ICategoricalColumn, IBaseCategoricalDesc} from './CategoricalColumn';
+import CategoricalColumn, {ICategoricalColumn, IBaseCategoricalDesc, ICategoricalFilter} from './CategoricalColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 
 export declare type ICategoricalNumberColumnDesc = IBaseCategoricalDesc & IValueColumnDesc<number>;
@@ -26,7 +26,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
 
   private readonly scale = scale.ordinal().rangeRoundPoints([0, 1]);
 
-  private currentFilter: string[] = null;
+  private currentFilter: ICategoricalFilter = null;
   /**
    * separator for multi handling
    * @type {string}
@@ -174,11 +174,8 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.currentFilter;
   }
 
-  setFilter(filter: string[]) {
-    if (this.currentFilter === filter) {
-      return;
-    }
-    this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
+  setFilter(filter: ICategoricalFilter) {
+    return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
