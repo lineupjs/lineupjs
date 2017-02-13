@@ -19,7 +19,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     const bak = <string[]>bakOri.filter;
     const bakMissing = bakOri.filterMissing;
     const popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th>Category</th></thead><tbody></tbody></table></div>
-        <label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label>`);
+        <label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label><br>`);
 
     // list all data rows !
     const colors = this.column.categoryColors,

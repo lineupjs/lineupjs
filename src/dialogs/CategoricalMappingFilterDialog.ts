@@ -24,7 +24,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     const scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 
     const $popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>
-        <label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label>`);
+        <label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label><br>`);
 
     const range = this.column.getScale().range,
       colors = this.column.categoryColors,
