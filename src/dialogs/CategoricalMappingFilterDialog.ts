@@ -16,12 +16,15 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
   }
 
   openDialog() {
-    const bak = this.column.getFilter() || [];
+    const bakOri = this.column.getFilter() || {filter: [], filterMissing: false};
+    const bak = <string[]>bakOri.filter;
+    const bakMissing = bakOri.filterMissing;
 
 
     const scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 
-    const $popup = this.makePopup('<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>');
+    const $popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>
+        <label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label><br>`);
 
     const range = this.column.getScale().range,
       colors = this.column.categoryColors,
@@ -79,13 +82,14 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
 
     redrawSelectAll();
 
-    const updateData = (filter: string[]) => {
-      this.markFiltered(filter && filter.length > 0 && filter.length < trData.length);
-      this.column.setFilter(filter);
+   const updateData = (filter: string[], filterMissing: boolean) => {
+      const noFilter = filter === null && filterMissing === null;
+      this.markFiltered(!noFilter);
+      this.column.setFilter(noFilter ? null : {filter, filterMissing});
     };
 
     $popup.select('.cancel').on('click', () => {
-      updateData(bak);
+      updateData(bak, bakMissing);
       this.column.setMapping(range);
       $popup.remove();
     });
@@ -95,7 +99,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
         d.range = 50;
       });
       redraw();
-      updateData(null);
+      updateData(null, null);
       this.column.setMapping(trData.map(() => 1));
     });
     $popup.select('.ok').on('click', () => {
@@ -103,7 +107,8 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
       if (f.length === trData.length) {
         f = [];
       }
-      updateData(f);
+      const filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+      updateData(f, filterMissing);
       this.column.setMapping(trData.map((d) => d.range / 100));
       $popup.remove();
     });
