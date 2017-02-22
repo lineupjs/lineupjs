@@ -16,7 +16,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
 
   openDialog() {
     const bakOri = this.column.getFilter() || {filter: [], filterMissing: false};
-    const bak = <string[]>bakOri.filter;
+    const bak = <string[]>bakOri.filter || [];
     const bakMissing = bakOri.filterMissing;
     const popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th>Category</th></thead><tbody></tbody></table></div>
         <label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label><br>`);
@@ -59,7 +59,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     redrawSelectAll();
 
     const updateData = (filter: string[], filterMissing: boolean) => {
-      const noFilter = filter === null && filterMissing === null;
+      const noFilter = filter === null && filterMissing === false;
       this.markFiltered(!noFilter);
       this.column.setFilter(noFilter ? null : {filter, filterMissing});
     };
@@ -75,8 +75,8 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     });
     popup.select('.ok').on('click', function () {
       let f = trData.filter((d) => d.isChecked).map((d) => d.cat);
-      if (f.length === trData.length) {
-        f = [];
+      if (f.length === trData.length) { // all checked = no filter
+        f = null;
       }
       const filterMissing = popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
       updateData(f, filterMissing);
