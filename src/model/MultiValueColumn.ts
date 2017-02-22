@@ -4,12 +4,29 @@
 import {median, quantile, mean, scale as d3scale, ascending} from 'd3';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
-import {IBoxPlotColumn, IBoxPlotData, SORT_METHOD, SortMethod, compareBoxPlot} from './BoxPlotColumn';
+import {
+  IBoxPlotColumn, IBoxPlotData, SORT_METHOD as BASE_SORT_METHOD, SortMethod, compareBoxPlot
+} from './BoxPlotColumn';
+import {merge} from '../utils';
+
+
+export const SORT_METHOD = merge({
+  mean: 'mean'
+}, BASE_SORT_METHOD);
+
+export interface IAdvancedBoxPlotData extends IBoxPlotData {
+  readonly mean: number;
+}
+
+
+export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
+  getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData;
+}
 
 /**
  * helper class to lazily compute box plotdata out of a given number array
  */
-class LazyBoxPlotData implements IBoxPlotData {
+class LazyBoxPlotData implements IAdvancedBoxPlotData {
   private _sorted: number[] = null;
 
   constructor(private readonly values: number[]) {
@@ -65,7 +82,7 @@ export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
 }
 
 
-export default class MultiValueColumn extends ValueColumn<number[]> implements IBoxPlotColumn,IMultiValueColumn {
+export default class MultiValueColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, IMultiValueColumn {
   private readonly domain;
   private sort: SortMethod;
   private readonly threshold;
@@ -153,7 +170,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     return d3scale.linear().domain(this.domain);
   }
 
-  getBoxPlotData(row: any, index: number): IBoxPlotData {
+  getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData {
     const data = this.getValue(row, index);
     if (data === null) {
       return null;

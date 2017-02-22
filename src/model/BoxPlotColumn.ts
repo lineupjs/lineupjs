@@ -9,10 +9,10 @@ export const SORT_METHOD = {
   max: 'max',
   median: 'median',
   q1: 'q1',
-  q3: 'q3',
-  mean: 'mean'
+  q3: 'q3'
 };
-// till it can be more spcific
+
+// till it can be more specific
 export declare type SortMethod = string;
 
 
@@ -23,19 +23,19 @@ export interface IBoxPlotColumn {
   setSortMethod(sortMethod: string);
 }
 
-
 export interface IBoxPlotColumnDesc extends IValueColumnDesc<IBoxPlotData> {
   readonly domain?: number[];
   readonly sort?: string;
 }
 
-export  interface IBoxPlotData {
+export interface IBoxPlotData {
   readonly min: number;
   readonly max: number;
   readonly median: number;
   readonly q1: number;
   readonly q3: number;
 }
+
 
 export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: number, bIndex: number) {
   const aVal = (col.getBoxPlotData(a, aIndex));
