@@ -278,7 +278,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return r.map((d) => d.col);
   }
 
-  find(idOrFilter: (col: Column) => boolean | string) {
+  find(idOrFilter: string | ((col: Column) => boolean)) {
     const filter = typeof(idOrFilter) === 'string' ? (col) => col.id === idOrFilter : idOrFilter;
     const r = this.flatColumns;
     for (const v of r) {

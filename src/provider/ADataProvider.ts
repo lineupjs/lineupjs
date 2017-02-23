@@ -350,7 +350,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param idOrFilter by id or by a filter function
    * @returns {Column}
    */
-  find(idOrFilter: (col: Column) => boolean | string): Column {
+  find(idOrFilter: string | ((col: Column) => boolean)): Column {
     //convert to function
     const filter = typeof(idOrFilter) === 'string' ? (col) => col.id === idOrFilter : idOrFilter;
 
