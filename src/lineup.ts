@@ -268,7 +268,7 @@ export default class LineUp extends AEventDispatcher {
    * @param ascending
    * @returns {boolean}
    */
-  sortBy(column: (col: Column) => boolean | string, ascending = false) {
+  sortBy(column: string | ((col: Column) => boolean), ascending = false) {
     const col = this.data.find(column);
     if (col) {
       col.sortByMe(ascending);
