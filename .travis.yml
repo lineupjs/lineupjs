@@ -1,15 +1,11 @@
 language: node_js
-
 node_js:
 - 4.6.0
-
 before_install:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
 - if [[ `npm -v` != 3* ]]; then npm i -g npm@3; fi
-
 script: npm run dist
-
 deploy:
   provider: releases
   api_key:
@@ -18,9 +14,6 @@ deploy:
   on:
     repo: Caleydo/lineupjs
     tags: true
-
 notifications:
   slack:
-    secure: GGD+yGe3KJGYIS0mJk2xbCOHlCZhxjnK2hdXyPzZjzevTsIXLZqYU9ZUvsGb/Vy4V4KR81vLukxH7rKcYfkSYIqsnYAarMWz/QnZXi8EHeC/8k6b4zSCPhG14fL95b5pfoasoGqZfkKUPJVF38fV2yVUmzIADRfls4UDvsIURh8=
-    on_success: change
-    on_failure: always
+    secure: olHxvHHKjtCsAqB88+TV2nwPXwmo46dyM4PODLuJsVVFcachfxYnric03blYBnlfnF5Z4CKeg6TAFADplEaGL8YFDxLXJboPO09DuwnMyaEi7Zlakwpv4tMOaB2m4LoH1lNdiwVmMamfhNU2cryqBYl7WCN/uwPfPbC4zR82hn8=
