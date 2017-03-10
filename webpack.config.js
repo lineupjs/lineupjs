@@ -36,8 +36,8 @@ function generate(bundle, min) {
       //rest depends on type
     ],
     externals: { //react always external
-      react: 'React',
-      'react-dom': 'ReactDOM'
+      react: { amd: 'react', global: 'React', commonjs: 'react' },
+      'react-dom': { amd: 'react-dom', global: 'ReactDOM', commonjs: 'react-dom' }
     },
     module: {
       loaders: [
