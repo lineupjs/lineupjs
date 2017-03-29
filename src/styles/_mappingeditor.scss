@@ -21,6 +21,10 @@ $mapping_color_hover: #0000cf;
       display: flex;
       flex-direction: column;
 
+      &:first-child {
+        text-align: right;
+      }
+
       > span:first-of-type {
         flex-grow: 1;
       }

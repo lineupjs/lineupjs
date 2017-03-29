@@ -70,7 +70,7 @@ export default class MappingEditor {
     const height = options.height - options.padding_ver * 2 - options.filter_height;
 
     (<HTMLElement>$root.node()).innerHTML = `<form onsubmit="return false">
-      <div style="text-align: center"><label for="me${options.idPrefix}mapping_type">Mapping Type: <select id="me${options.idPrefix}mapping_type">
+      <div><label for="me${options.idPrefix}mapping_type"><span style="font-weight: bold">Mapping / Scaling Type: </span><select id="me${options.idPrefix}mapping_type">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>
@@ -82,15 +82,18 @@ export default class MappingEditor {
         <option value="script">Custom Script</option>
       </select>
       </label></div>
+      <div style="font-weight: bold; margin-top: 15px">Filter:</div>
       <div class="mapping_area">
         <div>
           <span>0</span>
           <input type="text" class="raw_min" id="me${options.idPrefix}raw_min" value="0"><label for="me${options.idPrefix}raw_min">Min</label>
         </div>
         <svg width="${options.width}" height="${options.height}">
+          <text x="${width/2}" y="10">LineUp Scores</text>
+          <text x="${width/2}" y="${options.height - options.filter_height + 5}">Raw Input Scores</text>
           <line y1="${options.padding_ver}" y2="${options.padding_ver}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
           <rect class="adder" x="${options.padding_hor}" width="${width}" height="10"></rect>
-          <line y1="${options.height - options.filter_height - 5}" y2="${options.height - options.filter_height - 5}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
+          <line y1="${options.height - options.filter_height - options.padding_ver}" y2="${options.height - options.filter_height - options.padding_ver}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
           <rect class="adder" x="${options.padding_hor}" width="${width}" height="10" y="${options.height - options.filter_height - 10}"></rect>
           <g transform="translate(${options.padding_hor},${options.padding_ver})">
             <g class="samples">
@@ -99,7 +102,7 @@ export default class MappingEditor {
             <g class="mappings">
       
             </g>
-            <g class="filter" transform="translate(0,${options.height - options.filter_height - 10})">
+            <g class="filter" transform="translate(0,${options.height - options.filter_height - options.padding_ver - 10})">
                <g class="left_filter" transform="translate(0,0)">
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-4" y="7" width="40" height="13" rx="2" ry="2"></rect>

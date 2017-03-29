@@ -48,7 +48,8 @@ export default class MappingsFilterDialog extends AFilterDialog<NumberColumn> {
     const editorOptions = {
       idPrefix: this.idPrefix,
       callback: applyMapping,
-      triggerCallback: 'dragend'
+      triggerCallback: 'dragend',
+      padding_ver: 15
     };
     const dataSample = this.data.mappingSample(this.column);
     let editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
