@@ -257,11 +257,77 @@ export default class MappingEditor {
         renderMappingLines();
       }
 
+      $root.on('click', function() {
+        $root.select(`#me${options.idPrefix}mapping-overlay`).remove();
+      });
+
       $root.selectAll('rect.adder').on('click', () => {
         addPoint(mouse($root.select('svg > g').node())[0]);
       });
 
+      function createOverlay(d) {
+        $root.select(`#me${options.idPrefix}mapping-overlay`).remove();
+
+        const overlay = $root.append('div')
+          .attr('id', `me${options.idPrefix}mapping-overlay`)
+          .attr('style', `left: ${(<MouseEvent>d3event).layerX + options.padding_hor + 50}px; top: ${(<MouseEvent>d3event).layerY + options.padding_ver}px`)
+          .on('click', () => (<MouseEvent>d3event).stopPropagation());
+
+        overlay
+          .append('div')
+          .append('label')
+            .attr('for', `me${options.idPrefix}normalized-label`)
+            .text('Normalized: ')
+          .append('input')
+          .attr('id', `me${options.idPrefix}normalized-label`)
+            .attr('type', 'number')
+            .attr('min', 0)
+            .attr('step', 0.01)
+            .attr('data-type', 'normalized')
+            .attr('value', d.n);
+
+        overlay
+          .append('div')
+          .append('label')
+            .attr('for', `me${options.idPrefix}raw-label`)
+            .text('Raw: ')
+          .append('input')
+            .attr('id', `me${options.idPrefix}raw-label`)
+            .attr('type', 'number')
+            .attr('min', 0)
+            .attr('step', 0.01)
+            .attr('data-type', 'raw')
+            .attr('value', d.r);
+
+        overlay.selectAll('input')
+        .on('change', () => {
+          const element = <HTMLInputElement>(<MouseEvent>d3event).target;
+          const type = (<any>element.dataset).type;
+
+          let position = 0;
+          switch(type) {
+            case 'normalized':
+              d.n = element.value;
+              position = normal2pixel(parseFloat(element.value));
+              select(this).select('line').attr('x1', position);
+              break;
+            case 'raw':
+              d.r = element.value;
+              position = raw2pixel(parseFloat(element.value));
+              select(this).select('line').attr('x2', position);
+              break;
+          }
+
+          select(this.parentElement).select(`circle.${type}`).attr('cx', position);
+          updateScale();
+          options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
+        });
+
+        (<Event>d3event).stopPropagation();
+      }
+
       const $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mappingLines);
+      $mapping.on('click', createOverlay);
       const $mappingEnter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', (d, i) => {
         (<MouseEvent>d3event).preventDefault();
         (<MouseEvent>d3event).stopPropagation();

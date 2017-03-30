@@ -106,4 +106,18 @@ $mapping_color_hover: #0000cf;
       display: block;
     }
   }
+
+  div[id$='mapping-overlay'] {
+    position: absolute;
+    width: 140px;
+    padding: 10px;
+    background-color: white;
+    border: 1px solid rgb(193, 193, 193);
+    border-radius: 5px;
+    z-index: 10;
+
+    & div:first-child {
+      margin-bottom: 10px;
+    }
+  }
 }
