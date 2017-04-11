@@ -93,12 +93,8 @@ export default class MappingEditor {
           <line y1="${options.height - options.filter_height - 5}" y2="${options.height - options.filter_height - 5}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
           <rect class="adder" x="${options.padding_hor}" width="${width}" height="10" y="${options.height - options.filter_height - 10}"></rect>
           <g transform="translate(${options.padding_hor},${options.padding_ver})">
-            <g class="samples">
-      
-            </g>
-            <g class="mappings">
-      
-            </g>
+            <g class="samples"></g>
+            <g class="mappings"></g>
             <g class="filter" transform="translate(0,${options.height - options.filter_height - 10})">
                <g class="left_filter" transform="translate(0,0)">
                   <path d="M0,0L4,7L-4,7z"></path>

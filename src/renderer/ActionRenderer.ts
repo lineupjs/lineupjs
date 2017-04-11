@@ -59,4 +59,4 @@ export default class ActionRenderer implements ICellRendererFactory {
       }
     };
   }
-};
+}

@@ -4,11 +4,6 @@
 
 import Column, {IColumnParent, IFlatColumn, IColumnDesc} from './Column';
 
-export interface IMultiLevelColumn extends CompositeColumn {
-  getCollapsed(): boolean;
-  setCollapsed(value: boolean);
-}
-
 export function isMultiLevelColumn(col: Column) {
   return typeof ((<any>col).getCollapsed) === 'function';
 }
@@ -146,4 +141,9 @@ export default class CompositeColumn extends Column implements IColumnParent {
   toSortingDesc(toId: (desc: any) => string): any {
     return this._children.map((c) => c.toSortingDesc(toId));
   }
+}
+
+export interface IMultiLevelColumn extends CompositeColumn {
+  getCollapsed(): boolean;
+  setCollapsed(value: boolean);
 }
