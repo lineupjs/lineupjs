@@ -107,7 +107,7 @@ $mapping_color_hover: #0000cf;
     }
   }
 
-  div[id$='mapping-overlay'] {
+  div[id$='mapping-overlay'] { // id ends with mapping-overlay
     position: absolute;
     width: 140px;
     padding: 10px;
@@ -119,5 +119,11 @@ $mapping_color_hover: #0000cf;
     & div:first-child {
       margin-bottom: 10px;
     }
+  }
+
+  #filter_inputs {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
   }
 }

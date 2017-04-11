@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {select, scale, behavior, Selection, event as d3event, mouse} from 'd3';
+import {select, scale, behavior, Selection, event as d3event, mouse, selectAll} from 'd3';
 import {merge} from './utils';
 import {INumberFilter, IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
 
@@ -47,11 +47,17 @@ export default class MappingEditor {
   };
 
   private computeFilter: () => INumberFilter;
+  private _filter: { min: number, max: number };
 
   constructor(private parent: HTMLElement, public scale: IMappingFunction, private original: IMappingFunction, private oldFilter: INumberFilter, private dataPromise: Promise<number[]>, options: IMappingEditorOptions) {
     merge(this.options, options);
     //work on a local copy
     this.scale = scale.clone();
+
+    this._filter = {
+      min: -Infinity,
+      max: Infinity
+    };
 
     this.build(select(parent));
   }
@@ -103,12 +109,12 @@ export default class MappingEditor {
       
             </g>
             <g class="filter" transform="translate(0,${options.height - options.filter_height - options.padding_ver - 10})">
-               <g class="left_filter" transform="translate(0,0)">
+               <g class="left_filter" transform="translate(0,0)" data-filter="min">
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-4" y="7" width="40" height="13" rx="2" ry="2"></rect>
                   <text y="10" x="4" text-anchor="start">&gt; 0</text>
                 </g>
-              <g class="right_filter" transform="translate(${width},0)">
+              <g class="right_filter" transform="translate(${width},0)" data-filter="max">
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-36" y="7" width="40" height="13" rx="2" ry="2"></rect>
                   <text y="10" x="3" text-anchor="end">&lt; 1</text>
@@ -121,14 +127,14 @@ export default class MappingEditor {
           <input type="text" class="raw_max" id="me${options.idPrefix}raw_max" value="1"><label for="me${options.idPrefix}raw_max">Max</label>
         </div>
       </div>
-      <div style="display: flex; justify-content: space-between">
+      <div id="filter_inputs">
         <div>
-          <label for="left_filter_input">Left Filter:</label>
-          <input id="left_filter_input" type="number" min="0">
+          <label for="min_filter_input">Min Filter:</label>
+          <input id="min_filter_input" type="number" step="0.1" data-filter="min">
         </div>
         <div>
-          <label for="right_filter_input">Right Filter:</label>
-          <input id="right_filter_input" type="number" min="0">
+          <label for="max_filter_input">Max Filter:</label>
+          <input id="max_filter_input" type="number" step="0.1" data-filter="max">
         </div>
       </div>
       <div>
@@ -415,9 +421,32 @@ export default class MappingEditor {
     }
 
     {
+
+      const domain = raw2pixel.domain();
       const minFilter = (isFinite(this.oldFilter.min) ? raw2pixel(this.oldFilter.min) : 0);
       const maxFilter = (isFinite(this.oldFilter.max) ? raw2pixel(this.oldFilter.max) : width);
       const toFilterString = (d: number, i: number) => isFinite(d) ? ((i === 0 ? '>' : '<') + d.toFixed(1)) : 'any';
+
+      selectAll('#filter_inputs div input')
+        .attr('min', domain[0])
+        .attr('max', domain[1])
+        .data(domain)
+        .attr('value', (d) => d)
+        .on('change', function(d, i) {
+          const value = parseFloat(this.value);
+          if(value >= domain[0] && value <= domain[1]) {
+            that._filter[this.dataset.filter] = value;
+
+            const selector: string = (this.dataset.filter === 'min')? 'left' : 'right';
+            const px = raw2pixel(value);
+            const filter = (value === domain[0])? -Infinity : (value === domain[1])? Infinity : value;
+
+            $root.select(`g.${selector}_filter`).attr('transform', `translate(${px}, 0)`)
+              .select('text').text(toFilterString(filter, (this.dataset.filter === 'min')? 0 : 1));
+          }
+          triggerUpdate();
+      });
+
       $root.selectAll('g.left_filter, g.right_filter')
         .data([this.oldFilter.min, this.oldFilter.max])
         .attr('transform', (d, i) => `translate(${i === 0 ? minFilter : maxFilter},0)`).call(createDrag(function (d, i) {
@@ -426,6 +455,10 @@ export default class MappingEditor {
         const px = clamp((<DragEvent>d3event).x, 0, width);
         const v = raw2pixel.invert(px);
         const filter = (px <= 0 && i === 0 ? -Infinity : (px >= width && i === 1 ? Infinity : v));
+
+        that._filter[this.dataset.filter] = v;
+
+        select(`#filter_inputs #${this.dataset.filter}_filter_input`).attr('value', v.toFixed(1));
         select(this).datum(filter)
           .attr('transform', `translate(${px},0)`)
           .select('text').text(toFilterString(filter, i));
@@ -435,8 +468,8 @@ export default class MappingEditor {
 
     this.computeFilter = function () {
       return {
-        min: parseFloat($root.select('g.left_filter').datum()),
-        max: parseFloat($root.select('g.right_filter').datum()),
+        min: this._filter.min,
+        max: this._filter.max,
         filterMissing: $root.select('input[type="checkbox"]').property('checked')
       };
     };
