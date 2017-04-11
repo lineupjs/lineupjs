@@ -73,5 +73,5 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = context.option('style.text', 'black');
       clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, col.getWidth() - cell - 2, context.textHints);
     };
-  };
+  }
 }

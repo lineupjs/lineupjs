@@ -64,17 +64,17 @@
     "url": "https://github.com/Caleydo/lineupjs.git"
   },
   "devDependencies": {
-    "awesome-typescript-loader": "^3.0.0-beta.17",
-    "css-loader": "^0.26.1",
-    "extract-text-webpack-plugin": "^2.0.0-rc.2",
+    "awesome-typescript-loader": "^3.1.2",
+    "css-loader": "^0.28.0",
+    "extract-text-webpack-plugin": "^2.1.0",
     "mkdirp": "^0.5.1",
-    "node-sass": "^4.1.1",
-    "sass-loader": "^4.1.1",
-    "style-loader": "^0.13.1",
-    "tslint": "^4.2.0",
-    "typedoc": "^0.5.5",
-    "typescript": "2.1.5",
-    "webpack": "^2.2.0"
+    "node-sass": "^4.5.2",
+    "sass-loader": "^6.0.3",
+    "style-loader": "^0.16.1",
+    "tslint": "^5.0.0",
+    "typedoc": "^0.5.10",
+    "typescript": "2.2.2",
+    "webpack": "^2.3.3"
   },
   "optionalDependencies": {
     "@types/react": "^0.14.55",

@@ -5,13 +5,15 @@
 import Column from './Column';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 
+const DEFAULT_SCRIPT = 'return Math.max.apply(Math,values)';
+
 /**
  * factory for creating a description creating a mean column
  * @param label
  * @returns {{type: string, label: string}}
  */
 export function createDesc(label: string = 'script') {
-  return {type: 'script', label, script: ScriptColumn.DEFAULT_SCRIPT};
+  return {type: 'script', label, script: DEFAULT_SCRIPT};
 }
 
 export interface IScriptColumnDesc extends ICompositeNumberDesc {
@@ -24,7 +26,7 @@ export interface IScriptColumnDesc extends ICompositeNumberDesc {
 
 export default class ScriptColumn extends CompositeNumberColumn {
   static readonly EVENT_SCRIPT_CHANGED = 'scriptChanged';
-  static readonly DEFAULT_SCRIPT = 'return Math.max.apply(Math,values)';
+  static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;
 
   private script = ScriptColumn.DEFAULT_SCRIPT;
   private f: Function = null;

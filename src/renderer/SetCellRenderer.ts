@@ -18,7 +18,7 @@ export default class SetCellRenderer implements ICellRendererFactory {
     const right = (catindexes[catindexes.length - 1] * cellDimension) + (cellDimension / 2);
 
     return {left, right};
-  };
+  }
 
 
   createSVG(col: SetColumn, context: IDOMRenderContext): ISVGCellRenderer {
