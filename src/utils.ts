@@ -465,13 +465,13 @@ export function clipText(ctx: CanvasRenderingContext2D, text: string, x: number,
   return render(text.substring(0, min + 1) + ellipsis);
 }
 
-export function showOverlay(id: string, dx: number, dy: number) {
-  let overlay = <HTMLDivElement>document.querySelector(`div.lu-overlay#O${id}`);
+export function showOverlay(parentElement: HTMLElement, id: string, dx: number, dy: number) {
+  let overlay = <HTMLDivElement>parentElement.querySelector(`div.lu-overlay#O${id}`);
   if (!overlay) {
-    overlay = document.createElement('div');
+    overlay = parentElement.ownerDocument.createElement('div');
     overlay.classList.add('lu-overlay');
     overlay.id = 'O' + id;
-    document.querySelector('.lu-body').appendChild(overlay);
+    parentElement.appendChild(overlay);
   }
   overlay.style.display = 'block';
   overlay.style.left = dx + 'px';
@@ -479,8 +479,8 @@ export function showOverlay(id: string, dx: number, dy: number) {
   return overlay;
 }
 
-export function hideOverlays() {
-  forEach(document.querySelector('div.lu-body'), 'div.lu-overlay', (d: HTMLDivElement) => d.style.display = null);
+export function hideOverlays(parentElement: HTMLElement) {
+  forEach(parentElement, 'div.lu-overlay', (d: HTMLDivElement) => d.style.display = null);
 }
 
 

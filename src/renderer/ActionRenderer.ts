@@ -45,7 +45,7 @@ export default class ActionRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const hovered = context.hovered(d.dataIndex);
       if (hovered) {
-        const overlay = showOverlay(context.idPrefix + col.id, dx, dy);
+        const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
         overlay.style.width = col.getWidth() + 'px';
         overlay.classList.add('actions');
         overlay.innerHTML = actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('');

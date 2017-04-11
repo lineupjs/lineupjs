@@ -136,7 +136,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     this.currentHover = dataIndex;
     super.mouseOver(dataIndex, dataIndex >= 0);
     if (!hover || dataIndex < 0) {
-      hideOverlays();
+      hideOverlays(<HTMLElement>this.$node.node());
     }
     this.update();
   }
@@ -275,6 +275,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     const base: any = this.createContext(indexShift, createCanvas);
     base.hovered = this.isHovered.bind(this);
     base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);
+    base.bodyDOMElement = <HTMLElement>this.$node.node();
     return base;
   }
 
