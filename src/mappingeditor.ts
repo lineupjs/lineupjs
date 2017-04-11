@@ -107,7 +107,7 @@ export default class MappingEditor {
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-4" y="7" width="40" height="13" rx="2" ry="2"></rect>
                   <text y="10" x="4" text-anchor="start">&gt; 0</text>
-              </g>
+                </g>
               <g class="right_filter" transform="translate(${width},0)">
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-36" y="7" width="40" height="13" rx="2" ry="2"></rect>
@@ -119,6 +119,16 @@ export default class MappingEditor {
         <div>
           <span>1</span>
           <input type="text" class="raw_max" id="me${options.idPrefix}raw_max" value="1"><label for="me${options.idPrefix}raw_max">Max</label>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between">
+        <div>
+          <label for="left_filter_input">Left Filter:</label>
+          <input id="left_filter_input" type="number" min="0">
+        </div>
+        <div>
+          <label for="right_filter_input">Right Filter:</label>
+          <input id="right_filter_input" type="number" min="0">
         </div>
       </div>
       <div>
