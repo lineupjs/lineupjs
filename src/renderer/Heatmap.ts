@@ -68,4 +68,4 @@ export default class Heatmap implements ICellRendererFactory {
       ctx.fillRect(padding, padding, w, w);
     };
   }
-};
+}

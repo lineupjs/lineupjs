@@ -59,7 +59,7 @@ export default class AnnotationRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const hovered = context.hovered(d.dataIndex);
       if (hovered) {
-        const overlay = showOverlay(context.idPrefix + col.id, dx, dy);
+        const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
         overlay.style.width = col.getWidth() + 'px';
         overlay.innerHTML = `<input type='text' value='${col.getValue(d.v, d.dataIndex)}' style='width:${col.getWidth()}px'>`;
         const input = <HTMLInputElement>overlay.childNodes[0];
@@ -74,4 +74,4 @@ export default class AnnotationRenderer implements ICellRendererFactory {
       }
     };
   }
-};
+}

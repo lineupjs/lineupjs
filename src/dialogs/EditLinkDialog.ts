@@ -17,7 +17,7 @@ export default class EditLinkDialog extends ADialog {
   }
 
   openDialog() {
-    let t = `<input 
+    let t = `<input
         type="text"
         size="15"
         value="${(<LinkColumn>this.column).getLink()}"

@@ -38,4 +38,4 @@ export default class LoadingCellRenderer implements ICellRendererFactory {
       ctx.restore();
     };
   }
-};
+}

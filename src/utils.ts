@@ -385,7 +385,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
  * @param styles
  * @return {T}
  */
-export function attr<T extends (HTMLElement | SVGElement & SVGStylable)>(node: T, attrs = {}, styles = {}): T {
+export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs = {}, styles = {}): T {
   Object.keys(attrs).forEach((attr) => node.setAttribute(attr, String(attrs[attr])));
   Object.keys(styles).forEach((attr) => node.style.setProperty(attr, styles[attr]));
   return node;
@@ -465,13 +465,13 @@ export function clipText(ctx: CanvasRenderingContext2D, text: string, x: number,
   return render(text.substring(0, min + 1) + ellipsis);
 }
 
-export function showOverlay(id: string, dx: number, dy: number) {
-  let overlay = <HTMLDivElement>document.querySelector(`div.lu-overlay#O${id}`);
+export function showOverlay(parentElement: HTMLElement, id: string, dx: number, dy: number) {
+  let overlay = <HTMLDivElement>parentElement.querySelector(`div.lu-overlay#O${id}`);
   if (!overlay) {
-    overlay = document.createElement('div');
+    overlay = parentElement.ownerDocument.createElement('div');
     overlay.classList.add('lu-overlay');
     overlay.id = 'O' + id;
-    document.querySelector('.lu-body').appendChild(overlay);
+    parentElement.appendChild(overlay);
   }
   overlay.style.display = 'block';
   overlay.style.left = dx + 'px';
@@ -479,8 +479,8 @@ export function showOverlay(id: string, dx: number, dy: number) {
   return overlay;
 }
 
-export function hideOverlays() {
-  forEach(document.querySelector('div.lu-body'), 'div.lu-overlay', (d: HTMLDivElement) => d.style.display = null);
+export function hideOverlays(parentElement: HTMLElement) {
+  forEach(parentElement, 'div.lu-overlay', (d: HTMLDivElement) => d.style.display = null);
 }
 
 

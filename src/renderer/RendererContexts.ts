@@ -8,4 +8,5 @@ export interface ICanvasRenderContext extends IRenderContext<CanvasRenderingCont
   hovered(dataIndex: number): boolean;
   selected(dataIndex: number): boolean;
   readonly textHints: ITextRenderHints;
+  readonly bodyDOMElement: HTMLElement;
 }
