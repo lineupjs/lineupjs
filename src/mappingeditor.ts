@@ -153,6 +153,8 @@ export default class MappingEditor {
     const normal2pixel = scale.linear().domain([0, 1])
       .range([0, width]);
 
+    const domain = raw2pixel.domain();
+
     $root.select('input.raw_min')
       .property('value', raw2pixel.domain()[0])
       .on('blur', function () {
@@ -422,19 +424,24 @@ export default class MappingEditor {
 
     {
 
-      const domain = raw2pixel.domain();
       const minFilter = (isFinite(this.oldFilter.min) ? raw2pixel(this.oldFilter.min) : 0);
       const maxFilter = (isFinite(this.oldFilter.max) ? raw2pixel(this.oldFilter.max) : width);
       const toFilterString = (d: number, i: number) => isFinite(d) ? ((i === 0 ? '>' : '<') + d.toFixed(1)) : 'any';
 
+      // use the old filter if one was available, set to domain boundaries otherwise
+      const initialValues = [
+        (isFinite(this.oldFilter.min)? this.oldFilter.min : domain[0]).toFixed(1),
+        (isFinite(this.oldFilter.max)? this.oldFilter.max : domain[1]).toFixed(1)
+      ];
+
       selectAll('#filter_inputs div input')
         .attr('min', domain[0])
         .attr('max', domain[1])
-        .data(domain)
+        .data(initialValues)
         .attr('value', (d) => d)
-        .on('change', function(d, i) {
+        .on('change', function() {
           const value = parseFloat(this.value);
-          if(value >= domain[0] && value <= domain[1]) {
+          if(value > domain[0] && value < domain[1]) {
             that._filter[this.dataset.filter] = value;
 
             const selector: string = (this.dataset.filter === 'min')? 'left' : 'right';
@@ -458,7 +465,7 @@ export default class MappingEditor {
 
         that._filter[this.dataset.filter] = v;
 
-        select(`#filter_inputs #${this.dataset.filter}_filter_input`).attr('value', v.toFixed(1));
+        (<HTMLInputElement>document.querySelector(`#filter_inputs #${this.dataset.filter}_filter_input`)).value = v.toFixed(1);
         select(this).datum(filter)
           .attr('transform', `translate(${px},0)`)
           .select('text').text(toFilterString(filter, i));
@@ -467,9 +474,10 @@ export default class MappingEditor {
     }
 
     this.computeFilter = function () {
+      // if the new filter (_filter) was not set (min = -Infinity, max = Infinity), use the old one
       return {
-        min: this._filter.min,
-        max: this._filter.max,
+        min: isFinite(this._filter.min)? this._filter.min : this.oldFilter.min,
+        max: isFinite(this._filter.max)? this._filter.max : this.oldFilter.max,
         filterMissing: $root.select('input[type="checkbox"]').property('checked')
       };
     };
