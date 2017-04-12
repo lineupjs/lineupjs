@@ -153,7 +153,8 @@ export default class MappingEditor {
     const normal2pixel = scale.linear().domain([0, 1])
       .range([0, width]);
 
-    const domain = raw2pixel.domain();
+    const inputDomain = raw2pixel.domain();
+    const outputDomain = normal2pixel.domain();
 
     $root.select('input.raw_min')
       .property('value', raw2pixel.domain()[0])
@@ -299,7 +300,8 @@ export default class MappingEditor {
           .append('input')
           .attr('id', `me${options.idPrefix}normalized-label`)
             .attr('type', 'number')
-            .attr('min', 0)
+            .attr('min', outputDomain[0])
+            .attr('max', outputDomain[1])
             .attr('step', 0.01)
             .attr('data-type', 'normalized')
             .attr('value', d.n);
@@ -312,7 +314,8 @@ export default class MappingEditor {
           .append('input')
             .attr('id', `me${options.idPrefix}raw-label`)
             .attr('type', 'number')
-            .attr('min', 0)
+            .attr('min', inputDomain[0])
+            .attr('max', inputDomain[1])
             .attr('step', 0.01)
             .attr('data-type', 'raw')
             .attr('value', d.r);
@@ -336,7 +339,7 @@ export default class MappingEditor {
               break;
           }
 
-          select(this.parentElement).select(`circle.${type}`).attr('cx', position);
+          select(this).select(`circle.${type}`).attr('cx', position);
           updateScale();
           options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
         });
@@ -430,23 +433,23 @@ export default class MappingEditor {
 
       // use the old filter if one was available, set to domain boundaries otherwise
       const initialValues = [
-        (isFinite(this.oldFilter.min)? this.oldFilter.min : domain[0]).toFixed(1),
-        (isFinite(this.oldFilter.max)? this.oldFilter.max : domain[1]).toFixed(1)
+        (isFinite(this.oldFilter.min)? this.oldFilter.min : inputDomain[0]).toFixed(1),
+        (isFinite(this.oldFilter.max)? this.oldFilter.max : inputDomain[1]).toFixed(1)
       ];
 
       selectAll('#filter_inputs div input')
-        .attr('min', domain[0])
-        .attr('max', domain[1])
+        .attr('min', inputDomain[0])
+        .attr('max', inputDomain[1])
         .data(initialValues)
         .attr('value', (d) => d)
         .on('change', function() {
           const value = parseFloat(this.value);
-          if(value > domain[0] && value < domain[1]) {
+          if(value > inputDomain[0] && value < inputDomain[1]) {
             that._filter[this.dataset.filter] = value;
 
             const selector: string = (this.dataset.filter === 'min')? 'left' : 'right';
             const px = raw2pixel(value);
-            const filter = (value === domain[0])? -Infinity : (value === domain[1])? Infinity : value;
+            const filter = (value === inputDomain[0])? -Infinity : (value === inputDomain[1])? Infinity : value;
 
             $root.select(`g.${selector}_filter`).attr('transform', `translate(${px}, 0)`)
               .select('text').text(toFilterString(filter, (this.dataset.filter === 'min')? 0 : 1));
