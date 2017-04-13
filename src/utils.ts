@@ -387,7 +387,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
  */
 export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs = {}, styles = {}): T {
   Object.keys(attrs).forEach((attr) => node.setAttribute(attr, String(attrs[attr])));
-  Object.keys(styles).forEach((attr) => node.style.setProperty(attr, styles[attr]));
+  Object.keys(styles).forEach((attr) => (<any>node).style.setProperty(attr, styles[attr]));
   return node;
 }
 
