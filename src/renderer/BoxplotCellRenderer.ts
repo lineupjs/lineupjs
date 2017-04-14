@@ -36,12 +36,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q3: scale(rawBoxdata.q3),
           max: scale(rawBoxdata.max)
         };
-        n.querySelector('title').innerText = `BoxPlot:\n
-        min   :${rawBoxdata.min}\n
-        q1    :${rawBoxdata.q1}\n
-        median:${rawBoxdata.median}\n
-        q3    :${rawBoxdata.q3}\n
-        max   :${rawBoxdata.max}\n`;
+        n.querySelector('title').textContent = col.getLabel(d.v, d.dataIndex);
         attr(n.querySelector('rect'), {
           x: scaled.q1,
           width: (scaled.q3 - scaled.q1),
