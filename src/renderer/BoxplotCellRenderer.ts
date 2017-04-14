@@ -21,6 +21,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return {
 
       template: `<g class='boxplotcell'>
+            <title></title>
             <rect class='boxplotrect' y='${topPadding}'></rect>
             <path class='boxplotallpath'></path>
             <path class='boxplotsortpath' style='display: none'></path>
@@ -35,6 +36,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q3: scale(rawBoxdata.q3),
           max: scale(rawBoxdata.max)
         };
+        n.querySelector('title').innerText = `BoxPlot:\n
+        min   :${rawBoxdata.min}\n
+        q1    :${rawBoxdata.q1}\n
+        median:${rawBoxdata.median}\n
+        q3    :${rawBoxdata.q3}\n
+        max   :${rawBoxdata.max}\n`;
         attr(n.querySelector('rect'), {
           x: scaled.q1,
           width: (scaled.q3 - scaled.q1),
