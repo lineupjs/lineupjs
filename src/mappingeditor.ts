@@ -389,7 +389,7 @@ export default class MappingEditor {
         select(this).attr('cx', px);
         select(this.parentElement).select('line').attr('x1', px);
 
-        updateOverlayInput(d.n, 'normalized')
+        updateOverlayInput(d.n, 'normalized');
 
         updateScale();
       }));
@@ -460,7 +460,7 @@ export default class MappingEditor {
         .attr('value', (d) => d)
         .on('change', function() {
           const value = parseFloat(this.value);
-          if(value > inputDomain[0] && value < inputDomain[1]) {
+          if(value >= inputDomain[0] && value <= inputDomain[1]) {
             that._filter[this.dataset.filter] = value;
 
             const selector: string = (this.dataset.filter === 'min')? 'left' : 'right';
