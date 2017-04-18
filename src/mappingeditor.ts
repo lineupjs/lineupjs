@@ -319,7 +319,7 @@ export default class MappingEditor {
             .attr('max', (datum) => datum.domain[1])
             .attr('step', 0.01)
             .attr('data-type', (datum) => datum.type)
-            .attr('value', (datum) => datum.value);
+            .attr('value', (datum) => datum.value.toFixed(2));
 
         overlay.selectAll('input')
         .on('change', () => {
