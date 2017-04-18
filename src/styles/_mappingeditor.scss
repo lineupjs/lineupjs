@@ -125,6 +125,10 @@ $mapping_color_hover: #0000cf;
     border-radius: 5px;
     z-index: 10;
 
+    &.hide {
+      opacity: .2;
+    }
+
     div input {
       display: block;
     }

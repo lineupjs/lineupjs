@@ -216,12 +216,14 @@ export default class MappingEditor {
           select(this)
             .classed('dragging', true)
             .attr('r', options.radius * 1.1);
+          select(`#me${options.idPrefix}mapping-overlay`).classed('hide', true);
         })
         .on('drag', move)
         .on('dragend', function () {
           select(this)
             .classed('dragging', false)
             .attr('r', options.radius);
+          select(`#me${options.idPrefix}mapping-overlay`).classed('hide', false);
           triggerUpdate(true);
         });
     }
@@ -308,10 +310,10 @@ export default class MappingEditor {
           .enter()
           .append('div')
           .append('label')
-            .attr('for', (datum) => `me${options.idPrefix}${datum.type}-label`)
+            .attr('for', (datum) => `me${options.idPrefix}${datum.type}-input`)
             .text((datum) => `${datum.label}: `)
           .append('input')
-          .attr('id', (datum) => `me${options.idPrefix}${datum.type}-label`)
+          .attr('id', (datum) => `me${options.idPrefix}${datum.type}-input`)
             .attr('type', 'number')
             .attr('min', (datum) => datum.domain[0])
             .attr('max', (datum) => datum.domain[1])
@@ -346,6 +348,14 @@ export default class MappingEditor {
         (<Event>d3event).stopPropagation();
       }
 
+      function updateOverlayInput(value: number, type: string) {
+        const overlay = document.querySelector(`#me${options.idPrefix}mapping-overlay`);
+        if(overlay) {
+          const input = <HTMLInputElement>document.querySelector(`#me${options.idPrefix}${type}-input`);
+          input.value = value.toFixed(2);
+        }
+      }
+
       const $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mappingLines);
       $mapping.on('click', createOverlay);
       const $mappingEnter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', (d, i) => {
@@ -367,6 +377,9 @@ export default class MappingEditor {
         select(this.parentElement).select('circle.normalized').attr('cx', nx);
         select(this.parentElement).select('circle.raw').attr('cx', rx);
 
+        updateOverlayInput(d.r, 'raw');
+        updateOverlayInput(d.n, 'normalized');
+
         updateScale();
       }));
       $mappingEnter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
@@ -376,6 +389,8 @@ export default class MappingEditor {
         select(this).attr('cx', px);
         select(this.parentElement).select('line').attr('x1', px);
 
+        updateOverlayInput(d.n, 'normalized')
+
         updateScale();
       }));
       $mappingEnter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
@@ -384,6 +399,8 @@ export default class MappingEditor {
         d.r = raw2pixel.invert(px);
         select(this).attr('cx', px);
         select(this.parentElement).select('line').attr('x2', px);
+
+        updateOverlayInput(d.r, 'raw');
 
         updateScale();
       }));
