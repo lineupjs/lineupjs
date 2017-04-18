@@ -106,11 +106,13 @@ export default class MappingEditor {
             <g class="mappings"></g>
             <g class="filter" transform="translate(0,${options.height - options.filter_height - options.padding_ver - 10})">
                <g class="left_filter" transform="translate(0,0)" data-filter="min">
+                  <title>Min Filter</title>
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-4" y="7" width="40" height="13" rx="2" ry="2"></rect>
                   <text y="10" x="4" text-anchor="start">&gt; 0</text>
                 </g>
               <g class="right_filter" transform="translate(${width},0)" data-filter="max">
+                  <title>Max Filter</title>
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-36" y="7" width="40" height="13" rx="2" ry="2"></rect>
                   <text y="10" x="3" text-anchor="end">&lt; 1</text>

@@ -134,7 +134,7 @@ $mapping_color_hover: #0000cf;
     }
 
     input {
-      width: 100px;
+      width: 75px;
     }
 
     & div:first-child {
@@ -144,7 +144,11 @@ $mapping_color_hover: #0000cf;
 
   div[id$='filter_inputs'] {
     display: flex;
-    justify-content: space-between;
-    padding: 10px;
+    justify-content: space-around;
+    padding: 0 30px 10px;
+  }
+
+  div input[id$='_filter_input'] {
+    width: 75px;
   }
 }
