@@ -95,8 +95,8 @@ export default class MappingEditor {
           <input type="text" class="raw_min" id="me${options.idPrefix}raw_min" value="0"><label for="me${options.idPrefix}raw_min">Min</label>
         </div>
         <svg width="${options.width}" height="${options.height}">
-          <text x="${width/2}" y="10">LineUp Scores</text>
-          <text x="${width/2}" y="${options.height - options.filter_height + 5}">Raw Input Scores</text>
+          <text x="${width/2}" y="10">Normalized Input</text>
+          <text x="${width/2}" y="${options.height - options.filter_height + 5}">Raw Input</text>
           <line y1="${options.padding_ver}" y2="${options.padding_ver}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
           <rect class="adder" x="${options.padding_hor}" width="${width}" height="10"></rect>
           <line y1="${options.height - options.filter_height - options.padding_ver}" y2="${options.height - options.filter_height - options.padding_ver}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
@@ -123,14 +123,14 @@ export default class MappingEditor {
           <input type="text" class="raw_max" id="me${options.idPrefix}raw_max" value="1"><label for="me${options.idPrefix}raw_max">Max</label>
         </div>
       </div>
-      <div id="filter_inputs">
+      <div id="me${options.idPrefix}filter_inputs">
         <div>
-          <label for="min_filter_input">Min Filter:</label>
-          <input id="min_filter_input" type="number" step="0.1" data-filter="min">
+          <label for="me${options.idPrefix}min_filter_input">Min Filter:</label>
+          <input id="me${options.idPrefix}min_filter_input" type="number" step="0.1" data-filter="min">
         </div>
         <div>
-          <label for="max_filter_input">Max Filter:</label>
-          <input id="max_filter_input" type="number" step="0.1" data-filter="max">
+          <label for="me${options.idPrefix}max_filter_input">Max Filter:</label>
+          <input id="me${options.idPrefix}max_filter_input" type="number" step="0.1" data-filter="max">
         </div>
       </div>
       <div>
@@ -284,16 +284,16 @@ export default class MappingEditor {
         $root.select(`#me${options.idPrefix}mapping-overlay`).remove();
 
         const overlayOptions = [{
-          label: 'Raw Input',
-          value: d.r,
-          domain: inputDomain,
-          type: 'raw'
-        },
-        {
           label: 'Normalized Input',
           value: d.n,
           domain: outputDomain,
           type: 'normalized'
+        },
+        {
+          label: 'Raw Input',
+          value: d.r,
+          domain: inputDomain,
+          type: 'raw'
         }];
 
         const overlay = $root.append('div');
@@ -436,7 +436,7 @@ export default class MappingEditor {
         (isFinite(this.oldFilter.max)? this.oldFilter.max : inputDomain[1]).toFixed(1)
       ];
 
-      selectAll('#filter_inputs div input')
+      selectAll(`#me${options.idPrefix}filter_inputs div input`)
         .attr('min', inputDomain[0])
         .attr('max', inputDomain[1])
         .data(initialValues)
@@ -467,7 +467,7 @@ export default class MappingEditor {
 
         that._filter[this.dataset.filter] = v;
 
-        (<HTMLInputElement>document.querySelector(`#filter_inputs #${this.dataset.filter}_filter_input`)).value = v.toFixed(1);
+        (<HTMLInputElement>document.querySelector(`#me${options.idPrefix}filter_inputs #me${options.idPrefix}${this.dataset.filter}_filter_input`)).value = v.toFixed(1);
         select(this).datum(filter)
           .attr('transform', `translate(${px},0)`)
           .select('text').text(toFilterString(filter, i));
