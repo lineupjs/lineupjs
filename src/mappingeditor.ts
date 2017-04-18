@@ -104,8 +104,8 @@ export default class MappingEditor {
           <g transform="translate(${options.padding_hor},${options.padding_ver})">
             <g class="samples"></g>
             <g class="mappings"></g>
-            <g class="filter" transform="translate(0,${options.height - options.filter_height - 10})">
-               <g class="left_filter" transform="translate(0,0) data-filter="min"">
+            <g class="filter" transform="translate(0,${options.height - options.filter_height - options.padding_ver - 5})">
+               <g class="left_filter" transform="translate(0,0)" data-filter="min">
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-4" y="7" width="40" height="13" rx="2" ry="2"></rect>
                   <text y="10" x="4" text-anchor="start">&gt; 0</text>
