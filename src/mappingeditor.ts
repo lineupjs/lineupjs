@@ -76,7 +76,7 @@ export default class MappingEditor {
     const height = options.height - options.padding_ver * 2 - options.filter_height;
 
     (<HTMLElement>$root.node()).innerHTML = `<form onsubmit="return false">
-      <div><label for="me${options.idPrefix}mapping_type"><span style="font-weight: bold">Mapping / Scaling Type: </span><select id="me${options.idPrefix}mapping_type">
+      <div><label for="me${options.idPrefix}mapping_type"><span class="title">Mapping / Scaling Type: </span><select id="me${options.idPrefix}mapping_type">
         <option value="linear">Linear</option>
         <option value="linear_invert">Invert</option>
         <option value="linear_abs">Absolute</option>
@@ -88,7 +88,7 @@ export default class MappingEditor {
         <option value="script">Custom Script</option>
       </select>
       </label></div>
-      <div style="font-weight: bold; margin-top: 15px">Filter:</div>
+      <div class="filter_part"><span class="title">Filter:</span></div>
       <div class="mapping_area">
         <div>
           <span>0</span>
@@ -104,7 +104,7 @@ export default class MappingEditor {
           <g transform="translate(${options.padding_hor},${options.padding_ver})">
             <g class="samples"></g>
             <g class="mappings"></g>
-            <g class="filter" transform="translate(0,${options.height - options.filter_height - options.padding_ver - 5})">
+            <g class="filter" transform="translate(0,${options.height - options.filter_height - options.padding_ver - 10})">
                <g class="left_filter" transform="translate(0,0)" data-filter="min">
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-4" y="7" width="40" height="13" rx="2" ry="2"></rect>
@@ -283,38 +283,41 @@ export default class MappingEditor {
       function createOverlay(d) {
         $root.select(`#me${options.idPrefix}mapping-overlay`).remove();
 
-        const overlay = $root.append('div')
-          .attr('id', `me${options.idPrefix}mapping-overlay`)
+        const overlayOptions = [{
+          label: 'Raw Input',
+          value: d.r,
+          domain: inputDomain,
+          type: 'raw'
+        },
+        {
+          label: 'Normalized Input',
+          value: d.n,
+          domain: outputDomain,
+          type: 'normalized'
+        }];
+
+        const overlay = $root.append('div');
+
+        overlay.attr('id', `me${options.idPrefix}mapping-overlay`)
           .attr('style', `left: ${(<MouseEvent>d3event).layerX + options.padding_hor + 50}px; top: ${(<MouseEvent>d3event).layerY + options.padding_ver}px`)
           .on('click', () => (<MouseEvent>d3event).stopPropagation());
 
         overlay
+          .selectAll('div')
+          .data(overlayOptions)
+          .enter()
           .append('div')
           .append('label')
-            .attr('for', `me${options.idPrefix}normalized-label`)
-            .text('LineUp Scores: ')
+            .attr('for', (datum) => `me${options.idPrefix}${datum.type}-label`)
+            .text((datum) => `${datum.label}: `)
           .append('input')
-          .attr('id', `me${options.idPrefix}normalized-label`)
+          .attr('id', (datum) => `me${options.idPrefix}${datum.type}-label`)
             .attr('type', 'number')
-            .attr('min', outputDomain[0])
-            .attr('max', outputDomain[1])
+            .attr('min', (datum) => datum.domain[0])
+            .attr('max', (datum) => datum.domain[1])
             .attr('step', 0.01)
-            .attr('data-type', 'normalized')
-            .attr('value', d.n);
-
-        overlay
-          .append('div')
-          .append('label')
-            .attr('for', `me${options.idPrefix}raw-label`)
-            .text('Raw Input: ')
-          .append('input')
-            .attr('id', `me${options.idPrefix}raw-label`)
-            .attr('type', 'number')
-            .attr('min', inputDomain[0])
-            .attr('max', inputDomain[1])
-            .attr('step', 0.01)
-            .attr('data-type', 'raw')
-            .attr('value', d.r);
+            .attr('data-type', (datum) => datum.type)
+            .attr('value', (datum) => datum.value);
 
         overlay.selectAll('input')
         .on('change', () => {

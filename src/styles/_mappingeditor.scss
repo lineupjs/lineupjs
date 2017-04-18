@@ -8,6 +8,16 @@ $mapping_color_hover: #0000cf;
   margin-bottom: 5px;
   clear: both;
 
+  div {
+    &.filter_part {
+      margin-top: 15px;
+    }
+
+    span.title {
+      font-weight: bold;
+    }
+  }
+
   .raw_min, .raw_max {
     width: 3em;
     display: block;
