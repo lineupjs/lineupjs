@@ -55,8 +55,8 @@ export default class MappingEditor {
     this.scale = scale.clone();
 
     this._filter = {
-      min: -Infinity,
-      max: Infinity
+      min: this.oldFilter.min,
+      max: this.oldFilter.max
     };
 
     this.build(select(parent));
@@ -464,11 +464,11 @@ export default class MappingEditor {
         .on('change', function() {
           const value = parseFloat(this.value);
           if(value >= inputDomain[0] && value <= inputDomain[1]) {
-            that._filter[this.dataset.filter] = value;
-
             const selector: string = (this.dataset.filter === 'min')? 'left' : 'right';
+
             const px = raw2pixel(value);
             const filter = (value === inputDomain[0])? -Infinity : (value === inputDomain[1])? Infinity : value;
+            that._filter[this.dataset.filter] = filter;
 
             $root.select(`g.${selector}_filter`).attr('transform', `translate(${px}, 0)`)
               .select('text').text(toFilterString(filter, (this.dataset.filter === 'min')? 0 : 1));
@@ -485,7 +485,7 @@ export default class MappingEditor {
         const v = raw2pixel.invert(px);
         const filter = (px <= 0 && i === 0 ? -Infinity : (px >= width && i === 1 ? Infinity : v));
 
-        that._filter[this.dataset.filter] = v;
+        that._filter[this.dataset.filter] = filter;
 
         (<HTMLInputElement>document.querySelector(`#me${options.idPrefix}filter_inputs #me${options.idPrefix}${this.dataset.filter}_filter_input`)).value = v.toFixed(1);
         select(this).datum(filter)
@@ -496,10 +496,9 @@ export default class MappingEditor {
     }
 
     this.computeFilter = function () {
-      // if the new filter (_filter) was not set (min = -Infinity, max = Infinity), use the old one
       return {
-        min: isFinite(this._filter.min)? this._filter.min : this.oldFilter.min,
-        max: isFinite(this._filter.max)? this._filter.max : this.oldFilter.max,
+        min: this._filter.min,
+        max: this._filter.max,
         filterMissing: $root.select('input[type="checkbox"]').property('checked')
       };
     };
