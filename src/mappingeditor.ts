@@ -284,7 +284,7 @@ export default class MappingEditor {
         addPoint(mouse($root.select('svg > g').node())[0]);
       });
 
-      function createOverlay(d) {
+      function createOverlay(this: SVGGElement, d: {n: number, r: number}) {
         $root.select(`#me${options.idPrefix}mapping-overlay`).remove();
 
         const overlayOptions = [{
@@ -321,22 +321,23 @@ export default class MappingEditor {
             .attr('max', (datum) => datum.domain[1])
             .attr('step', 0.01)
             .attr('data-type', (datum) => datum.type)
-            .attr('value', (datum) => datum.value.toFixed(2));
+            .attr('value', (datum) => parseFloat(datum.value.toFixed(2)));
 
         overlay.selectAll('input')
         .on('change', () => {
+          // this is bound to the enclosing context, which is a mapping (<g class="mapping>)
           const element = <HTMLInputElement>(<MouseEvent>d3event).target;
           const type = (<any>element.dataset).type;
 
           let position = 0;
           switch(type) {
             case 'normalized':
-              d.n = element.value;
+              d.n = parseFloat(element.value);
               position = normal2pixel(parseFloat(element.value));
               select(this).select('line').attr('x1', position);
               break;
             case 'raw':
-              d.r = element.value;
+              d.r = parseFloat(element.value);
               position = raw2pixel(parseFloat(element.value));
               select(this).select('line').attr('x2', position);
               break;
