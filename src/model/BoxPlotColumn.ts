@@ -3,6 +3,7 @@
  */
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
+import {format} from 'd3';
 
 export const SORT_METHOD = {
   min: 'min',
@@ -55,6 +56,8 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   private readonly domain;
   private sort: SortMethod;
 
+  private static readonly DEFAULT_FORMATTER = format('.3n');
+
   constructor(id: string, desc: IBoxPlotColumnDesc) {
     super(id, desc);
     this.domain = desc.domain || [0, 100];
@@ -72,6 +75,15 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   getBoxPlotData(row: any, index: number): IBoxPlotData {
     return this.getValue(row, index);
+  }
+
+  getLabel(row: any, index: number): string {
+    const v = this.getValue(row, index);
+    if (v === null) {
+      return '';
+    }
+    const f = BoxPlotColumn.DEFAULT_FORMATTER;
+    return `BoxPlot(min=${f(v.min)},q1=${f(v.q1)},median=${f(v.median)},q3=${f(v.q3)},max=${f(v.max)})`;
   }
 
   getSortMethod() {

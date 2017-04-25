@@ -1,7 +1,7 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import {median, quantile, mean, scale as d3scale, ascending} from 'd3';
+import {median, quantile, mean, scale as d3scale, ascending, format} from 'd3';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {
@@ -88,6 +88,8 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   private readonly threshold;
   private readonly dataLength;
   private readonly colorRange;
+
+  private static readonly DEFAULT_FORMATTER = format('.3n');
 
   constructor(id: string, desc: IMultiValueColumnDesc) {
     super(id, desc);
@@ -177,6 +179,14 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     }
     //console.log(data)
     return new LazyBoxPlotData(data);
+  }
+
+  getLabel(row: any, index: number): string {
+    const v = this.getValue(row, index);
+    if (v === null) {
+      return '';
+    }
+    return `[${v.map(MultiValueColumn.DEFAULT_FORMATTER).join(', ')}]`;
   }
 
   getSortMethod() {
