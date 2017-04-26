@@ -52,8 +52,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (this.sortCriterias.length === 0) {
       return 0;
     }
-    for (let i = 0; i < this.sortCriterias.length; ++i) {
-      const sort = this.sortCriterias[i];
+    for (const sort of this.sortCriterias) {
       const r = sort.col.compare(a, b, aIndex, bIndex);
       if (r !== 0) {
         return sort.asc ? r : -r;
