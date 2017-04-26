@@ -8,6 +8,16 @@ $mapping_color_hover: #0000cf;
   margin-bottom: 5px;
   clear: both;
 
+  div {
+    &.filter_part {
+      margin-top: 15px;
+    }
+
+    span.title {
+      font-weight: bold;
+    }
+  }
+
   .raw_min, .raw_max {
     width: 3em;
     display: block;
@@ -20,6 +30,10 @@ $mapping_color_hover: #0000cf;
     > div {
       display: flex;
       flex-direction: column;
+
+      &:first-child {
+        text-align: right;
+      }
 
       > span:first-of-type {
         flex-grow: 1;
@@ -101,5 +115,40 @@ $mapping_color_hover: #0000cf;
       font-size: 8pt;
       display: block;
     }
+  }
+
+  div[id$='mapping-overlay'] { // id ends with mapping-overlay
+    position: absolute;
+    padding: 10px;
+    background-color: white;
+    border: 1px solid rgb(193, 193, 193);
+    border-radius: 5px;
+    z-index: 10;
+
+    &.hide {
+      opacity: .2;
+    }
+
+    div input {
+      display: block;
+    }
+
+    input {
+      width: 75px;
+    }
+
+    & div:first-child {
+      margin-bottom: 10px;
+    }
+  }
+
+  div[id$='filter_inputs'] {
+    display: flex;
+    justify-content: space-around;
+    padding: 0 30px 10px;
+  }
+
+  div input[id$='_filter_input'] {
+    width: 75px;
   }
 }
