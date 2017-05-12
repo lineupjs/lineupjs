@@ -83,7 +83,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
       return '';
     }
     const f = BoxPlotColumn.DEFAULT_FORMATTER;
-    return `BoxPlot(min=${f(v.min)},q1=${f(v.q1)},median=${f(v.median)},q3=${f(v.q3)},max=${f(v.max)})`;
+    return `BoxPlot(min = ${f(v.min)}, q1 = ${f(v.q1)}, median = ${f(v.median)}, q3 = ${f(v.q3)}, max = ${f(v.max)})`;
   }
 
   getSortMethod() {
