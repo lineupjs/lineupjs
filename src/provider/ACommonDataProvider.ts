@@ -118,7 +118,7 @@ abstract class ACommonDataProvider extends ADataProvider {
    * @returns {string}
    */
   toDescRef(desc: any): any {
-    return desc.column ? desc.type + '@' + desc.column : desc;
+    return typeof desc.column !== 'undefined' ? desc.type + '@' + desc.column : desc;
   }
 
   fromDescRef(descRef: any): any {
