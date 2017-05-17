@@ -124,7 +124,7 @@ export default class MappingEditor {
         </div>
       </div>
       <div class="filter_part2" style=""><span class="title">Filter:</span></div>
-      
+
       <div id="me${options.idPrefix}filter_inputs">
         <div>
           <label for="me${options.idPrefix}min_filter_input">Min Filter:</label>
