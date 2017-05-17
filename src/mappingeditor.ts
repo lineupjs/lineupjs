@@ -36,7 +36,7 @@ export default class MappingEditor {
   private options: IMappingEditorOptions = {
     idPrefix: '',
     width: 370,
-    height: 225,
+    height: 150,
     padding_hor: 7,
     padding_ver: 7,
     filter_height: 20,
@@ -88,13 +88,13 @@ export default class MappingEditor {
         <option value="script">Custom Script</option>
       </select>
       </label></div>
-      <div class="filter_part"><span class="title">Filter:</span></div>
+      <div class="filter_part"><span class="title">Mapping:</span></div>
       <div class="mapping_area">
         <div>
           <span>0</span>
           <input type="text" class="raw_min" id="me${options.idPrefix}raw_min" value="0"><label for="me${options.idPrefix}raw_min">Min</label>
         </div>
-        <svg width="${options.width}" height="${options.height}">
+        <svg width="${options.width}" height="${options.height+35}">
           <text x="${width/2}" y="10">Normalized Input</text>
           <text x="${width/2}" y="${options.height - options.filter_height + 5}">Raw Input</text>
           <line y1="${options.padding_ver}" y2="${options.padding_ver}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
@@ -104,18 +104,16 @@ export default class MappingEditor {
           <g transform="translate(${options.padding_hor},${options.padding_ver})">
             <g class="samples"></g>
             <g class="mappings"></g>
-            <g class="filter" transform="translate(0,${options.height - options.filter_height - options.padding_ver - 10})">
+            <g class="filter" transform="translate(0,${options.height - options.filter_height - options.padding_ver - 10 + 35})">
                <g class="left_filter" transform="translate(0,0)" data-filter="min">
-                  <title>Min Filter</title>
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-4" y="7" width="40" height="13" rx="2" ry="2"></rect>
-                  <text y="10" x="4" text-anchor="start">&gt; 0</text>
+                  <text y="10" x="4" text-anchor="start">Min</text>
                 </g>
               <g class="right_filter" transform="translate(${width},0)" data-filter="max">
-                  <title>Max Filter</title>
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-36" y="7" width="40" height="13" rx="2" ry="2"></rect>
-                  <text y="10" x="3" text-anchor="end">&lt; 1</text>
+                  <text y="10" x="3" text-anchor="end">Max</text>
               </g>
             </g>
           </g>
@@ -125,6 +123,8 @@ export default class MappingEditor {
           <input type="text" class="raw_max" id="me${options.idPrefix}raw_max" value="1"><label for="me${options.idPrefix}raw_max">Max</label>
         </div>
       </div>
+      <div class="filter_part2" style=""><span class="title">Filter:</span></div>
+      
       <div id="me${options.idPrefix}filter_inputs">
         <div>
           <label for="me${options.idPrefix}min_filter_input">Min Filter:</label>
@@ -448,7 +448,6 @@ export default class MappingEditor {
 
       const minFilter = (isFinite(this.oldFilter.min) ? raw2pixel(this.oldFilter.min) : 0);
       const maxFilter = (isFinite(this.oldFilter.max) ? raw2pixel(this.oldFilter.max) : width);
-      const toFilterString = (d: number, i: number) => isFinite(d) ? ((i === 0 ? '>' : '<') + d.toFixed(1)) : 'any';
 
       // use the old filter if one was available, set to domain boundaries otherwise
       const initialValues = [
@@ -470,8 +469,7 @@ export default class MappingEditor {
             const filter = (value === inputDomain[0])? -Infinity : (value === inputDomain[1])? Infinity : value;
             that._filter[this.dataset.filter] = filter;
 
-            $root.select(`g.${selector}_filter`).attr('transform', `translate(${px}, 0)`)
-              .select('text').text(toFilterString(filter, (this.dataset.filter === 'min')? 0 : 1));
+            $root.select(`g.${selector}_filter`).attr('transform', `translate(${px}, 0)`);
           }
           triggerUpdate();
       });
@@ -489,10 +487,8 @@ export default class MappingEditor {
 
         (<HTMLInputElement>document.querySelector(`#me${options.idPrefix}filter_inputs #me${options.idPrefix}${this.dataset.filter}_filter_input`)).value = v.toFixed(1);
         select(this).datum(filter)
-          .attr('transform', `translate(${px},0)`)
-          .select('text').text(toFilterString(filter, i));
-      }))
-        .select('text').text(toFilterString);
+          .attr('transform', `translate(${px},0)`);
+      }));
     }
 
     this.computeFilter = function () {

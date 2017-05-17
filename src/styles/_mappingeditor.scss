@@ -13,6 +13,12 @@ $mapping_color_hover: #0000cf;
       margin-top: 15px;
     }
 
+    &.filter_part2 {
+      position: relative;
+      top: -25px;
+      height: 0;
+    }
+
     span.title {
       font-weight: bold;
     }
@@ -30,6 +36,7 @@ $mapping_color_hover: #0000cf;
     > div {
       display: flex;
       flex-direction: column;
+      margin-bottom: 40px;
 
       &:first-child {
         text-align: right;
