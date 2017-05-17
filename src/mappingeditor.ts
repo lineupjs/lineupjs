@@ -506,6 +506,20 @@ export default class MappingEditor {
 
       updateDataLines();
       renderMappingLines();
+
+      updateFilter();
+    }
+
+    function updateFilter() {
+      const raw = raw2pixel.domain();
+      $root.select(`g.left_filter`).attr('transform', `translate(${raw2pixel(isFinite(that._filter.min) ? that._filter.min : raw[0])}, 0)`);
+      $root.select(`g.right_filter`).attr('transform', `translate(${raw2pixel(isFinite(that._filter.max) ? that._filter.max : raw[1])}, 0)`);
+
+      const filterValues = [
+        (isFinite(that._filter.min) ? that._filter.min : raw[0]).toFixed(1),
+        (isFinite(that._filter.max) ? that._filter.max : raw[1]).toFixed(1)
+      ];
+      selectAll(`#me${options.idPrefix}filter_inputs div input`).data(filterValues).property('value', String);
     }
 
     updateRaw();
