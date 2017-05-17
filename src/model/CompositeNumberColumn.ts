@@ -14,12 +14,18 @@ export interface ICompositeNumberDesc extends IColumnDesc {
    * @default 0.3n
    */
   numberFormat?: string;
+
+  /**
+   * missing value to use
+   * @default 0
+   */
+  missingValue?: number;
 }
 /**
  * implementation of a combine column, standard operations how to select
  */
 export default class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
-  public missingValue = 0;
+  missingValue = 0;
 
   private numberFormat: (n: number) => string = format('.3n');
 
@@ -28,6 +34,10 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
     if (desc.numberFormat) {
       this.numberFormat = format(desc.numberFormat);
+    }
+
+    if (desc.missingValue !== undefined) {
+      this.missingValue = desc.missingValue;
     }
   }
 
@@ -39,7 +49,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
   }
 
   restore(dump: any, factory: (dump: any) => Column) {
-    if (dump.missingValue) {
+    if (dump.missingValue !== undefined) {
       this.missingValue = dump.missingValue;
     }
     if (dump.numberFormat) {

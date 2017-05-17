@@ -262,6 +262,12 @@ export interface INumberColumnDesc extends IValueColumnDesc<number> {
    * @default .3n
    */
   numberFormat?: string;
+
+  /**
+   * missing value to use
+   * @default 0
+   */
+  missingValue?: number;
 }
 
 /**
@@ -302,6 +308,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.numberFormat = format(desc.numberFormat);
     }
 
+    if (desc.missingValue !== undefined) {
+      this.missingValue = desc.missingValue;
+    }
+
     const rendererList = [{type: 'number', label: 'Bar'},
       {type: 'circle', label: 'Circle'}];
 
@@ -326,7 +336,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (dump.currentFilter) {
       this.currentFilter = dump.currentFilter;
     }
-    if (dump.missingValue) {
+    if (dump.missingValue !== undefined) {
       this.missingValue = dump.missingValue;
     }
     if (dump.numberFormat) {
