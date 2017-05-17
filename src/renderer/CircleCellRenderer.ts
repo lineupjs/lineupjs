@@ -29,7 +29,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
           cx: (col.getWidth() / 2),
           r: (context.rowHeight(i) / 2) * v
         });
-        attr(<SVGTextElement>n.querySelector('text'), {}).textContent = v;
+        attr(<SVGTextElement>n.querySelector('text'), {}).textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
