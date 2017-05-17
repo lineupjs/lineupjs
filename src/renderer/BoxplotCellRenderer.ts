@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {IBoxPlotColumn} from '../model/BoxPlotColumn';
+import {default as BoxPlotColumn, IBoxPlotColumn, IBoxPlotData} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
 import {IDOMRenderContext} from './RendererContexts';
 import {ISVGCellRenderer} from './IDOMCellRenderers';
@@ -9,6 +9,14 @@ import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer  from './ICanvasCellRenderer';
 import {scale as d3scale, min as d3min, max as d3max} from 'd3';
 
+
+function computeLabel(v: IBoxPlotData) {
+  if (v === null) {
+    return '';
+  }
+  const f = BoxPlotColumn.DEFAULT_FORMATTER;
+  return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\nq3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
+}
 
 export default class BoxplotCellRenderer implements ICellRendererFactory {
 
@@ -22,6 +30,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
       template: `<g class='boxplotcell'>
             <title></title>
+            <rect class='cellbg'></rect>
             <rect class='boxplotrect' y='${topPadding}'></rect>
             <path class='boxplotallpath'></path>
             <path class='boxplotsortpath' style='display: none'></path>
@@ -36,8 +45,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q3: scale(rawBoxdata.q3),
           max: scale(rawBoxdata.max)
         };
-        n.querySelector('title').textContent = col.getLabel(d.v, d.dataIndex);
-        attr(n.querySelector('rect'), {
+        attr(<SVGElement>n.querySelector('rect.cellbg'),{
+          width: col.getWidth(),
+          height: rowHeight
+        });
+        n.querySelector('title').textContent = computeLabel(rawBoxdata);
+        attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
           x: scaled.q1,
           width: (scaled.q3 - scaled.q1),
           height: (rowHeight - (topPadding * 2))

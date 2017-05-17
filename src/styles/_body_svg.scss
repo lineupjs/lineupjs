@@ -53,7 +53,10 @@
   .boxplotrect {
     stroke: black;
     fill: #e0e0e0;
-
+  }
+  .cellbg {
+    fill: transparent;
+    stroke: none;
   }
   .boxplotline {
     stroke: black;

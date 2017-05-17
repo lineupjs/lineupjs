@@ -56,7 +56,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   private readonly domain;
   private sort: SortMethod;
 
-  private static readonly DEFAULT_FORMATTER = format('.3n');
+  static readonly DEFAULT_FORMATTER = format('.3n');
 
   constructor(id: string, desc: IBoxPlotColumnDesc) {
     super(id, desc);
