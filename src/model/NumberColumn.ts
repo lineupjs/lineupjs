@@ -27,11 +27,11 @@ function isMissingValue(v: any) {
  * @return {number}
  */
 export function numberCompare(a: number, b: number) {
-  if (isNaN(a)) { //NaN are bigger
-    return isNaN(b) ? 0 : +1;
+  if (isNaN(a)) { //NaN are smaller
+    return isNaN(b) ? 0 : -1;
   }
   if (isNaN(b)) {
-    return -1;
+    return +1;
   }
   return a - b;
 }
