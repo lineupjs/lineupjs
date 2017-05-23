@@ -177,7 +177,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
 
   removeImpl(child: Column) {
     child.on(Column.EVENT_WIDTH_CHANGED + '.stack', null);
-    super.setWidth(this.length === 1 ? 100 : this.getWidth() - child.getWidth());
+    super.setWidth(this.length === 0 ? 100 : this.getWidth() - child.getWidth());
     return super.removeImpl(child);
   }
 
