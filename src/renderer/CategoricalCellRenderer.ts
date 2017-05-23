@@ -1,5 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import CategoricalColumn from '../model/CategoricalColumn';
+import Column from '../model/Column';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -27,8 +28,12 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         <rect y='${padding}'></rect>
       </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const cell = Math.min(col.getWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
-
+        let cell: number;
+        if (col.getCompressed()) {
+          cell = Math.min(Column.COMPRESSED_WIDTH - padding * 2, Math.max(context.rowHeight(i) - padding * 2, 0));
+        } else {
+          cell = Math.min(col.getWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
+        }
         attr(<SVGRectElement>n.querySelector('rect'), {
           width: cell,
           height: cell
@@ -37,7 +42,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         });
         attr(<SVGTextElement>n.querySelector('text'), {
           x: cell + padding * 2
-        }).textContent = col.getLabel(d.v, d.dataIndex);
+        }).textContent = col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -50,16 +55,21 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         <span></span>
       </div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
-        const cell = Math.min(col.getWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
+        let cell: number;
+        if (col.getCompressed()) {
+          cell = Math.min(Column.COMPRESSED_WIDTH - padding * 2, Math.max(context.rowHeight(i) - padding * 2, 0));
+        } else {
+          cell = Math.min(col.getWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
+        }
         attr(n, {}, {
-          width: `${col.getWidth()}px`
+          width: `${col.getCompressed() ? Column.COMPRESSED_WIDTH : col.getWidth()}px`
         });
         attr(<HTMLDivElement>n.querySelector('div'), {}, {
           width: cell + 'px',
           height: cell + 'px',
           'background-color': col.getColor(d.v, d.dataIndex)
         });
-        attr(<HTMLSpanElement>n.querySelector('span'), {}).textContent = col.getLabel(d.v, d.dataIndex);
+        attr(<HTMLSpanElement>n.querySelector('span'), {}).textContent = col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -67,11 +77,16 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   createCanvas(col: CategoricalColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const cell = Math.min(col.getWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
       ctx.fillStyle = col.getColor(d.v, d.dataIndex);
-      ctx.fillRect(0, 0, cell, cell);
-      ctx.fillStyle = context.option('style.text', 'black');
-      clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, col.getWidth() - cell - 2, context.textHints);
+      if (col.getCompressed()) {
+        const cell = Math.min(Column.COMPRESSED_WIDTH - padding * 2, Math.max(context.rowHeight(i) - padding * 2, 0));
+        ctx.fillRect(padding, padding, cell, cell);
+      } else {
+        const cell = Math.min(col.getWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
+        ctx.fillRect(0, 0, cell, cell);
+        ctx.fillStyle = context.option('style.text', 'black');
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, col.getWidth() - cell - 2, context.textHints);
+      }
     };
   }
 }
