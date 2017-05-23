@@ -133,13 +133,20 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       change = (newValue - oldValue) / full;
     const oldWeight = oldValue / full;
     const factor = (1 - oldWeight - change) / (1 - oldWeight);
-    this._children.forEach((c) => {
+    const widths = this._children.map((c) => {
       if (c === col) {
         //c.weight += change;
+        return newValue;
       } else {
-        c.setWidthImpl(c.getWidth() * factor);
+        const guess = c.getWidth() * factor;
+        const w = isNaN(guess) || guess < 1 ? 0 : guess;
+        c.setWidthImpl(w);
+        return w;
       }
     });
+    //adapt width if needed
+    super.setWidth(widths.reduce((a, b) => a + b, 0));
+
     this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getWeights());
   }
 
