@@ -33,6 +33,7 @@ import CategoricalMappingFilterDialog from '../dialogs/CategoricalMappingFilterD
 
 import {IFilterDialog} from '../dialogs/AFilterDialog';
 import ScriptEditDialog from '../dialogs/ScriptEditDialog';
+import BooleanColumn from '../model/BooleanColumn';
 
 /**
  * utility function to generate the tooltip text with description
@@ -332,6 +333,7 @@ export default class HeaderRenderer {
       that = this;
     const $regular = $node.filter((d) => !(d instanceof RankColumn));
 
+
     //rename
     $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (d) {
       const dialog = new RenameDialog(d, d3.select(this.parentNode.parentNode));
@@ -344,13 +346,17 @@ export default class HeaderRenderer {
       (<MouseEvent>d3.event).stopPropagation();
     });
 
+    $node.filter((d) => d instanceof BooleanColumn || d instanceof CategoricalColumn).append('i').attr('class', 'fa fa-columns fa-rotate-270').attr('title', 'Stratify By').on('click', function (d) {
+      d.groupByMe();
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+
     //MultiValue Sort
     $node.filter((d) => d instanceof MultiValueColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
       const dialog = new SortDialog(<IBoxPlotColumn><any>d, d3.select(this.parentNode.parentNode));
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
-
 
     //Renderer Change
     $node.filter((d) => d.getRendererList().length > 1).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (d) {
@@ -490,7 +496,7 @@ export default class HeaderRenderer {
       'background-color': (d) => d.color
     });
     $headers.attr({
-      'class': (d) => `${clazz} ${d.cssClass || ''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''}`,
+      'class': (d) => `${clazz} ${d.cssClass || ''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''} ${d.isGroupedBy() ? 'grouped' : ''}`,
       title: (d) => toFullTooltip(d),
       'data-id': (d) => d.id
     });
@@ -501,6 +507,7 @@ export default class HeaderRenderer {
       }
       return 'sort_indicator fa';
     });
+
     $headers.select('span.lu-label').text((d) => d.label);
 
     const resolveDrop = (data: string[], copy: boolean) => {

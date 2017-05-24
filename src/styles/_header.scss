@@ -152,6 +152,10 @@
         color: darkblue;
       }
 
+      &.grouped > div.toolbar i.fa-columns {
+        color: darkblue;
+      }
+
       position: absolute;
       display: inline-block;
       overflow: hidden;

@@ -331,6 +331,22 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
+  groupByMe() {
+    const r = this.findMyRanker();
+    if (r) {
+      return r.groupBy(this === r.getGroupCriteria() ? null : this);
+    }
+    return false;
+  }
+
+  isGroupedBy() {
+    const r = this.findMyRanker();
+    if (r) {
+      return r.getGroupCriteria() === this;
+    }
+    return false;
+  }
+
   /**
    * toggles the sorting order of this column in the ranking
    * @returns {any}
