@@ -16,7 +16,7 @@ export function isNumberColumn(col: Column|IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }
 
-function isMissingValue(v: any) {
+export function isMissingValue(v: any) {
   return typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
 }
 
@@ -40,6 +40,7 @@ export function numberCompare(a: number, b: number) {
 export interface INumberColumn {
   isLoaded(): boolean;
   getNumber(row: any, index: number): number;
+  getRawNumber(row: any, index: number): number;
 }
 
 /**
@@ -270,14 +271,26 @@ export interface INumberColumnDesc extends IValueColumnDesc<number> {
   readonly missingValue?: number;
 }
 
+export interface IMapAbleColumn {
+  getOriginalMapping(): IMappingFunction;
+  getMapping(): IMappingFunction;
+  setMapping(mapping: IMappingFunction): void;
+  getFilter(): INumberFilter;
+  setFilter(value?: INumberFilter): void;
+}
+
+
+export function noNumberFilter() {
+  return ({min: -Infinity, max: Infinity, filterMissing: false});
+}
+
 /**
  * a number column mapped from an original input scale to an output range
  */
-export default class NumberColumn extends ValueColumn<number> implements INumberColumn {
+export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
   static readonly COMPRESSED_RENDERER = 'heatmap';
 
-  static readonly noFilter = () => ({min: -Infinity, max: Infinity, filterMissing: false});
 
   missingValue = 0;
 
@@ -290,7 +303,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    * @type {{min: number, max: number}}
    * @private
    */
-  private currentFilter: INumberFilter = NumberColumn.noFilter();
+  private currentFilter: INumberFilter = noNumberFilter();
 
   private numberFormat: (n: number) => string = format('.3n');
 
@@ -333,8 +346,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     } else if (dump.domain) {
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
-    if (dump.currentFilter) {
-      this.currentFilter = dump.currentFilter;
+    if (dump.filter) {
+      this.currentFilter = dump.filter;
     }
     if (dump.missingValue !== undefined) {
       this.missingValue = dump.missingValue;
@@ -383,6 +396,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   getNumber(row: any, index: number) {
     return this.getValue(row, index);
+  }
+
+  getRawNumber(row: any, index: number) {
+    return this.getRawValue(row, index);
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
@@ -467,7 +484,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (!this.isFiltered()) {
       return true;
     }
-    const v: any = super.getValue(row, index);
+    const v: any = this.getRawNumber(row, index);
     if (isMissingValue(v)) {
       return !this.filterMissing;
     }
@@ -481,6 +498,4 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
     return super.getRendererType();
   }
-
-
 }

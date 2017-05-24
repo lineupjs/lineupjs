@@ -8,10 +8,7 @@ import {
   IBoxPlotColumn, IBoxPlotData, SORT_METHOD as BASE_SORT_METHOD, SortMethod, compareBoxPlot, getBoxPlotNumber
 } from './BoxPlotColumn';
 import {merge} from '../utils';
-import NumberColumn, {
-  IMappingFunction, createMappingFunction, ScaleMappingFunction,
-  INumberColumn
-} from './NumberColumn';
+import NumberColumn, {INumberColumn, IMappingFunction, createMappingFunction, ScaleMappingFunction, IMapAbleColumn, INumberFilter, noNumberFilter} from './NumberColumn';
 
 
 export const SORT_METHOD = merge({
@@ -108,7 +105,7 @@ export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
 }
 
 
-export default class MultiValueColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, IMultiValueColumn {
+export default class MultiValueColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, IMultiValueColumn, IMapAbleColumn {
   private sort: SortMethod;
   private readonly threshold;
   private readonly dataLength;
@@ -117,6 +114,12 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   private mapping: IMappingFunction;
 
   private original: IMappingFunction;
+  /**
+   * currently active filter
+   * @type {{min: number, max: number}}
+   * @private
+   */
+  private currentFilter: INumberFilter = noNumberFilter();
 
   static readonly DEFAULT_FORMATTER = format('.3n');
 
@@ -212,7 +215,11 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   }
 
   getNumber(row: any, index: number) {
-    return getBoxPlotNumber(this, row, index);
+    return getBoxPlotNumber(this, row, index, 'normalized');
+  }
+
+  getRawNumber(row: any, index: number) {
+    return getBoxPlotNumber(this, row, index, 'raw');
   }
 
   getValue(row: any, index: number) {
@@ -250,6 +257,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
+    r.filter = this.currentFilter;
     r.map = this.mapping.dump();
     return r;
   }
@@ -258,6 +266,9 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;
+    }
+    if (dump.filter) {
+      this.currentFilter = dump.filter;
     }
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);
@@ -283,6 +294,22 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
       return;
     }
     this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+  }
+
+  isFiltered() {
+    return NumberColumn.prototype.isFiltered.call(this);
+  }
+
+  getFilter(): INumberFilter {
+    return NumberColumn.prototype.getFilter.call(this);
+  }
+
+  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+    NumberColumn.prototype.setFilter.call(this, value);
+  }
+
+  filter(row: any, index: number) {
+    return NumberColumn.prototype.filter.call(this, row, index);
   }
 }
 

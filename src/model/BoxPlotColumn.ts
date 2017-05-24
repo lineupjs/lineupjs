@@ -4,7 +4,7 @@
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {format} from 'd3';
-import NumberColumn, {INumberColumn, IMappingFunction, createMappingFunction, ScaleMappingFunction} from './NumberColumn';
+import NumberColumn, {INumberColumn, IMappingFunction, createMappingFunction, ScaleMappingFunction, IMapAbleColumn, INumberFilter, noNumberFilter} from './NumberColumn';
 
 export const SORT_METHOD = {
   min: 'min',
@@ -64,8 +64,8 @@ export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: numb
   return aVal[method] - bVal[method];
 }
 
-export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number) {
-  const data = col.getBoxPlotData(row, index);
+export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number, mode: 'raw'|'normalized') {
+  const data = mode === 'normalized' ? col.getBoxPlotData(row, index) : col.getRawBoxPlotData(row, index);
   if (data === null) {
     return NaN;
   }
@@ -73,7 +73,7 @@ export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number) {
 }
 
 
-export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
+export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
   static readonly DEFAULT_FORMATTER = format('.3n');
 
@@ -82,6 +82,12 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   private mapping: IMappingFunction;
 
   private original: IMappingFunction;
+  /**
+   * currently active filter
+   * @type {{min: number, max: number}}
+   * @private
+   */
+  private currentFilter: INumberFilter = noNumberFilter();
 
 
   constructor(id: string, desc: IBoxPlotColumnDesc) {
@@ -134,7 +140,11 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   }
 
   getNumber(row: any, index: number) {
-    return getBoxPlotNumber(this, row, index);
+    return getBoxPlotNumber(this, row, index, 'normalized');
+  }
+
+  getRawNumber(row: any, index: number) {
+    return getBoxPlotNumber(this, row, index, 'raw');
   }
 
   getLabel(row: any, index: number): string {
@@ -164,6 +174,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
+    r.filter = this.currentFilter;
     r.map = this.mapping.dump();
     return r;
   }
@@ -172,6 +183,9 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;
+    }
+    if (dump.filter) {
+      this.currentFilter = dump.filter;
     }
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);
@@ -197,6 +211,22 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
       return;
     }
     this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+  }
+
+  isFiltered() {
+    return NumberColumn.prototype.isFiltered.call(this);
+  }
+
+  getFilter(): INumberFilter {
+    return NumberColumn.prototype.getFilter.call(this);
+  }
+
+  setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
+    NumberColumn.prototype.setFilter.call(this, value);
+  }
+
+  filter(row: any, index: number) {
+    return NumberColumn.prototype.filter.call(this, row, index);
   }
 }
 

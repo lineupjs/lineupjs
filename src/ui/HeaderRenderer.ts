@@ -99,7 +99,9 @@ export default class HeaderRenderer {
       'boolean': BooleanFilterDialog,
       'categorical': CategoricalFilterDialog,
       'number': MappingsFilterDialog,
-      'ordinal': CategoricalMappingFilterDialog
+      'ordinal': CategoricalMappingFilterDialog,
+      'boxplot': MappingsFilterDialog,
+      'multiValue': MappingsFilterDialog
     },
     linkTemplates: [],
     searchAble: (col: Column) => col instanceof StringColumn,
