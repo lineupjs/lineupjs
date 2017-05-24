@@ -4,6 +4,7 @@
 
 import {AEventDispatcher} from '../utils';
 import Ranking from './Ranking';
+import {defaultGroup} from './Group';
 
 /**
  * converts a given id to css compatible one
@@ -447,6 +448,16 @@ export default class Column extends AEventDispatcher {
    */
   compare(a: any, b: any, aIndex: number, bIndex: number) {
     return 0; //can't compare
+  }
+
+  /**
+   * group the given row into a bin/group
+   * @param row
+   * @param index
+   * @return {IGroup}
+   */
+  group(row: any, index: number) {
+    return defaultGroup;
   }
 
   /**
