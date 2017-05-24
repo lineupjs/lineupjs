@@ -4,7 +4,7 @@
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {format} from 'd3';
-import {INumberColumn} from './NumberColumn';
+import NumberColumn, {INumberColumn, IMappingFunction, createMappingFunction, ScaleMappingFunction} from './NumberColumn';
 
 export const SORT_METHOD = {
   min: 'min',
@@ -20,13 +20,25 @@ export declare type SortMethod = string;
 
 export interface IBoxPlotColumn extends INumberColumn {
   getBoxPlotData(row: any, index: number): IBoxPlotData;
-  getDomain(): number[];
+  getRawBoxPlotData(row: any, index: number): IBoxPlotData;
   getSortMethod(): string;
   setSortMethod(sortMethod: string);
 }
 
 export interface IBoxPlotColumnDesc extends IValueColumnDesc<IBoxPlotData> {
-  readonly domain?: number[];
+  /**
+   * dump of mapping function
+   */
+  readonly map?: any;
+  /**
+   * either map or domain should be available
+   */
+  readonly domain?: [number, number];
+  /**
+   * @default [0,1]
+   */
+  readonly range?: [number, number];
+
   readonly sort?: string;
 }
 
@@ -57,22 +69,30 @@ export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number) {
   if (data === null) {
     return NaN;
   }
-  const raw = data[col.getSortMethod()];
-  const domain = col.getDomain();
-  // simple linear scaling to 0..1 range
-  return (raw - domain[0]) / (domain[1] - domain[0]);
+  return data[col.getSortMethod()];
 }
 
 
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
-  private readonly domain;
+  static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly DEFAULT_FORMATTER = format('.3n');
+
   private sort: SortMethod;
 
-  static readonly DEFAULT_FORMATTER = format('.3n');
+  private mapping: IMappingFunction;
+
+  private original: IMappingFunction;
+
 
   constructor(id: string, desc: IBoxPlotColumnDesc) {
     super(id, desc);
-    this.domain = desc.domain || [0, 100];
+    if (desc.map) {
+      this.mapping = createMappingFunction(desc.map);
+    } else if (desc.domain) {
+      this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
+    }
+    this.original = this.mapping.clone();
+
     this.sort = desc.sort || SORT_METHOD.min;
 
     this.setRendererList([
@@ -87,12 +107,30 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return compareBoxPlot(this, a, b, aIndex, bIndex);
   }
 
-  getDomain() {
-    return this.domain;
-  }
-
   getBoxPlotData(row: any, index: number): IBoxPlotData {
     return this.getValue(row, index);
+  }
+
+  getRawBoxPlotData(row: any, index: number): IBoxPlotData {
+    return this.getRawValue(row, index);
+  }
+
+  getRawValue(row: any, index: number) {
+    return super.getValue(row, index);
+  }
+
+  getValue(row: any, index: number) {
+    const v = this.getRawValue(row, index);
+    if (v === null) {
+      return v;
+    }
+    return {
+      min: this.mapping.apply(v.min),
+      max: this.mapping.apply(v.max),
+      median: this.mapping.apply(v.median),
+      q1: this.mapping.apply(v.q1),
+      q3: this.mapping.apply(v.q3)
+    };
   }
 
   getNumber(row: any, index: number) {
@@ -100,7 +138,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   }
 
   getLabel(row: any, index: number): string {
-    const v = this.getValue(row, index);
+    const v = this.getRawValue(row, index);
     if (v === null) {
       return '';
     }
@@ -126,6 +164,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
+    r.map = this.mapping.dump();
     return r;
   }
 
@@ -134,6 +173,30 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;
     }
+    if (dump.map) {
+      this.mapping = createMappingFunction(dump.map);
+    } else if (dump.domain) {
+      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    }
+  }
+
+  protected createEventList() {
+    return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED]);
+  }
+
+  getOriginalMapping() {
+    return this.original.clone();
+  }
+
+  getMapping() {
+    return this.mapping.clone();
+  }
+
+  setMapping(mapping: IMappingFunction) {
+    if (this.mapping.eq(mapping)) {
+      return;
+    }
+    this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 }
 

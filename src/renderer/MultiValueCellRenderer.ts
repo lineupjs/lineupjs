@@ -1,71 +1,75 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import MultiValueColumn from '../model/MultiValueColumn';
+import MultiValueColumn, {IMultiValueColumn} from '../model/MultiValueColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {select as d3select} from 'd3';
+import {attr, forEach} from '../utils';
+import Column from '../model/Column';
 
 
 export default class MultiValueCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const cellDimension = col.calculateCellDimension(col.getWidth());
-    const colorScale = col.getColorScale();
+  createSVG(col: IMultiValueColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const cellDimension = col.getWidth() / col.getDataLength();
+    const colorScale = col.getRawColorScale();
     const padding = context.option('rowBarPadding', 1);
+    let templateRows = '';
+    for (let i = 0; i < col.getDataLength(); ++i) {
+      templateRows += `<rect y="${padding}" width="${cellDimension}" height="1" x="${i * cellDimension}" fill="white"><title></title></rect>`;
+    }
     return {
-
-      template: `<g class="heatmapcell"></g>`,
+      template: `<g class="heatmapcell">${templateRows}</g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const rect = d3select(n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
-        rect.enter().append('rect').attr({
-          y: padding,
-          width: cellDimension,
-          height: context.rowHeight(i)
+        const rowHeight = context.rowHeight(i);
+        const data = col.getRawNumbers(d.v, d.dataIndex);
+        forEach(n, 'rect', (d, i) => {
+          const v = data[i];
+          attr(<SVGRectElement>d, {
+            fill: colorScale(v),
+            height: rowHeight
+          });
+          d.querySelector('title').textContent = MultiValueColumn.DEFAULT_FORMATTER(v);
         });
-        rect.attr({
-          x: (d, i) => i * cellDimension,
-          fill: colorScale
-        });
-        rect.exit().remove();
       }
     };
   }
 
-  createHTML(col: MultiValueColumn, context: IDOMRenderContext): IHTMLCellRenderer {
-    const cellDimension = col.calculateCellDimension(col.getWidth());
+  createHTML(col: IMultiValueColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
+    const cellDimension = col.getWidth() / col.getDataLength();
     const padding = context.option('rowBarPadding', 1);
-    const colorScale = col.getColorScale();
-
+    const colorScale = col.getRawColorScale();
+    let templateRows = '';
+    for (let i = 0; i < col.getDataLength(); ++i) {
+      templateRows += `<div style="left: ${i* cellDimension}px; width: ${cellDimension}px; background-color: white" title=""></div>`;
+    }
     return {
       template: `<div class="heatmapcell" style="top:${padding}px;"></div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        const g = d3select(n);
-        const div = g.selectAll('div').data(col.getValue(d.v, d.dataIndex));
-        div.enter().append('div').style({
-          widht: cellDimension + 'px',
-          height: context.rowHeight(i) + 'px'
-        });
-        div.style({
-          'background-color': colorScale,
-          'left': (d, i) => (i * cellDimension) + 'px'
+        const rowHeight = context.rowHeight(i);
+        const data = col.getRawNumbers(d.v, d.dataIndex);
+        forEach(n, 'div', (d, i) => {
+          const v = data[i];
+          (<HTMLDivElement>d).style.backgroundColor = colorScale(v);
+          (<HTMLDivElement>d).style.height = rowHeight + 'px';
+          (<HTMLDivElement>d).title = MultiValueColumn.DEFAULT_FORMATTER(v);
         });
       }
     };
   }
 
-  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const cellDimension = col.calculateCellDimension(col.getWidth());
+  createCanvas(col: IMultiValueColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const cellDimension = col.getWidth() / col.getDataLength();
     const padding = context.option('rowBarPadding', 1);
-    const colorScale = col.getColorScale();
+    const colorScale = col.getRawColorScale();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const data = col.getValue(d.v, d.dataIndex);
+      const data = col.getRawNumbers(d.v, d.dataIndex);
       const rowHeight = context.rowHeight(i);
       data.forEach((d: number, j: number) => {
-        const x = (j * cellDimension);
+        const x = j * cellDimension;
         ctx.beginPath();
-        ctx.fillStyle = String(colorScale(d));
+        ctx.fillStyle = colorScale(d);
         ctx.fillRect(x, padding, cellDimension, rowHeight);
       });
     };

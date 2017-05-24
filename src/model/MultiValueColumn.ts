@@ -8,6 +8,10 @@ import {
   IBoxPlotColumn, IBoxPlotData, SORT_METHOD as BASE_SORT_METHOD, SortMethod, compareBoxPlot, getBoxPlotNumber
 } from './BoxPlotColumn';
 import {merge} from '../utils';
+import NumberColumn, {
+  IMappingFunction, createMappingFunction, ScaleMappingFunction,
+  INumberColumn
+} from './NumberColumn';
 
 
 export const SORT_METHOD = merge({
@@ -21,6 +25,7 @@ export interface IAdvancedBoxPlotData extends IBoxPlotData {
 
 export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
   getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData;
+  getRawBoxPlotData(row: any, index: number): IAdvancedBoxPlotData;
 }
 
 /**
@@ -29,7 +34,7 @@ export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
 class LazyBoxPlotData implements IAdvancedBoxPlotData {
   private _sorted: number[] = null;
 
-  constructor(private readonly values: number[]) {
+  constructor(private readonly values: number[], private readonly scale?: IMappingFunction) {
   }
 
   /**
@@ -43,38 +48,59 @@ class LazyBoxPlotData implements IAdvancedBoxPlotData {
     return this._sorted;
   }
 
+  private map(v: number) {
+    return this.scale? this.scale.apply(v) : v;
+  }
 
   get min() {
-    return Math.min(...this.values);
+    return this.map(Math.min(...this.values));
   }
 
   get max() {
-    return Math.max(...this.values);
+    return this.map(Math.max(...this.values));
   }
 
   get median() {
-    return median(this.sorted);
+    return this.map(median(this.sorted));
   }
 
   get q1() {
-    return quantile(this.sorted, 0.25);
+    return this.map(quantile(this.sorted, 0.25));
   }
 
   get q3() {
-    return quantile(this.sorted, 0.75);
+    return this.map(quantile(this.sorted, 0.75));
   }
 
   get mean() {
-    return mean(this.values);
+    return this.map(mean(this.values));
   }
 }
 
-export interface IMultiValueColumn {
+export interface IMultiValueColumn extends INumberColumn {
   getNumbers(row: any, index: number): number[];
+  getRawNumbers(row: any, index: number): number[];
+  getDataLength(): number;
+  getRawColorScale(): d3.scale.Linear<string, string>;
+  getThreshold(): number;
+
+  getMapping(): IMappingFunction;
 }
 
 export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
-  readonly domain?: number[];
+  /**
+   * dump of mapping function
+   */
+  readonly map?: any;
+  /**
+   * either map or domain should be available
+   */
+  readonly domain?: [number, number];
+  /**
+   * @default [0,1]
+   */
+  readonly range?: [number, number];
+
   readonly sort?: string;
   readonly threshold?: number;
   readonly dataLength: number;
@@ -83,17 +109,26 @@ export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
 
 
 export default class MultiValueColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, IMultiValueColumn {
-  private readonly domain;
   private sort: SortMethod;
   private readonly threshold;
   private readonly dataLength;
   private readonly colorRange;
 
-  private static readonly DEFAULT_FORMATTER = format('.3n');
+  private mapping: IMappingFunction;
+
+  private original: IMappingFunction;
+
+  static readonly DEFAULT_FORMATTER = format('.3n');
 
   constructor(id: string, desc: IMultiValueColumnDesc) {
     super(id, desc);
-    this.domain = desc.domain || [0, 100];
+     if (desc.map) {
+      this.mapping = createMappingFunction(desc.map);
+    } else if (desc.domain) {
+      this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
+    }
+    this.original = this.mapping.clone();
+
     this.dataLength = desc.dataLength;
     this.threshold = desc.threshold || 0;
     this.colorRange = desc.colorRange || ['blue', 'red'];
@@ -127,54 +162,48 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     return compareBoxPlot(this, a, b, aIndex, bIndex);
   }
 
-  getColorScale() {
-    const colorScale = d3scale.linear<string, number>();
+  getRawColorScale() {
+    const colorScale = d3scale.linear<string, string>();
     const colorValues = this.getColorValues();
-    if (this.domain[0] < 0) {
+    const domain = this.mapping.domain;
+    if (domain[0] < 0) {
       colorScale
-        .domain([this.domain[0], 0, this.domain[1]])
+        .domain([domain[0], 0, domain[1]])
         .range(colorValues);
 
     } else {
       colorScale
-        .domain([this.domain[0], this.domain[1]])
+        .domain([domain[0], domain[1]])
         .range(colorValues);
     }
     return colorScale;
   }
 
-  calculateCellDimension(width: number) {
-    return (width / this.dataLength);
+  getRawNumbers(row: any, index: number) {
+    return this.getRawValue(row, index);
   }
 
-  getSparklineScale() {
-    const xposScale = d3scale.linear();
-    const yposScale = d3scale.linear();
-    return {
-      xScale: xposScale.domain([0, this.dataLength - 1]),
-      yScale: yposScale.domain(this.domain)
-    };
-  }
-
-
-  getDomain() {
-    return this.domain;
+  getDataLength() {
+    return this.dataLength;
   }
 
   getThreshold() {
     return this.threshold;
   }
 
-  getVerticalBarScale() {
-    return d3scale.linear().domain(this.domain);
-  }
-
   getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData {
-    const data = this.getValue(row, index);
+    const data = this.getRawValue(row, index);
     if (data === null) {
       return null;
     }
-    //console.log(data)
+    return new LazyBoxPlotData(data, this.mapping);
+  }
+
+  getRawBoxPlotData(row: any, index: number): IAdvancedBoxPlotData {
+    const data = this.getRawValue(row, index);
+    if (data === null) {
+      return null;
+    }
     return new LazyBoxPlotData(data);
   }
 
@@ -186,8 +215,17 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     return getBoxPlotNumber(this, row, index);
   }
 
+  getValue(row: any, index: number) {
+    const values = this.getRawValue(row, index);
+    return values.map((d) => this.mapping.apply(d));
+  }
+
+  getRawValue(row: any, index: number) {
+    return super.getValue(row, index);
+  }
+
   getLabel(row: any, index: number): string {
-    const v = this.getValue(row, index);
+    const v = this.getRawValue(row, index);
     if (v === null) {
       return '';
     }
@@ -212,6 +250,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
+    r.map = this.mapping.dump();
     return r;
   }
 
@@ -220,6 +259,30 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;
     }
+    if (dump.map) {
+      this.mapping = createMappingFunction(dump.map);
+    } else if (dump.domain) {
+      this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    }
+  }
+
+  protected createEventList() {
+    return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED]);
+  }
+
+  getOriginalMapping() {
+    return this.original.clone();
+  }
+
+  getMapping() {
+    return this.mapping.clone();
+  }
+
+  setMapping(mapping: IMappingFunction) {
+    if (this.mapping.eq(mapping)) {
+      return;
+    }
+    this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 }
 

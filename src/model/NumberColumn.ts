@@ -248,26 +248,26 @@ export interface INumberColumnDesc extends IValueColumnDesc<number> {
   /**
    * dump of mapping function
    */
-  map?: any;
+  readonly map?: any;
   /**
    * either map or domain should be available
    */
-  domain?: [number, number];
+  readonly domain?: [number, number];
   /**
    * @default [0,1]
    */
-  range?: [number, number];
+  readonly range?: [number, number];
   /**
    * d3 formatting option
    * @default .3n
    */
-  numberFormat?: string;
+  readonly numberFormat?: string;
 
   /**
    * missing value to use
    * @default 0
    */
-  missingValue?: number;
+  readonly missingValue?: number;
 }
 
 /**
