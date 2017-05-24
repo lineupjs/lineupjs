@@ -197,7 +197,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
         const ga = a.group;
         const gb = b.group;
         if (ga.name !== gb.name) {
-          return ga.localeCompare(gb);
+          return ga.name.localeCompare(gb.name);
         }
         return ranking.comparator(a.row, b.row, a.i, b.i);
       });

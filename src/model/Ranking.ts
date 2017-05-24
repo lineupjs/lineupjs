@@ -68,7 +68,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (this.groupColumn === null) {
       return defaultGroup;
     }
-    this.groupColumn.group(row, index);
+    return this.groupColumn.group(row, index);
   }
 
   readonly dirtyOrder = () => {
