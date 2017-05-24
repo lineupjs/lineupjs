@@ -4,6 +4,7 @@
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {format} from 'd3';
+import {INumberColumn} from './NumberColumn';
 
 export const SORT_METHOD = {
   min: 'min',
@@ -17,7 +18,7 @@ export const SORT_METHOD = {
 export declare type SortMethod = string;
 
 
-export interface IBoxPlotColumn {
+export interface IBoxPlotColumn extends INumberColumn {
   getBoxPlotData(row: any, index: number): IBoxPlotData;
   getDomain(): number[];
   getSortMethod(): string;
@@ -51,6 +52,17 @@ export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: numb
   return aVal[method] - bVal[method];
 }
 
+export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number) {
+  const data = col.getBoxPlotData(row, index);
+  if (data === null) {
+    return NaN;
+  }
+  const raw = data[col.getSortMethod()];
+  const domain = col.getDomain();
+  // simple linear scaling to 0..1 range
+  return (raw - domain[0]) / (domain[1] - domain[0]);
+}
+
 
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn {
   private readonly domain;
@@ -62,6 +74,12 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     super(id, desc);
     this.domain = desc.domain || [0, 100];
     this.sort = desc.sort || SORT_METHOD.min;
+
+    this.setRendererList([
+      {type: 'boxplot', label: 'Boxplot'},
+      {type: 'number', label: 'Bar'},
+      {type: 'circle', label: 'Circle'}
+    ]);
 
   }
 
@@ -75,6 +93,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   getBoxPlotData(row: any, index: number): IBoxPlotData {
     return this.getValue(row, index);
+  }
+
+  getNumber(row: any, index: number) {
+    return getBoxPlotNumber(this, row, index);
   }
 
   getLabel(row: any, index: number): string {

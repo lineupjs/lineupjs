@@ -5,7 +5,7 @@ import {median, quantile, mean, scale as d3scale, ascending, format} from 'd3';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {
-  IBoxPlotColumn, IBoxPlotData, SORT_METHOD as BASE_SORT_METHOD, SortMethod, compareBoxPlot
+  IBoxPlotColumn, IBoxPlotData, SORT_METHOD as BASE_SORT_METHOD, SortMethod, compareBoxPlot, getBoxPlotNumber
 } from './BoxPlotColumn';
 import {merge} from '../utils';
 
@@ -70,7 +70,7 @@ class LazyBoxPlotData implements IAdvancedBoxPlotData {
 }
 
 export interface IMultiValueColumn {
-  getNumber(row: any, index: number): number[];
+  getNumbers(row: any, index: number): number[];
 }
 
 export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
@@ -99,13 +99,14 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     this.colorRange = desc.colorRange || ['blue', 'red'];
     this.sort = desc.sort || SORT_METHOD.min;
 
-    const rendererList = [{type: 'multiValue', label: 'Heatmap'},
+    this.setRendererList([
+      {type: 'multiValue', label: 'Heatmap'},
       {type: 'boxplot', label: 'Boxplot'},
       {type: 'sparkline', label: 'Sparkline'},
       {type: 'threshold', label: 'Threshold'},
-      {type: 'verticalbar', label: 'VerticalBar'}];
-
-    this.setRendererList(rendererList);
+      {type: 'verticalbar', label: 'VerticalBar'},
+      {type: 'number', label: 'Bar'},
+      {type: 'circle', label: 'Circle'}]);
 
   }
 
@@ -142,10 +143,6 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     return colorScale;
   }
 
-  getNumber(row: any, index: number) {
-    return this.getValue(row, index);
-  }
-
   calculateCellDimension(width: number) {
     return (width / this.dataLength);
   }
@@ -179,6 +176,14 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     }
     //console.log(data)
     return new LazyBoxPlotData(data);
+  }
+
+  getNumbers(row: any, index: number) {
+    return this.getValue(row, index);
+  }
+
+  getNumber(row: any, index: number) {
+    return getBoxPlotNumber(this, row, index);
   }
 
   getLabel(row: any, index: number): string {
