@@ -1,15 +1,11 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import * as d3 from 'd3';
-import Column, {IColumnDesc, IStatistics} from './Column';
 import ValueColumn from './ValueColumn';
 import {IValueColumnDesc} from './ValueColumn';
 
-
 interface ISetColumnDesc extends IValueColumnDesc <number[]> {
   readonly dataLength?: number;
-
 }
 
 
@@ -20,8 +16,7 @@ export default class SetColumn extends ValueColumn<number[]> {
 
   constructor(id: string, desc: ISetColumnDesc) {
     super(id, desc);
-    this.dataLength = (desc.dataLength);
-
+    this.dataLength = desc.dataLength;
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
@@ -40,17 +35,11 @@ export default class SetColumn extends ValueColumn<number[]> {
     return (aCat - bCat);
   }
 
-
-  cellDimension() {
-    return (this.getWidth() / this.dataLength);
+  getDataLength() {
+    return this.dataLength;
   }
 
   getBinaryValue(row: any, index: number): boolean[] {
     return this.getValue(row, index).map((d) => d === SetColumn.IN_GROUP);
   }
-
-  getNumber(row: any, index: number) {
-    return this.getValue(row, index);
-  }
-
 }
