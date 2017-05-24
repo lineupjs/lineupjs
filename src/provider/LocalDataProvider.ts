@@ -10,6 +10,7 @@ import {merge} from '../utils';
 import * as d3 from 'd3';
 import {IStatsBuilder, IDataProviderOptions, IDataRow} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
+import {IOrderedGroup} from '../model/Group';
 
 /**
  * computes the simple statistics of an array using d3 histogram
@@ -161,12 +162,12 @@ export default class LocalDataProvider extends ACommonDataProvider {
     super.cleanUpRanking(ranking);
   }
 
-  sortImpl(ranking: Ranking): Promise<number[]> {
+  sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> {
     if (this._data.length === 0) {
       return Promise.resolve([]);
     }
     //wrap in a helper and store the initial index
-    let helper = this._data.map((r, i) => ({row: r, i}));
+    let helper = this._data.map((r, i) => ({row: r, i, group: null}));
 
     //do the optional filtering step
     if (this.options.filterGlobally) {
@@ -178,11 +179,42 @@ export default class LocalDataProvider extends ACommonDataProvider {
       helper = helper.filter((d) => ranking.filter(d.row, d.i));
     }
 
-    //sort by the ranking column
-    helper.sort((a, b) => ranking.comparator(a.row, b.row, a.i, b.i));
+    //create the groups for each row
+    helper.forEach((r) => r.group = ranking.grouper(r.row, r.i));
+    const groups = new Set<string>(helper.map((r) => r.group.name));
+    if (groups.size === 1) {
+      const group = helper[0].group;
+      //no need to split
+      //sort by the ranking column
+      helper.sort((a, b) => ranking.comparator(a.row, b.row, a.i, b.i));
 
-    //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-    return Promise.resolve(helper.map((r) => r.i));
+      //store the ranking index and create an argsort version, i.e. rank 0 -> index i
+      const order = helper.map((r) => r.i);
+      return Promise.resolve([Object.assign({order}, group)]);
+    } else {
+      //sort by group and within by order
+      helper.sort((a, b) => {
+        const ga = a.group;
+        const gb = b.group;
+        if (ga.name !== gb.name) {
+          return ga.localeCompare(gb);
+        }
+        return ranking.comparator(a.row, b.row, a.i, b.i);
+      });
+      //iterate over groups and create within orders
+      const groups: IOrderedGroup[] = [Object.assign({order: []}, helper[0].group)];
+      let group = groups[0];
+      helper.forEach((row) => {
+        const rowGroup = row.group;
+        if (rowGroup.name === group.name) {
+          group.order.push(row.i);
+        } else { // change in groups
+          group = Object.assign({order: [row.i]}, row.group);
+          groups.push(group);
+        }
+      });
+      return Promise.resolve(groups);
+    }
   }
 
 

@@ -4,7 +4,7 @@
 
 import Column, {IColumnParent, fixCSS, IFlatColumn, IColumnDesc} from './Column';
 import StringColumn from './StringColumn';
-import {IOrderedGroup, IGroup, defaultGroup} from './Group';
+import {IOrderedGroup, defaultGroup} from './Group';
 import {AEventDispatcher} from '../utils';
 
 export interface ISortCriteria {

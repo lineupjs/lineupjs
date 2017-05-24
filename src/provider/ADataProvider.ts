@@ -22,6 +22,7 @@ import {INumberColumn} from '../model/NumberColumn';
 import {merge, AEventDispatcher, delayedCall} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
+import {IOrderedGroup} from '../model/Group';
 
 /**
  * a data row for rendering
@@ -182,7 +183,7 @@ abstract class ADataProvider extends AEventDispatcher {
   }
 
   protected triggerReorder(ranking: Ranking) {
-    this.sort(ranking).then((order) => ranking.setOrder(order));
+    this.sort(ranking).then((order) => ranking.setGroups(order));
   }
 
   /**
@@ -536,7 +537,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param ranking
    * @return {Promise<any>}
    */
-  abstract sort(ranking: Ranking): Promise<number[]>;
+  abstract sort(ranking: Ranking): Promise<IOrderedGroup[]>;
 
   /**
    * returns a view in the order of the given indices

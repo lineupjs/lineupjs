@@ -5,6 +5,7 @@
 import {IColumnDesc, createRankDesc} from '../model';
 import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
+import {IOrderedGroup} from '../model/Group';
 
 
 function isComplexAccessor(column: any) {
@@ -43,7 +44,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   /**
    * the local ranking orders
    */
-  private readonly ranks = new Map<string, number[]>();
+  private readonly ranks = new Map<string, IOrderedGroup[]>();
 
   constructor(private columns: IColumnDesc[] = [], options: IDataProviderOptions = {}) {
     super(options);
@@ -81,7 +82,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     delete this.ranks[ranking.id];
   }
 
-  sort(ranking: Ranking): Promise<number[]> {
+  sort(ranking: Ranking): Promise<IOrderedGroup[]> {
     //use the server side to sort
     return this.sortImpl(ranking).then((argsort) => {
       //store the result
@@ -90,7 +91,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  protected abstract sortImpl(ranking: Ranking): Promise<number[]>;
+  protected abstract sortImpl(ranking: Ranking): Promise<IOrderedGroup[]>;
 
   /**
    * adds another column description to this data provider
