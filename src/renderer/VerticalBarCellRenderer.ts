@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import MultiValueColumn, {IMultiValueColumn} from '../model/MultiValueColumn';
+import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -23,7 +23,7 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
     return (domain[0] < threshold) ? (rowHeight / 2 - scale(cellData)) : scale(cellData);
   }
 
-  createSVG(col: IMultiValueColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: INumbersColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const colorScale = col.getRawColorScale();
     const cellDimension = col.getWidth() / col.getDataLength();
     const domain = col.getMapping().domain;
@@ -46,13 +46,13 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
             height: VerticalBarCellRenderer.verticalBarHeight(domain, threshold, v, scale, rowHeight),
             y: VerticalBarCellRenderer.verticalBarYpos(domain, threshold, v, scale, rowHeight),
           });
-          d.querySelector('title').textContent = MultiValueColumn.DEFAULT_FORMATTER(v);
+          d.querySelector('title').textContent = NumbersColumn.DEFAULT_FORMATTER(v);
         });
       }
     };
   }
 
-  createCanvas(col: IMultiValueColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const colorScale = col.getRawColorScale();
     const cellDimension = col.getWidth() / col.getDataLength();
     const domain = col.getMapping().domain;

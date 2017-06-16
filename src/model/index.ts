@@ -20,8 +20,8 @@ import CategoricalNumberColumn from './CategoricalNumberColumn';
 import NestedColumn from './NestedColumn';
 import DummyColumn from './DummyColumn';
 import LinkColumn from './LinkColumn';
-import SetColumn from './SetColumn';
-import MultiValueColumn from './MultiValueColumn';
+import BooleansColumn from './BooleansColumn';
+import NumbersColumn from './NumbersColumn';
 import BoxPlotColumn from './BoxPlotColumn';
 
 
@@ -80,11 +80,13 @@ export function createActionDesc(label = 'actions') {
 export function models() {
   return {
     number: NumberColumn,
+    numbers: NumbersColumn,
     string: StringColumn,
     link: LinkColumn,
     stack: StackColumn,
     rank: RankColumn,
     boolean: BooleanColumn,
+    booleans: BooleansColumn,
     categorical: CategoricalColumn,
     ordinal: CategoricalNumberColumn,
     actions: DummyColumn,
@@ -95,8 +97,6 @@ export function models() {
     mean: MeanColumn,
     script: ScriptColumn,
     nested: NestedColumn,
-    multiValue: MultiValueColumn,
-    set: SetColumn,
     boxplot: BoxPlotColumn
   };
 }

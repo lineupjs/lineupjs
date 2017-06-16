@@ -74,7 +74,7 @@ class LazyBoxPlotData implements IAdvancedBoxPlotData {
   }
 }
 
-export interface IMultiValueColumn extends INumberColumn {
+export interface INumbersColumn extends INumberColumn {
   getNumbers(row: any, index: number): number[];
   getRawNumbers(row: any, index: number): number[];
   getDataLength(): number;
@@ -84,7 +84,7 @@ export interface IMultiValueColumn extends INumberColumn {
   getMapping(): IMappingFunction;
 }
 
-export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
+export interface INumbersColumnDesc extends IValueColumnDesc<number[]> {
   /**
    * dump of mapping function
    */
@@ -105,7 +105,9 @@ export interface IMultiValueColumnDesc extends IValueColumnDesc<number[]> {
 }
 
 
-export default class MultiValueColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, IMultiValueColumn, IMapAbleColumn {
+export default class NumbersColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {
+  static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+
   private sort: SortMethod;
   private readonly threshold;
   private readonly dataLength;
@@ -123,7 +125,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
 
   static readonly DEFAULT_FORMATTER = format('.3n');
 
-  constructor(id: string, desc: IMultiValueColumnDesc) {
+  constructor(id: string, desc: INumbersColumnDesc) {
     super(id, desc);
      if (desc.map) {
       this.mapping = createMappingFunction(desc.map);
@@ -138,7 +140,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     this.sort = desc.sort || SORT_METHOD.min;
 
     this.setRendererList([
-      {type: 'multiValue', label: 'Heatmap'},
+      {type: 'numbers', label: 'Heatmap'},
       {type: 'boxplot', label: 'Boxplot'},
       {type: 'sparkline', label: 'Sparkline'},
       {type: 'threshold', label: 'Threshold'},
@@ -236,7 +238,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     if (v === null) {
       return '';
     }
-    return `[${v.map(MultiValueColumn.DEFAULT_FORMATTER).join(', ')}]`;
+    return `[${v.map(NumbersColumn.DEFAULT_FORMATTER).join(', ')}]`;
   }
 
   getSortMethod() {
@@ -278,7 +280,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumberColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED]);
   }
 
   getOriginalMapping() {
@@ -293,7 +295,7 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire([NumbersColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
   isFiltered() {

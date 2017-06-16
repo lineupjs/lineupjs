@@ -7,7 +7,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import {attr} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer  from './ICanvasCellRenderer';
-import {scale as d3scale, min as d3min, max as d3max} from 'd3';
+import {scale as d3scale} from 'd3';
 
 
 function computeLabel(v: IBoxPlotData) {

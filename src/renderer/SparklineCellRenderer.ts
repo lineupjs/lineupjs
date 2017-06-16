@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {IMultiValueColumn} from '../model/MultiValueColumn';
+import {INumbersColumn} from '../model/NumbersColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -7,7 +7,7 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {svg as d3svg, scale as d3scale} from 'd3';
 import Column from '../model/Column';
 
-function createScales(col: IMultiValueColumn & Column) {
+function createScales(col: INumbersColumn & Column) {
   const xScale = d3scale.linear().domain([0, col.getDataLength()-1]).range([0, col.getWidth()]);
   const yScale = d3scale.linear().domain([0, 1]);
   return {xScale, yScale};
@@ -15,7 +15,7 @@ function createScales(col: IMultiValueColumn & Column) {
 
 export default class SparklineCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: IMultiValueColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: INumbersColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const {xScale, yScale} = createScales(col);
     const line = d3svg.line<number>()
       .x((d, j) => xScale(j))
@@ -31,7 +31,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: IMultiValueColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const {xScale, yScale} = createScales(col);
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {

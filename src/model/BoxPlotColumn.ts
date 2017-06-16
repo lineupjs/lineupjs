@@ -210,7 +210,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     if (this.mapping.eq(mapping)) {
       return;
     }
-    this.fire([NumberColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
+    this.fire([BoxPlotColumn.EVENT_MAPPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.mapping.clone(), this.mapping = mapping);
   }
 
   isFiltered() {

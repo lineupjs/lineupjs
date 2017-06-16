@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import MultiValueColumn, {IMultiValueColumn} from '../model/MultiValueColumn';
+import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -8,9 +8,9 @@ import {attr, forEach} from '../utils';
 import Column from '../model/Column';
 
 
-export default class MultiValueCellRenderer implements ICellRendererFactory {
+export default class NumbersCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: IMultiValueColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: INumbersColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const cellDimension = col.getWidth() / col.getDataLength();
     const colorScale = col.getRawColorScale();
     const padding = context.option('rowBarPadding', 1);
@@ -29,13 +29,13 @@ export default class MultiValueCellRenderer implements ICellRendererFactory {
             fill: colorScale(v),
             height: rowHeight
           });
-          d.querySelector('title').textContent = MultiValueColumn.DEFAULT_FORMATTER(v);
+          d.querySelector('title').textContent = NumbersColumn.DEFAULT_FORMATTER(v);
         });
       }
     };
   }
 
-  createHTML(col: IMultiValueColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML(col: INumbersColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const cellDimension = col.getWidth() / col.getDataLength();
     const padding = context.option('rowBarPadding', 1);
     const colorScale = col.getRawColorScale();
@@ -52,13 +52,13 @@ export default class MultiValueCellRenderer implements ICellRendererFactory {
           const v = data[i];
           (<HTMLDivElement>d).style.backgroundColor = colorScale(v);
           (<HTMLDivElement>d).style.height = rowHeight + 'px';
-          (<HTMLDivElement>d).title = MultiValueColumn.DEFAULT_FORMATTER(v);
+          (<HTMLDivElement>d).title = NumbersColumn.DEFAULT_FORMATTER(v);
         });
       }
     };
   }
 
-  createCanvas(col: IMultiValueColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const cellDimension = col.getWidth() / col.getDataLength();
     const padding = context.option('rowBarPadding', 1);
     const colorScale = col.getRawColorScale();

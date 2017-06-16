@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import MultiValueColumn, {IMultiValueColumn} from '../model/MultiValueColumn';
+import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -10,7 +10,7 @@ import Column from '../model/Column';
 
 export default class ThresholdCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: IMultiValueColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: INumbersColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const cellDimension = col.getWidth() / col.getDataLength();
     const threshold = col.getThreshold();
     const colorValues = col.getRawColorScale().range();
@@ -30,13 +30,13 @@ export default class ThresholdCellRenderer implements ICellRendererFactory {
             height: (rowHeight / 2),
             y: (v < threshold) ? (rowHeight / 2) : 0
           });
-          d.querySelector('title').textContent = MultiValueColumn.DEFAULT_FORMATTER(v);
+          d.querySelector('title').textContent = NumbersColumn.DEFAULT_FORMATTER(v);
         });
       }
     };
   }
 
-  createCanvas(col: IMultiValueColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const cellDimension = col.getWidth() / col.getDataLength();
     const threshold = col.getThreshold();
     const colorValues = col.getRawColorScale().range();

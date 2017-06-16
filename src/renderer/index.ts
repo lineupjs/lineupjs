@@ -16,10 +16,10 @@ import AnnotationRenderer from './AnnotationRenderer';
 import ActionRenderer from './ActionRenderer';
 import StackCellRenderer from './StackCellRenderer';
 import CategoricalCellRenderer from './CategoricalCellRenderer';
-import MultiValueCellRenderer from './MultiValueCellRenderer';
+import NumbersCellRenderer from './NumbersCellRenderer';
 import SparklineCellRenderer from './SparklineCellRenderer';
 import VerticalBarCellRenderer from './VerticalBarCellRenderer';
-import SetCellRenderer from './SetCellRenderer';
+import UpSetCellRenderer from './UpSetCellRenderer';
 import CircleCellRenderer from './CircleCellRenderer';
 import BoxplotCellRenderer from './BoxplotCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
@@ -52,11 +52,12 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   min: combineCellRenderer,
   mean: combineCellRenderer,
   script: combineCellRenderer,
-  multiValue: new MultiValueCellRenderer(),
+  numbers: new NumbersCellRenderer(),
   threshold: new ThresholdCellRenderer(),
   sparkline: new SparklineCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
-  set: new SetCellRenderer(),
+  set: new UpSetCellRenderer(),
+  upset: new UpSetCellRenderer(),
   circle: new CircleCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
   loading: new LoadingCellRenderer()
