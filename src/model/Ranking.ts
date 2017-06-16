@@ -79,7 +79,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    * the current ordering as an sorted array of indices
    * @type {Array}
    */
-  private groups: IOrderedGroup[] = [];
+  private groups: IOrderedGroup[] = [Object.assign({order: []}, defaultGroup)];
 
   constructor(public id: string) {
     super();

@@ -240,11 +240,15 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     };
 
     const context = this.createContextImpl(visibleRange.from);
-    const orders = rankings.map((r) => orderSlicer(r.getOrder()));
+    //ranking1:group1, ranking1:group2, ranking2:group1, ...
+    //TODO slicing doesn't work for multiple groups
+    const orders = [].concat(...rankings.map((r) => r.getGroups().map((group) => orderSlicer(group.order))));
+    let flatOffset = 0;
     const data = this.data.fetch(orders);
 
     const padding = this.options.columnPadding;
     let totalWidth = 0;
+
     const rdata = rankings.map((r, i) => {
       const cols = r.children.filter((d) => !d.isHidden());
 
@@ -268,6 +272,9 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
       const frozen = colData.slice(0, this.options.freezeCols);
 
+      const currentOffset = flatOffset;
+      flatOffset += r.getGroups().length;
+
       return {
         id: r.id,
         ranking: r,
@@ -277,11 +284,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
         frozen,
         frozenWidth: Math.max(...(frozen.map((d) => d.shift + d.column.getWidth()))),
         columns: colData.slice(this.options.freezeCols),
-        groups: [{
-          group: defaultGroup,
-          order: orders[i],
-          data: data[i]
-        }]
+        groups: r.getGroups().map((group, i) => ({group, order: orders[currentOffset + i], data: data[currentOffset + i]}))
       };
     });
     //one to often
