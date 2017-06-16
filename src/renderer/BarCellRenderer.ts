@@ -107,7 +107,8 @@ export default class BarCellRenderer implements ICellRendererFactory {
           x: (d) => scale(d.x),
           y: (d) => yscale(d.y),
           width: (d) => scale(d.dx),
-          height: (d) => height - yscale(d.y)
+          height: (d) => height - yscale(d.y),
+          title: (d) => `${d.x} - ${d.x + d.dx} (${d.y})`
         });
       }
     };
