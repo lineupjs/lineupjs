@@ -14,7 +14,7 @@ import ABodyRenderer, {
   IBodyRenderContext,
   ERenderReason} from './ABodyRenderer';
 import ICellRendererFactory from '../renderer/ICellRendererFactory';
-import {IDOMCellRenderer} from '../renderer/IDOMCellRenderers';
+import {IDOMCellRenderer, IDOMGroupRenderer} from '../renderer/IDOMCellRenderers';
 
 export interface IDOMMapping {
   root: string;
@@ -25,6 +25,7 @@ export interface IDOMMapping {
   translate(n: SVGElement | HTMLElement, x: number, y: number);
   transform<T>(sel: d3.Selection<T>, callback: (d: T, i: number) => [number, number]);
   creator(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext): IDOMCellRenderer<SVGElement | HTMLElement>;
+  groupCreator(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext): IDOMGroupRenderer<SVGElement | HTMLElement>;
 
   bg: string;
   updateBG(sel: d3.Selection<any>, callback: (d: any, i: number, j: number) => [number, number]);
@@ -234,7 +235,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
   protected abstract updateClipPaths(data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number);
 
   protected createContextImpl(indexShift: number): IBodyRenderContext {
-    return this.createContext(indexShift, this.domMapping.creator);
+    return this.createContext(indexShift, this.domMapping.creator, this.domMapping.groupCreator);
   }
 
   protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {

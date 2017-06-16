@@ -36,7 +36,7 @@ export interface IBodyRenderer extends AEventDispatcher {
   fakeHover(dataIndex: number);
 }
 
-export interface IBodyRenderContext extends IRenderContext<any> {
+export interface IBodyRenderContext extends IRenderContext<any, any> {
   cellY(index: number): number;
   cellPrevY(index: number): number;
 }
@@ -61,6 +61,7 @@ export interface IRankingData {
 
 export interface IBodyRendererOptions {
   rowHeight?: number;
+  groupHeight?: number;
   rowPadding?: number;
   rowBarPadding?: number;
   rowBarTopPadding?: number;
@@ -86,12 +87,17 @@ export enum ERenderReason {
   SCROLLED
 }
 
+interface ICreatorFunc {
+  (col: Column, renderers: {[key: string]: ICellRendererFactory},context: IRenderContext<any, any>): any;
+}
+
 abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
   static readonly EVENT_RENDER_FINISHED = 'renderFinished';
 
   protected readonly options: IBodyRendererOptions = {
     rowHeight: 20,
+    groupHeight: 100,
     rowPadding: 1,
     rowBarPadding: 1,
     idPrefix: '',
@@ -154,7 +160,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     this.fire(ABodyRenderer.EVENT_RENDER_FINISHED, this);
   }
 
-  protected createContext(indexShift: number, creator: (col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IRenderContext<any>) => any): IBodyRenderContext {
+  protected createContext(indexShift: number, creator: ICreatorFunc, groupCreator: ICreatorFunc): IBodyRenderContext {
     const options = this.options;
 
     function findOption(key: string, defaultValue: any) {
@@ -180,9 +186,13 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       option: findOption,
 
       rowHeight: () => options.rowHeight - options.rowPadding,
+      groupHeight: () => options.groupHeight - options.rowPadding,
 
       renderer(col: Column) {
         return creator(col, options.renderers, this);
+      },
+      groupRenderer(col: Column) {
+        return groupCreator(col, options.renderers, this);
       }
     };
   }

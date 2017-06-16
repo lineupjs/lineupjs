@@ -6,7 +6,7 @@ import {event as d3event, mouse as d3mouse} from 'd3';
 import {merge, createTextHints, hideOverlays} from '../utils';
 import Column, {IStatistics} from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
-import {createCanvas} from '../renderer/index';
+import {createCanvas, createCanvasGroup} from '../renderer/index';
 import DataProvider, {IDataRow}  from '../provider/ADataProvider';
 import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext, ERenderReason} from './ABodyRenderer';
 import {ICanvasRenderContext} from '../renderer/RendererContexts';
@@ -272,7 +272,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   protected createContextImpl(indexShift: number): ICanvasRenderContext&IBodyRenderContext {
-    const base: any = this.createContext(indexShift, createCanvas);
+    const base: any = this.createContext(indexShift, createCanvas, createCanvasGroup);
     base.hovered = this.isHovered.bind(this);
     base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);
     base.bodyDOMElement = <HTMLElement>this.$node.node();

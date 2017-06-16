@@ -1,10 +1,11 @@
 import Column from '../model/Column';
 import ICellRendererFactory from './ICellRendererFactory';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {ISVGCellRenderer, IHTMLCellRenderer, ISVGGroupRenderer, IHTMLGroupRenderer} from './IDOMCellRenderers';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
+import {IGroup} from '../model/Group';
 
 /**
  * default renderer instance rendering the value as a text
@@ -62,6 +63,40 @@ export class DefaultCellRenderer implements ICellRendererFactory {
         shift = w;
       }
       clipText(ctx, col.getLabel(d.v, d.dataIndex), shift, 0, w, context.textHints);
+      ctx.textAlign = bak;
+    };
+  }
+
+  createGroupSVG(col: Column, context: IDOMRenderContext): ISVGGroupRenderer {
+    return {
+      template: `<text class="text_center"></text>`,
+      update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
+        n.textContent = `${group.name} (${rows.length})`;
+        attr(n, {
+          x: col.getWidth() / 2,
+          y: context.groupHeight(group) / 2
+        });
+      }
+    };
+  }
+
+  createGroupHTML(col: Column, context: IDOMRenderContext): IHTMLGroupRenderer {
+    return {
+      template: `<div class="text_center"></div>`,
+      update: (n: HTMLDivElement, group: IGroup, rows: IDataRow[]) => {
+        n.textContent = `${group.name} (${rows.length})`;
+        n.style.height = (context.groupHeight(group) / 2) + 'px';
+      }
+    };
+  }
+
+  createGroupCanvas(col: Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    const w = col.getWidth();
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
+      const bak = ctx.textAlign;
+      ctx.textAlign = 'center';
+      const shift = w / 2;
+      clipText(ctx, `${group.name} (${rows.length})`, shift, 0, w, context.textHints);
       ctx.textAlign = bak;
     };
   }

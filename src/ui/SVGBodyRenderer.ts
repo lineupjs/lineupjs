@@ -5,7 +5,7 @@
 import {Selection, max as d3max} from 'd3';
 import DataProvider from '../provider/ADataProvider';
 import Column from '../model/Column';
-import {createSVG} from '../renderer/index';
+import {createSVG, createSVGGroup} from '../renderer';
 import {ISlicer, IBodyRenderContext, IRankingData} from './ABodyRenderer';
 import ADOMBodyRenderer from './ADOMBodyRenderer';
 import {IDOMRenderContext} from '../renderer/RendererContexts';
@@ -38,6 +38,7 @@ const domMappings = {
       $slopes.attr('transform', (d, i) => `translate(${callback(d, i)},0)`);
     },
     creator: createSVG,
+    groupCreator: createSVGGroup,
     translate: (n: SVGElement, x: number, y: number) => n.setAttribute('transform', `translate(${x},${y})`),
     transform: (sel: Selection<any>, callback: (d: any, i: number) => [number, number]) => {
       sel.attr('transform', (d, i) => {

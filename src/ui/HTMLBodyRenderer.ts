@@ -4,7 +4,7 @@
 
 import {Selection} from 'd3';
 import DataProvider from '../provider/ADataProvider';
-import {createHTML} from '../renderer/index';
+import {createHTML, createHTMLGroup} from '../renderer';
 import {ISlicer, IRankingData, IBodyRenderContext} from './ABodyRenderer';
 import ADOMBodyRenderer, {} from './ADOMBodyRenderer';
 import {IDOMRenderContext} from '../renderer/RendererContexts';
@@ -35,6 +35,7 @@ const domHTMLMappings = {
   },
 
   creator: createHTML,
+  groupCreator: createHTMLGroup,
   translate: (n: HTMLElement, x: number, y: number) => n.style.transform = `translate(${x}px,${y}px)`,
   transform(sel: Selection<any>, callback: (d: any, i: number) => [number, number]) {
     sel.style('transform', (d, i) => {

@@ -14,7 +14,7 @@ export default class StackCellRenderer implements ICellRendererFactory {
   constructor(private readonly nestingPossible: boolean = true) {
   }
 
-  private createData(col: StackColumn, context: IRenderContext<any>) {
+  private createData(col: StackColumn, context: IRenderContext<any, any>) {
     const stacked = this.nestingPossible && context.option('stacked', true);
     const padding = context.option('columnPadding', 0);
     let offset = 0;

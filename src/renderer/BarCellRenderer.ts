@@ -2,10 +2,12 @@ import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {INumberColumn} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import {ISVGCellRenderer, IHTMLCellRenderer, ISVGGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {IGroup} from '../model/Group';
+import * as d3 from 'd3';
 
 
 /**
@@ -77,6 +79,28 @@ export default class BarCellRenderer implements ICellRendererFactory {
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');
         clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1, context.textHints);
+      }
+    };
+  }
+
+  createGroupSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
+    const gen = d3.layout.histogram().range([0,1]);
+    const scale = d3.scale.linear().domain([0, 1]).range([0, col.getWidth()]);
+    return {
+      template: `<g class='histogram'></g>`,
+      update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
+        const values = rows.map((d) => col.getValue(d.v, d.dataIndex));
+        const bins = gen(values);
+        const height = context.groupHeight(group);
+        const yscale = d3.scale.linear().domain([0, d3.max(bins, (d) => d.y)]).range([height, 0]);
+        const bars = d3.select(n).selectAll('rect').data(bins);
+        bars.enter().append('rect');
+        bars.attr({
+          x: (d) => scale(d.x),
+          y: (d) => yscale(d.y),
+          width: (d) => scale(bins[0].dx),
+          height: (d) => height - yscale(d.y)
+        });
       }
     };
   }
