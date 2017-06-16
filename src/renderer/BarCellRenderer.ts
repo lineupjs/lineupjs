@@ -96,17 +96,18 @@ export default class BarCellRenderer implements ICellRendererFactory {
 
   createGroupSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
     const factory = BarCellRenderer.createHistogram(col);
+    const padding = context.option('rowBarPadding', 1);
     return {
       template: `<g class='histogram'></g>`,
       update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
-        const height = context.groupHeight(group);
+        const height = context.groupHeight(group) - padding;
         const {bins, scale, yscale} = factory(rows, height);
         const bars = d3.select(n).selectAll('rect').data(bins);
         bars.enter().append('rect');
         bars.attr({
-          x: (d) => scale(d.x),
-          y: (d) => yscale(d.y),
-          width: (d) => scale(d.dx),
+          x: (d) => scale(d.x) + padding,
+          y: (d) => yscale(d.y) + padding,
+          width: (d) => scale(d.dx) - 2*padding,
           height: (d) => height - yscale(d.y),
           title: (d) => `${d.x} - ${d.x + d.dx} (${d.y})`
         });
@@ -114,14 +115,15 @@ export default class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupCannvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+  createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const factory = BarCellRenderer.createHistogram(col);
+    const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      const height = context.groupHeight(group);
+      const height = context.groupHeight(group) - padding;
       const {bins, scale, yscale} = factory(rows, height);
-      ctx.fillStyle = context.option('style.histogram', 'black');
+      ctx.fillStyle = context.option('style.histogram', 'lightgray');
       bins.forEach((d) => {
-        ctx.fillRect(scale(d.x), yscale(d.y), scale(d.dx), height - yscale(d.y));
+        ctx.fillRect(scale(d.x) + padding, yscale(d.y) + padding, scale(d.dx) - 2*padding, height - yscale(d.y));
       });
     };
   }

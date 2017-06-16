@@ -110,17 +110,18 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
 
   createGroupSVG(col: CategoricalColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
     const factory = CategoricalCellRenderer.createHistogram(col);
+    const padding = context.option('rowBarPadding', 1);
     return {
       template: `<g class='histogram'></g>`,
       update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
-        const height = context.groupHeight(group);
+        const height = context.groupHeight(group) - padding;
         const {bins, scale, yscale} = factory(rows, height);
         const bars = d3.select(n).selectAll('rect').data(bins);
         bars.enter().append('rect');
         bars.attr({
-          x: (d) => scale(d.name),
-          y: (d) => yscale(d.count),
-          width: (d) => scale.rangeBand(),
+          x: (d) => scale(d.name) + padding,
+          y: (d) => yscale(d.count) + padding,
+          width: (d) => scale.rangeBand() - 2 * padding,
           height: (d) => height - yscale(d.count),
           title: (d) => `${d.label} (${d.count})`
         }).style('fill', (d) => d.color);
@@ -128,14 +129,15 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupCannvas(col: CategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+  createGroupCanvas(col: CategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const factory = CategoricalCellRenderer.createHistogram(col);
+    const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      const height = context.groupHeight(group);
+      const height = context.groupHeight(group) - padding;
       const {bins, scale, yscale} = factory(rows, height);
-      ctx.fillStyle = context.option('style.histogram', 'black');
       bins.forEach((d) => {
-        ctx.fillRect(scale(d.name), yscale(d.count), scale.rangeBand(), height - yscale(d.count));
+        ctx.fillStyle = d.color;
+        ctx.fillRect(scale(d.name) + padding, yscale(d.count) + padding, scale.rangeBand() - 2 * padding, height - yscale(d.count));
       });
     };
   }

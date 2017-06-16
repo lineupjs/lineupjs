@@ -54,13 +54,13 @@ export default class MostCategoricalGroupRenderer implements ICellRendererFactor
     };
   }
 
-  createGroupCannvas(col: CategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+  createGroupCanvas(col: CategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group);
       const {count, name, label, color} = MostCategoricalGroupRenderer.choose(col, rows);
       ctx.fillStyle = color;
       ctx.fillRect(0, 0, col.getWidth(), height);
-      ctx.fillStyle = 'black';
+      ctx.fillStyle = context.option('style.text', 'black');
 
       const bak = ctx.textAlign;
       ctx.textAlign = 'center';

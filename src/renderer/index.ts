@@ -27,6 +27,7 @@ import ThresholdCellRenderer from './ThresholdCellRenderer';
 import MostCategoricalGroupRenderer from './MostCategoricalGroupRenderer';
 import Heatmap from './Heatmap';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import RankCellRenderer from ',r/RankCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -36,7 +37,7 @@ const combineCellRenderer = new BarCellRenderer(false, (d, i, col: CompositeNumb
  * default render factories
  */
 export const renderers: {[key: string]: ICellRendererFactory} = {
-  rank: new DefaultCellRenderer('rank', 'right'),
+  rank: new RankCellRenderer(),
   boolean: new DefaultCellRenderer('boolean', 'center'),
   number: new BarCellRenderer(),
   ordinal: new BarCellRenderer(true, (d, i, col: CategoricalNumberColumn) => col.getColor(d, i)),

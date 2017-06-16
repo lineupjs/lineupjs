@@ -96,7 +96,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       const bak = ctx.textAlign;
       ctx.textAlign = 'center';
       const shift = w / 2;
-      clipText(ctx, `${group.name} (${rows.length})`, shift, 0, w, context.textHints);
+      clipText(ctx, `${group.name} (${rows.length})`, shift, context.groupHeight(group) / 2, w, context.textHints);
       ctx.textAlign = bak;
     };
   }
