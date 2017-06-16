@@ -6,7 +6,7 @@ import Column from '../model/Column';
 import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
 
-import ICellRendererFactory from './ICellRendererFactory';
+import ICellRendererFactory, {IGroupRendererFactory} from './ICellRendererFactory';
 import BarCellRenderer from './BarCellRenderer';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
 import StringCellRenderer from './StringCellRenderer';
@@ -26,6 +26,8 @@ import LoadingCellRenderer from './LoadingCellRenderer';
 import ThresholdCellRenderer from './ThresholdCellRenderer';
 import Heatmap from './Heatmap';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import DefaultGroupRenderer from './DefaultGroupRenderer';
+import HistogramGroupRenderer from './HistogramGroupRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -78,4 +80,33 @@ export function createHTML(col: Column, renderers: {[key: string]: ICellRenderer
 export function createCanvas(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: ICanvasRenderContext) {
   const r = chooseRenderer(col, renderers);
   return (r.createCanvas ? r.createCanvas.bind(r) : defaultCellRenderer.createCanvas.bind(r))(col, context);
+}
+
+
+
+export const defaultGroupRenderer = new DefaultGroupRenderer();
+
+/**
+ * default render factories
+ */
+export const groupRenderers: {[key: string]: IGroupRendererFactory} = {
+  number: new HistogramGroupRenderer()
+};
+
+function chooseGroupRenderer(col: Column, renderers: {[key: string]: IGroupRendererFactory}): IGroupRendererFactory {
+  const r = renderers[col.getRendererType()];
+  return r || defaultGroupRenderer;
+}
+
+export function createSVGGroup(col: Column, renderers: {[key: string]: IGroupRendererFactory}, context: IDOMRenderContext) {
+  const r = chooseGroupRenderer(col, renderers);
+  return (r.createSVG ? r.createSVG.bind(r) : defaultGroupRenderer.createSVG.bind(r))(col, context);
+}
+export function createHTMLGroup(col: Column, renderers: {[key: string]: IGroupRendererFactory}, context: IDOMRenderContext) {
+  const r = chooseGroupRenderer(col, renderers);
+  return (r.createHTML ? r.createHTML.bind(r) : defaultGroupRenderer.createHTML.bind(r))(col, context);
+}
+export function createCanvasGroup(col: Column, renderers: {[key: string]: IGroupRendererFactory}, context: ICanvasRenderContext) {
+  const r = chooseGroupRenderer(col, renderers);
+  return (r.createCanvas ? r.createCanvas.bind(r) : defaultGroupRenderer.createCanvas.bind(r))(col, context);
 }

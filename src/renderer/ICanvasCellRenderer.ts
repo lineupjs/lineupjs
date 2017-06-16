@@ -1,4 +1,5 @@
 import {IDataRow} from '../provider/ADataProvider';
+import {IGroup} from '../model/Group';
 
 interface ICanvasCellRenderer {
   /**
@@ -11,3 +12,12 @@ interface ICanvasCellRenderer {
 }
 
 export default ICanvasCellRenderer;
+
+export interface ICanvasGroupRenderer {
+  /**
+   * renders the current item
+   * @param ctx
+   * @param rows
+   */
+  (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number): void;
+}
