@@ -69,6 +69,10 @@ class LazyBoxPlotData implements IAdvancedBoxPlotData {
   }
 }
 
+export function createLazyBoxPlotData(values: number[]): IAdvancedBoxPlotData {
+  return new LazyBoxPlotData(values);
+}
+
 export interface IMultiValueColumn {
   getNumber(row: any, index: number): number[];
 }
