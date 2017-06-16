@@ -11,6 +11,7 @@ import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import IRenderContext from '../renderer/IRenderContext';
 import ICellRendererFactory from '../renderer/ICellRendererFactory';
 import {renderers as defaultRenderers} from '../renderer/index';
+import {defaultGroup, IGroup} from '../model/Group';
 
 export interface ISlicer {
   (start: number, length: number, row2y: (i: number) => number): {from: number; to: number};
@@ -47,16 +48,21 @@ export interface IRankingColumnData {
   readonly shift: number;
 }
 
+export interface IGroupedRangkingData {
+  readonly group: IGroup;
+  readonly order: number[];
+  readonly data: Promise<IDataRow>[];
+}
+
 export interface IRankingData {
   readonly id: string;
   readonly ranking: Ranking;
-  readonly order: number[];
+  readonly groups: IGroupedRangkingData[];
   readonly shift: number;
   readonly width: number;
   readonly frozen: IRankingColumnData[];
   readonly frozenWidth: number;
   readonly columns: IRankingColumnData[];
-  readonly data: Promise<IDataRow>[];
 }
 
 export interface IBodyRendererOptions {
@@ -265,14 +271,17 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       return {
         id: r.id,
         ranking: r,
-        order: orders[i],
         shift: rankingShift,
         width,
         //compute frozen columns just for the first one
         frozen,
         frozenWidth: Math.max(...(frozen.map((d) => d.shift + d.column.getWidth()))),
         columns: colData.slice(this.options.freezeCols),
-        data: data[i]
+        groups: [{
+          group: defaultGroup,
+          order: orders[i],
+          data: data[i]
+        }]
       };
     });
     //one to often

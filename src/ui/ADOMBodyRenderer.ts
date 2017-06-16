@@ -12,7 +12,8 @@ import ABodyRenderer, {
   IRankingColumnData,
   IRankingData,
   IBodyRenderContext,
-  ERenderReason} from './ABodyRenderer';
+  ERenderReason, IGroupedRangkingData
+} from './ABodyRenderer';
 import ICellRendererFactory from '../renderer/ICellRendererFactory';
 import {IDOMCellRenderer, IDOMGroupRenderer} from '../renderer/IDOMCellRenderers';
 
@@ -70,7 +71,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
     const toWait: Promise<any>[] = [];
     {
-      const $rows = $rankings.select(g + '.rows').selectAll(g + '.row').data((d) => d.order, String);
+      const $rows = $rankings.select(g + '.rows').selectAll(g + '.row').data((d) => d.groups[0].order, String);
       const $rowsEnter = $rows.enter().append(g).attr('class', 'row');
       $rowsEnter.call(domMapping.transform, (d, i) => [0, context.cellPrevY(i)]);
 
@@ -111,7 +112,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
       $rows.select(domMapping.bg).attr('class', 'bg')
         .call(domMapping.updateBG, (d, i, j) => [data[j].width, context.rowHeight(i)]);
 
-      const updateColumns = (node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) => {
+      const updateColumns = (node: SVGGElement | HTMLElement, r: IGroupedRangkingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
         return r.data[i].then((row) => {
           matchColumns(node, columns);
@@ -125,13 +126,13 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
       //update columns
 
       $rows.select(g + '.cols').each(function (d, i, j) {
-        toWait.push(updateColumns(this, data[j], i, data[j].columns));
+        toWait.push(updateColumns(this, data[j].groups[0], i, data[j].columns));
       });
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
       $rows.select(g + '.frozen').each(function (d, i, j) {
         domMapping.setSize(this, maxFrozen, that.options.rowHeight);
-        toWait.push(updateColumns(this, data[j], i, data[j].frozen));
+        toWait.push(updateColumns(this, data[j].groups[0], i, data[j].frozen));
       });
       $rows.exit().remove();
     }
@@ -190,7 +191,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
   }
 
   renderSlopeGraphs($parent: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
-    const slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
+    const slopes = data.slice(1).map((d, i) => ({left: data[i].groups[0].order, left_i: i, right: d.groups[0].order, right_i: i + 1}));
 
     const $slopes = $parent.selectAll(this.domMapping.slopes + '.slopegraph').data(slopes);
     $slopes.enter().append(this.domMapping.slopes).attr('class', 'slopegraph');

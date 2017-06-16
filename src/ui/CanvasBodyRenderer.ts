@@ -219,7 +219,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     //asynchronous rendering!!!
     const all = Promise.all.bind(Promise);
     return all(data.map((ranking) => {
-      const toRender = ranking.data;
+      const toRender = ranking.groups[0].data;
       return all(toRender.map((p, i) => {
         // TODO render loading row
         return p.then((di: IDataRow) =>
@@ -230,7 +230,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   renderSlopeGraphs(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
-    const slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
+    const slopes = data.slice(1).map((d, i) => ({left: data[i].groups[0].order, left_i: i, right: d.groups[0].order, right_i: i + 1}));
     ctx.save();
     ctx.strokeStyle = this.style('slope');
     slopes.forEach((slope, i) => {
@@ -293,7 +293,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     const $canvas = this.$node.select('canvas');
 
     const firstLine = Math.max(context.cellY(0) - 20, 0); //where to start
-    const lastLine = Math.min(context.cellY(Math.max(...data.map((d) => d.order.length))) + 20, height);
+    const lastLine = Math.min(context.cellY(Math.max(...data.map((d) => d.groups[0].order.length))) + 20, height);
 
     this.$node.style({
       width: Math.max(0, width) + 'px',
