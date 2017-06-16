@@ -6,6 +6,7 @@ export interface IGroup {
   name: string;
   color: string;
 }
+
 export interface IOrderedGroup extends IGroup {
   order: number[];
 }
@@ -13,4 +14,4 @@ export interface IOrderedGroup extends IGroup {
 export const defaultGroup: IGroup = {
   name: 'Default',
   color: 'gray'
-}
+};
