@@ -5,7 +5,7 @@ import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer, ISVGGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
 import * as d3 from 'd3';
 
@@ -83,25 +83,45 @@ export default class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
+  private static createHistogram(col: INumberColumn & Column) {
     const gen = d3.layout.histogram().range([0,1]);
     const scale = d3.scale.linear().domain([0, 1]).range([0, col.getWidth()]);
+    return (rows: IDataRow[], height: number) => {
+      const values = rows.map((d) => col.getValue(d.v, d.dataIndex));
+      const bins = gen(values);
+      const yscale = d3.scale.linear().domain([0, d3.max(bins, (d) => d.y)]).range([height, 0]);
+      return {bins, scale, yscale};
+    };
+  }
+
+  createGroupSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
+    const factory = BarCellRenderer.createHistogram(col);
     return {
       template: `<g class='histogram'></g>`,
       update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
-        const values = rows.map((d) => col.getValue(d.v, d.dataIndex));
-        const bins = gen(values);
         const height = context.groupHeight(group);
-        const yscale = d3.scale.linear().domain([0, d3.max(bins, (d) => d.y)]).range([height, 0]);
+        const {bins, scale, yscale} = factory(rows, height);
         const bars = d3.select(n).selectAll('rect').data(bins);
         bars.enter().append('rect');
         bars.attr({
           x: (d) => scale(d.x),
           y: (d) => yscale(d.y),
-          width: (d) => scale(bins[0].dx),
+          width: (d) => scale(d.dx),
           height: (d) => height - yscale(d.y)
         });
       }
+    };
+  }
+
+  createGroupCannvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    const factory = BarCellRenderer.createHistogram(col);
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
+      const height = context.groupHeight(group);
+      const {bins, scale, yscale} = factory(rows, height);
+      ctx.fillStyle = context.option('style.histogram', 'black');
+      bins.forEach((d) => {
+        ctx.fillRect(scale(d.x), yscale(d.y), scale(d.dx), height - yscale(d.y));
+      });
     };
   }
 }
