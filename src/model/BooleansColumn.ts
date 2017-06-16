@@ -20,6 +20,8 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
     for (let i = 0; i < this.dataLength; ++i) {
       this.categories.push(String(`Category #` + (i+1)));
     }
+
+    this.setRendererType('upset');
   }
 
   get categoryLabels() {
