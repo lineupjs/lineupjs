@@ -27,7 +27,7 @@ import ThresholdCellRenderer from './ThresholdCellRenderer';
 import MostCategoricalGroupRenderer from './MostCategoricalGroupRenderer';
 import Heatmap from './Heatmap';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import RankCellRenderer from ',r/RankCellRenderer';
+import RankCellRenderer from './RankCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();

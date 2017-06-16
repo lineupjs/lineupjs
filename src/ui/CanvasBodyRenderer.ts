@@ -8,7 +8,10 @@ import Column, {IStatistics} from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {createCanvas, createCanvasGroup} from '../renderer/index';
 import DataProvider, {IDataRow}  from '../provider/ADataProvider';
-import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext, ERenderReason} from './ABodyRenderer';
+import ABodyRenderer, {
+  ISlicer, IRankingData, IBodyRenderContext, ERenderReason,
+  IGroupedRangkingData
+} from './ABodyRenderer';
 import {ICanvasRenderContext} from '../renderer/RendererContexts';
 
 export interface IStyleOptions {
@@ -20,6 +23,7 @@ export interface IStyleOptions {
   hover?: string;
   bg?: string;
   meanLine?: string;
+  histogram?: string;
 }
 
 export interface ICanvasBodyRendererOptions {
@@ -36,7 +40,8 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
       selection: '#ffa500',
       hover: '#e5e5e5',
       bg: '#f7f7f7',
-      meanLine: 'darkgray'
+      meanLine: 'darkgray',
+      histogram: 'lightgray'
     }
   };
 
@@ -212,20 +217,59 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     }));
   }
 
+  private renderGroup(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, group: IGroupedRangkingData, rows: IDataRow[]) {
+    let dx = ranking.shift;
+    const dy = group.y;
+    ctx.translate(dx, dy);
+
+    //clip the remaining children
+    ctx.save();
+    //shift if needs to shifted and then maximal that just the shifted columns are visible
+    const frozenLeft = this.currentFreezeLeft < ranking.shift ? 0 : Math.min(this.currentFreezeLeft - ranking.shift, ranking.width - ranking.frozenWidth);
+    if (ranking.frozenWidth > 0 && frozenLeft > 0) {
+      ctx.rect(dx + frozenLeft + ranking.frozenWidth, 0, ranking.width, group.height);
+      ctx.clip();
+    }
+    ranking.columns.forEach((child) => {
+      ctx.save();
+      ctx.translate(child.shift, 0);
+      child.groupRenderer(ctx, group.group, rows, dx + child.shift, dy);
+      ctx.restore();
+    });
+    ctx.restore();
+
+    ctx.translate(frozenLeft, 0);
+    dx += frozenLeft;
+    ranking.frozen.forEach((child) => {
+      ctx.save();
+      ctx.translate(child.shift, 0);
+      child.groupRenderer(ctx, group.group, rows, dx + child.shift, dy);
+      ctx.restore();
+    });
+    ctx.translate(-dx, -dy);
+  }
+
   renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height) {
 
     const renderRow = this.renderRow.bind(this, ctx, context);
+    const renderGroup = this.renderGroup.bind(this, ctx, context);
 
     //asynchronous rendering!!!
     const all = Promise.all.bind(Promise);
     return all(data.map((ranking) => {
-      const toRender = ranking.groups[0].data;
-      return all(toRender.map((p, i) => {
-        // TODO render loading row
-        return p.then((di: IDataRow) =>
-          renderRow(ranking, di, i)
-        );
-      })).then(() => this.renderMeanlines(ctx, ranking, height));
+      return all(ranking.groups.map((group) => {
+        if (group.aggregate) {
+          return all(group.data).then((rows) => renderGroup(ranking, group, rows));
+        } else {
+          const toRender = group.data;
+          return all(toRender.map((p, i) => {
+            // TODO render loading row
+            return p.then((di: IDataRow) =>
+              renderRow(ranking, di, i)
+            );
+          })).then(() => this.renderMeanlines(ctx, ranking, group.height));
+        }
+      }));
     }));
   }
 
@@ -293,7 +337,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     const $canvas = this.$node.select('canvas');
 
     const firstLine = Math.max(context.cellY(0) - 20, 0); //where to start
-    const lastLine = Math.min(context.cellY(Math.max(...data.map((d) => d.groups[0].order.length))) + 20, height);
+    const lastLine = Math.min(Math.max(...data.map((d) => d.height)) + 20, height);
 
     this.$node.style({
       width: Math.max(0, width) + 'px',

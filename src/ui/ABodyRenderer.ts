@@ -45,6 +45,7 @@ export interface IBodyRenderContext extends IRenderContext<any, any> {
 export interface IRankingColumnData {
   readonly column: Column;
   readonly renderer: any;
+  readonly groupRenderer: any;
   readonly shift: number;
 }
 
@@ -52,6 +53,12 @@ export interface IGroupedRangkingData {
   readonly group: IGroup;
   readonly order: number[];
   readonly data: Promise<IDataRow>[];
+  /**
+   * if true render the aggregated group else render details
+   */
+  readonly aggregate: boolean;
+  readonly y: number;
+  readonly height: number;
 }
 
 export interface IRankingData {
@@ -60,6 +67,7 @@ export interface IRankingData {
   readonly groups: IGroupedRangkingData[];
   readonly shift: number;
   readonly width: number;
+  readonly height: number;
   readonly frozen: IRankingColumnData[];
   readonly frozenWidth: number;
   readonly columns: IRankingColumnData[];
@@ -224,14 +232,19 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     return this.update(ERenderReason.SCROLLED);
   }
 
+  protected showAggregatedGroup(ranking: Ranking, group: IGroup) {
+    return true; //TODO where is this information stored?
+  }
+
   /**
    * render the body
    */
   update(reason = ERenderReason.DIRTY) {
     const rankings = this.data.getRankings();
-    const maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
-    const height = this.options.rowHeight * maxElems;
-    const visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
+    const height = d3.max(rankings, (d) => d3.sum(d.getGroups(), (g) => this.showAggregatedGroup(d, g) ? this.options.groupHeight : this.options.rowHeight * g.order.length)) || 0;
+    //TODO slicing doesn't work for multiple groups
+    const visibleRange = {from: 0, to: +Infinity}; // TODO this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
+
     const orderSlicer = (order: number[]) => {
       if (visibleRange.from === 0 && order.length <= visibleRange.to) {
         return order;
@@ -241,7 +254,6 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
     const context = this.createContextImpl(visibleRange.from);
     //ranking1:group1, ranking1:group2, ranking2:group1, ...
-    //TODO slicing doesn't work for multiple groups
     const orders = [].concat(...rankings.map((r) => r.getGroups().map((group) => orderSlicer(group.order))));
     let flatOffset = 0;
     const data = this.data.fetch(orders);
@@ -264,6 +276,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
         return {
           column: o,
           renderer: context.renderer(o),
+          groupRenderer: context.groupRenderer(o),
           shift: colShift
         };
       });
@@ -275,6 +288,22 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       const currentOffset = flatOffset;
       flatOffset += r.getGroups().length;
 
+      let acc = 0;
+      const groups = r.getGroups().map((group, i) => {
+        const aggregate = this.showAggregatedGroup(r, group);
+        const order = orders[currentOffset + i];
+        const y = acc, height = aggregate ? this.options.groupHeight : this.options.rowHeight * order.length;
+        acc += height;
+        return {
+          group,
+          order,
+          data: data[currentOffset + i],
+          aggregate,
+          y,
+          height
+        };
+      });
+
       return {
         id: r.id,
         ranking: r,
@@ -284,7 +313,8 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
         frozen,
         frozenWidth: Math.max(...(frozen.map((d) => d.shift + d.column.getWidth()))),
         columns: colData.slice(this.options.freezeCols),
-        groups: r.getGroups().map((group, i) => ({group, order: orders[currentOffset + i], data: data[currentOffset + i]}))
+        groups,
+        height: d3.sum(groups, (d) => d.height)
       };
     });
     //one to often
