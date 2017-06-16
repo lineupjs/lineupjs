@@ -7,7 +7,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
-import * as d3 from "d3";
+import * as d3 from 'd3';
 
 /**
  * renders categorical columns as a colored rect with label

@@ -24,6 +24,7 @@ import CircleCellRenderer from './CircleCellRenderer';
 import BoxplotCellRenderer from './BoxplotCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
 import ThresholdCellRenderer from './ThresholdCellRenderer';
+import MostCategoricalGroupRenderer from './MostCategoricalGroupRenderer';
 import Heatmap from './Heatmap';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 
@@ -59,7 +60,8 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   set: new SetCellRenderer(),
   circle: new CircleCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
-  loading: new LoadingCellRenderer()
+  loading: new LoadingCellRenderer(),
+  most: new MostCategoricalGroupRenderer()
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {

@@ -83,6 +83,14 @@
     stroke: black;
     fill: black;
   }
+
+  g.most-category {
+    text {
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+  }
+
   g.row {
     rect.bg {
       fill: transparent;
