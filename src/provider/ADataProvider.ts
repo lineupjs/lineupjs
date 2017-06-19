@@ -22,7 +22,8 @@ import {INumberColumn} from '../model/NumberColumn';
 import {merge, AEventDispatcher, delayedCall} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
-import {IOrderedGroup} from '../model/Group';
+import {IGroup, IOrderedGroup} from '../model/Group';
+import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 
 /**
  * a data row for rendering
@@ -97,6 +98,7 @@ abstract class ADataProvider extends AEventDispatcher {
   static readonly EVENT_ORDER_CHANGED = Ranking.EVENT_ORDER_CHANGED;
   static readonly EVENT_ADD_DESC = 'addDesc';
   static readonly EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
+  static readonly EVENT_GROUP_AGGREGATION_CHANGED = AggregateGroupColumn.EVENT_AGGREGATE;
 
   /**
    * all rankings
@@ -109,6 +111,9 @@ abstract class ADataProvider extends AEventDispatcher {
    * @type {Set}
    */
   private selection = new Set<number>();
+
+  //ranking.id@group.name
+  private aggregations = new Set<string>();
 
   private uid = 0;
 
@@ -139,7 +144,7 @@ abstract class ADataProvider extends AEventDispatcher {
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
       ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES,
       ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED, ADataProvider.EVENT_ADD_DESC,
-      ADataProvider.EVENT_JUMP_TO_NEAREST]);
+      ADataProvider.EVENT_JUMP_TO_NEAREST, ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED]);
   }
 
   /**
@@ -300,6 +305,9 @@ abstract class ADataProvider extends AEventDispatcher {
     } else if (desc.type === 'selection') {
       (<ISelectionColumnDesc>desc).accessor = (row: any, index: number) => this.isSelected(index);
       (<ISelectionColumnDesc>desc).setter = (row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
+    } else if (desc.type === 'aggregate') {
+      (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.isAggregated(ranking, group);
+      (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: boolean) => this.setAggregated(ranking, group, value);
     }
   }
 
@@ -530,6 +538,24 @@ abstract class ADataProvider extends AEventDispatcher {
     }
     this.insertRanking(ranking);
     return ranking;
+  }
+
+  isAggregated(ranking: Ranking, group: IGroup) {
+    const key = `${ranking.id}@${group.name}`;
+    return this.aggregations.has(key);
+  }
+
+  setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
+    const key = `${ranking.id}@${group.name}`;
+    if (value === this.aggregations.has(key)) {
+      return;
+    }
+    if (value) {
+      this.aggregations.add(key);
+    } else {
+      this.aggregations.delete(key);
+    }
+    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value);
   }
 
   /**

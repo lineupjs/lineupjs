@@ -80,7 +80,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     $groupsEnter.call(domMapping.transform, (d: IGroupedRangkingData, i) => [0, d.y]);
 
     const renderDetail = ($this: d3.Selection<IGroupedRangkingData>, ranking: IRankingData, group: IGroupedRangkingData) => {
-      $this.selectAll(g + '.aggregate > *').remove();
+      $this.selectAll(g + '.aggregate .cols > *, ' + g + '.aggregate .frozen > *').remove();
       const $rows = $this.select(g + '.rows').selectAll(g + '.row').data((d) => d.order, String);
       const $rowsEnter = $rows.enter().append(g).attr('class', 'row');
       $rowsEnter.call(domMapping.transform, (d, i) => [0, context.cellPrevY(i)]);
@@ -156,7 +156,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
         }
         h.then((stats: IStatistics) => {
           const xPos = d.shift + d.column.getWidth() * stats.mean;
-          domMapping.updateMeanLine($mean, isNaN(xPos) ? 0 : xPos, height);
+          domMapping.updateMeanLine($mean, isNaN(xPos) ? 0 : xPos, group.height);
         });
       });
       $meanlines.exit().remove();
