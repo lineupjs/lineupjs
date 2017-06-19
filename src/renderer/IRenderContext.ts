@@ -40,6 +40,8 @@ interface IRenderContext<T, T2> {
    * @param default_ default value
    */
   option<T>(key: string, defaultValue: T): T;
+
+  readonly totalNumberOfRows: number;
 }
 
 export default IRenderContext;

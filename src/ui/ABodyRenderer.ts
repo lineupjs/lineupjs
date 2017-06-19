@@ -174,7 +174,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     this.fire(ABodyRenderer.EVENT_RENDER_FINISHED, this);
   }
 
-  protected createContext(indexShift: number, creator: ICreatorFunc, groupCreator: ICreatorFunc): IBodyRenderContext {
+  protected createContext(indexShift: number, totalNumberOfRows: number, creator: ICreatorFunc, groupCreator: ICreatorFunc): IBodyRenderContext {
     const options = this.options;
 
     function findOption(key: string, defaultValue: any) {
@@ -196,6 +196,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       cellPrevY: (index: number) => (index + indexShift) * (this.options.rowHeight),
 
       idPrefix: options.idPrefix,
+      totalNumberOfRows,
 
       option: findOption,
 
@@ -252,7 +253,8 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
     };
 
-    const context = this.createContextImpl(visibleRange.from);
+    const totalNumberOfRows = d3.max(rankings, (d) => d3.sum(d.getGroups(), (g) => g.order.length));
+    const context = this.createContextImpl(visibleRange.from, totalNumberOfRows);
     //ranking1:group1, ranking1:group2, ranking2:group1, ...
     const orders = [].concat(...rankings.map((r) => r.getGroups().map((group) => orderSlicer(group.order))));
     let flatOffset = 0;
@@ -323,7 +325,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     return this.updateImpl(rdata, context, totalWidth, height, reason).then(this.fireFinished.bind(this));
   }
 
-  protected abstract createContextImpl(indexShift: number): IBodyRenderContext;
+  protected abstract createContextImpl(indexShift: number, totalNumberOfRows: number): IBodyRenderContext;
 
   protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason): Promise<void>;
 }

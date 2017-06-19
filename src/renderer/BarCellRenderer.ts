@@ -83,19 +83,22 @@ export default class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static createHistogram(col: INumberColumn & Column) {
-    const gen = d3.layout.histogram().range([0,1]).bins(5); //TODO based on the largest group or the total size of the rows?
+  private static createHistogram(col: INumberColumn & Column, totalNumberOfRows: number) {
+    // as by default used in d3 the Sturges' formula
+    const bins = Math.ceil(Math.log(totalNumberOfRows) / Math.LN2) + 1;
+    const gen = d3.layout.histogram().range([0,1]).bins(bins);
     const scale = d3.scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     return (rows: IDataRow[], height: number) => {
       const values = rows.map((d) => col.getValue(d.v, d.dataIndex));
       const bins = gen(values);
-      const yscale = d3.scale.linear().domain([0, d3.max(bins, (d) => d.y)]).range([height, 0]);
+      const maxBin = d3.max(bins, (d) => d.y); //TODO synchronize among groups
+      const yscale = d3.scale.linear().domain([0, maxBin]).range([height, 0]);
       return {bins, scale, yscale};
     };
   }
 
   createGroupSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
-    const factory = BarCellRenderer.createHistogram(col);
+    const factory = BarCellRenderer.createHistogram(col, context.totalNumberOfRows);
     const padding = context.option('rowBarPadding', 1);
     return {
       template: `<g class='histogram'></g>`,
@@ -116,7 +119,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
   }
 
   createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const factory = BarCellRenderer.createHistogram(col);
+    const factory = BarCellRenderer.createHistogram(col, context.totalNumberOfRows);
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group) - padding;

@@ -315,8 +315,8 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.restore();
   }
 
-  protected createContextImpl(indexShift: number): ICanvasRenderContext&IBodyRenderContext {
-    const base: any = this.createContext(indexShift, createCanvas, createCanvasGroup);
+  protected createContextImpl(indexShift: number, totalNumberOfRows: number): ICanvasRenderContext&IBodyRenderContext {
+    const base: any = this.createContext(indexShift, totalNumberOfRows, createCanvas, createCanvasGroup);
     base.hovered = this.isHovered.bind(this);
     base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);
     base.bodyDOMElement = <HTMLElement>this.$node.node();

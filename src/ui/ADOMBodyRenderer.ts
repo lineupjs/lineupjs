@@ -235,8 +235,8 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
   protected abstract updateClipPaths(data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number);
 
-  protected createContextImpl(indexShift: number): IBodyRenderContext {
-    return this.createContext(indexShift, this.domMapping.creator, this.domMapping.groupCreator);
+  protected createContextImpl(indexShift: number, totalNumberOfRows: number): IBodyRenderContext {
+    return this.createContext(indexShift, totalNumberOfRows, this.domMapping.creator, this.domMapping.groupCreator);
   }
 
   protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {
