@@ -8,7 +8,7 @@
   text {
     font-size: $lu_body_font_size;
 
-    &.selection {
+    &.selection, &.aggregate {
       cursor: pointer;
 
       &:hover {

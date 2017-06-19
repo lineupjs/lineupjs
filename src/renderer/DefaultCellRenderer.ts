@@ -22,15 +22,17 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   }
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const w = col.getVisibleWidth();
+    let alignmentShift = 2;
+    if (this.align === 'right') {
+      alignmentShift = w - 5;
+    } else if (this.align === 'center') {
+      alignmentShift = w * 0.5;
+    }
     return {
       template: `<text class="${this.textClass}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>`,
       update: (n: SVGTextElement, d: IDataRow) => {
-        let alignmentShift = 2;
-        if (this.align === 'right') {
-          alignmentShift = col.getWidth() - 5;
-        } else if (this.align === 'center') {
-          alignmentShift = col.getWidth() * 0.5;
-        }
+
         attr(n, {
           x: alignmentShift
         });
@@ -40,11 +42,12 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   }
 
   createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
+    const w = col.getVisibleWidth();
     return {
       template: `<div class="${this.textClass} ${this.align}"></div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
         attr(n, {}, {
-          width: `${col.getWidth()}px`
+          width: `${w}px`
         });
         n.textContent = col.getLabel(d.v, d.dataIndex);
       }
@@ -52,10 +55,10 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const w = col.getVisibleWidth();
     return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
       const bak = ctx.textAlign;
       ctx.textAlign = this.align;
-      const w = col.getWidth();
       let shift = 0;
       if (this.align === 'center') {
         shift = w / 2;
@@ -73,7 +76,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
         n.textContent = `${group.name} (${rows.length})`;
         attr(n, {
-          x: col.getWidth() / 2,
+          x: col.getVisibleWidth() / 2,
           y: context.groupHeight(group) / 2
         });
       }
@@ -91,7 +94,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   }
 
   createGroupCanvas(col: Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const w = col.getWidth();
+    const w = col.getVisibleWidth();
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const bak = ctx.textAlign;
       ctx.textAlign = 'center';

@@ -1,15 +1,15 @@
 import AggregateGroupColumn from '../model/AggregateGroupColumn';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import {ISVGCellRenderer, IHTMLCellRenderer, ISVGGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {clipText} from '../utils';
+import {clipText, attr} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 import {IGroup} from '../model/Group';
 import Column from '../model/Column';
 
 function render(ctx: CanvasRenderingContext2D, icon: string, col: AggregateGroupColumn, context: ICanvasRenderContext) {
-  const width = col.getCompressed() ? Column.COMPRESSED_WIDTH : col.getWidth();
+  const width = col.getVisibleWidth();
   const bak = ctx.font;
   const bakAlign = ctx.textAlign;
   ctx.textAlign = 'center';
@@ -21,6 +21,42 @@ function render(ctx: CanvasRenderingContext2D, icon: string, col: AggregateGroup
 }
 
 export default class AggregateGroupRenderer implements ICellRendererFactory {
+  createSVG(col: AggregateGroupColumn, context: IDOMRenderContext): ISVGCellRenderer {
+    return {
+      template: `<text class='aggregate fa text_center'>\uf142</text>`,
+      update(node: SVGTextElement, row: IDataRow, i: number, group: IGroup) {
+        attr(node, {
+          x: col.getVisibleWidth() / 2
+        }, {
+          display: i === 0 ? null : 'none'
+        });
+        node.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          col.setAggregated(group, true);
+        };
+      }
+    };
+  }
+
+  createGroupSVG(col: AggregateGroupColumn, context: IDOMRenderContext): ISVGGroupRenderer {
+    return {
+      template: `<text class='aggregate fa text_center'>\uf142</text>`,
+      update(node: SVGTextElement, group: IGroup, rows: IDataRow[]) {
+        const width = col.getCompressed() ? Column.COMPRESSED_WIDTH : col.getWidth();
+        attr(node, {
+          x: col.getVisibleWidth() / 2
+        });
+        node.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          col.setAggregated(group, false);
+        };
+      }
+    };
+  }
+
+
   createCanvas(col: AggregateGroupColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       if (i === 0) { //just for the first in each group
