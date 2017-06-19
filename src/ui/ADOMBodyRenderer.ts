@@ -21,7 +21,7 @@ export interface IDOMMapping {
   root: string;
   g: string;
 
-  setSize(n: HTMLElement, width: number, height: number);
+  setSize(n: SVGElement | HTMLElement, width: number, height: number);
 
   translate(n: SVGElement | HTMLElement, x: number, y: number);
   transform<T>(sel: d3.Selection<T>, callback: (d: T, i: number) => [number, number]);
@@ -62,24 +62,32 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
     const $rankingsEnter = $rankings.enter().append(g)
       .attr('class', 'ranking')
       .call(domMapping.transform, (d) => [d.shift, 0]);
-    $rankingsEnter.append(g).attr('class', 'rows');
-    $rankingsEnter.append(g).attr('class', 'meanlines').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`);
 
     //animated shift
     this.animated($rankings).call(domMapping.transform, (d, i) => [d.shift, 0]);
 
 
     const toWait: Promise<any>[] = [];
-    {
-      const $rows = $rankings.select(g + '.rows').selectAll(g + '.row').data((d) => d.groups[0].order, String);
+
+    const $groups = $rankings.selectAll(g + '.group').data((d) => d.groups, (d) => d.group.name);
+    const $groupsEnter = $groups.enter().append(g).attr('class', 'group');
+    $groupsEnter.append(g).attr('class', 'rows');
+    $groupsEnter.append(g).attr('class', 'meanlines').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`);
+    $groupsEnter.call(domMapping.transform, (d: IGroupedRangkingData, i) => [0, d.y]);
+
+    $groups.each(function(this: HTMLElement|SVGGElement, group, j, k) {
+      const $this = d3.select(this);
+      const ranking = data[k];
+
+      const $rows = $this.select(g + '.rows').selectAll(g + '.row').data((d) => d.order, String);
       const $rowsEnter = $rows.enter().append(g).attr('class', 'row');
       $rowsEnter.call(domMapping.transform, (d, i) => [0, context.cellPrevY(i)]);
 
       $rowsEnter.append(domMapping.bg).attr('class', 'bg');
       $rowsEnter
-        .on('mouseenter', (d) => this.mouseOver(d, true))
-        .on('mouseleave', (d) => this.mouseOver(d, false))
-        .on('click', (d) => this.select(d, (<MouseEvent>d3.event).ctrlKey));
+        .on('mouseenter', (d) => that.mouseOver(d, true))
+        .on('mouseleave', (d) => that.mouseOver(d, false))
+        .on('click', (d) => that.select(d, (<MouseEvent>d3.event).ctrlKey));
 
       //create templates
       const createTemplates = (node: HTMLElement|SVGGElement, columns: IRankingColumnData[]) => {
@@ -91,26 +99,26 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
         });
       };
 
-      $rowsEnter.append(g).attr('class', 'cols').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`).each(function (d, i, j) {
-        createTemplates(this, data[j].columns);
+      $rowsEnter.append(g).attr('class', 'cols').attr('clip-path', `url(#c${that.options.idPrefix}Freeze)`).each(function (d, i) {
+        createTemplates(this, ranking.columns);
       });
 
-      $rowsEnter.append(g).attr('class', 'frozen').call(this.domMapping.transform, () => [this.currentFreezeLeft, 0]).each(function (d, i, j) {
-        createTemplates(this, data[j].frozen);
+      $rowsEnter.append(g).attr('class', 'frozen').call(that.domMapping.transform, () => [that.currentFreezeLeft, 0]).each(function (d, i) {
+        createTemplates(this, ranking.frozen);
       });
 
       $rows
         .attr('class', (d, i) => 'row ' + (i % 2 === 0 ? 'even' : ''))
         .attr('data-data-index', (d) => d)
-        .classed('selected', (d) => this.data.isSelected(d));
+        .classed('selected', (d) => that.data.isSelected(d));
       //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
 
       //animated reordering
-      this.animated($rows).call(domMapping.transform, (d, i) => [0, context.cellY(i)]);
+      that.animated($rows).call(domMapping.transform, (d, i) => [0, context.cellY(i)]);
 
       //update background helper
       $rows.select(domMapping.bg).attr('class', 'bg')
-        .call(domMapping.updateBG, (d, i, j) => [data[j].width, context.rowHeight(i)]);
+        .call(domMapping.updateBG, (d, i) => [ranking.width, context.rowHeight(i)]);
 
       const updateColumns = (node: SVGGElement | HTMLElement, r: IGroupedRangkingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
@@ -125,22 +133,20 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
       };
       //update columns
 
-      $rows.select(g + '.cols').each(function (d, i, j) {
-        toWait.push(updateColumns(this, data[j].groups[0], i, data[j].columns));
+      $rows.select(g + '.cols').each(function (d, i) {
+        toWait.push(updateColumns(this, group, i, data[k].columns));
       });
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
-      $rows.select(g + '.frozen').each(function (d, i, j) {
+      $rows.select(g + '.frozen').each(function (this: HTMLElement|SVGGElement, d, i) {
         domMapping.setSize(this, maxFrozen, that.options.rowHeight);
-        toWait.push(updateColumns(this, data[j].groups[0], i, data[j].frozen));
+        toWait.push(updateColumns(this, group, i, data[k].frozen));
       });
       $rows.exit().remove();
-    }
 
-    {
-      const $meanlines = $rankings.select(g + '.meanlines').selectAll(domMapping.meanLine + '.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
+      const $meanlines = $rankings.select(g + '.meanlines').selectAll(domMapping.meanLine + '.meanline').data(ranking.columns.filter((c) => that.showMeanLine(c.column)));
       $meanlines.enter().append(domMapping.meanLine).attr('class', 'meanline');
-      $meanlines.each(function (d) {
+      $meanlines.each(function (this: HTMLElement|SVGGElement, d) {
         const h = that.histCache.get(d.column.id);
         const $mean = d3.select(this);
         if (!h) {
@@ -152,7 +158,11 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
         });
       });
       $meanlines.exit().remove();
-    }
+    });
+
+    //animated reordering
+    this.animated($groups).call(domMapping.transform, (d, i) => [0, d.y]);
+    $groups.exit().remove();
 
     $rankings.exit().remove();
 
