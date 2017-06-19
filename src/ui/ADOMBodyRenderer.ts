@@ -71,27 +71,29 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
     const $groups = $rankings.selectAll(g + '.group').data((d) => d.groups, (d) => d.group.name);
     const $groupsEnter = $groups.enter().append(g).attr('class', 'group');
+    const $aggregateEnter = $groupsEnter.append(g).attr('class', 'aggregate');
+    $aggregateEnter.append(g).attr('class', 'cols').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`);
+    $aggregateEnter.append(g).attr('class', 'frozen').call(this.domMapping.transform, () => [this.currentFreezeLeft, 0]);
+
     $groupsEnter.append(g).attr('class', 'rows');
     $groupsEnter.append(g).attr('class', 'meanlines').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`);
     $groupsEnter.call(domMapping.transform, (d: IGroupedRangkingData, i) => [0, d.y]);
 
-    $groups.each(function(this: HTMLElement|SVGGElement, group, j, k) {
-      const $this = d3.select(this);
-      const ranking = data[k];
-
+    const renderDetail = ($this: d3.Selection<IGroupedRangkingData>, ranking: IRankingData, group: IGroupedRangkingData) => {
+      $this.selectAll(g + '.aggregate > *').remove();
       const $rows = $this.select(g + '.rows').selectAll(g + '.row').data((d) => d.order, String);
       const $rowsEnter = $rows.enter().append(g).attr('class', 'row');
       $rowsEnter.call(domMapping.transform, (d, i) => [0, context.cellPrevY(i)]);
 
       $rowsEnter.append(domMapping.bg).attr('class', 'bg');
       $rowsEnter
-        .on('mouseenter', (d) => that.mouseOver(d, true))
-        .on('mouseleave', (d) => that.mouseOver(d, false))
-        .on('click', (d) => that.select(d, (<MouseEvent>d3.event).ctrlKey));
+        .on('mouseenter', (d) => this.mouseOver(d, true))
+        .on('mouseleave', (d) => this.mouseOver(d, false))
+        .on('click', (d) => this.select(d, (<MouseEvent>d3.event).ctrlKey));
 
       //create templates
       const createTemplates = (node: HTMLElement|SVGGElement, columns: IRankingColumnData[]) => {
-        matchColumns(node, columns);
+        matchColumns(node, columns, 'detail');
         //set transform
         columns.forEach((col, ci) => {
           const cnode: any = node.childNodes[ci];
@@ -99,22 +101,22 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
         });
       };
 
-      $rowsEnter.append(g).attr('class', 'cols').attr('clip-path', `url(#c${that.options.idPrefix}Freeze)`).each(function (d, i) {
+      $rowsEnter.append(g).attr('class', 'cols').attr('clip-path', `url(#c${this.options.idPrefix}Freeze)`).each(function () {
         createTemplates(this, ranking.columns);
       });
 
-      $rowsEnter.append(g).attr('class', 'frozen').call(that.domMapping.transform, () => [that.currentFreezeLeft, 0]).each(function (d, i) {
+      $rowsEnter.append(g).attr('class', 'frozen').call(this.domMapping.transform, () => [this.currentFreezeLeft, 0]).each(function () {
         createTemplates(this, ranking.frozen);
       });
 
       $rows
         .attr('class', (d, i) => 'row ' + (i % 2 === 0 ? 'even' : ''))
         .attr('data-data-index', (d) => d)
-        .classed('selected', (d) => that.data.isSelected(d));
+        .classed('selected', (d) => this.data.isSelected(d));
       //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
 
       //animated reordering
-      that.animated($rows).call(domMapping.transform, (d, i) => [0, context.cellY(i)]);
+      this.animated($rows).call(domMapping.transform, (d, i) => [0, context.cellY(i)]);
 
       //update background helper
       $rows.select(domMapping.bg).attr('class', 'bg')
@@ -123,7 +125,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
       const updateColumns = (node: SVGGElement | HTMLElement, r: IGroupedRangkingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
         return r.data[i].then((row) => {
-          matchColumns(node, columns);
+          matchColumns(node, columns, 'detail');
           columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
             domMapping.translate(cnode, col.shift, 0);
@@ -134,13 +136,13 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
       //update columns
 
       $rows.select(g + '.cols').each(function (d, i) {
-        toWait.push(updateColumns(this, group, i, data[k].columns));
+        toWait.push(updateColumns(this, group, i, ranking.columns));
       });
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
       $rows.select(g + '.frozen').each(function (this: HTMLElement|SVGGElement, d, i) {
         domMapping.setSize(this, maxFrozen, that.options.rowHeight);
-        toWait.push(updateColumns(this, group, i, data[k].frozen));
+        toWait.push(updateColumns(this, group, i, ranking.frozen));
       });
       $rows.exit().remove();
 
@@ -158,6 +160,39 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
         });
       });
       $meanlines.exit().remove();
+    };
+
+    const renderAggregate = ($this: d3.Selection<IGroupedRangkingData>, ranking: IRankingData, group: IGroupedRangkingData) => {
+      $this.selectAll(g + '.rows > *, '+ g + '.meanlines > *').remove();
+
+      const $base = $this.select(g + '.aggregate');
+
+      const updateColumns = (node: SVGGElement | HTMLElement, r: IGroupedRangkingData, columns: IRankingColumnData[]) => {
+        matchColumns(node, columns, 'group');
+        return Promise.all(r.data).then((rows) => {
+          columns.forEach((col, ci) => {
+            const cnode: any = node.childNodes[ci];
+            domMapping.translate(cnode, col.shift, 0);
+            col.groupRenderer.update(cnode, r.group, rows);
+          });
+        });
+      };
+      //update columns
+
+      $base.select(g + '.cols').each(function () {
+        toWait.push(updateColumns(this, group, ranking.columns));
+      });
+      //order for frozen in html + set the size in html to have a proper background instead of a clip-path
+      const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
+      $base.select(g + '.frozen').each(function (this: HTMLElement|SVGGElement) {
+        domMapping.setSize(this, maxFrozen, that.options.groupHeight);
+        toWait.push(updateColumns(this, group, ranking.frozen));
+      });
+    };
+
+    $groups.each(function(this: HTMLElement|SVGGElement, group: IGroupedRangkingData, j, k) {
+      const f = group.aggregate ? renderAggregate : renderDetail;
+      f(d3.select(this), data[k], group);
     });
 
     //animated reordering

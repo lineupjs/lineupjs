@@ -27,7 +27,8 @@ export default class StackCellRenderer implements ICellRendererFactory {
         column: d,
         shift,
         stacked,
-        renderer: context.renderer(d)
+        renderer: context.renderer(d),
+        groupRenderer: context.groupRenderer(d)
       };
     });
   }
@@ -38,7 +39,7 @@ export default class StackCellRenderer implements ICellRendererFactory {
       template: `<g class='stack component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</g>`,
       update: (n: SVGGElement, d: IDataRow, i: number, group: IGroup) => {
         let stackShift = 0;
-        matchColumns(n, cols);
+        matchColumns(n, cols, 'detail');
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
           cnode.setAttribute('transform', `translate(${col.shift - stackShift},0)`);
@@ -57,7 +58,7 @@ export default class StackCellRenderer implements ICellRendererFactory {
       template: `<div class='stack component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
         let stackShift = 0;
-        matchColumns(n, cols, 'html');
+        matchColumns(n, cols, 'detail', 'html');
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
           cnode.style.transform = `translate(${col.shift - stackShift}px,0)`;

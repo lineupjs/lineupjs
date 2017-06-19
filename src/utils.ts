@@ -4,7 +4,7 @@
 
 import {dispatch, select, event as d3event, Dispatch} from 'd3';
 import Column from './model/Column';
-import {IDOMCellRenderer} from './renderer/IDOMCellRenderers';
+import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
 
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
@@ -490,10 +490,10 @@ export function hideOverlays(parentElement: HTMLElement) {
  * @param columns
  * @param helperType
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer<any>}[], helperType = 'svg') {
+export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer<any>, groupRenderer: IDOMGroupRenderer<any>}[], render: 'group'|'detail', helperType = 'svg') {
   if (node.childElementCount === 0) {
     // initial call fast method
-    node.innerHTML = columns.map((c) => c.renderer.template).join('');
+    node.innerHTML = columns.map((c) => (render === 'detail' ? c.renderer : c.groupRenderer).template).join('');
     columns.forEach((col, i) => {
       const cnode = <Element>node.childNodes[i];
       // set attribute for finding again
@@ -529,7 +529,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
     let cnode = node.querySelector(`[data-column-id="${col.column.id}"]`);
     if (!cnode) {
       //create one
-      helper.innerHTML = col.renderer.template;
+      helper.innerHTML = (render === 'detail' ? col.renderer : col.groupRenderer).template;
       cnode = <Element>helper.childNodes[0];
       cnode.setAttribute('data-column-id', col.column.id);
       cnode.setAttribute('data-renderer', col.column.getRendererType());

@@ -234,7 +234,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   }
 
   protected showAggregatedGroup(ranking: Ranking, group: IGroup) {
-    return false; //TODO where is this information stored?
+    return true; //TODO where is this information stored?
   }
 
   /**
