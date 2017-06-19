@@ -84,7 +84,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
   }
 
   private static createHistogram(col: INumberColumn & Column) {
-    const gen = d3.layout.histogram().range([0,1]);
+    const gen = d3.layout.histogram().range([0,1]).bins(5); //TODO based on the largest group or the total size of the rows?
     const scale = d3.scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     return (rows: IDataRow[], height: number) => {
       const values = rows.map((d) => col.getValue(d.v, d.dataIndex));

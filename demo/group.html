@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp alpha</title>
+
+  <link href="../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
+
+  <link href="../build/style.css" rel="stylesheet">
+
+  <style>
+    .lu {
+      clear: both;
+      position: absolute;
+      top: 1px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0;
+      overflow: auto;
+    }
+
+  </style>
+</head>
+<body>
+<script src="../node_modules/d3/d3.js"></script>
+<script src="../build/LineUpJS.js"></script>
+
+<script>
+  (function () {
+    const arr = [];
+    const cats = ['c1', 'c2', 'c3'];
+    for (let i = 0; i < 100; ++i) {
+      arr.push({
+        a: Math.random() *10,
+        d: 'Row ' + i,
+        cat: cats[Math.floor(Math.random() * 3)],
+        cat2: cats[Math.floor(Math.random() * 3)],
+      })
+    }
+    const desc = [
+      {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
+      {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
+      {
+        label: 'Cat',
+        type: 'categorical',
+        column: 'cat',
+        categories: ['c1', 'c2', 'c3']
+      },
+      {
+        label: 'Cat Label',
+        type: 'categorical',
+        column: 'cat2',
+        categories: [{name: 'c1', label: 'C1', color: 'green'}, {name: 'c2', label: 'C2', color: 'blue'}, {
+          name: 'c3',
+          label: 'C3',
+          color: 'red'
+        }]
+      }
+    ];
+
+    const p = new LineUpJS.provider.LocalDataProvider(arr, desc);
+    p.deriveDefault();
+
+    const instance = LineUpJS.create(p, document.body, {
+      body: {
+        renderer: 'canvas'
+      },
+      renderingOptions: {
+        animation: false,
+        histograms: true,
+        meanLine: true
+      }
+    });
+    instance.update();
+  })();
+</script>
+
+</body>
+</html>
