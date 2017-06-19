@@ -56,7 +56,16 @@ abstract class ACommonDataProvider extends ADataProvider {
   }
 
   protected rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking) {
-    return (this.ranks[ranking.id].indexOf(index)) + 1;
+    const groups = this.ranks.get(ranking.id);
+    let acc = 0;
+    for(const group of groups) {
+      const rank = group.order.indexOf(index);
+      if (rank >= 0) {
+        return acc + rank + 1; // starting with 1
+      }
+      acc += group.order.length;
+    }
+    return -1;
   }
 
   cloneRanking(existing?: Ranking) {
@@ -65,7 +74,7 @@ abstract class ACommonDataProvider extends ADataProvider {
 
     if (existing) { //copy the ranking of the other one
       //copy the ranking
-      this.ranks[id] = this.ranks[existing.id];
+      this.ranks.set(id, this.ranks.get(existing.id));
       //TODO better cloning
       existing.children.forEach((child) => {
         this.push(clone, child.desc);
@@ -79,14 +88,14 @@ abstract class ACommonDataProvider extends ADataProvider {
 
   cleanUpRanking(ranking: Ranking) {
     //delete all stored information
-    delete this.ranks[ranking.id];
+    this.ranks.delete(ranking.id);
   }
 
   sort(ranking: Ranking): Promise<IOrderedGroup[]> {
     //use the server side to sort
     return this.sortImpl(ranking).then((argsort) => {
       //store the result
-      this.ranks[ranking.id] = argsort;
+      this.ranks.set(ranking.id, argsort);
       return argsort;
     });
   }
