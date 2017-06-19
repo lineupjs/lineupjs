@@ -28,6 +28,7 @@ import MostCategoricalGroupRenderer from './MostCategoricalGroupRenderer';
 import Heatmap from './Heatmap';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import RankCellRenderer from './RankCellRenderer';
+import AggregateGroupRenderer from './AggregateGroupRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -62,11 +63,17 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   circle: new CircleCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
   loading: new LoadingCellRenderer(),
-  most: new MostCategoricalGroupRenderer()
+  most: new MostCategoricalGroupRenderer(),
+  aggregate: new AggregateGroupRenderer()
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
   const r = renderers[col.getRendererType()];
+  return r || defaultCellRenderer;
+}
+
+function chooseGroupRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
+  const r = renderers[col.getGroupRenderer()];
   return r || defaultCellRenderer;
 }
 
@@ -86,16 +93,16 @@ export function createCanvas(col: Column, renderers: { [key: string]: ICellRende
 }
 
 export function createSVGGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext) {
-  const r = chooseRenderer(col, renderers);
+  const r = chooseGroupRenderer(col, renderers);
   return (r.createGroupSVG ? r.createGroupSVG.bind(r) : defaultCellRenderer.createGroupSVG.bind(r))(col, context);
 }
 
 export function createHTMLGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext) {
-  const r = chooseRenderer(col, renderers);
+  const r = chooseGroupRenderer(col, renderers);
   return (r.createGroupHTML ? r.createGroupHTML.bind(r) : defaultCellRenderer.createGroupHTML.bind(r))(col, context);
 }
 
 export function createCanvasGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext) {
-  const r = chooseRenderer(col, renderers);
+  const r = chooseGroupRenderer(col, renderers);
   return (r.createGroupCanvas ? r.createGroupCanvas.bind(r) : defaultCellRenderer.createGroupCanvas.bind(r))(col, context);
 }

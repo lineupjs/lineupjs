@@ -8,7 +8,7 @@ interface ICanvasCellRenderer {
    * @param d
    * @param i
    */
-  (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number): void;
+  (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number, group: IGroup): void;
 }
 
 export default ICanvasCellRenderer;

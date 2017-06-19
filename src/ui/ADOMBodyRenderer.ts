@@ -119,7 +119,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
           columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
             domMapping.translate(cnode, col.shift, 0);
-            col.renderer.update(cnode, row, i);
+            col.renderer.update(cnode, row, i, r.group);
           });
         });
       };

@@ -312,10 +312,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.missingValue = desc.missingValue;
     }
 
-    const rendererList = [{type: 'number', label: 'Bar'},
-      {type: 'circle', label: 'Circle'}];
-
-    this.setRendererList(rendererList);
+    this.setRendererList(
+      [{type: 'number', label: 'Bar'}, {type: 'circle', label: 'Circle'}],
+      [{type: 'number', label: 'Histogram'}, {type: 'boxplot', label: 'BoxPlot'}]);
   }
 
   dump(toDescRef: (desc: any) => any) {

@@ -39,7 +39,7 @@
       })
     }
     const desc = [
-      {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
+      {label: 'D', type: 'string', column: 'd'},
       {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
       {
         label: 'Cat',
@@ -61,6 +61,7 @@
 
     const p = new LineUpJS.provider.LocalDataProvider(arr, desc);
     p.deriveDefault();
+    p.getLastRanking().insert(p.create({ type: 'aggregate', label: 'A'}), 0);
 
     const instance = LineUpJS.create(p, document.body, {
       body: {

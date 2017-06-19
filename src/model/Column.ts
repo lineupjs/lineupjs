@@ -62,6 +62,11 @@ export interface IColumnDesc {
    * default renderer to use
    */
   readonly rendererType?: string;
+
+  /**
+   * default group renderer to use
+   */
+  readonly groupRenderer?: string;
 }
 
 export interface IStatistics {
@@ -90,11 +95,15 @@ export interface IRendererInfo {
   /*
    Name of the current Renderer
    */
-  rendererType: string;
+  renderer: string;
+
+  groupRenderer: string;
   /*
    * Possible RendererList
    */
-  rendererList: {type: string, label: string}[];
+  renderers: {type: string, label: string}[];
+
+  groupRenderers: {type: string, label: string}[];
 }
 
 
@@ -170,8 +179,10 @@ export default class Column extends AEventDispatcher {
     super();
     this.uid = fixCSS(id);
     this.rendererInfo = {
-      rendererType: this.desc.rendererType || this.desc.type,
-      rendererList: []
+      renderer: this.desc.rendererType || this.desc.type,
+      renderers: [],
+      groupRenderer: this.desc.groupRenderer || this.desc.type,
+      groupRenderers: []
     };
 
     this.cssClass = desc.cssClass || '';
@@ -431,7 +442,10 @@ export default class Column extends AEventDispatcher {
     };
     this.compressed = dump.compressed === true;
     if (dump.rendererType) {
-      this.rendererInfo.rendererType = dump.rendererType;
+      this.rendererInfo.renderer = dump.rendererType;
+    }
+    if (dump.groupRenderer) {
+      this.rendererInfo.groupRenderer = dump.groupRenderer;
     }
   }
 
@@ -499,23 +513,40 @@ export default class Column extends AEventDispatcher {
    * @return {string}
    */
   getRendererType(): string {
-    return this.rendererInfo.rendererType;
+    return this.rendererInfo.renderer;
+  }
+
+  getGroupRenderer(): string {
+    return this.rendererInfo.groupRenderer;
   }
 
   setRendererType(renderer: string) {
-    if (renderer === this.rendererInfo.rendererType) {
+    if (renderer === this.rendererInfo.renderer) {
       // nothing changes
       return;
     }
-    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.rendererType, this.rendererInfo.rendererType = renderer);
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.renderer, this.rendererInfo.renderer = renderer);
+  }
+
+  setGroupRenderer(renderer: string) {
+    if (renderer === this.rendererInfo.groupRenderer) {
+      // nothing changes
+      return;
+    }
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.groupRenderer, this.rendererInfo.groupRenderer = renderer);
   }
 
   getRendererList() {
-    return this.rendererInfo.rendererList;
+    return this.rendererInfo.renderers;
   }
 
-  protected setRendererList(rendererList: {type: string, label: string}[]) {
-    this.rendererInfo.rendererList = rendererList;
+  getGroupRenderers() {
+    return this.rendererInfo.groupRenderers;
+  }
+
+  protected setRendererList(renderers: {type: string, label: string}[], groupRenderers: {type: string, label: string}[] = []) {
+    this.rendererInfo.renderers = renderers;
+    this.rendererInfo.groupRenderers = groupRenderers;
   }
 
 

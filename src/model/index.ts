@@ -23,7 +23,7 @@ import LinkColumn from './LinkColumn';
 import SetColumn from './SetColumn';
 import MultiValueColumn from './MultiValueColumn';
 import BoxPlotColumn from './BoxPlotColumn';
-
+import AggregateGroupColumn from './AggregateGroupColumn';
 
 export {default as Column, IColumnDesc} from './Column';
 export {default as CompositeColumn} from './CompositeColumn';
@@ -38,6 +38,7 @@ export {createDesc as createSelectionDesc} from './SelectionColumn';
 export {createDesc as createScriptDesc} from './ScriptColumn';
 export {createDesc as createNestedDesc} from './NestedColumn';
 export {createDesc as createStackDesc} from './StackColumn';
+export {createDesc as createAggregateDesc} from './AggregateGroupColumn';
 
 /**
  * defines a new column type
@@ -97,6 +98,7 @@ export function models() {
     nested: NestedColumn,
     multiValue: MultiValueColumn,
     set: SetColumn,
-    boxplot: BoxPlotColumn
+    boxplot: BoxPlotColumn,
+    aggregate: AggregateGroupColumn
   };
 }

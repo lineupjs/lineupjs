@@ -15,7 +15,7 @@ export interface IDOMCellRenderer<T> {
    * @param d the data item
    * @param i the order relative index
    */
-  update(node: T, d: IDataRow, i: number): void;
+  update(node: T, d: IDataRow, i: number, group: IGroup): void;
 }
 
 export declare type ISVGCellRenderer = IDOMCellRenderer<SVGElement>;
