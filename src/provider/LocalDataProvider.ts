@@ -87,6 +87,11 @@ export interface ILocalDataProviderOptions {
    * default: false
    */
   jumpToSearchResult?: boolean;
+
+  /**
+   * the maximum number of nested sorting criteria
+   */
+  maxNestedSortingCriteria?: number;
 }
 /**
  * a data provider based on an local array
@@ -96,7 +101,9 @@ export default class LocalDataProvider extends ACommonDataProvider {
     /**
      * whether the filter should be applied to all rankings regardless where they are
      */
-    filterGlobally: false
+    filterGlobally: false,
+
+    maxNestedSortingCriteria: 1
   };
 
   private readonly reorderAll;
@@ -116,6 +123,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
         }
       });
     };
+  }
+
+  protected getMaxNestedSortingCriteria() {
+    return this.options.maxNestedSortingCriteria;
   }
 
   get data() {
