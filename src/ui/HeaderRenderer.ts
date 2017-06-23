@@ -502,8 +502,14 @@ export default class HeaderRenderer {
     });
     $headers.select('i.sort_indicator').attr('class', (d) => {
       const r = d.findMyRanker();
-      if (r && r.getSortCriteria().col === d) {
-        return 'sort_indicator fa fa-sort-' + (r.getSortCriteria().asc ? 'asc' : 'desc');
+      if (!r) {
+        return 'sort_indicator fa';
+      }
+      const criterias = r.getSortCriterias();
+      const index = criterias.findIndex((c) => c.col === d);
+      if (index === 0) { // just show the primary for now
+        // TODO handle if secondary, ... criteria
+        return 'sort_indicator fa fa-sort-' + (criterias[index].asc ? 'asc' : 'desc');
       }
       return 'sort_indicator fa';
     });

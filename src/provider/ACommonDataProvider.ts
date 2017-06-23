@@ -68,9 +68,17 @@ abstract class ACommonDataProvider extends ADataProvider {
     return -1;
   }
 
+  /**
+   * returns the maximal number of nested/hierarchical sorting criteria
+   * @return {number}
+   */
+  protected getMaxNestedSortingCriteria() {
+    return 1;
+  }
+
   cloneRanking(existing?: Ranking) {
     const id = this.nextRankingId();
-    const clone = new Ranking(id);
+    const clone = new Ranking(id, this.getMaxNestedSortingCriteria());
 
     if (existing) { //copy the ranking of the other one
       //copy the ranking
