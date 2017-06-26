@@ -10,7 +10,7 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {scale as d3scale} from 'd3';
 import {INumberColumn} from '../model/NumberColumn';
 import {IGroup} from '../model/Group';
-import {createLazyBoxPlotData} from '../model/MultiValueColumn';
+import {LazyBoxPlotData} from '../model/NumbersColumn';
 
 
 function computeLabel(v: IBoxPlotData) {
@@ -114,7 +114,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         </g>`,
       update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
         const height = context.groupHeight(group);
-        const box = createLazyBoxPlotData(rows.map((row) => col.getValue(row.v, row.dataIndex)));
+        const box = new LazyBoxPlotData(rows.map((row) => col.getValue(row.v, row.dataIndex)));
         attr(<SVGElement>n.querySelector('rect.cellbg'),{
           width: col.getWidth(),
           height
@@ -136,7 +136,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group);
-      const box = createLazyBoxPlotData(rows.map((row) => col.getValue(row.v, row.dataIndex)));
+      const box = new LazyBoxPlotData(rows.map((row) => col.getValue(row.v, row.dataIndex)));
       renderBoxPlot(ctx, box, height, topPadding);
     };
   }
