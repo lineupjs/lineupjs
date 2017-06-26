@@ -537,3 +537,11 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
     node.appendChild(cnode);
   });
 }
+
+
+export function equalArrays<T>(a: T[], b: T[]) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return a.every((ai, i) => ai === b[i]);
+}

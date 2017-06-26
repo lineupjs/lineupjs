@@ -30,6 +30,7 @@ import BooleanFilterDialog from '../dialogs/BooleanFilterDialog';
 import CategoricalFilterDialog from '../dialogs/CategoricalFilterDialog';
 import MappingsFilterDialog from '../dialogs/MappingsFilterDialog';
 import CategoricalMappingFilterDialog from '../dialogs/CategoricalMappingFilterDialog';
+import StratifyThresholdDialog from '../dialogs/StratifyThresholdDialog';
 
 import {IFilterDialog} from '../dialogs/AFilterDialog';
 import ScriptEditDialog from '../dialogs/ScriptEditDialog';
@@ -350,6 +351,12 @@ export default class HeaderRenderer {
 
     $node.filter((d) => d instanceof BooleanColumn || d instanceof CategoricalColumn).append('i').attr('class', 'fa fa-columns fa-rotate-270').attr('title', 'Stratify By').on('click', function (d) {
       d.groupByMe();
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+
+    $node.filter((d) => d instanceof NumberColumn).append('i').attr('class', 'fa fa-columns fa-rotate-270').attr('title', 'Stratify By Threshold').on('click', function (d: NumberColumn) {
+      const dialog = new StratifyThresholdDialog(d, d3.select(this.parentNode.parentNode), that.options.idPrefix);
+      dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
 

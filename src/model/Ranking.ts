@@ -222,16 +222,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return true; //already this group
     }
     if (this.groupColumn) { //disable dirty listening
-      this.groupColumn.on(Column.EVENT_DIRTY_VALUES + '.group', null);
-      this.groupColumn.on(Column.EVENT_SORTMETHOD_CHANGED + '.group', null);
+      this.groupColumn.on([Column.EVENT_DIRTY_VALUES + '.group', Column.EVENT_SORTMETHOD_CHANGED + '.group', Column.EVENT_GROUPING_CHANGED + '.group'], null);
     }
     const bak = this.groupColumn;
     this.groupColumn = col;
 
     if (this.groupColumn) { //enable dirty listening
-      this.groupColumn.on(Column.EVENT_DIRTY_VALUES + '.group', this.dirtyOrder);
-      // order is dirty if the sort method has changed
-      this.groupColumn.on(Column.EVENT_SORTMETHOD_CHANGED + '.group', this.dirtyOrder);
+      this.groupColumn.on([Column.EVENT_DIRTY_VALUES + '.group', Column.EVENT_SORTMETHOD_CHANGED + '.group', Column.EVENT_GROUPING_CHANGED + '.group'], this.dirtyOrder);
     }
     this.fire([Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,
       Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], bak, this.getGroupCriteria());
