@@ -7,7 +7,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import {attr} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {scale as d3scale, min as d3min, max as d3max} from 'd3';
+import {scale as d3scale} from 'd3';
 import {INumberColumn} from '../model/NumberColumn';
 import {IGroup} from '../model/Group';
 import {createLazyBoxPlotData} from '../model/MultiValueColumn';
@@ -26,8 +26,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const sortMethod = col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
-    const domain = col.getDomain();
-    const scale = d3scale.linear().domain(domain).range([0, col.getWidth()]);
+    const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
     return {
 
@@ -39,20 +38,20 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
             <path class='boxplotsortpath' style='display: none'></path>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
+        const data = col.getBoxPlotData(d.v, d.dataIndex);
         const rowHeight = context.rowHeight(i);
         const scaled = {
-          min: scale(rawBoxdata.min),
-          median: scale(rawBoxdata.median),
-          q1: scale(rawBoxdata.q1),
-          q3: scale(rawBoxdata.q3),
-          max: scale(rawBoxdata.max)
+          min: scale(data.min),
+          median: scale(data.median),
+          q1: scale(data.q1),
+          q3: scale(data.q3),
+          max: scale(data.max)
         };
         attr(<SVGElement>n.querySelector('rect.cellbg'),{
           width: col.getWidth(),
           height: rowHeight
         });
-        n.querySelector('title').textContent = computeLabel(rawBoxdata);
+        n.querySelector('title').textContent = computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex));
         attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
           x: scaled.q1,
           width: (scaled.q3 - scaled.q1),
@@ -73,22 +72,20 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const sortMethod = col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
-    const domain = col.getDomain();
-
-    const scale = d3scale.linear().domain([d3min(domain), d3max(domain)]).range([0, col.getWidth()]);
+    const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const rowHeight = context.rowHeight(i);
 
       // Rectangle
-      const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
+      const data = col.getBoxPlotData(d.v, d.dataIndex);
       const scaled = {
-        min: scale(rawBoxdata.min),
-        median: scale(rawBoxdata.median),
-        q1: scale(rawBoxdata.q1),
-        q3: scale(rawBoxdata.q3),
-        max: scale(rawBoxdata.max)
+        min: scale(data.min),
+        median: scale(data.median),
+        q1: scale(data.q1),
+        q3: scale(data.q3),
+        max: scale(data.max)
       };
       renderBoxPlot(ctx, scaled, rowHeight, topPadding);
 

@@ -15,7 +15,7 @@ import StackColumn, {createDesc as createStackDesc} from '../model/StackColumn';
 import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
-import MultiValueColumn from '../model/MultiValueColumn';
+import NumbersColumn from '../model/NumbersColumn';
 import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
 
 import SearchDialog from '../dialogs/SearchDialog';
@@ -100,7 +100,9 @@ export default class HeaderRenderer {
       'boolean': BooleanFilterDialog,
       'categorical': CategoricalFilterDialog,
       'number': MappingsFilterDialog,
-      'ordinal': CategoricalMappingFilterDialog
+      'ordinal': CategoricalMappingFilterDialog,
+      'boxplot': MappingsFilterDialog,
+      'numbers': MappingsFilterDialog
     },
     linkTemplates: [],
     searchAble: (col: Column) => col instanceof StringColumn,
@@ -351,8 +353,8 @@ export default class HeaderRenderer {
       (<MouseEvent>d3.event).stopPropagation();
     });
 
-    //MultiValue Sort
-    $node.filter((d) => d instanceof MultiValueColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+        //Numbers Sort
+    $node.filter((d) => d instanceof NumbersColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
       const dialog = new SortDialog(<IBoxPlotColumn><any>d, d3.select(this.parentNode.parentNode));
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
