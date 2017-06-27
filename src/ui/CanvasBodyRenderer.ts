@@ -152,10 +152,10 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return this.currentHover === dataIndex;
   }
 
-  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number, group: IGroup) {
+  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number, group: IGroupedRangkingData) {
     const dataIndex = di.dataIndex;
     let dx = ranking.shift;
-    const dy = context.cellY(i);
+    const dy = context.cellY(i) + group.y;
     ctx.translate(dx, dy);
     if (i % 2 === 0) {
       ctx.fillStyle = this.style('bg');
@@ -182,7 +182,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ranking.columns.forEach((child) => {
       ctx.save();
       ctx.translate(child.shift, 0);
-      child.renderer(ctx, di, i, dx + child.shift, dy, group);
+      child.renderer(ctx, di, i, dx + child.shift, dy, group.group);
       ctx.restore();
     });
     ctx.restore();
@@ -198,7 +198,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.translate(-dx, -dy);
   }
 
-  private renderMeanlines(ctx: CanvasRenderingContext2D, ranking: IRankingData, height: number) {
+  private renderMeanlines(ctx: CanvasRenderingContext2D, ranking: IRankingData, y: number, height: number) {
     const cols = ranking.columns.filter((c) => this.showMeanLine(c.column));
     return Promise.all(cols.map((d) => {
       const h = this.histCache.get(d.column.id);
@@ -212,8 +212,8 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
         }
         ctx.strokeStyle = this.style('meanLine');
         ctx.beginPath();
-        ctx.moveTo(xPos, 0);
-        ctx.lineTo(xPos, height);
+        ctx.moveTo(xPos, y);
+        ctx.lineTo(xPos, y + height);
         ctx.stroke();
       });
     }));
@@ -278,7 +278,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
             return p.then((di: IDataRow) =>
               renderRow(ranking, di, i, group)
             );
-          })).then(() => this.renderMeanlines(ctx, ranking, group.height));
+          })).then(() => this.renderMeanlines(ctx, ranking, group.y, group.height));
         }
       }));
     }));
