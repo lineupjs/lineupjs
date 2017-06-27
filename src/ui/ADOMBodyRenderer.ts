@@ -167,7 +167,6 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
       const $base = $this.select(g + '.aggregate');
 
-      const histMap = this.resolveHistMap(ranking);
 
       const updateColumns = (node: SVGGElement | HTMLElement, r: IGroupedRangkingData, columns: IRankingColumnData[]) => {
         matchColumns(node, columns, 'group');
