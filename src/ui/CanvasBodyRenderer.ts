@@ -4,7 +4,7 @@
 
 import {event as d3event, mouse as d3mouse} from 'd3';
 import {merge, createTextHints, hideOverlays} from '../utils';
-import Column, {IStatistics} from '../model/Column';
+import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {createCanvas, createCanvasGroup} from '../renderer/index';
 import DataProvider, {IDataRow}  from '../provider/ADataProvider';
@@ -219,7 +219,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     }));
   }
 
-  private renderGroup(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, group: IGroupedRangkingData, rows: IDataRow[]) {
+  private renderGroup(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, group: IGroupedRangkingData, rows: IDataRow[], hists: Map<string,IStatistics|ICategoricalStatistics>) {
     let dx = ranking.shift;
     const dy = group.y;
     ctx.translate(dx, dy);
@@ -235,7 +235,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ranking.columns.forEach((child) => {
       ctx.save();
       ctx.translate(child.shift, 0);
-      child.groupRenderer(ctx, group.group, rows, dx + child.shift, dy);
+      child.groupRenderer(ctx, group.group, rows, dx + child.shift, dy, hists.get(child.column.id));
       ctx.restore();
     });
     ctx.restore();
@@ -245,7 +245,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ranking.frozen.forEach((child) => {
       ctx.save();
       ctx.translate(child.shift, 0);
-      child.groupRenderer(ctx, group.group, rows, dx + child.shift, dy);
+      child.groupRenderer(ctx, group.group, rows, dx + child.shift, dy, hists.get(child.column.id));
       ctx.restore();
     });
     ctx.translate(-dx, -dy);
@@ -256,12 +256,21 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     const renderRow = this.renderRow.bind(this, ctx, context);
     const renderGroup = this.renderGroup.bind(this, ctx, context);
 
+
     //asynchronous rendering!!!
     const all = Promise.all.bind(Promise);
     return all(data.map((ranking) => {
+      let histMap: Promise<Map<string, IStatistics|ICategoricalStatistics>> = null;
       return all(ranking.groups.map((group) => {
         if (group.aggregate) {
-          return all(group.data).then((rows) => renderGroup(ranking, group, rows));
+          if (histMap === null) {
+            histMap = this.resolveHistMap(ranking);
+          }
+          return Promise.all([all(group.data), histMap]).then((data) => {
+            const rows = data[0];
+            const hists = data[1];
+            return renderGroup(ranking, group, rows, hists);
+          });
         } else {
           const toRender = group.data;
           return all(toRender.map((p, i) => {

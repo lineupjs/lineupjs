@@ -1,5 +1,6 @@
 import {IDataRow} from '../provider/ADataProvider';
 import {IGroup} from '../model/Group';
+import {ICategoricalStatistics, IStatistics} from '../model/Column';
 
 interface ICanvasCellRenderer {
   /**
@@ -19,5 +20,5 @@ export interface ICanvasGroupRenderer {
    * @param ctx
    * @param rows
    */
-  (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number): void;
+  (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number, hist: IStatistics|ICategoricalStatistics): void;
 }

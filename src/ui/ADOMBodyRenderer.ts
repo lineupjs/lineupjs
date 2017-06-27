@@ -167,14 +167,18 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
 
       const $base = $this.select(g + '.aggregate');
 
+      const histMap = this.resolveHistMap(ranking);
+
       const updateColumns = (node: SVGGElement | HTMLElement, r: IGroupedRangkingData, columns: IRankingColumnData[]) => {
         matchColumns(node, columns, 'group');
         return Promise.all(r.data).then((rows) => {
-          columns.forEach((col, ci) => {
-            const cnode: any = node.childNodes[ci];
-            domMapping.translate(cnode, col.shift, 0);
-            col.groupRenderer.update(cnode, r.group, rows);
-          });
+          return Promise.all(columns.map((col, ci) => {
+            return Promise.resolve(this.histCache.get(col.column.id)).then((hist) => {
+              const cnode: any = node.childNodes[ci];
+              domMapping.translate(cnode, col.shift, 0);
+              col.groupRenderer.update(cnode, r.group, rows, hist);
+            });
+          }));
         });
       };
       //update columns

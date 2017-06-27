@@ -1,5 +1,6 @@
 import {IDataRow} from '../provider/ADataProvider';
 import {IGroup} from '../model/Group';
+import {ICategoricalStatistics, IStatistics} from '../model/Column';
 
 /**
  * a cell renderer for rendering a cell of specific column
@@ -35,7 +36,7 @@ export interface IDOMGroupRenderer<T> {
    * @param node the node to update
    * @param rows the data items
    */
-  update(node: T, group: IGroup, rows: IDataRow[]): void;
+  update(node: T, group: IGroup, rows: IDataRow[], hist: IStatistics|ICategoricalStatistics): void;
 }
 
 export declare type ISVGGroupRenderer = IDOMGroupRenderer<SVGElement>;

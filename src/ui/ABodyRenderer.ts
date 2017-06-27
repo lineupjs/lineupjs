@@ -237,6 +237,18 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     return this.data.isAggregated(ranking, group);
   }
 
+  protected resolveHistMap(ranking: IRankingData): Promise<Map<string, IStatistics|ICategoricalStatistics>> {
+    return Promise.all(ranking.columns.map((col) => this.histCache.get(col.column.id))).then((hists) => {
+      const m = new Map<string, IStatistics|ICategoricalStatistics>();
+      hists.forEach((hist, i) => {
+        if (hist) {
+          m.set(ranking.columns[i].column.id, hist);
+        }
+      });
+      return m;
+    });
+  }
+
   /**
    * render the body
    */

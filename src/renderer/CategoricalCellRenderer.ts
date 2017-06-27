@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import CategoricalColumn from '../model/CategoricalColumn';
-import Column from '../model/Column';
+import Column, {ICategoricalStatistics} from '../model/Column';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer, ISVGGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -94,7 +94,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
 
   private static createHistogram(col: CategoricalColumn & Column) {
     const scale = d3.scale.ordinal().domain(col.categories).rangeBands([0, col.getWidth()]);
-    return (rows: IDataRow[], height: number) => {
+    return (rows: IDataRow[], height: number, maxBin?: number) => {
       const hist = new Map<string, number>();
       col.categories.forEach((cat) => hist.set(cat, 0));
       const labels = col.categoryLabels;
@@ -103,7 +103,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         col.getCategories(row.v, row.dataIndex).forEach((cat) =>
           hist.set(cat, hist.get(cat) + 1)));
       const bins = col.categories.map((name, i) => ({name, label: labels[i], color: colors[i], count: hist.get(name)}));
-      const yscale = d3.scale.linear().domain([0, d3.max(bins, (d) => d.count)]).range([height, 0]);
+      const yscale = d3.scale.linear().domain([0, maxBin !== undefined ? maxBin : d3.max(bins, (d) => d.count)]).range([height, 0]);
       return {bins, scale, yscale};
     };
   }
@@ -113,9 +113,9 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     const padding = context.option('rowBarPadding', 1);
     return {
       template: `<g class='histogram'></g>`,
-      update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
+      update: (n: SVGGElement, group: IGroup, rows: IDataRow[], hist?: ICategoricalStatistics) => {
         const height = context.groupHeight(group) - padding;
-        const {bins, scale, yscale} = factory(rows, height);
+        const {bins, scale, yscale} = factory(rows, height, hist ? hist.maxBin : undefined);
         const bars = d3.select(n).selectAll('rect').data(bins);
         bars.enter().append('rect');
         bars.attr({
@@ -132,9 +132,9 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   createGroupCanvas(col: CategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const factory = CategoricalCellRenderer.createHistogram(col);
     const padding = context.option('rowBarPadding', 1);
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number, hist?: ICategoricalStatistics) => {
       const height = context.groupHeight(group) - padding;
-      const {bins, scale, yscale} = factory(rows, height);
+      const {bins, scale, yscale} = factory(rows, height, hist ? hist.maxBin : undefined);
       bins.forEach((d) => {
         ctx.fillStyle = d.color;
         ctx.fillRect(scale(d.name) + padding, yscale(d.count) + padding, scale.rangeBand() - 2 * padding, height - yscale(d.count));

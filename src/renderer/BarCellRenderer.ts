@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import Column from '../model/Column';
+import Column, {IStatistics} from '../model/Column';
 import {INumberColumn} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer, ISVGGroupRenderer} from './IDOMCellRenderers';
@@ -88,11 +88,14 @@ export default class BarCellRenderer implements ICellRendererFactory {
     const bins = Math.ceil(Math.log(totalNumberOfRows) / Math.LN2) + 1;
     const gen = d3.layout.histogram().range([0,1]).bins(bins);
     const scale = d3.scale.linear().domain([0, 1]).range([0, col.getWidth()]);
-    return (rows: IDataRow[], height: number) => {
+    return (rows: IDataRow[], height: number, hist?: IStatistics) => {
       const values = rows.map((d) => col.getValue(d.v, d.dataIndex));
+      if (hist) {
+        gen.bins(hist.hist.length); //use shared one
+      }
       const bins = gen(values);
-      const maxBin = d3.max(bins, (d) => d.y); //TODO synchronize among groups
-      const yscale = d3.scale.linear().domain([0, maxBin]).range([height, 0]);
+      const actMaxBin = hist === undefined ? d3.max(bins, (d) => d.y) : hist.maxBin;
+      const yscale = d3.scale.linear().domain([0, actMaxBin]).range([height, 0]);
       return {bins, scale, yscale};
     };
   }
@@ -102,9 +105,9 @@ export default class BarCellRenderer implements ICellRendererFactory {
     const padding = context.option('rowBarPadding', 1);
     return {
       template: `<g class='histogram'></g>`,
-      update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
+      update: (n: SVGGElement, group: IGroup, rows: IDataRow[], hist?: IStatistics) => {
         const height = context.groupHeight(group) - padding;
-        const {bins, scale, yscale} = factory(rows, height);
+        const {bins, scale, yscale} = factory(rows, height, hist);
         const bars = d3.select(n).selectAll('rect').data(bins);
         bars.enter().append('rect');
         bars.attr({
@@ -121,9 +124,9 @@ export default class BarCellRenderer implements ICellRendererFactory {
   createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const factory = BarCellRenderer.createHistogram(col, context.totalNumberOfRows);
     const padding = context.option('rowBarPadding', 1);
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number, hist?: IStatistics) => {
       const height = context.groupHeight(group) - padding;
-      const {bins, scale, yscale} = factory(rows, height);
+      const {bins, scale, yscale} = factory(rows, height, hist);
       ctx.fillStyle = context.option('style.histogram', 'lightgray');
       bins.forEach((d) => {
         ctx.fillRect(scale(d.x) + padding, yscale(d.y) + padding, scale(d.dx) - 2*padding, height - yscale(d.y));
