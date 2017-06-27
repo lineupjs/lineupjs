@@ -219,7 +219,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     }));
   }
 
-  private renderGroup(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, group: IGroupedRangkingData, rows: IDataRow[], hists: Map<string,IStatistics|ICategoricalStatistics>) {
+  private renderGroup(ctx: CanvasRenderingContext2D, ranking: IRankingData, group: IGroupedRangkingData, rows: IDataRow[], hists: Map<string,IStatistics|ICategoricalStatistics>) {
     let dx = ranking.shift;
     const dy = group.y;
     ctx.translate(dx, dy);
@@ -254,7 +254,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height) {
 
     const renderRow = this.renderRow.bind(this, ctx, context);
-    const renderGroup = this.renderGroup.bind(this, ctx, context);
+    const renderGroup = this.renderGroup.bind(this, ctx);
 
 
     //asynchronous rendering!!!
