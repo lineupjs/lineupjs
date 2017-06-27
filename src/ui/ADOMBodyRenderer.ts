@@ -32,7 +32,7 @@ export interface IDOMMapping {
   updateBG(sel: d3.Selection<any>, callback: (d: any, i: number, j: number) => [number, number]);
 
   meanLine: string;
-  updateMeanLine($mean: d3.Selection<any>, x: number, height: number);
+  updateMeanLine($mean: d3.Selection<any>, x: number, y: number, height: number);
 
   slopes: string;
   updateSlopes($slopes: d3.Selection<any>, width: number, height: number, callback: (d, i) => number);
@@ -146,7 +146,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
       });
       $rows.exit().remove();
 
-      const $meanlines = $rankings.select(g + '.meanlines').selectAll(domMapping.meanLine + '.meanline').data(ranking.columns.filter((c) => that.showMeanLine(c.column)));
+      const $meanlines = $this.select(g + '.meanlines').selectAll(domMapping.meanLine + '.meanline').data(ranking.columns.filter((c) => that.showMeanLine(c.column)));
       $meanlines.enter().append(domMapping.meanLine).attr('class', 'meanline');
       $meanlines.each(function (this: HTMLElement|SVGGElement, d) {
         const h = that.histCache.get(d.column.id);
@@ -156,7 +156,7 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
         }
         h.then((stats: IStatistics) => {
           const xPos = d.shift + d.column.getWidth() * stats.mean;
-          domMapping.updateMeanLine($mean, isNaN(xPos) ? 0 : xPos, group.height);
+          domMapping.updateMeanLine($mean, isNaN(xPos) ? 0 : xPos, 0, group.height);
         });
       });
       $meanlines.exit().remove();

@@ -26,8 +26,8 @@ const domHTMLMappings = {
     });
   },
   meanLine: 'div',
-  updateMeanLine($mean: Selection<any>, x: number, height: number) {
-    $mean.style('left', x + 'px').style('height', height + 'px');
+  updateMeanLine($mean: Selection<any>, x: number, y: number, height: number) {
+    $mean.style('left', x + 'px').style('top', y + 'px').style('height', height + 'px');
   },
   slopes: 'svg',
   updateSlopes($slopes: Selection<any>, width: number, height: number, callback: (d, i) => number) {

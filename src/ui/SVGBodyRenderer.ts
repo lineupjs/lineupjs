@@ -28,10 +28,11 @@ const domMappings = {
       });
     },
     meanLine: 'line',
-    updateMeanLine: ($mean: Selection<any>, x: number, height: number) => {
+    updateMeanLine: ($mean: Selection<any>, x: number, y: number, height: number) => {
       $mean.attr('x1', 1 + x) //TODO don't know why +1 such that header and body lines are aligned
         .attr('x2', 1 + x)
-        .attr('y2', height);
+        .attr('y1', y)
+        .attr('y2', y + height);
     },
     slopes: 'g',
     updateSlopes: ($slopes: Selection<any>, width: number, height: number, callback: (d, i) => number) => {
