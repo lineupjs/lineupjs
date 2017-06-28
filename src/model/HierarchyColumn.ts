@@ -44,6 +44,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.currentNode = this.hierarchy;
     this.currentLeaves = computeLeaves(this.currentNode, this.currentMaxDepth);
 
+    this.setRendererType('categorical');
     this.setRendererList([
       {type: 'categorical', label: 'Default'}
     ]);
