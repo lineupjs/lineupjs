@@ -11,7 +11,7 @@ import Column, {IFlatColumn} from './Column';
  * @param label
  * @returns {{type: string, label: string}}
  */
-export function createDesc(label: string = 'Combined') {
+export function createDesc(label: string = 'Weighted Sum') {
   return {type: 'stack', label};
 }
 
