@@ -5,6 +5,7 @@
 import {ascending} from 'd3';
 import Column from './Column';
 import ValueColumn,{IValueColumnDesc} from './ValueColumn';
+import {ICategoricalColumn} from './CategoricalColumn';
 
 export interface IBooleanColumnDesc extends IValueColumnDesc<boolean> {
   /**
@@ -22,7 +23,7 @@ export interface IBooleanColumnDesc extends IValueColumnDesc<boolean> {
 /**
  * a string column with optional alignment
  */
-export default class BooleanColumn extends ValueColumn<boolean> {
+export default class BooleanColumn extends ValueColumn<boolean> implements ICategoricalColumn {
   private currentFilter: boolean = null;
   private trueMarker = 'X';
   private falseMarker = '';
@@ -34,12 +35,25 @@ export default class BooleanColumn extends ValueColumn<boolean> {
     this.falseMarker = desc.falseMarker || this.falseMarker;
   }
 
+  get categories() {
+    return [this.trueMarker, this.falseMarker];
+  }
+
+  get categoryLabels() {
+    return ['True', 'False'];
+  }
+
   getValue(row: any, index: number) {
     const v: any = super.getValue(row, index);
     if (typeof(v) === 'undefined' || v == null) {
       return false;
     }
     return v === true || v === 'true' || v === 'yes' || v === 'x';
+  }
+
+  getCategories(row: any, index: number) {
+    const v = this.getValue(row, index);
+    return v ? [this.trueMarker] : [this.falseMarker];
   }
 
   getLabel(row: any, index: number) {
