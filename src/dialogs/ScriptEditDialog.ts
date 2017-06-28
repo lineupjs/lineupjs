@@ -18,7 +18,7 @@ export default class ScriptEditDialog extends ADialog {
   openDialog() {
     const bak = this.column.getScript();
     const $popup = this.makePopup(`Parameters: <code>values: number[], children: Column[]</code><br>
-      <textarea autofocus="true" rows="5" autofocus="autofocus" style="width: 95%;">${this.column.getScript()}</textarea><br>`);
+      <textarea autofocus="true" rows="5" autofocus="autofocus" style="width: 95%;" required="required" placeholder="script to evaluate">${this.column.getScript()}</textarea><br>`);
 
     const updateData = (script: string) => {
       this.column.setScript(script);

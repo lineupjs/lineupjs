@@ -18,8 +18,8 @@ export default class CutOffHierarchyDialog extends ADialog {
     const innerNodes = resolveInnerNodes(this.column.hierarchy);
     const innerNodePaths = innerNodes.map((n) => n.path);
     const t = `<input type="text" value="${bak.node.label}" 
-        required="required" autofocus="autofocus" list="ui${this.idPrefix}lineupHierarchyList" placeholder="Cut off Hierarchy Node"><br>
-        <input type="number" value="${isFinite(bak.maxDepth) ? bak.maxDepth : ''}" placeholder="Max Depth (Infinity)"><br>
+        required="required" autofocus="autofocus" list="ui${this.idPrefix}lineupHierarchyList" placeholder="cut off node"><br>
+        <input type="number" value="${isFinite(bak.maxDepth) ? bak.maxDepth : ''}" placeholder="max depth (&infin;)"><br>
         <datalist id="ui${this.idPrefix}lineupHierarchyList">${innerNodes.map((node) => `<option value="${node.path}">${node.label}</option>`)}</datalist>`;
 
     const popup = this.makePopup(t);
