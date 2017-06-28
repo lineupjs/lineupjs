@@ -18,7 +18,7 @@ export default class SearchDialog extends ADialog {
   }
 
   openDialog() {
-    const popup = this.makePopup('<input type="text" size="15" value="" required="required" autofocus="autofocus"><br><label><input type="checkbox">RegExp</label><br>');
+    const popup = this.makePopup('<input type="text" size="15" value="" required="required" autofocus="autofocus" placeholder="search..."><br><label><input type="checkbox">RegExp</label><br>');
 
     popup.select('input[type="text"]').on('input', () => {
       const target = (<Event>d3.event).target;

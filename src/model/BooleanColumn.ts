@@ -59,6 +59,11 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return v ? [this.trueMarker] : [this.falseMarker];
   }
 
+  getColor(row: any, index: number) {
+    const flagged = this.getValue(row, index);
+    return flagged ? 'green': 'red';
+  }
+
   getLabel(row: any, index: number) {
     const v = this.getValue(row, index);
     return v ? this.trueMarker : this.falseMarker;

@@ -24,6 +24,7 @@ import BooleansColumn from './BooleansColumn';
 import NumbersColumn from './NumbersColumn';
 import BoxPlotColumn from './BoxPlotColumn';
 import AggregateGroupColumn from './AggregateGroupColumn';
+import HierarchyColumn from './HierarchyColumn';
 
 export {default as Column, IColumnDesc} from './Column';
 export {default as CompositeColumn} from './CompositeColumn';
@@ -99,6 +100,7 @@ export function models() {
     script: ScriptColumn,
     nested: NestedColumn,
     boxplot: BoxPlotColumn,
-    aggregate: AggregateGroupColumn
+    aggregate: AggregateGroupColumn,
+    hierarchy: HierarchyColumn
   };
 }

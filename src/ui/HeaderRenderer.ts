@@ -35,6 +35,8 @@ import StratifyThresholdDialog from '../dialogs/StratifyThresholdDialog';
 import {IFilterDialog} from '../dialogs/AFilterDialog';
 import ScriptEditDialog from '../dialogs/ScriptEditDialog';
 import BooleanColumn from '../model/BooleanColumn';
+import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
+import HierarchyColumn from '../model/HierarchyColumn';
 
 /**
  * utility function to generate the tooltip text with description
@@ -391,6 +393,13 @@ export default class HeaderRenderer {
     $node.filter((d) => this.options.filters.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', (d) => {
       const target = (<MouseEvent>d3.event).target;
       const dialog = new this.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode), '', provider, that.options.idPrefix);
+      dialog.openDialog();
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+    //cutoff
+    $node.filter((d) => d instanceof HierarchyColumn).append('i').attr('class', 'fa fa-scissors').attr('title', 'Set Cut Off').on('click', (d: HierarchyColumn) => {
+      const target = (<MouseEvent>d3.event).target;
+      const dialog = new CutOffHierarchyDialog(d, d3.select((<HTMLElement>target).parentNode), that.options.idPrefix);
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });

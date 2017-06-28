@@ -12,6 +12,7 @@ export interface ICategoricalColumn {
   readonly categoryLabels: string[];
 
   getCategories(row: any, index: number): string[];
+  getColor(row: any, index: number): string;
 }
 
 export interface ICategory {
@@ -50,7 +51,7 @@ export declare type ICategoricalDesc = IValueColumnDesc<string> & IBaseCategoric
  * @returns {boolean}
  */
 export function isCategoricalColumn(col: Column|IColumnDesc) {
-  return (col instanceof Column && typeof (<any>col).getCategories === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal)/) != null));
+  return (col instanceof Column && typeof (<any>col).getCategories === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null));
 }
 
 export interface ICategoricalFilter {
