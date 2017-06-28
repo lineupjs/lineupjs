@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 28.06.2017.
  */
-import {ascending, max, scale} from 'd3';
+import {scale} from 'd3';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
@@ -58,10 +58,11 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
       let lastColorUsed = -1;
       const children = (node.children || []).map((child: ICategoryNode|string): ICategoryInternalNode => {
         if (typeof child === 'string') {
+          const path = prefix + child;
           return {
-            path: prefix + child,
+            path,
             name: child,
-            label: child,
+            label: path,
             color: colors[(lastColorUsed++) % colors.length],
             children: []
           };
@@ -73,7 +74,9 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
         }
         return r;
       });
-      return {path: prefix + name, name, children, label: node.label || name, color: node.color};
+      const path = prefix + name;
+      const label = node.label ? `${path}: ${node.label}` : path;
+      return {path, name, children, label, color: node.color};
     };
     return add('', root);
   }
@@ -128,13 +131,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
 
   getLabel(row: any, index: number) {
     const base = this.resolveCategory(row, index);
-    if (!base) {
-      return '';
-    }
-    if (base.label === base.name) {
-      return base.path;
-    }
-    return `${base.path}: ${base.label}`;
+    return base ? base.label : null;
   }
 
   getCategories(row: any, index: number) {
@@ -148,9 +145,18 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    const va = this.getValue(a, aIndex);
-    const vb = this.getValue(b, bIndex);
-    return ascending(va, vb);
+    const va = this.resolveCategory(a, aIndex);
+    const vb = this.resolveCategory(b, bIndex);
+    if (va === vb) {
+      return 0;
+    }
+    if (va === null) {
+      return +1;
+    }
+    if (vb === null) {
+      return -1;
+    }
+    return va.path.localeCompare(vb.path);
   }
 }
 
@@ -168,4 +174,14 @@ function computeLeaves(node: ICategoryInternalNode, maxDepth: number = Infinity)
   };
   visit(node, 0);
   return leaves;
+}
+
+export function resolveInnerNodes(node: ICategoryInternalNode) {
+  //breath first
+  const queue: ICategoryInternalNode[] = [node];
+  for(let index = 0; index < queue.length; ++index) {
+    const next = queue[index];
+    queue.push(...next.children);
+  }
+  return queue;
 }

@@ -1,0 +1,57 @@
+import {Selection} from 'd3';
+import HierarchyColumn, {resolveInnerNodes} from '../model/HierarchyColumn';
+import ADialog from './ADialog';
+
+export default class CutOffHierarchyDialog extends ADialog {
+
+  /**
+   * opens a dialog for filtering a categorical column
+   * @param column the column to rename
+   * @param $header the visual header element of this column
+   */
+  constructor(private readonly column: HierarchyColumn, $header: Selection<HierarchyColumn>, private readonly idPrefix: string) {
+    super($header, 'Edit Hierarchy Cutoff');
+  }
+
+  openDialog() {
+    const bak = this.column.getCutOff();
+    const innerNodes = resolveInnerNodes(this.column.hierarchy);
+    const innerNodePaths = innerNodes.map((n) => n.path);
+    const t = `<input type="text" value="${bak.node.label}" 
+        required="required" autofocus="autofocus" list="ui${this.idPrefix}lineupHierarchyList" placeholder="Cut off Hierarchy Node"><br>
+        <input type="number" value="${isFinite(bak.maxDepth) ? bak.maxDepth : ''}" placeholder="Max Depth (Infinity)"><br>
+        <datalist id="ui${this.idPrefix}lineupHierarchyList">${innerNodes.map((node) => `<option value="${node.path}">${node.label}</option>`)}</datalist>`;
+
+    const popup = this.makePopup(t);
+
+    //custom validation
+    popup.select('input[type="text"]').on('change', function(this: HTMLInputElement) {
+      const value = this.value;
+      console.log('validate', value);
+      if (innerNodePaths.indexOf(value) < 0) {
+        this.setCustomValidity('invalid node');
+      } else {
+        this.setCustomValidity('');
+      }
+    });
+
+    const that = this;
+    popup.select('.ok').on('click', function () {
+      const form = <HTMLFormElement>popup.select('form').node();
+      if (!form.checkValidity()) {
+        return;
+      }
+      const newNode = popup.select('input[type="text"]').property('value');
+      const newNodeIndex = innerNodePaths.indexOf(newNode);
+      const node = innerNodes[newNodeIndex];
+      const maxDepthText = popup.select('input[type="number"]').property('value');
+      const maxDepth = maxDepthText === '' ? Infinity : parseInt(maxDepthText, 10);
+      that.column.setCutOff(node, maxDepth);
+      popup.remove();
+    });
+
+    popup.select('.cancel').on('click', function () {
+      popup.remove();
+    });
+  }
+}
