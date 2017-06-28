@@ -27,58 +27,60 @@
 <script src="../build/LineUpJS.js"></script>
 <script>
     window.onload = function () {
-        const hierarchy = [{
-            name: 'a1',
-            color: 'blue',
+        const hierarchy = {
+            name: '0',
+            color: 'black',
             children: [{
-                name: 'a2',
-                color: 'blue'
-            }, {
-                name: 'b2',
-                color: 'red',
+                name: 'a1',
+                color: 'blue',
                 children: [{
-                    name: 'a3',
+                    name: 'a2',
                     color: 'blue'
                 }, {
-                    name: 'b3',
+                    name: 'b2',
+                    color: 'red',
+                    children: [{
+                        name: 'a3',
+                        color: 'blue'
+                    }, {
+                        name: 'b3',
+                        color: 'red'
+                    }, {
+                        name: 'c3',
+                        color: 'green'
+                    }]
+                }]
+            }, {
+                name: 'b1',
+                color: 'red',
+                children: [{
+                    name: 'b2',
                     color: 'red'
                 }, {
-                    name: 'c3',
+                    name: 'c2',
                     color: 'green'
                 }]
             }]
-        }, {
-            name: 'b1',
-            color: 'red',
-            children: [{
-                name: 'b2',
-                color: 'red'
-            }, {
-                name: 'c2',
-                color: 'green'
-            }]
-        }];
-        const flat = [];
-
-        function add(prefix, node) {
-            node.forEach(function (n) {
-                flat.push(prefix + n);
-                if (n.children) {
-                    add(prefix + n + '.', n.children);
-                }
-            });
+        };
+        const leaves = [];
+        function visit(prefix, node) {
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(function(n) {
+                    visit(prefix + node.name + '.', n);
+                });
+            } else {
+                leaves.push(prefix + node.name);
+            }
         }
-        add('', hierarchy);
-
-
+        visit('', hierarchy);
         const data = [];
-        for (var i = 0 ; i < flat.length * 3; i++) {
-            data.push({ a: 'Row' + i, c: i, b: flat[i % flat.length]});
+        for (var i = 0 ; i < leaves.length * 3; i++) {
+            data.push({ a: 'Row' + i, c: i, b: leaves[i % leaves.length]});
         }
 
         const desc = [
             {label: 'A', type: 'string', column: 'a'},
-            {label: 'C', type: 'number', column: 'c', domain: [0, flat.length*3]},
+            {label: 'C', type: 'number', column: 'c', domain: [0, leaves.length*3]},
             {label: 'B', type: 'hierarchy', column: 'b', hierarchy: hierarchy}
         ];
 
