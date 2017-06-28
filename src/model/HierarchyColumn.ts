@@ -97,7 +97,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return {
       node: this.currentNode,
       maxDepth: this.currentMaxDepth
-    }
+    };
   }
 
   setCutOff(node: ICategoryInternalNode, maxDepth: number = Infinity) {
@@ -179,8 +179,9 @@ function computeLeaves(node: ICategoryInternalNode, maxDepth: number = Infinity)
 export function resolveInnerNodes(node: ICategoryInternalNode) {
   //breath first
   const queue: ICategoryInternalNode[] = [node];
-  for(let index = 0; index < queue.length; ++index) {
-    const next = queue[index];
+  let index = 0;
+  while (index < queue.length) {
+    const next = queue[index++];
     queue.push(...next.children);
   }
   return queue;
