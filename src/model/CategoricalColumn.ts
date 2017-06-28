@@ -10,6 +10,7 @@ import StringColumn from './StringColumn';
 export interface ICategoricalColumn {
   readonly categories: string[];
   readonly categoryLabels: string[];
+  readonly categoryColors: string[];
 
   getCategories(row: any, index: number): string[];
   getColor(row: any, index: number): string;

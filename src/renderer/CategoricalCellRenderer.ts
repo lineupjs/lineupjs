@@ -92,7 +92,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static createHistogram(col: CategoricalColumn & Column) {
+  private static createHistogram(col: ICategoricalColumn&Column) {
     const scale = d3.scale.ordinal().domain(col.categories).rangeBands([0, col.getWidth()]);
     return (rows: IDataRow[], height: number, maxBin?: number) => {
       const hist = new Map<string, number>();
@@ -108,7 +108,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupSVG(col: CategoricalColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
+  createGroupSVG(col: ICategoricalColumn&Column, context: IDOMRenderContext): ISVGGroupRenderer {
     const factory = CategoricalCellRenderer.createHistogram(col);
     const padding = context.option('rowBarPadding', 1);
     return {
@@ -129,7 +129,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupCanvas(col: CategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+  createGroupCanvas(col: ICategoricalColumn&Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const factory = CategoricalCellRenderer.createHistogram(col);
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number, hist?: ICategoricalStatistics) => {
