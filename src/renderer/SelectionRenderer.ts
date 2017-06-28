@@ -1,5 +1,5 @@
 import SelectionColumn from '../model/SelectionColumn';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import {ISVGCellRenderer, IHTMLCellRenderer, ISVGGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
@@ -47,6 +47,34 @@ export default class SelectionRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
       clipText(ctx, String(selected), 0, context.groupHeight(group), col.getWidth(), context.textHints);
+    };
+  }
+
+  createGroupSVG(col: SelectionColumn): ISVGGroupRenderer {
+    return {
+      template: `<text class='selection fa'><tspan class='selectionOnly'>\uf046</tspan><tspan class='notSelectionOnly'>\uf096</tspan></text>`,
+      update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
+        const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
+        const all = selected >= rows.length /2;
+        if (all) {
+          n.classList.add('groupSelected');
+        } else {
+          n.classList.remove('groupSelected');
+        }
+        n.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          const value = !all;
+          if (value) {
+            n.classList.add('groupSelected');
+          } else {
+            n.classList.remove('groupSelected');
+          }
+          rows.forEach((row) => {
+            col.setValue(row.v, row.dataIndex, value);
+          });
+        };
+      }
     };
   }
 }

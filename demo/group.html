@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>LineUp alpha</title>
 
-  <link href="../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
+  <link href="../../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
 
   <link href="../build/style.css" rel="stylesheet">
 
@@ -23,7 +23,7 @@
   </style>
 </head>
 <body>
-<script src="../node_modules/d3/d3.js"></script>
+<script src="../../node_modules/d3/d3.js"></script>
 <script src="../build/LineUpJS.js"></script>
 
 <script>
@@ -61,6 +61,7 @@
 
     const p = new LineUpJS.provider.LocalDataProvider(arr, desc);
     p.deriveDefault();
+    p.getLastRanking().insert(p.create({ type: 'selection', label: 'S'}), 0);
     p.getLastRanking().insert(p.create({ type: 'aggregate', label: 'A'}), 0);
 
     const instance = LineUpJS.create(p, document.body, {
