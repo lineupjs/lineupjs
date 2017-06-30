@@ -64,12 +64,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          const value = !all;
-          if (value) {
-            n.classList.add('groupSelected');
-          } else {
-            n.classList.remove('groupSelected');
-          }
+          const value = n.classList.toggle('groupSelected');
           rows.forEach((row) => {
             col.setValue(row.v, row.dataIndex, value);
           });
