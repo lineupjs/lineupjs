@@ -1,25 +1,26 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column, {IStatistics} from '../model/Column';
-import {INumberColumn} from '../model/NumberColumn';
+import {INumberColumn, numberCompare} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer, ISVGGroupRenderer} from './IDOMCellRenderers';
+import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
-import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IGroup} from '../model/Group';
-import * as d3 from 'd3';
+import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 
 
 /**
  * a renderer rendering a bar for numerical columns
  */
-export default class BarCellRenderer implements ICellRendererFactory {
+export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberColumn&Column> implements ICellRendererFactory {
   /**
    * flag to always render the value
    * @type {boolean}
    */
 
-  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {}
+  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {
+    super();
+  }
 
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
@@ -83,54 +84,17 @@ export default class BarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static createHistogram(col: INumberColumn & Column, totalNumberOfRows: number) {
-    // as by default used in d3 the Sturges' formula
-    const bins = Math.ceil(Math.log(totalNumberOfRows) / Math.LN2) + 1;
-    const gen = d3.layout.histogram().range([0,1]).bins(bins);
-    const scale = d3.scale.linear().domain([0, 1]).range([0, col.getWidth()]);
-    return (rows: IDataRow[], height: number, hist?: IStatistics) => {
-      const values = rows.map((d) => col.getValue(d.v, d.dataIndex));
-      if (hist) {
-        gen.bins(hist.hist.length); //use shared one
-      }
-      const bins = gen(values);
-      const actMaxBin = hist === undefined ? d3.max(bins, (d) => d.y) : hist.maxBin;
-      const yscale = d3.scale.linear().domain([0, actMaxBin]).range([height, 0]);
-      return {bins, scale, yscale};
-    };
+  protected aggregatedIndex(rows: IDataRow[], col: INumberColumn & Column) {
+    return medianIndex(rows, col);
   }
+}
 
-  createGroupSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
-    const factory = BarCellRenderer.createHistogram(col, context.totalNumberOfRows);
-    const padding = context.option('rowBarPadding', 1);
-    return {
-      template: `<g class='histogram'></g>`,
-      update: (n: SVGGElement, group: IGroup, rows: IDataRow[], hist?: IStatistics) => {
-        const height = context.groupHeight(group) - padding;
-        const {bins, scale, yscale} = factory(rows, height, hist);
-        const bars = d3.select(n).selectAll('rect').data(bins);
-        bars.enter().append('rect');
-        bars.attr({
-          x: (d) => scale(d.x) + padding,
-          y: (d) => yscale(d.y) + padding,
-          width: (d) => scale(d.dx) - 2*padding,
-          height: (d) => height - yscale(d.y),
-          title: (d) => `${d.x} - ${d.x + d.dx} (${d.y})`
-        });
-      }
-    };
+export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
+  //return the median row
+  const sorted = rows.map((r,i) => ({i,v: col.getNumber(r.v, r.dataIndex)})).sort((a, b) => numberCompare(a.v, b.v));
+  const index = sorted[Math.floor(sorted.length / 2.0)];
+  if (index === undefined) {
+    return 0; //error case
   }
-
-  createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const factory = BarCellRenderer.createHistogram(col, context.totalNumberOfRows);
-    const padding = context.option('rowBarPadding', 1);
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number, hist?: IStatistics) => {
-      const height = context.groupHeight(group) - padding;
-      const {bins, scale, yscale} = factory(rows, height, hist);
-      ctx.fillStyle = context.option('style.histogram', 'lightgray');
-      bins.forEach((d) => {
-        ctx.fillRect(scale(d.x) + padding, yscale(d.y) + padding, scale(d.dx) - 2*padding, height - yscale(d.y));
-      });
-    };
-  }
+  return index.i;
 }

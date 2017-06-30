@@ -6,15 +6,17 @@ import {ISVGCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
+import AAggregatedGroupRenderer from './AAggregatedGroupRenderer';
+import {medianIndex} from './BarCellRenderer';
 
-export default class CircleCellRenderer implements ICellRendererFactory {
+export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumberColumn&Column> implements ICellRendererFactory {
 
   constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {
+    super();
     this.renderValue = renderValue;
   }
 
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const padding = context.option('rowBarPadding', 1);
     return {
       template: `<g class='bar'>
           <circle class='${col.cssClass}' style='fill: ${col.color}'>
@@ -50,5 +52,9 @@ export default class CircleCellRenderer implements ICellRendererFactory {
         clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1, context.textHints);
       }
     };
+  }
+
+  protected aggregatedIndex(rows: IDataRow[], col: INumberColumn & Column) {
+    return medianIndex(rows, col);
   }
 }

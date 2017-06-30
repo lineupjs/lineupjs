@@ -29,6 +29,7 @@ import Heatmap from './Heatmap';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import RankCellRenderer from './RankCellRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
+import HistogramGroupRenderer from './HistogramGroupRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -65,7 +66,9 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   boxplot: new BoxplotCellRenderer(),
   loading: new LoadingCellRenderer(),
   most: new MostCategoricalGroupRenderer(),
-  aggregate: new AggregateGroupRenderer()
+  aggregate: new AggregateGroupRenderer(),
+  histogram: new HistogramGroupRenderer(),
+  default: defaultCellRenderer
 };
 
 function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
