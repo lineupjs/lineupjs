@@ -25,7 +25,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const sortMethod = col.getSortMethod();
-    const topPadding = 2.5 * (context.option('rowBarPadding', 1));
+    const topPadding = context.option('rowBarPadding', 1);
     const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
     return {
@@ -40,6 +40,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const data = col.getBoxPlotData(d.v, d.dataIndex);
         const rowHeight = context.rowHeight(i);
+        const boxTopPadding = topPadding + ((rowHeight- topPadding*2) * 0.1);
         const scaled = {
           min: scale(data.min),
           median: scale(data.median),
@@ -47,6 +48,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q3: scale(data.q3),
           max: scale(data.max)
         };
+        const sortValue = scaled[sortMethod];
         attr(<SVGElement>n.querySelector('rect.cellbg'),{
           width: col.getWidth(),
           height: rowHeight
@@ -54,14 +56,15 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         n.querySelector('title').textContent = computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex));
         attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
           x: scaled.q1,
-          width: (scaled.q3 - scaled.q1),
-          height: (rowHeight - (topPadding * 2))
+          y: boxTopPadding,
+          width: scaled.q3 - scaled.q1,
+          height: rowHeight - (boxTopPadding * 2)
         });
         attr(<SVGPathElement>n.querySelector('path.boxplotallpath'), {
           d: boxPlotPath(scaled, rowHeight, topPadding)
         });
         attr(<SVGPathElement>n.querySelector('path.boxplotsortpath'), {
-          d: `M${scaled[sortMethod]},${topPadding}L${scaled[sortMethod]},${rowHeight - topPadding}`
+          d: `M${sortValue},${topPadding}L${sortValue},${rowHeight - topPadding}`
         }, {
           display: sortedByMe ? null : 'none'
         });
@@ -71,7 +74,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const sortMethod = col.getSortMethod();
-    const topPadding = 2.5 * (context.option('rowBarPadding', 1));
+    const topPadding = context.option('rowBarPadding', 1);
     const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
 
@@ -104,7 +107,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
 
   createGroupSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
-    const topPadding = 2.5 * (context.option('rowBarPadding', 1));
+    const topPadding = context.option('rowBarGroupPadding', 1);
     const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     return {
       template: `<g class='boxplotcell'>
@@ -115,6 +118,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         </g>`,
       update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
         const height = context.groupHeight(group);
+        const boxTopPadding = topPadding + ((height- topPadding*2) * 0.1);
         const box = new LazyBoxPlotData(rows.map((row) => col.getValue(row.v, row.dataIndex)));
         attr(<SVGElement>n.querySelector('rect.cellbg'),{
           width: col.getWidth(),
@@ -131,8 +135,9 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         };
         attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
           x: scaled.q1,
-          width: (scaled.q3 - scaled.q1),
-          height: (height - (topPadding * 2))
+          y: boxTopPadding,
+          width: scaled.q3 - scaled.q1,
+          height: height - (boxTopPadding * 2)
         });
         attr(<SVGPathElement>n.querySelector('path.boxplotallpath'), {
           d: boxPlotPath(scaled, height, topPadding)
@@ -142,7 +147,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   }
 
   createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const topPadding = 2.5 * (context.option('rowBarPadding', 1));
+    const topPadding = context.option('rowBarGroupPadding', 1);
     const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group);
@@ -161,37 +166,41 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 }
 
 function boxPlotPath(box: IBoxPlotData, height: number, topPadding: number) {
-  const bottomPos = height - topPadding;
-  const middlePos = (height - topPadding) / 2;
-  return `M${box.min},${middlePos}L${box.q1},${middlePos}M${box.min},${topPadding}L${box.min},${bottomPos}` +   //minimum line
-    `M${box.median},${topPadding}L${box.median},${bottomPos}` +   //median line
-    `M${box.q3},${middlePos}L${box.max},${middlePos}` +
-    `M${box.max},${topPadding}L${box.max},${bottomPos}`;  // maximum line
+  const boxTopPadding = topPadding + ((height- topPadding*2) * 0.1);
+  const boxHeight = height - boxTopPadding*2;
+  const wheight = height - topPadding*2;
+  const middlePos = height / 2;
+  return `M${box.min},${middlePos}l${box.q1 - box.min},0M${box.min},${topPadding}l0,${wheight}` +   //minimum line
+    `M${box.median},${boxTopPadding}l0,${boxHeight}` +   //median line
+    `M${box.q3},${middlePos}l${box.max-box.q3},0` +
+    `M${box.max},${topPadding}l0,${wheight}`;  // maximum line
 }
 
 function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, height: number, topPadding: number) {
+  const boxTopPadding = topPadding + ((height- topPadding*2) * 0.1);
   const minPos = box.min, maxPos = box.max, medianPos = box.median, q3Pos = box.q3, q1Pos = box.q1;
+
   ctx.fillStyle = '#e0e0e0';
   ctx.strokeStyle = 'black';
   ctx.beginPath();
-  ctx.rect((q1Pos), topPadding, ((q3Pos) - (q1Pos)), (height - (topPadding * 2)));
+  ctx.rect(q1Pos, boxTopPadding, q3Pos - q1Pos, height - (boxTopPadding * 2));
   ctx.fill();
   ctx.stroke();
 
   //Line
   const bottomPos = height - topPadding;
-  const middlePos = (height - topPadding) / 2;
+  const middlePos = height / 2;
 
   ctx.strokeStyle = 'black';
   ctx.fillStyle = '#e0e0e0';
   ctx.beginPath();
   ctx.moveTo(minPos, middlePos);
-  ctx.lineTo((q1Pos), middlePos);
+  ctx.lineTo(q1Pos, middlePos);
   ctx.moveTo(minPos, topPadding);
   ctx.lineTo(minPos, bottomPos);
-  ctx.moveTo(medianPos, topPadding);
-  ctx.lineTo(medianPos, bottomPos);
-  ctx.moveTo((q3Pos), middlePos);
+  ctx.moveTo(medianPos, boxTopPadding);
+  ctx.lineTo(medianPos, height - boxTopPadding);
+  ctx.moveTo(q3Pos, middlePos);
   ctx.lineTo(maxPos, middlePos);
   ctx.moveTo(maxPos, topPadding);
   ctx.lineTo(maxPos, bottomPos);

@@ -78,6 +78,7 @@ export interface IBodyRendererOptions {
   groupHeight?: number;
   rowPadding?: number;
   rowBarPadding?: number;
+  rowBarGroupPadding?: number;
   rowBarTopPadding?: number;
   rowBarBottomPadding?: number;
   idPrefix?: string;
@@ -114,6 +115,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     groupHeight: 100,
     rowPadding: 1,
     rowBarPadding: 1,
+    rowBarGroupPadding: (50-20/2-1),
     idPrefix: '',
     slopeWidth: 150,
     columnPadding: 5,

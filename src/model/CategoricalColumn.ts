@@ -126,7 +126,8 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.setRendererList([
       {type: 'categorical', label: 'Default'},
       {type: 'upset', label: 'UpSet'}
-    ]);
+    ], [{type: 'categorical', label: 'Histogram'},
+      {type: 'most', label: 'Most Frequent Category'}]);
   }
 
   initCategories(desc: IBaseCategoricalDesc) {
