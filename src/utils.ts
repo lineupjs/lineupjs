@@ -491,6 +491,7 @@ export function hideOverlays(parentElement: HTMLElement) {
  * @param helperType
  */
 export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer<any>, groupRenderer: IDOMGroupRenderer<any>}[], render: 'group'|'detail', helperType = 'svg') {
+  const renderer = render === 'detail' ? (col: {column: Column}) => col.column.getRendererType() : (col: {column: Column}) => col.column.getGroupRenderer();
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => (render === 'detail' ? c.renderer : c.groupRenderer).template).join('');
@@ -499,7 +500,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
       // set attribute for finding again
       cnode.setAttribute('data-column-id', col.column.id);
       // store current renderer
-      cnode.setAttribute('data-renderer', col.column.getRendererType());
+      cnode.setAttribute('data-renderer', renderer(col));
     });
     return;
   }
@@ -507,14 +508,14 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
   function matches(c: {column: Column}, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
-    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getRendererType();
+    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === renderer(c);
   }
 
   if (columns.every(matches)) {
     return; //nothing to do
   }
 
-  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.getRendererType()));
+  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + renderer(c)));
   //remove all that are not existing anymore
   Array.prototype.slice.call(node.childNodes).forEach((n) => {
     const id = n.getAttribute('data-column-id');
@@ -532,7 +533,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
       helper.innerHTML = (render === 'detail' ? col.renderer : col.groupRenderer).template;
       cnode = <Element>helper.childNodes[0];
       cnode.setAttribute('data-column-id', col.column.id);
-      cnode.setAttribute('data-renderer', col.column.getRendererType());
+      cnode.setAttribute('data-renderer', renderer(col));
     }
     node.appendChild(cnode);
   });
