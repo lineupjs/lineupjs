@@ -481,7 +481,7 @@ export default class HeaderRenderer {
     }
 
     if (this.options.histograms) {
-      $headersEnter.append('div').classed('histogram', true);
+      $headersEnter.append('div').classed('summary', true);
     }
 
     $headers.style({
@@ -555,7 +555,7 @@ export default class HeaderRenderer {
     if (this.options.histograms) {
 
       $headers.filter((d) => isCategoricalColumn(d)).each(function (col: CategoricalColumn) {
-        const $this = d3.select(this).select('div.histogram');
+        const $this = d3.select(this).select('div.summary');
         const hist = that.histCache.get(col.id);
         if (hist) {
           hist.then((stats: ICategoricalStatistics) => {
@@ -578,7 +578,7 @@ export default class HeaderRenderer {
         }
       });
       $headers.filter((d) => d instanceof NumberColumn).each(function (col: Column) {
-        const $this = d3.select(this).select('div.histogram');
+        const $this = d3.select(this).select('div.summary');
         const hist = that.histCache.get(col.id);
         if (hist) {
           hist.then((stats: IStatistics) => {
