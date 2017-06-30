@@ -20,7 +20,11 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
       template: `<g>${single.template}</g>`,
       update: (node: SVGGElement, group: IGroup, rows: IDataRow[]) => {
         const aggregate = this.aggregatedIndex(rows, col);
-        single.update(<SVGElement>node.firstElementChild, rows[aggregate], aggregate, group);
+        const shift = (context.groupHeight(group) - context.rowHeight(aggregate)) / 2;
+        const child = <SVGElement>node.firstElementChild;
+        //manipulate child since myself is manipulated by my row renderer
+        child.setAttribute('transform', `translate(0,${shift})`);
+        single.update(child, rows[aggregate], aggregate, group);
       }
     };
   }
@@ -29,7 +33,10 @@ export abstract class AAggregatedGroupRenderer<T extends Column> implements ICel
     const single = this.createCanvas(col, context);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number) => {
       const aggregate = this.aggregatedIndex(rows, col);
-      single(ctx, rows[aggregate], aggregate, dx, dy, group);
+      const shift = (context.groupHeight(group) - context.rowHeight(aggregate)) / 2;
+      ctx.translate(0, shift);
+      single(ctx, rows[aggregate], aggregate, dx, dy + shift, group);
+      ctx.translate(0, -shift);
     };
   }
 }
