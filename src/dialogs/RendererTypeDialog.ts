@@ -12,7 +12,7 @@ export default class RedererTypeDialog extends ADialog {
     const bak = this.column.getRendererType();
     const rendererTypeList = this.column.getRendererList();
 
-    const popup = this.makeSortPopup(rendererTypeList.map((d) => {
+    const popup = this.makeChoosePopup(rendererTypeList.map((d) => {
       return `<input type="radio" name="renderertype" value=${d.type}  ${(bak === d.type) ? 'checked' : ''}> ${d.label}<br>`;
     }).join('\n'));
 
@@ -24,7 +24,5 @@ export default class RedererTypeDialog extends ADialog {
       const value = (<HTMLInputElement>target).value;
       this.column.setRendererType(value);
     });
-
-    this.hidePopupOnClickOutside(popup, rendererContent);
   }
 }

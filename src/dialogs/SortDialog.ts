@@ -13,7 +13,7 @@ export default class SortDialog extends ADialog {
     const bak = this.column.getSortMethod();
     const valueString = Object.keys(this.column instanceof NumbersColumn ? ADVANCED_SORT_METHOD : SORT_METHOD);
 
-    const popup = this.makeSortPopup(valueString.map((d) => {
+    const popup = this.makeChoosePopup(valueString.map((d) => {
       return `<input type="radio" name="multivaluesort" value=${d}  ${(bak === d) ? 'checked' : ''} > ${d.slice(0,1).toUpperCase() + d.slice(1)} <br>`;
     }).join('\n'));
 
@@ -24,7 +24,6 @@ export default class SortDialog extends ADialog {
       this.column.setSortMethod(value);
     });
 
-    this.hidePopupOnClickOutside(popup, sortContent);
   }
 
 }
