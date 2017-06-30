@@ -105,6 +105,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   createGroupSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
+    const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     return {
       template: `<g class='boxplotcell'>
             <title></title>
@@ -120,13 +121,21 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           height
         });
         n.querySelector('title').textContent = computeLabel(box);
+
+        const scaled = {
+          min: scale(box.min),
+          median: scale(box.median),
+          q1: scale(box.q1),
+          q3: scale(box.q3),
+          max: scale(box.max)
+        };
         attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
-          x: box.q1,
-          width: (box.q3 - box.q1),
+          x: scaled.q1,
+          width: (scaled.q3 - scaled.q1),
           height: (height - (topPadding * 2))
         });
         attr(<SVGPathElement>n.querySelector('path.boxplotallpath'), {
-          d: boxPlotPath(box, height, topPadding)
+          d: boxPlotPath(scaled, height, topPadding)
         });
       }
     };
@@ -134,10 +143,19 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
+    const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group);
       const box = new LazyBoxPlotData(rows.map((row) => col.getValue(row.v, row.dataIndex)));
-      renderBoxPlot(ctx, box, height, topPadding);
+
+      const scaled = {
+        min: scale(box.min),
+        median: scale(box.median),
+        q1: scale(box.q1),
+        q3: scale(box.q3),
+        max: scale(box.max)
+      };
+      renderBoxPlot(ctx, scaled, height, topPadding);
     };
   }
 }
