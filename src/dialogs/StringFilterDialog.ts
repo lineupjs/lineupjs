@@ -55,21 +55,23 @@ export default class StringFilterDialog extends AFilterDialog<StringColumn> {
     $popup.selectAll('input[type="checkbox"]').on('change', updateImpl);
     $popup.select('input[type="text"]').on('input', updateImpl);
 
-    $popup.select('.cancel').on('click', function () {
-      $popup.select('input[type="text"]').property('value', bak || '');
-      $popup.select('input[type="checkbox"]:first-of-type').property('checked', bak instanceof RegExp ? 'checked' : null);
-      $popup.select('input[type="checkbox"].lu_filter_missing').property('checked', bakMissing ? 'checked' : null);
-      updateData(bak);
-      $popup.remove();
-    });
-    $popup.select('.reset').on('click', function () {
-      $popup.select('input[type="text"]').property('value', '');
-      $popup.selectAll('input[type="checkbox"]').property('checked', null);
-      updateData(null);
-    });
-    $popup.select('.ok').on('click', function () {
-      updateImpl(true);
-      $popup.remove();
+
+    this.onButton($popup, {
+      cancel: () => {
+        $popup.select('input[type="text"]').property('value', bak || '');
+        $popup.select('input[type="checkbox"]:first-of-type').property('checked', bak instanceof RegExp ? 'checked' : null);
+        $popup.select('input[type="checkbox"].lu_filter_missing').property('checked', bakMissing ? 'checked' : null);
+        updateData(bak);
+      },
+      reset: () => {
+        $popup.select('input[type="text"]').property('value', '');
+        $popup.selectAll('input[type="checkbox"]').property('checked', null);
+        updateData(null);
+      },
+      submit: () => {
+        updateImpl(true);
+        return true;
+      }
     });
   }
 }

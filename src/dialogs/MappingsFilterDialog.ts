@@ -55,24 +55,24 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
     const dataSample = this.data.mappingSample(this.column);
     let editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
 
-
-    popup.select('.ok').on('click', function () {
-      applyMapping(editor.scale, editor.filter);
-      popup.remove();
-    });
-    popup.select('.cancel').on('click', () => {
-      this.column.setMapping(bak);
-      this.markFiltered(!bak.eq(original));
-      popup.remove();
-    });
-    popup.select('.reset').on('click', function () {
-      bak = original;
-      act = bak.clone();
-      bakfilter = noNumberFilter();
-      actfilter = bakfilter;
-      applyMapping(act, actfilter);
-      popup.selectAll('.mappingArea *').remove();
-      editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
+    this.onButton(popup, {
+      cancel: () => {
+        this.column.setMapping(bak);
+        this.markFiltered(!bak.eq(original));
+      },
+      reset: () => {
+        bak = original;
+        act = bak.clone();
+        bakfilter = noNumberFilter();
+        actfilter = bakfilter;
+        applyMapping(act, actfilter);
+        popup.selectAll('.mappingArea *').remove();
+        editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
+      },
+      submit: () => {
+        applyMapping(editor.scale, editor.filter);
+        return true;
+      }
     });
   }
 }

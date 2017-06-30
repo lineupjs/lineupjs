@@ -37,20 +37,19 @@ export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
 
     $popup.selectAll('input[type="radio"]').on('change', updateImpl);
 
-    $popup.select('.cancel').on('click', function () {
-      updateData(bak);
-      $popup.remove();
-    });
-    $popup.select('.reset').on('click', function () {
-      const v = bak === null ? 'null' : String(bak);
-      $popup.selectAll('input[type="radio"]').property('checked', function () {
-        return this.value === v;
-      });
-      updateData(null);
-    });
-    $popup.select('.ok').on('click', function () {
-      updateImpl();
-      $popup.remove();
+    this.onButton($popup, {
+      cancel: () => updateData(bak),
+      reset: () => {
+        const v = bak === null ? 'null' : String(bak);
+        $popup.selectAll('input[type="radio"]').property('checked', function () {
+          return this.value === v;
+        });
+        updateData(null);
+      },
+      submit: () => {
+        updateImpl();
+        return true;
+      }
     });
   }
 }

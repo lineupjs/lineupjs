@@ -31,15 +31,15 @@ export default class StratifyThresholdDialog extends ADialog {
 
     const popup = this.makePopup(t);
 
-    popup.select('.ok').on('click', () => {
-      const newValue = +popup.select('input[type="number"]').property('value');
-      this.column.setStratifyThresholds([newValue]);
-      this.column.groupByMe();
-      popup.remove();
-    });
-
-    popup.select('.cancel').on('click', function () {
-      popup.remove();
+    this.onButton(popup, {
+      cancel: () => undefined,
+      reset: () => undefined,
+      submit: () => {
+        const newValue = +popup.select('input[type="number"]').property('value');
+        this.column.setStratifyThresholds([newValue]);
+        this.column.groupByMe();
+        return true;
+      }
     });
   }
 }

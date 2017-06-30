@@ -20,7 +20,7 @@ export default class EditLinkDialog extends ADialog {
     let t = `<input
         type="text"
         size="15"
-        value="${(<LinkColumn>this.column).getLink()}"
+        value="${this.column.getLink()}"
         required="required"
         autofocus="autofocus"
         placeholder="link pattern"
@@ -32,15 +32,14 @@ export default class EditLinkDialog extends ADialog {
 
     const popup = this.makePopup(t);
 
-    const that = this;
-    popup.select('.ok').on('click', function () {
-      const newValue = popup.select('input[type="text"]').property('value');
-      (<LinkColumn>that.column).setLink(newValue);
-      popup.remove();
-    });
-
-    popup.select('.cancel').on('click', function () {
-      popup.remove();
+    this.onButton(popup, {
+      cancel: () => undefined,
+      reset: () => undefined,
+      submit: () => {
+        const newValue = popup.select('input[type="text"]').property('value');
+        this.column.setLink(newValue);
+        return true;
+      }
     });
   }
 }

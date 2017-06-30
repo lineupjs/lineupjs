@@ -1,6 +1,7 @@
 import CategoricalColumn from '../model/CategoricalColumn';
 import AFilterDialog from './AFilterDialog';
 import {Selection} from 'd3';
+import {sortByProperty} from './ADialog';
 
 export default class CategoricalFilterDialog extends AFilterDialog<CategoricalColumn> {
 
@@ -26,7 +27,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
       labels = this.column.categoryLabels;
     const trData = this.column.categories.map(function (d, i) {
       return {cat: d, label: labels[i], isChecked: bak.length === 0 || bak.indexOf(d) >= 0, color: colors[i]};
-    }).sort(this.sortByName('label'));
+    }).sort(sortByProperty('label'));
 
     const $rows = popup.select('tbody').selectAll('tr').data(trData);
     const $rowsEnter = $rows.enter().append('tr');
@@ -64,23 +65,22 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
       this.column.setFilter(noFilter ? null : {filter, filterMissing});
     };
 
-    popup.select('.cancel').on('click', function () {
-      updateData(bak, bakMissing);
-      popup.remove();
-    });
-    popup.select('.reset').on('click', function () {
-      trData.forEach((d) => d.isChecked = true);
-      redraw();
-      updateData(null, null);
-    });
-    popup.select('.ok').on('click', function () {
-      let f = trData.filter((d) => d.isChecked).map((d) => d.cat);
-      if (f.length === trData.length) { // all checked = no filter
-        f = null;
+    this.onButton(popup, {
+      cancel: () => updateData(bak, bakMissing),
+      reset: () => {
+        trData.forEach((d) => d.isChecked = true);
+        redraw();
+        updateData(null, null);
+      },
+      submit: () => {
+        let f = trData.filter((d) => d.isChecked).map((d) => d.cat);
+        if (f.length === trData.length) { // all checked = no filter
+          f = null;
+        }
+        const filterMissing = popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+        updateData(f, filterMissing);
+        return true;
       }
-      const filterMissing = popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
-      updateData(f, filterMissing);
-      popup.remove();
     });
   }
 }

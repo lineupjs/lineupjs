@@ -45,10 +45,14 @@ export default class SearchDialog extends ADialog {
     };
 
     popup.select('input[type="checkbox"]').on('change', updateImpl);
-    popup.select('.ok').on('click', updateImpl);
 
-    popup.select('.cancel').on('click', function () {
-      popup.remove();
+    this.onButton(popup, {
+      cancel: () => undefined,
+      reset: () => undefined,
+      submit: () => {
+        updateImpl();
+        return true;
+      }
     });
   }
 }

@@ -51,18 +51,19 @@ export default class WeightsEditDialog extends ADialog {
 
     redraw();
 
-    $popup.select('.cancel').on('click', () => {
-      this.column.setWeights(weights);
-      $popup.remove();
-    });
-    $popup.select('.reset').on('click', () => {
-      children.forEach((d, i) => d.weight = weights[i] * 100);
-      $rows.select('input').property('value', (d) => d.weight);
-      redraw();
-    });
-    $popup.select('.ok').on('click', () => {
-      this.column.setWeights(children.map((d) => d.weight));
-      $popup.remove();
+    this.onButton($popup, {
+      cancel: () => {
+        this.column.setWeights(weights);
+      },
+      reset: () => {
+        children.forEach((d, i) => d.weight = weights[i] * 100);
+        $rows.select('input').property('value', (d) => d.weight);
+        redraw();
+      },
+      submit: () => {
+        this.column.setWeights(children.map((d) => d.weight));
+        return true;
+      }
     });
   }
 }

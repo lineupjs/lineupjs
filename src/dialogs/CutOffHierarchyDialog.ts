@@ -35,23 +35,22 @@ export default class CutOffHierarchyDialog extends ADialog {
       }
     });
 
-    const that = this;
-    popup.select('.ok').on('click', function () {
-      const form = <HTMLFormElement>popup.select('form').node();
-      if (!form.checkValidity()) {
-        return;
+    this.onButton(popup, {
+      cancel: () => undefined,
+      reset: () => undefined,
+      submit: () => {
+        const form = <HTMLFormElement>popup.select('form').node();
+        if (!form.checkValidity()) {
+          return false;
+        }
+        const newNode = popup.select('input[type="text"]').property('value');
+        const newNodeIndex = innerNodePaths.indexOf(newNode);
+        const node = innerNodes[newNodeIndex];
+        const maxDepthText = popup.select('input[type="number"]').property('value');
+        const maxDepth = maxDepthText === '' ? Infinity : parseInt(maxDepthText, 10);
+        this.column.setCutOff(node, maxDepth);
+        return true;
       }
-      const newNode = popup.select('input[type="text"]').property('value');
-      const newNodeIndex = innerNodePaths.indexOf(newNode);
-      const node = innerNodes[newNodeIndex];
-      const maxDepthText = popup.select('input[type="number"]').property('value');
-      const maxDepth = maxDepthText === '' ? Infinity : parseInt(maxDepthText, 10);
-      that.column.setCutOff(node, maxDepth);
-      popup.remove();
-    });
-
-    popup.select('.cancel').on('click', function () {
-      popup.remove();
     });
   }
 }

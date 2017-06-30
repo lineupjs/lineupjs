@@ -1,7 +1,7 @@
 import AFilterDialog from './AFilterDialog';
 import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
-import DataProvider from '../provider/ADataProvider';
 import {scale as d3scale} from 'd3';
+import {sortByProperty} from './ADialog';
 
 
 export default class CategoricalMappingFilterDialog extends AFilterDialog<CategoricalNumberColumn> {
@@ -38,7 +38,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
         range: range[i] * 100,
         color: colors[i]
       };
-    }).sort(this.sortByName('label'));
+    }).sort(sortByProperty('label'));
 
     const $rows = $popup.select('tbody').selectAll('tr').data(trData);
     const $rowsEnter = $rows.enter().append('tr');
@@ -88,29 +88,31 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
       this.column.setFilter(noFilter ? null : {filter, filterMissing});
     };
 
-    $popup.select('.cancel').on('click', () => {
-      updateData(bak, bakMissing);
-      this.column.setMapping(range);
-      $popup.remove();
-    });
-    $popup.select('.reset').on('click', () => {
-      trData.forEach((d) => {
-        d.isChecked = true;
-        d.range = 50;
-      });
-      redraw();
-      updateData(null, null);
-      this.column.setMapping(trData.map(() => 1));
-    });
-    $popup.select('.ok').on('click', () => {
-      let f = trData.filter((d) => d.isChecked).map((d) => d.cat);
-      if (f.length === trData.length) {
-        f = null;
+
+    this.onButton($popup, {
+      cancel: () => {
+        updateData(bak, bakMissing);
+        this.column.setMapping(range);
+      },
+      reset: () => {
+        trData.forEach((d) => {
+          d.isChecked = true;
+          d.range = 50;
+        });
+        redraw();
+        updateData(null, null);
+        this.column.setMapping(trData.map(() => 1));
+      },
+      submit: () => {
+        let f = trData.filter((d) => d.isChecked).map((d) => d.cat);
+        if (f.length === trData.length) {
+          f = null;
+        }
+        const filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+        updateData(f, filterMissing);
+        this.column.setMapping(trData.map((d) => d.range / 100));
+        return true;
       }
-      const filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
-      updateData(f, filterMissing);
-      this.column.setMapping(trData.map((d) => d.range / 100));
-      $popup.remove();
     });
   }
 }

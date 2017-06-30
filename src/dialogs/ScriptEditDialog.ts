@@ -30,18 +30,19 @@ export default class ScriptEditDialog extends ADialog {
       updateData(script);
     };
 
-    $popup.select('.cancel').on('click', function () {
-      $popup.select('textarea').property('value', bak);
-      updateData(bak);
-      $popup.remove();
-    });
-    $popup.select('.reset').on('click', function () {
-      $popup.select('textarea').property('value', ScriptColumn.DEFAULT_SCRIPT);
-      updateData(ScriptColumn.DEFAULT_SCRIPT);
-    });
-    $popup.select('.ok').on('click', function () {
-      updateImpl();
-      $popup.remove();
+    this.onButton($popup, {
+      cancel: () => {
+        $popup.select('textarea').property('value', bak);
+        updateData(bak);
+      },
+      reset: () => {
+        $popup.select('textarea').property('value', ScriptColumn.DEFAULT_SCRIPT);
+        updateData(ScriptColumn.DEFAULT_SCRIPT);
+      },
+      submit: () => {
+        updateImpl();
+        return true;
+      }
     });
   }
 }

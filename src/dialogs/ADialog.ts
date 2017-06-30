@@ -9,20 +9,6 @@ abstract class ADialog {
 
   abstract openDialog();
 
-  sortByName(prop: string) {
-    return function (a, b) {
-      const av = a[prop],
-        bv = b[prop];
-      if (av.toLowerCase() < bv.toLowerCase()) {
-        return -1;
-      }
-      if (av.toLowerCase() > bv.toLowerCase()) {
-        return 1;
-      }
-      return 0;
-    };
-  }
-
   /**
    * creates a simple popup dialog under the given attachment
    * @param body
@@ -82,6 +68,21 @@ abstract class ADialog {
         <button type = "button" class="reset fa fa-undo" title="reset"></button>`);
   }
 
+  protected onButton($popup: Selection<any>, handler: {submit: ()=>boolean, reset: ()=>void, cancel: ()=>void}) {
+    $popup.select('.cancel').on('click', () => {
+      handler.cancel();
+      $popup.remove();
+    });
+    $popup.select('.reset').on('click', () => {
+      handler.reset();
+    });
+    $popup.select('.ok').on('click', () => {
+      if (handler.submit()) {
+        $popup.remove();
+      }
+    });
+  }
+
   private basicDialog(body: string) {
     return `<span style="font-weight: bold" class="lu-popup-title">${this.title}</span>
             <form onsubmit="return false">
@@ -101,6 +102,14 @@ abstract class ADialog {
       body.on('click', null);
     });
   }
+}
+
+export function sortByProperty(prop: string) {
+  return (a: any, b: any) => {
+    const av = a[prop],
+      bv = b[prop];
+    return av.toLowerCase().localeCompare(bv.toLowerCase());
+  };
 }
 
 export default ADialog;
