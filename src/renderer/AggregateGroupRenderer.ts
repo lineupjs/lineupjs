@@ -23,7 +23,7 @@ function render(ctx: CanvasRenderingContext2D, icon: string, col: AggregateGroup
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   createSVG(col: AggregateGroupColumn, context: IDOMRenderContext): ISVGCellRenderer {
     return {
-      template: `<text class='aggregate fa text_center'>\uf142</text>`,
+      template: `<text class='aggregate fa text_center'><title>Collapse Group</title>\uf0d7</text>`, //fa-caret-down
       update(node: SVGTextElement, row: IDataRow, i: number, group: IGroup) {
         attr(node, {
           x: col.getVisibleWidth() / 2
@@ -41,7 +41,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
 
   createGroupSVG(col: AggregateGroupColumn, context: IDOMRenderContext): ISVGGroupRenderer {
     return {
-      template: `<text class='aggregate fa text_center'>\uf142</text>`,
+      template: `<text class='aggregate fa text_center'><title>Expand Group</title>\uf0da</text>`, //fa-caret-right
       update(node: SVGTextElement, group: IGroup, rows: IDataRow[]) {
         const width = col.getCompressed() ? Column.COMPRESSED_WIDTH : col.getWidth();
         attr(node, {
@@ -60,14 +60,14 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
   createCanvas(col: AggregateGroupColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       if (i === 0) { //just for the first in each group
-        render(ctx, '\uf142', col, context);
+        render(ctx, '\uf0d7', col, context);
       }
     };
   }
 
   createGroupCanvas(col: AggregateGroupColumn, context: ICanvasRenderContext): ICanvasGroupRenderer {
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      render(ctx, '\uf142', col, context);
+      render(ctx, '\uf0da', col, context);
     };
   }
 }
