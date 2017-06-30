@@ -63,6 +63,7 @@
     p.deriveDefault();
     p.getLastRanking().insert(p.create({ type: 'selection', label: 'S'}), 0);
     p.getLastRanking().insert(p.create({ type: 'aggregate', label: 'A'}), 0);
+    p.getLastRanking().push(p.create(desc[1]));
 
     const instance = LineUpJS.create(p, document.body, {
       body: {
