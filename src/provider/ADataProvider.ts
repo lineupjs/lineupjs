@@ -381,6 +381,7 @@ abstract class ADataProvider extends AEventDispatcher {
     return {
       uid: this.uid,
       selection: this.getSelection(),
+      aggregations: Array.from(this.aggregations),
       rankings: this.rankings.map((r) => r.dump(this.toDescRef))
     };
   }
@@ -442,6 +443,10 @@ abstract class ADataProvider extends AEventDispatcher {
     this.uid = dump.uid || 0;
     if (dump.selection) {
       dump.selection.forEach((s) => this.selection.add(s));
+    }
+    if (dump.aggregations) {
+      this.aggregations.clear();
+      dump.aggregations.forEach((a) => this.aggregations.add(a));
     }
 
 
