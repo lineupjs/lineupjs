@@ -15,7 +15,7 @@ import StackColumn, {createDesc as createStackDesc} from '../model/StackColumn';
 import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
-import MultiValueColumn from '../model/MultiValueColumn';
+import NumbersColumn from '../model/NumbersColumn';
 import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
 
 import SearchDialog from '../dialogs/SearchDialog';
@@ -34,6 +34,8 @@ import CategoricalMappingFilterDialog from '../dialogs/CategoricalMappingFilterD
 import {IFilterDialog} from '../dialogs/AFilterDialog';
 import ScriptEditDialog from '../dialogs/ScriptEditDialog';
 import SelectionColumn from '../model/SelectionColumn';
+import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
+import HierarchyColumn from '../model/HierarchyColumn';
 
 /**
  * utility function to generate the tooltip text with description
@@ -100,7 +102,9 @@ export default class HeaderRenderer {
       'boolean': BooleanFilterDialog,
       'categorical': CategoricalFilterDialog,
       'number': MappingsFilterDialog,
-      'ordinal': CategoricalMappingFilterDialog
+      'ordinal': CategoricalMappingFilterDialog,
+      'boxplot': MappingsFilterDialog,
+      'numbers': MappingsFilterDialog
     },
     linkTemplates: [],
     searchAble: (col: Column) => col instanceof StringColumn,
@@ -345,8 +349,8 @@ export default class HeaderRenderer {
       (<MouseEvent>d3.event).stopPropagation();
     });
 
-    //MultiValue Sort
-    $node.filter((d) => d instanceof MultiValueColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+    //Numbers Sort
+    $node.filter((d) => d instanceof NumbersColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
       const dialog = new SortDialog(<IBoxPlotColumn><any>d, d3.select(this.parentNode.parentNode));
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
@@ -377,6 +381,13 @@ export default class HeaderRenderer {
     $node.filter((d) => this.options.filters.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', (d) => {
       const target = (<MouseEvent>d3.event).target;
       const dialog = new this.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode), '', provider, that.options.idPrefix);
+      dialog.openDialog();
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+    //cutoff
+    $node.filter((d) => d instanceof HierarchyColumn).append('i').attr('class', 'fa fa-scissors').attr('title', 'Set Cut Off').on('click', (d: HierarchyColumn) => {
+      const target = (<MouseEvent>d3.event).target;
+      const dialog = new CutOffHierarchyDialog(d, d3.select((<HTMLElement>target).parentNode), that.options.idPrefix);
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
