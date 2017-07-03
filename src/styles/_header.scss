@@ -63,34 +63,13 @@
         }
       }
 
-      div.histogram {
+      div.summary {
         position: absolute;
         left: 0;
         right: 5px;
         top: 40%;
         height: 60%;
         display: none;
-
-        > div.bar {
-          position: absolute;
-          background-color: white;
-          opacity: 0.5;
-
-          &.selected {
-            opacity: 1.0;
-          }
-
-          &:hover {
-            opacity: 0.7;
-          }
-        }
-
-        div.mean {
-          position: absolute;
-          height: 100%;
-          width: 1px;
-          border-left: 1px solid black;
-        }
       }
 
       div.lu-label {
@@ -205,8 +184,42 @@
       }
 
       &.number, &.categorical, &.ordinal {
-        div.histogram {
-          display: block
+        div.summary {
+          display: block;
+
+
+          > div.bar {
+            position: absolute;
+            background-color: white;
+            opacity: 0.5;
+
+            &.selected {
+              opacity: 1.0;
+            }
+
+            &:hover {
+              opacity: 0.7;
+            }
+          }
+
+          div.mean {
+            position: absolute;
+            height: 100%;
+            width: 1px;
+            border-left: 1px solid black;
+          }
+        }
+      }
+
+      &.string {
+        div.summary {
+          display: block;
+        }
+      }
+      &.selection {
+        div.summary {
+          text-align: left;
+          display: block;
         }
       }
 
