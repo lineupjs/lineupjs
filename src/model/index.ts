@@ -23,6 +23,7 @@ import LinkColumn from './LinkColumn';
 import BooleansColumn from './BooleansColumn';
 import NumbersColumn from './NumbersColumn';
 import BoxPlotColumn from './BoxPlotColumn';
+import HierarchyColumn from './HierarchyColumn';
 
 
 export {default as Column, IColumnDesc} from './Column';
@@ -97,6 +98,7 @@ export function models() {
     mean: MeanColumn,
     script: ScriptColumn,
     nested: NestedColumn,
-    boxplot: BoxPlotColumn
+    boxplot: BoxPlotColumn,
+    hierarchy: HierarchyColumn
   };
 }

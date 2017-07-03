@@ -23,6 +23,7 @@ export default class EditLinkDialog extends ADialog {
         value="${(<LinkColumn>this.column).getLink()}"
         required="required"
         autofocus="autofocus"
+        placeholder="link pattern"
         ${this.templates.length > 0 ? 'list="ui' + this.idPrefix + 'lineupPatternList"' : ''}
       ><br>`;
     if (this.templates.length > 0) {
