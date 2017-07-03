@@ -1,52 +1,54 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import MultiValueColumn from '../model/MultiValueColumn';
+import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {select as d3select} from 'd3';
+import {attr, forEach} from '../utils';
+import Column from '../model/Column';
 
 
 export default class ThresholdCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: MultiValueColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const cellDimension = col.calculateCellDimension(col.getWidth());
+  createSVG(col: INumbersColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const cellDimension = col.getWidth() / col.getDataLength();
     const threshold = col.getThreshold();
-    const colorValues = col.getColorScale().range();
-
+    const colorValues = col.getRawColorScale().range();
+    let templateRows = '';
+    for (let i = 0; i < col.getDataLength(); ++i) {
+      templateRows += `<rect width="${cellDimension}" height="1" x="${i * cellDimension}" y="0" fill="white"><title></title></rect>`;
+    }
     return {
-      template: `<g class='thresholdcell'></g>`,
+      template: `<g class='thresholdcell'>${templateRows}</g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const rowHeight = context.rowHeight(i);
-        const rect = d3select(n).selectAll('rect').data(col.getValue(d.v, d.dataIndex));
-        rect.enter().append('rect');
-        rect
-          .attr({
-            y: (d, j) => (d < threshold) ? (rowHeight / 2) : 0,
-            x: (d, j) => (j * cellDimension),
-            width: cellDimension,
-            height: (d, j) => (rowHeight / 2),
-            fill: (d) => (d < threshold) ? colorValues[0] : colorValues[2]
+        const data = col.getRawNumbers(d.v, d.dataIndex);
+        forEach(n, 'rect', (d, i) => {
+          const v = data[i];
+          attr(<SVGRectElement>d, {
+            fill: (v < threshold) ? colorValues[0] : colorValues[colorValues.length-1],
+            height: (rowHeight / 2),
+            y: (v < threshold) ? (rowHeight / 2) : 0
           });
-        rect.exit().remove();
+          d.querySelector('title').textContent = NumbersColumn.DEFAULT_FORMATTER(v);
+        });
       }
     };
   }
 
-  createCanvas(col: MultiValueColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-
-    const cellDimension = col.calculateCellDimension(col.getWidth());
+  createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const cellDimension = col.getWidth() / col.getDataLength();
     const threshold = col.getThreshold();
-    const colorValues = col.getColorScale().range();
+    const colorValues = col.getRawColorScale().range();
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const data = col.getValue(d.v, d.dataIndex);
+      const data = col.getRawNumbers(d.v, d.dataIndex);
       const rowHeight = context.rowHeight(i);
       data.forEach((d, j) => {
         ctx.beginPath();
-        const xpos = (j * cellDimension);
+        const xpos = j * cellDimension;
         const ypos = (d < threshold) ? (rowHeight / 2) : 0;
-        ctx.fillStyle = (d < threshold) ? colorValues[0] : colorValues[2];
+        ctx.fillStyle = (d < threshold) ? colorValues[0] : colorValues[colorValues.length-1];
         ctx.fillRect(xpos, ypos, cellDimension, rowHeight / 2);
       });
     };

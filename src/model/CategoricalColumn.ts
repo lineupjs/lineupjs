@@ -120,6 +120,11 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.separator = desc.separator || this.separator;
     this.initCategories(desc);
     //TODO infer categories from data
+
+    this.setRendererList([
+      {type: 'categorical', label: 'Default'},
+      {type: 'upset', label: 'UpSet'}
+    ]);
   }
 
   initCategories(desc: IBaseCategoricalDesc) {
