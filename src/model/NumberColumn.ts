@@ -314,7 +314,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
     const rendererList = [{type: 'number', label: 'Bar'},
       {type: 'circle', label: 'Circle'},
-      {type: 'string', label: 'String'}];
+      {type: 'default', label: 'String'}];
 
     this.setRendererList(rendererList);
   }
