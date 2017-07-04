@@ -2,7 +2,6 @@
 
 .lu-popup {
   position: absolute;
-
   dominant-baseline: central;
   text-anchor: middle;
 
@@ -17,11 +16,8 @@
   position: absolute;
   padding: 2px;
   box-shadow: 5px 5px 3px #888888;
-
   z-index: 9;
-
   font-size: 8pt;
-
   clear: right;
 
   input {
@@ -49,6 +45,7 @@
       width: 95%;
       border: 0;
     }
+
     tr:hover {
       background-color: lightblue;
     }
@@ -64,9 +61,11 @@
   * {
     margin: 0;
   }
+
   .ok {
     float: right;
   }
+
   div.bar {
     height: 1em;
   }

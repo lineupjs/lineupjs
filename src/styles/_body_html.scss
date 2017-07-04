@@ -21,6 +21,7 @@
       text-align: center;
     }
   }
+
   div.loading {
     div {
       display: inline;
@@ -32,19 +33,23 @@
       background-color: transparent;
       border: 1px solid transparent;
     }
+
     &.even div.bg {
       background-color: $lu_even_bg;
     }
+
     &.selected {
       div.bg {
         border: 1px solid $lu_selected_color;
       }
     }
+
     &.hover {
       div.bg {
         border: 1px solid $lu_hover_color;
       }
     }
+
     &.selected, &.hover {
       .bar {
         //bars nested combined with a text representation
@@ -59,6 +64,7 @@
     div.selection:before {
       content: "\f096";
     }
+
     &.selected div.selection:before {
       content: "\f046";
     }

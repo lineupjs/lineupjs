@@ -63,12 +63,15 @@ $mapping_color_hover: #0000cf;
         opacity: 0.5;
       }
     }
+
     g.mapping {
       &:hover {
         cursor: ew-resize;
+
         line {
           stroke: $mapping_color_hover;
         }
+
         circle {
           fill: $mapping_color_hover;
         }
@@ -78,6 +81,7 @@ $mapping_color_hover: #0000cf;
         stroke: $mapping_color;
 
       }
+
       circle {
         fill: $mapping_color;
       }
@@ -88,9 +92,11 @@ $mapping_color_hover: #0000cf;
         font-size: 8pt;
         alignment-baseline: hanging;
       }
+
       path {
         fill: gray;
       }
+
       rect {
         fill: white;
         stroke: gray;
@@ -105,6 +111,7 @@ $mapping_color_hover: #0000cf;
           path {
             fill: darkgray;
           }
+
           rect {
             stroke: darkgray;
           }

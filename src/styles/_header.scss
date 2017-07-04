@@ -47,7 +47,7 @@
     top: 0;
     border-radius: 3px 0 0 3px;
     cursor: auto;
-    background: #6D6C6C;
+    background: #6d6c6c;
     z-index: 1;
   }
 
@@ -97,7 +97,6 @@
         position: relative;
         background: inherit;
         transform-origin: left top;
-
         text-overflow: ellipsis;
         overflow-x: hidden;
       }
@@ -142,12 +141,10 @@
       position: absolute;
       display: inline-block;
       height: 100%;
-
       font-size: 90%;
     }
 
     div.header, div.header_i {
-
       &.filtered > div.toolbar i.fa-filter {
         color: darkblue;
       }
@@ -158,7 +155,6 @@
       color: white;
       text-align: center;
       height: 100%;
-
       font-size: 90%;
 
       &:not(.compressed):hover {
