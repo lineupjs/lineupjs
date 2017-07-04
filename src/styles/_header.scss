@@ -22,6 +22,7 @@
 
   *[draggable] {
     cursor: pointer;
+    cursor: -moz-grab;
     cursor: -webkit-grab; // indicate grab able
   }
 
