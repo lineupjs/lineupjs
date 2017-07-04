@@ -55,8 +55,7 @@
     &.selected,
     &.hover {
       .bar {
-        //bars nested combined with a text representation
-        opacity: 0.5;
+        opacity: 0.5; // bars nested combined with a text representation
 
         span {
           opacity: 1;
@@ -72,21 +71,23 @@
       content: "\f046";
     }
 
-    //div.frozen {
-    //  background-color: white;
-    //  z-index: 1;
-    //}
-    //&.even div.frozen {
-    //  background-color: $lu_even_bg;
-    //}
-    //&.selected div.frozen {
-    //  border-top: 1px solid $lu_selected_color;
-    //  border-bottom: 1px solid $lu_selected_color;
-    //}
-    //&.hover div.frozen {
-    //  border-top: 1px solid $lu_hover_color;
-    //  border-bottom: 1px solid $lu_hover_color;
-    //}
+    /**
+    div.frozen {
+      background-color: white;
+      z-index: 1;
+    }
+    &.even div.frozen {
+      background-color: $lu_even_bg;
+    }
+    &.selected div.frozen {
+      border-top: 1px solid $lu_selected_color;
+      border-bottom: 1px solid $lu_selected_color;
+    }
+    &.hover div.frozen {
+      border-top: 1px solid $lu_hover_color;
+      border-bottom: 1px solid $lu_hover_color;
+    }
+    */
 
     div.cat div {
       position: relative;

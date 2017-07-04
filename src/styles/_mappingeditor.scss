@@ -1,4 +1,6 @@
-//mapping editor
+/**
+mapping editor
+ */
 
 $sample_color: black;
 $mapping_color: blue;
@@ -151,7 +153,7 @@ $mapping_color_hover: #0000cf;
       width: 75px;
     }
 
-    & div:first-child {
+    div:first-child {
       margin-bottom: 10px;
     }
   }

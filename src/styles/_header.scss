@@ -22,7 +22,7 @@
 
   *[draggable] {
     cursor: pointer;
-    cursor: -webkit-grab; //indicate grab able
+    cursor: -webkit-grab; // indicate grab able
   }
 
   div.lu-header,
@@ -162,7 +162,7 @@
       font-size: 90%;
 
       &:not(.compressed):hover {
-        & > div.toolbar {
+        > div.toolbar {
           display: block;
           padding: 7px;
 
@@ -170,7 +170,9 @@
             display: none;
           }
 
-          // show menu icon and provide extra spacing, that the menu doesn't close immediately when the mouse leaves the toolbar
+          /**
+          show menu icon and provide extra spacing, that the menu doesn't close immediately when the mouse leaves the toolbar
+           */
           &::before {
             z-index: -1;
             content: '\f0c9';
@@ -199,7 +201,7 @@
       }
 
       &.compressed:hover {
-        & > div.toolbar {
+        > div.toolbar {
           display: block;
         }
       }

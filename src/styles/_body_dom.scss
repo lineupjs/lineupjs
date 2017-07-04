@@ -16,7 +16,10 @@
   .selectionOnly {
     display: none;
   }
-  // selected state extends hover state
+
+  /**
+    selected state extends hover state
+   */
   .selected .selectionOnly,
   .selected .hoverOnly {
     display: block;

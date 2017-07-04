@@ -35,7 +35,7 @@
     }
   }
 
-  .foreign { //e.g. the input field in annotate columns
+  .foreign { // e.g. the input field in annotate columns
     padding: 0;
     margin: 0;
     pointer-events: all;
@@ -120,8 +120,7 @@
     &.selected,
     &.hover {
       .bar rect {
-        //bars nested combined with a text representation
-        opacity: 0.5;
+        opacity: 0.5; // bars nested combined with a text representation
       }
     }
   }
