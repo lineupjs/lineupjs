@@ -1,7 +1,8 @@
 @import "colors";
 
 .lu svg.lu-body {
-  text, tspan {
+  text,
+  tspan {
     dominant-baseline: text-before-edge;
   }
 
@@ -24,7 +25,8 @@
       }
     }
 
-    &.rank, &.text_right {
+    &.rank,
+    &.text_right {
       text-anchor: end;
     }
 
@@ -33,7 +35,7 @@
     }
   }
 
-  foreignObject { //e.g. the input field in annotate columns
+  .foreign { //e.g. the input field in annotate columns
     padding: 0;
     margin: 0;
     pointer-events: all;
@@ -115,12 +117,12 @@
       }
     }
 
-    &.selected, &.hover {
+    &.selected,
+    &.hover {
       .bar rect {
         //bars nested combined with a text representation
         opacity: 0.5;
       }
     }
-
   }
 }

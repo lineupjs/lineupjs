@@ -24,7 +24,8 @@ $mapping_color_hover: #0000cf;
     }
   }
 
-  .raw_min, .raw_max {
+  .raw_min,
+  .raw_max {
     width: 3em;
     display: block;
   }
@@ -79,7 +80,6 @@ $mapping_color_hover: #0000cf;
 
       line {
         stroke: $mapping_color;
-
       }
 
       circle {
@@ -140,7 +140,7 @@ $mapping_color_hover: #0000cf;
     z-index: 10;
 
     &.hide {
-      opacity: .2;
+      opacity: 0.2;
     }
 
     div input {

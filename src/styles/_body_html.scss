@@ -4,13 +4,15 @@
   font-size: $lu_body_font_size;
   position: relative;
 
-  div, svg {
+  div,
+  svg {
     position: absolute;
     padding: 0;
     margin: 0;
   }
 
-  div.text, div.cat {
+  div.text,
+  div.cat {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -50,22 +52,23 @@
       }
     }
 
-    &.selected, &.hover {
+    &.selected,
+    &.hover {
       .bar {
         //bars nested combined with a text representation
         opacity: 0.5;
 
         span {
-          opacity: 1.0;
+          opacity: 1;
         }
       }
     }
 
-    div.selection:before {
+    div.selection::before {
       content: "\f096";
     }
 
-    &.selected div.selection:before {
+    &.selected div.selection::before {
       content: "\f046";
     }
 

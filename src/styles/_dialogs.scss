@@ -11,11 +11,12 @@
   }
 }
 
-.lu-popup, .lu-popup2 {
+.lu-popup,
+.lu-popup2 {
   background-color: rgba(255, 255, 255, 0.9);
   position: absolute;
   padding: 2px;
-  box-shadow: 5px 5px 3px #888888;
+  box-shadow: 5px 5px 3px #888;
   z-index: 9;
   font-size: 8pt;
   clear: right;
