@@ -3,7 +3,7 @@
  */
 
 import * as d3 from 'd3';
-import {forEach, matchColumns} from '../utils';
+import {attr, forEach, matchColumns} from '../utils';
 import Column, {IStatistics} from '../model/Column';
 import DataProvider from '../provider/ADataProvider';
 import {IDOMRenderContext} from '../renderer/RendererContexts';
@@ -97,17 +97,19 @@ abstract class ABodyDOMRenderer extends ABodyRenderer {
         createTemplates(this, data[j].frozen);
       });
 
-      $rows
-        .attr('class', (d, i) => 'row ' + (i % 2 === 0 ? 'even' : ''))
-        .attr('data-data-index', (d) => d)
-        .classed('selected', (d) => this.data.isSelected(d));
-      //.classed('highlighted', (d) => this.data.isHighlighted(d.d));
+      $rows.each(function(this: HTMLElement|SVGGElement, d: number, i: number) {
+        const selected = that.data.isSelected(d);
+        attr(this, {
+          'class': `row${i % 2 === 0 ? ' even' : ''}${selected ? ' selected' : ''}`,
+          'data-data-index': d
+        });
+      });
 
       //animated reordering
       this.animated($rows).call(domMapping.transform, (d, i) => [0, context.cellY(i)]);
 
       //update background helper
-      $rows.select(domMapping.bg).attr('class', 'bg')
+      $rows.select(domMapping.bg)
         .call(domMapping.updateBG, (d, i, j) => [data[j].width, context.rowHeight(i)]);
 
       const updateColumns = (node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) => {

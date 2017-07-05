@@ -26,9 +26,9 @@ export default class BarCellRenderer implements ICellRendererFactory {
     return {
       template: `<g class='bar'>
           <rect class='${col.cssClass}' y='${paddingTop}' style='fill: ${col.color}'>
-            <title></title>
+            <title> </title>
           </rect>
-          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"></text>
+          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"> </text>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         const width = col.getWidth() * col.getNumber(d.v, d.dataIndex);

@@ -28,7 +28,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return {
 
       template: `<g class='boxplotcell'>
-            <title></title>
+            <title> </title>
             <rect class='cellbg'></rect>
             <rect class='boxplotrect' y='${topPadding}'></rect>
             <path class='boxplotallpath'></path>

@@ -25,7 +25,7 @@ export default class Heatmap implements ICellRendererFactory {
     const padding = context.option('rowBarPadding', 1);
     return {
       template: `<rect class='heatmap ${col.cssClass}' y='${padding}' style='fill: ${col.color}'>
-            <title></title>
+            <title> </title>
           </rect>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         setText(n.querySelector('title'), col.getLabel(d.v, d.dataIndex));

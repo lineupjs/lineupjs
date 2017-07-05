@@ -383,6 +383,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
  * @param node
  * @param attrs
  * @param styles
+ * @param text
  * @return {T}
  */
 export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs = {}, styles = {}, text?: string): T {
@@ -398,13 +399,20 @@ export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs = {}, 
       (<any>node).style.setProperty(attr, v);
     }
   });
-  if (text !== undefined && node.textContent !== text) {
-    node.textContent = text;
-  }
-  return node;
+  return setText(node, text);
 }
 
-export function setText<T extends Node>(node: T, text: string): T {
+export function setText<T extends Node>(node: T, text?: string): T {
+  if (text === undefined) {
+    return node;
+  }
+  //no performance boost if setting the text node directly
+  //const textNode = <Text>node.firstChild;
+  //if (textNode == null) {
+  //  node.appendChild(node.ownerDocument.createTextNode(text));
+  //} else {
+  //  textNode.data = text;
+  //}
   if (node.textContent !== text) {
     node.textContent = text;
   }

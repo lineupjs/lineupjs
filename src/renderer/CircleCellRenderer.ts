@@ -18,9 +18,9 @@ export default class CircleCellRenderer implements ICellRendererFactory {
     return {
       template: `<g class='bar'>
           <circle class='${col.cssClass}' style='fill: ${col.color}'>
-            <title></title>
+            <title> </title>
           </circle>
-          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"></text>
+          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"> </text>
         </g>`,
       update: (n: SVGElement, d: IDataRow, i: number) => {
         const v = col.getNumber(d.v, d.dataIndex);

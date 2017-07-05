@@ -16,7 +16,7 @@ export default class ThresholdCellRenderer implements ICellRendererFactory {
     const colorValues = col.getRawColorScale().range();
     let templateRows = '';
     for (let i = 0; i < col.getDataLength(); ++i) {
-      templateRows += `<rect width="${cellDimension}" height="1" x="${i * cellDimension}" y="0" fill="white"><title></title></rect>`;
+      templateRows += `<rect width="${cellDimension}" height="1" x="${i * cellDimension}" y="0" fill="white"><title> </title></rect>`;
     }
     return {
       template: `<g class='thresholdcell'>${templateRows}</g>`,

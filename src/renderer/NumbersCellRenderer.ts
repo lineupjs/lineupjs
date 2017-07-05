@@ -16,7 +16,7 @@ export default class NumbersCellRenderer implements ICellRendererFactory {
     const padding = context.option('rowBarPadding', 1);
     let templateRows = '';
     for (let i = 0; i < col.getDataLength(); ++i) {
-      templateRows += `<rect y="${padding}" width="${cellDimension}" height="1" x="${i * cellDimension}" fill="white"><title></title></rect>`;
+      templateRows += `<rect y="${padding}" width="${cellDimension}" height="1" x="${i * cellDimension}" fill="white"><title> </title></rect>`;
     }
     return {
       template: `<g class="heatmapcell">${templateRows}</g>`,
