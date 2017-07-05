@@ -188,6 +188,9 @@
 
       &.number,
       &.categorical,
+      &.boolean,
+      &.booleans,
+      &.hierarchy,
       &.ordinal {
         div.summary {
           display: block;
