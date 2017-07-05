@@ -45,7 +45,7 @@
   ],
   "scripts": {
     "compile": "tsc",
-    "lint": "tslint --project tsconfig.json --type-check -c tslint.json",
+    "lint": "tslint --project tsconfig.json --type-check -c tslint.json && stylelint src/**/*.scss",
     "docs": "typedoc --options typedoc.json src",
     "pretest": "npm run compile",
     "test": "echo 'no tests'",
@@ -71,6 +71,9 @@
     "node-sass": "^4.5.2",
     "sass-loader": "^6.0.3",
     "style-loader": "^0.16.1",
+    "stylelint": "^7.12.0",
+    "stylelint-config-standard": "^16.0.0",
+    "stylelint-scss": "^1.4.4",
     "tslint": "^5.0.0",
     "typedoc": "^0.5.10",
     "typescript": "2.2.2",

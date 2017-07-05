@@ -1,8 +1,9 @@
-//popups, e.g., rename dialogs,...
+/**
+  popups, e.g., rename dialogs,...
+ */
 
 .lu-popup {
   position: absolute;
-
   dominant-baseline: central;
   text-anchor: middle;
 
@@ -12,16 +13,14 @@
   }
 }
 
-.lu-popup, .lu-popup2 {
+.lu-popup,
+.lu-popup2 {
   background-color: rgba(255, 255, 255, 0.9);
   position: absolute;
   padding: 2px;
-  box-shadow: 5px 5px 3px #888888;
-
+  box-shadow: 5px 5px 3px #888;
   z-index: 9;
-
   font-size: 8pt;
-
   clear: right;
 
   input {
@@ -49,6 +48,7 @@
       width: 95%;
       border: 0;
     }
+
     tr:hover {
       background-color: lightblue;
     }
@@ -64,9 +64,11 @@
   * {
     margin: 0;
   }
+
   .ok {
     float: right;
   }
+
   div.bar {
     height: 1em;
   }

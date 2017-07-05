@@ -1,0 +1,39 @@
+{
+  "plugins": [
+    "stylelint-scss"
+  ],
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "scss/at-extend-no-missing-placeholder": true,
+    "scss/at-else-closing-brace-newline-after": "always-last-in-chain",
+    "scss/at-else-closing-brace-space-after": "always-intermediate",
+    "scss/at-else-empty-line-before": "never",
+    "scss/at-function-pattern": null,
+    "scss/at-if-closing-brace-newline-after": "always-last-in-chain",
+    "scss/at-if-closing-brace-space-after": "always-intermediate",
+    "scss/at-import-no-partial-leading-underscore": true,
+    "scss/at-import-partial-extension-blacklist": null,
+    "scss/at-import-partial-extension-whitelist": null,
+    "scss/at-mixin-argumentless-call-parentheses": "always",
+    "scss/at-mixin-no-argumentless-call-parentheses": true,
+    "scss/at-mixin-pattern": null,
+    "scss/declaration-nested-properties": null,
+    "scss/declaration-nested-properties-no-divided-groups": true,
+    "scss/dollar-variable-colon-newline-after": null,
+    "scss/dollar-variable-colon-space-after": "always",
+    "scss/dollar-variable-colon-space-before": "never",
+    "scss/dollar-variable-empty-line-before": null,
+    "scss/dollar-variable-no-missing-interpolation": true,
+    "scss/dollar-variable-pattern": null,
+    "scss/double-slash-comment-empty-line-before": "always",
+    "scss/double-slash-comment-inline": "always",
+    "scss/double-slash-comment-whitespace-inside": "always",
+    "scss/media-feature-value-dollar-variable": "always",
+    "scss/operator-no-newline-after": true,
+    "scss/operator-no-newline-before": true,
+    "scss/operator-no-unspaced": true,
+    "scss/percent-placeholder-pattern": null,
+    "scss/partial-no-import": null,
+    "scss/selector-no-redundant-nesting-selector": true
+  }
+}
