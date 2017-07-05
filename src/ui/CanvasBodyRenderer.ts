@@ -209,7 +209,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
         return;
       }
       return h.then((stats: IStatistics) => {
-        const xPos = d.shift + d.column.getWidth() * stats.mean;
+        const xPos = ranking.shift + d.shift + d.column.getWidth() * stats.mean;
         if (isNaN(xPos)) {
           return;
         }

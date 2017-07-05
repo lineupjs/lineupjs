@@ -10,6 +10,7 @@ import StringColumn from './StringColumn';
 export interface ICategoricalColumn {
   readonly categories: string[];
   readonly categoryLabels: string[];
+  readonly categoryColors: string[];
 
   getCategories(row: any, index: number): string[];
   getColor(row: any, index: number): string;
@@ -170,10 +171,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     }
     //label or identity mapping
     return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c) : c);
-  }
-
-  colorOf(cat: string) {
-    return this.colors(cat);
   }
 
   getLabel(row: any, index: number) {

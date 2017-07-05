@@ -9,7 +9,7 @@ import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import NumberColumn, {isNumberColumn, INumberColumn} from '../model/NumberColumn';
-import CategoricalColumn, {isCategoricalColumn} from '../model/CategoricalColumn';
+import CategoricalColumn, {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import RankColumn from '../model/RankColumn';
 import StackColumn, {createDesc as createStackDesc} from '../model/StackColumn';
 import LinkColumn from '../model/LinkColumn';
@@ -583,22 +583,24 @@ export default class HeaderRenderer {
     $headers.exit().remove();
   }
 
-  private renderCategoricalSummary(col: CategoricalColumn, $this: d3.Selection<Column>) {
+  private renderCategoricalSummary(col: ICategoricalColumn&Column, $this: d3.Selection<Column>) {
     const hist = this.histCache.get(col.id);
     if (!hist) {
       return;
     }
     hist.then((stats: ICategoricalStatistics) => {
+      const cats = col.categories;
+      const colors = col.categoryColors;
       const $bars = $this.selectAll('div.bar').data(stats.hist);
       $bars.enter().append('div').classed('bar', true);
-      const sx = d3.scale.ordinal().domain(col.categories).rangeBands([0, 100], 0.1);
+      const sx = d3.scale.ordinal().domain(cats).rangeBands([0, 100], 0.1);
       const sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
       $bars.style({
         left: (d) => sx(d.cat) + '%',
         width: (d) => sx.rangeBand() + '%',
         top: (d) => (100 - sy(d.y)) + '%',
         height: (d) => sy(d.y) + '%',
-        'background-color': (d) => col.colorOf(d.cat)
+        'background-color': (d) => colors[cats.indexOf(d.cat)]
       }).attr({
         title: (d) => `${d.cat}: ${d.y}`,
         'data-cat': (d) => d.cat
