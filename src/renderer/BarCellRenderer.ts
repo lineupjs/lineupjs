@@ -4,7 +4,7 @@ import {INumberColumn} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText} from '../utils';
+import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 
 
@@ -31,7 +31,6 @@ export default class BarCellRenderer implements ICellRendererFactory {
           <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"></text>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        n.querySelector('rect title').textContent = col.getLabel(d.v, d.dataIndex);
         const width = col.getWidth() * col.getNumber(d.v, d.dataIndex);
 
         attr(<SVGRectElement>n.querySelector('rect'), {
@@ -41,7 +40,9 @@ export default class BarCellRenderer implements ICellRendererFactory {
         }, {
           fill: this.colorOf(d.v, i, col)
         });
-        (<SVGTextElement>n.querySelector('text')).textContent = col.getLabel(d.v, d.dataIndex);
+        const label = col.getLabel(d.v, d.dataIndex);
+        setText(n.querySelector('rect title'), label);
+        setText(<SVGTextElement>n.querySelector('text'), label);
       }
     };
   }

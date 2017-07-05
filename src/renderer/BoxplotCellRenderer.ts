@@ -4,7 +4,7 @@ import Column from '../model/Column';
 import {IDOMRenderContext} from './RendererContexts';
 import {ISVGCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr} from '../utils';
+import {attr, setText} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer  from './ICanvasCellRenderer';
 import {scale as d3scale} from 'd3';
@@ -48,7 +48,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           width: col.getWidth(),
           height: rowHeight
         });
-        n.querySelector('title').textContent = computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex));
+        setText(n.querySelector('title'), computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex)));
         attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
           x: scaled.q1,
           width: (scaled.q3 - scaled.q1),

@@ -34,8 +34,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
         attr(n, {
           x: alignmentShift,
           y: textHeight + Math.floor((context.rowHeight(index)-textHeight-2)/2)
-        });
-        n.textContent = col.getLabel(d.v, d.dataIndex);
+        }, {}, col.getLabel(d.v, d.dataIndex));
       }
     };
   }
@@ -46,8 +45,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, d: IDataRow) => {
         attr(n, {}, {
           width: `${col.getWidth()}px`
-        });
-        n.textContent = col.getLabel(d.v, d.dataIndex);
+        }, col.getLabel(d.v, d.dataIndex));
       }
     };
   }

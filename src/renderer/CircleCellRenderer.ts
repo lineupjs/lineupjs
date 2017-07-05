@@ -4,7 +4,7 @@ import {INumberColumn} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText} from '../utils';
+import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
@@ -29,7 +29,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
           cx: (col.getWidth() / 2),
           r: (context.rowHeight(i) / 2) * v
         });
-        (<SVGTextElement>n.querySelector('text')).textContent = col.getLabel(d.v, d.dataIndex);
+        setText((<SVGTextElement>n.querySelector('text')), col.getLabel(d.v, d.dataIndex));
       }
     };
   }

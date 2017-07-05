@@ -3,7 +3,7 @@ import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {showOverlay, clipText} from '../utils';
+import {showOverlay, clipText, attr, setText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 
 export default class AnnotationRenderer implements ICellRendererFactory {
@@ -27,10 +27,11 @@ export default class AnnotationRenderer implements ICellRendererFactory {
         input.style.width = col.getWidth() + 'px';
         input.value = col.getLabel(d.v, d.dataIndex);
 
-        n.querySelector('text').textContent = col.getLabel(d.v, d.dataIndex);
-        const f = n.querySelector('foreignObject');
-        f.setAttribute('width', String(col.getWidth()));
-        f.setAttribute('height', String(context.rowHeight(i)));
+        setText(n.querySelector('text'), col.getLabel(d.v, d.dataIndex));
+        attr(<SVGElement>n.querySelector('foreignObject'), {
+          width: col.getWidth(),
+          height: context.rowHeight(i)
+        });
       }
     };
   }

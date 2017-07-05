@@ -3,7 +3,7 @@ import Column from '../model/Column';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr} from '../utils';
+import {attr, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
@@ -28,7 +28,7 @@ export default class Heatmap implements ICellRendererFactory {
             <title></title>
           </rect>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        n.querySelector('title').textContent = col.getLabel(d.v, d.dataIndex);
+        setText(n.querySelector('title'), col.getLabel(d.v, d.dataIndex));
         const w = context.rowHeight(i) - padding * 2;
 
         attr(n, {

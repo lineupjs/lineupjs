@@ -4,7 +4,7 @@ import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {attr, forEach} from '../utils';
+import {attr, forEach, setText} from '../utils';
 import Column from '../model/Column';
 
 
@@ -29,7 +29,7 @@ export default class NumbersCellRenderer implements ICellRendererFactory {
             fill: colorScale(v),
             height: rowHeight
           });
-          d.querySelector('title').textContent = NumbersColumn.DEFAULT_FORMATTER(v);
+          setText(d.querySelector('title'), NumbersColumn.DEFAULT_FORMATTER(v));
         });
       }
     };

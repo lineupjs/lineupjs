@@ -4,7 +4,7 @@ import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {attr, forEach} from '../utils';
+import {attr, forEach, setText} from '../utils';
 import Column from '../model/Column';
 
 
@@ -30,7 +30,7 @@ export default class ThresholdCellRenderer implements ICellRendererFactory {
             height: (rowHeight / 2),
             y: (v < threshold) ? (rowHeight / 2) : 0
           });
-          d.querySelector('title').textContent = NumbersColumn.DEFAULT_FORMATTER(v);
+          setText(d.querySelector('title'), NumbersColumn.DEFAULT_FORMATTER(v));
         });
       }
     };

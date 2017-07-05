@@ -385,9 +385,29 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
  * @param styles
  * @return {T}
  */
-export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs = {}, styles = {}): T {
-  Object.keys(attrs).forEach((attr) => node.setAttribute(attr, String(attrs[attr])));
-  Object.keys(styles).forEach((attr) => (<any>node).style.setProperty(attr, styles[attr]));
+export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs = {}, styles = {}, text?: string): T {
+  Object.keys(attrs).forEach((attr) => {
+    const v = String(attrs[attr]);
+    if (node.getAttribute(attr) !== v) {
+      node.setAttribute(attr, v);
+    }
+  });
+  Object.keys(styles).forEach((attr) => {
+    const v = styles[attr];
+    if (node.style.getPropertyValue(attr) !== v) {
+      (<any>node).style.setProperty(attr, v);
+    }
+  });
+  if (text !== undefined && node.textContent !== text) {
+    node.textContent = text;
+  }
+  return node;
+}
+
+export function setText<T extends Node>(node: T, text: string): T {
+  if (node.textContent !== text) {
+    node.textContent = text;
+  }
   return node;
 }
 

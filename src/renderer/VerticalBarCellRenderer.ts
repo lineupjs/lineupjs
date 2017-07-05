@@ -6,7 +6,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {scale as d3scale} from 'd3';
 import Column from '../model/Column';
-import {attr, forEach} from '../utils';
+import {attr, forEach, setText} from '../utils';
 
 export default class VerticalBarCellRenderer implements ICellRendererFactory {
   private static verticalBarScale(domain: number[], threshold: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
@@ -46,7 +46,7 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
             height: VerticalBarCellRenderer.verticalBarHeight(domain, threshold, v, scale, rowHeight),
             y: VerticalBarCellRenderer.verticalBarYpos(domain, threshold, v, scale, rowHeight),
           });
-          d.querySelector('title').textContent = NumbersColumn.DEFAULT_FORMATTER(v);
+          setText(d.querySelector('title'), NumbersColumn.DEFAULT_FORMATTER(v));
         });
       }
     };

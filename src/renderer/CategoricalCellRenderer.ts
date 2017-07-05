@@ -43,7 +43,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         });
         attr(<SVGTextElement>n.querySelector('text'), {
           x: cell + padding * 2
-        }).textContent = col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex);
+        }, {}, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
       }
     };
   }
@@ -70,7 +70,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
           height: cell + 'px',
           'background-color': col.getColor(d.v, d.dataIndex)
         });
-        attr(<HTMLSpanElement>n.querySelector('span'), {}).textContent = col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex);
+        attr(<HTMLSpanElement>n.querySelector('span'), {}, {}, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
       }
     };
   }
