@@ -192,14 +192,13 @@
         div.summary {
           display: block;
 
-
-          > div.bar {
+          div.bar {
             position: absolute;
             background-color: white;
             opacity: 0.5;
 
             &.selected {
-              opacity: 1.0;
+              opacity: 1;
             }
 
             &:hover {
