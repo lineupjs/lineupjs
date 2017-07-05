@@ -93,6 +93,10 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return this.currentLeaves.map((c) => c.label);
   }
 
+  get categoryColors() {
+    return this.currentLeaves.map((c) => c.color);
+  }
+
   getCutOff() {
     return {
       node: this.currentNode,
