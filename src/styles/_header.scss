@@ -50,7 +50,7 @@
     top: 0;
     border-radius: 3px 0 0 3px;
     cursor: auto;
-    background: #6d6c6c;
+    background: $lu_header_background;
     z-index: 1;
   }
 
@@ -130,7 +130,7 @@
     div.header,
     div.header_i {
       &.filtered > div.toolbar i.fa-filter {
-        color: darkblue;
+        color: $lu_header_active_filter_color;
       }
 
       position: absolute;

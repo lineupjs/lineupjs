@@ -79,6 +79,10 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
 
+    const boxColor = context.option('style.boxplot.box', '#e0e0e0');
+    const boxStroke = context.option('style.boxplot.stroke', 'black');
+    const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ff0700');
+
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const rowHeight = context.rowHeight(i);
 
@@ -92,8 +96,8 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         max: scale(data.max)
       };
       const minPos = scaled.min, maxPos = scaled.max, medianPos = scaled.median, q3Pos = scaled.q3, q1Pos = scaled.q1;
-      ctx.fillStyle = '#e0e0e0';
-      ctx.strokeStyle = 'black';
+      ctx.fillStyle = boxColor;
+      ctx.strokeStyle = boxStroke;
       ctx.beginPath();
       ctx.rect((q1Pos), topPadding, ((q3Pos) - (q1Pos)), (rowHeight - (topPadding * 2)));
       ctx.fill();
@@ -103,8 +107,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       const bottomPos = (rowHeight - topPadding);
       const middlePos = (rowHeight - topPadding) / 2;
 
-      ctx.strokeStyle = 'black';
-      ctx.fillStyle = '#e0e0e0';
+      ctx.strokeStyle = boxStroke;
       ctx.beginPath();
       ctx.moveTo(minPos, middlePos);
       ctx.lineTo((q1Pos), middlePos);
@@ -117,17 +120,14 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       ctx.moveTo(maxPos, topPadding);
       ctx.lineTo(maxPos, bottomPos);
       ctx.stroke();
-      ctx.fill();
 
 
       if (sortedByMe) {
-        ctx.strokeStyle = 'red';
-        ctx.fillStyle = '#ff0700';
+        ctx.strokeStyle = boxSortIndicator;
         ctx.beginPath();
         ctx.moveTo(scaled[sortMethod], topPadding);
         ctx.lineTo(scaled[sortMethod], bottomPos);
         ctx.stroke();
-        ctx.fill();
       }
 
     };

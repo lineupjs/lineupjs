@@ -36,7 +36,17 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
       selection: '#ffa500',
       hover: '#e5e5e5',
       bg: '#f7f7f7',
-      meanLine: 'darkgray'
+      meanLine: 'darkgray',
+      boxplot: {
+        box: '#e0e0e0',
+        stroke: 'black',
+        sortIndicator: '#ff0700'
+      },
+      upset: {
+        circle: 'black',
+        inactiveOpacity: 0.1,
+        stroke: 'black'
+      }
     }
   };
 
