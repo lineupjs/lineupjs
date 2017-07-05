@@ -105,15 +105,15 @@ export default class MappingEditor {
             <g class="samples"></g>
             <g class="mappings"></g>
             <g class="filter" transform="translate(0,${options.height - options.filter_height - options.padding_ver - 10 + 35})">
-               <g class="left_filter" transform="translate(0,0)" data-filter="min">
+               <g class="left_filter" transform="translate(0,0)">
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-4" y="7" width="40" height="13" rx="2" ry="2"></rect>
-                  <text y="10" x="4" text-anchor="start">Min</text>
+                  <text y="14" x="15" text-anchor="middle">Min</text>
                 </g>
-              <g class="right_filter" transform="translate(${width},0)" data-filter="max">
+              <g class="right_filter" transform="translate(${width},0)">
                   <path d="M0,0L4,7L-4,7z"></path>
                   <rect x="-36" y="7" width="40" height="13" rx="2" ry="2"></rect>
-                  <text y="10" x="3" text-anchor="end">Max</text>
+                  <text y="14" x="-15" text-anchor="middle">Max</text>
               </g>
             </g>
           </g>
@@ -128,11 +128,11 @@ export default class MappingEditor {
       <div id="me${options.idPrefix}filter_inputs">
         <div>
           <label for="me${options.idPrefix}min_filter_input">Min Filter:</label>
-          <input id="me${options.idPrefix}min_filter_input" type="number" step="0.1" data-filter="min">
+          <input id="me${options.idPrefix}min_filter_input" type="number" step="0.1">
         </div>
         <div>
           <label for="me${options.idPrefix}max_filter_input">Max Filter:</label>
-          <input id="me${options.idPrefix}max_filter_input" type="number" step="0.1" data-filter="max">
+          <input id="me${options.idPrefix}max_filter_input" type="number" step="0.1">
         </div>
       </div>
       <div>
@@ -306,47 +306,44 @@ export default class MappingEditor {
           .attr('style', `left: ${(<MouseEvent>d3event).layerX + options.padding_hor + 50}px; top: ${(<MouseEvent>d3event).layerY + options.padding_ver}px`)
           .on('click', () => (<MouseEvent>d3event).stopPropagation());
 
-        overlay
-          .selectAll('div')
-          .data(overlayOptions)
-          .enter()
-          .append('div')
+        const $overlays = overlay.selectAll('div').data(overlayOptions);
+        const $overlaysEnter = $overlays.enter().append('div');
+        $overlaysEnter
           .append('label')
             .attr('for', (datum) => `me${options.idPrefix}${datum.type}-input`)
-            .text((datum) => `${datum.label}: `)
+            .text((datum) => `${datum.label}: `);
+        $overlaysEnter
           .append('input')
           .attr('id', (datum) => `me${options.idPrefix}${datum.type}-input`)
-            .attr('type', 'number')
-            .attr('min', (datum) => datum.domain[0])
-            .attr('max', (datum) => datum.domain[1])
-            .attr('step', 0.01)
-            .attr('data-type', (datum) => datum.type)
-            .attr('value', (datum) => parseFloat(datum.value.toFixed(2)));
+          .attr('type', 'number')
+          .attr('min', (datum) => datum.domain[0])
+          .attr('max', (datum) => datum.domain[1])
+          .attr('step', 0.01)
+          .attr('data-type', (datum) => datum.type)
+          .attr('value', (datum) => parseFloat(datum.value.toFixed(2)))
+          .on('change', (datum) => {
+            // this is bound to the enclosing context, which is a mapping (<g class="mapping>)
+            const element = <HTMLInputElement>(<MouseEvent>d3event).target;
+            const type = datum.type;
 
-        overlay.selectAll('input')
-        .on('change', () => {
-          // this is bound to the enclosing context, which is a mapping (<g class="mapping>)
-          const element = <HTMLInputElement>(<MouseEvent>d3event).target;
-          const type = (<any>element.dataset).type;
+            let position = 0;
+            switch (type) {
+              case 'normalized':
+                d.n = parseFloat(element.value);
+                position = normal2pixel(parseFloat(element.value));
+                select(this).select('line').attr('x1', position);
+                break;
+              case 'raw':
+                d.r = parseFloat(element.value);
+                position = raw2pixel(parseFloat(element.value));
+                select(this).select('line').attr('x2', position);
+                break;
+            }
 
-          let position = 0;
-          switch(type) {
-            case 'normalized':
-              d.n = parseFloat(element.value);
-              position = normal2pixel(parseFloat(element.value));
-              select(this).select('line').attr('x1', position);
-              break;
-            case 'raw':
-              d.r = parseFloat(element.value);
-              position = raw2pixel(parseFloat(element.value));
-              select(this).select('line').attr('x2', position);
-              break;
-          }
-
-          select(this).select(`circle.${type}`).attr('cx', position);
-          updateScale();
-          options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
-        });
+            select(this).select(`circle.${type}`).attr('cx', position);
+            updateScale();
+            options.callback.call(options.callbackThisArg, that.scale.clone(), that.filter);
+          });
 
         (<Event>d3event).stopPropagation();
       }
@@ -460,14 +457,14 @@ export default class MappingEditor {
         .attr('max', inputDomain[1])
         .data(initialValues)
         .attr('value', (d) => d)
-        .on('change', function() {
+        .on('change', function(this: HTMLInputElement, d, i) {
           const value = parseFloat(this.value);
+          const which = i === 0 ? 'min' : 'max';
           if(value >= inputDomain[0] && value <= inputDomain[1]) {
-            const selector: string = (this.dataset.filter === 'min')? 'left' : 'right';
+            const selector: string = (which === 'min')? 'left' : 'right';
 
             const px = raw2pixel(value);
-            const filter = (value === inputDomain[0])? -Infinity : (value === inputDomain[1])? Infinity : value;
-            that._filter[this.dataset.filter] = filter;
+            that._filter[which] = (value === inputDomain[0])? -Infinity : (value === inputDomain[1])? Infinity : value;
 
             $root.select(`g.${selector}_filter`).attr('transform', `translate(${px}, 0)`);
           }
@@ -476,16 +473,17 @@ export default class MappingEditor {
 
       $root.selectAll('g.left_filter, g.right_filter')
         .data([this.oldFilter.min, this.oldFilter.max])
-        .attr('transform', (d, i) => `translate(${i === 0 ? minFilter : maxFilter},0)`).call(createDrag(function (d, i) {
+        .attr('transform', (d, i) => `translate(${i === 0 ? minFilter : maxFilter},0)`).call(createDrag(function (this: SVGGElement, d, i) {
 
         //drag normalized
         const px = clamp((<DragEvent>d3event).x, 0, width);
         const v = raw2pixel.invert(px);
-        const filter = (px <= 0 && i === 0 ? -Infinity : (px >= width && i === 1 ? Infinity : v));
+        const which = i === 0 ? 'min' : 'max';
+        const filter = (px <= 0 && which === 'min' ? -Infinity : (px >= width && which === 'max' ? Infinity : v));
 
-        that._filter[this.dataset.filter] = filter;
+        that._filter[which] = filter;
 
-        (<HTMLInputElement>document.querySelector(`#me${options.idPrefix}filter_inputs #me${options.idPrefix}${this.dataset.filter}_filter_input`)).value = v.toFixed(1);
+        (<HTMLInputElement>document.querySelector(`#me${options.idPrefix}filter_inputs #me${options.idPrefix}${which}_filter_input`)).value = v.toFixed(1);
         select(this).datum(filter)
           .attr('transform', `translate(${px},0)`);
       }));
