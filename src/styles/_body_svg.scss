@@ -4,6 +4,10 @@
   text {
     font: $lu_body_font;
 
+    &.fa {
+      font-family: "FontAwesome", Arial, sans-serif;
+    }
+
     &.selection {
       cursor: pointer;
 

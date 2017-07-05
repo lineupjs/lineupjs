@@ -1,6 +1,6 @@
 import Column from '../model/Column';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
-import {ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
 import {clipText} from '../utils';
@@ -8,9 +8,10 @@ import ICellRendererFactory from './ICellRendererFactory';
 
 
 export default class LoadingCellRenderer implements ICellRendererFactory {
-  createSVG(col: Column): ISVGCellRenderer {
+  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const textHeight = context.option('textHeight', 13);
     return {
-      template: `<text class='loading'><tspan class='fa'>\uf110</tspan>Loading…</text>`,
+      template: `<text class='loading' y="${textHeight}"><tspan class='fa'>\uf110</tspan>Loading…</text>`,
       update: () => undefined // TODO svg animation
     };
   }

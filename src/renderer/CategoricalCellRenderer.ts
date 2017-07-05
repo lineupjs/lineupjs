@@ -22,9 +22,10 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
 
   createSVG(col: ICategoricalColumn&Column, context: IDOMRenderContext): ISVGCellRenderer {
     const padding = context.option('rowBarPadding', 1);
+    const textHeight = context.option('textHeight', 13);
     return {
       template: `<g class='${this.textClass}'>
-        <text clip-path='url(#cp${context.idPrefix}clipCol${col.id})'></text>
+        <text clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"></text>
         <rect y='${padding}'></rect>
       </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {

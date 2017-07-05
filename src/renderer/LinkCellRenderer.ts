@@ -9,8 +9,9 @@ import ICellRendererFactory from './ICellRendererFactory';
 
 export default class LinkCellRenderer implements ICellRendererFactory {
   createSVG(col: LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
+    const textHeight = context.option('textHeight', 13);
     return {
-      template: `<text class='link text' clip-path='url(#cp${context.idPrefix}clipCol${col.id})'></text>`,
+      template: `<text class='link text' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"></text>`,
       update: (n: SVGTextElement, d: IDataRow) => {
         n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class='link' xlink:href='${col.getValue(d.v, d.dataIndex)}' target='_blank'>${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
       }
