@@ -12,6 +12,7 @@ export interface ICategoricalColumn {
   readonly categoryLabels: string[];
 
   getCategories(row: any, index: number): string[];
+  getColor(row: any, index: number): string;
 }
 
 export interface ICategory {
@@ -50,7 +51,7 @@ export declare type ICategoricalDesc = IValueColumnDesc<string> & IBaseCategoric
  * @returns {boolean}
  */
 export function isCategoricalColumn(col: Column|IColumnDesc) {
-  return (col instanceof Column && typeof (<any>col).getCategories === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal)/) != null));
+  return (col instanceof Column && typeof (<any>col).getCategories === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null));
 }
 
 export interface ICategoricalFilter {
@@ -120,6 +121,11 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.separator = desc.separator || this.separator;
     this.initCategories(desc);
     //TODO infer categories from data
+
+    this.setRendererList([
+      {type: 'categorical', label: 'Default'},
+      {type: 'upset', label: 'UpSet'}
+    ]);
   }
 
   initCategories(desc: IBaseCategoricalDesc) {

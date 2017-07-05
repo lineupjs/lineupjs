@@ -55,8 +55,13 @@ export interface ILineUpConfig {
     animation?: boolean;
     /**
      * show histograms of the headers (just settable at the beginning)
+     * @deprecated use summary instead
      */
     histograms?: boolean;
+    /**
+     * show column summaries in the header
+     */
+    summary?: boolean;
     /**
      * show a mean line for single numberial columns
      */
@@ -135,7 +140,7 @@ export default class LineUp extends AEventDispatcher {
     renderingOptions: {
       stacked: true,
       animation: true,
-      histograms: false,
+      summary: false,
       meanLine: false,
     },
     body: {
@@ -171,6 +176,10 @@ export default class LineUp extends AEventDispatcher {
     this.config.htmlLayout = this.config.header;
 
     merge(this.config, config);
+    //backwards compatibility
+    if (this.config.renderingOptions.histograms === true) {
+      this.config.renderingOptions.summary = true;
+    }
 
 
     this.data.on(DataProvider.EVENT_SELECTION_CHANGED + '.main', this.triggerSelection.bind(this));
@@ -179,7 +188,7 @@ export default class LineUp extends AEventDispatcher {
     this.header = new HeaderRenderer(data, this.node, merge({}, this.config.header, {
       idPrefix: this.config.idPrefix,
       manipulative: this.config.manipulative,
-      histograms: this.config.renderingOptions.histograms,
+      summary: this.config.renderingOptions.summary,
       freezeCols: this.config.body.freezeCols,
     }));
     this.body = createBodyRenderer(this.config.body.renderer, data, this.node, this.slice.bind(this), merge({}, this.config.body, {

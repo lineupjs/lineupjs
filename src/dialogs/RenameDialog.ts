@@ -16,8 +16,8 @@ export default class RenameDialog extends ADialog {
 
   openDialog() {
     const popup = this.makePopup(`
-      <input type="text" size="15" value="${this.column.label}" required="required" autofocus="autofocus"><br>
-      <input type="color" size="15" value="${this.column.color}" required="required"><br>
+      <input type="text" size="15" value="${this.column.label}" required="required" autofocus="autofocus" placeholder="name"><br>
+      <input type="color" size="15" value="${this.column.color}" required="required" placeholder="color"><br>
       <textarea rows="5">${this.column.description}</textarea><br>`
     );
 

@@ -15,7 +15,7 @@ import StackColumn, {createDesc as createStackDesc} from '../model/StackColumn';
 import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
-import MultiValueColumn from '../model/MultiValueColumn';
+import NumbersColumn from '../model/NumbersColumn';
 import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
 
 import SearchDialog from '../dialogs/SearchDialog';
@@ -33,6 +33,9 @@ import CategoricalMappingFilterDialog from '../dialogs/CategoricalMappingFilterD
 
 import {IFilterDialog} from '../dialogs/AFilterDialog';
 import ScriptEditDialog from '../dialogs/ScriptEditDialog';
+import SelectionColumn from '../model/SelectionColumn';
+import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
+import HierarchyColumn from '../model/HierarchyColumn';
 
 const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
@@ -63,7 +66,7 @@ export interface IHeaderRendererOptions {
   headerHistogramHeight?: number;
   headerHeight?: number;
   manipulative?: boolean;
-  histograms?: boolean;
+  summary?: boolean;
 
   filters?: {[type: string]: IFilterDialog};
   linkTemplates?: string[];
@@ -95,13 +98,15 @@ export default class HeaderRenderer {
     headerHistogramHeight: 40,
     headerHeight: 20,
     manipulative: true,
-    histograms: false,
+    summary: false,
     filters:  <{[type: string]: IFilterDialog}>{
       'string': StringFilterDialog,
       'boolean': BooleanFilterDialog,
       'categorical': CategoricalFilterDialog,
       'number': MappingsFilterDialog,
-      'ordinal': CategoricalMappingFilterDialog
+      'ordinal': CategoricalMappingFilterDialog,
+      'boxplot': MappingsFilterDialog,
+      'numbers': MappingsFilterDialog
     },
     linkTemplates: [],
     searchAble: (col: Column) => col instanceof StringColumn,
@@ -179,7 +184,7 @@ export default class HeaderRenderer {
     }
     this.data = data;
     data.on(DataProvider.EVENT_DIRTY_HEADER + '.headerRenderer', delayedCall(this.update.bind(this), 1));
-    if (this.options.histograms) {
+    if (this.options.summary) {
       data.on(DataProvider.EVENT_ORDER_CHANGED + '.headerRenderer', () => {
         this.updateHist();
         this.update();
@@ -219,7 +224,7 @@ export default class HeaderRenderer {
    * update the selection in the histograms
    */
   drawSelection() {
-    if (!this.options.histograms) {
+    if (!this.options.summary) {
       return;
     }
     //highlight the bins in the histograms
@@ -296,7 +301,7 @@ export default class HeaderRenderer {
     const columns = shifts.map((d) => d.col);
 
     //update all if needed
-    if (this.options.histograms && this.histCache.size === 0 && rankings.length > 0) {
+    if (this.options.summary && this.histCache.size === 0 && rankings.length > 0) {
       this.updateHist();
     }
 
@@ -307,7 +312,7 @@ export default class HeaderRenderer {
     }
 
     const levels = Math.max(...columns.map(countMultiLevel));
-    let height = (this.options.histograms ? this.options.headerHistogramHeight : this.options.headerHeight) + (levels - 1) * this.options.headerHeight;
+    let height = (this.options.summary ? this.options.headerHistogramHeight : this.options.headerHeight) + (levels - 1) * this.options.headerHeight;
 
     if (this.options.autoRotateLabels) {
       //check if we have overflows
@@ -346,8 +351,8 @@ export default class HeaderRenderer {
       (<MouseEvent>d3.event).stopPropagation();
     });
 
-    //MultiValue Sort
-    $node.filter((d) => d instanceof MultiValueColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
+    //Numbers Sort
+    $node.filter((d) => d instanceof NumbersColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (d) {
       const dialog = new SortDialog(<IBoxPlotColumn><any>d, d3.select(this.parentNode.parentNode));
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
@@ -378,6 +383,13 @@ export default class HeaderRenderer {
     $node.filter((d) => this.options.filters.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', (d) => {
       const target = (<MouseEvent>d3.event).target;
       const dialog = new this.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode), '', provider, that.options.idPrefix);
+      dialog.openDialog();
+      (<MouseEvent>d3.event).stopPropagation();
+    });
+    //cutoff
+    $node.filter((d) => d instanceof HierarchyColumn).append('i').attr('class', 'fa fa-scissors').attr('title', 'Set Cut Off').on('click', (d: HierarchyColumn) => {
+      const target = (<MouseEvent>d3.event).target;
+      const dialog = new CutOffHierarchyDialog(d, d3.select((<HTMLElement>target).parentNode), that.options.idPrefix);
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
@@ -486,8 +498,8 @@ export default class HeaderRenderer {
       $headersEnter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
     }
 
-    if (this.options.histograms) {
-      $headersEnter.append('div').classed('histogram', true);
+    if (this.options.summary) {
+      $headersEnter.append('div').classed('summary', true);
     }
 
     $headers.style({
@@ -558,61 +570,99 @@ export default class HeaderRenderer {
       return ranking.insert(stack, index) != null;
     }));
 
-    if (this.options.histograms) {
+    if (this.options.summary) {
 
       $headers.filter((d) => isCategoricalColumn(d)).each(function (col: CategoricalColumn) {
-        const $this = d3.select(this).select('div.histogram');
-        const hist = that.histCache.get(col.id);
-        if (hist) {
-          hist.then((stats: ICategoricalStatistics) => {
-            const $bars = $this.selectAll('div.bar').data(stats.hist);
-            $bars.enter().append('div').classed('bar', true);
-            const sx = d3.scale.ordinal().domain(col.categories).rangeBands([0, 100], 0.1);
-            const sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
-            $bars.style({
-              left: (d) => sx(d.cat) + '%',
-              width: (d) => sx.rangeBand() + '%',
-              top: (d) => (100 - sy(d.y)) + '%',
-              height: (d) => sy(d.y) + '%',
-              'background-color': (d) => col.colorOf(d.cat)
-            }).attr({
-              title: (d) => `${d.cat}: ${d.y}`,
-              'data-cat': (d) => d.cat
-            });
-            $bars.exit().remove();
-          });
-        }
+        that.renderCategoricalSummary(col, d3.select(this).select('div.summary'));
       });
-      $headers.filter((d) => d instanceof NumberColumn).each(function (col: Column) {
-        const $this = d3.select(this).select('div.histogram');
-        const hist = that.histCache.get(col.id);
-        if (hist) {
-          hist.then((stats: IStatistics) => {
-            const $bars = $this.selectAll('div.bar').data(stats.hist);
-            $bars.enter().append('div').classed('bar', true);
-            const sx = d3.scale.ordinal().domain(d3.range(stats.hist.length).map(String)).rangeBands([0, 100], 0.1);
-            const sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
-            $bars.style({
-              left: (d, i) => sx(String(i)) + '%',
-              width: (d, i) => sx.rangeBand() + '%',
-              top: (d) => (100 - sy(d.y)) + '%',
-              height: (d) => sy(d.y) + '%'
-            }).attr({
-              title: (d, i) => `Bin ${i}: ${d.y}`,
-              'data-x': (d) => d.x
-            });
-            $bars.exit().remove();
-
-            let $mean = $this.select('div.mean');
-            if ($mean.empty()) {
-              $mean = $this.append('div').classed('mean', true);
-            }
-            $mean.style('left', (stats.mean * 100) + '%');
-          });
-        }
+      $headers.filter((d) => d instanceof NumberColumn).each(function (col: NumberColumn) {
+        that.renderNumericalSummary(col, d3.select(this).select('div.summary'));
+      });
+      $headers.filter((d) => d instanceof StringColumn).each(function (col: StringColumn) {
+        that.renderStringSummary(col, d3.select(this).select('div.summary'));
+      });
+      $headers.filter((d) => d instanceof SelectionColumn).each(function (col: SelectionColumn) {
+        that.renderSelectionSummary(col, d3.select(this).select('div.summary'));
       });
     }
 
     $headers.exit().remove();
+  }
+
+  private renderCategoricalSummary(col: CategoricalColumn, $this: d3.Selection<Column>) {
+    const hist = this.histCache.get(col.id);
+    if (!hist) {
+      return;
+    }
+    hist.then((stats: ICategoricalStatistics) => {
+      const $bars = $this.selectAll('div.bar').data(stats.hist);
+      $bars.enter().append('div').classed('bar', true);
+      const sx = d3.scale.ordinal().domain(col.categories).rangeBands([0, 100], 0.1);
+      const sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
+      $bars.style({
+        left: (d) => sx(d.cat) + '%',
+        width: (d) => sx.rangeBand() + '%',
+        top: (d) => (100 - sy(d.y)) + '%',
+        height: (d) => sy(d.y) + '%',
+        'background-color': (d) => col.colorOf(d.cat)
+      }).attr({
+        title: (d) => `${d.cat}: ${d.y}`,
+        'data-cat': (d) => d.cat
+      });
+      $bars.exit().remove();
+    });
+  }
+
+  private renderNumericalSummary(col: INumberColumn&Column, $this: d3.Selection<Column>) {
+    const hist = this.histCache.get(col.id);
+    if (!hist) {
+      return;
+    }
+    hist.then((stats: IStatistics) => {
+      const $bars = $this.selectAll('div.bar').data(stats.hist);
+      $bars.enter().append('div').classed('bar', true);
+      const sx = d3.scale.ordinal().domain(d3.range(stats.hist.length).map(String)).rangeBands([0, 100], 0.1);
+      const sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
+      $bars.style({
+        left: (d, i) => sx(String(i)) + '%',
+        width: (d, i) => sx.rangeBand() + '%',
+        top: (d) => (100 - sy(d.y)) + '%',
+        height: (d) => sy(d.y) + '%'
+      }).attr({
+        title: (d, i) => `Bin ${i}: ${d.y}`,
+        'data-x': (d) => d.x
+      });
+      $bars.exit().remove();
+
+      let $mean = $this.select('div.mean');
+      if ($mean.empty()) {
+        $mean = $this.append('div').classed('mean', true);
+      }
+      $mean.style('left', (stats.mean * 100) + '%');
+    });
+  }
+
+  private renderStringSummary(col: StringColumn, $this: d3.Selection<Column>) {
+    const f = col.getFilter();
+    $this.text(f === null ? '' : f.toString());
+  }
+
+  private renderSelectionSummary(col: SelectionColumn, $this: d3.Selection<Column>) {
+    let $i = $this.select('i');
+    if ($i.empty()) {
+      $i = $this.append('i')
+        .attr('class', 'fa fa-square-o')
+        .attr('title', 'Toggle Select All');
+    }
+    $i.on('click', () => {
+      if ($i.classed('fa-square-o')) {
+        const all = col.findMyRanker().getOrder();
+        $i.attr('class', 'fa fa-check-square-o');
+        this.data.setSelection(all);
+      } else {
+        $i.attr('class', 'fa fa-square-o');
+        this.data.clearSelection();
+      }
+    });
   }
 }

@@ -104,6 +104,10 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return this.getValue(row, index);
   }
 
+  getRawNumber(row: any, index: number) {
+    return this.getValue(row, index);
+  }
+
   compare(a: any, b: any, aIndex: number, bIndex: number) {
     return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
   }

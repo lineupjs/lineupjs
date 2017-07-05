@@ -52,6 +52,7 @@
 
   .sparklinecell {
     stroke: black;
+    fill: none;
   }
 
   .boxplotrect {
@@ -78,21 +79,20 @@
     stroke: #ff0700;
     fill: #e0e0e0;
   }
+  .upsetcell {
+    circle {
+      stroke: black;
+      fill: black;
+      opacity: 0.1;
 
-  .setcircle {
-    stroke: black;
-    fill: black;
-  }
-
-  .setcircleOpacity {
-    stroke: black;
-    fill: black;
-    opacity: 0.1;
-  }
-
-  .upsetpath {
-    stroke: black;
-    fill: black;
+      &.enabled {
+        opacity: 1;
+      }
+    }
+    path {
+      stroke: black;
+      fill: none;
+    }
   }
 
   g.row {
