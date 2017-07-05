@@ -5,7 +5,6 @@
 import {dispatch, select, event as d3event, Dispatch} from 'd3';
 import Column from './model/Column';
 import {IDOMCellRenderer} from './renderer/IDOMCellRenderers';
-import {platform} from "os";
 
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
@@ -309,6 +308,12 @@ export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
   return false;
 }
 
+/**
+ * helper storage for dnd in edge since edge doesn't support custom mime-types
+ * @type {Map<string, {[p: string]: string}>}
+ */
+const dndTransferStorage = new Map<string, {[key: string]:string}>();
+
 function isEdgeDnD(e: DragEvent) {
   return dndTransferStorage.size > 0 && hasDnDType(e, ['text/plain']);
 }
@@ -333,12 +338,6 @@ export function updateDropEffect(e: DragEvent) {
     dT.dropEffect = 'move';
   }
 }
-
-/**
- * helper storage for dnd in edge since edge doesn't support custom mime-types
- * @type {Map<string, {[p: string]: string}>}
- */
-const dndTransferStorage = new Map<string, {[key: string]:string}>();
 
 export function dragAble<T extends {id: string}>(onDragStart: (d: T) => {effectAllowed: 'none'|'copy'|'copyLink'|'copyMove'|'link'|'linkMove'|'move'|'all', data: {[key: string]: string}}) {
   return ($node) => {
