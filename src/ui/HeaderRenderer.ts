@@ -294,7 +294,7 @@ export default class HeaderRenderer {
     totalWidth -= this.options.slopeWidth;
 
     // fix for #179
-    this.$node.select('div.drop').style('width', totalWidth + 'px');
+    this.$node.select('div.drop').style('min-width', totalWidth + 'px');
 
     const columns = shifts.map((d) => d.col);
 
@@ -502,7 +502,7 @@ export default class HeaderRenderer {
       'background-color': (d) => d.color
     });
     $headers.attr({
-      'class': (d) => `${clazz} ${d.cssClass || ''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''}`,
+      'class': (d) => `${clazz}${d.cssClass ? ' ' + d.cssClass : ''}${(d.getCompressed() ? ' compressed' : '')} ${d.headerCssClass}${this.options.autoRotateLabels ? ' rotateable' : ''}${d.isFiltered() ? ' filtered' : ''}`,
       title: (d) => toFullTooltip(d),
       'data-id': (d) => d.id
     });
