@@ -6,9 +6,17 @@
 
   div,
   svg {
-    position: absolute;
     padding: 0;
     margin: 0;
+  }
+
+  .rows > *,
+  .cols > *,
+  .frozen > *,
+  div.bg,
+  svg.slopegraph,
+  div.ranking {
+    position: absolute;
   }
 
   div.text,
@@ -98,7 +106,7 @@
     div.thresholdcell,
     div.verticalbarcell {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-content: stretch;
       align-items: stretch;
 

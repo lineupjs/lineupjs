@@ -18,7 +18,7 @@ export default class NumbersCellRenderer implements ICellRendererFactory {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<div class="heatmapcell" style="top:${padding}px; width=${col.getWidth()}px"></div>`,
+      template: `<div class="heatmapcell" style="top:${padding}px; width=${col.getWidth()}px">${templateRows}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         attr(n, {}, {
           width: col.getWidth() + 'px',
