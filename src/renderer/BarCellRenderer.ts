@@ -2,9 +2,9 @@ import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {INumberColumn} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText, setText} from '../utils';
+import {attr, clipText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 
 
@@ -19,35 +19,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
 
   constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {}
 
-  createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
-    const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
-    const textHeight = context.option('textHeight', 13);
-    return {
-      template: `<g class='bar'>
-          <rect class='${col.cssClass}' y='${paddingTop}' style='fill: ${col.color}'>
-            <title> </title>
-          </rect>
-          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"> </text>
-        </g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const width = col.getWidth() * col.getNumber(d.v, d.dataIndex);
-
-        attr(<SVGRectElement>n.querySelector('rect'), {
-          y: paddingTop,
-          width: isNaN(width) ? 0 : width,
-          height: context.rowHeight(i) - (paddingTop + paddingBottom)
-        }, {
-          fill: this.colorOf(d.v, i, col)
-        });
-        const label = col.getLabel(d.v, d.dataIndex);
-        setText(n.querySelector('rect title'), label);
-        setText(<SVGTextElement>n.querySelector('text'), label);
-      }
-    };
-  }
-
-  createHTML(col: INumberColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return {

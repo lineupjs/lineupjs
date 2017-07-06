@@ -153,9 +153,9 @@ export function offset(element) {
 }
 
 export interface IContentScrollerOptions {
-  topShift?(): number;
-  backupRows?: number;
+  pageSize?: number;
   rowHeight?: number;
+  backupRows?: number;
 }
 
 /**
@@ -168,18 +168,7 @@ export class ContentScroller extends AEventDispatcher {
   static readonly EVENT_REDRAW = 'redraw';
 
   private options: IContentScrollerOptions = {
-    /**
-     * shift that should be used for calculating the top position
-     */
-    topShift: () => 0,
-    /**
-     * backup rows, i.e .the number of rows that should also be shown for avoiding to frequent updates
-     */
-    backupRows: 5,
-    /**
-     * the height of one row in pixel
-     */
-    rowHeight: 10
+    pageSize: 100
   };
 
   private prevScrollTop = 0;
@@ -240,7 +229,7 @@ export class ContentScroller extends AEventDispatcher {
   }
 
   private selectImpl(start: number, length: number, row2y: (i: number) => number, backupRows: number) {
-    const top = this.container.scrollTop - this.shift - this.options.topShift(),
+    const top = this.container.scrollTop - this.shift,
       bottom = top + this.container.clientHeight;
     let i = 0, j;
     /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
@@ -276,10 +265,11 @@ export class ContentScroller extends AEventDispatcher {
     //at least one row changed
     //console.log(top, left);
     this.fire(ContentScroller.EVENT_SCROLL, top, left);
-    if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
+    if (Math.abs(this.prevScrollTop - top) >= this.options.pageSize) {
       //we scrolled out of our backup rows, so we have to redraw the content
+      const delta = this.prevScrollTop - top;
       this.prevScrollTop = top;
-      this.fire(ContentScroller.EVENT_REDRAW);
+      this.fire(ContentScroller.EVENT_REDRAW, delta);
     }
   }
 
@@ -518,7 +508,7 @@ export function hideOverlays(parentElement: HTMLElement) {
  * @param columns
  * @param helperType
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer<any>}[], helperType = 'svg') {
+export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer}[], helperType = 'div') {
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.renderer.template).join('');

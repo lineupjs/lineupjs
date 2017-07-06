@@ -1,7 +1,7 @@
 import {INumberColumn} from '../model/NumberColumn';
 import Column from '../model/Column';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
@@ -21,28 +21,7 @@ export default class Heatmap implements ICellRendererFactory {
     return color.toString();
   }
 
-  createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const padding = context.option('rowBarPadding', 1);
-    return {
-      template: `<rect class='heatmap ${col.cssClass}' y='${padding}' style='fill: ${col.color}'>
-            <title> </title>
-          </rect>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-        setText(n.querySelector('title'), col.getLabel(d.v, d.dataIndex));
-        const w = context.rowHeight(i) - padding * 2;
-
-        attr(n, {
-          y: padding,
-          width: w,
-          height: w
-        }, {
-          fill: Heatmap.toHeatMapColor(d.v, d.dataIndex, col)
-        });
-      }
-    };
-  }
-
-  createHTML(col: INumberColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     return {
       template: `<div class='heatmap ${col.cssClass}' style='background-color: ${col.color}; top: ${padding}'></div>`,

@@ -68,13 +68,9 @@ function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFac
   return r || defaultCellRenderer;
 }
 
-export function createSVG(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
+export function createDOM(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
   const r = chooseRenderer(col, renderers);
-  return (r.createSVG ? r.createSVG.bind(r) : defaultCellRenderer.createSVG.bind(r))(col, context);
-}
-export function createHTML(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
-  const r = chooseRenderer(col, renderers);
-  return (r.createHTML ? r.createHTML.bind(r) : defaultCellRenderer.createHTML.bind(r))(col, context);
+  return (r.createDOM ? r.createDOM.bind(r) : defaultCellRenderer.createDOM.bind(r))(col, context);
 }
 export function createCanvas(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: ICanvasRenderContext) {
   const r = chooseRenderer(col, renderers);

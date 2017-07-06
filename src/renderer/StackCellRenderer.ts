@@ -2,7 +2,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 import StackColumn from '../model/StackColumn';
 import IRenderContext from './IRenderContext';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {matchColumns} from '../utils';
@@ -31,26 +31,7 @@ export default class StackCellRenderer implements ICellRendererFactory {
     });
   }
 
-  createSVG(col: StackColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const cols = this.createData(col, context);
-    return {
-      template: `<g class='stack component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-        let stackShift = 0;
-        matchColumns(n, cols);
-        cols.forEach((col, ci) => {
-          const cnode: any = n.childNodes[ci];
-          cnode.setAttribute('transform', `translate(${col.shift - stackShift},0)`);
-          col.renderer.update(cnode, d, i);
-          if (col.stacked) {
-            stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v, d.dataIndex));
-          }
-        });
-      }
-    };
-  }
-
-  createHTML(col: StackColumn, context: IDOMRenderContext): IHTMLCellRenderer {
+  createDOM(col: StackColumn, context: IDOMRenderContext): IDOMCellRenderer {
     const cols = this.createData(col, context);
     return {
       template: `<div class='stack component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</div>`,

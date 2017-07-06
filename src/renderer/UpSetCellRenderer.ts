@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, forEach} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
@@ -21,17 +21,22 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 
 
-  createSVG(col: ICategoricalColumn&Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createDOM(col: ICategoricalColumn&Column, context: IDOMRenderContext): IDOMCellRenderer {
     const dataLength = col.categories.length;
     const cellDimension = col.getWidth() / dataLength;
     let templateRows = '';
     for (let i = 0; i < dataLength; ++i) {
-      templateRows += `<circle r="${cellDimension / 4}" cx="${i * cellDimension + (cellDimension / 2)}"></circle>`;
+      templateRows += `<circle r="${cellDimension / 4}" cx="${i * cellDimension + (cellDimension / 2)}" cy="50%"></circle>`;
     }
     return {
-      template: `<g class='upsetcell'><path></path>${templateRows}</g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
+      template: `<svg class='upsetcell' width="${col.getWidth()}" height="20"><path></path>${templateRows}</svg>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
         const rowHeight = context.rowHeight(i);
+        const cellDimension = col.getWidth() / dataLength;
+        attr(n, {
+          width: col.getWidth(),
+          height: rowHeight
+        });
         const values = new Set(col.getCategories(d.v, d.dataIndex));
         const value = col.categories.map((cat) => values.has(cat));
         const hasTrueValues = value.some((d) => d); //some values are true?
@@ -39,8 +44,8 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         forEach(n, 'circle', (d, i) => {
           const v = value[i];
           attr(<SVGCircleElement>d, {
-            cy: rowHeight / 2,
-            class: v ? 'enabled' : ''
+            cx: i * cellDimension + (cellDimension / 2),
+            'class': v ? 'enabled' : ''
           });
         });
 

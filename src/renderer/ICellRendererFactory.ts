@@ -1,11 +1,10 @@
 import Column from '../model/Column';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {IHTMLCellRenderer, ISVGCellRenderer}  from './IDOMCellRenderers';
+import IDOMCellRenderer  from './IDOMCellRenderers';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 
 interface ICellRendererFactory {
-  createSVG?(col: Column, context: IDOMRenderContext): ISVGCellRenderer;
-  createHTML?(col: Column, context: IDOMRenderContext): IHTMLCellRenderer;
+  createDOM?(col: Column, context: IDOMRenderContext): IDOMCellRenderer;
   createCanvas?(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer;
 }
 

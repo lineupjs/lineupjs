@@ -1,6 +1,6 @@
 import LinkColumn from '../model/LinkColumn';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import {ICanvasRenderContext} from './RendererContexts';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {clipText, showOverlay} from '../utils';
@@ -8,17 +8,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 
 
 export default class LinkCellRenderer implements ICellRendererFactory {
-  createSVG(col: LinkColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const textHeight = context.option('textHeight', 13);
-    return {
-      template: `<text class='link text' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"> </text>`,
-      update: (n: SVGTextElement, d: IDataRow) => {
-        n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class='link' xlink:href='${col.getValue(d.v, d.dataIndex)}' target='_blank'>${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
-      }
-    };
-  }
-
-  createHTML(col: LinkColumn): IHTMLCellRenderer {
+  createDOM(col: LinkColumn): IDOMCellRenderer {
     return {
       template: `<div class='link text'></div>`,
       update: (n: HTMLElement, d: IDataRow) => {

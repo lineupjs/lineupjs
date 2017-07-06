@@ -2,7 +2,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {INumberColumn} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
@@ -13,7 +13,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
     this.renderValue = renderValue;
   }
 
-  createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createTODO(col: INumberColumn & Column, context: IDOMRenderContext) {
     const textHeight = context.option('textHeight', 13);
     return {
       template: `<g class='bar'>

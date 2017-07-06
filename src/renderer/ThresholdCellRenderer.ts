@@ -1,7 +1,7 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {attr, forEach, setText} from '../utils';
@@ -10,27 +10,29 @@ import Column from '../model/Column';
 
 export default class ThresholdCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: INumbersColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const cellDimension = col.getWidth() / col.getDataLength();
+  createDOM(col: INumbersColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const threshold = col.getThreshold();
     const colorValues = col.getRawColorScale().range();
     let templateRows = '';
     for (let i = 0; i < col.getDataLength(); ++i) {
-      templateRows += `<rect width="${cellDimension}" height="1" x="${i * cellDimension}" y="0" fill="white"><title> </title></rect>`;
+      templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<g class='thresholdcell'>${templateRows}</g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
+      template: `<div class="thresholdcell" style="width: ${col.getWidth()}px;">${templateRows}</div>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
         const rowHeight = context.rowHeight(i);
+        attr(n, {}, {
+          width: col.getWidth() + 'px',
+          height: rowHeight + 'px'
+        });
         const data = col.getRawNumbers(d.v, d.dataIndex);
-        forEach(n, 'rect', (d, i) => {
+        forEach(n, 'div', (d, i) => {
           const v = data[i];
-          attr(<SVGRectElement>d, {
-            fill: (v < threshold) ? colorValues[0] : colorValues[colorValues.length-1],
-            height: (rowHeight / 2),
-            y: (v < threshold) ? (rowHeight / 2) : 0
+          attr(<SVGRectElement>d, {}, {
+            'background-color': (v < threshold) ? colorValues[0] : colorValues[colorValues.length-1],
+            class: (v < threshold) ? 'down': '',
+            title: NumbersColumn.DEFAULT_FORMATTER(v)
           });
-          setText(d.querySelector('title'), NumbersColumn.DEFAULT_FORMATTER(v));
         });
       }
     };

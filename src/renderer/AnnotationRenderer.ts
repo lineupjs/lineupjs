@@ -1,45 +1,16 @@
 import AnnotateColumn from '../model/AnnotateColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {showOverlay, clipText, attr, setText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 
 export default class AnnotationRenderer implements ICellRendererFactory {
-  createSVG(col: AnnotateColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const textHeight = context.option('textHeight', 13);
-    return {
-      template: `<g class='annotations'>
-        <text class='notHoverOnly text' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"> </text>
-        <foreignObject class='foreign hoverOnly' x='-2' y='-2'>
-          <input type='text'>
-        </foreignObject>
-       </g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const input: HTMLInputElement = <HTMLInputElement>n.querySelector('foreignObject *');
-        input.onchange = function () {
-          col.setValue(d.v, d.dataIndex, input.value);
-        };
-        input.onclick = function (event) {
-          event.stopPropagation();
-        };
-        input.style.width = col.getWidth() + 'px';
-        input.value = col.getLabel(d.v, d.dataIndex);
-
-        setText(n.querySelector('text'), col.getLabel(d.v, d.dataIndex));
-        attr(<SVGElement>n.querySelector('foreignObject'), {
-          width: col.getWidth(),
-          height: context.rowHeight(i)
-        });
-      }
-    };
-  }
-
-  createHTML(col: AnnotateColumn): IHTMLCellRenderer {
+  createDOM(col: AnnotateColumn): IDOMCellRenderer {
     return {
       template: `<div class='annotations text'>
-        <input type='text' class='hoverOnly'>
+        <input class='hoverOnly'>
         <span class='text notHoverOnly'></span>
        </div>`,
       update: (n: HTMLElement, d: IDataRow) => {

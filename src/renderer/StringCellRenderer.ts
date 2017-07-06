@@ -1,7 +1,7 @@
 import {DefaultCellRenderer} from './DefaultCellRenderer';
 import StringColumn from '../model/StringColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
 
@@ -17,12 +17,8 @@ export default class StringCellRenderer implements ICellRendererFactory {
     center: new DefaultCellRenderer('text_center', 'center')
   };
 
-  createSVG(col: StringColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    return this.alignments[col.alignment].createSVG(col, context);
-  }
-
-  createHTML(col: StringColumn, context: IDOMRenderContext): IHTMLCellRenderer {
-    return this.alignments[col.alignment].createHTML(col, context);
+  createDOM(col: StringColumn, context: IDOMRenderContext): IDOMCellRenderer {
+    return this.alignments[col.alignment].createDOM(col, context);
   }
 
   createCanvas(col: StringColumn, context: ICanvasRenderContext): ICanvasCellRenderer {

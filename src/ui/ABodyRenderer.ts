@@ -29,7 +29,7 @@ export interface IBodyRenderer extends AEventDispatcher {
 
   updateFreeze(left: number);
 
-  scrolled();
+  scrolled(delta: number);
 
   update();
 
@@ -206,8 +206,9 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   abstract updateFreeze(left: number);
 
-  scrolled() {
+  scrolled(delta: number) {
     //next tick
+    console.log(delta);
     setTimeout(() => this.update(ERenderReason.SCROLLED), 1);
   }
 

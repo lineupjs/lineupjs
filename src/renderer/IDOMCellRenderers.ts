@@ -3,7 +3,7 @@ import {IDataRow} from '../provider/ADataProvider';
 /**
  * a cell renderer for rendering a cell of specific column
  */
-export interface IDOMCellRenderer<T> {
+export interface IDOMCellRenderer {
   /**
    * template as a basis for the update
    */
@@ -14,8 +14,7 @@ export interface IDOMCellRenderer<T> {
    * @param d the data item
    * @param i the order relative index
    */
-  update(node: T, d: IDataRow, i: number): void;
+  update(node: HTMLElement, d: IDataRow, i: number): void;
 }
 
-export declare type ISVGCellRenderer = IDOMCellRenderer<SVGElement>;
-export declare type IHTMLCellRenderer = IDOMCellRenderer<HTMLElement>;
+export default IDOMCellRenderer;

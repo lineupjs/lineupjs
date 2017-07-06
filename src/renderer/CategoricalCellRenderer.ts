@@ -2,7 +2,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import Column from '../model/Column';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
@@ -20,35 +20,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     this.textClass = textClass;
   }
 
-  createSVG(col: ICategoricalColumn&Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const padding = context.option('rowBarPadding', 1);
-    const textHeight = context.option('textHeight', 13);
-    return {
-      template: `<g class='${this.textClass}'>
-        <text clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"> </text>
-        <rect y='${padding}'></rect>
-      </g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-        let cell: number;
-        if (col.getCompressed()) {
-          cell = Math.min(Column.COMPRESSED_WIDTH - padding * 2, Math.max(context.rowHeight(i) - padding * 2, 0));
-        } else {
-          cell = Math.min(col.getWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
-        }
-        attr(<SVGRectElement>n.querySelector('rect'), {
-          width: cell,
-          height: cell
-        }, {
-          fill: col.getColor(d.v, d.dataIndex)
-        });
-        attr(<SVGTextElement>n.querySelector('text'), {
-          x: cell + padding * 2
-        }, {}, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
-      }
-    };
-  }
-
-  createHTML(col: ICategoricalColumn&Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createDOM(col: ICategoricalColumn&Column, context: IDOMRenderContext): IDOMCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     return {
       template: `<div class='${this.textClass}'>

@@ -1,7 +1,7 @@
 import Column from '../model/Column';
 import ICellRendererFactory from './ICellRendererFactory';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
@@ -20,26 +20,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     this.align = align;
   }
 
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const textHeight = context.option('textHeight', 13);
-    return {
-      template: `<text class="${this.textClass}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})" y="${textHeight}"> </text>`,
-      update: (n: SVGTextElement, d: IDataRow, index: number) => {
-        let alignmentShift = 2;
-        if (this.align === 'right') {
-          alignmentShift = col.getWidth() - 5;
-        } else if (this.align === 'center') {
-          alignmentShift = col.getWidth() * 0.5;
-        }
-        attr(n, {
-          x: alignmentShift,
-          y: textHeight + Math.floor((context.rowHeight(index)-textHeight-2)/2)
-        }, {}, col.getLabel(d.v, d.dataIndex));
-      }
-    };
-  }
-
-  createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createDOM(col: Column, context: IDOMRenderContext): IDOMCellRenderer {
     return {
       template: `<div class="${this.textClass} ${this.align}"> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {

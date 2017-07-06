@@ -1,5 +1,5 @@
 import SelectionColumn from '../model/SelectionColumn';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
@@ -7,21 +7,7 @@ import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 
 export default class SelectionRenderer implements ICellRendererFactory {
-  createSVG(col: SelectionColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const textHeight = context.option('textHeight', 13);
-    return {
-      template: `<text class='selection fa' y="${textHeight}"><tspan class='selectionOnly'>\uf046</tspan><tspan class='notSelectionOnly'>\uf096</tspan></text>`,
-      update: (n: SVGGElement, d: IDataRow) => {
-        n.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-          col.toggleValue(d.v, d.dataIndex);
-        };
-      }
-    };
-  }
-
-  createHTML(col: SelectionColumn): IHTMLCellRenderer {
+  createDOM(col: SelectionColumn): IDOMCellRenderer {
     return {
       template: `<div class='selection fa'></div>`,
       update: (n: HTMLElement, d: IDataRow) => {

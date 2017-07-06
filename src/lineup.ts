@@ -211,9 +211,9 @@ export default class LineUp extends AEventDispatcher {
 
     if (this.config.body.visibleRowsOnly) {
       this.contentScroller = new ContentScroller(bodyWrapper, this.body.node, {
+        pageSize: this.config.body.backupScrollRows * this.config.body.rowHeight,
         backupRows: this.config.body.backupScrollRows,
-        rowHeight: this.config.body.rowHeight,
-        topShift: () => this.header.currentHeight()
+        rowHeight: this.config.body.rowHeight
       });
       this.contentScroller.on(ContentScroller.EVENT_SCROLL, (top, left) => {
         //in two svg mode propagate horizontal shift
@@ -223,7 +223,7 @@ export default class LineUp extends AEventDispatcher {
           this.body.updateFreeze(left);
         }
       });
-      this.contentScroller.on(ContentScroller.EVENT_REDRAW, this.body.scrolled.bind(this.body));
+      this.contentScroller.on(ContentScroller.EVENT_REDRAW, (delta) => this.body.scrolled(delta));
     }
   }
 

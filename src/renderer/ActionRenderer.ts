@@ -1,6 +1,6 @@
 import Column from '../model/Column';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {forEach, showOverlay} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
@@ -8,24 +8,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 
 
 export default class ActionRenderer implements ICellRendererFactory {
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const actions = context.option('actions', []);
-    const textHeight = context.option('textHeight', 13);
-    return {
-      template: `<text class='actions hoverOnly fa' y="${textHeight}">${actions.map((a) => `<tspan>${a.icon}</tspan>`).join('')}</text>`,
-      update: (n: SVGTextElement, d: IDataRow) => {
-        forEach(n, 'tspan', (ni: SVGTSpanElement, i: number) => {
-          ni.onclick = function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            actions[i].action(d.v, d.dataIndex);
-          };
-        });
-      }
-    };
-  }
-
-  createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
+  createDOM(col: Column, context: IDOMRenderContext): IDOMCellRenderer {
     const actions = context.option('actions', []);
     return {
       template: `<div class='actions hoverOnly'>${actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('')}</div>`,

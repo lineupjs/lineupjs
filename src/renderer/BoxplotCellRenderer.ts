@@ -2,7 +2,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 import {default as BoxPlotColumn, IBoxPlotColumn, IBoxPlotData} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
 import {IDOMRenderContext} from './RendererContexts';
-import {ISVGCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, setText} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
@@ -20,21 +20,19 @@ function computeLabel(v: IBoxPlotData) {
 
 export default class BoxplotCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createDOM(col: IBoxPlotColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const sortMethod = col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
     const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
     return {
-
-      template: `<g class='boxplotcell'>
+      template: `<svg class='boxplotcell' width="${col.getWidth()}">
             <title> </title>
-            <rect class='cellbg'></rect>
             <rect class='boxplotrect' y='${topPadding}'></rect>
             <path class='boxplotallpath'></path>
             <path class='boxplotsortpath' style='display: none'></path>
-        </g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
+        </svg>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
         const data = col.getBoxPlotData(d.v, d.dataIndex);
         const rowHeight = context.rowHeight(i);
         const scaled = {
@@ -44,7 +42,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q3: scale(data.q3),
           max: scale(data.max)
         };
-        attr(<SVGElement>n.querySelector('rect.cellbg'),{
+        attr(n,{
           width: col.getWidth(),
           height: rowHeight
         });

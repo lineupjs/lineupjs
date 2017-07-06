@@ -1,11 +1,12 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import {INumbersColumn} from '../model/NumbersColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {svg as d3svg, scale as d3scale} from 'd3';
 import Column from '../model/Column';
+import {attr} from '../utils';
 
 function createScales(col: INumbersColumn & Column) {
   const xScale = d3scale.linear().domain([0, col.getDataLength()-1]).range([0, col.getWidth()]);
@@ -15,7 +16,7 @@ function createScales(col: INumbersColumn & Column) {
 
 export default class SparklineCellRenderer implements ICellRendererFactory {
 
-  createSVG(col: INumbersColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createDOM(col: INumbersColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const {xScale, yScale} = createScales(col);
     const line = d3svg.line<number>()
       .x((d, j) => xScale(j))
@@ -23,10 +24,15 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
       .interpolate('linear');
 
     return {
-      template: `<path class='sparklinecell'></path>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-        yScale.range([context.rowHeight(i), 0]);
-        n.setAttribute('d', line(col.getNumbers(d.v, d.dataIndex)));
+      template: `<svg width="${col.getWidth()}" height="20"><path class='sparklinecell'></path></svg>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
+        const height = context.rowHeight(i);
+        yScale.range([height, 0]);
+        attr(n, {
+          width: col.getWidth(),
+          height
+        });
+        n.querySelector('path').setAttribute('d', line(col.getNumbers(d.v, d.dataIndex)));
       }
     };
   }

@@ -4,8 +4,7 @@
 
 import {ISlicer, IBodyRenderer} from './ABodyRenderer';
 import DataProvider from '../provider/ADataProvider';
-import SVGBodyRenderer from './SVGBodyRenderer';
-import HTMLBodyRenderer from './HTMLBodyRenderer';
+import DOMBodyRenderer from './ADOMBodyRenderer';
 import CanvasBodyRenderer from './CanvasBodyRenderer';
 
 export {default as HeaderRenderer, IRankingHook, dummyRankingButtonHook} from './HeaderRenderer';
@@ -14,13 +13,9 @@ export {ISlicer, IBodyRenderer} from './ABodyRenderer';
 
 export function createBodyRenderer(type = 'svg', data: DataProvider, parent: Element, slicer: ISlicer, options = {}): IBodyRenderer {
   switch (type) {
-    case 'svg':
-      return new SVGBodyRenderer(data, parent, slicer, options);
-    case 'html':
-      return new HTMLBodyRenderer(data, parent, slicer, options);
     case 'canvas':
       return new CanvasBodyRenderer(data, parent, slicer, options);
     default:
-      return new SVGBodyRenderer(data, parent, slicer, options);
+      return new DOMBodyRenderer(data, parent, slicer, options);
   }
 }

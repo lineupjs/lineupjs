@@ -1,12 +1,12 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer} from './IDOMCellRenderers';
+import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {scale as d3scale} from 'd3';
 import Column from '../model/Column';
-import {attr, forEach, setText} from '../utils';
+import {attr, forEach} from '../utils';
 
 export default class VerticalBarCellRenderer implements ICellRendererFactory {
   private static verticalBarScale(domain: number[], threshold: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
@@ -23,30 +23,34 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
     return (domain[0] < threshold) ? (rowHeight / 2 - scale(cellData)) : scale(cellData);
   }
 
-  createSVG(col: INumbersColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
+  createDOM(col: INumbersColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const colorScale = col.getRawColorScale();
-    const cellDimension = col.getWidth() / col.getDataLength();
     const domain = col.getMapping().domain;
     const defaultScale = d3scale.linear().domain(domain);
     const threshold = col.getThreshold();
     let templateRows = '';
     for (let i = 0; i < col.getDataLength(); ++i) {
-      templateRows += `<rect width="${cellDimension}" height="1" x="${i * cellDimension}" y="0" fill="white"><title> </title></rect>`;
+      templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<g class='verticalbarcell'>${templateRows}</g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
+      template: `<div class='verticalbarcell' style="width: ${col.getWidth()}px; height: 20px">${templateRows}</div>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
         const rowHeight = context.rowHeight(i);
+        attr(n, {}, {
+          width: col.getWidth() + 'px',
+          height: rowHeight + 'px'
+        });
         const scale = VerticalBarCellRenderer.verticalBarScale(domain, threshold, defaultScale, rowHeight);
         const data = col.getRawNumbers(d.v, d.dataIndex);
-        forEach(n, 'rect', (d, i) => {
+        forEach(n, 'div', (d, i) => {
           const v = data[i];
           attr(<SVGRectElement>d, {
-            fill: colorScale(v),
-            height: VerticalBarCellRenderer.verticalBarHeight(domain, threshold, v, scale, rowHeight),
-            y: VerticalBarCellRenderer.verticalBarYpos(domain, threshold, v, scale, rowHeight),
+            title: NumbersColumn.DEFAULT_FORMATTER(v)
+          }, {
+            'background-color': colorScale(v),
+            height: VerticalBarCellRenderer.verticalBarHeight(domain, threshold, v, scale, rowHeight) + 'px',
+            top: VerticalBarCellRenderer.verticalBarYpos(domain, threshold, v, scale, rowHeight) + 'px'
           });
-          setText(d.querySelector('title'), NumbersColumn.DEFAULT_FORMATTER(v));
         });
       }
     };
