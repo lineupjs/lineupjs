@@ -4,7 +4,7 @@
 
 import {ISlicer, IBodyRenderer} from './ABodyRenderer';
 import DataProvider from '../provider/ADataProvider';
-import DOMBodyRenderer from './ADOMBodyRenderer';
+import DOMBodyRenderer from './DOMBodyRenderer';
 import CanvasBodyRenderer from './CanvasBodyRenderer';
 
 export {default as HeaderRenderer, IRankingHook, dummyRankingButtonHook} from './HeaderRenderer';
