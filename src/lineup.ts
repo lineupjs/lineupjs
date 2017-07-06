@@ -149,7 +149,7 @@ export default class LineUp extends AEventDispatcher {
       rowPadding: 1,
       rowBarPadding: 1,
       visibleRowsOnly: true,
-      backupScrollRows: 4,
+      backupScrollRows: 14,
       animationDuration: 1000,
       freezeCols: 0,
 
@@ -215,7 +215,7 @@ export default class LineUp extends AEventDispatcher {
       this.contentScroller.on(ContentScroller.EVENT_SCROLL, (top, left) => {
         //in two svg mode propagate horizontal shift
         //console.log(top, left,'ss');
-        this.header.$node.style('transform', `translate(0px, ${top}px)`);
+        this.header.$node.style('top', `${top}px`);
         if (this.config.body.freezeCols > 0) {
           this.header.updateFreeze(left);
           this.body.updateFreeze(left);

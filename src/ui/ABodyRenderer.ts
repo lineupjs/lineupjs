@@ -207,7 +207,8 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   abstract updateFreeze(left: number);
 
   scrolled() {
-    return this.update(ERenderReason.SCROLLED);
+    //next tick
+    setTimeout(() => this.update(ERenderReason.SCROLLED), 1);
   }
 
   /**
@@ -275,7 +276,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   protected abstract createContextImpl(indexShift: number): IBodyRenderContext;
 
-  protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason): Promise<void>;
+  protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason): Promise<void>;
 }
 
 export default ABodyRenderer;
