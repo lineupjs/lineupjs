@@ -149,7 +149,7 @@ export default class LineUp extends AEventDispatcher {
       rowPadding: 1,
       rowBarPadding: 1,
       visibleRowsOnly: true,
-      backupScrollRows: 14,
+      backupScrollRows: 4,
       animationDuration: 1000,
       freezeCols: 0,
 
@@ -170,8 +170,8 @@ export default class LineUp extends AEventDispatcher {
 
   constructor(container: Selection<any> | Element, public data: DataProvider, config: ILineUpConfig = {}) {
     super();
-    this.$container = container instanceof selection ? <Selection<any>>container : select(<Element>container);
-    this.$container = this.$container.append('div').classed('lu', true);
+    const $base = container instanceof selection ? <Selection<any>>container : select(<Element>container);
+    this.$container = $base.append('div').classed('lu', true);
     this.config.svgLayout = this.config.body;
     this.config.htmlLayout = this.config.header;
 
@@ -191,7 +191,10 @@ export default class LineUp extends AEventDispatcher {
       summary: this.config.renderingOptions.summary,
       freezeCols: this.config.body.freezeCols,
     }));
-    this.body = createBodyRenderer(this.config.body.renderer, data, this.node, this.slice.bind(this), merge({}, this.config.body, {
+
+    this.node.insertAdjacentHTML('beforeend', `<div class="lu-body-wrapper"></div>`);
+    const bodyWrapper = this.node.lastElementChild;
+    this.body = createBodyRenderer(this.config.body.renderer, data, bodyWrapper, this.slice.bind(this), merge({}, this.config.body, {
       meanLine: this.config.renderingOptions.meanLine,
       animation: this.config.renderingOptions.animation,
       stacked: this.config.renderingOptions.stacked,
@@ -207,15 +210,14 @@ export default class LineUp extends AEventDispatcher {
     }
 
     if (this.config.body.visibleRowsOnly) {
-      this.contentScroller = new ContentScroller(<Element>this.$container.node(), this.body.node, {
+      this.contentScroller = new ContentScroller(bodyWrapper, this.body.node, {
         backupRows: this.config.body.backupScrollRows,
         rowHeight: this.config.body.rowHeight,
         topShift: () => this.header.currentHeight()
       });
       this.contentScroller.on(ContentScroller.EVENT_SCROLL, (top, left) => {
         //in two svg mode propagate horizontal shift
-        //console.log(top, left,'ss');
-        this.header.$node.style('top', `${top}px`);
+        this.header.$node.style('margin-left', `${-left}px`);
         if (this.config.body.freezeCols > 0) {
           this.header.updateFreeze(left);
           this.body.updateFreeze(left);

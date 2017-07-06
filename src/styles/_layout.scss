@@ -1,0 +1,26 @@
+
+
+.lu {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  align-content: stretch;
+
+  div.lu-header {
+    flex: 0 0 auto;
+    position: relative;
+    z-index: 1;
+    overflow-x: hidden;
+  }
+
+  div.lu-body-wrapper {
+    flex: 1 1 auto;
+    position: relative;
+    overflow: auto;
+  }
+}
+
+.lu-pool {
+  position: relative;
+}
