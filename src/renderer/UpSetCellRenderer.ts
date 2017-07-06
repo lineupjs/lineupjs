@@ -23,13 +23,13 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
 
   createDOM(col: ICategoricalColumn&Column, context: IDOMRenderContext): IDOMCellRenderer {
     const dataLength = col.categories.length;
-    const cellDimension = col.getWidth() / dataLength;
+    const cellDimension = col.getActualWidth() / dataLength;
     let templateRows = '';
     for (let i = 0; i < dataLength; ++i) {
       templateRows += `<circle r="${cellDimension / 4}" cx="${i * cellDimension + (cellDimension / 2)}" cy="50%"></circle>`;
     }
     return {
-      template: `<svg class='upsetcell' width="${col.getWidth()}" height="20"><path></path>${templateRows}</svg>`,
+      template: `<svg class='upsetcell' height="20"><path></path>${templateRows}</svg>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const rowHeight = context.rowHeight(i);
         const cellDimension = col.getWidth() / dataLength;
@@ -61,7 +61,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: ICategoricalColumn&Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const dataLength = col.categories.length;
-    const cellDimension = col.getWidth() / dataLength;
+    const cellDimension = col.getActualWidth() / dataLength;
 
     const upsetCircle = context.option('style.upset.circle', 'black');
     const upsetInactive = context.option('style.upset.inactiveOpacity', 0.1);

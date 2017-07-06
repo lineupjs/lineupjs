@@ -63,16 +63,15 @@ export default class DOMBodyRenderer extends ABodyRenderer {
         //set transform
         columns.forEach((col, ci) => {
           const cnode: any = node.childNodes[ci];
-          cnode.style.left = `${col.shift}px`;
         });
       };
 
-      $rowsEnter.append('div').attr('class', 'cols').each(function (d, i, j) {
-        createTemplates(this, data[j].columns);
-      });
 
       $rowsEnter.append('div').attr('class', 'frozen').style('transform', `translate${this.currentFreezeLeft}px,0)`).each(function (d, i, j) {
         createTemplates(this, data[j].frozen);
+      });
+      $rowsEnter.append('div').attr('class', 'cols').each(function (d, i, j) {
+        createTemplates(this, data[j].columns);
       });
 
       $rows.each(function(this: HTMLElement|SVGGElement, d: number, i: number) {
@@ -99,22 +98,25 @@ export default class DOMBodyRenderer extends ABodyRenderer {
           matchColumns(node, columns);
           columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
-            cnode.style.left = `${col.shift}px`;
+            // use the shift if possible since it considers more cornercases
+            cnode.style.width = `${ci < columns.length-2 ? (columns[ci+1].shift - col.shift) : col.column.getActualWidth()}px`;
             col.renderer.update(cnode, row, i);
           });
         });
       };
       //update columns
 
-      $rows.select('div.cols').each(function (d, i, j) {
-        toWait.push(updateColumns(this, data[j], i, data[j].columns));
-      });
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
+
       $rows.select('div.frozen').each(function (d, i, j) {
         this.style.width = maxFrozen + 'px';
         this.style.height = that.options.rowHeight + 'px';
         toWait.push(updateColumns(this, data[j], i, data[j].frozen));
+      });
+      $rows.select('div.cols').each(function (d, i, j) {
+        this.style.marginLeft = (maxFrozen + that.options.columnPadding) + 'px';
+        toWait.push(updateColumns(this, data[j], i, data[j].columns));
       });
       $rows.exit().remove();
     }

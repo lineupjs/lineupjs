@@ -12,7 +12,6 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class='link text'></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        n.style.width = col.getWidth() + 'px';
         n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class='link' href='${col.getValue(d.v, d.dataIndex)}' target='_blank'>${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
       }
     };
@@ -22,18 +21,18 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const isLink = col.isLink(d.v, d.dataIndex);
       if (!isLink) {
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth(), context.textHints);
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getActualWidth(), context.textHints);
         return;
       }
       const hovered = context.hovered(d.dataIndex);
       if (hovered) {
         const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
-        overlay.style.width = col.getWidth() + 'px';
+        overlay.style.width = col.getActualWidth() + 'px';
         overlay.innerHTML = `<a class='link' href='${col.getValue(d.v, d.dataIndex)}' target='_blank'>${col.getLabel(d.v, d.dataIndex)}</a>`;
       } else {
         const bak = ctx.fillStyle;
         ctx.fillStyle = context.option('style.link', context.option('style.text', 'black'));
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth(), context.textHints);
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getActualWidth(), context.textHints);
         ctx.fillStyle = bak;
       }
     };

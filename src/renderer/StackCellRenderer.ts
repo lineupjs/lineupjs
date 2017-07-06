@@ -20,7 +20,7 @@ export default class StackCellRenderer implements ICellRendererFactory {
     let offset = 0;
     return col.children.map((d) => {
       const shift = offset;
-      offset += d.getWidth();
+      offset += d.getActualWidth();
       offset += (!stacked ? padding : 0);
       return {
         column: d,
@@ -34,16 +34,14 @@ export default class StackCellRenderer implements ICellRendererFactory {
   createDOM(col: StackColumn, context: IDOMRenderContext): IDOMCellRenderer {
     const cols = this.createData(col, context);
     return {
-      template: `<div class='stack component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
+      template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        let stackShift = 0;
         matchColumns(n, cols, 'html');
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
-          cnode.style.transform = `translate(${col.shift - stackShift}px,0)`;
           col.renderer.update(cnode, d, i);
           if (col.stacked) {
-            stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v, d.dataIndex));
+            cnode.style.marginRight = null;
           }
         });
       }
@@ -60,7 +58,7 @@ export default class StackCellRenderer implements ICellRendererFactory {
         col.renderer(ctx, d, i, dx + shift, dy);
         ctx.translate(-shift, 0);
         if (col.stacked) {
-          stackShift += col.column.getWidth() * (1 - col.column.getValue(d.v, d.dataIndex));
+          stackShift += col.column.getActualWidth() * (1 - col.column.getValue(d.v, d.dataIndex));
         }
       });
     };

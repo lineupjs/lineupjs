@@ -22,19 +22,23 @@ export default class BarCellRenderer implements ICellRendererFactory {
   createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
+    const columnPadding = context.option('columnPadding', 5);
     return {
       template: `<div class='bar' style='top:${paddingTop}px; background-color: ${col.color}'>
           <span class='number ${this.renderValue ? '' : 'hoverOnly'}'></span>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        const width = col.getWidth() * col.getNumber(d.v, d.dataIndex);
+        const total = col.getActualWidth();
+        const width = col.getActualWidth() * col.getNumber(d.v, d.dataIndex);
+        const w = isNaN(width) ? 0 : width;
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
-          width: `${isNaN(width) ? 0 : width}px`,
+          width: `${w}px`,
           height: `${context.rowHeight(i) - (paddingTop + paddingBottom)}px`,
           top: `${paddingTop}px`,
-          'background-color': this.colorOf(d.v, i, col)
+          'background-color': this.colorOf(d.v, i, col),
+          'margin-right': `${total - w + columnPadding}px` //compensate to the full length using marg
         });
         n.querySelector('span').textContent = col.getLabel(d.v, d.dataIndex);
       }

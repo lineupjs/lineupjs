@@ -243,6 +243,10 @@ export default class Column extends AEventDispatcher {
     return this.width;
   }
 
+  getActualWidth() {
+    return this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
+  }
+
   /**
    * a column is hidden if it has no width
    * @return {boolean}

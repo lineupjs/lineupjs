@@ -18,10 +18,9 @@ export default class NumbersCellRenderer implements ICellRendererFactory {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<div class="heatmapcell" style="top:${padding}px; width=${col.getWidth()}px">${templateRows}</div>`,
+      template: `<div class="heatmapcell" style="top:${padding}px">${templateRows}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         attr(n, {}, {
-          width: col.getWidth() + 'px',
           height: (context.rowHeight(i) - padding*2) + 'px'
         });
         const data = col.getRawNumbers(d.v, d.dataIndex);
@@ -38,7 +37,7 @@ export default class NumbersCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const cellDimension = col.getWidth() / col.getDataLength();
+    const cellDimension = col.getActualWidth() / col.getDataLength();
     const padding = context.option('rowBarPadding', 1);
     const colorScale = col.getRawColorScale();
 

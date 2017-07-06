@@ -4,7 +4,7 @@ import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText} from '../utils';
+import {attr, clipText, setText} from '../utils';
 
 /**
  * default renderer instance rendering the value as a text
@@ -24,9 +24,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${this.textClass} ${this.align}"> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
-        attr(n, {}, {
-          width: `${col.getWidth()}px`
-        }, col.getLabel(d.v, d.dataIndex));
+        setText(n, col.getLabel(d.v, d.dataIndex));
       }
     };
   }
@@ -35,7 +33,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
       const bak = ctx.textAlign;
       ctx.textAlign = this.align;
-      const w = col.getWidth();
+      const w = col.getActualWidth();
       let shift = 0;
       if (this.align === 'center') {
         shift = w / 2;

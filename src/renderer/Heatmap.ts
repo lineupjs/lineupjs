@@ -30,7 +30,7 @@ export default class Heatmap implements ICellRendererFactory {
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
-          width: `${w}px`,
+          width: `${w}px !important`,
           height: `${w}px`,
           top: `${padding}px`,
           'background-color': Heatmap.toHeatMapColor(d.v, d.dataIndex, col)

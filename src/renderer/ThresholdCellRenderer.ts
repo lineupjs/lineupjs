@@ -18,11 +18,10 @@ export default class ThresholdCellRenderer implements ICellRendererFactory {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<div class="thresholdcell" style="width: ${col.getWidth()}px;">${templateRows}</div>`,
+      template: `<div class="thresholdcell">${templateRows}</div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const rowHeight = context.rowHeight(i);
         attr(n, {}, {
-          width: col.getWidth() + 'px',
           height: rowHeight + 'px'
         });
         const data = col.getRawNumbers(d.v, d.dataIndex);

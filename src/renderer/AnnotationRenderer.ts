@@ -21,7 +21,6 @@ export default class AnnotationRenderer implements ICellRendererFactory {
         input.onclick = function (event) {
           event.stopPropagation();
         };
-        n.style.width = input.style.width = col.getWidth() + 'px';
         input.value = col.getLabel(d.v, d.dataIndex);
         n.querySelector('span').textContent = col.getLabel(d.v, d.dataIndex);
       }
@@ -34,7 +33,7 @@ export default class AnnotationRenderer implements ICellRendererFactory {
       if (hovered) {
         const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
         overlay.style.width = col.getWidth() + 'px';
-        overlay.innerHTML = `<input type='text' value='${col.getValue(d.v, d.dataIndex)}' style='width:${col.getWidth()}px'>`;
+        overlay.innerHTML = `<input type='text' value='${col.getValue(d.v, d.dataIndex)}' style='width:${col.getActualWidth()}px'>`;
         const input = <HTMLInputElement>overlay.childNodes[0];
         input.onchange = function () {
           col.setValue(d.v, d.dataIndex, input.value);

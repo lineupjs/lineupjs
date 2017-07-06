@@ -11,12 +11,35 @@
   }
 
   .rows > *,
-  .cols > *,
-  .frozen > *,
   div.bg,
   svg.slopegraph,
   div.ranking {
     position: absolute;
+  }
+
+  div.cols,
+  div.frozen,
+  div.component0,
+  div.component1 {
+    display: flex;
+    flex-direction: row;
+
+    > * {
+      flex: 0 0 auto;
+    }
+  }
+
+  div.frozen {
+    position: absolute;
+  }
+
+  div.stack.component0,
+  div.stack.component1 {
+    > *:not(:last-child) {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   div.text,
@@ -42,6 +65,7 @@
     div.bg {
       background-color: transparent;
       border: 1px solid transparent;
+      z-index: -1;
     }
 
     &.even div.bg {
@@ -100,6 +124,10 @@
     div.cat div {
       position: relative;
       display: inline-block;
+    }
+
+    div.annotations input {
+      width: 100%;
     }
 
     div.heatmapcell,

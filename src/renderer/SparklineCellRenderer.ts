@@ -9,7 +9,7 @@ import Column from '../model/Column';
 import {attr} from '../utils';
 
 function createScales(col: INumbersColumn & Column) {
-  const xScale = d3scale.linear().domain([0, col.getDataLength()-1]).range([0, col.getWidth()]);
+  const xScale = d3scale.linear().domain([0, col.getDataLength()-1]).range([0, col.getActualWidth()]);
   const yScale = d3scale.linear().domain([0, 1]);
   return {xScale, yScale};
 }
@@ -24,12 +24,11 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
       .interpolate('linear');
 
     return {
-      template: `<svg width="${col.getWidth()}" height="20"><path class='sparklinecell'></path></svg>`,
+      template: `<svg height="20"><path class='sparklinecell'></path></svg>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const height = context.rowHeight(i);
         yScale.range([height, 0]);
         attr(n, {
-          width: col.getWidth(),
           height
         });
         n.querySelector('path').setAttribute('d', line(col.getNumbers(d.v, d.dataIndex)));

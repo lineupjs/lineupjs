@@ -33,11 +33,10 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<div class='verticalbarcell' style="width: ${col.getWidth()}px; height: 20px">${templateRows}</div>`,
+      template: `<div class='verticalbarcell' style="height: 20px">${templateRows}</div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const rowHeight = context.rowHeight(i);
         attr(n, {}, {
-          width: col.getWidth() + 'px',
           height: rowHeight + 'px'
         });
         const scale = VerticalBarCellRenderer.verticalBarScale(domain, threshold, defaultScale, rowHeight);

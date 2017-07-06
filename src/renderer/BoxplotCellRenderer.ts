@@ -23,10 +23,10 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   createDOM(col: IBoxPlotColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const sortMethod = col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
-    const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
+    const scale = d3scale.linear().domain([0, 1]).range([0, col.getActualWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
     return {
-      template: `<svg class='boxplotcell' width="${col.getWidth()}">
+      template: `<svg class='boxplotcell'>
             <title> </title>
             <rect class='boxplotrect' y='${topPadding}'></rect>
             <path class='boxplotallpath'></path>
@@ -43,7 +43,6 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           max: scale(data.max)
         };
         attr(n,{
-          width: col.getWidth(),
           height: rowHeight
         });
         setText(n.querySelector('title'), computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex)));
