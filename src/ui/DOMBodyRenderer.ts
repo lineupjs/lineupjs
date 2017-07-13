@@ -51,7 +51,6 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       const $rowsEnter = $rows.enter().append('div').attr('class', 'row');
       $rowsEnter.style('top', (d, i) => context.cellPrevY(i) + 'px');
 
-      $rowsEnter.append('div').attr('class', 'bg');
       $rowsEnter
         .on('mouseenter', (d) => this.mouseOver(d, true))
         .on('mouseleave', (d) => this.mouseOver(d, false))
@@ -85,13 +84,6 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       //animated reordering
       this.animated($rows).style('top', (d, i) => context.cellY(i) + 'px');
 
-      //update background helper
-      $rows.select('div')
-        .style({
-          height: (d, i, j?) => context.rowHeight(i) + 'px',
-          width: (d, i, j?) => data[j].width + 'px'
-        });
-
       const updateColumns = (node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
         return r.data[i].then((row) => {
@@ -107,15 +99,14 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       //update columns
 
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
-      const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
+      const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : (d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth()) + that.options.columnPadding);
 
       $rows.select('div.frozen').each(function (d, i, j) {
         this.style.width = maxFrozen + 'px';
-        this.style.height = that.options.rowHeight + 'px';
         toWait.push(updateColumns(this, data[j], i, data[j].frozen));
       });
       $rows.select('div.cols').each(function (d, i, j) {
-        this.style.marginLeft = (maxFrozen + that.options.columnPadding) + 'px';
+        this.style.marginLeft = maxFrozen + 'px';
         toWait.push(updateColumns(this, data[j], i, data[j].columns));
       });
       $rows.exit().remove();

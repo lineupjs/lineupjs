@@ -11,7 +11,6 @@
   }
 
   .rows > *,
-  div.bg,
   svg.slopegraph,
   div.ranking {
     position: absolute;
@@ -31,6 +30,7 @@
 
   div.frozen {
     position: absolute;
+    z-index: 1;
   }
 
   div.stack.component0,
@@ -62,25 +62,42 @@
   }
 
   div.row {
-    div.bg {
-      background-color: transparent;
+    div.cols,
+    div.frozen {
+      background-color: white;
       border: 1px solid transparent;
-      z-index: -1;
+      transition: border-color ease 0.5s;
     }
 
-    &.even div.bg {
-      background-color: $lu_even_bg;
+    &.even {
+      div.cols,
+      div.frozen {
+        background-color: $lu_even_bg;
+      }
     }
 
     &.selected {
-      div.bg {
-        border: 1px solid $lu_selected_color;
+      z-index: 3;
+      div.cols {
+        border-color: $lu_selected_color;
+        border-left-color: transparent;
+      }
+
+      div.frozen {
+        border-color: $lu_selected_color;
+        border-right-color: transparent;
       }
     }
 
     &.hover {
-      div.bg {
-        border: 1px solid $lu_hover_color;
+      div.cols {
+        border-color: $lu_hover_color;
+        border-left-color: transparent;
+      }
+
+      div.frozen {
+        border-color: $lu_hover_color;
+        border-right-color: transparent;
       }
     }
 

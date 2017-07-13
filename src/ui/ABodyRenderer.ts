@@ -92,7 +92,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   static readonly EVENT_RENDER_FINISHED = 'renderFinished';
 
   protected readonly options: IBodyRendererOptions = {
-    rowHeight: 20,
+    rowHeight: 22,
     textHeight: 13, //10pt
     rowPadding: 1,
     rowBarPadding: 1,
