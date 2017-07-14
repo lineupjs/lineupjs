@@ -58,6 +58,11 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     const dataLength = col.categories.length;
     const cellDimension = col.getWidth() / dataLength;
 
+    const upsetCircle = context.option('style.upset.circle', 'black');
+    const upsetInactive = context.option('style.upset.inactiveOpacity', 0.1);
+    const upsetStroke = context.option('style.upset.stroke', 'black');
+
+
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       // Circle
       const values = new Set(col.getCategories(d.v, d.dataIndex));
@@ -67,8 +72,8 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
       const radius = (rowHeight / 3);
 
       ctx.save();
-      ctx.fillStyle = 'black';
-      ctx.strokeStyle = 'black';
+      ctx.fillStyle = upsetCircle;
+      ctx.strokeStyle = upsetStroke;
       if (hasTrueValues) {
         const {left, right} = UpSetCellRenderer.calculateSetPath(data, cellDimension);
         ctx.beginPath();
@@ -81,7 +86,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         const posy = (rowHeight / 2);
         const posx = (j * cellDimension) + (cellDimension / 2);
         ctx.beginPath();
-        ctx.globalAlpha = d ? 1 : 0.1;
+        ctx.globalAlpha = d ? 1 : upsetInactive;
         ctx.arc(posx, posy, radius, 0, 2 * Math.PI);
         ctx.fill();
       });

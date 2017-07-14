@@ -22,12 +22,13 @@ export default class BarCellRenderer implements ICellRendererFactory {
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
+    const textHeight = context.option('textHeight', 13);
     return {
       template: `<g class='bar'>
           <rect class='${col.cssClass}' y='${paddingTop}' style='fill: ${col.color}'>
             <title></title>
           </rect>
-          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})'></text>
+          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"></text>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         n.querySelector('rect title').textContent = col.getLabel(d.v, d.dataIndex);
@@ -40,7 +41,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         }, {
           fill: this.colorOf(d.v, i, col)
         });
-        attr(<SVGTextElement>n.querySelector('text'), {}).textContent = col.getLabel(d.v, d.dataIndex);
+        (<SVGTextElement>n.querySelector('text')).textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }

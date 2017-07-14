@@ -92,7 +92,6 @@ $mapping_color_hover: #0000cf;
     g.filter {
       text {
         font-size: 8pt;
-        alignment-baseline: hanging;
       }
 
       path {
@@ -107,7 +106,8 @@ $mapping_color_hover: #0000cf;
 
       > g {
         cursor: pointer;
-        cursor: -webkit-drag;
+        cursor: -moz-grab;
+        cursor: -webkit-grab; // indicate grab able
 
         &:hover {
           path {

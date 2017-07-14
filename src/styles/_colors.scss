@@ -5,8 +5,20 @@ $lu_selected_color: #ffa500;
 
 $lu_drag_over: #979797;
 
-$lu_body_font_size: 10pt;
+$lu_header_background: #6d6c6c;
+$lu_header_active_filter_color: darkblue;
+
+$lu_body_font: 10pt "Helvetica Neue", Helvetica, Arial, sans-serif;
 $lu_body_text_hover_color: darkblue;
 
 $lu_slope_color: darkgray;
+$lu_meanline_color: darkgray;
 $lu_even_bg: #f7f7f7;
+
+$lu_renderer_boxplot_box: #e0e0e0;
+$lu_renderer_boxplot_stroke: black;
+$lu_renderer_boxplot_sort_indicator: #ff0700;
+
+$lu_upset_circle_color: black;
+$lu_upset_inactive_opacity: 0.1;
+$lu_upset_stroke: black;
