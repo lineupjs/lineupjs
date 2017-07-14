@@ -309,6 +309,16 @@ export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
 }
 
 /**
+ * helper storage for dnd in edge since edge doesn't support custom mime-types
+ * @type {Map<string, {[p: string]: string}>}
+ */
+const dndTransferStorage = new Map<string, {[key: string]:string}>();
+
+function isEdgeDnD(e: DragEvent) {
+  return dndTransferStorage.size > 0 && hasDnDType(e, ['text/plain']);
+}
+
+/**
  * should it be a copy dnd operation?
  */
 export function copyDnD(e: DragEvent) {
@@ -329,6 +339,38 @@ export function updateDropEffect(e: DragEvent) {
   }
 }
 
+export function dragAble<T extends {id: string}>(onDragStart: (d: T) => {effectAllowed: 'none'|'copy'|'copyLink'|'copyMove'|'link'|'linkMove'|'move'|'all', data: {[key: string]: string}}) {
+  return ($node) => {
+      $node.on('dragstart', (d) => {
+        const e = <DragEvent>(<any>d3event);
+        const payload = onDragStart(d);
+        e.dataTransfer.effectAllowed = payload.effectAllowed;
+
+        const keys = Object.keys(payload.data);
+        const allSucceded = keys.every((k) => {
+          try {
+            e.dataTransfer.setData(k, payload.data[k]);
+            return true;
+          } catch(e) {
+            return false;
+          }
+        });
+        if (allSucceded) {
+          return;
+        }
+        //compatibility mode for edge
+        const text = payload.data['text/plain'] || '';
+        e.dataTransfer.setData('text/plain', d.id+(text ? ': ' + text: ''));
+          dndTransferStorage.set(d.id, payload.data);
+      }).on('dragend', (d) =>  {
+        if (dndTransferStorage.size > 0) {
+          //clear the id
+          dndTransferStorage.delete(d.id);
+        }
+      });
+    };
+}
+
 /**
  * returns a d3 callable function to make an element dropable, managed the class css 'drag_over' for hovering effects
  * @param mimeTypes the mime types to be dropable
@@ -339,7 +381,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
     $node.on('dragenter', function () {
       const e = <DragEvent>(<any>d3event);
       //var xy = mouse($node.node());
-      if (hasDnDType(e, mimeTypes)) {
+      if (hasDnDType(e, mimeTypes) || isEdgeDnD(e)) {
         select(this).classed('drag_over', true);
         //sounds good
         return false;
@@ -348,7 +390,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
       select(this).classed('drag_over', false);
     }).on('dragover', function () {
       const e = <DragEvent>(<any>d3event);
-      if (hasDnDType(e, mimeTypes)) {
+      if (hasDnDType(e, mimeTypes) || isEdgeDnD(e)) {
         e.preventDefault();
         updateDropEffect(e);
         select(this).classed('drag_over', true);
@@ -362,6 +404,15 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
       e.preventDefault();
       select(this).classed('drag_over', false);
       //var xy = mouse($node.node());
+      if (isEdgeDnD(e)) {
+        const base = e.dataTransfer.getData('text/plain');
+        const id = base.indexOf(':') >= 0 ? base.substring(0, base.indexOf(':')) : base;
+        if (dndTransferStorage.has(id)) {
+          const data = dndTransferStorage.get(id);
+          dndTransferStorage.delete(id);
+          return onDrop(data, d, copyDnD(e));
+        }
+      }
       if (hasDnDType(e, mimeTypes)) {
         const data: any = {};
         //selects the data contained in the data transfer
