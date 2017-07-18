@@ -24,12 +24,12 @@ export default class CircleCellRenderer implements ICellRendererFactory {
         </g>`,
       update: (n: SVGElement, d: IDataRow, i: number) => {
         const v = col.getNumber(d.v, d.dataIndex);
-        attr(<SVGCircleElement>n.querySelector('circle'), {
+        attr(<SVGCircleElement>n.firstElementChild, {
           cy: (context.rowHeight(i) / 2),
           cx: (col.getWidth() / 2),
           r: (context.rowHeight(i) / 2) * v
         });
-        setText((<SVGTextElement>n.querySelector('text')), col.getLabel(d.v, d.dataIndex));
+        setText((<SVGTextElement>n.lastElementChild), col.getLabel(d.v, d.dataIndex));
       }
     };
   }

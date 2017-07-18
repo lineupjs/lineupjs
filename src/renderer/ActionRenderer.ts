@@ -2,7 +2,7 @@ import Column from '../model/Column';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {forEach, showOverlay} from '../utils';
+import {forEachChild, showOverlay} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
 
@@ -13,7 +13,7 @@ export default class ActionRenderer implements ICellRendererFactory {
     return {
       template: `<div class='actions hoverOnly'>${actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('')}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        forEach(n, 'span', (ni: HTMLSpanElement, i: number) => {
+        forEachChild(n, (ni: HTMLSpanElement, i: number) => {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -33,7 +33,7 @@ export default class ActionRenderer implements ICellRendererFactory {
         overlay.style.width = col.getWidth() + 'px';
         overlay.classList.add('actions');
         overlay.innerHTML = actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('');
-        forEach(overlay, 'span', (ni: HTMLSpanElement, i) => {
+        forEachChild(overlay, (ni: HTMLSpanElement, i) => {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();

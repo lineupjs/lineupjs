@@ -34,12 +34,12 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         } else {
           cell = Math.min(col.getActualWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
         }
-        attr(<HTMLDivElement>n.querySelector('div'), {}, {
+        attr(<HTMLDivElement>n.firstElementChild, {}, {
           width: cell + 'px',
           height: cell + 'px',
           'background-color': col.getColor(d.v, d.dataIndex)
         });
-        attr(<HTMLSpanElement>n.querySelector('span'), {}, {}, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
+        attr(<HTMLSpanElement>n.lastElementChild, {}, {}, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
       }
     };
   }

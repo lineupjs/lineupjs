@@ -5,6 +5,7 @@
 import {dispatch, select, event as d3event, Dispatch} from 'd3';
 import Column from './model/Column';
 import {IDOMCellRenderer} from './renderer/IDOMCellRenderers';
+export {round} from 'd3';
 
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
@@ -416,7 +417,11 @@ export function setText<T extends Node>(node: T, text?: string): T {
  * @param callback
  */
 export function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number) => void) {
-  Array.prototype.slice.call(node.querySelectorAll(selector)).forEach(callback);
+  Array.from(node.querySelectorAll(selector)).forEach(callback);
+}
+
+export function forEachChild<T extends Element>(node: T, callback: (d: Element, i: number) => void) {
+  Array.from(node.children).forEach(callback);
 }
 
 export interface ITextRenderHints {

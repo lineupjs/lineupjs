@@ -4,7 +4,7 @@ import {INumberColumn} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText} from '../utils';
+import {attr, clipText, round} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 
 
@@ -21,27 +21,21 @@ export default class BarCellRenderer implements ICellRendererFactory {
   }
 
   createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
-    const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
-    const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     const columnPadding = context.option('columnPadding', 5);
     return {
-      template: `<div class='bar' style='top:${paddingTop}px; background-color: ${col.color}'>
+      template: `<div class='bar' style='background-color: ${col.color}'>
           <span class='number ${this.renderValue ? '' : 'hoverOnly'}'></span>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        const total = col.getActualWidth();
-        const width = col.getActualWidth() * col.getNumber(d.v, d.dataIndex);
-        const w = isNaN(width) ? 0 : width;
+        const value = col.getNumber(d.v, d.dataIndex);
+        const w = isNaN(value) ? 0 : round(value * 100, 2);
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
-          width: `${w}px`,
-          height: `${context.rowHeight(i) - (paddingTop + paddingBottom)}px`,
-          top: `${paddingTop}px`,
-          'background-color': this.colorOf(d.v, i, col),
-          'margin-right': `${total - w + columnPadding}px` //compensate to the full length using marg
+          width: `${w}%`,
+          'background-color': this.colorOf(d.v, i, col)
         });
-        n.querySelector('span').textContent = col.getLabel(d.v, d.dataIndex);
+        n.firstElementChild.textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }

@@ -4,7 +4,7 @@ import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {attr, forEach, setText} from '../utils';
+import {attr, forEachChild} from '../utils';
 import Column from '../model/Column';
 
 
@@ -20,12 +20,8 @@ export default class ThresholdCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="thresholdcell">${templateRows}</div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
-        const rowHeight = context.rowHeight(i);
-        attr(n, {}, {
-          height: rowHeight + 'px'
-        });
         const data = col.getRawNumbers(d.v, d.dataIndex);
-        forEach(n, 'div', (d, i) => {
+        forEachChild(n, (d, i) => {
           const v = data[i];
           attr(<SVGRectElement>d, {}, {
             'background-color': (v < threshold) ? colorValues[0] : colorValues[colorValues.length - 1],

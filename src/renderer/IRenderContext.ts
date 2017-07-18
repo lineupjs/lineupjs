@@ -24,7 +24,7 @@ interface IRenderContext<T> {
   /**
    * lookup custom options by key
    * @param key key to lookup
-   * @param default_ default value
+   * @param defaultValue default value
    */
   option<T>(key: string, defaultValue: T): T;
 }

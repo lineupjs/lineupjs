@@ -31,7 +31,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
         attr(n, {
           height
         });
-        n.querySelector('path').setAttribute('d', line(col.getNumbers(d.v, d.dataIndex)));
+        n.firstElementChild.setAttribute('d', line(col.getNumbers(d.v, d.dataIndex)));
       }
     };
   }

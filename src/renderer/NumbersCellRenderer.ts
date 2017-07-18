@@ -4,27 +4,23 @@ import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {attr, forEach, setText} from '../utils';
+import {attr, forEachChild} from '../utils';
 import Column from '../model/Column';
 
 
 export default class NumbersCellRenderer implements ICellRendererFactory {
 
   createDOM(col: INumbersColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
-    const padding = context.option('rowBarPadding', 1);
     const colorScale = col.getRawColorScale();
     let templateRows = '';
     for (let i = 0; i < col.getDataLength(); ++i) {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<div class="heatmapcell" style="top:${padding}px">${templateRows}</div>`,
+      template: `<div class="heatmapcell">${templateRows}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        attr(n, {}, {
-          height: (context.rowHeight(i) - padding * 2) + 'px'
-        });
         const data = col.getRawNumbers(d.v, d.dataIndex);
-        forEach(n, 'div', (d, i) => {
+        forEachChild(n, (d, i) => {
           const v = data[i];
           attr(<HTMLDivElement>d, {
             title: NumbersColumn.DEFAULT_FORMATTER(v)

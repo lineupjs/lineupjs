@@ -6,7 +6,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {scale as d3scale} from 'd3';
 import Column from '../model/Column';
-import {attr, forEach} from '../utils';
+import {attr, forEachChild} from '../utils';
 
 export default class VerticalBarCellRenderer implements ICellRendererFactory {
   private static verticalBarScale(domain: number[], threshold: number, scale: d3.scale.Linear<number, number>, rowHeight: number) {
@@ -38,12 +38,9 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
       template: `<div class='verticalbarcell' style="height: 20px">${templateRows}</div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const rowHeight = context.rowHeight(i);
-        attr(n, {}, {
-          height: rowHeight + 'px'
-        });
         const scale = VerticalBarCellRenderer.verticalBarScale(domain, threshold, defaultScale, rowHeight);
         const data = col.getRawNumbers(d.v, d.dataIndex);
-        forEach(n, 'div', (d, i) => {
+        forEachChild(n, (d, i) => {
           const v = data[i];
           attr(<SVGRectElement>d, {
             title: NumbersColumn.DEFAULT_FORMATTER(v)

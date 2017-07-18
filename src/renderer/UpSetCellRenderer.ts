@@ -2,7 +2,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, forEach} from '../utils';
+import {attr} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import Column from '../model/Column';
@@ -41,7 +41,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         const value = col.categories.map((cat) => values.has(cat));
         const hasTrueValues = value.some((d) => d); //some values are true?
 
-        forEach(n, 'circle', (d, i) => {
+        Array.from(n.children).slice(1).forEach((d, i) => {
           const v = value[i];
           attr(<SVGCircleElement>d, {
             cx: i * cellDimension + (cellDimension / 2),

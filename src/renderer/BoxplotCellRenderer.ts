@@ -45,8 +45,8 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         attr(n, {
           height: rowHeight
         });
-        setText(n.querySelector('title'), computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex)));
-        attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
+        setText(n.firstElementChild, computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex)));
+        attr(<SVGElement>n.children[1], {
           x: scaled.q1,
           width: (scaled.q3 - scaled.q1),
           height: (rowHeight - (topPadding * 2))
@@ -58,10 +58,10 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           `M${scaled.q3},${middlePos}L${scaled.max},${middlePos}` +
           `M${scaled.max},${topPadding}L${scaled.max},${bottomPos}`;   // maximum line
 
-        attr(<SVGPathElement>n.querySelector('path.boxplotallpath'), {
+        attr(<SVGPathElement>n.children[2], {
           d: path
         });
-        attr(<SVGPathElement>n.querySelector('path.boxplotsortpath'), {
+        attr(<SVGPathElement>n.children[3], {
           d: `M${scaled[sortMethod]},${topPadding}L${scaled[sortMethod]},${bottomPos}`
         }, {
           display: sortedByMe ? null : 'none'
