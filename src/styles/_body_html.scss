@@ -78,6 +78,7 @@
 
     &.selected {
       z-index: 3;
+
       div.cols {
         border-color: $lu_selected_color;
         border-left-color: transparent;
