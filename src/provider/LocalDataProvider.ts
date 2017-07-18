@@ -30,7 +30,7 @@ function computeStats(arr: any[], indices: number[], acc: (row: any, index: numb
       hist: []
     };
   }
-  const indexAccessor = (a, i) => acc(a, indices[i]);
+  const indexAccessor = (a: any, i: number) => acc(a, indices[i]);
   const hist = d3.layout.histogram().value(indexAccessor);
   if (range) {
     hist.range(() => range);
@@ -107,7 +107,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     maxNestedSortingCriteria: 1
   };
 
-  private readonly reorderAll;
+  private readonly reorderAll: () => void;
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: ILocalDataProviderOptions & IDataProviderOptions = {}) {
     super(columns, options);

@@ -117,7 +117,7 @@ abstract class ADataProvider extends AEventDispatcher {
    */
   readonly columnTypes: { [columnType: string]: typeof Column };
 
-  private readonly multiSelections;
+  private readonly multiSelections: boolean;
 
   constructor(options: IDataProviderOptions = {}) {
     super();
@@ -291,7 +291,7 @@ abstract class ADataProvider extends AEventDispatcher {
     return 'col' + (this.uid++);
   }
 
-  protected abstract rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking);
+  protected abstract rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking): number;
 
   private fixDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors
@@ -353,7 +353,7 @@ abstract class ADataProvider extends AEventDispatcher {
    */
   find(idOrFilter: string | ((col: Column) => boolean)): Column {
     //convert to function
-    const filter = typeof(idOrFilter) === 'string' ? (col) => col.id === idOrFilter : idOrFilter;
+    const filter = typeof(idOrFilter) === 'string' ? (col: Column) => col.id === idOrFilter : idOrFilter;
 
     for (const ranking of this.rankings) {
       const r = ranking.find(filter);
@@ -433,13 +433,13 @@ abstract class ADataProvider extends AEventDispatcher {
     //restore selection
     this.uid = dump.uid || 0;
     if (dump.selection) {
-      dump.selection.forEach((s) => this.selection.add(s));
+      dump.selection.forEach((s: number) => this.selection.add(s));
     }
 
 
     //restore rankings
     if (dump.rankings) {
-      dump.rankings.forEach((r) => {
+      dump.rankings.forEach((r: any) => {
         const ranking = this.cloneRanking();
         ranking.restore(r, this.createHelper);
         //if no rank column add one
@@ -461,7 +461,7 @@ abstract class ADataProvider extends AEventDispatcher {
     });
   }
 
-  abstract findDesc(ref: string);
+  abstract findDesc(ref: string): IColumnDesc|null;
 
   /**
    * generates a default ranking by using all column descriptions ones
@@ -486,7 +486,7 @@ abstract class ADataProvider extends AEventDispatcher {
   private deriveRanking(bundle: any[]) {
     const ranking = this.cloneRanking();
     ranking.clear();
-    const toCol = (column) => {
+    const toCol = (column: any) => {
       switch (column.type) {
         case 'rank':
           return this.create(createRankDesc());
@@ -499,7 +499,7 @@ abstract class ADataProvider extends AEventDispatcher {
         case 'stacked':
           //create a stacked one
           const stacked = <StackColumn>this.create(createStackDesc(column.label || 'Combined'));
-          (column.children || []).forEach((col) => {
+          (column.children || []).forEach((col: any) => {
             const c = toCol(col);
             if (c) {
               stacked.push(c);
@@ -510,7 +510,7 @@ abstract class ADataProvider extends AEventDispatcher {
           const desc = this.findDesc(column.column);
           if (desc) {
             const r = this.create(desc);
-            column.label = column.label || desc.label || desc.column;
+            column.label = column.label || desc.label || (<any>desc).column;
             r.restore(column, null);
             return r;
           }
@@ -591,7 +591,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param search
    * @param col
    */
-  abstract searchAndJump(search: string | RegExp, col: Column);
+  abstract searchAndJump(search: string | RegExp, col: Column): void;
 
   jumpToNearest(indices: number[]) {
     if (indices.length === 0) {
@@ -682,10 +682,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {Array}
    */
   getSelection() {
-    const indices = [];
-    this.selection.forEach((s) => indices.push(s));
-    indices.sort();
-    return indices;
+    return Array.from(this.selection).sort((a, b) => a - b);
   }
 
   /**
@@ -712,7 +709,7 @@ abstract class ADataProvider extends AEventDispatcher {
       header: true,
       quote: false,
       quoteChar: '"',
-      filter: (c) => !isSupportType(c)
+      filter: (c: IColumnDesc) => !isSupportType(c)
     }, options);
 
     //optionally quote not numbers
@@ -726,7 +723,7 @@ abstract class ADataProvider extends AEventDispatcher {
     const columns = ranking.flatColumns.filter((c) => options.filter(c.desc));
     const order = ranking.getOrder();
     return this.view(order).then((data) => {
-      const r = [];
+      const r: string[] = [];
       if (options.header) {
         r.push(columns.map((d) => quote(d.label)).join(options.separator));
       }

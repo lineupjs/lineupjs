@@ -7,6 +7,7 @@ import {merge} from '../utils';
 import {IColumnDesc, isNumberColumn, Column} from '../model';
 import DataProvider from '../provider/ADataProvider';
 import {toFullTooltip} from './HeaderRenderer';
+import Ranking from '../model/Ranking';
 
 class PoolEntry {
   used: number = 0;
@@ -75,7 +76,7 @@ export default class PoolRenderer {
         });
         that.update();
       });
-      data.on([DataProvider.EVENT_ADD_RANKING + '.pool', DataProvider.EVENT_REMOVE_RANKING + '.pool'], function (ranking) {
+      data.on([DataProvider.EVENT_ADD_RANKING + '.pool', DataProvider.EVENT_REMOVE_RANKING + '.pool'], function (ranking: Ranking) {
         const descs = ranking.flatColumns.map((d) => d.desc), change = this.type === 'addRanking' ? 1 : -1;
         that.entries.some((entry) => {
           if (descs.indexOf(entry.desc) < 0) {

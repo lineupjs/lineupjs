@@ -11,7 +11,7 @@ import Column from '../model/Column';
 export default class UpSetCellRenderer implements ICellRendererFactory {
   private static calculateSetPath(setData: boolean[], cellDimension: number) {
 
-    const catindexes = [];
+    const catindexes: number[] = [];
     setData.forEach((d: boolean, i: number) => (d) ? catindexes.push(i) : -1);
 
     const left = (catindexes[0] * cellDimension) + (cellDimension / 2);

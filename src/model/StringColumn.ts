@@ -21,12 +21,12 @@ export default class StringColumn extends ValueColumn<string> {
   static readonly FILTER_MISSING = '__FILTER_MISSING';
   private currentFilter: string | RegExp = null;
 
-  private _alignment: string = 'left';
+  private _alignment: 'left'|'right'|'center' = 'left';
 
   constructor(id: string, desc: IStringColumnDesc) {
     super(id, desc);
     this.setWidthImpl(200); //by default 200
-    this._alignment = desc.alignment || 'left';
+    this._alignment = <any>desc.alignment || 'left';
   }
 
   //readonly

@@ -10,7 +10,7 @@ import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import IRenderContext from '../renderer/IRenderContext';
 import ICellRendererFactory from '../renderer/ICellRendererFactory';
-import {renderers as defaultRenderers} from '../renderer/index';
+import {renderers as defaultRenderers} from '../renderer';
 
 export interface ISlicer {
   (start: number, length: number, row2y: (i: number) => number): { from: number; to: number };
@@ -135,7 +135,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     return <HTMLElement>this.$node.node();
   }
 
-  setOption(key: string, value: any) {
+  setOption(key: keyof IBodyRendererOptions, value: any) {
     this.options[key] = value;
   }
 
@@ -158,9 +158,9 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   }
 
   protected createContext(indexShift: number, creator: (col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IRenderContext<any>) => any): IBodyRenderContext {
-    const options = this.options;
+    const options: any = this.options;
 
-    function findOption(key: string, defaultValue: any) {
+    function findOption(key: string, defaultValue: any): any {
       if (key in options) {
         return options[key];
       }
@@ -178,14 +178,14 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       cellY: (index: number) => (index + indexShift) * (this.options.rowHeight),
       cellPrevY: (index: number) => (index + indexShift) * (this.options.rowHeight),
 
-      idPrefix: options.idPrefix,
+      idPrefix: this.options.idPrefix,
 
       option: findOption,
 
-      rowHeight: () => options.rowHeight - options.rowPadding,
+      rowHeight: () => this.options.rowHeight - this.options.rowPadding,
 
       renderer(col: Column) {
-        return creator(col, options.renderers, this);
+        return creator(col, this.options.renderers, this);
       }
     };
   }
@@ -194,7 +194,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     return this.data.toggleSelection(dataIndex, additional);
   }
 
-  abstract drawSelection();
+  abstract drawSelection(): void;
 
   fakeHover(dataIndex: number) {
     this.mouseOver(dataIndex, true);
@@ -205,7 +205,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   }
 
 
-  abstract updateFreeze(left: number);
+  abstract updateFreeze(left: number): void;
 
   scrolled(delta: number) {
     //next tick

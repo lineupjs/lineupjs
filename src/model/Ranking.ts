@@ -353,7 +353,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     this.fire([Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], null);
   }
 
-  get flatColumns() {
+  get flatColumns(): Column[] {
     const r: IFlatColumn[] = [];
     this.flatten(r, 0, Column.FLAT_ALL_COLUMNS);
     return r.map((d) => d.col);

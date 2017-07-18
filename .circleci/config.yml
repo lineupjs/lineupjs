@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/phovea
     docker:
-      - image: circleci/node:7-browsers
+      - image: circleci/node:6-browsers
     steps:
       - checkout
       - restore_cache:

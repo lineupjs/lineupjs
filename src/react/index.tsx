@@ -38,7 +38,7 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
     defineLineUp: React.PropTypes.func
   };
 
-  static readonly defaultProps = {
+  static readonly defaultProps: {data: any[], desc: IColumnDesc[]} = {
     data: [],
     desc: []
   };

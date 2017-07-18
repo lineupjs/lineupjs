@@ -53,7 +53,7 @@ export interface IRankingHook {
   ($node: d3.Selection<Ranking>): void;
 }
 
-export function dummyRankingButtonHook() {
+export function dummyRankingButtonHook(): any {
   return null;
 }
 
@@ -286,7 +286,7 @@ export default class HeaderRenderer {
     const that = this;
     const rankings = this.data.getRankings();
 
-    const shifts: IFlatColumn[] = [], rankingOffsets = [];
+    const shifts: IFlatColumn[] = [], rankingOffsets: number[] = [];
     let totalWidth = 0;
     rankings.forEach((ranking) => {
       totalWidth += ranking.flatten(shifts, totalWidth, 1, this.options.columnPadding) + this.options.slopeWidth;
@@ -523,7 +523,7 @@ export default class HeaderRenderer {
     });
     $headers.select('span.lu-label').text((d) => d.label);
 
-    const resolveDrop = (data: string[], copy: boolean) => {
+    const resolveDrop = (data: any, copy: boolean) => {
       if ('application/caleydo-lineup-column-number-ref' in data) {
         const id = data['application/caleydo-lineup-column-number-ref'];
         let col: Column = this.data.find(id);
@@ -543,7 +543,7 @@ export default class HeaderRenderer {
       if (col.getCollapsed() || col.getCompressed()) {
         d3.select(this).selectAll('div.' + clazz + '_i').remove();
       } else {
-        const sShifts = [];
+        const sShifts: IFlatColumn[] = [];
         col.flatten(sShifts, 0, 1, that.options.columnPadding);
 
         const sColumns = sShifts.map((d) => d.col);

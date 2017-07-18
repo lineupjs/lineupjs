@@ -21,7 +21,7 @@ function computeLabel(v: IBoxPlotData) {
 export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   createDOM(col: IBoxPlotColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
-    const sortMethod = col.getSortMethod();
+    const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
     const scale = d3scale.linear().domain([0, 1]).range([0, col.getActualWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
@@ -71,7 +71,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const sortMethod = col.getSortMethod();
+    const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
     const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
