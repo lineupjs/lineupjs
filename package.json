@@ -47,11 +47,15 @@
     "compile": "tsc",
     "lint": "tslint --project tsconfig.json --type-check -c tslint.json && stylelint src/**/*.scss",
     "docs": "typedoc --options typedoc.json src",
+    "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
     "pretest": "npm run compile",
-    "test": "echo 'no tests'",
+    "test": "test ! -d tests || karma start",
     "posttest": "npm run lint",
-    "prebuild": "npm run test",
-    "build": "webpack",
+    "test:watch": "karma start --autoWatch=true --singleRun=false",
+    "build:dev": "webpack",
+    "build": "webpack --env prod",
+    "start": "webpack-dev-server --inline",
+    "start:hot": "webpack-dev-server --inline --hot",
     "watch": "webpack --watch",
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
@@ -64,11 +68,28 @@
     "url": "https://github.com/Caleydo/lineupjs.git"
   },
   "devDependencies": {
+    "@types/handlebars": "4.0.33",
+    "@types/jasmine": "2.5.41",
     "awesome-typescript-loader": "^3.1.2",
     "css-loader": "^0.28.0",
+    "extract-loader": "^0.1.0",
     "extract-text-webpack-plugin": "^2.1.0",
+    "file-loader": "^0.10.0",
+    "html-loader": "^0.4.4",
+    "imports-loader": "^0.7.0",
+    "jasmine": "^2.5.3",
+    "jasmine-promises": "^0.4.1",
+    "json-loader": "^0.5.4",
+    "karma": "^1.4.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-jasmine": "^1.1.0",
+    "karma-junit-reporter": "^2.0.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^2.0.2",
     "mkdirp": "^0.5.1",
-    "node-sass": "^4.5.2",
+    "node-sass": "^4.5.3",
+    "null-loader": "^0.1.1",
+    "raw-loader": "^0.5.1",
     "sass-loader": "^6.0.3",
     "style-loader": "^0.16.1",
     "stylelint": "^7.12.0",
@@ -76,8 +97,12 @@
     "stylelint-scss": "^1.4.4",
     "tslint": "^5.0.0",
     "typedoc": "^0.5.10",
-    "typescript": "2.2.2",
-    "webpack": "^2.3.3"
+    "typescript": "^2.3.0",
+    "uglify-es": "^3.0.25",
+    "uglifyjs-webpack-plugin": "^1.0.0-beta.1",
+    "url-loader": "^0.5.7",
+    "webpack": "^2.3.3",
+    "webpack-dev-server": "^2.4.2"
   },
   "optionalDependencies": {
     "@types/react": "^0.14.55",
@@ -88,6 +113,6 @@
   "dependencies": {
     "@types/d3": "^3.5.36",
     "d3": "^3.5.17",
-    "font-awesome": "^4.6.3"
+    "font-awesome": "^4.7.0"
   }
 }

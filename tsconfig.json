@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
     "module": "es6",
-    "target": "es5",
-    "noImplicitAny": false,
-    "sourceMap": false,
-    "jsx": "react",
+    "target": "es6",
+    "importHelpers": true,
+    "sourceMap": true,
     "moduleResolution": "node",
+    "jsx": "react",
+    "experimentalDecorators": true,
     "lib": [
       "dom",
-      "es2015"
-    ]
+      "es2015",
+      "es2016.array.include",
+      "es2017.object"
+    ],
+    "noImplicitAny": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*.ts",
