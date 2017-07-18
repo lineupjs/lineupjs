@@ -56,7 +56,7 @@ function computeStats(arr: any[], indices: number[], acc: (row: any, index: numb
  * @returns {{hist: {cat: string, y: number}[]}}
  */
 function computeHist(arr: number[], indices: number[], acc: (row: any, index: number) => string[], categories: string[]): ICategoricalStatistics {
-  const m = new Map<string,number>();
+  const m = new Map<string, number>();
   categories.forEach((cat) => m.set(cat, 0));
 
   arr.forEach((a, i) => {
@@ -68,7 +68,7 @@ function computeHist(arr: number[], indices: number[], acc: (row: any, index: nu
       m.set(v, (m.get(v) || 0) + 1);
     });
   });
-  const entries: {cat: string; y: number}[] = [];
+  const entries: { cat: string; y: number }[] = [];
   m.forEach((v, k) => entries.push({cat: k, y: v}));
   return {
     maxBin: Math.max(...entries.map((d) => d.y)),
@@ -93,6 +93,7 @@ export interface ILocalDataProviderOptions {
    */
   maxNestedSortingCriteria?: number;
 }
+
 /**
  * a data provider based on an local array
  */
@@ -254,7 +255,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     return Promise.resolve(indices.map((i) => col.getRawValue(this.data[i], i)));
   }
 
-  searchAndJump(search: string|RegExp, col: Column) {
+  searchAndJump(search: string | RegExp, col: Column) {
     //case insensitive search
     search = typeof search === 'string' ? search.toLowerCase() : search;
     const f = typeof search === 'string' ? (v: string) => v.toLowerCase().indexOf((<string>search)) >= 0 : (<RegExp>search).test.bind(search);

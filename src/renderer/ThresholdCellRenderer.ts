@@ -28,8 +28,8 @@ export default class ThresholdCellRenderer implements ICellRendererFactory {
         forEach(n, 'div', (d, i) => {
           const v = data[i];
           attr(<SVGRectElement>d, {}, {
-            'background-color': (v < threshold) ? colorValues[0] : colorValues[colorValues.length-1],
-            class: (v < threshold) ? 'down': '',
+            'background-color': (v < threshold) ? colorValues[0] : colorValues[colorValues.length - 1],
+            class: (v < threshold) ? 'down' : '',
             title: NumbersColumn.DEFAULT_FORMATTER(v)
           });
         });
@@ -49,7 +49,7 @@ export default class ThresholdCellRenderer implements ICellRendererFactory {
         ctx.beginPath();
         const xpos = j * cellDimension;
         const ypos = (d < threshold) ? (rowHeight / 2) : 0;
-        ctx.fillStyle = (d < threshold) ? colorValues[0] : colorValues[colorValues.length-1];
+        ctx.fillStyle = (d < threshold) ? colorValues[0] : colorValues[colorValues.length - 1];
         ctx.fillRect(xpos, ypos, cellDimension, rowHeight / 2);
       });
     };

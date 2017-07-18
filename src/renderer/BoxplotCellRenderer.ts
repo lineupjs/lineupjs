@@ -6,7 +6,7 @@ import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, setText} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
-import ICanvasCellRenderer  from './ICanvasCellRenderer';
+import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {scale as d3scale} from 'd3';
 
 
@@ -42,7 +42,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q3: scale(data.q3),
           max: scale(data.max)
         };
-        attr(n,{
+        attr(n, {
           height: rowHeight
         });
         setText(n.querySelector('title'), computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex)));

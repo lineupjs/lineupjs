@@ -57,7 +57,7 @@ export default class WeightsEditDialog extends ADialog {
     });
     $popup.select('.reset').on('click', () => {
       children.forEach((d, i) => d.weight = weights[i] * 100);
-      $rows.select('input').property('value', (d) => d.weight);
+      $rows.select('input').property('value', (d: any) => d.weight);
       redraw();
     });
     $popup.select('.ok').on('click', () => {

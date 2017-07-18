@@ -9,17 +9,19 @@ import Column from '../model/Column';
 import {attr, forEach} from '../utils';
 
 export default class VerticalBarCellRenderer implements ICellRendererFactory {
-  private static verticalBarScale(domain: number[], threshold: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
+  private static verticalBarScale(domain: number[], threshold: number, scale: d3.scale.Linear<number, number>, rowHeight: number) {
     return (domain[0] < threshold) ? scale.range([0, rowHeight / 2]) : scale.range([0, rowHeight]);
   }
-  private static verticalBarYpos(domain: number[], threshold: number, cellData: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
+
+  private static verticalBarYpos(domain: number[], threshold: number, cellData: number, scale: d3.scale.Linear<number, number>, rowHeight: number) {
     if (domain[0] < threshold) {
       return (cellData < threshold) ? (rowHeight / 2) : rowHeight / 2 - scale(cellData);   // For positive and negative value
     } else {
       return rowHeight - scale(cellData);
     }
   }
-  private static verticalBarHeight(domain: number[], threshold: number, cellData: number, scale: d3.scale.Linear<number,number>, rowHeight: number) {
+
+  private static verticalBarHeight(domain: number[], threshold: number, cellData: number, scale: d3.scale.Linear<number, number>, rowHeight: number) {
     return (domain[0] < threshold) ? (rowHeight / 2 - scale(cellData)) : scale(cellData);
   }
 

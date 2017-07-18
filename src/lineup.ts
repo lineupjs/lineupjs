@@ -4,8 +4,8 @@
  */
 
 import Column, {IColumnDesc} from './model/Column';
-import DataProvider  from './provider/ADataProvider';
-import {renderers as defaultRenderers}  from './renderer/index';
+import DataProvider from './provider/ADataProvider';
+import {renderers as defaultRenderers} from './renderer';
 import {
   IRankingHook,
   dummyRankingButtonHook,
@@ -17,7 +17,7 @@ import {
 } from './ui';
 import {IHeaderRendererOptions} from './ui/HeaderRenderer';
 import {IBodyRendererOptions, default as ABodyRenderer} from './ui/ABodyRenderer';
-import {AEventDispatcher, ContentScroller, merge}  from './utils';
+import {AEventDispatcher, ContentScroller, merge} from './utils';
 import {scale as d3scale, selection, select, Selection} from 'd3';
 import ICellRendererFactory from './renderer/ICellRendererFactory';
 
@@ -25,6 +25,30 @@ export interface IBodyOptions {
   renderer?: string;
   visibleRowsOnly?: boolean;
   backupScrollRows?: number;
+}
+
+export interface IRenderingOptions {
+  /**
+   * show combined bars as stacked bars
+   */
+  stacked?: boolean;
+  /**
+   * use animation for reordering
+   */
+  animation?: boolean;
+  /**
+   * show histograms of the headers (just settable at the beginning)
+   * @deprecated use summary instead
+   */
+  histograms?: boolean;
+  /**
+   * show column summaries in the header
+   */
+  summary?: boolean;
+  /**
+   * show a mean line for single numberial columns
+   */
+  meanLine?: boolean;
 }
 
 export interface ILineUpConfig {
@@ -44,29 +68,7 @@ export interface ILineUpConfig {
   /**
    * visual representation options
    */
-  renderingOptions?: {
-    /**
-     * show combined bars as stacked bars
-     */
-    stacked?: boolean;
-    /**
-     * use animation for reordering
-     */
-    animation?: boolean;
-    /**
-     * show histograms of the headers (just settable at the beginning)
-     * @deprecated use summary instead
-     */
-    histograms?: boolean;
-    /**
-     * show column summaries in the header
-     */
-    summary?: boolean;
-    /**
-     * show a mean line for single numberial columns
-     */
-    meanLine?: boolean;
-  };
+  renderingOptions?: IRenderingOptions;
   /**
    * options related to the rendering of the body
    */
@@ -87,7 +89,7 @@ export interface ILineUpConfig {
   /**
    * the renderer to use for rendering the columns
    */
-  renderers?: {[key: string]: ICellRendererFactory};
+  renderers?: { [key: string]: ICellRendererFactory };
 }
 
 /**
@@ -238,7 +240,7 @@ export default class LineUp extends AEventDispatcher {
    */
   addPool(node: Element, config?: IPoolRendererOptions): PoolRenderer;
   addPool(pool: PoolRenderer): PoolRenderer;
-  addPool(poolOrNode: Element|PoolRenderer, config = this.config) {
+  addPool(poolOrNode: Element | PoolRenderer, config = this.config) {
     if (poolOrNode instanceof PoolRenderer) {
       this.pools.push(<PoolRenderer>poolOrNode);
     } else {
@@ -364,7 +366,7 @@ export default class LineUp extends AEventDispatcher {
     });
   }
 
-  changeRenderingOption(option: string, value: boolean) {
+  changeRenderingOption(option: keyof IRenderingOptions, value: boolean) {
     this.config.renderingOptions[option] = value;
     if (option === 'animation' || option === 'stacked') {
       this.body.setOption(option, value);

@@ -13,7 +13,8 @@ import ABodyRenderer, {
   IRankingColumnData,
   IRankingData,
   IBodyRenderContext,
-  ERenderReason} from './ABodyRenderer';
+  ERenderReason
+} from './ABodyRenderer';
 
 export default class DOMBodyRenderer extends ABodyRenderer {
 
@@ -30,7 +31,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     return $rows;
   }
 
-  private renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number): Promise<any> {
+  private renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext & IDOMRenderContext, height: number): Promise<any> {
     const that = this;
 
     const $rankings = $body.selectAll('div.ranking').data(data, (d) => d.id);
@@ -57,7 +58,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
         .on('click', (d) => this.select(d, (<MouseEvent>d3.event).ctrlKey));
 
       //create templates
-      const createTemplates = (node: HTMLElement|SVGGElement, columns: IRankingColumnData[]) => {
+      const createTemplates = (node: HTMLElement | SVGGElement, columns: IRankingColumnData[]) => {
         matchColumns(node, columns);
         //set transform
         columns.forEach((col, ci) => {
@@ -73,7 +74,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
         createTemplates(this, data[j].columns);
       });
 
-      $rows.each(function(this: HTMLElement|SVGGElement, d: number, i: number) {
+      $rows.each(function (this: HTMLElement | SVGGElement, d: number, i: number) {
         const selected = that.data.isSelected(d);
         attr(this, {
           'class': `row${i % 2 === 0 ? ' even' : ''}${selected ? ' selected' : ''}`,
@@ -91,7 +92,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
           columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
             // use the shift if possible since it considers more cornercases
-            cnode.style.width = `${ci < columns.length-2 ? (columns[ci+1].shift - col.shift) : col.column.getActualWidth()}px`;
+            cnode.style.width = `${ci < columns.length - 2 ? (columns[ci + 1].shift - col.shift) : col.column.getActualWidth()}px`;
             col.renderer.update(cnode, row, i);
           });
         });
@@ -165,7 +166,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     }
   }
 
-  renderSlopeGraphs($parent: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {
+  renderSlopeGraphs($parent: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext & IDOMRenderContext, height: number) {
     const slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
 
     const $slopes = $parent.selectAll('svg.slopegraph').data(slopes);
@@ -175,7 +176,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       .style('left', (d, i) => (data[i + 1].shift - this.options.slopeWidth) + 'px');
 
     const $lines = $slopes.selectAll('line.slope').data((d) => {
-      const cache = new Map<number,number>();
+      const cache = new Map<number, number>();
       d.right.forEach((dataIndex, pos) => cache.set(dataIndex, pos));
       return d.left.map((dataIndex, pos) => ({
         dataIndex,

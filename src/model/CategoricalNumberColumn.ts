@@ -4,7 +4,7 @@
 
 import {max as d3max, scale, min as d3min} from 'd3';
 import Column from './Column';
-import ValueColumn,{IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import CategoricalColumn, {ICategoricalColumn, IBaseCategoricalDesc, ICategoricalFilter} from './CategoricalColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 
@@ -106,7 +106,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.getValue(row, index);
   }
 
-  getColor(row: any, index: number) {
+  getColor(row: any, index: number): string {
     const vs = this.getValues(row, index);
     const cs = this.getColors(row, index);
     if (this.combiner === d3max) {
@@ -127,7 +127,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     }
   }
 
-  getColors(row: any, index: number) {
+  getColors(row: any, index: number): string[] {
     return CategoricalColumn.prototype.getColors.call(this, row, index);
   }
 

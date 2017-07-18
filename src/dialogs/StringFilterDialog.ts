@@ -25,7 +25,7 @@ export default class StringFilterDialog extends AFilterDialog<StringColumn> {
     <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label><br><label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label>
     <br>`);
 
-    const updateData = (filter: string|RegExp) => {
+    const updateData = (filter: string | RegExp) => {
       this.markFiltered((filter && filter !== ''));
       this.column.setFilter(filter);
     };

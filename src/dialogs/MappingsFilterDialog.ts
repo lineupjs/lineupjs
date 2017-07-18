@@ -2,7 +2,7 @@ import AFilterDialog from './AFilterDialog';
 import {IMapAbleColumn, IMappingFunction, noNumberFilter} from '../model/NumberColumn';
 import Column from '../model/Column';
 import {offset} from '../utils';
-import {select} from 'd3';
+import {select, Selection} from 'd3';
 import DataProvider from '../provider/ADataProvider';
 import MappingEditor from '../mappingeditor';
 
@@ -16,12 +16,12 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
    * @param data the data provider for illustrating the mapping by example
    * @param idPrefix dom id prefix
    */
-  constructor(column: IMapAbleColumn & Column, $header: d3.Selection<IMapAbleColumn & Column>, title: string = 'Change Mapping', private readonly data: DataProvider, private readonly idPrefix: string) {
+  constructor(column: IMapAbleColumn & Column, $header: Selection<IMapAbleColumn & Column>, title: string = 'Change Mapping', private readonly data: DataProvider, private readonly idPrefix: string) {
     super(column, $header, title);
   }
 
   openDialog() {
-    const pos = offset(this.attachment.node()),
+    const pos = offset(<HTMLElement>this.attachment.node()),
       original = this.column.getOriginalMapping();
     let bakfilter = this.column.getFilter(),
       bak = this.column.getMapping(),
@@ -37,7 +37,7 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
       })
       .html(this.dialogForm('<div class="mappingArea"></div>'));
 
-    const applyMapping = (newscale: IMappingFunction, filter: {min: number, max: number, filterMissing: boolean}) => {
+    const applyMapping = (newscale: IMappingFunction, filter: { min: number, max: number, filterMissing: boolean }) => {
       act = newscale;
       actfilter = filter;
       this.markFiltered(!newscale.eq(original) || (bakfilter.min !== filter.min || bakfilter.max !== filter.min || bakfilter.filterMissing !== filter.filterMissing));

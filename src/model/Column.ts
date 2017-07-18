@@ -10,7 +10,7 @@ import Ranking from './Ranking';
  * @param id
  * @return {string|void}
  */
-export function fixCSS(id) {
+export function fixCSS(id: string) {
   return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]\^`{|}~]/g, '_'); //replace non css stuff to _
 }
 
@@ -22,12 +22,19 @@ export interface IFlatColumn {
 
 export interface IColumnParent {
   remove(col: Column): boolean;
+
   insert(col: Column, index?: number): Column;
+
   insertAfter(col: Column, reference: Column): Column;
+
   findMyRanker(): Ranking;
+
   readonly fqid: string;
+
   indexOf(col: Column): number;
+
   at(index: number): Column;
+
   readonly fqpath: string;
 
 }
@@ -69,12 +76,12 @@ export interface IStatistics {
   readonly mean: number;
   readonly count: number;
   readonly maxBin: number;
-  readonly hist: {x: number; dx: number; y: number;}[];
+  readonly hist: { x: number; dx: number; y: number; }[];
 }
 
 export interface ICategoricalStatistics {
   readonly maxBin: number;
-  readonly hist: {cat: string; y: number}[];
+  readonly hist: { cat: string; y: number }[];
 }
 
 export interface IColumnMetaData {
@@ -93,7 +100,7 @@ export interface IRendererInfo {
   /*
    * Possible RendererList
    */
-  rendererList: {type: string, label: string}[];
+  rendererList: { type: string, label: string }[];
 }
 
 
@@ -491,7 +498,7 @@ export default class Column extends AEventDispatcher {
     return this.rendererInfo.rendererList;
   }
 
-  protected setRendererList(rendererList: {type: string, label: string}[]) {
+  protected setRendererList(rendererList: { type: string, label: string }[]) {
     this.rendererInfo.rendererList = rendererList;
   }
 

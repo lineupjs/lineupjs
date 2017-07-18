@@ -7,7 +7,7 @@ import {merge, createTextHints, hideOverlays} from '../utils';
 import Column, {IStatistics} from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {createCanvas} from '../renderer/index';
-import DataProvider, {IDataRow}  from '../provider/ADataProvider';
+import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext, ERenderReason} from './ABodyRenderer';
 import {ICanvasRenderContext} from '../renderer/RendererContexts';
 
@@ -53,7 +53,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   protected currentFreezeLeft = 0;
   protected currentHover = -1;
 
-  private lastShifts: {column: Column; shift: number}[] = [];
+  private lastShifts: { column: Column; shift: number }[] = [];
 
   constructor(data: DataProvider, parent: Element, slicer: ISlicer, options: ICanvasBodyRendererOptions = {}) {
     super(data, parent, slicer, 'div', merge({}, BodyCanvasRenderer.CUSTOM_OPTIONS, options));
@@ -155,7 +155,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return this.currentHover === dataIndex;
   }
 
-  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number) {
+  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext & ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number) {
     const dataIndex = di.dataIndex;
     let dx = ranking.shift;
     const dy = context.cellY(i);
@@ -222,7 +222,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     }));
   }
 
-  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height) {
+  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext & ICanvasRenderContext, height) {
 
     const renderRow = this.renderRow.bind(this, ctx, context);
 
@@ -239,7 +239,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     }));
   }
 
-  renderSlopeGraphs(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
+  renderSlopeGraphs(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext & ICanvasRenderContext) {
     const slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
     ctx.save();
     ctx.strokeStyle = this.style('slope');
@@ -281,7 +281,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.restore();
   }
 
-  protected createContextImpl(indexShift: number): ICanvasRenderContext&IBodyRenderContext {
+  protected createContextImpl(indexShift: number): ICanvasRenderContext & IBodyRenderContext {
     const base: any = this.createContext(indexShift, createCanvas);
     base.hovered = this.isHovered.bind(this);
     base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);
@@ -299,7 +299,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return r;
   }
 
-  protected updateImpl(data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, width: number, height: number, reason: ERenderReason) {
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext & ICanvasRenderContext, width: number, height: number, reason: ERenderReason) {
     const $canvas = this.$node.select('canvas');
 
     const firstLine = Math.max(context.cellY(0) - 20, 0); //where to start

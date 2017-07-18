@@ -57,7 +57,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
   restore(dump: any, factory: (dump: any) => Column) {
-    dump.children.map((child) => {
+    dump.children.map((child: any) => {
       const c = factory(child);
       if (c) {
         this.push(c);
@@ -145,5 +145,6 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
 export interface IMultiLevelColumn extends CompositeColumn {
   getCollapsed(): boolean;
-  setCollapsed(value: boolean);
+
+  setCollapsed(value: boolean): void;
 }

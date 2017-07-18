@@ -20,7 +20,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     this.textClass = textClass;
   }
 
-  createDOM(col: ICategoricalColumn&Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: ICategoricalColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     return {
       template: `<div class='${this.textClass}'>
@@ -44,7 +44,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: ICategoricalColumn&Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = col.getColor(d.v, d.dataIndex);

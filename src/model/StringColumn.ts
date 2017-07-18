@@ -19,7 +19,7 @@ export interface IStringColumnDesc extends IValueColumnDesc<string> {
 export default class StringColumn extends ValueColumn<string> {
   //magic key for filtering missing ones
   static readonly FILTER_MISSING = '__FILTER_MISSING';
-  private currentFilter: string|RegExp = null;
+  private currentFilter: string | RegExp = null;
 
   private _alignment: string = 'left';
 
@@ -90,7 +90,7 @@ export default class StringColumn extends ValueColumn<string> {
     return this.currentFilter;
   }
 
-  setFilter(filter: string|RegExp) {
+  setFilter(filter: string | RegExp) {
     if (filter === '') {
       filter = null;
     }

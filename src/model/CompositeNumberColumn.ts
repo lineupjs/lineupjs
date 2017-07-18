@@ -21,6 +21,7 @@ export interface ICompositeNumberDesc extends IColumnDesc {
    */
   missingValue?: number;
 }
+
 /**
  * implementation of a combine column, standard operations how to select
  */

@@ -3,6 +3,7 @@
  */
 
 import Column, {IColumnDesc} from './Column';
+
 /**
  * a default column with no values
  */

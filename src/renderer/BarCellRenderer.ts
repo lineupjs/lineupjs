@@ -17,7 +17,8 @@ export default class BarCellRenderer implements ICellRendererFactory {
    * @type {boolean}
    */
 
-  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {}
+  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {
+  }
 
   createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));

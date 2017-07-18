@@ -1,5 +1,6 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
+import {Selection} from 'd3';
 
 
 export default class RenameDialog extends ADialog {
@@ -10,7 +11,7 @@ export default class RenameDialog extends ADialog {
    * @param $header the visual header element of this column
    * @param title optional title
    */
-  constructor(private readonly column: Column, $header: d3.Selection<Column>, title: string = 'Rename Column') {
+  constructor(private readonly column: Column, $header: Selection<Column>, title: string = 'Rename Column') {
     super($header, title);
   }
 

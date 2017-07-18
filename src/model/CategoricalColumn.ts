@@ -4,7 +4,7 @@
 
 import {ascending, scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
-import ValueColumn,{IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
 
 export interface ICategoricalColumn {
@@ -13,6 +13,7 @@ export interface ICategoricalColumn {
   readonly categoryColors: string[];
 
   getCategories(row: any, index: number): string[];
+
   getColor(row: any, index: number): string;
 }
 
@@ -41,7 +42,7 @@ export interface IBaseCategoricalDesc {
    */
   separator?: string;
 
-  categories: (string|ICategory)[];
+  categories: (string | ICategory)[];
 }
 
 export declare type ICategoricalDesc = IValueColumnDesc<string> & IBaseCategoricalDesc;
@@ -51,12 +52,12 @@ export declare type ICategoricalDesc = IValueColumnDesc<string> & IBaseCategoric
  * @param col
  * @returns {boolean}
  */
-export function isCategoricalColumn(col: Column|IColumnDesc) {
+export function isCategoricalColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getCategories === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null));
 }
 
 export interface ICategoricalFilter {
-  filter: string[]|string|RegExp;
+  filter: string[] | string | RegExp;
   filterMissing: boolean;
 }
 
@@ -131,7 +132,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   initCategories(desc: IBaseCategoricalDesc) {
     if (desc.categories) {
-      const cats = [],
+      const cats: string[] = [],
         cols = this.colors.range().slice(), //work on a copy since it will be manipulated
         labels = new Map<string, string>();
       desc.categories.forEach((cat, i) => {
@@ -205,7 +206,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return r.length > 0 ? r[0] : null;
   }
 
-  getValues(row: any, index: number) {
+  getValues(row: any, index: number): string[] {
     const v = StringColumn.prototype.getValue.call(this, row, index);
     return v ? v.split(this.separator) : [];
   }
@@ -257,7 +258,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     }
     if (dump.labels) {
       this.catLabels = new Map<string, string>();
-      dump.labels.forEach((e) => this.catLabels.set(e.key, e.value));
+      dump.labels.forEach((e: { key: string, value: string }) => this.catLabels.set(e.key, e.value));
     }
     this.separator = dump.separator || this.separator;
   }

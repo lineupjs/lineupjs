@@ -8,6 +8,7 @@ export default class CutOffHierarchyDialog extends ADialog {
    * opens a dialog for filtering a categorical column
    * @param column the column to rename
    * @param $header the visual header element of this column
+   * @param idPrefix id prefix used for generated ids
    */
   constructor(private readonly column: HierarchyColumn, $header: Selection<HierarchyColumn>, private readonly idPrefix: string) {
     super($header, 'Edit Hierarchy Cutoff');
@@ -25,7 +26,7 @@ export default class CutOffHierarchyDialog extends ADialog {
     const popup = this.makePopup(t);
 
     //custom validation
-    popup.select('input[type="text"]').on('change', function(this: HTMLInputElement) {
+    popup.select('input[type="text"]').on('change', function (this: HTMLInputElement) {
       const value = this.value;
       console.log('validate', value);
       if (innerNodePaths.indexOf(value) < 0) {

@@ -12,7 +12,7 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
  * @param col
  * @returns {boolean}
  */
-export function isNumberColumn(col: Column|IColumnDesc) {
+export function isNumberColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }
 
@@ -39,7 +39,9 @@ export function numberCompare(a: number, b: number) {
 
 export interface INumberColumn {
   isLoaded(): boolean;
+
   getNumber(row: any, index: number): number;
+
   getRawNumber(row: any, index: number): number;
 }
 
@@ -50,10 +52,12 @@ export interface IScale {
   (v: number): number;
 
   domain(): number[];
-  domain(domain: number[]);
+
+  domain(domain: number[]): this;
 
   range(): number[];
-  range(range: number[]);
+
+  range(range: number[]): this;
 }
 
 export interface IMappingFunction {
@@ -62,7 +66,8 @@ export interface IMappingFunction {
   apply(v: number): number;
 
   dump(): any;
-  restore(dump: any);
+
+  restore(dump: any): void;
 
   domain: number[];
 
@@ -109,6 +114,7 @@ function fixDomain(domain: number[], type: string) {
   }
   return domain;
 }
+
 /**
  * a mapping function based on a d3 scale (linear, sqrt, log)
  */
@@ -152,7 +158,7 @@ export class ScaleMappingFunction implements IMappingFunction {
     };
   }
 
-  eq(other: IMappingFunction) {
+  eq(other: IMappingFunction): boolean {
     if (!(other instanceof ScaleMappingFunction)) {
       return false;
     }
@@ -200,7 +206,7 @@ export class ScriptMappingFunction implements IMappingFunction {
       value_max: max,
       value_range: max - min,
       value_domain: this.domain.slice(),
-      linear: (v, mi, ma) => (v - mi) / (ma - mi)
+      linear: (v: number, mi: number, ma: number) => (v - mi) / (ma - mi)
     }, v);
 
     if (typeof r === 'number') {
@@ -216,7 +222,7 @@ export class ScriptMappingFunction implements IMappingFunction {
     };
   }
 
-  eq(other: IMappingFunction) {
+  eq(other: IMappingFunction): boolean {
     if (!(other instanceof ScriptMappingFunction)) {
       return false;
     }
@@ -273,9 +279,13 @@ export interface INumberColumnDesc extends IValueColumnDesc<number> {
 
 export interface IMapAbleColumn {
   getOriginalMapping(): IMappingFunction;
+
   getMapping(): IMappingFunction;
+
   setMapping(mapping: IMappingFunction): void;
+
   getFilter(): INumberFilter;
+
   setFilter(value?: INumberFilter): void;
 }
 

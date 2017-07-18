@@ -3,7 +3,7 @@
  */
 
 import Column from './Column';
-import StringColumn, {IStringColumnDesc}from './StringColumn';
+import StringColumn, {IStringColumnDesc} from './StringColumn';
 
 /**
  * a string column in which the values can be edited locally

@@ -17,22 +17,25 @@ export interface IServerData {
    * @param desc
    */
   sort(desc: any): Promise<number[]>;
+
   /**
    * returns a slice of the data array identified by a list of indices
    * @param indices
    */
   view(indices: number[]): Promise<any[]>;
+
   /**
    * returns a sample of the values for a given column
    * @param column
    */
   mappingSample(column: any): Promise<number[]>;
+
   /**
    * return the matching indices matching the given arguments
    * @param search
    * @param column
    */
-  search(search: string|RegExp, column: any): Promise<number[]>;
+  search(search: string | RegExp, column: any): Promise<number[]>;
 
   stats(indices: number[]): IStatsBuilder;
 }
@@ -129,7 +132,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     return this.server.mappingSample((<any>col.desc).column);
   }
 
-  searchAndJump(search: string|RegExp, col: Column) {
+  searchAndJump(search: string | RegExp, col: Column) {
     this.server.search(search, (<any>col.desc).column).then((indices) => {
       this.jumpToNearest(indices);
     });

@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import CompositeNumberColumn,{ICompositeNumberDesc} from './CompositeNumberColumn';
+import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IMultiLevelColumn} from './CompositeColumn';
 import Column, {IFlatColumn} from './Column';
 
@@ -23,7 +23,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';
   static readonly COLLAPSED_RENDERER = 'number';
 
-  private readonly adaptChange;
+  private readonly adaptChange: (old: number, newValue: number)=>void;
 
   /**
    * whether this stack column is collapsed i.e. just looks like an ordinary number column

@@ -10,7 +10,7 @@ interface IBooleansColumnDesc extends IValueColumnDesc <boolean[]> {
 }
 
 export default class BooleansColumn extends ValueColumn<boolean[]> implements ICategoricalColumn {
-  private readonly dataLength;
+  private readonly dataLength: number;
   readonly categories: string[];
 
   constructor(id: string, desc: IBooleansColumnDesc) {
@@ -18,7 +18,7 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
     this.dataLength = desc.dataLength;
     this.categories = [];
     for (let i = 0; i < this.dataLength; ++i) {
-      this.categories.push(String(`Category #` + (i+1)));
+      this.categories.push(String(`Category #` + (i + 1)));
     }
 
     this.setRendererType('upset');
@@ -34,12 +34,12 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
 
   getCategories(row: any, index: number): string[] {
     const flagged = this.getValue(row, index);
-    return this.categories.filter((d,i) => flagged[i]);
+    return this.categories.filter((d, i) => flagged[i]);
   }
 
   getColor(row: any, index: number) {
     const flagged = this.getValue(row, index);
-    return flagged ? 'green': 'red';
+    return flagged ? 'green' : 'red';
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {

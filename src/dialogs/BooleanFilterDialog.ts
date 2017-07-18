@@ -1,5 +1,4 @@
 import BooleanColumn from '../model/BooleanColumn';
-import Column from '../model/Column';
 import AFilterDialog from './AFilterDialog';
 import {Selection} from 'd3';
 

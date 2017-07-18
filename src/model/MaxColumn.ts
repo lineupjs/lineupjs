@@ -13,6 +13,7 @@ import CompositeNumberColumn from './CompositeNumberColumn';
 export function createDesc(label: string = 'Max') {
   return {type: 'max', label};
 }
+
 /**
  * combines multiple columns by using the maximal value
  */

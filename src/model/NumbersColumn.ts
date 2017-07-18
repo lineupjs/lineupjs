@@ -8,7 +8,15 @@ import {
   IBoxPlotColumn, IBoxPlotData, SORT_METHOD as BASE_SORT_METHOD, SortMethod, compareBoxPlot, getBoxPlotNumber
 } from './BoxPlotColumn';
 import {merge} from '../utils';
-import NumberColumn, {INumberColumn, IMappingFunction, createMappingFunction, ScaleMappingFunction, IMapAbleColumn, INumberFilter, noNumberFilter} from './NumberColumn';
+import NumberColumn, {
+  INumberColumn,
+  IMappingFunction,
+  createMappingFunction,
+  ScaleMappingFunction,
+  IMapAbleColumn,
+  INumberFilter,
+  noNumberFilter
+} from './NumberColumn';
 
 
 export const SORT_METHOD = merge({
@@ -22,6 +30,7 @@ export interface IAdvancedBoxPlotData extends IBoxPlotData {
 
 export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
   getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData;
+
   getRawBoxPlotData(row: any, index: number): IAdvancedBoxPlotData;
 }
 
@@ -46,7 +55,7 @@ class LazyBoxPlotData implements IAdvancedBoxPlotData {
   }
 
   private map(v: number) {
-    return this.scale? this.scale.apply(v) : v;
+    return this.scale ? this.scale.apply(v) : v;
   }
 
   get min() {
@@ -76,9 +85,13 @@ class LazyBoxPlotData implements IAdvancedBoxPlotData {
 
 export interface INumbersColumn extends INumberColumn {
   getNumbers(row: any, index: number): number[];
+
   getRawNumbers(row: any, index: number): number[];
+
   getDataLength(): number;
+
   getRawColorScale(): d3.scale.Linear<string, string>;
+
   getThreshold(): number;
 
   getMapping(): IMappingFunction;
@@ -109,9 +122,9 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 
   private sort: SortMethod;
-  private readonly threshold;
-  private readonly dataLength;
-  private readonly colorRange;
+  private readonly threshold: number;
+  private readonly dataLength: number;
+  private readonly colorRange: string[];
 
   private mapping: IMappingFunction;
 
@@ -127,7 +140,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
 
   constructor(id: string, desc: INumbersColumnDesc) {
     super(id, desc);
-     if (desc.map) {
+    if (desc.map) {
       this.mapping = createMappingFunction(desc.map);
     } else if (desc.domain) {
       this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
@@ -216,11 +229,11 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return this.getValue(row, index);
   }
 
-  getNumber(row: any, index: number) {
+  getNumber(row: any, index: number): number {
     return getBoxPlotNumber(this, row, index, 'normalized');
   }
 
-  getRawNumber(row: any, index: number) {
+  getRawNumber(row: any, index: number): number {
     return getBoxPlotNumber(this, row, index, 'raw');
   }
 

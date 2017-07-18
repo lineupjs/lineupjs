@@ -35,7 +35,7 @@ export default class ValueColumn<T> extends Column {
    * is the data available
    * @type {boolean}
    */
-  private loaded;
+  private loaded: boolean;
 
   constructor(id: string, desc: IValueColumnDesc<T>) {
     super(id, desc);

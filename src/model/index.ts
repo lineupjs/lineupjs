@@ -59,6 +59,7 @@ export function defineColumn<T>(name: string, functions: any = {}) {
       // dummy
     }
   }
+
   CustomColumn.prototype.toString = () => name;
   CustomColumn.prototype = merge(CustomColumn.prototype, functions);
 

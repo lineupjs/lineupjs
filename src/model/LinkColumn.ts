@@ -12,6 +12,7 @@ export interface ILinkColumnDesc extends IStringColumnDesc {
    */
   link?: string;
 }
+
 /**
  * a string column in which the label is a text but the value a link
  */
@@ -21,7 +22,7 @@ export default class LinkColumn extends StringColumn {
    * a pattern used for generating the link, $1 is replaced with the actual value
    * @type {null}
    */
-  private link = null;
+  private link: string = null;
 
   constructor(id: string, desc: any) {
     super(id, desc);

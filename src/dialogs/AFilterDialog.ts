@@ -4,7 +4,7 @@ import ADataProvider from '../provider/ADataProvider';
 import {Selection} from 'd3';
 
 export interface IFilterDialog {
-  new(column: Column, $header: d3.Selection<Column>, title: string, data: ADataProvider, idPrefix: string) : AFilterDialog<Column>;
+  new(column: Column, $header: Selection<Column>, title: string, data: ADataProvider, idPrefix: string): AFilterDialog<Column>;
 }
 
 abstract class AFilterDialog<T extends Column> extends ADialog {

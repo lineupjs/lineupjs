@@ -67,11 +67,12 @@ export interface IExportOptions {
 
 export interface IStatsBuilder {
   stats(col: INumberColumn): Promise<IStatistics>;
+
   hist(col: ICategoricalColumn): Promise<ICategoricalStatistics>;
 }
 
 export interface IDataProviderOptions {
-  columnTypes?: {[columnType: string]: typeof Column};
+  columnTypes?: { [columnType: string]: typeof Column };
 
   /**
    * allow multiple selected rows
@@ -114,7 +115,7 @@ abstract class ADataProvider extends AEventDispatcher {
   /**
    * lookup map of a column type to its column implementation
    */
-  readonly columnTypes: {[columnType: string]: typeof Column};
+  readonly columnTypes: { [columnType: string]: typeof Column };
 
   private readonly multiSelections;
 
@@ -590,7 +591,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param search
    * @param col
    */
-  abstract searchAndJump(search: string|RegExp, col: Column);
+  abstract searchAndJump(search: string | RegExp, col: Column);
 
   jumpToNearest(indices: number[]) {
     if (indices.length === 0) {
@@ -713,6 +714,7 @@ abstract class ADataProvider extends AEventDispatcher {
       quoteChar: '"',
       filter: (c) => !isSupportType(c)
     }, options);
+
     //optionally quote not numbers
     function quote(l: string, c?: Column) {
       if (options.quote && (!c || !isNumberColumn(c))) {

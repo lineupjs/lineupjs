@@ -34,7 +34,7 @@ const combineCellRenderer = new BarCellRenderer(false, (d, i, col: CompositeNumb
 /**
  * default render factories
  */
-export const renderers: {[key: string]: ICellRendererFactory} = {
+export const renderers: { [key: string]: ICellRendererFactory } = {
   rank: new DefaultCellRenderer('rank', 'right'),
   boolean: new DefaultCellRenderer('boolean', 'center'),
   number: new BarCellRenderer(),
@@ -63,16 +63,17 @@ export const renderers: {[key: string]: ICellRendererFactory} = {
   loading: new LoadingCellRenderer()
 };
 
-function chooseRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
+function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getRendererType()];
   return r || defaultCellRenderer;
 }
 
-export function createDOM(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IDOMRenderContext) {
+export function createDOM(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext) {
   const r = chooseRenderer(col, renderers);
   return (r.createDOM ? r.createDOM.bind(r) : defaultCellRenderer.createDOM.bind(r))(col, context);
 }
-export function createCanvas(col: Column, renderers: {[key: string]: ICellRendererFactory}, context: ICanvasRenderContext) {
+
+export function createCanvas(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext) {
   const r = chooseRenderer(col, renderers);
   return (r.createCanvas ? r.createCanvas.bind(r) : defaultCellRenderer.createCanvas.bind(r))(col, context);
 }

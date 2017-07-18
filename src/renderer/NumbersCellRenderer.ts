@@ -21,7 +21,7 @@ export default class NumbersCellRenderer implements ICellRendererFactory {
       template: `<div class="heatmapcell" style="top:${padding}px">${templateRows}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         attr(n, {}, {
-          height: (context.rowHeight(i) - padding*2) + 'px'
+          height: (context.rowHeight(i) - padding * 2) + 'px'
         });
         const data = col.getRawNumbers(d.v, d.dataIndex);
         forEach(n, 'div', (d, i) => {

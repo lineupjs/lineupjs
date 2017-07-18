@@ -6,7 +6,9 @@ export declare type IDOMRenderContext = IRenderContext<IDOMCellRenderer>;
 
 export interface ICanvasRenderContext extends IRenderContext<CanvasRenderingContext2D> {
   hovered(dataIndex: number): boolean;
+
   selected(dataIndex: number): boolean;
+
   readonly textHints: ITextRenderHints;
   readonly bodyDOMElement: HTMLElement;
 }

@@ -56,7 +56,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     const add = (prefix: string, node: ICategoryNode): ICategoryInternalNode => {
       const name = node.name || node.value;
       let lastColorUsed = -1;
-      const children = (node.children || []).map((child: ICategoryNode|string): ICategoryInternalNode => {
+      const children = (node.children || []).map((child: ICategoryNode | string): ICategoryInternalNode => {
         if (typeof child === 'string') {
           const path = prefix + child;
           return {

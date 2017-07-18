@@ -13,31 +13,32 @@ import ICellRendererFactory from '../renderer/ICellRendererFactory';
 import {renderers as defaultRenderers} from '../renderer/index';
 
 export interface ISlicer {
-  (start: number, length: number, row2y: (i: number) => number): {from: number; to: number};
+  (start: number, length: number, row2y: (i: number) => number): { from: number; to: number };
 }
 
 export interface IBodyRenderer extends AEventDispatcher {
-  histCache: Map<string, Promise<IStatistics>>;
+  histCache: Map<string, Promise<IStatistics | ICategoricalStatistics>>;
 
   readonly node: Element;
 
-  setOption(key: string, value: any);
+  setOption(key: string, value: any): void;
 
-  changeDataStorage(data: DataProvider);
+  changeDataStorage(data: DataProvider): void;
 
-  select(dataIndex: number, additional?: boolean);
+  select(dataIndex: number, additional?: boolean): void;
 
-  updateFreeze(left: number);
+  updateFreeze(left: number): void;
 
-  scrolled(delta: number);
+  scrolled(delta: number): void;
 
-  update();
+  update(): void;
 
-  fakeHover(dataIndex: number);
+  fakeHover(dataIndex: number): void;
 }
 
 export interface IBodyRenderContext extends IRenderContext<any> {
   cellY(index: number): number;
+
   cellPrevY(index: number): number;
 }
 
@@ -73,11 +74,11 @@ export interface IBodyRendererOptions {
   animation?: boolean;
   animationDuration?: number;
 
-  renderers?: {[key: string]: ICellRendererFactory};
+  renderers?: { [key: string]: ICellRendererFactory };
 
   meanLine?: boolean;
 
-  actions?: {name: string, icon: string, action(v: any): void}[];
+  actions?: { name: string, icon: string, action(v: any): void }[];
 
   freezeCols?: number;
 }
@@ -114,7 +115,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   protected readonly $node: d3.Selection<any>;
 
-  histCache = new Map<string, Promise<IStatistics|ICategoricalStatistics>>();
+  histCache = new Map<string, Promise<IStatistics | ICategoricalStatistics>>();
 
   constructor(protected data: DataProvider, parent: Element, private slicer: ISlicer, root: string, options: IBodyRendererOptions = {}) {
     super();
@@ -156,7 +157,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     this.fire(ABodyRenderer.EVENT_RENDER_FINISHED, this);
   }
 
-  protected createContext(indexShift: number, creator: (col: Column, renderers: {[key: string]: ICellRendererFactory}, context: IRenderContext<any>) => any): IBodyRenderContext {
+  protected createContext(indexShift: number, creator: (col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IRenderContext<any>) => any): IBodyRenderContext {
     const options = this.options;
 
     function findOption(key: string, defaultValue: any) {

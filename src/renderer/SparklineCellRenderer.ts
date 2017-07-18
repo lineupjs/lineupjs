@@ -9,7 +9,7 @@ import Column from '../model/Column';
 import {attr} from '../utils';
 
 function createScales(col: INumbersColumn & Column) {
-  const xScale = d3scale.linear().domain([0, col.getDataLength()-1]).range([0, col.getActualWidth()]);
+  const xScale = d3scale.linear().domain([0, col.getDataLength() - 1]).range([0, col.getActualWidth()]);
   const yScale = d3scale.linear().domain([0, 1]);
   return {xScale, yScale};
 }

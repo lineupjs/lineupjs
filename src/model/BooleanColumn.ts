@@ -4,7 +4,7 @@
 
 import {ascending} from 'd3';
 import Column from './Column';
-import ValueColumn,{IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './CategoricalColumn';
 
 export interface IBooleanColumnDesc extends IValueColumnDesc<boolean> {
@@ -62,7 +62,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   getColor(row: any, index: number) {
     const flagged = this.getValue(row, index);
-    return flagged ? 'green': 'red';
+    return flagged ? 'green' : 'red';
   }
 
   getLabel(row: any, index: number) {

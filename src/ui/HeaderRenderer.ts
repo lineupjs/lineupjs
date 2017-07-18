@@ -41,7 +41,7 @@ import HierarchyColumn from '../model/HierarchyColumn';
  * utility function to generate the tooltip text with description
  * @param col the column
  */
-export function toFullTooltip(col: {label: string, description?: string}) {
+export function toFullTooltip(col: { label: string, description?: string }) {
   let base = col.label;
   if (col.description != null && col.description !== '') {
     base += '\n' + col.description;
@@ -66,9 +66,11 @@ export interface IHeaderRendererOptions {
   manipulative?: boolean;
   summary?: boolean;
 
-  filters?: {[type: string]: IFilterDialog};
+  filters?: { [type: string]: IFilterDialog };
   linkTemplates?: string[];
+
   searchAble?(col: Column): boolean;
+
   sortOnLabel?: boolean;
 
   autoRotateLabels?: boolean;
@@ -97,7 +99,7 @@ export default class HeaderRenderer {
     headerHeight: 20,
     manipulative: true,
     summary: false,
-    filters:  <{[type: string]: IFilterDialog}>{
+    filters: <{ [type: string]: IFilterDialog }>{
       'string': StringFilterDialog,
       'boolean': BooleanFilterDialog,
       'categorical': CategoricalFilterDialog,
@@ -121,7 +123,7 @@ export default class HeaderRenderer {
 
   readonly $node: d3.Selection<any>;
 
-  private histCache = new Map<string,Promise<IStatistics|ICategoricalStatistics>>();
+  private histCache = new Map<string, Promise<IStatistics | ICategoricalStatistics>>();
 
   private readonly dragHandler = d3.behavior.drag<Column>()
   //.origin((d) => d)
@@ -583,7 +585,7 @@ export default class HeaderRenderer {
     $headers.exit().remove();
   }
 
-  private renderCategoricalSummary(col: ICategoricalColumn&Column, $this: d3.Selection<Column>) {
+  private renderCategoricalSummary(col: ICategoricalColumn & Column, $this: d3.Selection<Column>) {
     const hist = this.histCache.get(col.id);
     if (!hist) {
       return;
@@ -609,7 +611,7 @@ export default class HeaderRenderer {
     });
   }
 
-  private renderNumericalSummary(col: INumberColumn&Column, $this: d3.Selection<Column>) {
+  private renderNumericalSummary(col: INumberColumn & Column, $this: d3.Selection<Column>) {
     const hist = this.histCache.get(col.id);
     if (!hist) {
       return;

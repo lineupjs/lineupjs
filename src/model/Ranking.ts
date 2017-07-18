@@ -107,7 +107,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   restore(dump: any, factory: (dump: any) => Column) {
     this.clear();
-    dump.columns.map((child) => {
+    dump.columns.map((child: any) => {
       const c = factory(child);
       if (c) {
         this.push(c);
@@ -121,10 +121,10 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       }
     }
     if (dump.sortCriterias) {
-      const sortCriterias = dump.sortCriterias.map((s) => {
+      const sortCriterias = dump.sortCriterias.map((s: {asc: boolean, sortBy: string}) => {
         return {
           asc: s.asc,
-          col: this.columns.find((d) => d.id === dump.sortColumn) || null
+          col: this.columns.find((d) => d.id === s.sortBy) || null
         };
       });
       this.setSortCriterias(sortCriterias);
@@ -242,12 +242,12 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return true;
   }
 
-  private triggerResort(bak?: ISortCriteria|ISortCriteria[]) {
+  private triggerResort(bak?: ISortCriteria | ISortCriteria[]) {
     const sortCriterias = this.getSortCriterias();
     const bakSingle = Array.isArray(bak) ? bak[0] : bak;
-    const bakMulti = Array.isArray(bak)? bak: sortCriterias;
+    const bakMulti = Array.isArray(bak) ? bak : sortCriterias;
     this.fire([Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,
-      Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY],bakSingle, sortCriterias[0]);
+      Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], bakSingle, sortCriterias[0]);
     this.fire(Ranking.EVENT_SORT_CRITERIAS_CHANGED, bakMulti, sortCriterias);
   }
 
@@ -280,7 +280,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   findByPath(fqpath: string): Column {
-    let p: IColumnParent|Column = <any>this;
+    let p: IColumnParent | Column = <any>this;
     const indices = fqpath.split('@').map(Number).slice(1); //ignore the first entry = ranking
     while (indices.length > 0) {
       const i = indices.shift();
@@ -317,7 +317,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
     this.unforward(col, Column.EVENT_DIRTY_VALUES + '.ranking', Column.EVENT_DIRTY_HEADER + '.ranking', Column.EVENT_DIRTY + '.ranking', Column.EVENT_FILTER_CHANGED + '.ranking');
 
-   const isSortCriteria = this.sortCriterias.findIndex((d) => d.col === col);
+    const isSortCriteria = this.sortCriterias.findIndex((d) => d.col === col);
     if (isSortCriteria === 0) {
       this.sortCriterias.shift();
       // if multiple ones sort by previous one
@@ -360,7 +360,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   find(idOrFilter: string | ((col: Column) => boolean)) {
-    const filter = typeof(idOrFilter) === 'string' ? (col) => col.id === idOrFilter : idOrFilter;
+    const filter = typeof(idOrFilter) === 'string' ? (col: Column) => col.id === idOrFilter : idOrFilter;
     const r = this.flatColumns;
     for (const v of r) {
       if (filter(v)) {

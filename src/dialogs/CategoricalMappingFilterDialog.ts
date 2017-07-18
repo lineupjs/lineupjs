@@ -1,6 +1,5 @@
 import AFilterDialog from './AFilterDialog';
 import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
-import DataProvider from '../provider/ADataProvider';
 import {scale as d3scale} from 'd3';
 
 
@@ -10,8 +9,9 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
    * opens the mapping editor for a given CategoricalNumberColumn, i.e. to map categories to numbers
    * @param column the column to rename
    * @param $header the visual header element of this column
+   * @param title mapping title
    */
-  constructor(column: CategoricalNumberColumn, $header: d3.Selection<CategoricalNumberColumn>, title: string = 'Edit Categorical Mapping') {
+  constructor(column: CategoricalNumberColumn, $header: d3.Selection<CategoricalNumberColumn>, title = 'Edit Categorical Mapping') {
     super(column, $header, title);
   }
 
@@ -82,7 +82,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
 
     redrawSelectAll();
 
-   const updateData = (filter: string[], filterMissing: boolean) => {
+    const updateData = (filter: string[], filterMissing: boolean) => {
       const noFilter = filter === null && filterMissing === false;
       this.markFiltered(!noFilter);
       this.column.setFilter(noFilter ? null : {filter, filterMissing});

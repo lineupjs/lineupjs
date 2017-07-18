@@ -21,7 +21,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 
 
-  createDOM(col: ICategoricalColumn&Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: ICategoricalColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const dataLength = col.categories.length;
     const cellDimension = col.getActualWidth() / dataLength;
     let templateRows = '';
@@ -59,7 +59,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: ICategoricalColumn&Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const dataLength = col.categories.length;
     const cellDimension = col.getActualWidth() / dataLength;
 

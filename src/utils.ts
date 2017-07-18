@@ -30,7 +30,7 @@ export function delayedCall(callback: (...args: any[]) => void, timeToDelay = 10
  */
 export class AEventDispatcher {
   private listeners: Dispatch;
-  private forwarder;
+  private forwarder: (...args: any[]) => void;
 
   constructor() {
     this.listeners = dispatch(...this.createEventList());
@@ -42,8 +42,8 @@ export class AEventDispatcher {
   }
 
   on(type: string): (...args: any[]) => void;
-  on(type: string|string[], listener: (...args: any[]) => any): AEventDispatcher;
-  on(type: string|string[], listener?: (...args: any[]) => any): any {
+  on(type: string | string[], listener: (...args: any[]) => any): AEventDispatcher;
+  on(type: string | string[], listener?: (...args: any[]) => any): any {
     if (arguments.length > 1) {
       if (Array.isArray(type)) {
         (<string[]>type).forEach((d) => this.listeners.on(d, listener));
@@ -63,18 +63,18 @@ export class AEventDispatcher {
     return [];
   }
 
-  protected fire(type: string|string[], ...args: any[]) {
-    const fireImpl = (t) => {
+  protected fire(type: string | string[], ...args: any[]) {
+    const fireImpl = (t: string) => {
       //local context per event, set a this argument
       const context = {
         source: this, //who is sending this event
         type: t, //the event type
         args //the arguments to the listener
       };
-      this.listeners[<string>t].apply(context, args);
+      this.listeners[t].apply(context, args);
     };
     if (Array.isArray(type)) {
-      (<string[]>type).forEach(fireImpl.bind(this));
+      type.forEach(fireImpl.bind(this));
     } else {
       fireImpl(<string>type);
     }
@@ -142,7 +142,7 @@ export function merge(...args: any[]) {
  * @param element
  * @return {{left: number, top: number, width: number, height: number}}
  */
-export function offset(element) {
+export function offset(element: Element) {
   const obj = element.getBoundingClientRect();
   return {
     left: obj.left + window.pageXOffset,
@@ -325,7 +325,7 @@ export function updateDropEffect(e: DragEvent) {
  * @param onDrop: handler when an element is dropped
  */
 export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy: boolean) => boolean) {
-  return ($node) => {
+  return ($node: d3.Selection<any>) => {
     $node.on('dragenter', function () {
       const e = <DragEvent>(<any>d3event);
       //var xy = mouse($node.node());
@@ -376,7 +376,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
  * @param text
  * @return {T}
  */
-export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs = {}, styles = {}, text?: string): T {
+export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: { [key: string]: any } = {}, styles: { [key: string]: any } = {}, text?: string): T {
   Object.keys(attrs).forEach((attr) => {
     const v = String(attrs[attr]);
     if (node.getAttribute(attr) !== v) {
@@ -425,6 +425,7 @@ export interface ITextRenderHints {
   readonly ellipsisWidth: number;
   readonly spinnerWidth: number;
 }
+
 const ellipsis = '…';
 
 function measureFontAweSomeSpinner(ctx: CanvasRenderingContext2D) {
@@ -508,7 +509,7 @@ export function hideOverlays(parentElement: HTMLElement) {
  * @param columns
  * @param helperType
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer}[], helperType = 'div') {
+export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer }[], helperType = 'div') {
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => c.renderer.template).join('');
@@ -522,7 +523,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
     return;
   }
 
-  function matches(c: {column: Column}, i: number) {
+  function matches(c: { column: Column }, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
     return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getRendererType();
@@ -534,7 +535,7 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
 
   const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.getRendererType()));
   //remove all that are not existing anymore
-  Array.prototype.slice.call(node.childNodes).forEach((n) => {
+  Array.from(node.childNodes).forEach((n: Element) => {
     const id = n.getAttribute('data-column-id');
     const renderer = n.getAttribute('data-renderer');
     const idAndRenderer = id + '@' + renderer;

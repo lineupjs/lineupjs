@@ -20,6 +20,7 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
    */
   setter(row: any, index: number, value: boolean): void;
 }
+
 /**
  * a checkbox column for selections
  */

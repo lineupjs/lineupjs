@@ -8,6 +8,7 @@ export interface IDOMCellRenderer {
    * template as a basis for the update
    */
   readonly template: string;
+
   /**
    * update a given node (create using the template) with the given data
    * @param node the node to update
