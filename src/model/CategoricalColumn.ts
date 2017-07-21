@@ -232,7 +232,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       separator: this.separator
     };
     if (this.catLabels !== null && this.catLabels.size !== 0) {
-      r.labels = this.catLabels.entries();
+      r.labels = Array.from(this.catLabels.entries());
     }
     return r;
   }
