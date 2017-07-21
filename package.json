@@ -77,7 +77,8 @@
     "tslint": "^5.0.0",
     "typedoc": "^0.5.10",
     "typescript": "2.2.2",
-    "webpack": "^2.3.3"
+    "webpack": "^2.3.3",
+    "@types/handlebars": "4.0.33"
   },
   "optionalDependencies": {
     "@types/react": "^0.14.55",
