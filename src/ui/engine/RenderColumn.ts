@@ -5,12 +5,7 @@ import {IColumn} from 'lineupengine/src';
 import Column from '../../model/Column';
 import ADataProvider from '../../provider/ADataProvider';
 import {IFilterDialog} from '../../dialogs/AFilterDialog';
-import {createToolbar} from './header';
-import StringColumn from '../../model/StringColumn';
-import {summaryCategorical, summaryNumerical, summarySelection, summaryString} from './summary';
-import {ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
-import {INumberColumn, isNumberColumn} from '../../model/NumberColumn';
-import SelectionColumn from '../../model/SelectionColumn';
+import {createToolbar, createSummary} from './header';
 
 export interface IRankingContext {
   readonly provider: ADataProvider;
@@ -43,16 +38,8 @@ export default class RenderColumn implements IColumn {
     const node = document.createElement('div');
     node.innerHTML = `<div class="lu-toolbar"></div><i class=""/><div class="lu-handle"></div><div class="lu-label">${this.c.label}</div><div class="lu-summary"></div>`;
     createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, this.c, ctx);
-    const summary = <HTMLElement>node.querySelector('div.lu-summary');
-    if (this.c instanceof StringColumn) {
-      summaryString(this.c, summary);
-    } else if (isCategoricalColumn(this.c)) {
-      summaryCategorical(<ICategoricalColumn&Column>this.c, summary, null); //TODO
-    } else if (isNumberColumn(this.c)) {
-      summaryNumerical(<INumberColumn&Column>this.c, summary, null);
-    } else if (this.c instanceof SelectionColumn) {
-      summarySelection(this.c, summary, ctx.provider);
-    }
+    createSummary(<HTMLElement>node.querySelector('div.lu-summary'), this.c, ctx);
+
     return node;
   }
 

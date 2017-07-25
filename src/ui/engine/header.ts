@@ -23,6 +23,8 @@ import CutOffHierarchyDialog from '../../dialogs/CutOffHierarchyDialog';
 import HierarchyColumn from '../../../../taggle2/src/column/HierarchyColumn';
 import SearchDialog from '../../dialogs/SearchDialog';
 
+export {default as createSummary} from './summary';
+
 export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingContext) {
   const isSupportColumn = isSupportType(col.desc);
 
