@@ -32,7 +32,7 @@ const webpackloaders = [
     test: /\.(png|jpg)$/,
     loader: 'url-loader',
     query: {
-      limit: 10000, //inline <= 10kb
+      limit: 10000 //inline <= 10kb
     }
   },
   {
@@ -58,14 +58,14 @@ const webpackloaders = [
  * generate a webpack configuration
  */
 function generateWebpack(bundle, options) {
-  let base = {
+  const base = {
     entry: {
       'LineUpJS': './src/index.ts',
       'LineUpJS_react': './src/react/index.tsx'
     },
     output: {
       path: resolve(__dirname, 'build'),
-      filename: '[name]' + (bundle ? '_bundle' : '') + (options.min && !options.nosuffix ? '.min' : '') + '.js',
+      filename: `[name]${bundle ? '_bundle' : ''}${options.min && !options.nosuffix ? '.min' : ''}.js`,
       chunkFilename: '[chunkhash].js',
       publicPath: '', //no public path = relative
       library: 'LineUpJS',
@@ -131,7 +131,7 @@ function generateWebpack(bundle, options) {
   if (!options.isTest && !bundle) {
     //extract the included css file to own file
     let p = new ExtractTextPlugin({
-      filename: '[name]'  + (options.min && !options.nosuffix ? '.min' : '') + '.css',
+      filename: `[name]${options.min && !options.nosuffix ? '.min' : ''}.css`,
       allChunks: true // there seems to be a bug in dynamically loaded chunk styles are not loaded, workaround: extract all styles from all chunks
     });
     base.plugins.push(p);
@@ -148,14 +148,13 @@ function generateWebpack(bundle, options) {
         debug: false
       }),
       new UglifyJsPlugin({
-        mangle: {
-          screw_ie8: true
+        uglifyOptions: {
+          ecma: 6,
+          mange: true,
+          compress: true,
+          warnings: true
         },
-        compress: {
-          screw_ie8: true
-        },
-        comments: false,
-        sourceMap: false
+        extractComments: false
       }));
   } else {
     //generate source maps

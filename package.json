@@ -96,6 +96,8 @@
     "stylelint-config-standard": "^16.0.0",
     "stylelint-scss": "^1.4.4",
     "tslint": "^5.0.0",
+    "tslint-consistent-codestyle": "^1.5.1",
+    "tslint-eslint-rules": "^4.1.1",
     "typedoc": "^0.5.10",
     "typescript": "^2.3.0",
     "uglify-es": "^3.0.25",
