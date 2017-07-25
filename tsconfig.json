@@ -19,7 +19,8 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "strictNullChecks": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": "../"
   },
   "include": [
     "src/**/*.ts",
