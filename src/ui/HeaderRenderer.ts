@@ -3,7 +3,7 @@
  */
 
 import * as d3 from 'd3';
-import {merge, dropAble, delayedCall, forEach} from '../utils';
+import {merge, dropAble, delayedCall, forEach, dragAble} from '../utils';
 import Column, {IStatistics, ICategoricalStatistics, IFlatColumn} from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
@@ -36,6 +36,8 @@ import ScriptEditDialog from '../dialogs/ScriptEditDialog';
 import SelectionColumn from '../model/SelectionColumn';
 import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
 import HierarchyColumn from '../model/HierarchyColumn';
+
+const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
 /**
  * utility function to generate the tooltip text with description
@@ -146,10 +148,10 @@ export default class HeaderRenderer {
       (<any>d3.event).sourceEvent.preventDefault();
     });
 
-  private readonly dropHandler = dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-column'], (data, d: Column, copy) => {
+  private readonly dropHandler = dropAble([`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (data, d: Column, copy) => {
     let col: Column = null;
-    if ('application/caleydo-lineup-column-ref' in data) {
-      const id = data['application/caleydo-lineup-column-ref'];
+    if (`${MIMETYPE_PREFIX}-ref` in data) {
+      const id = data[`${MIMETYPE_PREFIX}-ref`];
       col = this.data.find(id);
       if (copy) {
         col = this.data.clone(col);
@@ -157,7 +159,7 @@ export default class HeaderRenderer {
         col.removeMe();
       }
     } else {
-      const desc = JSON.parse(data['application/caleydo-lineup-column']);
+      const desc = JSON.parse(data[MIMETYPE_PREFIX]);
       col = this.data.create(this.data.fromDescRef(desc));
     }
     if (d instanceof Column) {
@@ -469,18 +471,22 @@ export default class HeaderRenderer {
           d.toggleMySorting();
         }
       })
-      .on('dragstart', (d) => {
-        const e = <DragEvent>(<any>d3.event);
-        e.dataTransfer.effectAllowed = 'copyMove'; //none, copy, copyLink, copyMove, link, linkMove, move, all
-        e.dataTransfer.setData('text/plain', d.label);
-        e.dataTransfer.setData('application/caleydo-lineup-column-ref', d.id);
+      .call(dragAble<Column>((d) => {
         const ref = JSON.stringify(this.data.toDescRef(d.desc));
-        e.dataTransfer.setData('application/caleydo-lineup-column', ref);
+        const data: any = {
+          'text/plain': d.label,
+          [`${MIMETYPE_PREFIX}-ref`]: d.id,
+          [MIMETYPE_PREFIX]: ref
+        };
         if (isNumberColumn(d)) {
-          e.dataTransfer.setData('application/caleydo-lineup-column-number', ref);
-          e.dataTransfer.setData('application/caleydo-lineup-column-number-ref', d.id);
+          data[`${MIMETYPE_PREFIX}-number`] = ref;
+          data[`${MIMETYPE_PREFIX}-number-ref`] = d.id;
         }
-      });
+        return {
+          data,
+          effectAllowed: 'copyMove' //none, copy, copyLink, copyMove, link, linkMove, move, all
+        };
+      }));
     $headersEnterDiv.append('i').attr('class', 'fa fa sort_indicator');
     $headersEnterDiv.append('span').classed('lu-label', true).attr({
       'draggable': this.options.manipulative
@@ -524,8 +530,8 @@ export default class HeaderRenderer {
     $headers.select('span.lu-label').text((d) => d.label);
 
     const resolveDrop = (data: any, copy: boolean) => {
-      if ('application/caleydo-lineup-column-number-ref' in data) {
-        const id = data['application/caleydo-lineup-column-number-ref'];
+      if (`${MIMETYPE_PREFIX}-number-ref` in data) {
+        const id = data[`${MIMETYPE_PREFIX}-number-ref`];
         let col: Column = this.data.find(id);
         if (copy) {
           col = this.data.clone(col);
@@ -534,7 +540,7 @@ export default class HeaderRenderer {
         }
         return col;
       } else {
-        const desc = JSON.parse(data['application/caleydo-lineup-column-number']);
+        const desc = JSON.parse(data[`${MIMETYPE_PREFIX}-number`]);
         return this.data.create(this.data.fromDescRef(desc));
       }
     };
@@ -549,13 +555,13 @@ export default class HeaderRenderer {
         const sColumns = sShifts.map((d) => d.col);
         that.renderColumns(sColumns, sShifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
       }
-    }).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: IMultiLevelColumn, copy) => {
+    }).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (data, d: IMultiLevelColumn, copy) => {
       const col: Column = resolveDrop(data, copy);
       return d.push(col) != null;
     }));
 
     // drag columns on top of each
-    $headers.filter((d) => d.parent instanceof Ranking && isNumberColumn(d) && !isMultiLevelColumn(d)).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: Column & INumberColumn, copy) => {
+    $headers.filter((d) => d.parent instanceof Ranking && isNumberColumn(d) && !isMultiLevelColumn(d)).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (data, d: Column & INumberColumn, copy) => {
       const col: Column = resolveDrop(data, copy);
       const ranking = d.findMyRanker();
       const index = ranking.indexOf(d);
