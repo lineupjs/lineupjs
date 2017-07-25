@@ -66,9 +66,9 @@ export interface IExportOptions {
 }
 
 export interface IStatsBuilder {
-  stats(col: INumberColumn): Promise<IStatistics>;
+  stats(col: INumberColumn): Promise<IStatistics>|IStatistics;
 
-  hist(col: ICategoricalColumn): Promise<ICategoricalStatistics>;
+  hist(col: ICategoricalColumn): Promise<ICategoricalStatistics>|ICategoricalStatistics;
 }
 
 export interface IDataProviderOptions {
@@ -288,7 +288,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @returns {string}
    */
   private nextId() {
-    return 'col' + (this.uid++);
+    return `col${this.uid++}`;
   }
 
   protected abstract rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking): number;
@@ -537,23 +537,23 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param ranking
    * @return {Promise<any>}
    */
-  abstract sort(ranking: Ranking): Promise<number[]>;
+  abstract sort(ranking: Ranking): Promise<number[]>|number[];
 
   /**
    * returns a view in the order of the given indices
    * @param indices
    * @return {Promise<any>}
    */
-  abstract view(indices: number[]): Promise<any[]>;
+  abstract view(indices: number[]): Promise<any[]>|any[];
 
-  abstract fetch(orders: number[][]): Promise<IDataRow>[][];
+  abstract fetch(orders: number[][]): Promise<IDataRow>[][]|(IDataRow[][]);
 
   /**
    * returns a data sample used for the mapping editor
    * @param col
    * @return {Promise<any>}
    */
-  abstract mappingSample(col: Column): Promise<number[]>;
+  abstract mappingSample(col: Column): Promise<number[]>|number[];
 
   /**
    * helper for computing statistics
@@ -644,14 +644,13 @@ abstract class ADataProvider extends AEventDispatcher {
         this.clearSelection();
       }
       return false;
-    } else {
-      if (additional) {
-        this.select(index);
-      } else {
-        this.setSelection([index]);
-      }
-      return true;
     }
+    if (additional) {
+      this.select(index);
+    } else {
+      this.setSelection([index]);
+    }
+    return true;
   }
 
   /**
@@ -670,7 +669,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * returns a promise containing the selected rows
    * @return {Promise<any[]>}
    */
-  selectedRows(): Promise<IDataRow[]> {
+  selectedRows(): Promise<IDataRow[]>|IDataRow[] {
     if (this.selection.size === 0) {
       return Promise.resolve([]);
     }
@@ -720,9 +719,9 @@ abstract class ADataProvider extends AEventDispatcher {
       return l;
     }
 
-    const columns = ranking.flatColumns.filter((c) => options.filter(c.desc));
+    const columns = ranking.flatColumns.filter((c) => options.filter!(c.desc));
     const order = ranking.getOrder();
-    return this.view(order).then((data) => {
+    return Promise.resolve(this.view(order)).then((data) => {
       const r: string[] = [];
       if (options.header) {
         r.push(columns.map((d) => quote(d.label)).join(options.separator));

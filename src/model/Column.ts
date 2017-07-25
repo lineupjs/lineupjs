@@ -87,7 +87,7 @@ export interface ICategoricalStatistics {
 export interface IColumnMetaData {
   readonly label: string;
   readonly description: string;
-  readonly color: string;
+  readonly color: string|null;
 }
 
 
@@ -152,7 +152,7 @@ export default class Column extends AEventDispatcher {
   /**
    * parent column of this column, set when added to a ranking or combined column
    */
-  parent: IColumnParent = null;
+  parent: IColumnParent|null = null;
 
   private metadata: IColumnMetaData;
 
@@ -221,14 +221,15 @@ export default class Column extends AEventDispatcher {
    * @returns {string}
    */
   get fqid() {
-    return this.parent ? this.parent.fqid + '_' + this.id : this.id;
+    return this.parent ? `${this.parent.fqid}_${this.id}` : this.id;
   }
 
   get fqpath() {
-    return this.parent ? this.parent.fqpath + '@' + this.parent.indexOf(this) : '';
+    return this.parent ? `${this.parent.fqpath}@${this.parent.indexOf(this)}`: '';
   }
 
   /**
+   * list of events
    * fires:
    *  * widthChanged
    *  * filterChanged
@@ -237,7 +238,7 @@ export default class Column extends AEventDispatcher {
    *  * compressChanged
    *  * addColumn, removeColumn ... for composite pattern
    *  * dirty, dirtyHeader, dirtyValues
-   * @returns {string[]}
+   * @returns {string[]} the list of events
    */
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
@@ -256,7 +257,7 @@ export default class Column extends AEventDispatcher {
 
   /**
    * a column is hidden if it has no width
-   * @return {boolean}
+   * @return {boolean} whether the column is hidden
    */
   isHidden() {
     return this.width <= 0;
@@ -279,10 +280,10 @@ export default class Column extends AEventDispatcher {
 
   /**
    * visitor pattern for flattening the columns
-   * @param r the result array
-   * @param offset left offset
-   * @param levelsToGo how many levels down
-   * @param padding padding between columns
+   * @param {IFlatColumn} r the result array
+   * @param {number} offset left offset
+   * @param {number} levelsToGo how many levels down
+   * @param {number} padding padding between columns
    * @returns {number} the used width by this column
    */
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0): number {
@@ -330,8 +331,8 @@ export default class Column extends AEventDispatcher {
 
   /**
    * triggers that the ranking is sorted by this column
-   * @param ascending
-   * @returns {any}
+   * @param ascending acending order?
+   * @returns {boolean} was successful
    */
   sortByMe(ascending = false) {
     const r = this.findMyRanker();
@@ -343,7 +344,7 @@ export default class Column extends AEventDispatcher {
 
   /**
    * toggles the sorting order of this column in the ranking
-   * @returns {any}
+   * @returns {boolean} was successful
    */
   toggleMySorting() {
     const r = this.findMyRanker();
@@ -355,7 +356,7 @@ export default class Column extends AEventDispatcher {
 
   /**
    * removes the column from the ranking
-   * @returns {boolean}
+   * @returns {boolean} was successful
    */
   removeMe() {
     if (this.parent) {
@@ -366,8 +367,8 @@ export default class Column extends AEventDispatcher {
 
   /**
    * inserts the given column after itself
-   * @param col
-   * @returns {boolean}
+   * @param col the column to insert
+   * @returns {boolean} was successful
    */
   insertAfterMe(col: Column) {
     if (this.parent) {
@@ -378,9 +379,9 @@ export default class Column extends AEventDispatcher {
 
   /**
    * finds the underlying ranking column
-   * @returns {Ranking}
+   * @returns {Ranking|null} my current ranking
    */
-  findMyRanker(): Ranking {
+  findMyRanker(): Ranking|null {
     if (this.parent) {
       return this.parent.findMyRanker();
     }
@@ -389,8 +390,8 @@ export default class Column extends AEventDispatcher {
 
   /**
    * dumps this column to JSON compatible format
-   * @param toDescRef
-   * @returns {any}
+   * @param toDescRef helper mapping function
+   * @returns {any} dump of this column
    */
   dump(toDescRef: (desc: any) => any): any {
     const r: any = {
@@ -413,8 +414,8 @@ export default class Column extends AEventDispatcher {
 
   /**
    * restore the column content from a dump
-   * @param dump
-   * @param factory
+   * @param dump column dump
+   * @param factory helper for creating columns
    */
   restore(dump: any, factory: (dump: any) => Column) {
     this.width = dump.width || this.width;
@@ -431,18 +432,19 @@ export default class Column extends AEventDispatcher {
 
   /**
    * return the label of a given row for the current column
-   * @param row
-   * @param index
-   * @return {string}
+   * @param row the current row
+   * @param index its row index
+   * @return {string} the label of this column at the specified row
    */
   getLabel(row: any, index: number): string {
-    return '' + this.getValue(row, index);
+    return String(this.getValue(row, index));
   }
 
   /**
    * return the value of a given row for the current column
-   * @param row
-   * @param index
+   * @param row the current row
+   * @param index its row index
+   * @return the value of this column at the specified row
    */
   getValue(row: any, index: number): any {
     return ''; //no value
@@ -501,7 +503,6 @@ export default class Column extends AEventDispatcher {
   protected setRendererList(rendererList: { type: string, label: string }[]) {
     this.rendererInfo.rendererList = rendererList;
   }
-
 
   /**
    * describe the column if it is a sorting criteria
