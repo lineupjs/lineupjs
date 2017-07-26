@@ -29,7 +29,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
   static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;
 
   private script = ScriptColumn.DEFAULT_SCRIPT;
-  private f: Function = null;
+  private f: Function|null = null;
 
   constructor(id: string, desc: IScriptColumnDesc) {
     super(id, desc);

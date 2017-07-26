@@ -29,16 +29,16 @@ export interface IAdvancedBoxPlotData extends IBoxPlotData {
 
 
 export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
-  getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData;
+  getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData|null;
 
-  getRawBoxPlotData(row: any, index: number): IAdvancedBoxPlotData;
+  getRawBoxPlotData(row: any, index: number): IAdvancedBoxPlotData|null;
 }
 
 /**
  * helper class to lazily compute box plotdata out of a given number array
  */
 class LazyBoxPlotData implements IAdvancedBoxPlotData {
-  private _sorted: number[] = null;
+  private _sorted: number[]|null = null;
 
   constructor(private readonly values: number[], private readonly scale?: IMappingFunction) {
   }
@@ -167,12 +167,11 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   private getColorValues(): string[] {
     if (this.colorRange.length > 2) {
       return this.colorRange.slice();
-    } else {
-      const minColor = this.colorRange[0];
-      const zeroColor = 'white';
-      const maxColor = this.colorRange[1];
-      return [minColor, zeroColor, maxColor];
     }
+    const minColor = this.colorRange[0];
+    const zeroColor = 'white';
+    const maxColor = this.colorRange[1];
+    return [minColor, zeroColor, maxColor];
   }
 
 
@@ -209,7 +208,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return this.threshold;
   }
 
-  getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData {
+  getBoxPlotData(row: any, index: number) {
     const data = this.getRawValue(row, index);
     if (data === null) {
       return null;
@@ -217,7 +216,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return new LazyBoxPlotData(data, this.mapping);
   }
 
-  getRawBoxPlotData(row: any, index: number): IAdvancedBoxPlotData {
+  getRawBoxPlotData(row: any, index: number) {
     const data = this.getRawValue(row, index);
     if (data === null) {
       return null;
@@ -243,7 +242,8 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   getRawValue(row: any, index: number) {
-    return super.getValue(row, index);
+    const r = super.getValue(row, index);
+    return r === null ? [] : r;
   }
 
   getLabel(row: any, index: number): string {
@@ -264,7 +264,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     }
     this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
     // sort by me if not already sorted by me
-    if (this.findMyRanker().getSortCriteria().col !== this) {
+    if (this.findMyRanker()!.getSortCriteria().col !== this) {
       this.sortByMe();
     }
   }

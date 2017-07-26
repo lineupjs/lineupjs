@@ -29,7 +29,7 @@ export interface IValueColumnDesc<T> extends IColumnDesc {
 export default class ValueColumn<T> extends Column {
   static readonly RENDERER_LOADING = 'loading';
 
-  private readonly accessor: (row: any, index: number, id: string, desc: any, ranking: Ranking) => T;
+  private readonly accessor: (row: any, index: number, id: string, desc: any, ranking: Ranking|null) => T;
 
   /**
    * is the data available
@@ -48,7 +48,7 @@ export default class ValueColumn<T> extends Column {
     if (!this.isLoaded()) {
       return '';
     }
-    return '' + this.getValue(row, index);
+    return String(this.getValue(row, index));
   }
 
   getRaw(row: any, index: number) {

@@ -3,6 +3,7 @@
  */
 
 import Column, {IColumnParent, IFlatColumn, IColumnDesc} from './Column';
+import {suffix} from '../utils';
 
 export function isMultiLevelColumn(col: Column) {
   return typeof ((<any>col).getCollapsed) === 'function';
@@ -72,7 +73,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
    * @param index
    * @returns {any}
    */
-  insert(col: Column, index: number) {
+  insert(col: Column, index: number): Column|null {
     this._children.splice(index, 0, col);
     //listen and propagate events
     return this.insertImpl(col, index);
@@ -80,7 +81,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   protected insertImpl(col: Column, index: number) {
     col.parent = this;
-    this.forward(col, Column.EVENT_DIRTY_HEADER + '.combine', Column.EVENT_DIRTY_VALUES + '.combine', Column.EVENT_DIRTY + '.combine', Column.EVENT_FILTER_CHANGED + '.combine');
+    this.forward(col, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
     this.fire([Column.EVENT_ADD_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index);
     return col;
   }
@@ -116,7 +117,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   protected removeImpl(child: Column) {
     child.parent = null;
-    this.unforward(child, Column.EVENT_DIRTY_HEADER + '.combine', Column.EVENT_DIRTY_VALUES + '.combine', Column.EVENT_DIRTY + '.combine', Column.EVENT_FILTER_CHANGED + '.combine');
+    this.unforward(child, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
     this.fire([Column.EVENT_REMOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], child);
     return true;
   }

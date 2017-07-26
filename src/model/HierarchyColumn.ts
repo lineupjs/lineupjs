@@ -63,7 +63,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
             path,
             name: child,
             label: path,
-            color: colors[(lastColorUsed++) % colors.length],
+            color: colors[(lastColorUsed++) % colors.length]!,
             children: []
           };
         }
@@ -76,7 +76,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
       });
       const path = prefix + name;
       const label = node.label ? `${path}: ${node.label}` : path;
-      return {path, name, children, label, color: node.color};
+      return {path, name, children, label, color: node.color!};
     };
     return add('', root);
   }
@@ -135,7 +135,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
 
   getLabel(row: any, index: number) {
     const base = this.resolveCategory(row, index);
-    return base ? base.label : null;
+    return base ? base.label : '';
   }
 
   getCategories(row: any, index: number) {

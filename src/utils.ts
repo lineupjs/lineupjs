@@ -25,6 +25,10 @@ export function delayedCall(callback: (...args: any[]) => void, timeToDelay = 10
   };
 }
 
+export function suffix(suffix: string, ...prefix: string[]) {
+  return prefix.map((p) => `${p}${suffix}`);
+}
+
 /**
  * base class for event dispatching using d3 event mechanism
  */

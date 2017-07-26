@@ -6,7 +6,7 @@ import {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './CategoricalColumn';
 
 interface IBooleansColumnDesc extends IValueColumnDesc <boolean[]> {
-  readonly dataLength?: number;
+  readonly dataLength: number;
 }
 
 export default class BooleansColumn extends ValueColumn<boolean[]> implements ICategoricalColumn {
@@ -18,7 +18,7 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
     this.dataLength = desc.dataLength;
     this.categories = [];
     for (let i = 0; i < this.dataLength; ++i) {
-      this.categories.push(String(`Category #` + (i + 1)));
+      this.categories.push(`Category #${i + 1}`);
     }
 
     this.setRendererType('upset');
@@ -34,7 +34,7 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
 
   getCategories(row: any, index: number): string[] {
     const flagged = this.getValue(row, index);
-    return this.categories.filter((d, i) => flagged[i]);
+    return this.categories.filter((d, i) => flagged != null && flagged[i]);
   }
 
   getColor(row: any, index: number) {

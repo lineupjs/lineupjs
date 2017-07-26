@@ -131,30 +131,31 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   initCategories(desc: IBaseCategoricalDesc) {
-    if (desc.categories) {
-      const cats: string[] = [],
-        cols = this.colors.range().slice(), //work on a copy since it will be manipulated
-        labels = new Map<string, string>();
-      desc.categories.forEach((cat, i) => {
-        if (typeof cat === 'string') {
-          //just the category value
-          cats.push(cat);
-        } else {
-          //the name or value of the category
-          cats.push(cat.name || cat.value);
-          //optional label mapping
-          if (cat.label) {
-            labels.set(cat.name, cat.label);
-          }
-          //optional color
-          if (cat.color) {
-            cols[i] = cat.color;
-          }
-        }
-      });
-      this.catLabels = labels;
-      this.colors.domain(cats).range(cols);
+    if (!desc.categories) {
+      return;
     }
+    const cats: string[] = [],
+      cols = this.colors.range().slice(), //work on a copy since it will be manipulated
+      labels = new Map<string, string>();
+    desc.categories.forEach((cat, i) => {
+      if (typeof cat === 'string') {
+        //just the category value
+        cats.push(cat);
+        return;
+      }
+      //the name or value of the category
+      cats.push(cat.name || cat.value);
+      //optional label mapping
+      if (cat.label) {
+        labels.set(cat.name, cat.label);
+      }
+      //optional color
+      if (cat.color) {
+        cols[i] = cat.color;
+      }
+    });
+    this.catLabels = labels;
+    this.colors.domain(cats).range(cols);
   }
 
   get categories() {
@@ -171,13 +172,13 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       return this.categories;
     }
     //label or identity mapping
-    return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c) : c);
+    return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c)! : c);
   }
 
   getLabel(row: any, index: number) {
     //no mapping
     if (this.catLabels === null || this.catLabels.size === 0) {
-      return '' + StringColumn.prototype.getValue.call(this, row, index);
+      return StringColumn.prototype.getValue.call(this, row, index);
     }
     return this.getLabels(row, index).join(this.separator);
   }
@@ -272,19 +273,21 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       return true;
     }
     const vs = this.getCategories(row, index),
-      filter = this.currentFilter.filter;
+      filter = this.currentFilter!.filter;
 
-    if (this.currentFilter.filterMissing && vs.length === 0) {
+    if (this.currentFilter!.filterMissing && vs.length === 0) {
       return false;
     }
 
     return vs.every((v) => {
       if (Array.isArray(filter) && filter.length > 0) { //array mode
         return filter.indexOf(v) >= 0;
-      } else if (typeof filter === 'string' && filter.length > 0) { //search mode
-        return v && v.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-      } else if (filter instanceof RegExp) { //regex match mode
-        return v != null && v.match(filter).length > 0;
+      }
+      if (typeof filter === 'string' && filter.length > 0) { //search mode
+        return v != null&& v.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+      }
+      if (filter instanceof RegExp) { //regex match mode
+        return v != null && filter.test(v);
       }
       return true;
     });

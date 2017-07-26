@@ -23,7 +23,7 @@ export default class AnnotateColumn extends StringColumn {
 
   getValue(row: any, index: number) {
     if (this.annotations.has(index)) {
-      return this.annotations.get(index);
+      return this.annotations.get(index)!;
     }
     return super.getValue(row, index);
   }
@@ -39,11 +39,12 @@ export default class AnnotateColumn extends StringColumn {
 
   restore(dump: any, factory: (dump: any) => Column) {
     super.restore(dump, factory);
-    if (dump.annotations) {
-      Object.keys(dump.annotations).forEach((k) => {
-        this.annotations.set(Number(k), dump.annotations[k]);
-      });
+    if (!dump.annotations) {
+      return;
     }
+    Object.keys(dump.annotations).forEach((k) => {
+      this.annotations.set(Number(k), dump.annotations[k]);
+    });
   }
 
   setValue(row: any, index: number, value: string) {

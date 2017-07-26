@@ -22,7 +22,7 @@ export default class LinkColumn extends StringColumn {
    * a pattern used for generating the link, $1 is replaced with the actual value
    * @type {null}
    */
-  private link: string = null;
+  private link: string|null = null;
 
   constructor(id: string, desc: any) {
     super(id, desc);
@@ -72,7 +72,7 @@ export default class LinkColumn extends StringColumn {
     if (v && v.alt) {
       return v.alt;
     }
-    return '' + v;
+    return String(v);
   }
 
   isLink(row: any, index: number) {
@@ -91,7 +91,8 @@ export default class LinkColumn extends StringColumn {
     //convert to link
     if (v && v.href) {
       return v.href;
-    } else if (this.link) {
+    }
+    if (this.link) {
       return this.link.replace(/\$1/g, v || '');
     }
     return v;

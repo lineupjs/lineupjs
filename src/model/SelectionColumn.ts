@@ -59,6 +59,6 @@ export default class SelectionColumn extends ValueColumn<boolean> {
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return ascending(this.getValue(a, aIndex), this.getValue(b, bIndex));
+    return ascending(this.getValue(a, aIndex) === true, this.getValue(b, bIndex) === true);
   }
 }

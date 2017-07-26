@@ -23,11 +23,11 @@ export interface IFlatColumn {
 export interface IColumnParent {
   remove(col: Column): boolean;
 
-  insert(col: Column, index?: number): Column;
+  insert(col: Column, index?: number): Column|null;
 
-  insertAfter(col: Column, reference: Column): Column;
+  insertAfter(col: Column, reference: Column): Column|null;
 
-  findMyRanker(): Ranking;
+  findMyRanker(): Ranking|null;
 
   readonly fqid: string;
 

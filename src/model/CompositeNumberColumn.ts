@@ -78,7 +78,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     }
     const v = this.getValue(row, index);
     //keep non number if it is not a number else convert using formatter
-    return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
+    return String(typeof v === 'number' ? this.numberFormat(v) : v);
   }
 
   getValue(row: any, index: number) {
@@ -102,15 +102,17 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
   }
 
   getNumber(row: any, index: number) {
-    return this.getValue(row, index);
+    const r = this.getValue(row, index);
+    return r === null ? NaN : r;
   }
 
   getRawNumber(row: any, index: number) {
-    return this.getValue(row, index);
+    const r = this.getValue(row, index);
+    return r === null ? NaN : r;
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
+    return numberCompare(this.getNumber(a, aIndex), this.getNumber(b, bIndex));
   }
 
   getRendererType(): string {

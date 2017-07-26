@@ -27,9 +27,9 @@ export declare type SortMethod = string;
 
 
 export interface IBoxPlotColumn extends INumberColumn {
-  getBoxPlotData(row: any, index: number): IBoxPlotData;
+  getBoxPlotData(row: any, index: number): IBoxPlotData|null;
 
-  getRawBoxPlotData(row: any, index: number): IBoxPlotData;
+  getRawBoxPlotData(row: any, index: number): IBoxPlotData|null;
 
   getSortMethod(): string;
 
@@ -124,11 +124,11 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return compareBoxPlot(this, a, b, aIndex, bIndex);
   }
 
-  getBoxPlotData(row: any, index: number): IBoxPlotData {
+  getBoxPlotData(row: any, index: number): IBoxPlotData|null {
     return this.getValue(row, index);
   }
 
-  getRawBoxPlotData(row: any, index: number): IBoxPlotData {
+  getRawBoxPlotData(row: any, index: number): IBoxPlotData|null {
     return this.getRawValue(row, index);
   }
 
@@ -177,7 +177,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     }
     this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
     // sort by me if not already sorted by me
-    if (this.findMyRanker().getSortCriteria().col !== this) {
+    if (this.findMyRanker()!.getSortCriteria().col !== this) {
       this.sortByMe();
     }
   }

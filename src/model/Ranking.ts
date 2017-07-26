@@ -4,8 +4,7 @@
 
 import Column, {IColumnParent, fixCSS, IFlatColumn, IColumnDesc} from './Column';
 import StringColumn from './StringColumn';
-import StackColumn from './StackColumn';
-import {AEventDispatcher} from '../utils';
+import {AEventDispatcher, suffix} from '../utils';
 
 export interface ISortCriteria {
   readonly col: Column;
@@ -53,7 +52,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return 0;
     }
     for (const sort of this.sortCriterias) {
-      const r = sort.col.compare(a, b, aIndex, bIndex);
+      const r = sort.col!.compare(a, b, aIndex, bIndex);
       if (r !== 0) {
         return sort.asc ? r : -r;
       }
@@ -101,7 +100,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   dump(toDescRef: (desc: any) => any) {
     const r: any = {};
     r.columns = this.columns.map((d) => d.dump(toDescRef));
-    r.sortCriterias = this.sortCriterias.map((s) => ({asc: s.asc, sortBy: s.col.id}));
+    r.sortCriterias = this.sortCriterias.map((s) => ({asc: s.asc, sortBy: s.col!.id}));
     return r;
   }
 
@@ -114,21 +113,20 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       }
     });
     // compatibility case
-    if (dump.sortColumn) {
-      if (dump.sortColumn.sortBy) {
-        const help = this.columns.filter((d) => d.id === dump.sortColumn.sortBy);
-        this.sortBy(help.length === 0 ? null : help[0], dump.sortColumn.asc);
-      }
+    if (dump.sortColumn && dump.sortColumn.sortBy) {
+      const help = this.columns.filter((d) => d.id === dump.sortColumn.sortBy);
+      this.sortBy(help.length === 0 ? null : help[0], dump.sortColumn.asc);
     }
-    if (dump.sortCriterias) {
-      const sortCriterias = dump.sortCriterias.map((s: {asc: boolean, sortBy: string}) => {
-        return {
-          asc: s.asc,
-          col: this.columns.find((d) => d.id === s.sortBy) || null
-        };
-      });
-      this.setSortCriterias(sortCriterias);
+    if (!dump.sortCriterias) {
+      return;
     }
+    const sortCriterias = dump.sortCriterias.map((s: {asc: boolean, sortBy: string}) => {
+      return {
+        asc: s.asc,
+        col: this.columns.find((d) => d.id === s.sortBy) || null
+      };
+    }).filter((s: any) => s.col);
+    this.setSortCriterias(sortCriterias);
   }
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
@@ -143,18 +141,16 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return acc - offset;
   }
 
-  private get primarySortCriteria(): ISortCriteria {
+  private get primarySortCriteria(): ISortCriteria|null {
     if (this.sortCriterias.length === 0) {
-      return {
-        col: null,
-        asc: false
-      };
+      return null;
     }
     return this.sortCriterias[0];
   }
 
-  getSortCriteria(): ISortCriteria {
-    return Object.assign({}, this.primarySortCriteria);
+  getSortCriteria(): ISortCriteria|null {
+    const p = this.primarySortCriteria;
+    return p === null ? null : Object.assign({}, p);
   }
 
   getSortCriterias(): ISortCriteria[] {
@@ -163,7 +159,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   toggleSorting(col: Column) {
     const primary = this.primarySortCriteria;
-    if (primary.col === col) {
+    if (primary && primary.col === col) {
       return this.sortBy(col, !primary.asc);
     }
     return this.sortBy(col);
@@ -176,15 +172,16 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   setSortCriterias(values: ISortCriteria[]) {
     if (values.length === 0) {
       return this.sortBy(null);
-    } else if (values.length === 1) {
+    }
+    if (values.length === 1) {
       return this.setSortCriteria(values[0]);
     }
     const bak = this.sortCriterias.slice();
 
     // update listener
     bak.forEach((d) => {
-      d.col.on(Column.EVENT_DIRTY_VALUES + '.order', null);
-      d.col.on(Column.EVENT_SORTMETHOD_CHANGED + '.order', null);
+      d.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null!);
+      d.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null!);
     });
 
     // trim
@@ -192,19 +189,20 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       values = values.slice(0, this.maxSortCriterias);
     }
     values.forEach((d) => {
-      d.col.on(Column.EVENT_DIRTY_VALUES + '.order', this.dirtyOrder);
-      d.col.on(Column.EVENT_SORTMETHOD_CHANGED + '.order', this.dirtyOrder);
+      d.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, this.dirtyOrder);
+      d.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, this.dirtyOrder);
     });
     this.sortCriterias.splice(0, this.sortCriterias.length, ...values.slice());
     this.triggerResort(bak);
+    return true;
   }
 
-  sortBy(col: Column, ascending = false) {
+  sortBy(col: Column|null, ascending: boolean = false) {
     if (col !== null && col.findMyRanker() !== this) {
       return false; //not one of mine
     }
     const primary = this.primarySortCriteria;
-    if (primary.col === col && primary.asc === ascending) {
+    if ((col === null && primary === null) || (primary && primary.col === col && primary.asc === ascending)) {
       return true; //already in this order
     }
     const bak = this.getSortCriteria();
@@ -216,14 +214,14 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         // can skip deregister will be reregistered anyhow
       } else if (this.sortCriterias.length === this.maxSortCriterias) {
         // remove the last one
-        const last = this.sortCriterias.pop();
-        last.col.on(Column.EVENT_DIRTY_VALUES + '.order', null);
-        last.col.on(Column.EVENT_SORTMETHOD_CHANGED + '.order', null);
+        const last = this.sortCriterias.pop()!;
+        last.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null);
+        last.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null);
       }
     } else {
       this.sortCriterias.forEach((s) => {
-        s.col.on(Column.EVENT_DIRTY_VALUES + '.order', null);
-        s.col.on(Column.EVENT_SORTMETHOD_CHANGED + '.order', null);
+        s.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null);
+        s.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null);
       });
       this.sortCriterias.splice(0, this.sortCriterias.length);
     }
@@ -234,15 +232,15 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         col,
         asc: ascending
       });
-      col.on(Column.EVENT_DIRTY_VALUES + '.order', this.dirtyOrder);
+      col.on(`${Column.EVENT_DIRTY_VALUES}.order`, this.dirtyOrder);
       // order is dirty if the sort method has changed
-      col.on(Column.EVENT_SORTMETHOD_CHANGED + '.order', this.dirtyOrder);
+      col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, this.dirtyOrder);
     }
     this.triggerResort(bak);
     return true;
   }
 
-  private triggerResort(bak?: ISortCriteria | ISortCriteria[]) {
+  private triggerResort(bak: ISortCriteria | ISortCriteria[] | null) {
     const sortCriterias = this.getSortCriterias();
     const bakSingle = Array.isArray(bak) ? bak[0] : bak;
     const bakMulti = Array.isArray(bak) ? bak : sortCriterias;
@@ -263,8 +261,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
     this.columns.splice(index, 0, col);
     col.parent = this;
-    this.forward(col, Column.EVENT_DIRTY_VALUES + '.ranking', Column.EVENT_DIRTY_HEADER + '.ranking', Column.EVENT_DIRTY + '.ranking', Column.EVENT_FILTER_CHANGED + '.ranking');
-    col.on(Ranking.EVENT_FILTER_CHANGED + '.order', this.dirtyOrder);
+    this.forward(col, ...suffix('.ranking', Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
+    col.on(`${Ranking.EVENT_FILTER_CHANGED}.order`, this.dirtyOrder);
 
 
     this.fire([Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, index);
@@ -283,7 +281,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     let p: IColumnParent | Column = <any>this;
     const indices = fqpath.split('@').map(Number).slice(1); //ignore the first entry = ranking
     while (indices.length > 0) {
-      const i = indices.shift();
+      const i = indices.shift()!;
       p = (<IColumnParent>p).at(i);
     }
     return <Column>p;
@@ -315,7 +313,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return false;
     }
 
-    this.unforward(col, Column.EVENT_DIRTY_VALUES + '.ranking', Column.EVENT_DIRTY_HEADER + '.ranking', Column.EVENT_DIRTY + '.ranking', Column.EVENT_FILTER_CHANGED + '.ranking');
+    this.unforward(col, ...suffix('.ranking', Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
 
     const isSortCriteria = this.sortCriterias.findIndex((d) => d.col === col);
     if (isSortCriteria === 0) {
@@ -330,7 +328,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     } else if (isSortCriteria > 0) {
       // just remove and trigger restore
       this.sortCriterias.splice(isSortCriteria, 1);
-      this.triggerResort();
+      this.triggerResort(null);
     }
 
     col.parent = null;
@@ -346,7 +344,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     }
     this.sortCriterias.splice(0, this.sortCriterias.length);
     this.columns.forEach((col) => {
-      this.unforward(col, Column.EVENT_DIRTY_VALUES + '.ranking', Column.EVENT_DIRTY_HEADER + '.ranking', Column.EVENT_DIRTY + '.ranking', Column.EVENT_FILTER_CHANGED + '.ranking');
+      this.unforward(col, ...suffix('.ranking', Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
       col.parent = null;
     });
     this.columns.length = 0;
@@ -383,6 +381,9 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return s.toSortingDesc(toId);
     };
     const primary = this.primarySortCriteria;
+    if (primary === null) {
+      return null;
+    }
     const id = resolve(primary.col);
     if (id === null) {
       return null;

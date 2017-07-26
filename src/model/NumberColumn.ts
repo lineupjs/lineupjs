@@ -26,11 +26,11 @@ export function isMissingValue(v: any) {
  * @param b
  * @return {number}
  */
-export function numberCompare(a: number, b: number) {
-  if (isNaN(a)) { //NaN are smaller
-    return isNaN(b) ? 0 : -1;
+export function numberCompare(a: number|null, b: number|null) {
+  if (a === null || isNaN(a)) { //NaN are smaller
+    return (b === null || isNaN(b)) ? 0 : -1;
   }
-  if (isNaN(b)) {
+  if (b === null || isNaN(b)) {
     return +1;
   }
   return a - b;
@@ -244,11 +244,10 @@ export function createMappingFunction(dump: any): IMappingFunction {
     const s = new ScriptMappingFunction();
     s.restore(dump);
     return s;
-  } else {
-    const l = new ScaleMappingFunction();
-    l.restore(dump);
-    return l;
   }
+  const l = new ScaleMappingFunction();
+  l.restore(dump);
+  return l;
 }
 
 export interface INumberColumnDesc extends IValueColumnDesc<number> {
