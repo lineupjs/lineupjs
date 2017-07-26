@@ -119,6 +119,8 @@
     "@types/d3-drag": "^1.1.0",
     "@types/d3-selection": "^1.1.0",
     "d3-drag": "^1.1.1",
-    "d3-dispatch": "^1.0.3"
+    "d3-dispatch": "^1.0.3",
+    "d3": "^3.5.17",
+    "@types/d3": "^3.5.36"
   }
 }

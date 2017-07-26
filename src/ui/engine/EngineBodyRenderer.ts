@@ -8,7 +8,7 @@ import {IStatistics, ICategoricalStatistics} from '../../model/Column';
 
 export default class EngineBodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
-  histCache = new Map<string, Promise<IStatistics | ICategoricalStatistics>>();
+  histCache = new Map<string, Promise<IStatistics | ICategoricalStatistics> | IStatistics | ICategoricalStatistics | null>();
 
   readonly node: HTMLElement;
 
