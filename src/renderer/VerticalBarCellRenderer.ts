@@ -16,9 +16,8 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
   private static verticalBarYpos(domain: number[], threshold: number, cellData: number, scale: d3.scale.Linear<number, number>, rowHeight: number) {
     if (domain[0] < threshold) {
       return (cellData < threshold) ? (rowHeight / 2) : rowHeight / 2 - scale(cellData);   // For positive and negative value
-    } else {
-      return rowHeight - scale(cellData);
     }
+    return rowHeight - scale(cellData);
   }
 
   private static verticalBarHeight(domain: number[], threshold: number, cellData: number, scale: d3.scale.Linear<number, number>, rowHeight: number) {
@@ -46,8 +45,8 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
             title: NumbersColumn.DEFAULT_FORMATTER(v)
           }, {
             'background-color': colorScale(v),
-            height: VerticalBarCellRenderer.verticalBarHeight(domain, threshold, v, scale, rowHeight) + 'px',
-            top: VerticalBarCellRenderer.verticalBarYpos(domain, threshold, v, scale, rowHeight) + 'px'
+            height: `${VerticalBarCellRenderer.verticalBarHeight(domain, threshold, v, scale, rowHeight)}px`,
+            top: `${VerticalBarCellRenderer.verticalBarYpos(domain, threshold, v, scale, rowHeight)}px`
           });
         });
       }

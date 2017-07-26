@@ -18,14 +18,16 @@ export interface ILineUpProps<T> {
   defineLineUp?(data: ADataProvider): void;
 }
 
-function deepEqual<T>(a: T[], b: T[]) {
+function deepEqual<T>(a?: T[], b?: T[]) {
   if (a === b) {
     return true;
   }
+  a = a ? a : [];
+  b = b ? b : [];
   if (a.length !== b.length) {
     return false;
   }
-  return a.every((ai, i) => ai === b[i]);
+  return a.every((ai, i) => ai === b![i]);
 }
 
 export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
@@ -43,8 +45,8 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
     desc: []
   };
 
-  private plot: Impl = null;
-  private parent: HTMLDivElement = null;
+  private plot: Impl|null = null;
+  private parent: HTMLDivElement|null = null;
 
   constructor(props: ILineUpProps<T>, context?: any) {
     super(props, context);
@@ -68,7 +70,7 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
     } else {
       data.deriveDefault();
     }
-    this.plot = new Impl(this.parent, data, this.props.options);
+    this.plot = new Impl(this.parent!, data, this.props.options);
     this.plot.update();
   }
 
@@ -83,6 +85,9 @@ export default class LineUp<T> extends React.Component<ILineUpProps<T>, {}> {
   }
 
   componentDidUpdate() {
+    if (!this.plot) {
+      return;
+    }
     const provider = (this.plot.data as LocalDataProvider);
     if (!deepEqual(provider.data, this.props.data)) {
       const data = new LocalDataProvider(this.props.data, this.props.desc);

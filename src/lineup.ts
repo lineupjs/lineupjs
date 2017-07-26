@@ -60,7 +60,7 @@ export interface ILineUpConfig {
   /**
    * options related to the header html layout
    */
-  header: IHeaderRendererOptions;
+  header: Partial<IHeaderRendererOptions>;
   /**
    * old name for header
    */
@@ -72,7 +72,7 @@ export interface ILineUpConfig {
   /**
    * options related to the rendering of the body
    */
-  body: IBodyOptions & IBodyRendererOptions;
+  body: Partial<IBodyOptions & IBodyRendererOptions>;
   /**
    * old name for body
    */
@@ -127,42 +127,47 @@ export default class LineUp extends AEventDispatcher {
   /**
    * default config of LineUp with all available options
    */
-  readonly config: ILineUpConfig = {
-    idPrefix: Math.random().toString(36).slice(-8).substr(0, 3), //generate a random string with length3
-    header: {
-      headerHeight: 20,
-      headerHistogramHeight: 40,
-      autoRotateLabels: false,
-      rotationHeight: 50, //in px
-      rotationDegree: -20, //in deg
-      rankingButtons: <IRankingHook>dummyRankingButtonHook,
-      linkTemplates: []
+  readonly config: ILineUpConfig = (() => {
+    const idPrefix = Math.random().toString(36).slice(-8).substr(0, 3); //generate a random string with length3;
+    return {
+      idPrefix,
+      header: {
+        idPrefix,
+        headerHeight: 20,
+        headerHistogramHeight: 40,
+        autoRotateLabels: false,
+        rotationHeight: 50, //in px
+        rotationDegree: -20, //in deg
+        rankingButtons: <IRankingHook>dummyRankingButtonHook,
+        linkTemplates: [],
+          slopeWidth: 150
     },
-    htmlLayout: {},
-    renderingOptions: {
-      stacked: true,
-      animation: true,
-      summary: false,
-      meanLine: false,
-      histograms: false
-    },
-    body: {
-      renderer: 'svg', //svg, canvas, html
-      rowHeight: 18,
-      rowPadding: 1,
-      rowBarPadding: 1,
-      visibleRowsOnly: true,
-      backupScrollRows: 4,
-      animationDuration: 1000,
-      freezeCols: 0,
-
-      actions: []
-    },
-    svgLayout: {},
-    manipulative: true,
-    pool: false,
-    renderers: merge({}, defaultRenderers)
-  };
+      htmlLayout: {},
+      renderingOptions: {
+        stacked: true,
+          animation: true,
+          summary: false,
+          meanLine: false,
+          histograms: false
+      },
+      body: {
+        renderer: 'svg', //svg, canvas, html
+          rowHeight: 18,
+          rowPadding: 1,
+          rowBarPadding: 1,
+          visibleRowsOnly: true,
+          backupScrollRows: 4,
+          animationDuration: 1000,
+          freezeCols: 0,
+          slopeWidth: 150,
+          actions: []
+      },
+      svgLayout: {},
+      manipulative: true,
+        pool: false,
+      renderers: merge({}, defaultRenderers)
+    };
+  })();
 
   private $container: Selection<any>;
 
@@ -212,22 +217,23 @@ export default class LineUp extends AEventDispatcher {
       this.addPool(new PoolRenderer(data, this.node, <IPoolRendererOptions>this.config.pool));
     }
 
-    if (this.config.body.visibleRowsOnly) {
-      this.contentScroller = new ContentScroller(bodyWrapper, this.body.node, {
-        pageSize: this.config.body.backupScrollRows * this.config.body.rowHeight,
-        backupRows: this.config.body.backupScrollRows,
-        rowHeight: this.config.body.rowHeight
-      });
-      this.contentScroller.on(ContentScroller.EVENT_SCROLL, (top, left) => {
-        //in two svg mode propagate horizontal shift
-        this.header.$node.style('margin-left', `${-left}px`);
-        if (this.config.body.freezeCols > 0) {
-          this.header.updateFreeze(left);
-          this.body.updateFreeze(left);
-        }
-      });
-      this.contentScroller.on(ContentScroller.EVENT_REDRAW, (delta) => this.body.scrolled(delta));
+    if (!this.config.body.visibleRowsOnly) {
+      return;
     }
+    this.contentScroller = new ContentScroller(bodyWrapper, this.body.node, {
+      pageSize: this.config.body.backupScrollRows! * this.config.body.rowHeight!,
+      backupRows: this.config.body.backupScrollRows,
+      rowHeight: this.config.body.rowHeight
+    });
+    this.contentScroller.on(ContentScroller.EVENT_SCROLL, (top, left) => {
+      //in two svg mode propagate horizontal shift
+      this.header.$node.style('margin-left', `${-left}px`);
+      if (this.config.body.freezeCols! > 0) {
+        this.header.updateFreeze(left);
+        this.body.updateFreeze(left);
+      }
+    });
+    this.contentScroller.on(ContentScroller.EVENT_REDRAW, (delta) => this.body.scrolled(delta));
   }
 
   protected createEventList() {
@@ -324,10 +330,10 @@ export default class LineUp extends AEventDispatcher {
     //relative order
     const indices = dataIndices.map((d) => order.indexOf(d)).sort((a, b) => a - b);
     if (this.contentScroller) {
-      this.contentScroller.scrollIntoView(0, order.length, indices[0], (i) => i * this.config.body.rowHeight);
+      this.contentScroller.scrollIntoView(0, order.length, indices[0], (i) => i * this.config.body.rowHeight!);
     } else {
       const container = (<HTMLElement>this.$container.node());
-      container.scrollTop = indices[0] * this.config.body.rowHeight;
+      container.scrollTop = indices[0] * this.config.body.rowHeight!;
     }
     //fake hover in 100ms - TODO right timing
     setTimeout(() => {

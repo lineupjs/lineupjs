@@ -18,13 +18,22 @@ function computeLabel(v: IBoxPlotData) {
   return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\nq3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
 }
 
+function isSortedByMe(col: Column) {
+  const r = col.findMyRanker();
+  if (!r) {
+    return false;
+  }
+  const s = r.getSortCriteria();
+  return s && s.col === col;
+}
+
 export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   createDOM(col: IBoxPlotColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
     const scale = d3scale.linear().domain([0, 1]).range([0, col.getActualWidth()]);
-    const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
+    const sortedByMe = isSortedByMe(col);
     return {
       template: `<svg class='boxplotcell'>
             <title> </title>
@@ -34,6 +43,10 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         </svg>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const data = col.getBoxPlotData(d.v, d.dataIndex);
+        n.style.display = data ? null : 'none';
+        if (!data) {
+          return;
+        }
         const rowHeight = context.rowHeight(i);
         const scaled = {
           min: scale(data.min),
@@ -45,7 +58,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         attr(n, {
           height: rowHeight
         });
-        setText(n.firstElementChild, computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex)));
+        setText(n.firstElementChild!, computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex)!));
         attr(<SVGElement>n.children[1], {
           x: scaled.q1,
           width: (scaled.q3 - scaled.q1),
@@ -74,7 +87,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
     const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
-    const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
+    const sortedByMe = isSortedByMe(col);
 
     const boxColor = context.option('style.boxplot.box', '#e0e0e0');
     const boxStroke = context.option('style.boxplot.stroke', 'black');
@@ -85,6 +98,9 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
       // Rectangle
       const data = col.getBoxPlotData(d.v, d.dataIndex);
+      if (!data) {
+        return;
+      }
       const scaled = {
         min: scale(data.min),
         median: scale(data.median),
@@ -119,14 +135,14 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       ctx.stroke();
 
 
-      if (sortedByMe) {
-        ctx.strokeStyle = boxSortIndicator;
-        ctx.beginPath();
-        ctx.moveTo(scaled[sortMethod], topPadding);
-        ctx.lineTo(scaled[sortMethod], bottomPos);
-        ctx.stroke();
+      if (!sortedByMe) {
+        return;
       }
-
+      ctx.strokeStyle = boxSortIndicator;
+      ctx.beginPath();
+      ctx.moveTo(scaled[sortMethod], topPadding);
+      ctx.lineTo(scaled[sortMethod], bottomPos);
+      ctx.stroke();
     };
   }
 }

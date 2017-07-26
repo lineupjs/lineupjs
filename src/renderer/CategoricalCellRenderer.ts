@@ -35,8 +35,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
           cell = Math.min(col.getActualWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
         }
         attr(<HTMLDivElement>n.firstElementChild, {}, {
-          width: cell + 'px',
-          height: cell + 'px',
+          width: `${cell}px`,
+          height: `${cell}px`,
           'background-color': col.getColor(d.v, d.dataIndex)
         });
         attr(<HTMLSpanElement>n.lastElementChild, {}, {}, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
@@ -47,7 +47,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   createCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      ctx.fillStyle = col.getColor(d.v, d.dataIndex);
+      ctx.fillStyle = col.getColor(d.v, d.dataIndex) || '';
       if (col.getCompressed()) {
         const cell = Math.min(Column.COMPRESSED_WIDTH - padding * 2, Math.max(context.rowHeight(i) - padding * 2, 0));
         ctx.fillRect(padding, padding, cell, cell);

@@ -167,7 +167,7 @@
     "prefer-template": true,
 
     "early-exit": true,
-    "no-as-type-assertion": true,
+    "no-as-type-assertion": false,
     "no-collapsible-if": true,
     "no-else-after-return": true,
     "no-static-this": true,

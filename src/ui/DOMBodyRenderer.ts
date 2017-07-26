@@ -5,7 +5,7 @@
 import * as d3 from 'd3';
 import {attr, forEach, matchColumns} from '../utils';
 import {IStatistics} from '../model/Column';
-import DataProvider from '../provider/ADataProvider';
+import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import {IDOMRenderContext} from '../renderer/RendererContexts';
 import {createDOM} from '../renderer';
 import ABodyRenderer, {
@@ -37,20 +37,20 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     const $rankings = $body.selectAll('div.ranking').data(data, (d) => d.id);
     const $rankingsEnter = $rankings.enter().append('div')
       .attr('class', 'ranking')
-      .style('left', (d) => d.shift + 'px');
+      .style('left', (d) => `${d.shift}px`);
     $rankingsEnter.append('div').attr('class', 'rows');
     $rankingsEnter.append('div').attr('class', 'meanlines');
 
     //animated shift
     this.animated($rankings)
-      .style('left', (d) => d.shift + 'px');
+      .style('left', (d) => `${d.shift}px`);
 
 
-    const toWait: Promise<any>[] = [];
+    const toWait: (Promise<any>|void)[] = [];
     {
       const $rows = $rankings.select('div.rows').selectAll('div.row').data((d) => d.order, String);
       const $rowsEnter = $rows.enter().append('div').attr('class', 'row');
-      $rowsEnter.style('top', (d, i) => context.cellPrevY(i) + 'px');
+      $rowsEnter.style('top', (d, i) => `${context.cellPrevY(i)}px`);
 
       $rowsEnter
         .on('mouseenter', (d) => this.mouseOver(d, true))
@@ -60,10 +60,6 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       //create templates
       const createTemplates = (node: HTMLElement | SVGGElement, columns: IRankingColumnData[]) => {
         matchColumns(node, columns);
-        //set transform
-        columns.forEach((col, ci) => {
-          const cnode: any = node.childNodes[ci];
-        });
       };
 
 
@@ -83,11 +79,11 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       });
 
       //animated reordering
-      this.animated($rows).style('top', (d, i) => context.cellY(i) + 'px');
+      this.animated($rows).style('top', (d, i) => `${context.cellY(i)}px`);
 
       const updateColumns = (node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
-        return r.data[i].then((row) => {
+        const updateRow = (row: IDataRow) => {
           matchColumns(node, columns);
           columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
@@ -95,7 +91,12 @@ export default class DOMBodyRenderer extends ABodyRenderer {
             cnode.style.width = `${ci < columns.length - 2 ? (columns[ci + 1].shift - col.shift) : col.column.getActualWidth()}px`;
             col.renderer.update(cnode, row, i);
           });
-        });
+        };
+        const d = r.data[i];
+        if (d instanceof Promise) {
+          return d.then(updateRow);
+        }
+        return updateRow(d);
       };
       //update columns
 
@@ -103,11 +104,11 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : (d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth()) + that.options.columnPadding);
 
       $rows.select('div.frozen').each(function (d, i, j) {
-        this.style.width = maxFrozen + 'px';
+        this.style.width = `${maxFrozen}px`;
         toWait.push(updateColumns(this, data[j], i, data[j].frozen));
       });
       $rows.select('div.cols').each(function (d, i, j) {
-        this.style.marginLeft = maxFrozen + 'px';
+        this.style.marginLeft = `${maxFrozen}px`;
         toWait.push(updateColumns(this, data[j], i, data[j].columns));
       });
       $rows.exit().remove();
@@ -124,7 +125,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
         }
         h.then((stats: IStatistics) => {
           const xPos = d.shift + d.column.getWidth() * stats.mean;
-          $mean.style('left', (isNaN(xPos) ? 0 : xPos) + 'px').style('height', height + 'px');
+          $mean.style('left', `${isNaN(xPos) ? 0 : xPos}px`).style('height', `${height}px`);
         });
       });
       $meanlines.exit().remove();
@@ -147,10 +148,9 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     forEach(this.node, '.selected', (d) => d.classList.remove('selected'));
     if (indices.length === 0) {
       return;
-    } else {
-      const q = indices.map((d) => `[data-data-index='${d}']`).join(',');
-      forEach(this.node, q, (d) => d.classList.add('selected'));
     }
+    const q = indices.map((d) => `[data-data-index='${d}']`).join(',');
+    forEach(this.node, q, (d) => d.classList.add('selected'));
   }
 
   mouseOver(dataIndex: number, hover = true) {
@@ -173,7 +173,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     $slopes.enter().append('svg').attr('class', 'slopegraph');
     $slopes.attr('width', this.options.slopeWidth)
       .attr('height', height)
-      .style('left', (d, i) => (data[i + 1].shift - this.options.slopeWidth) + 'px');
+      .style('left', (d, i) => `${data[i + 1].shift - this.options.slopeWidth}px`);
 
     const $lines = $slopes.selectAll('line.slope').data((d) => {
       const cache = new Map<number, number>();
@@ -212,8 +212,8 @@ export default class DOMBodyRenderer extends ABodyRenderer {
 
   protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {
     // - ... added one to often
-    this.node.style.width = Math.max(0, width) + 'px';
-    this.node.style.height = Math.max(0, height) + 'px';
+    this.node.style.width = `${Math.max(0, width)}px`;
+    this.node.style.height = `${Math.max(0, height)}px`;
 
     let $body = this.$node.select('div.body');
     if ($body.empty()) {

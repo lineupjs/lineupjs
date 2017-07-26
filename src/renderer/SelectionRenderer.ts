@@ -1,7 +1,7 @@
 import SelectionColumn from '../model/SelectionColumn';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';

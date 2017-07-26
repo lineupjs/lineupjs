@@ -85,7 +85,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     if (col === null) {
       return null;
     }
-    const order = col.findMyRanker().getOrder();
+    const order = col.findMyRanker()!.getOrder();
     return {
       dataIndex: order[row],
       column: col
@@ -232,9 +232,13 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
       const toRender = ranking.data;
       return all(toRender.map((p, i) => {
         // TODO render loading row
-        return p.then((di: IDataRow) =>
-          renderRow(ranking, di, i)
-        );
+        if (p instanceof Promise) {
+          return p.then((di: IDataRow) =>
+            renderRow(ranking, di, i)
+          );
+        }
+        renderRow(ranking, p, i);
+        return null;
       })).then(() => this.renderMeanlines(ctx, ranking, height));
     }));
   }
@@ -254,7 +258,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
       const lines = slope.left.map((dataIndex, pos) => ({
         dataIndex,
         lpos: pos,
-        rpos: cache.get(dataIndex)
+        rpos: cache.get(dataIndex)!
       })).filter((d) => d.rpos != null);
 
 
@@ -306,19 +310,19 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     const lastLine = Math.min(context.cellY(Math.max(...data.map((d) => d.order.length))) + 20, height);
 
     this.$node.style({
-      width: Math.max(0, width) + 'px',
-      height: height + 'px'
+      width: `${Math.max(0, width)}px`,
+      height: `${height}px`
     });
 
     $canvas.attr({
       width: Math.max(0, width),
       height: lastLine - firstLine
-    }).style('margin-top', firstLine + 'px');
+    }).style('margin-top', `${firstLine}px`);
 
     this.lastShifts = this.computeShifts(data);
 
 
-    const ctx = (<HTMLCanvasElement>$canvas.node()).getContext('2d');
+    const ctx = (<HTMLCanvasElement>$canvas.node()).getContext('2d')!;
     ctx.save();
     ctx.font = this.style('font');
     ctx.textBaseline = 'top';

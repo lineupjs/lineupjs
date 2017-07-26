@@ -17,7 +17,7 @@ export interface ISlicer {
 }
 
 export interface IBodyRenderer extends AEventDispatcher {
-  histCache: Map<string, Promise<IStatistics | ICategoricalStatistics>>;
+  histCache: Map<string, Promise<IStatistics | ICategoricalStatistics> | IStatistics | ICategoricalStatistics | null>;
 
   readonly node: Element;
 
@@ -57,30 +57,30 @@ export interface IRankingData {
   readonly frozen: IRankingColumnData[];
   readonly frozenWidth: number;
   readonly columns: IRankingColumnData[];
-  readonly data: Promise<IDataRow>[];
+  readonly data: (Promise<IDataRow>|IDataRow)[];
 }
 
 export interface IBodyRendererOptions {
-  rowHeight?: number;
-  textHeight?: number;
-  rowPadding?: number;
-  rowBarPadding?: number;
-  rowBarTopPadding?: number;
-  rowBarBottomPadding?: number;
-  idPrefix?: string;
-  slopeWidth?: number;
-  columnPadding?: number;
-  stacked?: boolean;
-  animation?: boolean;
-  animationDuration?: number;
+  rowHeight: number;
+  textHeight: number;
+  rowPadding: number;
+  rowBarPadding: number;
+  rowBarTopPadding: number;
+  rowBarBottomPadding: number;
+  idPrefix: string;
+  slopeWidth: number;
+  columnPadding: number;
+  stacked: boolean;
+  animation: boolean;
+  animationDuration: number;
 
-  renderers?: { [key: string]: ICellRendererFactory };
+  renderers: { [key: string]: ICellRendererFactory };
 
-  meanLine?: boolean;
+  meanLine: boolean;
 
-  actions?: { name: string, icon: string, action(v: any): void }[];
+  actions: { name: string, icon: string, action(v: any): void }[];
 
-  freezeCols?: number;
+  freezeCols: number;
 }
 
 export enum ERenderReason {
@@ -97,6 +97,8 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     textHeight: 13, //10pt
     rowPadding: 1,
     rowBarPadding: 1,
+    rowBarTopPadding: 1,
+    rowBarBottomPadding: 1,
     idPrefix: '',
     slopeWidth: 150,
     columnPadding: 5,
@@ -115,9 +117,9 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   protected readonly $node: d3.Selection<any>;
 
-  histCache = new Map<string, Promise<IStatistics | ICategoricalStatistics>>();
+  histCache = new Map<string, Promise<IStatistics | ICategoricalStatistics> | IStatistics | ICategoricalStatistics | null>();
 
-  constructor(protected data: DataProvider, parent: Element, private slicer: ISlicer, root: string, options: IBodyRendererOptions = {}) {
+  constructor(protected data: DataProvider, parent: Element, private slicer: ISlicer, root: string, options: Partial<IBodyRendererOptions> = {}) {
     super();
     //merge options
     merge(this.options, options);
@@ -141,144 +143,144 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   changeDataStorage(data: DataProvider) {
     if (this.data) {
-      this.data.on([DataProvider.EVENT_DIRTY_VALUES + '.bodyRenderer', DataProvider.EVENT_SELECTION_CHANGED + '.bodyRenderer'], null);
+      this.data.on([`${DataProvider.EVENT_DIRTY_VALUES}.bodyRenderer`, `${DataProvider.EVENT_SELECTION_CHANGED}.bodyRenderer`], null);
     }
     this.data = data;
-    data.on(DataProvider.EVENT_DIRTY_VALUES + '.bodyRenderer', delayedCall(this.update.bind(this), 1));
-    data.on(DataProvider.EVENT_SELECTION_CHANGED + '.bodyRenderer', delayedCall(this.drawSelection.bind(this), 1));
-  }
-
-  protected showMeanLine(col: Column) {
-    //show mean line if option is enabled and top level
-    return this.options.meanLine && isNumberColumn(col) && !col.getCompressed() && col.parent instanceof Ranking;
-  }
-
-  private fireFinished() {
-    this.fire(ABodyRenderer.EVENT_RENDER_FINISHED, this);
-  }
-
-  protected createContext(indexShift: number, creator: (col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IRenderContext<any>) => any): IBodyRenderContext {
-    const options: any = this.options;
-
-    function findOption(key: string, defaultValue: any): any {
-      if (key in options) {
-        return options[key];
-      }
-      if (key.indexOf('.') > 0) {
-        const p = key.substring(0, key.indexOf('.'));
-        key = key.substring(key.indexOf('.') + 1);
-        if (p in options && key in options[p]) {
-          return options[p][key];
-        }
-      }
-      return defaultValue;
+    data.on(`${DataProvider.EVENT_DIRTY_VALUES}.bodyRenderer`, delayedCall(this.update.bind(this), 1));
+    data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.bodyRenderer`, delayedCall(this.drawSelection.bind(this), 1));
     }
 
-    return {
-      cellY: (index: number) => (index + indexShift) * (this.options.rowHeight),
-      cellPrevY: (index: number) => (index + indexShift) * (this.options.rowHeight),
+    protected showMeanLine(col: Column) {
+      //show mean line if option is enabled and top level
+      return this.options.meanLine && isNumberColumn(col) && !col.getCompressed() && col.parent instanceof Ranking;
+    }
 
-      idPrefix: this.options.idPrefix,
+    private fireFinished() {
+      this.fire(ABodyRenderer.EVENT_RENDER_FINISHED, this);
+    }
 
-      option: findOption,
+    protected createContext(indexShift: number, creator: (col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IRenderContext<any>) => any): IBodyRenderContext {
+      const options: any = this.options;
 
-      rowHeight: () => this.options.rowHeight - this.options.rowPadding,
-
-      renderer(col: Column) {
-        return creator(col, this.options.renderers, this);
-      }
-    };
-  }
-
-  select(dataIndex: number, additional = false) {
-    return this.data.toggleSelection(dataIndex, additional);
-  }
-
-  abstract drawSelection(): void;
-
-  fakeHover(dataIndex: number) {
-    this.mouseOver(dataIndex, true);
-  }
-
-  mouseOver(dataIndex: number, hover = true) {
-    this.fire(ABodyRenderer.EVENT_HOVER_CHANGED, hover ? dataIndex : -1);
-  }
-
-
-  abstract updateFreeze(left: number): void;
-
-  scrolled(delta: number) {
-    //next tick
-    console.log(delta);
-    setTimeout(() => this.update(ERenderReason.SCROLLED), 1);
-  }
-
-  /**
-   * render the body
-   */
-  update(reason = ERenderReason.DIRTY) {
-    const rankings = this.data.getRankings();
-    const maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
-    const height = this.options.rowHeight * maxElems;
-    const visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
-    const orderSlicer = (order: number[]) => {
-      if (visibleRange.from === 0 && order.length <= visibleRange.to) {
-        return order;
-      }
-      return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
-    };
-
-    const context = this.createContextImpl(visibleRange.from);
-    const orders = rankings.map((r) => orderSlicer(r.getOrder()));
-    const data = this.data.fetch(orders);
-
-    const padding = this.options.columnPadding;
-    let totalWidth = 0;
-    const rdata = rankings.map((r, i) => {
-      const cols = r.children.filter((d) => !d.isHidden());
-
-      const rankingShift = totalWidth;
-      let width = 0;
-
-      const colData = cols.map((o) => {
-        const colShift = width;
-        width += (o.getCompressed() ? Column.COMPRESSED_WIDTH : o.getWidth()) + padding;
-        if (isMultiLevelColumn(o) && !(<IMultiLevelColumn>o).getCollapsed() && !o.getCompressed()) {
-          width += padding * ((<IMultiLevelColumn>o).length - 1);
+      function findOption(key: string, defaultValue: any): any {
+        if (key in options) {
+          return options[key];
         }
-        return {
-          column: o,
-          renderer: context.renderer(o),
-          shift: colShift
-        };
-      });
-      totalWidth += width;
-      totalWidth += this.options.slopeWidth;
-
-      const frozen = colData.slice(0, this.options.freezeCols);
+        if (key.indexOf('.') > 0) {
+          const p = key.substring(0, key.indexOf('.'));
+          key = key.substring(key.indexOf('.') + 1);
+          if (p in options && key in options[p]) {
+            return options[p][key];
+          }
+        }
+        return defaultValue;
+      }
 
       return {
-        id: r.id,
-        ranking: r,
-        order: orders[i],
-        shift: rankingShift,
-        width,
-        //compute frozen columns just for the first one
-        frozen,
-        frozenWidth: Math.max(...(frozen.map((d) => d.shift + d.column.getWidth()))),
-        columns: colData.slice(this.options.freezeCols),
-        data: data[i]
-      };
-    });
-    //one to often
-    totalWidth -= this.options.slopeWidth;
+        cellY: (index: number) => (index + indexShift) * (this.options.rowHeight),
+        cellPrevY: (index: number) => (index + indexShift) * (this.options.rowHeight),
 
-    return this.updateImpl(rdata, context, totalWidth, height, reason).then(this.fireFinished.bind(this));
+        idPrefix: this.options.idPrefix,
+
+        option: findOption,
+
+        rowHeight: () => this.options.rowHeight - this.options.rowPadding,
+
+        renderer(col: Column) {
+          return creator(col, this.options.renderers, this);
+        }
+      };
+    }
+
+    select(dataIndex: number, additional = false) {
+      return this.data.toggleSelection(dataIndex, additional);
+    }
+
+    abstract drawSelection(): void;
+
+    fakeHover(dataIndex: number) {
+      this.mouseOver(dataIndex, true);
+    }
+
+    mouseOver(dataIndex: number, hover = true) {
+      this.fire(ABodyRenderer.EVENT_HOVER_CHANGED, hover ? dataIndex : -1);
+    }
+
+
+    abstract updateFreeze(left: number): void;
+
+    scrolled(delta: number) {
+      //next tick
+      console.log(delta);
+      setTimeout(() => this.update(ERenderReason.SCROLLED), 1);
+    }
+
+    /**
+     * render the body
+     */
+    update(reason = ERenderReason.DIRTY) {
+      const rankings = this.data.getRankings();
+      const maxElems = d3.max(rankings, (d) => d.getOrder().length) || 0;
+      const height = this.options.rowHeight * maxElems;
+      const visibleRange = this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
+      const orderSlicer = (order: number[]) => {
+        if (visibleRange.from === 0 && order.length <= visibleRange.to) {
+          return order;
+        }
+        return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
+      };
+
+      const context = this.createContextImpl(visibleRange.from);
+      const orders = rankings.map((r) => orderSlicer(r.getOrder()));
+      const data = this.data.fetch(orders);
+
+      const padding = this.options.columnPadding;
+      let totalWidth = 0;
+      const rdata = rankings.map((r, i) => {
+        const cols = r.children.filter((d) => !d.isHidden());
+
+        const rankingShift = totalWidth;
+        let width = 0;
+
+        const colData = cols.map((o) => {
+          const colShift = width;
+          width += (o.getCompressed() ? Column.COMPRESSED_WIDTH : o.getWidth()) + padding;
+          if (isMultiLevelColumn(o) && !(<IMultiLevelColumn>o).getCollapsed() && !o.getCompressed()) {
+            width += padding * ((<IMultiLevelColumn>o).length - 1);
+          }
+          return {
+            column: o,
+            renderer: context.renderer(o),
+            shift: colShift
+          };
+        });
+        totalWidth += width;
+        totalWidth += this.options.slopeWidth;
+
+        const frozen = colData.slice(0, this.options.freezeCols);
+
+        return {
+          id: r.id,
+          ranking: r,
+          order: orders[i],
+          shift: rankingShift,
+          width,
+          //compute frozen columns just for the first one
+          frozen,
+          frozenWidth: Math.max(...(frozen.map((d) => d.shift + d.column.getWidth()))),
+          columns: colData.slice(this.options.freezeCols),
+          data: data[i]
+        };
+      });
+      //one to often
+      totalWidth -= this.options.slopeWidth;
+
+      return this.updateImpl(rdata, context, totalWidth, height, reason).then(this.fireFinished.bind(this));
+    }
+
+    protected abstract createContextImpl(indexShift: number): IBodyRenderContext;
+
+    protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason): Promise<void>;
   }
 
-  protected abstract createContextImpl(indexShift: number): IBodyRenderContext;
-
-  protected abstract updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason): Promise<void>;
-}
-
-export default ABodyRenderer;
+  export default ABodyRenderer;

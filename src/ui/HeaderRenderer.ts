@@ -3,7 +3,7 @@
  */
 
 import * as d3 from 'd3';
-import {merge, dropAble, delayedCall, forEach, dragAble} from '../utils';
+import {merge, dropAble, delayedCall, forEach, dragAble, suffix} from '../utils';
 import Column, {IStatistics, ICategoricalStatistics, IFlatColumn} from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
@@ -14,7 +14,7 @@ import RankColumn from '../model/RankColumn';
 import StackColumn, {createDesc as createStackDesc} from '../model/StackColumn';
 import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
-import DataProvider from '../provider/ADataProvider';
+import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import NumbersColumn from '../model/NumbersColumn';
 import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
 
@@ -46,7 +46,7 @@ const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 export function toFullTooltip(col: { label: string, description?: string }) {
   let base = col.label;
   if (col.description != null && col.description !== '') {
-    base += '\n' + col.description;
+    base += `\n${col.description}`;
   }
   return base;
 }
@@ -60,28 +60,28 @@ export function dummyRankingButtonHook(): any {
 }
 
 export interface IHeaderRendererOptions {
-  idPrefix?: string;
-  slopeWidth?: number;
-  columnPadding?: number;
-  headerHistogramHeight?: number;
-  headerHeight?: number;
-  manipulative?: boolean;
-  summary?: boolean;
+  idPrefix: string;
+  slopeWidth: number;
+  columnPadding: number;
+  headerHistogramHeight: number;
+  headerHeight: number;
+  manipulative: boolean;
+  summary: boolean;
 
-  filters?: { [type: string]: IFilterDialog };
-  linkTemplates?: string[];
+  filters: { [type: string]: IFilterDialog };
+  linkTemplates: string[];
 
-  searchAble?(col: Column): boolean;
+  searchAble(col: Column): boolean;
 
-  sortOnLabel?: boolean;
+  sortOnLabel: boolean;
 
-  autoRotateLabels?: boolean;
-  rotationHeight?: number;
-  rotationDegree?: number;
+  autoRotateLabels: boolean;
+  rotationHeight: number;
+  rotationDegree: number;
 
-  freezeCols?: number;
+  freezeCols: number;
 
-  rankingButtons?: IRankingHook;
+  rankingButtons: IRankingHook;
 }
 
 function countMultiLevel(c: Column): number {
@@ -125,7 +125,7 @@ export default class HeaderRenderer {
 
   readonly $node: d3.Selection<any>;
 
-  private histCache = new Map<string, Promise<IStatistics | ICategoricalStatistics>>();
+  private histCache = new Map<string, Promise<IStatistics | ICategoricalStatistics> | IStatistics | ICategoricalStatistics | null>();
 
   private readonly dragHandler = d3.behavior.drag<Column>()
   //.origin((d) => d)
@@ -149,12 +149,15 @@ export default class HeaderRenderer {
     });
 
   private readonly dropHandler = dropAble([`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (data, d: Column, copy) => {
-    let col: Column = null;
+    let col: Column|null = null;
     if (`${MIMETYPE_PREFIX}-ref` in data) {
       const id = data[`${MIMETYPE_PREFIX}-ref`];
       col = this.data.find(id);
+      if (!col) {
+        return false;
+      }
       if (copy) {
-        col = this.data.clone(col);
+        col = this.data.clone(col!);
       } else {
         col.removeMe();
       }
@@ -162,12 +165,14 @@ export default class HeaderRenderer {
       const desc = JSON.parse(data[MIMETYPE_PREFIX]);
       col = this.data.create(this.data.fromDescRef(desc));
     }
+    if (!col) {
+      return false;
+    }
     if (d instanceof Column) {
       return d.insertAfterMe(col) != null;
-    } else {
-      const r = this.data.getLastRanking();
-      return r.push(col) !== null;
     }
+    const r = this.data.getLastRanking();
+    return r.push(col) !== null;
   });
 
 
@@ -182,17 +187,18 @@ export default class HeaderRenderer {
 
   changeDataStorage(data: DataProvider) {
     if (this.data) {
-      this.data.on([DataProvider.EVENT_DIRTY_HEADER + '.headerRenderer', DataProvider.EVENT_ORDER_CHANGED + '.headerRenderer', DataProvider.EVENT_SELECTION_CHANGED + '.headerRenderer'], null);
+      this.data.on(suffix('.headerRenderer', DataProvider.EVENT_DIRTY_HEADER, DataProvider.EVENT_ORDER_CHANGED, DataProvider.EVENT_SELECTION_CHANGED), null);
     }
     this.data = data;
-    data.on(DataProvider.EVENT_DIRTY_HEADER + '.headerRenderer', delayedCall(this.update.bind(this), 1));
-    if (this.options.summary) {
-      data.on(DataProvider.EVENT_ORDER_CHANGED + '.headerRenderer', () => {
-        this.updateHist();
-        this.update();
-      });
-      data.on(DataProvider.EVENT_SELECTION_CHANGED + '.headerRenderer', delayedCall(this.drawSelection.bind(this), 1));
+    data.on(`${DataProvider.EVENT_DIRTY_HEADER}.headerRenderer`, delayedCall(this.update.bind(this), 1));
+    if (!this.options.summary) {
+      return;
     }
+    data.on(`${DataProvider.EVENT_ORDER_CHANGED}.headerRenderer`, () => {
+      this.updateHist();
+      this.update();
+    });
+    data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.headerRenderer`, delayedCall(this.drawSelection.bind(this), 1));
   }
 
   get sharedHistCache() {
@@ -237,7 +243,8 @@ export default class HeaderRenderer {
     if (indices.length <= 0) {
       return;
     }
-    this.data.view(indices).then((data) => {
+
+    const render = (data: IDataRow[]) => {
       //get the data
 
       const rankings = this.data.getRankings();
@@ -255,7 +262,8 @@ export default class HeaderRenderer {
               if (bar.dataset.x > v) { //previous bin
                 bars[i - 1].classList.add('selected');
                 break;
-              } else if (i === bars.length - 1) { //last bin
+              }
+              if (i === bars.length - 1) { //last bin
                 bar.classList.add('selected');
                 break;
               }
@@ -263,16 +271,23 @@ export default class HeaderRenderer {
           });
         });
         cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: CategoricalColumn) => {
-          const header = node.querySelector(`div.header[data-id="${col.id}"]`);
+          const header = node.querySelector(`div.header[data-id="${col.id}"]`)!;
           data.forEach((d, i) => {
             const cats = col.getCategories(d, indices[i]);
             (cats || []).forEach((cat) => {
-              header.querySelector(`div.bar[data-cat="${cat}"]`).classList.add('selected');
+              header.querySelector(`div.bar[data-cat="${cat}"]`)!.classList.add('selected');
             });
           });
         });
       });
-    });
+    };
+
+    const r = this.data.view(indices);
+    if (Array.isArray(r)) {
+      render(r);
+    } else {
+      r.then(render);
+    }
   }
 
   private renderRankingButtons(rankings: Ranking[], rankingsOffsets: number[]) {
@@ -280,7 +295,7 @@ export default class HeaderRenderer {
     $rankingbuttons.enter().append('div')
       .classed('rankingbuttons', true)
       .call(this.options.rankingButtons);
-    $rankingbuttons.style('left', (d, i) => rankingsOffsets[i] + 'px');
+    $rankingbuttons.style('left', (d, i) => `${rankingsOffsets[i]}px`);
     $rankingbuttons.exit().remove();
   }
 
@@ -298,7 +313,7 @@ export default class HeaderRenderer {
     totalWidth -= this.options.slopeWidth;
 
     // fix for #179
-    this.$node.select('div.drop').style('min-width', totalWidth + 'px');
+    this.$node.select('div.drop').style('min-width', `${totalWidth}px`);
 
     const columns = shifts.map((d) => d.col);
 
@@ -320,20 +335,20 @@ export default class HeaderRenderer {
       //check if we have overflows
       let rotatedAny = false;
       this.$node.selectAll('div.header')
-        .style('height', height + 'px').select('div.lu-label').each(function (d) {
+        .style('height', `${height}px`).select('div.lu-label').each(function (d) {
         const w = this.querySelector('span.lu-label').offsetWidth;
         const actWidth = d.getWidth();
         if (w > (actWidth + 30)) { //rotate
           d3.select(this).style('transform', `rotate(${that.options.rotationDegree}deg)`);
           rotatedAny = true;
         } else {
-          d3.select(this).style('transform', null);
+          d3.select(this).style('transform', null!);
         }
       });
-      this.$node.selectAll('div.header').style('margin-top', rotatedAny ? this.options.rotationHeight + 'px' : null);
+      this.$node.selectAll('div.header').style('margin-top', rotatedAny ? `${this.options.rotationHeight}px` : null!);
       height += rotatedAny ? this.options.rotationHeight : 0;
     }
-    this.$node.style('height', height + 'px');
+    this.$node.style('height', `${height}px`);
   }
 
   private createToolbar($node: d3.Selection<Column>) {
@@ -371,7 +386,7 @@ export default class HeaderRenderer {
 
     //edit link
     $node.filter((d) => d instanceof LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (d) {
-      const dialog = new EditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), that.options.idPrefix, [].concat((<any>d.desc).templates || [], that.options.linkTemplates));
+      const dialog = new EditLinkDialog(<LinkColumn>d, d3.select(this.parentNode.parentNode), that.options.idPrefix, (<string[]>[]).concat((<any>d.desc).templates || [], that.options.linkTemplates));
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
@@ -384,14 +399,14 @@ export default class HeaderRenderer {
     //filter
     $node.filter((d) => this.options.filters.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', (d) => {
       const target = (<MouseEvent>d3.event).target;
-      const dialog = new this.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode), '', provider, that.options.idPrefix);
+      const dialog = new this.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode!), '', provider, that.options.idPrefix);
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
     //cutoff
     $node.filter((d) => d instanceof HierarchyColumn).append('i').attr('class', 'fa fa-scissors').attr('title', 'Set Cut Off').on('click', (d: HierarchyColumn) => {
       const target = (<MouseEvent>d3.event).target;
-      const dialog = new CutOffHierarchyDialog(d, d3.select((<HTMLElement>target).parentNode), that.options.idPrefix);
+      const dialog = new CutOffHierarchyDialog(d, d3.select((<HTMLElement>target).parentNode!), that.options.idPrefix);
       dialog.openDialog();
       (<MouseEvent>d3.event).stopPropagation();
     });
@@ -436,7 +451,7 @@ export default class HeaderRenderer {
     //remove
     $node.append('i').attr('class', 'fa fa-times').attr('title', 'Hide').on('click', (d) => {
       if (d instanceof RankColumn) {
-        provider.removeRanking(d.findMyRanker());
+        provider.removeRanking(d.findMyRanker()!);
         if (provider.getRankings().length === 0) { //create at least one
           provider.pushRanking();
         }
@@ -450,13 +465,13 @@ export default class HeaderRenderer {
   updateFreeze(left: number) {
     const numColumns = this.options.freezeCols;
     this.$node.selectAll('div.header')
-      .style('z-index', (d, i) => i < numColumns ? 1 : null)
-      .style('transform', (d, i) => i < numColumns ? `translate(${left}px,0)` : null);
+      .style('z-index', (d, i) => i < numColumns ? 1 : null!)
+      .style('transform', (d, i) => i < numColumns ? `translate(${left}px,0)` : null!);
   }
 
   private renderColumns(columns: Column[], shifts: IFlatColumn[], $base: d3.Selection<any> = this.$node, clazz: string = 'header') {
     const that = this;
-    const $headers = $base.selectAll('div.' + clazz).data(columns, (d) => d.id);
+    const $headers = $base.selectAll(`div.${clazz}`).data(columns, (d) => d.id);
     const $headersEnter = $headers.enter().append('div').attr('class', clazz)
       .on('click', (d) => {
         const mevent = <MouseEvent>d3.event;
@@ -495,7 +510,7 @@ export default class HeaderRenderer {
     if (this.options.manipulative) {
       $headersEnter.append('div').classed('handle', true)
         .call(this.dragHandler)
-        .style('width', this.options.columnPadding + 'px')
+        .style('width', `${this.options.columnPadding}px`)
         .call(this.dropHandler);
       $headersEnter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
     }
@@ -505,12 +520,12 @@ export default class HeaderRenderer {
     }
 
     $headers.style({
-      width: (d, i) => (shifts[i].width + this.options.columnPadding) + 'px',
-      left: (d, i) => shifts[i].offset + 'px',
-      'background-color': (d) => d.color
+      width: (d, i) => `${shifts[i].width + this.options.columnPadding}px`,
+      left: (d, i) => `${shifts[i].offset}px`,
+      'background-color': (d) => d.color!
     });
     $headers.attr({
-      'class': (d) => `${clazz}${d.cssClass ? ' ' + d.cssClass : ''}${(d.getCompressed() ? ' compressed' : '')} ${d.headerCssClass}${this.options.autoRotateLabels ? ' rotateable' : ''}${d.isFiltered() ? ' filtered' : ''}`,
+      'class': (d) => `${clazz}${d.cssClass ? ` ${d.cssClass}` : ''}${(d.getCompressed() ? ' compressed' : '')} ${d.headerCssClass}${this.options.autoRotateLabels ? ' rotateable' : ''}${d.isFiltered() ? ' filtered' : ''}`,
       title: (d) => toFullTooltip(d),
       'data-id': (d) => d.id
     });
@@ -523,7 +538,7 @@ export default class HeaderRenderer {
       const index = criterias.findIndex((c) => c.col === d);
       if (index === 0) { // just show the primary for now
         // TODO handle if secondary, ... criteria
-        return 'sort_indicator fa fa-sort-' + (criterias[index].asc ? 'asc' : 'desc');
+        return `sort_indicator fa fa-sort-${criterias[index].asc ? 'asc' : 'desc'}`;
       }
       return 'sort_indicator fa';
     });
@@ -532,38 +547,43 @@ export default class HeaderRenderer {
     const resolveDrop = (data: any, copy: boolean) => {
       if (`${MIMETYPE_PREFIX}-number-ref` in data) {
         const id = data[`${MIMETYPE_PREFIX}-number-ref`];
-        let col: Column = this.data.find(id);
+        let col = this.data.find(id);
+        if (!col) {
+          return null;
+        }
         if (copy) {
           col = this.data.clone(col);
         } else if (col) {
           col.removeMe();
         }
         return col;
-      } else {
-        const desc = JSON.parse(data[`${MIMETYPE_PREFIX}-number`]);
-        return this.data.create(this.data.fromDescRef(desc));
       }
+      const desc = JSON.parse(data[`${MIMETYPE_PREFIX}-number`]);
+      return this.data.create(this.data.fromDescRef(desc));
     };
 
     $headers.filter((d) => isMultiLevelColumn(d)).each(function (col: IMultiLevelColumn) {
       if (col.getCollapsed() || col.getCompressed()) {
-        d3.select(this).selectAll('div.' + clazz + '_i').remove();
-      } else {
-        const sShifts: IFlatColumn[] = [];
-        col.flatten(sShifts, 0, 1, that.options.columnPadding);
-
-        const sColumns = sShifts.map((d) => d.col);
-        that.renderColumns(sColumns, sShifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
+        d3.select(this).selectAll(`div.${clazz}_i`).remove();
+        return;
       }
+      const sShifts: IFlatColumn[] = [];
+      col.flatten(sShifts, 0, 1, that.options.columnPadding);
+
+      const sColumns = sShifts.map((d) => d.col);
+      that.renderColumns(sColumns, sShifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
     }).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (data, d: IMultiLevelColumn, copy) => {
-      const col: Column = resolveDrop(data, copy);
-      return d.push(col) != null;
+      const col: Column|null = resolveDrop(data, copy);
+      return col != null && d.push(col) != null;
     }));
 
     // drag columns on top of each
     $headers.filter((d) => d.parent instanceof Ranking && isNumberColumn(d) && !isMultiLevelColumn(d)).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (data, d: Column & INumberColumn, copy) => {
-      const col: Column = resolveDrop(data, copy);
+      const col: Column|null = resolveDrop(data, copy);
       const ranking = d.findMyRanker();
+      if (!ranking || !col) {
+        return false;
+      }
       const index = ranking.indexOf(d);
       const stack = <StackColumn>this.data.create(createStackDesc());
       d.removeMe();
@@ -596,7 +616,7 @@ export default class HeaderRenderer {
     if (!hist) {
       return;
     }
-    hist.then((stats: ICategoricalStatistics) => {
+    const render = (stats: ICategoricalStatistics) => {
       const cats = col.categories;
       const colors = col.categoryColors;
       const $bars = $this.selectAll('div.bar').data(stats.hist);
@@ -604,17 +624,22 @@ export default class HeaderRenderer {
       const sx = d3.scale.ordinal().domain(cats).rangeBands([0, 100], 0.1);
       const sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
       $bars.style({
-        left: (d) => sx(d.cat) + '%',
-        width: (d) => sx.rangeBand() + '%',
-        top: (d) => (100 - sy(d.y)) + '%',
-        height: (d) => sy(d.y) + '%',
+        left: (d) => `${sx(d.cat)}%`,
+        width: (d) => `${sx.rangeBand()}%`,
+        top: (d) => `${100 - sy(d.y)}%`,
+        height: (d) => `${sy(d.y)}%`,
         'background-color': (d) => colors[cats.indexOf(d.cat)]
       }).attr({
         title: (d) => `${d.cat}: ${d.y}`,
         'data-cat': (d) => d.cat
       });
       $bars.exit().remove();
-    });
+    };
+    if (hist instanceof Promise) {
+      hist.then(render);
+    } else {
+      render(<ICategoricalStatistics>hist);
+    }
   }
 
   private renderNumericalSummary(col: INumberColumn & Column, $this: d3.Selection<Column>) {
@@ -622,16 +647,16 @@ export default class HeaderRenderer {
     if (!hist) {
       return;
     }
-    hist.then((stats: IStatistics) => {
+    const render = (stats: IStatistics) => {
       const $bars = $this.selectAll('div.bar').data(stats.hist);
       $bars.enter().append('div').classed('bar', true);
       const sx = d3.scale.ordinal().domain(d3.range(stats.hist.length).map(String)).rangeBands([0, 100], 0.1);
       const sy = d3.scale.linear().domain([0, stats.maxBin]).range([0, 100]);
       $bars.style({
-        left: (d, i) => sx(String(i)) + '%',
-        width: (d, i) => sx.rangeBand() + '%',
-        top: (d) => (100 - sy(d.y)) + '%',
-        height: (d) => sy(d.y) + '%'
+        left: (d, i) => `${sx(String(i))}%`,
+        width: (d, i) => `${sx.rangeBand()}%`,
+        top: (d) => `${100 - sy(d.y)}%`,
+        height: (d) => `${sy(d.y)}%`
       }).attr({
         title: (d, i) => `Bin ${i}: ${d.y}`,
         'data-x': (d) => d.x
@@ -642,8 +667,13 @@ export default class HeaderRenderer {
       if ($mean.empty()) {
         $mean = $this.append('div').classed('mean', true);
       }
-      $mean.style('left', (stats.mean * 100) + '%');
-    });
+      $mean.style('left', `${stats.mean * 100}%`);
+    };
+    if (hist instanceof Promise) {
+      hist.then(render);
+    } else {
+      render(<IStatistics>hist);
+    }
   }
 
   private renderStringSummary(col: StringColumn, $this: d3.Selection<Column>) {
@@ -660,7 +690,7 @@ export default class HeaderRenderer {
     }
     $i.on('click', () => {
       if ($i.classed('fa-square-o')) {
-        const all = col.findMyRanker().getOrder();
+        const all = col.findMyRanker()!.getOrder();
         $i.attr('class', 'fa fa-check-square-o');
         this.data.setSelection(all);
       } else {

@@ -17,11 +17,10 @@ export default class BarCellRenderer implements ICellRendererFactory {
    * @type {boolean}
    */
 
-  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string = (d, i, col) => col.color) {
+  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string|null = (d, i, col) => col.color) {
   }
 
   createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
-    const columnPadding = context.option('columnPadding', 5);
     return {
       template: `<div class='bar' style='background-color: ${col.color}'>
           <span class='number ${this.renderValue ? '' : 'hoverOnly'}'></span>
@@ -35,7 +34,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
           width: `${w}%`,
           'background-color': this.colorOf(d.v, i, col)
         });
-        n.firstElementChild.textContent = col.getLabel(d.v, d.dataIndex);
+        n.firstElementChild!.textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -44,7 +43,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      ctx.fillStyle = this.colorOf(d.v, i, col);
+      ctx.fillStyle = this.colorOf(d.v, i, col) || '';
       const width = col.getWidth() * col.getNumber(d.v, d.dataIndex);
       ctx.fillRect(0, paddingTop, isNaN(width) ? 0 : width, context.rowHeight(i) - (paddingTop + paddingBottom));
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {

@@ -1,6 +1,6 @@
 import Column from '../model/Column';
 import IDOMCellRenderer from './IDOMCellRenderers';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
 import {clipText} from '../utils';

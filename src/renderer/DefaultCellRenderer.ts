@@ -4,7 +4,7 @@ import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText, setText} from '../utils';
+import {clipText, setText} from '../utils';
 
 /**
  * default renderer instance rendering the value as a text

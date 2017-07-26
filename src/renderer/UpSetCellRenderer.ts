@@ -54,7 +54,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
           const {left, right} = UpSetCellRenderer.calculateSetPath(value, cellDimension);
           path = `M${left},${rowHeight / 2}L${right},${rowHeight / 2}`;
         }
-        n.querySelector('path').setAttribute('d', path);
+        n.firstElementChild!.setAttribute('d', path);
       }
     };
   }
