@@ -78,7 +78,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     super.restore(dump, factory);
     if (typeof dump.filter !== 'undefined') {
       this.currentFilter = dump.filter;

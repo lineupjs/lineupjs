@@ -277,7 +277,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;

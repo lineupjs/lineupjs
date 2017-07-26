@@ -242,7 +242,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     super.restore(dump, factory);
     if ('filter' in dump) {
       const bak = dump.filter;

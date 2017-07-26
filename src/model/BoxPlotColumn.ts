@@ -190,7 +190,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;

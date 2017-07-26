@@ -81,17 +81,17 @@ export interface ILocalDataProviderOptions {
    * whether the filter should be applied to all rankings regardless where they are
    * default: false
    */
-  filterGlobally?: boolean;
+  filterGlobally: boolean;
   /**
    * jump to search results such that they are visible
    * default: false
    */
-  jumpToSearchResult?: boolean;
+  jumpToSearchResult: boolean;
 
   /**
    * the maximum number of nested sorting criteria
    */
-  maxNestedSortingCriteria?: number;
+  maxNestedSortingCriteria: number;
 }
 
 /**
@@ -104,12 +104,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
      */
     filterGlobally: false,
 
+    jumpToSearchResult: false,
+
     maxNestedSortingCriteria: 1
   };
 
   private readonly reorderAll: () => void;
 
-  constructor(private _data: any[], columns: IColumnDesc[] = [], options: ILocalDataProviderOptions & IDataProviderOptions = {}) {
+  constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
     merge(this.options, options);
 
@@ -160,7 +162,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     const clone = super.cloneRanking(existing);
 
     if (this.options.filterGlobally) {
-      clone.on(Column.EVENT_FILTER_CHANGED + '.reorderAll', this.reorderAll);
+      clone.on(`${Column.EVENT_FILTER_CHANGED}.reorderAll`, this.reorderAll);
     }
 
     return clone;
@@ -168,14 +170,14 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   cleanUpRanking(ranking: Ranking) {
     if (this.options.filterGlobally) {
-      ranking.on(Column.EVENT_FILTER_CHANGED + '.reorderAll', null);
+      ranking.on(`${Column.EVENT_FILTER_CHANGED}.reorderAll`, null);
     }
     super.cleanUpRanking(ranking);
   }
 
-  sortImpl(ranking: Ranking): Promise<number[]> {
+  sortImpl(ranking: Ranking): number[] {
     if (this._data.length === 0) {
-      return Promise.resolve([]);
+      return [];
     }
     //wrap in a helper and store the initial index
     let helper = this._data.map((r, i) => ({row: r, i}));
@@ -194,23 +196,21 @@ export default class LocalDataProvider extends ACommonDataProvider {
     helper.sort((a, b) => ranking.comparator(a.row, b.row, a.i, b.i));
 
     //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-    return Promise.resolve(helper.map((r) => r.i));
+    return helper.map((r) => r.i);
   }
 
 
   viewRaw(indices: number[]) {
     //filter invalid indices
-    const l = this._data.length;
     return indices.map((index) => this._data[index]);
   }
 
   view(indices: number[]) {
-    return Promise.resolve(this.viewRaw(indices));
+    return this.viewRaw(indices);
   }
 
-  fetch(orders: number[][]): Promise<IDataRow>[][] {
-    const l = this._data.length;
-    return orders.map((order) => order.map((index) => Promise.resolve({
+  fetch(orders: number[][]): IDataRow[][] {
+    return orders.map((order) => order.map((index) => ({
       v: this._data[index],
       dataIndex: index
     })));
@@ -222,7 +222,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
   stats(indices: number[]): IStatsBuilder {
-    let d: any[] = null;
+    let d: any[]|null = null;
     const getD = () => {
       if (d === null) {
         d = this.viewRaw(indices);
@@ -231,17 +231,17 @@ export default class LocalDataProvider extends ACommonDataProvider {
     };
 
     return {
-      stats: (col: INumberColumn) => Promise.resolve(computeStats(getD(), indices, col.getNumber.bind(col), [0, 1])),
-      hist: (col: ICategoricalColumn) => Promise.resolve(computeHist(getD(), indices, col.getCategories.bind(col), col.categories))
+      stats: (col: INumberColumn) => computeStats(getD(), indices, col.getNumber.bind(col), [0, 1]),
+      hist: (col: ICategoricalColumn) => computeHist(getD(), indices, col.getCategories.bind(col), col.categories)
     };
   }
 
 
-  mappingSample(col: NumberColumn): Promise<number[]> {
+  mappingSample(col: NumberColumn): number[] {
     const MAX_SAMPLE = 500; //at most 500 sample lines
     const l = this._data.length;
     if (l <= MAX_SAMPLE) {
-      return Promise.resolve(<number[]>this._data.map(col.getRawValue.bind(col)));
+      return <number[]>this._data.map(col.getRawValue.bind(col));
     }
     //randomly select 500 elements
     const indices: number[] = [];
@@ -252,7 +252,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       }
       indices.push(j);
     }
-    return Promise.resolve(indices.map((i) => col.getRawValue(this.data[i], i)));
+    return indices.map((i) => col.getRawValue(this.data[i], i));
   }
 
   searchAndJump(search: string | RegExp, col: Column) {

@@ -58,7 +58,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     this.script = dump.script || this.script;
     super.restore(dump, factory);
   }

@@ -417,7 +417,7 @@ export default class Column extends AEventDispatcher {
    * @param dump column dump
    * @param factory helper for creating columns
    */
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,

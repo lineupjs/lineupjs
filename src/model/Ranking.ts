@@ -104,7 +104,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     this.clear();
     dump.columns.map((child: any) => {
       const c = factory(child);

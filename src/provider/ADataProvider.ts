@@ -19,7 +19,7 @@ import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import {INumberColumn} from '../model/NumberColumn';
-import {merge, AEventDispatcher, delayedCall} from '../utils';
+import {merge, AEventDispatcher, delayedCall, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
 
@@ -72,13 +72,13 @@ export interface IStatsBuilder {
 }
 
 export interface IDataProviderOptions {
-  columnTypes?: { [columnType: string]: typeof Column };
+  columnTypes: { [columnType: string]: typeof Column };
 
   /**
    * allow multiple selected rows
    * default: true
    */
-  multiSelection?: boolean;
+  multiSelection: boolean;
 }
 
 
@@ -119,7 +119,7 @@ abstract class ADataProvider extends AEventDispatcher {
 
   private readonly multiSelections: boolean;
 
-  constructor(options: IDataProviderOptions = {}) {
+  constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
     this.columnTypes = merge(models(), options.columnTypes || {});
     this.multiSelections = options.multiSelection !== false;
@@ -170,12 +170,12 @@ abstract class ADataProvider extends AEventDispatcher {
 
   insertRanking(r: Ranking, index = this.rankings.length) {
     this.rankings.splice(index, 0, r);
-    this.forward(r, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
-      Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
-      Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
+    this.forward(r, ...suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
+      Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
+      Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
     const that = this;
     //delayed reordering per ranking
-    r.on(Ranking.EVENT_DIRTY_ORDER + '.provider', delayedCall(function () {
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, delayedCall(function () {
       that.triggerReorder(this.source);
     }, 100, null));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
@@ -183,7 +183,12 @@ abstract class ADataProvider extends AEventDispatcher {
   }
 
   protected triggerReorder(ranking: Ranking) {
-    this.sort(ranking).then((order) => ranking.setOrder(order));
+    const r = this.sort(ranking);
+    if (Array.isArray(r)) {
+      ranking.setOrder(r);
+    } else {
+      r.then((order) => ranking.setOrder(order));
+    }
   }
 
   /**
@@ -196,11 +201,11 @@ abstract class ADataProvider extends AEventDispatcher {
     if (i < 0) {
       return false;
     }
-    this.unforward(ranking, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
-      Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
-      Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
+    this.unforward(ranking, ...suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
+      Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
+      Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
     this.rankings.splice(i, 1);
-    ranking.on(Ranking.EVENT_DIRTY_ORDER + '.provider', null);
+    ranking.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, null);
     this.cleanUpRanking(ranking);
     this.fire([ADataProvider.EVENT_REMOVE_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, i);
     return true;
@@ -211,10 +216,10 @@ abstract class ADataProvider extends AEventDispatcher {
    */
   clearRankings() {
     this.rankings.forEach((ranking) => {
-      this.unforward(ranking, Ranking.EVENT_ADD_COLUMN + '.provider', Ranking.EVENT_REMOVE_COLUMN + '.provider',
-        Ranking.EVENT_DIRTY + '.provider', Ranking.EVENT_DIRTY_HEADER + '.provider',
-        Ranking.EVENT_ORDER_CHANGED + '.provider', Ranking.EVENT_DIRTY_VALUES + '.provider');
-      ranking.on(Ranking.EVENT_DIRTY_ORDER + '.provider', null);
+      this.unforward(ranking, ...suffix('.provider', Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN,
+        Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER,
+        Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
+      ranking.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, null);
       this.cleanUpRanking(ranking);
     });
     this.rankings = [];
@@ -258,7 +263,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param desc the description of the column
    * @return {Column} the newly created column or null
    */
-  push(ranking: Ranking, desc: IColumnDesc): Column {
+  push(ranking: Ranking, desc: IColumnDesc): Column|null {
     const r = this.create(desc);
     if (r) {
       ranking.push(r);
@@ -308,7 +313,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param desc
    * @returns {Column] the new column or null if it can't be created
    */
-  create(desc: IColumnDesc): Column {
+  create(desc: IColumnDesc): Column|null {
     this.fixDesc(desc);
     //find by type and instantiate
     const type = this.columnTypes[desc.type];
@@ -351,7 +356,7 @@ abstract class ADataProvider extends AEventDispatcher {
    * @param idOrFilter by id or by a filter function
    * @returns {Column}
    */
-  find(idOrFilter: string | ((col: Column) => boolean)): Column {
+  find(idOrFilter: string | ((col: Column) => boolean)): Column|null {
     //convert to function
     const filter = typeof(idOrFilter) === 'string' ? (col: Column) => col.id === idOrFilter : idOrFilter;
 
@@ -416,7 +421,7 @@ abstract class ADataProvider extends AEventDispatcher {
     ranking.restore(dump, this.createHelper);
     //if no rank column add one
     if (!ranking.children.some((d) => d instanceof RankColumn)) {
-      ranking.insert(this.create(createRankDesc()), 0);
+      ranking.insert(this.create(createRankDesc())!, 0);
     }
     const idGenerator = this.nextId.bind(this);
     ranking.children.forEach((c) => c.assignNewId(idGenerator));
@@ -444,7 +449,7 @@ abstract class ADataProvider extends AEventDispatcher {
         ranking.restore(r, this.createHelper);
         //if no rank column add one
         if (!ranking.children.some((d) => d instanceof RankColumn)) {
-          ranking.insert(this.create(createRankDesc()), 0);
+          ranking.insert(this.create(createRankDesc())!, 0);
         }
         this.insertRanking(ranking);
       });
@@ -493,12 +498,12 @@ abstract class ADataProvider extends AEventDispatcher {
         case 'selection':
           return this.create(createSelectionDesc());
         case 'actions':
-          const actions = this.create(createActionDesc(column.label || 'actions'));
-          actions.restore(column, null);
+          const actions = this.create(createActionDesc(column.label || 'actions'))!;
+          actions.restore(column, this.createHelper);
           return actions;
         case 'stacked':
           //create a stacked one
-          const stacked = <StackColumn>this.create(createStackDesc(column.label || 'Combined'));
+          const stacked = <StackColumn>this.create(createStackDesc(column.label || 'Combined'))!;
           (column.children || []).forEach((col: any) => {
             const c = toCol(col);
             if (c) {
@@ -511,7 +516,9 @@ abstract class ADataProvider extends AEventDispatcher {
           if (desc) {
             const r = this.create(desc);
             column.label = column.label || desc.label || (<any>desc).column;
-            r.restore(column, null);
+            if (r) {
+              r.restore(column, this.createHelper);
+            }
             return r;
           }
           return null;
@@ -526,7 +533,7 @@ abstract class ADataProvider extends AEventDispatcher {
     });
     //if no rank column add one
     if (!ranking.children.some((d) => d instanceof RankColumn)) {
-      ranking.insert(this.create(createRankDesc()), 0);
+      ranking.insert(this.create(createRankDesc())!, 0);
     }
     this.insertRanking(ranking);
     return ranking;

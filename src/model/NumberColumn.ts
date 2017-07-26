@@ -349,7 +349,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     super.restore(dump, factory);
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);

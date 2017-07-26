@@ -47,7 +47,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     this.collapsed = dump.collapsed === true;
     super.restore(dump, factory);
   }

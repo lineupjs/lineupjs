@@ -57,7 +57,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     dump.children.map((child: any) => {
       const c = factory(child);
       if (c) {

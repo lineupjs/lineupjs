@@ -45,7 +45,7 @@ export interface IRemoteDataProviderOptions {
   /**
    * maximal cache size (unused at the moment)
    */
-  maxCacheSize?: number;
+  maxCacheSize: number;
 }
 
 /**
@@ -59,7 +59,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
   private readonly cache = new Map<number, Promise<IDataRow>>();
 
 
-  constructor(private server: IServerData, columns: IColumnDesc[] = [], options: IRemoteDataProviderOptions & IDataProviderOptions = {}) {
+  constructor(private server: IServerData, columns: IColumnDesc[] = [], options: Partial<IRemoteDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
     merge(this.options, options);
   }
@@ -122,7 +122,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     this.loadInCache(toLoad);
 
     return orders.map((order) =>
-      order.map((dataIndex) => this.cache.get(dataIndex)));
+      order.map((dataIndex) => this.cache.get(dataIndex)!));
   }
 
 

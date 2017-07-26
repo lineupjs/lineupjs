@@ -141,7 +141,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     CategoricalColumn.prototype.restore.call(this, dump, factory);
     if (dump.scale) {
       this.scale.domain(dump.scale.domain).range(dump.scale.range);

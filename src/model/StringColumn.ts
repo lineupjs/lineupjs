@@ -53,7 +53,7 @@ export default class StringColumn extends ValueColumn<string> {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     super.restore(dump, factory);
     if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
       this.currentFilter = new RegExp(dump.filter.slice(6));
