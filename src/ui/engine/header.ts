@@ -20,8 +20,8 @@ import RankColumn from '../../model/RankColumn';
 import WeightsEditDialog from '../../dialogs/WeightsEditDialog';
 import StackColumn from '../../model/StackColumn';
 import CutOffHierarchyDialog from '../../dialogs/CutOffHierarchyDialog';
-import HierarchyColumn from '../../../../taggle2/src/column/HierarchyColumn';
 import SearchDialog from '../../dialogs/SearchDialog';
+import HierarchyColumn from '../../model/HierarchyColumn';
 
 export {default as createSummary} from './summary';
 
