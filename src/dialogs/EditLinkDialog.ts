@@ -24,10 +24,10 @@ export default class EditLinkDialog extends ADialog {
         required="required"
         autofocus="autofocus"
         placeholder="link pattern"
-        ${this.templates.length > 0 ? 'list="ui' + this.idPrefix + 'lineupPatternList"' : ''}
+        ${this.templates.length > 0 ? `list="ui${this.idPrefix}lineupPatternList"` : ''}
       ><br>`;
     if (this.templates.length > 0) {
-      t += '<datalist id="ui${idPrefix}lineupPatternList">' + this.templates.map((t) => `<option value="${t}">`) + '</datalist>';
+      t += `<datalist id="ui${this.idPrefix}lineupPatternList">${this.templates.map((t) => `<option value="${t}">`)}</datalist>`;
     }
 
     const popup = this.makePopup(t);

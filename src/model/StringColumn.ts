@@ -19,7 +19,7 @@ export interface IStringColumnDesc extends IValueColumnDesc<string> {
 export default class StringColumn extends ValueColumn<string> {
   //magic key for filtering missing ones
   static readonly FILTER_MISSING = '__FILTER_MISSING';
-  private currentFilter: string | RegExp = null;
+  private currentFilter: string | RegExp | null = null;
 
   private _alignment: 'left'|'right'|'center' = 'left';
 
@@ -45,7 +45,7 @@ export default class StringColumn extends ValueColumn<string> {
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     if (this.currentFilter instanceof RegExp) {
-      r.filter = 'REGEX:' + (<RegExp>this.currentFilter).source;
+      r.filter = `REGEX:${(<RegExp>this.currentFilter).source}`;
     } else {
       r.filter = this.currentFilter;
     }
@@ -78,10 +78,10 @@ export default class StringColumn extends ValueColumn<string> {
       return r != null && r.trim() !== '';
     }
     if (typeof filter === 'string' && filter.length > 0) {
-      return r && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+      return r !== '' && r.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
     }
     if (filter instanceof RegExp) {
-      return r && filter.test(r);
+      return r !== '' && filter.test(r);
     }
     return true;
   }
@@ -90,7 +90,7 @@ export default class StringColumn extends ValueColumn<string> {
     return this.currentFilter;
   }
 
-  setFilter(filter: string | RegExp) {
+  setFilter(filter: string | RegExp | null) {
     if (filter === '') {
       filter = null;
     }
@@ -101,10 +101,12 @@ export default class StringColumn extends ValueColumn<string> {
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    let aValue: string, bValue: string;
-    if ((aValue = this.getValue(a, aIndex)) === '') {
-      return this.getValue(b, bIndex) === '' ? 0 : +1; //same = 0
-    } else if ((bValue = this.getValue(b, bIndex)) === '') {
+    const aValue = this.getValue(a, aIndex);
+    const bValue = this.getValue(b, bIndex);
+    if (aValue === '') {
+      return bValue === '' ? 0 : +1; //same = 0
+    }
+    if (bValue === '') {
       return -1;
     }
     return aValue.localeCompare(bValue);

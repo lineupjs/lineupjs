@@ -145,7 +145,7 @@
     "no-regex-spaces": true,
     "ter-no-sparse-arrays": true,
     "no-unexpected-multiline": true,
-    "valid-jsdoc": [true, {
+    "valid-jsdoc": [false, {
       "prefer": {
         "return": "return"
       },

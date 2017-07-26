@@ -26,7 +26,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
 
   private readonly scale = scale.ordinal().rangeRoundPoints([0, 1]);
 
-  private currentFilter: ICategoricalFilter = null;
+  private currentFilter: ICategoricalFilter|null = null;
   /**
    * separator for multi handling
    * @type {string}
@@ -65,7 +65,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
       return this.categories;
     }
     //label or identity mapping
-    return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c) : c);
+    return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c)! : c);
   }
 
   colorOf(cat: string) {
@@ -106,7 +106,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.getValue(row, index);
   }
 
-  getColor(row: any, index: number): string {
+  getColor(row: any, index: number): string|null {
     const vs = this.getValues(row, index);
     const cs = this.getColors(row, index);
     if (this.combiner === d3max) {
@@ -115,16 +115,16 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
         c: cs[0],
         v: vs[0]
       }).c;
-    } else if (this.combiner === d3min) {
+    }
+    if (this.combiner === d3min) {
       //use the max color
       return cs.slice(1).reduce((prev, act, i) => vs[i + 1] < prev.v ? {c: act, v: vs[i + 1]} : prev, {
         c: cs[0],
         v: vs[0]
       }).c;
-    } else {
-      //use the first
-      return cs[0] || null;
     }
+    //use the first
+    return cs[0] || null;
   }
 
   getColors(row: any, index: number): string[] {
@@ -178,7 +178,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.currentFilter;
   }
 
-  setFilter(filter: ICategoricalFilter) {
+  setFilter(filter: ICategoricalFilter|null) {
     return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 

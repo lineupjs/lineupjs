@@ -25,7 +25,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     const colors = this.column.categoryColors,
       labels = this.column.categoryLabels;
     const trData = this.column.categories.map(function (d, i) {
-      return {cat: d, label: labels[i], isChecked: bak.length === 0 || bak.indexOf(d) >= 0, color: colors[i]};
+      return {cat: d, label: labels[i]!, isChecked: bak.length === 0 || bak.indexOf(d) >= 0, color: colors[i]!};
     }).sort(this.sortByName('label'));
 
     const $rows = popup.select('tbody').selectAll('tr').data(trData);
@@ -38,7 +38,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     });
 
     function redraw() {
-      $rows.select('.checkmark').html((d) => '<i class="fa fa-' + ((d.isChecked) ? 'check-' : '') + 'square-o"></i>');
+      $rows.select('.checkmark').html((d) => `<i class="fa fa-${(d.isChecked) ? 'check-' : ''}square-o"></i>`);
       $rows.select('.datalabel').style('opacity', (d) => d.isChecked ? '1.0' : '.8');
     }
 
@@ -47,7 +47,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     let isCheckedAll = true;
 
     function redrawSelectAll() {
-      popup.select('.selectAll').html((d) => '<i class="fa fa-' + ((isCheckedAll) ? 'check-' : '') + 'square-o"></i>');
+      popup.select('.selectAll').html((d) => `<i class="fa fa-${(isCheckedAll) ? 'check-' : ''}square-o"></i>`);
       popup.select('thead').on('click', () => {
         isCheckedAll = !isCheckedAll;
         trData.forEach((row) => row.isChecked = isCheckedAll);
@@ -58,10 +58,10 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
 
     redrawSelectAll();
 
-    const updateData = (filter: string[], filterMissing: boolean) => {
+    const updateData = (filter: string[]|null, filterMissing: boolean) => {
       const noFilter = filter === null && filterMissing === false;
       this.markFiltered(!noFilter);
-      this.column.setFilter(noFilter ? null : {filter, filterMissing});
+      this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
     };
 
     popup.select('.cancel').on('click', function () {
@@ -71,10 +71,10 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     popup.select('.reset').on('click', function () {
       trData.forEach((d) => d.isChecked = true);
       redraw();
-      updateData(null, null);
+      updateData(null, false);
     });
     popup.select('.ok').on('click', function () {
-      let f = trData.filter((d) => d.isChecked).map((d) => d.cat);
+      let f: string[]|null = trData.filter((d) => d.isChecked).map((d) => d.cat);
       if (f.length === trData.length) { // all checked = no filter
         f = null;
       }

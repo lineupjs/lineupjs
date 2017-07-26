@@ -34,8 +34,8 @@ abstract class ADialog {
       .attr({
         'class': 'lu-popup2'
       }).style({
-        left: pos.left + 'px',
-        top: pos.top + 'px'
+        left: `${pos.left}px`,
+        top: `${pos.top}px`
       }).html(this.dialogForm(body));
 
     function movePopup() {
@@ -43,8 +43,8 @@ abstract class ADialog {
       //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
       //const mouse = d3.mouse(this.parentElement);
       $popup.style({
-        left: (this.parentElement.offsetLeft + (<any>d3event).dx) + 'px',
-        top: (this.parentElement.offsetTop + (<any>d3event).dy) + 'px'
+        left: `${this.parentElement.offsetLeft + (<any>d3event).dx}px`,
+        top: `${this.parentElement.offsetTop + (<any>d3event).dy}px`
       });
     }
 
@@ -67,8 +67,8 @@ abstract class ADialog {
       .attr({
         'class': 'lu-popup2'
       }).style({
-        left: pos.left + 'px',
-        top: pos.top + 'px'
+        left: `${pos.left}px`,
+        top: `${pos.top}px`
       }).html(this.sortDialogForm(body));
 
   }
@@ -97,7 +97,7 @@ abstract class ADialog {
       }).empty();
       if (outside) {
         popup.remove();
-        select(this).on('click', null);
+        select(this).on('click', null!);
       }
     });
   }

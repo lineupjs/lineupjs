@@ -1,7 +1,7 @@
 import Column from '../model/Column';
 import StackColumn from '../model/StackColumn';
 import ADialog from './ADialog';
-import {scale as d3scale} from 'd3';
+import {scale as d3scale, Selection} from 'd3';
 
 
 export default class WeightsEditDialog extends ADialog {
@@ -11,7 +11,7 @@ export default class WeightsEditDialog extends ADialog {
    * @param $header the visual header element of this column
    * @param title optional title
    */
-  constructor(private readonly column: StackColumn, $header: d3.Selection<Column>, title: string = 'Edit Weights') {
+  constructor(private readonly column: StackColumn, $header: Selection<Column>, title: string = 'Edit Weights') {
     super($header, title);
   }
 
@@ -40,13 +40,13 @@ export default class WeightsEditDialog extends ADialog {
     });
 
     $rowsEnter.append('td').append('div')
-      .attr('class', (d) => 'bar ' + d.col.cssClass)
-      .style('background-color', (d) => d.col.color);
+      .attr('class', (d) => `bar ${d.col.cssClass}`)
+      .style('background-color', (d) => d.col.color!);
 
     $rowsEnter.append('td').text((d) => d.col.label);
 
     function redraw() {
-      $rows.select('.bar').transition().style('width', (d) => scale(d.weight) + 'px');
+      $rows.select('.bar').transition().style('width', (d) => `${scale(d.weight)}px`);
     }
 
     redraw();

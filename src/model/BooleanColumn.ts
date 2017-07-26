@@ -24,7 +24,7 @@ export interface IBooleanColumnDesc extends IValueColumnDesc<boolean> {
  * a string column with optional alignment
  */
 export default class BooleanColumn extends ValueColumn<boolean> implements ICategoricalColumn {
-  private currentFilter: boolean = null;
+  private currentFilter: boolean|null = null;
   private trueMarker = 'X';
   private falseMarker = '';
 
@@ -101,7 +101,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return this.currentFilter;
   }
 
-  setFilter(filter: boolean) {
+  setFilter(filter: boolean|null) {
     if (this.currentFilter === filter) {
       return;
     }

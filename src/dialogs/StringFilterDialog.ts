@@ -25,8 +25,8 @@ export default class StringFilterDialog extends AFilterDialog<StringColumn> {
     <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label><br><label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label>
     <br>`);
 
-    const updateData = (filter: string | RegExp) => {
-      this.markFiltered((filter && filter !== ''));
+    const updateData = (filter: string | RegExp | null) => {
+      this.markFiltered((filter != null && filter !== ''));
       this.column.setFilter(filter);
     };
 
@@ -42,14 +42,14 @@ export default class StringFilterDialog extends AFilterDialog<StringColumn> {
         updateData(search);
         return;
       }
-      if (search.length >= 3 || force) {
-        const isRegex = $popup.select('input[type="checkbox"]:first-of-type').property('checked');
-        if (isRegex && search !== StringColumn.FILTER_MISSING) {
-          search = new RegExp(search);
-        }
-        updateData(search);
+      if (search.length < 3 && !force) {
+        return;
       }
-
+      const isRegex = $popup.select('input[type="checkbox"]:first-of-type').property('checked');
+      if (isRegex && search !== StringColumn.FILTER_MISSING) {
+        search = new RegExp(search);
+      }
+      updateData(search);
     }
 
     $popup.selectAll('input[type="checkbox"]').on('change', updateImpl);

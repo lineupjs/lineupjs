@@ -17,17 +17,17 @@ function unique(data: number[]) {
 
 export interface IMappingEditorOptions {
   idPrefix: string;
-  width?: number;
-  height?: number;
-  padding_hor?: number;
-  padding_ver?: number;
-  filter_height?: number;
-  radius?: number;
+  width: number;
+  height: number;
+  padding_hor: number;
+  padding_ver: number;
+  filter_height: number;
+  radius: number;
 
-  callback?(newscale: IMappingFunction, filter: { min: number, max: number }): void;
+  callback(newscale: IMappingFunction, filter: { min: number, max: number }): void;
 
-  callbackThisArg?: any;
-  triggerCallback?: string;
+  callbackThisArg: any;
+  triggerCallback: string;
 }
 
 interface IMappingLine {
@@ -36,7 +36,7 @@ interface IMappingLine {
 }
 
 export default class MappingEditor {
-  private options: IMappingEditorOptions = {
+  private readonly options: IMappingEditorOptions = {
     idPrefix: '',
     width: 370,
     height: 150,
@@ -52,7 +52,7 @@ export default class MappingEditor {
   private computeFilter: () => INumberFilter;
   private _filter: { min: number, max: number };
 
-  constructor(private parent: HTMLElement, public scale: IMappingFunction, private original: IMappingFunction, private oldFilter: INumberFilter, private dataPromise: Promise<number[]>, options: IMappingEditorOptions) {
+  constructor(parent: HTMLElement, public scale: IMappingFunction, private readonly original: IMappingFunction, private readonly oldFilter: INumberFilter, private readonly dataPromise: Promise<number[]>, options: Partial<IMappingEditorOptions>) {
     merge(this.options, options);
     //work on a local copy
     this.scale = scale.clone();
@@ -186,7 +186,7 @@ export default class MappingEditor {
     });
 
     //lines that show mapping of individual data items
-    let datalines = $root.select('g.samples').selectAll('line').data([]);
+    let datalines = $root.select('g.samples').selectAll('line').data(<number[]>[]);
     this.dataPromise.then((data) => {
       //to unique values
       data = unique(data);
@@ -199,9 +199,9 @@ export default class MappingEditor {
           y1: 0,
           x2: raw2pixel,
           y2: height
-        }).style('visibility', function (d) {
+        }).style('visibility', (d) => {
         const domain = that.scale.domain;
-        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
+        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null!;
       });
     });
 
@@ -209,9 +209,9 @@ export default class MappingEditor {
       datalines.attr({
         x1: (d) => normal2pixel(that.scale.apply(d)),
         x2: raw2pixel
-      }).style('visibility', function (d) {
+      }).style('visibility', (d) => {
         const domain = that.scale.domain;
-        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
+        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null!;
       });
     }
 
@@ -422,7 +422,7 @@ export default class MappingEditor {
         $root.select('div.script').style('display', 'none');
         return;
       }
-      $root.select('div.script').style('display', null);
+      $root.select('div.script').style('display', null!);
 
       const sscale = <ScriptMappingFunction>that.scale;
       const $text = $root.select('textarea').text(sscale.code);

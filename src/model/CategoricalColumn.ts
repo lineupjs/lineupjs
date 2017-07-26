@@ -14,7 +14,7 @@ export interface ICategoricalColumn {
 
   getCategories(row: any, index: number): string[];
 
-  getColor(row: any, index: number): string;
+  getColor(row: any, index: number): string|null;
 }
 
 export interface ICategory {
@@ -61,7 +61,7 @@ export interface ICategoricalFilter {
   filterMissing: boolean;
 }
 
-function isEqualFilter(a: ICategoricalFilter, b: ICategoricalFilter) {
+function isEqualFilter(a: ICategoricalFilter|null, b: ICategoricalFilter|null) {
   if (a === b) {
     return true;
   }
@@ -110,7 +110,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
    * @type {null}
    * @private
    */
-  private currentFilter: ICategoricalFilter = null;
+  private currentFilter: ICategoricalFilter|null = null;
 
   /**
    * split multiple categories
@@ -294,7 +294,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter;
   }
 
-  setFilter(filter: ICategoricalFilter) {
+  setFilter(filter: ICategoricalFilter|null) {
     if (isEqualFilter(this.currentFilter, filter)) {
       return;
     }

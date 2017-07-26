@@ -22,74 +22,74 @@ import {scale as d3scale, selection, select, Selection} from 'd3';
 import ICellRendererFactory from './renderer/ICellRendererFactory';
 
 export interface IBodyOptions {
-  renderer?: string;
-  visibleRowsOnly?: boolean;
-  backupScrollRows?: number;
+  renderer: string;
+  visibleRowsOnly: boolean;
+  backupScrollRows: number;
 }
 
 export interface IRenderingOptions {
   /**
    * show combined bars as stacked bars
    */
-  stacked?: boolean;
+  stacked: boolean;
   /**
    * use animation for reordering
    */
-  animation?: boolean;
+  animation: boolean;
   /**
    * show histograms of the headers (just settable at the beginning)
    * @deprecated use summary instead
    */
-  histograms?: boolean;
+  histograms: boolean;
   /**
    * show column summaries in the header
    */
-  summary?: boolean;
+  summary: boolean;
   /**
    * show a mean line for single numberial columns
    */
-  meanLine?: boolean;
+  meanLine: boolean;
 }
 
 export interface ILineUpConfig {
   /**
    * a prefix used for all generated html ids
    */
-  idPrefix?: string;
+  idPrefix: string;
 
   /**
    * options related to the header html layout
    */
-  header?: IHeaderRendererOptions;
+  header: IHeaderRendererOptions;
   /**
    * old name for header
    */
-  htmlLayout?: IHeaderRendererOptions;
+  htmlLayout: Partial<IHeaderRendererOptions>;
   /**
    * visual representation options
    */
-  renderingOptions?: IRenderingOptions;
+  renderingOptions: IRenderingOptions;
   /**
    * options related to the rendering of the body
    */
-  body?: IBodyOptions & IBodyRendererOptions;
+  body: IBodyOptions & IBodyRendererOptions;
   /**
    * old name for body
    */
-  svgLayout?: IBodyOptions & IBodyRendererOptions;
+  svgLayout: Partial<IBodyOptions & IBodyRendererOptions>;
   /**
    *  enables manipulation features, remove column, reorder,...
    */
-  manipulative?: boolean;
+  manipulative: boolean;
   /**
    * automatically add a column pool at the end
    */
-  pool?: boolean|IPoolRendererOptions;
+  pool: boolean|IPoolRendererOptions;
 
   /**
    * the renderer to use for rendering the columns
    */
-  renderers?: { [key: string]: ICellRendererFactory };
+  renderers: { [key: string]: ICellRendererFactory };
 }
 
 /**
@@ -144,6 +144,7 @@ export default class LineUp extends AEventDispatcher {
       animation: true,
       summary: false,
       meanLine: false,
+      histograms: false
     },
     body: {
       renderer: 'svg', //svg, canvas, html
@@ -165,12 +166,12 @@ export default class LineUp extends AEventDispatcher {
 
   private $container: Selection<any>;
 
-  private body: IBodyRenderer = null;
-  private header: HeaderRenderer = null;
+  private readonly body: IBodyRenderer;
+  private readonly header: HeaderRenderer;
   private pools: PoolRenderer[] = [];
-  private contentScroller: ContentScroller = null;
+  private readonly contentScroller: ContentScroller|null;
 
-  constructor(container: Selection<any> | Element, public data: DataProvider, config: ILineUpConfig = {}) {
+  constructor(container: Selection<any> | Element, public data: DataProvider, config: Partial<ILineUpConfig> = {}) {
     super();
     const $base = container instanceof selection ? <Selection<any>>container : select(<Element>container);
     this.$container = $base.append('div').classed('lu', true);
@@ -184,8 +185,8 @@ export default class LineUp extends AEventDispatcher {
     }
 
 
-    this.data.on(DataProvider.EVENT_SELECTION_CHANGED + '.main', this.triggerSelection.bind(this));
-    this.data.on(DataProvider.EVENT_JUMP_TO_NEAREST + '.main', this.jumpToNearest.bind(this));
+    this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.main`, this.triggerSelection.bind(this));
+    this.data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.main`, this.jumpToNearest.bind(this));
 
     this.header = new HeaderRenderer(data, this.node, merge({}, this.config.header, {
       idPrefix: this.config.idPrefix,
@@ -195,7 +196,7 @@ export default class LineUp extends AEventDispatcher {
     }));
 
     this.node.insertAdjacentHTML('beforeend', `<div class="lu-body-wrapper"></div>`);
-    const bodyWrapper = this.node.lastElementChild;
+    const bodyWrapper = this.node.lastElementChild!;
     this.body = createBodyRenderer(this.config.body.renderer, data, bodyWrapper, this.slice.bind(this), merge({}, this.config.body, {
       meanLine: this.config.renderingOptions.meanLine,
       animation: this.config.renderingOptions.animation,
@@ -238,7 +239,7 @@ export default class LineUp extends AEventDispatcher {
    * @param node the node element to attach
    * @param config
    */
-  addPool(node: Element, config?: IPoolRendererOptions): PoolRenderer;
+  addPool(node: Element, config?: Partial<IPoolRendererOptions>): PoolRenderer;
   addPool(pool: PoolRenderer): PoolRenderer;
   addPool(poolOrNode: Element | PoolRenderer, config = typeof(this.config.pool) === 'boolean' ? {} : this.config.pool) {
     if (poolOrNode instanceof PoolRenderer) {
@@ -295,14 +296,14 @@ export default class LineUp extends AEventDispatcher {
 
   changeDataStorage(data: DataProvider, dump?: any) {
     if (this.data) {
-      this.data.on([DataProvider.EVENT_SELECTION_CHANGED + '.main', DataProvider.EVENT_JUMP_TO_NEAREST + '.main'], null);
+      this.data.on([`${DataProvider.EVENT_SELECTION_CHANGED}.main`, `${DataProvider.EVENT_JUMP_TO_NEAREST}.main`], null);
     }
     this.data = data;
     if (dump) {
       this.data.restore(dump);
     }
-    this.data.on(DataProvider.EVENT_SELECTION_CHANGED + '.main', this.triggerSelection.bind(this));
-    this.data.on(DataProvider.EVENT_JUMP_TO_NEAREST + '.main', this.jumpToNearest.bind(this));
+    this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.main`, this.triggerSelection.bind(this));
+    this.data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.main`, this.jumpToNearest.bind(this));
     this.header.changeDataStorage(data);
     this.body.changeDataStorage(data);
     this.pools.forEach((p) => p.changeDataStorage(data));
@@ -358,7 +359,7 @@ export default class LineUp extends AEventDispatcher {
     this.body.update();
     this.pools.forEach((p) => p.update());
 
-    this.body.on(ABodyRenderer.EVENT_RENDER_FINISHED + '.main', () => {
+    this.body.on(`${ABodyRenderer.EVENT_RENDER_FINISHED}.main`, () => {
       waitForBodyRenderer -= 1;
       if (waitForBodyRenderer === 0) {
         this.fire(LineUp.EVENT_UPDATE_FINISHED);

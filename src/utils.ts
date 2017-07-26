@@ -2,17 +2,16 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {dispatch, select, event as d3event, Dispatch} from 'd3';
+import {dispatch, select, event as d3event, Dispatch, Selection} from 'd3';
 import Column from './model/Column';
 import {IDOMCellRenderer} from './renderer/IDOMCellRenderers';
-export {round} from 'd3';
 
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
- * @param callback the callback to call
- * @param timeToDelay delay the call in milliseconds
- * @param thisCallback this argument of the callback
- * @return {function(...[any]): undefined} a function that can be called with the same interface as the callback but delayed
+ * @param {(...args: any[]) => void} callback the callback to call
+ * @param {number} timeToDelay delay the call in milliseconds
+ * @param {delayedCall} thisCallback this argument of the callback
+ * @return {(...args: any[]) => any} a function that can be called with the same interface as the callback but delayed
  */
 export function delayedCall(callback: (...args: any[]) => void, timeToDelay = 100, thisCallback = this) {
   let tm = -1;
@@ -43,13 +42,13 @@ export class AEventDispatcher {
   }
 
   on(type: string): (...args: any[]) => void;
-  on(type: string | string[], listener: (...args: any[]) => any): AEventDispatcher;
-  on(type: string | string[], listener?: (...args: any[]) => any): any {
-    if (arguments.length > 1) {
+  on(type: string | string[], listener: ((...args: any[]) => any)|null): AEventDispatcher;
+  on(type: string | string[], listener?: ((...args: any[]) => any)|null): any {
+    if (listener !== undefined) {
       if (Array.isArray(type)) {
-        (<string[]>type).forEach((d) => this.listeners.on(d, listener));
+        (<string[]>type).forEach((d) => this.listeners.on(d, listener!));
       } else {
-        this.listeners.on(<string>type, listener);
+        this.listeners.on(<string>type, listener!);
       }
       return this;
     }
@@ -58,7 +57,7 @@ export class AEventDispatcher {
 
   /**
    * return the list of events to be able to dispatch
-   * @return {Array}
+   * @return {Array} by default no events
    */
   protected createEventList(): string[] {
     return [];
@@ -84,8 +83,8 @@ export class AEventDispatcher {
   /**
    * forwards one or more events from a given dispatcher to the current one
    * i.e. when one of the given events is fired in 'from' it will be forwarded to all my listeners
-   * @param from the event dispatcher to forward from
-   * @param types the event types to forward
+   * @param {AEventDispatcher} from the event dispatcher to forward from
+   * @param {string[]} types the event types to forward
    */
   protected forward(from: AEventDispatcher, ...types: string[]) {
     from.on(types, this.forwarder);
@@ -93,8 +92,8 @@ export class AEventDispatcher {
 
   /**
    * removes the forwarding declarations
-   * @param from
-   * @param types
+   * @param {AEventDispatcher} from the originated dispatcher
+   * @param {string[]} types event types to forward
    */
   protected unforward(from: AEventDispatcher, ...types: string[]) {
     from.on(types, null);
@@ -140,8 +139,8 @@ export function merge(...args: any[]) {
 
 /**
  * computes the absolute offset of the given element
- * @param element
- * @return {{left: number, top: number, width: number, height: number}}
+ * @param {Element} element element to compute the offset of
+ * @return {{left: number, top: number, width: number, height: number}} offset of the element
  */
 export function offset(element: Element) {
   const obj = element.getBoundingClientRect();
@@ -168,20 +167,22 @@ export class ContentScroller extends AEventDispatcher {
   static readonly EVENT_SCROLL = 'scroll';
   static readonly EVENT_REDRAW = 'redraw';
 
-  private options: IContentScrollerOptions = {
-    pageSize: 100
+  private readonly options: IContentScrollerOptions = {
+    pageSize: 100,
+    rowHeight: 20,
+    backupRows: 5
   };
 
   private prevScrollTop = 0;
   private shift = 0;
 
   /**
-   *
-   * @param container the container element wrapping the content with a fixed height for enforcing scrolling
-   * @param content the content element to scroll
-   * @param options options see attribute
+   * utility for scrolling
+   * @param {Element} container the container element wrapping the content with a fixed height for enforcing scrolling
+   * @param {Element} content the content element to scroll
+   * @param {IContentScrollerOptions} options options see attribute
    */
-  constructor(private container: Element, private content: Element, options: IContentScrollerOptions = {}) {
+  constructor(private readonly container: Element, content: Element, options: IContentScrollerOptions = {}) {
     super();
     merge(this.options, options);
     select(container).on('scroll.scroller', () => this.onScroll());
@@ -198,7 +199,7 @@ export class ContentScroller extends AEventDispatcher {
    *  * redraw when a redraw of the content must be performed due to scrolling changes. Note due to backup rows
    *     a scrolling operation might not include a redraw
    *
-   * @returns {string[]}
+   * @returns {string[]} list of events
    */
   protected createEventList() {
     return super.createEventList().concat([ContentScroller.EVENT_REDRAW, ContentScroller.EVENT_SCROLL]);
@@ -220,13 +221,13 @@ export class ContentScroller extends AEventDispatcher {
 
   /**
    * selects a range identified by start and length and the row2y position callback returning the slice to show according to the current user scrolling position
-   * @param start start of the range
-   * @param length length of the range
-   * @param row2y lookup for computing the y position of a given row
-   * @returns {{from: number, to: number}} the slide to show
+   * @param {number} start start of the range
+   * @param {number} length length of the range
+   * @param {(i: number) => number} row2y lookup for computing the y position of a given row
+   * @return {{from: number; to: number}} the slide to show
    */
   select(start: number, length: number, row2y: (i: number) => number) {
-    return this.selectImpl(start, length, row2y, this.options.backupRows);
+    return this.selectImpl(start, length, row2y, this.options.backupRows!);
   }
 
   private selectImpl(start: number, length: number, row2y: (i: number) => number, backupRows: number) {
@@ -239,7 +240,7 @@ export class ContentScroller extends AEventDispatcher {
      return [0, data.length];
      }*/
     if (top > 0) {
-      i = Math.round(top / this.options.rowHeight);
+      i = Math.round(top / this.options.rowHeight!);
       //count up till really even partial rows are visible
       while (i >= start && row2y(i + 1) > top) {
         i--;
@@ -247,7 +248,7 @@ export class ContentScroller extends AEventDispatcher {
       i -= backupRows; //one more row as backup for scrolling
     }
     { //some parts from the bottom aren't visible
-      j = Math.round(bottom / this.options.rowHeight);
+      j = Math.round(bottom / this.options.rowHeight!);
       //count down till really even partial rows are visible
       while (j <= length && row2y(j - 1) < bottom) {
         j++;
@@ -266,24 +267,28 @@ export class ContentScroller extends AEventDispatcher {
     //at least one row changed
     //console.log(top, left);
     this.fire(ContentScroller.EVENT_SCROLL, top, left);
-    if (Math.abs(this.prevScrollTop - top) >= this.options.pageSize) {
-      //we scrolled out of our backup rows, so we have to redraw the content
-      const delta = this.prevScrollTop - top;
-      this.prevScrollTop = top;
-      this.fire(ContentScroller.EVENT_REDRAW, delta);
+    if (Math.abs(this.prevScrollTop - top) < this.options.pageSize!) {
+      return;
     }
+    //we scrolled out of our backup rows, so we have to redraw the content
+    const delta = this.prevScrollTop - top;
+    this.prevScrollTop = top;
+    this.fire(ContentScroller.EVENT_REDRAW, delta);
   }
 
   /**
    * removes the listeners
    */
   destroy() {
-    select(this.container).on('scroll.scroller', null);
+    select(this.container).on('scroll.scroller', null!);
   }
 }
 
 /**
  * checks whether the given DragEvent has one of the given types
+ * @param {DragEvent} e event to check
+ * @param {string[]} typesToCheck mime types to check
+ * @return {boolean} has any mime to check mime types
  */
 export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
   const types: any = e.dataTransfer.types;
@@ -309,8 +314,11 @@ function isEdgeDnD(e: DragEvent) {
   return dndTransferStorage.size > 0 && hasDnDType(e, ['text/plain']);
 }
 
+
 /**
  * should it be a copy dnd operation?
+ * @param {DragEvent} e event to check
+ * @return {boolean} whether it is a copy drag event
  */
 export function copyDnD(e: DragEvent) {
   const dT = e.dataTransfer;
@@ -319,7 +327,7 @@ export function copyDnD(e: DragEvent) {
 
 /**
  * updates the drop effect according to the currently selected meta keys
- * @param e
+ * @param {DragEvent} e event to update
  */
 export function updateDropEffect(e: DragEvent) {
   const dT = e.dataTransfer;
@@ -331,7 +339,7 @@ export function updateDropEffect(e: DragEvent) {
 }
 
 export function dragAble<T extends {id: string}>(onDragStart: (d: T) => {effectAllowed: 'none'|'copy'|'copyLink'|'copyMove'|'link'|'linkMove'|'move'|'all', data: {[key: string]: string}}) {
-  return ($node) => {
+  return ($node: Selection<T>) => {
       $node.on('dragstart', (d) => {
         const e = <DragEvent>(<any>d3event);
         const payload = onDragStart(d);
@@ -351,7 +359,7 @@ export function dragAble<T extends {id: string}>(onDragStart: (d: T) => {effectA
         }
         //compatibility mode for edge
         const text = payload.data['text/plain'] || '';
-        e.dataTransfer.setData('text/plain', d.id+(text ? ': ' + text: ''));
+        e.dataTransfer.setData('text/plain', `${d.id}${text ? `: ${text}`: ''}`);
           dndTransferStorage.set(d.id, payload.data);
       }).on('dragend', (d) =>  {
         if (dndTransferStorage.size > 0) {
@@ -379,6 +387,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
       }
       //not a valid mime type
       select(this).classed('drag_over', false);
+      return;
     }).on('dragover', function () {
       const e = <DragEvent>(<any>d3event);
       if (hasDnDType(e, mimeTypes) || isEdgeDnD(e)) {
@@ -387,6 +396,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
         select(this).classed('drag_over', true);
         return false;
       }
+      return;
     }).on('dragleave', function () {
       //
       select(this).classed('drag_over', false);
@@ -415,6 +425,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
         });
         return onDrop(data, d, copyDnD(e));
       }
+      return;
     });
   };
 }
@@ -494,7 +505,7 @@ export function createTextHints(ctx: CanvasRenderingContext2D, font: string): IT
   const spinnerWidth = measureFontAweSomeSpinner(ctx);
   ctx.font = font;
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-  const testText = alphabet + (alphabet.toUpperCase()) + '0123456789';
+  const testText = `${alphabet}${alphabet.toUpperCase()}0123456789`;
   const r = {
     maxLetterWidth: ctx.measureText('M').width,
     avgLetterWidth: ctx.measureText(testText).width / testText.length,
@@ -545,12 +556,12 @@ export function showOverlay(parentElement: HTMLElement, id: string, dx: number, 
   if (!overlay) {
     overlay = parentElement.ownerDocument.createElement('div');
     overlay.classList.add('lu-overlay');
-    overlay.id = 'O' + id;
+    overlay.id = `O${id}`;
     parentElement.appendChild(overlay);
   }
   overlay.style.display = 'block';
-  overlay.style.left = dx + 'px';
-  overlay.style.top = dy + 'px';
+  overlay.style.left = `${dx}px`;
+  overlay.style.top = `${dy}px`;
   return overlay;
 }
 
@@ -560,10 +571,10 @@ export function hideOverlays(parentElement: HTMLElement) {
 
 
 /**
- * machtes the columns and the dom nodes representing them
- * @param node
- * @param columns
- * @param helperType
+ * matches the columns and the dom nodes representing them
+ * @param {SVGGElement | HTMLElement} node row
+ * @param {{column: Column; renderer: IDOMCellRenderer}[]} columns columns to check
+ * @param {string} helperType create types of
  */
 export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer }[], helperType = 'div') {
   if (node.childElementCount === 0) {
@@ -589,12 +600,12 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
     return; //nothing to do
   }
 
-  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.getRendererType()));
+  const idsAndRenderer = new Set(columns.map((c) => `${c.column.id}@${c.column.getRendererType()}`));
   //remove all that are not existing anymore
   Array.from(node.childNodes).forEach((n: Element) => {
     const id = n.getAttribute('data-column-id');
     const renderer = n.getAttribute('data-renderer');
-    const idAndRenderer = id + '@' + renderer;
+    const idAndRenderer = `${id}@${renderer}`;
     if (!idsAndRenderer.has(idAndRenderer)) {
       node.removeChild(n);
     }

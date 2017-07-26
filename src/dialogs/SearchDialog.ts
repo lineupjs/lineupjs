@@ -23,13 +23,14 @@ export default class SearchDialog extends ADialog {
     popup.select('input[type="text"]').on('input', () => {
       const target = (<Event>d3.event).target;
       let search: any = (<HTMLInputElement>target).value;
-      if (search.length >= 3) {
-        const isRegex = popup.select('input[type="checkbox"]').property('checked');
-        if (isRegex) {
-          search = new RegExp(search);
-        }
-        this.provider.searchAndJump(search, this.column);
+      if (search.length < 3) {
+        return;
       }
+      const isRegex = popup.select('input[type="checkbox"]').property('checked');
+      if (isRegex) {
+        search = new RegExp(search);
+      }
+      this.provider.searchAndJump(search, this.column);
     });
 
     const updateImpl = () => {

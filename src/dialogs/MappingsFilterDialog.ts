@@ -32,8 +32,8 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
       .attr({
         'class': 'lu-popup'
       }).style({
-        left: pos.left + 'px',
-        top: pos.top + 'px'
+        left: `${pos.left}px`,
+        top: `${pos.top}px`
       })
       .html(this.dialogForm('<div class="mappingArea"></div>'));
 
@@ -52,7 +52,7 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
       triggerCallback: 'dragend',
       padding_ver: 15
     };
-    const dataSample = this.data.mappingSample(this.column);
+    const dataSample = Promise.resolve(this.data.mappingSample(this.column));
     let editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
 
 
