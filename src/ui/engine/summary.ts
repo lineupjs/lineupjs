@@ -14,9 +14,9 @@ export default function createSummary(node: HTMLElement, col: Column, ctx: IRank
   if (this.c instanceof StringColumn) {
     summaryString(this.c, node);
   } else if (isCategoricalColumn(this.c)) {
-    summaryCategorical(<ICategoricalColumn & Column>this.c, node, null); //TODO
+    summaryCategorical(<ICategoricalColumn & Column>this.c, node, <ICategoricalStatistics>ctx.statsOf(<ICategoricalColumn & Column>col)); //TODO
   } else if (isNumberColumn(this.c)) {
-    summaryNumerical(<INumberColumn & Column>this.c, node, null);
+    summaryNumerical(<INumberColumn & Column>this.c, node, <IStatistics>ctx.statsOf(<INumberColumn & Column>col));
   } else if (this.c instanceof SelectionColumn) {
     summarySelection(this.c, node, ctx.provider);
   }
@@ -34,8 +34,8 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
 
 function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats: IStatistics) {
   node.innerHTML = '';
-  stats.hist.forEach(({y}, i) => {
-    node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%" title="Bin ${i}: ${y}"></div>`);
+  stats.hist.forEach(({x, y}, i) => {
+    node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
   });
 }
 

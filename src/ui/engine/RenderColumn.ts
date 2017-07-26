@@ -2,10 +2,12 @@
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import {IColumn} from 'lineupengine/src';
-import Column from '../../model/Column';
+import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import ADataProvider from '../../provider/ADataProvider';
 import {IFilterDialog} from '../../dialogs/AFilterDialog';
 import {createToolbar, createSummary} from './header';
+import {INumberColumn} from '../../model/NumberColumn';
+import {ICategoricalColumn} from '../../model/CategoricalColumn';
 
 export interface IRankingContext {
   readonly provider: ADataProvider;
@@ -15,6 +17,8 @@ export interface IRankingContext {
     searchAble(col: Column): boolean;
     filters: { [type: string]: IFilterDialog };
   };
+
+  statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics;
 }
 
 export default class RenderColumn implements IColumn {
