@@ -7,6 +7,16 @@ import Column from './model/Column';
 import {IDOMCellRenderer} from './renderer/IDOMCellRenderers';
 export {round} from 'd3';
 
+export function isSortedByMe(col: Column) {
+  const r = col.findMyRanker();
+  if (!r) {
+    return false;
+  }
+  const s = r.getSortCriteria();
+  return s && s.col === col;
+}
+
+
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
  * @param {(...args: any[]) => void} callback the callback to call

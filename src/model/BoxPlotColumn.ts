@@ -13,6 +13,7 @@ import NumberColumn, {
   INumberFilter,
   noNumberFilter
 } from './NumberColumn';
+import {isSortedByMe} from '../utils';
 
 export const SORT_METHOD = {
   min: 'min',
@@ -177,7 +178,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     }
     this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
     // sort by me if not already sorted by me
-    if (this.findMyRanker()!.getSortCriteria().col !== this) {
+    if (!isSortedByMe(this)) {
       this.sortByMe();
     }
   }

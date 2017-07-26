@@ -4,7 +4,7 @@ import Column from '../model/Column';
 import {IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, setText} from '../utils';
+import {attr, isSortedByMe, setText} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {scale as d3scale} from 'd3';
@@ -16,15 +16,6 @@ function computeLabel(v: IBoxPlotData) {
   }
   const f = BoxPlotColumn.DEFAULT_FORMATTER;
   return `min = ${f(v.min)}\nq1 = ${f(v.q1)}\nmedian = ${f(v.median)}\nq3 = ${f(v.q3)}\nmax = ${f(v.max)}`;
-}
-
-function isSortedByMe(col: Column) {
-  const r = col.findMyRanker();
-  if (!r) {
-    return false;
-  }
-  const s = r.getSortCriteria();
-  return s && s.col === col;
 }
 
 export default class BoxplotCellRenderer implements ICellRendererFactory {

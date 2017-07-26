@@ -27,7 +27,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
       const hovered = context.hovered(d.dataIndex);
       if (hovered) {
         const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
-        overlay.style.width = col.getActualWidth() + 'px';
+        overlay.style.width = `${col.getActualWidth()}px`;
         overlay.innerHTML = `<a class='link' href='${col.getValue(d.v, d.dataIndex)}' target='_blank'>${col.getLabel(d.v, d.dataIndex)}</a>`;
       } else {
         const bak = ctx.fillStyle;

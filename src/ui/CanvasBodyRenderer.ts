@@ -208,7 +208,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
       if (!h) {
         return;
       }
-      return h.then((stats: IStatistics) => {
+      return Promise.resolve(h).then((stats: IStatistics) => {
         const xPos = ranking.shift + d.shift + d.column.getWidth() * stats.mean;
         if (isNaN(xPos)) {
           return;

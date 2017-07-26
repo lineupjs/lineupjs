@@ -123,10 +123,15 @@ export default class DOMBodyRenderer extends ABodyRenderer {
         if (!h) {
           return;
         }
-        h.then((stats: IStatistics) => {
+        const render = (stats: IStatistics) => {
           const xPos = d.shift + d.column.getWidth() * stats.mean;
           $mean.style('left', `${isNaN(xPos) ? 0 : xPos}px`).style('height', `${height}px`);
-        });
+        };
+        if (h instanceof Promise) {
+          h.then(render);
+        } else {
+          render(<IStatistics>h);
+        }
       });
       $meanlines.exit().remove();
     }
