@@ -23,13 +23,13 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   createDOM(col: ICategoricalColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     return {
       template: `<div class='${this.textClass}'>
-        <span></span>
+        <span></span><span></span>
       </div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         attr(<HTMLDivElement>n.firstElementChild, {}, {
           'background-color': col.getColor(d.v, d.dataIndex)
         });
-        setText(<HTMLSpanElement>n, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
+        setText(<HTMLSpanElement>n.lastElementChild!, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
       }
     };
   }

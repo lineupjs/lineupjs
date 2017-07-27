@@ -131,7 +131,7 @@ function generateWebpack(bundle, options) {
   if (!options.isTest && !bundle) {
     //extract the included css file to own file
     let p = new ExtractTextPlugin({
-      filename: `[name]${options.min && !options.nosuffix ? '.min' : ''}.css`,
+      filename: `style${options.min && !options.nosuffix ? '.min' : ''}.css`,
       allChunks: true // there seems to be a bug in dynamically loaded chunk styles are not loaded, workaround: extract all styles from all chunks
     });
     base.plugins.push(p);
