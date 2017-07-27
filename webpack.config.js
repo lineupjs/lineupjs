@@ -175,12 +175,12 @@ function generateWebpackConfig(env) {
   };
 
   if (isTest) {
-    return generateWebpack(base);
+    return generateWebpack(false, base);
   }
 
   //single generation
   if (isDev) {
-    return generateWebpack(base);
+    return generateWebpack(false, base);
   } else { //isProduction
     return [
       //plain
