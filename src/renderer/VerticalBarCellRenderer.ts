@@ -34,14 +34,14 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<div class='verticalbarcell' style="height: 20px">${templateRows}</div>`,
+      template: `<div style="height: 20px">${templateRows}</div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const rowHeight = context.rowHeight(i);
         const scale = VerticalBarCellRenderer.verticalBarScale(domain, threshold, defaultScale, rowHeight);
         const data = col.getRawNumbers(d.v, d.dataIndex);
         forEachChild(n, (d, i) => {
           const v = data[i];
-          attr(<SVGRectElement>d, {
+          attr(<HTMLElement>d, {
             title: NumbersColumn.DEFAULT_FORMATTER(v)
           }, {
             'background-color': colorScale(v),

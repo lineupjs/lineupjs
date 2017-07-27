@@ -9,7 +9,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 export default class SelectionRenderer implements ICellRendererFactory {
   createDOM(col: SelectionColumn): IDOMCellRenderer {
     return {
-      template: `<div class='selection fa'></div>`,
+      template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         n.onclick = function (event) {
           event.preventDefault();

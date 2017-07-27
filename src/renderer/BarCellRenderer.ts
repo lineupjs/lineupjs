@@ -4,7 +4,7 @@ import {INumberColumn} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText, round} from '../utils';
+import {attr, clipText, round, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 
 
@@ -17,24 +17,25 @@ export default class BarCellRenderer implements ICellRendererFactory {
    * @type {boolean}
    */
 
-  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string|null = (d, i, col) => col.color) {
+  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string | null = (d, i, col) => col.color) {
   }
 
   createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     return {
-      template: `<div class='bar' style='background-color: ${col.color}'>
-          <span class='number ${this.renderValue ? '' : 'hoverOnly'}'></span>
+      template: `<div style='background-color: ${col.color}'>
+          <span ${this.renderValue ? '' : 'class="hoverOnly"'}></span>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         const value = col.getNumber(d.v, d.dataIndex);
         const w = isNaN(value) ? 0 : round(value * 100, 2);
+        const title = col.getLabel(d.v, d.dataIndex);
         attr(n, {
-          title: col.getLabel(d.v, d.dataIndex)
+          title
         }, {
           width: `${w}%`,
           'background-color': this.colorOf(d.v, i, col)
         });
-        n.firstElementChild!.textContent = col.getLabel(d.v, d.dataIndex);
+        setText(n.firstElementChild!, title);
       }
     };
   }

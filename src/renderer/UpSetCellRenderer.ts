@@ -29,7 +29,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
       templateRows += `<circle r="${cellDimension / 4}" cx="${i * cellDimension + (cellDimension / 2)}" cy="50%"></circle>`;
     }
     return {
-      template: `<svg class='upsetcell' height="20"><path></path>${templateRows}</svg>`,
+      template: `<svg height="20"><path></path>${templateRows}</svg>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const rowHeight = context.rowHeight(i);
         const cellDimension = col.getWidth() / dataLength;

@@ -14,15 +14,14 @@ export default class AnnotationRenderer implements ICellRendererFactory {
         <span class='text notHoverOnly'></span>
        </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        const input: HTMLInputElement = <HTMLInputElement>n.firstElementChild;
+        const input: HTMLInputElement = <HTMLInputElement>n.firstElementChild!;
         input.onchange = () => {
           col.setValue(d.v, d.dataIndex, input.value);
         };
         input.onclick = (event) => {
           event.stopPropagation();
         };
-        input.value = col.getLabel(d.v, d.dataIndex);
-        n.lastElementChild!.textContent = col.getLabel(d.v, d.dataIndex);
+        n.lastElementChild!.textContent = input.value = col.getLabel(d.v, d.dataIndex);
       }
     };
   }

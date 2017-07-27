@@ -10,7 +10,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 export default class LoadingCellRenderer implements ICellRendererFactory {
   createDOM(col: Column): IDOMCellRenderer {
     return {
-      template: `<div class='loading'><i class='fa fa-spinner fa-pulse'></i><div>Loading…</div></div>`,
+      template: `<div>Loading…</div>`,
       update: () => undefined
     };
   }

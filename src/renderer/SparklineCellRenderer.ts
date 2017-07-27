@@ -24,7 +24,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
       .interpolate('linear');
 
     return {
-      template: `<svg height="20"><path class='sparklinecell'></path></svg>`,
+      template: `<svg height="20"><path></path></svg>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const height = context.rowHeight(i);
         yScale.range([height, 0]);

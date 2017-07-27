@@ -8,27 +8,23 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
 
-  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string|null = (d, i, col) => col.color) {
-    this.renderValue = renderValue;
+  constructor(private colorOf: (d: any, i: number, col: Column) => string|null = (d, i, col) => col.color) {
   }
 
   createTODO(col: INumberColumn & Column, context: IDOMRenderContext) {
-    const textHeight = context.option('textHeight', 13);
     return {
-      template: `<g class='bar'>
-          <circle class='${col.cssClass}' style='fill: ${col.color}'>
-            <title> </title>
-          </circle>
-          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"> </text>
-        </g>`,
-      update: (n: SVGElement, d: IDataRow, i: number) => {
+      template: `<div title="">
+          <div style="width: 10px; height: 10px; background-color: ${col.color}"></div>
+        </div>`,
+      update: (n: HTMLElement, d: IDataRow, i: number) => {
+        setText(n, col.getLabel(d.v, d.dataIndex));
         const v = col.getNumber(d.v, d.dataIndex);
-        attr(<SVGCircleElement>n.firstElementChild, {
-          cy: (context.rowHeight(i) / 2),
-          cx: (col.getWidth() / 2),
-          r: (context.rowHeight(i) / 2) * v
+        const height = context.rowHeight(i);
+        attr(<HTMLElement>n.firstElementChild!, {}, {
+          width: `${height * v}px`,
+          height: `${height * v}px`,
+          'background-color': this.colorOf(d.v, d.dataIndex, col)!
         });
-        setText((<SVGTextElement>n.lastElementChild), col.getLabel(d.v, d.dataIndex));
       }
     };
   }
@@ -44,7 +40,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
       ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getNumber(d.v, d.dataIndex), 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
-      if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
+      if (context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');
         clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1, context.textHints);
       }

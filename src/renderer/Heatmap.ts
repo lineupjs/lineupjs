@@ -22,17 +22,12 @@ export default class Heatmap implements ICellRendererFactory {
   }
 
   createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
-    const padding = context.option('rowBarPadding', 1);
     return {
-      template: `<div class='heatmap ${col.cssClass}' style='background-color: ${col.color}; top: ${padding}'></div>`,
+      template: `<div title="" class="heatmap ${col.cssClass}' style='background-color: ${col.color};"></div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
-        const w = context.rowHeight(i) - padding * 2;
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
-          width: `${w}px !important`,
-          height: `${w}px`,
-          top: `${padding}px`,
           'background-color': Heatmap.toHeatMapColor(d.v, d.dataIndex, col)
         });
       }

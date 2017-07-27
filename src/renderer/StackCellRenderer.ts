@@ -36,7 +36,7 @@ export default class StackCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        matchColumns(n, cols, 'html');
+        matchColumns(n, cols, 'div');
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
           col.renderer.update(cnode, d, i);

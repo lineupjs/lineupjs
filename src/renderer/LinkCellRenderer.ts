@@ -12,7 +12,7 @@ export default class LinkCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class='link text'></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class='link' href='${col.getValue(d.v, d.dataIndex)}' target='_blank'>${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
+        n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class="link" href="${col.getValue(d.v, d.dataIndex)}" target="_blank">${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
       }
     };
   }

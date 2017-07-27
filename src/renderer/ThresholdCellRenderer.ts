@@ -18,7 +18,7 @@ export default class ThresholdCellRenderer implements ICellRendererFactory {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<div class="thresholdcell">${templateRows}</div>`,
+      template: `<div>${templateRows}</div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const data = col.getRawNumbers(d.v, d.dataIndex);
         forEachChild(n, (d, i) => {
