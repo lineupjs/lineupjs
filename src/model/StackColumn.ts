@@ -56,6 +56,10 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     return this.collapsed;
   }
 
+  get canJustAddNumbers() {
+    return true;
+  }
+
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
     let self = null;
     const children = levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => !c.isHidden());
@@ -202,7 +206,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     return this._children.reduce((acc, d) => acc + d.getValue(row, index) * (d.getWidth() / w), 0);
   }
 
-  rendererType() {
+  getRendererType() {
     if (this.getCollapsed() && this.isLoaded()) {
       return StackColumn.COLLAPSED_RENDERER;
     }

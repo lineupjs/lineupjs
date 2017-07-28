@@ -31,4 +31,8 @@ export default class MeanColumn extends CompositeNumberColumn {
       operands: this._children.map((c) => c.toSortingDesc(toId))
     };
   }
+
+  get canJustAddNumbers() {
+    return true;
+  }
 }

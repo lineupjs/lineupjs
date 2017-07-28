@@ -38,8 +38,8 @@ export function numberCompare(a: number, b: number) {
 
 
 export interface INumberColumn {
-  isLoaded(): boolean;
   getNumber(row: any, index: number): number;
+  getRawNumber(row: any, index: number): number;
 }
 
 /**
@@ -384,6 +384,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   getNumber(row: any, index: number) {
     return this.getValue(row, index);
+  }
+
+  getRawNumber(row: any, index: number) {
+    return this.getRawValue(row, index);
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {

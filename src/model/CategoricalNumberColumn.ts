@@ -102,6 +102,10 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.getValue(row, index);
   }
 
+  getRawNumber(row: any, index: number) {
+    return this.getNumber(row, index);
+  }
+
   getColor(row: any, index: number) {
     const vs = this.getValues(row, index);
     const cs = this.getColors(row, index);
