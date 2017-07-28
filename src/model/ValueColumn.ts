@@ -79,4 +79,27 @@ export default class ValueColumn<T> extends Column {
     }
     return super.getRendererType();
   }
+
+
+  /**
+   * patch the dump such that the loaded attribute is defined (for lazy loading columns)
+   * @param toDescRef
+   * @returns {any}
+   */
+  dump(toDescRef: (desc: any) => any): any {
+    const r = super.dump(toDescRef);
+    r.loaded = this.loaded;
+
+    if(!this.loaded && r.rendererType === ValueColumn.RENDERER_LOADING) {
+      delete r.rendererType;
+    }
+    return r;
+  }
+
+  restore(dump: any, factory: (dump: any) => Column) {
+    if(dump.loaded !== undefined) {
+      this.loaded = dump.loaded;
+    }
+    super.restore(dump, factory);
+  }
 }
