@@ -50,4 +50,8 @@ export default class MaxColumn extends CompositeNumberColumn {
       operands: this._children.map((c) => c.toSortingDesc(toId))
     };
   }
+
+  get canJustAddNumbers() {
+    return true;
+  }
 }

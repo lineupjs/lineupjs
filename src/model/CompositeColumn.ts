@@ -3,6 +3,8 @@
  */
 
 import Column, {IColumnParent, IFlatColumn, IColumnDesc} from './Column';
+import {isNumberColumn} from './NumberColumn';
+import ValueColumn from './ValueColumn';
 
 export function isMultiLevelColumn(col: Column) {
   return typeof ((<any>col).getCollapsed) === 'function';
@@ -73,6 +75,9 @@ export default class CompositeColumn extends Column implements IColumnParent {
    * @returns {any}
    */
   insert(col: Column, index: number) {
+    if (!isNumberColumn(col) && this.canJustAddNumbers) { //indicator it is a number type
+      return null;
+    }
     this._children.splice(index, 0, col);
     //listen and propagate events
     return this.insertImpl(col, index);
@@ -133,6 +138,10 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children.every((d) => d.filter(row, index));
   }
 
+  isLoaded() {
+    return this._children.every((c) => !(c instanceof ValueColumn || c instanceof CompositeColumn) || (<ValueColumn<any>|CompositeColumn>c).isLoaded());
+  }
+
   /**
    * describe the column if it is a sorting criteria
    * @param toId helper to convert a description to an id
@@ -140,6 +149,10 @@ export default class CompositeColumn extends Column implements IColumnParent {
    */
   toSortingDesc(toId: (desc: any) => string): any {
     return this._children.map((c) => c.toSortingDesc(toId));
+  }
+
+  get canJustAddNumbers() {
+    return false;
   }
 }
 
