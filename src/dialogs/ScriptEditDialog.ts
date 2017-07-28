@@ -47,8 +47,10 @@ export default class ScriptEditDialog extends ADialog {
         <dd>ensures that the given value is within the given min/max value</dd>
         <dt><code>normalize(v: number, min: number, max: number) => number</code></dt>
         <dd>normalizes the given value <code>(v - min) / (max - min)</code></dd>
+        <dt><code>denormalize(v: number, min: number, max: number) => number</code></dt>
+        <dd>inverts a normalized value <code>v * (max - min) + min</code></dd>
         <dt><code>linear(v: number, input: [number, number], output: [number, number]) => number</code></dt>
-        <dd>performs a linear mapping from input domain to output domain both given as an array of [min, max] values. <code>normalize(v, input[0], input[1]) * (output[1] - output[0]) + output[0]</code></dd>
+        <dd>performs a linear mapping from input domain to output domain both given as an array of [min, max] values. <code>denormalize(normalize(v, input[0], input[1]), output[0], output[1])</code></dd>
       </dl>
       </div><br>
       <textarea autofocus="true" rows="5" autofocus="autofocus" style="width: 95%;">${this.column.getScript()}</textarea>

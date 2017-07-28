@@ -35,15 +35,21 @@ function wrapWithContext(code: string) {
     }
     return (v - minMax) / (max - minMax);
   };
+  const denormalize = function(v, minMax, max) {
+    if (Array.isArray(minMax)) {
+      minMax = minMax[0];
+      max = minMax[1];
+    }
+    return v * (max - minMax) + minMax;
+  };
   const linear = function(v, source, target) {
     target = target || [0, 1];
-    const normalized = normalize(v, source);
-    return normalized * (target[1] - target[0]) + target[0];
+    return denormalize(normalize(v, source), target);
   };
   const v = (function custom() {
     ${clean}
   })();
-  
+
   return typeof v === 'number' ? v : NaN`;
 }
 
