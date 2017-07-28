@@ -6,7 +6,7 @@ import Column from './Column';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {INumberColumn, isNumberColumn} from './NumberColumn';
 
-const DEFAULT_SCRIPT = 'return Math.max.apply(Math,values)';
+const DEFAULT_SCRIPT = 'max(values)';
 
 /**
  * factory for creating a description creating a mean column
@@ -17,6 +17,36 @@ export function createDesc(label: string = 'script') {
   return {type: 'script', label, script: DEFAULT_SCRIPT};
 }
 
+
+function wrapWithContext(code: string) {
+  let clean = code.trim();
+  if (!clean.startsWith('return')) {
+    clean = `return (${clean});`;
+  }
+  return `
+  const max = function(arr) { return Math.max.apply(Math, arr); };
+  const min = function(arr) { return Math.min.apply(Math, arr); };
+  const extent = function(arr) { return [min(arr), max(arr)]; };
+  const clamp = function(v, minValue, maxValue) { return v < minValue ? minValue : (v > maxValue ? maxValue : v); };
+  const normalize = function(v, minMax, max) {
+    if (Array.isArray(minMax)) {
+      minMax = minMax[0];
+      max = minMax[1];
+    }
+    return (v - minMax) / (max - minMax);
+  };
+  const linear = function(v, source, target) {
+    target = target || [0, 1];
+    const normalized = normalize(v, source);
+    return normalized * (target[1] - target[0]) + target[0];
+  };
+  const v = (function custom() {
+    ${clean}
+  })();
+  
+  return typeof v === 'number' ? v : NaN`;
+}
+
 export interface IScriptColumnDesc extends ICompositeNumberDesc {
   /**
    * the function to use, it has two parameters: children (current children) and values (their row values)
@@ -24,6 +54,7 @@ export interface IScriptColumnDesc extends ICompositeNumberDesc {
    */
   script?: string;
 }
+
 
 export default class ScriptColumn extends CompositeNumberColumn {
   static readonly EVENT_SCRIPT_CHANGED = 'scriptChanged';
@@ -66,9 +97,14 @@ export default class ScriptColumn extends CompositeNumberColumn {
 
   protected compute(row: any, index: number) {
     if (this.f == null) {
-      this.f = new Function('children', 'values', 'raws', this.script);
+      this.f = new Function('children', 'values', 'raws', 'row', 'index', wrapWithContext(this.script));
     }
-    return this.f.call(this, this._children, this._children.map((d) => d.getValue(row, index)), <number[]>this._children.map((d) => isNumberColumn(d) ? (<INumberColumn><any>d).getRawNumber(row, index) : null));
+    return this.f.call(this,
+      this._children,
+      this._children.map((d) => d.getValue(row, index)),
+      <number[]>this._children.map((d) => isNumberColumn(d) ? (<INumberColumn><any>d).getRawNumber(row, index) : null),
+      row,
+      index);
   }
 
   /**
