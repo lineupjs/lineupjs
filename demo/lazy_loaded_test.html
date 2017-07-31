@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>LineUp alpha</title>
+
+  <link href="../node_modules/font-awesome/css/font-awesome.css" rel="stylesheet" type='text/css'>
+
+  <link href="../build/style.css" rel="stylesheet">
+
+  <style>
+    div.orange {
+      background-color: orange;
+    }
+
+    rect.bar.orange {
+      fill: orange;
+    }
+
+    div.green {
+      background-color: green;
+    }
+
+    rect.bar.green, .bar.green rect {
+      fill: green;
+    }
+
+    .lu {
+      clear: both;
+      position: absolute;
+      top: 1px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0;
+      overflow: auto;
+    }
+
+  </style>
+</head>
+<body>
+<script src="../node_modules/d3/d3.js"></script>
+<script src="../build/LineUpJS.js"></script>
+
+<script>
+  (function () {
+    const arr = [
+      {a: 10},
+      {a: 5},
+      {a: 2},
+      {a: 7},
+      {a: 2},
+      {a: NaN}
+    ];
+    const desc = [
+      {label: 'Lazy', type: 'number', column: 'a', 'domain': [0, 10], lazyLoaded: true}
+    ];
+
+    const p = new LineUpJS.provider.LocalDataProvider(arr, desc);
+    const lazy = p.create(desc[0]);
+    {
+      const r = p.pushRanking();
+      r.insert(p.create(LineUpJS.model.createSelectionDesc()), 0);
+      r.push(lazy);
+    }
+
+    const instance = LineUpJS.create(p, document.body, {
+      additionalDesc: [
+        LineUpJS.model.createStackDesc('+ Stack')
+      ],
+      htmlLayout: {
+        autoRotateLabels: true
+      },
+      body: {
+        renderer: 'canvas',
+        freezeCols: 0
+      },
+      header: {
+        rankingButtons: function ($node) {
+          $node.append('button').text('+').on('click', function (d) {
+            console.log(d);
+          });
+        },
+        linkTemplates: ['a/$1', 'b/$1']
+      },
+      renderingOptions: {
+        animation: false,
+        histograms: true,
+        meanLine: true
+      }
+    });
+    instance.update();
+
+    // create animation in canvas case through regular updates
+    var update = setInterval(instance.update.bind(instance), 200);
+    // load in 5 sec
+    setTimeout(function () {
+      p.rankings.forEach((ranking) => {
+
+        // find all columns, which where cloned from the original lazy column and set their loaded property to true
+        const lazyColumns = ranking.flatColumns.filter((col) => col.desc === lazy.desc);
+        lazyColumns.forEach((col) => col.setLoaded(true));
+      });
+      lazy.setLoaded(true);
+      clearInterval(update);
+    }, 5000);
+  })();
+</script>
+
+</body>
+</html>
