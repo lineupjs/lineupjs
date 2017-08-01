@@ -587,7 +587,7 @@ export default class HeaderRenderer {
     $headers.filter((d) => !isMultiLevelColumn(d) && justNumbers(d)).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], dropOrMerge(true)));
     $headers.filter((d) => !isMultiLevelColumn(d) && !justNumbers(d)).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], dropOrMerge(false)));
 
-    if (this.options.histograms) {
+    if (this.options.summary) {
 
       $headers.filter((d) => isCategoricalColumn(d)).each(function (col: CategoricalColumn) {
         that.renderCategoricalSummary(col, d3.select(this).select('div.summary'));
