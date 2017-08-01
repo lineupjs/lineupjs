@@ -54,6 +54,9 @@ const webpackloaders = [
   {test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'file-loader'}
 ];
 
+// use workspace registry file if available
+const isWorkspaceContext = fs.existsSync(resolve(__dirname, '..', 'phovea_registry.js'));
+
 /**
  * generate a webpack configuration
  */
@@ -77,7 +80,12 @@ function generateWebpack(bundle, options) {
       extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
       alias: {
         d3: 'd3/d3'
-      }
+      },
+      //fallback to the directory above if they are siblings just in the workspace context
+      modules: isWorkspaceContext ? [
+        resolve(__dirname, '../'),
+        'node_modules'
+      ]: ['node_modules']
     },
     plugins: [
       //define magic constants that are replaced

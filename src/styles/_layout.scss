@@ -19,6 +19,10 @@
     position: relative;
     overflow: auto;
   }
+
+  [aria-hidden=true] {
+    display: none;
+  }
 }
 
 .lu-pool {

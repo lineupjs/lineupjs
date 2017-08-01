@@ -128,7 +128,7 @@ export default class LineUp extends AEventDispatcher {
    * default config of LineUp with all available options
    */
   readonly config: ILineUpConfig = (() => {
-    const idPrefix = Math.random().toString(36).slice(-8).substr(0, 3); //generate a random string with length3;
+    const idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
     return {
       idPrefix,
       header: {

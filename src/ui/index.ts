@@ -6,6 +6,7 @@ import {ISlicer, IBodyRenderer} from './ABodyRenderer';
 import DataProvider from '../provider/ADataProvider';
 import DOMBodyRenderer from './DOMBodyRenderer';
 import CanvasBodyRenderer from './CanvasBodyRenderer';
+import EngineBodyRenderer from './engine/EngineBodyRenderer';
 
 export {default as HeaderRenderer, IRankingHook, dummyRankingButtonHook} from './HeaderRenderer';
 export {default as PoolRenderer, IPoolRendererOptions} from './PoolRenderer';
@@ -15,6 +16,8 @@ export function createBodyRenderer(type = 'svg', data: DataProvider, parent: Ele
   switch (type) {
     case 'canvas':
       return new CanvasBodyRenderer(data, parent, slicer, options);
+    case 'engine':
+      return new EngineBodyRenderer(data, parent, options);
     default:
       return new DOMBodyRenderer(data, parent, slicer, options);
   }

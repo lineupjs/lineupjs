@@ -18,20 +18,16 @@ export interface IRankingContext {
     filters: { [type: string]: IFilterDialog };
   };
 
-  statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics;
+  statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 }
 
 export default class RenderColumn implements IColumn {
-  constructor(public readonly c: Column, public readonly index: number) {
+  constructor(public readonly c: Column, public readonly width: number, public readonly index: number) {
 
   }
 
   get id() {
     return this.c.id;
-  }
-
-  get width() {
-    return this.c.getWidth();
   }
 
   get frozen() {
@@ -40,7 +36,7 @@ export default class RenderColumn implements IColumn {
 
   createHeader(document: Document, ctx: IRankingContext) {
     const node = document.createElement('div');
-    node.innerHTML = `<div class="lu-toolbar"></div><i class=""/><div class="lu-handle"></div><div class="lu-label">${this.c.label}</div><div class="lu-summary"></div>`;
+    node.innerHTML = `<div class="lu-toolbar"></div><i class="lu-sort"></i><div class="lu-handle"></div><div class="lu-label">${this.c.label}</div><div class="lu-summary"></div>`;
     createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, this.c, ctx);
     createSummary(<HTMLElement>node.querySelector('div.lu-summary'), this.c, ctx);
 
@@ -53,11 +49,13 @@ export default class RenderColumn implements IColumn {
 
   createCell(index: number, document: Document, ctx: IRankingContext) {
     const node = document.createElement('div');
+    //TODO user renderer
     node.textContent = `${this.c.label}@${index}`;
     return node;
   }
 
   updateCell(node: HTMLElement, index: number, ctx: IRankingContext): HTMLElement|void {
+    //TODO user renderer
     node.textContent = `${this.c.label}@${index}`;
   }
 }

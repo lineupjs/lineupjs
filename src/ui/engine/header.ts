@@ -29,7 +29,7 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingConte
   const isSupportColumn = isSupportType(col.desc);
 
   const addIcon = (title: string, icon: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
-    node.insertAdjacentHTML('beforeend', `<i class="fa ${icon}" title="${title}"></i>`);
+    node.insertAdjacentHTML('beforeend', `<i class="fa ${icon}" title="${title}"><span aria-hidden="true">${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     if (!dialogClass) {
       return i;

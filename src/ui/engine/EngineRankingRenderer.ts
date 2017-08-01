@@ -5,7 +5,7 @@ import {ACellRenderer, ICellRenderContext, nonUniformContext} from 'lineupengine
 import RenderColumn, {IRankingContext} from './RenderColumn';
 import {IExceptionContext} from 'lineupengine/src/logic';
 
-export default class EngineRenderer extends ACellRenderer<RenderColumn> {
+export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
   protected readonly _context: ICellRenderContext<RenderColumn>;
 
   constructor(root: HTMLElement, id: string, columns: RenderColumn[], rowContext: IExceptionContext, private readonly ctx: IRankingContext) {
@@ -38,5 +38,13 @@ export default class EngineRenderer extends ACellRenderer<RenderColumn> {
 
   protected updateCell(node: HTMLElement, index: number, column: RenderColumn) {
     return column.updateCell(node, index, this.ctx);
+  }
+
+  build() {
+    return super.init();
+  }
+
+  update() {
+    super.update();
   }
 }
