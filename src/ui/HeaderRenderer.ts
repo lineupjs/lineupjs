@@ -7,11 +7,12 @@ import {merge, dropAble, delayedCall, forEach, dragAble} from '../utils';
 import Column, {IStatistics, ICategoricalStatistics, IFlatColumn} from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
-import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
+import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import NumberColumn, {isNumberColumn, INumberColumn} from '../model/NumberColumn';
 import CategoricalColumn, {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import RankColumn from '../model/RankColumn';
 import StackColumn, {createDesc as createStackDesc} from '../model/StackColumn';
+import {createDesc as createNestedDesc} from '../model/NestedColumn';
 import LinkColumn from '../model/LinkColumn';
 import ScriptColumn from '../model/ScriptColumn';
 import DataProvider from '../provider/ADataProvider';
@@ -527,9 +528,10 @@ export default class HeaderRenderer {
     });
     $headers.select('span.lu-label').text((d) => d.label);
 
-    const resolveDrop = (data: string[], copy: boolean) => {
-      if (`${MIMETYPE_PREFIX}-number-ref` in data) {
-        const id = data[`${MIMETYPE_PREFIX}-number-ref`];
+    const resolveDrop = (data: {[key: string]: string}, copy: boolean, numbersOnly: boolean) => {
+      const prefix = `${MIMETYPE_PREFIX}${numbersOnly?'-number':''}`;
+      if (`${prefix}-ref` in data) {
+        const id = data[`${prefix}-ref`];
         let col: Column = this.data.find(id);
         if (copy) {
           col = this.data.clone(col);
@@ -538,12 +540,12 @@ export default class HeaderRenderer {
         }
         return col;
       } else {
-        const desc = JSON.parse(data[`${MIMETYPE_PREFIX}-number`]);
+        const desc = JSON.parse(data[prefix]);
         return this.data.create(this.data.fromDescRef(desc));
       }
     };
 
-    $headers.filter((d) => isMultiLevelColumn(d)).each(function (col: IMultiLevelColumn) {
+    const renderMultiLevel = function (this: HTMLElement, col: IMultiLevelColumn) {
       if (col.getCollapsed() || col.getCompressed()) {
         d3.select(this).selectAll('div.' + clazz + '_i').remove();
       } else {
@@ -553,22 +555,37 @@ export default class HeaderRenderer {
         const sColumns = sShifts.map((d) => d.col);
         that.renderColumns(sColumns, sShifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
       }
-    }).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (data, d: IMultiLevelColumn, copy) => {
-      const col: Column = resolveDrop(data, copy);
+    };
+
+    $headers.filter((d) => isMultiLevelColumn(d) && (<IMultiLevelColumn>d).canJustAddNumbers).each(renderMultiLevel).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (data, d: IMultiLevelColumn, copy) => {
+      const col: Column = resolveDrop(data, copy, true);
       return d.push(col) != null;
     }));
 
-    // drag columns on top of each
-    $headers.filter((d) => d.parent instanceof Ranking && isNumberColumn(d) && !isMultiLevelColumn(d)).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (data, d: Column & INumberColumn, copy) => {
-      const col: Column = resolveDrop(data, copy);
-      const ranking = d.findMyRanker();
-      const index = ranking.indexOf(d);
-      const stack = <StackColumn>this.data.create(createStackDesc());
-      d.removeMe();
-      stack.push(d);
-      stack.push(col);
-      return ranking.insert(stack, index) != null;
+    $headers.filter((d) => isMultiLevelColumn(d) && !(<IMultiLevelColumn>d).canJustAddNumbers).each(renderMultiLevel).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (data, d: IMultiLevelColumn, copy) => {
+      const col: Column = resolveDrop(data, copy, false);
+      return d.push(col) != null;
     }));
+
+    const justNumbers = (d: Column) => (d instanceof CompositeColumn && d.canJustAddNumbers) || (isNumberColumn(d) && d.parent instanceof Ranking);
+    const dropOrMerge = (justNumbers: boolean) => {
+      return (data, d: CompositeColumn|(Column & INumberColumn), copy) => {
+        const col: Column = resolveDrop(data, copy, justNumbers);
+        if (d instanceof CompositeColumn) {
+          return (d.push(col) !== null);
+        }
+        const ranking = d.findMyRanker();
+        const index = ranking.indexOf(d);
+        const parent = <CompositeColumn>this.data.create(justNumbers ? createStackDesc(): createNestedDesc());
+        d.removeMe();
+        parent.push(d);
+        parent.push(col);
+        return ranking.insert(parent, index) != null;
+      };
+    };
+
+    $headers.filter((d) => !isMultiLevelColumn(d) && justNumbers(d)).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], dropOrMerge(true)));
+    $headers.filter((d) => !isMultiLevelColumn(d) && !justNumbers(d)).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], dropOrMerge(false)));
 
     if (this.options.summary) {
 

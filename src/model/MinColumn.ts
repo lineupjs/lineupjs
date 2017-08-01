@@ -50,4 +50,8 @@ export default class MinColumn extends CompositeNumberColumn {
       operands: this._children.map((c) => c.toSortingDesc(toId))
     };
   }
+
+  get canJustAddNumbers() {
+    return true;
+  }
 }

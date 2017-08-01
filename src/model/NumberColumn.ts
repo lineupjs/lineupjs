@@ -38,7 +38,6 @@ export function numberCompare(a: number, b: number) {
 
 
 export interface INumberColumn {
-  isLoaded(): boolean;
   getNumber(row: any, index: number): number;
   getRawNumber(row: any, index: number): number;
 }
