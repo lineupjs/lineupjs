@@ -22,16 +22,17 @@ export default class BarCellRenderer implements ICellRendererFactory {
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
+    const textHeight = context.option('textHeight', 13);
     return {
       template: `<g class='bar'>
           <rect class='${col.cssClass}' y='${paddingTop}' style='fill: ${col.color}'>
             <title></title>
           </rect>
-          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})'></text>
+          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"></text>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         n.querySelector('rect title').textContent = col.getLabel(d.v, d.dataIndex);
-        const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
+        const width = col.getWidth() * col.getNumber(d.v, d.dataIndex);
 
         attr(<SVGRectElement>n.querySelector('rect'), {
           y: paddingTop,
@@ -40,7 +41,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         }, {
           fill: this.colorOf(d.v, i, col)
         });
-        attr(<SVGTextElement>n.querySelector('text'), {}).textContent = col.getLabel(d.v, d.dataIndex);
+        (<SVGTextElement>n.querySelector('text')).textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -53,7 +54,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
           <span class='number ${this.renderValue ? '' : 'hoverOnly'}'></span>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
+        const width = col.getWidth() * col.getNumber(d.v, d.dataIndex);
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
@@ -72,7 +73,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = this.colorOf(d.v, i, col);
-      const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
+      const width = col.getWidth() * col.getNumber(d.v, d.dataIndex);
       ctx.fillRect(0, paddingTop, isNaN(width) ? 0 : width, context.rowHeight(i) - (paddingTop + paddingBottom));
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');

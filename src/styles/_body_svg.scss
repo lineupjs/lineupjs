@@ -1,13 +1,12 @@
 @import "colors";
 
 .lu svg.lu-body {
-  text,
-  tspan {
-    dominant-baseline: text-before-edge;
-  }
-
   text {
-    font-size: $lu_body_font_size;
+    font: $lu_body_font;
+
+    &.fa {
+      font-family: "FontAwesome", Arial, sans-serif;
+    }
 
     &.selection {
       cursor: pointer;
@@ -46,53 +45,54 @@
   }
 
   line.meanline {
-    stroke: darkgray;
+    stroke: $lu_meanline_color;
     stroke-width: 1;
   }
 
   .sparklinecell {
     stroke: black;
+    fill: none;
   }
 
-  .boxplotrect {
-    stroke: black;
-    fill: #e0e0e0;
+  .boxplotcell {
+    .boxplotrect {
+      stroke: $lu_renderer_boxplot_stroke;
+      fill: $lu_renderer_boxplot_box;
+    }
+
+    .cellbg {
+      fill: transparent;
+      stroke: none;
+    }
+
+    path {
+      fill: none;
+
+      &.boxplotallpath {
+        stroke: $lu_renderer_boxplot_stroke;
+      }
+
+      &.boxplotsortpath {
+        stroke: $lu_renderer_boxplot_sort_indicator;
+      }
+    }
   }
 
-  .cellbg {
-    fill: transparent;
-    stroke: none;
-  }
+  .upsetcell {
+    circle {
+      stroke: $lu_upset_stroke;
+      fill: $lu_upset_circle_color;
+      opacity: $lu_upset_inactive_opacity;
 
-  .boxplotline {
-    stroke: black;
-    fill: #e0e0e0;
-  }
+      &.enabled {
+        opacity: 1;
+      }
+    }
 
-  .boxplotallpath {
-    stroke: black;
-    fill: #e0e0e0;
-  }
-
-  .boxplotsortpath {
-    stroke: #ff0700;
-    fill: #e0e0e0;
-  }
-
-  .setcircle {
-    stroke: black;
-    fill: black;
-  }
-
-  .setcircleOpacity {
-    stroke: black;
-    fill: black;
-    opacity: 0.1;
-  }
-
-  .upsetpath {
-    stroke: black;
-    fill: black;
+    path {
+      stroke: $lu_upset_stroke;
+      fill: none;
+    }
   }
 
   g.row {

@@ -14,22 +14,22 @@ export default class CircleCellRenderer implements ICellRendererFactory {
   }
 
   createSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const padding = context.option('rowBarPadding', 1);
+    const textHeight = context.option('textHeight', 13);
     return {
       template: `<g class='bar'>
           <circle class='${col.cssClass}' style='fill: ${col.color}'>
             <title></title>
           </circle>
-          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})'></text>
+          <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"></text>
         </g>`,
       update: (n: SVGElement, d: IDataRow, i: number) => {
-        const v = col.getValue(d.v, d.dataIndex);
+        const v = col.getNumber(d.v, d.dataIndex);
         attr(<SVGCircleElement>n.querySelector('circle'), {
           cy: (context.rowHeight(i) / 2),
           cx: (col.getWidth() / 2),
           r: (context.rowHeight(i) / 2) * v
         });
-        attr(<SVGTextElement>n.querySelector('text'), {}).textContent = col.getLabel(d.v, d.dataIndex);
+        (<SVGTextElement>n.querySelector('text')).textContent = col.getLabel(d.v, d.dataIndex);
       }
     };
   }
@@ -42,7 +42,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = this.colorOf(d.v, i, col);
       ctx.strokeStyle = this.colorOf(d.v, i, col);
       ctx.beginPath();
-      ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
+      ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getNumber(d.v, d.dataIndex), 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {

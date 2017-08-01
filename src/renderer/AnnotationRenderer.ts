@@ -8,9 +8,10 @@ import ICellRendererFactory from './ICellRendererFactory';
 
 export default class AnnotationRenderer implements ICellRendererFactory {
   createSVG(col: AnnotateColumn, context: IDOMRenderContext): ISVGCellRenderer {
+    const textHeight = context.option('textHeight', 13);
     return {
       template: `<g class='annotations'>
-        <text class='notHoverOnly text' clip-path='url(#cp${context.idPrefix}clipCol${col.id})'></text>
+        <text class='notHoverOnly text' clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"></text>
         <foreignObject class='foreign hoverOnly' x='-2' y='-2'>
           <input type='text'>
         </foreignObject>

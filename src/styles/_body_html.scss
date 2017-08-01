@@ -1,7 +1,7 @@
 @import "colors";
 
 .lu div.lu-body {
-  font-size: $lu_body_font_size;
+  font: $lu_body_font;
   position: relative;
 
   div,
@@ -92,6 +92,11 @@
     div.cat div {
       position: relative;
       display: inline-block;
+    }
+
+    div.heatmapcell div {
+      width: 1px;
+      height: 1px;
     }
   }
 }

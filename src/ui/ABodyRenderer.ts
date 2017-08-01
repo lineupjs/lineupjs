@@ -61,6 +61,7 @@ export interface IRankingData {
 
 export interface IBodyRendererOptions {
   rowHeight?: number;
+  textHeight?: number;
   rowPadding?: number;
   rowBarPadding?: number;
   rowBarTopPadding?: number;
@@ -92,6 +93,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   protected readonly options: IBodyRendererOptions = {
     rowHeight: 20,
+    textHeight: 13, //10pt
     rowPadding: 1,
     rowBarPadding: 1,
     idPrefix: '',

@@ -7,7 +7,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import {attr} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer  from './ICanvasCellRenderer';
-import {scale as d3scale, min as d3min, max as d3max} from 'd3';
+import {scale as d3scale} from 'd3';
 
 
 function computeLabel(v: IBoxPlotData) {
@@ -23,8 +23,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   createSVG(col: IBoxPlotColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
     const sortMethod = col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
-    const domain = col.getDomain();
-    const scale = d3scale.linear().domain(domain).range([0, col.getWidth()]);
+    const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
     return {
 
@@ -36,20 +35,20 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
             <path class='boxplotsortpath' style='display: none'></path>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
+        const data = col.getBoxPlotData(d.v, d.dataIndex);
         const rowHeight = context.rowHeight(i);
         const scaled = {
-          min: scale(rawBoxdata.min),
-          median: scale(rawBoxdata.median),
-          q1: scale(rawBoxdata.q1),
-          q3: scale(rawBoxdata.q3),
-          max: scale(rawBoxdata.max)
+          min: scale(data.min),
+          median: scale(data.median),
+          q1: scale(data.q1),
+          q3: scale(data.q3),
+          max: scale(data.max)
         };
         attr(<SVGElement>n.querySelector('rect.cellbg'),{
           width: col.getWidth(),
           height: rowHeight
         });
-        n.querySelector('title').textContent = computeLabel(rawBoxdata);
+        n.querySelector('title').textContent = computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex));
         attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
           x: scaled.q1,
           width: (scaled.q3 - scaled.q1),
@@ -77,26 +76,28 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const sortMethod = col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
-    const domain = col.getDomain();
-
-    const scale = d3scale.linear().domain([d3min(domain), d3max(domain)]).range([0, col.getWidth()]);
+    const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     const sortedByMe = col.findMyRanker().getSortCriteria().col === col;
+
+    const boxColor = context.option('style.boxplot.box', '#e0e0e0');
+    const boxStroke = context.option('style.boxplot.stroke', 'black');
+    const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ff0700');
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const rowHeight = context.rowHeight(i);
 
       // Rectangle
-      const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
+      const data = col.getBoxPlotData(d.v, d.dataIndex);
       const scaled = {
-        min: scale(rawBoxdata.min),
-        median: scale(rawBoxdata.median),
-        q1: scale(rawBoxdata.q1),
-        q3: scale(rawBoxdata.q3),
-        max: scale(rawBoxdata.max)
+        min: scale(data.min),
+        median: scale(data.median),
+        q1: scale(data.q1),
+        q3: scale(data.q3),
+        max: scale(data.max)
       };
       const minPos = scaled.min, maxPos = scaled.max, medianPos = scaled.median, q3Pos = scaled.q3, q1Pos = scaled.q1;
-      ctx.fillStyle = '#e0e0e0';
-      ctx.strokeStyle = 'black';
+      ctx.fillStyle = boxColor;
+      ctx.strokeStyle = boxStroke;
       ctx.beginPath();
       ctx.rect((q1Pos), topPadding, ((q3Pos) - (q1Pos)), (rowHeight - (topPadding * 2)));
       ctx.fill();
@@ -106,8 +107,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       const bottomPos = (rowHeight - topPadding);
       const middlePos = (rowHeight - topPadding) / 2;
 
-      ctx.strokeStyle = 'black';
-      ctx.fillStyle = '#e0e0e0';
+      ctx.strokeStyle = boxStroke;
       ctx.beginPath();
       ctx.moveTo(minPos, middlePos);
       ctx.lineTo((q1Pos), middlePos);
@@ -120,17 +120,14 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       ctx.moveTo(maxPos, topPadding);
       ctx.lineTo(maxPos, bottomPos);
       ctx.stroke();
-      ctx.fill();
 
 
       if (sortedByMe) {
-        ctx.strokeStyle = 'red';
-        ctx.fillStyle = '#ff0700';
+        ctx.strokeStyle = boxSortIndicator;
         ctx.beginPath();
         ctx.moveTo(scaled[sortMethod], topPadding);
         ctx.lineTo(scaled[sortMethod], bottomPos);
         ctx.stroke();
-        ctx.fill();
       }
 
     };

@@ -21,9 +21,10 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   }
 
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
+    const textHeight = context.option('textHeight', 13);
     return {
-      template: `<text class="${this.textClass}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"></text>`,
-      update: (n: SVGTextElement, d: IDataRow) => {
+      template: `<text class="${this.textClass}" clip-path="url(#cp${context.idPrefix}clipCol${col.id})" y="${textHeight}"></text>`,
+      update: (n: SVGTextElement, d: IDataRow, index: number) => {
         let alignmentShift = 2;
         if (this.align === 'right') {
           alignmentShift = col.getWidth() - 5;
@@ -31,7 +32,8 @@ export class DefaultCellRenderer implements ICellRendererFactory {
           alignmentShift = col.getWidth() * 0.5;
         }
         attr(n, {
-          x: alignmentShift
+          x: alignmentShift,
+          y: textHeight + Math.floor((context.rowHeight(index)-textHeight-2)/2)
         });
         n.textContent = col.getLabel(d.v, d.dataIndex);
       }

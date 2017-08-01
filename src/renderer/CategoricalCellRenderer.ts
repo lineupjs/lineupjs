@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import CategoricalColumn from '../model/CategoricalColumn';
+import {ICategoricalColumn} from '../model/CategoricalColumn';
 import Column from '../model/Column';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
@@ -20,11 +20,12 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     this.textClass = textClass;
   }
 
-  createSVG(col: CategoricalColumn, context: IDOMRenderContext): ISVGCellRenderer {
+  createSVG(col: ICategoricalColumn&Column, context: IDOMRenderContext): ISVGCellRenderer {
     const padding = context.option('rowBarPadding', 1);
+    const textHeight = context.option('textHeight', 13);
     return {
       template: `<g class='${this.textClass}'>
-        <text clip-path='url(#cp${context.idPrefix}clipCol${col.id})'></text>
+        <text clip-path='url(#cp${context.idPrefix}clipCol${col.id})' y="${textHeight}"></text>
         <rect y='${padding}'></rect>
       </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
@@ -47,7 +48,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createHTML(col: CategoricalColumn, context: IDOMRenderContext): IHTMLCellRenderer {
+  createHTML(col: ICategoricalColumn&Column, context: IDOMRenderContext): IHTMLCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     return {
       template: `<div class='${this.textClass}'>
@@ -74,7 +75,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: CategoricalColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: ICategoricalColumn&Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = col.getColor(d.v, d.dataIndex);

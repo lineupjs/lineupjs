@@ -50,7 +50,7 @@
     top: 0;
     border-radius: 3px 0 0 3px;
     cursor: auto;
-    background: #6d6c6c;
+    background: $lu_header_background;
     z-index: 1;
   }
 
@@ -67,34 +67,13 @@
         }
       }
 
-      div.histogram {
+      div.summary {
         position: absolute;
         left: 0;
         right: 5px;
         top: 40%;
         height: 60%;
         display: none;
-
-        > div.bar {
-          position: absolute;
-          background-color: white;
-          opacity: 0.5;
-
-          &.selected {
-            opacity: 1;
-          }
-
-          &:hover {
-            opacity: 0.7;
-          }
-        }
-
-        div.mean {
-          position: absolute;
-          height: 100%;
-          width: 1px;
-          border-left: 1px solid black;
-        }
       }
 
       div.lu-label {
@@ -151,7 +130,7 @@
     div.header,
     div.header_i {
       &.filtered > div.toolbar i.fa-filter {
-        color: darkblue;
+        color: $lu_header_active_filter_color;
       }
 
       position: absolute;
@@ -209,8 +188,45 @@
 
       &.number,
       &.categorical,
+      &.boolean,
+      &.booleans,
+      &.hierarchy,
       &.ordinal {
-        div.histogram {
+        div.summary {
+          display: block;
+
+          div.bar {
+            position: absolute;
+            background-color: white;
+            opacity: 0.5;
+
+            &.selected {
+              opacity: 1;
+            }
+
+            &:hover {
+              opacity: 0.7;
+            }
+          }
+
+          div.mean {
+            position: absolute;
+            height: 100%;
+            width: 1px;
+            border-left: 1px solid black;
+          }
+        }
+      }
+
+      &.string {
+        div.summary {
+          display: block;
+        }
+      }
+
+      &.selection {
+        div.summary {
+          text-align: left;
           display: block;
         }
       }

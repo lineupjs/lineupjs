@@ -10,8 +10,9 @@ import ICellRendererFactory from './ICellRendererFactory';
 export default class ActionRenderer implements ICellRendererFactory {
   createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
     const actions = context.option('actions', []);
+    const textHeight = context.option('textHeight', 13);
     return {
-      template: `<text class='actions hoverOnly fa'>${actions.map((a) => `<tspan>${a.icon}</tspan>`).join('')}</text>`,
+      template: `<text class='actions hoverOnly fa' y="${textHeight}">${actions.map((a) => `<tspan>${a.icon}</tspan>`).join('')}</text>`,
       update: (n: SVGTextElement, d: IDataRow) => {
         forEach(n, 'tspan', (ni: SVGTSpanElement, i: number) => {
           ni.onclick = function (event) {
