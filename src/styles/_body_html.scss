@@ -149,17 +149,18 @@
     }
 
 
-
-    div.thresholdcell div {
-      height: 50%;
-
-      &.down {
-        top: 50%;
-      }
+    [data-renderer] {
+      overflow-x: hidden;
+      text-overflow: ellipsis;
     }
+
     @import './renderer/heatmap';
     @import './renderer/upset';
     @import './renderer/boxplot';
+    @import './renderer/bar';
+    @import './renderer/threshold';
+    @import './renderer/sparkline';
+    @import './renderer/vertical';
 
   }
 }

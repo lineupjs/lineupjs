@@ -11,20 +11,18 @@ export default class CircleCellRenderer implements ICellRendererFactory {
   constructor(private colorOf: (d: any, i: number, col: Column) => string|null = (d, i, col) => col.color) {
   }
 
-  createTODO(col: INumberColumn & Column, context: IDOMRenderContext) {
+  createDOM(col: INumberColumn & Column, context: IDOMRenderContext) {
     return {
-      template: `<div title="">
-          <div style="width: 10px; height: 10px; background-color: ${col.color}"></div>
-        </div>`,
+      template: `<div style="background: radial-gradient(circle closest-side, red 100%, transparent 100%)" title="">
+              <div class="hoverOnly"></div>
+          </div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
-        setText(n, col.getLabel(d.v, d.dataIndex));
         const v = col.getNumber(d.v, d.dataIndex);
-        const height = context.rowHeight(i);
-        attr(<HTMLElement>n.firstElementChild!, {}, {
-          width: `${height * v}px`,
-          height: `${height * v}px`,
-          'background-color': this.colorOf(d.v, d.dataIndex, col)!
-        });
+        const p = Math.round(v * 100);
+        attr(<HTMLElement>n, {}, {
+          background: `radial-gradient(circle closest-side, ${this.colorOf(d.v, d.dataIndex, col)} ${p}%, transparent ${p}%)`
+        }, );
+        setText(n.firstElementChild!, col.getLabel(d.v, d.dataIndex));
       }
     };
   }

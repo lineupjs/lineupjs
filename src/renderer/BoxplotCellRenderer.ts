@@ -4,7 +4,7 @@ import Column from '../model/Column';
 import {IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, isSortedByMe, setText} from '../utils';
+import {isSortedByMe} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {scale as d3scale} from 'd3';

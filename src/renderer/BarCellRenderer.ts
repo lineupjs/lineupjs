@@ -22,20 +22,25 @@ export default class BarCellRenderer implements ICellRendererFactory {
 
   createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     return {
-      template: `<div style='background-color: ${col.color}'>
-          <span ${this.renderValue ? '' : 'class="hoverOnly"'}></span>
+      template: `<div title="">
+          <div style='background-color: ${col.color}'>
+            <span ${this.renderValue ? '' : 'class="hoverOnly"'}></span>
+          </div>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         const value = col.getNumber(d.v, d.dataIndex);
         const w = isNaN(value) ? 0 : round(value * 100, 2);
         const title = col.getLabel(d.v, d.dataIndex);
-        attr(n, {
+        n.title = title;
+
+        const bar = n.firstElementChild!;
+        attr(<HTMLElement>bar, {
           title
         }, {
           width: `${w}%`,
           'background-color': this.colorOf(d.v, i, col)
         });
-        setText(n.firstElementChild!, title);
+        setText(bar.firstElementChild!, title);
       }
     };
   }

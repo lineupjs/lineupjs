@@ -1,6 +1,6 @@
 @import "../colors";
 
-div[data-renderer="boxplot"] {
+[data-renderer="boxplot"] {
   display: flex;
   flex-direction: row;
   align-items: center;

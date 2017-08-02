@@ -4,11 +4,6 @@ import Column from '../model/Column';
  * context for rendering, wrapped as an object for easy extensibility
  */
 interface IRenderContext<T> {
-  /**
-   * the height of a row
-   * @param index
-   */
-  rowHeight(index: number): number;
 
   /**
    * render a column
