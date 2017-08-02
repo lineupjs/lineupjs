@@ -23,38 +23,34 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
 
   createDOM(col: ICategoricalColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const dataLength = col.categories.length;
-    const cellDimension = col.getActualWidth() / dataLength;
     let templateRows = '';
     for (let i = 0; i < dataLength; ++i) {
-      templateRows += `<circle r="${cellDimension / 4}" cx="${i * cellDimension + (cellDimension / 2)}" cy="50%"></circle>`;
+      templateRows += `<div></div>`;
     }
     return {
-      template: `<svg height="20"><path></path>${templateRows}</svg>`,
+      template: `<div><div></div>${templateRows}</div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
-        const rowHeight = context.rowHeight(i);
-        const cellDimension = col.getWidth() / dataLength;
-        attr(n, {
-          width: col.getWidth(),
-          height: rowHeight
-        });
         const values = new Set(col.getCategories(d.v, d.dataIndex));
         const value = col.categories.map((cat) => values.has(cat));
-        const hasTrueValues = value.some((d) => d); //some values are true?
 
         Array.from(n.children).slice(1).forEach((d, i) => {
           const v = value[i];
-          attr(<SVGCircleElement>d, {
-            cx: i * cellDimension + (cellDimension / 2),
+          attr(<HTMLElement>d, {
             'class': v ? 'enabled' : ''
           });
         });
 
-        let path = '';
-        if (hasTrueValues) {
-          const {left, right} = UpSetCellRenderer.calculateSetPath(value, cellDimension);
-          path = `M${left},${rowHeight / 2}L${right},${rowHeight / 2}`;
+        const line = <HTMLElement>n.firstElementChild;
+        const left = value.findIndex((d) => d);
+        const right = (value.length - 1) - value.reverse().findIndex((d) => d);
+
+        if (left < 0 || left === right) {
+          line.style.display = 'none';
+          return;
         }
-        n.firstElementChild!.setAttribute('d', path);
+        line.style.display = null;
+        line.style.left = `${Math.round(100 * (left + 0.5)/value.length)}%`;
+        line.style.width = `${Math.round(100 * (right - left)/value.length)}%`;
       }
     };
   }

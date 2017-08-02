@@ -1,0 +1,34 @@
+@import '../colors';
+
+div[data-renderer=upset] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+
+  > div:first-child {
+    position: absolute;
+    top: 0;
+    height: 50%;
+    //line
+    border-bottom: 1px solid $lu_upset_stroke;
+  }
+
+  //circles
+  > div:nth-child(n + 2) {
+    border-radius: 50%;
+    background-color: $lu_upset_circle_color;
+    opacity: $lu_upset_inactive_opacity;
+    width: 15px;
+    height: 15px;
+
+    &.enabled {
+      opacity: 1;
+    }
+  }
+
+  path {
+    stroke: $lu_upset_stroke;
+    fill: none;
+  }
+}

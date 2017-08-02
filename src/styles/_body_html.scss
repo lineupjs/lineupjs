@@ -148,18 +148,7 @@
       width: 100%;
     }
 
-    div.heatmapcell,
-    div.thresholdcell,
-    div.verticalbarcell {
-      display: flex;
-      flex-direction: row;
-      align-content: stretch;
-      align-items: stretch;
 
-      div {
-        flex: 1 1 auto;
-      }
-    }
 
     div.thresholdcell div {
       height: 50%;
@@ -168,41 +157,8 @@
         top: 50%;
       }
     }
+    @import './renderer/heatmap';
+    @import './renderer/upset';
 
-    svg.boxplotcell {
-      .boxplotrect {
-        stroke: $lu_renderer_boxplot_stroke;
-        fill: $lu_renderer_boxplot_box;
-      }
-
-      path {
-        fill: none;
-
-        &.boxplotallpath {
-          stroke: $lu_renderer_boxplot_stroke;
-        }
-
-        &.boxplotsortpath {
-          stroke: $lu_renderer_boxplot_sort_indicator;
-        }
-      }
-    }
-
-    svg.upsetcell {
-      circle {
-        stroke: $lu_upset_stroke;
-        fill: $lu_upset_circle_color;
-        opacity: $lu_upset_inactive_opacity;
-
-        &.enabled {
-          opacity: 1;
-        }
-      }
-
-      path {
-        stroke: $lu_upset_stroke;
-        fill: none;
-      }
-    }
   }
 }

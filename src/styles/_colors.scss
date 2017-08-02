@@ -1,24 +1,24 @@
-$lu_toolbar_font_size: 8pt;
+$lu_toolbar_font_size: 8pt !default;
 
-$lu_hover_color: #e5e5e5;
-$lu_selected_color: #ffa500;
+$lu_hover_color: #e5e5e5 !default;
+$lu_selected_color: #ffa500 !default;
 
-$lu_drag_over: #979797;
+$lu_drag_over: #979797 !default;
 
-$lu_header_background: #6d6c6c;
-$lu_header_active_filter_color: darkblue;
+$lu_header_background: #6d6c6c !default;
+$lu_header_active_filter_color: darkblue !default;
 
-$lu_body_font: 10pt "Helvetica Neue", Helvetica, Arial, sans-serif;
-$lu_body_text_hover_color: darkblue;
+$lu_body_font: 10pt "Helvetica Neue", Helvetica, Arial, sans-serif !default;
+$lu_body_text_hover_color: darkblue !default;
 
-$lu_slope_color: darkgray;
-$lu_meanline_color: darkgray;
-$lu_even_bg: #f7f7f7;
+$lu_slope_color: darkgray !default;
+$lu_meanline_color: darkgray !default;
+$lu_even_bg: #f7f7f7 !default;
 
-$lu_renderer_boxplot_box: #e0e0e0;
-$lu_renderer_boxplot_stroke: black;
-$lu_renderer_boxplot_sort_indicator: #ff0700;
+$lu_renderer_boxplot_box: #e0e0e0 !default;
+$lu_renderer_boxplot_stroke: black !default;
+$lu_renderer_boxplot_sort_indicator: #ff0700 !default;
 
-$lu_upset_circle_color: black;
-$lu_upset_inactive_opacity: 0.1;
-$lu_upset_stroke: black;
+$lu_upset_circle_color: black !default;
+$lu_upset_inactive_opacity: 0.1 !default;
+$lu_upset_stroke: black !default;
