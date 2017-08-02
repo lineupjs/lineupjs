@@ -22,54 +22,35 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   createDOM(col: IBoxPlotColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
-    const topPadding = 2.5 * (context.option('rowBarPadding', 1));
-    const scale = d3scale.linear().domain([0, 1]).range([0, col.getActualWidth()]);
     const sortedByMe = isSortedByMe(col);
     return {
-      template: `<svg class='boxplotcell'>
-            <title> </title>
-            <rect class='boxplotrect' y='${topPadding}'></rect>
-            <path class='boxplotallpath'></path>
-            <path class='boxplotsortpath' style='display: none'></path>
-        </svg>`,
+      template: `<div title="">
+                    <div><div></div><div></div></div>
+                 </div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const data = col.getBoxPlotData(d.v, d.dataIndex);
         n.style.display = data ? null : 'none';
         if (!data) {
           return;
         }
-        const rowHeight = context.rowHeight(i);
-        const scaled = {
-          min: scale(data.min),
-          median: scale(data.median),
-          q1: scale(data.q1),
-          q3: scale(data.q3),
-          max: scale(data.max)
-        };
-        attr(n, {
-          height: rowHeight
-        });
-        setText(n.firstElementChild!, computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex)!));
-        attr(<SVGElement>n.children[1], {
-          x: scaled.q1,
-          width: (scaled.q3 - scaled.q1),
-          height: (rowHeight - (topPadding * 2))
-        });
-        const bottomPos = (rowHeight - topPadding);
-        const middlePos = (rowHeight - topPadding) / 2;
-        const path = `M${scaled.min},${middlePos}L${scaled.q1},${middlePos}M${scaled.min},${topPadding}L${scaled.min},${bottomPos}` +   //minimum line
-          `M${scaled.median},${topPadding}L${scaled.median},${bottomPos}` +   //median line
-          `M${scaled.q3},${middlePos}L${scaled.max},${middlePos}` +
-          `M${scaled.max},${topPadding}L${scaled.max},${bottomPos}`;   // maximum line
+        n.title = computeLabel(col.getRawBoxPlotData(d.v, d.dataIndex)!);
 
-        attr(<SVGPathElement>n.children[2], {
-          d: path
-        });
-        attr(<SVGPathElement>n.children[3], {
-          d: `M${scaled[sortMethod]},${topPadding}L${scaled[sortMethod]},${bottomPos}`
-        }, {
-          display: sortedByMe ? null : 'none'
-        });
+
+        const wiskers = <HTMLElement>n.firstElementChild;
+        const box = <HTMLElement>wiskers.firstElementChild;
+        const median = <HTMLElement>wiskers.lastElementChild;
+
+        wiskers.dataset.sort = sortedByMe ? sortMethod: '';
+        wiskers.style.left = `${Math.round(data.min * 100)}%`;
+        const range = data.max - data.min;
+        wiskers.style.width = `${Math.round(range * 100)}%`;
+
+        //relative within the wiskers
+        box.style.left = `${Math.round((data.q1 - data.min)/range * 100)}%`;
+        box.style.width = `${Math.round((data.q3 - data.q1)/range * 100)}%`;
+
+        //relative within the wiskers
+        median.style.left = `${Math.round((data.median - data.min)/range * 100)}%`;
       }
     };
   }

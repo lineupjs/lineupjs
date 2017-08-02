@@ -17,7 +17,7 @@ export default class NumbersCellRenderer implements ICellRendererFactory {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<div class="heatmapcell">${templateRows}</div>`,
+      template: `<div>${templateRows}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         const data = col.getRawNumbers(d.v, d.dataIndex);
         forEachChild(n, (d, i) => {
