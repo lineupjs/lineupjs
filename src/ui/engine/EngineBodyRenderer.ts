@@ -5,16 +5,11 @@ import {AEventDispatcher, forEach, merge} from '../../utils';
 import {default as ABodyRenderer, IBodyRenderer, IBodyRendererOptions} from '../ABodyRenderer';
 import DataProvider from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
-import {renderers as defaultRenderers} from '../../renderer';
+import {createDOM, renderers as defaultRenderers} from '../../renderer';
+import {filters as defaultFilters} from '../../dialogs';
 import {default as RenderColumn, IRankingContext} from './RenderColumn';
 import EngineRankingRenderer from './EngineRankingRenderer';
 import {uniformContext} from 'lineupengine/src';
-import MappingsFilterDialog from '../../dialogs/MappingsFilterDialog';
-import CategoricalMappingFilterDialog from '../../dialogs/CategoricalMappingFilterDialog';
-import CategoricalFilterDialog from '../../dialogs/CategoricalFilterDialog';
-import BooleanFilterDialog from '../../dialogs/BooleanFilterDialog';
-import StringFilterDialog from '../../dialogs/StringFilterDialog';
-import {IFilterDialog} from '../../dialogs/AFilterDialog';
 import StringColumn from '../../model/StringColumn';
 
 
@@ -36,7 +31,7 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
     animation: false, //200
     animationDuration: 1000,
 
-    renderers: merge({}, defaultRenderers),
+    renderers: Object.assign({}, defaultRenderers),
 
     meanLine: false,
 
@@ -62,15 +57,7 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
     this.ctx = {
       provider: data,
       options: Object.assign({
-        filters: <{ [type: string]: IFilterDialog }>{
-          'string': StringFilterDialog,
-          'boolean': BooleanFilterDialog,
-          'categorical': CategoricalFilterDialog,
-          'number': MappingsFilterDialog,
-          'ordinal': CategoricalMappingFilterDialog,
-          'boxplot': MappingsFilterDialog,
-          'numbers': MappingsFilterDialog
-        },
+        filters: Object.assign({}, defaultFilters),
         linkTemplates: <string[]>[],
         searchAble: (col: Column) => col instanceof StringColumn
       }, this.options),
@@ -102,7 +89,10 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
     if(this.renderer === null) {
       const cols: IFlatColumn[] = [];
       ranking.flatten(cols, 0, 1, 0);
-      const columns = cols.map((c, i) => new RenderColumn(c.col, c.width, i));
+      const columns = cols.map((c, i) => {
+        const renderer = createDOM(c.col, this.options.renderers, this.ctx);
+        new RenderColumn(c.col, c.width, i)
+      });
 
       const rowContext = uniformContext(ranking.getOrder().length, 20);
 

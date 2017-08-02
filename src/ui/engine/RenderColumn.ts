@@ -3,11 +3,12 @@
  */
 import {IColumn} from 'lineupengine/src';
 import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
-import ADataProvider from '../../provider/ADataProvider';
+import ADataProvider, {IDataRow} from '../../provider/ADataProvider';
 import {IFilterDialog} from '../../dialogs/AFilterDialog';
 import {createToolbar, createSummary} from './header';
 import {INumberColumn} from '../../model/NumberColumn';
 import {ICategoricalColumn} from '../../model/CategoricalColumn';
+import {IDOMCellRenderer} from '../../renderer/IDOMCellRenderers';
 
 export interface IRankingContext {
   readonly provider: ADataProvider;
@@ -19,10 +20,11 @@ export interface IRankingContext {
   };
 
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
+  getRow(index: number): IDataRow;
 }
 
 export default class RenderColumn implements IColumn {
-  constructor(public readonly c: Column, public readonly width: number, public readonly index: number) {
+  constructor(public readonly c: Column, private readonly renderer: IDOMCellRenderer, public readonly width: number, public readonly index: number) {
 
   }
 
@@ -35,27 +37,32 @@ export default class RenderColumn implements IColumn {
   }
 
   createHeader(document: Document, ctx: IRankingContext) {
-    const node = document.createElement('div');
+    const node = document.createElement('section');
     node.innerHTML = `<div class="lu-toolbar"></div><i class="lu-sort"></i><div class="lu-handle"></div><div class="lu-label">${this.c.label}</div><div class="lu-summary"></div>`;
     createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, this.c, ctx);
-    createSummary(<HTMLElement>node.querySelector('div.lu-summary'), this.c, ctx);
+    createSummary(<HTMLElement>node.querySelector('div.lu-summary')!, this.c, ctx);
 
     return node;
   }
 
   updateHeader(node: HTMLElement, ctx: IRankingContext) {
-    // TODO
+    node.querySelector('div.lu-label')!.innerHTML = this.c.label;
+    createSummary(<HTMLElement>node.querySelector('div.lu-summary')!, this.c, ctx);
   }
 
   createCell(index: number, document: Document, ctx: IRankingContext) {
-    const node = document.createElement('div');
-    //TODO user renderer
-    node.textContent = `${this.c.label}@${index}`;
-    return node;
+    return asElement(document, this.renderer.template);
   }
 
   updateCell(node: HTMLElement, index: number, ctx: IRankingContext): HTMLElement|void {
-    //TODO user renderer
-    node.textContent = `${this.c.label}@${index}`;
+    this.renderer.update(node, ctx.getRow(index), index);
   }
+}
+
+function asElement(doc: Document, html: string) {
+  const helper = doc.createElement('div');
+  helper.innerHTML = html;
+  const s = helper.firstElementChild;
+  helper.innerHTML = '';
+  return s;
 }

@@ -8,6 +8,7 @@ import Column, {IStatistics, ICategoricalStatistics, IFlatColumn} from '../model
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
+import {filters as defaultFilters} from '../dialogs';
 import NumberColumn, {isNumberColumn, INumberColumn} from '../model/NumberColumn';
 import CategoricalColumn, {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import RankColumn from '../model/RankColumn';
@@ -24,12 +25,6 @@ import EditLinkDialog from '../dialogs/EditLinkDialog';
 import RendererTypeDialog from '../dialogs/RendererTypeDialog';
 import WeightsEditDialog from '../dialogs/WeightsEditDialog';
 import SortDialog from '../dialogs/SortDialog';
-
-import StringFilterDialog from '../dialogs/StringFilterDialog';
-import BooleanFilterDialog from '../dialogs/BooleanFilterDialog';
-import CategoricalFilterDialog from '../dialogs/CategoricalFilterDialog';
-import MappingsFilterDialog from '../dialogs/MappingsFilterDialog';
-import CategoricalMappingFilterDialog from '../dialogs/CategoricalMappingFilterDialog';
 
 import {IFilterDialog} from '../dialogs/AFilterDialog';
 import ScriptEditDialog from '../dialogs/ScriptEditDialog';
@@ -101,15 +96,7 @@ export default class HeaderRenderer {
     headerHeight: 20,
     manipulative: true,
     summary: false,
-    filters: <{ [type: string]: IFilterDialog }>{
-      'string': StringFilterDialog,
-      'boolean': BooleanFilterDialog,
-      'categorical': CategoricalFilterDialog,
-      'number': MappingsFilterDialog,
-      'ordinal': CategoricalMappingFilterDialog,
-      'boxplot': MappingsFilterDialog,
-      'numbers': MappingsFilterDialog
-    },
+    filters: Object.assign({}, defaultFilters),
     linkTemplates: [],
     searchAble: (col: Column) => col instanceof StringColumn,
     sortOnLabel: true,
