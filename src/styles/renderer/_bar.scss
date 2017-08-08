@@ -1,7 +1,9 @@
 
-[data-renderer=number] {
+[data-renderer=number],
+[data-renderer=circle] {
   position: relative;
   white-space: nowrap;
+
   > div {
     width: 100%;
     height: 100%;
