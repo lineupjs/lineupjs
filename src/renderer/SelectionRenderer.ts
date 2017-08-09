@@ -24,7 +24,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
       const bak = ctx.font;
       ctx.font = '10pt FontAwesome';
-      clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, col.getActualWidth(), context.textHints);
+      clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, context.colWidth(col), context.textHints);
       ctx.font = bak;
     };
   }

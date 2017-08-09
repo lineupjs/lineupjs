@@ -41,7 +41,7 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const colorScale = col.getRawColorScale();
-    const cellDimension = col.getWidth() / col.getDataLength();
+    const cellDimension = context.colWidth(col) / col.getDataLength();
     const domain = col.getMapping().domain;
     const threshold = col.getThreshold();
     const range = domain[1] - domain[0];

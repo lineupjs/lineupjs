@@ -33,7 +33,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
       const bak = ctx.textAlign;
       ctx.textAlign = this.align;
-      const w = col.getActualWidth();
+      const w = context.colWidth(col);
       let shift = 0;
       if (this.align === 'center') {
         shift = w / 2;

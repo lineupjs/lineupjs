@@ -42,10 +42,10 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         const cell = Math.min(Column.COMPRESSED_WIDTH - padding * 2, Math.max(context.rowHeight(i) - padding * 2, 0));
         ctx.fillRect(padding, padding, cell, cell);
       } else {
-        const cell = Math.min(col.getActualWidth() * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
+        const cell = Math.min(context.colWidth(col) * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
         ctx.fillRect(0, 0, cell, cell);
         ctx.fillStyle = context.option('style.text', 'black');
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, col.getWidth() - cell - 2, context.textHints);
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
       }
     };
   }

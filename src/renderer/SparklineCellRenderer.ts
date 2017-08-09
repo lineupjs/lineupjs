@@ -32,7 +32,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
         return;
       }
       ctx.save();
-      ctx.scale(col.getActualWidth() / col.getDataLength(), context.rowHeight(i));
+      ctx.scale(context.colWidth(col) / col.getDataLength(), context.rowHeight(i));
       ctx.strokeStyle = 'black';
       ctx.fillStyle = 'black';
       ctx.beginPath();

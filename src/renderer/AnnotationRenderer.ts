@@ -30,12 +30,12 @@ export default class AnnotationRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       const hovered = context.hovered(d.dataIndex);
       if (!hovered) {
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, col.getWidth(), context.textHints);
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, context.colWidth(col), context.textHints);
         return;
       }
       const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
-      overlay.style.width = `${col.getWidth()}px`;
-      overlay.innerHTML = `<input type='text' value='${col.getValue(d.v, d.dataIndex)}' style='width:${col.getActualWidth()}px'>`;
+      overlay.style.width = `${context.colWidth(col)}px`;
+      overlay.innerHTML = `<input type='text' value='${col.getValue(d.v, d.dataIndex)}' style='width:${context.colWidth(col)}px'>`;
       const input = <HTMLInputElement>overlay.childNodes[0];
       input.onchange = function () {
         col.setValue(d.v, d.dataIndex, input.value);

@@ -31,7 +31,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const posy = (context.rowHeight(i) / 2);
-      const posx = (col.getWidth() / 2);
+      const posx = (context.colWidth(col) / 2);
       ctx.fillStyle = this.colorOf(d.v, i, col) || '';
       ctx.strokeStyle = this.colorOf(d.v, i, col) || '';
       ctx.beginPath();
@@ -40,7 +40,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
       ctx.stroke();
       if (context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1, context.textHints);
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, context.colWidth(col) - 1, context.textHints);
       }
     };
   }

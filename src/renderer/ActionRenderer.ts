@@ -32,7 +32,7 @@ export default class ActionRenderer implements ICellRendererFactory {
         return;
       }
       const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
-      overlay.style.width = `${col.getWidth()}px`;
+      overlay.style.width = `${context.colWidth(col)}px`;
       overlay.classList.add('actions');
       overlay.innerHTML = actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('');
       forEachChild(overlay, (ni: HTMLSpanElement, i) => {

@@ -57,7 +57,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
     const sortedByMe = isSortedByMe(col);
-    const width = col.getActualWidth();
+    const width = context.colWidth(col);
     const boxColor = context.option('style.boxplot.box', '#e0e0e0');
     const boxStroke = context.option('style.boxplot.stroke', 'black');
     const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ff0700');

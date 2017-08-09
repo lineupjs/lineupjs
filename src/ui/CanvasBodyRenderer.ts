@@ -286,10 +286,12 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   protected createContextImpl(indexShift: number): ICanvasRenderContext & IBodyRenderContext {
-    const base: any = this.createContext(indexShift, createCanvas);
+    const base = <ICanvasRenderContext & IBodyRenderContext><any>this.createContext(indexShift, createCanvas);
     base.hovered = this.isHovered.bind(this);
     base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);
-    base.bodyDOMElement = <HTMLElement>this.$node.node();
+    (<any>base).bodyDOMElement = <HTMLElement>this.$node.node();
+    base.rowHeight = () => this.options.rowHeight;
+    base.colWidth = (col) => col.getActualWidth();
     return base;
   }
 

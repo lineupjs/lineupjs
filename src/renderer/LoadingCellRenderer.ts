@@ -18,7 +18,7 @@ export default class LoadingCellRenderer implements ICellRendererFactory {
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const base = Date.now() % 360;
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      clipText(ctx, 'Loading…', 10, 0, col.getActualWidth() - 10, context.textHints);
+      clipText(ctx, 'Loading…', 10, 0, context.colWidth(col) - 10, context.textHints);
       const angle = (base + i * 45) * (Math.PI / 180);
       ctx.save();
       ctx.font = '10pt FontAwesome';

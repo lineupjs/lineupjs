@@ -34,7 +34,7 @@ export default class ThresholdCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const cellDimension = col.getWidth() / col.getDataLength();
+    const cellDimension = context.colWidth(col) / col.getDataLength();
     const threshold = col.getThreshold();
     const colorValues = col.getRawColorScale().range();
 

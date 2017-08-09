@@ -33,7 +33,7 @@ export default class NumbersCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const cellDimension = col.getActualWidth() / col.getDataLength();
+    const cellDimension = context.colWidth(col) / col.getDataLength();
     const padding = context.option('rowBarPadding', 1);
     const colorScale = col.getRawColorScale();
 

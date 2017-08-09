@@ -50,11 +50,11 @@ export default class BarCellRenderer implements ICellRendererFactory {
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       ctx.fillStyle = this.colorOf(d.v, i, col) || '';
-      const width = col.getWidth() * col.getNumber(d.v, d.dataIndex);
+      const width = context.colWidth(col) * col.getNumber(d.v, d.dataIndex);
       ctx.fillRect(0, paddingTop, isNaN(width) ? 0 : width, context.rowHeight(i) - (paddingTop + paddingBottom));
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, col.getWidth() - 1, context.textHints);
+        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, context.colWidth(col) - 1, context.textHints);
       }
     };
   }

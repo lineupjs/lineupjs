@@ -57,7 +57,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const dataLength = col.categories.length;
-    const cellDimension = col.getActualWidth() / dataLength;
+    const cellDimension = context.colWidth(col) / dataLength;
 
     const upsetCircle = context.option('style.upset.circle', 'black');
     const upsetInactive = context.option('style.upset.inactiveOpacity', 0.1);
