@@ -35,6 +35,12 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     return column.updateCell(node, index, this.ctx);
   }
 
+  updateColumnWidths() {
+    const context = this.context;
+    this.style.update(context.defaultRowHeight, context.columns, context.column.defaultRowHeight);
+    //no data update needed since just width changed
+  }
+
   render(columns: RenderColumn[], rowContext: IExceptionContext) {
     this._context = Object.assign({
       columns,

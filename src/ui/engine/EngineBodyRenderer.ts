@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, forEach, merge} from '../../utils';
+import {AEventDispatcher, forEach, merge, debounce} from '../../utils';
 import {default as ABodyRenderer, IBodyRenderer, IBodyRendererOptions} from '../ABodyRenderer';
 import DataProvider, {IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
@@ -11,6 +11,7 @@ import {default as RenderColumn, IRankingContext} from './RenderColumn';
 import EngineRankingRenderer from './EngineRankingRenderer';
 import {uniformContext} from 'lineupengine/src';
 import StringColumn from '../../model/StringColumn';
+import Ranking from '../../model/Ranking';
 
 
 export default class EngineBodyRenderer extends AEventDispatcher implements IBodyRenderer {
@@ -114,14 +115,23 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
     const order = ranking.getOrder();
     const data = this.data.view(order);
     this.ctx.data = (Array.isArray(data) ? data : []).map(((v, i) => ({v, dataIndex: order[i]})));
-
+    const that = this;
+    ranking.on(`${Ranking.EVENT_DIRTY}.body`, debounce(function(this: {primaryType: string}) {
+      if (this.primaryType !== Column.EVENT_WIDTH_CHANGED) {
+        that.update();
+      }
+    }));
 
     const cols: IFlatColumn[] = [];
     ranking.flatten(cols, 0, 1, 0);
     const columns = cols.map((c, i) => {
       const renderer = createDOM(c.col, this.options.renderers, this.ctx);
-      return new RenderColumn(c.col, c.col.getRendererType(), renderer, c.width, i);
+      return new RenderColumn(c.col, c.col.getRendererType(), renderer, i);
     });
+
+    cols.forEach((c) => c.col.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
+      this.renderer.updateColumnWidths();
+    }));
 
     const rowContext = uniformContext(this.ctx.data.length, 20);
 

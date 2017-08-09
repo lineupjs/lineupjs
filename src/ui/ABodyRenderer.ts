@@ -3,7 +3,7 @@
  */
 
 import * as d3 from 'd3';
-import {merge, delayedCall, AEventDispatcher} from '../utils';
+import {merge, debounce, AEventDispatcher} from '../utils';
 import {Ranking, isNumberColumn} from '../model';
 import Column, {IStatistics, ICategoricalStatistics} from '../model/Column';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
@@ -146,8 +146,8 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       this.data.on([`${DataProvider.EVENT_DIRTY_VALUES}.bodyRenderer`, `${DataProvider.EVENT_SELECTION_CHANGED}.bodyRenderer`], null);
     }
     this.data = data;
-    data.on(`${DataProvider.EVENT_DIRTY_VALUES}.bodyRenderer`, delayedCall(this.update.bind(this), 1));
-    data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.bodyRenderer`, delayedCall(this.drawSelection.bind(this), 1));
+    data.on(`${DataProvider.EVENT_DIRTY_VALUES}.bodyRenderer`, debounce(this.update.bind(this), 1));
+    data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.bodyRenderer`, debounce(this.drawSelection.bind(this), 1));
     }
 
     protected showMeanLine(col: Column) {

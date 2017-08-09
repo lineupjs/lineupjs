@@ -19,7 +19,7 @@ import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import {INumberColumn} from '../model/NumberColumn';
-import {merge, AEventDispatcher, delayedCall, suffix} from '../utils';
+import {merge, AEventDispatcher, debounce, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
 
@@ -175,7 +175,7 @@ abstract class ADataProvider extends AEventDispatcher {
       Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
     const that = this;
     //delayed reordering per ranking
-    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, delayedCall(function () {
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function () {
       that.triggerReorder(this.source);
     }, 100, null));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);

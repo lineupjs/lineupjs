@@ -130,7 +130,14 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
   let start = 0;
   const mouseMove = (evt: MouseEvent) => {
-    //TODO visual feedback
+    const end = evt.clientX;
+    if (Math.abs(start - end) < 2) {
+      //ignore
+      return;
+    }
+    const delta = end - start;
+    start = end;
+    col.setWidth(Math.max(0, col.getWidth() + delta));
   };
 
   const mouseUp = (evt: MouseEvent) => {

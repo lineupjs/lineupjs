@@ -17,6 +17,7 @@ export function isSortedByMe(col: Column) {
 }
 
 
+
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
  * @param {(...args: any[]) => void} callback the callback to call
@@ -24,7 +25,7 @@ export function isSortedByMe(col: Column) {
  * @param {delayedCall} thisCallback this argument of the callback
  * @return {(...args: any[]) => any} a function that can be called with the same interface as the callback but delayed
  */
-export function delayedCall(callback: (...args: any[]) => void, timeToDelay = 100, thisCallback = this) {
+export function debounce(callback: (...args: any[]) => void, timeToDelay = 100, thisCallback = null) {
   let tm = -1;
   return function (...args: any[]) {
     if (tm >= 0) {
@@ -40,6 +41,25 @@ export function suffix(suffix: string, ...prefix: string[]) {
   return prefix.map((p) => `${p}${suffix}`);
 }
 
+export interface IEventContext {
+  /**
+   * who is sending this event
+   */
+  readonly source: AEventDispatcher;
+  /**
+   * the event type
+   */
+  readonly type: string;
+  /**
+   * in case of multi propagation the 'main' event type
+   */
+  readonly primaryType: string;
+  /**
+   * the arguments to the listener
+   */
+  readonly args: any[];
+}
+
 /**
  * base class for event dispatching using d3 event mechanism
  */
@@ -51,7 +71,7 @@ export class AEventDispatcher {
     this.listeners = dispatch(...this.createEventList());
 
     const that = this;
-    this.forwarder = function (...args: any[]) {
+    this.forwarder = function (this: IEventContext, ...args: any[]) {
       that.fire(this.type, ...args);
     };
   }
@@ -79,11 +99,13 @@ export class AEventDispatcher {
   }
 
   protected fire(type: string | string[], ...args: any[]) {
+    const primaryType = Array.isArray(type) ? type[0]: type;
     const fireImpl = (t: string) => {
       //local context per event, set a this argument
-      const context = {
+      const context: IEventContext = {
         source: this, //who is sending this event
         type: t, //the event type
+        primaryType, //in case of multi propagation the 'main' event type
         args //the arguments to the listener
       };
       this.listeners[t].apply(context, args);

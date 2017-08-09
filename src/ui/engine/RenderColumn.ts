@@ -38,8 +38,12 @@ export function toFullTooltip(col: { label: string, description?: string }) {
 }
 
 export default class RenderColumn implements IColumn {
-  constructor(public readonly c: Column, private readonly rendererId: string, private readonly renderer: IDOMCellRenderer, public readonly width: number, public readonly index: number) {
+  constructor(public readonly c: Column, private readonly rendererId: string, private readonly renderer: IDOMCellRenderer, public readonly index: number) {
 
+  }
+
+  get width() {
+    return this.c.getActualWidth();
   }
 
   get id() {

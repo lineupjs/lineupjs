@@ -3,7 +3,7 @@
  */
 
 import * as d3 from 'd3';
-import {merge, dropAble, delayedCall, forEach, dragAble, suffix} from '../utils';
+import {merge, dropAble, debounce, forEach, dragAble, suffix} from '../utils';
 import Column, {IStatistics, ICategoricalStatistics, IFlatColumn} from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
@@ -168,7 +168,7 @@ export default class HeaderRenderer {
       this.data.on(suffix('.headerRenderer', DataProvider.EVENT_DIRTY_HEADER, DataProvider.EVENT_ORDER_CHANGED, DataProvider.EVENT_SELECTION_CHANGED), null);
     }
     this.data = data;
-    data.on(`${DataProvider.EVENT_DIRTY_HEADER}.headerRenderer`, delayedCall(this.update.bind(this), 1));
+    data.on(`${DataProvider.EVENT_DIRTY_HEADER}.headerRenderer`, debounce(this.update.bind(this), 1));
     if (!this.options.summary) {
       return;
     }
@@ -176,7 +176,7 @@ export default class HeaderRenderer {
       this.updateHist();
       this.update();
     });
-    data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.headerRenderer`, delayedCall(this.drawSelection.bind(this), 1));
+    data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.headerRenderer`, debounce(this.drawSelection.bind(this), 1));
   }
 
   get sharedHistCache() {
