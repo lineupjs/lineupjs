@@ -175,15 +175,15 @@ export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
 export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingContext) {
   dragAble(node, () => {
-    const ref = JSON.stringify(ctx.provider.toDescRef(this.c.desc));
+    const ref = JSON.stringify(ctx.provider.toDescRef(column.desc));
     const data: any = {
-      'text/plain': this.c.label,
-      [`${MIMETYPE_PREFIX}-ref`]: this.c.id,
+      'text/plain': column.label,
+      [`${MIMETYPE_PREFIX}-ref`]: column.id,
       [MIMETYPE_PREFIX]: ref
     };
-    if (isNumberColumn(this.c)) {
+    if (isNumberColumn(column)) {
       data[`${MIMETYPE_PREFIX}-number`] = ref;
-      data[`${MIMETYPE_PREFIX}-number-ref`] = this.c.id;
+      data[`${MIMETYPE_PREFIX}-number-ref`] = column.id;
     }
     return {
       effectAllowed: 'copyMove',
@@ -197,16 +197,16 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingContex
     const prefix = `${MIMETYPE_PREFIX}${numbersOnly?'-number':''}`;
       if (`${prefix}-ref` in data) {
         const id = data[`${prefix}-ref`];
-        let col: Column = this.data.find(id)!;
+        let col: Column = ctx.provider.find(id)!;
         if (copy) {
-          col = this.data.clone(col);
+          col = ctx.provider.clone(col);
         } else if (col) {
           col.removeMe();
         }
         return col;
       }
       const desc = JSON.parse(data[prefix]);
-      return this.data.create(this.data.fromDescRef(desc))!;
+      return this.data.create(ctx.provider.fromDescRef(desc))!;
   };
 
   if (isMultiLevelColumn(column)) {
@@ -233,7 +233,7 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingContex
       }
       const ranking = column.findMyRanker()!;
       const index = ranking.indexOf(column);
-      const parent = <CompositeColumn>this.data.create(justNumbers ? createStackDesc(): createNestedDesc());
+      const parent = <CompositeColumn>ctx.provider.create(justNumbers ? createStackDesc(): createNestedDesc());
       column.removeMe();
       parent.push(column);
       parent.push(col);
