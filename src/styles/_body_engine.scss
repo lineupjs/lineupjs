@@ -1,0 +1,57 @@
+@import 'vars';
+
+.lineup-engine {
+  > header {
+    *[draggable] {
+      cursor: pointer;
+      cursor: -moz-grab;
+      cursor: -webkit-grab; // indicate grab able
+    }
+
+    section {
+      text-align: center;
+      font-size: 90%;
+      color: white;
+      overflow: hidden;
+      background: #c1c1c1;
+
+      > .lu-toolbar {
+        display: none;
+        position: absolute;
+        text-align: right;
+        right: 5px;
+        top: 0;
+        border-radius: 3px 0 0 3px;
+        cursor: auto;
+        background: $lu_header_background;
+        z-index: 1;
+      }
+
+      > .lu-sort {
+        @extend .#{$fa-css-prefix};
+
+        position: absolute;
+        left: 1px;
+        top: 1px;
+        font-size: $lu_toolbar_font_size;
+      }
+
+      &.compressed {
+        > .lu-toolbar i:not(.fa-toggle-right),
+        > .lu-summary {
+          display: none;
+        }
+      }
+
+      > .lu-summary {
+        position: absolute;
+        left: 0;
+        right: 5px;
+        top: 40%;
+        height: 60%;
+        display: none;
+      }
+
+    }
+  }
+}

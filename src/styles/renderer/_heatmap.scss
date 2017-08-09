@@ -1,8 +1,8 @@
 
 
-[data-renderer="numbers"],
-[data-renderer="threshold"],
-[data-renderer="verticalbar"] {
+[data-renderer=numbers],
+[data-renderer=threshold],
+[data-renderer=verticalbar] {
   display: flex;
   flex-direction: row;
   align-content: stretch;

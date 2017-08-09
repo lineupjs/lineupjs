@@ -72,7 +72,7 @@ export default class MappingEditor {
   private build($root: Selection<any>) {
     const options = this.options,
       that = this;
-    $root = $root.append('div').classed('lugui-me', true);
+    $root = $root.append('div').classed('lu-mapping-editor', true);
 
 
     const width = options.width - options.padding_hor * 2;

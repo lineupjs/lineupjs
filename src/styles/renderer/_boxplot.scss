@@ -1,21 +1,20 @@
-@import "../colors";
+@import "../vars";
 
-[data-renderer="boxplot"] {
+[data-renderer=boxplot] {
   display: flex;
   flex-direction: row;
   align-items: center;
 
-  > div {
+  > div { // wiskers + contains everything
+
     position: relative;
-    //wiskers + contains everything
     border-left: 1px solid $lu_renderer_boxplot_stroke;
     border-right: 1px solid $lu_renderer_boxplot_stroke;
-
     height: 90%;
     max-height: 30px;
 
-    &::before {
-      //wiskers line
+    &::before { // wiskers line
+
       content: '';
       position: absolute;
       top: 0;
@@ -24,8 +23,8 @@
       border-bottom: 1px solid $lu_renderer_boxplot_stroke;
     }
 
-    > div:first-child {
-      //box
+    > div:first-child { // box
+
       position: absolute;
       top: 10%;
       height: 80%;
@@ -33,8 +32,8 @@
       outline: 1px solid $lu_renderer_boxplot_stroke;
     }
 
-    > div:last-child {
-      //median
+    > div:last-child { // median
+
       position: absolute;
       top: 10%;
       height: 80%;
@@ -50,7 +49,7 @@
     }
 
     &[data-sort=q1],
-    &[data-sort=q3]{
+    &[data-sort=q3] {
       > div:first-child {
         &::after {
           content: '';
