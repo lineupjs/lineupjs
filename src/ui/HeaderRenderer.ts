@@ -524,29 +524,28 @@ export default class HeaderRenderer {
       const prefix = `${MIMETYPE_PREFIX}${numbersOnly?'-number':''}`;
       if (`${prefix}-ref` in data) {
         const id = data[`${prefix}-ref`];
-        let col: Column = this.data.find(id);
+        let col: Column = this.data.find(id)!;
         if (copy) {
           col = this.data.clone(col);
         } else if (col) {
           col.removeMe();
         }
         return col;
-      } else {
-        const desc = JSON.parse(data[prefix]);
-        return this.data.create(this.data.fromDescRef(desc));
       }
+      const desc = JSON.parse(data[prefix]);
+      return this.data.create(this.data.fromDescRef(desc))!;
     };
 
     const renderMultiLevel = function (this: HTMLElement, col: IMultiLevelColumn) {
       if (col.getCollapsed() || col.getCompressed()) {
-        d3.select(this).selectAll('div.' + clazz + '_i').remove();
-      } else {
-        const sShifts = [];
-        col.flatten(sShifts, 0, 1, that.options.columnPadding);
-
-        const sColumns = sShifts.map((d) => d.col);
-        that.renderColumns(sColumns, sShifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
+        d3.select(this).selectAll(`div.${clazz}_i`).remove();
+        return;
       }
+      const sShifts = <IFlatColumn[]>[];
+      col.flatten(sShifts, 0, 1, that.options.columnPadding);
+
+      const sColumns = sShifts.map((d) => d.col);
+      that.renderColumns(sColumns, sShifts, d3.select(this), clazz + (clazz.substr(clazz.length - 2) !== '_i' ? '_i' : ''));
     };
 
     $headers.filter((d) => isMultiLevelColumn(d) && (<IMultiLevelColumn>d).canJustAddNumbers).each(renderMultiLevel).select('div.lu-label').call(dropAble([`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (data, d: IMultiLevelColumn, copy) => {
@@ -561,12 +560,12 @@ export default class HeaderRenderer {
 
     const justNumbers = (d: Column) => (d instanceof CompositeColumn && d.canJustAddNumbers) || (isNumberColumn(d) && d.parent instanceof Ranking);
     const dropOrMerge = (justNumbers: boolean) => {
-      return (data, d: CompositeColumn|(Column & INumberColumn), copy) => {
+      return (data: {[key: string]: string}, d: CompositeColumn|(Column & INumberColumn), copy: boolean) => {
         const col: Column = resolveDrop(data, copy, justNumbers);
         if (d instanceof CompositeColumn) {
           return (d.push(col) !== null);
         }
-        const ranking = d.findMyRanker();
+        const ranking = d.findMyRanker()!;
         const index = ranking.indexOf(d);
         const parent = <CompositeColumn>this.data.create(justNumbers ? createStackDesc(): createNestedDesc());
         d.removeMe();

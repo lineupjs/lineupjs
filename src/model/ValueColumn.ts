@@ -96,7 +96,7 @@ export default class ValueColumn<T> extends Column {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column|null) {
     if(dump.loaded !== undefined) {
       this.loaded = dump.loaded;
     }

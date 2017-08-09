@@ -5,6 +5,7 @@
 import Column, {IColumnParent, IFlatColumn, IColumnDesc} from './Column';
 import {isNumberColumn} from './NumberColumn';
 import ValueColumn from './ValueColumn';
+import {suffix} from '../utils';
 
 export function isMultiLevelColumn(col: Column) {
   return typeof ((<any>col).getCollapsed) === 'function';
@@ -138,7 +139,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children.every((d) => d.filter(row, index));
   }
 
-  isLoaded() {
+  isLoaded(): boolean {
     return this._children.every((c) => !(c instanceof ValueColumn || c instanceof CompositeColumn) || (<ValueColumn<any>|CompositeColumn>c).isLoaded());
   }
 

@@ -5,9 +5,7 @@
 import {format} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import NumberColumn, {INumberColumn, isNumberColumn, numberCompare} from './NumberColumn';
-import ValueColumn from './ValueColumn';
-
+import NumberColumn, {INumberColumn, numberCompare} from './NumberColumn';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
