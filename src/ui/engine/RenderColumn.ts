@@ -5,7 +5,7 @@ import {IColumn} from 'lineupengine/src';
 import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import ADataProvider, {IDataRow} from '../../provider/ADataProvider';
 import {IFilterDialog} from '../../dialogs/AFilterDialog';
-import {createToolbar, createSummary, dragWidth} from './header';
+import {createToolbar, createSummary, dragWidth, handleDnD} from './header';
 import {INumberColumn} from '../../model/NumberColumn';
 import {ICategoricalColumn} from '../../model/CategoricalColumn';
 import {IDOMCellRenderer} from '../../renderer/IDOMCellRenderers';
@@ -24,6 +24,7 @@ export interface IRankingContext extends IDOMRenderContext {
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
   getRow(index: number): IDataRow;
 }
+
 
 /**
  * utility function to generate the tooltip text with description
@@ -64,6 +65,8 @@ export default class RenderColumn implements IColumn {
       evt.stopPropagation();
       this.c.toggleMySorting();
     });
+
+    handleDnD(node, this.c, ctx);
 
     dragWidth(this.c, node);
     this.updateHeader(node, ctx);

@@ -32,10 +32,7 @@ import SelectionColumn from '../model/SelectionColumn';
 import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
 import HierarchyColumn from '../model/HierarchyColumn';
 import {toFullTooltip} from './engine/RenderColumn';
-
-const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
-
-
+import {MIMETYPE_PREFIX} from 'lineupjs/src/ui/engine/header';
 
 export interface IRankingHook {
   ($node: d3.Selection<Ranking>): void;

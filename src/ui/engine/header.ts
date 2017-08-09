@@ -1,9 +1,9 @@
 /**
  * Created by Samuel Gratzl on 25.07.2017.
  */
-import Column from '../..//model/Column';
+import Column from '../../model/Column';
 import {IRankingContext} from './RenderColumn';
-import {isSupportType} from '../../model';
+import {isSupportType, createStackDesc} from '../../model';
 import NumbersColumn from '../../model/NumbersColumn';
 import BoxPlotColumn from '../../model/BoxPlotColumn';
 import SortDialog from '../../dialogs/SortDialog';
@@ -22,6 +22,9 @@ import StackColumn from '../../model/StackColumn';
 import CutOffHierarchyDialog from '../../dialogs/CutOffHierarchyDialog';
 import SearchDialog from '../../dialogs/SearchDialog';
 import HierarchyColumn from '../../model/HierarchyColumn';
+import {dragAble, dropAble, IDropResult} from './dnd';
+import {isNumberColumn} from '../../model/NumberColumn';
+import Ranking from '../../model/Ranking';
 
 export {default as createSummary} from './summary';
 
@@ -166,4 +169,70 @@ export function dragWidth(col: Column, node: HTMLElement) {
     ueberElement.addEventListener('mouseleave', mouseUp);
   };
 
+}
+
+export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
+
+export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingContext) {
+  dragAble(node, () => {
+    const ref = JSON.stringify(ctx.provider.toDescRef(this.c.desc));
+    const data: any = {
+      'text/plain': this.c.label,
+      [`${MIMETYPE_PREFIX}-ref`]: this.c.id,
+      [MIMETYPE_PREFIX]: ref
+    };
+    if (isNumberColumn(this.c)) {
+      data[`${MIMETYPE_PREFIX}-number`] = ref;
+      data[`${MIMETYPE_PREFIX}-number-ref`] = this.c.id;
+    }
+    return {
+      effectAllowed: 'copyMove',
+      data
+    };
+  }, true);
+
+  const resolveDrop = (result: IDropResult) => {
+    const data = result.data;
+    const copy = result.effect === 'copy';
+    if (`${MIMETYPE_PREFIX}-number-ref` in data) {
+      const id = data[`${MIMETYPE_PREFIX}-number-ref`];
+      let col = ctx.provider.find(id);
+      if (!col) {
+        return null;
+      }
+      if (copy) {
+        col = this.data.clone(col);
+      } else if (col) {
+        col.removeMe();
+      }
+      return col;
+    }
+    const desc = JSON.parse(data[`${MIMETYPE_PREFIX}-number`]);
+    return ctx.provider.create(ctx.provider.fromDescRef(desc));
+  };
+
+  if (isMultiLevelColumn(column)) {
+    dropAble(node, [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (result) => {
+      const col: Column|null = resolveDrop(result);
+      return col != null && (<IMultiLevelColumn>column).push(col) != null;
+    });
+    return;
+  }
+
+  if (!(column.parent instanceof Ranking && isNumberColumn(column) && !isMultiLevelColumn(column))) {
+    return;
+  }
+  dropAble(node, [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (result) => {
+    const col: Column | null = resolveDrop(result);
+    const ranking = column.findMyRanker();
+    if (!ranking || !col) {
+      return false;
+    }
+    const index = ranking.indexOf(column);
+    const stack = <StackColumn>this.data.create(createStackDesc());
+    column.removeMe();
+    stack.push(column);
+    stack.push(col);
+    return ranking.insert(stack, index) != null;
+  });
 }
