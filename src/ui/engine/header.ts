@@ -3,7 +3,7 @@
  */
 import Column from '../../model/Column';
 import {IRankingContext} from './RenderColumn';
-import {isSupportType, createStackDesc} from '../../model';
+import {isSupportType, createStackDesc, createNestedDesc} from '../../model';
 import NumbersColumn from '../../model/NumbersColumn';
 import BoxPlotColumn from '../../model/BoxPlotColumn';
 import SortDialog from '../../dialogs/SortDialog';
@@ -15,7 +15,7 @@ import ADialog from '../../dialogs/ADialog';
 import ScriptColumn from '../../model/ScriptColumn';
 import ScriptEditDialog from '../../dialogs/ScriptEditDialog';
 import EditLinkDialog from '../../dialogs/EditLinkDialog';
-import {IMultiLevelColumn, isMultiLevelColumn} from '../../model/CompositeColumn';
+import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../../model/CompositeColumn';
 import RankColumn from '../../model/RankColumn';
 import WeightsEditDialog from '../../dialogs/WeightsEditDialog';
 import StackColumn from '../../model/StackColumn';
@@ -191,48 +191,59 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingContex
     };
   }, true);
 
-  const resolveDrop = (result: IDropResult) => {
+  const resolveDrop = (result: IDropResult, numbersOnly: boolean) => {
     const data = result.data;
     const copy = result.effect === 'copy';
-    if (`${MIMETYPE_PREFIX}-number-ref` in data) {
-      const id = data[`${MIMETYPE_PREFIX}-number-ref`];
-      let col = ctx.provider.find(id);
-      if (!col) {
-        return null;
+    const prefix = `${MIMETYPE_PREFIX}${numbersOnly?'-number':''}`;
+      if (`${prefix}-ref` in data) {
+        const id = data[`${prefix}-ref`];
+        let col: Column = this.data.find(id)!;
+        if (copy) {
+          col = this.data.clone(col);
+        } else if (col) {
+          col.removeMe();
+        }
+        return col;
       }
-      if (copy) {
-        col = this.data.clone(col);
-      } else if (col) {
-        col.removeMe();
-      }
-      return col;
-    }
-    const desc = JSON.parse(data[`${MIMETYPE_PREFIX}-number`]);
-    return ctx.provider.create(ctx.provider.fromDescRef(desc));
+      const desc = JSON.parse(data[prefix]);
+      return this.data.create(this.data.fromDescRef(desc))!;
   };
 
   if (isMultiLevelColumn(column)) {
-    dropAble(node, [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (result) => {
-      const col: Column|null = resolveDrop(result);
-      return col != null && (<IMultiLevelColumn>column).push(col) != null;
-    });
+    if ((<IMultiLevelColumn>column).canJustAddNumbers) {
+      dropAble(node, [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (result) => {
+        const col: Column | null = resolveDrop(result, true);
+        return col != null && (<IMultiLevelColumn>column).push(col) != null;
+      });
+    } else {
+      dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
+        const col: Column|null = resolveDrop(result, false);
+        return col != null && (<IMultiLevelColumn>column).push(col) != null;
+      });
+    }
     return;
   }
 
-  if (!(column.parent instanceof Ranking && isNumberColumn(column) && !isMultiLevelColumn(column))) {
-    return;
+  const justNumbers = (d: Column) => (d instanceof CompositeColumn && d.canJustAddNumbers) || (isNumberColumn(d) && d.parent instanceof Ranking);
+  const dropOrMerge = (justNumbers: boolean) => {
+    return (result: IDropResult) => {
+      const col: Column = resolveDrop(result, justNumbers);
+      if (column instanceof CompositeColumn) {
+        return (column.push(col) !== null);
+      }
+      const ranking = column.findMyRanker()!;
+      const index = ranking.indexOf(column);
+      const parent = <CompositeColumn>this.data.create(justNumbers ? createStackDesc(): createNestedDesc());
+      column.removeMe();
+      parent.push(column);
+      parent.push(col);
+      return ranking.insert(parent, index) != null;
+    };
+  };
+
+  if (justNumbers(column)) {
+    dropAble(node, [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], dropOrMerge(true));
+  } else {
+    dropAble(node, [`${MIMETYPE_PREFIX}-ref`, `${MIMETYPE_PREFIX}`], dropOrMerge(false));
   }
-  dropAble(node, [`${MIMETYPE_PREFIX}-number-ref`, `${MIMETYPE_PREFIX}-number`], (result) => {
-    const col: Column | null = resolveDrop(result);
-    const ranking = column.findMyRanker();
-    if (!ranking || !col) {
-      return false;
-    }
-    const index = ranking.indexOf(column);
-    const stack = <StackColumn>this.data.create(createStackDesc());
-    column.removeMe();
-    stack.push(column);
-    stack.push(col);
-    return ranking.insert(stack, index) != null;
-  });
 }
