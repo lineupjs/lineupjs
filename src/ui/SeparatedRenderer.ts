@@ -46,6 +46,7 @@ export default class SeparatedRenderer extends AEventDispatcher {
     this.body.histCache = this.header.sharedHistCache;
 
     this.forward(this.body, ABodyRenderer.EVENT_HOVER_CHANGED);
+    this.forward(this.body, ABodyRenderer.EVENT_RENDER_FINISHED);
 
     if (!this.config.body.visibleRowsOnly) {
       return;
@@ -64,6 +65,10 @@ export default class SeparatedRenderer extends AEventDispatcher {
       }
     });
     this.contentScroller.on(ContentScroller.EVENT_REDRAW, (delta) => this.body.scrolled(delta));
+  }
+
+  protected createEventList() {
+    return [ABodyRenderer.EVENT_RENDER_FINISHED, ABodyRenderer.EVENT_HOVER_CHANGED];
   }
 
   private slice(start: number, length: number, row2y: (i: number) => number) {

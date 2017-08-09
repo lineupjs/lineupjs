@@ -209,8 +209,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
     scrolled(delta: number) {
       //next tick
-      console.log(delta);
-      setTimeout(() => this.update(ERenderReason.SCROLLED), 1);
+      this.update(ERenderReason.SCROLLED);
     }
 
     /**
