@@ -1,8 +1,8 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, forEach, merge, debounce} from '../../utils';
-import {default as ABodyRenderer, IBodyRenderer, IBodyRendererOptions} from '../ABodyRenderer';
+import {AEventDispatcher, debounce, forEach, merge} from '../../utils';
+import {default as ABodyRenderer, IBodyRendererOptions} from '../ABodyRenderer';
 import DataProvider, {IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
 import {createDOM, renderers as defaultRenderers} from '../../renderer';
@@ -12,9 +12,11 @@ import EngineRankingRenderer from './EngineRankingRenderer';
 import {uniformContext} from 'lineupengine/src';
 import StringColumn from '../../model/StringColumn';
 import Ranking from '../../model/Ranking';
+import {ILineUpRenderer} from '../index';
+import {IRenderingOptions} from '../../lineup';
 
 
-export default class EngineBodyRenderer extends AEventDispatcher implements IBodyRenderer {
+export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
   static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
   static readonly EVENT_RENDER_FINISHED = ABodyRenderer.EVENT_RENDER_FINISHED;
 
@@ -98,11 +100,7 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
   }
 
   protected createEventList() {
-    return super.createEventList().concat([EngineBodyRenderer.EVENT_HOVER_CHANGED, EngineBodyRenderer.EVENT_RENDER_FINISHED]);
-  }
-
-  setOption(key: string, value: any) {
-    //TODO
+    return super.createEventList().concat([EngineRenderer.EVENT_HOVER_CHANGED, EngineRenderer.EVENT_RENDER_FINISHED]);
   }
 
   changeDataStorage(data: DataProvider) {
@@ -116,7 +114,7 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
     const data = this.data.view(order);
     this.ctx.data = (Array.isArray(data) ? data : []).map(((v, i) => ({v, dataIndex: order[i]})));
     const that = this;
-    ranking.on(`${Ranking.EVENT_DIRTY}.body`, debounce(function(this: {primaryType: string}) {
+    ranking.on(`${Ranking.EVENT_DIRTY}.body`, debounce(function (this: { primaryType: string }) {
       if (this.primaryType !== Column.EVENT_WIDTH_CHANGED) {
         that.update();
       }
@@ -166,5 +164,17 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
 
   scrolled(delta: number) {
     // internally nothing to do
+  }
+
+  destroy() {
+    // TODO
+  }
+
+  scrollIntoView(index: number) {
+
+  }
+
+  setBodyOption(option: keyof IRenderingOptions, value: boolean) {
+
   }
 }

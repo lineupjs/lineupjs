@@ -11,13 +11,11 @@ import {
   dummyRankingButtonHook,
   PoolRenderer,
   IPoolRendererOptions,
-  IBodyRenderer,
-  HeaderRenderer,
-  createBodyRenderer
+  ILineUpRenderer, createRenderer
 } from './ui';
 import {IHeaderRendererOptions} from './ui/HeaderRenderer';
 import {IBodyRendererOptions, default as ABodyRenderer} from './ui/ABodyRenderer';
-import {AEventDispatcher, ContentScroller, merge} from './utils';
+import {AEventDispatcher, merge} from './utils';
 import {scale as d3scale, selection, select, Selection} from 'd3';
 import ICellRendererFactory from './renderer/ICellRendererFactory';
 
@@ -171,10 +169,8 @@ export default class LineUp extends AEventDispatcher {
 
   private $container: Selection<any>;
 
-  private readonly body: IBodyRenderer;
-  private readonly header: HeaderRenderer;
   private pools: PoolRenderer[] = [];
-  private readonly contentScroller: ContentScroller|null;
+  private renderer: ILineUpRenderer;
 
   constructor(container: Selection<any> | Element, public data: DataProvider, config: Partial<ILineUpConfig> = {}) {
     super();
@@ -188,52 +184,14 @@ export default class LineUp extends AEventDispatcher {
     if (this.config.renderingOptions.histograms === true) {
       this.config.renderingOptions.summary = true;
     }
-
-
     this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.main`, this.triggerSelection.bind(this));
     this.data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.main`, this.jumpToNearest.bind(this));
 
-    this.header = new HeaderRenderer(data, this.node, merge({}, this.config.header, {
-      idPrefix: this.config.idPrefix,
-      manipulative: this.config.manipulative,
-      summary: this.config.renderingOptions.summary,
-      freezeCols: this.config.body.freezeCols,
-    }));
-
-    this.node.insertAdjacentHTML('beforeend', `<div class="lu-body-wrapper"></div>`);
-    const bodyWrapper = this.node.lastElementChild!;
-    this.body = createBodyRenderer(this.config.body.renderer, data, bodyWrapper, this.slice.bind(this), merge({}, this.config.body, {
-      meanLine: this.config.renderingOptions.meanLine,
-      animation: this.config.renderingOptions.animation,
-      stacked: this.config.renderingOptions.stacked,
-      idPrefix: this.config.idPrefix,
-      renderers: this.config.renderers
-    }));
-    //share hist caches
-    this.body.histCache = this.header.sharedHistCache;
-
-    this.forward(this.body, LineUp.EVENT_HOVER_CHANGED);
+    this.renderer = createRenderer(this.config.body.renderer, this.data, this.node, this.config);
+    this.forward(this.renderer, LineUp.EVENT_HOVER_CHANGED);
     if (this.config.pool && this.config.manipulative) {
       this.addPool(new PoolRenderer(data, this.node, <IPoolRendererOptions>this.config.pool));
     }
-
-    if (!this.config.body.visibleRowsOnly) {
-      return;
-    }
-    this.contentScroller = new ContentScroller(bodyWrapper, this.body.node, {
-      pageSize: this.config.body.backupScrollRows! * this.config.body.rowHeight!,
-      backupRows: this.config.body.backupScrollRows,
-      rowHeight: this.config.body.rowHeight
-    });
-    this.contentScroller.on(ContentScroller.EVENT_SCROLL, (top, left) => {
-      //in two svg mode propagate horizontal shift
-      this.header.$node.style('margin-left', `${-left}px`);
-      if (this.config.body.freezeCols! > 0) {
-        this.header.updateFreeze(left);
-        this.body.updateFreeze(left);
-      }
-    });
-    this.contentScroller.on(ContentScroller.EVENT_REDRAW, (delta) => this.body.scrolled(delta));
   }
 
   protected createEventList() {
@@ -264,12 +222,7 @@ export default class LineUp extends AEventDispatcher {
     return <Element>this.$container.node();
   }
 
-  private slice(start: number, length: number, row2y: (i: number) => number) {
-    if (this.contentScroller) {
-      return this.contentScroller.select(start, length, row2y);
-    }
-    return {from: start, to: length};
-  }
+
 
   /**
    * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
@@ -277,9 +230,7 @@ export default class LineUp extends AEventDispatcher {
   destroy() {
     this.pools.forEach((p) => p.remove());
     this.$container.remove();
-    if (this.contentScroller) {
-      this.contentScroller.destroy();
-    }
+    this.renderer.destroy();
   }
 
   /**
@@ -310,8 +261,7 @@ export default class LineUp extends AEventDispatcher {
     }
     this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.main`, this.triggerSelection.bind(this));
     this.data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.main`, this.jumpToNearest.bind(this));
-    this.header.changeDataStorage(data);
-    this.body.changeDataStorage(data);
+    this.renderer.changeDataStorage(data);
     this.pools.forEach((p) => p.changeDataStorage(data));
     this.update();
   }
@@ -329,15 +279,10 @@ export default class LineUp extends AEventDispatcher {
     const order = ranking.getOrder();
     //relative order
     const indices = dataIndices.map((d) => order.indexOf(d)).sort((a, b) => a - b);
-    if (this.contentScroller) {
-      this.contentScroller.scrollIntoView(0, order.length, indices[0], (i) => i * this.config.body.rowHeight!);
-    } else {
-      const container = (<HTMLElement>this.$container.node());
-      container.scrollTop = indices[0] * this.config.body.rowHeight!;
-    }
+    this.renderer.scrollIntoView(order.length, indices[0]);
     //fake hover in 100ms - TODO right timing
     setTimeout(() => {
-      this.body.fakeHover(order[indices[0]]);
+      this.renderer.fakeHover(order[indices[0]]);
     }, 100);
   }
 
@@ -361,11 +306,10 @@ export default class LineUp extends AEventDispatcher {
     this.isUpdateInitialized = true;
 
     this.fire(LineUp.EVENT_UPDATE_START);
-    this.header.update();
-    this.body.update();
+    this.renderer.update();
     this.pools.forEach((p) => p.update());
 
-    this.body.on(`${ABodyRenderer.EVENT_RENDER_FINISHED}.main`, () => {
+    this.renderer.on(`${ABodyRenderer.EVENT_RENDER_FINISHED}.main`, () => {
       waitForBodyRenderer -= 1;
       if (waitForBodyRenderer === 0) {
         this.fire(LineUp.EVENT_UPDATE_FINISHED);
@@ -376,8 +320,7 @@ export default class LineUp extends AEventDispatcher {
   changeRenderingOption(option: keyof IRenderingOptions, value: boolean) {
     this.config.renderingOptions[option] = value;
     if (option === 'animation' || option === 'stacked') {
-      this.body.setOption(option, value);
-      this.body.update();
+      this.renderer.setBodyOption(option, value);
     }
   }
 }
