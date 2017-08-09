@@ -16,9 +16,9 @@
       overflow: hidden;
       background: #c1c1c1;
       position: relative;
+      margin-right: -$lu_engine_grip_gap;
 
       > .#{$lu_css_prefix}-toolbar {
-
         display: none;
         position: absolute;
         text-align: right;
@@ -32,6 +32,7 @@
 
         > i {
           @include fa-icon();
+
           padding: 1px 2px;
           cursor: pointer;
 
@@ -102,8 +103,9 @@
       }
 
       > .#{$lu_css_prefix}-label {
+        overflow: hidden;
         text-overflow: ellipsis;
-        overflow-x: hidden;
+        max-height: 5ex; // around two rows
       }
 
       > .#{$lu_css_prefix}-sort {
@@ -115,7 +117,7 @@
         font-size: $lu_toolbar_font_size;
       }
 
-      &:not(.compressed):hover {
+      &:not(.#{$lu_css_prefix}-compressed):hover {
         > .#{$lu_css_prefix}-toolbar {
           display: block;
           padding: 7px;
@@ -155,8 +157,9 @@
         }
       }
 
-      &.compressed {
-        > .#{$lu_css_prefix}-toolbar i:not([title='Hide']),
+      &.#{$lu_css_prefix}-compressed {
+        > .#{$lu_css_prefix}-toolbar i:not([title='UnCollapse']),
+        > .#{$lu_css_prefix}-label,
         > .#{$lu_css_prefix}-summary {
           display: none;
         }
@@ -190,6 +193,11 @@
         }
       }
     }
+  }
+
+  > header > article,
+  > main > article > * {
+    grid-column-gap: $lu_engine_grip_gap;
   }
 
   > main > article {

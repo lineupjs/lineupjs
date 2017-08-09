@@ -56,6 +56,8 @@ export default class RenderColumn implements IColumn {
 
   createHeader(document: Document, ctx: IRankingContext) {
     const node = document.createElement('section');
+    node.title = toFullTooltip(this.c);
+    node.className = `${this.c.cssClass ? ` ${this.c.cssClass}` : ''}${(this.c.getCompressed() ? ' lu-compressed' : '')} ${this.c.headerCssClass}${ctx.options.autoRotateLabels ? ' rotateable' : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
     node.innerHTML = `<div class="lu-toolbar"></div><i class="lu-sort fa"></i><div class="lu-handle"></div><div class="lu-label">${this.c.label}</div><div class="lu-summary"></div>`;
     createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, this.c, ctx);
     createSummary(<HTMLElement>node.querySelector('div.lu-summary')!, this.c, ctx);
