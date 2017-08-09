@@ -17,11 +17,24 @@ export interface IRankingContext extends IDOMRenderContext {
     idPrefix: string;
     linkTemplates: string[];
     searchAble(col: Column): boolean;
+    autoRotateLabels: boolean;
     filters: { [type: string]: IFilterDialog };
   };
 
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
   getRow(index: number): IDataRow;
+}
+
+/**
+ * utility function to generate the tooltip text with description
+ * @param col the column
+ */
+export function toFullTooltip(col: { label: string, description?: string }) {
+  let base = col.label;
+  if (col.description != null && col.description !== '') {
+    base += `\n${col.description}`;
+  }
+  return base;
 }
 
 export default class RenderColumn implements IColumn {
@@ -48,6 +61,9 @@ export default class RenderColumn implements IColumn {
 
   updateHeader(node: HTMLElement, ctx: IRankingContext) {
     node.querySelector('div.lu-label')!.innerHTML = this.c.label;
+    node.title = toFullTooltip(this.c);
+    node.className = `${this.c.cssClass ? ` ${this.c.cssClass}` : ''}${(this.c.getCompressed() ? ' lu-compressed' : '')} ${this.c.headerCssClass}${ctx.options.autoRotateLabels ? ' rotateable' : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
+
     createSummary(<HTMLElement>node.querySelector('div.lu-summary')!, this.c, ctx);
   }
 

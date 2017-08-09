@@ -33,6 +33,7 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
 
     renderers: Object.assign({}, defaultRenderers),
 
+
     meanLine: false,
 
     actions: [],
@@ -73,9 +74,10 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
     this.ctx = {
       provider: data,
       options: Object.assign({
-        filters: Object.assign({}, defaultFilters),
-        linkTemplates: <string[]>[],
-        searchAble: (col: Column) => col instanceof StringColumn
+        filters: Object.assign({}, defaultFilters), //TODO
+        linkTemplates: <string[]>[], //TODO
+        autoRotateLabels: false, //TODO
+        searchAble: (col: Column) => col instanceof StringColumn //TODO
       }, this.options),
       option: findOption,
       statsOf: (col: Column) => {

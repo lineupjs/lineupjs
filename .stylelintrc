@@ -14,7 +14,6 @@
     "scss/at-import-no-partial-leading-underscore": true,
     "scss/at-import-partial-extension-blacklist": null,
     "scss/at-import-partial-extension-whitelist": null,
-    "scss/at-mixin-argumentless-call-parentheses": "always",
     "scss/at-mixin-no-argumentless-call-parentheses": true,
     "scss/at-mixin-pattern": null,
     "scss/declaration-nested-properties": null,

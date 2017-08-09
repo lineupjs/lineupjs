@@ -28,8 +28,8 @@ export {default as createSummary} from './summary';
 export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingContext) {
   const isSupportColumn = isSupportType(col.desc);
 
-  const addIcon = (title: string, icon: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
-    node.insertAdjacentHTML('beforeend', `<i class="fa ${icon}" title="${title}"><span aria-hidden="true">${title}</span> </i>`);
+  const addIcon = (title: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
+    node.insertAdjacentHTML('beforeend', `<i title="${title}"><span aria-hidden="true">${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     if (!dialogClass) {
       return i;
@@ -44,9 +44,9 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingConte
 
   if (!isSupportColumn) {
     //rename
-    addIcon('Rename', 'fa-pencil-square-o', RenameDialog);
+    addIcon('Rename', RenameDialog);
     //clone
-    addIcon('Generate Snapshot', 'fa-code-fork').onclick = (evt) => {
+    addIcon('Generate Snapshot').onclick = (evt) => {
       evt.stopPropagation();
       ctx.provider.takeSnapshot(col);
     };
@@ -54,66 +54,64 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingConte
 
   if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
     //Numbers Sort
-    addIcon('Sort By', 'fa-sort', SortDialog);
+    addIcon('Sort By', SortDialog);
   }
 
   if (col.getRendererList().length > 1) {
     //Renderer Change
-    addIcon('Change Visualization', 'fa-exchange', RendererTypeDialog);
+    addIcon('Change Visualization', RendererTypeDialog);
   }
 
   if (col instanceof LinkColumn) {
     //edit link
-    addIcon('Edit Link Pattern', 'fa-external-link', EditLinkDialog, ctx.options.idPrefix, (<string[]>[]).concat((<any>col.desc).templates || [], ctx.options.linkTemplates));
+    addIcon('Edit Link Pattern', EditLinkDialog, ctx.options.idPrefix, (<string[]>[]).concat((<any>col.desc).templates || [], ctx.options.linkTemplates));
   }
 
   if (col instanceof ScriptColumn) {
     //edit script
-    addIcon('Edit Combine Script', 'fa-gears', ScriptEditDialog);
+    addIcon('Edit Combine Script', ScriptEditDialog);
   }
 
   //filter
   if (ctx.options.filters.hasOwnProperty(col.desc.type)) {
-    addIcon('Filter', 'fa-filter', ctx.options.filters[col.desc.type], '', ctx.provider, ctx.options.idPrefix);
+    addIcon('Filter', ctx.options.filters[col.desc.type], '', ctx.provider, ctx.options.idPrefix);
   }
 
   if (col instanceof HierarchyColumn) {
     //cutoff
-    addIcon('Set Cut Off', 'fa-scissors', CutOffHierarchyDialog, ctx.options.idPrefix);
+    addIcon('Set Cut Off', CutOffHierarchyDialog, ctx.options.idPrefix);
   }
 
   if (ctx.options.searchAble(col)) {
     //search
-    addIcon('Search', 'fa-search', SearchDialog, ctx.provider);
+    addIcon('Search', SearchDialog, ctx.provider);
   }
 
   if (col instanceof StackColumn) {
     //edit weights
-    addIcon('Edit Weights', 'fa-tasks', WeightsEditDialog);
+    addIcon('Edit Weights', WeightsEditDialog);
   }
 
   if (!isSupportColumn) {
-    addIcon('(Un)Collapse', col.getCompressed() ? 'fa-toggle-right' : 'fa-toggle-left').onclick = (evt) => {
+    addIcon(col.getCompressed() ? 'UnCollapse' : 'Collapse').onclick = (evt) => {
       evt.stopPropagation();
       col.setCompressed(!col.getCompressed());
       const i = <HTMLElement>evt.currentTarget;
-      i.classList.toggle('fa-toggle-left');
-      i.classList.toggle('fa-toggle-right');
+      i.title = col.getCompressed() ? 'UnCollapse' : 'Collapse';
     };
   }
 
   if (isMultiLevelColumn(col)) {
     const mcol = <IMultiLevelColumn>col;
-    addIcon('Compress/Expand', mcol.getCollapsed() ? 'fa-expand' : 'fa-compress').onclick = (evt) => {
+    addIcon(mcol.getCollapsed() ? 'Expand' : 'Compress').onclick = (evt) => {
       evt.stopPropagation();
       mcol.setCollapsed(!mcol.getCollapsed());
       const i = <HTMLElement>evt.currentTarget;
-      i.classList.toggle('fa-expand');
-      i.classList.toggle('fa-compress');
+      i.title = mcol.getCollapsed() ? 'Expand' : 'Compress';
     };
   }
 
-  addIcon('Hide', 'fa-times').onclick = (evt) => {
+  addIcon('Hide').onclick = (evt) => {
     evt.stopPropagation();
     if (!(col instanceof RankColumn)) {
       col.removeMe();

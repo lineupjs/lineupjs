@@ -6,8 +6,8 @@ import {Selection, round, select, event as d3event} from 'd3';
 import {merge, suffix} from '../utils';
 import {IColumnDesc, isNumberColumn, Column} from '../model';
 import DataProvider from '../provider/ADataProvider';
-import {toFullTooltip} from './HeaderRenderer';
 import Ranking from '../model/Ranking';
+import {toFullTooltip} from './engine/RenderColumn';
 
 class PoolEntry {
   used: number = 0;

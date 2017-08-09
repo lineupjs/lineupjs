@@ -31,20 +31,11 @@ import ScriptEditDialog from '../dialogs/ScriptEditDialog';
 import SelectionColumn from '../model/SelectionColumn';
 import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
 import HierarchyColumn from '../model/HierarchyColumn';
+import {toFullTooltip} from './engine/RenderColumn';
 
 const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
-/**
- * utility function to generate the tooltip text with description
- * @param col the column
- */
-export function toFullTooltip(col: { label: string, description?: string }) {
-  let base = col.label;
-  if (col.description != null && col.description !== '') {
-    base += `\n${col.description}`;
-  }
-  return base;
-}
+
 
 export interface IRankingHook {
   ($node: d3.Selection<Ranking>): void;
