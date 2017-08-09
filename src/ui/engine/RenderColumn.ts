@@ -56,20 +56,45 @@ export default class RenderColumn implements IColumn {
 
   createHeader(document: Document, ctx: IRankingContext) {
     const node = document.createElement('section');
-    node.title = toFullTooltip(this.c);
-    node.className = `${this.c.cssClass ? ` ${this.c.cssClass}` : ''}${(this.c.getCompressed() ? ' lu-compressed' : '')} ${this.c.headerCssClass}${ctx.options.autoRotateLabels ? ' rotateable' : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
-    node.innerHTML = `<div class="lu-toolbar"></div><i class="lu-sort fa"></i><div class="lu-handle"></div><div class="lu-label">${this.c.label}</div><div class="lu-summary"></div>`;
+    node.innerHTML = `<div class="lu-toolbar"></div><i class="lu-sort"></i><div class="lu-handle"></div><div class="lu-label">${this.c.label}</div><div class="lu-summary"></div>`;
     createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, this.c, ctx);
-    createSummary(<HTMLElement>node.querySelector('div.lu-summary')!, this.c, ctx);
+
+    node.addEventListener('click', (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.c.toggleMySorting();
+    });
 
     dragWidth(this.c, node);
+    this.updateHeader(node, ctx);
     return node;
+  }
+
+  private isSortedByMe(): {asc: 'asc'|'desc'|undefined, priority: string|undefined} {
+    const ranker = this.c.findMyRanker();
+    if (!ranker) {
+      return {asc: undefined, priority: undefined};
+    }
+    const criterias = ranker.getSortCriterias();
+    const index = criterias.findIndex((c) => c.col === this.c);
+    if (index < 0) {
+      return {asc: undefined, priority: undefined};
+    }
+    return {
+      asc: criterias[index].asc ? 'asc' : 'desc',
+      priority: index.toString()
+    };
   }
 
   updateHeader(node: HTMLElement, ctx: IRankingContext) {
     node.querySelector('div.lu-label')!.innerHTML = this.c.label;
     node.title = toFullTooltip(this.c);
     node.className = `${this.c.cssClass ? ` ${this.c.cssClass}` : ''}${(this.c.getCompressed() ? ' lu-compressed' : '')} ${this.c.headerCssClass}${ctx.options.autoRotateLabels ? ' rotateable' : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
+    const sort = <HTMLElement>node.querySelector('.lu-sort')!;
+    const {asc, priority} = this.isSortedByMe();
+    sort.dataset.sort = asc;
+    sort.dataset.priority = priority;
+
 
     createSummary(<HTMLElement>node.querySelector('div.lu-summary')!, this.c, ctx);
   }
