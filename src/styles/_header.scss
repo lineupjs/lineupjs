@@ -1,6 +1,6 @@
 @import "vars";
 
-.lu-pool {
+.#{$lu_css_prefix}-pool {
   div.header {
     border: 2px outset white;
     position: absolute;
@@ -11,16 +11,16 @@
   }
 }
 
-.lu,
-.lu-pool {
+.#{$lu_css_prefix},
+.#{$lu_css_prefix}-pool {
   *[draggable] {
     cursor: pointer;
     cursor: -moz-grab;
     cursor: -webkit-grab; // indicate grab able
   }
 
-  div.lu-header,
-  div.lu-pool {
+  div.#{$lu_css_prefix}-header,
+  div.#{$lu_css_prefix}-pool {
     .drop {
       width: 100%;
       height: 100%;
@@ -32,7 +32,7 @@
     }
   }
 
-  div.lu-header {
+  div.#{$lu_css_prefix}-header {
     div.toolbar {
       display: none;
       position: absolute;
@@ -46,7 +46,7 @@
     }
 
     div.header {
-      &.drag_over div.lu-label {
+      &.drag_over div.#{$lu_css_prefix}-label {
         color: $lu_drag_over;
       }
 
@@ -66,7 +66,7 @@
         display: none;
       }
 
-      div.lu-label {
+      div.#{$lu_css_prefix}-label {
         position: relative;
         background: inherit;
         transform-origin: left top;
@@ -74,7 +74,7 @@
         overflow-x: hidden;
       }
 
-      span.lu-label {
+      span.#{$lu_css_prefix}-label {
         background: inherit;
       }
 

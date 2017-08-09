@@ -1,6 +1,6 @@
 @import "vars";
 
-.lu div.lu-body div.lu-overlay {
+.#{$lu_css_prefix} div.#{$lu_css_prefix}-body div.#{$lu_css_prefix}-overlay {
   position: absolute;
   display: none;
   padding: 0;

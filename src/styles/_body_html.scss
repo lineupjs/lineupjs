@@ -1,6 +1,6 @@
 @import "vars";
 
-.lu div.lu-body {
+.#{$lu_css_prefix} div.#{$lu_css_prefix}-body {
   font: $lu_body_font;
   position: relative;
 

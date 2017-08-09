@@ -1,6 +1,6 @@
 @import "vars";
 
-.lu .lu-body {
+.#{$lu_css_prefix} .#{$lu_css_prefix}-body {
   .hoverOnly {
     display: none;
   }

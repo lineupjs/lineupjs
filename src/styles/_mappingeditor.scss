@@ -1,8 +1,9 @@
 /**
 mapping editor
  */
+@import 'vars';
 
-.lu-mapping-editor {
+.#{$lu_css_prefix}-mapping-editor {
   $sample_color: black;
   $mapping_color: blue;
   $mapping_color_hover: #0000cf;

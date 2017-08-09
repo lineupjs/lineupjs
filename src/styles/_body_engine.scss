@@ -10,12 +10,13 @@
 
     section {
       text-align: center;
-      font-size: 90%;
       color: white;
       overflow: hidden;
       background: #c1c1c1;
+      position: relative;
+      font-size: $lu_toolbar_font_size;
 
-      > .lu-toolbar {
+      > .#{$lu_css_prefix}-toolbar {
         display: none;
         position: absolute;
         text-align: right;
@@ -25,25 +26,81 @@
         cursor: auto;
         background: $lu_header_background;
         z-index: 1;
-      }
 
-      > .lu-sort {
-        @extend .#{$fa-css-prefix};
+        > i {
+          padding: 1px 2px;
+          cursor: pointer;
 
-        position: absolute;
-        left: 1px;
-        top: 1px;
-        font-size: $lu_toolbar_font_size;
-      }
-
-      &.compressed {
-        > .lu-toolbar i:not(.fa-toggle-right),
-        > .lu-summary {
-          display: none;
+          &:hover {
+            color: darkblue;
+          }
         }
       }
 
-      > .lu-summary {
+      > .#{$lu_css_prefix}-label {
+        text-overflow: ellipsis;
+        overflow-x: hidden;
+      }
+
+      > .#{$lu_css_prefix}-sort {
+        position: absolute;
+        left: 1px;
+        top: 1px;
+      }
+
+      &:not(.compressed):hover {
+        > .#{$lu_css_prefix}-toolbar {
+          display: block;
+          padding: 7px;
+
+          i {
+            display: none;
+          }
+
+          /**
+          show menu icon and provide extra spacing, that the menu doesn't close immediately when the mouse leaves the toolbar
+           */
+          &::before {
+            z-index: -1;
+            content: '\f0c9';
+            font-family: FontAwesome, sans-serif;
+            font-size: 7pt;
+            padding: 1px 2px 1px 1px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: -5px;
+            left: -5px;
+          }
+
+          &:hover {
+            padding: 0 10px 0 5px; // give more padding to the right to prevent clicking the hide button
+
+            &::before {
+              content: '';
+            }
+
+            i {
+              display: inline-block;
+            }
+          }
+        }
+      }
+
+      &.compressed {
+        > .#{$lu_css_prefix}-toolbar i:not(.fa-toggle-right),
+        > .#{$lu_css_prefix}-summary {
+          display: none;
+        }
+
+        &:hover {
+          > .#{$lu_css_prefix}-toolbar {
+            display: block;
+          }
+        }
+      }
+
+      > .#{$lu_css_prefix}-summary {
         position: absolute;
         left: 0;
         right: 5px;
@@ -52,6 +109,19 @@
         display: none;
       }
 
+      > .#{$lu_css_prefix}-handle {
+        position: absolute;
+        right: 0;
+        height: 100%;
+        top: 0;
+        background-color: white;
+        display: inline-block;
+        cursor: col-resize;
+
+        &.drag_over {
+          background-color: $lu_drag_over;
+        }
+      }
     }
   }
 }
