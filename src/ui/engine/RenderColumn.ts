@@ -9,8 +9,9 @@ import {createToolbar, createSummary} from './header';
 import {INumberColumn} from '../../model/NumberColumn';
 import {ICategoricalColumn} from '../../model/CategoricalColumn';
 import {IDOMCellRenderer} from '../../renderer/IDOMCellRenderers';
+import {IDOMRenderContext} from '../../renderer/RendererContexts';
 
-export interface IRankingContext {
+export interface IRankingContext extends IDOMRenderContext {
   readonly provider: ADataProvider;
   readonly options: {
     idPrefix: string;
@@ -59,10 +60,10 @@ export default class RenderColumn implements IColumn {
   }
 }
 
-function asElement(doc: Document, html: string) {
+function asElement(doc: Document, html: string): HTMLElement {
   const helper = doc.createElement('div');
   helper.innerHTML = html;
-  const s = helper.firstElementChild;
+  const s = <HTMLElement>helper.firstElementChild!;
   helper.innerHTML = '';
   return s;
 }

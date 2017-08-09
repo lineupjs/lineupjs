@@ -54,6 +54,22 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
     this.node = parent.ownerDocument.createElement('main');
     parent.appendChild(this.node);
 
+    const fixOptions: any = this.options;
+
+    function findOption(key: string, defaultValue: any): any {
+      if (key in options) {
+        return fixOptions[key];
+      }
+      if (key.indexOf('.') > 0) {
+        const p = key.substring(0, key.indexOf('.'));
+        key = key.substring(key.indexOf('.') + 1);
+        if (p in options && key in fixOptions[p]) {
+          return fixOptions[p][key];
+        }
+      }
+      return defaultValue;
+    }
+
     this.ctx = {
       provider: data,
       options: Object.assign({
@@ -61,12 +77,19 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
         linkTemplates: <string[]>[],
         searchAble: (col: Column) => col instanceof StringColumn
       }, this.options),
+      option: findOption,
       statsOf: (col: Column) => {
         const r = this.histCache.get(col.id);
         if (r == null || r instanceof Promise) {
           return null;
         }
         return r;
+      },
+      renderer: (col: Column) => createDOM(col, this.options.renderers, this.ctx),
+      idPrefix: this.options.idPrefix,
+
+      getRow: (index: number) => {
+        return { dataIndex: 0, v: {}}; //TODO
       }
     };
   }
@@ -91,7 +114,7 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
       ranking.flatten(cols, 0, 1, 0);
       const columns = cols.map((c, i) => {
         const renderer = createDOM(c.col, this.options.renderers, this.ctx);
-        new RenderColumn(c.col, c.width, i)
+        return new RenderColumn(c.col, renderer, c.width, i);
       });
 
       const rowContext = uniformContext(ranking.getOrder().length, 20);

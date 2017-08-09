@@ -195,9 +195,14 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     }).on('mouseenter', (d) => this.mouseOver(d.dataIndex, true))
       .on('mouseleave', (d) => this.mouseOver(d.dataIndex, false));
     $lines.attr('data-data-index', (d) => d.dataIndex);
+    const pos = (index: number) => {
+      const act = context.cellY(index);
+      const next = context.cellY(index + 1);
+      return act + (next - act) * 0.5;
+    };
     $lines.attr({
-      y1: (d: any) => context.rowHeight(d.lpos) * 0.5 + context.cellY(d.lpos),
-      y2: (d: any) => context.rowHeight(d.rpos) * 0.5 + context.cellY(d.rpos)
+      y1: (d: any) => pos(d.lpos),
+      y2: (d: any) => pos(d.rpos)
     });
     $lines.exit().remove();
 

@@ -184,8 +184,6 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
         option: findOption,
 
-        rowHeight: () => this.options.rowHeight - this.options.rowPadding,
-
         renderer(col: Column) {
           return creator(col, options.renderers, this);
         }
