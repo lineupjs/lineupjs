@@ -103,7 +103,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
   }
 
   getRawNumber(row: any, index: number) {
-    return this.getValue(row, index);
+    return this.getNumber(row, index);
   }
 
   getColor(row: any, index: number): string|null {

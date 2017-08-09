@@ -38,7 +38,6 @@ export function numberCompare(a: number|null, b: number|null) {
 
 
 export interface INumberColumn {
-  isLoaded(): boolean;
 
   getNumber(row: any, index: number): number;
 

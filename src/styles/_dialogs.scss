@@ -59,6 +59,19 @@
     cursor: pointer;
     cursor: -webkit-grab;
   }
+
+  .script-description {
+    font-size: 120%;
+    max-width: 50em;
+
+    dl {
+      padding: 1em 0.2em;
+
+      dd {
+        padding-left: 1em;
+      }
+    }
+  }
 }
 
 .#{$lu_css_prefix}-popup2 {

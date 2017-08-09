@@ -6,6 +6,7 @@ import {format} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
 import NumberColumn, {INumberColumn, isNumberColumn, numberCompare} from './NumberColumn';
+import ValueColumn from './ValueColumn';
 
 
 export interface ICompositeNumberDesc extends IColumnDesc {
@@ -59,19 +60,6 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     super.restore(dump, factory);
   }
 
-  /**
-   * inserts a column at a the given position
-   * @param col
-   * @param index
-   * @returns {any}
-   */
-  insert(col: Column, index: number) {
-    if (!isNumberColumn(col)) { //indicator it is a number type
-      return null;
-    }
-    return super.insert(col, index);
-  }
-
   getLabel(row: any, index: number) {
     if (!this.isLoaded()) {
       return '';
@@ -93,10 +81,6 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return v;
   }
 
-  isLoaded() {
-    return this._children.every((c) => (<INumberColumn><any>c).isLoaded());
-  }
-
   protected compute(row: any, index: number) {
     return NaN;
   }
@@ -107,8 +91,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
   }
 
   getRawNumber(row: any, index: number) {
-    const r = this.getValue(row, index);
-    return r === null ? NaN : r;
+    return this.getNumber(row, index);
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
