@@ -191,6 +191,30 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingContex
     };
   }, true);
 
+  dropAble(<HTMLElement>node.querySelector('.lu-handle')!, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
+    let col: Column|null = null;
+    const data = result.data;
+    if (`${MIMETYPE_PREFIX}-ref` in data) {
+      const id = data[`${MIMETYPE_PREFIX}-ref`];
+      col = ctx.provider.find(id);
+      if (!col || (col === column && result.effect === 'move')) {
+        return false;
+      }
+      if (result.effect === 'copy') {
+        col = ctx.provider.clone(col!);
+      } else {
+        col.removeMe();
+      }
+    } else {
+      const desc = JSON.parse(data[MIMETYPE_PREFIX]);
+      col = ctx.provider.create(ctx.provider.fromDescRef(desc));
+    }
+    if (!col || col === column) {
+      return false;
+    }
+    return column.insertAfterMe(col) != null;
+  }, null, true);
+
   const resolveDrop = (result: IDropResult, numbersOnly: boolean) => {
     const data = result.data;
     const copy = result.effect === 'copy';
@@ -200,13 +224,15 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingContex
         let col: Column = ctx.provider.find(id)!;
         if (copy) {
           col = ctx.provider.clone(col);
-        } else if (col) {
+        } else if (col === column) {
+          return null;
+        } else {
           col.removeMe();
         }
         return col;
       }
       const desc = JSON.parse(data[prefix]);
-      return this.data.create(ctx.provider.fromDescRef(desc))!;
+      return ctx.provider.create(ctx.provider.fromDescRef(desc))!;
   };
 
   if (isMultiLevelColumn(column)) {
@@ -227,7 +253,10 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingContex
   const justNumbers = (d: Column) => (d instanceof CompositeColumn && d.canJustAddNumbers) || (isNumberColumn(d) && d.parent instanceof Ranking);
   const dropOrMerge = (justNumbers: boolean) => {
     return (result: IDropResult) => {
-      const col: Column = resolveDrop(result, justNumbers);
+      const col: Column|null = resolveDrop(result, justNumbers);
+      if (!col) {
+        return false;
+      }
       if (column instanceof CompositeColumn) {
         return (column.push(col) !== null);
       }

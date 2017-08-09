@@ -87,7 +87,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
   const id = ++idCounter;
   node.draggable = true;
   node.addEventListener('dragstart', (e) => {
-    node.classList.add('phovea-dragging');
+    node.classList.add('lu-dragging');
     const payload = onDragStart();
     e.dataTransfer.effectAllowed = payload.effectAllowed;
 
@@ -113,7 +113,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
     dndTransferStorage.set(id, payload.data);
   });
   node.addEventListener('dragend', (e) => {
-    node.classList.remove('phovea-dragging');
+    node.classList.remove('lu-dragging');
     if (stopPropagation) {
       e.stopPropagation();
     }
@@ -136,7 +136,7 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
   node.addEventListener('dragenter', (e) => {
     //var xy = mouse($node.node());
     if (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) {
-      node.classList.add('phovea-dragover');
+      node.classList.add('lu-dragover');
       if (stopPropagation) {
         e.stopPropagation();
       }
@@ -144,14 +144,14 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
       return false;
     }
     //not a valid mime type
-    node.classList.remove('phovea-dragover');
+    node.classList.remove('lu-dragover');
     return;
   });
   node.addEventListener('dragover', (e) => {
     if (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) {
       e.preventDefault();
       updateDropEffect(e);
-      node.classList.add('phovea-dragover');
+      node.classList.add('lu-dragover');
 
       if (stopPropagation) {
         e.stopPropagation();
@@ -165,7 +165,7 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
     return;
   });
   node.addEventListener('dragleave', () => {
-    node.classList.remove('phovea-dragover');
+    node.classList.remove('lu-dragover');
   });
   node.addEventListener('drop', (e) => {
     e.preventDefault();
@@ -174,7 +174,7 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
     }
     const effect = <IDragEffect>e.dataTransfer.effectAllowed;
 
-    node.classList.remove('phovea-dragover');
+    node.classList.remove('lu-dragover');
 
     if (isEdgeDnD(e)) {
       const base = e.dataTransfer.getData('text/plain');

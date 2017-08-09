@@ -194,6 +194,26 @@ section {
     }
   }
 
+  &.#{$lu_css_prefix}-dragging {
+    opacity: 0.5;
+  }
+
+  &.#{$lu_css_prefix}-dragover::after {
+    content: '+';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    pointer-events: none;
+    background: $lu_drag_over;
+  }
+
   &.#{$lu_css_prefix}-compressed {
     > .#{$lu_css_prefix}-toolbar i:not([title='UnCollapse']),
     > .#{$lu_css_prefix}-label,
@@ -225,7 +245,7 @@ section {
     background-color: white;
     cursor: col-resize;
 
-    &.drag_over {
+    &.#{$lu_css_prefix}-dragover {
       background-color: $lu_drag_over;
     }
   }
