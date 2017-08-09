@@ -148,7 +148,6 @@
       width: 100%;
     }
 
-
     [data-renderer] {
       overflow-x: hidden;
       text-overflow: ellipsis;
@@ -161,6 +160,5 @@
     @import './renderer/threshold';
     @import './renderer/sparkline';
     @import './renderer/vertical';
-
   }
 }
