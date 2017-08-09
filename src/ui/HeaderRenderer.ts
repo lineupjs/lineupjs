@@ -33,7 +33,7 @@ import SelectionColumn from '../model/SelectionColumn';
 import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
 import HierarchyColumn from '../model/HierarchyColumn';
 import {toFullTooltip} from './engine/RenderColumn';
-import {MIMETYPE_PREFIX} from 'lineupjs/src/ui/engine/header';
+import {MIMETYPE_PREFIX} from './engine/header';
 
 export interface IRankingHook {
   ($node: d3.Selection<Ranking>): void;
