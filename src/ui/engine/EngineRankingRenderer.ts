@@ -46,7 +46,7 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
       super.recreate();
     } else {
       this.initialized = true;
-      super.init();
+      setTimeout(() => super.init(), 100);
     }
   }
 }

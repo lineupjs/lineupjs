@@ -180,10 +180,9 @@
       > .#{$lu_css_prefix}-handle {
         position: absolute;
         right: 0;
+        width: 5px;
         height: 100%;
-        top: 0;
         background-color: white;
-        display: inline-block;
         cursor: col-resize;
 
         &.drag_over {

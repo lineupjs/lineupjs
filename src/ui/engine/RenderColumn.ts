@@ -5,7 +5,7 @@ import {IColumn} from 'lineupengine/src';
 import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import ADataProvider, {IDataRow} from '../../provider/ADataProvider';
 import {IFilterDialog} from '../../dialogs/AFilterDialog';
-import {createToolbar, createSummary} from './header';
+import {createToolbar, createSummary, dragWidth} from './header';
 import {INumberColumn} from '../../model/NumberColumn';
 import {ICategoricalColumn} from '../../model/CategoricalColumn';
 import {IDOMCellRenderer} from '../../renderer/IDOMCellRenderers';
@@ -56,6 +56,7 @@ export default class RenderColumn implements IColumn {
     createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, this.c, ctx);
     createSummary(<HTMLElement>node.querySelector('div.lu-summary')!, this.c, ctx);
 
+    dragWidth(this.c, node);
     return node;
   }
 

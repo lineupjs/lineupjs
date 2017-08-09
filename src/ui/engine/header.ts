@@ -123,3 +123,40 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingConte
     }
   };
 }
+
+export function dragWidth(col: Column, node: HTMLElement) {
+  let ueberElement: HTMLElement;
+  const handle = <HTMLElement>node.querySelector('.lu-handle');
+
+  let start = 0;
+  const mouseMove = (evt: MouseEvent) => {
+    //TODO visual feedback
+  };
+
+  const mouseUp = (evt: MouseEvent) => {
+    const end = evt.clientX;
+
+    ueberElement.removeEventListener('mousemove', mouseMove);
+    ueberElement.removeEventListener('mouseup', mouseUp);
+    ueberElement.removeEventListener('mouseleave', mouseUp);
+
+    if (Math.abs(start - end) < 2) {
+      //ignore
+      return;
+    }
+    const delta = end - start;
+    col.setWidth(Math.max(0, col.getWidth() + delta));
+  };
+  handle.onmousedown = (evt) => {
+    evt.stopPropagation();
+    evt.preventDefault();
+    node.classList.add('lu-change-width');
+
+    start = evt.clientX;
+    ueberElement = <HTMLElement>node.closest('header')!;
+    ueberElement.addEventListener('mousemove', mouseMove);
+    ueberElement.addEventListener('mouseup', mouseUp);
+    ueberElement.addEventListener('mouseleave', mouseUp);
+  };
+
+}

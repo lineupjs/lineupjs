@@ -4,15 +4,17 @@
   white-space: nowrap;
 
   :first-child {
-    flex: 0 0 1em;
+    flex: 0 0 16px;
     height: 100%;
-    max-height: 1em;
+    max-height: 16px;
     margin-right: 0.5em;
-    border-radius: 0.5em;
+    border-radius: 8px;
     align-self: center;
   }
 
   :last-child {
     flex: 1 1 auto;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
   }
 }
