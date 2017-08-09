@@ -7,8 +7,6 @@ import {IDataRow} from '../provider/ADataProvider';
 import {isSortedByMe} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {scale as d3scale} from 'd3';
-
 
 function computeLabel(v: IBoxPlotData) {
   if (v === null) {
@@ -58,9 +56,8 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
-    const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
     const sortedByMe = isSortedByMe(col);
-
+    const width = col.getActualWidth();
     const boxColor = context.option('style.boxplot.box', '#e0e0e0');
     const boxStroke = context.option('style.boxplot.stroke', 'black');
     const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ff0700');
@@ -74,11 +71,11 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         return;
       }
       const scaled = {
-        min: scale(data.min),
-        median: scale(data.median),
-        q1: scale(data.q1),
-        q3: scale(data.q3),
-        max: scale(data.max)
+        min: data.min * width,
+        median: data.median * width,
+        q1: data.q1 * width,
+        q3: data.q3 * width,
+        max: data.max * width
       };
       const minPos = scaled.min, maxPos = scaled.max, medianPos = scaled.median, q3Pos = scaled.q3, q1Pos = scaled.q1;
       ctx.fillStyle = boxColor;

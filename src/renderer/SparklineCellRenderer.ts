@@ -4,10 +4,15 @@ import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {svg as d3svg} from 'd3';
 import Column from '../model/Column';
 
-const line = d3svg.line<number>().x((d, j) => j).y((d) => 1 - d).interpolate('linear');
+function line(data: number[]) {
+  if (data.length === 0) {
+    return '';
+  }
+  const first = data[0];
+  return `M0,${1-first} ${data.slice(1).map((d,i) => `L${i},${1-d}`).join(' ')}`;
+}
 
 export default class SparklineCellRenderer implements ICellRendererFactory {
 
