@@ -1,0 +1,18 @@
+
+[data-renderer=categorical] {
+  display: flex;
+  white-space: nowrap;
+
+  :first-child {
+    flex: 0 0 1em;
+    height: 100%;
+    max-height: 1em;
+    margin-right: 0.5em;
+    border-radius: 0.5em;
+    align-self: center;
+  }
+
+  :last-child {
+    flex: 1 1 auto;
+  }
+}

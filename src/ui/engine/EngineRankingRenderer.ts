@@ -6,18 +6,13 @@ import RenderColumn, {IRankingContext} from './RenderColumn';
 import {IExceptionContext} from 'lineupengine/src/logic';
 
 export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
-  protected readonly _context: ICellRenderContext<RenderColumn>;
+  protected _context: ICellRenderContext<RenderColumn>;
 
-  constructor(root: HTMLElement, id: string, columns: RenderColumn[], rowContext: IExceptionContext, private readonly ctx: IRankingContext) {
+  private initialized: boolean = false;
+
+  constructor(root: HTMLElement, private readonly id: string, private readonly ctx: IRankingContext) {
     super(root);
     root.id = id;
-
-    this._context = Object.assign({
-      columns,
-      column: nonUniformContext(columns.map((w) => w.width), 100),
-      htmlId: `#${id}`
-    }, rowContext);
-
   }
 
   protected get context() {
@@ -40,11 +35,18 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     return column.updateCell(node, index, this.ctx);
   }
 
-  build() {
-    return super.init();
-  }
+  render(columns: RenderColumn[], rowContext: IExceptionContext) {
+    this._context = Object.assign({
+      columns,
+      column: nonUniformContext(columns.map((w) => w.width), 100),
+      htmlId: `#${this.id}`
+    }, rowContext);
 
-  update() {
-    super.update();
+    if (this.initialized) {
+      super.recreate();
+    } else {
+      this.initialized = true;
+      super.init();
+    }
   }
 }

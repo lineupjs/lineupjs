@@ -23,7 +23,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   createDOM(col: ICategoricalColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     return {
       template: `<div class='${this.textClass}'>
-        <span></span><span></span>
+        <div></div><div></div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         attr(<HTMLDivElement>n.firstElementChild, {}, {

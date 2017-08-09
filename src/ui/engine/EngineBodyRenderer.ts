@@ -3,7 +3,7 @@
  */
 import {AEventDispatcher, forEach, merge} from '../../utils';
 import {default as ABodyRenderer, IBodyRenderer, IBodyRendererOptions} from '../ABodyRenderer';
-import DataProvider from '../../provider/ADataProvider';
+import DataProvider, {IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
 import {createDOM, renderers as defaultRenderers} from '../../renderer';
 import {filters as defaultFilters} from '../../dialogs';
@@ -45,9 +45,9 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
 
   readonly node: HTMLElement;
 
-  readonly ctx: IRankingContext;
+  readonly ctx: IRankingContext & { data: IDataRow[] };
 
-  private renderer: EngineRankingRenderer|null = null;
+  private readonly renderer: EngineRankingRenderer;
 
   constructor(private data: DataProvider, parent: Element, options: Partial<IBodyRendererOptions> = {}) {
     super();
@@ -89,11 +89,11 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
       },
       renderer: (col: Column) => createDOM(col, this.options.renderers, this.ctx),
       idPrefix: this.options.idPrefix,
-
-      getRow: (index: number) => {
-        return { dataIndex: 0, v: {}}; //TODO
-      }
+      data: [],
+      getRow: (index: number) => this.ctx.data[index]
     };
+
+    this.renderer = new EngineRankingRenderer(this.node, this.options.idPrefix, this.ctx);
   }
 
   protected createEventList() {
@@ -111,23 +111,21 @@ export default class EngineBodyRenderer extends AEventDispatcher implements IBod
 
   update() {
     const ranking = this.data.getLastRanking();
-    if(this.renderer === null) {
-      const cols: IFlatColumn[] = [];
-      ranking.flatten(cols, 0, 1, 0);
-      const columns = cols.map((c, i) => {
-        const renderer = createDOM(c.col, this.options.renderers, this.ctx);
-        return new RenderColumn(c.col, renderer, c.width, i);
-      });
+    const order = ranking.getOrder();
+    const data = this.data.view(order);
+    this.ctx.data = (Array.isArray(data) ? data : []).map(((v, i) => ({v, dataIndex: order[i]})));
 
-      const rowContext = uniformContext(ranking.getOrder().length, 20);
 
-      this.renderer = new EngineRankingRenderer(this.node, this.options.idPrefix, columns, rowContext, this.ctx);
-      this.renderer.build();
-    }
+    const cols: IFlatColumn[] = [];
+    ranking.flatten(cols, 0, 1, 0);
+    const columns = cols.map((c, i) => {
+      const renderer = createDOM(c.col, this.options.renderers, this.ctx);
+      return new RenderColumn(c.col, c.col.getRendererType(), renderer, c.width, i);
+    });
 
-    this.renderer.update();
+    const rowContext = uniformContext(this.ctx.data.length, 20);
 
-    //TODO rebuild;
+    this.renderer.render(columns, rowContext);
   }
 
   select(dataIndex: number, additional?: boolean) {

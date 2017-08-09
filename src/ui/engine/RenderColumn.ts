@@ -38,7 +38,7 @@ export function toFullTooltip(col: { label: string, description?: string }) {
 }
 
 export default class RenderColumn implements IColumn {
-  constructor(public readonly c: Column, private readonly renderer: IDOMCellRenderer, public readonly width: number, public readonly index: number) {
+  constructor(public readonly c: Column, private readonly rendererId: string, private readonly renderer: IDOMCellRenderer, public readonly width: number, public readonly index: number) {
 
   }
 
@@ -68,10 +68,13 @@ export default class RenderColumn implements IColumn {
   }
 
   createCell(index: number, document: Document, ctx: IRankingContext) {
-    return asElement(document, this.renderer.template);
+    const node = asElement(document, this.renderer.template);
+    this.updateCell(node, index, ctx);
+    return node;
   }
 
   updateCell(node: HTMLElement, index: number, ctx: IRankingContext): HTMLElement|void {
+    node.dataset.renderer = this.rendererId;
     this.renderer.update(node, ctx.getRow(index), index);
   }
 }
