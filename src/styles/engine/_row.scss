@@ -1,0 +1,43 @@
+
+.hoverOnly,
+.selectionOnly {
+  display: none;
+}
+
+&:hover,
+&.selected {
+  .notHoverOnly {
+    display: none;
+  }
+
+  .hoverOnly {
+    display: block;
+  }
+}
+
+/**
+  selected state extends hover state
+ */
+&.selected {
+  .notSelectionOnly {
+    display: none;
+  }
+
+  .selectionOnly {
+    display: block;
+  }
+}
+
+[data-renderer] {
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+@import '../renderer/heatmap';
+@import '../renderer/upset';
+@import '../renderer/boxplot';
+@import '../renderer/bar';
+@import '../renderer/cat';
+@import '../renderer/threshold';
+@import '../renderer/sparkline';
+@import '../renderer/vertical';

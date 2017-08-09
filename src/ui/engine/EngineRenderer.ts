@@ -13,7 +13,7 @@ import {uniformContext} from 'lineupengine/src';
 import StringColumn from '../../model/StringColumn';
 import Ranking from '../../model/Ranking';
 import {ILineUpRenderer} from '../index';
-import {IRenderingOptions} from '../../lineup';
+import {ILineUpConfig, IRenderingOptions} from '../../lineup';
 
 
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
@@ -44,7 +44,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     freezeCols: 0
   };
 
-  histCache = new Map<string, Promise<IStatistics | ICategoricalStatistics> | IStatistics | ICategoricalStatistics | null>();
+  private readonly histCache = new Map<string, IStatistics | ICategoricalStatistics>();
 
   readonly node: HTMLElement;
 
@@ -52,9 +52,9 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   private readonly renderer: EngineRankingRenderer;
 
-  constructor(private data: DataProvider, parent: Element, options: Partial<IBodyRendererOptions> = {}) {
+  constructor(private data: DataProvider, parent: Element, options: ILineUpConfig) {
     super();
-    merge(this.options, options);
+    merge(this.options, options.body, options.header, options);
     this.node = parent.ownerDocument.createElement('main');
     parent.appendChild(this.node);
 
