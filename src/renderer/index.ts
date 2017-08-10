@@ -24,8 +24,10 @@ import CircleCellRenderer from './CircleCellRenderer';
 import BoxplotCellRenderer from './BoxplotCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
 import ThresholdCellRenderer from './ThresholdCellRenderer';
-import Heatmap from './Heatmap';
+import HeatmapCellRenderer from './HeatmapCellRenderer';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {EmptyCellRenderer} from './EmptyCellRenderer';
+import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -41,13 +43,14 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   ordinal: new BarCellRenderer(true, (d, i, col: CategoricalNumberColumn) => col.getColor(d, i)),
   string: new StringCellRenderer(),
   selection: new SelectionRenderer(),
-  heatmap: new Heatmap(),
+  heatmap: new HeatmapCellRenderer(),
   link: new LinkCellRenderer(),
   annotate: new AnnotationRenderer(),
   actions: new ActionRenderer(),
   stack: new StackCellRenderer(),
   nested: new StackCellRenderer(false),
   categorical: new CategoricalCellRenderer(),
+  catcolor: new CategoricalColorCellRenderer(),
   max: combineCellRenderer,
   min: combineCellRenderer,
   mean: combineCellRenderer,
@@ -60,7 +63,8 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   upset: new UpSetCellRenderer(),
   circle: new CircleCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
-  loading: new LoadingCellRenderer()
+  loading: new LoadingCellRenderer(),
+  empty: new EmptyCellRenderer()
 };
 
 function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {

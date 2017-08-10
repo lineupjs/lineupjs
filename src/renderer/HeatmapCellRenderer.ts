@@ -9,7 +9,7 @@ import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
 
 
-export default class Heatmap implements ICellRendererFactory {
+export default class HeatmapCellRenderer implements ICellRendererFactory {
   private static toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
     let v = col.getNumber(d, index);
     if (isNaN(v)) {
@@ -28,7 +28,7 @@ export default class Heatmap implements ICellRendererFactory {
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
-          'background-color': Heatmap.toHeatMapColor(d.v, d.dataIndex, col)
+          'background-color': HeatmapCellRenderer.toHeatMapColor(d.v, d.dataIndex, col)
         });
       }
     };
@@ -38,7 +38,7 @@ export default class Heatmap implements ICellRendererFactory {
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const w = context.rowHeight(i) - padding * 2;
-      ctx.fillStyle = Heatmap.toHeatMapColor(d.v, d.dataIndex, col);
+      ctx.fillStyle = HeatmapCellRenderer.toHeatMapColor(d.v, d.dataIndex, col);
       ctx.fillRect(padding, padding, w, w);
     };
   }

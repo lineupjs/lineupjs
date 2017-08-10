@@ -11,18 +11,9 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
  * renders categorical columns as a colored rect with label
  */
 export default class CategoricalCellRenderer implements ICellRendererFactory {
-  /**
-   * class to append to the text elements
-   * @type {string}
-   */
-
-  constructor(private readonly textClass: string = 'cat') {
-    this.textClass = textClass;
-  }
-
   createDOM(col: ICategoricalColumn & Column): IDOMCellRenderer {
     return {
-      template: `<div class='${this.textClass}'>
+      template: `<div>
         <div></div><div></div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
