@@ -1,13 +1,13 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, debounce, forEach, merge} from '../../utils';
+import {AEventDispatcher, debounce, merge} from '../../utils';
 import {default as ABodyRenderer, IBodyRendererOptions} from '../ABodyRenderer';
-import DataProvider, {IDataRow} from '../../provider/ADataProvider';
+import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
 import {createDOM, renderers as defaultRenderers} from '../../renderer';
 import {filters as defaultFilters} from '../../dialogs';
-import {default as RenderColumn, IRankingContext} from './RenderColumn';
+import {default as RenderColumn, IRankingContextContainer} from './RenderColumn';
 import EngineRankingRenderer from './EngineRankingRenderer';
 import {uniformContext} from 'lineupengine/src';
 import StringColumn from '../../model/StringColumn';
@@ -48,7 +48,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   readonly node: HTMLElement;
 
-  readonly ctx: IRankingContext & { data: IDataRow[] };
+  readonly ctx: IRankingContextContainer & { data: IDataRow[] };
 
   private readonly renderer: EngineRankingRenderer;
 
@@ -97,6 +97,8 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     };
 
     this.renderer = new EngineRankingRenderer(this.node, this.options.idPrefix, this.ctx);
+
+    this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.renderer.updateSelection(data.getSelection()));
   }
 
   protected createEventList() {
@@ -104,8 +106,11 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   }
 
   changeDataStorage(data: DataProvider) {
+    this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
     this.data = data;
-    //TODO rebuild;
+    this.ctx.provider = data;
+    this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.renderer.updateSelection(data.getSelection()));
+    this.update();
   }
 
   update() {
@@ -136,34 +141,15 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.renderer.render(columns, rowContext);
   }
 
-  select(dataIndex: number, additional?: boolean) {
-    if (!additional) {
-      forEach(this.node, `[data-data-index].selected`, (n: HTMLElement) => {
-        n.classList.remove('selected');
-      });
-    }
-    forEach(this.node, `[data-data-index="${dataIndex}]`, (n: HTMLElement) => {
-      n.classList.add('selected');
-    });
-  }
-
   fakeHover(dataIndex: number) {
-    const old = this.node.querySelector(`[data-data-index].hovered`);
+    const old = this.node.querySelector(`[data-data-index].lu-hovered`);
     if (old) {
-      old.classList.remove('hovered');
+      old.classList.remove('lu-hovered');
     }
-    const item = this.node.querySelector(`[data-data-index="${dataIndex}"].hovered`);
+    const item = this.node.querySelector(`[data-data-index="${dataIndex}"]`);
     if (item) {
-      item.classList.add('hovered');
+      item.classList.add('lu-hovered');
     }
-  }
-
-  updateFreeze(left: number) {
-    // nothing to do
-  }
-
-  scrolled(delta: number) {
-    // internally nothing to do
   }
 
   destroy() {

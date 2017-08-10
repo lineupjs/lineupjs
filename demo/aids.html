@@ -86,6 +86,7 @@ window.onload = function () {
 
     const p = new LineUpJS.provider.LocalDataProvider(data, desc);
     p.deriveDefault();
+    p.getLastRanking().insert(p.create(LineUpJS.model.createSelectionDesc()), 1);
 
     const lineup = LineUpJS.create(p, document.body, {
       body: {

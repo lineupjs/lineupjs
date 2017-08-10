@@ -11,9 +11,9 @@ import {ICategoricalColumn} from '../../model/CategoricalColumn';
 import {IDOMCellRenderer} from '../../renderer/IDOMCellRenderers';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 
-export interface IRankingContext extends IDOMRenderContext {
-  readonly provider: ADataProvider;
-  readonly options: {
+export interface IRankingContextContainer extends IDOMRenderContext {
+  provider: ADataProvider;
+  options: {
     idPrefix: string;
     linkTemplates: string[];
     searchAble(col: Column): boolean;
@@ -24,6 +24,8 @@ export interface IRankingContext extends IDOMRenderContext {
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
   getRow(index: number): IDataRow;
 }
+
+export declare type IRankingContext = Readonly<IRankingContextContainer>;
 
 
 /**

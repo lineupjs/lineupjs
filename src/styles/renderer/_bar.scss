@@ -5,8 +5,10 @@
   white-space: nowrap;
 
   > div {
+    position: absolute;
+    top: 5%;
+    bottom: 5%;
     width: 100%;
-    height: 100%;
   }
 }
 
