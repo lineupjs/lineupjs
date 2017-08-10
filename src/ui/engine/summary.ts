@@ -7,7 +7,7 @@ import {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {INumberColumn, isNumberColumn} from '../../model/NumberColumn';
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';
-import ADataProvider from '../../provider/ADataProvider';
+import {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingContext} from './RenderColumn';
 
 export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingContext) {
@@ -52,7 +52,7 @@ function summaryString(col: StringColumn & Column, node: HTMLElement) {
   node.textContent = f === null ? '' : f.toString();
 }
 
-function summarySelection(col: SelectionColumn, node: HTMLElement, provider: ADataProvider) {
+function summarySelection(col: SelectionColumn, node: HTMLElement, provider: IDataProvider) {
   node.innerHTML = `<i class="fa fa-square-o" title="(Un)Select All"></i>`;
   const button = (<HTMLElement>node.firstElementChild);
   button.onclick = (evt) => {
@@ -61,7 +61,7 @@ function summarySelection(col: SelectionColumn, node: HTMLElement, provider: ADa
       const order = (col.findMyRanker()!).getOrder();
       provider.setSelection(order);
     } else {
-      provider.clearSelection();
+      provider.setSelection([]);
     }
     button.classList.toggle('fa-square-o');
     button.classList.toggle('fa-check-square-o');

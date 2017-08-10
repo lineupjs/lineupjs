@@ -84,6 +84,7 @@ export interface IDataProviderOptions {
 export interface IDataProvider {
   takeSnapshot(col: Column): void;
 
+  setSelection(dataIndices: number[]): void;
   toggleSelection(dataIndex: number, additional?: boolean): boolean;
   isSelected(dataIndex: number): boolean;
 
@@ -657,6 +658,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param indices
    */
   setSelection(indices: number[]) {
+    if (indices.length === 0) {
+      return this.clearSelection();
+    }
     if (this.selection.size === indices.length && indices.every((i) => this.selection.has(i))) {
       return; //no change
     }

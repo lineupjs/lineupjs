@@ -48,7 +48,7 @@ export function computeStats(arr: any[], indices: number[], acc: (row: any, inde
  * @param categories the list of known categories
  * @returns {{hist: {cat: string, y: number}[]}}
  */
-export function computeHist(arr: number[], indices: number[], acc: (row: any, index: number) => string[], categories: string[]): ICategoricalStatistics {
+export function computeHist(arr: any[], indices: number[], acc: (row: any, index: number) => string[], categories: string[]): ICategoricalStatistics {
   const m = new Map<string, number>();
   categories.forEach((cat) => m.set(cat, 0));
 
