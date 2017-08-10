@@ -3,7 +3,7 @@
  */
 import {IColumn} from 'lineupengine/src';
 import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
-import ADataProvider, {IDataRow} from '../../provider/ADataProvider';
+import {IDataProvider, IDataRow} from '../../provider/ADataProvider';
 import {IFilterDialog} from '../../dialogs/AFilterDialog';
 import {createToolbar, createSummary, dragWidth, handleDnD} from './header';
 import {INumberColumn} from '../../model/NumberColumn';
@@ -12,7 +12,7 @@ import {IDOMCellRenderer} from '../../renderer/IDOMCellRenderers';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 
 export interface IRankingContextContainer extends IDOMRenderContext {
-  provider: ADataProvider;
+  provider: IDataProvider;
   linkTemplates: string[];
   searchAble(col: Column): boolean;
   autoRotateLabels: boolean;

@@ -81,11 +81,33 @@ export interface IDataProviderOptions {
   multiSelection: boolean;
 }
 
+export interface IDataProvider {
+  takeSnapshot(col: Column): void;
+
+  toggleSelection(dataIndex: number, additional?: boolean): boolean;
+  isSelected(dataIndex: number): boolean;
+
+  removeRanking(ranking: Ranking): void;
+  getRankings(): Ranking[];
+  pushRanking(): Ranking;
+
+  find(id: string): Column|null;
+  clone(col: Column): Column;
+  create(desc: IColumnDesc): Column|null;
+
+  toDescRef(desc: IColumnDesc): any;
+  fromDescRef(ref: any): IColumnDesc;
+
+  mappingSample(col: Column): Promise<number[]>|number[];
+
+  searchAndJump(search: string|RegExp, col: Column): void;
+}
+
 
 /**
  * a basic data provider holding the data and rankings
  */
-abstract class ADataProvider extends AEventDispatcher {
+abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_SELECTION_CHANGED = 'selectionChanged';
   static readonly EVENT_ADD_COLUMN = Ranking.EVENT_ADD_COLUMN;
   static readonly EVENT_REMOVE_COLUMN = Ranking.EVENT_REMOVE_COLUMN;

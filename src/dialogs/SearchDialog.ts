@@ -1,6 +1,6 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
-import DataProvider from '../provider/ADataProvider';
+import {IDataProvider} from '../provider/ADataProvider';
 import * as d3 from 'd3';
 
 
@@ -13,7 +13,7 @@ export default class SearchDialog extends ADialog {
    * @param provider the data provider for the actual search
    * @param title optional title
    */
-  constructor(private readonly column: Column, $header: d3.Selection<Column>, private readonly provider: DataProvider, title: string = 'Search') {
+  constructor(private readonly column: Column, $header: d3.Selection<Column>, private readonly provider: IDataProvider, title: string = 'Search') {
     super($header, title);
   }
 

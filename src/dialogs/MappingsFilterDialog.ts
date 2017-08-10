@@ -3,7 +3,7 @@ import {IMapAbleColumn, IMappingFunction, noNumberFilter} from '../model/NumberC
 import Column from '../model/Column';
 import {offset} from '../utils';
 import {select, Selection} from 'd3';
-import DataProvider from '../provider/ADataProvider';
+import {IDataProvider} from '../provider/ADataProvider';
 import MappingEditor from '../mappingeditor';
 
 export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn & Column> {
@@ -16,7 +16,7 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
    * @param data the data provider for illustrating the mapping by example
    * @param idPrefix dom id prefix
    */
-  constructor(column: IMapAbleColumn & Column, $header: Selection<IMapAbleColumn & Column>, title: string = 'Change Mapping', private readonly data: DataProvider, private readonly idPrefix: string) {
+  constructor(column: IMapAbleColumn & Column, $header: Selection<IMapAbleColumn & Column>, title: string = 'Change Mapping', private readonly data: IDataProvider, private readonly idPrefix: string) {
     super(column, $header, title);
   }
 
