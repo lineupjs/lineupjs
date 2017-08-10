@@ -1,7 +1,7 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import Column from '../model/Column';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
@@ -20,12 +20,12 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     this.textClass = textClass;
   }
 
-  createDOM(col: ICategoricalColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: ICategoricalColumn & Column): IDOMCellRenderer {
     return {
       template: `<div class='${this.textClass}'>
         <div></div><div></div>
       </div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         attr(<HTMLDivElement>n.firstElementChild, {}, {
           'background-color': col.getColor(d.v, d.dataIndex)
         });

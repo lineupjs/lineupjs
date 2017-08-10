@@ -36,7 +36,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     super(id, desc);
 
     const that = this;
-    this.adaptChange = function (oldValue, newValue) {
+    this.adaptChange = function (this: {source: Column}, oldValue, newValue) {
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
   }

@@ -207,7 +207,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
     abstract updateFreeze(left: number): void;
 
-    scrolled(delta: number) {
+    scrolled() {
       //next tick
       this.update(ERenderReason.SCROLLED);
     }

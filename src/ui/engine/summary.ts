@@ -16,7 +16,7 @@ export default function createSummary(node: HTMLElement, col: Column, ctx: IRank
   } else if (isCategoricalColumn(col)) {
     summaryCategorical(<ICategoricalColumn & Column>col, node, <ICategoricalStatistics>ctx.statsOf(<ICategoricalColumn & Column>col));
   } else if (isNumberColumn(col)) {
-    summaryNumerical(<INumberColumn & Column>col, node, <IStatistics>ctx.statsOf(<INumberColumn & Column>col));
+    summaryNumerical(node, <IStatistics>ctx.statsOf(<INumberColumn & Column>col));
   } else if (col instanceof SelectionColumn) {
     summarySelection(col, node, ctx.provider);
   }
@@ -36,7 +36,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   });
 }
 
-function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats: IStatistics) {
+function summaryNumerical(node: HTMLElement, stats: IStatistics) {
   node.innerHTML = '';
   if (!stats) {
     return;

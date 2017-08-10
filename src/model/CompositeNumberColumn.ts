@@ -79,7 +79,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return v;
   }
 
-  protected compute(row: any, index: number) {
+  protected compute(_row: any, _index: number) {
     return NaN;
   }
 

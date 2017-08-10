@@ -8,7 +8,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 
 
 export default class ActionRenderer implements ICellRendererFactory {
-  createDOM(col: Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(_col: Column, context: IDOMRenderContext): IDOMCellRenderer {
     const actions = <{ name: string, icon: string, action(v: any, rowIndex: number): void }[]>context.option('actions', []);
     return {
       template: `<div class='actions lu-hover-only'>${actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('')}</div>`,
@@ -26,7 +26,7 @@ export default class ActionRenderer implements ICellRendererFactory {
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const actions = <{ name: string, icon: string, action(v: any, rowIndex: number): void }[]>context.option('actions', []);
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
+    return (_ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, dx: number, dy: number) => {
       const hovered = context.hovered(d.dataIndex);
       if (!hovered) {
         return;

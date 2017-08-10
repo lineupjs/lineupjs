@@ -1,6 +1,6 @@
 import Column from '../model/Column';
 import ICellRendererFactory from './ICellRendererFactory';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
@@ -20,7 +20,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     this.align = align;
   }
 
-  createDOM(col: Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: Column): IDOMCellRenderer {
     return {
       template: `<div class="${this.textClass} ${this.align}"> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {

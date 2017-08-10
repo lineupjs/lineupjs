@@ -55,7 +55,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
 
     const that = this;
-    this.reorderAll = function () {
+    this.reorderAll = function (this: {source: Ranking}) {
       //fire for all other rankings a dirty order event, too
       const ranking = this.source;
       that.getRankings().forEach((r) => {

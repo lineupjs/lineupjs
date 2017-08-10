@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
@@ -10,7 +10,7 @@ import Column from '../model/Column';
 
 export default class ThresholdCellRenderer implements ICellRendererFactory {
 
-  createDOM(col: INumbersColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: INumbersColumn & Column): IDOMCellRenderer {
     const threshold = col.getThreshold();
     const colorValues = col.getRawColorScale().range();
     let templateRows = '';
@@ -19,7 +19,7 @@ export default class ThresholdCellRenderer implements ICellRendererFactory {
     }
     return {
       template: `<div>${templateRows}</div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getRawNumbers(d.v, d.dataIndex);
         forEachChild(n, (d, i) => {
           const v = data[i];

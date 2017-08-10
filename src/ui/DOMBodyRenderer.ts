@@ -12,8 +12,7 @@ import ABodyRenderer, {
   ISlicer,
   IRankingColumnData,
   IRankingData,
-  IBodyRenderContext,
-  ERenderReason
+  IBodyRenderContext
 } from './ABodyRenderer';
 
 export default class DOMBodyRenderer extends ABodyRenderer {
@@ -50,7 +49,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     {
       const $rows = $rankings.select('div.rows').selectAll('div.row').data((d) => d.order, String);
       const $rowsEnter = $rows.enter().append('div').attr('class', 'row');
-      $rowsEnter.style('top', (d, i) => `${context.cellPrevY(i)}px`);
+      $rowsEnter.style('top', (_d, i) => `${context.cellPrevY(i)}px`);
 
       $rowsEnter
         .on('mouseenter', (d) => this.mouseOver(d, true))
@@ -63,10 +62,10 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       };
 
 
-      $rowsEnter.append('div').attr('class', 'frozen').style('transform', `translate${this.currentFreezeLeft}px,0)`).each(function (d, i, j) {
+      $rowsEnter.append('div').attr('class', 'frozen').style('transform', `translate${this.currentFreezeLeft}px,0)`).each(function (this: HTMLElement, _d, _i, j) {
         createTemplates(this, data[j].frozen);
       });
-      $rowsEnter.append('div').attr('class', 'cols').each(function (d, i, j) {
+      $rowsEnter.append('div').attr('class', 'cols').each(function (this: HTMLElement, _d, _i, j) {
         createTemplates(this, data[j].columns);
       });
 
@@ -79,7 +78,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       });
 
       //animated reordering
-      this.animated($rows).style('top', (d, i) => `${context.cellY(i)}px`);
+      this.animated($rows).style('top', (_d, i) => `${context.cellY(i)}px`);
 
       const updateColumns = (node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
@@ -103,11 +102,11 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : (d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth()) + that.options.columnPadding);
 
-      $rows.select('div.frozen').each(function (d, i, j) {
+      $rows.select('div.frozen').each(function (this: HTMLElement, _d, i, j) {
         this.style.width = `${maxFrozen}px`;
         toWait.push(updateColumns(this, data[j], i, data[j].frozen));
       });
-      $rows.select('div.cols').each(function (d, i, j) {
+      $rows.select('div.cols').each(function (this: HTMLElement, _d, i, j) {
         this.style.marginLeft = `${maxFrozen}px`;
         toWait.push(updateColumns(this, data[j], i, data[j].columns));
       });
@@ -117,7 +116,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     {
       const $meanlines = $rankings.select('div.meanlines').selectAll('div.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
       $meanlines.enter().append('div').attr('class', 'meanline');
-      $meanlines.each(function (d) {
+      $meanlines.each(function (this: HTMLElement, d) {
         const h = that.histCache.get(d.column.id);
         const $mean = d3.select(this);
         if (!h) {
@@ -178,7 +177,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     $slopes.enter().append('svg').attr('class', 'slopegraph');
     $slopes.attr('width', this.options.slopeWidth)
       .attr('height', height)
-      .style('left', (d, i) => `${data[i + 1].shift - this.options.slopeWidth}px`);
+      .style('left', (_d, i) => `${data[i + 1].shift - this.options.slopeWidth}px`);
 
     const $lines = $slopes.selectAll('line.slope').data((d) => {
       const cache = new Map<number, number>();
@@ -220,7 +219,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     return this.createContext(indexShift, createDOM);
   }
 
-  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number, reason: ERenderReason) {
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number) {
     // - ... added one to often
     this.node.style.width = `${Math.max(0, width)}px`;
     this.node.style.height = `${Math.max(0, height)}px`;

@@ -197,7 +197,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
     const that = this;
     //delayed reordering per ranking
-    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function () {
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function (this: {source: Ranking}) {
       that.triggerReorder(this.source);
     }, 100, null));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
@@ -274,7 +274,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * hook method for cleaning up a ranking
    * @param ranking
    */
-  cleanUpRanking(ranking: Ranking) {
+  cleanUpRanking(_ranking: Ranking) {
     //nothing to do
   }
 
@@ -331,8 +331,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (desc.type === 'rank') {
       (<IValueColumnDesc<number>>desc).accessor = this.rankAccessor.bind(this);
     } else if (desc.type === 'selection') {
-      (<ISelectionColumnDesc>desc).accessor = (row: any, index: number) => this.isSelected(index);
-      (<ISelectionColumnDesc>desc).setter = (row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
+      (<ISelectionColumnDesc>desc).accessor = (_row: any, index: number) => this.isSelected(index);
+      (<ISelectionColumnDesc>desc).setter = (_row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
     }
   }
 

@@ -282,11 +282,11 @@ export default class Column extends AEventDispatcher {
    * visitor pattern for flattening the columns
    * @param {IFlatColumn} r the result array
    * @param {number} offset left offset
-   * @param {number} levelsToGo how many levels down
-   * @param {number} padding padding between columns
+   * @param {number} _levelsToGo how many levels down
+   * @param {number} _padding padding between columns
    * @returns {number} the used width by this column
    */
-  flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0): number {
+  flatten(r: IFlatColumn[], offset: number, _levelsToGo = 0, _padding = 0): number {
     const w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
     r.push({col: this, offset, width: w});
     return w;
@@ -415,9 +415,9 @@ export default class Column extends AEventDispatcher {
   /**
    * restore the column content from a dump
    * @param dump column dump
-   * @param factory helper for creating columns
+   * @param _factory helper for creating columns
    */
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, _factory: (dump: any) => Column|null) {
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,
@@ -442,23 +442,23 @@ export default class Column extends AEventDispatcher {
 
   /**
    * return the value of a given row for the current column
-   * @param row the current row
-   * @param index its row index
+   * @param _row the current row
+   * @param _index its row index
    * @return the value of this column at the specified row
    */
-  getValue(row: any, index: number): any {
+  getValue(_row: any, _index: number): any {
     return ''; //no value
   }
 
   /**
    * compare function used to determine the order according to the values of the current column
-   * @param a first element
-   * @param b second element
-   * @param aIndex index of the first element
-   * @param bIndex index of the second element
+   * @param _a first element
+   * @param _b second element
+   * @param _aIndex index of the first element
+   * @param _bIndex index of the second element
    * @return {number}
    */
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
+  compare(_a: any, _b: any, _aIndex: number, _bIndex: number) {
     return 0; //can't compare
   }
 
@@ -473,10 +473,10 @@ export default class Column extends AEventDispatcher {
   /**
    * predicate whether the current row should be included
    * @param row
-   * @param index the row index
+   * @param _index the row index
    * @return {boolean}
    */
-  filter(row: any, index: number) {
+  filter(row: any, _index: number) {
     return row !== null;
   }
 

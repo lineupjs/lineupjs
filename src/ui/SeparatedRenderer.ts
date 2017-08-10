@@ -56,7 +56,7 @@ export default class SeparatedRenderer extends AEventDispatcher {
       backupRows: this.config.body.backupScrollRows,
       rowHeight: this.config.body.rowHeight
     });
-    this.contentScroller.on(ContentScroller.EVENT_SCROLL, (top, left) => {
+    this.contentScroller.on(ContentScroller.EVENT_SCROLL, (_top, left) => {
       //in two svg mode propagate horizontal shift
       this.header.$node.style('margin-left', `${-left}px`);
       if (this.config.body.freezeCols! > 0) {

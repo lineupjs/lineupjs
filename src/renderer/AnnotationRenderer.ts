@@ -27,7 +27,7 @@ export default class AnnotationRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: AnnotateColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, dx: number, dy: number) => {
       const hovered = context.hovered(d.dataIndex);
       if (!hovered) {
         clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, context.colWidth(col), context.textHints);

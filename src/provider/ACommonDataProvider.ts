@@ -25,7 +25,7 @@ function resolveComplex(column: string, row: any) {
   return column.split('.').reduce(resolve, row);
 }
 
-function rowGetter(row: any, index: number, id: string, desc: any) {
+function rowGetter(row: any, _index: number, _id: string, desc: any) {
   const column = desc.column;
   if (isComplexAccessor(column)) {
     return resolveComplex(<string>column, row);
@@ -54,7 +54,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  protected rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking) {
+  protected rankAccessor(_row: any, index: number, _id: string, _desc: IColumnDesc, ranking: Ranking) {
     return (this.ranks.get(ranking.id)!.indexOf(index)) + 1;
   }
 

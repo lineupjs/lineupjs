@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr} from '../utils';
@@ -21,7 +21,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   }
 
 
-  createDOM(col: ICategoricalColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: ICategoricalColumn & Column): IDOMCellRenderer {
     const dataLength = col.categories.length;
     let templateRows = '';
     for (let i = 0; i < dataLength; ++i) {
@@ -29,7 +29,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     }
     return {
       template: `<div><div></div>${templateRows}</div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         const values = new Set(col.getCategories(d.v, d.dataIndex));
         const value = col.categories.map((cat) => values.has(cat));
 

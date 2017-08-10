@@ -127,7 +127,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return true;
   }
 
-  getColor(row: any, index: number) {
+  getColor(_row: any, _index: number) {
     return this.color;
   }
 

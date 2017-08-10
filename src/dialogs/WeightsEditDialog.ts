@@ -34,8 +34,8 @@ export default class WeightsEditDialog extends ADialog {
       min: 0,
       max: 100,
       size: 5
-    }).on('input', function (d) {
-      d.weight = +this.value;
+    }).on('input', function (this: HTMLInputElement, d) {
+      d.weight = parseFloat(this.value);
       redraw();
     });
 

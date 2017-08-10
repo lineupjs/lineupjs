@@ -1,6 +1,6 @@
 import {INumberColumn} from '../model/NumberColumn';
 import Column from '../model/Column';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr} from '../utils';
@@ -21,10 +21,10 @@ export default class Heatmap implements ICellRendererFactory {
     return color.toString();
   }
 
-  createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: INumberColumn & Column): IDOMCellRenderer {
     return {
       template: `<div title="" class="heatmap ${col.cssClass}' style='background-color: ${col.color};"></div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {

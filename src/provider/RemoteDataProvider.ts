@@ -96,7 +96,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     orders.forEach((order) => order.forEach(unionAdd));
 
     // removed cached
-    this.cache.forEach((v, k) => union.delete(k));
+    this.cache.forEach((_v, k) => union.delete(k));
 
     if ((this.cache.size + union.size) > this.options.maxCacheSize) {
       // clean up cache
@@ -111,7 +111,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     }
     // load data and map to rows;
     const v = this.loadFromServer(missing);
-    missing.forEach((m, i) => {
+    missing.forEach((_m, i) => {
       const dataIndex = missing[i];
       this.cache.set(dataIndex, v.then((loaded) => ({v: loaded[i], dataIndex})));
     });

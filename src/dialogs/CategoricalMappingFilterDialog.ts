@@ -53,8 +53,8 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
       min: 0,
       max: 100,
       size: 5
-    }).on('input', function (d) {
-      d.range = +this.value;
+    }).on('input', function (this: HTMLInputElement, d) {
+      d.range = parseFloat(this.value);
       redraw();
     });
     $rowsEnter.append('td').append('div').attr('class', 'bar').style('background-color', (d) => d.color);
@@ -71,7 +71,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     let isCheckedAll = true;
 
     function redrawSelectAll() {
-      $popup.select('.selectAll').html((d) => `<i class="fa fa-${(isCheckedAll) ? 'check-' : ''}square-o"></i>`);
+      $popup.select('.selectAll').html(`<i class="fa fa-${(isCheckedAll) ? 'check-' : ''}square-o"></i>`);
       $popup.select('thead').on('click', () => {
         isCheckedAll = !isCheckedAll;
         trData.forEach((row) => row.isChecked = isCheckedAll);

@@ -162,11 +162,11 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     // TODO
   }
 
-  scrollIntoView(index: number) {
+  scrollIntoView(_index: number) {
     // TODO
   }
 
-  setBodyOption(option: keyof IRenderingOptions, value: boolean) {
+  setBodyOption(_option: keyof IRenderingOptions, _value: boolean) {
     // TODO
   }
 }

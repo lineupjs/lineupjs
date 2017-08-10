@@ -67,7 +67,7 @@ export default class PoolRenderer {
       return;
     }
     const that = this;
-    data.on(suffix('.pool', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN), function (col) {
+    data.on(suffix('.pool', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN), function (this: {type: string}, col) {
       const desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
       that.entries.some((entry) => {
         if (entry.desc !== desc) {
@@ -78,7 +78,7 @@ export default class PoolRenderer {
       });
       that.update();
     });
-    data.on(suffix('.pool', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING), function (ranking: Ranking) {
+    data.on(suffix('.pool', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING), function (this: {type: string}, ranking: Ranking) {
       const descs = ranking.flatColumns.map((d) => d.desc), change = this.type === 'addRanking' ? 1 : -1;
       that.entries.some((entry) => {
         if (descs.indexOf(entry.desc) < 0) {
@@ -138,7 +138,7 @@ export default class PoolRenderer {
     $headerEnter.append('span').classed('label', true).text((d) => d.label);
     $headers.attr('class', (d) => `header ${((<any>d).cssClass || '')} ${d.type}`);
     $headers.style({
-      'transform': (d, i) => {
+      'transform': (_d, i) => {
         const pos = this.layout(i);
         return `translate(${pos.x}px,${pos.y}px)`;
       },

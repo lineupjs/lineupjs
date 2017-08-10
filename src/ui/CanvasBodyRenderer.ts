@@ -8,7 +8,7 @@ import Column, {IStatistics} from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {createCanvas} from '../renderer/index';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
-import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext, ERenderReason} from './ABodyRenderer';
+import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext} from './ABodyRenderer';
 import {ICanvasRenderContext} from '../renderer/RendererContexts';
 
 export interface IStyleOptions {
@@ -305,7 +305,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return r;
   }
 
-  protected updateImpl(data: IRankingData[], context: IBodyRenderContext & ICanvasRenderContext, width: number, height: number, reason: ERenderReason) {
+  protected updateImpl(data: IRankingData[], context: IBodyRenderContext & ICanvasRenderContext, width: number, height: number) {
     const $canvas = this.$node.select('canvas');
 
     const firstLine = Math.max(context.cellY(0) - 20, 0); //where to start

@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
@@ -8,7 +8,7 @@ import Column from '../model/Column';
 import {attr, forEachChild} from '../utils';
 
 export default class VerticalBarCellRenderer implements ICellRendererFactory {
-  createDOM(col: INumbersColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: INumbersColumn & Column): IDOMCellRenderer {
     const colorScale = col.getRawColorScale();
     const domain = col.getMapping().domain;
     const threshold = col.getThreshold();
@@ -20,7 +20,7 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
     }
     return {
       template: `<div style="height: 20px">${templateRows}</div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getRawNumbers(d.v, d.dataIndex);
 
         forEachChild(n, (d, i) => {

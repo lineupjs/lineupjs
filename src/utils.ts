@@ -27,7 +27,7 @@ export function isSortedByMe(col: Column) {
  */
 export function debounce(callback: (...args: any[]) => void, timeToDelay = 100, thisCallback = null) {
   let tm = -1;
-  return function (...args: any[]) {
+  return function (this: any, ...args: any[]) {
     if (tm >= 0) {
       clearTimeout(tm);
       tm = -1;
@@ -414,7 +414,7 @@ export function dragAble<T extends {id: string}>(onDragStart: (d: T) => {effectA
  */
 export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy: boolean) => boolean) {
   return ($node: d3.Selection<any>) => {
-    $node.on('dragenter', function () {
+    $node.on('dragenter', function (this: HTMLElement) {
       const e = <DragEvent>(<any>d3event);
       //var xy = mouse($node.node());
       if (hasDnDType(e, mimeTypes) || isEdgeDnD(e)) {
@@ -425,7 +425,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
       //not a valid mime type
       select(this).classed('drag_over', false);
       return;
-    }).on('dragover', function () {
+    }).on('dragover', function (this: HTMLElement) {
       const e = <DragEvent>(<any>d3event);
       if (hasDnDType(e, mimeTypes) || isEdgeDnD(e)) {
         e.preventDefault();
@@ -434,10 +434,10 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
         return false;
       }
       return;
-    }).on('dragleave', function () {
+    }).on('dragleave', function (this: HTMLElement) {
       //
       select(this).classed('drag_over', false);
-    }).on('drop', function (d: T) {
+    }).on('drop', function (this: HTMLElement, d: T) {
       const e = <DragEvent>(<any>d3event);
       e.preventDefault();
       select(this).classed('drag_over', false);

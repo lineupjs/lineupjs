@@ -38,13 +38,13 @@ abstract class ADialog {
         top: `${pos.top}px`
       }).html(this.dialogForm(body));
 
-    function movePopup() {
+    function movePopup(this: Element) {
       //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
       //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
       //const mouse = d3.mouse(this.parentElement);
       $popup.style({
-        left: `${this.parentElement.offsetLeft + (<any>d3event).dx}px`,
-        top: `${this.parentElement.offsetTop + (<any>d3event).dy}px`
+        left: `${this.parentElement!.offsetLeft + (<any>d3event).dx}px`,
+        top: `${this.parentElement!.offsetTop + (<any>d3event).dy}px`
       });
     }
 
@@ -89,10 +89,10 @@ abstract class ADialog {
   }
 
   hidePopupOnClickOutside(popup: Selection<any>, rendererContent: Selection<any>) {
-    select('body').on('click', function () {
+    select('body').on('click', function (this: HTMLBodyElement) {
       const target = (<MouseEvent>d3event).target;
       // is none of the content element clicked?
-      const outside = rendererContent.filter(function () {
+      const outside = rendererContent.filter(function (this: Element) {
         return this === target;
       }).empty();
       if (outside) {

@@ -34,7 +34,7 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
 
   getCategories(row: any, index: number): string[] {
     const flagged = this.getValue(row, index);
-    return this.categories.filter((d, i) => flagged != null && flagged[i]);
+    return this.categories.filter((_d, i) => flagged != null && flagged[i]);
   }
 
   getColor(row: any, index: number) {

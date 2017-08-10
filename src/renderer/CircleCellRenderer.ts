@@ -1,22 +1,22 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {INumberColumn} from '../model/NumberColumn';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
 
-  constructor(private colorOf: (d: any, i: number, col: Column) => string|null = (d, i, col) => col.color) {
+  constructor(private colorOf: (d: any, i: number, col: Column) => string|null = (_d, _i, col) => col.color) {
   }
 
-  createDOM(col: INumberColumn & Column, context: IDOMRenderContext) {
+  createDOM(col: INumberColumn & Column) {
     return {
       template: `<div style="background: radial-gradient(circle closest-side, red 100%, transparent 100%)" title="">
               <div class="lu-hover-only"></div>
           </div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         const v = col.getNumber(d.v, d.dataIndex);
         const p = Math.round(v * 100);
         attr(<HTMLElement>n, {}, {

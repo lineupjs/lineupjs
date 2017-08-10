@@ -13,15 +13,15 @@ export default class DummyColumn extends Column {
     super(id, desc);
   }
 
-  getLabel(row: any) {
+  getLabel() {
     return '';
   }
 
-  getValue(row: any) {
+  getValue() {
     return '';
   }
 
-  compare(a: any, b: any) {
+  compare() {
     return 0; //can't compare
   }
 }

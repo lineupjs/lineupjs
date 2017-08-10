@@ -1,7 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import {default as BoxPlotColumn, IBoxPlotColumn, IBoxPlotData} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
-import {IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {isSortedByMe} from '../utils';
@@ -18,14 +17,14 @@ function computeLabel(v: IBoxPlotData) {
 
 export default class BoxplotCellRenderer implements ICellRendererFactory {
 
-  createDOM(col: IBoxPlotColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: IBoxPlotColumn & Column): IDOMCellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const sortedByMe = isSortedByMe(col);
     return {
       template: `<div title="">
                     <div><div></div><div></div></div>
                  </div>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d.v, d.dataIndex);
         n.style.display = data ? null : 'none';
         if (!data) {

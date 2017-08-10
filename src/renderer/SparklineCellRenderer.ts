@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import {INumbersColumn} from '../model/NumbersColumn';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
@@ -16,10 +16,10 @@ function line(data: number[]) {
 
 export default class SparklineCellRenderer implements ICellRendererFactory {
 
-  createDOM(col: INumbersColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: INumbersColumn & Column): IDOMCellRenderer {
     return {
       template: `<svg viewBox="0 0 ${col.getDataLength()} 1" preserveAspectRatio="meet"><path></path></svg>`,
-      update: (n: HTMLElement, d: IDataRow, i: number) => {
+      update: (n: HTMLElement, d: IDataRow) => {
         n.firstElementChild!.setAttribute('d', line(col.getNumbers(d.v, d.dataIndex)));
       }
     };

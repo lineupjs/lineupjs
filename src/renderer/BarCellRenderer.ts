@@ -1,7 +1,7 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {INumberColumn} from '../model/NumberColumn';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, round, setText} from '../utils';
@@ -17,10 +17,10 @@ export default class BarCellRenderer implements ICellRendererFactory {
    * @type {boolean}
    */
 
-  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string | null = (d, i, col) => col.color) {
+  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string | null = (_d, _i, col) => col.color) {
   }
 
-  createDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: INumberColumn & Column): IDOMCellRenderer {
     return {
       template: `<div title="">
           <div style='background-color: ${col.color}'>
