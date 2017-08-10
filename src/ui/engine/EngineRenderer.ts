@@ -41,13 +41,13 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     const bodyOptions: any = this.options.body;
 
     function findOption(key: string, defaultValue: any): any {
-      if (key in options) {
+      if (key in bodyOptions) {
         return bodyOptions[key];
       }
       if (key.indexOf('.') > 0) {
         const p = key.substring(0, key.indexOf('.'));
         key = key.substring(key.indexOf('.') + 1);
-        if (p in options && key in bodyOptions[p]) {
+        if (p in bodyOptions && key in bodyOptions[p]) {
           return bodyOptions[p][key];
         }
       }
