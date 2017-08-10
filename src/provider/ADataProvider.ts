@@ -88,8 +88,7 @@ export interface IDataProvider {
   isSelected(dataIndex: number): boolean;
 
   removeRanking(ranking: Ranking): void;
-  getRankings(): Ranking[];
-  pushRanking(): Ranking;
+  ensureOneRanking(): void;
 
   find(id: string): Column|null;
   clone(col: Column): Column;
@@ -262,6 +261,12 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   getLastRanking() {
     return this.rankings[this.rankings.length - 1];
+  }
+
+  ensureOneRanking() {
+    if (this.rankings.length === 0) {
+      this.pushRanking();
+    }
   }
 
   /**

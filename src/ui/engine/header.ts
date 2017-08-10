@@ -121,9 +121,7 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingConte
       return;
     }
     ctx.provider.removeRanking(col.findMyRanker()!);
-    if (ctx.provider.getRankings().length === 0) { //create at least one
-      ctx.provider.pushRanking();
-    }
+    ctx.provider.ensureOneRanking();
   };
 }
 
