@@ -387,10 +387,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return String(v);
   }
 
-  getRawValue(row: any, index: number) {
+  getRawValue(row: any, index: number, missingValue = this.missingValue) {
     const v: any = super.getValue(row, index);
     if (isMissingValue(v)) {
-      return this.missingValue;
+      return missingValue;
     }
     return +v;
   }
@@ -407,8 +407,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return this.getValue(row, index);
   }
 
-  getRawNumber(row: any, index: number) {
-    return this.getRawValue(row, index);
+  getRawNumber(row: any, index: number, missingValue = this.missingValue) {
+    return this.getRawValue(row, index, missingValue);
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
@@ -493,8 +493,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (!this.isFiltered()) {
       return true;
     }
-    const v: any = this.getRawNumber(row, index);
-    if (isMissingValue(v)) {
+    //force a known missing value
+    const v: any = this.getRawNumber(row, index, NaN);
+    if (isNaN(v)) {
       return !this.filterMissing;
     }
     const vn = +v;
