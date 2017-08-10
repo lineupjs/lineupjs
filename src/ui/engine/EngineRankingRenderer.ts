@@ -40,8 +40,6 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     node.dataset.dataIndex = this.ctx.getRow(rowIndex).dataIndex.toString();
 
     node.onclick = (evt) => {
-      evt.preventDefault();
-      evt.stopPropagation();
       const dataIndex = parseInt(node.dataset.dataIndex!, 10);
       this.ctx.provider.toggleSelection(dataIndex, evt.ctrlKey);
     };
