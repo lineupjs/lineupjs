@@ -67,7 +67,7 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingConte
 
   if (col instanceof LinkColumn) {
     //edit link
-    addIcon('Edit Link Pattern', EditLinkDialog, ctx.options.idPrefix, (<string[]>[]).concat((<any>col.desc).templates || [], ctx.options.linkTemplates));
+    addIcon('Edit Link Pattern', EditLinkDialog, ctx.idPrefix, (<string[]>[]).concat((<any>col.desc).templates || [], ctx.linkTemplates));
   }
 
   if (col instanceof ScriptColumn) {
@@ -76,16 +76,16 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingConte
   }
 
   //filter
-  if (ctx.options.filters.hasOwnProperty(col.desc.type)) {
-    addIcon('Filter', ctx.options.filters[col.desc.type], '', ctx.provider, ctx.options.idPrefix);
+  if (ctx.filters.hasOwnProperty(col.desc.type)) {
+    addIcon('Filter', ctx.filters[col.desc.type], '', ctx.provider, ctx.idPrefix);
   }
 
   if (col instanceof HierarchyColumn) {
     //cutoff
-    addIcon('Set Cut Off', CutOffHierarchyDialog, ctx.options.idPrefix);
+    addIcon('Set Cut Off', CutOffHierarchyDialog, ctx.idPrefix);
   }
 
-  if (ctx.options.searchAble(col)) {
+  if (ctx.searchAble(col)) {
     //search
     addIcon('Search', SearchDialog, ctx.provider);
   }

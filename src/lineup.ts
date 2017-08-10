@@ -7,16 +7,17 @@ import Column, {IColumnDesc} from './model/Column';
 import DataProvider from './provider/ADataProvider';
 import {renderers as defaultRenderers} from './renderer';
 import {
-  IRankingHook,
+  createRenderer,
   dummyRankingButtonHook,
-  PoolRenderer,
+  ILineUpRenderer,
   IPoolRendererOptions,
-  ILineUpRenderer, createRenderer
+  IRankingHook,
+  PoolRenderer
 } from './ui';
 import {IHeaderRendererOptions} from './ui/HeaderRenderer';
-import {IBodyRendererOptions, default as ABodyRenderer} from './ui/ABodyRenderer';
+import {default as ABodyRenderer, IBodyRendererOptions} from './ui/ABodyRenderer';
 import {AEventDispatcher, merge} from './utils';
-import {scale as d3scale, selection, select, Selection} from 'd3';
+import {scale as d3scale, select, selection, Selection} from 'd3';
 import ICellRendererFactory from './renderer/ICellRendererFactory';
 
 export interface IBodyOptions {
@@ -138,31 +139,31 @@ export default class LineUp extends AEventDispatcher {
         rotationDegree: -20, //in deg
         rankingButtons: <IRankingHook>dummyRankingButtonHook,
         linkTemplates: [],
-          slopeWidth: 150
-    },
+        slopeWidth: 150
+      },
       htmlLayout: {},
       renderingOptions: {
         stacked: true,
-          animation: true,
-          summary: false,
-          meanLine: false,
-          histograms: false
+        animation: true,
+        summary: false,
+        meanLine: false,
+        histograms: false
       },
       body: {
         renderer: 'svg', //svg, canvas, html
-          rowHeight: 18,
-          rowPadding: 1,
-          rowBarPadding: 1,
-          visibleRowsOnly: true,
-          backupScrollRows: 4,
-          animationDuration: 1000,
-          freezeCols: 0,
-          slopeWidth: 150,
-          actions: []
+        rowHeight: 18,
+        rowPadding: 1,
+        rowBarPadding: 1,
+        visibleRowsOnly: true,
+        backupScrollRows: 4,
+        animationDuration: 1000,
+        freezeCols: 0,
+        slopeWidth: 150,
+        actions: []
       },
       svgLayout: {},
       manipulative: true,
-        pool: false,
+      pool: false,
       renderers: merge({}, defaultRenderers)
     };
   })();

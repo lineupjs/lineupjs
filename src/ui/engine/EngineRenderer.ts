@@ -1,11 +1,11 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, debounce, merge} from '../../utils';
-import {default as ABodyRenderer, IBodyRendererOptions} from '../ABodyRenderer';
+import {AEventDispatcher, debounce} from '../../utils';
+import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
-import {createDOM, renderers as defaultRenderers} from '../../renderer';
+import {createDOM} from '../../renderer';
 import {filters as defaultFilters} from '../../dialogs';
 import {default as RenderColumn, IRankingContextContainer} from './RenderColumn';
 import EngineRankingRenderer from './EngineRankingRenderer';
@@ -20,29 +20,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
   static readonly EVENT_RENDER_FINISHED = ABodyRenderer.EVENT_RENDER_FINISHED;
 
-  protected readonly options: IBodyRendererOptions = {
-    rowHeight: 22,
-    textHeight: 13, //10pt
-    rowPadding: 1,
-    rowBarPadding: 1,
-    rowBarTopPadding: 1,
-    rowBarBottomPadding: 1,
-    idPrefix: '',
-    slopeWidth: 150,
-    columnPadding: 5,
-    stacked: true,
-    animation: false, //200
-    animationDuration: 1000,
-
-    renderers: Object.assign({}, defaultRenderers),
-
-
-    meanLine: false,
-
-    actions: [],
-
-    freezeCols: 0
-  };
+  protected readonly options: Readonly<ILineUpConfig>;
 
   private readonly histCache = new Map<string, IStatistics | ICategoricalStatistics>();
 
@@ -52,23 +30,23 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   private readonly renderer: EngineRankingRenderer;
 
-  constructor(private data: DataProvider, parent: Element, options: ILineUpConfig) {
+  constructor(private data: DataProvider, parent: Element, options: Readonly<ILineUpConfig>) {
     super();
-    merge(this.options, options.body, options.header, options);
+    this.options = options;
     this.node = parent.ownerDocument.createElement('main');
     parent.appendChild(this.node);
 
-    const fixOptions: any = this.options;
+    const bodyOptions: any = this.options.body;
 
     function findOption(key: string, defaultValue: any): any {
       if (key in options) {
-        return fixOptions[key];
+        return bodyOptions[key];
       }
       if (key.indexOf('.') > 0) {
         const p = key.substring(0, key.indexOf('.'));
         key = key.substring(key.indexOf('.') + 1);
-        if (p in options && key in fixOptions[p]) {
-          return fixOptions[p][key];
+        if (p in options && key in bodyOptions[p]) {
+          return bodyOptions[p][key];
         }
       }
       return defaultValue;
@@ -76,12 +54,10 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
     this.ctx = {
       provider: data,
-      options: Object.assign({
-        filters: Object.assign({}, defaultFilters), //TODO
-        linkTemplates: <string[]>[], //TODO
-        autoRotateLabels: false, //TODO
-        searchAble: (col: Column) => col instanceof StringColumn //TODO
-      }, this.options),
+      filters: Object.assign({}, defaultFilters),
+      linkTemplates: <string[]>[],
+      autoRotateLabels: false,
+      searchAble: (col: Column) => col instanceof StringColumn,
       option: findOption,
       statsOf: (col: Column) => {
         const r = this.histCache.get(col.id);
