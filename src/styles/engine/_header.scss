@@ -103,9 +103,10 @@ section {
   }
 
   > .#{$lu_css_prefix}-label {
-    overflow: hidden;
+    padding-left: 0.8em;
+    white-space: nowrap;
+    overflow-x: hidden;
     text-overflow: ellipsis;
-    max-height: 5ex; // around two rows
   }
 
   > .#{$lu_css_prefix}-sort {
@@ -229,12 +230,32 @@ section {
   }
 
   > .#{$lu_css_prefix}-summary {
-    position: absolute;
-    left: 0;
-    right: 5px;
-    top: 40%;
-    height: 60%;
+    height: 2em;
+    position: relative;
     display: none;
+    margin-right: $lu-engine_grip_gap;
+
+    &[data-summary=hist] {
+      display: flex;
+      align-items: flex-end;
+      font-size: x-small;
+
+      > * {
+        flex: 1 1 auto;
+        position: relative;
+        background: rgba(255, 255, 255, 0.5);
+        margin: 0 2px;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+
+        > .lu-selected {
+          flex: 1 1 auto;
+          background-color: $lu_selected_color;
+          border-radius: 5px 5px 0 0;
+        }
+      }
+    }
   }
 
   > .#{$lu_css_prefix}-handle {

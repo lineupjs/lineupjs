@@ -27,6 +27,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   if (!stats) {
     return;
   }
+  node.dataset.summary = 'hist';
   const cats = col.categories;
   const colors = col.categoryColors;
 
@@ -40,6 +41,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats:
   if (!stats) {
     return;
   }
+  node.dataset.summary = 'hist';
   stats.hist.forEach(({x, y}, i) => {
     node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
   });

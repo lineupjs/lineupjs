@@ -14,6 +14,8 @@ import StringColumn from '../../model/StringColumn';
 import Ranking from '../../model/Ranking';
 import {ILineUpRenderer} from '../index';
 import {ILineUpConfig, IRenderingOptions} from '../../lineup';
+import {isCategoricalColumn} from '../../model/CategoricalColumn';
+import NumberColumn from '../../model/NumberColumn';
 
 
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
@@ -22,7 +24,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   protected readonly options: Readonly<ILineUpConfig>;
 
-  private readonly histCache = new Map<string, IStatistics | ICategoricalStatistics>();
+  private readonly histCache = new Map<string, IStatistics | ICategoricalStatistics | null | Promise<IStatistics | ICategoricalStatistics>>();
 
   readonly node: HTMLElement;
 
@@ -83,10 +85,33 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   changeDataStorage(data: DataProvider) {
     this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
+    this.data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, null);
+
     this.data = data;
     this.ctx.provider = data;
+
     this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.renderer.updateSelection(data.getSelection()));
+    this.data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, () => this.updateHist());
+
     this.update();
+  }
+
+  private updateHist() {
+    if (!this.options.header.summary) {
+      return;
+    }
+    const rankings = this.data.getRankings();
+    rankings.forEach((ranking) => {
+      const order = ranking.getOrder();
+      const cols = ranking.flatColumns;
+      const histo = order == null ? null : this.data.stats(order);
+      cols.filter((d) => d instanceof NumberColumn && !d.isHidden()).forEach((col: any) => {
+        this.histCache.set(col.id, histo === null ? null : histo.stats(col));
+      });
+      cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: any) => {
+        this.histCache.set(col.id, histo === null ? null : histo.hist(col));
+      });
+    });
   }
 
   update() {
@@ -101,14 +126,19 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       }
     }));
 
-    const cols: IFlatColumn[] = [];
-    ranking.flatten(cols, 0, 1, 0);
+    const flatCols: IFlatColumn[] = [];
+    ranking.flatten(flatCols, 0, 1, 0);
+    const cols = flatCols.map((c) => c.col);
     const columns = cols.map((c, i) => {
-      const renderer = createDOM(c.col, this.options.renderers, this.ctx);
-      return new RenderColumn(c.col, c.col.getRendererType(), renderer, i);
+      const renderer = createDOM(c, this.options.renderers, this.ctx);
+      return new RenderColumn(c, c.getRendererType(), renderer, i);
     });
 
-    cols.forEach((c) => c.col.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
+    if (this.histCache.size === 0) {
+      this.updateHist();
+    }
+
+    cols.forEach((c) => c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
       this.renderer.updateColumnWidths();
     }));
 
