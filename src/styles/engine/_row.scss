@@ -1,18 +1,18 @@
 @import '../vars';
 
-.hoverOnly,
-.selectionOnly {
+.lu-hover-only,
+.lu-selection-only {
   display: none;
 }
 
 &:hover,
 &.lu-selected,
 &.lu-hovered {
-  .notHoverOnly {
+  .lu-not-hover {
     display: none;
   }
 
-  .hoverOnly {
+  .lu-hover-only {
     display: block;
   }
 }
@@ -24,11 +24,7 @@
   z-index: 10;
   outline: 2px solid $lu_selected_color;
 
-  .notSelectionOnly {
-    display: none;
-  }
-
-  .selectionOnly {
+  .lu-selection-only {
     display: block;
   }
 }

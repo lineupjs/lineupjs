@@ -24,7 +24,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
     return {
       template: `<div title="">
           <div style='background-color: ${col.color}'>
-            <span ${this.renderValue ? '' : 'class="hoverOnly"'}></span>
+            <span ${this.renderValue ? '' : 'class="lu-hover-only"'}></span>
           </div>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {

@@ -14,7 +14,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
   createDOM(col: INumberColumn & Column, context: IDOMRenderContext) {
     return {
       template: `<div style="background: radial-gradient(circle closest-side, red 100%, transparent 100%)" title="">
-              <div class="hoverOnly"></div>
+              <div class="lu-hover-only"></div>
           </div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const v = col.getNumber(d.v, d.dataIndex);

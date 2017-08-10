@@ -10,8 +10,8 @@ export default class AnnotationRenderer implements ICellRendererFactory {
   createDOM(col: AnnotateColumn): IDOMCellRenderer {
     return {
       template: `<div class='annotations text'>
-        <input class='hoverOnly'>
-        <span class='text notHoverOnly'></span>
+        <input class='lu-hover-only'>
+        <span class='text lu-not-hover'></span>
        </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const input: HTMLInputElement = <HTMLInputElement>n.firstElementChild!;

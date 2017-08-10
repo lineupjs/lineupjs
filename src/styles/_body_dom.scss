@@ -1,32 +1,31 @@
 @import "vars";
 
 .#{$lu_css_prefix} .#{$lu_css_prefix}-body {
-  .hoverOnly {
+  .lu-hover-only {
     display: none;
   }
 
-  .hover .notHoverOnly {
+  .hover .lu-not-hover {
     display: none;
   }
 
-  .hover .hoverOnly {
+  .hover .lu-hover-only {
     display: block;
   }
 
-  .selectionOnly {
+  .lu-selection-only {
     display: none;
   }
 
   /**
     selected state extends hover state
    */
-  .selected .selectionOnly,
-  .selected .hoverOnly {
+  .selected .lu-selection-only,
+  .selected .lu-hover-only {
     display: block;
   }
 
-  .selected .notSelectionOnly,
-  .selected .notHoverOnly {
+  .selected .lu-not-hover {
     display: none;
   }
 

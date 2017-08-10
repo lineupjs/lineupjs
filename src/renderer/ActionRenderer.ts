@@ -11,7 +11,7 @@ export default class ActionRenderer implements ICellRendererFactory {
   createDOM(col: Column, context: IDOMRenderContext): IDOMCellRenderer {
     const actions = <{ name: string, icon: string, action(v: any, rowIndex: number): void }[]>context.option('actions', []);
     return {
-      template: `<div class='actions hoverOnly'>${actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('')}</div>`,
+      template: `<div class='actions lu-hover-only'>${actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('')}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         forEachChild(n, (ni: HTMLSpanElement, i: number) => {
           ni.onclick = function (event) {
