@@ -20,6 +20,10 @@ function isMissingValue(v: any) {
   return typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
 }
 
+function isUnknown(v?: number|null) {
+  return isNaN(v) || v === null || v === undefined;
+}
+
 /**
  * save number comparison
  * @param a
@@ -435,13 +439,13 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   set filterMin(min: number) {
     const bak = this.getFilter();
-    this.currentFilter.min = isNaN(min) ? -Infinity : min;
+    this.currentFilter.min = isUnknown(min) ? -Infinity : min;
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
   set filterMax(max: number) {
     const bak = this.getFilter();
-    this.currentFilter.max = isNaN(max) ? Infinity : max;
+    this.currentFilter.max = isUnknown(max) ? Infinity : max;
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
@@ -456,8 +460,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       return;
     }
     const bak = this.getFilter();
-    this.currentFilter.min = isNaN(value.min) ? -Infinity : value.min;
-    this.currentFilter.max = isNaN(value.max) ? Infinity : value.max;
+    this.currentFilter.min = isUnknown(value.min) ? -Infinity : value.min;
+    this.currentFilter.max = isUnknown(value.max) ? Infinity : value.max;
     this.currentFilter.filterMissing = value.filterMissing;
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
