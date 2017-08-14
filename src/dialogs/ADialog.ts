@@ -4,7 +4,21 @@ import {Selection, select, event as d3event, behavior} from 'd3';
 
 abstract class ADialog {
 
-  constructor(readonly attachment: Selection<any>, private readonly title: string) {}
+  protected static readonly visiblePopups: Selection<any>[] = [];
+
+  private static removeAllPopups() {
+    ADialog.visiblePopups.splice(0, ADialog.visiblePopups.length).forEach((d) => {
+      d.remove();
+    });
+  }
+
+  protected static registerPopup($popup: Selection<any>) {
+    ADialog.removeAllPopups();
+    ADialog.visiblePopups.push($popup);
+  }
+
+  constructor(readonly attachment: Selection<any>, private readonly title: string) {
+  }
 
   abstract openDialog();
 
@@ -24,42 +38,42 @@ abstract class ADialog {
 
   /**
    * creates a simple popup dialog under the given attachment
-   * @param attachment
-   * @param title
    * @param body
    * @returns {Selection<any>}
    */
   makePopup(body: string) {
-      const pos = offset(<Element>this.attachment.node());
-      const $popup = select('body').append('div')
-        .attr({
-          'class': 'lu-popup2'
-        }).style({
-          left: pos.left + 'px',
-          top: pos.top + 'px'
-        }).html(this.dialogForm(body));
+    const pos = offset(<Element>this.attachment.node());
+    const $popup = select('body').append('div')
+      .attr({
+        'class': 'lu-popup2'
+      }).style({
+        left: pos.left + 'px',
+        top: pos.top + 'px'
+      }).html(this.dialogForm(body));
 
-      function movePopup() {
-        //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
-        //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
-        //const mouse = d3.mouse(this.parentElement);
-        $popup.style({
-          left: (this.parentElement.offsetLeft + (<any>d3event).dx) + 'px',
-          top: (this.parentElement.offsetTop + (<any>d3event).dy) + 'px'
-        });
-      }
-
-      $popup.select('span.lu-popup-title').call(behavior.drag().on('drag', movePopup));
-      $popup.on('keydown', () => {
-        if ((<KeyboardEvent>d3event).which === 27) {
-          $popup.remove();
-        }
+    function movePopup() {
+      //.style("left", (this.parentElement.offsetLeft + (<any>event).dx) + 'px')
+      //.style("top", (this.parentElement.offsetTop + event.dy) + 'px');
+      //const mouse = d3.mouse(this.parentElement);
+      $popup.style({
+        left: (this.parentElement.offsetLeft + (<any>d3event).dx) + 'px',
+        top: (this.parentElement.offsetTop + (<any>d3event).dy) + 'px'
       });
-      const auto = <HTMLInputElement>$popup.select('input[autofocus]').node();
-      if (auto) {
-        auto.focus();
+    }
+
+    $popup.select('span.lu-popup-title').call(behavior.drag().on('drag', movePopup));
+    $popup.on('keydown', () => {
+      if ((<KeyboardEvent>d3event).which === 27) {
+        $popup.remove();
       }
-      return $popup;
+    });
+    const auto = <HTMLInputElement>$popup.select('input[autofocus]').node();
+    if (auto) {
+      auto.focus();
+    }
+
+    ADialog.registerPopup($popup);
+    return $popup;
   }
 
   makeSortPopup(body: string) {
@@ -72,6 +86,7 @@ abstract class ADialog {
         top: pos.top + 'px'
       }).html(this.sortDialogForm(body));
 
+    ADialog.registerPopup($popup);
     return $popup;
 
   }
@@ -92,6 +107,7 @@ abstract class ADialog {
   }
 
   hidePopupOnClickOutside(popup: Selection<any>, rendererContent: Selection<any>) {
+    //clean up old
     select('body').on('click', function () {
       const target = (<MouseEvent>d3event).target;
       // is none of the content element clicked?
@@ -99,7 +115,8 @@ abstract class ADialog {
         return this === target;
       }).empty();
       if (outside) {
-        popup.remove();
+        //delete all
+        ADialog.removeAllPopups();
         select(this).on('click', null);
       }
     });

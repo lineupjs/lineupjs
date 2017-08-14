@@ -1,4 +1,4 @@
-import AFilterDialog from './AFilterDialog';
+import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
 import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
 import DataProvider from '../provider/ADataProvider';
 import {scale as d3scale} from 'd3';
@@ -24,7 +24,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     const scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 
     const $popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>
-        <label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label><br>`);
+        ${filterMissingMarkup(bakMissing)}<br>`);
 
     const range = this.column.getScale().range,
       colors = this.column.categoryColors,
@@ -89,9 +89,9 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     };
 
     $popup.select('.cancel').on('click', () => {
+      $popup.remove();
       updateData(bak, bakMissing);
       this.column.setMapping(range);
-      $popup.remove();
     });
     $popup.select('.reset').on('click', () => {
       trData.forEach((d) => {

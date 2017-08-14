@@ -60,9 +60,9 @@ export default class MappingsFilterDialog extends AFilterDialog<NumberColumn> {
       popup.remove();
     });
     popup.select('.cancel').on('click', () => {
+      popup.remove();
       this.column.setMapping(bak);
       this.markFiltered(!bak.eq(original));
-      popup.remove();
     });
     popup.select('.reset').on('click', function () {
       bak = original;
@@ -73,5 +73,7 @@ export default class MappingsFilterDialog extends AFilterDialog<NumberColumn> {
       popup.selectAll('.mappingArea *').remove();
       editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
     });
+
+    MappingsFilterDialog.registerPopup(popup);
   }
 }

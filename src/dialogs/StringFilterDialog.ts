@@ -1,5 +1,5 @@
 import StringColumn from '../model/StringColumn';
-import AFilterDialog from './AFilterDialog';
+import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
 import {Selection} from 'd3';
 
 
@@ -21,8 +21,9 @@ export default class StringFilterDialog extends AFilterDialog<StringColumn> {
       bak = '';
     }
 
-    const $popup = this.makePopup(`<input type="text" placeholder="containing..." autofocus="true" size="15" value="${(bak instanceof RegExp) ? bak.source : bak}" autofocus="autofocus">
-    <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label><br><label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label>
+    const $popup = this.makePopup(`<input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
+    <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
+    <br>${filterMissingMarkup(bakMissing)}
     <br>`);
 
     const updateData = (filter: string|RegExp) => {

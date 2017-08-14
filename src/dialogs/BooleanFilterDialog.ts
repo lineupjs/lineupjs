@@ -38,8 +38,8 @@ export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
     $popup.selectAll('input[type="radio"]').on('change', updateImpl);
 
     $popup.select('.cancel').on('click', function () {
-      updateData(bak);
       $popup.remove();
+      updateData(bak);
     });
     $popup.select('.reset').on('click', function () {
       const v = bak === null ? 'null' : String(bak);

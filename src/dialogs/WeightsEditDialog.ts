@@ -52,8 +52,8 @@ export default class WeightsEditDialog extends ADialog {
     redraw();
 
     $popup.select('.cancel').on('click', () => {
-      this.column.setWeights(weights);
       $popup.remove();
+      this.column.setWeights(weights);
     });
     $popup.select('.reset').on('click', () => {
       children.forEach((d, i) => d.weight = weights[i] * 100);

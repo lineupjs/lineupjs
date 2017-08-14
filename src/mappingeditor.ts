@@ -5,6 +5,7 @@
 import {select, scale, behavior, Selection, event as d3event, mouse, selectAll} from 'd3';
 import {merge} from './utils';
 import {INumberFilter, IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
+import {filterMissingText} from './dialogs/AFilterDialog';
 
 
 function clamp(v: number, min: number, max: number) {
@@ -136,7 +137,7 @@ export default class MappingEditor {
         </div>
       </div>
       <div>
-         Extras: <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.oldFilter.filterMissing ? 'checked="checked"' : ''}>Filter Missing Values</label>
+         Extras: <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.oldFilter.filterMissing ? 'checked="checked"' : ''}>${filterMissingText}</label>
       </div>
       <div class="script" style="/* display: none; */">
         <label for="me${options.idPrefix}script_code">Custom Script</label><button>Apply</button>
