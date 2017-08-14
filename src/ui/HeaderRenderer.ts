@@ -259,7 +259,10 @@ export default class HeaderRenderer {
           data.forEach((d, i) => {
             const cats = col.getCategories(d, indices[i]);
             (cats || []).forEach((cat) => {
-              header.querySelector(`div.bar[data-cat="${cat}"]`).classList.add('selected');
+              const h = header.querySelector(`div.bar[data-cat="${cat}"]`);
+              if (h) {
+                h.classList.add('selected');
+              }
             });
           });
         });
