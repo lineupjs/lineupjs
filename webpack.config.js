@@ -100,6 +100,7 @@ function generateWebpack(bundle, options) {
       })
       //rest depends on type
     ],
+    externals: {},
     module: {
       loaders: webpackloaders.slice()
     },
