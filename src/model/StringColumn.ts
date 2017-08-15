@@ -10,7 +10,7 @@ export interface IStringColumnDesc extends IValueColumnDesc<string> {
    * column alignment: left, center, right
    * @default left
    */
-  readonly alignment?: string;
+  readonly alignment?: 'left'|'center'|'right';
 }
 
 /**

@@ -20,7 +20,7 @@ export interface IValueColumnDesc<T> extends IColumnDesc {
    * @param desc the description of this column
    * @param ranking the ranking of this column
    */
-  accessor(row: any, index: number, id: string, desc: any, ranking: Ranking): T;
+  accessor?(row: any, index: number, id: string, desc: any, ranking: Ranking): T;
 }
 
 /**
@@ -40,7 +40,7 @@ export default class ValueColumn<T> extends Column {
   constructor(id: string, desc: IValueColumnDesc<T>) {
     super(id, desc);
     //find accessor
-    this.accessor = desc.accessor || (() => null);
+    this.accessor = desc.accessor! || (() => null);
     this.loaded = desc.lazyLoaded !== true;
   }
 
