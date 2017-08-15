@@ -91,6 +91,48 @@ export interface ILineUpConfig {
   renderers: { [key: string]: ICellRendererFactory };
 }
 
+export function defaultConfig() {
+  const idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
+  return {
+    idPrefix,
+    header: {
+      idPrefix,
+      headerHeight: 20,
+      headerHistogramHeight: 40,
+      autoRotateLabels: false,
+      rotationHeight: 50, //in px
+      rotationDegree: -20, //in deg
+      rankingButtons: <IRankingHook>dummyRankingButtonHook,
+      linkTemplates: [],
+      slopeWidth: 150
+    },
+    htmlLayout: {},
+    renderingOptions: {
+      stacked: true,
+      animation: true,
+      summary: false,
+      meanLine: false,
+      histograms: false
+    },
+    body: {
+      renderer: 'svg', //svg, canvas, html
+      rowHeight: 18,
+      rowPadding: 1,
+      rowBarPadding: 1,
+      visibleRowsOnly: true,
+      backupScrollRows: 4,
+      animationDuration: 1000,
+      freezeCols: 0,
+      slopeWidth: 150,
+      actions: []
+    },
+    svgLayout: {},
+    manipulative: true,
+    pool: false,
+    renderers: merge({}, defaultRenderers)
+  };
+}
+
 /**
  * main LineUp class managing data and rendering
  */
@@ -126,47 +168,7 @@ export default class LineUp extends AEventDispatcher {
   /**
    * default config of LineUp with all available options
    */
-  readonly config: ILineUpConfig = (() => {
-    const idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
-    return {
-      idPrefix,
-      header: {
-        idPrefix,
-        headerHeight: 20,
-        headerHistogramHeight: 40,
-        autoRotateLabels: false,
-        rotationHeight: 50, //in px
-        rotationDegree: -20, //in deg
-        rankingButtons: <IRankingHook>dummyRankingButtonHook,
-        linkTemplates: [],
-        slopeWidth: 150
-      },
-      htmlLayout: {},
-      renderingOptions: {
-        stacked: true,
-        animation: true,
-        summary: false,
-        meanLine: false,
-        histograms: false
-      },
-      body: {
-        renderer: 'svg', //svg, canvas, html
-        rowHeight: 18,
-        rowPadding: 1,
-        rowBarPadding: 1,
-        visibleRowsOnly: true,
-        backupScrollRows: 4,
-        animationDuration: 1000,
-        freezeCols: 0,
-        slopeWidth: 150,
-        actions: []
-      },
-      svgLayout: {},
-      manipulative: true,
-      pool: false,
-      renderers: merge({}, defaultRenderers)
-    };
-  })();
+  readonly config: ILineUpConfig = defaultConfig();
 
   private $container: Selection<any>;
 
