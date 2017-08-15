@@ -7,7 +7,7 @@ import {IBodyRendererOptions} from './ui/ABodyRenderer';
 import {renderers as defaultRenderers} from './renderer';
 import {filters as defaultFilters} from './dialogs';
 import StringColumn from './model/StringColumn';
-import {Column} from 'lineupjs/src/model';
+import {Column} from './model';
 
 export interface IFullLineUpConfig extends ILineUpConfig {
   /**
