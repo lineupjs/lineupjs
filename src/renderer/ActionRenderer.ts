@@ -1,15 +1,15 @@
-import Column from '../model/Column';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {forEachChild, showOverlay} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
+import {default as ActionColumn, IAction} from '../model/ActionColumn';
 
 
 export default class ActionRenderer implements ICellRendererFactory {
-  createDOM(_col: Column, context: IDOMRenderContext): IDOMCellRenderer {
-    const actions = <{ name: string, icon: string, action(v: any, rowIndex: number): void }[]>context.option('actions', []);
+  createDOM(col: ActionColumn, context: IDOMRenderContext): IDOMCellRenderer {
+    const actions = (<IAction[]>context.option('actions', [])).concat(col.actions);
     return {
       template: `<div class='actions lu-hover-only'>${actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('')}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
@@ -24,8 +24,8 @@ export default class ActionRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const actions = <{ name: string, icon: string, action(v: any, rowIndex: number): void }[]>context.option('actions', []);
+  createCanvas(col: ActionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const actions = (<IAction[]>context.option('actions', [])).concat(col.actions);
     return (_ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, dx: number, dy: number) => {
       const hovered = context.hovered(d.dataIndex);
       if (!hovered) {

@@ -18,7 +18,7 @@ import SelectionColumn from './SelectionColumn';
 import ScriptColumn from './ScriptColumn';
 import CategoricalNumberColumn from './CategoricalNumberColumn';
 import NestedColumn from './NestedColumn';
-import DummyColumn from './DummyColumn';
+import ActionColumn from './ActionColumn';
 import LinkColumn from './LinkColumn';
 import BooleansColumn from './BooleansColumn';
 import NumbersColumn from './NumbersColumn';
@@ -39,6 +39,7 @@ export {createDesc as createSelectionDesc} from './SelectionColumn';
 export {createDesc as createScriptDesc} from './ScriptColumn';
 export {createDesc as createNestedDesc} from './NestedColumn';
 export {createDesc as createStackDesc} from './StackColumn';
+export {createDesc as createActionDesc} from './ActionColumn';
 
 /**
  * defines a new column type
@@ -67,14 +68,6 @@ export function defineColumn<T>(name: string, functions: any = {}) {
 }
 
 
-/**
- * utility for creating an action description with optional label
- * @param label
- * @returns {{type: string, label: string}}
- */
-export function createActionDesc(label = 'actions') {
-  return {type: 'actions', label};
-}
 
 /**
  * a map of all known column types
@@ -91,7 +84,7 @@ export function models() {
     booleans: BooleansColumn,
     categorical: CategoricalColumn,
     ordinal: CategoricalNumberColumn,
-    actions: DummyColumn,
+    actions: ActionColumn,
     annotate: AnnotateColumn,
     selection: SelectionColumn,
     max: MaxColumn,
