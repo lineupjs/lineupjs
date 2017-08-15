@@ -11,6 +11,7 @@ import * as ui_ from './ui';
 import LineUp from './lineup';
 
 export {deriveColors} from './lineup';
+export {deriveColumnDescriptions} from './provider';
 /**
  * access to the model module
  */
