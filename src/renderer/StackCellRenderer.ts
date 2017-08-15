@@ -7,15 +7,9 @@ import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {matchColumns} from '../utils';
 
-/**
- * renders a stacked column using composite pattern
- */
-export default class StackCellRenderer implements ICellRendererFactory {
-  constructor(private readonly nestingPossible: boolean = true) {
-  }
 
-  private createData(col: StackColumn, context: IRenderContext<any>) {
-    const stacked = this.nestingPossible && context.option('stacked', true);
+export function createData(col: StackColumn, context: IRenderContext<any>, nestingPossible: boolean) {
+    const stacked = nestingPossible && context.option('stacked', true);
     const padding = context.option('columnPadding', 0);
     let offset = 0;
     return col.children.map((d) => {
@@ -31,8 +25,15 @@ export default class StackCellRenderer implements ICellRendererFactory {
     });
   }
 
+/**
+ * renders a stacked column using composite pattern
+ */
+export default class StackCellRenderer implements ICellRendererFactory {
+  constructor(private readonly nestingPossible: boolean = true) {
+  }
+
   createDOM(col: StackColumn, context: IDOMRenderContext): IDOMCellRenderer {
-    const cols = this.createData(col, context);
+    const cols = createData(col, context, this.nestingPossible);
     return {
       template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
@@ -49,7 +50,7 @@ export default class StackCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(col: StackColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const cols = this.createData(col, context);
+    const cols = createData(col, context, this.nestingPossible);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       let stackShift = 0;
       cols.forEach((col) => {

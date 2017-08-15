@@ -8,18 +8,19 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
 
+export function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
+  let v = col.getNumber(d, index);
+  if (isNaN(v)) {
+    v = 0;
+  }
+  //hsl space encoding, encode in lightness
+  const color = hsl(col.color || Column.DEFAULT_COLOR);
+  color.l = v;
+  return color.toString();
+}
 
 export default class HeatmapCellRenderer implements ICellRendererFactory {
-  private static toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
-    let v = col.getNumber(d, index);
-    if (isNaN(v)) {
-      v = 0;
-    }
-    //hsl space encoding, encode in lightness
-    const color = hsl(col.color || Column.DEFAULT_COLOR);
-    color.l = v;
-    return color.toString();
-  }
+
 
   createDOM(col: INumberColumn & Column): IDOMCellRenderer {
     return {
@@ -28,7 +29,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
-          'background-color': HeatmapCellRenderer.toHeatMapColor(d.v, d.dataIndex, col)
+          'background-color': toHeatMapColor(d.v, d.dataIndex, col)
         });
       }
     };
@@ -38,7 +39,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const w = context.rowHeight(i) - padding * 2;
-      ctx.fillStyle = HeatmapCellRenderer.toHeatMapColor(d.v, d.dataIndex, col);
+      ctx.fillStyle = toHeatMapColor(d.v, d.dataIndex, col);
       ctx.fillRect(padding, padding, w, w);
     };
   }
