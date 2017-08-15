@@ -63,8 +63,7 @@ const isWorkspaceContext = fs.existsSync(resolve(__dirname, '..', 'phovea_regist
 function generateWebpack(bundle, options) {
   const base = {
     entry: {
-      'LineUpJS': './src/index.ts',
-      'LineUpJS_react': './src/react/index.tsx'
+      'LineUpJS': './src/index.ts'
     },
     output: {
       path: resolve(__dirname, 'build'),
@@ -101,10 +100,6 @@ function generateWebpack(bundle, options) {
       })
       //rest depends on type
     ],
-    externals: { //react always external
-      react: { amd: 'react', root: 'React', commonjs: 'react', commonjs2: 'react' },
-      'react-dom': { amd: 'react-dom', root: 'ReactDOM', commonjs: 'react-dom', commonjs2: 'react-dom' }
-    },
     module: {
       loaders: webpackloaders.slice()
     },

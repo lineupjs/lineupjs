@@ -105,12 +105,6 @@
     "webpack": "^3.4.1",
     "webpack-dev-server": "^2.4.2"
   },
-  "optionalDependencies": {
-    "@types/react": "^15.0.39",
-    "@types/react-dom": "^15.5.1",
-    "react": "^15.4.1",
-    "react-dom": "^15.4.1"
-  },
   "dependencies": {
     "font-awesome": "^4.7.0",
     "lineupengine": "github:sgratzl/lineupengine",
