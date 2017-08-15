@@ -7,7 +7,7 @@ import Column from './Column';
 import {
   IBoxPlotColumn, IBoxPlotData, SORT_METHOD as BASE_SORT_METHOD, SortMethod, compareBoxPlot, getBoxPlotNumber
 } from './BoxPlotColumn';
-import {isSortedByMe, merge} from '../utils';
+import {merge} from '../utils';
 import NumberColumn, {
   INumberColumn,
   IMappingFunction,
@@ -264,7 +264,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     }
     this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
     // sort by me if not already sorted by me
-    if (!isSortedByMe(this)) {
+    if (!this.isSortedByMe().asc) {
       this.sortByMe();
     }
   }

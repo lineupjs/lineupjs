@@ -5,13 +5,10 @@
 
 import Column, {IColumnDesc} from './model/Column';
 import DataProvider from './provider/ADataProvider';
-import {renderers as defaultRenderers} from './renderer';
 import {
   createRenderer,
-  dummyRankingButtonHook,
   ILineUpRenderer,
   IPoolRendererOptions,
-  IRankingHook,
   PoolRenderer
 } from './ui';
 import {IHeaderRendererOptions} from './ui/HeaderRenderer';
@@ -19,6 +16,7 @@ import {default as ABodyRenderer, IBodyRendererOptions} from './ui/ABodyRenderer
 import {AEventDispatcher, merge} from './utils';
 import {scale as d3scale, select, selection, Selection} from 'd3';
 import ICellRendererFactory from './renderer/ICellRendererFactory';
+import {defaultConfig} from './config';
 
 export interface IBodyOptions {
   renderer: string;
@@ -89,48 +87,6 @@ export interface ILineUpConfig {
    * the renderer to use for rendering the columns
    */
   renderers: { [key: string]: ICellRendererFactory };
-}
-
-export function defaultConfig() {
-  const idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
-  return {
-    idPrefix,
-    header: {
-      idPrefix,
-      headerHeight: 20,
-      headerHistogramHeight: 40,
-      autoRotateLabels: false,
-      rotationHeight: 50, //in px
-      rotationDegree: -20, //in deg
-      rankingButtons: <IRankingHook>dummyRankingButtonHook,
-      linkTemplates: [],
-      slopeWidth: 150
-    },
-    htmlLayout: {},
-    renderingOptions: {
-      stacked: true,
-      animation: true,
-      summary: false,
-      meanLine: false,
-      histograms: false
-    },
-    body: {
-      renderer: 'svg', //svg, canvas, html
-      rowHeight: 18,
-      rowPadding: 1,
-      rowBarPadding: 1,
-      visibleRowsOnly: true,
-      backupScrollRows: 4,
-      animationDuration: 1000,
-      freezeCols: 0,
-      slopeWidth: 150,
-      actions: []
-    },
-    svgLayout: {},
-    manipulative: true,
-    pool: false,
-    renderers: merge({}, defaultRenderers)
-  };
 }
 
 /**

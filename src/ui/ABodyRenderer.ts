@@ -10,7 +10,7 @@ import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import IRenderContext from '../renderer/IRenderContext';
 import ICellRendererFactory from '../renderer/ICellRendererFactory';
-import {renderers as defaultRenderers} from '../renderer';
+import {defaultConfig} from '../config';
 
 export interface ISlicer {
   (start: number, length: number, row2y: (i: number) => number): { from: number; to: number };
@@ -92,28 +92,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
   static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
   static readonly EVENT_RENDER_FINISHED = 'renderFinished';
 
-  protected readonly options: IBodyRendererOptions = {
-    rowHeight: 22,
-    textHeight: 13, //10pt
-    rowPadding: 1,
-    rowBarPadding: 1,
-    rowBarTopPadding: 1,
-    rowBarBottomPadding: 1,
-    idPrefix: '',
-    slopeWidth: 150,
-    columnPadding: 5,
-    stacked: true,
-    animation: false, //200
-    animationDuration: 1000,
-
-    renderers: merge({}, defaultRenderers),
-
-    meanLine: false,
-
-    actions: [],
-
-    freezeCols: 0
-  };
+  protected readonly options: IBodyRendererOptions = defaultConfig().body;
 
   protected readonly $node: d3.Selection<any>;
 

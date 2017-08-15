@@ -1,22 +1,19 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, debounce} from '../../utils';
+import {AEventDispatcher, debounce, findOption} from '../../utils';
 import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
 import {createDOM} from '../../renderer';
-import {filters as defaultFilters} from '../../dialogs';
-import {default as RenderColumn, IRankingContextContainer} from './RenderColumn';
+import {default as RenderColumn, IRankingBodyContext} from './RenderColumn';
 import EngineRankingRenderer from './EngineRankingRenderer';
 import {uniformContext} from 'lineupengine/src';
-import StringColumn from '../../model/StringColumn';
 import Ranking from '../../model/Ranking';
 import {ILineUpRenderer} from '../index';
 import {ILineUpConfig, IRenderingOptions} from '../../lineup';
 import {isCategoricalColumn} from '../../model/CategoricalColumn';
 import NumberColumn from '../../model/NumberColumn';
-
 
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
   static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
@@ -28,7 +25,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   readonly node: HTMLElement;
 
-  readonly ctx: IRankingContextContainer & { data: IDataRow[] };
+  readonly ctx: IRankingBodyContext & { data: IDataRow[] };
 
   private readonly renderer: EngineRankingRenderer;
 
@@ -38,29 +35,13 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.node = parent.ownerDocument.createElement('main');
     parent.appendChild(this.node);
 
-    const bodyOptions: any = this.options.body;
-
-    function findOption(key: string, defaultValue: any): any {
-      if (key in bodyOptions) {
-        return bodyOptions[key];
-      }
-      if (key.indexOf('.') > 0) {
-        const p = key.substring(0, key.indexOf('.'));
-        key = key.substring(key.indexOf('.') + 1);
-        if (p in bodyOptions && key in bodyOptions[p]) {
-          return bodyOptions[p][key];
-        }
-      }
-      return defaultValue;
-    }
-
     this.ctx = {
       provider: data,
-      filters: Object.assign({}, defaultFilters),
-      linkTemplates: <string[]>[],
-      autoRotateLabels: false,
-      searchAble: (col: Column) => col instanceof StringColumn,
-      option: findOption,
+      filters: this.options.header.filters!,
+      linkTemplates: this.options.header.linkTemplates!,
+      autoRotateLabels: this.options.header.autoRotateLabels!,
+      searchAble: this.options.header.searchAble!,
+      option: findOption(this.options.body),
       statsOf: (col: Column) => {
         const r = this.histCache.get(col.id);
         if (r == null || r instanceof Promise) {

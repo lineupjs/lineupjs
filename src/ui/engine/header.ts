@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import Column from '../../model/Column';
-import {IRankingContext} from './RenderColumn';
+import {IRankingHeaderContext} from './RenderColumn';
 import {isSupportType, createStackDesc, createNestedDesc} from '../../model';
 import NumbersColumn from '../../model/NumbersColumn';
 import BoxPlotColumn from '../../model/BoxPlotColumn';
@@ -28,7 +28,7 @@ import Ranking from '../../model/Ranking';
 
 export {default as createSummary} from './summary';
 
-export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingContext) {
+export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
   const isSupportColumn = isSupportType(col.desc);
 
   const addIcon = (title: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
@@ -171,7 +171,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
 export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
-export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingContext) {
+export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   dragAble(node, () => {
     const ref = JSON.stringify(ctx.provider.toDescRef(column.desc));
     const data: any = {

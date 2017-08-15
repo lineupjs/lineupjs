@@ -11,17 +11,23 @@ import {ICategoricalColumn} from '../../model/CategoricalColumn';
 import {IDOMCellRenderer} from '../../renderer/IDOMCellRenderers';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 
-export interface IRankingContextContainer extends IDOMRenderContext {
+export interface IRankingHeaderContextContainer {
+  readonly idPrefix: string;
   provider: IDataProvider;
   linkTemplates: string[];
   searchAble(col: Column): boolean;
   autoRotateLabels: boolean;
   filters: { [type: string]: IFilterDialog };
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
+}
+
+export interface IRankingBodyContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   getRow(index: number): IDataRow;
 }
 
-export declare type IRankingContext = Readonly<IRankingContextContainer>;
+export declare type IRankingHeaderContext = Readonly<IRankingHeaderContextContainer>;
+
+export declare type IRankingContext = Readonly<IRankingBodyContext>;
 
 
 /**
@@ -71,28 +77,14 @@ export default class RenderColumn implements IColumn {
     return node;
   }
 
-  private isSortedByMe(): {asc: 'asc'|'desc'|undefined, priority: string|undefined} {
-    const ranker = this.c.findMyRanker();
-    if (!ranker) {
-      return {asc: undefined, priority: undefined};
-    }
-    const criterias = ranker.getSortCriterias();
-    const index = criterias.findIndex((c) => c.col === this.c);
-    if (index < 0) {
-      return {asc: undefined, priority: undefined};
-    }
-    return {
-      asc: criterias[index].asc ? 'asc' : 'desc',
-      priority: index.toString()
-    };
-  }
+
 
   updateHeader(node: HTMLElement, ctx: IRankingContext) {
     node.querySelector('div.lu-label')!.innerHTML = this.c.label;
     node.title = toFullTooltip(this.c);
     node.className = `${this.c.cssClass ? ` ${this.c.cssClass}` : ''}${(this.c.getCompressed() ? ' lu-compressed' : '')} ${this.c.headerCssClass}${ctx.autoRotateLabels ? ' rotateable' : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
     const sort = <HTMLElement>node.querySelector('.lu-sort')!;
-    const {asc, priority} = this.isSortedByMe();
+    const {asc, priority} = this.c.isSortedByMe();
     sort.dataset.sort = asc;
     sort.dataset.priority = priority;
 

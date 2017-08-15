@@ -8,7 +8,6 @@ import Column, {IStatistics, ICategoricalStatistics, IFlatColumn} from '../model
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import {filters as defaultFilters} from '../dialogs';
 import NumberColumn, {isNumberColumn, INumberColumn} from '../model/NumberColumn';
 import CategoricalColumn, {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import RankColumn from '../model/RankColumn';
@@ -34,13 +33,10 @@ import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
 import HierarchyColumn from '../model/HierarchyColumn';
 import {toFullTooltip} from './engine/RenderColumn';
 import {MIMETYPE_PREFIX} from './engine/header';
+import {defaultConfig, dummyRankingButtonHook} from '../config';
 
 export interface IRankingHook {
   ($node: d3.Selection<Ranking>): void;
-}
-
-export function dummyRankingButtonHook(): any {
-  return null;
 }
 
 export interface IHeaderRendererOptions {
@@ -77,27 +73,7 @@ function countMultiLevel(c: Column): number {
 
 
 export default class HeaderRenderer {
-  private readonly options: IHeaderRendererOptions = {
-    idPrefix: '',
-    slopeWidth: 150,
-    columnPadding: 5,
-    headerHistogramHeight: 40,
-    headerHeight: 20,
-    manipulative: true,
-    summary: false,
-    filters: Object.assign({}, defaultFilters),
-    linkTemplates: [],
-    searchAble: (col: Column) => col instanceof StringColumn,
-    sortOnLabel: true,
-
-    autoRotateLabels: false,
-    rotationHeight: 50, //in px
-    rotationDegree: -20, //in deg
-
-    freezeCols: 0,
-
-    rankingButtons: <IRankingHook>dummyRankingButtonHook
-  };
+  private readonly options: IHeaderRendererOptions = defaultConfig().header;
 
   readonly $node: d3.Selection<any>;
 
@@ -152,7 +128,7 @@ export default class HeaderRenderer {
   });
 
 
-  constructor(private data: DataProvider, parent: Element, options: IHeaderRendererOptions) {
+  constructor(private data: DataProvider, parent: Element, options: Partial<IHeaderRendererOptions>) {
     merge(this.options, options);
 
     this.$node = d3.select(parent).append('div').classed('lu-header', true);

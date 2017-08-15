@@ -8,9 +8,9 @@ import {INumberColumn, isNumberColumn} from '../../model/NumberColumn';
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';
 import {IDataProvider} from '../../provider/ADataProvider';
-import {IRankingContext} from './RenderColumn';
+import {IRankingHeaderContext} from './RenderColumn';
 
-export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingContext) {
+export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
   if (col instanceof StringColumn) {
     summaryString(col, node);
   } else if (isCategoricalColumn(col)) {

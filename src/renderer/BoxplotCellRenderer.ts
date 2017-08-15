@@ -3,7 +3,6 @@ import {default as BoxPlotColumn, IBoxPlotColumn, IBoxPlotData} from '../model/B
 import Column from '../model/Column';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {isSortedByMe} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 
@@ -19,7 +18,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   createDOM(col: IBoxPlotColumn & Column): IDOMCellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
-    const sortedByMe = isSortedByMe(col);
+    const sortedByMe = col.isSortedByMe().asc !== undefined;
     return {
       template: `<div title="">
                     <div><div></div><div></div></div>
@@ -55,7 +54,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const topPadding = 2.5 * (context.option('rowBarPadding', 1));
-    const sortedByMe = isSortedByMe(col);
+    const sortedByMe = col.isSortedByMe().asc !== undefined;
     const width = context.colWidth(col);
     const boxColor = context.option('style.boxplot.box', '#e0e0e0');
     const boxStroke = context.option('style.boxplot.stroke', 'black');

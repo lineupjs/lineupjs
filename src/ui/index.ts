@@ -8,7 +8,7 @@ import {AEventDispatcher} from '../utils';
 import EngineRenderer from './engine/EngineRenderer';
 import SeparatedRenderer from './SeparatedRenderer';
 
-export {default as HeaderRenderer, IRankingHook, dummyRankingButtonHook} from './HeaderRenderer';
+export {default as HeaderRenderer, IRankingHook} from './HeaderRenderer';
 export {default as PoolRenderer, IPoolRendererOptions} from './PoolRenderer';
 export {ISlicer, IBodyRenderer} from './ABodyRenderer';
 

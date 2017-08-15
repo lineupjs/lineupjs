@@ -7,15 +7,22 @@ import Column from './model/Column';
 import {IDOMCellRenderer} from './renderer/IDOMCellRenderers';
 export {round} from 'd3';
 
-export function isSortedByMe(col: Column) {
-  const r = col.findMyRanker();
-  if (!r) {
-    return false;
-  }
-  const s = r.getSortCriteria();
-  return s && s.col === col;
-}
 
+export function findOption(options: any) {
+  return (key: string, defaultValue: any): any => {
+    if (key in options) {
+      return options[key];
+    }
+    if (key.indexOf('.') > 0) {
+      const p = key.substring(0, key.indexOf('.'));
+      key = key.substring(key.indexOf('.') + 1);
+      if (p in options && key in options[p]) {
+        return options[p][key];
+      }
+    }
+    return defaultValue;
+  };
+}
 
 
 /**

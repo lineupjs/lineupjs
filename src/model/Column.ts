@@ -354,6 +354,22 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
+  isSortedByMe(): { asc: 'asc' | 'desc' | undefined, priority: string | undefined } {
+    const ranker = this.findMyRanker();
+    if (!ranker) {
+      return {asc: undefined, priority: undefined};
+    }
+    const criterias = ranker.getSortCriterias();
+    const index = criterias.findIndex((c) => c.col === this);
+    if (index < 0) {
+      return {asc: undefined, priority: undefined};
+    }
+    return {
+      asc: criterias[index].asc ? 'asc' : 'desc',
+      priority: index.toString()
+    };
+  }
+
   /**
    * removes the column from the ranking
    * @returns {boolean} was successful
