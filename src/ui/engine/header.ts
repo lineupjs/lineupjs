@@ -28,9 +28,8 @@ import Ranking from '../../model/Ranking';
 
 export {default as createSummary} from './summary';
 
-export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
-  const isSupportColumn = isSupportType(col.desc);
 
+export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
   const addIcon = (title: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
     node.insertAdjacentHTML('beforeend', `<i title="${title}"><span aria-hidden="true">${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
@@ -44,6 +43,15 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeade
     };
     return i;
   };
+  return createToolbarImpl(<any>addIcon, col, ctx);
+}
+
+interface IAddIcon {
+  (title: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]): { onclick: (evt: { stopPropagation: ()=>void, currentTarget: Element, [key: string]: any}) => any };
+}
+
+export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+  const isSupportColumn = isSupportType(col.desc);
 
   if (!isSupportColumn) {
     //rename
