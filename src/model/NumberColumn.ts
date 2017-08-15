@@ -249,7 +249,7 @@ export function createMappingFunction(dump: any): IMappingFunction {
   return l;
 }
 
-export interface INumberColumnDesc extends IValueColumnDesc<number> {
+export interface INumberDesc  {
   /**
    * dump of mapping function
    */
@@ -274,6 +274,8 @@ export interface INumberColumnDesc extends IValueColumnDesc<number> {
    */
   readonly missingValue?: number;
 }
+
+export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
 
 export interface IMapAbleColumn {
   getOriginalMapping(): IMappingFunction;

@@ -6,12 +6,14 @@ import Column from './Column';
 import StringColumn, {IStringColumnDesc} from './StringColumn';
 
 
-export interface ILinkColumnDesc extends IStringColumnDesc {
+export interface ILinkDesc {
   /**
    * link pattern to use, where $1 will be replaced with the actual value
    */
   link?: string;
 }
+
+export declare type ILinkColumnDesc = ILinkDesc & IStringColumnDesc;
 
 /**
  * a string column in which the label is a text but the value a link
@@ -24,9 +26,9 @@ export default class LinkColumn extends StringColumn {
    */
   private link: string|null = null;
 
-  constructor(id: string, desc: any) {
+  constructor(id: string, desc: ILinkColumnDesc) {
     super(id, desc);
-    this.link = desc.link;
+    this.link = desc.link || null;
   }
 
   get headerCssClass() {

@@ -11,10 +11,12 @@ export interface ICategoryNode extends ICategory {
   readonly children: ICategoryNode[];
 }
 
-export interface IHierarchyDesc extends IValueColumnDesc<string> {
+export interface IHierarchyDesc {
   readonly hierarchy: ICategoryNode;
   readonly hiearchySeparator?: string;
 }
+
+export declare type IHierarchyColumnDesc = IHierarchyDesc & IValueColumnDesc<string>;
 
 export interface ICategoryInternalNode {
   readonly path: string;
@@ -37,7 +39,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   private currentMaxDepth: number = Infinity;
   private currentLeaves: ICategoryInternalNode[] = [];
 
-  constructor(id: string, desc: IHierarchyDesc) {
+  constructor(id: string, desc: IHierarchyColumnDesc) {
     super(id, desc);
     this.hierarchySeparator = desc.hiearchySeparator || '.';
     this.hierarchy = this.initHierarchy(desc.hierarchy);

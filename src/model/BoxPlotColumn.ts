@@ -36,7 +36,7 @@ export interface IBoxPlotColumn extends INumberColumn {
   setSortMethod(sortMethod: string): void;
 }
 
-export interface IBoxPlotColumnDesc extends IValueColumnDesc<IBoxPlotData> {
+export interface IBoxPlotDesc {
   /**
    * dump of mapping function
    */
@@ -52,6 +52,8 @@ export interface IBoxPlotColumnDesc extends IValueColumnDesc<IBoxPlotData> {
 
   readonly sort?: string;
 }
+
+export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlotData>;
 
 export interface IBoxPlotData {
   readonly min: number;

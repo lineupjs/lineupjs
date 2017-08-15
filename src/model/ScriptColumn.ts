@@ -53,13 +53,15 @@ function wrapWithContext(code: string) {
   return typeof v === 'number' ? v : NaN`;
 }
 
-export interface IScriptColumnDesc extends ICompositeNumberDesc {
+export interface IScriptDesc extends ICompositeNumberDesc {
   /**
    * the function to use, it has two parameters: children (current children) and values (their row values)
    * @default 'return Math.max.apply(Math,values)'
    */
   script?: string;
 }
+
+export declare type IScriptColumnDesc = IScriptDesc & ICompositeNumberDesc;
 
 
 export default class ScriptColumn extends CompositeNumberColumn {

@@ -7,7 +7,7 @@ import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './CategoricalColumn';
 
-export interface IBooleanColumnDesc extends IValueColumnDesc<boolean> {
+export interface IBooleanDesc extends IValueColumnDesc<boolean> {
   /**
    * string to show for true
    * @default X
@@ -19,6 +19,8 @@ export interface IBooleanColumnDesc extends IValueColumnDesc<boolean> {
    */
   falseMarker?: string;
 }
+
+export declare type IBooleanColumnDesc = IValueColumnDesc<boolean> & IBooleanDesc;
 
 /**
  * a string column with optional alignment

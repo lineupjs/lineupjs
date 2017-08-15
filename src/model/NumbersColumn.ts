@@ -97,7 +97,7 @@ export interface INumbersColumn extends INumberColumn {
   getMapping(): IMappingFunction;
 }
 
-export interface INumbersColumnDesc extends IValueColumnDesc<number[]> {
+export interface INumbersDesc {
   /**
    * dump of mapping function
    */
@@ -116,6 +116,9 @@ export interface INumbersColumnDesc extends IValueColumnDesc<number[]> {
   readonly dataLength: number;
   readonly colorRange?: string[];
 }
+
+
+export declare type INumbersColumnDesc = INumbersDesc & IValueColumnDesc<number[]>;
 
 
 export default class NumbersColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {

@@ -5,9 +5,11 @@ import ValueColumn from './ValueColumn';
 import {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './CategoricalColumn';
 
-interface IBooleansColumnDesc extends IValueColumnDesc <boolean[]> {
+export interface IBooleansDesc {
   readonly dataLength: number;
 }
+
+export declare type IBooleansColumnDesc = IValueColumnDesc<boolean[]> & IBooleansDesc;
 
 export default class BooleansColumn extends ValueColumn<boolean[]> implements ICategoricalColumn {
   private readonly dataLength: number;

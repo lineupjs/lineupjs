@@ -5,13 +5,16 @@
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
-export interface IStringColumnDesc extends IValueColumnDesc<string> {
+export interface IStringDesc {
   /**
    * column alignment: left, center, right
    * @default left
    */
   readonly alignment?: 'left'|'center'|'right';
 }
+
+
+export declare type IStringColumnDesc = IStringDesc & IValueColumnDesc<string>;
 
 /**
  * a string column with optional alignment

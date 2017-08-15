@@ -20,10 +20,11 @@ export function createDesc(label = 'actions', actions: IAction[] = []) {
   return {type: 'actions', label, actions};
 }
 
-
-export interface IActionColumnDesc extends IColumnDesc {
+export interface IActionDesc {
   actions?: IAction[];
 }
+
+export declare type IActionColumnDesc = IColumnDesc & IActionDesc;
 
 /**
  * a default column with no values

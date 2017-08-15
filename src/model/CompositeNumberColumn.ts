@@ -21,6 +21,8 @@ export interface ICompositeNumberDesc extends IColumnDesc {
   missingValue?: number;
 }
 
+export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnDesc;
+
 /**
  * implementation of a combine column, standard operations how to select
  */
@@ -29,7 +31,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
   private numberFormat: (n: number) => string = format('.3n');
 
-  constructor(id: string, desc: ICompositeNumberDesc) {
+  constructor(id: string, desc: ICompositeNumberColumnDesc) {
     super(id, desc);
 
     if (desc.numberFormat) {
