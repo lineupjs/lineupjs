@@ -6,7 +6,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 
-function computeLabel(v: IBoxPlotData) {
+export function computeLabel(v: IBoxPlotData) {
   if (v === null) {
     return '';
   }

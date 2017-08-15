@@ -6,7 +6,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import Column from '../model/Column';
 
-function line(data: number[]) {
+export function line(data: number[]) {
   if (data.length === 0) {
     return '';
   }

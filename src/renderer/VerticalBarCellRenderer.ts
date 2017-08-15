@@ -19,7 +19,7 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<div style="height: 20px">${templateRows}</div>`,
+      template: `<div>${templateRows}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getRawNumbers(d.v, d.dataIndex);
 
