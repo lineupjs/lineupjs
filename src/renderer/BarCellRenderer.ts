@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import Column, {IStatistics} from '../model/Column';
+import Column from '../model/Column';
 import {INumberColumn, numberCompare} from '../model/NumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
@@ -19,6 +19,7 @@ export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberCol
    */
 
   constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string | null = (_d, _i, col) => col.color) {
+    super();
   }
 
   createDOM(col: INumberColumn & Column): IDOMCellRenderer {

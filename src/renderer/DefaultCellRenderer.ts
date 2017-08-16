@@ -1,7 +1,7 @@
 import Column from '../model/Column';
 import ICellRendererFactory from './ICellRendererFactory';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {IHTMLCellRenderer, IHTMLGroupRenderer} from './IDOMCellRenderers';
+import {ICanvasRenderContext} from './RendererContexts';
+import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
 import {clipText, setText} from '../utils';
@@ -22,13 +22,6 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   }
 
   createDOM(col: Column): IDOMCellRenderer {
-    const w = col.getVisibleWidth();
-    let alignmentShift = 2;
-    if (this.align === 'right') {
-      alignmentShift = w - 5;
-    } else if (this.align === 'center') {
-      alignmentShift = w * 0.5;
-    }
     return {
       template: `<div class="${this.textClass} ${this.align}"> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
@@ -53,31 +46,17 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupSVG(col: Column, context: IDOMRenderContext): ISVGGroupRenderer {
+  createGroupDOM(_col: Column): IDOMGroupRenderer {
     return {
-      template: `<text class="text_center"></text>`,
-      update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
-        n.textContent = `${group.name} (${rows.length})`;
-        attr(n, {
-          x: col.getVisibleWidth() / 2,
-          y: context.groupHeight(group) / 2
-        });
-      }
-    };
-  }
-
-  createGroupHTML(col: Column, context: IDOMRenderContext): IHTMLGroupRenderer {
-    return {
-      template: `<div class="text_center"></div>`,
+      template: `<div class="${this.textClass} ${this.align}"> </div>`,
       update: (n: HTMLDivElement, group: IGroup, rows: IDataRow[]) => {
-        n.textContent = `${group.name} (${rows.length})`;
-        n.style.height = (context.groupHeight(group) / 2) + 'px';
+        setText(n, `${group.name} (${rows.length})`);
       }
     };
   }
 
   createGroupCanvas(col: Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const w = col.getVisibleWidth();
+    const w = context.colWidth(col);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const bak = ctx.textAlign;
       ctx.textAlign = 'center';

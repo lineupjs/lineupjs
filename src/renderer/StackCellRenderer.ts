@@ -9,7 +9,7 @@ import {matchColumns} from '../utils';
 import {IGroup} from '../model/Group';
 
 
-export function createData(col: StackColumn, context: IRenderContext<any>, nestingPossible: boolean) {
+export function createData(col: StackColumn, context: IRenderContext<any, any>, nestingPossible: boolean) {
     const stacked = nestingPossible && context.option('stacked', true);
     const padding = context.option('columnPadding', 0);
     let offset = 0;
@@ -39,7 +39,6 @@ export default class StackCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
-        let stackShift = 0;
         matchColumns(n, cols, 'detail', 'html');
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];

@@ -2,12 +2,12 @@ import ICellRendererFactory from './ICellRendererFactory';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import Column, {ICategoricalStatistics} from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
-import IDOMCellRenderer from './IDOMCellRenderers';
+import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText, setText} from '../utils';
+import {attr, clipText, forEachChild, setText} from '../utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
-import * as d3 from 'd3';
+import {computeHist} from '../provider/math';
 
 /**
  * renders categorical columns as a colored rect with label
@@ -43,52 +43,41 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static createHistogram(col: ICategoricalColumn&Column) {
-    const scale = d3.scale.ordinal().domain(col.categories).rangeBands([0, col.getWidth()]);
-    return (rows: IDataRow[], height: number, maxBin?: number) => {
-      const hist = new Map<string, number>();
-      col.categories.forEach((cat) => hist.set(cat, 0));
-      const labels = col.categoryLabels;
-      const colors = col.categoryColors;
-      rows.forEach((row) =>
-        col.getCategories(row.v, row.dataIndex).forEach((cat) =>
-          hist.set(cat, hist.get(cat) + 1)));
-      const bins = col.categories.map((name, i) => ({name, label: labels[i], color: colors[i], count: hist.get(name)}));
-      const yscale = d3.scale.linear().domain([0, maxBin !== undefined ? maxBin : d3.max(bins, (d) => d.count)]).range([height, 0]);
-      return {bins, scale, yscale};
-    };
-  }
+  createGroupDOM(col: ICategoricalColumn&Column): IDOMGroupRenderer {
+    const colors = col.categoryColors;
+    const labels = col.categoryLabels;
+    const bins = col.categories.map((c, i) => `<div style="height: 0; background-color: ${colors[i]}" title="${labels[i]}: 0" data-cat="${c}"></div>`);
 
-  createGroupSVG(col: ICategoricalColumn&Column, context: IDOMRenderContext): ISVGGroupRenderer {
-    const factory = CategoricalCellRenderer.createHistogram(col);
-    const padding = context.option('rowBarPadding', 1);
     return {
-      template: `<g class='histogram'></g>`,
-      update: (n: SVGGElement, group: IGroup, rows: IDataRow[], hist?: ICategoricalStatistics) => {
-        const height = context.groupHeight(group) - padding;
-        const {bins, scale, yscale} = factory(rows, height, hist ? hist.maxBin : undefined);
-        const bars = d3.select(n).selectAll('rect').data(bins);
-        bars.enter().append('rect');
-        bars.attr({
-          x: (d) => scale(d.name) + padding,
-          y: (d) => yscale(d.count) + padding,
-          width: (d) => scale.rangeBand() - 2 * padding,
-          height: (d) => height - yscale(d.count),
-          title: (d) => `${d.label} (${d.count})`
-        }).style('fill', (d) => d.color);
+      template: `<div>${bins}</div>`,
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: ICategoricalStatistics|null) => {
+        const {maxBin, hist} = computeHist(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getCategories(r.v, r.dataIndex), col.categories);
+
+        const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
+        forEachChild(n, (d: HTMLElement, i) => {
+          const {y} = hist[i];
+          d.style.height = `${Math.round(y * 100 / max)}%`;
+          d.title = `${labels[i]}: ${y}`;
+        });
       }
     };
   }
 
   createGroupCanvas(col: ICategoricalColumn&Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const factory = CategoricalCellRenderer.createHistogram(col);
     const padding = context.option('rowBarPadding', 1);
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number, hist?: ICategoricalStatistics) => {
-      const height = context.groupHeight(group) - padding;
-      const {bins, scale, yscale} = factory(rows, height, hist ? hist.maxBin : undefined);
-      bins.forEach((d) => {
-        ctx.fillStyle = d.color;
-        ctx.fillRect(scale(d.name) + padding, yscale(d.count) + padding, scale.rangeBand() - 2 * padding, height - yscale(d.count));
+    const cats = col.categories;
+    const colors = col.categoryColors;
+    const widthPerBin = context.colWidth(col) / cats.length;
+
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], _dx: number, _dy: number, globalHist: ICategoricalStatistics|null) => {
+      const {maxBin, hist} = computeHist(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getCategories(r.v, r.dataIndex), col.categories);
+      const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
+
+      const total = context.groupHeight(group) - padding;
+      hist.forEach(({y}, i) => {
+        const height = (y / max) * total;
+        ctx.fillStyle = colors[i];
+        ctx.fillRect(i * widthPerBin + padding, (total - height) + padding, widthPerBin - 2 * padding, height);
       });
     };
   }

@@ -1,5 +1,5 @@
 import SelectionColumn from '../model/SelectionColumn';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
@@ -37,10 +37,10 @@ export default class SelectionRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupSVG(col: SelectionColumn): ISVGGroupRenderer {
+  createGroupDOM(col: SelectionColumn): IDOMGroupRenderer {
     return {
-      template: `<text class='selection fa'><tspan class='selectionOnly'>\uf046</tspan><tspan class='notSelectionOnly'>\uf096</tspan></text>`,
-      update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
+      template: `<div></div>`,
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
         const all = selected >= rows.length /2;
         if (all) {

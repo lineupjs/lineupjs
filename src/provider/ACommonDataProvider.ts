@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {IColumnDesc, createRankDesc} from '../model';
+import {createRankDesc, IColumnDesc} from '../model';
 import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
 import {IOrderedGroup} from '../model/Group';
@@ -55,8 +55,8 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  protected rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking) {
-    const groups = this.ranks.get(ranking.id);
+  protected rankAccessor(_row: any, index: number, _id: string, _desc: IColumnDesc, ranking: Ranking) {
+    const groups = this.ranks.get(ranking.id) || [];
     let acc = 0;
     for(const group of groups) {
       const rank = group.order.indexOf(index);
@@ -99,13 +99,17 @@ abstract class ACommonDataProvider extends ADataProvider {
     this.ranks.delete(ranking.id);
   }
 
-  sort(ranking: Ranking): Promise<IOrderedGroup[]> {
+  sort(ranking: Ranking): Promise<IOrderedGroup[]>|IOrderedGroup[] {
     //use the server side to sort
     const r = this.sortImpl(ranking);
     if (Array.isArray(r)) {
       //store the result
-      this.ranks.set(ranking.id, argsort);
-      return argsort;
+      this.ranks.set(ranking.id, r);
+      return r;
+    }
+    return r.then((r) => {
+      this.ranks.set(ranking.id, r);
+      return r;
     });
   }
 

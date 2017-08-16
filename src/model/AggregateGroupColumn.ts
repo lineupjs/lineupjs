@@ -14,7 +14,7 @@ export function createDesc(label: string = 'A') {
 
 export interface IAggregateGroupColumnDesc extends IColumnDesc {
   isAggregated(ranking: Ranking, group: IGroup): boolean;
-  setAggregated(ranking: Ranking, group: IGroup, value: boolean);
+  setAggregated(ranking: Ranking, group: IGroup, value: boolean): void;
 }
 /**
  * a checkbox column for selections
@@ -32,7 +32,7 @@ export default class AggregateGroupColumn extends Column {
   }
 
   isAggregated(group: IGroup) {
-    const ranking = this.findMyRanker();
+    const ranking = this.findMyRanker()!;
     if ((<IAggregateGroupColumnDesc>this.desc).isAggregated) {
       return (<IAggregateGroupColumnDesc>this.desc).isAggregated(ranking, group);
     }
@@ -40,7 +40,7 @@ export default class AggregateGroupColumn extends Column {
   }
 
   setAggregated(group: IGroup, value: boolean) {
-    const ranking = this.findMyRanker();
+    const ranking = this.findMyRanker()!;
     const current = ((<IAggregateGroupColumnDesc>this.desc).isAggregated) && (<IAggregateGroupColumnDesc>this.desc).isAggregated(ranking, group);
     if (current === value) {
       return true;

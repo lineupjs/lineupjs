@@ -9,7 +9,7 @@ import BoxPlotColumn from '../../model/BoxPlotColumn';
 import SortDialog from '../../dialogs/SortDialog';
 import {select, Selection} from 'd3';
 import RenameDialog from '../../dialogs/RenameDialog';
-import RendererTypeDialog from '../../dialogs/RendererTypeDialog';
+import ChangeRendererDialog from '../../dialogs/ChangeRendererDialog';
 import LinkColumn from '../../model/LinkColumn';
 import ADialog from '../../dialogs/ADialog';
 import ScriptColumn from '../../model/ScriptColumn';
@@ -25,6 +25,7 @@ import HierarchyColumn from '../../model/HierarchyColumn';
 import {dragAble, dropAble, IDropResult} from './dnd';
 import {isNumberColumn} from '../../model/NumberColumn';
 import Ranking from '../../model/Ranking';
+import ChangeGroupRendererDialog from '../../dialogs/ChangeGroupRendererDialog';
 
 export {default as createSummary} from './summary';
 
@@ -70,7 +71,11 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
 
   if (col.getRendererList().length > 1) {
     //Renderer Change
-    addIcon('Change Visualization', RendererTypeDialog);
+    addIcon('Change Visualization', ChangeRendererDialog);
+  }
+  if (col.getGroupRenderers().length > 1) {
+    //Renderer Change
+    addIcon('Change Group Visualization', ChangeGroupRendererDialog);
   }
 
   if (col instanceof LinkColumn) {

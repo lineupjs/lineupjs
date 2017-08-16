@@ -20,5 +20,5 @@ export interface ICanvasGroupRenderer {
    * @param ctx
    * @param rows
    */
-  (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number, hist: IStatistics|ICategoricalStatistics): void;
+  (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number, hist: IStatistics|ICategoricalStatistics|null): void;
 }

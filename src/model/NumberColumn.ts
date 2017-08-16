@@ -22,7 +22,7 @@ export function isMissingValue(v: any) {
 }
 
 function isUnknown(v?: number|null) {
-  return isNaN(v) || v === null || v === undefined;
+  return v === null || v === undefined || isNaN(v);
 }
 
 /**

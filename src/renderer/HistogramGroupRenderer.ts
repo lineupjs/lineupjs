@@ -2,64 +2,63 @@ import ICellRendererFactory from './ICellRendererFactory';
 import Column, {IStatistics} from '../model/Column';
 import {INumberColumn} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGGroupRenderer} from './IDOMCellRenderers';
+import {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
-import * as d3 from 'd3';
+import {computeStats, getNumberOfBins} from '../provider/math';
+import {forEachChild} from 'lineupjs/src/utils';
 
 
 /**
  * a renderer rendering a bar for numerical columns
  */
 export default class HistogramGroupRenderer implements ICellRendererFactory {
-  private static createHistogram(col: INumberColumn & Column, totalNumberOfRows: number) {
-    // as by default used in d3 the Sturges' formula
-    const bins = Math.ceil(Math.log(totalNumberOfRows) / Math.LN2) + 1;
-    const gen = d3.layout.histogram().range([0,1]).bins(bins);
-    const scale = d3.scale.linear().domain([0, 1]).range([0, col.getWidth()]);
-    return (rows: IDataRow[], height: number, hist?: IStatistics) => {
-      const values = rows.map((d) => col.getValue(d.v, d.dataIndex));
-      if (hist) {
-        gen.bins(hist.hist.length); //use shared one
-      }
-      const bins = gen(values);
-      const actMaxBin = hist === undefined ? d3.max(bins, (d) => d.y) : hist.maxBin;
-      const yscale = d3.scale.linear().domain([0, actMaxBin]).range([height, 0]);
-      return {bins, scale, yscale};
-    };
-  }
-
-  createGroupSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
-    const factory = HistogramGroupRenderer.createHistogram(col, context.totalNumberOfRows);
-    const padding = context.option('rowBarPadding', 1);
+  createGroupDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMGroupRenderer {
+    const guessedBins = getNumberOfBins(context.totalNumberOfRows);
+    let bins = '';
+    for (let i = 0; i < guessedBins; ++i) {
+      bins += `<div style="height: 0" title="Bin ${i}: 0"></div>`;
+    }
     return {
-      template: `<g class='histogram'></g>`,
-      update: (n: SVGGElement, group: IGroup, rows: IDataRow[], hist?: IStatistics) => {
-        const height = context.groupHeight(group) - padding;
-        const {bins, scale, yscale} = factory(rows, height, hist);
-        const bars = d3.select(n).selectAll('rect').data(bins);
-        bars.enter().append('rect');
-        bars.attr({
-          x: (d) => scale(d.x) + padding,
-          y: (d) => yscale(d.y) + padding,
-          width: (d) => scale(d.dx) - 2*padding,
-          height: (d) => height - yscale(d.y),
-          title: (d) => `${d.x} - ${d.x + d.dx} (${d.y})`
+      template: `<div>${bins}</div>`,
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: IStatistics|null) => {
+        const bins = globalHist ? globalHist.hist.length : guessedBins;
+        const {maxBin, hist} = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), [0, 1], bins);
+
+        const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
+
+        //adapt the number of children
+        if (n.children.length !== bins) {
+          let bins = '';
+          for (let i = 0; i < guessedBins; ++i) {
+            bins += `<div style="height: 0" title="Bin ${i}: 0"></div>`;
+          }
+          n.innerHTML = bins;
+        }
+        forEachChild(n, (d: HTMLElement, i) => {
+          const {x, dx, y} = hist[i];
+          d.style.height = `${Math.round(y * 100 / max)}%`;
+          d.title = `${x} - ${x + dx} (${y})`;
         });
       }
     };
   }
 
   createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const factory = HistogramGroupRenderer.createHistogram(col, context.totalNumberOfRows);
+    const guessedBins = getNumberOfBins(context.totalNumberOfRows);
     const padding = context.option('rowBarPadding', 1);
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number, hist?: IStatistics) => {
-      const height = context.groupHeight(group) - padding;
-      const {bins, scale, yscale} = factory(rows, height, hist);
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], _dx: number, _dy: number, globalHist: IStatistics|null) => {
+      const total = context.groupHeight(group) - padding;
+      const bins = globalHist ? globalHist.hist.length : guessedBins;
+      const widthPerBin = context.colWidth(col) / bins;
+      const {maxBin, hist} = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), [0, 1], bins);
+      const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
+
       ctx.fillStyle = context.option('style.histogram', 'lightgray');
-      bins.forEach((d) => {
-        ctx.fillRect(scale(d.x) + padding, yscale(d.y) + padding, scale(d.dx) - 2*padding, height - yscale(d.y));
+      hist.forEach(({y}, i) => {
+        const height = (y / max) * total;
+        ctx.fillRect(i * widthPerBin + padding, (total - height) + padding, widthPerBin - 2 * padding, height);
       });
     };
   }

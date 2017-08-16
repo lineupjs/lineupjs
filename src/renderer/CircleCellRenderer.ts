@@ -11,6 +11,7 @@ import {medianIndex} from './BarCellRenderer';
 export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumberColumn&Column> implements ICellRendererFactory {
 
   constructor(private colorOf: (d: any, i: number, col: Column) => string|null = (_d, _i, col) => col.color) {
+    super();
   }
 
   createDOM(col: INumberColumn & Column) {

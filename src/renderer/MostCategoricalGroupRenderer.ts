@@ -1,13 +1,12 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import CategoricalColumn from '../model/CategoricalColumn';
 import Column from '../model/Column';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer, ISVGGroupRenderer} from './IDOMCellRenderers';
+import {ICanvasRenderContext} from './RendererContexts';
+import {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText} from '../utils';
-import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
+import {clipText} from '../utils';
+import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
-import * as d3 from 'd3';
 
 /**
  * renders just the most frequent categorical group
@@ -18,11 +17,11 @@ export default class MostCategoricalGroupRenderer implements ICellRendererFactor
     col.categories.forEach((cat) => hist.set(cat, 0));
     rows.forEach((row) =>
       col.getCategories(row.v, row.dataIndex).forEach((cat) =>
-        hist.set(cat, hist.get(cat) + 1)));
+        hist.set(cat, (hist.get(cat) || 0) + 1)));
 
     let max = 0, maxCat = 0;
     col.categories.forEach((cat, i) => {
-      const count = hist.get(cat);
+      const count = hist.get(cat)!;
       if (count > max) {
         max = count;
         maxCat = i;
@@ -30,41 +29,34 @@ export default class MostCategoricalGroupRenderer implements ICellRendererFactor
     });
     return {
       count: max,
-      name: col.categories[maxCat],
       label: col.categoryLabels[maxCat],
       color: col.categoryColors[maxCat]
     };
   }
 
-  createGroupSVG(col: CategoricalColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
+  createGroupDOM(col: CategoricalColumn & Column): IDOMGroupRenderer {
     return {
-      template: `<g class='most-category'><rect width="${col.getWidth()}" height="0"></rect><text x="${col.getWidth()/2}"></text></g>`,
-      update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
-        const height = context.groupHeight(group);
-        const {count, name, label, color} = MostCategoricalGroupRenderer.choose(col, rows);
-        attr(n.querySelector('rect'), {
-          height
-        }, {
-          fill: color
-        });
-        attr(n.querySelector('text'), {
-          y: height/2
-        }).textContent = `${label} (${count})`;
+      template: `<div style="background-color: white"></div>`,
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+        const {count, label, color} = MostCategoricalGroupRenderer.choose(col, rows);
+        n.textContent = `${label} (${count})`;
+        n.style.backgroundColor = color;
       }
     };
   }
 
   createGroupCanvas(col: CategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    const width = context.colWidth(col);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group);
-      const {count, name, label, color} = MostCategoricalGroupRenderer.choose(col, rows);
+      const {count, label, color} = MostCategoricalGroupRenderer.choose(col, rows);
       ctx.fillStyle = color;
-      ctx.fillRect(0, 0, col.getWidth(), height);
+      ctx.fillRect(0, 0, width, height);
       ctx.fillStyle = context.option('style.text', 'black');
 
       const bak = ctx.textAlign;
       ctx.textAlign = 'center';
-      clipText(ctx, `${label} (${count})`, col.getWidth()/2, height / 2, col.getWidth(), context.textHints);
+      clipText(ctx, `${label} (${count})`, width / 2, height / 2, width, context.textHints);
       ctx.textAlign = bak;
     };
   }

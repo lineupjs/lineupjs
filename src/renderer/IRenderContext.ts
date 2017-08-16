@@ -1,17 +1,9 @@
 import Column from '../model/Column';
-import {IGroup} from '../model/Group';
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
  */
 interface IRenderContext<T, T2> {
-
-  /**
-   * the height of a group
-   * @param group
-   */
-  groupHeight(group: IGroup): number;
-
   /**
    * render a column
    * @param col

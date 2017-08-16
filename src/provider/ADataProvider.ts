@@ -211,7 +211,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   protected triggerReorder(ranking: Ranking) {
-    this.sort(ranking).then((order) => ranking.setGroups(order));
+    Promise.resolve(this.sort(ranking)).then((order) => ranking.setGroups(order));
   }
 
   /**
@@ -463,8 +463,6 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   restore(dump: any) {
-
-
     //clean old
     this.clearRankings();
 
@@ -475,7 +473,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     }
     if (dump.aggregations) {
       this.aggregations.clear();
-      dump.aggregations.forEach((a) => this.aggregations.add(a));
+      dump.aggregations.forEach((a: string) => this.aggregations.add(a));
     }
 
 

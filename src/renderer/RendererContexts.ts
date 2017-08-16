@@ -3,8 +3,9 @@ import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {ITextRenderHints} from '../utils';
 import Column from '../model/Column';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
+import {IGroup} from '../model/Group';
 
-export declare type IDOMRenderContext = IRenderContext<IDOMCellRenderer>;
+export declare type IDOMRenderContext = IRenderContext<IDOMCellRenderer, IDOMGroupRenderer>;
 
 export interface ICanvasRenderContext extends IRenderContext<ICanvasCellRenderer, ICanvasGroupRenderer> {
   /**
@@ -12,6 +13,12 @@ export interface ICanvasRenderContext extends IRenderContext<ICanvasCellRenderer
    * @param index
    */
   rowHeight(index: number): number;
+
+  /**
+   * the height of a group
+   * @param group
+   */
+  groupHeight(group: IGroup): number;
 
   colWidth(col: Column): number;
 

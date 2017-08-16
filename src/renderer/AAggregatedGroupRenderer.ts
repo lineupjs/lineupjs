@@ -3,28 +3,24 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, ISVGGroupRenderer} from './IDOMCellRenderers';
 import {default as ICanvasCellRenderer, ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
 import {IDataRow} from '../provider/ADataProvider';
+import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 
 export abstract class AAggregatedGroupRenderer<T extends Column> implements ICellRendererFactory {
-  abstract createSVG(col: T, context: IDOMRenderContext): ISVGCellRenderer;
+  abstract createDOM(col: T, context: IDOMRenderContext): IDOMCellRenderer;
   abstract createCanvas(col: T, context: ICanvasRenderContext): ICanvasCellRenderer;
 
   protected abstract aggregatedIndex(rows: IDataRow[], col: T): number;
 
-  createGroupSVG(col: T, context: IDOMRenderContext): ISVGGroupRenderer {
-    const single = this.createSVG(col, context);
+  createGroupDOM(col: T, context: IDOMRenderContext): IDOMGroupRenderer {
+    const single = this.createDOM(col, context);
     return {
-      template: `<g>${single.template}</g>`,
-      update: (node: SVGGElement, group: IGroup, rows: IDataRow[]) => {
+      template: `<div>${single.template}</div>`,
+      update: (node: HTMLElement, group: IGroup, rows: IDataRow[]) => {
         const aggregate = this.aggregatedIndex(rows, col);
-        const shift = (context.groupHeight(group) - context.rowHeight(aggregate)) / 2;
-        const child = <SVGElement>node.firstElementChild;
-        //manipulate child since myself is manipulated by my row renderer
-        child.setAttribute('transform', `translate(0,${shift})`);
-        single.update(child, rows[aggregate], aggregate, group);
+        single.update(<HTMLElement>node.firstElementChild!, rows[aggregate], aggregate, group);
       }
     };
   }

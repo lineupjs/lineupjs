@@ -1,39 +1,32 @@
 
 
 import {DefaultCellRenderer} from './DefaultCellRenderer';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
+import {ICanvasRenderContext} from './RendererContexts';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
 import {IGroup} from '../model/Group';
 import RankColumn from '../model/RankColumn';
-import {clipText, attr} from '../utils';
-import {ISVGGroupRenderer} from './IDOMCellRenderers';
+import {clipText} from '../utils';
+import {IDOMGroupRenderer} from './IDOMCellRenderers';
 
 export default class RankCellRenderer extends DefaultCellRenderer {
   constructor() {
     super('rank', 'right');
   }
 
-  createGroupSVG(col: RankColumn, context: IDOMRenderContext): ISVGGroupRenderer {
+  createGroupDOM(col: RankColumn): IDOMGroupRenderer {
     return {
-      template: `<text class="rank" clip-path="url(#cp${context.idPrefix}clipCol${col.id})"><tspan></tspan><tspan></tspan></text>`,
-      update: (n: SVGTextElement, group: IGroup, rows: IDataRow[]) => {
-        const alignmentShift = col.getWidth() - 5;
-        const fromTSpan = <SVGTSpanElement>n.firstElementChild;
-        const toTSpan = <SVGTSpanElement>n.lastElementChild;
+      template: `<div><div></div><div></div></div>`,
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+        const fromTSpan = <HTMLElement>n.firstElementChild!;
+        const toTSpan = <HTMLElement>n.lastElementChild!;
         if (rows.length === 0) {
           fromTSpan.textContent = '';
           toTSpan.textContent = '';
           return;
         }
-        attr(fromTSpan, {
-          x: alignmentShift
-        }).textContent = col.getLabel(rows[0].v, rows[0].dataIndex);
-        //TODO relative offset -12 hard coded
-        attr(toTSpan, {
-          x: alignmentShift,
-          dy: context.groupHeight(group) - 12
-        }).textContent = col.getLabel(rows[rows.length - 1].v, rows[rows.length - 1].dataIndex);
+        fromTSpan.textContent = col.getLabel(rows[0].v, rows[0].dataIndex);
+        toTSpan.textContent = col.getLabel(rows[rows.length - 1].v, rows[rows.length - 1].dataIndex);
       }
     };
   }

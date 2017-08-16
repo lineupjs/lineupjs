@@ -43,7 +43,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    */
   private readonly sortCriterias: ISortCriteria[] = [];
 
-  private groupColumn: Column = null;
+  private groupColumn: Column|null = null;
 
   /**
    * columns of this ranking
@@ -80,7 +80,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    * the current ordering as an sorted array of indices
    * @type {Array}
    */
-  private groups: IOrderedGroup[] = [Object.assign({order: []}, defaultGroup)];
+  private groups: IOrderedGroup[] = [Object.assign({order: <number[]>[]}, defaultGroup)];
 
   constructor(public id: string, private readonly maxSortCriterias = 1) {
     super();
@@ -119,7 +119,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       case 1:
         return this.groups[0].order;
       default:
-        return [].concat(...this.groups.map((g) => g.order));
+        return (<number[]>[]).concat(...this.groups.map((g) => g.order));
     }
   }
 
@@ -155,7 +155,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       this.groupBy(help || null);
     }
     if (dump.sortCriterias) {
-      const sortCriterias = dump.sortCriterias.map((s) => {
+      const sortCriterias = dump.sortCriterias.map((s: any) => {
         return {
           asc: s.asc,
           col: this.columns.find((d) => d.id === dump.sortColumn) || null
@@ -220,21 +220,22 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.groupBy(col);
   }
 
-  groupBy(col: Column) {
+  groupBy(col: Column|null) {
     if (this.groupColumn === col) {
       return true; //already this group
     }
     if (this.groupColumn) { //disable dirty listening
-      this.groupColumn.on([Column.EVENT_DIRTY_VALUES + '.group', Column.EVENT_SORTMETHOD_CHANGED + '.group', Column.EVENT_GROUPING_CHANGED + '.group'], null);
+      this.groupColumn.on(suffix('.group', Column.EVENT_DIRTY_VALUES, Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_GROUPING_CHANGED), null);
     }
     const bak = this.groupColumn;
     this.groupColumn = col;
 
     if (this.groupColumn) { //enable dirty listening
-      this.groupColumn.on([Column.EVENT_DIRTY_VALUES + '.group', Column.EVENT_SORTMETHOD_CHANGED + '.group', Column.EVENT_GROUPING_CHANGED + '.group'], this.dirtyOrder);
+      this.groupColumn.on(suffix('.group', Column.EVENT_DIRTY_VALUES, Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_GROUPING_CHANGED), this.dirtyOrder);
     }
     this.fire([Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_HEADER,
       Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], bak, this.getGroupCriteria());
+    return true;
   }
 
   setSortCriterias(values: ISortCriteria[]) {
@@ -417,8 +418,8 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     this.sortCriterias.splice(0, this.sortCriterias.length);
 
     if (this.groupColumn) {
-      this.groupColumn.on(Column.EVENT_DIRTY_VALUES + '.group', null);
-      this.groupColumn.on(Column.EVENT_SORTMETHOD_CHANGED + '.group', null);
+      this.groupColumn.on(`${Column.EVENT_DIRTY_VALUES}.group`, null);
+      this.groupColumn.on(`${Column.EVENT_SORTMETHOD_CHANGED}.group`, null);
     }
     this.groupColumn = null;
 

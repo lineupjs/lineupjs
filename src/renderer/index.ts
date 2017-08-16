@@ -26,7 +26,6 @@ import LoadingCellRenderer from './LoadingCellRenderer';
 import ThresholdCellRenderer from './ThresholdCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
 import MostCategoricalGroupRenderer from './MostCategoricalGroupRenderer';
-import Heatmap from './Heatmap';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {EmptyCellRenderer} from './EmptyCellRenderer';
 import RankCellRenderer from './RankCellRenderer';
@@ -69,7 +68,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   circle: new CircleCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
   loading: new LoadingCellRenderer(),
-  empty: new EmptyCellRenderer()
+  empty: new EmptyCellRenderer(),
   most: new MostCategoricalGroupRenderer(),
   aggregate: new AggregateGroupRenderer(),
   histogram: new HistogramGroupRenderer(),
@@ -96,14 +95,9 @@ export function createCanvas(col: Column, renderers: { [key: string]: ICellRende
   return (r.createCanvas ? r.createCanvas.bind(r) : defaultCellRenderer.createCanvas.bind(r))(col, context);
 }
 
-export function createSVGGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext) {
+export function createDOMGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext) {
   const r = chooseGroupRenderer(col, renderers);
-  return (r.createGroupSVG ? r.createGroupSVG.bind(r) : defaultCellRenderer.createGroupSVG.bind(r))(col, context);
-}
-
-export function createHTMLGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext) {
-  const r = chooseGroupRenderer(col, renderers);
-  return (r.createGroupHTML ? r.createGroupHTML.bind(r) : defaultCellRenderer.createGroupHTML.bind(r))(col, context);
+  return (r.createGroupDOM ? r.createGroupDOM.bind(r) : defaultCellRenderer.createGroupDOM.bind(r))(col, context);
 }
 
 export function createCanvasGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext) {

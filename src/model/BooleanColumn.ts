@@ -29,7 +29,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   static readonly GROUP_TRUE = { name: 'True', color: 'black'};
   static readonly GROUP_FALSE = { name: 'False', color: 'white'};
 
-  private currentFilter: boolean = null;
+  private currentFilter: boolean|null = null;
   private trueMarker = 'X';
   private falseMarker = '';
 

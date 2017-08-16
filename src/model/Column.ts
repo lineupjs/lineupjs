@@ -512,11 +512,11 @@ export default class Column extends AEventDispatcher {
 
   /**
    * group the given row into a bin/group
-   * @param row
-   * @param index
+   * @param _row
+   * @param _index
    * @return {IGroup}
    */
-  group(row: any, index: number) {
+  group(_row: any, _index: number) {
     return defaultGroup;
   }
 
