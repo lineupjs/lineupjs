@@ -10,39 +10,15 @@ import Ranking from '../model/Ranking';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import NumberColumn, {isNumberColumn, INumberColumn} from '../model/NumberColumn';
 import CategoricalColumn, {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
-import RankColumn from '../model/RankColumn';
-import StackColumn, {createDesc as createStackDesc} from '../model/StackColumn';
+import {createDesc as createStackDesc} from '../model/StackColumn';
 import {createDesc as createNestedDesc} from '../model/NestedColumn';
-import LinkColumn from '../model/LinkColumn';
-import ScriptColumn from '../model/ScriptColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
-import NumbersColumn from '../model/NumbersColumn';
-import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
-
-import SearchDialog from '../dialogs/SearchDialog';
-import RenameDialog from '../dialogs/RenameDialog';
-import EditLinkDialog from '../dialogs/EditLinkDialog';
-import ChangeRendererDialog from '../dialogs/ChangeRendererDialog';
-import ChangeGroupRendererDialog from '../dialogs/ChangeGroupRendererDialog';
-import WeightsEditDialog from '../dialogs/WeightsEditDialog';
-import SortDialog from '../dialogs/SortDialog';
-
-import StringFilterDialog from '../dialogs/StringFilterDialog';
-import BooleanFilterDialog from '../dialogs/BooleanFilterDialog';
-import CategoricalFilterDialog from '../dialogs/CategoricalFilterDialog';
-import MappingsFilterDialog from '../dialogs/MappingsFilterDialog';
-import CategoricalMappingFilterDialog from '../dialogs/CategoricalMappingFilterDialog';
-import StratifyThresholdDialog from '../dialogs/StratifyThresholdDialog';
-
 import {IFilterDialog} from '../dialogs/AFilterDialog';
-import ScriptEditDialog from '../dialogs/ScriptEditDialog';
 import SelectionColumn from '../model/SelectionColumn';
-import BooleanColumn from '../model/BooleanColumn';
-import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
-import HierarchyColumn from '../model/HierarchyColumn';
-import {toFullTooltip} from './engine/RenderColumn';
-import {MIMETYPE_PREFIX} from './engine/header';
+import {IRankingHeaderContext, toFullTooltip} from './engine/RenderColumn';
+import {createToolbarImpl, MIMETYPE_PREFIX} from './engine/header';
 import {defaultConfig, dummyRankingButtonHook} from '../config';
+import ADialog from '../dialogs/ADialog';
 
 export interface IRankingHook {
   ($node: d3.Selection<Ranking>): void;
@@ -316,93 +292,29 @@ export default class HeaderRenderer {
   }
 
   private createToolbar($node: d3.Selection<Column>) {
-    const provider = this.data,
-      that = this;
-    const $regular = $node.filter((d) => !(d instanceof RankColumn));
+    const ctx: IRankingHeaderContext = Object.assign({
+      provider: this.data,
+      statsOf: () => null
+    }, this.options);
 
-    const stopEvent = () => (<MouseEvent>d3.event).stopPropagation();
-    const showDialog = (dialogType: {new(d: Column, parent: d3.Selection<any>, ...args:any[])}, ...args: any[]) => {
-      return function(d: Column) {
-        const dialog = new dialogType(d, d3.select(this.parentNode.parentNode), ...args);
-        dialog.openDialog();
-      };
-    };
-    const addIcon = ($base: d3.Selection<Column>, filter: (d: Column) => boolean, icon: string, title: string, click: (this: HTMLElement, d: Column)=>void) => {
-      $base.filter(filter).append('i').attr('class', `fa ${icon}`).attr('title', title).on('click', function (d) {
-        click.call(this, d);
-        stopEvent();
-      });
-    };
-
-    //rename
-    addIcon($regular, ()=>true, 'fa-pencil-square-o', 'Rename', showDialog(RenameDialog));
-    //clone
-    addIcon($regular, ()=>true, 'fa-code-fork', 'Generate Snapshot', (d) => provider.takeSnapshot(d));
-    //stratify
-    addIcon($node, (d)=>d instanceof BooleanColumn || d instanceof CategoricalColumn, 'fa-columns fa-rotate-270', 'Stratify By', (d) => d.groupByMe());
-    addIcon($node, (d) => d instanceof NumberColumn, 'fa-columns fa-rotate-270', 'Stratify By Threshold', showDialog(StratifyThresholdDialog, this.options.idPrefix));
-    //change sort criteria
-    addIcon($node, (d) => d instanceof NumbersColumn || d instanceof BoxPlotColumn, 'fa-sort', 'Sort By', showDialog(SortDialog));
-    //change renderer
-    addIcon($node, (d) => d.getRendererList().length > 1, 'fa-exchange', 'Change Visualization', showDialog(ChangeRendererDialog));
-    addIcon($node, (d) => d.getGroupRenderers().length > 1, 'fa-exchange', 'Change Group Visualization', showDialog(ChangeGroupRendererDialog));
-    //edit link
-    addIcon($node, (d) => d instanceof LinkColumn, 'fa-external-link', 'Edit Link Pattern', function(d: LinkColumn) {
-      const dialog = new EditLinkDialog(d, d3.select(this.parentNode.parentNode), that.options.idPrefix, [].concat((<any>d.desc).templates || [], that.options.linkTemplates));
-      dialog.openDialog();
-    });
-    //edit script
-    addIcon($node, (d) => d instanceof ScriptColumn, 'fa-gears', 'Edit Combine Script', showDialog(ScriptEditDialog));
-    //filter
-    addIcon($node, (d) => this.options.filters.hasOwnProperty(d.desc.type), 'fa-filter', 'Filter', function(d) {
-      const target = (<MouseEvent>d3.event).target;
-      const dialog = new that.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode), '', provider, that.options.idPrefix);
-      dialog.openDialog();
-      stopEvent();
-    });
-    //cutoff
-    addIcon($node, (d) => d instanceof HierarchyColumn, 'fa-scissors', 'Set Cut Off', showDialog(CutOffHierarchyDialog, this.options.idPrefix));
-    //search
-    addIcon($node, (d) => this.options.searchAble(d), 'fa-search', 'Search', showDialog(SearchDialog, provider));
-    //edit weights
-    addIcon($node, (d) => d instanceof StackColumn, 'fa-tasks', 'Edit Weights', showDialog(WeightsEditDialog));
-    //collapse
-    $regular.append('i')
-      .attr('class', 'fa')
-      .classed('fa-toggle-left', (d: Column) => !d.getCompressed())
-      .classed('fa-toggle-right', (d: Column) => d.getCompressed())
-      .attr('title', '(Un)Collapse')
-      .on('click', function (this: HTMLElement, d: Column) {
-        d.setCompressed(!d.getCompressed());
-        d3.select(this)
-          .classed('fa-toggle-left', !d.getCompressed())
-          .classed('fa-toggle-right', d.getCompressed());
-        stopEvent();
-      });
-    //compress
-    $node.filter((d) => isMultiLevelColumn(d)).append('i')
-      .attr('class', 'fa')
-      .classed('fa-compress', (d: IMultiLevelColumn) => !d.getCollapsed())
-      .classed('fa-expand', (d: IMultiLevelColumn) => d.getCollapsed())
-      .attr('title', 'Compress/Expand')
-      .on('click', function (this: HTMLElement, d: IMultiLevelColumn) {
-        d.setCollapsed(!d.getCollapsed());
-        d3.select(this)
-          .classed('fa-compress', !d.getCollapsed())
-          .classed('fa-expand', d.getCollapsed());
-        stopEvent();
-      });
-    //remove
-    addIcon($node, () => true, 'fa-times', 'Hide', (d) => {
-      if (d instanceof RankColumn) {
-        provider.removeRanking(d.findMyRanker()!);
-        if (provider.getRankings().length === 0) { //create at least one
-          provider.pushRanking();
+    $node.each(function(this: HTMLElement, col) {
+      const $this = d3.select(this);
+      const addIcon = (title: string, dialogClass?: { new(col: any, header: d3.Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
+        const proxy: { onclick: (e: MouseEvent)=>any } = {onclick: () => undefined};
+        $this.append('i').attr('title', title).html(`<span aria-hidden="true">${title}</span>`).on('click', function () {
+          proxy.onclick(<MouseEvent>d3.event);
+        });
+        if (!dialogClass) {
+          return <any>proxy;
         }
-      } else {
-        d.removeMe();
-      }
-      stopEvent();
+        proxy.onclick = (evt: MouseEvent) => {
+          evt.stopPropagation();
+          const dialog = new dialogClass(col, d3.select((evt.currentTarget as HTMLElement).parentElement!), ...dialogArgs);
+          dialog.openDialog();
+        };
+        return proxy;
+      };
+      createToolbarImpl(addIcon, col, ctx);
     });
   }
 

@@ -7,10 +7,12 @@ import {merge, createTextHints, hideOverlays} from '../utils';
 import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {createCanvas, createCanvasGroup} from '../renderer/index';
-import DataProvider, {IDataRow} from '../provider/ADataProvider';
-import ABodyRenderer, {ISlicer, IRankingData, IBodyRenderContext} from './ABodyRenderer';
+import DataProvider, {IDataRow}  from '../provider/ADataProvider';
+import ABodyRenderer, {
+  ISlicer, IRankingData, IBodyRenderContext,
+  IGroupedRangkingData
+} from './ABodyRenderer';
 import {ICanvasRenderContext} from '../renderer/RendererContexts';
-import {IGroup} from '../model/Group';
 
 export interface IStyleOptions {
   text?: string;
@@ -159,7 +161,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return this.currentHover === dataIndex;
   }
 
-  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext & ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number, group: IGroupedRangkingDat) {
+  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number, group: IGroupedRangkingData) {
     const dataIndex = di.dataIndex;
     let dx = ranking.shift;
     const dy = context.cellY(i) + group.y;
@@ -258,7 +260,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.translate(-dx, -dy);
   }
 
-  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext, height) {
+  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
 
     const renderRow = this.renderRow.bind(this, ctx, context);
     const renderGroup = this.renderGroup.bind(this, ctx);
@@ -267,10 +269,10 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     //asynchronous rendering!!!
     const all = Promise.all.bind(Promise);
     return all(data.map((ranking) => {
-      let histMap: Promise<Map<string, IStatistics|ICategoricalStatistics>> = null;
+      let histMap: Promise<Map<string, IStatistics|ICategoricalStatistics>>;
       return all(ranking.groups.map((group) => {
         if (group.aggregate) {
-          if (histMap === null) {
+          if (histMap == null) {
             histMap = this.resolveHistMap(ranking);
           }
           return Promise.all([all(group.data), histMap]).then((data) => {
@@ -278,15 +280,14 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
             const hists = data[1];
             return renderGroup(ranking, group, rows, hists);
           });
-        } else {
-          const toRender = group.data;
-          return all(toRender.map((p, i) => {
-            // TODO render loading row
-            return p.then((di: IDataRow) =>
-              renderRow(ranking, di, i, group)
-            );
-          })).then(() => this.renderMeanlines(ctx, ranking, group.y, group.height));
         }
+        const toRender = group.data;
+        return all(toRender.map((p, i) => {
+          // TODO render loading row
+          return Promise.resolve(p).then((di: IDataRow) =>
+            renderRow(ranking, di, i, group)
+          );
+        })).then(() => this.renderMeanlines(ctx, ranking, group.y, group.height));
       }));
     }));
   }
@@ -333,13 +334,14 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.restore();
   }
 
-  protected createContextImpl(indexShift: number): ICanvasRenderContext & IBodyRenderContext {
-    const base = <ICanvasRenderContext & IBodyRenderContext><any>this.createContext(indexShift, createCanvas, createCanvasGroup);
+  protected createContextImpl(indexShift: number, totalNumberOfRows: number): ICanvasRenderContext&IBodyRenderContext {
+    const base: any = this.createContext(indexShift, totalNumberOfRows, createCanvas, createCanvasGroup);
     base.hovered = this.isHovered.bind(this);
     base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);
     (<any>base).bodyDOMElement = <HTMLElement>this.$node.node();
     base.rowHeight = () => this.options.rowHeight;
-    base.colWidth = (col) => col.getActualWidth();
+    base.groupHeight = () => this.options.groupHeight;
+    base.colWidth = (col: Column) => col.getActualWidth();
     return base;
   }
 
@@ -386,7 +388,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
 
     this.renderSlopeGraphs(ctx, data, context);
 
-    return this.renderRankings(ctx, data, context, height).then(() => {
+    return this.renderRankings(ctx, data, context).then(() => {
       ctx.restore();
     });
   }

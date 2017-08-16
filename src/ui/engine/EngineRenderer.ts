@@ -5,7 +5,7 @@ import {AEventDispatcher, debounce, findOption} from '../../utils';
 import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
-import {createDOM} from '../../renderer';
+import {createDOM, createDOMGroup} from '../../renderer';
 import {default as RenderColumn, IRankingBodyContext} from './RenderColumn';
 import EngineRankingRenderer from './EngineRankingRenderer';
 import {uniformContext} from 'lineupengine/src';
@@ -50,9 +50,11 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
         return r;
       },
       renderer: (col: Column) => createDOM(col, this.options.renderers, this.ctx),
+      groupRenderer: (col: Column) => createDOMGroup(col, this.options.renderers, this.ctx),
       idPrefix: this.options.idPrefix,
       data: [],
-      getRow: (index: number) => this.ctx.data[index]
+      getRow: (index: number) => this.ctx.data[index],
+      totalNumberOfRows: 0
     };
 
     this.renderer = new EngineRankingRenderer(this.node, this.options.idPrefix, this.ctx);
@@ -100,6 +102,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     const order = ranking.getOrder();
     const data = this.data.view(order);
     this.ctx.data = (Array.isArray(data) ? data : []).map(((v, i) => ({v, dataIndex: order[i]})));
+    (<any>this.ctx).totalNumberOfRows = order.length;
     const that = this;
     ranking.on(`${Ranking.EVENT_DIRTY}.body`, debounce(function (this: { primaryType: string }) {
       if (this.primaryType !== Column.EVENT_WIDTH_CHANGED) {

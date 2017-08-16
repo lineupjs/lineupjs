@@ -10,6 +10,7 @@ import {INumberColumn} from '../../model/NumberColumn';
 import {ICategoricalColumn} from '../../model/CategoricalColumn';
 import {IDOMCellRenderer} from '../../renderer/IDOMCellRenderers';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
+import {defaultGroup} from '../../model/Group';
 
 export interface IRankingHeaderContextContainer {
   readonly idPrefix: string;
@@ -100,7 +101,7 @@ export default class RenderColumn implements IColumn {
 
   updateCell(node: HTMLElement, index: number, ctx: IRankingContext): HTMLElement|void {
     node.dataset.renderer = this.rendererId;
-    this.renderer.update(node, ctx.getRow(index), index);
+    this.renderer.update(node, ctx.getRow(index), index, defaultGroup);
   }
 }
 

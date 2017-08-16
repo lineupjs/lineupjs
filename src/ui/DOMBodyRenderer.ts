@@ -7,12 +7,13 @@ import {attr, forEach, matchColumns} from '../utils';
 import {IStatistics} from '../model/Column';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import {IDOMRenderContext} from '../renderer/RendererContexts';
-import {createDOM} from '../renderer';
+import {createDOM, createDOMGroup} from '../renderer';
 import ABodyRenderer, {
-  ISlicer,
+  IBodyRenderContext,
+  IGroupedRangkingData,
   IRankingColumnData,
   IRankingData,
-  IBodyRenderContext
+  ISlicer
 } from './ABodyRenderer';
 
 export default class DOMBodyRenderer extends ABodyRenderer {
@@ -45,9 +46,21 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       .style('left', (d) => `${d.shift}px`);
 
 
-    const toWait: (Promise<any>|void)[] = [];
-    {
-      const $rows = $rankings.select('div.rows').selectAll('div.row').data((d) => d.order, String);
+    const toWait: (Promise<any> | void)[] = [];
+
+    const $groups = $rankings.selectAll('div.group').data((d) => d.groups, (d) => d.group.name);
+    const $groupsEnter = $groups.enter().append('div').attr('class', 'group');
+    const $aggregateEnter = $groupsEnter.append('div').attr('class', 'aggregate');
+    $aggregateEnter.append('div').attr('class', 'cols');
+    $aggregateEnter.append('div').attr('class', 'frozen').style('transform', `translate${this.currentFreezeLeft}px,0)`);
+
+    $groupsEnter.append('div').attr('class', 'rows');
+    $groupsEnter.append('div').attr('class', 'meanlines');
+    $groupsEnter.style('top', (d: IGroupedRangkingData) => `${d.y}px`);
+
+    const renderDetail = ($this: d3.Selection<IGroupedRangkingData>, ranking: IRankingData, group: IGroupedRangkingData) => {
+      $this.selectAll('div.aggregate .cols > *, div.aggregate .frozen > *').remove();
+      const $rows = $this.select('div.rows').selectAll('div.row').data((d) => d.order, String);
       const $rowsEnter = $rows.enter().append('div').attr('class', 'row');
       $rowsEnter.style('top', (_d, i) => `${context.cellPrevY(i)}px`);
 
@@ -58,15 +71,14 @@ export default class DOMBodyRenderer extends ABodyRenderer {
 
       //create templates
       const createTemplates = (node: HTMLElement | SVGGElement, columns: IRankingColumnData[]) => {
-        matchColumns(node, columns);
+        matchColumns(node, columns, 'detail');
       };
 
-
-      $rowsEnter.append('div').attr('class', 'frozen').style('transform', `translate${this.currentFreezeLeft}px,0)`).each(function (this: HTMLElement, _d, _i, j) {
-        createTemplates(this, data[j].frozen);
+      $rowsEnter.append('div').attr('class', 'frozen').style('transform', `translate${this.currentFreezeLeft}px,0)`).each(function (this: HTMLElement) {
+        createTemplates(this, ranking.frozen);
       });
-      $rowsEnter.append('div').attr('class', 'cols').each(function (this: HTMLElement, _d, _i, j) {
-        createTemplates(this, data[j].columns);
+      $rowsEnter.append('div').attr('class', 'cols').each(function (this: HTMLElement) {
+        createTemplates(this, ranking.columns);
       });
 
       $rows.each(function (this: HTMLElement | SVGGElement, d: number, i: number) {
@@ -80,10 +92,10 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       //animated reordering
       this.animated($rows).style('top', (_d, i) => `${context.cellY(i)}px`);
 
-      const updateColumns = (node: SVGGElement | HTMLElement, r: IRankingData, i: number, columns: IRankingColumnData[]) => {
+      const updateColumns = (node: HTMLElement, r: IGroupedRangkingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
         const updateRow = (row: IDataRow) => {
-          matchColumns(node, columns);
+          matchColumns(node, columns, 'detail');
           columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
             // use the shift if possible since it considers more cornercases
@@ -102,38 +114,78 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : (d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth()) + that.options.columnPadding);
 
-      $rows.select('div.frozen').each(function (this: HTMLElement, _d, i, j) {
+      $rows.select('div.frozen').each(function (this: HTMLElement, _d, i) {
         this.style.width = `${maxFrozen}px`;
-        toWait.push(updateColumns(this, data[j], i, data[j].frozen));
+        toWait.push(updateColumns(this, group, i, ranking.frozen));
       });
-      $rows.select('div.cols').each(function (this: HTMLElement, _d, i, j) {
+      $rows.select('div.cols').each(function (this: HTMLElement, _d, i) {
         this.style.marginLeft = `${maxFrozen}px`;
-        toWait.push(updateColumns(this, data[j], i, data[j].columns));
+        toWait.push(updateColumns(this, group, i, ranking.frozen));
       });
       $rows.exit().remove();
-    }
 
-    {
-      const $meanlines = $rankings.select('div.meanlines').selectAll('div.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
-      $meanlines.enter().append('div').attr('class', 'meanline');
-      $meanlines.each(function (this: HTMLElement, d) {
-        const h = that.histCache.get(d.column.id);
-        const $mean = d3.select(this);
-        if (!h) {
-          return;
-        }
-        const render = (stats: IStatistics) => {
-          const xPos = d.shift + d.column.getWidth() * stats.mean;
-          $mean.style('left', `${isNaN(xPos) ? 0 : xPos}px`).style('height', `${height}px`);
-        };
-        if (h instanceof Promise) {
-          h.then(render);
-        } else {
-          render(<IStatistics>h);
-        }
+      {
+        const $meanlines = $rankings.select('div.meanlines').selectAll('div.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
+        $meanlines.enter().append('div').attr('class', 'meanline');
+        $meanlines.each(function (this: HTMLElement, d) {
+          const h = that.histCache.get(d.column.id);
+          const $mean = d3.select(this);
+          if (!h) {
+            return;
+          }
+          const render = (stats: IStatistics) => {
+            const xPos = d.shift + d.column.getWidth() * stats.mean;
+            $mean.style('left', `${isNaN(xPos) ? 0 : xPos}px`).style('height', `${height}px`);
+          };
+          if (h instanceof Promise) {
+            h.then(render);
+          } else {
+            render(<IStatistics>h);
+          }
+        });
+        $meanlines.exit().remove();
+      }
+    };
+
+    const renderAggregate = ($this: d3.Selection<IGroupedRangkingData>, ranking: IRankingData, group: IGroupedRangkingData) => {
+      $this.selectAll('div.rows > *, div.meanlines > *').remove();
+
+      const $base = $this.select('div.aggregate');
+
+      const updateColumns = (node: HTMLElement, r: IGroupedRangkingData, columns: IRankingColumnData[]) => {
+        matchColumns(node, columns, 'group');
+        return Promise.all(r.data).then((rows) => {
+          return Promise.all(columns.map((col, ci) => {
+            return Promise.resolve(this.histCache.get(col.column.id)!).then((hist) => {
+              const cnode: any = node.childNodes[ci];
+              cnode.style.width = `${ci < columns.length - 2 ? (columns[ci + 1].shift - col.shift) : col.column.getActualWidth()}px`;
+              col.groupRenderer.update(cnode, r.group, rows, hist);
+            });
+          }));
+        });
+      };
+      //update columns
+
+      $base.select('div.cols').each(function (this: HTMLElement) {
+        toWait.push(updateColumns(this, group, ranking.columns));
       });
-      $meanlines.exit().remove();
-    }
+      //order for frozen in html + set the size in html to have a proper background instead of a clip-path
+      const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
+      $base.select('div.frozen').each(function (this: HTMLElement) {
+        this.style.width = `${maxFrozen}px`;
+        this.style.height = `${that.options.groupHeight}px`;
+        toWait.push(updateColumns(this, group, ranking.frozen));
+      });
+    };
+
+    $groups.each(function (this: HTMLElement, group: IGroupedRangkingData, _j, k) {
+      const f = group.aggregate ? renderAggregate : renderDetail;
+      f(d3.select(this), data[k], group);
+    });
+
+    //animated reordering
+    this.animated($groups).style('top', (d) => `${d.y}px`);
+    $groups.exit().remove();
 
     $rankings.exit().remove();
 
@@ -171,7 +223,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
   }
 
   renderSlopeGraphs($parent: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext & IDOMRenderContext, height: number) {
-    const slopes = data.slice(1).map((d, i) => ({left: data[i].order, left_i: i, right: d.order, right_i: i + 1}));
+    const slopes = data.slice(1).map((d, i) => ({left: data[i].groups[0].order, left_i: i, right: d.groups[0].order, right_i: i + 1}));
 
     const $slopes = $parent.selectAll('svg.slopegraph').data(slopes);
     $slopes.enter().append('svg').attr('class', 'slopegraph');
@@ -215,8 +267,8 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     this.currentFreezeLeft = left;
   }
 
-  protected createContextImpl(indexShift: number): IBodyRenderContext {
-    return this.createContext(indexShift, createDOM);
+  protected createContextImpl(indexShift: number, totalNumberOfRows: number): IBodyRenderContext {
+    return this.createContext(indexShift, totalNumberOfRows, createDOM, createDOMGroup);
   }
 
   protected updateImpl(data: IRankingData[], context: IBodyRenderContext, width: number, height: number) {

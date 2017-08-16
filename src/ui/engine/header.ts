@@ -23,9 +23,12 @@ import CutOffHierarchyDialog from '../../dialogs/CutOffHierarchyDialog';
 import SearchDialog from '../../dialogs/SearchDialog';
 import HierarchyColumn from '../../model/HierarchyColumn';
 import {dragAble, dropAble, IDropResult} from './dnd';
-import {isNumberColumn} from '../../model/NumberColumn';
+import {isNumberColumn, default as NumberColumn} from '../../model/NumberColumn';
 import Ranking from '../../model/Ranking';
 import ChangeGroupRendererDialog from '../../dialogs/ChangeGroupRendererDialog';
+import BooleanColumn from '../../model/BooleanColumn';
+import CategoricalColumn from '../../model/CategoricalColumn';
+import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 
 export {default as createSummary} from './summary';
 
@@ -62,6 +65,17 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
       evt.stopPropagation();
       ctx.provider.takeSnapshot(col);
     };
+  }
+  //stratify
+  if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
+    addIcon('Stratify By').onclick = (evt) => {
+      evt.stopPropagation();
+      col.groupByMe();
+    };
+  }
+
+  if (col instanceof NumberColumn) {
+    addIcon('Stratify By Threshold', StratifyThresholdDialog);
   }
 
   if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
