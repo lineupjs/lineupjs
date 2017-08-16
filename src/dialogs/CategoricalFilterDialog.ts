@@ -1,5 +1,5 @@
 import CategoricalColumn from '../model/CategoricalColumn';
-import AFilterDialog from './AFilterDialog';
+import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
 import {Selection} from 'd3';
 
 export default class CategoricalFilterDialog extends AFilterDialog<CategoricalColumn> {
@@ -19,7 +19,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     const bak = <string[]>bakOri.filter || [];
     const bakMissing = bakOri.filterMissing;
     const popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th>Category</th></thead><tbody></tbody></table></div>
-        <label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label><br>`);
+        ${filterMissingMarkup(bakMissing)}<br>`);
 
     // list all data rows !
     const colors = this.column.categoryColors,
@@ -65,8 +65,8 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     };
 
     popup.select('.cancel').on('click', function () {
-      updateData(bak, bakMissing);
       popup.remove();
+      updateData(bak, bakMissing);
     });
     popup.select('.reset').on('click', function () {
       trData.forEach((d) => d.isChecked = true);

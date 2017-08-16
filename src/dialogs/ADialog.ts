@@ -4,10 +4,23 @@ import {Selection, select, event as d3event, behavior} from 'd3';
 
 abstract class ADialog {
 
+  protected static readonly visiblePopups: Selection<any>[] = [];
+
+  private static removeAllPopups() {
+    ADialog.visiblePopups.splice(0, ADialog.visiblePopups.length).forEach((d) => {
+      d.remove();
+    });
+  }
+
+  protected static registerPopup($popup: Selection<any>) {
+    ADialog.removeAllPopups();
+    ADialog.visiblePopups.push($popup);
+  }
+
   constructor(readonly attachment: Selection<any>, private readonly title: string) {
   }
 
-  abstract openDialog(): void;
+  abstract openDialog();
 
   sortByName(prop: string) {
     return function (a: any, b: any) {
@@ -58,6 +71,7 @@ abstract class ADialog {
     if (auto) {
       auto.focus();
     }
+    ADialog.registerPopup($popup);
     return $popup;
   }
 
@@ -70,6 +84,9 @@ abstract class ADialog {
         left: `${pos.left}px`,
         top: `${pos.top}px`
       }).html(this.sortDialogForm(body));
+
+    ADialog.registerPopup($popup);
+    return $popup;
 
   }
 
@@ -89,14 +106,16 @@ abstract class ADialog {
   }
 
   hidePopupOnClickOutside(popup: Selection<any>, rendererContent: Selection<any>) {
-    select('body').on('click', function (this: HTMLBodyElement) {
+    //clean up old
+    select('body').on('click', function () {
       const target = (<MouseEvent>d3event).target;
       // is none of the content element clicked?
       const outside = rendererContent.filter(function (this: Element) {
         return this === target;
       }).empty();
       if (outside) {
-        popup.remove();
+        //delete all
+        ADialog.removeAllPopups();
         select(this).on('click', null!);
       }
     });

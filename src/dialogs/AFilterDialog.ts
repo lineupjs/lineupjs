@@ -18,4 +18,7 @@ abstract class AFilterDialog<T extends Column> extends ADialog {
   }
 }
 
+export const filterMissingText = 'Filter out rows containing missing values';
+export const filterMissingMarkup = (bakMissing: boolean) => `<label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>${filterMissingText}</label>`;
+
 export default AFilterDialog;
