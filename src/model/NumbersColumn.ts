@@ -37,7 +37,7 @@ export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
 /**
  * helper class to lazily compute box plotdata out of a given number array
  */
-class LazyBoxPlotData implements IAdvancedBoxPlotData {
+export class LazyBoxPlotData implements IAdvancedBoxPlotData {
   private _sorted: number[]|null = null;
 
   constructor(private readonly values: number[], private readonly scale?: IMappingFunction) {

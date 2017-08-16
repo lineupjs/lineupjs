@@ -26,7 +26,10 @@ export declare type IBooleanColumnDesc = IValueColumnDesc<boolean> & IBooleanDes
  * a string column with optional alignment
  */
 export default class BooleanColumn extends ValueColumn<boolean> implements ICategoricalColumn {
-  private currentFilter: boolean|null = null;
+  static readonly GROUP_TRUE = { name: 'True', color: 'black'};
+  static readonly GROUP_FALSE = { name: 'False', color: 'white'};
+
+  private currentFilter: boolean = null;
   private trueMarker = 'X';
   private falseMarker = '';
 
@@ -112,5 +115,10 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
     return ascending(this.getValue(a, aIndex), this.getValue(b, bIndex));
+  }
+
+  group(row: any, index: number) {
+    const enabled = this.getValue(row, index);
+    return enabled ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE;
   }
 }

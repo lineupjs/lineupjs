@@ -22,13 +22,22 @@ import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
 import SearchDialog from '../dialogs/SearchDialog';
 import RenameDialog from '../dialogs/RenameDialog';
 import EditLinkDialog from '../dialogs/EditLinkDialog';
-import RendererTypeDialog from '../dialogs/RendererTypeDialog';
+import ChangeRendererDialog from '../dialogs/ChangeRendererDialog';
+import ChangeGroupRendererDialog from '../dialogs/ChangeGroupRendererDialog';
 import WeightsEditDialog from '../dialogs/WeightsEditDialog';
 import SortDialog from '../dialogs/SortDialog';
+
+import StringFilterDialog from '../dialogs/StringFilterDialog';
+import BooleanFilterDialog from '../dialogs/BooleanFilterDialog';
+import CategoricalFilterDialog from '../dialogs/CategoricalFilterDialog';
+import MappingsFilterDialog from '../dialogs/MappingsFilterDialog';
+import CategoricalMappingFilterDialog from '../dialogs/CategoricalMappingFilterDialog';
+import StratifyThresholdDialog from '../dialogs/StratifyThresholdDialog';
 
 import {IFilterDialog} from '../dialogs/AFilterDialog';
 import ScriptEditDialog from '../dialogs/ScriptEditDialog';
 import SelectionColumn from '../model/SelectionColumn';
+import BooleanColumn from '../model/BooleanColumn';
 import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
 import HierarchyColumn from '../model/HierarchyColumn';
 import {toFullTooltip} from './engine/RenderColumn';
@@ -308,72 +317,52 @@ export default class HeaderRenderer {
       that = this;
     const $regular = $node.filter((d) => !(d instanceof RankColumn));
 
+    const stopEvent = () => (<MouseEvent>d3.event).stopPropagation();
+    const showDialog = (dialogType: {new(d: Column, parent: d3.Selection<any>, ...args:any[])}, ...args: any[]) => {
+      return function(d: Column) {
+        const dialog = new dialogType(d, d3.select(this.parentNode.parentNode), ...args);
+        dialog.openDialog();
+      };
+    };
+    const addIcon = ($base: d3.Selection<Column>, filter: (d: Column) => boolean, icon: string, title: string, click: (this: HTMLElement, d: Column)=>void) => {
+      $base.filter(filter).append('i').attr('class', `fa ${icon}`).attr('title', title).on('click', function (d) {
+        click.call(this, d);
+        stopEvent();
+      });
+    };
+
     //rename
-    $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (this: HTMLElement, d) {
-      const dialog = new RenameDialog(d, d3.select(this.parentNode!.parentNode!));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
+    addIcon($regular, ()=>true, 'fa-pencil-square-o', 'Rename', showDialog(RenameDialog));
     //clone
-    $regular.append('i').attr('class', 'fa fa-code-fork').attr('title', 'Generate Snapshot').on('click', function (d) {
-      provider.takeSnapshot(d);
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-
-    //Numbers Sort
-    $node.filter((d) => d instanceof NumbersColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (this: HTMLElement, d) {
-      const dialog = new SortDialog(<IBoxPlotColumn><any>d, d3.select(this.parentNode!.parentNode!));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-
-
-    //Renderer Change
-    $node.filter((d) => d.getRendererList().length > 1).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (this: HTMLElement, d) {
-      const dialog = new RendererTypeDialog(d, d3.select(this.parentNode!.parentNode!));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-
-
+    addIcon($regular, ()=>true, 'fa-code-fork', 'Generate Snapshot', (d) => provider.takeSnapshot(d));
+    //stratify
+    addIcon($node, (d)=>d instanceof BooleanColumn || d instanceof CategoricalColumn, 'fa-columns fa-rotate-270', 'Stratify By', (d) => d.groupByMe());
+    addIcon($node, (d) => d instanceof NumberColumn, 'fa-columns fa-rotate-270', 'Stratify By Threshold', showDialog(StratifyThresholdDialog, this.options.idPrefix));
+    //change sort criteria
+    addIcon($node, (d) => d instanceof NumbersColumn || d instanceof BoxPlotColumn, 'fa-sort', 'Sort By', showDialog(SortDialog));
+    //change renderer
+    addIcon($node, (d) => d.getRendererList().length > 1, 'fa-exchange', 'Change Visualization', showDialog(ChangeRendererDialog));
+    addIcon($node, (d) => d.getGroupRenderers().length > 1, 'fa-exchange', 'Change Group Visualization', showDialog(ChangeGroupRendererDialog));
     //edit link
-    $node.filter((d) => d instanceof LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (this: HTMLElement, d) {
-      const dialog = new EditLinkDialog(<LinkColumn>d, d3.select(this.parentNode!.parentNode!), that.options.idPrefix, (<string[]>[]).concat((<any>d.desc).templates || [], that.options.linkTemplates));
+    addIcon($node, (d) => d instanceof LinkColumn, 'fa-external-link', 'Edit Link Pattern', function(d: LinkColumn) {
+      const dialog = new EditLinkDialog(d, d3.select(this.parentNode.parentNode), that.options.idPrefix, [].concat((<any>d.desc).templates || [], that.options.linkTemplates));
       dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
     });
     //edit script
-    $node.filter((d) => d instanceof ScriptColumn).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (this: HTMLElement, d) {
-      const dialog = new ScriptEditDialog(<ScriptColumn>d, d3.select(this.parentNode!.parentNode!));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
+    addIcon($node, (d) => d instanceof ScriptColumn, 'fa-gears', 'Edit Combine Script', showDialog(ScriptEditDialog));
     //filter
-    $node.filter((d) => this.options.filters.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', (d) => {
+    addIcon($node, (d) => this.options.filters.hasOwnProperty(d.desc.type), 'fa-filter', 'Filter', function(d) {
       const target = (<MouseEvent>d3.event).target;
-      const dialog = new this.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode!), '', provider, that.options.idPrefix);
+      const dialog = new that.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode), '', provider, that.options.idPrefix);
       dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
+      stopEvent();
     });
     //cutoff
-    $node.filter((d) => d instanceof HierarchyColumn).append('i').attr('class', 'fa fa-scissors').attr('title', 'Set Cut Off').on('click', (d: HierarchyColumn) => {
-      const target = (<MouseEvent>d3.event).target;
-      const dialog = new CutOffHierarchyDialog(d, d3.select((<HTMLElement>target).parentNode!), that.options.idPrefix);
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
+    addIcon($node, (d) => d instanceof HierarchyColumn, 'fa-scissors', 'Set Cut Off', showDialog(CutOffHierarchyDialog, this.options.idPrefix));
     //search
-    $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (this: HTMLElement, d) {
-      const dialog = new SearchDialog(d, d3.select(this.parentNode!.parentNode!), provider);
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
+    addIcon($node, (d) => this.options.searchAble(d), 'fa-search', 'Search', showDialog(SearchDialog, provider));
     //edit weights
-    $node.filter((d) => d instanceof StackColumn).append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (this: HTMLElement, d) {
-      const dialog = new WeightsEditDialog(<StackColumn>d, d3.select(this.parentNode!.parentNode!));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
+    addIcon($node, (d) => d instanceof StackColumn, 'fa-tasks', 'Edit Weights', showDialog(WeightsEditDialog));
     //collapse
     $regular.append('i')
       .attr('class', 'fa')
@@ -385,7 +374,7 @@ export default class HeaderRenderer {
         d3.select(this)
           .classed('fa-toggle-left', !d.getCompressed())
           .classed('fa-toggle-right', d.getCompressed());
-        (<MouseEvent>d3.event).stopPropagation();
+        stopEvent();
       });
     //compress
     $node.filter((d) => isMultiLevelColumn(d)).append('i')
@@ -398,10 +387,10 @@ export default class HeaderRenderer {
         d3.select(this)
           .classed('fa-compress', !d.getCollapsed())
           .classed('fa-expand', d.getCollapsed());
-        (<MouseEvent>d3.event).stopPropagation();
+        stopEvent();
       });
     //remove
-    $node.append('i').attr('class', 'fa fa-times').attr('title', 'Hide').on('click', (d) => {
+    addIcon($node, () => true, 'fa-times', 'Hide', (d) => {
       if (d instanceof RankColumn) {
         provider.removeRanking(d.findMyRanker()!);
         if (provider.getRankings().length === 0) { //create at least one
@@ -410,7 +399,7 @@ export default class HeaderRenderer {
       } else {
         d.removeMe();
       }
-      (<MouseEvent>d3.event).stopPropagation();
+      stopEvent();
     });
   }
 
@@ -477,7 +466,7 @@ export default class HeaderRenderer {
       'background-color': (d) => d.color!
     });
     $headers.attr({
-      'class': (d) => `${clazz}${d.cssClass ? ` ${d.cssClass}` : ''}${(d.getCompressed() ? ' compressed' : '')} ${d.headerCssClass}${this.options.autoRotateLabels ? ' rotateable' : ''}${d.isFiltered() ? ' filtered' : ''}`,
+      'class': (d) => `${clazz} ${d.cssClass || ''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''} ${d.isGroupedBy() ? 'grouped' : ''}`,
       title: (d) => toFullTooltip(d),
       'data-id': (d) => d.id
     });
@@ -494,6 +483,7 @@ export default class HeaderRenderer {
       }
       return 'sort_indicator fa';
     });
+
     $headers.select('span.lu-label').text((d) => d.label);
 
     const resolveDrop = (data: {[key: string]: string}, copy: boolean, numbersOnly: boolean) => {

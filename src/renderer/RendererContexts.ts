@@ -1,11 +1,12 @@
 import IRenderContext from './IRenderContext';
-import {IDOMCellRenderer} from './IDOMCellRenderers';
+import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {ITextRenderHints} from '../utils';
 import Column from '../model/Column';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 
 export declare type IDOMRenderContext = IRenderContext<IDOMCellRenderer>;
 
-export interface ICanvasRenderContext extends IRenderContext<CanvasRenderingContext2D> {
+export interface ICanvasRenderContext extends IRenderContext<ICanvasCellRenderer, ICanvasGroupRenderer> {
   /**
    * the height of a row
    * @param index

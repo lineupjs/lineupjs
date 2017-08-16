@@ -25,9 +25,14 @@ import BoxplotCellRenderer from './BoxplotCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
 import ThresholdCellRenderer from './ThresholdCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
+import MostCategoricalGroupRenderer from './MostCategoricalGroupRenderer';
+import Heatmap from './Heatmap';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {EmptyCellRenderer} from './EmptyCellRenderer';
+import RankCellRenderer from './RankCellRenderer';
 import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
+import AggregateGroupRenderer from './AggregateGroupRenderer';
+import HistogramGroupRenderer from './HistogramGroupRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -37,7 +42,7 @@ const combineCellRenderer = new BarCellRenderer(false, (d, i, col: CompositeNumb
  * default render factories
  */
 export const renderers: { [key: string]: ICellRendererFactory } = {
-  rank: new DefaultCellRenderer('rank', 'right'),
+  rank: new RankCellRenderer(),
   boolean: new DefaultCellRenderer('boolean', 'center'),
   number: new BarCellRenderer(),
   ordinal: new BarCellRenderer(true, (d, i, col: CategoricalNumberColumn) => col.getColor(d, i)),
@@ -65,10 +70,19 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   boxplot: new BoxplotCellRenderer(),
   loading: new LoadingCellRenderer(),
   empty: new EmptyCellRenderer()
+  most: new MostCategoricalGroupRenderer(),
+  aggregate: new AggregateGroupRenderer(),
+  histogram: new HistogramGroupRenderer(),
+  default: defaultCellRenderer
 };
 
 function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getRendererType()];
+  return r || defaultCellRenderer;
+}
+
+function chooseGroupRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
+  const r = renderers[col.getGroupRenderer()];
   return r || defaultCellRenderer;
 }
 
@@ -80,4 +94,19 @@ export function createDOM(col: Column, renderers: { [key: string]: ICellRenderer
 export function createCanvas(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext) {
   const r = chooseRenderer(col, renderers);
   return (r.createCanvas ? r.createCanvas.bind(r) : defaultCellRenderer.createCanvas.bind(r))(col, context);
+}
+
+export function createSVGGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext) {
+  const r = chooseGroupRenderer(col, renderers);
+  return (r.createGroupSVG ? r.createGroupSVG.bind(r) : defaultCellRenderer.createGroupSVG.bind(r))(col, context);
+}
+
+export function createHTMLGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext) {
+  const r = chooseGroupRenderer(col, renderers);
+  return (r.createGroupHTML ? r.createGroupHTML.bind(r) : defaultCellRenderer.createGroupHTML.bind(r))(col, context);
+}
+
+export function createCanvasGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext) {
+  const r = chooseGroupRenderer(col, renderers);
+  return (r.createGroupCanvas ? r.createGroupCanvas.bind(r) : defaultCellRenderer.createGroupCanvas.bind(r))(col, context);
 }

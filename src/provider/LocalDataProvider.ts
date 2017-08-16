@@ -6,11 +6,12 @@ import Column, {IColumnDesc} from '../model/Column';
 import NumberColumn, {INumberColumn} from '../model/NumberColumn';
 import Ranking from '../model/Ranking';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
-import {merge} from '../utils';
+import {merge, computeHist, computeStats} from '../utils';
 import * as d3 from 'd3';
 import {IStatsBuilder, IDataProviderOptions, IDataRow} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 import {computeHist, computeStats} from './math';
+import {IOrderedGroup} from '../model/Group';
 
 
 
@@ -113,12 +114,13 @@ export default class LocalDataProvider extends ACommonDataProvider {
     super.cleanUpRanking(ranking);
   }
 
-  sortImpl(ranking: Ranking): number[] {
+  sortImpl(ranking: Ranking): IOrderedGroup[] {
     if (this._data.length === 0) {
+      return Promise.resolve([]);
       return [];
     }
     //wrap in a helper and store the initial index
-    let helper = this._data.map((r, i) => ({row: r, i}));
+    let helper = this._data.map((r, i) => ({row: r, i, group: null}));
 
     //do the optional filtering step
     if (this.options.filterGlobally) {
@@ -130,11 +132,43 @@ export default class LocalDataProvider extends ACommonDataProvider {
       helper = helper.filter((d) => ranking.filter(d.row, d.i));
     }
 
-    //sort by the ranking column
-    helper.sort((a, b) => ranking.comparator(a.row, b.row, a.i, b.i));
+    //create the groups for each row
+    helper.forEach((r) => r.group = ranking.grouper(r.row, r.i));
+    const groups = new Set<string>(helper.map((r) => r.group.name));
+    if (groups.size === 1) {
+      const group = helper[0].group;
+      //no need to split
+      //sort by the ranking column
+      helper.sort((a, b) => ranking.comparator(a.row, b.row, a.i, b.i));
 
-    //store the ranking index and create an argsort version, i.e. rank 0 -> index i
     return helper.map((r) => r.i);
+      //store the ranking index and create an argsort version, i.e. rank 0 -> index i
+      const order = helper.map((r) => r.i);
+      return Promise.resolve([Object.assign({order}, group)]);
+    } else {
+      //sort by group and within by order
+      helper.sort((a, b) => {
+        const ga = a.group;
+        const gb = b.group;
+        if (ga.name !== gb.name) {
+          return ga.name.localeCompare(gb.name);
+        }
+        return ranking.comparator(a.row, b.row, a.i, b.i);
+      });
+      //iterate over groups and create within orders
+      const groups: IOrderedGroup[] = [Object.assign({order: []}, helper[0].group)];
+      let group = groups[0];
+      helper.forEach((row) => {
+        const rowGroup = row.group;
+        if (rowGroup.name === group.name) {
+          group.order.push(row.i);
+        } else { // change in groups
+          group = Object.assign({order: [row.i]}, row.group);
+          groups.push(group);
+        }
+      });
+      return groups;
+    }
   }
 
 

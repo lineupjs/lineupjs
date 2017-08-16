@@ -5,6 +5,7 @@
 import {IColumnDesc, createRankDesc} from '../model';
 import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
+import {IOrderedGroup} from '../model/Group';
 
 
 function isComplexAccessor(column: any) {
@@ -43,7 +44,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   /**
    * the local ranking orders
    */
-  private readonly ranks = new Map<string, number[]>();
+  private readonly ranks = new Map<string, IOrderedGroup[]>();
 
   constructor(private columns: IColumnDesc[] = [], options: Partial<IDataProviderOptions> = {}) {
     super(options);
@@ -54,8 +55,17 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  protected rankAccessor(_row: any, index: number, _id: string, _desc: IColumnDesc, ranking: Ranking) {
-    return (this.ranks.get(ranking.id)!.indexOf(index)) + 1;
+  protected rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking) {
+    const groups = this.ranks.get(ranking.id);
+    let acc = 0;
+    for(const group of groups) {
+      const rank = group.order.indexOf(index);
+      if (rank >= 0) {
+        return acc + rank + 1; // starting with 1
+      }
+      acc += group.order.length;
+    }
+    return -1;
   }
 
   /**
@@ -89,22 +99,17 @@ abstract class ACommonDataProvider extends ADataProvider {
     this.ranks.delete(ranking.id);
   }
 
-  sort(ranking: Ranking) {
+  sort(ranking: Ranking): Promise<IOrderedGroup[]> {
     //use the server side to sort
     const r = this.sortImpl(ranking);
     if (Array.isArray(r)) {
-      //store the result
-      this.ranks.set(ranking.id, r);
-      return r;
-    }
-    return r.then((argsort) => {
       //store the result
       this.ranks.set(ranking.id, argsort);
       return argsort;
     });
   }
 
-  protected abstract sortImpl(ranking: Ranking): Promise<number[]>|number[];
+  protected abstract sortImpl(ranking: Ranking): Promise<IOrderedGroup[]>|IOrderedGroup[];
 
   /**
    * adds another column description to this data provider

@@ -620,16 +620,17 @@ export function hideOverlays(parentElement: HTMLElement) {
  * @param {{column: Column; renderer: IDOMCellRenderer}[]} columns columns to check
  * @param {string} helperType create types of
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer }[], helperType = 'div') {
+export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer<any>, groupRenderer: IDOMGroupRenderer<any>}[], render: 'group'|'detail', helperType = 'svg') {
+  const renderer = render === 'detail' ? (col: {column: Column}) => col.column.getRendererType() : (col: {column: Column}) => col.column.getGroupRenderer();
   if (node.childElementCount === 0) {
     // initial call fast method
-    node.innerHTML = columns.map((c) => c.renderer.template).join('');
+    node.innerHTML = columns.map((c) => (render === 'detail' ? c.renderer : c.groupRenderer).template).join('');
     columns.forEach((col, i) => {
       const cnode = <Element>node.childNodes[i];
       // set attribute for finding again
       cnode.setAttribute('data-column-id', col.column.id);
       // store current renderer
-      cnode.setAttribute('data-renderer', col.column.getRendererType());
+      cnode.setAttribute('data-renderer', renderer(col));
     });
     return;
   }
@@ -637,14 +638,14 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
   function matches(c: { column: Column }, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
-    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getRendererType();
+    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === renderer(c);
   }
 
   if (columns.every(matches)) {
     return; //nothing to do
   }
 
-  const idsAndRenderer = new Set(columns.map((c) => `${c.column.id}@${c.column.getRendererType()}`));
+  const idsAndRenderer = new Set(columns.map((c) => `${c.column.id}@${renderer(c)}`));
   //remove all that are not existing anymore
   Array.from(node.childNodes).forEach((n: Element) => {
     const id = n.getAttribute('data-column-id');
@@ -659,11 +660,85 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
     let cnode = node.querySelector(`[data-column-id="${col.column.id}"]`);
     if (!cnode) {
       //create one
-      helper.innerHTML = col.renderer.template;
+      helper.innerHTML = (render === 'detail' ? col.renderer : col.groupRenderer).template;
       cnode = <Element>helper.childNodes[0];
       cnode.setAttribute('data-column-id', col.column.id);
-      cnode.setAttribute('data-renderer', col.column.getRendererType());
+      cnode.setAttribute('data-renderer', renderer(col));
     }
     node.appendChild(cnode);
   });
+}
+
+
+export function equalArrays<T>(a: T[], b: T[]) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return a.every((ai, i) => ai === b[i]);
+}
+
+
+/**
+ * computes the simple statistics of an array using d3 histogram
+ * @param arr the data array
+ * @param indices array data indices
+ * @param acc accessor function
+ * @param range the total value range
+ * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
+ */
+export function computeStats(arr: any[], indices: number[], acc: (row: any, index: number) => number, range?: [number, number]): IStatistics {
+  if (arr.length === 0) {
+    return {
+      min: NaN,
+      max: NaN,
+      mean: NaN,
+      count: 0,
+      maxBin: 0,
+      hist: []
+    };
+  }
+  const indexAccessor = (a, i) => acc(a, indices[i]);
+  const hist = layout.histogram().value(indexAccessor);
+  if (range) {
+    hist.range(() => range);
+  }
+  const ex = extent(arr, indexAccessor);
+  const histData = hist(arr);
+  return {
+    min: ex[0],
+    max: ex[1],
+    mean: mean(arr, indexAccessor),
+    count: arr.length,
+    maxBin: Math.max(...histData.map((d) => d.y)),
+    hist: histData
+  };
+}
+
+/**
+ * computes a categorical histogram
+ * @param arr the data array
+ * @param indices the data array data indices
+ * @param acc the accessor
+ * @param categories the list of known categories
+ * @returns {{hist: {cat: string, y: number}[]}}
+ */
+export function computeHist(arr: number[], indices: number[], acc: (row: any, index: number) => string[], categories: string[]): ICategoricalStatistics {
+  const m = new Map<string,number>();
+  categories.forEach((cat) => m.set(cat, 0));
+
+  arr.forEach((a, i) => {
+    const vs = acc(a, indices[i]);
+    if (vs == null) {
+      return;
+    }
+    vs.forEach((v) => {
+      m.set(v, (m.get(v) || 0) + 1);
+    });
+  });
+  const entries: {cat: string; y: number}[] = [];
+  m.forEach((v, k) => entries.push({cat: k, y: v}));
+  return {
+    maxBin: Math.max(...entries.map((d) => d.y)),
+    hist: entries
+  };
 }

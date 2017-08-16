@@ -127,7 +127,8 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.setRendererList([
       {type: 'categorical', label: 'Default'},
       {type: 'upset', label: 'UpSet'}
-    ]);
+    ], [{type: 'categorical', label: 'Histogram'},
+      {type: 'most', label: 'Most Frequent Category'}]);
   }
 
   initCategories(desc: IBaseCategoricalDesc) {
@@ -316,5 +317,11 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     }
     //smaller length wins
     return va.length - vb.length;
+  }
+
+  group(row: any, index: number) {
+    const name = this.getValue(row, index);
+    const color = this.getColor(row, index);
+    return {name, color};
   }
 }

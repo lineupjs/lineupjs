@@ -5,6 +5,7 @@
 import {scale, format} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {equalArrays} from '../utils';
 
 
 /**
@@ -317,6 +318,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   private numberFormat: (n: number) => string = format('.3n');
 
+  private currentStratifyThresholds: number[] = [];
+
   constructor(id: string, desc: INumberColumnDesc) {
     super(id, desc);
 
@@ -335,11 +338,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.missingValue = desc.missingValue;
     }
 
-    const rendererList = [{type: 'number', label: 'Bar'},
-      {type: 'circle', label: 'Circle'},
-      {type: 'default', label: 'String'}];
-
-    this.setRendererList(rendererList);
+    this.setRendererList(
+      [{type: 'number', label: 'Bar'}, {type: 'circle', label: 'Circle'}, {type: 'default', label: 'String'}],
+      [{type: 'histogram', label: 'Histogram'}, {type: 'boxplot', label: 'BoxPlot'}, {type: 'number', label: 'Median Bar'}, {type: 'circle', label: 'Median Circle'}]);
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -347,6 +348,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     r.map = this.mapping.dump();
     r.filter = this.currentFilter;
     r.missingValue = this.missingValue;
+    if (this.currentStratifyThresholds) {
+      r.stratifyThreshholds = this.currentStratifyThresholds;
+    }
     return r;
   }
 
@@ -359,6 +363,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
     if (dump.filter) {
       this.currentFilter = dump.filter;
+    }
+    if (dump.stratifyThreshholds) {
+      this.currentStratifyThresholds = dump.stratifyThresholds;
     }
     if (dump.missingValue !== undefined) {
       this.missingValue = dump.missingValue;
@@ -502,6 +509,38 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
     const vn = +v;
     return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
+  }
+
+  getStratifyTresholds() {
+    return this.currentStratifyThresholds.slice();
+  }
+
+  setStratifyThresholds(value: number[]) {
+    if (equalArrays(this.currentStratifyThresholds, value)) {
+      return;
+    }
+    const bak = this.getStratifyTresholds();
+    this.currentStratifyThresholds = value.slice();
+    this.fire([Column.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
+  }
+
+  group(row: any, index: number) {
+    if (this.currentStratifyThresholds.length === 0) {
+      return super.group(row, index);
+    }
+    const value = this.getRawNumber(row, index);
+    const treshholdIndex = this.currentStratifyThresholds.findIndex((t) => t <= value);
+    // group by thresholds / bins
+    switch(treshholdIndex) {
+      case -1:
+        //bigger than the last threshold
+        return {name: `v > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length-1]}`, color: 'gray'};
+      case 0:
+        //smallest
+        return {name: `v <= ${this.currentStratifyThresholds[0]}`, color: 'gray'};
+      default:
+        return {name: `${this.currentStratifyThresholds[index-1]} <= v <= ${this.currentStratifyThresholds[index]}`, color: 'gray'};
+    }
   }
 
   getRendererType(): string {

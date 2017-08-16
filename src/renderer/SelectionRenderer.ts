@@ -1,10 +1,11 @@
 import SelectionColumn from '../model/SelectionColumn';
-import IDOMCellRenderer from './IDOMCellRenderers';
+import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext} from './RendererContexts';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
+import {IGroup} from '../model/Group';
 
 export default class SelectionRenderer implements ICellRendererFactory {
   createDOM(col: SelectionColumn): IDOMCellRenderer {
@@ -26,6 +27,36 @@ export default class SelectionRenderer implements ICellRendererFactory {
       ctx.font = '10pt FontAwesome';
       clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, context.colWidth(col), context.textHints);
       ctx.font = bak;
+    };
+  }
+
+  createGroupCanvas(col: SelectionColumn, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
+      const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
+      clipText(ctx, String(selected), 0, context.groupHeight(group), col.getWidth(), context.textHints);
+    };
+  }
+
+  createGroupSVG(col: SelectionColumn): ISVGGroupRenderer {
+    return {
+      template: `<text class='selection fa'><tspan class='selectionOnly'>\uf046</tspan><tspan class='notSelectionOnly'>\uf096</tspan></text>`,
+      update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
+        const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
+        const all = selected >= rows.length /2;
+        if (all) {
+          n.classList.add('groupSelected');
+        } else {
+          n.classList.remove('groupSelected');
+        }
+        n.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          const value = n.classList.toggle('groupSelected');
+          rows.forEach((row) => {
+            col.setValue(row.v, row.dataIndex, value);
+          });
+        };
+      }
     };
   }
 }

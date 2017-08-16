@@ -1,17 +1,18 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import Column from '../model/Column';
-import {INumberColumn} from '../model/NumberColumn';
+import Column, {IStatistics} from '../model/Column';
+import {INumberColumn, numberCompare} from '../model/NumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, round, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 
 
 /**
  * a renderer rendering a bar for numerical columns
  */
-export default class BarCellRenderer implements ICellRendererFactory {
+export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberColumn&Column> implements ICellRendererFactory {
   /**
    * flag to always render the value
    * @type {boolean}
@@ -58,4 +59,18 @@ export default class BarCellRenderer implements ICellRendererFactory {
       }
     };
   }
+
+  protected aggregatedIndex(rows: IDataRow[], col: INumberColumn & Column) {
+    return medianIndex(rows, col);
+  }
+}
+
+export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
+  //return the median row
+  const sorted = rows.map((r,i) => ({i,v: col.getNumber(r.v, r.dataIndex)})).sort((a, b) => numberCompare(a.v, b.v));
+  const index = sorted[Math.floor(sorted.length / 2.0)];
+  if (index === undefined) {
+    return 0; //error case
+  }
+  return index.i;
 }

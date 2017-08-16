@@ -22,6 +22,8 @@ import {INumberColumn} from '../model/NumberColumn';
 import {merge, AEventDispatcher, debounce, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
+import {IGroup, IOrderedGroup} from '../model/Group';
+import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 
 /**
  * a data row for rendering
@@ -119,6 +121,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_ORDER_CHANGED = Ranking.EVENT_ORDER_CHANGED;
   static readonly EVENT_ADD_DESC = 'addDesc';
   static readonly EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
+  static readonly EVENT_GROUP_AGGREGATION_CHANGED = AggregateGroupColumn.EVENT_AGGREGATE;
 
   /**
    * all rankings
@@ -131,6 +134,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @type {Set}
    */
   private selection = new Set<number>();
+
+  //ranking.id@group.name
+  private aggregations = new Set<string>();
 
   private uid = 0;
 
@@ -161,7 +167,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
       ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES,
       ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED, ADataProvider.EVENT_ADD_DESC,
-      ADataProvider.EVENT_JUMP_TO_NEAREST]);
+      ADataProvider.EVENT_JUMP_TO_NEAREST, ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED]);
   }
 
   /**
@@ -205,12 +211,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   protected triggerReorder(ranking: Ranking) {
-    const r = this.sort(ranking);
-    if (Array.isArray(r)) {
-      ranking.setOrder(r);
-    } else {
-      r.then((order) => ranking.setOrder(order));
-    }
+    this.sort(ranking).then((order) => ranking.setGroups(order));
   }
 
   /**
@@ -333,6 +334,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     } else if (desc.type === 'selection') {
       (<ISelectionColumnDesc>desc).accessor = (_row: any, index: number) => this.isSelected(index);
       (<ISelectionColumnDesc>desc).setter = (_row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
+    } else if (desc.type === 'aggregate') {
+      (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.isAggregated(ranking, group);
+      (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: boolean) => this.setAggregated(ranking, group, value);
     }
   }
 
@@ -406,6 +410,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return {
       uid: this.uid,
       selection: this.getSelection(),
+      aggregations: Array.from(this.aggregations),
       rankings: this.rankings.map((r) => r.dump(this.toDescRef))
     };
   }
@@ -467,6 +472,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.uid = dump.uid || 0;
     if (dump.selection) {
       dump.selection.forEach((s: number) => this.selection.add(s));
+    }
+    if (dump.aggregations) {
+      this.aggregations.clear();
+      dump.aggregations.forEach((a) => this.aggregations.add(a));
     }
 
 
@@ -567,12 +576,30 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return ranking;
   }
 
+  isAggregated(ranking: Ranking, group: IGroup) {
+    const key = `${ranking.id}@${group.name}`;
+    return this.aggregations.has(key);
+  }
+
+  setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
+    const key = `${ranking.id}@${group.name}`;
+    if (value === this.aggregations.has(key)) {
+      return;
+    }
+    if (value) {
+      this.aggregations.add(key);
+    } else {
+      this.aggregations.delete(key);
+    }
+    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value);
+  }
+
   /**
    * sorts the given ranking and eventually return a ordering of the data items
    * @param ranking
    * @return {Promise<any>}
    */
-  abstract sort(ranking: Ranking): Promise<number[]>|number[];
+  abstract sort(ranking: Ranking): Promise<IOrderedGroup[]>|IOrderedGroup[];
 
   /**
    * returns a view in the order of the given indices

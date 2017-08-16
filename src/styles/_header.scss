@@ -123,6 +123,10 @@
         color: $lu_header_active_filter_color;
       }
 
+      &.grouped > div.toolbar i.fa-columns {
+        color: darkblue;
+      }
+
       position: absolute;
       top: 0;
       display: inline-block;

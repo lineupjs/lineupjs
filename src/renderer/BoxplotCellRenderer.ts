@@ -4,7 +4,10 @@ import Column from '../model/Column';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext} from './RendererContexts';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
+import {INumberColumn} from '../model/NumberColumn';
+import {IGroup} from '../model/Group';
+import {LazyBoxPlotData} from '../model/NumbersColumn';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v === null) {
@@ -53,7 +56,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
-    const topPadding = 2.5 * (context.option('rowBarPadding', 1));
+    const topPadding = context.option('rowBarPadding', 1);
     const sortedByMe = col.isSortedByMe().asc !== undefined;
     const width = context.colWidth(col);
     const boxColor = context.option('style.boxplot.box', '#e0e0e0');
@@ -75,41 +78,120 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         q3: data.q3 * width,
         max: data.max * width
       };
-      const minPos = scaled.min, maxPos = scaled.max, medianPos = scaled.median, q3Pos = scaled.q3, q1Pos = scaled.q1;
-      ctx.fillStyle = boxColor;
-      ctx.strokeStyle = boxStroke;
-      ctx.beginPath();
-      ctx.rect((q1Pos), topPadding, ((q3Pos) - (q1Pos)), (rowHeight - (topPadding * 2)));
-      ctx.fill();
-      ctx.stroke();
+      renderBoxPlot(ctx, scaled, rowHeight, topPadding);
 
-      //Line
-      const bottomPos = (rowHeight - topPadding);
-      const middlePos = (rowHeight - topPadding) / 2;
-
-      ctx.strokeStyle = boxStroke;
-      ctx.beginPath();
-      ctx.moveTo(minPos, middlePos);
-      ctx.lineTo((q1Pos), middlePos);
-      ctx.moveTo(minPos, topPadding);
-      ctx.lineTo(minPos, bottomPos);
-      ctx.moveTo(medianPos, topPadding);
-      ctx.lineTo(medianPos, bottomPos);
-      ctx.moveTo((q3Pos), middlePos);
-      ctx.lineTo(maxPos, middlePos);
-      ctx.moveTo(maxPos, topPadding);
-      ctx.lineTo(maxPos, bottomPos);
-      ctx.stroke();
-
-
-      if (!sortedByMe) {
-        return;
+      if (sortedByMe) {
+        ctx.strokeStyle = 'red';
+        ctx.fillStyle = '#ff0700';
+        ctx.beginPath();
+        ctx.moveTo(scaled[sortMethod], topPadding);
+        ctx.lineTo(scaled[sortMethod], rowHeight - topPadding);
+        ctx.stroke();
+        ctx.fill();
       }
-      ctx.strokeStyle = boxSortIndicator;
-      ctx.beginPath();
-      ctx.moveTo(scaled[sortMethod], topPadding);
-      ctx.lineTo(scaled[sortMethod], bottomPos);
-      ctx.stroke();
+
     };
   }
+
+
+  createGroupSVG(col: INumberColumn & Column, context: IDOMRenderContext): ISVGGroupRenderer {
+    const topPadding = context.option('rowBarGroupPadding', 1);
+    const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
+    return {
+      template: `<g class='boxplotcell'>
+            <title></title>
+            <rect class='cellbg'></rect>
+            <rect class='boxplotrect' y='${topPadding}'></rect>
+            <path class='boxplotallpath'></path>
+        </g>`,
+      update: (n: SVGGElement, group: IGroup, rows: IDataRow[]) => {
+        const height = context.groupHeight(group);
+        const boxTopPadding = topPadding + ((height- topPadding*2) * 0.1);
+        const box = new LazyBoxPlotData(rows.map((row) => col.getValue(row.v, row.dataIndex)));
+        attr(<SVGElement>n.querySelector('rect.cellbg'),{
+          width: col.getWidth(),
+          height
+        });
+        n.querySelector('title').textContent = computeLabel(box);
+
+        const scaled = {
+          min: scale(box.min),
+          median: scale(box.median),
+          q1: scale(box.q1),
+          q3: scale(box.q3),
+          max: scale(box.max)
+        };
+        attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
+          x: scaled.q1,
+          y: boxTopPadding,
+          width: scaled.q3 - scaled.q1,
+          height: height - (boxTopPadding * 2)
+        });
+        attr(<SVGPathElement>n.querySelector('path.boxplotallpath'), {
+          d: boxPlotPath(scaled, height, topPadding)
+        });
+      }
+    };
+  }
+
+  createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    const topPadding = context.option('rowBarGroupPadding', 1);
+    const scale = d3scale.linear().domain([0, 1]).range([0, col.getWidth()]);
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
+      const height = context.groupHeight(group);
+      const box = new LazyBoxPlotData(rows.map((row) => col.getValue(row.v, row.dataIndex)));
+
+      const scaled = {
+        min: scale(box.min),
+        median: scale(box.median),
+        q1: scale(box.q1),
+        q3: scale(box.q3),
+        max: scale(box.max)
+      };
+      renderBoxPlot(ctx, scaled, height, topPadding);
+    };
+  }
+}
+
+function boxPlotPath(box: IBoxPlotData, height: number, topPadding: number) {
+  const boxTopPadding = topPadding + ((height- topPadding*2) * 0.1);
+  const boxHeight = height - boxTopPadding*2;
+  const wheight = height - topPadding*2;
+  const middlePos = height / 2;
+  return `M${box.min},${middlePos}l${box.q1 - box.min},0M${box.min},${topPadding}l0,${wheight}` +   //minimum line
+    `M${box.median},${boxTopPadding}l0,${boxHeight}` +   //median line
+    `M${box.q3},${middlePos}l${box.max-box.q3},0` +
+    `M${box.max},${topPadding}l0,${wheight}`;  // maximum line
+}
+
+function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, height: number, topPadding: number) {
+  const boxTopPadding = topPadding + ((height- topPadding*2) * 0.1);
+  const minPos = box.min, maxPos = box.max, medianPos = box.median, q3Pos = box.q3, q1Pos = box.q1;
+
+  ctx.fillStyle = '#e0e0e0';
+  ctx.strokeStyle = 'black';
+  ctx.beginPath();
+  ctx.rect(q1Pos, boxTopPadding, q3Pos - q1Pos, height - (boxTopPadding * 2));
+  ctx.fill();
+  ctx.stroke();
+
+  //Line
+  const bottomPos = height - topPadding;
+  const middlePos = height / 2;
+
+  ctx.strokeStyle = 'black';
+  ctx.fillStyle = '#e0e0e0';
+  ctx.beginPath();
+  ctx.moveTo(minPos, middlePos);
+  ctx.lineTo(q1Pos, middlePos);
+  ctx.moveTo(minPos, topPadding);
+  ctx.lineTo(minPos, bottomPos);
+  ctx.moveTo(medianPos, boxTopPadding);
+  ctx.lineTo(medianPos, height - boxTopPadding);
+  ctx.moveTo(q3Pos, middlePos);
+  ctx.lineTo(maxPos, middlePos);
+  ctx.moveTo(maxPos, topPadding);
+  ctx.lineTo(maxPos, bottomPos);
+  ctx.stroke();
+  ctx.fill();
 }
