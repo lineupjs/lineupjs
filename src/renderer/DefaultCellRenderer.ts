@@ -17,8 +17,6 @@ export class DefaultCellRenderer implements ICellRendererFactory {
    * @param align {string} the text alignment: left, center, right
    */
   constructor(private readonly textClass: string = 'text', private readonly align: string = 'left') {
-    this.textClass = textClass;
-    this.align = align;
   }
 
   createDOM(col: Column): IDOMCellRenderer {

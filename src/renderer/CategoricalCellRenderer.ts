@@ -46,7 +46,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   createGroupDOM(col: ICategoricalColumn&Column): IDOMGroupRenderer {
     const colors = col.categoryColors;
     const labels = col.categoryLabels;
-    const bins = col.categories.map((c, i) => `<div style="height: 0; background-color: ${colors[i]}" title="${labels[i]}: 0" data-cat="${c}"></div>`);
+    const bins = col.categories.map((c, i) => `<div style="height: 0; background-color: ${colors[i]}" title="${labels[i]}: 0" data-cat="${c}"></div>`).join('');
 
     return {
       template: `<div>${bins}</div>`,

@@ -21,5 +21,23 @@
 }
 
 [data-agg=group] [data-renderer=categorical] {
+  display: flex;
+  align-items: flex-end;
+  font-size: x-small;
 
+  > * {
+    flex: 1 1 auto;
+    position: relative;
+    background: rgba(255, 255, 255, 0.5);
+    margin: 0 2px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+
+    > .lu-selected {
+      flex: 1 1 auto;
+      background-color: $lu_selected_color;
+      border-radius: 5px 5px 0 0;
+    }
+  }
 }

@@ -4,11 +4,18 @@
   position: relative;
   white-space: nowrap;
 
-  > div {
+  div {
     position: absolute;
+    width: 100%;
+  }
+  
+  > div {
     top: 5%;
     bottom: 5%;
-    width: 100%;
+
+    > div {
+      height: 100%;
+    }
   }
 }
 

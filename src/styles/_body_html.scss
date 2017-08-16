@@ -61,6 +61,10 @@
     }
   }
 
+  div.group {
+    position: absolute;
+  }
+
   div.meanlines * {
     position: absolute;
     display: inline-block;
@@ -68,7 +72,8 @@
     border-left: 1px solid gray;
   }
 
-  div.row {
+  div.row,
+  div.aggregate {
     font-size: 90%;
     display: flex;
 
@@ -76,14 +81,7 @@
     div.frozen {
       background-color: white;
       border: 1px solid transparent;
-      transition: border-color ease 0.5s;
-    }
-
-    &.even {
-      div.cols,
-      div.frozen {
-        background-color: $lu_even_bg;
-      }
+      transition: border-color ease 0.2s;
     }
 
     &.selected {
@@ -100,6 +98,13 @@
       }
     }
 
+    &.even {
+      div.cols,
+      div.frozen {
+        background-color: $lu_even_bg;
+      }
+    }
+
     &.hover {
       div.cols {
         border-color: $lu_hover_color;
@@ -111,7 +116,6 @@
         border-right-color: transparent;
       }
     }
-
     /**
     div.frozen {
       background-color: white;
@@ -138,8 +142,7 @@
       overflow-x: hidden;
       text-overflow: ellipsis;
     }
-
-
-    @import './renderer/index';
   }
+
+  @import './renderer/index';
 }

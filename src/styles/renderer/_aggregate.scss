@@ -4,6 +4,7 @@
 
 [data-renderer=aggregate] {
   @include fa-icon();
+  cursor: pointer;
 
   &::before {
     content: $fa-var-caret-down;

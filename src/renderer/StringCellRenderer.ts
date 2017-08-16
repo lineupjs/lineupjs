@@ -24,4 +24,12 @@ export default class StringCellRenderer implements ICellRendererFactory {
   createCanvas(col: StringColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return this.alignments[col.alignment].createCanvas(col, context);
   }
+
+  createGroupDOM(col: StringColumn) {
+    return this.alignments[col.alignment].createGroupDOM(col);
+  }
+
+  createGroupCanvas(col: StringColumn, context: ICanvasRenderContext) {
+    return this.alignments[col.alignment].createGroupCanvas(col, context);
+  }
 }

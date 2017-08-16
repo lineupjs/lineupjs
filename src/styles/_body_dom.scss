@@ -5,12 +5,16 @@
     display: none;
   }
 
-  .hover .lu-not-hover {
-    display: none;
-  }
+  .hover,
+  div.row:hover,
+  div.aggregate:hover {
+    .lu-not-hover {
+      display: none;
+    }
 
-  .hover .lu-hover-only {
-    display: block;
+    .lu-hover-only {
+      display: block;
+    }
   }
 
   .lu-selection-only {

@@ -31,7 +31,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     return $rows;
   }
 
-  private renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext & IDOMRenderContext, height: number): Promise<any> {
+  private renderRankings($body: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext & IDOMRenderContext): Promise<any> {
     const that = this;
 
     const $rankings = $body.selectAll('div.ranking').data(data, (d) => d.id);
@@ -125,7 +125,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       $rows.exit().remove();
 
       {
-        const $meanlines = $rankings.select('div.meanlines').selectAll('div.meanline').data((d) => d.columns.filter((c) => this.showMeanLine(c.column)));
+        const $meanlines = $groups.select('div.meanlines').selectAll('div.meanline').data(ranking.columns.filter((c) => this.showMeanLine(c.column)));
         $meanlines.enter().append('div').attr('class', 'meanline');
         $meanlines.each(function (this: HTMLElement, d) {
           const h = that.histCache.get(d.column.id);
@@ -135,7 +135,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
           }
           const render = (stats: IStatistics) => {
             const xPos = d.shift + d.column.getWidth() * stats.mean;
-            $mean.style('left', `${isNaN(xPos) ? 0 : xPos}px`).style('height', `${height}px`);
+            $mean.style('left', `${isNaN(xPos) ? 0 : xPos}px`).style('height', `${group.height}px`);
           };
           if (h instanceof Promise) {
             h.then(render);
@@ -150,7 +150,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     const renderAggregate = ($this: d3.Selection<IGroupedRangkingData>, ranking: IRankingData, group: IGroupedRangkingData) => {
       $this.selectAll('div.rows > *, div.meanlines > *').remove();
 
-      const $base = $this.select('div.aggregate');
+      const $base = $this.select('div.aggregate').style('height', `${group.height}px`);
 
       const updateColumns = (node: HTMLElement, r: IGroupedRangkingData, columns: IRankingColumnData[]) => {
         matchColumns(node, columns, 'group');
@@ -282,6 +282,6 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     }
 
     this.renderSlopeGraphs($body, data, context, height);
-    return this.renderRankings($body, data, context, height);
+    return this.renderRankings($body, data, context);
   }
 }
