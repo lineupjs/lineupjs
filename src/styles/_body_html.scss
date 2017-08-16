@@ -61,7 +61,17 @@
     }
   }
 
+  div.meanlines * {
+    position: absolute;
+    display: inline-block;
+    width: 1px;
+    border-left: 1px solid gray;
+  }
+
   div.row {
+    font-size: 90%;
+    display: flex;
+
     div.cols,
     div.frozen {
       background-color: white;
@@ -102,25 +112,6 @@
       }
     }
 
-    &.selected,
-    &.hover {
-      .bar {
-        opacity: 0.5; // bars nested combined with a text representation
-
-        span {
-          opacity: 1;
-        }
-      }
-    }
-
-    div.selection::before {
-      content: "\f096";
-    }
-
-    &.selected div.selection::before {
-      content: "\f046";
-    }
-
     /**
     div.frozen {
       background-color: white;
@@ -139,11 +130,6 @@
     }
     */
 
-    div.cat div {
-      position: relative;
-      display: inline-block;
-    }
-
     div.annotations input {
       width: 100%;
     }
@@ -153,13 +139,7 @@
       text-overflow: ellipsis;
     }
 
-    @import './renderer/heatmap';
-    @import './renderer/upset';
-    @import './renderer/boxplot';
-    @import './renderer/bar';
-    @import './renderer/cat';
-    @import './renderer/threshold';
-    @import './renderer/sparkline';
-    @import './renderer/vertical';
+
+    @import './renderer/index';
   }
 }

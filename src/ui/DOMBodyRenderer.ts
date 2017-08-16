@@ -35,11 +35,9 @@ export default class DOMBodyRenderer extends ABodyRenderer {
     const that = this;
 
     const $rankings = $body.selectAll('div.ranking').data(data, (d) => d.id);
-    const $rankingsEnter = $rankings.enter().append('div')
+    $rankings.enter().append('div')
       .attr('class', 'ranking')
       .style('left', (d) => `${d.shift}px`);
-    $rankingsEnter.append('div').attr('class', 'rows');
-    $rankingsEnter.append('div').attr('class', 'meanlines');
 
     //animated shift
     this.animated($rankings)
@@ -50,17 +48,17 @@ export default class DOMBodyRenderer extends ABodyRenderer {
 
     const $groups = $rankings.selectAll('div.group').data((d) => d.groups, (d) => d.group.name);
     const $groupsEnter = $groups.enter().append('div').attr('class', 'group');
-    const $aggregateEnter = $groupsEnter.append('div').attr('class', 'aggregate');
+    const $aggregateEnter = $groupsEnter.append('div').attr('class', 'aggregate').attr('data-agg', 'group');
     $aggregateEnter.append('div').attr('class', 'cols');
     $aggregateEnter.append('div').attr('class', 'frozen').style('transform', `translate${this.currentFreezeLeft}px,0)`);
 
-    $groupsEnter.append('div').attr('class', 'rows');
+    $groupsEnter.append('div').attr('class', 'rows').attr('data-agg', 'detail');
     $groupsEnter.append('div').attr('class', 'meanlines');
     $groupsEnter.style('top', (d: IGroupedRangkingData) => `${d.y}px`);
 
     const renderDetail = ($this: d3.Selection<IGroupedRangkingData>, ranking: IRankingData, group: IGroupedRangkingData) => {
       $this.selectAll('div.aggregate .cols > *, div.aggregate .frozen > *').remove();
-      const $rows = $this.select('div.rows').selectAll('div.row').data((d) => d.order, String);
+      const $rows = $this.select('div.rows').selectAll('div.row').data(group.order, String);
       const $rowsEnter = $rows.enter().append('div').attr('class', 'row');
       $rowsEnter.style('top', (_d, i) => `${context.cellPrevY(i)}px`);
 
@@ -90,7 +88,9 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       });
 
       //animated reordering
-      this.animated($rows).style('top', (_d, i) => `${context.cellY(i)}px`);
+      this.animated($rows)
+        .style('top', (_d, i) => `${context.cellY(i)}px`)
+        .style('height', `${this.options.rowHeight}px`);
 
       const updateColumns = (node: HTMLElement, r: IGroupedRangkingData, i: number, columns: IRankingColumnData[]) => {
         //update nodes and create templates
@@ -100,7 +100,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
             const cnode: any = node.childNodes[ci];
             // use the shift if possible since it considers more cornercases
             cnode.style.width = `${ci < columns.length - 2 ? (columns[ci + 1].shift - col.shift) : col.column.getActualWidth()}px`;
-            col.renderer.update(cnode, row, i);
+            col.renderer.update(cnode, row, i, group.group);
           });
         };
         const d = r.data[i];
@@ -114,12 +114,12 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : (d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth()) + that.options.columnPadding);
 
-      $rows.select('div.frozen').each(function (this: HTMLElement, _d, i) {
-        this.style.width = `${maxFrozen}px`;
-        toWait.push(updateColumns(this, group, i, ranking.frozen));
-      });
       $rows.select('div.cols').each(function (this: HTMLElement, _d, i) {
         this.style.marginLeft = `${maxFrozen}px`;
+        toWait.push(updateColumns(this, group, i, ranking.columns));
+      });
+      $rows.select('div.frozen').each(function (this: HTMLElement, _d, i) {
+        this.style.width = `${maxFrozen}px`;
         toWait.push(updateColumns(this, group, i, ranking.frozen));
       });
       $rows.exit().remove();
@@ -166,14 +166,14 @@ export default class DOMBodyRenderer extends ABodyRenderer {
       };
       //update columns
 
-      $base.select('div.cols').each(function (this: HTMLElement) {
-        toWait.push(updateColumns(this, group, ranking.columns));
-      });
       //order for frozen in html + set the size in html to have a proper background instead of a clip-path
       const maxFrozen = data.length === 0 || data[0].frozen.length === 0 ? 0 : d3.max(data[0].frozen, (f) => f.shift + f.column.getWidth());
+      $base.select('div.cols').each(function (this: HTMLElement) {
+        this.style.marginLeft = `${maxFrozen}px`;
+        toWait.push(updateColumns(this, group, ranking.columns));
+      });
       $base.select('div.frozen').each(function (this: HTMLElement) {
         this.style.width = `${maxFrozen}px`;
-        this.style.height = `${that.options.groupHeight}px`;
         toWait.push(updateColumns(this, group, ranking.frozen));
       });
     };

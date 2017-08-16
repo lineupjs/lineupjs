@@ -4,7 +4,7 @@ import {INumberColumn, numberCompare} from '../model/NumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText, round, setText} from '../utils';
+import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 
@@ -31,7 +31,7 @@ export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberCol
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         const value = col.getNumber(d.v, d.dataIndex);
-        const w = isNaN(value) ? 0 : round(value * 100, 2);
+        const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
         const title = col.getLabel(d.v, d.dataIndex);
         n.title = title;
 

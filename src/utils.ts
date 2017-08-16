@@ -5,7 +5,6 @@
 import {dispatch, select, event as d3event, Dispatch, Selection} from 'd3';
 import Column from './model/Column';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
-export {round} from 'd3';
 
 
 export function findOption(options: any) {

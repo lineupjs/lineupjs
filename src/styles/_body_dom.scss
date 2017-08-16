@@ -21,11 +21,14 @@
     selected state extends hover state
    */
   .selected .lu-selection-only,
-  .selected .lu-hover-only {
+  .selected .lu-hover-only,
+  .groupSelected .lu-selection-only,
+  .groupSelected .lu-hover-only {
     display: block;
   }
 
-  .selected .lu-not-hover {
+  .selected .lu-not-hover,
+  .groupSelected .lu-not-hover {
     display: none;
   }
 

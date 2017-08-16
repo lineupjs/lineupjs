@@ -63,7 +63,7 @@ export function defaultConfig(): IFullLineUpConfig {
       renderer: 'svg', //svg, canvas, html
       visibleRowsOnly: true,
       backupScrollRows: 5,
-      rowHeight: 22,
+      rowHeight: 18,
       groupHeight: 50,
       textHeight: 13, //10pt
       rowPadding: 1,

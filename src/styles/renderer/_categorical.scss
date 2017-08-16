@@ -1,5 +1,6 @@
 
-[data-renderer=categorical] {
+
+[data-agg=detail] [data-renderer=categorical] {
   display: flex;
   white-space: nowrap;
 
@@ -17,4 +18,8 @@
     overflow-x: hidden;
     text-overflow: ellipsis;
   }
+}
+
+[data-agg=group] [data-renderer=categorical] {
+
 }

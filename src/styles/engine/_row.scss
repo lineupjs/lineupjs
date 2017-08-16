@@ -34,13 +34,4 @@
   text-overflow: ellipsis;
 }
 
-@import '../renderer/heatmap';
-@import '../renderer/upset';
-@import '../renderer/boxplot';
-@import '../renderer/bar';
-@import '../renderer/cat';
-@import '../renderer/threshold';
-@import '../renderer/sparkline';
-@import '../renderer/vertical';
-@import '../renderer/stack';
-@import '../renderer/selection';
+@import '../renderer/index';

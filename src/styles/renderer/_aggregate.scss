@@ -1,0 +1,15 @@
+
+@import '~font-awesome/scss/variables';
+@import '~font-awesome/scss/mixins';
+
+[data-renderer=aggregate] {
+  @include fa-icon();
+
+  &::before {
+    content: $fa-var-caret-down;
+  }
+}
+
+[data-agg=group] [data-renderer=aggregate]::before {
+  content: $fa-var-caret-right;
+}

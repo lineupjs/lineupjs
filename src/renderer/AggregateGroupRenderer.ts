@@ -24,7 +24,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     return {
       template: `<div title="Collase Group"></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IGroup) {
-        node.style.display = i === 0 ? null : 'none';
+        node.style.visibility = i === 0 ? null : 'hidden';
         node.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();

@@ -364,11 +364,11 @@ export default class HeaderRenderer {
     });
 
     if (this.options.manipulative) {
-      $headersEnter.append('div').classed('handle', true)
+      $headersEnter.append('div').classed('lu-handle', true)
         .call(this.dragHandler)
         .style('width', `${this.options.columnPadding}px`)
         .call(this.dropHandler);
-      $headersEnter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
+      $headersEnter.append('div').classed('lu-toolbar', true).call(this.createToolbar.bind(this));
     }
 
     if (this.options.summary) {

@@ -39,6 +39,7 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     super.createRow(node, rowIndex, ...extras);
     const dataIndex = this.ctx.getRow(rowIndex).dataIndex;
     node.dataset.dataIndex = dataIndex.toString();
+    node.dataset.agg = 'detail'; //or 'group'
     if (this.ctx.provider.isSelected(dataIndex)) {
       node.classList.add('lu-selected');
     } else {
