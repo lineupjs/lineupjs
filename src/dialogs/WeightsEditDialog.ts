@@ -34,19 +34,19 @@ export default class WeightsEditDialog extends ADialog {
       min: 0,
       max: 100,
       size: 5
-    }).on('input', function (d) {
+    }).on('input', function (this: HTMLInputElement, d) {
       d.weight = +this.value;
       redraw();
     });
 
     $rowsEnter.append('td').append('div')
-      .attr('class', (d) => 'bar ' + d.col.cssClass)
-      .style('background-color', (d) => d.col.color);
+      .attr('class', (d) => `bar ${d.col.cssClass}`)
+      .style('background-color', (d) => d.col.color!);
 
     $rowsEnter.append('td').text((d) => d.col.label);
 
     function redraw() {
-      $rows.select('.bar').transition().style('width', (d) => scale(d.weight) + 'px');
+      $rows.select('.bar').transition().style('width', (d) => `${scale(d.weight)}px`);
     }
 
     redraw();
@@ -57,7 +57,7 @@ export default class WeightsEditDialog extends ADialog {
       },
       reset: () => {
         children.forEach((d, i) => d.weight = weights[i] * 100);
-        $rows.select('input').property('value', (d) => d.weight);
+        $rows.select('input').property('value', (d: any) => d.weight);
         redraw();
       },
       submit: () => {

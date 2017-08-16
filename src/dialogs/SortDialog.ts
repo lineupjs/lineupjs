@@ -2,7 +2,7 @@ import Column from '../model/Column';
 import ADialog from './ADialog';
 import {IBoxPlotColumn, SORT_METHOD} from '../model/BoxPlotColumn';
 import NumbersColumn, {SORT_METHOD as ADVANCED_SORT_METHOD,} from '../model/NumbersColumn';
-import {event as d3event, selectAll, Selection} from 'd3';
+import {event as d3event, Selection} from 'd3';
 
 export default class SortDialog extends ADialog {
   constructor(private readonly column: IBoxPlotColumn&Column, $header: Selection<Column>, title: string = 'Change Sort Criteria') {
@@ -17,7 +17,7 @@ export default class SortDialog extends ADialog {
       return `<input type="radio" name="multivaluesort" value=${d}  ${(bak === d) ? 'checked' : ''} > ${d.slice(0, 1).toUpperCase() + d.slice(1)} <br>`;
     }).join('\n'));
 
-    const sortContent = selectAll('input[name=multivaluesort]');
+    const sortContent = popup.selectAll('input[name=multivaluesort]');
     sortContent.on('change', () => {
       const target = (<MouseEvent>d3event).target;
       const value = (<HTMLInputElement>target).value;

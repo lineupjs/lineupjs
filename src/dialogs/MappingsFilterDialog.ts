@@ -74,21 +74,6 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
         return true;
       }
     });
-    popup.select('.cancel').on('click', () => {
-      popup.remove();
-      this.column.setMapping(bak);
-      this.markFiltered(!bak.eq(original));
-    });
-    popup.select('.reset').on('click', function () {
-      bak = original;
-      act = bak.clone();
-      bakfilter = NumberColumn.noFilter();
-      actfilter = bakfilter;
-      applyMapping(act, actfilter);
-      popup.selectAll('.mappingArea *').remove();
-      editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
-    });
-
     MappingsFilterDialog.registerPopup(popup);
   }
 }

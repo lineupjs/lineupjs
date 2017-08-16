@@ -321,7 +321,10 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   group(row: any, index: number) {
     const name = this.getValue(row, index);
-    const color = this.getColor(row, index);
+    if (!name) {
+      return super.group(row, index);
+    }
+    const color = this.getColor(row, index)!;
     return {name, color};
   }
 }

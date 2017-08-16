@@ -8,9 +8,8 @@ export default class StratifyThresholdDialog extends ADialog {
    * opens a dialog for editing the link of a column
    * @param column the column to rename
    * @param $header the visual header element of this column
-   * @param idPrefix dom id prefix
    */
-  constructor(private readonly column: NumberColumn, $header: d3.Selection<Column>, private readonly idPrefix: string) {
+  constructor(private readonly column: NumberColumn, $header: d3.Selection<Column>) {
     super($header, 'Stratify By Threshold');
   }
 
