@@ -112,6 +112,11 @@ abstract class ACommonDataProvider extends ADataProvider {
     this.fire(ADataProvider.EVENT_ADD_DESC, d);
   }
 
+  clearColumns() {
+    this.clearRankings();
+    this.columns.splice(0, this.columns.length);
+  }
+
   getColumns(): IColumnDesc[] {
     return this.columns.slice();
   }
