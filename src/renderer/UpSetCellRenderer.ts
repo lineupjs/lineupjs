@@ -6,7 +6,7 @@ import {attr} from '../utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import Column from '../model/Column';
-import {IGroup} from 'lineupjs/src/model/Group';
+import {IGroup} from '../model/Group';
 
 
 export default class UpSetCellRenderer implements ICellRendererFactory {
