@@ -25,7 +25,6 @@ import BoxplotCellRenderer from './BoxplotCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
 import ThresholdCellRenderer from './ThresholdCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
-import MostCategoricalGroupRenderer from './MostCategoricalGroupRenderer';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import {EmptyCellRenderer} from './EmptyCellRenderer';
 import RankCellRenderer from './RankCellRenderer';
@@ -69,7 +68,6 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   boxplot: new BoxplotCellRenderer(),
   loading: new LoadingCellRenderer(),
   empty: new EmptyCellRenderer(),
-  most: new MostCategoricalGroupRenderer(),
   aggregate: new AggregateGroupRenderer(),
   histogram: new HistogramGroupRenderer(),
   default: defaultCellRenderer

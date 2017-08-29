@@ -8,7 +8,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 import {IGroup} from '../model/Group';
 
 function render(ctx: CanvasRenderingContext2D, icon: string, col: AggregateGroupColumn, context: ICanvasRenderContext) {
-  const width = col.getActualWidth();
+  const width = context.colWidth(col);
   const bak = ctx.font;
   const bakAlign = ctx.textAlign;
   ctx.textAlign = 'center';
@@ -22,7 +22,7 @@ function render(ctx: CanvasRenderingContext2D, icon: string, col: AggregateGroup
 export default class AggregateGroupRenderer implements ICellRendererFactory {
   createDOM(col: AggregateGroupColumn): IDOMCellRenderer {
     return {
-      template: `<div title="Collase Group"></div>`,
+      template: `<div title="Collapse Group"></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IGroup) {
         node.style.visibility = i === 0 ? null : 'hidden';
         node.onclick = function (event) {

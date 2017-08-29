@@ -7,6 +7,8 @@ import {attr} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
+import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
+import {medianIndex} from './BarCellRenderer';
 
 export function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
   let v = col.getNumber(d, index);
@@ -19,7 +21,7 @@ export function toHeatMapColor(d: any, index: number, col: INumberColumn & Colum
   return color.toString();
 }
 
-export default class HeatmapCellRenderer implements ICellRendererFactory {
+export default class HeatmapCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
 
 
   createDOM(col: INumberColumn & Column): IDOMCellRenderer {
@@ -42,5 +44,9 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = toHeatMapColor(d.v, d.dataIndex, col);
       ctx.fillRect(padding, padding, w, w);
     };
+  }
+
+  protected aggregatedIndex(rows: IDataRow[], col: INumberColumn & Column) {
+    return medianIndex(rows, col);
   }
 }

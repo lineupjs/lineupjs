@@ -1,29 +1,27 @@
-import ICellRendererFactory from './ICellRendererFactory';
 import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
-import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
 import Column from '../model/Column';
 import {attr, forEachChild} from '../utils';
+import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 
-export default class VerticalBarCellRenderer implements ICellRendererFactory {
-  createDOM(col: INumbersColumn & Column): IDOMCellRenderer {
+export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
+
+  protected createDOMContext(col: INumbersColumn & Column) {
     const colorScale = col.getRawColorScale();
     const domain = col.getMapping().domain;
     const threshold = col.getThreshold();
     const range = domain[1] - domain[0];
-
     let templateRows = '';
     for (let i = 0; i < col.getDataLength(); ++i) {
       templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<div>${templateRows}</div>`,
-      update: (n: HTMLElement, d: IDataRow) => {
+      templateRow: templateRows,
+      render: (row: HTMLElement, d: IDataRow) => {
         const data = col.getRawNumbers(d.v, d.dataIndex);
 
-        forEachChild(n, (d, i) => {
+        forEachChild(row, (d, i) => {
           const v = data[i];
           const top = v < threshold ? v : threshold;
           const height = v < threshold ? (threshold - v) : (v - threshold);
@@ -39,25 +37,22 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  protected createCanvasContext(col: INumbersColumn & Column, context: ICanvasRenderContext) {
     const colorScale = col.getRawColorScale();
     const cellDimension = context.colWidth(col) / col.getDataLength();
     const domain = col.getMapping().domain;
     const threshold = col.getThreshold();
     const range = domain[1] - domain[0];
-
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, offset: number, rowHeight: number) => {
       const data = col.getRawNumbers(d.v, d.dataIndex);
-      const rowHeight = context.rowHeight(i);
       const scale = rowHeight / range;
       data.forEach((v, j) => {
         const top = v < threshold ? v : threshold;
         const height = v < threshold ? (threshold - v) : (v - threshold);
         const xpos = (j * cellDimension);
         ctx.fillStyle = colorScale(v);
-        ctx.fillRect(xpos, top * scale, cellDimension, height * scale);
+        ctx.fillRect(xpos, top * scale + offset, cellDimension, height * scale);
       });
     };
   }
-
 }

@@ -5,9 +5,10 @@ import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {clipText, showOverlay} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
+import {ANoGroupRenderer} from './ANoGroupRenderer';
 
 
-export default class LinkCellRenderer implements ICellRendererFactory {
+export default class LinkCellRenderer extends ANoGroupRenderer implements ICellRendererFactory {
   createDOM(col: LinkColumn): IDOMCellRenderer {
     return {
       template: `<div class='link text'></div>`,

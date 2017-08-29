@@ -7,6 +7,8 @@ import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {matchColumns} from '../utils';
 import {IGroup} from '../model/Group';
+import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
+import {medianIndex} from './BarCellRenderer';
 
 
 export function createData(col: StackColumn, context: IRenderContext<any, any>, nestingPossible: boolean) {
@@ -30,8 +32,9 @@ export function createData(col: StackColumn, context: IRenderContext<any, any>, 
 /**
  * renders a stacked column using composite pattern
  */
-export default class StackCellRenderer implements ICellRendererFactory {
+export default class StackCellRenderer extends AAggregatedGroupRenderer<StackColumn> implements ICellRendererFactory {
   constructor(private readonly nestingPossible: boolean = true) {
+    super();
   }
 
   createDOM(col: StackColumn, context: IDOMRenderContext): IDOMCellRenderer {
@@ -65,5 +68,9 @@ export default class StackCellRenderer implements ICellRendererFactory {
         }
       });
     };
+  }
+
+  protected aggregatedIndex(rows: IDataRow[], col: StackColumn) {
+    return medianIndex(rows, col);
   }
 }
