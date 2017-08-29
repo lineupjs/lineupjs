@@ -72,6 +72,7 @@ abstract class ADialog {
       }).html(this.basicDialog(body));
 
     ADialog.registerPopup($popup);
+    this.hidePopupOnClickOutside($popup);
     return $popup;
   }
 
@@ -108,20 +109,17 @@ abstract class ADialog {
             </form>`;
   }
 
-  hidePopupOnClickOutside(rendererContent: Selection<any>) {
-    //clean up old
-    select('body').on('click', function (this: HTMLElement) {
-      const target = (<MouseEvent>d3event).target;
-      // is none of the content element clicked?
-      const outside = rendererContent.filter(function (this: Element) {
-        return this === target;
-      }).empty();
-      if (outside) {
-        //delete all
+  private hidePopupOnClickOutside(popup: Selection<any>) {
+      const body = select('body');
+      popup.on('click', () => {
+        // don't bubble up click events within the popup
+        (<MouseEvent>d3event).stopPropagation();
+      });
+      body.on('click', () => {
+        // we have a click event which was not in the popup
         ADialog.removeAllPopups();
-        select(this).on('click', null!);
-      }
-    });
+        body.on('click', <any>null);
+      });
   }
 }
 
