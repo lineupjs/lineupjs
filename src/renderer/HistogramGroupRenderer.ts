@@ -7,7 +7,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
 import {computeStats, getNumberOfBins} from '../provider/math';
-import {forEachChild} from 'lineupjs/src/utils';
+import {forEachChild} from '../utils';
 
 
 /**
