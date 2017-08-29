@@ -5,7 +5,7 @@ import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import Column from '../model/Column';
-import {matchRows} from './NumbersCellRenderer';
+import {matchRows} from './ANumbersCellRenderer';
 import {forEachChild} from '../utils';
 import {IGroup} from '../model/Group';
 

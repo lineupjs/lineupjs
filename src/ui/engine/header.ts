@@ -25,7 +25,6 @@ import HierarchyColumn from '../../model/HierarchyColumn';
 import {dragAble, dropAble, IDropResult} from './dnd';
 import {default as NumberColumn, isNumberColumn} from '../../model/NumberColumn';
 import Ranking from '../../model/Ranking';
-import ChangeGroupRendererDialog from '../../dialogs/ChangeGroupRendererDialog';
 import BooleanColumn from '../../model/BooleanColumn';
 import CategoricalColumn from '../../model/CategoricalColumn';
 import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
@@ -83,13 +82,9 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
     addIcon('Sort By', SortDialog);
   }
 
-  if (col.getRendererList().length > 1) {
+  if (col.getRendererList().length > 1 || col.getGroupRenderers().length > 1) {
     //Renderer Change
     addIcon('Change Visualization', ChangeRendererDialog);
-  }
-  if (col.getGroupRenderers().length > 1) {
-    //Renderer Change
-    addIcon('Change Group Visualization', ChangeGroupRendererDialog);
   }
 
   if (col instanceof LinkColumn) {

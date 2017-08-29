@@ -36,8 +36,7 @@
       content: $fa-var-sort;
     }
 
-    &[title='Change Visualization']::before,
-    &[title='Change Group Visualization']::before {
+    &[title='Change Visualization']::before {
       content: $fa-var-exchange;
     }
 

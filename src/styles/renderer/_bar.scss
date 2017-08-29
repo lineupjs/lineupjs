@@ -20,8 +20,7 @@
 }
 
 [data-agg=group] {
-  [data-renderer=number],
-  [data-renderer=circle] {
+  [data-renderer=number] {
     > div > div {
       display: flex;
       align-items: center;
