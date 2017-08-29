@@ -4,7 +4,7 @@
 import Column from '../..//model/Column';
 import {default as CategoricalColumn, ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
 import {ICategoricalStatistics, IStatistics} from '../../model/Column';
-import {INumberColumn, isNumberColumn} from '../../model/NumberColumn';
+import {isNumberColumn} from '../../model/NumberColumn';
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';
 import {IDataProvider} from '../../provider/ADataProvider';
@@ -15,9 +15,9 @@ export default function createSummary(node: HTMLElement, col: Column, ctx: IRank
   if (col instanceof StringColumn) {
     summaryString(col, node);
   } else if (isCategoricalColumn(col)) {
-    summaryCategorical(<ICategoricalColumn & Column>col, node, <ICategoricalStatistics>ctx.statsOf(<ICategoricalColumn & Column>col));
+    summaryCategorical(col, node, <ICategoricalStatistics>ctx.statsOf(col));
   } else if (isNumberColumn(col)) {
-    summaryNumerical(node, <IStatistics>ctx.statsOf(<INumberColumn & Column>col));
+    summaryNumerical(node, <IStatistics>ctx.statsOf(col));
   } else if (col instanceof SelectionColumn) {
     summarySelection(col, node, ctx.provider);
   }

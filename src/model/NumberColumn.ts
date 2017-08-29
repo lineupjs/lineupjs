@@ -7,16 +7,6 @@ import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays} from '../utils';
 
-
-/**
- * checks whether the given column or description is a number column, i.e. the value is a number
- * @param col
- * @returns {boolean}
- */
-export function isNumberColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
-}
-
 export function isMissingValue(v: any) {
   return typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
 }
@@ -85,6 +75,17 @@ export interface INumberFilter {
   min: number;
   max: number;
   filterMissing: boolean;
+}
+
+/**
+ * checks whether the given column or description is a number column, i.e. the value is a number
+ * @param col
+ * @returns {boolean}
+ */
+export function isNumberColumn(col: Column): col is INumberColumn&Column;
+export function isNumberColumn(col: IColumnDesc): col is INumberDesc&IColumnDesc;
+export function isNumberColumn(col: Column | IColumnDesc) {
+  return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }
 
 function toScale(type = 'linear'): IScale {

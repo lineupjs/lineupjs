@@ -9,7 +9,7 @@ import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import NumberColumn, {INumberColumn, isNumberColumn} from '../model/NumberColumn';
-import CategoricalColumn, {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import {createDesc as createStackDesc} from '../model/StackColumn';
 import {createDesc as createNestedDesc} from '../model/NestedColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
@@ -207,7 +207,7 @@ export default class HeaderRenderer {
             }
           });
         });
-        cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: CategoricalColumn) => {
+        cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn&Column) => {
           const header = node.querySelector(`div.header[data-id="${col.id}"]`)!;
           data.forEach((d, i) => {
             const cats = col.getCategories(d, indices[i]);
@@ -461,7 +461,7 @@ export default class HeaderRenderer {
 
     if (this.options.summary) {
 
-      $headers.filter((d) => isCategoricalColumn(d)).each(function (this: HTMLElement, col: CategoricalColumn) {
+      $headers.filter((d) => isCategoricalColumn(d)).each(function (this: HTMLElement, col: ICategoricalColumn & Column) {
         that.renderCategoricalSummary(col, d3.select(this).select('div.summary'));
       });
       $headers.filter((d) => d instanceof NumberColumn).each(function (this: HTMLElement, col: NumberColumn) {

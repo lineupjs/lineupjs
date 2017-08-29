@@ -34,7 +34,7 @@ export interface IGroupData extends IGroup {
   rows: IDataRow[];
 }
 
-export function isGroup(item: IGroupData|IGroupItem) {
+export function isGroup(item: IGroupData|IGroupItem): item is IGroupData {
   return (<IGroupData>item).name !== undefined; // use .name as separator
 }
 

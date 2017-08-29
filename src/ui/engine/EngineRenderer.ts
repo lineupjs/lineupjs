@@ -10,7 +10,7 @@ import {default as RenderColumn, IGroupData, IGroupItem, IRankingBodyContext, is
 import EngineRankingRenderer from './EngineRankingRenderer';
 import {ILineUpRenderer} from '../index';
 import {ILineUpConfig, IRenderingOptions} from '../../lineup';
-import {isCategoricalColumn} from '../../model/CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
 import NumberColumn from '../../model/NumberColumn';
 import {nonUniformContext} from 'lineupengine/src/logic';
 
@@ -99,10 +99,10 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       const order = ranking.getOrder();
       const cols = ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
-      cols.filter((d) => d instanceof NumberColumn && !d.isHidden()).forEach((col: any) => {
+      cols.filter((d) => d instanceof NumberColumn && !d.isHidden()).forEach((col: NumberColumn) => {
         this.histCache.set(col.id, histo === null ? null : histo.stats(col));
       });
-      cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: any) => {
+      cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn&Column) => {
         this.histCache.set(col.id, histo === null ? null : histo.hist(col));
       });
     });

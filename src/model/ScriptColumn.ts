@@ -4,7 +4,7 @@
 
 import Column from './Column';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {INumberColumn, isNumberColumn} from './NumberColumn';
+import {isNumberColumn} from './NumberColumn';
 
 const DEFAULT_SCRIPT = 'max(values)';
 
@@ -110,7 +110,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
     return this.f.call(this,
       this._children,
       this._children.map((d) => d.getValue(row, index)),
-      <number[]>this._children.map((d) => isNumberColumn(d) ? (<INumberColumn><any>d).getRawNumber(row, index) : null),
+      <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row, index) : null),
       row,
       index);
   }

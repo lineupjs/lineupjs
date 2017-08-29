@@ -52,6 +52,8 @@ export declare type ICategoricalDesc = IValueColumnDesc<string> & IBaseCategoric
  * @param col
  * @returns {boolean}
  */
+export function isCategoricalColumn(col: Column): col is ICategoricalColumn & Column;
+export function isCategoricalColumn(col: IColumnDesc): col is ICategoricalDesc;
 export function isCategoricalColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getCategories === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(categorical|ordinal|hierarchy)/) != null));
 }
