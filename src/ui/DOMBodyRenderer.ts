@@ -58,6 +58,8 @@ export default class DOMBodyRenderer extends ABodyRenderer {
 
     const renderDetail = ($this: d3.Selection<IGroupedRangkingData>, ranking: IRankingData, group: IGroupedRangkingData) => {
       $this.selectAll('div.aggregate .cols > *, div.aggregate .frozen > *').remove();
+      $this.select('div.aggregate').style('height', null); //reset height
+
       const $rows = $this.select('div.rows').selectAll('div.row').data(group.order, String);
       const $rowsEnter = $rows.enter().append('div').attr('class', 'row');
       $rowsEnter.style('top', (_d, i) => `${context.cellPrevY(i)}px`);
