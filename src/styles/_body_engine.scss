@@ -18,3 +18,7 @@
     @import './renderer/index';
   }
 }
+
+$engine_assets: "~lineupengine/src/assets";
+
+@import '~lineupengine/src/style';
