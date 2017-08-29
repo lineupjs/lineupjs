@@ -3,13 +3,13 @@
  */
 
 import CompositeColumn, {IMultiLevelColumn} from './CompositeColumn';
-import Column, {IFlatColumn, IColumnDesc} from './Column';
+import Column, {IColumnDesc, IFlatColumn} from './Column';
 import StackColumn from './StackColumn';
 
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
 
-  private readonly adaptChange: (old: number, newValue: number)=>void;
+  private readonly adaptChange: (old: number, newValue: number) => void;
 
   /**
    * whether this stack column is collapsed i.e. just looks like an ordinary number column
@@ -47,7 +47,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     this.collapsed = dump.collapsed === true;
     super.restore(dump, factory);
   }

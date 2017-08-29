@@ -1,4 +1,3 @@
-
 import Column, {IColumnDesc} from './Column';
 import {IGroup} from './Group';
 import Ranking from './Ranking';
@@ -14,8 +13,10 @@ export function createDesc(label: string = 'A') {
 
 export interface IAggregateGroupColumnDesc extends IColumnDesc {
   isAggregated(ranking: Ranking, group: IGroup): boolean;
+
   setAggregated(ranking: Ranking, group: IGroup, value: boolean): void;
 }
+
 /**
  * a checkbox column for selections
  */

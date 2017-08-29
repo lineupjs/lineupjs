@@ -3,23 +3,22 @@
  */
 
 import {
-  isSupportType,
-  IColumnDesc,
-  models,
   createActionDesc,
-  isNumberColumn,
-  createStackDesc,
   createRankDesc,
-  createSelectionDesc
+  createSelectionDesc,
+  createStackDesc,
+  IColumnDesc,
+  isNumberColumn,
+  isSupportType,
+  models
 } from '../model';
-import Column from '../model/Column';
+import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
 import Ranking from '../model/Ranking';
-import {IStatistics, ICategoricalStatistics} from '../model/Column';
 import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import {INumberColumn} from '../model/NumberColumn';
-import {merge, AEventDispatcher, debounce, suffix} from '../utils';
+import {AEventDispatcher, debounce, merge, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
 import {IGroup, IOrderedGroup} from '../model/Group';
@@ -68,9 +67,9 @@ export interface IExportOptions {
 }
 
 export interface IStatsBuilder {
-  stats(col: INumberColumn): Promise<IStatistics>|IStatistics;
+  stats(col: INumberColumn): Promise<IStatistics> | IStatistics;
 
-  hist(col: ICategoricalColumn): Promise<ICategoricalStatistics>|ICategoricalStatistics;
+  hist(col: ICategoricalColumn): Promise<ICategoricalStatistics> | ICategoricalStatistics;
 }
 
 export interface IDataProviderOptions {
@@ -87,22 +86,28 @@ export interface IDataProvider {
   takeSnapshot(col: Column): void;
 
   setSelection(dataIndices: number[]): void;
+
   toggleSelection(dataIndex: number, additional?: boolean): boolean;
+
   isSelected(dataIndex: number): boolean;
 
   removeRanking(ranking: Ranking): void;
+
   ensureOneRanking(): void;
 
-  find(id: string): Column|null;
+  find(id: string): Column | null;
+
   clone(col: Column): Column;
-  create(desc: IColumnDesc): Column|null;
+
+  create(desc: IColumnDesc): Column | null;
 
   toDescRef(desc: IColumnDesc): any;
+
   fromDescRef(ref: any): IColumnDesc;
 
-  mappingSample(col: Column): Promise<number[]>|number[];
+  mappingSample(col: Column): Promise<number[]> | number[];
 
-  searchAndJump(search: string|RegExp, col: Column): void;
+  searchAndJump(search: string | RegExp, col: Column): void;
 }
 
 
@@ -203,7 +208,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_DIRTY_VALUES));
     const that = this;
     //delayed reordering per ranking
-    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function (this: {source: Ranking}) {
+    r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function (this: { source: Ranking }) {
       that.triggerReorder(this.source);
     }, 100, null));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
@@ -292,7 +297,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param desc the description of the column
    * @return {Column} the newly created column or null
    */
-  push(ranking: Ranking, desc: IColumnDesc): Column|null {
+  push(ranking: Ranking, desc: IColumnDesc): Column | null {
     const r = this.create(desc);
     if (r) {
       ranking.push(r);
@@ -345,7 +350,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param desc
    * @returns {Column] the new column or null if it can't be created
    */
-  create(desc: IColumnDesc): Column|null {
+  create(desc: IColumnDesc): Column | null {
     this.fixDesc(desc);
     //find by type and instantiate
     const type = this.columnTypes[desc.type];
@@ -388,7 +393,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param idOrFilter by id or by a filter function
    * @returns {Column}
    */
-  find(idOrFilter: string | ((col: Column) => boolean)): Column|null {
+  find(idOrFilter: string | ((col: Column) => boolean)): Column | null {
     //convert to function
     const filter = typeof(idOrFilter) === 'string' ? (col: Column) => col.id === idOrFilter : idOrFilter;
 
@@ -447,7 +452,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       c.restore(d, this.createHelper);
     }
     return c;
-  }
+  };
 
   restoreRanking(dump: any) {
     const ranking = this.cloneRanking();
@@ -501,7 +506,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     });
   }
 
-  abstract findDesc(ref: string): IColumnDesc|null;
+  abstract findDesc(ref: string): IColumnDesc | null;
 
   /**
    * generates a default ranking by using all column descriptions ones
@@ -597,23 +602,23 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param ranking
    * @return {Promise<any>}
    */
-  abstract sort(ranking: Ranking): Promise<IOrderedGroup[]>|IOrderedGroup[];
+  abstract sort(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[];
 
   /**
    * returns a view in the order of the given indices
    * @param indices
    * @return {Promise<any>}
    */
-  abstract view(indices: number[]): Promise<any[]>|any[];
+  abstract view(indices: number[]): Promise<any[]> | any[];
 
-  abstract fetch(orders: number[][]): Promise<IDataRow>[][]|(IDataRow[][]);
+  abstract fetch(orders: number[][]): Promise<IDataRow>[][] | (IDataRow[][]);
 
   /**
    * returns a data sample used for the mapping editor
    * @param col
    * @return {Promise<any>}
    */
-  abstract mappingSample(col: Column): Promise<number[]>|number[];
+  abstract mappingSample(col: Column): Promise<number[]> | number[];
 
   /**
    * helper for computing statistics
@@ -732,7 +737,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * returns a promise containing the selected rows
    * @return {Promise<any[]>}
    */
-  selectedRows(): Promise<IDataRow[]>|IDataRow[] {
+  selectedRows(): Promise<IDataRow[]> | IDataRow[] {
     if (this.selection.size === 0) {
       return Promise.resolve([]);
     }

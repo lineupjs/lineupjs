@@ -42,7 +42,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
       template: `<div></div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
-        const all = selected >= rows.length /2;
+        const all = selected >= rows.length / 2;
         if (all) {
           n.classList.add('groupSelected');
         } else {

@@ -14,7 +14,7 @@ export default class SeparatedRenderer extends AEventDispatcher {
 
   private readonly body: IBodyRenderer;
   private readonly header: HeaderRenderer;
-  private readonly contentScroller: ContentScroller|null;
+  private readonly contentScroller: ContentScroller | null;
 
   private readonly config: ILineUpConfig;
 

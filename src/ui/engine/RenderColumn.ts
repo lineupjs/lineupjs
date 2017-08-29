@@ -5,7 +5,7 @@ import {IColumn} from 'lineupengine/src';
 import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {IDataProvider, IDataRow} from '../../provider/ADataProvider';
 import {IFilterDialog} from '../../dialogs/AFilterDialog';
-import {createToolbar, createSummary, dragWidth, handleDnD} from './header';
+import {createSummary, createToolbar, dragWidth, handleDnD} from './header';
 import {INumberColumn} from '../../model/NumberColumn';
 import {ICategoricalColumn} from '../../model/CategoricalColumn';
 import {IDOMCellRenderer} from '../../renderer/IDOMCellRenderers';
@@ -16,9 +16,12 @@ export interface IRankingHeaderContextContainer {
   readonly idPrefix: string;
   provider: IDataProvider;
   linkTemplates: string[];
+
   searchAble(col: Column): boolean;
+
   autoRotateLabels: boolean;
   filters: { [type: string]: IFilterDialog };
+
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 }
 
@@ -79,7 +82,6 @@ export default class RenderColumn implements IColumn {
   }
 
 
-
   updateHeader(node: HTMLElement, ctx: IRankingContext) {
     node.querySelector('div.lu-label')!.innerHTML = this.c.label;
     node.title = toFullTooltip(this.c);
@@ -99,7 +101,7 @@ export default class RenderColumn implements IColumn {
     return node;
   }
 
-  updateCell(node: HTMLElement, index: number, ctx: IRankingContext): HTMLElement|void {
+  updateCell(node: HTMLElement, index: number, ctx: IRankingContext): HTMLElement | void {
     node.dataset.renderer = this.rendererId;
     this.renderer.update(node, ctx.getRow(index), index, defaultGroup);
   }

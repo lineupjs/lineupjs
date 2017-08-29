@@ -14,7 +14,7 @@ export interface ICategoricalColumn {
 
   getCategories(row: any, index: number): string[];
 
-  getColor(row: any, index: number): string|null;
+  getColor(row: any, index: number): string | null;
 }
 
 export interface ICategory {
@@ -61,7 +61,7 @@ export interface ICategoricalFilter {
   filterMissing: boolean;
 }
 
-function isEqualFilter(a: ICategoricalFilter|null, b: ICategoricalFilter|null) {
+function isEqualFilter(a: ICategoricalFilter | null, b: ICategoricalFilter | null) {
   if (a === b) {
     return true;
   }
@@ -110,7 +110,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
    * @type {null}
    * @private
    */
-  private currentFilter: ICategoricalFilter|null = null;
+  private currentFilter: ICategoricalFilter | null = null;
 
   /**
    * split multiple categories
@@ -243,7 +243,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if ('filter' in dump) {
       const bak = dump.filter;
@@ -285,7 +285,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
         return filter.indexOf(v) >= 0;
       }
       if (typeof filter === 'string' && filter.length > 0) { //search mode
-        return v != null&& v.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+        return v != null && v.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
       }
       if (filter instanceof RegExp) { //regex match mode
         return v != null && filter.test(v);
@@ -298,7 +298,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter;
   }
 
-  setFilter(filter: ICategoricalFilter|null) {
+  setFilter(filter: ICategoricalFilter | null) {
     if (isEqualFilter(this.currentFilter, filter)) {
       return;
     }

@@ -58,7 +58,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   protected rankAccessor(_row: any, index: number, _id: string, _desc: IColumnDesc, ranking: Ranking) {
     const groups = this.ranks.get(ranking.id) || [];
     let acc = 0;
-    for(const group of groups) {
+    for (const group of groups) {
       const rank = group.order.indexOf(index);
       if (rank >= 0) {
         return acc + rank + 1; // starting with 1
@@ -99,7 +99,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     this.ranks.delete(ranking.id);
   }
 
-  sort(ranking: Ranking): Promise<IOrderedGroup[]>|IOrderedGroup[] {
+  sort(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[] {
     //use the server side to sort
     const r = this.sortImpl(ranking);
     if (Array.isArray(r)) {
@@ -113,7 +113,7 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  protected abstract sortImpl(ranking: Ranking): Promise<IOrderedGroup[]>|IOrderedGroup[];
+  protected abstract sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> | IOrderedGroup[];
 
   /**
    * adds another column description to this data provider

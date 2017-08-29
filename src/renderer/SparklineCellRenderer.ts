@@ -11,7 +11,7 @@ export function line(data: number[]) {
     return '';
   }
   const first = data[0];
-  return `M0,${1-first} ${data.slice(1).map((d,i) => `L${i},${1-d}`).join(' ')}`;
+  return `M0,${1 - first} ${data.slice(1).map((d, i) => `L${i},${1 - d}`).join(' ')}`;
 }
 
 export default class SparklineCellRenderer implements ICellRendererFactory {

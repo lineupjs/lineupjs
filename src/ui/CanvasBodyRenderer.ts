@@ -3,15 +3,12 @@
  */
 
 import {event as d3event, mouse as d3mouse} from 'd3';
-import {merge, createTextHints, hideOverlays} from '../utils';
+import {createTextHints, hideOverlays, merge} from '../utils';
 import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
 import SelectionColumn from '../model/SelectionColumn';
 import {createCanvas, createCanvasGroup} from '../renderer/index';
-import DataProvider, {IDataRow}  from '../provider/ADataProvider';
-import ABodyRenderer, {
-  ISlicer, IRankingData, IBodyRenderContext,
-  IGroupedRangkingData
-} from './ABodyRenderer';
+import DataProvider, {IDataRow} from '../provider/ADataProvider';
+import ABodyRenderer, {IBodyRenderContext, IGroupedRangkingData, IRankingData, ISlicer} from './ABodyRenderer';
 import {ICanvasRenderContext} from '../renderer/RendererContexts';
 
 export interface IStyleOptions {
@@ -161,7 +158,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     return this.currentHover === dataIndex;
   }
 
-  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext&ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number, group: IGroupedRangkingData) {
+  private renderRow(ctx: CanvasRenderingContext2D, context: IBodyRenderContext & ICanvasRenderContext, ranking: IRankingData, di: IDataRow, i: number, group: IGroupedRangkingData) {
     const dataIndex = di.dataIndex;
     let dx = ranking.shift;
     const dy = context.cellY(i) + group.y;
@@ -228,7 +225,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     }));
   }
 
-  private renderGroup(ctx: CanvasRenderingContext2D, ranking: IRankingData, group: IGroupedRangkingData, rows: IDataRow[], hists: Map<string,IStatistics|ICategoricalStatistics>) {
+  private renderGroup(ctx: CanvasRenderingContext2D, ranking: IRankingData, group: IGroupedRangkingData, rows: IDataRow[], hists: Map<string, IStatistics | ICategoricalStatistics>) {
     let dx = ranking.shift;
     const dy = group.y;
     ctx.translate(dx, dy);
@@ -260,7 +257,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.translate(-dx, -dy);
   }
 
-  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext&ICanvasRenderContext) {
+  renderRankings(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext & ICanvasRenderContext) {
 
     const renderRow = this.renderRow.bind(this, ctx, context);
     const renderGroup = this.renderGroup.bind(this, ctx);
@@ -269,7 +266,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     //asynchronous rendering!!!
     const all = Promise.all.bind(Promise);
     return all(data.map((ranking) => {
-      let histMap: Promise<Map<string, IStatistics|ICategoricalStatistics>>;
+      let histMap: Promise<Map<string, IStatistics | ICategoricalStatistics>>;
       return all(ranking.groups.map((group) => {
         if (group.aggregate) {
           if (histMap == null) {
@@ -293,7 +290,12 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   }
 
   renderSlopeGraphs(ctx: CanvasRenderingContext2D, data: IRankingData[], context: IBodyRenderContext & ICanvasRenderContext) {
-    const slopes = data.slice(1).map((d, i) => ({left: data[i].groups[0].order, left_i: i, right: d.groups[0].order, right_i: i + 1}));
+    const slopes = data.slice(1).map((d, i) => ({
+      left: data[i].groups[0].order,
+      left_i: i,
+      right: d.groups[0].order,
+      right_i: i + 1
+    }));
     ctx.save();
     ctx.strokeStyle = this.style('slope');
     slopes.forEach((slope, i) => {
@@ -334,7 +336,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     ctx.restore();
   }
 
-  protected createContextImpl(indexShift: number, totalNumberOfRows: number): ICanvasRenderContext&IBodyRenderContext {
+  protected createContextImpl(indexShift: number, totalNumberOfRows: number): ICanvasRenderContext & IBodyRenderContext {
     const base: any = this.createContext(indexShift, totalNumberOfRows, createCanvas, createCanvasGroup);
     base.hovered = this.isHovered.bind(this);
     base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);

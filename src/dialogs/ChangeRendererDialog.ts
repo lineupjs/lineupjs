@@ -17,7 +17,7 @@ export default class ChangeRendererDialog extends ADialog {
     }).join('\n'));
 
     const that = this;
-    d3.selectAll('input[name="renderertype"]').on('change', function(this: HTMLInputElement) {
+    d3.selectAll('input[name="renderertype"]').on('change', function (this: HTMLInputElement) {
       that.column.setRendererType(this.value);
     });
   }

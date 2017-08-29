@@ -8,9 +8,9 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import AAggregatedGroupRenderer from './AAggregatedGroupRenderer';
 import {medianIndex} from './BarCellRenderer';
 
-export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumberColumn&Column> implements ICellRendererFactory {
+export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
 
-  constructor(private colorOf: (d: any, i: number, col: Column) => string|null = (_d, _i, col) => col.color) {
+  constructor(private colorOf: (d: any, i: number, col: Column) => string | null = (_d, _i, col) => col.color) {
     super();
   }
 
@@ -24,7 +24,7 @@ export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumber
         const p = Math.round(v * 100);
         attr(<HTMLElement>n, {}, {
           background: `radial-gradient(circle closest-side, ${this.colorOf(d.v, d.dataIndex, col)} ${p}%, transparent ${p}%)`
-        }, );
+        },);
         setText(n.firstElementChild!, col.getLabel(d.v, d.dataIndex));
       }
     };

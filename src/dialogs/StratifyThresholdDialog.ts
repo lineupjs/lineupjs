@@ -20,7 +20,7 @@ export default class StratifyThresholdDialog extends ADialog {
     const t = `<input
         type="number"
         size="15"
-        value="${bak.length > 0 ? bak[0] : (domain[1] - domain[0])/2}"
+        value="${bak.length > 0 ? bak[0] : (domain[1] - domain[0]) / 2}"
         required="required"
         autofocus="autofocus"
         min="${domain[0]}"

@@ -39,6 +39,7 @@ export interface IBodyRenderer extends AEventDispatcher {
 
 export interface IBodyRenderContext extends IRenderContext<any, any> {
   cellY(index: number): number;
+
   cellPrevY(index: number): number;
 }
 
@@ -52,7 +53,7 @@ export interface IRankingColumnData {
 export interface IGroupedRangkingData {
   readonly group: IGroup;
   readonly order: number[];
-  readonly data: (Promise<IDataRow>|IDataRow)[];
+  readonly data: (Promise<IDataRow> | IDataRow)[];
   /**
    * if true render the aggregated group else render details
    */
@@ -201,9 +202,9 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     return this.data.isAggregated(ranking, group);
   }
 
-  protected resolveHistMap(ranking: IRankingData): Promise<Map<string, IStatistics|ICategoricalStatistics>> {
+  protected resolveHistMap(ranking: IRankingData): Promise<Map<string, IStatistics | ICategoricalStatistics>> {
     return Promise.all(ranking.columns.map((col) => Promise.resolve(this.histCache.get(col.column.id)!))).then((hists) => {
-      const m = new Map<string, IStatistics|ICategoricalStatistics>();
+      const m = new Map<string, IStatistics | ICategoricalStatistics>();
       hists.forEach((hist, i) => {
         if (hist) {
           m.set(ranking.columns[i].column.id, hist);

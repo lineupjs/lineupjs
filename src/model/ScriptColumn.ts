@@ -69,7 +69,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
   static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;
 
   private script = ScriptColumn.DEFAULT_SCRIPT;
-  private f: Function|null = null;
+  private f: Function | null = null;
 
   constructor(id: string, desc: IScriptColumnDesc) {
     super(id, desc);
@@ -98,7 +98,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     this.script = dump.script || this.script;
     super.restore(dump, factory);
   }

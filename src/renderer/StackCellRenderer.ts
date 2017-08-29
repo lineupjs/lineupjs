@@ -1,7 +1,7 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import StackColumn from '../model/StackColumn';
 import IRenderContext from './IRenderContext';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
@@ -10,22 +10,22 @@ import {IGroup} from '../model/Group';
 
 
 export function createData(col: StackColumn, context: IRenderContext<any, any>, nestingPossible: boolean) {
-    const stacked = nestingPossible && context.option('stacked', true);
-    const padding = context.option('columnPadding', 0);
-    let offset = 0;
-    return col.children.map((d) => {
-      const shift = offset;
-      offset += d.getActualWidth();
-      offset += (!stacked ? padding : 0);
-      return {
-        column: d,
-        shift,
-        stacked,
-        renderer: context.renderer(d),
-        groupRenderer: context.groupRenderer(d)
-      };
-    });
-  }
+  const stacked = nestingPossible && context.option('stacked', true);
+  const padding = context.option('columnPadding', 0);
+  let offset = 0;
+  return col.children.map((d) => {
+    const shift = offset;
+    offset += d.getActualWidth();
+    offset += (!stacked ? padding : 0);
+    return {
+      column: d,
+      shift,
+      stacked,
+      renderer: context.renderer(d),
+      groupRenderer: context.groupRenderer(d)
+    };
+  });
+}
 
 /**
  * renders a stacked column using composite pattern

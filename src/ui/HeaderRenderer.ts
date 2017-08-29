@@ -3,12 +3,12 @@
  */
 
 import * as d3 from 'd3';
-import {merge, dropAble, debounce, forEach, dragAble, suffix} from '../utils';
-import Column, {IStatistics, ICategoricalStatistics, IFlatColumn} from '../model/Column';
+import {debounce, dragAble, dropAble, forEach, merge, suffix} from '../utils';
+import Column, {ICategoricalStatistics, IFlatColumn, IStatistics} from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import NumberColumn, {isNumberColumn, INumberColumn} from '../model/NumberColumn';
+import NumberColumn, {INumberColumn, isNumberColumn} from '../model/NumberColumn';
 import CategoricalColumn, {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import {createDesc as createStackDesc} from '../model/StackColumn';
 import {createDesc as createNestedDesc} from '../model/NestedColumn';
@@ -86,7 +86,7 @@ export default class HeaderRenderer {
     });
 
   private readonly dropHandler = dropAble([`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (data, d: Column, copy) => {
-    let col: Column|null = null;
+    let col: Column | null = null;
     if (`${MIMETYPE_PREFIX}-ref` in data) {
       const id = data[`${MIMETYPE_PREFIX}-ref`];
       col = this.data.find(id);
@@ -297,10 +297,10 @@ export default class HeaderRenderer {
       statsOf: () => null
     }, this.options);
 
-    $node.each(function(this: HTMLElement, col) {
+    $node.each(function (this: HTMLElement, col) {
       const $this = d3.select(this);
       const addIcon = (title: string, dialogClass?: { new(col: any, header: d3.Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
-        const proxy: { onclick: (e: MouseEvent)=>any } = {onclick: () => undefined};
+        const proxy: { onclick: (e: MouseEvent) => any } = {onclick: () => undefined};
         $this.append('i').attr('title', title).html(`<span aria-hidden="true">${title}</span>`).on('click', function () {
           proxy.onclick(<MouseEvent>d3.event);
         });
@@ -401,8 +401,8 @@ export default class HeaderRenderer {
 
     $headers.select('span.lu-label').text((d) => d.label);
 
-    const resolveDrop = (data: {[key: string]: string}, copy: boolean, numbersOnly: boolean) => {
-      const prefix = `${MIMETYPE_PREFIX}${numbersOnly?'-number':''}`;
+    const resolveDrop = (data: { [key: string]: string }, copy: boolean, numbersOnly: boolean) => {
+      const prefix = `${MIMETYPE_PREFIX}${numbersOnly ? '-number' : ''}`;
       if (`${prefix}-ref` in data) {
         const id = data[`${prefix}-ref`];
         let col: Column = this.data.find(id)!;
@@ -441,14 +441,14 @@ export default class HeaderRenderer {
 
     const justNumbers = (d: Column) => (d instanceof CompositeColumn && d.canJustAddNumbers) || (isNumberColumn(d) && d.parent instanceof Ranking);
     const dropOrMerge = (justNumbers: boolean) => {
-      return (data: {[key: string]: string}, d: CompositeColumn|(Column & INumberColumn), copy: boolean) => {
+      return (data: { [key: string]: string }, d: CompositeColumn | (Column & INumberColumn), copy: boolean) => {
         const col: Column = resolveDrop(data, copy, justNumbers);
         if (d instanceof CompositeColumn) {
           return (d.push(col) !== null);
         }
         const ranking = d.findMyRanker()!;
         const index = ranking.indexOf(d);
-        const parent = <CompositeColumn>this.data.create(justNumbers ? createStackDesc(): createNestedDesc());
+        const parent = <CompositeColumn>this.data.create(justNumbers ? createStackDesc() : createNestedDesc());
         d.removeMe();
         parent.push(d);
         parent.push(col);

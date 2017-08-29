@@ -1,21 +1,26 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import {median, quantile, mean, scale as d3scale, ascending, format} from 'd3';
+import {ascending, format, mean, median, quantile, scale as d3scale} from 'd3';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {
-  IBoxPlotColumn, IBoxPlotData, SORT_METHOD as BASE_SORT_METHOD, SortMethod, compareBoxPlot, getBoxPlotNumber
+  compareBoxPlot,
+  getBoxPlotNumber,
+  IBoxPlotColumn,
+  IBoxPlotData,
+  SORT_METHOD as BASE_SORT_METHOD,
+  SortMethod
 } from './BoxPlotColumn';
 import {merge} from '../utils';
 import NumberColumn, {
-  INumberColumn,
-  IMappingFunction,
   createMappingFunction,
-  ScaleMappingFunction,
   IMapAbleColumn,
+  IMappingFunction,
+  INumberColumn,
   INumberFilter,
-  noNumberFilter
+  noNumberFilter,
+  ScaleMappingFunction
 } from './NumberColumn';
 
 
@@ -29,16 +34,16 @@ export interface IAdvancedBoxPlotData extends IBoxPlotData {
 
 
 export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
-  getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData|null;
+  getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData | null;
 
-  getRawBoxPlotData(row: any, index: number): IAdvancedBoxPlotData|null;
+  getRawBoxPlotData(row: any, index: number): IAdvancedBoxPlotData | null;
 }
 
 /**
  * helper class to lazily compute box plotdata out of a given number array
  */
 export class LazyBoxPlotData implements IAdvancedBoxPlotData {
-  private _sorted: number[]|null = null;
+  private _sorted: number[] | null = null;
 
   constructor(private readonly values: number[], private readonly scale?: IMappingFunction) {
   }
@@ -280,7 +285,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;

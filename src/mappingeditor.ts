@@ -2,9 +2,9 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {select, scale, behavior, Selection, event as d3event, mouse, selectAll} from 'd3';
+import {behavior, event as d3event, mouse, scale, select, selectAll, Selection} from 'd3';
 import {merge} from './utils';
-import {INumberFilter, IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
+import {IMappingFunction, INumberFilter, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
 import {filterMissingText} from './dialogs/AFilterDialog';
 
 

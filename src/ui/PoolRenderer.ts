@@ -2,9 +2,9 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {Selection, round, select, event as d3event} from 'd3';
+import {event as d3event, round, select, Selection} from 'd3';
 import {merge, suffix} from '../utils';
-import {IColumnDesc, isNumberColumn, Column} from '../model';
+import {Column, IColumnDesc, isNumberColumn} from '../model';
 import DataProvider from '../provider/ADataProvider';
 import Ranking from '../model/Ranking';
 import {toFullTooltip} from './engine/RenderColumn';
@@ -54,7 +54,7 @@ export default class PoolRenderer {
   changeDataStorage(data: DataProvider) {
     if (this.data) {
       this.data.on(suffix('.pool', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN,
-        DataProvider.EVENT_ADD_RANKING , DataProvider.EVENT_REMOVE_RANKING,
+        DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
         DataProvider.EVENT_ADD_DESC), null);
     }
     this.data = data;
@@ -67,7 +67,7 @@ export default class PoolRenderer {
       return;
     }
     const that = this;
-    data.on(suffix('.pool', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN), function (this: {type: string}, col) {
+    data.on(suffix('.pool', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN), function (this: { type: string }, col) {
       const desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
       that.entries.some((entry) => {
         if (entry.desc !== desc) {
@@ -78,7 +78,7 @@ export default class PoolRenderer {
       });
       that.update();
     });
-    data.on(suffix('.pool', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING), function (this: {type: string}, ranking: Ranking) {
+    data.on(suffix('.pool', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING), function (this: { type: string }, ranking: Ranking) {
       const descs = ranking.flatColumns.map((d) => d.desc), change = this.type === 'addRanking' ? 1 : -1;
       that.entries.some((entry) => {
         if (descs.indexOf(entry.desc) < 0) {
@@ -107,7 +107,7 @@ export default class PoolRenderer {
       return;
     }
     this.data.on(suffix('.pool', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN,
-      DataProvider.EVENT_ADD_RANKING , DataProvider.EVENT_REMOVE_RANKING,
+      DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
       DataProvider.EVENT_ADD_DESC), null);
   }
 

@@ -5,12 +5,7 @@
 
 import Column, {IColumnDesc} from './model/Column';
 import DataProvider from './provider/ADataProvider';
-import {
-  createRenderer,
-  ILineUpRenderer,
-  IPoolRendererOptions,
-  PoolRenderer
-} from './ui';
+import {createRenderer, ILineUpRenderer, IPoolRendererOptions, PoolRenderer} from './ui';
 import {IHeaderRendererOptions} from './ui/HeaderRenderer';
 import {default as ABodyRenderer, IBodyRendererOptions} from './ui/ABodyRenderer';
 import {AEventDispatcher, merge} from './utils';
@@ -81,7 +76,7 @@ export interface ILineUpConfig {
   /**
    * automatically add a column pool at the end
    */
-  pool: boolean|IPoolRendererOptions;
+  pool: boolean | IPoolRendererOptions;
 
   /**
    * the renderer to use for rendering the columns
@@ -180,7 +175,6 @@ export default class LineUp extends AEventDispatcher {
   get node() {
     return <Element>this.$container.node();
   }
-
 
 
   /**

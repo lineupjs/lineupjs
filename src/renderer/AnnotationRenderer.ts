@@ -3,7 +3,7 @@ import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {showOverlay, clipText} from '../utils';
+import {clipText, showOverlay} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 
 export default class AnnotationRenderer implements ICellRendererFactory {

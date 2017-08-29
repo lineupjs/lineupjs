@@ -50,7 +50,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     if (dump.missingValue !== undefined) {
       this.missingValue = dump.missingValue;
     }

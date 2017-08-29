@@ -5,7 +5,7 @@
 import {merge} from '../utils';
 import Column, {IColumnDesc} from '../model/Column';
 import Ranking from '../model/Ranking';
-import {IStatsBuilder, IDataRow, IDataProviderOptions} from './ADataProvider';
+import {IDataProviderOptions, IDataRow, IStatsBuilder} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 import {defaultGroup, IOrderedGroup} from '../model/Group';
 

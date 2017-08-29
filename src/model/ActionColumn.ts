@@ -7,6 +7,7 @@ import Column, {IColumnDesc} from './Column';
 export interface IAction {
   name: string;
   icon: string;
+
   action(v: any, dataIndex: number): void;
 }
 

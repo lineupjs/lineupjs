@@ -69,7 +69,6 @@ export function defineColumn<T>(name: string, functions: any = {}) {
 }
 
 
-
 /**
  * a map of all known column types
  */

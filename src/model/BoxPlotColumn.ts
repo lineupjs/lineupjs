@@ -5,13 +5,13 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {format} from 'd3';
 import NumberColumn, {
-  INumberColumn,
-  IMappingFunction,
   createMappingFunction,
-  ScaleMappingFunction,
   IMapAbleColumn,
+  IMappingFunction,
+  INumberColumn,
   INumberFilter,
-  noNumberFilter
+  noNumberFilter,
+  ScaleMappingFunction
 } from './NumberColumn';
 
 export const SORT_METHOD = {
@@ -27,9 +27,9 @@ export declare type SortMethod = string;
 
 
 export interface IBoxPlotColumn extends INumberColumn {
-  getBoxPlotData(row: any, index: number): IBoxPlotData|null;
+  getBoxPlotData(row: any, index: number): IBoxPlotData | null;
 
-  getRawBoxPlotData(row: any, index: number): IBoxPlotData|null;
+  getRawBoxPlotData(row: any, index: number): IBoxPlotData | null;
 
   getSortMethod(): string;
 
@@ -126,11 +126,11 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return compareBoxPlot(this, a, b, aIndex, bIndex);
   }
 
-  getBoxPlotData(row: any, index: number): IBoxPlotData|null {
+  getBoxPlotData(row: any, index: number): IBoxPlotData | null {
     return this.getValue(row, index);
   }
 
-  getRawBoxPlotData(row: any, index: number): IBoxPlotData|null {
+  getRawBoxPlotData(row: any, index: number): IBoxPlotData | null {
     return this.getRawValue(row, index);
   }
 
@@ -192,7 +192,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;

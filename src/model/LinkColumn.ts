@@ -24,7 +24,7 @@ export default class LinkColumn extends StringColumn {
    * a pattern used for generating the link, $1 is replaced with the actual value
    * @type {null}
    */
-  private link: string|null = null;
+  private link: string | null = null;
 
   constructor(id: string, desc: ILinkColumnDesc) {
     super(id, desc);
@@ -62,7 +62,7 @@ export default class LinkColumn extends StringColumn {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if (dump.link) {
       this.link = dump.link;

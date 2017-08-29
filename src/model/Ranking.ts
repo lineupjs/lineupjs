@@ -2,9 +2,9 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import Column, {IColumnParent, fixCSS, IFlatColumn, IColumnDesc} from './Column';
+import Column, {fixCSS, IColumnDesc, IColumnParent, IFlatColumn} from './Column';
 import StringColumn from './StringColumn';
-import {IOrderedGroup, defaultGroup} from './Group';
+import {defaultGroup, IOrderedGroup} from './Group';
 import {AEventDispatcher, suffix} from '../utils';
 
 export interface ISortCriteria {
@@ -43,7 +43,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    */
   private readonly sortCriterias: ISortCriteria[] = [];
 
-  private groupColumn: Column|null = null;
+  private groupColumn: Column | null = null;
 
   /**
    * columns of this ranking
@@ -63,18 +63,18 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       }
     }
     return 0;
-  }
+  };
 
   readonly grouper = (row: any, index: number) => {
     if (this.groupColumn === null) {
       return defaultGroup;
     }
     return this.groupColumn.group(row, index);
-  }
+  };
 
   readonly dirtyOrder = () => {
     this.fire([Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], this.getSortCriteria());
-  }
+  };
 
   /**
    * the current ordering as an sorted array of indices
@@ -137,7 +137,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     this.clear();
     dump.columns.map((child: any) => {
       const c = factory(child);
@@ -163,7 +163,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       });
       this.setSortCriterias(sortCriterias);
     }
-    const sortCriterias = dump.sortCriterias.map((s: {asc: boolean, sortBy: string}) => {
+    const sortCriterias = dump.sortCriterias.map((s: { asc: boolean, sortBy: string }) => {
       return {
         asc: s.asc,
         col: this.columns.find((d) => d.id === s.sortBy) || null
@@ -184,14 +184,14 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return acc - offset;
   }
 
-  private get primarySortCriteria(): ISortCriteria|null {
+  private get primarySortCriteria(): ISortCriteria | null {
     if (this.sortCriterias.length === 0) {
       return null;
     }
     return this.sortCriterias[0];
   }
 
-  getSortCriteria(): ISortCriteria|null {
+  getSortCriteria(): ISortCriteria | null {
     const p = this.primarySortCriteria;
     return p === null ? null : Object.assign({}, p);
   }
@@ -220,7 +220,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.groupBy(col);
   }
 
-  groupBy(col: Column|null) {
+  groupBy(col: Column | null) {
     if (this.groupColumn === col) {
       return true; //already this group
     }
@@ -266,7 +266,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return true;
   }
 
-  sortBy(col: Column|null, ascending: boolean = false) {
+  sortBy(col: Column | null, ascending: boolean = false) {
     if (col !== null && col.findMyRanker() !== this) {
       return false; //not one of mine
     }

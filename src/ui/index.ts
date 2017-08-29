@@ -14,10 +14,15 @@ export {ISlicer, IBodyRenderer} from './ABodyRenderer';
 
 export interface ILineUpRenderer extends AEventDispatcher {
   destroy(): void;
+
   update(): void;
+
   changeDataStorage(data: DataProvider): void;
+
   scrollIntoView(length: number, index: number): void;
-  fakeHover(index: number):void;
+
+  fakeHover(index: number): void;
+
   setBodyOption(option: keyof IRenderingOptions, value: boolean): void;
 }
 

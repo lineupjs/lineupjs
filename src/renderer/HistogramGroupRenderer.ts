@@ -1,7 +1,7 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column, {IStatistics} from '../model/Column';
 import {INumberColumn} from '../model/NumberColumn';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
@@ -22,7 +22,7 @@ export default class HistogramGroupRenderer implements ICellRendererFactory {
     }
     return {
       template: `<div>${bins}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: IStatistics|null) => {
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: IStatistics | null) => {
         const bins = globalHist ? globalHist.hist.length : guessedBins;
         const {maxBin, hist} = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), [0, 1], bins);
 
@@ -48,7 +48,7 @@ export default class HistogramGroupRenderer implements ICellRendererFactory {
   createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const guessedBins = getNumberOfBins(context.totalNumberOfRows);
     const padding = context.option('rowBarPadding', 1);
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], _dx: number, _dy: number, globalHist: IStatistics|null) => {
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], _dx: number, _dy: number, globalHist: IStatistics | null) => {
       const total = context.groupHeight(group) - padding;
       const bins = globalHist ? globalHist.hist.length : guessedBins;
       const widthPerBin = context.colWidth(col) / bins;

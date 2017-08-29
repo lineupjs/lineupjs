@@ -8,11 +8,10 @@ import Ranking from '../model/Ranking';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import {merge} from '../utils';
 import * as d3 from 'd3';
-import {IStatsBuilder, IDataProviderOptions, IDataRow} from './ADataProvider';
+import {IDataProviderOptions, IDataRow, IStatsBuilder} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 import {computeHist, computeStats} from './math';
 import {defaultGroup, IGroup, IOrderedGroup} from '../model/Group';
-
 
 
 export interface ILocalDataProviderOptions {
@@ -56,7 +55,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
 
     const that = this;
-    this.reorderAll = function (this: {source: Ranking}) {
+    this.reorderAll = function (this: { source: Ranking }) {
       //fire for all other rankings a dirty order event, too
       const ranking = this.source;
       that.getRankings().forEach((r) => {
@@ -119,7 +118,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return [];
     }
     //wrap in a helper and store the initial index
-    let helper = this._data.map((r, i) => ({row: r, i, group: <IGroup|null>null}));
+    let helper = this._data.map((r, i) => ({row: r, i, group: <IGroup | null>null}));
 
     //do the optional filtering step
     if (this.options.filterGlobally) {
@@ -190,7 +189,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
    * @returns {{stats: (function(INumberColumn): *), hist: (function(ICategoricalColumn): *)}}
    */
   stats(indices: number[]): IStatsBuilder {
-    let d: any[]|null = null;
+    let d: any[] | null = null;
     const getD = () => {
       if (d === null) {
         d = this.viewRaw(indices);

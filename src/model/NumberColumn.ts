@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {scale, format} from 'd3';
+import {format, scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays} from '../utils';
@@ -21,7 +21,7 @@ export function isMissingValue(v: any) {
   return typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
 }
 
-function isUnknown(v?: number|null) {
+function isUnknown(v?: number | null) {
   return v === null || v === undefined || isNaN(v);
 }
 
@@ -31,7 +31,7 @@ function isUnknown(v?: number|null) {
  * @param b
  * @return {number}
  */
-export function numberCompare(a: number|null, b: number|null) {
+export function numberCompare(a: number | null, b: number | null) {
   if (a === null || isNaN(a)) { //NaN are smaller
     return (b === null || isNaN(b)) ? 0 : -1;
   }
@@ -254,7 +254,7 @@ export function createMappingFunction(dump: any): IMappingFunction {
   return l;
 }
 
-export interface INumberDesc  {
+export interface INumberDesc {
   /**
    * dump of mapping function
    */
@@ -344,7 +344,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
     this.setRendererList(
       [{type: 'number', label: 'Bar'}, {type: 'circle', label: 'Circle'}, {type: 'default', label: 'String'}],
-      [{type: 'histogram', label: 'Histogram'}, {type: 'boxplot', label: 'BoxPlot'}, {type: 'number', label: 'Median Bar'}, {type: 'circle', label: 'Median Circle'}]);
+      [{type: 'histogram', label: 'Histogram'}, {type: 'boxplot', label: 'BoxPlot'}, {
+        type: 'number',
+        label: 'Median Bar'
+      }, {type: 'circle', label: 'Median Circle'}]);
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -358,7 +361,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);
@@ -535,15 +538,21 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     const value = this.getRawNumber(row, index);
     const treshholdIndex = this.currentStratifyThresholds.findIndex((t) => t <= value);
     // group by thresholds / bins
-    switch(treshholdIndex) {
+    switch (treshholdIndex) {
       case -1:
         //bigger than the last threshold
-        return {name: `v > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length-1]}`, color: 'gray'};
+        return {
+          name: `v > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length - 1]}`,
+          color: 'gray'
+        };
       case 0:
         //smallest
         return {name: `v <= ${this.currentStratifyThresholds[0]}`, color: 'gray'};
       default:
-        return {name: `${this.currentStratifyThresholds[index-1]} <= v <= ${this.currentStratifyThresholds[index]}`, color: 'gray'};
+        return {
+          name: `${this.currentStratifyThresholds[index - 1]} <= v <= ${this.currentStratifyThresholds[index]}`,
+          color: 'gray'
+        };
     }
   }
 

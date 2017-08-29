@@ -1,5 +1,3 @@
-
-
 import {DefaultCellRenderer} from './DefaultCellRenderer';
 import {ICanvasRenderContext} from './RendererContexts';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';

@@ -67,11 +67,11 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     const selected = new Set(dataIndices);
     this.forEachRow((node: HTMLElement) => {
       const dataIndex = parseInt(node.dataset.dataIndex!, 10);
-        if (selected.has(dataIndex)) {
-          node.classList.add('lu-selected');
-        } else {
-          node.classList.remove('lu-selected');
-        }
+      if (selected.has(dataIndex)) {
+        node.classList.add('lu-selected');
+      } else {
+        node.classList.remove('lu-selected');
+      }
     }, true);
   }
 

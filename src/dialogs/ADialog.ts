@@ -1,5 +1,5 @@
 import {offset} from '../utils';
-import {Selection, select, event as d3event, behavior} from 'd3';
+import {behavior, event as d3event, select, Selection} from 'd3';
 
 
 abstract class ADialog {
@@ -86,7 +86,7 @@ abstract class ADialog {
             </form>`;
   }
 
-  protected onButton($popup: Selection<any>, handler: {submit: ()=>boolean, reset: ()=>void, cancel: ()=>void}) {
+  protected onButton($popup: Selection<any>, handler: { submit: () => boolean, reset: () => void, cancel: () => void }) {
     $popup.select('.cancel').on('click', () => {
       handler.cancel();
       $popup.remove();

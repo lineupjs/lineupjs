@@ -26,7 +26,7 @@ import LoadingCellRenderer from './LoadingCellRenderer';
 import ThresholdCellRenderer from './ThresholdCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
 import MostCategoricalGroupRenderer from './MostCategoricalGroupRenderer';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import {EmptyCellRenderer} from './EmptyCellRenderer';
 import RankCellRenderer from './RankCellRenderer';
 import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
@@ -80,7 +80,7 @@ function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFa
   return r || defaultCellRenderer;
 }
 
-function chooseGroupRenderer(col: Column, renderers: {[key: string]: ICellRendererFactory}): ICellRendererFactory {
+function chooseGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getGroupRenderer()];
   return r || defaultCellRenderer;
 }

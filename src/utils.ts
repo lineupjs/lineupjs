@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {dispatch, select, event as d3event, Dispatch, Selection} from 'd3';
+import {dispatch, Dispatch, event as d3event, select, Selection} from 'd3';
 import Column from './model/Column';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
 
@@ -83,8 +83,8 @@ export class AEventDispatcher {
   }
 
   on(type: string): (...args: any[]) => void;
-  on(type: string | string[], listener: ((...args: any[]) => any)|null): AEventDispatcher;
-  on(type: string | string[], listener?: ((...args: any[]) => any)|null): any {
+  on(type: string | string[], listener: ((...args: any[]) => any) | null): AEventDispatcher;
+  on(type: string | string[], listener?: ((...args: any[]) => any) | null): any {
     if (listener !== undefined) {
       if (Array.isArray(type)) {
         (<string[]>type).forEach((d) => this.listeners.on(d, listener!));
@@ -105,7 +105,7 @@ export class AEventDispatcher {
   }
 
   protected fire(type: string | string[], ...args: any[]) {
-    const primaryType = Array.isArray(type) ? type[0]: type;
+    const primaryType = Array.isArray(type) ? type[0] : type;
     const fireImpl = (t: string) => {
       //local context per event, set a this argument
       const context: IEventContext = {
@@ -351,7 +351,7 @@ export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
  * helper storage for dnd in edge since edge doesn't support custom mime-types
  * @type {Map<string, {[p: string]: string}>}
  */
-const dndTransferStorage = new Map<string, {[key: string]:string}>();
+const dndTransferStorage = new Map<string, { [key: string]: string }>();
 
 function isEdgeDnD(e: DragEvent) {
   return dndTransferStorage.size > 0 && hasDnDType(e, ['text/plain']);
@@ -381,36 +381,36 @@ export function updateDropEffect(e: DragEvent) {
   }
 }
 
-export function dragAble<T extends {id: string}>(onDragStart: (d: T) => {effectAllowed: 'none'|'copy'|'copyLink'|'copyMove'|'link'|'linkMove'|'move'|'all', data: {[key: string]: string}}) {
+export function dragAble<T extends { id: string }>(onDragStart: (d: T) => { effectAllowed: 'none' | 'copy' | 'copyLink' | 'copyMove' | 'link' | 'linkMove' | 'move' | 'all', data: { [key: string]: string } }) {
   return ($node: Selection<T>) => {
-      $node.on('dragstart', (d) => {
-        const e = <DragEvent>(<any>d3event);
-        const payload = onDragStart(d);
-        e.dataTransfer.effectAllowed = payload.effectAllowed;
+    $node.on('dragstart', (d) => {
+      const e = <DragEvent>(<any>d3event);
+      const payload = onDragStart(d);
+      e.dataTransfer.effectAllowed = payload.effectAllowed;
 
-        const keys = Object.keys(payload.data);
-        const allSucceded = keys.every((k) => {
-          try {
-            e.dataTransfer.setData(k, payload.data[k]);
-            return true;
-          } catch(e) {
-            return false;
-          }
-        });
-        if (allSucceded) {
-          return;
-        }
-        //compatibility mode for edge
-        const text = payload.data['text/plain'] || '';
-        e.dataTransfer.setData('text/plain', `${d.id}${text ? `: ${text}`: ''}`);
-          dndTransferStorage.set(d.id, payload.data);
-      }).on('dragend', (d) =>  {
-        if (dndTransferStorage.size > 0) {
-          //clear the id
-          dndTransferStorage.delete(d.id);
+      const keys = Object.keys(payload.data);
+      const allSucceded = keys.every((k) => {
+        try {
+          e.dataTransfer.setData(k, payload.data[k]);
+          return true;
+        } catch (e) {
+          return false;
         }
       });
-    };
+      if (allSucceded) {
+        return;
+      }
+      //compatibility mode for edge
+      const text = payload.data['text/plain'] || '';
+      e.dataTransfer.setData('text/plain', `${d.id}${text ? `: ${text}` : ''}`);
+      dndTransferStorage.set(d.id, payload.data);
+    }).on('dragend', (d) => {
+      if (dndTransferStorage.size > 0) {
+        //clear the id
+        dndTransferStorage.delete(d.id);
+      }
+    });
+  };
 }
 
 /**
@@ -619,8 +619,8 @@ export function hideOverlays(parentElement: HTMLElement) {
  * @param {{column: Column; renderer: IDOMCellRenderer}[]} columns columns to check
  * @param {string} helperType create types of
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer, groupRenderer: IDOMGroupRenderer}[], render: 'group'|'detail', helperType = 'svg') {
-  const renderer = render === 'detail' ? (col: {column: Column}) => col.column.getRendererType() : (col: {column: Column}) => col.column.getGroupRenderer();
+export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer, groupRenderer: IDOMGroupRenderer }[], render: 'group' | 'detail', helperType = 'svg') {
+  const renderer = render === 'detail' ? (col: { column: Column }) => col.column.getRendererType() : (col: { column: Column }) => col.column.getGroupRenderer();
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => (render === 'detail' ? c.renderer : c.groupRenderer).template).join('');

@@ -223,7 +223,12 @@ export default class DOMBodyRenderer extends ABodyRenderer {
   }
 
   renderSlopeGraphs($parent: d3.Selection<any>, data: IRankingData[], context: IBodyRenderContext & IDOMRenderContext, height: number) {
-    const slopes = data.slice(1).map((d, i) => ({left: data[i].groups[0].order, left_i: i, right: d.groups[0].order, right_i: i + 1}));
+    const slopes = data.slice(1).map((d, i) => ({
+      left: data[i].groups[0].order,
+      left_i: i,
+      right: d.groups[0].order,
+      right_i: i + 1
+    }));
 
     const $slopes = $parent.selectAll('svg.slopegraph').data(slopes);
     $slopes.enter().append('svg').attr('class', 'slopegraph');

@@ -49,8 +49,8 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
           return;
         }
         line.style.display = null;
-        line.style.left = `${Math.round(100 * (left + 0.5)/value.length)}%`;
-        line.style.width = `${Math.round(100 * (right - left)/value.length)}%`;
+        line.style.left = `${Math.round(100 * (left + 0.5) / value.length)}%`;
+        line.style.width = `${Math.round(100 * (right - left) / value.length)}%`;
       }
     };
   }

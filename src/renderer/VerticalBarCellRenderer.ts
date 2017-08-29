@@ -31,8 +31,8 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
             title: NumbersColumn.DEFAULT_FORMATTER(v)
           }, {
             'background-color': colorScale(v),
-            height: `${Math.round(100*top/range)}%`,
-            top: `${Math.round(100*height/range)}%`
+            height: `${Math.round(100 * top / range)}%`,
+            top: `${Math.round(100 * height / range)}%`
           });
         });
       }
@@ -49,7 +49,7 @@ export default class VerticalBarCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const data = col.getRawNumbers(d.v, d.dataIndex);
       const rowHeight = context.rowHeight(i);
-      const scale = rowHeight/range;
+      const scale = rowHeight / range;
       data.forEach((v, j) => {
         const top = v < threshold ? v : threshold;
         const height = v < threshold ? (threshold - v) : (v - threshold);

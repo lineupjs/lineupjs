@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import Column, {IColumnParent, IFlatColumn, IColumnDesc} from './Column';
+import Column, {IColumnDesc, IColumnParent, IFlatColumn} from './Column';
 import {isNumberColumn} from './NumberColumn';
 import ValueColumn from './ValueColumn';
 import {suffix} from '../utils';
@@ -59,7 +59,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     dump.children.map((child: any) => {
       const c = factory(child);
       if (c) {
@@ -75,7 +75,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
    * @param index
    * @returns {any}
    */
-  insert(col: Column, index: number): Column|null {
+  insert(col: Column, index: number): Column | null {
     if (!isNumberColumn(col) && this.canJustAddNumbers) { //indicator it is a number type
       return null;
     }
@@ -140,7 +140,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
   }
 
   isLoaded(): boolean {
-    return this._children.every((c) => !(c instanceof ValueColumn || c instanceof CompositeColumn) || (<ValueColumn<any>|CompositeColumn>c).isLoaded());
+    return this._children.every((c) => !(c instanceof ValueColumn || c instanceof CompositeColumn) || (<ValueColumn<any> | CompositeColumn>c).isLoaded());
   }
 
   /**

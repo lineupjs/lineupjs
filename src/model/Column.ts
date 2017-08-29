@@ -24,11 +24,11 @@ export interface IFlatColumn {
 export interface IColumnParent {
   remove(col: Column): boolean;
 
-  insert(col: Column, index?: number): Column|null;
+  insert(col: Column, index?: number): Column | null;
 
-  insertAfter(col: Column, reference: Column): Column|null;
+  insertAfter(col: Column, reference: Column): Column | null;
 
-  findMyRanker(): Ranking|null;
+  findMyRanker(): Ranking | null;
 
   readonly fqid: string;
 
@@ -93,7 +93,7 @@ export interface ICategoricalStatistics {
 export interface IColumnMetaData {
   readonly label: string;
   readonly description: string;
-  readonly color: string|null;
+  readonly color: string | null;
 }
 
 
@@ -108,9 +108,9 @@ export interface IRendererInfo {
   /*
    * Possible RendererList
    */
-  renderers: {type: string, label: string}[];
+  renderers: { type: string, label: string }[];
 
-  groupRenderers: {type: string, label: string}[];
+  groupRenderers: { type: string, label: string }[];
 }
 
 
@@ -163,7 +163,7 @@ export default class Column extends AEventDispatcher {
   /**
    * parent column of this column, set when added to a ranking or combined column
    */
-  parent: IColumnParent|null = null;
+  parent: IColumnParent | null = null;
 
   private metadata: IColumnMetaData;
 
@@ -238,7 +238,7 @@ export default class Column extends AEventDispatcher {
   }
 
   get fqpath() {
-    return this.parent ? `${this.parent.fqpath}@${this.parent.indexOf(this)}`: '';
+    return this.parent ? `${this.parent.fqpath}@${this.parent.indexOf(this)}` : '';
   }
 
   /**
@@ -426,7 +426,7 @@ export default class Column extends AEventDispatcher {
    * finds the underlying ranking column
    * @returns {Ranking|null} my current ranking
    */
-  findMyRanker(): Ranking|null {
+  findMyRanker(): Ranking | null {
     if (this.parent) {
       return this.parent.findMyRanker();
     }
@@ -462,7 +462,7 @@ export default class Column extends AEventDispatcher {
    * @param dump column dump
    * @param _factory helper for creating columns
    */
-  restore(dump: any, _factory: (dump: any) => Column|null) {
+  restore(dump: any, _factory: (dump: any) => Column | null) {
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,
@@ -574,7 +574,7 @@ export default class Column extends AEventDispatcher {
     return this.rendererInfo.groupRenderers;
   }
 
-  protected setRendererList(renderers: {type: string, label: string}[], groupRenderers: {type: string, label: string}[] = []) {
+  protected setRendererList(renderers: { type: string, label: string }[], groupRenderers: { type: string, label: string }[] = []) {
     this.rendererInfo.renderers = renderers;
     this.rendererInfo.groupRenderers = groupRenderers;
   }

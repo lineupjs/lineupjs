@@ -12,7 +12,7 @@ import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 /**
  * a renderer rendering a bar for numerical columns
  */
-export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberColumn&Column> implements ICellRendererFactory {
+export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
   /**
    * flag to always render the value
    * @type {boolean}
@@ -68,7 +68,7 @@ export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberCol
 
 export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
   //return the median row
-  const sorted = rows.map((r,i) => ({i,v: col.getNumber(r.v, r.dataIndex)})).sort((a, b) => numberCompare(a.v, b.v));
+  const sorted = rows.map((r, i) => ({i, v: col.getNumber(r.v, r.dataIndex)})).sort((a, b) => numberCompare(a.v, b.v));
   const index = sorted[Math.floor(sorted.length / 2.0)];
   if (index === undefined) {
     return 0; //error case

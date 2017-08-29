@@ -5,7 +5,7 @@ import NumbersColumn, {SORT_METHOD as ADVANCED_SORT_METHOD,} from '../model/Numb
 import {event as d3event, Selection} from 'd3';
 
 export default class SortDialog extends ADialog {
-  constructor(private readonly column: IBoxPlotColumn&Column, $header: Selection<Column>, title: string = 'Change Sort Criteria') {
+  constructor(private readonly column: IBoxPlotColumn & Column, $header: Selection<Column>, title: string = 'Change Sort Criteria') {
     super($header, title);
   }
 

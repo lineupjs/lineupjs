@@ -35,7 +35,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         const label = col.getRawBoxPlotData(d.v, d.dataIndex)!;
         renderDOMBoxPlot(n, data, label);
         const wiskers = <HTMLElement>n.firstElementChild;
-        wiskers.dataset.sort = sortedByMe ? sortMethod: '';
+        wiskers.dataset.sort = sortedByMe ? sortMethod : '';
       }
     };
   }
@@ -120,18 +120,18 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   wiskers.style.width = `${Math.round(range * 100)}%`;
 
   //relative within the wiskers
-  box.style.left = `${Math.round((data.q1 - data.min)/range * 100)}%`;
-  box.style.width = `${Math.round((data.q3 - data.q1)/range * 100)}%`;
+  box.style.left = `${Math.round((data.q1 - data.min) / range * 100)}%`;
+  box.style.width = `${Math.round((data.q3 - data.q1) / range * 100)}%`;
 
   //relative within the wiskers
-  median.style.left = `${Math.round((data.median - data.min)/range * 100)}%`;
+  median.style.left = `${Math.round((data.median - data.min) / range * 100)}%`;
 }
 
 function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, height: number, topPadding: number, context: ICanvasRenderContext) {
   const boxColor = context.option('style.boxplot.box', '#e0e0e0');
   const boxStroke = context.option('style.boxplot.stroke', 'black');
 
-  const boxTopPadding = topPadding + ((height- topPadding*2) * 0.1);
+  const boxTopPadding = topPadding + ((height - topPadding * 2) * 0.1);
   const minPos = box.min, maxPos = box.max, medianPos = box.median, q3Pos = box.q3, q1Pos = box.q1;
 
   ctx.fillStyle = boxColor;

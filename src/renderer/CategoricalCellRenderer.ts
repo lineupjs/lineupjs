@@ -43,14 +43,14 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupDOM(col: ICategoricalColumn&Column): IDOMGroupRenderer {
+  createGroupDOM(col: ICategoricalColumn & Column): IDOMGroupRenderer {
     const colors = col.categoryColors;
     const labels = col.categoryLabels;
     const bins = col.categories.map((c, i) => `<div style="height: 0; background-color: ${colors[i]}" title="${labels[i]}: 0" data-cat="${c}"></div>`).join('');
 
     return {
       template: `<div>${bins}</div>`,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: ICategoricalStatistics|null) => {
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: ICategoricalStatistics | null) => {
         const {maxBin, hist} = computeHist(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getCategories(r.v, r.dataIndex), col.categories);
 
         const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
@@ -63,13 +63,13 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupCanvas(col: ICategoricalColumn&Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+  createGroupCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const padding = context.option('rowBarPadding', 1);
     const cats = col.categories;
     const colors = col.categoryColors;
     const widthPerBin = context.colWidth(col) / cats.length;
 
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], _dx: number, _dy: number, globalHist: ICategoricalStatistics|null) => {
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], _dx: number, _dy: number, globalHist: ICategoricalStatistics | null) => {
       const {maxBin, hist} = computeHist(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getCategories(r.v, r.dataIndex), col.categories);
       const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
 

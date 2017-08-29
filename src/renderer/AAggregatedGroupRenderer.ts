@@ -1,5 +1,3 @@
-
-
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
@@ -10,6 +8,7 @@ import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 
 export abstract class AAggregatedGroupRenderer<T extends Column> implements ICellRendererFactory {
   abstract createDOM(col: T, context: IDOMRenderContext): IDOMCellRenderer;
+
   abstract createCanvas(col: T, context: ICanvasRenderContext): ICanvasCellRenderer;
 
   protected abstract aggregatedIndex(rows: IDataRow[], col: T): number;
