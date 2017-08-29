@@ -270,29 +270,37 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter != null;
   }
 
+  static filter(filter: ICategoricalFilter|null, category: string) {
+    if (!filter) {
+      return true;
+    }
+    if (category == null && filter.filterMissing) {
+      return false;
+    }
+    const filterObj = filter.filter;
+    if (Array.isArray(filterObj) && filterObj.length > 0) { //array mode
+      return filterObj.indexOf(category) >= 0;
+    }
+    if (typeof filterObj === 'string' && filterObj.length > 0) { //search mode
+      return category != null && category.toLowerCase().indexOf(filterObj.toLowerCase()) >= 0;
+    }
+    if (filterObj instanceof RegExp) { //regex match mode
+      return category != null && filterObj.test(category);
+    }
+    return true;
+  }
+
   filter(row: any, index: number): boolean {
     if (!this.isFiltered()) {
       return true;
     }
-    const vs = this.getCategories(row, index),
-      filter = this.currentFilter!.filter;
+    const vs = this.getCategories(row, index);
 
     if (this.currentFilter!.filterMissing && vs.length === 0) {
       return false;
     }
 
-    return vs.every((v) => {
-      if (Array.isArray(filter) && filter.length > 0) { //array mode
-        return filter.indexOf(v) >= 0;
-      }
-      if (typeof filter === 'string' && filter.length > 0) { //search mode
-        return v != null && v.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
-      }
-      if (filter instanceof RegExp) { //regex match mode
-        return v != null && filter.test(v);
-      }
-      return true;
-    });
+    return vs.every((v) => CategoricalColumn.filter(this.currentFilter, v));
   }
 
   getFilter() {

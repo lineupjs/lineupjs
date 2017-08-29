@@ -2,13 +2,14 @@
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import Column from '../..//model/Column';
-import {ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
+import {default as CategoricalColumn, ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
 import {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {INumberColumn, isNumberColumn} from '../../model/NumberColumn';
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';
 import {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from './RenderColumn';
+import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 
 export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
   if (col instanceof StringColumn) {
@@ -35,6 +36,52 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   stats.hist.forEach(({cat, y}) => {
     const i = cats.indexOf(cat);
     node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}" title="${labels[i]}: ${y}" data-cat="${cat}"></div>`);
+  });
+
+  if (!(col instanceof CategoricalColumn || col instanceof CategoricalNumberColumn)) {
+    return;
+  }
+  node.dataset.summary = 'interactive-hist';
+  // make histogram interactive
+  const ccol = <CategoricalColumn|CategoricalNumberColumn>col;
+  const start = ccol.getFilter();
+
+  Array.from(node.children).forEach((bin: HTMLElement, i) => {
+    const cat = bin.dataset.cat!;
+    bin.dataset.filtered = CategoricalColumn.filter(start, cat) ? '' : 'filtered';
+    bin.onclick = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+
+      // toggle filter
+      const old = ccol.getFilter();
+      if (old === null || !Array.isArray(old.filter)) {
+        // deselect
+        const without = cats.slice();
+        bin.dataset.filtered = 'filtered';
+        without.splice(i, 1);
+        ccol.setFilter({
+          filterMissing: false,
+          filter: without
+        });
+        return;
+      }
+      const filter = old.filter.slice();
+      const contained = filter.indexOf(cat);
+      if (contained >= 0) {
+        // remove
+        bin.dataset.filtered = 'filtered';
+        filter.splice(contained, 1);
+      } else {
+        // readd
+        bin.dataset.filtered = '';
+        filter.push(cat);
+      }
+      ccol.setFilter({
+        filterMissing: old.filterMissing,
+        filter
+      });
+    };
   });
 }
 
