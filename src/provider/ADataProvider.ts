@@ -278,7 +278,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   /**
    * hook method for cleaning up a ranking
-   * @param ranking
+   * @param _ranking
    */
   cleanUpRanking(_ranking: Ranking) {
     //nothing to do
@@ -452,7 +452,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       c.restore(d, this.createHelper);
     }
     return c;
-  };
+  }
 
   restoreRanking(dump: any) {
     const ranking = this.cloneRanking();

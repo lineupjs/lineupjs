@@ -8,13 +8,23 @@
     position: absolute;
     width: 100%;
   }
-  
+
   > div {
     top: 5%;
     bottom: 5%;
 
     > div {
       height: 100%;
+    }
+  }
+}
+
+[data-agg=group] {
+  [data-renderer=number],
+  [data-renderer=circle] {
+    > div > div {
+      display: flex;
+      align-items: center;
     }
   }
 }
