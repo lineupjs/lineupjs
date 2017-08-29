@@ -120,6 +120,8 @@ export default class RenderColumn implements IColumn {
   createCell(index: number, document: Document, ctx: IRankingContext) {
     const isGroup = ctx.isGroup(index);
     const node = asElement(document, isGroup ? this.renderers.group.template : this.renderers.single.template);
+    node.dataset.renderer = isGroup ? this.renderers.groupId : this.renderers.singleId;
+    node.dataset.group = isGroup ? 'g' : 'd';
     this.updateCell(node, index, ctx);
     return node;
   }
@@ -127,7 +129,15 @@ export default class RenderColumn implements IColumn {
   updateCell(node: HTMLElement, index: number, ctx: IRankingContext): HTMLElement | void {
     const isGroup = ctx.isGroup(index);
     // assert that we have the template of the right mode
-    node.dataset.renderer = isGroup ? this.renderers.groupId : this.renderers.singleId;
+    const oldRenderer = node.dataset.renderer;
+    const currentRenderer = isGroup ? this.renderers.groupId : this.renderers.singleId;
+    const oldGroup = node.dataset.group;
+    const currentGroup = (isGroup ? 'g' : 'd');
+    if (oldRenderer !== currentRenderer || oldGroup !== currentGroup) {
+      node = asElement(document, isGroup ? this.renderers.group.template : this.renderers.single.template);
+      node.dataset.renderer = currentRenderer;
+      node.dataset.group = currentGroup;
+    }
     if (isGroup) {
       const g = ctx.getGroup(index);
       this.renderers.group.update(node, g, g.rows, ctx.statsOf(<any>this.c));
@@ -135,6 +145,7 @@ export default class RenderColumn implements IColumn {
       const r = ctx.getRow(index);
       this.renderers.single.update(node, r, r.relativeIndex, r.group);
     }
+    return node;
   }
 }
 
