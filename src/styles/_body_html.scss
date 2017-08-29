@@ -61,19 +61,27 @@
     }
   }
 
-  div.row {
+  div.group {
+    position: absolute;
+  }
+
+  div.meanlines * {
+    position: absolute;
+    display: inline-block;
+    width: 1px;
+    border-left: 1px solid gray;
+  }
+
+  div.row,
+  div.aggregate {
+    font-size: 90%;
+    display: flex;
+
     div.cols,
     div.frozen {
       background-color: white;
       border: 1px solid transparent;
-      transition: border-color ease 0.5s;
-    }
-
-    &.even {
-      div.cols,
-      div.frozen {
-        background-color: $lu_even_bg;
-      }
+      transition: border-color ease 0.2s;
     }
 
     &.selected {
@@ -90,6 +98,13 @@
       }
     }
 
+    &.even {
+      div.cols,
+      div.frozen {
+        background-color: $lu_even_bg;
+      }
+    }
+
     &.hover {
       div.cols {
         border-color: $lu_hover_color;
@@ -100,25 +115,6 @@
         border-color: $lu_hover_color;
         border-right-color: transparent;
       }
-    }
-
-    &.selected,
-    &.hover {
-      .bar {
-        opacity: 0.5; // bars nested combined with a text representation
-
-        span {
-          opacity: 1;
-        }
-      }
-    }
-
-    div.selection::before {
-      content: "\f096";
-    }
-
-    &.selected div.selection::before {
-      content: "\f046";
     }
 
     /**
@@ -139,11 +135,6 @@
     }
     */
 
-    div.cat div {
-      position: relative;
-      display: inline-block;
-    }
-
     div.annotations input {
       width: 100%;
     }
@@ -152,14 +143,7 @@
       overflow-x: hidden;
       text-overflow: ellipsis;
     }
-
-    @import './renderer/heatmap';
-    @import './renderer/upset';
-    @import './renderer/boxplot';
-    @import './renderer/bar';
-    @import './renderer/cat';
-    @import './renderer/threshold';
-    @import './renderer/sparkline';
-    @import './renderer/vertical';
   }
+
+  @import './renderer/index';
 }

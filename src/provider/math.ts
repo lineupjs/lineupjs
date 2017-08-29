@@ -4,15 +4,23 @@
 
 import * as d3 from 'd3';
 import {ICategoricalStatistics, IStatistics} from '../model/Column';
+
+
+export function getNumberOfBins(length: number) {
+  // as by default used in d3 the Sturges' formula
+  return Math.ceil(Math.log(length) / Math.LN2) + 1;
+}
+
 /**
  * computes the simple statistics of an array using d3 histogram
  * @param arr the data array
  * @param indices array data indices
  * @param acc accessor function
  * @param range the total value range
+ * @param bins the number of bins
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  */
-export function computeStats(arr: any[], indices: number[], acc: (row: any, index: number) => number, range?: [number, number]): IStatistics {
+export function computeStats(arr: any[], indices: number[], acc: (row: any, index: number) => number, range?: [number, number], bins?: number): IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -27,6 +35,11 @@ export function computeStats(arr: any[], indices: number[], acc: (row: any, inde
   const hist = d3.layout.histogram().value(indexAccessor);
   if (range) {
     hist.range(() => range);
+  }
+  if (bins) {
+    hist.bins(bins);
+  } else {
+    hist.bins(getNumberOfBins(arr.length));
   }
   const ex = d3.extent(arr, indexAccessor);
   const histData = hist(arr);

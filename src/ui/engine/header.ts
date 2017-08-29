@@ -3,13 +3,13 @@
  */
 import Column from '../../model/Column';
 import {IRankingHeaderContext} from './RenderColumn';
-import {isSupportType, createStackDesc, createNestedDesc} from '../../model';
+import {createNestedDesc, createStackDesc, isSupportType} from '../../model';
 import NumbersColumn from '../../model/NumbersColumn';
 import BoxPlotColumn from '../../model/BoxPlotColumn';
 import SortDialog from '../../dialogs/SortDialog';
 import {select, Selection} from 'd3';
 import RenameDialog from '../../dialogs/RenameDialog';
-import RendererTypeDialog from '../../dialogs/RendererTypeDialog';
+import ChangeRendererDialog from '../../dialogs/ChangeRendererDialog';
 import LinkColumn from '../../model/LinkColumn';
 import ADialog from '../../dialogs/ADialog';
 import ScriptColumn from '../../model/ScriptColumn';
@@ -23,8 +23,11 @@ import CutOffHierarchyDialog from '../../dialogs/CutOffHierarchyDialog';
 import SearchDialog from '../../dialogs/SearchDialog';
 import HierarchyColumn from '../../model/HierarchyColumn';
 import {dragAble, dropAble, IDropResult} from './dnd';
-import {isNumberColumn} from '../../model/NumberColumn';
+import {default as NumberColumn, isNumberColumn} from '../../model/NumberColumn';
 import Ranking from '../../model/Ranking';
+import BooleanColumn from '../../model/BooleanColumn';
+import CategoricalColumn from '../../model/CategoricalColumn';
+import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 
 export {default as createSummary} from './summary';
 
@@ -47,7 +50,7 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeade
 }
 
 interface IAddIcon {
-  (title: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]): { onclick: (evt: { stopPropagation: ()=>void, currentTarget: Element, [key: string]: any}) => any };
+  (title: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]): { onclick: (evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }) => any };
 }
 
 export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
@@ -62,15 +65,26 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
       ctx.provider.takeSnapshot(col);
     };
   }
+  //stratify
+  if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
+    addIcon('Stratify By').onclick = (evt) => {
+      evt.stopPropagation();
+      col.groupByMe();
+    };
+  }
+
+  if (col instanceof NumberColumn) {
+    addIcon('Stratify By Threshold', StratifyThresholdDialog);
+  }
 
   if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
     //Numbers Sort
     addIcon('Sort By', SortDialog);
   }
 
-  if (col.getRendererList().length > 1) {
+  if (col.getRendererList().length > 1 || col.getGroupRenderers().length > 1) {
     //Renderer Change
-    addIcon('Change Visualization', RendererTypeDialog);
+    addIcon('Change Visualization', ChangeRendererDialog);
   }
 
   if (col instanceof LinkColumn) {
@@ -198,7 +212,7 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeader
   }, true);
 
   dropAble(<HTMLElement>node.querySelector('.lu-handle')!, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
-    let col: Column|null = null;
+    let col: Column | null = null;
     const data = result.data;
     if (`${MIMETYPE_PREFIX}-ref` in data) {
       const id = data[`${MIMETYPE_PREFIX}-ref`];
@@ -224,21 +238,21 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeader
   const resolveDrop = (result: IDropResult, numbersOnly: boolean) => {
     const data = result.data;
     const copy = result.effect === 'copy';
-    const prefix = `${MIMETYPE_PREFIX}${numbersOnly?'-number':''}`;
-      if (`${prefix}-ref` in data) {
-        const id = data[`${prefix}-ref`];
-        let col: Column = ctx.provider.find(id)!;
-        if (copy) {
-          col = ctx.provider.clone(col);
-        } else if (col === column) {
-          return null;
-        } else {
-          col.removeMe();
-        }
-        return col;
+    const prefix = `${MIMETYPE_PREFIX}${numbersOnly ? '-number' : ''}`;
+    if (`${prefix}-ref` in data) {
+      const id = data[`${prefix}-ref`];
+      let col: Column = ctx.provider.find(id)!;
+      if (copy) {
+        col = ctx.provider.clone(col);
+      } else if (col === column) {
+        return null;
+      } else {
+        col.removeMe();
       }
-      const desc = JSON.parse(data[prefix]);
-      return ctx.provider.create(ctx.provider.fromDescRef(desc))!;
+      return col;
+    }
+    const desc = JSON.parse(data[prefix]);
+    return ctx.provider.create(ctx.provider.fromDescRef(desc))!;
   };
 
   if (isMultiLevelColumn(column)) {
@@ -249,7 +263,7 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeader
       });
     } else {
       dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
-        const col: Column|null = resolveDrop(result, false);
+        const col: Column | null = resolveDrop(result, false);
         return col != null && (<IMultiLevelColumn>column).push(col) != null;
       });
     }
@@ -259,7 +273,7 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeader
   const justNumbers = (d: Column) => (d instanceof CompositeColumn && d.canJustAddNumbers) || (isNumberColumn(d) && d.parent instanceof Ranking);
   const dropOrMerge = (justNumbers: boolean) => {
     return (result: IDropResult) => {
-      const col: Column|null = resolveDrop(result, justNumbers);
+      const col: Column | null = resolveDrop(result, justNumbers);
       if (!col) {
         return false;
       }
@@ -268,7 +282,7 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeader
       }
       const ranking = column.findMyRanker()!;
       const index = ranking.indexOf(column);
-      const parent = <CompositeColumn>ctx.provider.create(justNumbers ? createStackDesc(): createNestedDesc());
+      const parent = <CompositeColumn>ctx.provider.create(justNumbers ? createStackDesc() : createNestedDesc());
       column.removeMe();
       parent.push(column);
       parent.push(col);

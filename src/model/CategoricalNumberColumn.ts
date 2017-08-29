@@ -2,10 +2,10 @@
  * Created by sam on 04.11.2016.
  */
 
-import {max as d3max, scale, min as d3min} from 'd3';
+import {max as d3max, min as d3min, scale} from 'd3';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import CategoricalColumn, {ICategoricalColumn, IBaseCategoricalDesc, ICategoricalFilter} from './CategoricalColumn';
+import CategoricalColumn, {IBaseCategoricalDesc, ICategoricalColumn, ICategoricalFilter} from './CategoricalColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 
 export declare type ICategoricalNumberColumnDesc = IBaseCategoricalDesc & IValueColumnDesc<number>;
@@ -26,7 +26,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
 
   private readonly scale = scale.ordinal().rangeRoundPoints([0, 1]);
 
-  private currentFilter: ICategoricalFilter|null = null;
+  private currentFilter: ICategoricalFilter | null = null;
   /**
    * separator for multi handling
    * @type {string}
@@ -106,7 +106,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.getNumber(row, index);
   }
 
-  getColor(row: any, index: number): string|null {
+  getColor(row: any, index: number): string | null {
     const vs = this.getValues(row, index);
     const cs = this.getColors(row, index);
     if (this.combiner === d3max) {
@@ -141,7 +141,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     CategoricalColumn.prototype.restore.call(this, dump, factory);
     if (dump.scale) {
       this.scale.domain(dump.scale.domain).range(dump.scale.range);
@@ -178,7 +178,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.currentFilter;
   }
 
-  setFilter(filter: ICategoricalFilter|null) {
+  setFilter(filter: ICategoricalFilter | null) {
     return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 

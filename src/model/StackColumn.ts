@@ -23,7 +23,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';
   static readonly COLLAPSED_RENDERER = 'number';
 
-  private readonly adaptChange: (old: number, newValue: number)=>void;
+  private readonly adaptChange: (old: number, newValue: number) => void;
 
   /**
    * whether this stack column is collapsed i.e. just looks like an ordinary number column
@@ -36,7 +36,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     super(id, desc);
 
     const that = this;
-    this.adaptChange = function (this: {source: Column}, oldValue, newValue) {
+    this.adaptChange = function (this: { source: Column }, oldValue, newValue) {
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
   }
@@ -91,7 +91,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     this.collapsed = dump.collapsed === true;
     super.restore(dump, factory);
   }

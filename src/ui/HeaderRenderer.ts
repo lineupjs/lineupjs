@@ -3,37 +3,22 @@
  */
 
 import * as d3 from 'd3';
-import {merge, dropAble, debounce, forEach, dragAble, suffix} from '../utils';
-import Column, {IStatistics, ICategoricalStatistics, IFlatColumn} from '../model/Column';
+import {debounce, dragAble, dropAble, forEach, merge, suffix} from '../utils';
+import Column, {ICategoricalStatistics, IFlatColumn, IStatistics} from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import NumberColumn, {isNumberColumn, INumberColumn} from '../model/NumberColumn';
+import NumberColumn, {INumberColumn, isNumberColumn} from '../model/NumberColumn';
 import CategoricalColumn, {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
-import RankColumn from '../model/RankColumn';
-import StackColumn, {createDesc as createStackDesc} from '../model/StackColumn';
+import {createDesc as createStackDesc} from '../model/StackColumn';
 import {createDesc as createNestedDesc} from '../model/NestedColumn';
-import LinkColumn from '../model/LinkColumn';
-import ScriptColumn from '../model/ScriptColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
-import NumbersColumn from '../model/NumbersColumn';
-import BoxPlotColumn, {IBoxPlotColumn} from '../model/BoxPlotColumn';
-
-import SearchDialog from '../dialogs/SearchDialog';
-import RenameDialog from '../dialogs/RenameDialog';
-import EditLinkDialog from '../dialogs/EditLinkDialog';
-import RendererTypeDialog from '../dialogs/RendererTypeDialog';
-import WeightsEditDialog from '../dialogs/WeightsEditDialog';
-import SortDialog from '../dialogs/SortDialog';
-
 import {IFilterDialog} from '../dialogs/AFilterDialog';
-import ScriptEditDialog from '../dialogs/ScriptEditDialog';
 import SelectionColumn from '../model/SelectionColumn';
-import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
-import HierarchyColumn from '../model/HierarchyColumn';
-import {toFullTooltip} from './engine/RenderColumn';
-import {MIMETYPE_PREFIX} from './engine/header';
+import {IRankingHeaderContext, toFullTooltip} from './engine/RenderColumn';
+import {createToolbarImpl, MIMETYPE_PREFIX} from './engine/header';
 import {defaultConfig, dummyRankingButtonHook} from '../config';
+import ADialog from '../dialogs/ADialog';
 
 export interface IRankingHook {
   ($node: d3.Selection<Ranking>): void;
@@ -101,7 +86,7 @@ export default class HeaderRenderer {
     });
 
   private readonly dropHandler = dropAble([`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (data, d: Column, copy) => {
-    let col: Column|null = null;
+    let col: Column | null = null;
     if (`${MIMETYPE_PREFIX}-ref` in data) {
       const id = data[`${MIMETYPE_PREFIX}-ref`];
       col = this.data.find(id);
@@ -227,7 +212,10 @@ export default class HeaderRenderer {
           data.forEach((d, i) => {
             const cats = col.getCategories(d, indices[i]);
             (cats || []).forEach((cat) => {
-              header.querySelector(`div.bar[data-cat="${cat}"]`)!.classList.add('selected');
+              const h = header.querySelector(`div.bar[data-cat="${cat}"]`);
+              if (h) {
+                h.classList.add('selected');
+              }
             });
           });
         });
@@ -304,113 +292,29 @@ export default class HeaderRenderer {
   }
 
   private createToolbar($node: d3.Selection<Column>) {
-    const provider = this.data,
-      that = this;
-    const $regular = $node.filter((d) => !(d instanceof RankColumn));
+    const ctx: IRankingHeaderContext = Object.assign({
+      provider: this.data,
+      statsOf: () => null
+    }, this.options);
 
-    //rename
-    $regular.append('i').attr('class', 'fa fa-pencil-square-o').attr('title', 'Rename').on('click', function (this: HTMLElement, d) {
-      const dialog = new RenameDialog(d, d3.select(this.parentNode!.parentNode!));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-    //clone
-    $regular.append('i').attr('class', 'fa fa-code-fork').attr('title', 'Generate Snapshot').on('click', function (d) {
-      provider.takeSnapshot(d);
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-
-    //Numbers Sort
-    $node.filter((d) => d instanceof NumbersColumn || d instanceof BoxPlotColumn).append('i').attr('class', 'fa fa-sort').attr('title', 'Sort By').on('click', function (this: HTMLElement, d) {
-      const dialog = new SortDialog(<IBoxPlotColumn><any>d, d3.select(this.parentNode!.parentNode!));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-
-
-    //Renderer Change
-    $node.filter((d) => d.getRendererList().length > 1).append('i').attr('class', 'fa fa-exchange').attr('title', 'Change Visualization').on('click', function (this: HTMLElement, d) {
-      const dialog = new RendererTypeDialog(d, d3.select(this.parentNode!.parentNode!));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-
-
-    //edit link
-    $node.filter((d) => d instanceof LinkColumn).append('i').attr('class', 'fa fa-external-link').attr('title', 'Edit Link Pattern').on('click', function (this: HTMLElement, d) {
-      const dialog = new EditLinkDialog(<LinkColumn>d, d3.select(this.parentNode!.parentNode!), that.options.idPrefix, (<string[]>[]).concat((<any>d.desc).templates || [], that.options.linkTemplates));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-    //edit script
-    $node.filter((d) => d instanceof ScriptColumn).append('i').attr('class', 'fa fa-gears').attr('title', 'Edit Combine Script').on('click', function (this: HTMLElement, d) {
-      const dialog = new ScriptEditDialog(<ScriptColumn>d, d3.select(this.parentNode!.parentNode!));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-    //filter
-    $node.filter((d) => this.options.filters.hasOwnProperty(d.desc.type)).append('i').attr('class', 'fa fa-filter').attr('title', 'Filter').on('click', (d) => {
-      const target = (<MouseEvent>d3.event).target;
-      const dialog = new this.options.filters[d.desc.type](d, d3.select((<HTMLElement>target).parentNode!), '', provider, that.options.idPrefix);
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-    //cutoff
-    $node.filter((d) => d instanceof HierarchyColumn).append('i').attr('class', 'fa fa-scissors').attr('title', 'Set Cut Off').on('click', (d: HierarchyColumn) => {
-      const target = (<MouseEvent>d3.event).target;
-      const dialog = new CutOffHierarchyDialog(d, d3.select((<HTMLElement>target).parentNode!), that.options.idPrefix);
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-    //search
-    $node.filter((d) => this.options.searchAble(d)).append('i').attr('class', 'fa fa-search').attr('title', 'Search').on('click', function (this: HTMLElement, d) {
-      const dialog = new SearchDialog(d, d3.select(this.parentNode!.parentNode!), provider);
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-    //edit weights
-    $node.filter((d) => d instanceof StackColumn).append('i').attr('class', 'fa fa-tasks').attr('title', 'Edit Weights').on('click', function (this: HTMLElement, d) {
-      const dialog = new WeightsEditDialog(<StackColumn>d, d3.select(this.parentNode!.parentNode!));
-      dialog.openDialog();
-      (<MouseEvent>d3.event).stopPropagation();
-    });
-    //collapse
-    $regular.append('i')
-      .attr('class', 'fa')
-      .classed('fa-toggle-left', (d: Column) => !d.getCompressed())
-      .classed('fa-toggle-right', (d: Column) => d.getCompressed())
-      .attr('title', '(Un)Collapse')
-      .on('click', function (this: HTMLElement, d: Column) {
-        d.setCompressed(!d.getCompressed());
-        d3.select(this)
-          .classed('fa-toggle-left', !d.getCompressed())
-          .classed('fa-toggle-right', d.getCompressed());
-        (<MouseEvent>d3.event).stopPropagation();
-      });
-    //compress
-    $node.filter((d) => isMultiLevelColumn(d)).append('i')
-      .attr('class', 'fa')
-      .classed('fa-compress', (d: IMultiLevelColumn) => !d.getCollapsed())
-      .classed('fa-expand', (d: IMultiLevelColumn) => d.getCollapsed())
-      .attr('title', 'Compress/Expand')
-      .on('click', function (this: HTMLElement, d: IMultiLevelColumn) {
-        d.setCollapsed(!d.getCollapsed());
-        d3.select(this)
-          .classed('fa-compress', !d.getCollapsed())
-          .classed('fa-expand', d.getCollapsed());
-        (<MouseEvent>d3.event).stopPropagation();
-      });
-    //remove
-    $node.append('i').attr('class', 'fa fa-times').attr('title', 'Hide').on('click', (d) => {
-      if (d instanceof RankColumn) {
-        provider.removeRanking(d.findMyRanker()!);
-        if (provider.getRankings().length === 0) { //create at least one
-          provider.pushRanking();
+    $node.each(function (this: HTMLElement, col) {
+      const $this = d3.select(this);
+      const addIcon = (title: string, dialogClass?: { new(col: any, header: d3.Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
+        const proxy: { onclick: (e: MouseEvent) => any } = {onclick: () => undefined};
+        $this.append('i').attr('title', title).html(`<span aria-hidden="true">${title}</span>`).on('click', function () {
+          proxy.onclick(<MouseEvent>d3.event);
+        });
+        if (!dialogClass) {
+          return <any>proxy;
         }
-      } else {
-        d.removeMe();
-      }
-      (<MouseEvent>d3.event).stopPropagation();
+        proxy.onclick = (evt: MouseEvent) => {
+          evt.stopPropagation();
+          const dialog = new dialogClass(col, d3.select((evt.currentTarget as HTMLElement).parentElement!), ...dialogArgs);
+          dialog.openDialog();
+        };
+        return proxy;
+      };
+      createToolbarImpl(addIcon, col, ctx);
     });
   }
 
@@ -460,11 +364,11 @@ export default class HeaderRenderer {
     });
 
     if (this.options.manipulative) {
-      $headersEnter.append('div').classed('handle', true)
+      $headersEnter.append('div').classed('lu-handle', true)
         .call(this.dragHandler)
         .style('width', `${this.options.columnPadding}px`)
         .call(this.dropHandler);
-      $headersEnter.append('div').classed('toolbar', true).call(this.createToolbar.bind(this));
+      $headersEnter.append('div').classed('lu-toolbar', true).call(this.createToolbar.bind(this));
     }
 
     if (this.options.summary) {
@@ -477,7 +381,7 @@ export default class HeaderRenderer {
       'background-color': (d) => d.color!
     });
     $headers.attr({
-      'class': (d) => `${clazz}${d.cssClass ? ` ${d.cssClass}` : ''}${(d.getCompressed() ? ' compressed' : '')} ${d.headerCssClass}${this.options.autoRotateLabels ? ' rotateable' : ''}${d.isFiltered() ? ' filtered' : ''}`,
+      'class': (d) => `${clazz} ${d.cssClass || ''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''} ${d.isGroupedBy() ? 'grouped' : ''}`,
       title: (d) => toFullTooltip(d),
       'data-id': (d) => d.id
     });
@@ -494,10 +398,11 @@ export default class HeaderRenderer {
       }
       return 'sort_indicator fa';
     });
+
     $headers.select('span.lu-label').text((d) => d.label);
 
-    const resolveDrop = (data: {[key: string]: string}, copy: boolean, numbersOnly: boolean) => {
-      const prefix = `${MIMETYPE_PREFIX}${numbersOnly?'-number':''}`;
+    const resolveDrop = (data: { [key: string]: string }, copy: boolean, numbersOnly: boolean) => {
+      const prefix = `${MIMETYPE_PREFIX}${numbersOnly ? '-number' : ''}`;
       if (`${prefix}-ref` in data) {
         const id = data[`${prefix}-ref`];
         let col: Column = this.data.find(id)!;
@@ -536,14 +441,14 @@ export default class HeaderRenderer {
 
     const justNumbers = (d: Column) => (d instanceof CompositeColumn && d.canJustAddNumbers) || (isNumberColumn(d) && d.parent instanceof Ranking);
     const dropOrMerge = (justNumbers: boolean) => {
-      return (data: {[key: string]: string}, d: CompositeColumn|(Column & INumberColumn), copy: boolean) => {
+      return (data: { [key: string]: string }, d: CompositeColumn | (Column & INumberColumn), copy: boolean) => {
         const col: Column = resolveDrop(data, copy, justNumbers);
         if (d instanceof CompositeColumn) {
           return (d.push(col) !== null);
         }
         const ranking = d.findMyRanker()!;
         const index = ranking.indexOf(d);
-        const parent = <CompositeColumn>this.data.create(justNumbers ? createStackDesc(): createNestedDesc());
+        const parent = <CompositeColumn>this.data.create(justNumbers ? createStackDesc() : createNestedDesc());
         d.removeMe();
         parent.push(d);
         parent.push(col);

@@ -2,9 +2,10 @@
  * Created by sam on 04.11.2016.
  */
 
-import {scale, format} from 'd3';
+import {format, scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {equalArrays} from '../utils';
 
 
 /**
@@ -20,13 +21,17 @@ export function isMissingValue(v: any) {
   return typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
 }
 
+function isUnknown(v?: number | null) {
+  return v === null || v === undefined || isNaN(v);
+}
+
 /**
  * save number comparison
  * @param a
  * @param b
  * @return {number}
  */
-export function numberCompare(a: number|null, b: number|null) {
+export function numberCompare(a: number | null, b: number | null) {
   if (a === null || isNaN(a)) { //NaN are smaller
     return (b === null || isNaN(b)) ? 0 : -1;
   }
@@ -249,7 +254,7 @@ export function createMappingFunction(dump: any): IMappingFunction {
   return l;
 }
 
-export interface INumberDesc  {
+export interface INumberDesc {
   /**
    * dump of mapping function
    */
@@ -317,6 +322,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   private numberFormat: (n: number) => string = format('.3n');
 
+  private currentStratifyThresholds: number[] = [];
+
   constructor(id: string, desc: INumberColumnDesc) {
     super(id, desc);
 
@@ -335,11 +342,12 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.missingValue = desc.missingValue;
     }
 
-    const rendererList = [{type: 'number', label: 'Bar'},
-      {type: 'circle', label: 'Circle'},
-      {type: 'default', label: 'String'}];
-
-    this.setRendererList(rendererList);
+    this.setRendererList(
+      [{type: 'number', label: 'Bar'}, {type: 'circle', label: 'Circle'}, {type: 'default', label: 'String'}],
+      [{type: 'histogram', label: 'Histogram'}, {type: 'boxplot', label: 'BoxPlot'}, {
+        type: 'number',
+        label: 'Median Bar'
+      }, {type: 'circle', label: 'Median Circle'}]);
   }
 
   dump(toDescRef: (desc: any) => any) {
@@ -347,10 +355,13 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     r.map = this.mapping.dump();
     r.filter = this.currentFilter;
     r.missingValue = this.missingValue;
+    if (this.currentStratifyThresholds) {
+      r.stratifyThreshholds = this.currentStratifyThresholds;
+    }
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);
@@ -359,6 +370,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
     if (dump.filter) {
       this.currentFilter = dump.filter;
+    }
+    if (dump.stratifyThreshholds) {
+      this.currentStratifyThresholds = dump.stratifyThresholds;
     }
     if (dump.missingValue !== undefined) {
       this.missingValue = dump.missingValue;
@@ -458,13 +472,13 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   set filterMin(min: number) {
     const bak = this.getFilter();
-    this.currentFilter.min = isNaN(min) ? -Infinity : min;
+    this.currentFilter.min = isUnknown(min) ? -Infinity : min;
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
   set filterMax(max: number) {
     const bak = this.getFilter();
-    this.currentFilter.max = isNaN(max) ? Infinity : max;
+    this.currentFilter.max = isUnknown(max) ? Infinity : max;
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
 
@@ -479,8 +493,8 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       return;
     }
     const bak = this.getFilter();
-    this.currentFilter.min = isNaN(value.min) ? -Infinity : value.min;
-    this.currentFilter.max = isNaN(value.max) ? Infinity : value.max;
+    this.currentFilter.min = isUnknown(value.min) ? -Infinity : value.min;
+    this.currentFilter.max = isUnknown(value.max) ? Infinity : value.max;
     this.currentFilter.filterMissing = value.filterMissing;
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getFilter());
   }
@@ -502,6 +516,44 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
     const vn = +v;
     return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
+  }
+
+  getStratifyTresholds() {
+    return this.currentStratifyThresholds.slice();
+  }
+
+  setStratifyThresholds(value: number[]) {
+    if (equalArrays(this.currentStratifyThresholds, value)) {
+      return;
+    }
+    const bak = this.getStratifyTresholds();
+    this.currentStratifyThresholds = value.slice();
+    this.fire([Column.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
+  }
+
+  group(row: any, index: number) {
+    if (this.currentStratifyThresholds.length === 0) {
+      return super.group(row, index);
+    }
+    const value = this.getRawNumber(row, index);
+    const treshholdIndex = this.currentStratifyThresholds.findIndex((t) => t <= value);
+    // group by thresholds / bins
+    switch (treshholdIndex) {
+      case -1:
+        //bigger than the last threshold
+        return {
+          name: `v > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length - 1]}`,
+          color: 'gray'
+        };
+      case 0:
+        //smallest
+        return {name: `v <= ${this.currentStratifyThresholds[0]}`, color: 'gray'};
+      default:
+        return {
+          name: `${this.currentStratifyThresholds[index - 1]} <= v <= ${this.currentStratifyThresholds[index]}`,
+          color: 'gray'
+        };
+    }
   }
 
   getRendererType(): string {

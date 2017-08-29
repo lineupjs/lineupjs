@@ -1,23 +1,25 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn} from '../model/NumberColumn';
+import {INumberColumn, numberCompare} from '../model/NumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText, round, setText} from '../utils';
+import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 
 
 /**
  * a renderer rendering a bar for numerical columns
  */
-export default class BarCellRenderer implements ICellRendererFactory {
+export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
   /**
    * flag to always render the value
    * @type {boolean}
    */
 
   constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string | null = (_d, _i, col) => col.color) {
+    super();
   }
 
   createDOM(col: INumberColumn & Column): IDOMCellRenderer {
@@ -29,7 +31,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         const value = col.getNumber(d.v, d.dataIndex);
-        const w = isNaN(value) ? 0 : round(value * 100, 2);
+        const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
         const title = col.getLabel(d.v, d.dataIndex);
         n.title = title;
 
@@ -58,4 +60,18 @@ export default class BarCellRenderer implements ICellRendererFactory {
       }
     };
   }
+
+  protected aggregatedIndex(rows: IDataRow[], col: INumberColumn & Column) {
+    return medianIndex(rows, col);
+  }
+}
+
+export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
+  //return the median row
+  const sorted = rows.map((r, i) => ({i, v: col.getNumber(r.v, r.dataIndex)})).sort((a, b) => numberCompare(a.v, b.v));
+  const index = sorted[Math.floor(sorted.length / 2.0)];
+  if (index === undefined) {
+    return 0; //error case
+  }
+  return index.i;
 }

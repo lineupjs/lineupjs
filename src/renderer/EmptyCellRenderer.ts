@@ -1,8 +1,9 @@
 import Column from '../model/Column';
 import ICellRendererFactory from './ICellRendererFactory';
-import IDOMCellRenderer from './IDOMCellRenderers';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
+import {IGroup} from '../model/Group';
 
 export class EmptyCellRenderer implements ICellRendererFactory {
 
@@ -16,6 +17,21 @@ export class EmptyCellRenderer implements ICellRendererFactory {
   }
 
   createCanvas(): ICanvasCellRenderer {
+    return () => {
+      //dummy
+    };
+  }
+
+  createGroupDOM(): IDOMGroupRenderer {
+    return {
+      template: `<div title=""></div>`,
+      update: (n: HTMLDivElement, group: IGroup) => {
+        n.title = group.name;
+      }
+    };
+  }
+
+  createGroupCanvas(): ICanvasGroupRenderer {
     return () => {
       //dummy
     };

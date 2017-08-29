@@ -10,7 +10,7 @@ export interface IStringDesc {
    * column alignment: left, center, right
    * @default left
    */
-  readonly alignment?: 'left'|'center'|'right';
+  readonly alignment?: 'left' | 'center' | 'right';
 }
 
 
@@ -24,7 +24,7 @@ export default class StringColumn extends ValueColumn<string> {
   static readonly FILTER_MISSING = '__FILTER_MISSING';
   private currentFilter: string | RegExp | null = null;
 
-  private _alignment: 'left'|'right'|'center' = 'left';
+  private _alignment: 'left' | 'right' | 'center' = 'left';
 
   constructor(id: string, desc: IStringColumnDesc) {
     super(id, desc);
@@ -56,7 +56,7 @@ export default class StringColumn extends ValueColumn<string> {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if (dump.filter && dump.filter.slice(0, 6) === 'REGEX:') {
       this.currentFilter = new RegExp(dump.filter.slice(6));

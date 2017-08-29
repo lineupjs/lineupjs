@@ -22,16 +22,16 @@ export default class RenameDialog extends ADialog {
       <textarea rows="5">${this.column.description}</textarea><br>`
     );
 
-    popup.select('.ok').on('click', () => {
-      const newValue = popup.select('input[type="text"]').property('value');
-      const newColor = popup.select('input[type="color"]').property('value');
-      const newDescription = popup.select('textarea').property('value');
-      this.column.setMetaData({label: newValue, color: newColor, description: newDescription});
-      popup.remove();
-    });
-
-    popup.select('.cancel').on('click', function () {
-      popup.remove();
+    this.onButton(popup, {
+      cancel: () => undefined,
+      reset: () => undefined,
+      submit: () => {
+        const newValue = popup.select('input[type="text"]').property('value');
+        const newColor = popup.select('input[type="color"]').property('value');
+        const newDescription = popup.select('textarea').property('value');
+        this.column.setMetaData({label: newValue, color: newColor, description: newDescription});
+        return true;
+      }
     });
   }
 }

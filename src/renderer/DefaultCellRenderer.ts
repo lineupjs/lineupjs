@@ -1,10 +1,11 @@
 import Column from '../model/Column';
 import ICellRendererFactory from './ICellRendererFactory';
 import {ICanvasRenderContext} from './RendererContexts';
-import IDOMCellRenderer from './IDOMCellRenderers';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
 import {clipText, setText} from '../utils';
+import {IGroup} from '../model/Group';
 
 /**
  * default renderer instance rendering the value as a text
@@ -16,8 +17,6 @@ export class DefaultCellRenderer implements ICellRendererFactory {
    * @param align {string} the text alignment: left, center, right
    */
   constructor(private readonly textClass: string = 'text', private readonly align: string = 'left') {
-    this.textClass = textClass;
-    this.align = align;
   }
 
   createDOM(col: Column): IDOMCellRenderer {
@@ -41,6 +40,26 @@ export class DefaultCellRenderer implements ICellRendererFactory {
         shift = w;
       }
       clipText(ctx, col.getLabel(d.v, d.dataIndex), shift, 0, w, context.textHints);
+      ctx.textAlign = bak;
+    };
+  }
+
+  createGroupDOM(_col: Column): IDOMGroupRenderer {
+    return {
+      template: `<div class="${this.textClass} ${this.align}"> </div>`,
+      update: (n: HTMLDivElement, group: IGroup, rows: IDataRow[]) => {
+        setText(n, `${group.name} (${rows.length})`);
+      }
+    };
+  }
+
+  createGroupCanvas(col: Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    const w = context.colWidth(col);
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
+      const bak = ctx.textAlign;
+      ctx.textAlign = 'center';
+      const shift = w / 2;
+      clipText(ctx, `${group.name} (${rows.length})`, shift, context.groupHeight(group) / 2, w, context.textHints);
       ctx.textAlign = bak;
     };
   }

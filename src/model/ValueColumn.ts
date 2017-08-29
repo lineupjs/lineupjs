@@ -29,7 +29,7 @@ export interface IValueColumnDesc<T> extends IColumnDesc {
 export default class ValueColumn<T> extends Column {
   static readonly RENDERER_LOADING = 'loading';
 
-  private readonly accessor: (row: any, index: number, id: string, desc: any, ranking: Ranking|null) => T;
+  private readonly accessor: (row: any, index: number, id: string, desc: any, ranking: Ranking | null) => T;
 
   /**
    * is the data available
@@ -90,14 +90,14 @@ export default class ValueColumn<T> extends Column {
     const r = super.dump(toDescRef);
     r.loaded = this.loaded;
 
-    if(!this.loaded && r.rendererType === ValueColumn.RENDERER_LOADING) {
+    if (!this.loaded && r.rendererType === ValueColumn.RENDERER_LOADING) {
       delete r.rendererType;
     }
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
-    if(dump.loaded !== undefined) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
+    if (dump.loaded !== undefined) {
       this.loaded = dump.loaded;
     }
     super.restore(dump, factory);

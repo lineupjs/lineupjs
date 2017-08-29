@@ -132,7 +132,7 @@ export function dragAble(node: HTMLElement, onDragStart: () => IDragStartResult,
  * @param {(e: DragEvent) => void} onDragOver optional drag over handler, e.g. for special effects
  * @param {boolean} stopPropagation flag if the event propagation should be stopped in case of success
  */
-export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result: IDropResult, e: DragEvent) => boolean, onDragOver: null|((e: DragEvent)=> void) = null, stopPropagation: boolean = false) {
+export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result: IDropResult, e: DragEvent) => boolean, onDragOver: null | ((e: DragEvent) => void) = null, stopPropagation: boolean = false) {
   node.addEventListener('dragenter', (e) => {
     //var xy = mouse($node.node());
     if (hasDnDType(e, ...mimeTypes) || isEdgeDnD(e)) {

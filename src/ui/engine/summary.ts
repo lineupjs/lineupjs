@@ -30,9 +30,11 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   node.dataset.summary = 'hist';
   const cats = col.categories;
   const colors = col.categoryColors;
+  const labels = col.categoryLabels;
 
   stats.hist.forEach(({cat, y}) => {
-    node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[cats.indexOf(cat)]}" title="${cat}: ${y}" data-cat="${cat}"></div>`);
+    const i = cats.indexOf(cat);
+    node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}" title="${labels[i]}: ${y}" data-cat="${cat}"></div>`);
   });
 }
 

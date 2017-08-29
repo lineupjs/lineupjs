@@ -5,8 +5,9 @@
 import {merge} from '../utils';
 import Column, {IColumnDesc} from '../model/Column';
 import Ranking from '../model/Ranking';
-import {IStatsBuilder, IDataRow, IDataProviderOptions} from './ADataProvider';
+import {IDataProviderOptions, IDataRow, IStatsBuilder} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
+import {defaultGroup, IOrderedGroup} from '../model/Group';
 
 /**
  * interface what the server side has to provide
@@ -64,11 +65,11 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     merge(this.options, options);
   }
 
-  sortImpl(ranking: Ranking): Promise<number[]> {
+  sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> {
     //generate a description of what to sort
     const desc = ranking.toSortingDesc((desc) => desc.column);
     //use the server side to sort
-    return this.server.sort(desc);
+    return this.server.sort(desc).then((order) => [Object.assign({order}, defaultGroup)]);
   }
 
   private loadFromServer(indices: number[]) {

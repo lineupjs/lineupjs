@@ -37,7 +37,7 @@ export default class AnnotateColumn extends StringColumn {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column|null) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if (!dump.annotations) {
       return;

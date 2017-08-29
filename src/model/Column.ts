@@ -4,6 +4,7 @@
 
 import {AEventDispatcher} from '../utils';
 import Ranking from './Ranking';
+import {defaultGroup} from './Group';
 
 /**
  * converts a given id to css compatible one
@@ -23,11 +24,11 @@ export interface IFlatColumn {
 export interface IColumnParent {
   remove(col: Column): boolean;
 
-  insert(col: Column, index?: number): Column|null;
+  insert(col: Column, index?: number): Column | null;
 
-  insertAfter(col: Column, reference: Column): Column|null;
+  insertAfter(col: Column, reference: Column): Column | null;
 
-  findMyRanker(): Ranking|null;
+  findMyRanker(): Ranking | null;
 
   readonly fqid: string;
 
@@ -68,6 +69,11 @@ export interface IColumnDesc {
    * default renderer to use
    */
   readonly rendererType?: string;
+
+  /**
+   * default group renderer to use
+   */
+  readonly groupRenderer?: string;
 }
 
 export interface IStatistics {
@@ -87,7 +93,7 @@ export interface ICategoricalStatistics {
 export interface IColumnMetaData {
   readonly label: string;
   readonly description: string;
-  readonly color: string|null;
+  readonly color: string | null;
 }
 
 
@@ -96,11 +102,15 @@ export interface IRendererInfo {
   /*
    Name of the current Renderer
    */
-  rendererType: string;
+  renderer: string;
+
+  groupRenderer: string;
   /*
    * Possible RendererList
    */
-  rendererList: { type: string, label: string }[];
+  renderers: { type: string, label: string }[];
+
+  groupRenderers: { type: string, label: string }[];
 }
 
 
@@ -136,6 +146,7 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_DIRTY_VALUES = 'dirtyValues';
   static readonly EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
+  static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
 
   /**
    * the id of this column
@@ -152,7 +163,7 @@ export default class Column extends AEventDispatcher {
   /**
    * parent column of this column, set when added to a ranking or combined column
    */
-  parent: IColumnParent|null = null;
+  parent: IColumnParent | null = null;
 
   private metadata: IColumnMetaData;
 
@@ -176,8 +187,10 @@ export default class Column extends AEventDispatcher {
     super();
     this.uid = fixCSS(id);
     this.rendererInfo = {
-      rendererType: this.desc.rendererType || this.desc.type,
-      rendererList: []
+      renderer: this.desc.rendererType || this.desc.type,
+      renderers: [],
+      groupRenderer: this.desc.groupRenderer || this.desc.type,
+      groupRenderers: []
     };
 
     this.cssClass = desc.cssClass || '';
@@ -225,7 +238,7 @@ export default class Column extends AEventDispatcher {
   }
 
   get fqpath() {
-    return this.parent ? `${this.parent.fqpath}@${this.parent.indexOf(this)}`: '';
+    return this.parent ? `${this.parent.fqpath}@${this.parent.indexOf(this)}` : '';
   }
 
   /**
@@ -244,7 +257,7 @@ export default class Column extends AEventDispatcher {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
       Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED,
-      Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES]);
+      Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_GROUPING_CHANGED]);
   }
 
   getWidth() {
@@ -342,6 +355,22 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
+  groupByMe() {
+    const r = this.findMyRanker();
+    if (r) {
+      return r.groupBy(this === r.getGroupCriteria() ? null : this);
+    }
+    return false;
+  }
+
+  isGroupedBy() {
+    const r = this.findMyRanker();
+    if (r) {
+      return r.getGroupCriteria() === this;
+    }
+    return false;
+  }
+
   /**
    * toggles the sorting order of this column in the ranking
    * @returns {boolean} was successful
@@ -397,7 +426,7 @@ export default class Column extends AEventDispatcher {
    * finds the underlying ranking column
    * @returns {Ranking|null} my current ranking
    */
-  findMyRanker(): Ranking|null {
+  findMyRanker(): Ranking | null {
     if (this.parent) {
       return this.parent.findMyRanker();
     }
@@ -433,7 +462,7 @@ export default class Column extends AEventDispatcher {
    * @param dump column dump
    * @param _factory helper for creating columns
    */
-  restore(dump: any, _factory: (dump: any) => Column|null) {
+  restore(dump: any, _factory: (dump: any) => Column | null) {
     this.width = dump.width || this.width;
     this.metadata = {
       label: dump.label || this.label,
@@ -442,7 +471,10 @@ export default class Column extends AEventDispatcher {
     };
     this.compressed = dump.compressed === true;
     if (dump.rendererType) {
-      this.rendererInfo.rendererType = dump.rendererType;
+      this.rendererInfo.renderer = dump.rendererType;
+    }
+    if (dump.groupRenderer) {
+      this.rendererInfo.groupRenderer = dump.groupRenderer;
     }
   }
 
@@ -479,6 +511,16 @@ export default class Column extends AEventDispatcher {
   }
 
   /**
+   * group the given row into a bin/group
+   * @param _row
+   * @param _index
+   * @return {IGroup}
+   */
+  group(_row: any, _index: number) {
+    return defaultGroup;
+  }
+
+  /**
    * flag whether any filter is applied
    * @return {boolean}
    */
@@ -501,24 +543,42 @@ export default class Column extends AEventDispatcher {
    * @return {string}
    */
   getRendererType(): string {
-    return this.rendererInfo.rendererType;
+    return this.rendererInfo.renderer;
+  }
+
+  getGroupRenderer(): string {
+    return this.rendererInfo.groupRenderer;
   }
 
   setRendererType(renderer: string) {
-    if (renderer === this.rendererInfo.rendererType) {
+    if (renderer === this.rendererInfo.renderer) {
       // nothing changes
       return;
     }
-    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.rendererType, this.rendererInfo.rendererType = renderer);
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.renderer, this.rendererInfo.renderer = renderer);
+  }
+
+  setGroupRenderer(renderer: string) {
+    if (renderer === this.rendererInfo.groupRenderer) {
+      // nothing changes
+      return;
+    }
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.groupRenderer, this.rendererInfo.groupRenderer = renderer);
   }
 
   getRendererList() {
-    return this.rendererInfo.rendererList;
+    return this.rendererInfo.renderers;
   }
 
-  protected setRendererList(rendererList: { type: string, label: string }[]) {
-    this.rendererInfo.rendererList = rendererList;
+  getGroupRenderers() {
+    return this.rendererInfo.groupRenderers;
   }
+
+  protected setRendererList(renderers: { type: string, label: string }[], groupRenderers: { type: string, label: string }[] = []) {
+    this.rendererInfo.renderers = renderers;
+    this.rendererInfo.groupRenderers = groupRenderers;
+  }
+
 
   /**
    * describe the column if it is a sorting criteria

@@ -1,6 +1,7 @@
-import AFilterDialog from './AFilterDialog';
+import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
 import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
 import {scale as d3scale} from 'd3';
+import {sortByProperty} from './ADialog';
 
 
 export default class CategoricalMappingFilterDialog extends AFilterDialog<CategoricalNumberColumn> {
@@ -24,7 +25,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     const scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 
     const $popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>
-        <label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label><br>`);
+        ${filterMissingMarkup(bakMissing)}<br>`);
 
     const range = this.column.getScale().range,
       colors = this.column.categoryColors,
@@ -38,7 +39,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
         range: range[i]! * 100,
         color: colors[i]!
       };
-    }).sort(this.sortByName('label'));
+    }).sort(sortByProperty('label'));
 
     const $rows = $popup.select('tbody').selectAll('tr').data(trData);
     const $rowsEnter = $rows.enter().append('tr');
@@ -82,35 +83,36 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
 
     redrawSelectAll();
 
-    const updateData = (filter: string[]|null, filterMissing: boolean) => {
+    const updateData = (filter: string[] | null, filterMissing: boolean) => {
       const noFilter = filter === null && filterMissing === false;
       this.markFiltered(!noFilter);
       this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
     };
 
-    $popup.select('.cancel').on('click', () => {
-      updateData(bak, bakMissing);
-      this.column.setMapping(range);
-      $popup.remove();
-    });
-    $popup.select('.reset').on('click', () => {
-      trData.forEach((d) => {
-        d.isChecked = true;
-        d.range = 50;
-      });
-      redraw();
-      updateData(null, false);
-      this.column.setMapping(trData.map(() => 1));
-    });
-    $popup.select('.ok').on('click', () => {
-      let f: string[]|null = trData.filter((d) => d.isChecked).map((d) => d.cat);
-      if (f.length === trData.length) {
-        f = null;
+    this.onButton($popup, {
+      cancel: () => {
+        updateData(bak, bakMissing);
+        this.column.setMapping(range);
+      },
+      reset: () => {
+        trData.forEach((d) => {
+          d.isChecked = true;
+          d.range = 50;
+        });
+        redraw();
+        updateData(null, false);
+        this.column.setMapping(trData.map(() => 1));
+      },
+      submit: () => {
+        let f: string[] | null = trData.filter((d) => d.isChecked).map((d) => d.cat);
+        if (f.length === trData.length) {
+          f = null;
+        }
+        const filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+        updateData(f, filterMissing);
+        this.column.setMapping(trData.map((d) => d.range / 100));
+        return true;
       }
-      const filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
-      updateData(f, filterMissing);
-      this.column.setMapping(trData.map((d) => d.range / 100));
-      $popup.remove();
     });
   }
 }

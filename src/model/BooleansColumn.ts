@@ -1,8 +1,7 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import ValueColumn from './ValueColumn';
-import {IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './CategoricalColumn';
 
 export interface IBooleansDesc {

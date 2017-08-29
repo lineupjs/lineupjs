@@ -22,7 +22,7 @@ export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
      <label><input type="radio" name="boolean_check" value="false" ${bak === false ? 'checked="checked"' : ''}>False</label>
     <br>`);
 
-    const updateData = (filter: boolean|null) => {
+    const updateData = (filter: boolean | null) => {
       this.markFiltered((filter !== null));
       this.column.setFilter(filter);
     };
@@ -36,20 +36,19 @@ export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {
 
     $popup.selectAll('input[type="radio"]').on('change', updateImpl);
 
-    $popup.select('.cancel').on('click', function () {
-      updateData(bak);
-      $popup.remove();
-    });
-    $popup.select('.reset').on('click', function () {
-      const v = bak === null ? 'null' : String(bak);
-      $popup.selectAll('input[type="radio"]').property('checked', function (this: HTMLInputElement) {
-        return this.value === v;
-      });
-      updateData(null);
-    });
-    $popup.select('.ok').on('click', function () {
-      updateImpl();
-      $popup.remove();
+    this.onButton($popup, {
+      cancel: () => updateData(bak),
+      reset: () => {
+        const v = bak === null ? 'null' : String(bak);
+        $popup.selectAll('input[type="radio"]').property('checked', function (this: HTMLInputElement) {
+          return this.value === v;
+        });
+        updateData(null);
+      },
+      submit: () => {
+        updateImpl();
+        return true;
+      }
     });
   }
 }

@@ -37,14 +37,21 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
 
   protected createRow(node: HTMLElement, rowIndex: number, ...extras: any[]): void {
     super.createRow(node, rowIndex, ...extras);
+    const isGroup = this.ctx.isGroup(rowIndex);
+
+    if (isGroup) {
+      node.dataset.agg = 'group';
+      return;
+    }
+
     const dataIndex = this.ctx.getRow(rowIndex).dataIndex;
     node.dataset.dataIndex = dataIndex.toString();
+    node.dataset.agg = 'detail'; //or 'group'
     if (this.ctx.provider.isSelected(dataIndex)) {
       node.classList.add('lu-selected');
     } else {
       node.classList.remove('lu-selected');
     }
-
     node.onclick = (evt) => {
       const dataIndex = parseInt(node.dataset.dataIndex!, 10);
       this.ctx.provider.toggleSelection(dataIndex, evt.ctrlKey);
@@ -52,25 +59,48 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
   }
 
   protected updateRow(node: HTMLElement, rowIndex: number, ...extras: any[]): void {
-    super.updateRow(node, rowIndex, ...extras);
-    const dataIndex = this.ctx.getRow(rowIndex).dataIndex;
-    node.dataset.dataIndex = dataIndex.toString();
-    if (this.ctx.provider.isSelected(dataIndex)) {
-      node.classList.add('lu-selected');
-    } else {
-      node.classList.remove('lu-selected');
+    const isGroup = this.ctx.isGroup(rowIndex);
+    const wasGroup = node.dataset.agg === 'group';
+
+    if (isGroup !== wasGroup) {
+      // change of mode clear the children to reinitialize them
+      node.innerHTML = '';
+
+      // adapt body
+      node.dataset.agg = isGroup ? 'group' : 'detail';
+      if (isGroup) {
+        node.dataset.dataIndex = undefined;
+        node.onclick = <any>undefined;
+      } else {
+        node.onclick = (evt) => {
+          const dataIndex = parseInt(node.dataset.dataIndex!, 10);
+          this.ctx.provider.toggleSelection(dataIndex, evt.ctrlKey);
+        };
+      }
     }
+
+    if (!isGroup) {
+      const dataIndex = this.ctx.getRow(rowIndex).dataIndex;
+      node.dataset.dataIndex = dataIndex.toString();
+      if (this.ctx.provider.isSelected(dataIndex)) {
+        node.classList.add('lu-selected');
+      } else {
+        node.classList.remove('lu-selected');
+      }
+    }
+
+    super.updateRow(node, rowIndex, ...extras);
   }
 
   updateSelection(dataIndices: number[]) {
     const selected = new Set(dataIndices);
     this.forEachRow((node: HTMLElement) => {
       const dataIndex = parseInt(node.dataset.dataIndex!, 10);
-        if (selected.has(dataIndex)) {
-          node.classList.add('lu-selected');
-        } else {
-          node.classList.remove('lu-selected');
-        }
+      if (selected.has(dataIndex)) {
+        node.classList.add('lu-selected');
+      } else {
+        node.classList.remove('lu-selected');
+      }
     }, true);
   }
 

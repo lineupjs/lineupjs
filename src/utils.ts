@@ -2,10 +2,9 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {dispatch, select, event as d3event, Dispatch, Selection} from 'd3';
+import {dispatch, Dispatch, event as d3event, select, Selection} from 'd3';
 import Column from './model/Column';
-import {IDOMCellRenderer} from './renderer/IDOMCellRenderers';
-export {round} from 'd3';
+import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
 
 
 export function findOption(options: any) {
@@ -84,8 +83,8 @@ export class AEventDispatcher {
   }
 
   on(type: string): (...args: any[]) => void;
-  on(type: string | string[], listener: ((...args: any[]) => any)|null): AEventDispatcher;
-  on(type: string | string[], listener?: ((...args: any[]) => any)|null): any {
+  on(type: string | string[], listener: ((...args: any[]) => any) | null): AEventDispatcher;
+  on(type: string | string[], listener?: ((...args: any[]) => any) | null): any {
     if (listener !== undefined) {
       if (Array.isArray(type)) {
         (<string[]>type).forEach((d) => this.listeners.on(d, listener!));
@@ -106,7 +105,7 @@ export class AEventDispatcher {
   }
 
   protected fire(type: string | string[], ...args: any[]) {
-    const primaryType = Array.isArray(type) ? type[0]: type;
+    const primaryType = Array.isArray(type) ? type[0] : type;
     const fireImpl = (t: string) => {
       //local context per event, set a this argument
       const context: IEventContext = {
@@ -352,7 +351,7 @@ export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
  * helper storage for dnd in edge since edge doesn't support custom mime-types
  * @type {Map<string, {[p: string]: string}>}
  */
-const dndTransferStorage = new Map<string, {[key: string]:string}>();
+const dndTransferStorage = new Map<string, { [key: string]: string }>();
 
 function isEdgeDnD(e: DragEvent) {
   return dndTransferStorage.size > 0 && hasDnDType(e, ['text/plain']);
@@ -382,36 +381,36 @@ export function updateDropEffect(e: DragEvent) {
   }
 }
 
-export function dragAble<T extends {id: string}>(onDragStart: (d: T) => {effectAllowed: 'none'|'copy'|'copyLink'|'copyMove'|'link'|'linkMove'|'move'|'all', data: {[key: string]: string}}) {
+export function dragAble<T extends { id: string }>(onDragStart: (d: T) => { effectAllowed: 'none' | 'copy' | 'copyLink' | 'copyMove' | 'link' | 'linkMove' | 'move' | 'all', data: { [key: string]: string } }) {
   return ($node: Selection<T>) => {
-      $node.on('dragstart', (d) => {
-        const e = <DragEvent>(<any>d3event);
-        const payload = onDragStart(d);
-        e.dataTransfer.effectAllowed = payload.effectAllowed;
+    $node.on('dragstart', (d) => {
+      const e = <DragEvent>(<any>d3event);
+      const payload = onDragStart(d);
+      e.dataTransfer.effectAllowed = payload.effectAllowed;
 
-        const keys = Object.keys(payload.data);
-        const allSucceded = keys.every((k) => {
-          try {
-            e.dataTransfer.setData(k, payload.data[k]);
-            return true;
-          } catch(e) {
-            return false;
-          }
-        });
-        if (allSucceded) {
-          return;
-        }
-        //compatibility mode for edge
-        const text = payload.data['text/plain'] || '';
-        e.dataTransfer.setData('text/plain', `${d.id}${text ? `: ${text}`: ''}`);
-          dndTransferStorage.set(d.id, payload.data);
-      }).on('dragend', (d) =>  {
-        if (dndTransferStorage.size > 0) {
-          //clear the id
-          dndTransferStorage.delete(d.id);
+      const keys = Object.keys(payload.data);
+      const allSucceded = keys.every((k) => {
+        try {
+          e.dataTransfer.setData(k, payload.data[k]);
+          return true;
+        } catch (e) {
+          return false;
         }
       });
-    };
+      if (allSucceded) {
+        return;
+      }
+      //compatibility mode for edge
+      const text = payload.data['text/plain'] || '';
+      e.dataTransfer.setData('text/plain', `${d.id}${text ? `: ${text}` : ''}`);
+      dndTransferStorage.set(d.id, payload.data);
+    }).on('dragend', (d) => {
+      if (dndTransferStorage.size > 0) {
+        //clear the id
+        dndTransferStorage.delete(d.id);
+      }
+    });
+  };
 }
 
 /**
@@ -620,16 +619,17 @@ export function hideOverlays(parentElement: HTMLElement) {
  * @param {{column: Column; renderer: IDOMCellRenderer}[]} columns columns to check
  * @param {string} helperType create types of
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer }[], helperType = 'div') {
+export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer, groupRenderer: IDOMGroupRenderer }[], render: 'group' | 'detail', helperType = 'svg') {
+  const renderer = render === 'detail' ? (col: { column: Column }) => col.column.getRendererType() : (col: { column: Column }) => col.column.getGroupRenderer();
   if (node.childElementCount === 0) {
     // initial call fast method
-    node.innerHTML = columns.map((c) => c.renderer.template).join('');
+    node.innerHTML = columns.map((c) => (render === 'detail' ? c.renderer : c.groupRenderer).template).join('');
     columns.forEach((col, i) => {
       const cnode = <Element>node.childNodes[i];
       // set attribute for finding again
       cnode.setAttribute('data-column-id', col.column.id);
       // store current renderer
-      cnode.setAttribute('data-renderer', col.column.getRendererType());
+      cnode.setAttribute('data-renderer', renderer(col));
     });
     return;
   }
@@ -637,14 +637,14 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
   function matches(c: { column: Column }, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
-    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getRendererType();
+    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === renderer(c);
   }
 
   if (columns.every(matches)) {
     return; //nothing to do
   }
 
-  const idsAndRenderer = new Set(columns.map((c) => `${c.column.id}@${c.column.getRendererType()}`));
+  const idsAndRenderer = new Set(columns.map((c) => `${c.column.id}@${renderer(c)}`));
   //remove all that are not existing anymore
   Array.from(node.childNodes).forEach((n: Element) => {
     const id = n.getAttribute('data-column-id');
@@ -659,11 +659,20 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: { column:
     let cnode = node.querySelector(`[data-column-id="${col.column.id}"]`);
     if (!cnode) {
       //create one
-      helper.innerHTML = col.renderer.template;
+      helper.innerHTML = (render === 'detail' ? col.renderer : col.groupRenderer).template;
       cnode = <Element>helper.childNodes[0];
       cnode.setAttribute('data-column-id', col.column.id);
-      cnode.setAttribute('data-renderer', col.column.getRendererType());
+      cnode.setAttribute('data-renderer', renderer(col));
     }
     node.appendChild(cnode);
   });
 }
+
+
+export function equalArrays<T>(a: T[], b: T[]) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return a.every((ai, i) => ai === b[i]);
+}
+
