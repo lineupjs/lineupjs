@@ -6,6 +6,9 @@ import {IGroup} from '../model/Group';
 import {IDataRow} from '../provider/ADataProvider';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 
+/**
+ * helper class that renders a group renderer as a selected (e.g. median) single item
+ */
 export abstract class AAggregatedGroupRenderer<T extends Column> implements ICellRendererFactory {
   abstract createDOM(col: T, context: IDOMRenderContext): IDOMCellRenderer;
 

@@ -24,6 +24,8 @@ export interface ICanvasRenderContext extends IRenderContext<ICanvasCellRenderer
 
   hovered(dataIndex: number): boolean;
 
+  groupHovered(group: IGroup): boolean;
+
   selected(dataIndex: number): boolean;
 
   readonly textHints: ITextRenderHints;

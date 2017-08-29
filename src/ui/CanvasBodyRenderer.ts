@@ -339,6 +339,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
   protected createContextImpl(indexShift: number, totalNumberOfRows: number): ICanvasRenderContext & IBodyRenderContext {
     const base: any = this.createContext(indexShift, totalNumberOfRows, createCanvas, createCanvasGroup);
     base.hovered = this.isHovered.bind(this);
+    base.groupHovered = () => false; // TODO support grouping hovering
     base.selected = (dataIndex: number) => this.data.isSelected(dataIndex);
     (<any>base).bodyDOMElement = <HTMLElement>this.$node.node();
     base.rowHeight = () => this.options.rowHeight;
