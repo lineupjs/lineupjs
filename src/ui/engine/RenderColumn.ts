@@ -8,9 +8,9 @@ import {IFilterDialog} from '../../dialogs/AFilterDialog';
 import {createSummary, createToolbar, dragWidth, handleDnD} from './header';
 import {INumberColumn} from '../../model/NumberColumn';
 import {ICategoricalColumn} from '../../model/CategoricalColumn';
-import {IDOMCellRenderer} from '../../renderer/IDOMCellRenderers';
+import {IDOMCellRenderer, IDOMGroupRenderer} from '../../renderer/IDOMCellRenderers';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
-import {defaultGroup} from '../../model/Group';
+import {IGroup} from '../../model/Group';
 
 export interface IRankingHeaderContextContainer {
   readonly idPrefix: string;
@@ -25,8 +25,23 @@ export interface IRankingHeaderContextContainer {
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 }
 
+export interface IGroupItem extends IDataRow {
+  group: IGroup;
+  relativeIndex: number;
+}
+
+export interface IGroupData extends IGroup {
+  rows: IDataRow[];
+}
+
+export function isGroup(item: IGroupData|IGroupItem) {
+  return (<IGroupData>item).name !== undefined; // use .name as separator
+}
+
 export interface IRankingBodyContext extends IRankingHeaderContextContainer, IDOMRenderContext {
-  getRow(index: number): IDataRow;
+  isGroup(index: number): boolean;
+  getGroup(index: number): IGroupData;
+  getRow(index: number): IGroupItem;
 }
 
 export declare type IRankingHeaderContext = Readonly<IRankingHeaderContextContainer>;
@@ -46,8 +61,15 @@ export function toFullTooltip(col: { label: string, description?: string }) {
   return base;
 }
 
+export interface IRenderers {
+  singleId: string;
+  single: IDOMCellRenderer;
+  groupId: string;
+  group: IDOMGroupRenderer;
+}
+
 export default class RenderColumn implements IColumn {
-  constructor(public readonly c: Column, private readonly rendererId: string, private readonly renderer: IDOMCellRenderer, public readonly index: number) {
+  constructor(public readonly c: Column, private readonly renderers: IRenderers, public readonly index: number) {
 
   }
 
@@ -96,14 +118,23 @@ export default class RenderColumn implements IColumn {
   }
 
   createCell(index: number, document: Document, ctx: IRankingContext) {
-    const node = asElement(document, this.renderer.template);
+    const isGroup = ctx.isGroup(index);
+    const node = asElement(document, isGroup ? this.renderers.group.template : this.renderers.single.template);
     this.updateCell(node, index, ctx);
     return node;
   }
 
   updateCell(node: HTMLElement, index: number, ctx: IRankingContext): HTMLElement | void {
-    node.dataset.renderer = this.rendererId;
-    this.renderer.update(node, ctx.getRow(index), index, defaultGroup);
+    const isGroup = ctx.isGroup(index);
+    // assert that we have the template of the right mode
+    node.dataset.renderer = isGroup ? this.renderers.groupId : this.renderers.singleId;
+    if (isGroup) {
+      const g = ctx.getGroup(index);
+      this.renderers.group.update(node, g, g.rows, ctx.statsOf(<any>this.c));
+    } else {
+      const r = ctx.getRow(index);
+      this.renderers.single.update(node, r, r.relativeIndex, r.group);
+    }
   }
 }
 

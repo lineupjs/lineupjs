@@ -3,17 +3,16 @@
  */
 import {AEventDispatcher, debounce, findOption} from '../../utils';
 import {default as ABodyRenderer} from '../ABodyRenderer';
-import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
+import DataProvider, {default as ADataProvider} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
 import {createDOM, createDOMGroup} from '../../renderer';
-import {default as RenderColumn, IRankingBodyContext} from './RenderColumn';
+import {default as RenderColumn, IGroupData, IGroupItem, IRankingBodyContext, isGroup} from './RenderColumn';
 import EngineRankingRenderer from './EngineRankingRenderer';
-import {uniformContext} from 'lineupengine/src';
-import Ranking from '../../model/Ranking';
 import {ILineUpRenderer} from '../index';
 import {ILineUpConfig, IRenderingOptions} from '../../lineup';
 import {isCategoricalColumn} from '../../model/CategoricalColumn';
 import NumberColumn from '../../model/NumberColumn';
+import {nonUniformContext} from 'lineupengine/src/logic';
 
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
   static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
@@ -25,7 +24,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   readonly node: HTMLElement;
 
-  readonly ctx: IRankingBodyContext & { data: IDataRow[] };
+  readonly ctx: IRankingBodyContext & { data: (IGroupItem|IGroupData)[] };
 
   private readonly renderer: EngineRankingRenderer;
 
@@ -53,13 +52,15 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       groupRenderer: (col: Column) => createDOMGroup(col, this.options.renderers, this.ctx),
       idPrefix: this.options.idPrefix,
       data: [],
-      getRow: (index: number) => this.ctx.data[index],
+      isGroup: (index: number) => isGroup(this.ctx.data[index]),
+      getGroup: (index: number) => <IGroupData>this.ctx.data[index],
+      getRow: (index: number) => <IGroupItem>this.ctx.data[index],
       totalNumberOfRows: 0
     };
 
     this.renderer = new EngineRankingRenderer(this.node, this.options.idPrefix, this.ctx);
 
-    this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.renderer.updateSelection(data.getSelection()));
+    this.initProvider(data);
   }
 
   protected createEventList() {
@@ -69,14 +70,24 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   changeDataStorage(data: DataProvider) {
     this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
     this.data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, null);
+    this.data.on(`${DataProvider.EVENT_DIRTY}.body`, null);
 
     this.data = data;
     this.ctx.provider = data;
 
-    this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.renderer.updateSelection(data.getSelection()));
-    this.data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, () => this.updateHist());
+    this.initProvider(data);
+  }
 
-    this.update();
+  private initProvider(data: DataProvider) {
+    const that = this;
+
+    data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.renderer.updateSelection(data.getSelection()));
+    data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, () => this.updateHist());
+    data.on(`${DataProvider.EVENT_DIRTY}.body`, debounce(function (this: { primaryType: string }) {
+      if (this.primaryType !== Column.EVENT_WIDTH_CHANGED) {
+        that.update();
+      }
+    }));
   }
 
   private updateHist() {
@@ -99,23 +110,49 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   update() {
     const ranking = this.data.getLastRanking();
+    const groups = ranking.getGroups();
+
     const order = ranking.getOrder();
     const data = this.data.view(order);
-    this.ctx.data = (Array.isArray(data) ? data : []).map(((v, i) => ({v, dataIndex: order[i]})));
-    (<any>this.ctx).totalNumberOfRows = order.length;
-    const that = this;
-    ranking.on(`${Ranking.EVENT_DIRTY}.body`, debounce(function (this: { primaryType: string }) {
-      if (this.primaryType !== Column.EVENT_WIDTH_CHANGED) {
-        that.update();
+    const localData = (Array.isArray(data) ? data : []).map((v, i) => ({v, dataIndex: order[i]}));
+
+    if (groups.length === 1) {
+      // simple case
+      if (this.data.isAggregated(ranking, groups[0])) {
+        // just a single row
+        this.ctx.data = [Object.assign({rows: localData}, groups[0])];
+      } else {
+        // simple ungrouped case
+        this.ctx.data = localData.map((r, i) => Object.assign({ group: groups[0], relativeIndex: i}, r));
       }
-    }));
+    } else {
+      //multiple groups
+      let offset = 0;
+      const r = <(IGroupItem|IGroupData)[]>[];
+      groups.forEach((group) => {
+        const length = group.order.length;
+        const groupData = localData.slice(offset, offset + length);
+        offset += length;
+
+        if (this.data.isAggregated(ranking, group)) {
+          r.push(Object.assign({rows: groupData}, group));
+        } else {
+          r.push(...groupData.map((r, i) => Object.assign({ group, relativeIndex: i}, r)));
+        }
+      });
+      this.ctx.data = r;
+    }
+
+    (<any>this.ctx).totalNumberOfRows = this.ctx.data.length;
 
     const flatCols: IFlatColumn[] = [];
     ranking.flatten(flatCols, 0, 1, 0);
     const cols = flatCols.map((c) => c.col);
     const columns = cols.map((c, i) => {
-      const renderer = createDOM(c, this.options.renderers, this.ctx);
-      return new RenderColumn(c, c.getRendererType(), renderer, i);
+      const single = createDOM(c, this.options.renderers, this.ctx);
+      const group = createDOMGroup(c, this.options.renderers, this.ctx);
+      const renderers = { single, group, singleId: c.getRendererType(), groupId: c.getGroupRenderer()};
+      return new RenderColumn(c, renderers, i);
     });
 
     if (this.histCache.size === 0) {
@@ -126,7 +163,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       this.renderer.updateColumnWidths();
     }));
 
-    const rowContext = uniformContext(this.ctx.data.length, 20);
+    const rowContext = nonUniformContext(this.ctx.data.map((d) => isGroup(d) ? this.options.body.groupHeight! : this.options.body.rowHeight!), this.options.body.rowHeight!);
 
     this.renderer.render(columns, rowContext);
   }
