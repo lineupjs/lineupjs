@@ -4,9 +4,9 @@ div.lu-missing {
   background: repeating-linear-gradient(
     45deg,
     transparent,
-    transparent 10px,
-    #ccc 10px,
-    #ccc 20px
+    transparent 3px,
+    #dddddd 3px,
+    #dddddd 10px
   );
 
   > * {
@@ -24,16 +24,9 @@ g.lu-missing {
   }
 
   &.boxplotcell > rect.cellbg,
-  &.bar > rect {
+  &.bar > rect,
+  &.stack > g:first-of-type {
     display: block;
-
-    fill: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 10px,
-        #ccc 10px,
-        #ccc 20px
-    );
   }
 
 }

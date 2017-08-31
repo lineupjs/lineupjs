@@ -57,6 +57,13 @@ export default class SVGBodyRenderer extends ADOMBodyRenderer {
     let $base = this.$node.select('defs.body');
     if ($base.empty()) {
       $base = this.$node.append('defs').classed('body', true);
+      $base.append('pattern')
+        .attr('id', `m${context.idPrefix}MissingPattern`)
+        .attr('width', 10)
+        .attr('height', 10)
+        .attr('patternUnits', 'userSpaceOnUse')
+        .attr('patternTransform', 'rotate(45 50 50)')
+        .html(`<line style="stroke: #dddddd; stroke-width: 7" y2="10"/>`);
     }
 
     //generate clip paths for the text columns to avoid text overflow
@@ -75,6 +82,8 @@ export default class SVGBodyRenderer extends ADOMBodyRenderer {
         width: (d) => Math.max(d.getWidth() - 5, 0),
         height
       });
+
+
   }
 
   updateClipPaths(data: IRankingData[], context: IBodyRenderContext&IDOMRenderContext, height: number) {

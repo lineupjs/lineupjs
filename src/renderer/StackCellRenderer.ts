@@ -5,7 +5,7 @@ import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {matchColumns} from '../utils';
+import {attr, matchColumns} from '../utils';
 import {renderMissingValue} from './BarCellRenderer';
 
 /**
@@ -42,6 +42,20 @@ export default class StackCellRenderer implements ICellRendererFactory {
         if (col.isMissing(d.v, d.dataIndex)) {
           // everything is missing or at least a part of it
           n.classList.add('lu-missing');
+          // hijack the first rect
+          const hijacked = n.querySelector('rect');
+          if (hijacked) {
+            attr(hijacked, {
+              width: col.getWidth(),
+              height: context.rowHeight(i)
+            }, {
+              fill: `url(#m${context.idPrefix}MissingPattern)`
+            });
+          }
+          const hijackedText = n.querySelector('text');
+          if (hijackedText) {
+            hijackedText.textContent = 'NaN';
+          }
           return;
         }
         n.classList.remove('lu-missing');

@@ -47,8 +47,14 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         // missing
           n.classList.add('lu-missing');
           n.querySelector('title')!.textContent = 'NaN';
+          attr(<SVGElement>n.querySelector('rect.cellbg'), {}, {
+            fill: `url(#m${context.idPrefix}MissingPattern)`
+          });
           return;
         }
+        attr(<SVGElement>n.querySelector('rect.cellbg'), {}, {
+          fill: null
+        });
         n.classList.remove('lu-missing');
 
         const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);

@@ -40,7 +40,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
             width: col.getWidth(),
             height: context.rowHeight(i) - (paddingTop + paddingBottom)
           }, {
-            fill: null
+            fill: `url(#m${context.idPrefix}MissingPattern)`
           });
           attr(<SVGTextElement>n.querySelector('text'), {}).textContent = 'NaN';
           return;
