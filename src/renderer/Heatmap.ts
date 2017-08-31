@@ -7,6 +7,7 @@ import {attr} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
+import {renderMissingValue} from './BarCellRenderer';
 
 
 export default class Heatmap implements ICellRendererFactory {
@@ -36,7 +37,7 @@ export default class Heatmap implements ICellRendererFactory {
           width: w,
           height: w
         }, {
-          fill: Heatmap.toHeatMapColor(d.v, d.dataIndex, col)
+          fill: col.isMissing(d.v, d.dataIndex) ? `url(#m${context.idPrefix}MissingPattern)` : Heatmap.toHeatMapColor(d.v, d.dataIndex, col)
         });
       }
     };
@@ -48,13 +49,19 @@ export default class Heatmap implements ICellRendererFactory {
       template: `<div class='heatmap ${col.cssClass}' style='background-color: ${col.color}; top: ${padding}'></div>`,
       update: (n: HTMLElement, d: IDataRow, i: number) => {
         const w = context.rowHeight(i) - padding * 2;
+        const missing = col.isMissing(d.v, d.dataIndex);
+        if (missing) {
+          n.classList.add('lu-missing');
+        } else {
+          n.classList.remove('lu-missing');
+        }
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
           width: `${w}px`,
           height: `${w}px`,
           top: `${padding}px`,
-          'background-color': Heatmap.toHeatMapColor(d.v, d.dataIndex, col)
+          'background-color': missing ? null : Heatmap.toHeatMapColor(d.v, d.dataIndex, col)
         });
       }
     };
@@ -64,6 +71,10 @@ export default class Heatmap implements ICellRendererFactory {
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const w = context.rowHeight(i) - padding * 2;
+      if (col.isMissing(d.v, d.dataIndex)) {
+        renderMissingValue(ctx, w, w, padding, padding);
+        return;
+      }
       ctx.fillStyle = Heatmap.toHeatMapColor(d.v, d.dataIndex, col);
       ctx.fillRect(padding, padding, w, w);
     };

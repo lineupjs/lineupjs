@@ -121,11 +121,11 @@ export default class BarCellRenderer implements ICellRendererFactory {
 }
 
 
-export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number) {
+export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
   // create a hatching pattern over the full width
 
   const missingImage = new Image();
   missingImage.src = hatching;
   ctx.fillStyle = ctx.createPattern(missingImage, 'repeat');
-  ctx.fillRect(0, 0, width, height);
+  ctx.fillRect(x, y, width, height);
 }
