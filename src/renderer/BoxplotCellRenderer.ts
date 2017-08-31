@@ -8,6 +8,8 @@ import {attr} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer  from './ICanvasCellRenderer';
 import {scale as d3scale, min as d3min, max as d3max} from 'd3';
+import {renderMissingValue} from './BarCellRenderer';
+import {isMissingValue} from '../model/NumberColumn';
 
 
 function computeLabel(v: IBoxPlotData) {
@@ -36,8 +38,21 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
             <path class='boxplotsortpath' style='display: none'></path>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
         const rowHeight = context.rowHeight(i);
+        attr(<SVGElement>n.querySelector('rect.cellbg'),{
+          width: col.getWidth(),
+          height: rowHeight
+        });
+
+        const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
+        if (isMissingValue(rawBoxdata)) {
+          // missing
+          n.classList.add('lu-missing');
+          n.querySelector('title')!.textContent = 'NaN';
+          return;
+        }
+        n.classList.remove('lu-missing');
+
         const scaled = {
           min: scale(rawBoxdata.min),
           median: scale(rawBoxdata.median),
@@ -45,10 +60,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q3: scale(rawBoxdata.q3),
           max: scale(rawBoxdata.max)
         };
-        attr(<SVGElement>n.querySelector('rect.cellbg'),{
-          width: col.getWidth(),
-          height: rowHeight
-        });
+
         n.querySelector('title').textContent = computeLabel(rawBoxdata);
         attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
           x: scaled.q1,
@@ -87,6 +99,13 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
       // Rectangle
       const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
+
+      if (isMissingValue(rawBoxdata)) {
+        // missing
+        renderMissingValue(ctx, col.getWidth(), rowHeight);
+        return;
+      }
+
       const scaled = {
         min: scale(rawBoxdata.min),
         median: scale(rawBoxdata.median),

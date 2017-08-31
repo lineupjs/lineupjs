@@ -71,6 +71,7 @@ export interface IBodyRendererOptions {
   stacked?: boolean;
   animation?: boolean;
   animationDuration?: number;
+  missingValueColor?: string;
 
   renderers?: {[key: string]: ICellRendererFactory};
 
@@ -100,6 +101,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
     stacked: true,
     animation: false, //200
     animationDuration: 1000,
+    missingValueColor: '#111111',
 
     renderers: merge({}, defaultRenderers),
 

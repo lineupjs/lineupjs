@@ -6,6 +6,8 @@ import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {matchColumns} from '../utils';
+import {renderMissingValue} from './BarCellRenderer';
+import {isMissingValue} from '../model/NumberColumn';
 
 /**
  * renders a stacked column using composite pattern
@@ -38,6 +40,13 @@ export default class StackCellRenderer implements ICellRendererFactory {
       update: (n: SVGGElement, d: IDataRow, i: number) => {
         let stackShift = 0;
         matchColumns(n, cols);
+        if (isMissingValue(col.getValue(d.v, d.dataIndex))) {
+          // everything is missing or at least a part of it
+          n.classList.add('lu-missing');
+          return;
+        }
+        n.classList.remove('lu-missing');
+
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
           cnode.setAttribute('transform', `translate(${col.shift - stackShift},0)`);
@@ -57,6 +66,13 @@ export default class StackCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         let stackShift = 0;
         matchColumns(n, cols, 'html');
+        if (isMissingValue(col.getValue(d.v, d.dataIndex))) {
+          // everything is missing or at least a part of it
+          n.classList.add('lu-missing');
+          return;
+        }
+        n.classList.remove('lu-missing');
+
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
           cnode.style.transform = `translate(${col.shift - stackShift}px,0)`;
@@ -73,6 +89,11 @@ export default class StackCellRenderer implements ICellRendererFactory {
     const cols = this.createData(col, context);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
       let stackShift = 0;
+      if (isMissingValue(col.getValue(d.v, d.dataIndex))) {
+        // everything is missing or at least a part of it
+        renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
+        return;
+      }
       cols.forEach((col) => {
         const shift = col.shift - stackShift;
         ctx.translate(shift, 0);
