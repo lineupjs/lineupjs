@@ -63,7 +63,7 @@ export default class SVGBodyRenderer extends ADOMBodyRenderer {
         .attr('height', 10)
         .attr('patternUnits', 'userSpaceOnUse')
         .attr('patternTransform', 'rotate(45 50 50)')
-        .html(`<line style="stroke: #dddddd; stroke-width: 7" y2="10"/>`);
+        .html(`<line style="stroke: #ddd; stroke-width: 7" y2="10"/>`);
     }
 
     //generate clip paths for the text columns to avoid text overflow
