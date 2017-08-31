@@ -38,11 +38,11 @@ export default class CircleCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const value = col.getValue(d.v, d.dataIndex);
-      if (isMissingValue(value)) {
+      if (col.isMissing(d.v, d.dataIndex)) {
         renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
         return;
       }
+      const value = col.getValue(d.v, d.dataIndex);
       const posy = (context.rowHeight(i) / 2);
       const posx = (col.getWidth() / 2);
       ctx.fillStyle = this.colorOf(d.v, i, col);

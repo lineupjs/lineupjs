@@ -42,6 +42,7 @@ export function numberCompare(a: number, b: number) {
 
 
 export interface INumberColumn {
+  isMissing(row: any, index: number): boolean;
   getNumber(row: any, index: number): number;
   getRawNumber(row: any, index: number): number;
 }
@@ -376,6 +377,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       return this.missingValue;
     }
     return +v;
+  }
+
+  isMissing(row: any, index: number) {
+    return isMissingValue(super.getValue(row, index));
   }
 
   getValue(row: any, index: number) {

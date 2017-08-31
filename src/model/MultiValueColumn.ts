@@ -146,6 +146,10 @@ export default class MultiValueColumn extends ValueColumn<number[]> implements I
     return this.getValue(row, index);
   }
 
+  isMissing(row: any, index: number) {
+    return this.getValue(row, index) == null;
+  }
+
   calculateCellDimension(width: number) {
     return (width / this.dataLength);
   }

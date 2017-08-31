@@ -91,6 +91,10 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return this.getNumber(row, index);
   }
 
+  isMissing(row: any, index: number) {
+    return isMissingValue(this.compute(row, index));
+  }
+
   compare(a: any, b: any, aIndex: number, bIndex: number) {
     return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
   }

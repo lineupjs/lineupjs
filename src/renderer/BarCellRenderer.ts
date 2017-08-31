@@ -31,10 +31,8 @@ export default class BarCellRenderer implements ICellRendererFactory {
           <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})'></text>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        n.querySelector('rect title').textContent = col.getLabel(d.v, d.dataIndex);
-        const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
 
-        if (isMissingValue(width)) {
+        if (col.isMissing(d.v, d.dataIndex)) {
           // missing
           n.classList.add('lu-missing');
           attr(<SVGRectElement>n.querySelector('rect'), {
@@ -48,6 +46,9 @@ export default class BarCellRenderer implements ICellRendererFactory {
           return;
         }
         n.classList.remove('lu-missing');
+
+        const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
+        n.querySelector('rect title').textContent = col.getLabel(d.v, d.dataIndex);
 
         attr(<SVGRectElement>n.querySelector('rect'), {
           y: paddingTop,
@@ -69,9 +70,8 @@ export default class BarCellRenderer implements ICellRendererFactory {
           <span class='number ${this.renderValue ? '' : 'hoverOnly'}'></span>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
 
-        if (isMissingValue(width)) {
+        if (col.isMissing(d.v, d.dataIndex)) {
           // missing
           n.classList.add('lu-missing');
           attr(n, {
@@ -87,6 +87,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
         }
         n.classList.remove('lu-missing');
 
+        const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
@@ -104,11 +105,11 @@ export default class BarCellRenderer implements ICellRendererFactory {
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
-      if (isMissingValue(width)) {
+      if (col.isMissing(d.v, d.dataIndex)) {
         renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
         return;
       }
+      const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
       ctx.fillStyle = this.colorOf(d.v, i, col);
       ctx.fillRect(0, paddingTop, isNaN(width) ? 0 : width, context.rowHeight(i) - (paddingTop + paddingBottom));
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {

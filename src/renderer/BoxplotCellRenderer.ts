@@ -9,7 +9,6 @@ import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer  from './ICanvasCellRenderer';
 import {scale as d3scale, min as d3min, max as d3max} from 'd3';
 import {renderMissingValue} from './BarCellRenderer';
-import {isMissingValue} from '../model/NumberColumn';
 
 
 function computeLabel(v: IBoxPlotData) {
@@ -44,15 +43,15 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           height: rowHeight
         });
 
-        const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
-        if (isMissingValue(rawBoxdata)) {
-          // missing
+        if (col.isMissing(d.v, d.dataIndex)) {
+        // missing
           n.classList.add('lu-missing');
           n.querySelector('title')!.textContent = 'NaN';
           return;
         }
         n.classList.remove('lu-missing');
 
+        const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
         const scaled = {
           min: scale(rawBoxdata.min),
           median: scale(rawBoxdata.median),
@@ -97,14 +96,15 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const rowHeight = context.rowHeight(i);
 
-      // Rectangle
-      const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
 
-      if (isMissingValue(rawBoxdata)) {
-        // missing
+      if (col.isMissing(d.v, d.dataIndex)) {
+          // missing
         renderMissingValue(ctx, col.getWidth(), rowHeight);
         return;
       }
+
+      // Rectangle
+      const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
 
       const scaled = {
         min: scale(rawBoxdata.min),
