@@ -28,13 +28,15 @@ function isUnknown(v?: number|null) {
  * save number comparison
  * @param a
  * @param b
+ * @param aMissing
+ * @param bMissing
  * @return {number}
  */
-export function numberCompare(a: number, b: number) {
-  if (isNaN(a)) { //NaN are smaller
-    return isNaN(b) ? 0 : -1;
+export function numberCompare(a: number, b: number, aMissing = false, bMissing = false) {
+  if (isNaN(a) || aMissing) { //NaN are smaller
+    return (isNaN(b) || bMissing) ? 0 : -1;
   }
-  if (isNaN(b)) {
+  if (isNaN(b) || bMissing) {
     return +1;
   }
   return a - b;
@@ -400,7 +402,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
+    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex), this.isMissing(a, aIndex), this.isMissing(b, bIndex));
   }
 
   getOriginalMapping() {
