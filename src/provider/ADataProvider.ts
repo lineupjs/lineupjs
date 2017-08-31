@@ -63,6 +63,11 @@ export interface IExportOptions {
    * @param col the column description to filter
    */
   filter?: (col: IColumnDesc) => boolean; //!isSupportType
+
+  /**
+   * whether the description should be part of the column header
+   */
+  verboseColumnHeaders?: boolean;
 }
 
 export interface IStatsBuilder {
@@ -711,12 +716,15 @@ abstract class ADataProvider extends AEventDispatcher {
       header: true,
       quote: false,
       quoteChar: '"',
-      filter: (c) => !isSupportType(c)
+      filter: (c) => !isSupportType(c),
+      verboseColumnHeaders: false
     }, options);
     //optionally quote not numbers
+    const escape = new RegExp(`[${options.quoteChar}]`, 'g');
+
     function quote(l: string, c?: Column) {
-      if (options.quote && (!c || !isNumberColumn(c))) {
-        return options.quoteChar + l + options.quoteChar;
+      if ((options.quote || l.indexOf('\n') >= 0) && (!c || !isNumberColumn(c))) {
+        return `${options.quoteChar}${l.replace(escape, options.quoteChar + options.quoteChar)}${options.quoteChar}`;
       }
       return l;
     }
@@ -726,7 +734,7 @@ abstract class ADataProvider extends AEventDispatcher {
     return this.view(order).then((data) => {
       const r = [];
       if (options.header) {
-        r.push(columns.map((d) => quote(d.label)).join(options.separator));
+        r.push(columns.map((d) => quote(`${d.label}${options.verboseColumnHeaders && d.description ? '\n' + d.description : ''}`)).join(options.separator));
       }
       data.forEach((row, i) => {
         r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(options.separator));
