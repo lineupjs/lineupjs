@@ -6,6 +6,7 @@ import {ISVGCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {renderMissingValue} from './BarCellRenderer';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
 
@@ -37,12 +38,17 @@ export default class CircleCellRenderer implements ICellRendererFactory {
 
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      if (col.isMissing(d.v, d.dataIndex)) {
+        renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
+        return;
+      }
+      const value = col.getValue(d.v, d.dataIndex);
       const posy = (context.rowHeight(i) / 2);
       const posx = (col.getWidth() / 2);
       ctx.fillStyle = this.colorOf(d.v, i, col);
       ctx.strokeStyle = this.colorOf(d.v, i, col);
       ctx.beginPath();
-      ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getValue(d.v, d.dataIndex), 0, 2 * Math.PI);
+      ctx.arc(posx, posy, (context.rowHeight(i) / 2) * value, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {

@@ -1,11 +1,12 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn} from '../model/NumberColumn';
+import {INumberColumn, isMissingValue} from '../model/NumberColumn';
 import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
 import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
+import * as hatching from '../assets/hatching.png';
 
 
 /**
@@ -30,8 +31,24 @@ export default class BarCellRenderer implements ICellRendererFactory {
           <text class='number ${this.renderValue ? '' : 'hoverOnly'}' clip-path='url(#cp${context.idPrefix}clipCol${col.id})'></text>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        n.querySelector('rect title').textContent = col.getLabel(d.v, d.dataIndex);
+
+        if (col.isMissing(d.v, d.dataIndex)) {
+          // missing
+          n.classList.add('lu-missing');
+          attr(<SVGRectElement>n.querySelector('rect'), {
+            y: paddingTop,
+            width: col.getWidth(),
+            height: context.rowHeight(i) - (paddingTop + paddingBottom)
+          }, {
+            fill: `url(#m${context.idPrefix}MissingPattern)`
+          });
+          attr(<SVGTextElement>n.querySelector('text'), {}).textContent = 'NaN';
+          return;
+        }
+        n.classList.remove('lu-missing');
+
         const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
+        n.querySelector('rect title').textContent = col.getLabel(d.v, d.dataIndex);
 
         attr(<SVGRectElement>n.querySelector('rect'), {
           y: paddingTop,
@@ -53,6 +70,23 @@ export default class BarCellRenderer implements ICellRendererFactory {
           <span class='number ${this.renderValue ? '' : 'hoverOnly'}'></span>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
+
+        if (col.isMissing(d.v, d.dataIndex)) {
+          // missing
+          n.classList.add('lu-missing');
+          attr(n, {
+           title: 'NaN'
+          }, {
+            width: `${col.getWidth()}px`,
+            height: `${context.rowHeight(i) - (paddingTop + paddingBottom)}px`,
+            top: `${paddingTop}px`,
+            'background-color': null
+          });
+          n.querySelector('span').textContent = 'NaN';
+          return;
+        }
+        n.classList.remove('lu-missing');
+
         const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
         attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
@@ -71,8 +105,12 @@ export default class BarCellRenderer implements ICellRendererFactory {
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      ctx.fillStyle = this.colorOf(d.v, i, col);
+      if (col.isMissing(d.v, d.dataIndex)) {
+        renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
+        return;
+      }
       const width = col.getWidth() * col.getValue(d.v, d.dataIndex);
+      ctx.fillStyle = this.colorOf(d.v, i, col);
       ctx.fillRect(0, paddingTop, isNaN(width) ? 0 : width, context.rowHeight(i) - (paddingTop + paddingBottom));
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');
@@ -80,4 +118,14 @@ export default class BarCellRenderer implements ICellRendererFactory {
       }
     };
   }
+}
+
+
+export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
+  // create a hatching pattern over the full width
+
+  const missingImage = new Image();
+  missingImage.src = hatching;
+  ctx.fillStyle = ctx.createPattern(missingImage, 'repeat');
+  ctx.fillRect(x, y, width, height);
 }

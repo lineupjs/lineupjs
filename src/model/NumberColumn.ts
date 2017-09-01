@@ -16,7 +16,7 @@ export function isNumberColumn(col: Column|IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }
 
-function isMissingValue(v: any) {
+export function isMissingValue(v: any) {
   return typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
 }
 
@@ -28,13 +28,15 @@ function isUnknown(v?: number|null) {
  * save number comparison
  * @param a
  * @param b
+ * @param aMissing
+ * @param bMissing
  * @return {number}
  */
-export function numberCompare(a: number, b: number) {
-  if (isNaN(a)) { //NaN are smaller
-    return isNaN(b) ? 0 : -1;
+export function numberCompare(a: number, b: number, aMissing = false, bMissing = false) {
+  if (isNaN(a) || aMissing) { //NaN are smaller
+    return (isNaN(b) || bMissing) ? 0 : -1;
   }
-  if (isNaN(b)) {
+  if (isNaN(b) || bMissing) {
     return +1;
   }
   return a - b;
@@ -42,6 +44,7 @@ export function numberCompare(a: number, b: number) {
 
 
 export interface INumberColumn {
+  isMissing(row: any, index: number): boolean;
   getNumber(row: any, index: number): number;
   getRawNumber(row: any, index: number): number;
 }
@@ -378,6 +381,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return +v;
   }
 
+  isMissing(row: any, index: number) {
+    return isMissingValue(super.getValue(row, index));
+  }
+
   getValue(row: any, index: number) {
     const v = this.getRawValue(row, index);
     if (isNaN(v)) {
@@ -395,7 +402,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
+    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex), this.isMissing(a, aIndex), this.isMissing(b, bIndex));
   }
 
   getOriginalMapping() {

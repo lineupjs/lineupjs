@@ -8,6 +8,7 @@ import {attr} from '../utils';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer  from './ICanvasCellRenderer';
 import {scale as d3scale, min as d3min, max as d3max} from 'd3';
+import {renderMissingValue} from './BarCellRenderer';
 
 
 function computeLabel(v: IBoxPlotData) {
@@ -36,8 +37,27 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
             <path class='boxplotsortpath' style='display: none'></path>
         </g>`,
       update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
         const rowHeight = context.rowHeight(i);
+        attr(<SVGElement>n.querySelector('rect.cellbg'),{
+          width: col.getWidth(),
+          height: rowHeight
+        });
+
+        if (col.isMissing(d.v, d.dataIndex)) {
+        // missing
+          n.classList.add('lu-missing');
+          n.querySelector('title')!.textContent = 'NaN';
+          attr(<SVGElement>n.querySelector('rect.cellbg'), {}, {
+            fill: `url(#m${context.idPrefix}MissingPattern)`
+          });
+          return;
+        }
+        attr(<SVGElement>n.querySelector('rect.cellbg'), {}, {
+          fill: null
+        });
+        n.classList.remove('lu-missing');
+
+        const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
         const scaled = {
           min: scale(rawBoxdata.min),
           median: scale(rawBoxdata.median),
@@ -45,10 +65,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           q3: scale(rawBoxdata.q3),
           max: scale(rawBoxdata.max)
         };
-        attr(<SVGElement>n.querySelector('rect.cellbg'),{
-          width: col.getWidth(),
-          height: rowHeight
-        });
+
         n.querySelector('title').textContent = computeLabel(rawBoxdata);
         attr(<SVGElement>n.querySelector('rect.boxplotrect'), {
           x: scaled.q1,
@@ -85,8 +102,16 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const rowHeight = context.rowHeight(i);
 
+
+      if (col.isMissing(d.v, d.dataIndex)) {
+          // missing
+        renderMissingValue(ctx, col.getWidth(), rowHeight);
+        return;
+      }
+
       // Rectangle
       const rawBoxdata = col.getBoxPlotData(d.v, d.dataIndex);
+
       const scaled = {
         min: scale(rawBoxdata.min),
         median: scale(rawBoxdata.median),

@@ -47,6 +47,13 @@ function generate(bundle, min) {
           loader: 'style-loader!css-loader!sass-loader'
         },
         {
+          test: /\.(png|jpg)$/,
+          loader: 'url-loader',
+          query: {
+            limit: 10000, //inline <= 10kb
+          }
+        },
+        {
           test: /\.tsx?$/,
           loader: 'awesome-typescript-loader'
         }

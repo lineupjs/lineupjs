@@ -18,6 +18,7 @@ export declare type SortMethod = string;
 
 
 export interface IBoxPlotColumn {
+  isMissing(row: any, index: number): boolean;
   getBoxPlotData(row: any, index: number): IBoxPlotData;
   getDomain(): number[];
   getSortMethod(): string;
@@ -71,6 +72,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   getDomain() {
     return this.domain;
+  }
+
+  isMissing(row: any, index: number) {
+    return this.getValue(row, index) == null;
   }
 
   getBoxPlotData(row: any, index: number): IBoxPlotData {
