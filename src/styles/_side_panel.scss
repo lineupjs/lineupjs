@@ -1,0 +1,26 @@
+@import "vars";
+
+.#{$lu_css_prefix}-side-panel {
+  display: flex;
+  flex-direction: column;
+  max-width: 20em;
+
+  > header {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 1em 0.5em;
+
+    form {
+      position: relative;
+
+      select {
+        width: 100%;
+        font-size: 120%;
+      }
+    }
+  }
+
+  > main {
+    flex: 1 1 auto;
+  }
+}

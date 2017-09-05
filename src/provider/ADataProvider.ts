@@ -82,7 +82,7 @@ export interface IDataProviderOptions {
   multiSelection: boolean;
 }
 
-export interface IDataProvider {
+export interface IDataProvider extends AEventDispatcher {
   takeSnapshot(col: Column): void;
 
   setSelection(dataIndices: number[]): void;
@@ -108,6 +108,10 @@ export interface IDataProvider {
   mappingSample(col: Column): Promise<number[]> | number[];
 
   searchAndJump(search: string | RegExp, col: Column): void;
+
+  getRankings(): Ranking[];
+  getLastRanking(): Ranking;
+  getColumns(): IColumnDesc[];
 }
 
 
