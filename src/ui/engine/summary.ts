@@ -10,6 +10,7 @@ import StringColumn from '../../model/StringColumn';
 import {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from './RenderColumn';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
+import {stringFilter} from '../../dialogs/StringFilterDialog';
 
 export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
   if (col instanceof StringColumn) {
@@ -100,14 +101,17 @@ function summaryNumerical(node: HTMLElement, stats: IStatistics, interactive: bo
   }
 }
 
-function summaryString(col: StringColumn & Column, node: HTMLElement, interactive: boolean) {
+export function summaryString(col: StringColumn, node: HTMLElement, interactive: boolean) {
   if (!interactive) {
-    const f = col.getFilter();
-    node.textContent = f === null ? '' : f.toString();
+    const filter = col.getFilter() || '';
+    node.textContent = filter === StringColumn.FILTER_MISSING ? '' : String(filter);
     return;
   }
 
-  // TODO
+  const base = stringFilter(col);
+
+  node.innerHTML = base.template;
+  base.init(node);
 }
 
 function summarySelection(col: SelectionColumn, node: HTMLElement, provider: IDataProvider) {
