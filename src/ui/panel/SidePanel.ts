@@ -7,8 +7,7 @@ import {nest} from 'd3';
 import Ranking, {isSupportType} from '../../model/Ranking';
 import {default as Column, IColumnDesc} from '../../model/Column';
 import SidePanelEntry from './SidePanelEntry';
-import {DataProvider} from 'lineupjs/src/provider';
-import {IDataProvider} from '../../provider/ADataProvider';
+import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../engine/RenderColumn';
 
 export interface ISidePanelOptions {
