@@ -24,6 +24,17 @@
       background-color: $lu_selected_color;
       border-radius: 5px 5px 0 0;
     }
+
+    &[data-title]::before {
+      content: attr(data-title);
+      position: absolute;
+      top: 100%;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
   }
 }
 

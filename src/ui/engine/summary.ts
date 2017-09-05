@@ -11,19 +11,19 @@ import {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from './RenderColumn';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 
-export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
+export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
   if (col instanceof StringColumn) {
-    summaryString(col, node);
+    summaryString(col, node, interactive);
   } else if (isCategoricalColumn(col)) {
-    summaryCategorical(col, node, <ICategoricalStatistics>ctx.statsOf(col));
+    summaryCategorical(col, node, <ICategoricalStatistics>ctx.statsOf(col), interactive);
   } else if (isNumberColumn(col)) {
-    summaryNumerical(node, <IStatistics>ctx.statsOf(col));
+    summaryNumerical(node, <IStatistics>ctx.statsOf(col), interactive);
   } else if (col instanceof SelectionColumn) {
     summarySelection(col, node, ctx.provider);
   }
 }
 
-function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement, stats: ICategoricalStatistics) {
+function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement, stats: ICategoricalStatistics, withLabels: boolean) {
   node.innerHTML = '';
   if (!stats) {
     return;
@@ -35,7 +35,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
 
   stats.hist.forEach(({cat, y}) => {
     const i = cats.indexOf(cat);
-    node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}" title="${labels[i]}: ${y}" data-cat="${cat}"></div>`);
+    node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}" title="${labels[i]}: ${y}" data-cat="${cat}" ${withLabels ? `data-title="${labels[i]}"`:''}></div>`);
   });
 
   if (!(col instanceof CategoricalColumn || col instanceof CategoricalNumberColumn)) {
@@ -85,7 +85,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   });
 }
 
-function summaryNumerical(node: HTMLElement, stats: IStatistics) {
+function summaryNumerical(node: HTMLElement, stats: IStatistics, interactive: boolean) {
   node.innerHTML = '';
   if (!stats) {
     return;
@@ -94,11 +94,20 @@ function summaryNumerical(node: HTMLElement, stats: IStatistics) {
   stats.hist.forEach(({x, y}, i) => {
     node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
   });
+
+  if (interactive) {
+    // TODO add handler
+  }
 }
 
-function summaryString(col: StringColumn & Column, node: HTMLElement) {
-  const f = col.getFilter();
-  node.textContent = f === null ? '' : f.toString();
+function summaryString(col: StringColumn & Column, node: HTMLElement, interactive: boolean) {
+  if (!interactive) {
+    const f = col.getFilter();
+    node.textContent = f === null ? '' : f.toString();
+    return;
+  }
+
+  // TODO
 }
 
 function summarySelection(col: SelectionColumn, node: HTMLElement, provider: IDataProvider) {
