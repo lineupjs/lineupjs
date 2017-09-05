@@ -73,8 +73,6 @@ section {
     }
   }
 
-
-
   &.#{$lu_css_prefix}-dragging {
     opacity: 0.5;
   }
@@ -115,38 +113,7 @@ section {
     display: none;
     margin-right: $lu-engine_grip_gap;
 
-    &[data-summary=hist],
-    &[data-summary=interactive-hist] {
-      display: flex;
-      align-items: flex-end;
-      font-size: x-small;
-
-      > * {
-        flex: 1 1 auto;
-        position: relative;
-        background: rgba(255, 255, 255, 0.5);
-        margin: 0 2px;
-        display: flex;
-        flex-direction: row;
-        align-items: flex-end;
-
-        &[data-filtered=filtered] {
-          opacity: 0.2;
-        }
-
-        > .lu-selected {
-          flex: 1 1 auto;
-          background-color: $lu_selected_color;
-          border-radius: 5px 5px 0 0;
-        }
-      }
-    }
-
-    &[data-summary=interactive-hist] {
-      > * {
-        cursor: pointer;
-      }
-    }
+    @import './summary';
   }
 
   > .#{$lu_css_prefix}-handle {

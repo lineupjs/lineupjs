@@ -1,0 +1,53 @@
+@import "../vars";
+
+> article {
+  margin-bottom: 10px;
+  background-color: #fff;
+
+  &:not(.nodrag) {
+    counter-increment: side-panel-counter;
+
+    > header::before,
+    h2 {
+      cursor: move;
+    }
+  }
+
+  > header {
+    display: flex;
+    align-content: space-between;
+    background: $lu_side_panel_bg_color;
+    padding: 0.5em;
+    position: relative;
+
+    &::before {
+      color: #999;
+      content: counter(side-panel-counter);
+      font-size: 1.4em;
+      position: absolute;
+      top: 0.05em;
+    }
+
+    h2 {
+      order: 1;
+      font-size: 1em;
+      margin: 0 1em 0 0;
+      padding: 0 0 0 1.6em;
+      white-space: nowrap;
+      overflow: hidden !important;
+      text-overflow: ellipsis;
+    }
+  }
+
+  main {
+    margin: 0.5em;
+    height: 50px;
+
+    @import '../engine/summary';
+
+    &[data-summary=interactive-hist] > div,
+    &[data-summary=hist] > div {
+      background: #dcdcdc;
+    }
+  }
+}

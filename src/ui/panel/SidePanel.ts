@@ -4,11 +4,12 @@
 
 import {merge, suffix} from '../../utils';
 import {nest} from 'd3';
-import Ranking from '../../model/Ranking';
-import {IColumnDesc} from '../../model/Column';
+import Ranking, {isSupportType} from '../../model/Ranking';
+import {default as Column, IColumnDesc} from '../../model/Column';
 import SidePanelEntry from './SidePanelEntry';
 import {DataProvider} from 'lineupjs/src/provider';
 import {IDataProvider} from '../../provider/ADataProvider';
+import {IRankingHeaderContext} from '../engine/RenderColumn';
 
 export interface ISidePanelOptions {
   additionalDescs: IColumnDesc[];
@@ -21,15 +22,15 @@ export default class SidePanel {
   };
 
   readonly node: HTMLElement;
-  private entries: SidePanelEntry[];
+  private readonly descs = new Map<IColumnDesc, SidePanelEntry>();
 
-  constructor(private data: IDataProvider, document: Document, options: Partial<ISidePanelOptions> = {}) {
+  constructor(private ctx: IRankingHeaderContext, document: Document, options: Partial<ISidePanelOptions> = {}) {
     merge(this.options, options);
 
     this.node = document.createElement('aside');
     this.node.classList.add('lu-side-panel');
     this.init();
-    this.changeDataStorage(data);
+    this.update(ctx);
   }
 
   private init() {
@@ -41,7 +42,7 @@ export default class SidePanel {
             </select>
         </form>
       </header>
-      <main></main>
+      <div><main></main></div>
     `;
     this.node.querySelector('header select')!.addEventListener('change', (evt) => {
       evt.preventDefault();
@@ -49,7 +50,7 @@ export default class SidePanel {
       if (id === '') {
         return;
       }
-      const entry = this.entries.find((d) => d.id === id)!;
+      const entry = Array.from(this.descs.values()).find((d) => d.id === id)!;
       console.assert(Boolean(entry));
 
       const col = this.data.create(entry.desc);
@@ -58,22 +59,34 @@ export default class SidePanel {
       }
       this.data.getLastRanking().push(col);
     });
+
+
+    this.changeDataStorage(null, this.data);
+    this.updateChooser();
+    this.updateList();
   }
 
-  changeDataStorage(data: IDataProvider) {
-    if (this.data) {
-      this.data.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
+  private get data() {
+    return this.ctx.provider;
+  }
+
+  private changeDataStorage(old: IDataProvider|null, data: IDataProvider) {
+    const that = this;
+    if (old) {
+      old.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
         DataProvider.EVENT_ADD_DESC), null);
     }
-    this.data = data;
-    this.entries = data.getColumns().concat(this.options.additionalDescs).map((d) => new SidePanelEntry(d));
-    const lookup = new Map(this.entries.map((d) => (<[IColumnDesc, SidePanelEntry]>[d.desc, d])));
+    this.descs.forEach((v) => v.destroyVis());
+    this.descs.clear();
+    data.getColumns().concat(this.options.additionalDescs).forEach((col) => {
+      this.descs.set(col, new SidePanelEntry(col));
+    });
 
     const handleRanking = (ranking: Ranking, added: boolean) => {
       const change = added ? +1 : -1;
       ranking.flatColumns.forEach((col) => {
-        if (lookup.has(col.desc)) {
-          lookup.get(col.desc)!.used += change;
+        if (this.descs.has(col.desc)) {
+          this.descs.get(col.desc)!.used += change;
         }
       });
 
@@ -91,10 +104,10 @@ export default class SidePanel {
       ranking.on(suffix('.panel', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN), function (this: { type: string }, col) {
         const desc = col.desc;
         const added = this.type === 'addColumn';
-        if (!lookup.has(desc)) {
+        if (!that.descs.has(desc)) {
           return;
         }
-        const entry = lookup.get(desc)!;
+        const entry = that.descs.get(desc)!;
         entry.used += added ? +1 : -1;
         that.updateList();
       });
@@ -104,16 +117,22 @@ export default class SidePanel {
 
     data.on(`${DataProvider.EVENT_ADD_DESC}.panel`, (desc) => {
       const v = new SidePanelEntry(desc);
-      this.entries.push(v);
-      lookup.set(desc, v);
+      that.descs.set(desc, v);
       this.updateChooser();
     });
-    const that = this;
 
     data.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING), function (this: { type: string }, ranking: Ranking) {
       handleRanking(ranking, this.type === 'addRanking');
       that.updateList();
     });
+  }
+
+  update(ctx: IRankingHeaderContext) {
+    const bak = this.data;
+    this.ctx = ctx;
+    if (ctx.provider !== bak) {
+      this.changeDataStorage(bak, ctx.provider);
+    }
 
     this.updateChooser();
     this.updateList();
@@ -131,8 +150,80 @@ export default class SidePanel {
       DataProvider.EVENT_ADD_DESC), null);
   }
 
-  private updateList() {
+  private columnOrder() {
+    // sort column by first ranking order
+    const ranking = this.data.getRankings()[0];
+    if (!ranking) {
+      return [];
+    }
+    const hierarchy = ranking.getSortCriterias().map((d) => d.col);
+    if (ranking.getGroupCriteria()) {
+      hierarchy.unshift(ranking.getGroupCriteria()!);
+    }
+    return hierarchy;
+  }
 
+  private prepareListData() {
+    const order = this.columnOrder();
+    // columns with reference column impl
+    const referenceColumns = new Map<IColumnDesc, Column>();
+
+    // preset with the order
+    order.forEach((col) => referenceColumns.set(col.desc, col));
+
+    this.data.getRankings().forEach((ranking) => {
+      ranking.flatColumns.forEach((col) => {
+        const key = col.desc;
+        // just if not already part of
+        if (referenceColumns.has(key) || isSupportType(key)) {
+          return;
+        }
+        referenceColumns.set(key, col);
+      });
+    });
+    const columns = Array.from(referenceColumns.values());
+
+    // sort by order
+    columns.sort((a, b) => {
+      const ai = order.indexOf(a);
+      const bi = order.indexOf(b);
+      if (ai < 0) {
+        return bi <0 ? 0 : 1;
+      }
+      if (bi < 0) {
+        return -1;
+      }
+      return ai - bi;
+    });
+
+    return columns;
+
+  }
+
+  private updateList() {
+    const node = this.node.querySelector('main')!;
+    const columns = this.prepareListData();
+
+    if (columns.length === 0) {
+      node.innerHTML = '';
+      this.descs.forEach((d) => d.destroyVis());
+      return;
+    }
+
+    node.innerHTML = ``;
+
+    columns.forEach((col) => {
+      const entry = this.descs.get(col.desc);
+      if (!entry) {
+        return;
+      }
+      if (entry.visColumn === col) {
+        node.appendChild(entry.updateVis(this.ctx)!);
+        return;
+      }
+      entry.destroyVis();
+      node.appendChild(entry.createVis(col, this.ctx, node.ownerDocument));
+    });
   }
 
 
@@ -165,7 +256,7 @@ export default class SidePanel {
 
   private updateChooser() {
     const select = <HTMLSelectElement>this.node.querySelector('header select')!;
-    const groups = SidePanel.groupByType(this.entries);
+    const groups = SidePanel.groupByType(Array.from(this.descs.values()));
 
     const renderGroup = ({key, values}: {key: string, values: SidePanelEntry[]}) => {
       return `<optgroup label="${key[0].toUpperCase()}${key.slice(1)}">
