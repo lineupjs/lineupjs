@@ -46,7 +46,7 @@
 
     @import '../engine/summary';
 
-    &[data-summary=interactive-hist] > div,
+    &[data-summary=slider-hist] > div,
     &[data-summary=hist] > div {
       background: #dcdcdc;
     }

@@ -1,7 +1,8 @@
 @import '../vars';
 
 &[data-summary=hist],
-&[data-summary=interactive-hist] {
+&[data-summary=interactive-hist],
+&[data-summary=slider-hist] {
   display: flex;
   align-items: flex-end;
   font-size: x-small;
@@ -41,5 +42,63 @@
 &[data-summary=interactive-hist] {
   > * {
     cursor: pointer;
+  }
+}
+
+&[data-summary=slider-hist] {
+  margin-bottom: 2.75em;
+  position: relative;
+
+  > [data-handle=min],
+  > [data-handle=max] {
+    position: absolute;
+    height: 100%;
+    border-right: 1px solid black;
+    transition: border-width 0.5s linear;
+    width: 1px;
+    cursor: ew-resize;
+
+    &::before {
+      content: attr(data-value);
+      position: absolute;
+      top: 100%;
+      width: 5em;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  > [data-handle=max] {
+    right: 0;
+    border-right: none;
+    border-left: 1px solid black;
+
+    &::before {
+      left: -5em;
+      text-align: right;
+    }
+  }
+
+  &:hover {
+    > [data-handle=min] {
+      border-right-width: 5px;
+    }
+
+    > [data-handle=max] {
+      border-left-width: 5px;
+    }
+  }
+
+  > [data-handle$=hint] {
+    pointer-events: none;
+    position: absolute;
+    height: 100%;
+    background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 7px, #bababa 7px, #bababa 10px);
+  }
+
+  label {
+    position: absolute;
+    bottom: -2.75em;
   }
 }
