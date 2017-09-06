@@ -112,7 +112,7 @@
 
       z-index: -1;
       content: $fa-var-bars;
-      font-size: 7pt;
+      font-size: $lu_toolbar_font_size - 1pt;
       padding: 1px 2px 1px 1px;
       position: absolute;
       top: 0;

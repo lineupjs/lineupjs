@@ -34,6 +34,20 @@
     }
   }
 
+  .#{$lu_css_prefix}-toolbar {
+    background: $lu_side_panel_toolbar_bg;
+    font-size: $lu_side_panel_toolbar_font_size;
+    top: 5px;
+
+    > i:hover {
+      color: #3e89db;
+    }
+  }
+
+  &:not(.#{$lu_css_prefix}-compressed):hover .#{$lu_css_prefix}-toolbar::before {
+    font-size: $lu_side_panel_toolbar_font_size - 1pt;
+  }
+
   main {
     margin: 0.5em;
     height: 50px;
