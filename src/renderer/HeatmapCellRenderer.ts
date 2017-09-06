@@ -3,7 +3,7 @@ import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr} from '../utils';
+import {clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
@@ -22,23 +22,17 @@ export function toHeatMapColor(d: any, index: number, col: INumberColumn & Colum
 }
 
 export default class HeatmapCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
-
-
   createDOM(col: INumberColumn & Column): IDOMCellRenderer {
     return {
-      template: `<div title="" class="heatmap ${col.cssClass}' style='background-color: ${col.color};"></div>`,
+      template: `<div title="">
+        <div style="background-color: ${col.color}"></div><div> </div>
+      </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = col.isMissing(d.v, d.dataIndex);
-        if (missing) {
-          n.classList.add('lu-missing');
-        } else {
-          n.classList.remove('lu-missing');
-        }
-        attr(n, {
-          title: col.getLabel(d.v, d.dataIndex)
-        }, {
-          'background-color': toHeatMapColor(d.v, d.dataIndex, col)
-        });
+        n.classList.toggle('lu-missing', missing);
+        n.title = col.getLabel(d.v, d.dataIndex);
+        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = missing ? null : toHeatMapColor(d.v, d.dataIndex, col);
+        setText(<HTMLSpanElement>n.lastElementChild!, col.getCompressed() ? '' : n.title);
       }
     };
   }
@@ -52,7 +46,14 @@ export default class HeatmapCellRenderer extends AAggregatedGroupRenderer<INumbe
         return;
       }
       ctx.fillStyle = toHeatMapColor(d.v, d.dataIndex, col);
-      ctx.fillRect(padding, padding, w, w);
+      if (col.getCompressed()) {
+        ctx.fillRect(padding, padding, w, w);
+        return;
+      }
+      const cell = Math.min(context.colWidth(col) * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
+      ctx.fillRect(0, 0, cell, cell);
+      ctx.fillStyle = context.option('style.text', 'black');
+      clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
     };
   }
 

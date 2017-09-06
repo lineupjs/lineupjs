@@ -22,8 +22,10 @@ export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumber
       update: (n: HTMLElement, d: IDataRow) => {
         const v = col.getNumber(d.v, d.dataIndex);
         const p = Math.round(v * 100);
+        const missing = col.isMissing(d.v, d.dataIndex);
+        n.classList.toggle('lu-missing', missing);
         attr(<HTMLElement>n, {}, {
-          background: `radial-gradient(circle closest-side, ${this.colorOf(d.v, d.dataIndex, col)} ${p}%, transparent ${p}%)`
+          background: missing ? null : `radial-gradient(circle closest-side, ${this.colorOf(d.v, d.dataIndex, col)} ${p}%, transparent ${p}%)`
         },);
         setText(n.firstElementChild!, col.getLabel(d.v, d.dataIndex));
       }

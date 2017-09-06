@@ -4,7 +4,7 @@ import Column, {ICategoricalStatistics} from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, clipText, forEachChild, setText} from '../utils';
+import {clipText, forEachChild, setText} from '../utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
 import {computeHist} from '../provider/math';
@@ -19,9 +19,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         <div></div><div></div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        attr(<HTMLDivElement>n.firstElementChild, {}, {
-          'background-color': col.getColor(d.v, d.dataIndex)
-        });
+        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = col.getColor(d.v, d.dataIndex);
         setText(<HTMLSpanElement>n.lastElementChild!, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
       }
     };

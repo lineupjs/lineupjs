@@ -39,6 +39,23 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     this.adaptChange = function (this: { source: Column }, oldValue, newValue) {
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
+
+    this.setRendererList(
+      [
+        {type: 'stack', label: 'Stacked Bar'},
+        {type: 'number', label: 'Bar'},
+        {type: 'circle', label: 'Circle'},
+        {type: 'default', label: 'String'},
+        {type: 'heatmap', label: 'Heatmap'}
+      ],
+      [
+        {type: 'histogram', label: 'Histogram'},
+        {type: 'boxplot', label: 'BoxPlot'},
+        {type: 'stack', label: 'Median Stacked Bar'},
+        {type: 'number', label: 'Median Bar'},
+        {type: 'circle', label: 'Median Circle'},
+        {type: 'heatmap', label: 'Median Heatmap'}
+      ]);
   }
 
   protected createEventList() {

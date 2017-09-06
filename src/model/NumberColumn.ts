@@ -351,11 +351,19 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     }
 
     this.setRendererList(
-      [{type: 'number', label: 'Bar'}, {type: 'circle', label: 'Circle'}, {type: 'default', label: 'String'}],
-      [{type: 'histogram', label: 'Histogram'}, {type: 'boxplot', label: 'BoxPlot'}, {
-        type: 'number',
-        label: 'Median Bar'
-      }, {type: 'circle', label: 'Median Circle'}]);
+      [
+        {type: 'number', label: 'Bar'},
+        {type: 'circle', label: 'Circle'},
+        {type: 'default', label: 'String'},
+        {type: 'heatmap', label: 'Heatmap'}
+      ],
+      [
+        {type: 'histogram', label: 'Histogram'},
+        {type: 'boxplot', label: 'BoxPlot'},
+        {type: 'number', label: 'Median Bar'},
+        {type: 'circle', label: 'Median Circle'},
+        {type: 'heatmap', label: 'Median Heatmap'}
+      ]);
   }
 
   dump(toDescRef: (desc: any) => any) {

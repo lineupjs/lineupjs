@@ -1,5 +1,6 @@
 
-[data-agg=detail] [data-renderer=categorical] {
+[data-agg=detail] [data-renderer=categorical],
+[data-agg=detail] [data-renderer=heatmap] {
   display: flex;
   white-space: nowrap;
 
@@ -8,7 +9,7 @@
     line-height: 100%;
     max-height: 16px;
     margin-right: 0.5em;
-    border-radius: 8px;
+    // border-radius: 8px;
   }
 
   :last-child {
