@@ -52,7 +52,7 @@
     "docs": "typedoc --options typedoc.json src",
     "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
     "pretest": "npm run compile",
-    "test": "test ! -d tests || karma start",
+    "test": "node -e \"require('fs').existsSync('./tests')?0:1\" || karma start",
     "posttest": "npm run lint",
     "test:watch": "karma start --autoWatch=true --singleRun=false",
     "build:dev": "webpack",
