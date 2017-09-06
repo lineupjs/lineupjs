@@ -75,6 +75,10 @@
       background: #dcdcdc;
     }
 
+    &[data-summary=interactive-hist] {
+      margin-bottom: 1em;
+    }
+
     &[data-summary=string] {
       display: block;
     }
