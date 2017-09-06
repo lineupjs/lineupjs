@@ -29,10 +29,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
                  </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d.v, d.dataIndex);
-        n.style.display = data ? null : 'none';
-        if (!data) {
+        if (col.isMissing(d.v, d.dataIndex) || !data) {
+          // everything is missing or at least a part of it
+          n.classList.add('lu-missing');
           return;
         }
+        n.classList.remove('lu-missing');
         const label = col.getRawBoxPlotData(d.v, d.dataIndex)!;
         renderDOMBoxPlot(n, data, label);
         const wiskers = <HTMLElement>n.firstElementChild;
@@ -50,7 +52,6 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const rowHeight = context.rowHeight(i);
-
 
       if (col.isMissing(d.v, d.dataIndex)) {
         // missing
