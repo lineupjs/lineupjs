@@ -1,0 +1,50 @@
+@import '../vars';
+@import '../header/index';
+
+/**
+  needs to be the full path without any super import otherwise the @extend won't work properly
+ */
+.lineup-engine > header section {
+  @extend %lu-header;
+
+  cursor: pointer;
+  text-align: center;
+  color: white;
+  overflow: hidden;
+  background: #c1c1c1;
+  margin-right: -$lu_engine_grip_gap;
+
+  > .#{$lu_css_prefix}-label {
+    padding-left: 0.8em;
+    margin-right: $lu-engine_grip_gap;
+  }
+
+  > .#{$lu_css_prefix}-sort {
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    font-size: $lu_toolbar_font_size;
+  }
+
+  &.#{$lu_css_prefix}-dragover::after {
+    background: $lu_drag_over;
+  }
+
+  > .#{$lu_css_prefix}-summary {
+    height: 2em;
+    margin-right: $lu-engine_grip_gap;
+  }
+
+  > .#{$lu_css_prefix}-handle {
+    position: absolute;
+    right: 0;
+    width: 5px;
+    height: 100%;
+    background-color: white;
+    cursor: col-resize;
+
+    &.#{$lu_css_prefix}-dragover {
+      background-color: $lu_drag_over;
+    }
+  }
+}

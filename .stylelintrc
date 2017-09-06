@@ -4,6 +4,8 @@
   ],
   "extends": "stylelint-config-standard",
   "rules": {
+    "at-rule-no-unknown": null,
+    "scss/at-rule-no-unknown": true,
     "scss/at-extend-no-missing-placeholder": true,
     "scss/at-else-closing-brace-newline-after": "always-last-in-chain",
     "scss/at-else-closing-brace-space-after": "always-intermediate",
@@ -15,7 +17,6 @@
     "scss/at-import-partial-extension-blacklist": null,
     "scss/at-import-partial-extension-whitelist": null,
     "scss/at-mixin-argumentless-call-parentheses": "always",
-    "scss/at-mixin-no-argumentless-call-parentheses": true,
     "scss/at-mixin-pattern": null,
     "scss/declaration-nested-properties": null,
     "scss/declaration-nested-properties-no-divided-groups": true,

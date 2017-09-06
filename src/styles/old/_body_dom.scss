@@ -1,32 +1,38 @@
-@import "colors";
+@import '../vars';
 
-.lu .lu-body {
-  .hoverOnly {
+.#{$lu_css_prefix} .#{$lu_css_prefix}-body {
+  .lu-hover-only {
     display: none;
   }
 
-  .hover .notHoverOnly {
-    display: none;
+  .hover,
+  div.row:hover,
+  div.aggregate:hover {
+    .lu-not-hover {
+      display: none;
+    }
+
+    .lu-hover-only {
+      display: block;
+    }
   }
 
-  .hover .hoverOnly {
-    display: block;
-  }
-
-  .selectionOnly {
+  .lu-selection-only {
     display: none;
   }
 
   /**
     selected state extends hover state
    */
-  .selected .selectionOnly,
-  .selected .hoverOnly {
+  .selected .lu-selection-only,
+  .selected .lu-hover-only,
+  .lu-group-selected .lu-selection-only,
+  .lu-group-selected .lu-hover-only {
     display: block;
   }
 
-  .selected .notSelectionOnly,
-  .selected .notHoverOnly {
+  .selected .lu-not-hover,
+  .lu-group-selected .lu-not-hover {
     display: none;
   }
 

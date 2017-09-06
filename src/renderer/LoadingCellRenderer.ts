@@ -1,42 +1,50 @@
 import Column from '../model/Column';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {IDOMGroupRenderer} from './IDOMCellRenderers';
+import {ICanvasRenderContext} from './RendererContexts';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
 import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
+import {IGroup} from '../model/Group';
 
 
 export default class LoadingCellRenderer implements ICellRendererFactory {
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const textHeight = context.option('textHeight', 13);
+  createDOM() {
     return {
-      template: `<text class='loading' y="${textHeight}"><tspan class='fa'>\uf110</tspan>Loading…</text>`,
-      update: () => undefined // TODO svg animation
-    };
-  }
-
-  createHTML(col: Column): IHTMLCellRenderer {
-    return {
-      template: `<div class='loading'><i class='fa fa-spinner fa-pulse'></i><div>Loading…</div></div>`,
+      template: `<div>Loading…</div>`,
       update: () => undefined
     };
   }
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const base = Date.now() % 360;
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      clipText(ctx, 'Loading…', 10, 0, col.getWidth() - 10, context.textHints);
-      const angle = (base + i * 45) * (Math.PI / 180);
-      ctx.save();
-      ctx.font = '10pt FontAwesome';
-      ctx.textAlign = 'center';
-      const shift = (context.rowHeight(i) - context.textHints.spinnerWidth) * 0.5;
-      ctx.translate(2, shift + context.textHints.spinnerWidth * 0.5);
-      ctx.rotate(angle);
-      ctx.translate(0, -context.textHints.spinnerWidth * 0.5);
-      ctx.fillText('\uf110', 0, 0);
-      ctx.restore();
+    return (ctx: CanvasRenderingContext2D, _d: IDataRow, i: number) => {
+      renderLoading(ctx, base, i, context.rowHeight(i), col, context);
     };
   }
+
+  createGroupDOM(): IDOMGroupRenderer {
+    return this.createDOM();
+  }
+
+  createGroupCanvas(col: Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    const base = Date.now() % 360;
+    return (ctx: CanvasRenderingContext2D, group: IGroup) => {
+      renderLoading(ctx, base, 0, context.groupHeight(group), col, context);
+    };
+  }
+}
+
+function renderLoading(ctx: CanvasRenderingContext2D, base: number, i: number, height: number, col: Column, context: ICanvasRenderContext) {
+  clipText(ctx, 'Loading…', 10, 0, context.colWidth(col) - 10, context.textHints);
+  const angle = (base + i * 45) * (Math.PI / 180);
+  ctx.save();
+  ctx.font = '10pt FontAwesome';
+  ctx.textAlign = 'center';
+  const shift = (height - context.textHints.spinnerWidth) * 0.5;
+  ctx.translate(2, shift + context.textHints.spinnerWidth * 0.5);
+  ctx.rotate(angle);
+  ctx.translate(0, -context.textHints.spinnerWidth * 0.5);
+  ctx.fillText('\uf110', 0, 0);
+  ctx.restore();
 }

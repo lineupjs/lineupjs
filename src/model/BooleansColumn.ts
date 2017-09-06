@@ -1,16 +1,17 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import ValueColumn from './ValueColumn';
-import {IValueColumnDesc} from './ValueColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './CategoricalColumn';
 
-interface IBooleansColumnDesc extends IValueColumnDesc <boolean[]> {
-  readonly dataLength?: number;
+export interface IBooleansDesc {
+  readonly dataLength: number;
 }
 
+export declare type IBooleansColumnDesc = IValueColumnDesc<boolean[]> & IBooleansDesc;
+
 export default class BooleansColumn extends ValueColumn<boolean[]> implements ICategoricalColumn {
-  private readonly dataLength;
+  private readonly dataLength: number;
   readonly categories: string[];
 
   constructor(id: string, desc: IBooleansColumnDesc) {
@@ -18,7 +19,7 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
     this.dataLength = desc.dataLength;
     this.categories = [];
     for (let i = 0; i < this.dataLength; ++i) {
-      this.categories.push(String(`Category #` + (i+1)));
+      this.categories.push(`Category #${i + 1}`);
     }
 
     this.setRendererType('upset');
@@ -34,12 +35,12 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
 
   getCategories(row: any, index: number): string[] {
     const flagged = this.getValue(row, index);
-    return this.categories.filter((d,i) => flagged[i]);
+    return this.categories.filter((_d, i) => flagged != null && flagged[i]);
   }
 
   getColor(row: any, index: number) {
     const flagged = this.getValue(row, index);
-    return flagged ? 'green': 'red';
+    return flagged ? 'green' : 'red';
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {

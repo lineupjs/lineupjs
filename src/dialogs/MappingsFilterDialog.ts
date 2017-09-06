@@ -2,8 +2,8 @@ import AFilterDialog from './AFilterDialog';
 import {IMapAbleColumn, IMappingFunction, noNumberFilter} from '../model/NumberColumn';
 import Column from '../model/Column';
 import {offset} from '../utils';
-import {select} from 'd3';
-import DataProvider from '../provider/ADataProvider';
+import {select, Selection} from 'd3';
+import {IDataProvider} from '../provider/ADataProvider';
 import MappingEditor from '../mappingeditor';
 
 export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn & Column> {
@@ -16,12 +16,12 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
    * @param data the data provider for illustrating the mapping by example
    * @param idPrefix dom id prefix
    */
-  constructor(column: IMapAbleColumn & Column, $header: d3.Selection<IMapAbleColumn & Column>, title: string = 'Change Mapping', private readonly data: DataProvider, private readonly idPrefix: string) {
+  constructor(column: IMapAbleColumn & Column, $header: Selection<IMapAbleColumn & Column>, title: string = 'Change Mapping', private readonly data: IDataProvider, private readonly idPrefix: string) {
     super(column, $header, title);
   }
 
   openDialog() {
-    const pos = offset(this.attachment.node()),
+    const pos = offset(<HTMLElement>this.attachment.node()),
       original = this.column.getOriginalMapping();
     let bakfilter = this.column.getFilter(),
       bak = this.column.getMapping(),
@@ -32,12 +32,12 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
       .attr({
         'class': 'lu-popup'
       }).style({
-        left: pos.left + 'px',
-        top: pos.top + 'px'
+        left: `${pos.left}px`,
+        top: `${pos.top}px`
       })
       .html(this.dialogForm('<div class="mappingArea"></div>'));
 
-    const applyMapping = (newscale: IMappingFunction, filter: {min: number, max: number, filterMissing: boolean}) => {
+    const applyMapping = (newscale: IMappingFunction, filter: { min: number, max: number, filterMissing: boolean }) => {
       act = newscale;
       actfilter = filter;
       this.markFiltered(!newscale.eq(original) || (bakfilter.min !== filter.min || bakfilter.max !== filter.min || bakfilter.filterMissing !== filter.filterMissing));
@@ -52,27 +52,28 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
       triggerCallback: 'dragend',
       padding_ver: 15
     };
-    const dataSample = this.data.mappingSample(this.column);
+    const dataSample = Promise.resolve(this.data.mappingSample(this.column));
     let editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
 
-
-    popup.select('.ok').on('click', function () {
-      applyMapping(editor.scale, editor.filter);
-      popup.remove();
+    this.onButton(popup, {
+      cancel: () => {
+        this.column.setMapping(bak);
+        this.markFiltered(!bak.eq(original));
+      },
+      reset: () => {
+        bak = original;
+        act = bak.clone();
+        bakfilter = noNumberFilter();
+        actfilter = bakfilter;
+        applyMapping(act, actfilter);
+        popup.selectAll('.mappingArea *').remove();
+        editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
+      },
+      submit: () => {
+        applyMapping(editor.scale, editor.filter);
+        return true;
+      }
     });
-    popup.select('.cancel').on('click', () => {
-      this.column.setMapping(bak);
-      this.markFiltered(!bak.eq(original));
-      popup.remove();
-    });
-    popup.select('.reset').on('click', function () {
-      bak = original;
-      act = bak.clone();
-      bakfilter = noNumberFilter();
-      actfilter = bakfilter;
-      applyMapping(act, actfilter);
-      popup.selectAll('.mappingArea *').remove();
-      editor = new MappingEditor(<HTMLElement>popup.select('.mappingArea').node(), act, original, actfilter, dataSample, editorOptions);
-    });
+    MappingsFilterDialog.registerPopup(popup);
   }
 }

@@ -1,8 +1,9 @@
 /**
   popups, e.g., rename dialogs,...
  */
+@import 'vars';
 
-.lu-popup {
+.#{$lu_css_prefix}-popup {
   position: absolute;
   dominant-baseline: central;
   text-anchor: middle;
@@ -13,8 +14,8 @@
   }
 }
 
-.lu-popup,
-.lu-popup2 {
+.#{$lu_css_prefix}-popup,
+.#{$lu_css_prefix}-popup2 {
   background-color: rgba(255, 255, 255, 0.9);
   position: absolute;
   padding: 2px;
@@ -73,7 +74,7 @@
   }
 }
 
-.lu-popup2 {
+.#{$lu_css_prefix}-popup2 {
   * {
     margin: 0;
   }

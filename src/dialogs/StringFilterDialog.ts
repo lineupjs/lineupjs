@@ -1,5 +1,5 @@
 import StringColumn from '../model/StringColumn';
-import AFilterDialog from './AFilterDialog';
+import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
 import {Selection} from 'd3';
 
 
@@ -15,61 +15,85 @@ export default class StringFilterDialog extends AFilterDialog<StringColumn> {
   }
 
   openDialog() {
-    let bak = this.column.getFilter() || '';
-    const bakMissing = bak === StringColumn.FILTER_MISSING;
-    if (bakMissing) {
-      bak = '';
-    }
+    const base = stringFilter(this.column);
+    const $popup = this.makePopup(base.template);
 
-    const $popup = this.makePopup(`<input type="text" placeholder="containing..." autofocus="true" size="15" value="${(bak instanceof RegExp) ? bak.source : bak}" autofocus="autofocus">
-    <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label><br><label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>Filter Missing</label>
-    <br>`);
-
-    const updateData = (filter: string|RegExp) => {
-      this.markFiltered((filter && filter !== ''));
+    const updateData = (filter: string | RegExp | null) => {
+      this.markFiltered(filter != null && filter !== '');
       this.column.setFilter(filter);
     };
 
-    function updateImpl(force: boolean) {
-      //get value
-      let search: any = $popup.select('input[type="text"]').property('value');
-      const filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+    const update = base.init(<HTMLElement>$popup.select('form').node(), (filtered) => this.markFiltered(filtered));
 
-      if (filterMissing && search === '') {
-        search = StringColumn.FILTER_MISSING;
+    this.onButton($popup, {
+      cancel: () => {
+        updateData(base.original);
+      },
+      reset: () => {
+        $popup.select('input[type="text"]').property('value', '');
+        $popup.selectAll('input[type="checkbox"]').property('checked', null);
+        updateData(null);
+      },
+      submit: () => {
+        update(true);
+        return true;
       }
-      if (search === '') { //reset
-        updateData(search);
-        return;
-      }
-      if (search.length >= 3 || force) {
-        const isRegex = $popup.select('input[type="checkbox"]:first-of-type').property('checked');
-        if (isRegex && search !== StringColumn.FILTER_MISSING) {
+    });
+  }
+}
+
+export function stringFilter(col: StringColumn) {
+  let bak = col.getFilter() || '';
+  const original = bak;
+  const bakMissing = bak === StringColumn.FILTER_MISSING;
+  if (bakMissing) {
+    bak = '';
+  }
+
+  return {
+    original,
+    template: `<input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
+  <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
+  <br>${filterMissingMarkup(bakMissing)}
+  <br>`,
+    init(node: HTMLElement, filterCallback?: (filtered: boolean) => void) {
+
+      const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
+      const filterMissing = <HTMLInputElement>node.querySelector('input[type="checkbox"].lu_filter_missing');
+      const input = <HTMLInputElement>node.querySelector('input[type="text"]');
+
+      const updateData = (filter: string | RegExp | null) => {
+        if (filterCallback) {
+          filterCallback((filter != null && filter !== ''));
+        }
+        col.setFilter(filter);
+      };
+
+      function updateImpl(force: boolean) {
+        //get value
+        let search: any = input.value;
+
+        if (filterMissing.checked && search === '') {
+          search = StringColumn.FILTER_MISSING;
+        }
+        if (search === '') { //reset
+          updateData(search);
+          return;
+        }
+        if (search.length < 3 && !force) {
+          return;
+        }
+        if (isRegex.checked && search !== StringColumn.FILTER_MISSING) {
           search = new RegExp(search);
         }
         updateData(search);
       }
 
+      isRegex.addEventListener('change', () => updateImpl(false));
+      filterMissing.addEventListener('change', () => updateImpl(false));
+      input.addEventListener('input', () => updateImpl(false));
+
+      return updateImpl;
     }
-
-    $popup.selectAll('input[type="checkbox"]').on('change', updateImpl);
-    $popup.select('input[type="text"]').on('input', updateImpl);
-
-    $popup.select('.cancel').on('click', function () {
-      $popup.select('input[type="text"]').property('value', bak || '');
-      $popup.select('input[type="checkbox"]:first-of-type').property('checked', bak instanceof RegExp ? 'checked' : null);
-      $popup.select('input[type="checkbox"].lu_filter_missing').property('checked', bakMissing ? 'checked' : null);
-      updateData(bak);
-      $popup.remove();
-    });
-    $popup.select('.reset').on('click', function () {
-      $popup.select('input[type="text"]').property('value', '');
-      $popup.selectAll('input[type="checkbox"]').property('checked', null);
-      updateData(null);
-    });
-    $popup.select('.ok').on('click', function () {
-      updateImpl(true);
-      $popup.remove();
-    });
-  }
+  };
 }

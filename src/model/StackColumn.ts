@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import CompositeNumberColumn,{ICompositeNumberDesc} from './CompositeNumberColumn';
+import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IMultiLevelColumn} from './CompositeColumn';
 import Column, {IFlatColumn} from './Column';
 
@@ -23,7 +23,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';
   static readonly COLLAPSED_RENDERER = 'number';
 
-  private readonly adaptChange;
+  private readonly adaptChange: (old: number, newValue: number) => void;
 
   /**
    * whether this stack column is collapsed i.e. just looks like an ordinary number column
@@ -36,7 +36,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     super(id, desc);
 
     const that = this;
-    this.adaptChange = function (oldValue, newValue) {
+    this.adaptChange = function (this: { source: Column }, oldValue, newValue) {
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
   }
@@ -91,7 +91,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     this.collapsed = dump.collapsed === true;
     super.restore(dump, factory);
   }
@@ -103,7 +103,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     if (!isNaN(weight)) {
       col.setWidth((weight / (1 - weight) * this.getWidth()));
     }
-    col.on(Column.EVENT_WIDTH_CHANGED + '.stack', this.adaptChange);
+    col.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, this.adaptChange);
     //increase my width
     super.setWidth(this.length === 0 ? col.getWidth() : (this.getWidth() + col.getWidth()));
 
@@ -141,12 +141,11 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       if (c === col) {
         //c.weight += change;
         return newValue;
-      } else {
-        const guess = c.getWidth() * factor;
-        const w = isNaN(guess) || guess < 1 ? 0 : guess;
-        c.setWidthImpl(w);
-        return w;
       }
+      const guess = c.getWidth() * factor;
+      const w = isNaN(guess) || guess < 1 ? 0 : guess;
+      c.setWidthImpl(w);
+      return w;
     });
     //adapt width if needed
     super.setWidth(widths.reduce((a, b) => a + b, 0));
@@ -187,7 +186,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   }
 
   removeImpl(child: Column) {
-    child.on(Column.EVENT_WIDTH_CHANGED + '.stack', null);
+    child.on(`${Column.EVENT_WIDTH_CHANGED}.stack`, null);
     super.setWidth(this.length === 0 ? 100 : this.getWidth() - child.getWidth());
     return super.removeImpl(child);
   }

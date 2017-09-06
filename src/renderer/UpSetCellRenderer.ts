@@ -1,17 +1,17 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer} from './IDOMCellRenderers';
+import {ICanvasRenderContext} from './RendererContexts';
+import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {attr, forEach} from '../utils';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {attr} from '../utils';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import Column from '../model/Column';
+import {IGroup} from '../model/Group';
 
 
 export default class UpSetCellRenderer implements ICellRendererFactory {
   private static calculateSetPath(setData: boolean[], cellDimension: number) {
-
-    const catindexes = [];
+    const catindexes: number[] = [];
     setData.forEach((d: boolean, i: number) => (d) ? catindexes.push(i) : -1);
 
     const left = (catindexes[0] * cellDimension) + (cellDimension / 2);
@@ -20,55 +20,78 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     return {left, right};
   }
 
-
-  createSVG(col: ICategoricalColumn&Column, context: IDOMRenderContext): ISVGCellRenderer {
+  private static createDOMContext(col: ICategoricalColumn & Column) {
     const dataLength = col.categories.length;
-    const cellDimension = col.getWidth() / dataLength;
     let templateRows = '';
     for (let i = 0; i < dataLength; ++i) {
-      templateRows += `<circle r="${cellDimension / 4}" cx="${i * cellDimension + (cellDimension / 2)}"></circle>`;
+      templateRows += `<div></div>`;
     }
     return {
-      template: `<g class='upsetcell'><path></path>${templateRows}</g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const rowHeight = context.rowHeight(i);
-        const values = new Set(col.getCategories(d.v, d.dataIndex));
-        const value = col.categories.map((cat) => values.has(cat));
-        const hasTrueValues = value.some((d) => d); //some values are true?
-
-        forEach(n, 'circle', (d, i) => {
+      templateRow: templateRows,
+      render: (n: HTMLElement, value: boolean[]) => {
+        Array.from(n.children).slice(1).forEach((d, i) => {
           const v = value[i];
-          attr(<SVGCircleElement>d, {
-            cy: rowHeight / 2,
-            class: v ? 'enabled' : ''
+          attr(<HTMLElement>d, {
+            'class': v ? 'enabled' : ''
           });
         });
 
-        let path = '';
-        if (hasTrueValues) {
-          const {left, right} = UpSetCellRenderer.calculateSetPath(value, cellDimension);
-          path = `M${left},${rowHeight / 2}L${right},${rowHeight / 2}`;
+        const line = <HTMLElement>n.firstElementChild;
+        const left = value.findIndex((d) => d);
+        const right = (value.length - 1) - value.reverse().findIndex((d) => d);
+
+        if (left < 0 || left === right) {
+          line.style.display = 'none';
+          return;
         }
-        n.querySelector('path').setAttribute('d', path);
+        line.style.display = null;
+        line.style.left = `${Math.round(100 * (left + 0.5) / value.length)}%`;
+        line.style.width = `${Math.round(100 * (right - left) / value.length)}%`;
       }
     };
   }
 
-  createCanvas(col: ICategoricalColumn&Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  private static union(col: ICategoricalColumn, rows: IDataRow[]) {
+    const values = new Set<string>();
+    rows.forEach((d) => {
+      col.getCategories(d.v, d.dataIndex).forEach((cat) => values.add(cat));
+    });
+    return col.categories.map((cat) => values.has(cat));
+  }
+
+  createDOM(col: ICategoricalColumn & Column): IDOMCellRenderer {
+    const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
+    return {
+      template: `<div><div></div>${templateRow}</div>`,
+      update: (n: HTMLElement, d: IDataRow) => {
+        const values = new Set(col.getCategories(d.v, d.dataIndex));
+        const value = col.categories.map((cat) => values.has(cat));
+        render(n, value);
+      }
+    };
+  }
+
+  createGroupDOM(col: ICategoricalColumn & Column): IDOMGroupRenderer {
+    const {templateRow, render} = UpSetCellRenderer.createDOMContext(col);
+    return {
+      template: `<div><div></div>${templateRow}</div>`,
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+        const value = UpSetCellRenderer.union(col, rows);
+        render(n, value);
+      }
+    };
+  }
+
+  private static createCanvasContext(col: ICategoricalColumn & Column, context: ICanvasRenderContext) {
     const dataLength = col.categories.length;
-    const cellDimension = col.getWidth() / dataLength;
+    const cellDimension = context.colWidth(col) / dataLength;
 
     const upsetCircle = context.option('style.upset.circle', 'black');
     const upsetInactive = context.option('style.upset.inactiveOpacity', 0.1);
     const upsetStroke = context.option('style.upset.stroke', 'black');
 
-
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      // Circle
-      const values = new Set(col.getCategories(d.v, d.dataIndex));
-      const data = col.categories.map((cat) => values.has(cat));
+    return (ctx: CanvasRenderingContext2D, data: boolean[], rowHeight: number) => {
       const hasTrueValues = data.some((d) => d); //some values are true?
-      const rowHeight = context.rowHeight(i);
       const radius = (rowHeight / 3);
 
       ctx.save();
@@ -92,6 +115,27 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
       });
 
       ctx.restore();
+    };
+  }
+
+  createCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const render = UpSetCellRenderer.createCanvasContext(col, context);
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      // Circle
+      const values = new Set(col.getCategories(d.v, d.dataIndex));
+      const data = col.categories.map((cat) => values.has(cat));
+      const rowHeight = context.rowHeight(i);
+      render(ctx, data, rowHeight);
+    };
+  }
+
+  createGroupCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    const render = UpSetCellRenderer.createCanvasContext(col, context);
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
+      // Circle
+      const data = UpSetCellRenderer.union(col, rows);
+      const rowHeight = context.groupHeight(group);
+      render(ctx, data, rowHeight);
     };
   }
 

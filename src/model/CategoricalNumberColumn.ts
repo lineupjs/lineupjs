@@ -2,10 +2,10 @@
  * Created by sam on 04.11.2016.
  */
 
-import {max as d3max, scale, min as d3min} from 'd3';
+import {max as d3max, min as d3min, scale} from 'd3';
 import Column from './Column';
-import ValueColumn,{IValueColumnDesc} from './ValueColumn';
-import CategoricalColumn, {ICategoricalColumn, IBaseCategoricalDesc, ICategoricalFilter} from './CategoricalColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import CategoricalColumn, {IBaseCategoricalDesc, ICategoricalColumn, ICategoricalFilter} from './CategoricalColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 
 export declare type ICategoricalNumberColumnDesc = IBaseCategoricalDesc & IValueColumnDesc<number>;
@@ -26,7 +26,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
 
   private readonly scale = scale.ordinal().rangeRoundPoints([0, 1]);
 
-  private currentFilter: ICategoricalFilter = null;
+  private currentFilter: ICategoricalFilter | null = null;
   /**
    * separator for multi handling
    * @type {string}
@@ -65,7 +65,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
       return this.categories;
     }
     //label or identity mapping
-    return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c) : c);
+    return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c)! : c);
   }
 
   colorOf(cat: string) {
@@ -102,11 +102,15 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.getValue(row, index);
   }
 
+  isMissing(row: any, index: number) {
+    return this.getLabels(row, index).length === 0;
+  }
+
   getRawNumber(row: any, index: number) {
     return this.getNumber(row, index);
   }
 
-  getColor(row: any, index: number) {
+  getColor(row: any, index: number): string | null {
     const vs = this.getValues(row, index);
     const cs = this.getColors(row, index);
     if (this.combiner === d3max) {
@@ -115,19 +119,19 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
         c: cs[0],
         v: vs[0]
       }).c;
-    } else if (this.combiner === d3min) {
+    }
+    if (this.combiner === d3min) {
       //use the max color
       return cs.slice(1).reduce((prev, act, i) => vs[i + 1] < prev.v ? {c: act, v: vs[i + 1]} : prev, {
         c: cs[0],
         v: vs[0]
       }).c;
-    } else {
-      //use the first
-      return cs[0] || null;
     }
+    //use the first
+    return cs[0] || null;
   }
 
-  getColors(row: any, index: number) {
+  getColors(row: any, index: number): string[] {
     return CategoricalColumn.prototype.getColors.call(this, row, index);
   }
 
@@ -141,7 +145,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     CategoricalColumn.prototype.restore.call(this, dump, factory);
     if (dump.scale) {
       this.scale.domain(dump.scale.domain).range(dump.scale.range);
@@ -178,7 +182,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.currentFilter;
   }
 
-  setFilter(filter: ICategoricalFilter) {
+  setFilter(filter: ICategoricalFilter | null) {
     return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 

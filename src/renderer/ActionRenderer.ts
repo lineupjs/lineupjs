@@ -1,36 +1,20 @@
-import Column from '../model/Column';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
+import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {forEach, showOverlay} from '../utils';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {forEachChild, showOverlay} from '../utils';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
+import {default as ActionColumn, IAction, IGroupAction} from '../model/ActionColumn';
+import {IGroup} from '../model/Group';
 
 
 export default class ActionRenderer implements ICellRendererFactory {
-  createSVG(col: Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const actions = context.option('actions', []);
-    const textHeight = context.option('textHeight', 13);
+  createDOM(col: ActionColumn, context: IDOMRenderContext): IDOMCellRenderer {
+    const actions = (<IAction[]>context.option('actions', [])).concat(col.actions);
     return {
-      template: `<text class='actions hoverOnly fa' y="${textHeight}">${actions.map((a) => `<tspan>${a.icon}</tspan>`).join('')}</text>`,
-      update: (n: SVGTextElement, d: IDataRow) => {
-        forEach(n, 'tspan', (ni: SVGTSpanElement, i: number) => {
-          ni.onclick = function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            actions[i].action(d.v, d.dataIndex);
-          };
-        });
-      }
-    };
-  }
-
-  createHTML(col: Column, context: IDOMRenderContext): IHTMLCellRenderer {
-    const actions = context.option('actions', []);
-    return {
-      template: `<div class='actions hoverOnly'>${actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('')}</div>`,
+      template: `<div class='actions lu-hover-only'>${actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('')}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        forEach(n, 'span', (ni: HTMLSpanElement, i: number) => {
+        forEachChild(n, (ni: HTMLSpanElement, i: number) => {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -41,23 +25,61 @@ export default class ActionRenderer implements ICellRendererFactory {
     };
   }
 
-  createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const actions = context.option('actions', []);
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
-      const hovered = context.hovered(d.dataIndex);
-      if (hovered) {
-        const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
-        overlay.style.width = col.getWidth() + 'px';
-        overlay.classList.add('actions');
-        overlay.innerHTML = actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('');
-        forEach(overlay, 'span', (ni: HTMLSpanElement, i) => {
+  createGroupDOM(col: ActionColumn, context: IDOMRenderContext): IDOMGroupRenderer {
+    const actions = (<IGroupAction[]>context.option('groupActions', [])).concat(col.groupActions);
+    return {
+      template: `<div class='actions lu-hover-only'>${actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('')}</div>`,
+      update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
+        forEachChild(n, (ni: HTMLSpanElement, i: number) => {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            actions[i].action(d.v, d.dataIndex);
+            actions[i].action(group, rows);
           };
         });
       }
+    };
+  }
+
+  createCanvas(col: ActionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
+    const actions = (<IAction[]>context.option('actions', [])).concat(col.actions);
+    return (_ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, dx: number, dy: number) => {
+      const hovered = context.hovered(d.dataIndex);
+      if (!hovered) {
+        return;
+      }
+      const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
+      overlay.style.width = `${context.colWidth(col)}px`;
+      overlay.classList.add('actions');
+      overlay.innerHTML = actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('');
+      forEachChild(overlay, (ni: HTMLSpanElement, i) => {
+        ni.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          actions[i].action(d.v, d.dataIndex);
+        };
+      });
+    };
+  }
+
+  createGroupCanvas(col: ActionColumn, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    const actions = (<IGroupAction[]>context.option('groupActions', [])).concat(col.groupActions);
+    return (_ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number) => {
+      const hovered = context.groupHovered(group);
+      if (!hovered) {
+        return;
+      }
+      const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
+      overlay.style.width = `${context.colWidth(col)}px`;
+      overlay.classList.add('actions');
+      overlay.innerHTML = actions.map((a) => `<span title='${a.name}' class='fa'>${a.icon}</span>`).join('');
+      forEachChild(overlay, (ni: HTMLSpanElement, i) => {
+        ni.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          actions[i].action(group, rows);
+        };
+      });
     };
   }
 }

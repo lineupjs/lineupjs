@@ -1,0 +1,34 @@
+
+[data-renderer=number],
+[data-renderer=circle] {
+  position: relative;
+  white-space: nowrap;
+
+  div {
+    position: absolute;
+    width: 100%;
+  }
+
+  > div {
+    top: 5%;
+    bottom: 5%;
+
+    > div {
+      height: 100%;
+    }
+  }
+}
+
+[data-agg=group] {
+  [data-renderer=number] {
+    > div > div {
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
+[data-renderer=stack] [data-renderer=number] > div {
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}

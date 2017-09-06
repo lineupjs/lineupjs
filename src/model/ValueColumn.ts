@@ -20,7 +20,7 @@ export interface IValueColumnDesc<T> extends IColumnDesc {
    * @param desc the description of this column
    * @param ranking the ranking of this column
    */
-  accessor(row: any, index: number, id: string, desc: any, ranking: Ranking): T;
+  accessor?(row: any, index: number, id: string, desc: any, ranking: Ranking): T;
 }
 
 /**
@@ -29,18 +29,18 @@ export interface IValueColumnDesc<T> extends IColumnDesc {
 export default class ValueColumn<T> extends Column {
   static readonly RENDERER_LOADING = 'loading';
 
-  private readonly accessor: (row: any, index: number, id: string, desc: any, ranking: Ranking) => T;
+  private readonly accessor: (row: any, index: number, id: string, desc: any, ranking: Ranking | null) => T;
 
   /**
    * is the data available
    * @type {boolean}
    */
-  private loaded;
+  private loaded: boolean;
 
   constructor(id: string, desc: IValueColumnDesc<T>) {
     super(id, desc);
     //find accessor
-    this.accessor = desc.accessor || (() => null);
+    this.accessor = desc.accessor! || (() => null);
     this.loaded = desc.lazyLoaded !== true;
   }
 
@@ -48,7 +48,7 @@ export default class ValueColumn<T> extends Column {
     if (!this.isLoaded()) {
       return '';
     }
-    return '' + this.getValue(row, index);
+    return String(this.getValue(row, index));
   }
 
   getRaw(row: any, index: number) {
@@ -90,14 +90,14 @@ export default class ValueColumn<T> extends Column {
     const r = super.dump(toDescRef);
     r.loaded = this.loaded;
 
-    if(!this.loaded && r.rendererType === ValueColumn.RENDERER_LOADING) {
+    if (!this.loaded && r.rendererType === ValueColumn.RENDERER_LOADING) {
       delete r.rendererType;
     }
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
-    if(dump.loaded !== undefined) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
+    if (dump.loaded !== undefined) {
       this.loaded = dump.loaded;
     }
     super.restore(dump, factory);

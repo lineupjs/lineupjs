@@ -1,0 +1,14 @@
+
+
+[data-renderer=numbers],
+[data-renderer=threshold],
+[data-renderer=verticalbar] {
+  display: flex;
+  flex-direction: row;
+  align-content: stretch;
+  align-items: stretch;
+
+  div {
+    flex: 1 1 auto;
+  }
+}

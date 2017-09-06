@@ -1,19 +1,17 @@
-@import "colors";
+@import 'vars';
 
-.lu div.lu-body {
-  div.lu-overlay {
-    position: absolute;
-    display: none;
-    padding: 0;
-    margin: 0;
-    z-index: 1;
+.#{$lu_css_prefix} div.#{$lu_css_prefix}-body div.#{$lu_css_prefix}-overlay {
+  position: absolute;
+  display: none;
+  padding: 0;
+  margin: 0;
+  z-index: 1;
 
-    &.actions span {
-      cursor: pointer;
+  &.actions span {
+    cursor: pointer;
 
-      &:hover {
-        color: $lu_body_text_hover_color;
-      }
+    &:hover {
+      color: $lu_body_text_hover_color;
     }
   }
 }

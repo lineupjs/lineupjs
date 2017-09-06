@@ -1,76 +1,46 @@
-import ICellRendererFactory from './ICellRendererFactory';
 import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
-import {IDOMRenderContext, ICanvasRenderContext} from './RendererContexts';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import {ICanvasRenderContext} from './RendererContexts';
 import {IDataRow} from '../provider/ADataProvider';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {attr, forEach} from '../utils';
+import {attr, forEachChild} from '../utils';
 import Column from '../model/Column';
+import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 
+export default class NumbersCellRenderer extends ANumbersCellRenderer {
 
-export default class NumbersCellRenderer implements ICellRendererFactory {
-
-  createSVG(col: INumbersColumn & Column, context: IDOMRenderContext): ISVGCellRenderer {
-    const cellDimension = col.getWidth() / col.getDataLength();
+  protected createDOMContext(col: INumbersColumn & Column) {
     const colorScale = col.getRawColorScale();
-    const padding = context.option('rowBarPadding', 1);
     let templateRows = '';
     for (let i = 0; i < col.getDataLength(); ++i) {
-      templateRows += `<rect y="${padding}" width="${cellDimension}" height="1" x="${i * cellDimension}" fill="white"><title></title></rect>`;
+      templateRows += `<div style="background-color: white" title=""></div>`;
     }
     return {
-      template: `<g class="heatmapcell">${templateRows}</g>`,
-      update: (n: SVGGElement, d: IDataRow, i: number) => {
-        const rowHeight = context.rowHeight(i);
+      templateRow: templateRows,
+      render: (row: HTMLElement, d: IDataRow) => {
         const data = col.getRawNumbers(d.v, d.dataIndex);
-        forEach(n, 'rect', (d, i) => {
+        forEachChild(row, (d, i) => {
           const v = data[i];
-          attr(<SVGRectElement>d, {
-            fill: colorScale(v),
-            height: rowHeight
+          attr(<HTMLDivElement>d, {
+            title: NumbersColumn.DEFAULT_FORMATTER(v)
+          }, {
+            'background-color': colorScale(v)
           });
-          d.querySelector('title').textContent = NumbersColumn.DEFAULT_FORMATTER(v);
         });
       }
     };
   }
 
-  createHTML(col: INumbersColumn & Column, context: IDOMRenderContext): IHTMLCellRenderer {
-    const cellDimension = col.getWidth() / col.getDataLength();
-    const padding = context.option('rowBarPadding', 1);
-    const colorScale = col.getRawColorScale();
-    let templateRows = '';
-    for (let i = 0; i < col.getDataLength(); ++i) {
-      templateRows += `<div style="left: ${i* cellDimension}px; width: ${cellDimension}px; background-color: white" title=""></div>`;
-    }
-    return {
-      template: `<div class="heatmapcell" style="top:${padding}px;"></div>`,
-      update: (n: HTMLDivElement, d: IDataRow, i: number) => {
-        const rowHeight = context.rowHeight(i);
-        const data = col.getRawNumbers(d.v, d.dataIndex);
-        forEach(n, 'div', (d, i) => {
-          const v = data[i];
-          (<HTMLDivElement>d).style.backgroundColor = colorScale(v);
-          (<HTMLDivElement>d).style.height = rowHeight + 'px';
-          (<HTMLDivElement>d).title = NumbersColumn.DEFAULT_FORMATTER(v);
-        });
-      }
-    };
-  }
-
-  createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const cellDimension = col.getWidth() / col.getDataLength();
+  protected createCanvasContext(col: INumbersColumn & Column, context: ICanvasRenderContext) {
+    const cellDimension = context.colWidth(col) / col.getDataLength();
     const padding = context.option('rowBarPadding', 1);
     const colorScale = col.getRawColorScale();
 
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, offset: number, rowHeight: number) => {
       const data = col.getRawNumbers(d.v, d.dataIndex);
-      const rowHeight = context.rowHeight(i);
       data.forEach((d: number, j: number) => {
         const x = j * cellDimension;
         ctx.beginPath();
         ctx.fillStyle = colorScale(d);
-        ctx.fillRect(x, padding, cellDimension, rowHeight);
+        ctx.fillRect(x, padding + offset, cellDimension, rowHeight);
       });
     };
   }

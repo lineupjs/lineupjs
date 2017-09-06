@@ -4,7 +4,7 @@
 
 import Column from './Column';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {INumberColumn, isNumberColumn} from './NumberColumn';
+import {isNumberColumn} from './NumberColumn';
 
 const DEFAULT_SCRIPT = 'max(values)';
 
@@ -53,7 +53,7 @@ function wrapWithContext(code: string) {
   return typeof v === 'number' ? v : NaN`;
 }
 
-export interface IScriptColumnDesc extends ICompositeNumberDesc {
+export interface IScriptDesc extends ICompositeNumberDesc {
   /**
    * the function to use, it has two parameters: children (current children) and values (their row values)
    * @default 'return Math.max.apply(Math,values)'
@@ -61,13 +61,15 @@ export interface IScriptColumnDesc extends ICompositeNumberDesc {
   script?: string;
 }
 
+export declare type IScriptColumnDesc = IScriptDesc & ICompositeNumberDesc;
+
 
 export default class ScriptColumn extends CompositeNumberColumn {
   static readonly EVENT_SCRIPT_CHANGED = 'scriptChanged';
   static readonly DEFAULT_SCRIPT = DEFAULT_SCRIPT;
 
   private script = ScriptColumn.DEFAULT_SCRIPT;
-  private f: Function = null;
+  private f: Function | null = null;
 
   constructor(id: string, desc: IScriptColumnDesc) {
     super(id, desc);
@@ -96,7 +98,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     this.script = dump.script || this.script;
     super.restore(dump, factory);
   }
@@ -108,7 +110,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
     return this.f.call(this,
       this._children,
       this._children.map((d) => d.getValue(row, index)),
-      <number[]>this._children.map((d) => isNumberColumn(d) ? (<INumberColumn><any>d).getRawNumber(row, index) : null),
+      <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row, index) : null),
       row,
       index);
   }

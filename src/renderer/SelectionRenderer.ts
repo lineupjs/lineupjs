@@ -1,29 +1,16 @@
 import SelectionColumn from '../model/SelectionColumn';
-import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
+import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {ICanvasRenderContext} from './RendererContexts';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
+import {IGroup} from '../model/Group';
 
 export default class SelectionRenderer implements ICellRendererFactory {
-  createSVG(col: SelectionColumn, context: IDOMRenderContext): ISVGCellRenderer {
-    const textHeight = context.option('textHeight', 13);
+  createDOM(col: SelectionColumn): IDOMCellRenderer {
     return {
-      template: `<text class='selection fa' y="${textHeight}"><tspan class='selectionOnly'>\uf046</tspan><tspan class='notSelectionOnly'>\uf096</tspan></text>`,
-      update: (n: SVGGElement, d: IDataRow) => {
-        n.onclick = function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-          col.toggleValue(d.v, d.dataIndex);
-        };
-      }
-    };
-  }
-
-  createHTML(col: SelectionColumn): IHTMLCellRenderer {
-    return {
-      template: `<div class='selection fa'></div>`,
+      template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         n.onclick = function (event) {
           event.preventDefault();
@@ -38,8 +25,38 @@ export default class SelectionRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
       const bak = ctx.font;
       ctx.font = '10pt FontAwesome';
-      clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, col.getWidth(), context.textHints);
+      clipText(ctx, col.getValue(d.v, d.dataIndex) ? '\uf046' : '\uf096', 0, 0, context.colWidth(col), context.textHints);
       ctx.font = bak;
+    };
+  }
+
+  createGroupCanvas(col: SelectionColumn, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
+      const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
+      clipText(ctx, String(selected), 0, context.groupHeight(group), col.getWidth(), context.textHints);
+    };
+  }
+
+  createGroupDOM(col: SelectionColumn): IDOMGroupRenderer {
+    return {
+      template: `<div></div>`,
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+        const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
+        const all = selected >= rows.length / 2;
+        if (all) {
+          n.classList.add('lu-group-selected');
+        } else {
+          n.classList.remove('lu-group-selected');
+        }
+        n.onclick = function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          const value = n.classList.toggle('lu-group-selected');
+          rows.forEach((row) => {
+            col.setValue(row.v, row.dataIndex, value);
+          });
+        };
+      }
     };
   }
 }

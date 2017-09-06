@@ -2,11 +2,12 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {Selection, round, select, event as d3event} from 'd3';
-import {merge} from '../utils';
-import {IColumnDesc, isNumberColumn, Column} from '../model';
+import {event as d3event, round, select, Selection} from 'd3';
+import {merge, suffix} from '../utils';
+import {Column, IColumnDesc, isNumberColumn} from '../model';
 import DataProvider from '../provider/ADataProvider';
-import {toFullTooltip} from './HeaderRenderer';
+import Ranking from '../model/Ranking';
+import {toFullTooltip} from './engine/header';
 
 class PoolEntry {
   used: number = 0;
@@ -17,14 +18,14 @@ class PoolEntry {
 }
 
 export interface IPoolRendererOptions {
-  layout?: string;
-  elemWidth?: number;
-  elemHeight?: number;
-  width?: number;
-  height?: number;
-  additionalDesc?: IColumnDesc[];
-  hideUsed?: boolean;
-  addAtEndOnClick?: boolean;
+  layout: string;
+  elemWidth: number;
+  elemHeight: number;
+  width: number;
+  height: number;
+  additionalDesc: IColumnDesc[];
+  hideUsed: boolean;
+  addAtEndOnClick: boolean;
 }
 
 export default class PoolRenderer {
@@ -42,7 +43,7 @@ export default class PoolRenderer {
   private readonly $node: Selection<any>;
   private entries: PoolEntry[];
 
-  constructor(private data: DataProvider, parent: Element, options: IPoolRendererOptions = {}) {
+  constructor(private data: DataProvider, parent: Element, options: Partial<IPoolRendererOptions> = {}) {
     merge(this.options, options);
 
     this.$node = select(parent).append('div').classed('lu-pool', true);
@@ -52,57 +53,62 @@ export default class PoolRenderer {
 
   changeDataStorage(data: DataProvider) {
     if (this.data) {
-      this.data.on([DataProvider.EVENT_ADD_COLUMN + '.pool', DataProvider.EVENT_REMOVE_COLUMN + '.pool',
-        DataProvider.EVENT_ADD_RANKING + '.pool', DataProvider.EVENT_REMOVE_RANKING + '.pool',
-        DataProvider.EVENT_ADD_DESC + '.pool'], null);
+      this.data.on(suffix('.pool', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN,
+        DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
+        DataProvider.EVENT_ADD_DESC), null);
     }
     this.data = data;
     this.entries = data.getColumns().concat(this.options.additionalDesc).map((d) => new PoolEntry(d));
-    data.on(DataProvider.EVENT_ADD_DESC + '.pool', (desc) => {
+    data.on(`${DataProvider.EVENT_ADD_DESC}.pool`, (desc) => {
       this.entries.push(new PoolEntry(desc));
       this.update();
     });
-    if (this.options.hideUsed) {
-      const that = this;
-      data.on([DataProvider.EVENT_ADD_COLUMN + '.pool', DataProvider.EVENT_REMOVE_COLUMN + '.pool'], function (col) {
-        const desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
-        that.entries.some((entry) => {
-          if (entry.desc !== desc) {
-            return false;
-          }
-          entry.used += change;
-          return true;
-        });
-        that.update();
-      });
-      data.on([DataProvider.EVENT_ADD_RANKING + '.pool', DataProvider.EVENT_REMOVE_RANKING + '.pool'], function (ranking) {
-        const descs = ranking.flatColumns.map((d) => d.desc), change = this.type === 'addRanking' ? 1 : -1;
-        that.entries.some((entry) => {
-          if (descs.indexOf(entry.desc) < 0) {
-            return false;
-          }
-          entry.used += change;
-          return true;
-        });
-        that.update();
-      });
-      data.getRankings().forEach((ranking) => {
-        const descs = ranking.flatColumns.map((d) => d.desc), change = +1;
-        that.entries.some((entry) => {
-          if (descs.indexOf(entry.desc) < 0) {
-            return false;
-          }
-          entry.used += change;
-        });
-      });
+    if (!this.options.hideUsed) {
+      return;
     }
+    const that = this;
+    data.on(suffix('.pool', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN), function (this: { type: string }, col) {
+      const desc = col.desc, change = this.type === 'addColumn' ? 1 : -1;
+      that.entries.some((entry) => {
+        if (entry.desc !== desc) {
+          return false;
+        }
+        entry.used += change;
+        return true;
+      });
+      that.update();
+    });
+    data.on(suffix('.pool', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING), function (this: { type: string }, ranking: Ranking) {
+      const descs = ranking.flatColumns.map((d) => d.desc), change = this.type === 'addRanking' ? 1 : -1;
+      that.entries.some((entry) => {
+        if (descs.indexOf(entry.desc) < 0) {
+          return false;
+        }
+        entry.used += change;
+        return true;
+      });
+      that.update();
+    });
+    data.getRankings().forEach((ranking) => {
+      const descs = ranking.flatColumns.map((d) => d.desc), change = +1;
+      that.entries.some((entry) => {
+        if (descs.indexOf(entry.desc) < 0) {
+          return false;
+        }
+        entry.used += change;
+        return true;
+      });
+    });
   }
 
   remove() {
     this.$node.remove();
-    if (this.data) {
-      this.data.on([DataProvider.EVENT_ADD_COLUMN + '.pool', DataProvider.EVENT_REMOVE_COLUMN + '.pool', 'addRanking.pool', 'removeRanking.pool', 'addDesc.pool'], null);
+    if (!this.data) {
+      return;
     }
+    this.data.on(suffix('.pool', DataProvider.EVENT_ADD_COLUMN, DataProvider.EVENT_REMOVE_COLUMN,
+      DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
+      DataProvider.EVENT_ADD_DESC), null);
   }
 
   update() {
@@ -121,8 +127,8 @@ export default class PoolRenderer {
         e.dataTransfer.setData('application/caleydo-lineup-column-number', JSON.stringify(data.toDescRef(d)));
       }
     }).style({
-      width: this.options.elemWidth + 'px',
-      height: this.options.elemHeight + 'px'
+      width: `${this.options.elemWidth}px`,
+      height: `${this.options.elemHeight}px`
     });
     if (this.options.addAtEndOnClick) {
       $headerEnter.on('click', (d) => {
@@ -132,9 +138,9 @@ export default class PoolRenderer {
     $headerEnter.append('span').classed('label', true).text((d) => d.label);
     $headers.attr('class', (d) => `header ${((<any>d).cssClass || '')} ${d.type}`);
     $headers.style({
-      'transform': (d, i) => {
+      'transform': (_d, i) => {
         const pos = this.layout(i);
-        return 'translate(' + pos.x + 'px,' + pos.y + 'px)';
+        return `translate(${pos.x}px,${pos.y}px)`;
       },
       'background-color': (d) => {
         const s = (<any>d);
@@ -151,22 +157,22 @@ export default class PoolRenderer {
     switch (this.options.layout) {
       case 'horizontal':
         this.$node.style({
-          width: (this.options.elemWidth * descToShow.length) + 'px',
-          height: (this.options.elemHeight) + 'px'
+          width: `${this.options.elemWidth * descToShow.length}px`,
+          height: `${this.options.elemHeight}px`
         });
         break;
       case 'grid':
         const perRow = round(this.options.width / this.options.elemWidth, 0);
         this.$node.style({
-          width: perRow * this.options.elemWidth + 'px',
-          height: Math.ceil(descToShow.length / perRow) * this.options.elemHeight + 'px'
+          width: `${perRow * this.options.elemWidth}px`,
+          height: `${Math.ceil(descToShow.length / perRow) * this.options.elemHeight}px`
         });
         break;
       //case 'vertical':
       default:
         this.$node.style({
-          width: (this.options.elemWidth) + 'px',
-          height: (this.options.elemHeight * descToShow.length) + 'px'
+          width: `${this.options.elemWidth}px`,
+          height: `${this.options.elemHeight * descToShow.length}px`
         });
         break;
     }

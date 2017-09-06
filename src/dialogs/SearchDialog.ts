@@ -1,6 +1,6 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
-import DataProvider from '../provider/ADataProvider';
+import {IDataProvider} from '../provider/ADataProvider';
 import * as d3 from 'd3';
 
 
@@ -13,7 +13,7 @@ export default class SearchDialog extends ADialog {
    * @param provider the data provider for the actual search
    * @param title optional title
    */
-  constructor(private readonly column: Column, $header: d3.Selection<Column>, private readonly provider: DataProvider, title: string = 'Search') {
+  constructor(private readonly column: Column, $header: d3.Selection<Column>, private readonly provider: IDataProvider, title: string = 'Search') {
     super($header, title);
   }
 
@@ -23,13 +23,14 @@ export default class SearchDialog extends ADialog {
     popup.select('input[type="text"]').on('input', () => {
       const target = (<Event>d3.event).target;
       let search: any = (<HTMLInputElement>target).value;
-      if (search.length >= 3) {
-        const isRegex = popup.select('input[type="checkbox"]').property('checked');
-        if (isRegex) {
-          search = new RegExp(search);
-        }
-        this.provider.searchAndJump(search, this.column);
+      if (search.length < 3) {
+        return;
       }
+      const isRegex = popup.select('input[type="checkbox"]').property('checked');
+      if (isRegex) {
+        search = new RegExp(search);
+      }
+      this.provider.searchAndJump(search, this.column);
     });
 
     const updateImpl = () => {
@@ -45,10 +46,14 @@ export default class SearchDialog extends ADialog {
     };
 
     popup.select('input[type="checkbox"]').on('change', updateImpl);
-    popup.select('.ok').on('click', updateImpl);
 
-    popup.select('.cancel').on('click', function () {
-      popup.remove();
+    this.onButton(popup, {
+      cancel: () => undefined,
+      reset: () => undefined,
+      submit: () => {
+        updateImpl();
+        return true;
+      }
     });
   }
 }

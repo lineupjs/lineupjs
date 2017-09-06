@@ -1,0 +1,35 @@
+
+$lu_css_prefix: 'lu' !default;
+$lu_toolbar_font_size: 8pt !default;
+
+$lu_hover_color: #e5e5e5 !default;
+$lu_selected_color: #ffa500 !default;
+
+$lu_drag_over: #979797 !default;
+
+$lu_header_background: #6d6c6c !default;
+$lu_header_active_filter_color: darkblue !default;
+
+$lu_body_font: 10pt 'Helvetica Neue', Helvetica, Arial, sans-serif !default;
+$lu_body_text_hover_color: darkblue !default;
+
+$lu_slope_color: darkgray !default;
+$lu_meanline_color: darkgray !default;
+$lu_even_bg: #f7f7f7 !default;
+
+$lu_renderer_boxplot_box: #e0e0e0 !default;
+$lu_renderer_boxplot_stroke: black !default;
+$lu_renderer_boxplot_sort_indicator: #ff0700 !default;
+
+$lu_upset_circle_color: black !default;
+$lu_upset_inactive_opacity: 0.1 !default;
+$lu_upset_stroke: black !default;
+
+$lu_engine_grip_gap: 5px !default;
+
+$lu_missing_bg: repeating-linear-gradient(-45deg, transparent, transparent 7px, #ddd 7px, #ddd 10px) !default;
+
+$lu_side_panel_bg_color: #f0f0f0 !default;
+$lu_side_panel_toolbar_bg: white !default;
+$lu_side_panel_font_size: 14pt !default;
+$lu_side_panel_toolbar_font_size: 12pt !default;

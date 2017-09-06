@@ -2,9 +2,9 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {select, scale, behavior, Selection, event as d3event, mouse, selectAll} from 'd3';
-import {merge} from './utils';
-import {INumberFilter, IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
+import {behavior, event as d3event, mouse, scale, select, selectAll, Selection} from 'd3';
+import {IMappingFunction, INumberFilter, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
+import {filterMissingText} from './dialogs/AFilterDialog';
 
 
 function clamp(v: number, min: number, max: number) {
@@ -12,28 +12,31 @@ function clamp(v: number, min: number, max: number) {
 }
 
 function unique(data: number[]) {
-  const s = new Set<number>();
-  data.forEach((d) => s.add(d));
-  const r = [];
-  s.forEach((d) => r.push(d));
-  return r;
+  return Array.from(new Set(data));
 }
 
 export interface IMappingEditorOptions {
   idPrefix: string;
-  width?: number;
-  height?: number;
-  padding_hor?: number;
-  padding_ver?: number;
-  filter_height?: number;
-  radius?: number;
-  callback?(newscale: IMappingFunction, filter: {min: number, max: number}): void;
-  callbackThisArg?: any;
-  triggerCallback?: string;
+  width: number;
+  height: number;
+  padding_hor: number;
+  padding_ver: number;
+  filter_height: number;
+  radius: number;
+
+  callback(newscale: IMappingFunction, filter: { min: number, max: number }): void;
+
+  callbackThisArg: any;
+  triggerCallback: string;
+}
+
+interface IMappingLine {
+  r: number;
+  n: number;
 }
 
 export default class MappingEditor {
-  private options: IMappingEditorOptions = {
+  private readonly options: IMappingEditorOptions = {
     idPrefix: '',
     width: 370,
     height: 150,
@@ -49,8 +52,8 @@ export default class MappingEditor {
   private computeFilter: () => INumberFilter;
   private _filter: { min: number, max: number };
 
-  constructor(private parent: HTMLElement, public scale: IMappingFunction, private original: IMappingFunction, private oldFilter: INumberFilter, private dataPromise: Promise<number[]>, options: IMappingEditorOptions) {
-    merge(this.options, options);
+  constructor(parent: HTMLElement, public scale: IMappingFunction, private readonly original: IMappingFunction, private readonly oldFilter: INumberFilter, private readonly dataPromise: Promise<number[]>, options: Partial<IMappingEditorOptions>) {
+    Object.assign(this.options, options);
     //work on a local copy
     this.scale = scale.clone();
 
@@ -69,7 +72,7 @@ export default class MappingEditor {
   private build($root: Selection<any>) {
     const options = this.options,
       that = this;
-    $root = $root.append('div').classed('lugui-me', true);
+    $root = $root.append('div').classed('lu-mapping-editor', true);
 
 
     const width = options.width - options.padding_hor * 2;
@@ -94,9 +97,9 @@ export default class MappingEditor {
           <span>0</span>
           <input type="text" class="raw_min" id="me${options.idPrefix}raw_min" value="0"><label for="me${options.idPrefix}raw_min">Min</label>
         </div>
-        <svg width="${options.width}" height="${options.height+35}">
-          <text x="${width/2}" y="10">Normalized Input</text>
-          <text x="${width/2}" y="${options.height - options.filter_height + 5}">Raw Input</text>
+        <svg width="${options.width}" height="${options.height + 35}">
+          <text x="${width / 2}" y="10">Normalized Input</text>
+          <text x="${width / 2}" y="${options.height - options.filter_height + 5}">Raw Input</text>
           <line y1="${options.padding_ver}" y2="${options.padding_ver}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
           <rect class="adder" x="${options.padding_hor}" width="${width}" height="10"></rect>
           <line y1="${options.height - options.filter_height - options.padding_ver}" y2="${options.height - options.filter_height - options.padding_ver}" x1="${options.padding_hor}" x2="${width + options.padding_hor}" stroke="black"></line>
@@ -136,7 +139,7 @@ export default class MappingEditor {
         </div>
       </div>
       <div>
-         Extras: <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.oldFilter.filterMissing ? 'checked="checked"' : ''}>Filter Missing Values</label>
+         Extras: <label><input type="checkbox" id="me${options.idPrefix}filterMissing" ${this.oldFilter.filterMissing ? 'checked="checked"' : ''}>${filterMissingText}</label>
       </div>
       <div class="script" style="/* display: none; */">
         <label for="me${options.idPrefix}script_code">Custom Script</label><button>Apply</button>
@@ -156,7 +159,7 @@ export default class MappingEditor {
 
     $root.select('input.raw_min')
       .property('value', raw2pixel.domain()[0])
-      .on('blur', function () {
+      .on('blur', function (this: HTMLInputElement) {
         const d = raw2pixel.domain();
         d[0] = parseFloat(this.value);
         raw2pixel.domain(d);
@@ -168,7 +171,7 @@ export default class MappingEditor {
       });
     $root.select('input.raw_max')
       .property('value', raw2pixel.domain()[1])
-      .on('blur', function () {
+      .on('blur', function (this: HTMLInputElement) {
         const d = raw2pixel.domain();
         d[1] = parseFloat(this.value);
         raw2pixel.domain(d);
@@ -183,7 +186,7 @@ export default class MappingEditor {
     });
 
     //lines that show mapping of individual data items
-    let datalines = $root.select('g.samples').selectAll('line').data([]);
+    let datalines = $root.select('g.samples').selectAll('line').data(<number[]>[]);
     this.dataPromise.then((data) => {
       //to unique values
       data = unique(data);
@@ -196,9 +199,9 @@ export default class MappingEditor {
           y1: 0,
           x2: raw2pixel,
           y2: height
-        }).style('visibility', function (d) {
+        }).style('visibility', (d) => {
         const domain = that.scale.domain;
-        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
+        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null!;
       });
     });
 
@@ -206,22 +209,22 @@ export default class MappingEditor {
       datalines.attr({
         x1: (d) => normal2pixel(that.scale.apply(d)),
         x2: raw2pixel
-      }).style('visibility', function (d) {
+      }).style('visibility', (d) => {
         const domain = that.scale.domain;
-        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null;
+        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null!;
       });
     }
 
-    function createDrag(move) {
+    function createDrag<T>(move: (d: T, index: number) => void) {
       return behavior.drag()
-        .on('dragstart', function () {
+        .on('dragstart', function (this: HTMLElement) {
           select(this)
             .classed('dragging', true)
             .attr('r', options.radius * 1.1);
           select(`#me${options.idPrefix}mapping-overlay`).classed('hide', true);
         })
         .on('drag', move)
-        .on('dragend', function () {
+        .on('dragend', function (this: HTMLElement) {
           select(this)
             .classed('dragging', false)
             .attr('r', options.radius);
@@ -230,7 +233,7 @@ export default class MappingEditor {
         });
     }
 
-    let mappingLines = [];
+    let mappingLines: IMappingLine[] = [];
 
     function renderMappingLines() {
       if (!(that.scale instanceof ScaleMappingFunction)) {
@@ -257,7 +260,7 @@ export default class MappingEditor {
         updateDataLines();
       }
 
-      function removePoint(i) {
+      function removePoint(i: number) {
         if (mappingLines.length <= 2) {
           return; //can't remove have to have at least two
         }
@@ -266,7 +269,7 @@ export default class MappingEditor {
         renderMappingLines();
       }
 
-      function addPoint(x) {
+      function addPoint(x: number) {
         const px = clamp(x, 0, width);
         mappingLines.push({
           n: normal2pixel.invert(px),
@@ -276,7 +279,7 @@ export default class MappingEditor {
         renderMappingLines();
       }
 
-      $root.on('click', function() {
+      $root.on('click', function () {
         $root.select(`#me${options.idPrefix}mapping-overlay`).remove();
       });
 
@@ -284,7 +287,7 @@ export default class MappingEditor {
         addPoint(mouse($root.select('svg > g').node())[0]);
       });
 
-      function createOverlay(this: SVGGElement, d: {n: number, r: number}) {
+      function createOverlay(this: SVGGElement, d: { n: number, r: number }) {
         $root.select(`#me${options.idPrefix}mapping-overlay`).remove();
 
         const overlayOptions = [{
@@ -293,12 +296,12 @@ export default class MappingEditor {
           domain: outputDomain,
           type: 'normalized'
         },
-        {
-          label: 'Raw Input',
-          value: d.r,
-          domain: inputDomain,
-          type: 'raw'
-        }];
+          {
+            label: 'Raw Input',
+            value: d.r,
+            domain: inputDomain,
+            type: 'raw'
+          }];
 
         const overlay = $root.append('div');
 
@@ -310,8 +313,8 @@ export default class MappingEditor {
         const $overlaysEnter = $overlays.enter().append('div');
         $overlaysEnter
           .append('label')
-            .attr('for', (datum) => `me${options.idPrefix}${datum.type}-input`)
-            .text((datum) => `${datum.label}: `);
+          .attr('for', (datum) => `me${options.idPrefix}${datum.type}-input`)
+          .text((datum) => `${datum.label}: `);
         $overlaysEnter
           .append('input')
           .attr('id', (datum) => `me${options.idPrefix}${datum.type}-input`)
@@ -350,7 +353,7 @@ export default class MappingEditor {
 
       function updateOverlayInput(value: number, type: string) {
         const overlay = document.querySelector(`#me${options.idPrefix}mapping-overlay`);
-        if(overlay) {
+        if (overlay) {
           const input = <HTMLInputElement>document.querySelector(`#me${options.idPrefix}${type}-input`);
           input.value = value.toFixed(2);
         }
@@ -358,7 +361,7 @@ export default class MappingEditor {
 
       const $mapping = $root.select('g.mappings').selectAll('g.mapping').data(mappingLines);
       $mapping.on('click', createOverlay);
-      const $mappingEnter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', (d, i) => {
+      const $mappingEnter = $mapping.enter().append('g').classed('mapping', true).on('contextmenu', (_d, i) => {
         (<MouseEvent>d3event).preventDefault();
         (<MouseEvent>d3event).stopPropagation();
         removePoint(i);
@@ -366,7 +369,7 @@ export default class MappingEditor {
       $mappingEnter.append('line').attr({
         y1: 0,
         y2: height
-      }).call(createDrag(function (d) {
+      }).call(createDrag<IMappingLine>(function (this: SVGLineElement, d) {
         //drag the line shifts both point in parallel
         const dx = (<any>d3event).dx;
         const nx = clamp(normal2pixel(d.n) + dx, 0, width);
@@ -374,31 +377,31 @@ export default class MappingEditor {
         d.n = normal2pixel.invert(nx);
         d.r = raw2pixel.invert(rx);
         select(this).attr('x1', nx).attr('x2', rx);
-        select(this.parentElement).select('circle.normalized').attr('cx', nx);
-        select(this.parentElement).select('circle.raw').attr('cx', rx);
+        select(this.parentElement!).select('circle.normalized').attr('cx', nx);
+        select(this.parentElement!).select('circle.raw').attr('cx', rx);
 
         updateOverlayInput(d.r, 'raw');
         updateOverlayInput(d.n, 'normalized');
 
         updateScale();
       }));
-      $mappingEnter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag(function (d) {
+      $mappingEnter.append('circle').classed('normalized', true).attr('r', options.radius).call(createDrag<IMappingLine>(function (this: SVGCircleElement, d) {
         //drag normalized
         const px = clamp((<DragEvent>d3event).x, 0, width);
         d.n = normal2pixel.invert(px);
         select(this).attr('cx', px);
-        select(this.parentElement).select('line').attr('x1', px);
+        select(this.parentElement!).select('line').attr('x1', px);
 
         updateOverlayInput(d.n, 'normalized');
 
         updateScale();
       }));
-      $mappingEnter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag(function (d) {
+      $mappingEnter.append('circle').classed('raw', true).attr('r', options.radius).attr('cy', height).call(createDrag<IMappingLine>(function (this: SVGCircleElement, d) {
         //drag raw
         const px = clamp((<DragEvent>d3event).x, 0, width);
         d.r = raw2pixel.invert(px);
         select(this).attr('cx', px);
-        select(this.parentElement).select('line').attr('x2', px);
+        select(this.parentElement!).select('line').attr('x2', px);
 
         updateOverlayInput(d.r, 'raw');
 
@@ -419,7 +422,7 @@ export default class MappingEditor {
         $root.select('div.script').style('display', 'none');
         return;
       }
-      $root.select('div.script').style('display', null);
+      $root.select('div.script').style('display', null!);
 
       const sscale = <ScriptMappingFunction>that.scale;
       const $text = $root.select('textarea').text(sscale.code);
@@ -448,8 +451,8 @@ export default class MappingEditor {
 
       // use the old filter if one was available, set to domain boundaries otherwise
       const initialValues = [
-        (isFinite(this.oldFilter.min)? this.oldFilter.min : inputDomain[0]).toFixed(1),
-        (isFinite(this.oldFilter.max)? this.oldFilter.max : inputDomain[1]).toFixed(1)
+        (isFinite(this.oldFilter.min) ? this.oldFilter.min : inputDomain[0]).toFixed(1),
+        (isFinite(this.oldFilter.max) ? this.oldFilter.max : inputDomain[1]).toFixed(1)
       ];
 
       selectAll(`#me${options.idPrefix}filter_inputs div input`)
@@ -457,23 +460,23 @@ export default class MappingEditor {
         .attr('max', inputDomain[1])
         .data(initialValues)
         .attr('value', (d) => d)
-        .on('change', function(this: HTMLInputElement, d, i) {
+        .on('change', function (this: HTMLInputElement, _d, i) {
           const value = parseFloat(this.value);
           const which = i === 0 ? 'min' : 'max';
-          if(value >= inputDomain[0] && value <= inputDomain[1]) {
-            const selector: string = (which === 'min')? 'left' : 'right';
+          if (value >= inputDomain[0] && value <= inputDomain[1]) {
+            const selector: string = (which === 'min') ? 'left' : 'right';
 
             const px = raw2pixel(value);
-            that._filter[which] = (value === inputDomain[0])? -Infinity : (value === inputDomain[1])? Infinity : value;
+            that._filter[which] = (value === inputDomain[0]) ? -Infinity : (value === inputDomain[1]) ? Infinity : value;
 
             $root.select(`g.${selector}_filter`).attr('transform', `translate(${px}, 0)`);
           }
           triggerUpdate();
-      });
+        });
 
       $root.selectAll('g.left_filter, g.right_filter')
         .data([this.oldFilter.min, this.oldFilter.max])
-        .attr('transform', (d, i) => `translate(${i === 0 ? minFilter : maxFilter},0)`).call(createDrag(function (this: SVGGElement, d, i) {
+        .attr('transform', (_d, i) => `translate(${i === 0 ? minFilter : maxFilter},0)`).call(createDrag(function (this: SVGGElement, _d, i) {
 
         //drag normalized
         const px = clamp((<DragEvent>d3event).x, 0, width);
@@ -522,7 +525,7 @@ export default class MappingEditor {
 
     updateRaw();
 
-    $root.select('select').on('change', function () {
+    $root.select('select').on('change', function (this: HTMLSelectElement) {
       const v = this.value;
       if (v === 'linear_invert') {
         that.scale = new ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);

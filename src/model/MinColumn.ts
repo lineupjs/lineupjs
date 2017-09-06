@@ -2,7 +2,6 @@
  * Created by sam on 04.11.2016.
  */
 
-import {min as d3min} from 'd3';
 import CompositeNumberColumn from './CompositeNumberColumn';
 
 /**
@@ -36,7 +35,7 @@ export default class MinColumn extends CompositeNumberColumn {
   }
 
   protected compute(row: any, index: number) {
-    return d3min(this._children, (d) => d.getValue(row, index));
+    return Math.min(...this._children.map((d) => d.getValue(row, index)));
   }
 
   /**

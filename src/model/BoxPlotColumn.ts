@@ -4,7 +4,17 @@
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {format} from 'd3';
-import NumberColumn, {INumberColumn, IMappingFunction, createMappingFunction, ScaleMappingFunction, IMapAbleColumn, INumberFilter, noNumberFilter} from './NumberColumn';
+import NumberColumn, {
+  createMappingFunction,
+  FIRST_IS_NAN,
+  IMapAbleColumn,
+  IMappingFunction,
+  INumberColumn,
+  INumberFilter,
+  noNumberFilter,
+  numberCompare,
+  ScaleMappingFunction
+} from './NumberColumn';
 
 export const SORT_METHOD = {
   min: 'min',
@@ -19,13 +29,18 @@ export declare type SortMethod = string;
 
 
 export interface IBoxPlotColumn extends INumberColumn {
-  getBoxPlotData(row: any, index: number): IBoxPlotData;
-  getRawBoxPlotData(row: any, index: number): IBoxPlotData;
+  getBoxPlotData(row: any, index: number): IBoxPlotData | null;
+
+  getMapping(): IMappingFunction;
+
+  getRawBoxPlotData(row: any, index: number): IBoxPlotData | null;
+
   getSortMethod(): string;
-  setSortMethod(sortMethod: string);
+
+  setSortMethod(sortMethod: string): void;
 }
 
-export interface IBoxPlotColumnDesc extends IValueColumnDesc<IBoxPlotData> {
+export interface IBoxPlotDesc {
   /**
    * dump of mapping function
    */
@@ -42,6 +57,8 @@ export interface IBoxPlotColumnDesc extends IValueColumnDesc<IBoxPlotData> {
   readonly sort?: string;
 }
 
+export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlotData>;
+
 export interface IBoxPlotData {
   readonly min: number;
   readonly max: number;
@@ -52,24 +69,24 @@ export interface IBoxPlotData {
 
 
 export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: number, bIndex: number) {
-  const aVal = (col.getBoxPlotData(a, aIndex));
-  const bVal = (col.getBoxPlotData(b, bIndex));
+  const aVal = col.getBoxPlotData(a, aIndex);
+  const bVal = col.getBoxPlotData(b, bIndex);
   if (aVal === null) {
-    return bVal === null ? 0 : +1;
+    return bVal === null ? 0 : FIRST_IS_NAN;
   }
   if (bVal === null) {
-    return -1;
+    return FIRST_IS_NAN * -1;
   }
-  const method = col.getSortMethod();
-  return aVal[method] - bVal[method];
+  const method = <keyof IBoxPlotData>col.getSortMethod();
+  return numberCompare(aVal[method], bVal[method]);
 }
 
-export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number, mode: 'raw'|'normalized') {
+export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number, mode: 'raw' | 'normalized'): number {
   const data = mode === 'normalized' ? col.getBoxPlotData(row, index) : col.getRawBoxPlotData(row, index);
   if (data === null) {
     return NaN;
   }
-  return data[col.getSortMethod()];
+  return data[<keyof IBoxPlotData>col.getSortMethod()];
 }
 
 
@@ -113,11 +130,15 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return compareBoxPlot(this, a, b, aIndex, bIndex);
   }
 
-  getBoxPlotData(row: any, index: number): IBoxPlotData {
+  getBoxPlotData(row: any, index: number): IBoxPlotData | null {
     return this.getValue(row, index);
   }
 
-  getRawBoxPlotData(row: any, index: number): IBoxPlotData {
+  isMissing(row: any, index: number) {
+    return this.getValue(row, index) == null;
+  }
+
+  getRawBoxPlotData(row: any, index: number): IBoxPlotData | null {
     return this.getRawValue(row, index);
   }
 
@@ -139,11 +160,11 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     };
   }
 
-  getNumber(row: any, index: number) {
+  getNumber(row: any, index: number): number {
     return getBoxPlotNumber(this, row, index, 'normalized');
   }
 
-  getRawNumber(row: any, index: number) {
+  getRawNumber(row: any, index: number): number {
     return getBoxPlotNumber(this, row, index, 'raw');
   }
 
@@ -166,7 +187,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     }
     this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.sort, this.sort = sort);
     // sort by me if not already sorted by me
-    if (this.findMyRanker().getSortCriteria().col !== this) {
+    if (!this.isSortedByMe().asc) {
       this.sortByMe();
     }
   }
@@ -179,7 +200,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     super.restore(dump, factory);
     if (dump.sortMethod) {
       this.sort = dump.sortMethod;

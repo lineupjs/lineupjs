@@ -2,7 +2,6 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import {merge} from '../utils';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import NumberColumn from './NumberColumn';
 import StringColumn from './StringColumn';
@@ -18,13 +17,13 @@ import SelectionColumn from './SelectionColumn';
 import ScriptColumn from './ScriptColumn';
 import CategoricalNumberColumn from './CategoricalNumberColumn';
 import NestedColumn from './NestedColumn';
-import DummyColumn from './DummyColumn';
+import ActionColumn from './ActionColumn';
 import LinkColumn from './LinkColumn';
 import BooleansColumn from './BooleansColumn';
 import NumbersColumn from './NumbersColumn';
 import BoxPlotColumn from './BoxPlotColumn';
+import AggregateGroupColumn from './AggregateGroupColumn';
 import HierarchyColumn from './HierarchyColumn';
-
 
 export {default as Column, IColumnDesc} from './Column';
 export {default as CompositeColumn} from './CompositeColumn';
@@ -39,6 +38,8 @@ export {createDesc as createSelectionDesc} from './SelectionColumn';
 export {createDesc as createScriptDesc} from './ScriptColumn';
 export {createDesc as createNestedDesc} from './NestedColumn';
 export {createDesc as createStackDesc} from './StackColumn';
+export {createDesc as createActionDesc} from './ActionColumn';
+export {createDesc as createAggregateDesc} from './AggregateGroupColumn';
 
 /**
  * defines a new column type
@@ -59,21 +60,13 @@ export function defineColumn<T>(name: string, functions: any = {}) {
       // dummy
     }
   }
+
   CustomColumn.prototype.toString = () => name;
-  CustomColumn.prototype = merge(CustomColumn.prototype, functions);
+  CustomColumn.prototype = Object.assign(CustomColumn.prototype, functions);
 
   return CustomColumn;
 }
 
-
-/**
- * utility for creating an action description with optional label
- * @param label
- * @returns {{type: string, label: string}}
- */
-export function createActionDesc(label = 'actions') {
-  return {type: 'actions', label};
-}
 
 /**
  * a map of all known column types
@@ -90,7 +83,7 @@ export function models() {
     booleans: BooleansColumn,
     categorical: CategoricalColumn,
     ordinal: CategoricalNumberColumn,
-    actions: DummyColumn,
+    actions: ActionColumn,
     annotate: AnnotateColumn,
     selection: SelectionColumn,
     max: MaxColumn,
@@ -99,6 +92,7 @@ export function models() {
     script: ScriptColumn,
     nested: NestedColumn,
     boxplot: BoxPlotColumn,
+    aggregate: AggregateGroupColumn,
     hierarchy: HierarchyColumn
   };
 }

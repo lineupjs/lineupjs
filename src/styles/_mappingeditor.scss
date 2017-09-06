@@ -1,12 +1,13 @@
 /**
 mapping editor
  */
+@import 'vars';
 
-$sample_color: black;
-$mapping_color: blue;
-$mapping_color_hover: #0000cf;
+.#{$lu_css_prefix}-mapping-editor {
+  $sample_color: black;
+  $mapping_color: blue;
+  $mapping_color_hover: #0000cf;
 
-.lugui-me {
   margin-bottom: 5px;
   clear: both;
 

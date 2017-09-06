@@ -2,20 +2,38 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {dispatch, select, event as d3event, Dispatch} from 'd3';
+import {dispatch, Dispatch, event as d3event, select, Selection} from 'd3';
 import Column from './model/Column';
-import {IDOMCellRenderer} from './renderer/IDOMCellRenderers';
+import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
+
+
+export function findOption(options: any) {
+  return (key: string, defaultValue: any): any => {
+    if (key in options) {
+      return options[key];
+    }
+    if (key.indexOf('.') > 0) {
+      const p = key.substring(0, key.indexOf('.'));
+      key = key.substring(key.indexOf('.') + 1);
+      if (p in options && key in options[p]) {
+        return options[p][key];
+      }
+    }
+    return defaultValue;
+  };
+}
+
 
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
- * @param callback the callback to call
- * @param timeToDelay delay the call in milliseconds
- * @param thisCallback this argument of the callback
- * @return {function(...[any]): undefined} a function that can be called with the same interface as the callback but delayed
+ * @param {(...args: any[]) => void} callback the callback to call
+ * @param {number} timeToDelay delay the call in milliseconds
+ * @param {delayedCall} thisCallback this argument of the callback
+ * @return {(...args: any[]) => any} a function that can be called with the same interface as the callback but delayed
  */
-export function delayedCall(callback: (...args: any[]) => void, timeToDelay = 100, thisCallback = this) {
+export function debounce(callback: (...args: any[]) => void, timeToDelay = 100, thisCallback = null) {
   let tm = -1;
-  return function (...args: any[]) {
+  return function (this: any, ...args: any[]) {
     if (tm >= 0) {
       clearTimeout(tm);
       tm = -1;
@@ -25,30 +43,53 @@ export function delayedCall(callback: (...args: any[]) => void, timeToDelay = 10
   };
 }
 
+export function suffix(suffix: string, ...prefix: string[]) {
+  return prefix.map((p) => `${p}${suffix}`);
+}
+
+export interface IEventContext {
+  /**
+   * who is sending this event
+   */
+  readonly source: AEventDispatcher;
+  /**
+   * the event type
+   */
+  readonly type: string;
+  /**
+   * in case of multi propagation the 'main' event type
+   */
+  readonly primaryType: string;
+  /**
+   * the arguments to the listener
+   */
+  readonly args: any[];
+}
+
 /**
  * base class for event dispatching using d3 event mechanism
  */
 export class AEventDispatcher {
   private listeners: Dispatch;
-  private forwarder;
+  private forwarder: (...args: any[]) => void;
 
   constructor() {
     this.listeners = dispatch(...this.createEventList());
 
     const that = this;
-    this.forwarder = function (...args: any[]) {
+    this.forwarder = function (this: IEventContext, ...args: any[]) {
       that.fire(this.type, ...args);
     };
   }
 
   on(type: string): (...args: any[]) => void;
-  on(type: string|string[], listener: (...args: any[]) => any): AEventDispatcher;
-  on(type: string|string[], listener?: (...args: any[]) => any): any {
-    if (arguments.length > 1) {
+  on(type: string | string[], listener: ((...args: any[]) => any) | null): AEventDispatcher;
+  on(type: string | string[], listener?: ((...args: any[]) => any) | null): any {
+    if (listener !== undefined) {
       if (Array.isArray(type)) {
-        (<string[]>type).forEach((d) => this.listeners.on(d, listener));
+        (<string[]>type).forEach((d) => this.listeners.on(d, listener!));
       } else {
-        this.listeners.on(<string>type, listener);
+        this.listeners.on(<string>type, listener!);
       }
       return this;
     }
@@ -57,24 +98,26 @@ export class AEventDispatcher {
 
   /**
    * return the list of events to be able to dispatch
-   * @return {Array}
+   * @return {Array} by default no events
    */
   protected createEventList(): string[] {
     return [];
   }
 
-  protected fire(type: string|string[], ...args: any[]) {
-    const fireImpl = (t) => {
+  protected fire(type: string | string[], ...args: any[]) {
+    const primaryType = Array.isArray(type) ? type[0] : type;
+    const fireImpl = (t: string) => {
       //local context per event, set a this argument
-      const context = {
+      const context: IEventContext = {
         source: this, //who is sending this event
         type: t, //the event type
+        primaryType, //in case of multi propagation the 'main' event type
         args //the arguments to the listener
       };
-      this.listeners[<string>t].apply(context, args);
+      this.listeners[t].apply(context, args);
     };
     if (Array.isArray(type)) {
-      (<string[]>type).forEach(fireImpl.bind(this));
+      type.forEach(fireImpl.bind(this));
     } else {
       fireImpl(<string>type);
     }
@@ -83,8 +126,8 @@ export class AEventDispatcher {
   /**
    * forwards one or more events from a given dispatcher to the current one
    * i.e. when one of the given events is fired in 'from' it will be forwarded to all my listeners
-   * @param from the event dispatcher to forward from
-   * @param types the event types to forward
+   * @param {AEventDispatcher} from the event dispatcher to forward from
+   * @param {string[]} types the event types to forward
    */
   protected forward(from: AEventDispatcher, ...types: string[]) {
     from.on(types, this.forwarder);
@@ -92,8 +135,8 @@ export class AEventDispatcher {
 
   /**
    * removes the forwarding declarations
-   * @param from
-   * @param types
+   * @param {AEventDispatcher} from the originated dispatcher
+   * @param {string[]} types event types to forward
    */
   protected unforward(from: AEventDispatcher, ...types: string[]) {
     from.on(types, null);
@@ -139,10 +182,10 @@ export function merge(...args: any[]) {
 
 /**
  * computes the absolute offset of the given element
- * @param element
- * @return {{left: number, top: number, width: number, height: number}}
+ * @param {Element} element element to compute the offset of
+ * @return {{left: number, top: number, width: number, height: number}} offset of the element
  */
-export function offset(element) {
+export function offset(element: Element) {
   const obj = element.getBoundingClientRect();
   return {
     left: obj.left + window.pageXOffset,
@@ -153,9 +196,9 @@ export function offset(element) {
 }
 
 export interface IContentScrollerOptions {
-  topShift?(): number;
-  backupRows?: number;
+  pageSize?: number;
   rowHeight?: number;
+  backupRows?: number;
 }
 
 /**
@@ -167,31 +210,22 @@ export class ContentScroller extends AEventDispatcher {
   static readonly EVENT_SCROLL = 'scroll';
   static readonly EVENT_REDRAW = 'redraw';
 
-  private options: IContentScrollerOptions = {
-    /**
-     * shift that should be used for calculating the top position
-     */
-    topShift: () => 0,
-    /**
-     * backup rows, i.e .the number of rows that should also be shown for avoiding to frequent updates
-     */
-    backupRows: 5,
-    /**
-     * the height of one row in pixel
-     */
-    rowHeight: 10
+  private readonly options: IContentScrollerOptions = {
+    pageSize: 100,
+    rowHeight: 20,
+    backupRows: 5
   };
 
   private prevScrollTop = 0;
   private shift = 0;
 
   /**
-   *
-   * @param container the container element wrapping the content with a fixed height for enforcing scrolling
-   * @param content the content element to scroll
-   * @param options options see attribute
+   * utility for scrolling
+   * @param {Element} container the container element wrapping the content with a fixed height for enforcing scrolling
+   * @param {Element} content the content element to scroll
+   * @param {IContentScrollerOptions} options options see attribute
    */
-  constructor(private container: Element, private content: Element, options: IContentScrollerOptions = {}) {
+  constructor(private readonly container: Element, content: Element, options: IContentScrollerOptions = {}) {
     super();
     merge(this.options, options);
     select(container).on('scroll.scroller', () => this.onScroll());
@@ -208,7 +242,7 @@ export class ContentScroller extends AEventDispatcher {
    *  * redraw when a redraw of the content must be performed due to scrolling changes. Note due to backup rows
    *     a scrolling operation might not include a redraw
    *
-   * @returns {string[]}
+   * @returns {string[]} list of events
    */
   protected createEventList() {
     return super.createEventList().concat([ContentScroller.EVENT_REDRAW, ContentScroller.EVENT_SCROLL]);
@@ -230,17 +264,17 @@ export class ContentScroller extends AEventDispatcher {
 
   /**
    * selects a range identified by start and length and the row2y position callback returning the slice to show according to the current user scrolling position
-   * @param start start of the range
-   * @param length length of the range
-   * @param row2y lookup for computing the y position of a given row
-   * @returns {{from: number, to: number}} the slide to show
+   * @param {number} start start of the range
+   * @param {number} length length of the range
+   * @param {(i: number) => number} row2y lookup for computing the y position of a given row
+   * @return {{from: number; to: number}} the slide to show
    */
   select(start: number, length: number, row2y: (i: number) => number) {
-    return this.selectImpl(start, length, row2y, this.options.backupRows);
+    return this.selectImpl(start, length, row2y, this.options.backupRows!);
   }
 
   private selectImpl(start: number, length: number, row2y: (i: number) => number, backupRows: number) {
-    const top = this.container.scrollTop - this.shift - this.options.topShift(),
+    const top = this.container.scrollTop - this.shift,
       bottom = top + this.container.clientHeight;
     let i = 0, j;
     /*console.log(window.matchMedia('print').matches, window.matchMedia('screen').matches, top, bottom);
@@ -249,7 +283,7 @@ export class ContentScroller extends AEventDispatcher {
      return [0, data.length];
      }*/
     if (top > 0) {
-      i = Math.round(top / this.options.rowHeight);
+      i = Math.round(top / this.options.rowHeight!);
       //count up till really even partial rows are visible
       while (i >= start && row2y(i + 1) > top) {
         i--;
@@ -257,7 +291,7 @@ export class ContentScroller extends AEventDispatcher {
       i -= backupRows; //one more row as backup for scrolling
     }
     { //some parts from the bottom aren't visible
-      j = Math.round(bottom / this.options.rowHeight);
+      j = Math.round(bottom / this.options.rowHeight!);
       //count down till really even partial rows are visible
       while (j <= length && row2y(j - 1) < bottom) {
         j++;
@@ -276,23 +310,28 @@ export class ContentScroller extends AEventDispatcher {
     //at least one row changed
     //console.log(top, left);
     this.fire(ContentScroller.EVENT_SCROLL, top, left);
-    if (Math.abs(this.prevScrollTop - top) >= this.options.rowHeight * this.options.backupRows) {
-      //we scrolled out of our backup rows, so we have to redraw the content
-      this.prevScrollTop = top;
-      this.fire(ContentScroller.EVENT_REDRAW);
+    if (Math.abs(this.prevScrollTop - top) < this.options.pageSize!) {
+      return;
     }
+    //we scrolled out of our backup rows, so we have to redraw the content
+    const delta = this.prevScrollTop - top;
+    this.prevScrollTop = top;
+    this.fire(ContentScroller.EVENT_REDRAW, delta);
   }
 
   /**
    * removes the listeners
    */
   destroy() {
-    select(this.container).on('scroll.scroller', null);
+    select(this.container).on('scroll.scroller', null!);
   }
 }
 
 /**
  * checks whether the given DragEvent has one of the given types
+ * @param {DragEvent} e event to check
+ * @param {string[]} typesToCheck mime types to check
+ * @return {boolean} has any mime to check mime types
  */
 export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
   const types: any = e.dataTransfer.types;
@@ -312,14 +351,17 @@ export function hasDnDType(e: DragEvent, typesToCheck: string[]) {
  * helper storage for dnd in edge since edge doesn't support custom mime-types
  * @type {Map<string, {[p: string]: string}>}
  */
-const dndTransferStorage = new Map<string, {[key: string]:string}>();
+const dndTransferStorage = new Map<string, { [key: string]: string }>();
 
 function isEdgeDnD(e: DragEvent) {
   return dndTransferStorage.size > 0 && hasDnDType(e, ['text/plain']);
 }
 
+
 /**
  * should it be a copy dnd operation?
+ * @param {DragEvent} e event to check
+ * @return {boolean} whether it is a copy drag event
  */
 export function copyDnD(e: DragEvent) {
   const dT = e.dataTransfer;
@@ -328,7 +370,7 @@ export function copyDnD(e: DragEvent) {
 
 /**
  * updates the drop effect according to the currently selected meta keys
- * @param e
+ * @param {DragEvent} e event to update
  */
 export function updateDropEffect(e: DragEvent) {
   const dT = e.dataTransfer;
@@ -339,36 +381,36 @@ export function updateDropEffect(e: DragEvent) {
   }
 }
 
-export function dragAble<T extends {id: string}>(onDragStart: (d: T) => {effectAllowed: 'none'|'copy'|'copyLink'|'copyMove'|'link'|'linkMove'|'move'|'all', data: {[key: string]: string}}) {
-  return ($node) => {
-      $node.on('dragstart', (d) => {
-        const e = <DragEvent>(<any>d3event);
-        const payload = onDragStart(d);
-        e.dataTransfer.effectAllowed = payload.effectAllowed;
+export function dragAble<T extends { id: string }>(onDragStart: (d: T) => { effectAllowed: 'none' | 'copy' | 'copyLink' | 'copyMove' | 'link' | 'linkMove' | 'move' | 'all', data: { [key: string]: string } }) {
+  return ($node: Selection<T>) => {
+    $node.on('dragstart', (d) => {
+      const e = <DragEvent>(<any>d3event);
+      const payload = onDragStart(d);
+      e.dataTransfer.effectAllowed = payload.effectAllowed;
 
-        const keys = Object.keys(payload.data);
-        const allSucceded = keys.every((k) => {
-          try {
-            e.dataTransfer.setData(k, payload.data[k]);
-            return true;
-          } catch(e) {
-            return false;
-          }
-        });
-        if (allSucceded) {
-          return;
-        }
-        //compatibility mode for edge
-        const text = payload.data['text/plain'] || '';
-        e.dataTransfer.setData('text/plain', d.id+(text ? ': ' + text: ''));
-          dndTransferStorage.set(d.id, payload.data);
-      }).on('dragend', (d) =>  {
-        if (dndTransferStorage.size > 0) {
-          //clear the id
-          dndTransferStorage.delete(d.id);
+      const keys = Object.keys(payload.data);
+      const allSucceded = keys.every((k) => {
+        try {
+          e.dataTransfer.setData(k, payload.data[k]);
+          return true;
+        } catch (e) {
+          return false;
         }
       });
-    };
+      if (allSucceded) {
+        return;
+      }
+      //compatibility mode for edge
+      const text = payload.data['text/plain'] || '';
+      e.dataTransfer.setData('text/plain', `${d.id}${text ? `: ${text}` : ''}`);
+      dndTransferStorage.set(d.id, payload.data);
+    }).on('dragend', (d) => {
+      if (dndTransferStorage.size > 0) {
+        //clear the id
+        dndTransferStorage.delete(d.id);
+      }
+    });
+  };
 }
 
 /**
@@ -377,8 +419,8 @@ export function dragAble<T extends {id: string}>(onDragStart: (d: T) => {effectA
  * @param onDrop: handler when an element is dropped
  */
 export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy: boolean) => boolean) {
-  return ($node) => {
-    $node.on('dragenter', function () {
+  return ($node: d3.Selection<any>) => {
+    $node.on('dragenter', function (this: HTMLElement) {
       const e = <DragEvent>(<any>d3event);
       //var xy = mouse($node.node());
       if (hasDnDType(e, mimeTypes) || isEdgeDnD(e)) {
@@ -388,7 +430,8 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
       }
       //not a valid mime type
       select(this).classed('drag_over', false);
-    }).on('dragover', function () {
+      return;
+    }).on('dragover', function (this: HTMLElement) {
       const e = <DragEvent>(<any>d3event);
       if (hasDnDType(e, mimeTypes) || isEdgeDnD(e)) {
         e.preventDefault();
@@ -396,10 +439,11 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
         select(this).classed('drag_over', true);
         return false;
       }
-    }).on('dragleave', function () {
+      return;
+    }).on('dragleave', function (this: HTMLElement) {
       //
       select(this).classed('drag_over', false);
-    }).on('drop', function (d: T) {
+    }).on('drop', function (this: HTMLElement, d: T) {
       const e = <DragEvent>(<any>d3event);
       e.preventDefault();
       select(this).classed('drag_over', false);
@@ -424,6 +468,7 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
         });
         return onDrop(data, d, copyDnD(e));
       }
+      return;
     });
   };
 }
@@ -434,11 +479,39 @@ export function dropAble<T>(mimeTypes: string[], onDrop: (data: any, d: T, copy:
  * @param node
  * @param attrs
  * @param styles
+ * @param text
  * @return {T}
  */
-export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs = {}, styles = {}): T {
-  Object.keys(attrs).forEach((attr) => node.setAttribute(attr, String(attrs[attr])));
-  Object.keys(styles).forEach((attr) => (<any>node).style.setProperty(attr, styles[attr]));
+export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: { [key: string]: any } = {}, styles: { [key: string]: any } = {}, text?: string): T {
+  Object.keys(attrs).forEach((attr) => {
+    const v = String(attrs[attr]);
+    if (node.getAttribute(attr) !== v) {
+      node.setAttribute(attr, v);
+    }
+  });
+  Object.keys(styles).forEach((attr) => {
+    const v = styles[attr];
+    if (node.style.getPropertyValue(attr) !== v) {
+      (<any>node).style.setProperty(attr, v);
+    }
+  });
+  return setText(node, text);
+}
+
+export function setText<T extends Node>(node: T, text?: string): T {
+  if (text === undefined) {
+    return node;
+  }
+  //no performance boost if setting the text node directly
+  //const textNode = <Text>node.firstChild;
+  //if (textNode == null) {
+  //  node.appendChild(node.ownerDocument.createTextNode(text));
+  //} else {
+  //  textNode.data = text;
+  //}
+  if (node.textContent !== text) {
+    node.textContent = text;
+  }
   return node;
 }
 
@@ -449,7 +522,11 @@ export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs = {}, 
  * @param callback
  */
 export function forEach<T extends Element>(node: T, selector: string, callback: (d: Element, i: number) => void) {
-  Array.prototype.slice.call(node.querySelectorAll(selector)).forEach(callback);
+  Array.from(node.querySelectorAll(selector)).forEach(callback);
+}
+
+export function forEachChild<T extends Element>(node: T, callback: (d: Element, i: number) => void) {
+  Array.from(node.children).forEach(callback);
 }
 
 export interface ITextRenderHints {
@@ -458,6 +535,7 @@ export interface ITextRenderHints {
   readonly ellipsisWidth: number;
   readonly spinnerWidth: number;
 }
+
 const ellipsis = '…';
 
 function measureFontAweSomeSpinner(ctx: CanvasRenderingContext2D) {
@@ -470,7 +548,7 @@ export function createTextHints(ctx: CanvasRenderingContext2D, font: string): IT
   const spinnerWidth = measureFontAweSomeSpinner(ctx);
   ctx.font = font;
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-  const testText = alphabet + (alphabet.toUpperCase()) + '0123456789';
+  const testText = `${alphabet}${alphabet.toUpperCase()}0123456789`;
   const r = {
     maxLetterWidth: ctx.measureText('M').width,
     avgLetterWidth: ctx.measureText(testText).width / testText.length,
@@ -521,12 +599,12 @@ export function showOverlay(parentElement: HTMLElement, id: string, dx: number, 
   if (!overlay) {
     overlay = parentElement.ownerDocument.createElement('div');
     overlay.classList.add('lu-overlay');
-    overlay.id = 'O' + id;
+    overlay.id = `O${id}`;
     parentElement.appendChild(overlay);
   }
   overlay.style.display = 'block';
-  overlay.style.left = dx + 'px';
-  overlay.style.top = dy + 'px';
+  overlay.style.left = `${dx}px`;
+  overlay.style.top = `${dy}px`;
   return overlay;
 }
 
@@ -536,41 +614,42 @@ export function hideOverlays(parentElement: HTMLElement) {
 
 
 /**
- * machtes the columns and the dom nodes representing them
- * @param node
- * @param columns
- * @param helperType
+ * matches the columns and the dom nodes representing them
+ * @param {SVGGElement | HTMLElement} node row
+ * @param {{column: Column; renderer: IDOMCellRenderer}[]} columns columns to check
+ * @param {string} helperType create types of
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: Column, renderer: IDOMCellRenderer<any>}[], helperType = 'svg') {
+export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer, groupRenderer: IDOMGroupRenderer }[], render: 'group' | 'detail', helperType = 'svg') {
+  const renderer = render === 'detail' ? (col: { column: Column }) => col.column.getRendererType() : (col: { column: Column }) => col.column.getGroupRenderer();
   if (node.childElementCount === 0) {
     // initial call fast method
-    node.innerHTML = columns.map((c) => c.renderer.template).join('');
+    node.innerHTML = columns.map((c) => (render === 'detail' ? c.renderer : c.groupRenderer).template).join('');
     columns.forEach((col, i) => {
       const cnode = <Element>node.childNodes[i];
       // set attribute for finding again
       cnode.setAttribute('data-column-id', col.column.id);
       // store current renderer
-      cnode.setAttribute('data-renderer', col.column.getRendererType());
+      cnode.setAttribute('data-renderer', renderer(col));
     });
     return;
   }
 
-  function matches(c: {column: Column}, i: number) {
+  function matches(c: { column: Column }, i: number) {
     //do both match?
     const n = <Element>(node.childElementCount <= i ? null : node.childNodes[i]);
-    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === c.column.getRendererType();
+    return n != null && n.getAttribute('data-column-id') === c.column.id && n.getAttribute('data-renderer') === renderer(c);
   }
 
   if (columns.every(matches)) {
     return; //nothing to do
   }
 
-  const idsAndRenderer = new Set(columns.map((c) => c.column.id + '@' + c.column.getRendererType()));
+  const idsAndRenderer = new Set(columns.map((c) => `${c.column.id}@${renderer(c)}`));
   //remove all that are not existing anymore
-  Array.prototype.slice.call(node.childNodes).forEach((n) => {
+  Array.from(node.childNodes).forEach((n: Element) => {
     const id = n.getAttribute('data-column-id');
     const renderer = n.getAttribute('data-renderer');
-    const idAndRenderer = id + '@' + renderer;
+    const idAndRenderer = `${id}@${renderer}`;
     if (!idsAndRenderer.has(idAndRenderer)) {
       node.removeChild(n);
     }
@@ -580,11 +659,20 @@ export function matchColumns(node: SVGGElement | HTMLElement, columns: {column: 
     let cnode = node.querySelector(`[data-column-id="${col.column.id}"]`);
     if (!cnode) {
       //create one
-      helper.innerHTML = col.renderer.template;
+      helper.innerHTML = (render === 'detail' ? col.renderer : col.groupRenderer).template;
       cnode = <Element>helper.childNodes[0];
       cnode.setAttribute('data-column-id', col.column.id);
-      cnode.setAttribute('data-renderer', col.column.getRendererType());
+      cnode.setAttribute('data-renderer', renderer(col));
     }
     node.appendChild(cnode);
   });
 }
+
+
+export function equalArrays<T>(a: T[], b: T[]) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return a.every((ai, i) => ai === b[i]);
+}
+

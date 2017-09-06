@@ -1,0 +1,37 @@
+@import '../vars';
+
+.#{$lu_css_prefix}-side-panel {
+  display: flex;
+  flex-direction: column;
+  max-width: 20em;
+  min-width: 15em;
+
+  > header {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 1em 0.5em;
+
+    form {
+      position: relative;
+
+      select {
+        width: 100%;
+        font-size: 120%;
+      }
+    }
+
+    border-bottom: 2px solid #dedede;
+  }
+
+  > div {
+    flex: 1 1 auto;
+    position: relative;
+    overflow: auto;
+
+    > main {
+      counter-reset: side-panel-counter;
+
+      @import './entry';
+    }
+  }
+}

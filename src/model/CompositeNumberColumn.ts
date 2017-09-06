@@ -5,9 +5,7 @@
 import {format} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import NumberColumn, {INumberColumn, isNumberColumn, numberCompare} from './NumberColumn';
-import ValueColumn from './ValueColumn';
-
+import NumberColumn, {INumberColumn, numberCompare, isMissingValue} from './NumberColumn';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
@@ -22,15 +20,18 @@ export interface ICompositeNumberDesc extends IColumnDesc {
    */
   missingValue?: number;
 }
+
+export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnDesc;
+
 /**
  * implementation of a combine column, standard operations how to select
  */
 export default class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
-  missingValue = 0;
+  missingValue = NaN;
 
   private numberFormat: (n: number) => string = format('.3n');
 
-  constructor(id: string, desc: ICompositeNumberDesc) {
+  constructor(id: string, desc: ICompositeNumberColumnDesc) {
     super(id, desc);
 
     if (desc.numberFormat) {
@@ -49,7 +50,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
+  restore(dump: any, factory: (dump: any) => Column | null) {
     if (dump.missingValue !== undefined) {
       this.missingValue = dump.missingValue;
     }
@@ -65,7 +66,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     }
     const v = this.getValue(row, index);
     //keep non number if it is not a number else convert using formatter
-    return '' + (typeof v === 'number' ? this.numberFormat(v) : v);
+    return String(typeof v === 'number' ? this.numberFormat(v) : v);
   }
 
   getValue(row: any, index: number) {
@@ -74,26 +75,31 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     }
     //weighted sum
     const v = this.compute(row, index);
-    if (typeof(v) === 'undefined' || v == null || isNaN(v)) {
+    if (isMissingValue(v)) {
       return this.missingValue;
     }
     return v;
   }
 
-  protected compute(row: any, index: number) {
+  protected compute(_row: any, _index: number) {
     return NaN;
   }
 
   getNumber(row: any, index: number) {
-    return this.getValue(row, index);
+    const r = this.getValue(row, index);
+    return r === null ? NaN : r;
   }
 
   getRawNumber(row: any, index: number) {
     return this.getNumber(row, index);
   }
 
+  isMissing(row: any, index: number) {
+    return isMissingValue(this.compute(row, index));
+  }
+
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
+    return numberCompare(this.getNumber(a, aIndex), this.getNumber(b, bIndex));
   }
 
   getRendererType(): string {

@@ -1,0 +1,17 @@
+@import '~font-awesome/scss/variables';
+@import '~font-awesome/scss/mixins';
+@import '../vars';
+
+[data-renderer=selection] {
+  @include fa-icon();
+
+  &::before {
+    content: $fa-var-square-o;
+  }
+}
+
+.#{$lu_css_prefix}-selected [data-renderer=selection]::before,
+.selected [data-renderer=selection]::before,
+.#{$lu_css_prefix}-group-selected[data-renderer=selection]::before {
+  content: $fa-var-check-square-o;
+}

@@ -1,23 +1,75 @@
-var webpack = require('webpack');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var path = require('path');
-var pkg = require('./package.json');
+/* *****************************************************************************
+ * Caleydo - Visualization for Molecular Biology - http://caleydo.org
+ * Copyright (c) The Caleydo Team. All rights reserved.
+ * Licensed under the new BSD license, available at http://caleydo.org/license
+ **************************************************************************** */
 
-var year = (new Date()).getFullYear();
-var banner = '/*! ' + ( pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' + year + '\n' +
-  '* ' + pkg.homepage + '\n' +
+const resolve = require('path').resolve;
+const pkg = require('./package.json');
+const webpack = require('webpack');
+const fs = require('fs');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+
+const now = new Date();
+const prefix = (n) => n < 10 ? ('0' + n) : n.toString();
+const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(now.getUTCMinutes())}${prefix(now.getUTCSeconds())}`;
+pkg.version = pkg.version.replace('SNAPSHOT', buildId);
+
+const year = (new Date()).getFullYear();
+const banner = '/*! ' + (pkg.title || pkg.name) + ' - v' + pkg.version + ' - ' + year + '\n' +
+  (pkg.homepage ? '* ' + pkg.homepage + '\n' : '') +
   '* Copyright (c) ' + year + ' ' + pkg.author.name + ';' +
   ' Licensed ' + pkg.license + '*/\n';
 
-function generate(bundle, min) {
-  var base = {
+
+//list of loaders and their mappings
+const webpackloaders = [
+  {test: /\.scss$/, loader: 'style-loader!css-loader!sass-loader'},
+  {test: /\.tsx?$/, loader: 'awesome-typescript-loader'},
+  {test: /\.json$/, loader: 'json-loader'},
+  {
+    test: /\.(png|jpg)$/,
+    loader: 'url-loader',
+    query: {
+      limit: 10000 //inline <= 10kb
+    }
+  },
+  {
+    test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+    loader: 'url-loader',
+    query: {
+      limit: 10000, //inline <= 10kb
+      mimetype: 'application/font-woff'
+    }
+  },
+  {
+    test: /\.svg(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+    loader: 'url-loader',
+    query: {
+      limit: 10000, //inline <= 10kb
+      mimetype: 'image/svg+xml'
+    }
+  },
+  {test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'file-loader'}
+];
+
+// use workspace registry file if available
+const isWorkspaceContext = fs.existsSync(resolve(__dirname, '..', 'phovea_registry.js'));
+
+/**
+ * generate a webpack configuration
+ */
+function generateWebpack(bundle, options) {
+  const base = {
     entry: {
-      'LineUpJS': './src/index.ts',
-      'LineUpJS_react': './src/react/index.tsx'
+      'LineUpJS': './src/index.ts'
     },
     output: {
-      path: path.resolve('./build'),
-      filename: '[name]' + (bundle ? '_bundle' : '') + (min ? '.min' : '') + '.js',
+      path: resolve(__dirname, 'build'),
+      filename: `[name]${bundle ? '_bundle' : ''}${options.min && !options.nosuffix ? '.min' : ''}.js`,
+      chunkFilename: '[chunkhash].js',
+      publicPath: '', //no public path = relative
       library: 'LineUpJS',
       libraryTarget: 'umd',
       umdNamedDefine: false //anonymous require module
@@ -27,43 +79,87 @@ function generate(bundle, min) {
       extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
       alias: {
         d3: 'd3/d3'
-      }
+      },
+      //fallback to the directory above if they are siblings just in the workspace context
+      modules: isWorkspaceContext ? [
+        resolve(__dirname, '../'),
+        'node_modules'
+      ]: ['node_modules']
     },
     plugins: [
-      new webpack.BannerPlugin({
-        banner: banner,
-        raw: true
+      //define magic constants that are replaced
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(options.isProduction ? 'production': 'development'),
+        __VERSION__: JSON.stringify(pkg.version),
+        __LICENSE__: JSON.stringify(pkg.license),
+        __BUILD_ID__: buildId,
+        __DEBUG__: options.isDev || options.isTest,
+        __TEST__: options.isTest,
+        __PRODUCTION__: options.isProduction,
+        __APP_CONTEXT__: JSON.stringify('/')
       })
       //rest depends on type
     ],
-    externals: { //react always external
-      react: { amd: 'react', root: 'React', commonjs: 'react', commonjs2: 'react' },
-      'react-dom': { amd: 'react-dom', root: 'ReactDOM', commonjs: 'react-dom', commonjs2: 'react-dom' }
-    },
+    externals: {},
     module: {
-      loaders: [
-        {
-          test: /\.scss$/,
-          loader: 'style-loader!css-loader!sass-loader'
-        },
-        {
-          test: /\.tsx?$/,
-          loader: 'awesome-typescript-loader'
-        }
-      ]
+      loaders: webpackloaders.slice()
+    },
+    devServer: {
+      contentBase: resolve(__dirname, 'build'),
+      watchOptions: {
+        aggregateTimeout: 500,
+        ignored: /node_modules/
+      }
+    },
+    watchOptions: {
+      aggregateTimeout: 500,
+      ignored: /node_modules/
     }
   };
   if (!bundle) {
     //don't bundle d3
     base.externals.d3 = 'd3';
-
-    //extract the included css file to own file
-    var p = new ExtractTextPlugin('style' + (min ? '.min' : '') + '.css');
-    base.plugins.push(p);
-    base.module.loaders[0].loader = p.extract(['css-loader', 'sass-loader']);
   }
-  if (min) {
-    base.plugins.push(new webpack.optimize.UglifyJsPlugin({compress: {warnings: false}}));
+
+  if (options.isProduction) {
+      base.plugins.unshift(new webpack.BannerPlugin({
+        banner: banner,
+        raw: true
+      }));
+      base.plugins.push(new webpack.optimize.MinChunkSizePlugin({
+        minChunkSize: 10000 //at least 10.000 characters
+      }),
+      new webpack.optimize.AggressiveMergingPlugin());
+  }
+
+  if (!options.isTest && !bundle) {
+    //extract the included css file to own file
+    let p = new ExtractTextPlugin({
+      filename: `style${options.min && !options.nosuffix ? '.min' : ''}.css`,
+      allChunks: true // there seems to be a bug in dynamically loaded chunk styles are not loaded, workaround: extract all styles from all chunks
+    });
+    base.plugins.push(p);
+    base.module.loaders[0] = {
+      test: /\.scss$/,
+      loader: p.extract(['css-loader', 'sass-loader'])
+    };
+  }
+  if (options.min) {
+    //use a minifier
+    base.plugins.push(
+      new webpack.LoaderOptionsPlugin({
+        minimize: true,
+        debug: false
+      }),
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          ecma: 6,
+          mange: true,
+          compress: true,
+          warnings: true
+        },
+        extractComments: false
+      }));
   } else {
     //generate source maps
     base.devtool = 'source-map';
@@ -71,14 +167,41 @@ function generate(bundle, min) {
   return base;
 }
 
-var library = generate(false, false);
-var library_min = generate(false, true);
+function generateWebpackConfig(env) {
+  const isTest = env === 'test';
+  const isProduction = env === 'prod';
+  const isDev = !isProduction && !isTest;
 
-var bundle = generate(true, false);
-var bundle_min = generate(true, true);
+  const base = {
+    isProduction: isProduction,
+    isDev: isDev,
+    isTest: isTest
+  };
 
-if (process.argv[2] === '--watch') { //aka called as: webpack --watch
-  module.exports = library;
-} else {
-  module.exports = [library, library_min, bundle, bundle_min];
+  if (isTest) {
+    return generateWebpack(false, base);
+  }
+
+  //single generation
+  if (isDev) {
+    return generateWebpack(false, base);
+  } else { //isProduction
+    return [
+      //plain
+      generateWebpack(false, base),
+      //minified
+      generateWebpack(false, Object.assign({}, base, {
+        min: true
+      })),
+      //plain
+      generateWebpack(true, base),
+      //minified
+      generateWebpack(true, Object.assign({}, base, {
+        min: true
+      }))
+    ];
+  }
 }
+
+module.exports = generateWebpackConfig;
+module.exports.generateWebpack = generateWebpack;

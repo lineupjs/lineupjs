@@ -1,0 +1,35 @@
+@import '../vars';
+
+.lu-hover-only,
+.lu-selection-only {
+  display: none;
+}
+
+&:hover,
+&.lu-selected,
+&.lu-hovered {
+  .lu-not-hover {
+    display: none;
+  }
+
+  .lu-hover-only {
+    display: block;
+  }
+}
+
+/**
+  selected state extends hover state
+ */
+&.lu-selected {
+  z-index: 10;
+  outline: 2px solid $lu_selected_color;
+
+  .lu-selection-only {
+    display: block;
+  }
+}
+
+[data-renderer] {
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}

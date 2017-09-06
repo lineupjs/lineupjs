@@ -1,0 +1,9 @@
+@import '../vars';
+
+.#{$lu_css_prefix}-missing {
+  background: $lu_missing_bg;
+
+  > * {
+    display: none;
+  }
+}

@@ -2,9 +2,10 @@
  * Created by sam on 04.11.2016.
  */
 
-import Column, {IColumnParent, IFlatColumn, IColumnDesc} from './Column';
+import Column, {IColumnDesc, IColumnParent, IFlatColumn} from './Column';
 import {isNumberColumn} from './NumberColumn';
 import ValueColumn from './ValueColumn';
+import {suffix} from '../utils';
 
 export function isMultiLevelColumn(col: Column) {
   return typeof ((<any>col).getCollapsed) === 'function';
@@ -58,8 +59,8 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return r;
   }
 
-  restore(dump: any, factory: (dump: any) => Column) {
-    dump.children.map((child) => {
+  restore(dump: any, factory: (dump: any) => Column | null) {
+    dump.children.map((child: any) => {
       const c = factory(child);
       if (c) {
         this.push(c);
@@ -74,7 +75,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
    * @param index
    * @returns {any}
    */
-  insert(col: Column, index: number) {
+  insert(col: Column, index: number): Column | null {
     if (!isNumberColumn(col) && this.canJustAddNumbers) { //indicator it is a number type
       return null;
     }
@@ -85,7 +86,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   protected insertImpl(col: Column, index: number) {
     col.parent = this;
-    this.forward(col, Column.EVENT_DIRTY_HEADER + '.combine', Column.EVENT_DIRTY_VALUES + '.combine', Column.EVENT_DIRTY + '.combine', Column.EVENT_FILTER_CHANGED + '.combine');
+    this.forward(col, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
     this.fire([Column.EVENT_ADD_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index);
     return col;
   }
@@ -121,12 +122,12 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
   protected removeImpl(child: Column) {
     child.parent = null;
-    this.unforward(child, Column.EVENT_DIRTY_HEADER + '.combine', Column.EVENT_DIRTY_VALUES + '.combine', Column.EVENT_DIRTY + '.combine', Column.EVENT_FILTER_CHANGED + '.combine');
+    this.unforward(child, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
     this.fire([Column.EVENT_REMOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], child);
     return true;
   }
 
-  getColor(row: any, index: number) {
+  getColor(_row: any, _index: number) {
     return this.color;
   }
 
@@ -138,8 +139,8 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children.every((d) => d.filter(row, index));
   }
 
-  isLoaded() {
-    return this._children.every((c) => !(c instanceof ValueColumn || c instanceof CompositeColumn) || (<ValueColumn<any>|CompositeColumn>c).isLoaded());
+  isLoaded(): boolean {
+    return this._children.every((c) => !(c instanceof ValueColumn || c instanceof CompositeColumn) || (<ValueColumn<any> | CompositeColumn>c).isLoaded());
   }
 
   /**
@@ -158,5 +159,6 @@ export default class CompositeColumn extends Column implements IColumnParent {
 
 export interface IMultiLevelColumn extends CompositeColumn {
   getCollapsed(): boolean;
-  setCollapsed(value: boolean);
+
+  setCollapsed(value: boolean): void;
 }

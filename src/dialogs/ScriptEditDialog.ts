@@ -1,6 +1,7 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
 import ScriptColumn from '../model/ScriptColumn';
+import {Selection} from 'd3';
 
 
 export default class ScriptEditDialog extends ADialog {
@@ -11,7 +12,7 @@ export default class ScriptEditDialog extends ADialog {
    * @param $header the visual header element of this column
    * @param title optional title
    */
-  constructor(private readonly column: ScriptColumn, $header: d3.Selection<Column>, title: string = 'Edit Script') {
+  constructor(private readonly column: ScriptColumn, $header: Selection<Column>, title: string = 'Edit Script') {
     super($header, title);
   }
 
@@ -66,18 +67,19 @@ export default class ScriptEditDialog extends ADialog {
       updateData(script);
     };
 
-    $popup.select('.cancel').on('click', function () {
-      $popup.select('textarea').property('value', bak);
-      updateData(bak);
-      $popup.remove();
-    });
-    $popup.select('.reset').on('click', function () {
-      $popup.select('textarea').property('value', ScriptColumn.DEFAULT_SCRIPT);
-      updateData(ScriptColumn.DEFAULT_SCRIPT);
-    });
-    $popup.select('.ok').on('click', function () {
-      updateImpl();
-      $popup.remove();
+    this.onButton($popup, {
+      cancel: () => {
+        $popup.select('textarea').property('value', bak);
+        updateData(bak);
+      },
+      reset: () => {
+        $popup.select('textarea').property('value', ScriptColumn.DEFAULT_SCRIPT);
+        updateData(ScriptColumn.DEFAULT_SCRIPT);
+      },
+      submit: () => {
+        updateImpl();
+        return true;
+      }
     });
   }
 }

@@ -1,0 +1,10 @@
+
+[data-renderer=threshold] {
+  > div {
+    height: 50%;
+
+    &.down {
+      top: 50%;
+    }
+  }
+}

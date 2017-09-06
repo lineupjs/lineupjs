@@ -4,90 +4,84 @@
  */
 
 import Column, {IColumnDesc} from './model/Column';
-import DataProvider  from './provider/ADataProvider';
-import {renderers as defaultRenderers}  from './renderer/index';
-import {
-  IRankingHook,
-  dummyRankingButtonHook,
-  PoolRenderer,
-  IPoolRendererOptions,
-  IBodyRenderer,
-  HeaderRenderer,
-  createBodyRenderer
-} from './ui';
+import DataProvider from './provider/ADataProvider';
+import {createRenderer, ILineUpRenderer, IPoolRendererOptions, PoolRenderer} from './ui';
 import {IHeaderRendererOptions} from './ui/HeaderRenderer';
-import {IBodyRendererOptions, default as ABodyRenderer} from './ui/ABodyRenderer';
-import {AEventDispatcher, ContentScroller, merge}  from './utils';
-import {scale as d3scale, selection, select, Selection} from 'd3';
+import {default as ABodyRenderer, IBodyRendererOptions} from './ui/ABodyRenderer';
+import {AEventDispatcher, merge} from './utils';
+import {scale as d3scale, select, selection, Selection} from 'd3';
 import ICellRendererFactory from './renderer/ICellRendererFactory';
+import {defaultConfig} from './config';
 
 export interface IBodyOptions {
-  renderer?: string;
-  visibleRowsOnly?: boolean;
-  backupScrollRows?: number;
+  renderer: string;
+  visibleRowsOnly: boolean;
+  backupScrollRows: number;
+}
+
+export interface IRenderingOptions {
+  /**
+   * show combined bars as stacked bars
+   */
+  stacked: boolean;
+  /**
+   * use animation for reordering
+   */
+  animation: boolean;
+  /**
+   * show histograms of the headers (just settable at the beginning)
+   * @deprecated use summary instead
+   */
+  histograms: boolean;
+  /**
+   * show column summaries in the header
+   */
+  summary: boolean;
+  /**
+   * show a mean line for single numberial columns
+   */
+  meanLine: boolean;
 }
 
 export interface ILineUpConfig {
   /**
    * a prefix used for all generated html ids
    */
-  idPrefix?: string;
+  idPrefix: string;
 
   /**
    * options related to the header html layout
    */
-  header?: IHeaderRendererOptions;
+  header: Partial<IHeaderRendererOptions>;
   /**
    * old name for header
    */
-  htmlLayout?: IHeaderRendererOptions;
+  htmlLayout: Partial<IHeaderRendererOptions>;
   /**
    * visual representation options
    */
-  renderingOptions?: {
-    /**
-     * show combined bars as stacked bars
-     */
-    stacked?: boolean;
-    /**
-     * use animation for reordering
-     */
-    animation?: boolean;
-    /**
-     * show histograms of the headers (just settable at the beginning)
-     * @deprecated use summary instead
-     */
-    histograms?: boolean;
-    /**
-     * show column summaries in the header
-     */
-    summary?: boolean;
-    /**
-     * show a mean line for single numberial columns
-     */
-    meanLine?: boolean;
-  };
+  renderingOptions: IRenderingOptions;
   /**
    * options related to the rendering of the body
    */
-  body?: IBodyOptions & IBodyRendererOptions;
+  body: Partial<IBodyOptions & IBodyRendererOptions>;
   /**
    * old name for body
    */
-  svgLayout?: IBodyOptions & IBodyRendererOptions;
+  svgLayout: Partial<IBodyOptions & IBodyRendererOptions>;
   /**
    *  enables manipulation features, remove column, reorder,...
    */
-  manipulative?: boolean;
+  manipulative: boolean;
   /**
    * automatically add a column pool at the end
    */
-  pool?: boolean;
+  pool: boolean | IPoolRendererOptions;
 
   /**
    * the renderer to use for rendering the columns
    */
-  renderers?: {[key: string]: ICellRendererFactory};
+  renderers: { [key: string]: ICellRendererFactory };
 }
 
 /**
@@ -125,53 +119,17 @@ export default class LineUp extends AEventDispatcher {
   /**
    * default config of LineUp with all available options
    */
-  readonly config: ILineUpConfig = {
-    idPrefix: Math.random().toString(36).slice(-8).substr(0, 3), //generate a random string with length3
-    header: {
-      headerHeight: 20,
-      headerHistogramHeight: 40,
-      autoRotateLabels: false,
-      rotationHeight: 50, //in px
-      rotationDegree: -20, //in deg
-      rankingButtons: <IRankingHook>dummyRankingButtonHook,
-      linkTemplates: []
-    },
-    htmlLayout: {},
-    renderingOptions: {
-      stacked: true,
-      animation: true,
-      summary: false,
-      meanLine: false,
-    },
-    body: {
-      renderer: 'svg', //svg, canvas, html
-      rowHeight: 18,
-      rowPadding: 1,
-      rowBarPadding: 1,
-      visibleRowsOnly: true,
-      backupScrollRows: 4,
-      animationDuration: 1000,
-      freezeCols: 0,
-
-      actions: []
-    },
-    svgLayout: {},
-    manipulative: true,
-    pool: false,
-    renderers: merge({}, defaultRenderers)
-  };
+  readonly config: ILineUpConfig = defaultConfig();
 
   private $container: Selection<any>;
 
-  private body: IBodyRenderer = null;
-  private header: HeaderRenderer = null;
   private pools: PoolRenderer[] = [];
-  private contentScroller: ContentScroller = null;
+  private renderer: ILineUpRenderer;
 
-  constructor(container: Selection<any> | Element, public data: DataProvider, config: ILineUpConfig = {}) {
+  constructor(container: Selection<any> | Element, public data: DataProvider, config: Partial<ILineUpConfig> = {}) {
     super();
-    this.$container = container instanceof selection ? <Selection<any>>container : select(<Element>container);
-    this.$container = this.$container.append('div').classed('lu', true);
+    const $base = container instanceof selection ? <Selection<any>>container : select(<Element>container);
+    this.$container = $base.append('div').classed('lu', true);
     this.config.svgLayout = this.config.body;
     this.config.htmlLayout = this.config.header;
 
@@ -180,48 +138,13 @@ export default class LineUp extends AEventDispatcher {
     if (this.config.renderingOptions.histograms === true) {
       this.config.renderingOptions.summary = true;
     }
+    this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.main`, this.triggerSelection.bind(this));
+    this.data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.main`, this.jumpToNearest.bind(this));
 
-
-    this.data.on(DataProvider.EVENT_SELECTION_CHANGED + '.main', this.triggerSelection.bind(this));
-    this.data.on(DataProvider.EVENT_JUMP_TO_NEAREST + '.main', this.jumpToNearest.bind(this));
-
-    this.header = new HeaderRenderer(data, this.node, merge({}, this.config.header, {
-      idPrefix: this.config.idPrefix,
-      manipulative: this.config.manipulative,
-      summary: this.config.renderingOptions.summary,
-      freezeCols: this.config.body.freezeCols,
-    }));
-    this.body = createBodyRenderer(this.config.body.renderer, data, this.node, this.slice.bind(this), merge({}, this.config.body, {
-      meanLine: this.config.renderingOptions.meanLine,
-      animation: this.config.renderingOptions.animation,
-      stacked: this.config.renderingOptions.stacked,
-      idPrefix: this.config.idPrefix,
-      renderers: this.config.renderers
-    }));
-    //share hist caches
-    this.body.histCache = this.header.sharedHistCache;
-
-    this.forward(this.body, LineUp.EVENT_HOVER_CHANGED);
+    this.renderer = createRenderer(this.config.body.renderer, this.data, this.node, this.config);
+    this.forward(this.renderer, LineUp.EVENT_HOVER_CHANGED);
     if (this.config.pool && this.config.manipulative) {
-      this.addPool(new PoolRenderer(data, this.node, this.config));
-    }
-
-    if (this.config.body.visibleRowsOnly) {
-      this.contentScroller = new ContentScroller(<Element>this.$container.node(), this.body.node, {
-        backupRows: this.config.body.backupScrollRows,
-        rowHeight: this.config.body.rowHeight,
-        topShift: () => this.header.currentHeight()
-      });
-      this.contentScroller.on(ContentScroller.EVENT_SCROLL, (top, left) => {
-        //in two svg mode propagate horizontal shift
-        //console.log(top, left,'ss');
-        this.header.$node.style('transform', `translate(0px, ${top}px)`);
-        if (this.config.body.freezeCols > 0) {
-          this.header.updateFreeze(left);
-          this.body.updateFreeze(left);
-        }
-      });
-      this.contentScroller.on(ContentScroller.EVENT_REDRAW, this.body.scrolled.bind(this.body));
+      this.addPool(new PoolRenderer(data, this.node, <IPoolRendererOptions>this.config.pool));
     }
   }
 
@@ -234,9 +157,9 @@ export default class LineUp extends AEventDispatcher {
    * @param node the node element to attach
    * @param config
    */
-  addPool(node: Element, config?: IPoolRendererOptions): PoolRenderer;
+  addPool(node: Element, config?: Partial<IPoolRendererOptions>): PoolRenderer;
   addPool(pool: PoolRenderer): PoolRenderer;
-  addPool(poolOrNode: Element|PoolRenderer, config = this.config) {
+  addPool(poolOrNode: Element | PoolRenderer, config = typeof(this.config.pool) === 'boolean' ? {} : this.config.pool) {
     if (poolOrNode instanceof PoolRenderer) {
       this.pools.push(<PoolRenderer>poolOrNode);
     } else {
@@ -253,12 +176,6 @@ export default class LineUp extends AEventDispatcher {
     return <Element>this.$container.node();
   }
 
-  private slice(start: number, length: number, row2y: (i: number) => number) {
-    if (this.contentScroller) {
-      return this.contentScroller.select(start, length, row2y);
-    }
-    return {from: start, to: length};
-  }
 
   /**
    * destroys the DOM elements created by this lineup instance, this should be the last call to this lineup instance
@@ -266,9 +183,7 @@ export default class LineUp extends AEventDispatcher {
   destroy() {
     this.pools.forEach((p) => p.remove());
     this.$container.remove();
-    if (this.contentScroller) {
-      this.contentScroller.destroy();
-    }
+    this.renderer.destroy();
   }
 
   /**
@@ -291,16 +206,15 @@ export default class LineUp extends AEventDispatcher {
 
   changeDataStorage(data: DataProvider, dump?: any) {
     if (this.data) {
-      this.data.on([DataProvider.EVENT_SELECTION_CHANGED + '.main', DataProvider.EVENT_JUMP_TO_NEAREST + '.main'], null);
+      this.data.on([`${DataProvider.EVENT_SELECTION_CHANGED}.main`, `${DataProvider.EVENT_JUMP_TO_NEAREST}.main`], null);
     }
     this.data = data;
     if (dump) {
       this.data.restore(dump);
     }
-    this.data.on(DataProvider.EVENT_SELECTION_CHANGED + '.main', this.triggerSelection.bind(this));
-    this.data.on(DataProvider.EVENT_JUMP_TO_NEAREST + '.main', this.jumpToNearest.bind(this));
-    this.header.changeDataStorage(data);
-    this.body.changeDataStorage(data);
+    this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.main`, this.triggerSelection.bind(this));
+    this.data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.main`, this.jumpToNearest.bind(this));
+    this.renderer.changeDataStorage(data);
     this.pools.forEach((p) => p.changeDataStorage(data));
     this.update();
   }
@@ -318,15 +232,10 @@ export default class LineUp extends AEventDispatcher {
     const order = ranking.getOrder();
     //relative order
     const indices = dataIndices.map((d) => order.indexOf(d)).sort((a, b) => a - b);
-    if (this.contentScroller) {
-      this.contentScroller.scrollIntoView(0, order.length, indices[0], (i) => i * this.config.body.rowHeight);
-    } else {
-      const container = (<HTMLElement>this.$container.node());
-      container.scrollTop = indices[0] * this.config.body.rowHeight;
-    }
+    this.renderer.scrollIntoView(order.length, indices[0]);
     //fake hover in 100ms - TODO right timing
     setTimeout(() => {
-      this.body.fakeHover(order[indices[0]]);
+      this.renderer.fakeHover(order[indices[0]]);
     }, 100);
   }
 
@@ -350,11 +259,10 @@ export default class LineUp extends AEventDispatcher {
     this.isUpdateInitialized = true;
 
     this.fire(LineUp.EVENT_UPDATE_START);
-    this.header.update();
-    this.body.update();
+    this.renderer.update();
     this.pools.forEach((p) => p.update());
 
-    this.body.on(ABodyRenderer.EVENT_RENDER_FINISHED + '.main', () => {
+    this.renderer.on(`${ABodyRenderer.EVENT_RENDER_FINISHED}.main`, () => {
       waitForBodyRenderer -= 1;
       if (waitForBodyRenderer === 0) {
         this.fire(LineUp.EVENT_UPDATE_FINISHED);
@@ -362,11 +270,10 @@ export default class LineUp extends AEventDispatcher {
     });
   }
 
-  changeRenderingOption(option: string, value: boolean) {
+  changeRenderingOption(option: keyof IRenderingOptions, value: boolean) {
     this.config.renderingOptions[option] = value;
     if (option === 'animation' || option === 'stacked') {
-      this.body.setOption(option, value);
-      this.body.update();
+      this.renderer.setBodyOption(option, value);
     }
   }
 }

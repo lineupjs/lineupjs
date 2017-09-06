@@ -1,5 +1,6 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
+import {Selection} from 'd3';
 
 
 export default class RenameDialog extends ADialog {
@@ -10,7 +11,7 @@ export default class RenameDialog extends ADialog {
    * @param $header the visual header element of this column
    * @param title optional title
    */
-  constructor(private readonly column: Column, $header: d3.Selection<Column>, title: string = 'Rename Column') {
+  constructor(private readonly column: Column, $header: Selection<Column>, title: string = 'Rename Column') {
     super($header, title);
   }
 
@@ -21,16 +22,16 @@ export default class RenameDialog extends ADialog {
       <textarea rows="5">${this.column.description}</textarea><br>`
     );
 
-    popup.select('.ok').on('click', () => {
-      const newValue = popup.select('input[type="text"]').property('value');
-      const newColor = popup.select('input[type="color"]').property('value');
-      const newDescription = popup.select('textarea').property('value');
-      this.column.setMetaData({label: newValue, color: newColor, description: newDescription});
-      popup.remove();
-    });
-
-    popup.select('.cancel').on('click', function () {
-      popup.remove();
+    this.onButton(popup, {
+      cancel: () => undefined,
+      reset: () => undefined,
+      submit: () => {
+        const newValue = popup.select('input[type="text"]').property('value');
+        const newColor = popup.select('input[type="color"]').property('value');
+        const newDescription = popup.select('textarea').property('value');
+        this.column.setMetaData({label: newValue, color: newColor, description: newDescription});
+        return true;
+      }
     });
   }
 }

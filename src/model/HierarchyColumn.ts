@@ -11,10 +11,12 @@ export interface ICategoryNode extends ICategory {
   readonly children: ICategoryNode[];
 }
 
-export interface IHierarchyDesc extends IValueColumnDesc<string> {
+export interface IHierarchyDesc {
   readonly hierarchy: ICategoryNode;
   readonly hiearchySeparator?: string;
 }
+
+export declare type IHierarchyColumnDesc = IHierarchyDesc & IValueColumnDesc<string>;
 
 export interface ICategoryInternalNode {
   readonly path: string;
@@ -37,7 +39,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   private currentMaxDepth: number = Infinity;
   private currentLeaves: ICategoryInternalNode[] = [];
 
-  constructor(id: string, desc: IHierarchyDesc) {
+  constructor(id: string, desc: IHierarchyColumnDesc) {
     super(id, desc);
     this.hierarchySeparator = desc.hiearchySeparator || '.';
     this.hierarchy = this.initHierarchy(desc.hierarchy);
@@ -56,14 +58,14 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     const add = (prefix: string, node: ICategoryNode): ICategoryInternalNode => {
       const name = node.name || node.value;
       let lastColorUsed = -1;
-      const children = (node.children || []).map((child: ICategoryNode|string): ICategoryInternalNode => {
+      const children = (node.children || []).map((child: ICategoryNode | string): ICategoryInternalNode => {
         if (typeof child === 'string') {
           const path = prefix + child;
           return {
             path,
             name: child,
             label: path,
-            color: colors[(lastColorUsed++) % colors.length],
+            color: colors[(lastColorUsed++) % colors.length]!,
             children: []
           };
         }
@@ -76,7 +78,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
       });
       const path = prefix + name;
       const label = node.label ? `${path}: ${node.label}` : path;
-      return {path, name, children, label, color: node.color};
+      return {path, name, children, label, color: node.color!};
     };
     return add('', root);
   }
@@ -135,7 +137,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
 
   getLabel(row: any, index: number) {
     const base = this.resolveCategory(row, index);
-    return base ? base.label : null;
+    return base ? base.label : '';
   }
 
   getCategories(row: any, index: number) {
