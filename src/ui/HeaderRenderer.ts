@@ -381,7 +381,7 @@ export default class HeaderRenderer {
       'background-color': (d) => d.color!
     });
     $headers.attr({
-      'class': (d) => `${clazz} ${d.cssClass || ''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''} ${d.isGroupedBy() ? 'grouped' : ''}`,
+      'class': (d) => `${clazz} ${d.cssClass || ''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''} ${d.isGroupedBy() >= 0 ? 'grouped' : ''}`,
       title: (d) => toFullTooltip(d),
       'data-id': (d) => d.id
     });

@@ -29,6 +29,7 @@ import CategoricalColumn, {isCategoricalColumn} from '../../model/CategoricalCol
 import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 import createSummary from './summary';
 import {IRankingHeaderContext} from './interfaces';
+import {equalArrays} from '../../utils';
 
 export {default as createSummary} from './summary';
 
@@ -48,10 +49,10 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
   node.querySelector('.lu-label')!.innerHTML = col.label;
   node.title = toFullTooltip(col);
   const sort = <HTMLElement>node.querySelector('.lu-sort')!;
-  const {asc, priority} = col.isSortedByMe();
   const groupedBy = col.isGroupedBy();
-  sort.dataset.sort = asc || (groupedBy ? 'stratify' : '');
-  sort.dataset.priority = priority !== undefined ? priority : (groupedBy ? '0' : '');
+  const {asc, priority} = col.isSortedByMe();
+  sort.dataset.sort = (groupedBy >= 0 ? 'stratify' : asc || '');
+  sort.dataset.priority = groupedBy >= 0 ? groupedBy.toString() : (priority !== undefined ? priority : '');
 
   createSummary(<HTMLElement>node.querySelector('.lu-summary')!, col, ctx, interactive);
 }
@@ -284,12 +285,13 @@ export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingH
       return false;
     }
 
-    const criterias = ranking.getSortCriterias();
+    const criteria = ranking.getSortCriterias();
+    const groups = ranking.getGroupCriteria();
 
     const removeFromSort = (col: Column) => {
-      const existing = criterias.findIndex((d) => d.col === col);
+      const existing = criteria.findIndex((d) => d.col === col);
       if (existing >= 0) { // remove existing column but keep asc state
-        return criterias.splice(existing, 1)[0].asc;
+        return criteria.splice(existing, 1)[0].asc;
       }
       return false;
     };
@@ -297,32 +299,38 @@ export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingH
     // remove the one to add
     const asc = removeFromSort(col);
 
-    const groupCriteria = ranking.getGroupCriteria();
-    if (autoGroup && groupCriteria === column) {
+    const groupIndex = groups.indexOf(column);
+    const index = criteria.findIndex((d) => d.col === column);
+
+    if (autoGroup && groupIndex >= 0) {
       // before the grouping, so either ungroup or regroup
       removeFromSort(column);
       if (isCategoricalColumn(col)) { // we can group by it
-        criterias.unshift({asc: false, col: column}); // now a first sorting criteria
-        ranking.setGroupCriteria(col);
+        groups.splice(groupIndex + (where === 'after' ? 1 : 0), 0, col);
+        if (groups.length > ranking.getMaxGroupColumns()) {
+          // move the rest to sorting
+          const removed = groups.splice(0, groups.length - ranking.getMaxGroupColumns());
+          criteria.unshift(...removed.reverse().map((d) => ({asc: false, col: d}))); // now a first sorting criteria
+        }
       } else {
-        // no grouping -> first ranking no grouping
-        criterias.unshift({asc, col});
-        ranking.setGroupCriteria(null);
+        // remove all before and shift to sorting + sorting
+        const removed = groups.splice(0, groups.length - groupIndex);
+        criteria.unshift(...removed.reverse().map((d) => ({asc: false, col: d}))); // now a first sorting criteria
+        criteria.unshift({asc, col});
       }
-      ranking.setSortCriterias(criterias);
-      return true;
-    }
-
-    const index = criterias.findIndex((d) => d.col === column);
-    if (index < 0) {
-      criterias.push({asc, col});
+    } else if (index < 0) {
+      criteria.push({asc, col});
     } else if (index === 0 && autoGroup && isCategoricalColumn(col)) {
       // make group criteria
-      ranking.setGroupCriteria(col);
+      groups.push(col);
     } else {
-      criterias.splice(index + (where === 'after' ? 1 : 0), 0, {asc, col});
+      criteria.splice(index + (where === 'after' ? 1 : 0), 0, {asc, col});
     }
-    ranking.setSortCriterias(criterias);
+
+    if (!equalArrays(groups, ranking.getGroupCriteria())) {
+      ranking.groupBy(groups);
+    }
+    ranking.setSortCriteria(criteria);
     return true;
   }, null, true);
 }

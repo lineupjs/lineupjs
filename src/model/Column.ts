@@ -358,17 +358,21 @@ export default class Column extends AEventDispatcher {
   groupByMe() {
     const r = this.findMyRanker();
     if (r) {
-      return r.groupBy(this === r.getGroupCriteria() ? null : this);
+      return r.groupBy(this.isGroupedBy() >= 0 ? null : this);
     }
     return false;
   }
 
-  isGroupedBy() {
+  /**
+   *
+   * @return {number}
+   */
+  isGroupedBy(): number {
     const r = this.findMyRanker();
-    if (r) {
-      return r.getGroupCriteria() === this;
+    if (!r) {
+      return -1;
     }
-    return false;
+    return r.getGroupCriteria().indexOf(this);
   }
 
   /**

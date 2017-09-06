@@ -155,16 +155,23 @@ export default class SidePanel {
     if (!ranking) {
       return [];
     }
-    const hierarchy = ranking.getSortCriterias().map((d) => d.col);
-    if (ranking.getGroupCriteria()) {
-      hierarchy.unshift(ranking.getGroupCriteria()!);
-    }
-    // add rest in ranking order
+    const hierarchy = ranking.getGroupCriteria();
     const used = new Set(hierarchy);
-    ranking.flatColumns.forEach((c) => {
-      if (!used.has(c)) {
-        hierarchy.push(c);
+
+    ranking.getSortCriterias().forEach(({col}) => {
+      if (used.has(col)) {
+        return;
       }
+      hierarchy.push(col);
+      used.add(col);
+    });
+    // add rest in ranking order
+    ranking.flatColumns.forEach((c) => {
+      if (used.has(c)) {
+        return;
+      }
+      hierarchy.push(c);
+      used.add(c);
     });
     return hierarchy;
   }
