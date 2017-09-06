@@ -23,15 +23,25 @@ export default class SidePanelEntryVis {
 
   private init() {
     this.node.innerHTML = `
-      <header><i class="lu-sort"></i><h2 class="lu-label"></h2><div class="lu-toolbar"></div></header>
+      <header><i class="lu-sort"></i><div class="lu-label"></div><div class="lu-toolbar"></div></header>
       <main class="lu-summary"></main>`;
     createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), this.column, this.ctx);
+    this.node.querySelector('.lu-label')!.addEventListener('click', (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.column.toggleMySorting();
+    });
   }
 
   update(ctx: IRankingHeaderContext = this.ctx) {
     this.ctx = ctx;
     this.node.querySelector('.lu-label')!.textContent = this.column.label;
     this.node.title = toFullTooltip(this.column);
+
+    const sort = <HTMLElement>this.node.querySelector('.lu-sort')!;
+    const {asc, priority} = this.column.isSortedByMe();
+    sort.dataset.sort = asc;
+    sort.dataset.priority = priority;
 
     createSummary(<HTMLElement>this.node.querySelector('.lu-summary')!, this.column, this.ctx, true);
   }

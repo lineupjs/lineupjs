@@ -7,6 +7,7 @@
 .lineup-engine > header section {
   @extend %lu-header;
 
+  cursor: pointer;
   text-align: center;
   color: white;
   overflow: hidden;

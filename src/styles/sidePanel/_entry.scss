@@ -14,23 +14,26 @@
     background: $lu_side_panel_bg_color;
     padding: 0.5em;
     position: relative;
+    font-size: $lu_side_panel_font_size;
 
     &::before {
       color: #999;
       content: counter(side-panel-counter);
-      font-size: 1.4em;
-      position: absolute;
-      top: 0.05em;
     }
 
-    h2 {
-      order: 1;
-      font-size: 1em;
+    .#{$lu_css_prefix}-sort {
+      width: 0.5em;
+
+      &[data-sort=asc] {
+        margin-top: 0.3em;
+      }
+    }
+
+    .#{$lu_css_prefix}-label {
       margin: 0 1em 0 0;
-      padding: 0 0 0 1.6em;
-      white-space: nowrap;
+      padding: 0 0 0 0.2em;
       overflow: hidden !important;
-      text-overflow: ellipsis;
+      cursor: pointer;
     }
   }
 
@@ -48,7 +51,7 @@
     font-size: $lu_side_panel_toolbar_font_size - 1pt;
   }
 
-  main {
+  main.#{$lu_css_prefix}-summary {
     margin: 0.5em;
     height: 50px;
     font-size: small;
@@ -56,6 +59,10 @@
     &[data-summary=slider-hist] > div,
     &[data-summary=hist] > div {
       background: #dcdcdc;
+    }
+
+    &[data-summary=string] {
+      display: block;
     }
   }
 }

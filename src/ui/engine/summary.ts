@@ -164,6 +164,7 @@ function summaryNumerical(col: INumberColumn&Column, node: HTMLElement, stats: I
 }
 
 export function summaryString(col: StringColumn, node: HTMLElement, interactive: boolean) {
+  node.dataset.summary = 'string';
   if (!interactive) {
     const filter = col.getFilter() || '';
     node.textContent = filter === StringColumn.FILTER_MISSING ? '' : String(filter);
@@ -177,6 +178,7 @@ export function summaryString(col: StringColumn, node: HTMLElement, interactive:
 }
 
 function summarySelection(col: SelectionColumn, node: HTMLElement, provider: IDataProvider) {
+  node.dataset.summary = 'selection';
   node.innerHTML = `<i class='fa fa-square-o' title='(Un)Select All'></i>`;
   const button = (<HTMLElement>node.firstElementChild);
   button.onclick = (evt) => {
