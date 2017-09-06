@@ -5,7 +5,6 @@
   @extend %lu-header;
 
   counter-increment: side-panel-counter;
-  margin-bottom: 10px;
   background-color: #fff;
 
   > header {
@@ -50,6 +49,15 @@
 
     > i:hover {
       color: #3e89db;
+    }
+  }
+
+  > .#{$lu_css_prefix}-sort-handle {
+    height: 5px;
+    background-color: white;
+
+    &.#{$lu_css_prefix}-dragover {
+      background-color: $lu_drag_over;
     }
   }
 

@@ -3,7 +3,7 @@
  */
 import {IColumn} from 'lineupengine/src';
 import Column from '../../model/Column';
-import {createToolbar, dragWidth, handleDnD, updateHeader} from './header';
+import {createToolbar, dragWidth, dragAbleColumn, mergeDropAble, rearrangeDropAble, updateHeader} from './header';
 import {IDOMCellRenderer, IDOMGroupRenderer} from '../../renderer/IDOMCellRenderers';
 import {IRankingContext} from './interfaces';
 
@@ -43,7 +43,9 @@ export default class RenderColumn implements IColumn {
       this.c.toggleMySorting();
     });
 
-    handleDnD(node, this.c, ctx);
+    dragAbleColumn(node, this.c, ctx);
+    mergeDropAble(node, this.c, ctx);
+    rearrangeDropAble(<HTMLElement>node.querySelector('.lu-handle')!, this.c, ctx);
 
     dragWidth(this.c, node);
     this.updateHeader(node, ctx);

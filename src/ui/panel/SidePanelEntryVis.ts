@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 05.09.2017.
  */
 import Column from '../../model/Column';
-import {createToolbar, updateHeader} from '../engine/header';
+import {createToolbar, dragAbleColumn, resortDropAble, updateHeader} from '../engine/header';
 import {IRankingHeaderContext} from '../engine/interfaces';
 
 
@@ -22,7 +22,7 @@ export default class SidePanelEntryVis {
 
   private init() {
     this.node.innerHTML = `
-      <header><i class="lu-sort"></i><div class="lu-label"></div><div class="lu-toolbar"></div></header>
+      <div class="lu-sort-handle"></div><header><i class="lu-sort"></i><div class="lu-label"></div><div class="lu-toolbar"></div></header>
       <main class="lu-summary"></main>`;
     createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), this.column, this.ctx);
     this.node.querySelector('.lu-label')!.addEventListener('click', (evt) => {
@@ -30,6 +30,9 @@ export default class SidePanelEntryVis {
       evt.stopPropagation();
       this.column.toggleMySorting();
     });
+
+    dragAbleColumn(this.node, this.column, this.ctx);
+    resortDropAble(<HTMLElement>this.node.querySelector('.lu-sort-handle')!, this.column, this.ctx, 'before');
   }
 
   update(ctx: IRankingHeaderContext = this.ctx) {

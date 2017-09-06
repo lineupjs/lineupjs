@@ -217,7 +217,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
 export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
-export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
+export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   dragAble(node, () => {
     const ref = JSON.stringify(ctx.provider.toDescRef(column.desc));
     const data: any = {
@@ -234,8 +234,10 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeader
       data
     };
   }, true);
+}
 
-  dropAble(<HTMLElement>node.querySelector('.lu-handle')!, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
+export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
+  dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
     let col: Column | null = null;
     const data = result.data;
     if (`${MIMETYPE_PREFIX}-ref` in data) {
@@ -258,7 +260,52 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeader
     }
     return column.insertAfterMe(col) != null;
   }, null, true);
+}
 
+export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext, where: 'before'|'after') {
+  dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
+    let col: Column | null = null;
+    const data = result.data;
+    if (`${MIMETYPE_PREFIX}-ref` in data) {
+      const id = data[`${MIMETYPE_PREFIX}-ref`];
+      col = ctx.provider.find(id);
+      if (!col || col === column) {
+        return false;
+      }
+    } else {
+      const desc = JSON.parse(data[MIMETYPE_PREFIX]);
+      col = ctx.provider.create(ctx.provider.fromDescRef(desc));
+      if (col) {
+        column.findMyRanker()!.push(col);
+      }
+    }
+    const ranking = column.findMyRanker()!;
+    if (!col || col === column || !ranking) {
+      return false;
+    }
+
+    const criterias = ranking.getSortCriterias();
+
+    const existing = criterias.findIndex((d) => d.col === col);
+    let asc = false;
+    if (existing >= 0) { // remove existing column but keep asc state
+      asc = criterias.splice(existing, 1)[0].asc;
+    }
+
+    const index = criterias.findIndex((d) => d.col === column);
+    if (index < 0) {
+      criterias.push({asc, col});
+    } else {
+      criterias.splice(index + (where === 'after' ? 1 : 0), 0, {asc, col});
+    }
+    ranking.setSortCriterias(criterias);
+
+    // TODO
+    return true;
+  }, null, true);
+}
+
+export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   const resolveDrop = (result: IDropResult, numbersOnly: boolean) => {
     const data = result.data;
     const copy = result.effect === 'copy';
