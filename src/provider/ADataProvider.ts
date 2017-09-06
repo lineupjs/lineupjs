@@ -117,7 +117,9 @@ export interface IDataProvider extends AEventDispatcher {
   searchAndJump(search: string | RegExp, col: Column): void;
 
   getRankings(): Ranking[];
+
   getLastRanking(): Ranking;
+
   getColumns(): IColumnDesc[];
 }
 
@@ -463,7 +465,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       c.restore(d, this.createHelper);
     }
     return c;
-  }
+  };
 
   restoreRanking(dump: any) {
     const ranking = this.cloneRanking();

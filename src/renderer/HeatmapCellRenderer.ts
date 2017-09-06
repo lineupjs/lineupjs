@@ -34,7 +34,7 @@ export default class HeatmapCellRenderer extends AAggregatedGroupRenderer<INumbe
         } else {
           n.classList.remove('lu-missing');
         }
-		attr(n, {
+        attr(n, {
           title: col.getLabel(d.v, d.dataIndex)
         }, {
           'background-color': toHeatMapColor(d.v, d.dataIndex, col)

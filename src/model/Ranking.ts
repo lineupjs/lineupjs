@@ -63,18 +63,18 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       }
     }
     return 0;
-  }
+  };
 
   readonly grouper = (row: any, index: number) => {
     if (this.groupColumn === null) {
       return defaultGroup;
     }
     return this.groupColumn.group(row, index);
-  }
+  };
 
   readonly dirtyOrder = () => {
     this.fire([Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], this.getSortCriteria());
-  }
+  };
 
   /**
    * the current ordering as an sorted array of indices

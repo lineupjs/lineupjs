@@ -8,7 +8,7 @@ import {IRankingHeaderContext} from '../engine/interfaces';
 
 export default class SidePanelEntry {
   used = 0;
-  private vis: SidePanelEntryVis|null = null;
+  private vis: SidePanelEntryVis | null = null;
 
   constructor(public readonly desc: IColumnDesc) {
 
@@ -29,7 +29,7 @@ export default class SidePanelEntry {
   }
 
   get visColumn() {
-    return this.vis ? this.vis.column: null;
+    return this.vis ? this.vis.column : null;
   }
 
   updateVis(ctx: IRankingHeaderContext) {

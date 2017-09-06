@@ -69,7 +69,7 @@ export default class SidePanel {
     return this.ctx.provider;
   }
 
-  private changeDataStorage(old: IDataProvider|null, data: IDataProvider) {
+  private changeDataStorage(old: IDataProvider | null, data: IDataProvider) {
     const that = this;
     if (old) {
       old.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
@@ -233,14 +233,17 @@ export default class SidePanel {
   }
 
 
-  private static groupByType(entries: SidePanelEntry[]): {key: string, values: SidePanelEntry[]}[] {
+  private static groupByType(entries: SidePanelEntry[]): { key: string, values: SidePanelEntry[] }[] {
     const order = ['label', 'categorical', 'numerical', 'matrix', 'combined', 'others'];
     return nest<SidePanelEntry>().key((entry) => {
-      switch(entry.desc.type) {
-        case 'string': return order[0];
+      switch (entry.desc.type) {
+        case 'string':
+          return order[0];
         case 'ordinal':
-        case 'categorical': return order[1];
-        case 'number': return order[2];
+        case 'categorical':
+          return order[1];
+        case 'number':
+          return order[2];
         case 'numbers':
         case 'booleans':
         case 'boxplot':
@@ -264,7 +267,7 @@ export default class SidePanel {
     const select = <HTMLSelectElement>this.node.querySelector('header select')!;
     const groups = SidePanel.groupByType(Array.from(this.descs.values()));
 
-    const renderGroup = ({key, values}: {key: string, values: SidePanelEntry[]}) => {
+    const renderGroup = ({key, values}: { key: string, values: SidePanelEntry[] }) => {
       return `<optgroup label="${key[0].toUpperCase()}${key.slice(1)}">
           ${values.map((v) => `<option value="${v.id}">${v.name}</option>`).join('')}
       </optgroup>`;

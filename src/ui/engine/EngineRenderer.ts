@@ -25,7 +25,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   readonly node: HTMLElement;
 
-  readonly ctx: IRankingBodyContext & { data: (IGroupItem|IGroupData)[] };
+  readonly ctx: IRankingBodyContext & { data: (IGroupItem | IGroupData)[] };
 
   private readonly renderer: EngineRankingRenderer;
 
@@ -103,7 +103,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       cols.filter((d) => d instanceof NumberColumn && !d.isHidden()).forEach((col: NumberColumn) => {
         this.histCache.set(col.id, histo === null ? null : histo.stats(col));
       });
-      cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn&Column) => {
+      cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn & Column) => {
         this.histCache.set(col.id, histo === null ? null : histo.hist(col));
       });
     });
@@ -125,12 +125,12 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
         this.ctx.data = [Object.assign({rows: localData}, groups[0])];
       } else {
         // simple ungrouped case
-        this.ctx.data = localData.map((r, i) => Object.assign({ group: groups[0], relativeIndex: i}, r));
+        this.ctx.data = localData.map((r, i) => Object.assign({group: groups[0], relativeIndex: i}, r));
       }
     } else {
       //multiple groups
       let offset = 0;
-      const r = <(IGroupItem|IGroupData)[]>[];
+      const r = <(IGroupItem | IGroupData)[]>[];
       groups.forEach((group) => {
         const length = group.order.length;
         const groupData = localData.slice(offset, offset + length);
@@ -139,7 +139,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
         if (this.data.isAggregated(ranking, group)) {
           r.push(Object.assign({rows: groupData}, group));
         } else {
-          r.push(...groupData.map((r, i) => Object.assign({ group, relativeIndex: i}, r)));
+          r.push(...groupData.map((r, i) => Object.assign({group, relativeIndex: i}, r)));
         }
       });
       this.ctx.data = r;
@@ -153,7 +153,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     const columns = cols.map((c, i) => {
       const single = createDOM(c, this.options.renderers, this.ctx);
       const group = createDOMGroup(c, this.options.renderers, this.ctx);
-      const renderers = { single, group, singleId: c.getRendererType(), groupId: c.getGroupRenderer()};
+      const renderers = {single, group, singleId: c.getRendererType(), groupId: c.getGroupRenderer()};
       return new RenderColumn(c, renderers, i);
     });
 

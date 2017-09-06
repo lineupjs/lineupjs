@@ -110,16 +110,16 @@ abstract class ADialog {
   }
 
   private hidePopupOnClickOutside(popup: Selection<any>) {
-      const body = select('body');
-      popup.on('click', () => {
-        // don't bubble up click events within the popup
-        (<MouseEvent>d3event).stopPropagation();
-      });
-      body.on('click', () => {
-        // we have a click event which was not in the popup
-        ADialog.removeAllPopups();
-        body.on('click', <any>null);
-      });
+    const body = select('body');
+    popup.on('click', () => {
+      // don't bubble up click events within the popup
+      (<MouseEvent>d3event).stopPropagation();
+    });
+    body.on('click', () => {
+      // we have a click event which was not in the popup
+      ADialog.removeAllPopups();
+      body.on('click', <any>null);
+    });
   }
 }
 

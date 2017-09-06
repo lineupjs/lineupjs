@@ -40,6 +40,7 @@ export function numberCompare(a: number | null, b: number | null, aMissing = fal
 
 export interface INumberColumn {
   isMissing(row: any, index: number): boolean;
+
   getNumber(row: any, index: number): number;
 
   getRawNumber(row: any, index: number): number;
@@ -88,8 +89,8 @@ export interface INumberFilter {
  * @param col
  * @returns {boolean}
  */
-export function isNumberColumn(col: Column): col is INumberColumn&Column;
-export function isNumberColumn(col: IColumnDesc): col is INumberDesc&IColumnDesc;
+export function isNumberColumn(col: Column): col is INumberColumn & Column;
+export function isNumberColumn(col: IColumnDesc): col is INumberDesc & IColumnDesc;
 export function isNumberColumn(col: Column | IColumnDesc) {
   return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
 }

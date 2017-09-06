@@ -225,7 +225,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     search = typeof search === 'string' ? search.toLowerCase() : search;
     const f = typeof search === 'string' ? (v: string) => v.toLowerCase().indexOf((<string>search)) >= 0 : (<RegExp>search).test.bind(search);
     const indices = <number[]>[];
-    for(let i = 0; i < this._data.length; ++i) {
+    for (let i = 0; i < this._data.length; ++i) {
       if (f(col.getLabel(this._data[i], i))) {
         indices.push(i);
       }

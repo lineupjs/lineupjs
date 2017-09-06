@@ -29,6 +29,7 @@ import CategoricalColumn, {isCategoricalColumn} from '../../model/CategoricalCol
 import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 import createSummary from './summary';
 import {IRankingHeaderContext} from './interfaces';
+
 export {default as createSummary} from './summary';
 
 /**
@@ -261,7 +262,7 @@ export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRanki
   }, null, true);
 }
 
-export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext, where: 'before'|'after', autoGroup: boolean) {
+export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext, where: 'before' | 'after', autoGroup: boolean) {
   dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
     let col: Column | null = null;
     const data = result.data;
@@ -294,7 +295,7 @@ export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingH
     };
 
     // remove the one to add
-    const asc  = removeFromSort(col);
+    const asc = removeFromSort(col);
 
     const groupCriteria = ranking.getGroupCriteria();
     if (autoGroup && groupCriteria === column) {

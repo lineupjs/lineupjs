@@ -207,7 +207,7 @@ export default class HeaderRenderer {
             }
           });
         });
-        cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn&Column) => {
+        cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn & Column) => {
           const header = node.querySelector(`div.header[data-id="${col.id}"]`)!;
           data.forEach((d, i) => {
             const cats = col.getCategories(d, indices[i]);

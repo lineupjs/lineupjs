@@ -6,10 +6,9 @@ import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {matchColumns} from '../utils';
-import {renderMissingValue} from './BarCellRenderer';
+import {medianIndex, renderMissingValue} from './BarCellRenderer';
 import {IGroup} from '../model/Group';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {medianIndex} from './BarCellRenderer';
 
 
 export function createData(col: StackColumn, context: IRenderContext<any, any>, nestingPossible: boolean) {
@@ -45,7 +44,7 @@ export default class StackCellRenderer extends AAggregatedGroupRenderer<StackCol
       update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
         matchColumns(n, cols, 'detail', 'html');
         if (col.isMissing(d.v, d.dataIndex)) {
-        // everything is missing or at least a part of it
+          // everything is missing or at least a part of it
           n.classList.add('lu-missing');
           return;
         }

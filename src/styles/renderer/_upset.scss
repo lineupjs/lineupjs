@@ -13,7 +13,7 @@
     border-bottom: 1px solid $lu_upset_stroke; // line
   }
 
-  > div:nth-child(n + 2) {  // circles
+  > div:nth-child(n + 2) { // circles
     border-radius: 50%;
     background-color: $lu_upset_circle_color;
     opacity: $lu_upset_inactive_opacity;

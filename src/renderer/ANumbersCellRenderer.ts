@@ -11,7 +11,7 @@ import {IGroup} from '../model/Group';
 
 export abstract class ANumbersCellRenderer implements ICellRendererFactory {
 
-  protected abstract createDOMContext(col: INumbersColumn & Column): { templateRow: string, render: (row: HTMLElement, d: IDataRow)=>void};
+  protected abstract createDOMContext(col: INumbersColumn & Column): { templateRow: string, render: (row: HTMLElement, d: IDataRow) => void };
 
   createDOM(col: INumbersColumn & Column): IDOMCellRenderer {
     const {templateRow, render} = this.createDOMContext(col);
@@ -38,7 +38,7 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
     };
   }
 
-  protected abstract createCanvasContext(col: INumbersColumn & Column, context: ICanvasRenderContext): (ctx: CanvasRenderingContext2D, d: IDataRow, offset: number, rowHeight: number)=>void;
+  protected abstract createCanvasContext(col: INumbersColumn & Column, context: ICanvasRenderContext): (ctx: CanvasRenderingContext2D, d: IDataRow, offset: number, rowHeight: number) => void;
 
   createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const render = this.createCanvasContext(col, context);
@@ -60,9 +60,9 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
 }
 
 
-export function matchRows(n: HTMLElement|SVGElement, rows: IDataRow[], template: string) {
+export function matchRows(n: HTMLElement | SVGElement, rows: IDataRow[], template: string) {
   // first match the number of rows
-  const children = <(HTMLElement|SVGElement)[]>Array.from(n.children);
+  const children = <(HTMLElement | SVGElement)[]>Array.from(n.children);
   if (children.length > rows.length) {
     children.slice(rows.length).forEach((c) => c.remove());
   } else if (rows.length > children.length) {

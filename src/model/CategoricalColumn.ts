@@ -272,7 +272,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter != null;
   }
 
-  static filter(filter: ICategoricalFilter|null, category: string) {
+  static filter(filter: ICategoricalFilter | null, category: string) {
     if (!filter) {
       return true;
     }

@@ -53,7 +53,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
 
       if (col.isMissing(d.v, d.dataIndex)) {
-          // missing
+        // missing
         renderMissingValue(ctx, col.getWidth(), rowHeight);
         return;
       }
