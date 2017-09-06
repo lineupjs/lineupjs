@@ -27,6 +27,12 @@
       &[data-sort=asc] {
         margin-top: 0.3em;
       }
+
+      &[data-sort=stratify] {
+        font-size: 80%;
+        margin-top: 0.3em;
+        width: 1em;
+      }
     }
 
     .#{$lu_css_prefix}-label {
