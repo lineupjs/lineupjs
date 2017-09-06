@@ -2,7 +2,6 @@
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import Column from '../../model/Column';
-import {IRankingHeaderContext} from './RenderColumn';
 import {createNestedDesc, createStackDesc, isSupportType} from '../../model';
 import NumbersColumn from '../../model/NumbersColumn';
 import BoxPlotColumn from '../../model/BoxPlotColumn';
@@ -28,9 +27,34 @@ import Ranking from '../../model/Ranking';
 import BooleanColumn from '../../model/BooleanColumn';
 import CategoricalColumn from '../../model/CategoricalColumn';
 import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
+import createSummary from './summary';
+import {IRankingHeaderContext} from './interfaces';
 
 export {default as createSummary} from './summary';
 
+/**
+ * utility function to generate the tooltip text with description
+ * @param col the column
+ */
+export function toFullTooltip(col: { label: string, description?: string }) {
+  let base = col.label;
+  if (col.description != null && col.description !== '') {
+    base += `\n${col.description}`;
+  }
+  return base;
+}
+
+export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
+  node.querySelector('.lu-label')!.innerHTML = col.label;
+  node.title = toFullTooltip(col);
+  const sort = <HTMLElement>node.querySelector('.lu-sort')!;
+  const {asc, priority} = col.isSortedByMe();
+  const groupedBy = col.isGroupedBy();
+  sort.dataset.sort = asc || (groupedBy ? 'stratify' : '');
+  sort.dataset.priority = priority !== undefined ? priority : (groupedBy ? '0' : '');
+
+  createSummary(<HTMLElement>node.querySelector('.lu-summary')!, col, ctx, interactive);
+}
 
 export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
   const addIcon = (title: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {

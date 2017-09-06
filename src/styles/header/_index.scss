@@ -26,6 +26,10 @@
       content: $fa-var-sort-desc;
     }
 
+    &[data-sort=stratify]::before {
+      content: $fa-var-window-maximize;
+    }
+
     &[data-priority] {
       opacity: 0.2;
     }

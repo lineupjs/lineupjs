@@ -7,12 +7,12 @@ import {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import NumberColumn, {INumberColumn, isNumberColumn,} from '../../model/NumberColumn';
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';
-import {IRankingHeaderContext} from './RenderColumn';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import {filterMissingMarkup} from '../../dialogs/AFilterDialog';
 import {stringFilter} from '../../dialogs/StringFilterDialog';
 import {IDataProvider} from '../../provider/ADataProvider';
 import {behavior, event as d3event, select, selectAll, DragEvent, round} from 'd3';
+import {IRankingHeaderContext} from './interfaces';
 
 export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
   if (col instanceof StringColumn) {

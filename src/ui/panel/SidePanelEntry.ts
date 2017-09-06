@@ -2,8 +2,8 @@
  * Created by Samuel Gratzl on 05.09.2017.
  */
 import {default as Column, IColumnDesc} from '../../model/Column';
-import {IRankingHeaderContext} from '../engine/RenderColumn';
 import SidePanelEntryVis from './SidePanelEntryVis';
+import {IRankingHeaderContext} from '../engine/interfaces';
 
 
 export default class SidePanelEntry {

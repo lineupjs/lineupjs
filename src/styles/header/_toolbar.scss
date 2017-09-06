@@ -52,13 +52,9 @@
       content: $fa-var-filter;
     }
 
-    &[title='Stratify By'],
-    &[title='Stratify By Threshold'] {
-      @include fa-icon-rotate(270deg, 3);
-
-      &::before {
-        content: $fa-var-columns;
-      }
+    &[title='Stratify By']::before,
+    &[title='Stratify By Threshold']::before {
+      content: $fa-var-window-maximize;
     }
 
     &[title='Set Cut Off']::before {

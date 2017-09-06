@@ -2,9 +2,8 @@
  * Created by Samuel Gratzl on 05.09.2017.
  */
 import Column from '../../model/Column';
-import {IRankingHeaderContext, toFullTooltip} from '../engine/RenderColumn';
-import createSummary from '../engine/summary';
-import {createToolbar} from '../engine/header';
+import {createToolbar, updateHeader} from '../engine/header';
+import {IRankingHeaderContext} from '../engine/interfaces';
 
 
 export default class SidePanelEntryVis {
@@ -35,15 +34,7 @@ export default class SidePanelEntryVis {
 
   update(ctx: IRankingHeaderContext = this.ctx) {
     this.ctx = ctx;
-    this.node.querySelector('.lu-label')!.textContent = this.column.label;
-    this.node.title = toFullTooltip(this.column);
-
-    const sort = <HTMLElement>this.node.querySelector('.lu-sort')!;
-    const {asc, priority} = this.column.isSortedByMe();
-    sort.dataset.sort = asc;
-    sort.dataset.priority = priority;
-
-    createSummary(<HTMLElement>this.node.querySelector('.lu-summary')!, this.column, this.ctx, true);
+    updateHeader(this.node, this.column, this.ctx, true);
   }
 
   destroy() {

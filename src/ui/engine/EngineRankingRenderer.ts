@@ -2,7 +2,8 @@
  * Created by Samuel Gratzl on 18.07.2017.
  */
 import {ACellRenderer, ICellRenderContext, nonUniformContext} from 'lineupengine/src';
-import RenderColumn, {IRankingContext} from './RenderColumn';
+import RenderColumn from './RenderColumn';
+import {IRankingContext} from './interfaces';
 import {IExceptionContext} from 'lineupengine/src/logic';
 
 export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {

@@ -8,7 +8,7 @@ import Ranking, {isSupportType} from '../../model/Ranking';
 import {default as Column, IColumnDesc} from '../../model/Column';
 import SidePanelEntry from './SidePanelEntry';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
-import {IRankingHeaderContext} from '../engine/RenderColumn';
+import {IRankingHeaderContext} from '../engine/interfaces';
 
 export interface ISidePanelOptions {
   additionalDescs: IColumnDesc[];
