@@ -6,7 +6,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import AAggregatedGroupRenderer from './AAggregatedGroupRenderer';
-import {medianIndex} from './BarCellRenderer';
+import {medianIndex, renderMissingValue} from './BarCellRenderer';
 
 export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
 
@@ -33,12 +33,17 @@ export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumber
 
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      if (col.isMissing(d.v, d.dataIndex)) {
+        renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
+        return;
+      }
+      const value = col.getNumber(d.v, d.dataIndex);
       const posy = (context.rowHeight(i) / 2);
       const posx = (context.colWidth(col) / 2);
       ctx.fillStyle = this.colorOf(d.v, i, col) || '';
       ctx.strokeStyle = this.colorOf(d.v, i, col) || '';
       ctx.beginPath();
-      ctx.arc(posx, posy, (context.rowHeight(i) / 2) * col.getNumber(d.v, d.dataIndex), 0, 2 * Math.PI);
+      ctx.arc(posx, posy, (context.rowHeight(i) / 2) * value, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
       if (context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {

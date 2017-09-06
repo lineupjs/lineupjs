@@ -102,6 +102,10 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.getValue(row, index);
   }
 
+  isMissing(row: any, index: number) {
+    return this.getLabels(row, index).length === 0;
+  }
+
   getRawNumber(row: any, index: number) {
     return this.getNumber(row, index);
   }

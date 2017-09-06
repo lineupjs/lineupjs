@@ -11,7 +11,8 @@ import NumberColumn, {
   INumberColumn,
   INumberFilter,
   noNumberFilter,
-  ScaleMappingFunction
+  ScaleMappingFunction,
+  numberCompare, FIRST_IS_NAN
 } from './NumberColumn';
 
 export const SORT_METHOD = {
@@ -28,6 +29,7 @@ export declare type SortMethod = string;
 
 export interface IBoxPlotColumn extends INumberColumn {
   getBoxPlotData(row: any, index: number): IBoxPlotData | null;
+  getDomain(): number[];
 
   getRawBoxPlotData(row: any, index: number): IBoxPlotData | null;
 
@@ -68,13 +70,13 @@ export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: numb
   const aVal = col.getBoxPlotData(a, aIndex);
   const bVal = col.getBoxPlotData(b, bIndex);
   if (aVal === null) {
-    return bVal === null ? 0 : +1;
+    return bVal === null ? 0 : FIRST_IS_NAN;
   }
   if (bVal === null) {
-    return -1;
+    return FIRST_IS_NAN * -1;
   }
   const method = <keyof IBoxPlotData>col.getSortMethod();
-  return aVal[method] - bVal[method];
+  return numberCompare(aVal[method], bVal[method]);
 }
 
 export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number, mode: 'raw' | 'normalized'): number {
@@ -128,6 +130,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   getBoxPlotData(row: any, index: number): IBoxPlotData | null {
     return this.getValue(row, index);
+  }
+
+  isMissing(row: any, index: number) {
+    return this.getValue(row, index) == null;
   }
 
   getRawBoxPlotData(row: any, index: number): IBoxPlotData | null {

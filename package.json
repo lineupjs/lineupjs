@@ -40,6 +40,9 @@
     "build",
     "!build/docs",
     "src/**/*.ts",
+    "src/assets/**/*.png",
+    "src/assets/**/*.jpg",
+    "src/assets/**/*.svg",
     "src/**/*.tsx",
     "src/**/*.scss"
   ],

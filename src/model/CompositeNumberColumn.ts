@@ -5,7 +5,7 @@
 import {format} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import NumberColumn, {INumberColumn, numberCompare} from './NumberColumn';
+import NumberColumn, {INumberColumn, numberCompare, isMissingValue} from './NumberColumn';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
@@ -27,7 +27,7 @@ export declare type ICompositeNumberColumnDesc = ICompositeNumberDesc & IColumnD
  * implementation of a combine column, standard operations how to select
  */
 export default class CompositeNumberColumn extends CompositeColumn implements INumberColumn {
-  missingValue = 0;
+  missingValue = NaN;
 
   private numberFormat: (n: number) => string = format('.3n');
 
@@ -75,7 +75,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     }
     //weighted sum
     const v = this.compute(row, index);
-    if (typeof(v) === 'undefined' || v == null || isNaN(v)) {
+    if (isMissingValue(v)) {
       return this.missingValue;
     }
     return v;
@@ -92,6 +92,10 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
 
   getRawNumber(row: any, index: number) {
     return this.getNumber(row, index);
+  }
+
+  isMissing(row: any, index: number) {
+    return isMissingValue(this.compute(row, index));
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {

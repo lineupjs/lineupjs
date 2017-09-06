@@ -8,6 +8,7 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {INumberColumn} from '../model/NumberColumn';
 import {IGroup} from '../model/Group';
 import {LazyBoxPlotData} from '../model/NumbersColumn';
+import {renderMissingValue} from './BarCellRenderer';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v === null) {
@@ -50,11 +51,19 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const rowHeight = context.rowHeight(i);
 
+
+      if (col.isMissing(d.v, d.dataIndex)) {
+          // missing
+        renderMissingValue(ctx, col.getWidth(), rowHeight);
+        return;
+      }
+
       // Rectangle
       const data = col.getBoxPlotData(d.v, d.dataIndex);
       if (!data) {
         return;
       }
+
       const scaled = {
         min: data.min * width,
         median: data.median * width,

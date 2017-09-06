@@ -5,7 +5,8 @@ import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {matchColumns} from '../utils';
+import {attr, matchColumns} from '../utils';
+import {renderMissingValue} from './BarCellRenderer';
 import {IGroup} from '../model/Group';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {medianIndex} from './BarCellRenderer';
@@ -43,6 +44,13 @@ export default class StackCellRenderer extends AAggregatedGroupRenderer<StackCol
       template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
         matchColumns(n, cols, 'detail', 'html');
+        if (col.isMissing(d.v, d.dataIndex)) {
+        // everything is missing or at least a part of it
+          n.classList.add('lu-missing');
+          return;
+        }
+        n.classList.remove('lu-missing');
+
         cols.forEach((col, ci) => {
           const cnode: any = n.childNodes[ci];
           col.renderer.update(cnode, d, i, group);
@@ -58,6 +66,11 @@ export default class StackCellRenderer extends AAggregatedGroupRenderer<StackCol
     const cols = createData(col, context, this.nestingPossible);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number, group: IGroup) => {
       let stackShift = 0;
+      if (col.isMissing(d.v, d.dataIndex)) {
+        // everything is missing or at least a part of it
+        renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
+        return;
+      }
       cols.forEach((col) => {
         const shift = col.shift - stackShift;
         ctx.translate(shift, 0);

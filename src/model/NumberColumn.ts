@@ -15,25 +15,31 @@ function isUnknown(v?: number | null) {
   return v === null || v === undefined || isNaN(v);
 }
 
+export const FIRST_IS_NAN = -1;
+
 /**
  * save number comparison
  * @param a
  * @param b
+ * @param aMissing
+ * @param bMissing
  * @return {number}
  */
-export function numberCompare(a: number | null, b: number | null) {
-  if (a === null || isNaN(a)) { //NaN are smaller
-    return (b === null || isNaN(b)) ? 0 : -1;
+export function numberCompare(a: number | null, b: number | null, aMissing = false, bMissing = false) {
+  aMissing = aMissing || a === null || isNaN(a);
+  bMissing = bMissing || b === null || isNaN(b);
+  if (aMissing) { //NaN are smaller
+    return bMissing ? 0 : FIRST_IS_NAN;
   }
-  if (b === null || isNaN(b)) {
-    return +1;
+  if (bMissing) {
+    return FIRST_IS_NAN * -1;
   }
   return a - b;
 }
 
 
 export interface INumberColumn {
-
+  isMissing(row: any, index: number): boolean;
   getNumber(row: any, index: number): number;
 
   getRawNumber(row: any, index: number): number;
@@ -412,6 +418,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return +v;
   }
 
+  isMissing(row: any, index: number) {
+    return isMissingValue(super.getValue(row, index));
+  }
+
   getValue(row: any, index: number) {
     const v = this.getRawValue(row, index);
     if (isNaN(v)) {
@@ -429,7 +439,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex));
+    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex), this.isMissing(a, aIndex), this.isMissing(b, bIndex));
   }
 
   getOriginalMapping() {

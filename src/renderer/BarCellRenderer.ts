@@ -1,12 +1,13 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn, numberCompare} from '../model/NumberColumn';
+import {INumberColumn, numberCompare, isMissingValue} from '../model/NumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
+import * as hatching from '../assets/hatching.png';
 
 
 /**
@@ -31,16 +32,19 @@ export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberCol
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         const value = col.getNumber(d.v, d.dataIndex);
+        const missing = col.isMissing(d.v, d.dataIndex);
         const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
         const title = col.getLabel(d.v, d.dataIndex);
         n.title = title;
+
+        n.classList.toggle('lu-missing', missing);
 
         const bar = n.firstElementChild!;
         attr(<HTMLElement>bar, {
           title
         }, {
-          width: `${w}%`,
-          'background-color': this.colorOf(d.v, i, col)
+          width: missing ? '100%' : `${w}%`,
+          'background-color': missing ? null : this.colorOf(d.v, i, col)
         });
         setText(bar.firstElementChild!, title);
       }
@@ -51,6 +55,10 @@ export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberCol
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      if (col.isMissing(d.v, d.dataIndex)) {
+        renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
+        return;
+      }
       ctx.fillStyle = this.colorOf(d.v, i, col) || '';
       const width = context.colWidth(col) * col.getNumber(d.v, d.dataIndex);
       ctx.fillRect(0, paddingTop, isNaN(width) ? 0 : width, context.rowHeight(i) - (paddingTop + paddingBottom));
@@ -74,4 +82,13 @@ export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
     return 0; //error case
   }
   return index.i;
+}
+
+export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
+  // create a hatching pattern over the full width
+
+  const missingImage = new Image();
+  missingImage.src = hatching;
+  ctx.fillStyle = ctx.createPattern(missingImage, 'repeat');
+  ctx.fillRect(x, y, width, height);
 }
