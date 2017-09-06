@@ -4,7 +4,7 @@
 
 import Column, {fixCSS, IColumnDesc, IColumnParent, IFlatColumn} from './Column';
 import StringColumn from './StringColumn';
-import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
+import {defaultGroup, IOrderedGroup, joinGroups, unifyParents} from './Group';
 import {AEventDispatcher, equalArrays, suffix} from '../utils';
 
 export interface ISortCriteria {
@@ -110,6 +110,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   setGroups(groups: IOrderedGroup[]) {
+    unifyParents(groups);
     const old = this.getOrder();
     const oldGroups = this.groups;
     this.groups = groups;

@@ -21,7 +21,7 @@ import {INumberColumn} from '../model/NumberColumn';
 import {AEventDispatcher, debounce, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
-import {IGroup, IOrderedGroup} from '../model/Group';
+import {IGroup, IOrderedGroup, toGroupID} from '../model/Group';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 
 /**
@@ -593,12 +593,19 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   isAggregated(ranking: Ranking, group: IGroup) {
-    const key = `${ranking.id}@${group.name}`;
-    return this.aggregations.has(key);
+    let g: IGroup|undefined|null = group;
+    while (g) {
+      const key = `${ranking.id}@${toGroupID(g)}`;
+      if (this.aggregations.has(key)) {
+        return true;
+      }
+      g = g.parent;
+    }
+    return false;
   }
 
   setAggregated(ranking: Ranking, group: IGroup, value: boolean) {
-    const key = `${ranking.id}@${group.name}`;
+    const key = `${ranking.id}@${toGroupID(group)}`;
     if (value === this.aggregations.has(key)) {
       return;
     }
