@@ -1,23 +1,21 @@
-@import 'vars';
+@import '../vars';
+@import '../renderer/index';
 
 .lineup-engine {
-  > header {
-    @import './engine/header';
-  }
-
   > header > article,
   > main > article > * {
     grid-column-gap: $lu_engine_grip_gap;
   }
 
   > main > article {
+    @extend %lu-renderer;
     > * {
-      @import './engine/row';
+      @import './row';
     }
-
-    @import './renderer/index';
   }
 }
+
+@import './header';
 
 $engine_assets: "~lineupengine/src/assets";
 

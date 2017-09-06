@@ -1,15 +1,17 @@
 
-@import './aggregate';
-@import './bar';
-@import './boxplot';
-@import './categorical';
-@import './heatmap';
-@import './rank';
-@import './selection';
-@import './sparkline';
-@import './stack';
-@import './string';
-@import './threshold';
-@import './upset';
-@import './vertical';
-@import './histogram';
+%lu-renderer {
+  @import './aggregate';
+  @import './bar';
+  @import './boxplot';
+  @import './categorical';
+  @import './heatmap';
+  @import './rank';
+  @import './selection';
+  @import './sparkline';
+  @import './stack';
+  @import './string';
+  @import './threshold';
+  @import './upset';
+  @import './vertical';
+  @import './histogram';
+}

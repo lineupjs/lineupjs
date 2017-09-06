@@ -1,0 +1,15 @@
+@import 'vars';
+
+.#{$lu_css_prefix},
+.#{$lu_css_prefix}-pool,
+.#{$lu_css_prefix}-side-panel {
+  [aria-hidden=true] {
+    display: none;
+  }
+
+  *[draggable] {
+    cursor: pointer;
+    cursor: -moz-grab;
+    cursor: -webkit-grab; // indicate grab able
+  }
+}

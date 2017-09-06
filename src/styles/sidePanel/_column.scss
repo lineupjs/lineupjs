@@ -1,17 +1,12 @@
 @import "../vars";
+@import '../header/index';
 
 > article {
+  @extend %lu-header;
+
+  counter-increment: side-panel-counter;
   margin-bottom: 10px;
   background-color: #fff;
-
-  &:not(.nodrag) {
-    counter-increment: side-panel-counter;
-
-    > header::before,
-    h2 {
-      cursor: move;
-    }
-  }
 
   > header {
     display: flex;
@@ -43,8 +38,6 @@
     margin: 0.5em;
     height: 50px;
     font-size: small;
-
-    @import '../engine/summary';
 
     &[data-summary=slider-hist] > div,
     &[data-summary=hist] > div {
