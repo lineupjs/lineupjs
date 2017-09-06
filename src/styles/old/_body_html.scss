@@ -1,5 +1,5 @@
-@import "../vars";
-@import "../renderer/index";
+@import '../vars';
+@import '../renderer/index';
 
 .#{$lu_css_prefix} div.#{$lu_css_prefix}-body {
   @extend %lu-renderer;

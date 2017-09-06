@@ -3,6 +3,9 @@
 @import '~font-awesome/scss/mixins';
 @import '../header/index';
 
+/**
+  needs to be the full path without any super import otherwise the @extend won't work properly
+ */
 .lineup-engine > header section {
   @extend %lu-header;
 
