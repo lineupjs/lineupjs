@@ -32,7 +32,7 @@ export default class SidePanelEntryVis {
     });
 
     dragAbleColumn(this.node, this.column, this.ctx);
-    resortDropAble(<HTMLElement>this.node.querySelector('.lu-sort-handle')!, this.column, this.ctx, 'before');
+    resortDropAble(<HTMLElement>this.node.querySelector('.lu-sort-handle')!, this.column, this.ctx, 'before', true);
   }
 
   update(ctx: IRankingHeaderContext = this.ctx) {

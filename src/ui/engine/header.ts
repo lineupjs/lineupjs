@@ -25,11 +25,10 @@ import {dragAble, dropAble, IDropResult} from './dnd';
 import {default as NumberColumn, isNumberColumn} from '../../model/NumberColumn';
 import Ranking from '../../model/Ranking';
 import BooleanColumn from '../../model/BooleanColumn';
-import CategoricalColumn from '../../model/CategoricalColumn';
+import CategoricalColumn, {isCategoricalColumn} from '../../model/CategoricalColumn';
 import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 import createSummary from './summary';
 import {IRankingHeaderContext} from './interfaces';
-
 export {default as createSummary} from './summary';
 
 /**
@@ -262,7 +261,7 @@ export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRanki
   }, null, true);
 }
 
-export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext, where: 'before'|'after') {
+export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext, where: 'before'|'after', autoGroup: boolean) {
   dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
     let col: Column | null = null;
     const data = result.data;
@@ -286,21 +285,43 @@ export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingH
 
     const criterias = ranking.getSortCriterias();
 
-    const existing = criterias.findIndex((d) => d.col === col);
-    let asc = false;
-    if (existing >= 0) { // remove existing column but keep asc state
-      asc = criterias.splice(existing, 1)[0].asc;
+    const removeFromSort = (col: Column) => {
+      const existing = criterias.findIndex((d) => d.col === col);
+      if (existing >= 0) { // remove existing column but keep asc state
+        return criterias.splice(existing, 1)[0].asc;
+      }
+      return false;
+    };
+
+    // remove the one to add
+    const asc  = removeFromSort(col);
+
+    const groupCriteria = ranking.getGroupCriteria();
+    if (autoGroup && groupCriteria === column) {
+      // before the grouping, so either ungroup or regroup
+      removeFromSort(column);
+      if (isCategoricalColumn(col)) { // we can group by it
+        criterias.unshift({asc: false, col: column}); // now a first sorting criteria
+        ranking.setGroupCriteria(col);
+      } else {
+        // no grouping -> first ranking no grouping
+        criterias.unshift({asc, col});
+        ranking.setGroupCriteria(null);
+      }
+      ranking.setSortCriterias(criterias);
+      return true;
     }
 
     const index = criterias.findIndex((d) => d.col === column);
     if (index < 0) {
       criterias.push({asc, col});
+    } else if (index === 0 && autoGroup && isCategoricalColumn(col)) {
+      // make group criteria
+      ranking.setGroupCriteria(col);
     } else {
       criterias.splice(index + (where === 'after' ? 1 : 0), 0, {asc, col});
     }
     ranking.setSortCriterias(criterias);
-
-    // TODO
     return true;
   }, null, true);
 }
