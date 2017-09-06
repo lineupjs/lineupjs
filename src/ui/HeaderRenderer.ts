@@ -309,7 +309,7 @@ export default class HeaderRenderer {
         }
         proxy.onclick = (evt: MouseEvent) => {
           evt.stopPropagation();
-          const dialog = new dialogClass(col, d3.select((evt.currentTarget as HTMLElement).parentElement!), ...dialogArgs);
+          const dialog = new dialogClass(col, d3.select((<HTMLElement>evt.currentTarget).parentElement!), ...dialogArgs);
           dialog.openDialog();
         };
         return proxy;
