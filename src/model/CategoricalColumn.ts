@@ -321,7 +321,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     const vb = this.getValues(b, bIndex);
     //check all categories
     for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
-      const ci = va[i].localCompare(vb[i]);
+      const ci = va[i].localeCompare(vb[i]);
       if (ci !== 0) {
         return ci;
       }
