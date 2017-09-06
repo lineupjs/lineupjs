@@ -24,7 +24,7 @@ export default class AggregateGroupRenderer implements ICellRendererFactory {
     return {
       template: `<div title="Collapse Group"></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IGroup) {
-        node.style.visibility = i === 0 ? null : 'hidden';
+        node.style.visibility = i === 0 && col.findMyRanker()!.getGroupCriteria() ? null : 'hidden';
         node.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
