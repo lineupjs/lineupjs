@@ -4,6 +4,7 @@
 import Column from '../../model/Column';
 import {IRankingHeaderContext, toFullTooltip} from '../engine/RenderColumn';
 import createSummary from '../engine/summary';
+import {createToolbar} from '../engine/header';
 
 
 export default class SidePanelEntryVis {
@@ -22,16 +23,17 @@ export default class SidePanelEntryVis {
 
   private init() {
     this.node.innerHTML = `
-      <header><h2></h2></header>
+      <header><i class="lu-sort"></i><h2 class="lu-label"></h2><div class="lu-toolbar"></div></header>
       <main class="lu-summary"></main>`;
+    createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), this.column, this.ctx);
   }
 
   update(ctx: IRankingHeaderContext = this.ctx) {
     this.ctx = ctx;
-    this.node.querySelector('h2')!.textContent = this.column.label;
+    this.node.querySelector('.lu-label')!.textContent = this.column.label;
     this.node.title = toFullTooltip(this.column);
 
-    createSummary(<HTMLElement>this.node.querySelector('main.lu-summary')!, this.column, this.ctx, true);
+    createSummary(<HTMLElement>this.node.querySelector('.lu-summary')!, this.column, this.ctx, true);
   }
 
   destroy() {
