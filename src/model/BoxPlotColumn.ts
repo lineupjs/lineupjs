@@ -4,6 +4,7 @@
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {format} from 'd3';
+import {numberCompare, FIRST_IS_NAN} from './NumberColumn';
 
 export const SORT_METHOD = {
   min: 'min',
@@ -43,13 +44,13 @@ export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: numb
   const aVal = (col.getBoxPlotData(a, aIndex));
   const bVal = (col.getBoxPlotData(b, bIndex));
   if (aVal === null) {
-    return bVal === null ? 0 : +1;
+    return bVal === null ? 0 : FIRST_IS_NAN;
   }
   if (bVal === null) {
-    return -1;
+    return FIRST_IS_NAN * -1;
   }
   const method = col.getSortMethod();
-  return aVal[method] - bVal[method];
+  return numberCompare(aVal[method], bVal[method]);
 }
 
 

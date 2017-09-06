@@ -24,6 +24,8 @@ function isUnknown(v?: number|null) {
   return isNaN(v) || v === null || v === undefined;
 }
 
+export const FIRST_IS_NAN = -1;
+
 /**
  * save number comparison
  * @param a
@@ -34,10 +36,10 @@ function isUnknown(v?: number|null) {
  */
 export function numberCompare(a: number, b: number, aMissing = false, bMissing = false) {
   if (isNaN(a) || aMissing) { //NaN are smaller
-    return (isNaN(b) || bMissing) ? 0 : -1;
+    return (isNaN(b) || bMissing) ? 0 : FIRST_IS_NAN;
   }
   if (isNaN(b) || bMissing) {
-    return +1;
+    return FIRST_IS_NAN * -1;
   }
   return a - b;
 }
