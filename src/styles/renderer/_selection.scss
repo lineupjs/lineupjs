@@ -9,9 +9,8 @@
   }
 }
 
-.lu-selected,
-.selected {
-  [data-renderer=selection]::before {
-    content: $fa-var-check-square-o;
-  }
+.lu-selected [data-renderer=selection]::before,
+.selected [data-renderer=selection]::before,
+.lu-group-selected[data-renderer=selection]::before {
+  content: $fa-var-check-square-o;
 }

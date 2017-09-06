@@ -5,7 +5,6 @@
 &[data-summary=slider-hist] {
   display: flex;
   align-items: flex-end;
-  font-size: x-small;
 
   > * {
     flex: 1 1 auto;
@@ -101,4 +100,13 @@
     position: absolute;
     bottom: -2.75em;
   }
+}
+
+&[data-summary=selection] > i {
+  cursor: pointer;
+}
+
+&[data-summary=string],
+&[data-summary=selection] {
+  display: block;
 }

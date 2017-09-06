@@ -184,8 +184,7 @@ function summarySelection(col: SelectionColumn, node: HTMLElement, provider: IDa
   button.onclick = (evt) => {
     evt.stopPropagation();
     if (button.classList.contains('fa-square-o')) {
-      const order = (col.findMyRanker()!).getOrder();
-      provider.setSelection(order);
+      provider.selectAllOf(col.findMyRanker()!);
     } else {
       provider.setSelection([]);
     }

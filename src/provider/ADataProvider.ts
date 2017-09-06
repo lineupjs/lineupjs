@@ -85,6 +85,8 @@ export interface IDataProviderOptions {
 export interface IDataProvider extends AEventDispatcher {
   takeSnapshot(col: Column): void;
 
+  selectAllOf(ranking: Ranking): void;
+
   setSelection(dataIndices: number[]): void;
 
   toggleSelection(dataIndex: number, additional?: boolean): boolean;
@@ -685,6 +687,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       this.selection.add(index);
     });
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
+  }
+
+  selectAllOf(ranking: Ranking) {
+    this.setSelection(ranking.getOrder());
   }
 
   /**

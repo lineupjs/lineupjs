@@ -26,13 +26,13 @@
    */
   .selected .lu-selection-only,
   .selected .lu-hover-only,
-  .groupSelected .lu-selection-only,
-  .groupSelected .lu-hover-only {
+  .lu-group-selected .lu-selection-only,
+  .lu-group-selected .lu-hover-only {
     display: block;
   }
 
   .selected .lu-not-hover,
-  .groupSelected .lu-not-hover {
+  .lu-group-selected .lu-not-hover {
     display: none;
   }
 

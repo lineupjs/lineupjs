@@ -80,9 +80,11 @@
   }
 
   &.#{$lu_css_prefix}-compressed {
+    .#{$lu_css_prefix}-label {
+      visibility: hidden;
+    }
     .#{$lu_css_prefix}-toolbar i:not([title='UnCollapse']),
-    .#{$lu_css_prefix}-label,
-    .#{$lu_css_prefix}-summary {
+    .#{$lu_css_prefix}-summary:not([data-summary=selection]) {
       display: none;
     }
 
@@ -96,6 +98,7 @@
   .#{$lu_css_prefix}-summary {
     position: relative;
     display: none;
+    font-size: x-small;
 
     @import './summary';
   }

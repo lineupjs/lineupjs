@@ -16,6 +16,7 @@
 
   > .#{$lu_css_prefix}-label {
     padding-left: 0.8em;
+    margin-right: $lu-engine_grip_gap;
   }
 
   > .#{$lu_css_prefix}-sort {
