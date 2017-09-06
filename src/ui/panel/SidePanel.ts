@@ -159,6 +159,13 @@ export default class SidePanel {
     if (ranking.getGroupCriteria()) {
       hierarchy.unshift(ranking.getGroupCriteria()!);
     }
+    // add rest in ranking order
+    const used = new Set(hierarchy);
+    ranking.flatColumns.forEach((c) => {
+      if (!used.has(c)) {
+        hierarchy.push(c);
+      }
+    });
     return hierarchy;
   }
 
@@ -187,7 +194,7 @@ export default class SidePanel {
       const ai = order.indexOf(a);
       const bi = order.indexOf(b);
       if (ai < 0) {
-        return bi <0 ? 0 : 1;
+        return bi < 0 ? 0 : 1;
       }
       if (bi < 0) {
         return -1;
