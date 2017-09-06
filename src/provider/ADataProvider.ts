@@ -42,33 +42,33 @@ export interface IExportOptions {
   /**
    * export separator, default: '\t'
    */
-  separator?: string;
+  separator: string;
   /**
    * new line character, default: '\n'
    */
-  newline?: string;
+  newline: string;
   /**
    * should a header be generated, default: true
    */
-  header?: boolean;
+  header: boolean;
   /**
    * quote strings, default: false
    */
-  quote?: boolean;
+  quote: boolean;
   /**
    * quote string to use, default: '"'
    */
-  quoteChar?: string;
+  quoteChar: string;
   /**
    * filter specific column types, default: exclude all support types (selection, action, rank)
    * @param col the column description to filter
    */
-  filter?: (col: IColumnDesc) => boolean; //!isSupportType
+  filter: (col: IColumnDesc) => boolean; //!isSupportType
 
   /**
    * whether the description should be part of the column header
    */
-  verboseColumnHeaders?: boolean;
+  verboseColumnHeaders: boolean;
 }
 
 export interface IStatsBuilder {
@@ -784,8 +784,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @param options
    * @returns {Promise<string>}
    */
-  exportTable(ranking: Ranking, options: IExportOptions = {}) {
-    options = merge({
+  exportTable(ranking: Ranking, options: Partial<IExportOptions> = {}) {
+    const opts = <IExportOptions>Object.assign({
       separator: '\t',
       newline: '\n',
       header: true,
@@ -796,26 +796,26 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     }, options);
 
     //optionally quote not numbers
-    const escape = new RegExp(`[${options.quoteChar}]`, 'g');
+    const escape = new RegExp(`[${opts.quoteChar}]`, 'g');
 
     function quote(l: string, c?: Column) {
-      if ((options.quote || l.indexOf('\n') >= 0) && (!c || !isNumberColumn(c))) {
-        return `${options.quoteChar}${l.replace(escape, options.quoteChar + options.quoteChar)}${options.quoteChar}`;
+      if ((opts.quote || l.indexOf('\n') >= 0) && (!c || !isNumberColumn(c))) {
+        return `${opts.quoteChar}${l.replace(escape, opts.quoteChar + opts.quoteChar)}${opts.quoteChar}`;
       }
       return l;
     }
 
-    const columns = ranking.flatColumns.filter((c) => options.filter!(c.desc));
+    const columns = ranking.flatColumns.filter((c) => opts.filter!(c.desc));
     const order = ranking.getOrder();
     return Promise.resolve(this.view(order)).then((data) => {
       const r: string[] = [];
-      if (options.header) {
-        r.push(columns.map((d) => quote(`${d.label}${options.verboseColumnHeaders && d.description ? '\n' + d.description : ''}`)).join(options.separator));
+      if (opts.header) {
+        r.push(columns.map((d) => quote(`${d.label}${opts.verboseColumnHeaders && d.description ? `\n${d.description}` : ''}`)).join(opts.separator));
       }
       data.forEach((row, i) => {
-        r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(options.separator));
+        r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(opts.separator));
       });
-      return r.join(options.newline);
+      return r.join(opts.newline);
     });
   }
 

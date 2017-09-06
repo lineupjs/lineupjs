@@ -6,13 +6,14 @@ import Column from './Column';
 import {format} from 'd3';
 import NumberColumn, {
   createMappingFunction,
+  FIRST_IS_NAN,
   IMapAbleColumn,
   IMappingFunction,
   INumberColumn,
   INumberFilter,
   noNumberFilter,
-  ScaleMappingFunction,
-  numberCompare, FIRST_IS_NAN
+  numberCompare,
+  ScaleMappingFunction
 } from './NumberColumn';
 
 export const SORT_METHOD = {
@@ -29,7 +30,8 @@ export declare type SortMethod = string;
 
 export interface IBoxPlotColumn extends INumberColumn {
   getBoxPlotData(row: any, index: number): IBoxPlotData | null;
-  getDomain(): number[];
+
+  getMapping(): IMappingFunction;
 
   getRawBoxPlotData(row: any, index: number): IBoxPlotData | null;
 

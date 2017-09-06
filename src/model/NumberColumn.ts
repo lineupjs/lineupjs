@@ -34,7 +34,7 @@ export function numberCompare(a: number | null, b: number | null, aMissing = fal
   if (bMissing) {
     return FIRST_IS_NAN * -1;
   }
-  return a - b;
+  return a! - b!;
 }
 
 
