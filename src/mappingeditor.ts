@@ -3,7 +3,6 @@
  */
 
 import {behavior, event as d3event, mouse, scale, select, selectAll, Selection} from 'd3';
-import {merge} from './utils';
 import {IMappingFunction, INumberFilter, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
 import {filterMissingText} from './dialogs/AFilterDialog';
 
@@ -54,7 +53,7 @@ export default class MappingEditor {
   private _filter: { min: number, max: number };
 
   constructor(parent: HTMLElement, public scale: IMappingFunction, private readonly original: IMappingFunction, private readonly oldFilter: INumberFilter, private readonly dataPromise: Promise<number[]>, options: Partial<IMappingEditorOptions>) {
-    merge(this.options, options);
+    Object.assign(this.options, options);
     //work on a local copy
     this.scale = scale.clone();
 

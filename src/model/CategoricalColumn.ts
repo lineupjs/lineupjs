@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {ascending, scale} from 'd3';
+import {scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
@@ -321,7 +321,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     const vb = this.getValues(b, bIndex);
     //check all categories
     for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
-      const ci = ascending(va[i], vb[i]);
+      const ci = va[i].localCompare(vb[i]);
       if (ci !== 0) {
         return ci;
       }

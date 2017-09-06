@@ -18,7 +18,7 @@ import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import {INumberColumn} from '../model/NumberColumn';
-import {AEventDispatcher, debounce, merge, suffix} from '../utils';
+import {AEventDispatcher, debounce, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
 import {IGroup, IOrderedGroup} from '../model/Group';
@@ -165,7 +165,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
 
   constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
-    this.columnTypes = merge(models(), options.columnTypes || {});
+    this.columnTypes = Object.assign(models(), options.columnTypes || {});
     this.multiSelections = options.multiSelection !== false;
   }
 

@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {merge, suffix} from '../../utils';
+import {suffix} from '../../utils';
 import {nest} from 'd3';
 import Ranking, {isSupportType} from '../../model/Ranking';
 import {default as Column, IColumnDesc} from '../../model/Column';
@@ -24,7 +24,7 @@ export default class SidePanel {
   private readonly descs = new Map<IColumnDesc, SidePanelEntry>();
 
   constructor(private ctx: IRankingHeaderContext, document: Document, options: Partial<ISidePanelOptions> = {}) {
-    merge(this.options, options);
+    Object.assign(this.options, options);
 
     this.node = document.createElement('aside');
     this.node.classList.add('lu-side-panel');

@@ -2,7 +2,6 @@
  * Created by sam on 04.11.2016.
  */
 
-import {merge} from '../utils';
 import Column, {IColumnDesc} from '../model/Column';
 import Ranking from '../model/Ranking';
 import {IDataProviderOptions, IDataRow, IStatsBuilder} from './ADataProvider';
@@ -62,7 +61,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
 
   constructor(private server: IServerData, columns: IColumnDesc[] = [], options: Partial<IRemoteDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
-    merge(this.options, options);
+    Object.assign(this.options, options);
   }
 
   sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> {

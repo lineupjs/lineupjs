@@ -2,7 +2,6 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import {merge} from '../utils';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import NumberColumn from './NumberColumn';
 import StringColumn from './StringColumn';
@@ -63,7 +62,7 @@ export function defineColumn<T>(name: string, functions: any = {}) {
   }
 
   CustomColumn.prototype.toString = () => name;
-  CustomColumn.prototype = merge(CustomColumn.prototype, functions);
+  CustomColumn.prototype = Object.assign(CustomColumn.prototype, functions);
 
   return CustomColumn;
 }

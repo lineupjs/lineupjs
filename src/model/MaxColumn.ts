@@ -2,7 +2,6 @@
  * Created by sam on 04.11.2016.
  */
 
-import {max as d3max} from 'd3';
 import CompositeNumberColumn from './CompositeNumberColumn';
 
 /**
@@ -37,7 +36,7 @@ export default class MaxColumn extends CompositeNumberColumn {
   }
 
   protected compute(row: any, index: number) {
-    return d3max(this._children, (d) => d.getValue(row, index));
+    return Math.max(...this._children.map((d) => d.getValue(row, index)));
   }
 
   /**

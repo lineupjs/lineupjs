@@ -48,7 +48,7 @@ export function computeStats(arr: any[], indices: number[], acc: (row: any, inde
     max: ex[1],
     mean: d3.mean(arr, indexAccessor),
     count: arr.length,
-    maxBin: d3.max(histData, (d) => d.y),
+    maxBin: Math.max(...histData.map((d) => d.y)),
     hist: histData
   };
 }

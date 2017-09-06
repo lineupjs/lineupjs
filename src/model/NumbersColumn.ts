@@ -12,7 +12,6 @@ import {
   SORT_METHOD as BASE_SORT_METHOD,
   SortMethod
 } from './BoxPlotColumn';
-import {merge} from '../utils';
 import NumberColumn, {
   createMappingFunction,
   IMapAbleColumn,
@@ -24,7 +23,7 @@ import NumberColumn, {
 } from './NumberColumn';
 
 
-export const SORT_METHOD = merge({
+export const SORT_METHOD = Object.assign({
   mean: 'mean'
 }, BASE_SORT_METHOD);
 
@@ -95,7 +94,7 @@ export interface INumbersColumn extends INumberColumn {
 
   getDataLength(): number;
 
-  getRawColorScale(): d3.scale.Linear<string, string>;
+  getRawColorScale(): d3scale.Linear<string, string>;
 
   getThreshold(): number;
 

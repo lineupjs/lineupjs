@@ -2,7 +2,6 @@
  * Created by sam on 04.11.2016.
  */
 
-import {ascending} from 'd3';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 /**
@@ -59,6 +58,8 @@ export default class SelectionColumn extends ValueColumn<boolean> {
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return ascending(this.getValue(a, aIndex) === true, this.getValue(b, bIndex) === true);
+    const va = this.getValue(a, aIndex) === true;
+    const vb = this.getValue(b, bIndex) === true;
+    return va === vb ? 0 : (va < vb ? -1 : +1);
   }
 }

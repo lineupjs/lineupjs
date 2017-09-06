@@ -2,7 +2,6 @@
  * Created by sam on 04.11.2016.
  */
 
-import {ascending} from 'd3';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './CategoricalColumn';
@@ -114,7 +113,9 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return ascending(this.getValue(a, aIndex), this.getValue(b, bIndex));
+    const av = this.getValue(a, aIndex);
+    const bv = this.getValue(b, bIndex);
+    return av === bv ? 0 : (av < bv ? -1 : +1);
   }
 
   group(row: any, index: number) {

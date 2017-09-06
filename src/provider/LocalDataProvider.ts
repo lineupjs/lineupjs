@@ -6,8 +6,6 @@ import Column, {IColumnDesc} from '../model/Column';
 import NumberColumn, {INumberColumn} from '../model/NumberColumn';
 import Ranking from '../model/Ranking';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
-import {merge} from '../utils';
-import * as d3 from 'd3';
 import {IDataProviderOptions, IDataRow, IStatsBuilder} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 import {computeHist, computeStats} from './math';
@@ -51,7 +49,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
   constructor(private _data: any[], columns: IColumnDesc[] = [], options: Partial<ILocalDataProviderOptions & IDataProviderOptions> = {}) {
     super(columns, options);
-    merge(this.options, options);
+    Object.assign(this.options, options);
 
 
     const that = this;
