@@ -6,7 +6,6 @@
   align-items: center;
 
   > div { // wiskers + contains everything
-
     position: relative;
     border-left: 1px solid $lu_renderer_boxplot_stroke;
     border-right: 1px solid $lu_renderer_boxplot_stroke;
@@ -14,7 +13,6 @@
     max-height: 30px;
 
     &::before { // wiskers line
-
       content: '';
       position: absolute;
       top: 0;
@@ -24,7 +22,6 @@
     }
 
     > div:first-child { // box
-
       position: absolute;
       top: 10%;
       height: 80%;
@@ -33,7 +30,6 @@
     }
 
     > div:last-child { // median
-
       position: absolute;
       top: 10%;
       height: 80%;
@@ -44,6 +40,7 @@
     &[data-sort=min] {
       border-left-color: $lu_renderer_boxplot_sort_indicator;
     }
+
     &[data-sort=max] {
       border-right-color: $lu_renderer_boxplot_sort_indicator;
     }

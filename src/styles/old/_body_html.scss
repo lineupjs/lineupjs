@@ -3,6 +3,7 @@
 
 .#{$lu_css_prefix} div.#{$lu_css_prefix}-body {
   @extend %lu-renderer;
+
   font: $lu_body_font;
   position: relative;
 

@@ -16,6 +16,7 @@
 
   .#{$lu_css_prefix}-sort {
     @include fa-icon();
+
     opacity: 0;
 
     &[data-sort=asc]::before {
@@ -83,6 +84,7 @@
     .#{$lu_css_prefix}-label {
       visibility: hidden;
     }
+
     .#{$lu_css_prefix}-toolbar i:not([title='UnCollapse']),
     .#{$lu_css_prefix}-summary:not([data-summary=selection]) {
       display: none;

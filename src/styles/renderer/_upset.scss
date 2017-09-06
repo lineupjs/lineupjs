@@ -10,12 +10,10 @@
     position: absolute;
     top: 0;
     height: 50%;
-    // line
-    border-bottom: 1px solid $lu_upset_stroke;
+    border-bottom: 1px solid $lu_upset_stroke; // line
   }
 
-  // circles
-  > div:nth-child(n + 2) {
+  > div:nth-child(n + 2) {  // circles
     border-radius: 50%;
     background-color: $lu_upset_circle_color;
     opacity: $lu_upset_inactive_opacity;
