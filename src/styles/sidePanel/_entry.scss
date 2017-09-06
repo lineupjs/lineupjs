@@ -1,0 +1,82 @@
+@import '../vars';
+@import '../header/index';
+
+> article {
+  @extend %lu-header;
+
+  counter-increment: side-panel-counter;
+  background-color: #fff;
+
+  > header {
+    display: flex;
+    align-content: space-between;
+    background: $lu_side_panel_bg_color;
+    padding: 0.5em;
+    position: relative;
+    font-size: $lu_side_panel_font_size;
+
+    &::before {
+      color: #999;
+      content: counter(side-panel-counter);
+    }
+
+    .#{$lu_css_prefix}-sort {
+      width: 0.5em;
+
+      &[data-sort=asc] {
+        margin-top: 0.3em;
+      }
+
+      &[data-sort=stratify] {
+        font-size: 80%;
+        margin-top: 0.3em;
+        width: 1em;
+      }
+    }
+
+    .#{$lu_css_prefix}-label {
+      margin: 0 1em 0 0;
+      padding: 0 0 0 0.2em;
+      overflow: hidden !important;
+      cursor: pointer;
+    }
+  }
+
+  .#{$lu_css_prefix}-toolbar {
+    background: $lu_side_panel_toolbar_bg;
+    font-size: $lu_side_panel_toolbar_font_size;
+    top: 5px;
+
+    > i:hover {
+      color: #3e89db;
+    }
+  }
+
+  > .#{$lu_css_prefix}-sort-handle {
+    height: 5px;
+    background-color: white;
+
+    &.#{$lu_css_prefix}-dragover {
+      background-color: $lu_drag_over;
+    }
+  }
+
+  &:not(.#{$lu_css_prefix}-compressed):hover .#{$lu_css_prefix}-toolbar::before {
+    font-size: $lu_side_panel_toolbar_font_size - 1pt;
+  }
+
+  main.#{$lu_css_prefix}-summary {
+    margin: 0.5em;
+    height: 50px;
+    font-size: small;
+
+    &[data-summary=slider-hist] > div,
+    &[data-summary=hist] > div {
+      background: #dcdcdc;
+    }
+
+    &[data-summary=string] {
+      display: block;
+    }
+  }
+}

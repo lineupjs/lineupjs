@@ -2,7 +2,6 @@
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import Column from '../../model/Column';
-import {IRankingHeaderContext} from './RenderColumn';
 import {createNestedDesc, createStackDesc, isSupportType} from '../../model';
 import NumbersColumn from '../../model/NumbersColumn';
 import BoxPlotColumn from '../../model/BoxPlotColumn';
@@ -26,11 +25,35 @@ import {dragAble, dropAble, IDropResult} from './dnd';
 import {default as NumberColumn, isNumberColumn} from '../../model/NumberColumn';
 import Ranking from '../../model/Ranking';
 import BooleanColumn from '../../model/BooleanColumn';
-import CategoricalColumn from '../../model/CategoricalColumn';
+import CategoricalColumn, {isCategoricalColumn} from '../../model/CategoricalColumn';
 import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
-
+import createSummary from './summary';
+import {IRankingHeaderContext} from './interfaces';
 export {default as createSummary} from './summary';
 
+/**
+ * utility function to generate the tooltip text with description
+ * @param col the column
+ */
+export function toFullTooltip(col: { label: string, description?: string }) {
+  let base = col.label;
+  if (col.description != null && col.description !== '') {
+    base += `\n${col.description}`;
+  }
+  return base;
+}
+
+export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
+  node.querySelector('.lu-label')!.innerHTML = col.label;
+  node.title = toFullTooltip(col);
+  const sort = <HTMLElement>node.querySelector('.lu-sort')!;
+  const {asc, priority} = col.isSortedByMe();
+  const groupedBy = col.isGroupedBy();
+  sort.dataset.sort = asc || (groupedBy ? 'stratify' : '');
+  sort.dataset.priority = priority !== undefined ? priority : (groupedBy ? '0' : '');
+
+  createSummary(<HTMLElement>node.querySelector('.lu-summary')!, col, ctx, interactive);
+}
 
 export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
   const addIcon = (title: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
@@ -193,7 +216,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
 export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
-export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
+export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   dragAble(node, () => {
     const ref = JSON.stringify(ctx.provider.toDescRef(column.desc));
     const data: any = {
@@ -210,8 +233,10 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeader
       data
     };
   }, true);
+}
 
-  dropAble(<HTMLElement>node.querySelector('.lu-handle')!, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
+export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
+  dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
     let col: Column | null = null;
     const data = result.data;
     if (`${MIMETYPE_PREFIX}-ref` in data) {
@@ -234,7 +259,74 @@ export function handleDnD(node: HTMLElement, column: Column, ctx: IRankingHeader
     }
     return column.insertAfterMe(col) != null;
   }, null, true);
+}
 
+export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext, where: 'before'|'after', autoGroup: boolean) {
+  dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
+    let col: Column | null = null;
+    const data = result.data;
+    if (`${MIMETYPE_PREFIX}-ref` in data) {
+      const id = data[`${MIMETYPE_PREFIX}-ref`];
+      col = ctx.provider.find(id);
+      if (!col || col === column) {
+        return false;
+      }
+    } else {
+      const desc = JSON.parse(data[MIMETYPE_PREFIX]);
+      col = ctx.provider.create(ctx.provider.fromDescRef(desc));
+      if (col) {
+        column.findMyRanker()!.push(col);
+      }
+    }
+    const ranking = column.findMyRanker()!;
+    if (!col || col === column || !ranking) {
+      return false;
+    }
+
+    const criterias = ranking.getSortCriterias();
+
+    const removeFromSort = (col: Column) => {
+      const existing = criterias.findIndex((d) => d.col === col);
+      if (existing >= 0) { // remove existing column but keep asc state
+        return criterias.splice(existing, 1)[0].asc;
+      }
+      return false;
+    };
+
+    // remove the one to add
+    const asc  = removeFromSort(col);
+
+    const groupCriteria = ranking.getGroupCriteria();
+    if (autoGroup && groupCriteria === column) {
+      // before the grouping, so either ungroup or regroup
+      removeFromSort(column);
+      if (isCategoricalColumn(col)) { // we can group by it
+        criterias.unshift({asc: false, col: column}); // now a first sorting criteria
+        ranking.setGroupCriteria(col);
+      } else {
+        // no grouping -> first ranking no grouping
+        criterias.unshift({asc, col});
+        ranking.setGroupCriteria(null);
+      }
+      ranking.setSortCriterias(criterias);
+      return true;
+    }
+
+    const index = criterias.findIndex((d) => d.col === column);
+    if (index < 0) {
+      criterias.push({asc, col});
+    } else if (index === 0 && autoGroup && isCategoricalColumn(col)) {
+      // make group criteria
+      ranking.setGroupCriteria(col);
+    } else {
+      criterias.splice(index + (where === 'after' ? 1 : 0), 0, {asc, col});
+    }
+    ranking.setSortCriterias(criterias);
+    return true;
+  }, null, true);
+}
+
+export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   const resolveDrop = (result: IDropResult, numbersOnly: boolean) => {
     const data = result.data;
     const copy = result.effect === 'copy';

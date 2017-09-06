@@ -1,4 +1,4 @@
-@import "../vars";
+@import '../vars';
 
 [data-renderer=upset] {
   position: relative;
@@ -10,11 +10,11 @@
     position: absolute;
     top: 0;
     height: 50%;
-    //line
+    // line
     border-bottom: 1px solid $lu_upset_stroke;
   }
 
-  //circles
+  // circles
   > div:nth-child(n + 2) {
     border-radius: 50%;
     background-color: $lu_upset_circle_color;

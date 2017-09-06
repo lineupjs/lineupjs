@@ -216,7 +216,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.groupColumn;
   }
 
-  setGroupCriteria(col: Column) {
+  setGroupCriteria(col: Column | null) {
     return this.groupBy(col);
   }
 

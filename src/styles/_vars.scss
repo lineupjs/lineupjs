@@ -10,7 +10,7 @@ $lu_drag_over: #979797 !default;
 $lu_header_background: #6d6c6c !default;
 $lu_header_active_filter_color: darkblue !default;
 
-$lu_body_font: 10pt "Helvetica Neue", Helvetica, Arial, sans-serif !default;
+$lu_body_font: 10pt 'Helvetica Neue', Helvetica, Arial, sans-serif !default;
 $lu_body_text_hover_color: darkblue !default;
 
 $lu_slope_color: darkgray !default;
@@ -26,3 +26,8 @@ $lu_upset_inactive_opacity: 0.1 !default;
 $lu_upset_stroke: black !default;
 
 $lu_engine_grip_gap: 5px !default;
+
+$lu_side_panel_bg_color: #f0f0f0 !default;
+$lu_side_panel_toolbar_bg: white !default;
+$lu_side_panel_font_size: 14pt !default;
+$lu_side_panel_toolbar_font_size: 12pt !default;

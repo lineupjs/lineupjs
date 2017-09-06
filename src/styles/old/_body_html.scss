@@ -1,6 +1,8 @@
-@import "vars";
+@import '../vars';
+@import '../renderer/index';
 
 .#{$lu_css_prefix} div.#{$lu_css_prefix}-body {
+  @extend %lu-renderer;
   font: $lu_body_font;
   position: relative;
 
@@ -144,6 +146,4 @@
       text-overflow: ellipsis;
     }
   }
-
-  @import './renderer/index';
 }

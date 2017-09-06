@@ -1,152 +1,38 @@
 @import '../vars';
-@import '~font-awesome/scss/variables';
-@import '~font-awesome/scss/mixins';
+@import '../header/index';
 
-*[draggable] {
+/**
+  needs to be the full path without any super import otherwise the @extend won't work properly
+ */
+.lineup-engine > header section {
+  @extend %lu-header;
+
   cursor: pointer;
-  cursor: -moz-grab;
-  cursor: -webkit-grab; // indicate grab able
-}
-
-section {
   text-align: center;
   color: white;
   overflow: hidden;
   background: #c1c1c1;
-  position: relative;
   margin-right: -$lu_engine_grip_gap;
-  cursor: pointer;
-  user-select: none;
-
-  @import '../toolbar';
 
   > .#{$lu_css_prefix}-label {
     padding-left: 0.8em;
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
+    margin-right: $lu-engine_grip_gap;
   }
 
   > .#{$lu_css_prefix}-sort {
-    @include fa-icon();
-
     position: absolute;
     left: 1px;
     top: 1px;
     font-size: $lu_toolbar_font_size;
-    opacity: 0;
-
-    &[data-sort=asc]::before {
-      content: $fa-var-sort-asc;
-    }
-
-    &[data-sort=desc]::before {
-      content: $fa-var-sort-desc;
-    }
-
-    &[data-priority] {
-      opacity: 0.2;
-    }
-
-    &[data-priority='0'] {
-      opacity: 1;
-    }
-
-    &[data-priority='1'] {
-      opacity: 0.9;
-    }
-
-    &[data-priority='2'] {
-      opacity: 0.7;
-    }
-
-    &[data-priority='3'] {
-      opacity: 0.6;
-    }
-
-    &[data-priority='4'] {
-      opacity: 0.5;
-    }
-
-    &[data-priority='5'] {
-      opacity: 0.4;
-    }
-  }
-
-
-
-  &.#{$lu_css_prefix}-dragging {
-    opacity: 0.5;
   }
 
   &.#{$lu_css_prefix}-dragover::after {
-    content: '+';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-    pointer-events: none;
     background: $lu_drag_over;
-  }
-
-  &.#{$lu_css_prefix}-compressed {
-    > .#{$lu_css_prefix}-toolbar i:not([title='UnCollapse']),
-    > .#{$lu_css_prefix}-label,
-    > .#{$lu_css_prefix}-summary {
-      display: none;
-    }
-
-    &:hover {
-      > .#{$lu_css_prefix}-toolbar {
-        display: block;
-      }
-    }
   }
 
   > .#{$lu_css_prefix}-summary {
     height: 2em;
-    position: relative;
-    display: none;
     margin-right: $lu-engine_grip_gap;
-
-    &[data-summary=hist],
-    &[data-summary=interactive-hist] {
-      display: flex;
-      align-items: flex-end;
-      font-size: x-small;
-
-      > * {
-        flex: 1 1 auto;
-        position: relative;
-        background: rgba(255, 255, 255, 0.5);
-        margin: 0 2px;
-        display: flex;
-        flex-direction: row;
-        align-items: flex-end;
-
-        &[data-filtered=filtered] {
-          opacity: 0.2;
-        }
-
-        > .lu-selected {
-          flex: 1 1 auto;
-          background-color: $lu_selected_color;
-          border-radius: 5px 5px 0 0;
-        }
-      }
-    }
-
-    &[data-summary=interactive-hist] {
-      > * {
-        cursor: pointer;
-      }
-    }
   }
 
   > .#{$lu_css_prefix}-handle {

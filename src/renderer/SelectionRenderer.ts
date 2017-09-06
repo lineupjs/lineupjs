@@ -44,14 +44,14 @@ export default class SelectionRenderer implements ICellRendererFactory {
         const selected = rows.reduce((act, r) => col.getValue(r.v, r.dataIndex) ? act + 1 : act, 0);
         const all = selected >= rows.length / 2;
         if (all) {
-          n.classList.add('groupSelected');
+          n.classList.add('lu-group-selected');
         } else {
-          n.classList.remove('groupSelected');
+          n.classList.remove('lu-group-selected');
         }
         n.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          const value = n.classList.toggle('groupSelected');
+          const value = n.classList.toggle('lu-group-selected');
           rows.forEach((row) => {
             col.setValue(row.v, row.dataIndex, value);
           });

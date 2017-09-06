@@ -1,4 +1,4 @@
-@import "vars";
+@import '../vars';
 
 .#{$lu_css_prefix}-pool {
   div.header {
@@ -13,11 +13,6 @@
 
 .#{$lu_css_prefix},
 .#{$lu_css_prefix}-pool {
-  *[draggable] {
-    cursor: pointer;
-    cursor: -moz-grab;
-    cursor: -webkit-grab; // indicate grab able
-  }
 
   div.#{$lu_css_prefix}-header,
   div.#{$lu_css_prefix}-pool {
@@ -138,7 +133,7 @@
         }
       }
 
-      @import './toolbar';
+      @import '../header/toolbar';
 
       &.string {
         div.summary {

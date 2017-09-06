@@ -344,7 +344,7 @@ export default class Column extends AEventDispatcher {
 
   /**
    * triggers that the ranking is sorted by this column
-   * @param ascending acending order?
+   * @param ascending ascending order?
    * @returns {boolean} was successful
    */
   sortByMe(ascending = false) {

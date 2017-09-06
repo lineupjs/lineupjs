@@ -1,8 +1,8 @@
-@import './vars';
+@import '../vars';
 @import '~font-awesome/scss/variables';
 @import '~font-awesome/scss/mixins';
 
-> .#{$lu_css_prefix}-toolbar {
+.#{$lu_css_prefix}-toolbar {
   display: none;
   position: absolute;
   text-align: right;
@@ -52,13 +52,9 @@
       content: $fa-var-filter;
     }
 
-    &[title='Stratify By'],
-    &[title='Stratify By Threshold'] {
-      @include fa-icon-rotate(270deg, 3);
-
-      &::before {
-        content: $fa-var-columns;
-      }
+    &[title='Stratify By']::before,
+    &[title='Stratify By Threshold']::before {
+      content: $fa-var-window-maximize;
     }
 
     &[title='Set Cut Off']::before {
@@ -96,7 +92,7 @@
 }
 
 &:not(.#{$lu_css_prefix}-compressed):hover {
-  > .#{$lu_css_prefix}-toolbar {
+  .#{$lu_css_prefix}-toolbar {
     display: block;
     padding: 7px;
 
@@ -112,7 +108,7 @@
 
       z-index: -1;
       content: $fa-var-bars;
-      font-size: 7pt;
+      font-size: $lu_toolbar_font_size - 1pt;
       padding: 1px 2px 1px 1px;
       position: absolute;
       top: 0;
@@ -136,15 +132,15 @@
 }
 
 &.compressed:hover {
-  > div.toolbar {
+  div.toolbar {
     display: block;
   }
 }
 
-&.filtered > .#{$lu_css_prefix}-toolbar i[title='Filter'] {
+&.filtered .#{$lu_css_prefix}-toolbar i[title='Filter'] {
   color: $lu_header_active_filter_color;
 }
 
-&.grouped > .#{$lu_css_prefix}-toolbar i[title='Stratify By'] {
+&.grouped .#{$lu_css_prefix}-toolbar i[title='Stratify By'] {
   color: $lu_header_active_filter_color;
 }

@@ -15,10 +15,10 @@ import {createDesc as createNestedDesc} from '../model/NestedColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import {IFilterDialog} from '../dialogs/AFilterDialog';
 import SelectionColumn from '../model/SelectionColumn';
-import {IRankingHeaderContext, toFullTooltip} from './engine/RenderColumn';
-import {createToolbarImpl, MIMETYPE_PREFIX} from './engine/header';
+import {createToolbarImpl, MIMETYPE_PREFIX, toFullTooltip} from './engine/header';
 import {defaultConfig, dummyRankingButtonHook} from '../config';
 import ADialog from '../dialogs/ADialog';
+import {IRankingHeaderContext} from './engine/interfaces';
 
 export interface IRankingHook {
   ($node: d3.Selection<Ranking>): void;

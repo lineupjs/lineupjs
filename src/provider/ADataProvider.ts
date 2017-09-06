@@ -82,8 +82,10 @@ export interface IDataProviderOptions {
   multiSelection: boolean;
 }
 
-export interface IDataProvider {
+export interface IDataProvider extends AEventDispatcher {
   takeSnapshot(col: Column): void;
+
+  selectAllOf(ranking: Ranking): void;
 
   setSelection(dataIndices: number[]): void;
 
@@ -108,6 +110,10 @@ export interface IDataProvider {
   mappingSample(col: Column): Promise<number[]> | number[];
 
   searchAndJump(search: string | RegExp, col: Column): void;
+
+  getRankings(): Ranking[];
+  getLastRanking(): Ranking;
+  getColumns(): IColumnDesc[];
 }
 
 
@@ -681,6 +687,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       this.selection.add(index);
     });
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
+  }
+
+  selectAllOf(ranking: Ranking) {
+    this.setSelection(ranking.getOrder());
   }
 
   /**

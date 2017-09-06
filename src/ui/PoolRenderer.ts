@@ -7,7 +7,7 @@ import {merge, suffix} from '../utils';
 import {Column, IColumnDesc, isNumberColumn} from '../model';
 import DataProvider from '../provider/ADataProvider';
 import Ranking from '../model/Ranking';
-import {toFullTooltip} from './engine/RenderColumn';
+import {toFullTooltip} from './engine/header';
 
 class PoolEntry {
   used: number = 0;
