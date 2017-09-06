@@ -39,6 +39,8 @@
 }
 
 &[data-summary=interactive-hist] {
+  margin-bottom: 1em;
+
   > * {
     cursor: pointer;
   }
