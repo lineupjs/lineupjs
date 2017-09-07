@@ -111,7 +111,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   update() {
     // TODO support multiple rankings connected with slopegraphs
-    const ranking = this.data.getLastRanking();
+    const ranking = this.data.getRankings()[0];
     const groups = ranking.getGroups();
 
     const order = ranking.getOrder();
