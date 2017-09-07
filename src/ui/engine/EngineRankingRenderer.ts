@@ -5,6 +5,10 @@ import {ACellRenderer, ICellRenderContext, nonUniformContext} from 'lineupengine
 import RenderColumn from './RenderColumn';
 import {IRankingContext} from './interfaces';
 import {IExceptionContext} from 'lineupengine/src/logic';
+import MultiLevelRenderColumn from './MultiLevelRenderColumn';
+import {debounce} from '../../utils';
+import StackColumn from '../../model/StackColumn';
+import Column from '../../model/Column';
 
 export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
   protected _context: ICellRenderContext<RenderColumn>;
@@ -21,11 +25,17 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
   }
 
   protected createHeader(document: Document, column: RenderColumn) {
+    if (column instanceof MultiLevelRenderColumn) {
+      column.updateWidthRule(this.style);
+    }
     return column.createHeader(document, this.ctx);
   }
 
-  protected updateHeader(node: HTMLElement, column: RenderColumn, ...args: any[]) {
-    return column.updateHeader(node, this.ctx, ...args);
+  protected updateHeader(node: HTMLElement, column: RenderColumn) {
+    if (column instanceof MultiLevelRenderColumn) {
+      column.updateWidthRule(this.style);
+    }
+    return column.updateHeader(node, this.ctx);
   }
 
   protected createCell(document: Document, index: number, column: RenderColumn) {
@@ -43,9 +53,13 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     super.updateHeaders();
   }
 
-  updateHeaderOf(col: RenderColumn, i: number) {
+  updateHeaderOf(i: number) {
     const node = <HTMLElement>this.header.children[i]!;
-    this.updateHeader(node, col, true);
+    const column = this._context.columns[i];
+    if (column instanceof MultiLevelRenderColumn) {
+      column.updateWidthRule(this.style);
+    }
+    this.updateHeader(node, column);
   }
 
   protected createRow(node: HTMLElement, rowIndex: number, ...extras: any[]): void {
@@ -125,10 +139,39 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     }, true);
   }
 
+  getStyleManager() {
+    return this.style;
+  }
+
   updateColumnWidths() {
     const context = this.context;
     this.style.update(context.defaultRowHeight, context.columns, context.column.defaultRowHeight);
     //no data update needed since just width changed
+    context.columns.forEach((column) => {
+      if (column instanceof MultiLevelRenderColumn) {
+        column.updateWidthRule(this.style);
+      }
+    });
+  }
+
+  private updateColumn(index: number) {
+    const column = this._context.columns[index];
+    this.forEachRow((row, rowIndex) => {
+      this.updateCell(<HTMLElement>row.children[index], rowIndex, column);
+    });
+  }
+
+  destroy() {
+    this.root.remove();
+
+    this._context.columns.forEach((c) => {
+      c.c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
+      if (!(c instanceof MultiLevelRenderColumn)) {
+        return;
+      }
+      c.c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
+      c.c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
+    });
   }
 
   render(columns: RenderColumn[], rowContext: IExceptionContext) {
@@ -137,6 +180,19 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
       column: nonUniformContext(columns.map((w) => w.width), 100),
       htmlId: `#${this.id}`
     }, rowContext);
+
+    columns.forEach((c, i) => {
+      c.c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
+        this.updateColumnWidths();
+      });
+      if (!(c instanceof MultiLevelRenderColumn)) {
+        return;
+      }
+      c.c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
+        c.updateWidthRule(this.getStyleManager());
+      });
+      c.c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounce(() => this.updateColumn(i), 25));
+    });
 
     if (this.initialized) {
       super.recreate();

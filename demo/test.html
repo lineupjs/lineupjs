@@ -48,7 +48,7 @@
   (function () {
     const arr = [
       {a: 10, b: 20, c: 30, d: 'Row1', e: false, l: {alt: 'Google', href: 'https://google.com'}, cat: 'c2'},
-      {a: 5, b: 14, c: 2, d: 'Row2', e: true, l: {alt: 'ORF', href: 'https://orf.at'}, cat: 'c3'},
+      {a: 100, b: 100, c: 50, d: 'Row2', e: true, l: {alt: 'ORF', href: 'https://orf.at'}, cat: 'c3'},
       {a: 2, b: 7, c: 100, d: 'Row3', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
       {
         a: 7,
@@ -63,9 +63,9 @@
       {a: NaN, b: '', c: 30, d: '', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'}];
     const desc = [
       {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
-      {label: 'A', type: 'number', column: 'a', 'domain': [0, 10]},
-      {label: 'B', type: 'number', column: 'b', 'domain': [0, 30]},
-      {label: 'C', type: 'number', column: 'c', 'domain': [0, 120], color: 'green'},
+      {label: 'A', type: 'number', column: 'a', 'domain': [0, 100], color: 'red'},
+      {label: 'B', type: 'number', column: 'b', 'domain': [0, 100], color: 'blue'},
+      {label: 'C', type: 'number', column: 'c', 'domain': [0, 100], color: 'green'},
       {label: 'L', type: 'link', column: 'l'},
       {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
       {
@@ -105,11 +105,12 @@
 
       r.push((function () {
         const rstack = p.create(LineUpJS.model.createStackDesc('Stack'));
+        rstack.setWidth(400);
         rstack.push(p.create(desc[1]));
         rstack.push(p.create(desc[2]));
         rstack.push(p.create(desc[3]));
         rstack.push(lazy);
-        rstack.setWeights([0.2, 0.4, 0.1]);
+        rstack.setWeights([0.3, 0.3, 0.3, 0.1]);
         return rstack;
       })());
 

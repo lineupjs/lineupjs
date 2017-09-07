@@ -12,13 +12,15 @@ import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {IMultiLevelColumn} from '../model/CompositeColumn';
 import Column from '../model/Column';
 
+export function gridClass(column: Column) {
+  return `lu-stacked-${column.id}`;
+}
 
 export function createData(col: IMultiLevelColumn & Column, context: IRenderContext<any, any>, nestingPossible: boolean) {
   const stacked = nestingPossible && context.option('stacked', true);
   const padding = context.option('columnPadding', 0);
   let offset = 0;
-  const total = col.getActualWidth();
-  return col.children.map((d) => {
+  const cols = col.children.map((d) => {
     const shift = offset;
     const width = d.getActualWidth();
     offset += width;
@@ -27,12 +29,11 @@ export function createData(col: IMultiLevelColumn & Column, context: IRenderCont
       column: d,
       shift,
       width,
-      stacked,
-      weight: width / total,
       renderer: context.renderer(d),
       groupRenderer: context.groupRenderer(d)
     };
   });
+  return {cols, stacked, padding};
 }
 
 /**
@@ -44,10 +45,10 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
   }
 
   createDOM(col: IMultiLevelColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
-    const cols = createData(col, context, this.nestingPossible);
-    const padding = context.option('columnPadding', 0);
+    const {cols, stacked, padding} = createData(col, context, this.nestingPossible);
+    const useGrid = context.option('useGridLayout', false);
     return {
-      template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
+      template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)} ${useGrid ? gridClass(col): ''}${useGrid && !stacked ? ' lu-grid-space': ''}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
         if (col.isMissing(d.v, d.dataIndex)) {
           // everything is missing or at least a part of it
@@ -58,23 +59,29 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         n.classList.remove('lu-missing');
 
         const children = <HTMLElement[]>Array.from(n.children);
-        let previous = 0;
+        const total = col.getActualWidth();
+        let missingWeight = 0;
         cols.forEach((col, ci) => {
+          const weight = col.column.getActualWidth() / total;
           const cnode = children[ci];
-          cnode.style.width = `${round(col.weight * 100, 2)}%`;
-          cnode.style.marginRight = col.stacked ? null : `${padding}px`;
-          cnode.style.marginLeft = col.stacked ? `-${round(previous * 100, 2)}%` : null;
+          cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)`: null;
+          if (!useGrid) {
+            cnode.style.width = `${round(weight * 100, 2)}%`;
+            cnode.style.marginRight = stacked ? null : `${padding}px`;
+          }
           col.renderer.update(cnode, d, i, group);
-          if (col.stacked) {
-            previous = col.weight * (1 - col.column.getValue(d.v, d.dataIndex));
+          if (stacked) {
+            missingWeight += (1 - col.column.getValue(d.v, d.dataIndex)) * weight;
           }
         });
       }
     };
   }
 
+
+
   createCanvas(col: StackColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const cols = createData(col, context, this.nestingPossible);
+    const {cols, stacked} = createData(col, context, this.nestingPossible);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number, group: IGroup) => {
       if (col.isMissing(d.v, d.dataIndex)) {
         // everything is missing or at least a part of it
@@ -87,7 +94,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         ctx.translate(shift, 0);
         col.renderer(ctx, d, i, dx + shift, dy, group);
         ctx.translate(-shift, 0);
-        if (col.stacked) {
+        if (stacked) {
           stackShift += col.width * (1 - col.column.getValue(d.v, d.dataIndex));
         }
       });

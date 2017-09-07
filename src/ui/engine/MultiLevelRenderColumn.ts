@@ -7,6 +7,8 @@ import {IRankingContext} from './interfaces';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import {IMultiLevelColumn} from '../../model/CompositeColumn';
 import {round} from '../../utils';
+import {isEdge, StyleManager} from 'lineupengine/src/style';
+import {gridClass} from '../../renderer/MultiLevelCellRenderer';
 
 
 export default class MultiLevelRenderColumn extends RenderColumn {
@@ -27,6 +29,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
 
     const wrapper = document.createElement('div');
     wrapper.classList.add('lu-nested');
+    wrapper.classList.add(gridClass(this.c));
     node.appendChild(wrapper);
     const mc = this.mc;
     if (mc.getCollapsed() || mc.getCompressed()) {
@@ -42,36 +45,36 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     return node;
   }
 
-  updateHeader(node: HTMLElement, ctx: IRankingContext, widthsOnly: boolean = false) {
-    const wrapper = <HTMLElement>node.querySelector('.lu-nested');
-    if (widthsOnly && wrapper) {
-      this.updateNested(wrapper, ctx, true);
-      return;
-    }
-
+  updateHeader(node: HTMLElement, ctx: IRankingContext) {
     super.updateHeader(node, ctx);
+    const wrapper = <HTMLElement>node.querySelector('.lu-nested');
     if (!wrapper) {
       return; // too early
     }
     this.updateNested(wrapper, ctx);
   }
 
-  private updateNested(wrapper: HTMLElement, ctx: IRankingContext, widthsOnly: boolean = false) {
+  updateWidthRule(style: StyleManager) {
+    const mc = this.mc;
+    const total = this.width;
+    const widths = mc.children.map((c) => `${round(100 * c.getActualWidth() / total, 2)}%`);
+    const clazz = gridClass(this.c);
+    style.updateRule(`stacked-${this.c.id}`, `.lineup-engine .${clazz} {
+      display: ${isEdge ? '-ms-grid' : 'grid'};
+      ${isEdge ? '-ms-grid-columns' : 'grid-template-columns'}: ${widths.join(' ')};
+    }`);
+    return clazz;
+  }
+
+  private updateNested(wrapper: HTMLElement, ctx: IRankingContext) {
     const mc = this.mc;
     if (mc.getCollapsed() || mc.getCompressed()) {
       return;
     }
-    // TODO change changes
     const sub = this.mc.children;
     const children = <HTMLElement[]>Array.from(wrapper.children);
-    const total = this.width;
-
     sub.forEach((c, i) => {
       const node = children[i];
-      node.style.width = `${round(100 * c.getActualWidth() / total, 2)}%`;
-      if (widthsOnly) {
-        return;
-      }
       node.className = `${c.cssClass ? ` ${c.cssClass}` : ''}${this.c.headerCssClass}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
       updateHeader(node, c, ctx);
     });

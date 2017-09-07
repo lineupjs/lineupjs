@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, debounce, findOption, IEventContext} from '../../utils';
+import {AEventDispatcher, debounce, findOption} from '../../utils';
 import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
@@ -44,7 +44,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       linkTemplates: this.options.header.linkTemplates!,
       autoRotateLabels: this.options.header.autoRotateLabels!,
       searchAble: this.options.header.searchAble!,
-      option: findOption(this.options.body),
+      option: findOption(Object.assign({useGridLayout: true}, this.options.body)),
       statsOf: (col: Column) => {
         const r = this.histCache.get(col.id);
         if (r == null || r instanceof Promise) {
@@ -72,23 +72,27 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   }
 
   changeDataStorage(data: DataProvider) {
-    this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
-    this.data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, null);
-    this.data.on(`${DataProvider.EVENT_DIRTY}.body`, null);
+    this.takeDownProvider();
 
     this.data = data;
     this.ctx.provider = data;
 
-    this.initProvider(data);
+     this.initProvider(data);
+  }
+
+  private takeDownProvider() {
+    this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
+    this.data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, null);
+    this.data.on(`${DataProvider.EVENT_DIRTY}.body`, null);
   }
 
   private initProvider(data: DataProvider) {
     const that = this;
-
     data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.renderer.updateSelection(data.getSelection()));
     data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, () => this.updateHist());
     data.on(`${DataProvider.EVENT_DIRTY}.body`, debounce(function (this: { primaryType: string }) {
       if (this.primaryType !== Column.EVENT_WIDTH_CHANGED && this.primaryType !== StackColumn.EVENT_WEIGHTS_CHANGED) {
+        console.log('update');
         that.update();
       }
     }));
@@ -171,19 +175,6 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       this.updateHist();
     }
 
-    const that = this;
-    cols.forEach((c, i) => {
-      c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, function(this: IEventContext) {
-        that.renderer.updateColumnWidths();
-      });
-      if (!isMultiLevelColumn(c)) {
-        return;
-      }
-      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, function(this: IEventContext) {
-        that.renderer.updateHeaderOf(columns[i], i);
-      });
-    });
-
     const rowContext = nonUniformContext(this.ctx.data.map((d) => isGroup(d) ? this.options.body.groupHeight! : this.options.body.rowHeight!), this.options.body.rowHeight!);
 
     this.renderer.render(columns, rowContext);
@@ -201,7 +192,9 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   }
 
   destroy() {
-    // TODO
+    this.takeDownProvider();
+    this.renderer.destroy();
+    this.node.remove();
   }
 
   scrollIntoView(_index: number) {
