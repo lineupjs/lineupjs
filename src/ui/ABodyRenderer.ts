@@ -117,7 +117,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   histCache = new Map<string, Promise<IStatistics | ICategoricalStatistics> | IStatistics | ICategoricalStatistics | null>();
 
-  constructor(protected data: DataProvider, parent: Element, _slicer: ISlicer, root: string, options: Partial<IBodyRendererOptions> = {}) {
+  constructor(protected data: DataProvider, parent: Element, private readonly slicer: ISlicer, root: string, options: Partial<IBodyRendererOptions> = {}) {
     super();
     //merge options
     merge(this.options, options);
@@ -219,9 +219,11 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
    */
   update(reason = ERenderReason.DIRTY) {
     const rankings = this.data.getRankings();
+    const singleGroup = rankings.every((d) => d.getGroups().length <= 1);
     const height = d3.max(rankings, (d) => d3.sum(d.getGroups(), (g) => this.showAggregatedGroup(d, g) ? this.options.groupHeight : this.options.rowHeight * g.order.length)) || 0;
     //TODO slicing doesn't work for multiple groups
-    const visibleRange = {from: 0, to: +Infinity}; // TODO this.slicer(0, maxElems, (i) => i * this.options.rowHeight);
+    const totalNumberOfRows = d3.max(rankings, (d) => d3.sum(d.getGroups(), (g) => g.order.length));
+    const visibleRange = singleGroup ? this.slicer(0, totalNumberOfRows, (i) => i * this.options.rowHeight) : {from: 0, to: +Infinity};
 
     const orderSlicer = (order: number[]) => {
       if (visibleRange.from === 0 && order.length <= visibleRange.to) {
@@ -230,7 +232,6 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
       return order.slice(visibleRange.from, Math.min(order.length, visibleRange.to));
     };
 
-    const totalNumberOfRows = d3.max(rankings, (d) => d3.sum(d.getGroups(), (g) => g.order.length));
     const context = this.createContextImpl(visibleRange.from, totalNumberOfRows);
     //ranking1:group1, ranking1:group2, ranking2:group1, ...
     const orders = (<number[][]>[]).concat(...rankings.map((r) => r.getGroups().map((group) => orderSlicer(group.order))));

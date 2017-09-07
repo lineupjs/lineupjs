@@ -85,6 +85,11 @@ export interface IDataProviderOptions {
    * default: true
    */
   multiSelection: boolean;
+
+  /**
+   *  enables grouping / stratification features
+   */
+  grouping: boolean;
 }
 
 export interface IDataProvider extends AEventDispatcher {
@@ -164,11 +169,13 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   readonly columnTypes: { [columnType: string]: typeof Column };
 
   private readonly multiSelections: boolean;
+  private readonly groupings: boolean;
 
   constructor(options: Partial<IDataProviderOptions> = {}) {
     super();
     this.columnTypes = Object.assign(models(), options.columnTypes || {});
     this.multiSelections = options.multiSelection !== false;
+    this.groupings = options.grouping === true;
   }
 
   /**
@@ -202,6 +209,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   pushRanking(existing?: Ranking): Ranking {
 
     const r = this.cloneRanking(existing);
+    if (!this.groupings) {
+      r.setMaxGroupColumns(0);
+    }
 
     this.insertRanking(r);
     return r;
