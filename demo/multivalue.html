@@ -65,7 +65,7 @@ window.onload = function () {
       accessor: (row) => row[groups[0]].map((d) => d >= 0)
     });
 
-    const p = new LineUpJS.provider.LocalDataProvider(data, desc);
+    const p = LineUpJS.createLocalStorage(data, desc);
     p.deriveDefault();
 
     const lineup = LineUpJS.create(p, document.body, {

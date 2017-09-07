@@ -86,7 +86,7 @@ window.onload = function () {
         {column: 'World Share (%)', type: 'number', domain: [0, 18.5]}
         ];
 
-    const p = new LineUpJS.provider.LocalDataProvider(data, desc);
+    const p = LineUpJS.createLocalStorage(data, desc);
     p.deriveDefault();
     p.getLastRanking().insert(p.create(LineUpJS.model.createSelectionDesc()), 1);
 

@@ -76,7 +76,7 @@
         }
         visit('', hierarchy);
         const data = [];
-        for (var i = 0 ; i < leaves.length * 3; i++) {
+        for (let i = 0 ; i < leaves.length * 3; i++) {
             data.push({ a: 'Row' + i, c: i, b: leaves[i % leaves.length]});
         }
 
@@ -86,7 +86,7 @@
             {label: 'B', type: 'hierarchy', column: 'b', hierarchy: hierarchy}
         ];
 
-        const p = new LineUpJS.provider.LocalDataProvider(data, desc);
+        const p = LineUpJS.createLocalStorage(data, desc);
         p.deriveDefault();
 
         const lineup = LineUpJS.create(p, document.body, {

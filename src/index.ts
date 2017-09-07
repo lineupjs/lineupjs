@@ -8,7 +8,8 @@ import * as model_ from './model';
 import * as provider_ from './provider';
 import * as renderer_ from './renderer/index';
 import * as ui_ from './ui';
-import LineUp from './lineup';
+import {Selection} from 'd3';
+import LineUp, {ILineUpConfig} from './lineup';
 
 export {deriveColors} from './lineup';
 export {deriveColumnDescriptions} from './provider';
@@ -36,11 +37,11 @@ export const ui = ui_;
  * @param options
  * @returns {LocalDataProvider}
  */
-export function createLocalStorage(data: any[], columns: model_.IColumnDesc[], options = {}) {
+export function createLocalStorage(data: any[], columns: model_.IColumnDesc[], options: Partial<provider_.ILocalDataProviderOptions> = {}) {
   return new provider_.LocalDataProvider(data, columns, options);
 }
 
-export function create(data: provider_.DataProvider, container: d3.Selection<any> | Element, config: any = {}) {
+export function create(data: provider_.DataProvider, container: Selection<any> | Element, config: Partial<ILineUpConfig> = {}) {
   return new LineUp(container, data, config);
 }
 

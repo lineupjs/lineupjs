@@ -58,7 +58,7 @@
       {label: 'Lazy', type: 'number', column: 'a', 'domain': [0, 10], lazyLoaded: true}
     ];
 
-    const p = new LineUpJS.provider.LocalDataProvider(arr, desc);
+    const p = new LineUpJS.createLocalStorage(arr, desc);
     const lazy = p.create(desc[0]);
     {
       const r = p.pushRanking();
@@ -94,7 +94,7 @@
     instance.update();
 
     // create animation in canvas case through regular updates
-    var update = setInterval(instance.update.bind(instance), 200);
+    const update = setInterval(instance.update.bind(instance), 200);
     // load in 5 sec
     setTimeout(function () {
       p.rankings.forEach((ranking) => {
