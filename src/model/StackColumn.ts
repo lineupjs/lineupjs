@@ -6,6 +6,7 @@ import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColu
 import {IMultiLevelColumn} from './CompositeColumn';
 import Column, {IFlatColumn} from './Column';
 import {isNumberColumn} from './NumberColumn';
+import {similar} from '../utils';
 
 /**
  * factory for creating a description creating a stacked column
@@ -23,6 +24,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   static readonly EVENT_COLLAPSE_CHANGED = 'collapseChanged';
   static readonly EVENT_WEIGHTS_CHANGED = 'weightsChanged';
   static readonly COLLAPSED_RENDERER = 'number';
+  static readonly EVENT_MULTI_LEVEL_CHANGED = 'nestedChildRatio';
 
   private readonly adaptChange: (old: number, newValue: number) => void;
 
@@ -60,7 +62,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   }
 
   protected createEventList() {
-    return super.createEventList().concat([StackColumn.EVENT_COLLAPSE_CHANGED, StackColumn.EVENT_WEIGHTS_CHANGED]);
+    return super.createEventList().concat([StackColumn.EVENT_COLLAPSE_CHANGED, StackColumn.EVENT_WEIGHTS_CHANGED, StackColumn.EVENT_MULTI_LEVEL_CHANGED]);
   }
 
   setCollapsed(value: boolean) {
@@ -147,7 +149,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
    * @param newValue
    */
   private adaptWidthChange(col: Column, oldValue: number, newValue: number) {
-    if (oldValue === newValue) {
+    if (similar(oldValue, newValue, 0.5)) {
       return;
     }
     const bak = this.getWeights();
@@ -168,7 +170,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     //adapt width if needed
     super.setWidth(widths.reduce((a, b) => a + b, 0));
 
-    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getWeights());
+    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, StackColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getWeights());
   }
 
   getWeights() {
@@ -199,7 +201,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     this._children.forEach((c, i) => {
       c.setWidthImpl(weights[i]);
     });
-    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, weights);
+    this.fire([StackColumn.EVENT_WEIGHTS_CHANGED, StackColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, weights);
 
   }
 

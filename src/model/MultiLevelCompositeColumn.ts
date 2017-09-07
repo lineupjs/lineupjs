@@ -6,9 +6,11 @@ import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn} from './Composit
 import Column, {IColumnDesc, IFlatColumn} from './Column';
 import StackColumn from './StackColumn';
 import {isNumberColumn} from './NumberColumn';
+import {similar} from '../utils';
 
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
+  static readonly EVENT_MULTI_LEVEL_CHANGED = StackColumn.EVENT_MULTI_LEVEL_CHANGED;
 
   private readonly adaptChange: (old: number, newValue: number) => void;
 
@@ -28,7 +30,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
   }
 
   protected createEventList() {
-    return super.createEventList().concat([MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED]);
+    return super.createEventList().concat([MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED, MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED]);
   }
 
   setCollapsed(value: boolean) {
@@ -76,10 +78,13 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
    * @param newValue
    */
   private adaptWidthChange(oldValue: number, newValue: number) {
-    if (oldValue === newValue) {
+    if (similar(oldValue, newValue, 0.5)) {
       return;
     }
-    super.setWidth(this.getWidth() + (newValue - oldValue));
+    const act = this.getWidth();
+    const next = act + (newValue - oldValue);
+    this.fire([MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], act, next);
+    super.setWidth(next);
   }
 
   removeImpl(child: Column) {
@@ -89,11 +94,15 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
   }
 
   setWidth(value: number) {
-    const factor = this.length / this.getWidth();
+    const act = this.getWidth();
+    const factor = this.length / act;
     this._children.forEach((child) => {
       //disable since we change it
       child.setWidthImpl(child.getWidth() * factor);
     });
+    if (!similar(act, value, 0.5)) {
+      this.fire([MultiLevelCompositeColumn.EVENT_MULTI_LEVEL_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], act, value);
+    }
     super.setWidth(value);
   }
 

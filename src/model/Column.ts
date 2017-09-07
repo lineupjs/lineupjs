@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import {AEventDispatcher} from '../utils';
+import {AEventDispatcher, similar} from '../utils';
 import Ranking from './Ranking';
 import {defaultGroup} from './Group';
 
@@ -306,7 +306,7 @@ export default class Column extends AEventDispatcher {
   }
 
   setWidth(value: number) {
-    if (this.width === value) {
+    if (similar(this.width, value, 0.5)) {
       return;
     }
     this.fire([Column.EVENT_WIDTH_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.width, this.width = value);

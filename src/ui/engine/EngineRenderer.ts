@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, debounce, findOption} from '../../utils';
+import {AEventDispatcher, debounce, findOption, IEventContext} from '../../utils';
 import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
@@ -160,6 +160,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       const single = createDOM(c, this.options.renderers, this.ctx);
       const group = createDOMGroup(c, this.options.renderers, this.ctx);
       const renderers = {single, group, singleId: c.getRendererType(), groupId: c.getGroupRenderer()};
+
       if (isMultiLevelColumn(c)) {
         return new MultiLevelRenderColumn(c, renderers, i, columnPadding);
       }
@@ -170,9 +171,18 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       this.updateHist();
     }
 
-    cols.forEach((c) => c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
-      this.renderer.updateColumnWidths();
-    }));
+    const that = this;
+    cols.forEach((c, i) => {
+      c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, function(this: IEventContext) {
+        that.renderer.updateColumnWidths();
+      });
+      if (!isMultiLevelColumn(c)) {
+        return;
+      }
+      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, function(this: IEventContext) {
+        that.renderer.updateHeaderOf(columns[i], i);
+      });
+    });
 
     const rowContext = nonUniformContext(this.ctx.data.map((d) => isGroup(d) ? this.options.body.groupHeight! : this.options.body.rowHeight!), this.options.body.rowHeight!);
 

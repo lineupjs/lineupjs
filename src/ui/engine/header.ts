@@ -213,6 +213,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
     evt.stopPropagation();
     evt.preventDefault();
     const end = evt.clientX;
+    node.classList.remove('lu-change-width');
 
     ueberElement.removeEventListener('mousemove', mouseMove);
     ueberElement.removeEventListener('mouseup', mouseUp);

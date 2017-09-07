@@ -24,8 +24,8 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     return column.createHeader(document, this.ctx);
   }
 
-  protected updateHeader(node: HTMLElement, column: RenderColumn) {
-    return column.updateHeader(node, this.ctx);
+  protected updateHeader(node: HTMLElement, column: RenderColumn, ...args: any[]) {
+    return column.updateHeader(node, this.ctx, ...args);
   }
 
   protected createCell(document: Document, index: number, column: RenderColumn) {
@@ -41,6 +41,11 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
       return;
     }
     super.updateHeaders();
+  }
+
+  updateHeaderOf(col: RenderColumn, i: number) {
+    const node = <HTMLElement>this.header.children[i]!;
+    this.updateHeader(node, col, true);
   }
 
   protected createRow(node: HTMLElement, rowIndex: number, ...extras: any[]): void {

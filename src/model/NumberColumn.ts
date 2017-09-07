@@ -5,7 +5,7 @@
 import {format, scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import {equalArrays} from '../utils';
+import {equalArrays, similar} from '../utils';
 
 export function isMissingValue(v: any) {
   return typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
@@ -116,7 +116,7 @@ function isSame(a: number[], b: number[]) {
   if (a.length !== b.length) {
     return false;
   }
-  return a.every((ai, i) => ai === b[i]);
+  return a.every((ai, i) => similar(ai, b[i], 0.0001));
 }
 
 
@@ -509,7 +509,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
-    if (this.currentFilter.min === value.min && this.currentFilter.max === value.max && this.currentFilter.filterMissing === value.filterMissing) {
+    if (similar(this.currentFilter.min, value.min, 0.001) && similar(this.currentFilter.max, value.max, 0.001) && this.currentFilter.filterMissing === value.filterMissing) {
       return;
     }
     const bak = this.getFilter();

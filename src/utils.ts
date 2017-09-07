@@ -24,6 +24,12 @@ export function findOption(options: any) {
   };
 }
 
+export function similar(a: number, b: number, delta = 0.5) {
+  if (a === b) {
+    return true;
+  }
+  return Math.abs(a - b) < delta;
+}
 
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed

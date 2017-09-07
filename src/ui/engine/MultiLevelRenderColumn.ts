@@ -42,17 +42,21 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     return node;
   }
 
-  updateHeader(node: HTMLElement, ctx: IRankingContext) {
-    super.updateHeader(node, ctx);
-
+  updateHeader(node: HTMLElement, ctx: IRankingContext, widthsOnly: boolean = false) {
     const wrapper = <HTMLElement>node.querySelector('.lu-nested');
+    if (widthsOnly && wrapper) {
+      this.updateNested(wrapper, ctx, true);
+      return;
+    }
+
+    super.updateHeader(node, ctx);
     if (!wrapper) {
       return; // too early
     }
     this.updateNested(wrapper, ctx);
   }
 
-  private updateNested(wrapper: HTMLElement, ctx: IRankingContext) {
+  private updateNested(wrapper: HTMLElement, ctx: IRankingContext, widthsOnly: boolean = false) {
     const mc = this.mc;
     if (mc.getCollapsed() || mc.getCompressed()) {
       return;
@@ -65,6 +69,9 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     sub.forEach((c, i) => {
       const node = children[i];
       node.style.width = `${round(100 * c.getActualWidth() / total, 2)}%`;
+      if (widthsOnly) {
+        return;
+      }
       node.className = `${c.cssClass ? ` ${c.cssClass}` : ''}${this.c.headerCssClass}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
       updateHeader(node, c, ctx);
     });
