@@ -9,9 +9,11 @@ import {matchColumns} from '../utils';
 import {medianIndex, renderMissingValue} from './BarCellRenderer';
 import {IGroup} from '../model/Group';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
+import {IMultiLevelColumn} from '../model/CompositeColumn';
+import Column from '../model/Column';
 
 
-export function createData(col: StackColumn, context: IRenderContext<any, any>, nestingPossible: boolean) {
+export function createData(col: IMultiLevelColumn & Column, context: IRenderContext<any, any>, nestingPossible: boolean) {
   const stacked = nestingPossible && context.option('stacked', true);
   const padding = context.option('columnPadding', 0);
   let offset = 0;
@@ -32,12 +34,12 @@ export function createData(col: StackColumn, context: IRenderContext<any, any>, 
 /**
  * renders a stacked column using composite pattern
  */
-export default class StackCellRenderer extends AAggregatedGroupRenderer<StackColumn> implements ICellRendererFactory {
+export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMultiLevelColumn & Column> implements ICellRendererFactory {
   constructor(private readonly nestingPossible: boolean = true) {
     super();
   }
 
-  createDOM(col: StackColumn, context: IDOMRenderContext): IDOMCellRenderer {
+  createDOM(col: IMultiLevelColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
     const cols = createData(col, context, this.nestingPossible);
     return {
       template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)}'>${cols.map((d) => d.renderer.template).join('')}</div>`,

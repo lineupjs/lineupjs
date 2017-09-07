@@ -14,7 +14,7 @@ import SelectionRenderer from './SelectionRenderer';
 import LinkCellRenderer from './LinkCellRenderer';
 import AnnotationRenderer from './AnnotationRenderer';
 import ActionRenderer from './ActionRenderer';
-import StackCellRenderer from './StackCellRenderer';
+import MultiLevelCellRenderer from './MultiLevelCellRenderer';
 import CategoricalCellRenderer from './CategoricalCellRenderer';
 import NumbersCellRenderer from './NumbersCellRenderer';
 import SparklineCellRenderer from './SparklineCellRenderer';
@@ -50,8 +50,8 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   link: new LinkCellRenderer(),
   annotate: new AnnotationRenderer(),
   actions: new ActionRenderer(),
-  stack: new StackCellRenderer(),
-  nested: new StackCellRenderer(false),
+  stack: new MultiLevelCellRenderer(),
+  nested: new MultiLevelCellRenderer(false),
   categorical: new CategoricalCellRenderer(),
   catcolor: new CategoricalColorCellRenderer(),
   max: combineCellRenderer,

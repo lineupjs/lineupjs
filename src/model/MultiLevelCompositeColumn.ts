@@ -2,9 +2,10 @@
  * Created by sam on 04.11.2016.
  */
 
-import CompositeColumn, {IMultiLevelColumn} from './CompositeColumn';
+import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn} from './CompositeColumn';
 import Column, {IColumnDesc, IFlatColumn} from './Column';
 import StackColumn from './StackColumn';
+import {isNumberColumn} from './NumberColumn';
 
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
@@ -96,10 +97,14 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     super.setWidth(value);
   }
 
-  getrendererType() {
+  getRendererType() {
     if (this.getCollapsed()) {
       return MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED;
     }
     return super.getRendererType();
+  }
+
+  isMissing(row: any, index: number) {
+    return this._children.some((c) => (isNumberColumn(c) || isMultiLevelColumn(c)) && c.isMissing(row, index));
   }
 }

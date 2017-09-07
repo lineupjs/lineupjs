@@ -7,7 +7,7 @@ import {isNumberColumn} from './NumberColumn';
 import ValueColumn from './ValueColumn';
 import {suffix} from '../utils';
 
-export function isMultiLevelColumn(col: Column) {
+export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn&Column {
   return typeof ((<any>col).getCollapsed) === 'function';
 }
 
@@ -161,4 +161,6 @@ export interface IMultiLevelColumn extends CompositeColumn {
   getCollapsed(): boolean;
 
   setCollapsed(value: boolean): void;
+
+  isMissing(row: any, index: number): boolean;
 }
