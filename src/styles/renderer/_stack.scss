@@ -1,6 +1,12 @@
-[data-renderer=stack] {
+[data-renderer=stack],
+[data-renderer=nested] {
   > * {
     height: 100%;
     display: inline-block;
+    overflow: hidden;
+
+    > * {
+      overflow: hidden;
+    }
   }
 }

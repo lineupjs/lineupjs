@@ -6,6 +6,7 @@ import {dispatch, Dispatch, event as d3event, select, Selection} from 'd3';
 import Column from './model/Column';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
 
+export {round} from 'd3';
 
 export function findOption(options: any) {
   return (key: string, defaultValue: any): any => {

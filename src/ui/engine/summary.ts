@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 25.07.2017.
  */
-import Column from '../..//model/Column';
+import Column from '../../model/Column';
 import {default as CategoricalColumn, ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
 import {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import NumberColumn, {INumberColumn, isNumberColumn,} from '../../model/NumberColumn';
@@ -11,7 +11,8 @@ import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import {filterMissingMarkup} from '../../dialogs/AFilterDialog';
 import {stringFilter} from '../../dialogs/StringFilterDialog';
 import {IDataProvider} from '../../provider/ADataProvider';
-import {behavior, DragEvent, event as d3event, round, select, selectAll} from 'd3';
+import {behavior, DragEvent, event as d3event, select, selectAll} from 'd3';
+import {round} from '../../utils';
 import {IRankingHeaderContext} from './interfaces';
 
 export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {

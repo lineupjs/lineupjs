@@ -5,6 +5,7 @@
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IMultiLevelColumn} from './CompositeColumn';
 import Column, {IFlatColumn} from './Column';
+import {isNumberColumn} from './NumberColumn';
 
 /**
  * factory for creating a description creating a stacked column
@@ -237,5 +238,9 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
   toSortingDesc(toId: (desc: any) => string): any {
     const w = this.getWeights();
     return this._children.map((c, i) => ({weight: w[i], id: c.toSortingDesc(toId)}));
+  }
+
+  isMissing(row: any, index: number) {
+    return this._children.some((c) => isNumberColumn(c) && c.isMissing(row, index));
   }
 }

@@ -105,6 +105,9 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
   }
 
   isMissing(row: any, index: number) {
-    return this._children.some((c) => (isNumberColumn(c) || isMultiLevelColumn(c)) && c.isMissing(row, index));
+    if (this.getCollapsed()) {
+      return this._children.some((c) => (isNumberColumn(c) || isMultiLevelColumn(c)) && c.isMissing(row, index));
+    }
+    return false;
   }
 }
