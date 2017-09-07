@@ -11,7 +11,7 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
 
   private initialized: boolean = false;
 
-  constructor(root: HTMLElement, private readonly id: string, private readonly ctx: IRankingContext) {
+  constructor(root: HTMLElement, private readonly id: string, private readonly ctx: IRankingContext, private readonly extraRowUpdate?: (row: HTMLElement, rowIndex: number) => void) {
     super(root);
     root.id = id;
   }
@@ -40,6 +40,10 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     super.createRow(node, rowIndex, ...extras);
     const isGroup = this.ctx.isGroup(rowIndex);
 
+    if (this.extraRowUpdate) {
+      this.extraRowUpdate(node, rowIndex);
+    }
+
     if (isGroup) {
       node.dataset.agg = 'group';
       return;
@@ -62,6 +66,10 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
   protected updateRow(node: HTMLElement, rowIndex: number, ...extras: any[]): void {
     const isGroup = this.ctx.isGroup(rowIndex);
     const wasGroup = node.dataset.agg === 'group';
+
+    if (this.extraRowUpdate) {
+      this.extraRowUpdate(node, rowIndex);
+    }
 
     if (isGroup !== wasGroup) {
       // change of mode clear the children to reinitialize them
