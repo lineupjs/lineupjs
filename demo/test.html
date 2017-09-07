@@ -88,7 +88,7 @@
         }]
       },
       {label: 'L.alt', type: 'string', column: 'l.alt'},
-      {label: 'Lazy', type: 'number', column: 'a', 'domain': [0, 10], lazyLoaded: true}
+      {label: 'Lazy', type: 'number', column: 'a', 'domain': [0, 10]}
     ];
 
     const p = LineUpJS.createLocalStorage(arr, desc);
@@ -148,36 +148,26 @@
       additionalDesc: [
         LineUpJS.model.createStackDesc('+ Stack')
       ],
-      htmlLayout: {
-        autoRotateLabels: true
-      },
       body: {
         renderer: 'engine',
         freezeCols: 0
       },
       header: {
+        autoRotateLabels: true,
         rankingButtons: function ($node) {
           $node.append('button').text('+').on('click', function (d) {
             console.log(d);
           });
         },
-        linkTemplates: ['a/$1', 'b/$1']
+        linkTemplates: ['a/$1', 'b/$1'],
+        summary: true,
       },
       renderingOptions: {
         animation: false,
-        histograms: true,
-        meanLine: true
+        meanLine: true,
       }
     });
     instance.update();
-
-    // create animation in canvas case through regular updates
-    const update = setInterval(instance.update.bind(instance), 200);
-    // load in 5 sec
-    setTimeout(function () {
-      lazy.setLoaded(true);
-      clearInterval(update);
-    }, 5000);
   })();
 </script>
 

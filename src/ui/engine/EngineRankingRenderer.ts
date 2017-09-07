@@ -36,6 +36,13 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     return column.updateCell(node, index, this.ctx);
   }
 
+  updateHeaders() {
+    if (!this._context) {
+      return;
+    }
+    super.updateHeaders();
+  }
+
   protected createRow(node: HTMLElement, rowIndex: number, ...extras: any[]): void {
     super.createRow(node, rowIndex, ...extras);
     const isGroup = this.ctx.isGroup(rowIndex);

@@ -14,6 +14,9 @@ import {ILineUpConfig, IRenderingOptions} from '../../lineup';
 import {ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
 import NumberColumn from '../../model/NumberColumn';
 import {nonUniformContext} from 'lineupengine/src/logic';
+import {isMultiLevelColumn} from '../../model/CompositeColumn';
+import MultiLevelRenderColumn from './MultiLevelRenderColumn';
+import StackColumn from '../../model/StackColumn';
 
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
   static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
@@ -85,7 +88,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.renderer.updateSelection(data.getSelection()));
     data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, () => this.updateHist());
     data.on(`${DataProvider.EVENT_DIRTY}.body`, debounce(function (this: { primaryType: string }) {
-      if (this.primaryType !== Column.EVENT_WIDTH_CHANGED) {
+      if (this.primaryType !== Column.EVENT_WIDTH_CHANGED && this.primaryType !== StackColumn.EVENT_WEIGHTS_CHANGED) {
         that.update();
       }
     }));
@@ -107,6 +110,8 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
         this.histCache.set(col.id, histo === null ? null : histo.hist(col));
       });
     });
+
+    this.renderer.updateHeaders();
   }
 
   update() {
@@ -150,10 +155,14 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     const flatCols: IFlatColumn[] = [];
     ranking.flatten(flatCols, 0, 1, 0);
     const cols = flatCols.map((c) => c.col);
+    const columnPadding = this.options.header.columnPadding === undefined ? 5 : this.options.header.columnPadding;
     const columns = cols.map((c, i) => {
       const single = createDOM(c, this.options.renderers, this.ctx);
       const group = createDOMGroup(c, this.options.renderers, this.ctx);
       const renderers = {single, group, singleId: c.getRendererType(), groupId: c.getGroupRenderer()};
+      if (isMultiLevelColumn(c)) {
+        return new MultiLevelRenderColumn(c, renderers, i, columnPadding);
+      }
       return new RenderColumn(c, renderers, i);
     });
 

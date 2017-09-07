@@ -3,7 +3,7 @@
  */
 import {IColumn} from 'lineupengine/src';
 import Column from '../../model/Column';
-import {createToolbar, dragAbleColumn, dragWidth, mergeDropAble, rearrangeDropAble, updateHeader} from './header';
+import {createHeader, updateHeader} from './header';
 import {IDOMCellRenderer, IDOMGroupRenderer} from '../../renderer/IDOMCellRenderers';
 import {IRankingContext} from './interfaces';
 
@@ -33,25 +33,10 @@ export default class RenderColumn implements IColumn {
   }
 
   createHeader(document: Document, ctx: IRankingContext) {
-    const node = document.createElement('section');
-    node.innerHTML = `<div class="lu-toolbar"></div><i class="lu-sort"></i><div class="lu-handle"></div><div class="lu-label">${this.c.label}</div><div class="lu-summary"></div>`;
-    createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, this.c, ctx);
-
-    node.addEventListener('click', (evt) => {
-      evt.preventDefault();
-      evt.stopPropagation();
-      this.c.toggleMySorting();
-    });
-
-    dragAbleColumn(node, this.c, ctx);
-    mergeDropAble(node, this.c, ctx);
-    rearrangeDropAble(<HTMLElement>node.querySelector('.lu-handle')!, this.c, ctx);
-
-    dragWidth(this.c, node);
+    const node = createHeader(this.c, document, ctx);
     this.updateHeader(node, ctx);
     return node;
   }
-
 
   updateHeader(node: HTMLElement, ctx: IRankingContext) {
     node.className = `${this.c.cssClass ? ` ${this.c.cssClass}` : ''}${(this.c.getCompressed() ? ' lu-compressed' : '')} ${this.c.headerCssClass}${ctx.autoRotateLabels ? ' rotateable' : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;

@@ -53,6 +53,8 @@ export interface IEventContext {
    * who is sending this event
    */
   readonly source: AEventDispatcher;
+
+  readonly origin: AEventDispatcher;
   /**
    * the event type
    */
@@ -79,7 +81,7 @@ export class AEventDispatcher {
 
     const that = this;
     this.forwarder = function (this: IEventContext, ...args: any[]) {
-      that.fire(this.type, ...args);
+      that.fireImpl(this.type, this.primaryType, this.origin, ...args);
     };
   }
 
@@ -107,10 +109,15 @@ export class AEventDispatcher {
 
   protected fire(type: string | string[], ...args: any[]) {
     const primaryType = Array.isArray(type) ? type[0] : type;
+    this.fireImpl(type, primaryType, this, ...args);
+  }
+
+  private fireImpl(type: string | string[], primaryType: string, origin: AEventDispatcher, ...args: any[]) {
     const fireImpl = (t: string) => {
       //local context per event, set a this argument
       const context: IEventContext = {
-        source: this, //who is sending this event
+        source: this, //who is sending this event,
+        origin,
         type: t, //the event type
         primaryType, //in case of multi propagation the 'main' event type
         args //the arguments to the listener

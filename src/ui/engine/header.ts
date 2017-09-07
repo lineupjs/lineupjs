@@ -45,6 +45,25 @@ export function toFullTooltip(col: { label: string, description?: string }) {
   return base;
 }
 
+export function createHeader(col: Column, document: Document, ctx: IRankingHeaderContext) {
+  const node = document.createElement('section');
+  node.innerHTML = `<div class="lu-toolbar"></div><i class="lu-sort"></i><div class="lu-handle"></div><div class="lu-label">${col.label}</div><div class="lu-summary"></div>`;
+  createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, col, ctx);
+
+  node.addEventListener('click', (evt) => {
+    evt.preventDefault();
+    evt.stopPropagation();
+    col.toggleMySorting();
+  });
+
+  dragAbleColumn(node, col, ctx);
+  mergeDropAble(node, col, ctx);
+  rearrangeDropAble(<HTMLElement>node.querySelector('.lu-handle')!, col, ctx);
+
+  dragWidth(col, node);
+  return node;
+}
+
 export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
   node.querySelector('.lu-label')!.innerHTML = col.label;
   node.title = toFullTooltip(col);
@@ -178,6 +197,8 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
   let start = 0;
   const mouseMove = (evt: MouseEvent) => {
+    evt.stopPropagation();
+    evt.preventDefault();
     const end = evt.clientX;
     if (Math.abs(start - end) < 2) {
       //ignore
@@ -189,6 +210,8 @@ export function dragWidth(col: Column, node: HTMLElement) {
   };
 
   const mouseUp = (evt: MouseEvent) => {
+    evt.stopPropagation();
+    evt.preventDefault();
     const end = evt.clientX;
 
     ueberElement.removeEventListener('mousemove', mouseMove);
@@ -213,7 +236,11 @@ export function dragWidth(col: Column, node: HTMLElement) {
     ueberElement.addEventListener('mouseup', mouseUp);
     ueberElement.addEventListener('mouseleave', mouseUp);
   };
-
+  handle.onclick = (evt) => {
+    // avoid resorting
+    evt.stopPropagation();
+    evt.preventDefault();
+  };
 }
 
 export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';

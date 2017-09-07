@@ -5,6 +5,9 @@
 %lu-header {
   position: relative;
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
   @import './toolbar';
 
@@ -103,5 +106,10 @@
     font-size: x-small;
 
     @import './summary';
+  }
+
+  .#{$lu_css_prefix}-nested {
+    display: flex;
+    position: relative;
   }
 }
