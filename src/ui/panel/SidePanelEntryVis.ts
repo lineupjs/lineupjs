@@ -31,7 +31,7 @@ export default class SidePanelEntryVis {
       this.column.toggleMySorting();
     });
 
-    dragAbleColumn(this.node, this.column, this.ctx);
+    dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
     resortDropAble(<HTMLElement>this.node.querySelector('.lu-sort-handle')!, this.column, this.ctx, 'before', true);
   }
 
