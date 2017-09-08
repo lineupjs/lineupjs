@@ -92,7 +92,7 @@
 }
 
 &:not(.#{$lu_css_prefix}-compressed):hover {
-  > .#{$lu_css_prefix}-toolbar {
+  .#{$lu_css_prefix}-toolbar {
     display: block;
     padding: 7px;
 
