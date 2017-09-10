@@ -170,35 +170,22 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
 
   }
 
-
-  private getColorValues(): string[] {
-    if (this.colorRange.length > 2) {
-      return this.colorRange.slice();
-    }
-    const minColor = this.colorRange[0];
-    const zeroColor = 'white';
-    const maxColor = this.colorRange[1];
-    return [minColor, zeroColor, maxColor];
-  }
-
-
   compare(a: any, b: any, aIndex: number, bIndex: number): number {
     return compareBoxPlot(this, a, b, aIndex, bIndex);
   }
 
   getRawColorScale() {
     const colorScale = d3scale.linear<string, string>();
-    const colorValues = this.getColorValues();
     const domain = this.mapping.domain;
     if (domain[0] < 0) {
       colorScale
         .domain([domain[0], 0, domain[1]])
-        .range(colorValues);
+        .range([this.colorRange[0], (this.colorRange.length > 2 ? this.colorRange[1] : 'white'), this.colorRange[this.colorRange.length - 1]]);
 
     } else {
       colorScale
         .domain([domain[0], domain[1]])
-        .range(colorValues);
+        .range([this.colorRange[0], this.colorRange[this.colorRange.length - 1]]);
     }
     return colorScale;
   }
