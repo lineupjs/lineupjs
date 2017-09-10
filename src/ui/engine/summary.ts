@@ -114,7 +114,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats:
   const filterMax = isFinite(filter.max) ? filter.max : domain[1];
   node.insertAdjacentHTML('beforeend', `
     <div data-handle="min-hint" style="width: ${Math.round(percent(filterMin))}%"></div>
-    <div data-handle="max-hint" style="right: ${Math.round(100 - percent(filterMax))}%; width: ${Math.round(100 - percent(filterMax))}%"></div>
+    <div data-handle="max-hint" style="width: ${Math.round(100 - percent(filterMax))}%"></div>
     <div data-handle="min" data-value="${round(filterMin, 2)}" style="left: ${Math.round(percent(filterMin))}%"></div>
     <div data-handle='max' data-value="${round(filterMax, 2)}" style="right: ${Math.round(100 - percent(filterMax))}%"></div>
     ${filterMissingMarkup(filter.filterMissing)}
@@ -128,7 +128,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats:
 
   const update = () => {
     const minValue = unpercent(parseFloat(min.style.left!));
-    const maxValue = unpercent(parseFloat(max.style.left!));
+    const maxValue = unpercent(100 - parseFloat(max.style.right!));
     ncol.setFilter({
       filterMissing: filterMissing.checked,
       min: Math.abs(minValue - domain[0]) < 0.001 ? NaN : minValue,
@@ -155,7 +155,6 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats:
         return;
       }
       this.style.right = `${100 - percent}%`;
-      maxHint.style.right = `${100 - percent}%`;
       maxHint.style.width = `${100 - percent}%`;
     })
     .on('dragend', function (this: HTMLElement) {

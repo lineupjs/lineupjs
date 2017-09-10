@@ -94,6 +94,10 @@
     position: absolute;
     height: 100%;
     background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 7px, #bababa 7px, #bababa 10px);
+
+    &[data-handle=max-hint] {
+      right: 0;
+    }
   }
 
   label {
