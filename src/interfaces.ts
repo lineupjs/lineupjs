@@ -1,5 +1,5 @@
 import {IBodyRendererOptions, IHeaderRendererOptions} from 'lineupjs/src/ui/interfaces';
-import {IPoolRendererOptions} from 'lineupjs/src/ui';
+import {IPoolRendererOptions} from 'lineupjs/src/ui/PoolRenderer';
 import ICellRendererFactory from 'lineupjs/src/renderer/ICellRendererFactory';
 
 export interface IBodyOptions {
