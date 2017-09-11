@@ -61,8 +61,6 @@ export default class SidePanel {
 
 
     this.changeDataStorage(null, this.data);
-    this.updateChooser();
-    this.updateList();
   }
 
   private get data() {

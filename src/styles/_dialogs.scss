@@ -3,88 +3,90 @@
  */
 @import 'vars';
 
-.#{$lu_css_prefix}-popup {
-  position: absolute;
-  dominant-baseline: central;
-  text-anchor: middle;
-
-  .ok {
+@at-root {
+  .#{$lu_css_prefix}-popup {
     position: absolute;
-    right: 10px;
+    dominant-baseline: central;
+    text-anchor: middle;
+
+    .ok {
+      position: absolute;
+      right: 10px;
+    }
   }
-}
 
-.#{$lu_css_prefix}-popup,
-.#{$lu_css_prefix}-popup2 {
-  background-color: rgba(255, 255, 255, 0.9);
-  position: absolute;
-  padding: 2px;
-  box-shadow: 5px 5px 3px #888;
-  z-index: 9;
-  font-size: 8pt;
-  clear: right;
-
-  input {
+  .#{$lu_css_prefix}-popup,
+  .#{$lu_css_prefix}-popup2 {
+    background-color: rgba(255, 255, 255, 0.9);
+    position: absolute;
+    padding: 2px;
+    box-shadow: 5px 5px 3px #888;
+    z-index: 9;
     font-size: 8pt;
-  }
+    clear: right;
 
-  .selectionTable {
-    background: white;
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 50vh;
+    input {
+      font-size: 8pt;
+    }
 
-    td,
-    th {
-      white-space: nowrap;
-      padding: 1px 5px 1px 3px;
+    .selectionTable {
+      background: white;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 50vh;
+
+      td,
+      th {
+        white-space: nowrap;
+        padding: 1px 5px 1px 3px;
+        cursor: pointer;
+      }
+
+      th {
+        border-bottom: #c1c1c1 1px solid;
+      }
+
+      table {
+        width: 95%;
+        border: 0;
+      }
+
+      tr:hover {
+        background-color: lightblue;
+      }
+    }
+
+    .lu-popup-title {
       cursor: pointer;
+      cursor: -webkit-grab;
     }
 
-    th {
-      border-bottom: #c1c1c1 1px solid;
-    }
+    .script-description {
+      font-size: 120%;
+      max-width: 50em;
 
-    table {
-      width: 95%;
-      border: 0;
-    }
+      dl {
+        padding: 1em 0.2em;
 
-    tr:hover {
-      background-color: lightblue;
-    }
-  }
-
-  .lu-popup-title {
-    cursor: pointer;
-    cursor: -webkit-grab;
-  }
-
-  .script-description {
-    font-size: 120%;
-    max-width: 50em;
-
-    dl {
-      padding: 1em 0.2em;
-
-      dd {
-        padding-left: 1em;
+        dd {
+          padding-left: 1em;
+        }
       }
     }
   }
-}
 
-.#{$lu_css_prefix}-popup2 {
-  * {
-    margin: 0;
-  }
+  .#{$lu_css_prefix}-popup2 {
+    * {
+      margin: 0;
+    }
 
-  .ok {
-    float: right;
-  }
+    .ok {
+      float: right;
+    }
 
-  div.bar {
-    height: 1em;
-    transition: width 0.5s ease;
+    div.bar {
+      height: 1em;
+      transition: width 0.5s ease;
+    }
   }
 }
