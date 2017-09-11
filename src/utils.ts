@@ -505,7 +505,7 @@ export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: { [ke
   });
   Object.keys(styles).forEach((attr) => {
     const v = styles[attr];
-    if (node.style.getPropertyValue(attr) !== v) {
+    if ((<any>node).style.getPropertyValue(attr) !== v) {
       (<any>node).style.setProperty(attr, v);
     }
   });
