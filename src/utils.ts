@@ -2,11 +2,17 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {dispatch, Dispatch, event as d3event, select, Selection} from 'd3';
-import Column from './model/Column';
+import {dispatch, Dispatch, event as d3event, select, Selection, scale as d3scale} from 'd3';
+import Column, {IColumnDesc} from './model/Column';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
 
-export {round} from 'd3';
+export function round(v: number, precision: number = 0) {
+  if (precision === 0) {
+    return Math.round(v);
+  }
+  const scale = Math.pow(10, precision);
+  return Math.round(v * scale) / scale;
+}
 
 export function findOption(options: any) {
   return (key: string, defaultValue: any): any => {
@@ -690,3 +696,20 @@ export function equalArrays<T>(a: T[], b: T[]) {
   return a.every((ai, i) => ai === b[i]);
 }
 
+
+/**
+ * assigns colors to columns if they are numbers and not yet defined
+ * @param columns
+ * @returns {IColumnDesc[]}
+ */
+export function deriveColors(columns: IColumnDesc[]) {
+  const colors = d3scale.category10().range().slice();
+  columns.forEach((col: any) => {
+    switch (col.type) {
+      case 'number':
+        col.color = colors.shift();
+        break;
+    }
+  });
+  return columns;
+}

@@ -3,7 +3,7 @@
  */
 import {AEventDispatcher, ContentScroller, merge} from '../utils';
 import ADataProvider from '../provider/ADataProvider';
-import {ILineUpConfig, IRenderingOptions} from '../lineup';
+import {ILineUpConfig, IRenderingOptions} from '../interfaces';
 import DOMBodyRenderer from './DOMBodyRenderer';
 import CanvasBodyRenderer from './CanvasBodyRenderer';
 import {default as ABodyRenderer, IBodyRenderer} from './ABodyRenderer';

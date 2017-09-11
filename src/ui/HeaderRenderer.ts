@@ -273,7 +273,7 @@ export default class HeaderRenderer {
       const $this = d3.select(this);
       const addIcon = (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
         const proxy: { onclick: (e: MouseEvent) => any } = {onclick: () => undefined};
-        $this.append('i').attr('title', title).html(`<span aria-hidden>${title}</span>`).on('click', function () {
+        $this.append('i').attr('title', title).html(`<span aria-hidden="true">${title}</span>`).on('click', function () {
           proxy.onclick(<MouseEvent>d3.event);
         });
         if (!dialogClass) {

@@ -3,15 +3,18 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import Column, {IColumnDesc} from './model/Column';
+import Column from './model/Column';
 import DataProvider from './provider/ADataProvider';
-import {IPoolRendererOptions, PoolRenderer} from './ui';
+import PoolRenderer, {IPoolRendererOptions} from './ui/PoolRenderer';
 import {AEventDispatcher, merge} from './utils';
-import {scale as d3scale, select, selection, Selection} from 'd3';
+import {select, selection, Selection} from 'd3';
 import {defaultConfig} from './config';
 import {ILineUpRenderer, RENDERER_EVENT_HOVER_CHANGED, RENDERER_EVENT_RENDER_FINISHED} from './ui/interfaces';
 import {ILineUpConfig, IRenderingOptions} from './interfaces';
 import {createRenderer} from './ui/factory';
+
+export {ILineUpConfig, IRenderingOptions} from './interfaces';
+export {deriveColors} from './utils';
 
 /**
  * main LineUp class managing data and rendering
@@ -203,21 +206,4 @@ export default class LineUp extends AEventDispatcher {
       this.renderer.setBodyOption(option, value);
     }
   }
-}
-
-/**
- * assigns colors to columns if they are numbers and not yet defined
- * @param columns
- * @returns {IColumnDesc[]}
- */
-export function deriveColors(columns: IColumnDesc[]) {
-  const colors = d3scale.category10().range().slice();
-  columns.forEach((col: any) => {
-    switch (col.type) {
-      case 'number':
-        col.color = colors.shift();
-        break;
-    }
-  });
-  return columns;
 }

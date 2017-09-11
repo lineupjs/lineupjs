@@ -104,7 +104,7 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
       // adapt body
       node.dataset.agg = isGroup ? 'group' : 'detail';
       if (isGroup) {
-        node.dataset.dataIndex = undefined;
+        node.dataset.dataIndex = '';
         node.onclick = <any>undefined;
       } else {
         node.onclick = (evt) => {
