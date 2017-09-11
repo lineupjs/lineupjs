@@ -12,12 +12,14 @@ import {IRankingHeaderContext} from '../engine/interfaces';
 
 export interface ISidePanelOptions {
   additionalDescs: IColumnDesc[];
+  chooser: boolean;
 }
 
 export default class SidePanel {
 
   private readonly options: ISidePanelOptions = {
-    additionalDescs: []
+    additionalDescs: [],
+    chooser: true
   };
 
   readonly node: HTMLElement;
@@ -34,15 +36,23 @@ export default class SidePanel {
 
   private init() {
     this.node.innerHTML = `
-      <header>
+      <div><main></main></div>
+    `;
+    this.initChooser();
+    this.changeDataStorage(null, this.data);
+  }
+
+  private initChooser() {
+    if (!this.options.chooser) {
+      return;
+    }
+    this.node.insertAdjacentHTML('afterbegin', `<header>
         <form>
             <select>
                 <option value="">Add Column...</option>
             </select>
         </form>
-      </header>
-      <div><main></main></div>
-    `;
+      </header>`);
     this.node.querySelector('header select')!.addEventListener('change', (evt) => {
       evt.preventDefault();
       const id = (<HTMLSelectElement>evt.currentTarget).value;
@@ -58,9 +68,6 @@ export default class SidePanel {
       }
       this.data.getLastRanking().push(col);
     });
-
-
-    this.changeDataStorage(null, this.data);
   }
 
   private get data() {
@@ -269,6 +276,9 @@ export default class SidePanel {
   }
 
   private updateChooser() {
+    if (!this.options.chooser) {
+      return;
+    }
     const select = <HTMLSelectElement>this.node.querySelector('header select')!;
     const groups = SidePanel.groupByType(Array.from(this.descs.values()));
 
