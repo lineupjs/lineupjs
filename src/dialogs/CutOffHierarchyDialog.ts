@@ -1,4 +1,3 @@
-import {Selection} from 'd3';
 import HierarchyColumn, {resolveInnerNodes} from '../model/HierarchyColumn';
 import ADialog from './ADialog';
 
@@ -7,11 +6,11 @@ export default class CutOffHierarchyDialog extends ADialog {
   /**
    * opens a dialog for filtering a categorical column
    * @param column the column to rename
-   * @param $header the visual header element of this column
+   * @param header the visual header element of this column
    * @param idPrefix id prefix used for generated ids
    */
-  constructor(private readonly column: HierarchyColumn, $header: Selection<HierarchyColumn>, private readonly idPrefix: string) {
-    super($header, 'Edit Hierarchy Cutoff');
+  constructor(private readonly column: HierarchyColumn, header: HTMLElement, private readonly idPrefix: string) {
+    super(header, 'Edit Hierarchy Cutoff');
   }
 
   openDialog() {
@@ -26,7 +25,7 @@ export default class CutOffHierarchyDialog extends ADialog {
     const popup = this.makePopup(t);
 
     //custom validation
-    popup.select('input[type="text"]').on('change', function (this: HTMLInputElement) {
+    popup.querySelector('input[type="text"]')!.addEventListener('change', function (this: HTMLInputElement) {
       const value = this.value;
       console.log('validate', value);
       if (innerNodePaths.indexOf(value) < 0) {
@@ -40,14 +39,14 @@ export default class CutOffHierarchyDialog extends ADialog {
       cancel: () => undefined,
       reset: () => undefined,
       submit: () => {
-        const form = <HTMLFormElement>popup.select('form').node();
+        const form = <HTMLFormElement>popup.querySelector('form');
         if (!form.checkValidity()) {
           return false;
         }
-        const newNode = popup.select('input[type="text"]').property('value');
+        const newNode = (<HTMLInputElement>popup.querySelector('input[type="text"]')).value;
         const newNodeIndex = innerNodePaths.indexOf(newNode);
         const node = innerNodes[newNodeIndex];
-        const maxDepthText = popup.select('input[type="number"]').property('value');
+        const maxDepthText = (<HTMLInputElement>popup.querySelector('input[type="number"]')).value;
         const maxDepth = maxDepthText === '' ? Infinity : parseInt(maxDepthText, 10);
         this.column.setCutOff(node, maxDepth);
         return true;

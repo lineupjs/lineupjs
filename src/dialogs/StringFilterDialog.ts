@@ -1,37 +1,36 @@
 import StringColumn from '../model/StringColumn';
 import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
-import {Selection} from 'd3';
 
 
 export default class StringFilterDialog extends AFilterDialog<StringColumn> {
   /**
    * opens a dialog for filtering a string column
    * @param column the column to filter
-   * @param $header the visual header element of this column
+   * @param header the visual header element of this column
    * @param title optional title
    */
-  constructor(column: StringColumn, $header: Selection<StringColumn>, title: string = 'Filter') {
-    super(column, $header, title);
+  constructor(column: StringColumn, header: HTMLElement, title = 'Filter') {
+    super(column, header, title);
   }
 
   openDialog() {
     const base = stringFilter(this.column);
-    const $popup = this.makePopup(base.template);
+    const popup = this.makePopup(base.template);
 
     const updateData = (filter: string | RegExp | null) => {
       this.markFiltered(filter != null && filter !== '');
       this.column.setFilter(filter);
     };
 
-    const update = base.init(<HTMLElement>$popup.select('form').node(), (filtered) => this.markFiltered(filtered));
+    const update = base.init(<HTMLElement>popup.querySelector('form')!, (filtered) => this.markFiltered(filtered));
 
-    this.onButton($popup, {
+    this.onButton(popup, {
       cancel: () => {
         updateData(base.original);
       },
       reset: () => {
-        $popup.select('input[type="text"]').property('value', '');
-        $popup.selectAll('input[type="checkbox"]').property('checked', null);
+        (<HTMLInputElement>popup.querySelector('input[type="text"]')).value = '';
+        Array.from(popup.querySelectorAll('input[type=checkbox')).forEach((n: HTMLInputElement) => n.checked = false);
         updateData(null);
       },
       submit: () => {

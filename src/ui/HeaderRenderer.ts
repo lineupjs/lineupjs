@@ -299,7 +299,7 @@ export default class HeaderRenderer {
 
     $node.each(function (this: HTMLElement, col) {
       const $this = d3.select(this);
-      const addIcon = (title: string, dialogClass?: { new(col: any, header: d3.Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
+      const addIcon = (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
         const proxy: { onclick: (e: MouseEvent) => any } = {onclick: () => undefined};
         $this.append('i').attr('title', title).html(`<span aria-hidden="true">${title}</span>`).on('click', function () {
           proxy.onclick(<MouseEvent>d3.event);
@@ -309,7 +309,7 @@ export default class HeaderRenderer {
         }
         proxy.onclick = (evt: MouseEvent) => {
           evt.stopPropagation();
-          const dialog = new dialogClass(col, d3.select((<HTMLElement>evt.currentTarget).parentElement!), ...dialogArgs);
+          const dialog = new dialogClass(col, (<HTMLElement>evt.currentTarget).parentElement!, ...dialogArgs);
           dialog.openDialog();
         };
         return proxy;

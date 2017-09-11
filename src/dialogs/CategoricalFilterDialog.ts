@@ -1,6 +1,5 @@
 import CategoricalColumn from '../model/CategoricalColumn';
 import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
-import {Selection} from 'd3';
 import {sortByProperty} from './ADialog';
 
 export default class CategoricalFilterDialog extends AFilterDialog<CategoricalColumn> {
@@ -8,11 +7,11 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
   /**
    * opens a dialog for filtering a categorical column
    * @param column the column to rename
-   * @param $header the visual header element of this column
+   * @param header the visual header element of this column
    * @param title optional title
    */
-  constructor(column: CategoricalColumn, $header: Selection<CategoricalColumn>, title: string = 'Filter') {
-    super(column, $header, title);
+  constructor(column: CategoricalColumn, header: HTMLElement, title: string = 'Filter') {
+    super(column, header, title);
   }
 
   openDialog() {
@@ -29,18 +28,26 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
       return {cat: d, label: labels[i]!, isChecked: bak.length === 0 || bak.indexOf(d) >= 0, color: colors[i]!};
     }).sort(sortByProperty('label'));
 
-    const $rows = popup.select('tbody').selectAll('tr').data(trData);
-    const $rowsEnter = $rows.enter().append('tr');
-    $rowsEnter.append('td').attr('class', 'checkmark');
-    $rowsEnter.append('td').attr('class', 'datalabel').text((d) => d.label);
-    $rowsEnter.on('click', (d) => {
-      d.isChecked = !d.isChecked;
-      redraw();
+    const base = popup.querySelector('table')!;
+    const rows = trData.map((d) => {
+      base.insertAdjacentHTML('beforeend', `<tr>
+          <td class="checkmark"></td>
+          <td class="datalabel">${d.label}</td>
+         </tr>`);
+      const row = <HTMLElement>base.lastElementChild!;
+      row.querySelector('td.checkmark')!.addEventListener('click', () => {
+        d.isChecked = !d.isChecked;
+        redraw();
+      });
+      return row;
     });
 
     function redraw() {
-      $rows.select('.checkmark').html((d) => `<i class="fa fa-${(d.isChecked) ? 'check-' : ''}square-o"></i>`);
-      $rows.select('.datalabel').style('opacity', (d) => d.isChecked ? '1.0' : '.8');
+      rows.forEach((row, i) => {
+        const d = trData[i];
+        (<HTMLElement>row.querySelector('.checkmark')).innerHTML = `<i class="fa fa-${(d.isChecked) ? 'check-' : ''}square-o"></i>`;
+        (<HTMLElement>row.querySelector('.datalabel')).style.opacity = d.isChecked ? '1.0' : '.8';
+      });
     }
 
     redraw();
@@ -48,16 +55,14 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     let isCheckedAll = true;
 
     function redrawSelectAll() {
-      popup.select('.selectAll').html(`<i class="fa fa-${(isCheckedAll) ? 'check-' : ''}square-o"></i>`);
-      popup.select('thead').on('click', () => {
-        isCheckedAll = !isCheckedAll;
-        trData.forEach((row) => row.isChecked = isCheckedAll);
-        redraw();
-        redrawSelectAll();
-      });
+      (<HTMLElement>popup.querySelector('.selectAll')).innerHTML = `<i class="fa fa-${(isCheckedAll) ? 'check-' : ''}square-o"></i>`;
     }
-
-    redrawSelectAll();
+    popup.querySelector('thead')!.addEventListener('click', () => {
+      isCheckedAll = !isCheckedAll;
+      trData.forEach((row) => row.isChecked = isCheckedAll);
+      redraw();
+      redrawSelectAll();
+    });
 
     const updateData = (filter: string[] | null, filterMissing: boolean) => {
       const noFilter = filter === null && filterMissing === false;
@@ -77,7 +82,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
         if (f.length === trData.length) { // all checked = no filter
           f = null;
         }
-        const filterMissing = popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+        const filterMissing = (<HTMLInputElement>popup.querySelector('input[type="checkbox"].lu_filter_missing')!).checked;
         updateData(f, filterMissing);
         return true;
       }

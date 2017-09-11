@@ -6,7 +6,6 @@ import {createNestedDesc, createStackDesc, isSupportType} from '../../model';
 import NumbersColumn from '../../model/NumbersColumn';
 import BoxPlotColumn from '../../model/BoxPlotColumn';
 import SortDialog from '../../dialogs/SortDialog';
-import {select, Selection} from 'd3';
 import RenameDialog from '../../dialogs/RenameDialog';
 import ChangeRendererDialog from '../../dialogs/ChangeRendererDialog';
 import LinkColumn from '../../model/LinkColumn';
@@ -77,7 +76,7 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
 }
 
 export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
-  const addIcon = (title: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
+  const addIcon = (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
     node.insertAdjacentHTML('beforeend', `<i title="${title}"><span aria-hidden="true">${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     if (!dialogClass) {
@@ -85,7 +84,7 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeade
     }
     i.onclick = (evt) => {
       evt.stopPropagation();
-      const dialog = new dialogClass(col, select(node.parentElement!), ...dialogArgs);
+      const dialog = new dialogClass(col, node.parentElement!, ...dialogArgs);
       dialog.openDialog();
     };
     return i;
@@ -94,7 +93,7 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeade
 }
 
 interface IAddIcon {
-  (title: string, dialogClass?: { new(col: any, header: Selection<any>, ...args: any[]): ADialog }, ...dialogArgs: any[]): { onclick: (evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }) => any };
+  (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]): { onclick: (evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }) => any };
 }
 
 export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {

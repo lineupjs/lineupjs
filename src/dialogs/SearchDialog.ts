@@ -1,32 +1,31 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
 import {IDataProvider} from '../provider/ADataProvider';
-import * as d3 from 'd3';
-
 
 export default class SearchDialog extends ADialog {
 
   /**
    * opens a search dialog for the given column
    * @param column the column to rename
-   * @param $header the visual header element of this column
+   * @param header the visual header element of this column
    * @param provider the data provider for the actual search
    * @param title optional title
    */
-  constructor(private readonly column: Column, $header: d3.Selection<Column>, private readonly provider: IDataProvider, title: string = 'Search') {
-    super($header, title);
+  constructor(private readonly column: Column, header: HTMLElement, private readonly provider: IDataProvider, title = 'Search') {
+    super(header, title);
   }
 
   openDialog() {
-    const popup = this.makePopup('<input type="text" size="15" value="" required="required" autofocus="autofocus" placeholder="search..."><br><label><input type="checkbox">RegExp</label><br>');
+    const popup = this.makePopup('<input type="text" size="15" value="" required autofocus placeholder="search..."><br><label><input type="checkbox">RegExp</label><br>');
 
-    popup.select('input[type="text"]').on('input', () => {
-      const target = (<Event>d3.event).target;
-      let search: any = (<HTMLInputElement>target).value;
+    const input = <HTMLInputElement>popup.querySelector('input[type="text"]')!;
+    const checkbox = <HTMLInputElement>popup.querySelector('input[type="checkbox"]')!;
+    input.addEventListener('input', () => {
+      let search: any = input.value;
       if (search.length < 3) {
         return;
       }
-      const isRegex = popup.select('input[type="checkbox"]').property('checked');
+      const isRegex = checkbox.checked;
       if (isRegex) {
         search = new RegExp(search);
       }
@@ -34,8 +33,8 @@ export default class SearchDialog extends ADialog {
     });
 
     const updateImpl = () => {
-      let search = popup.select('input[type="text"]').property('value');
-      const isRegex = popup.select('input[type="text"]').property('checked');
+      let search: string|RegExp = input.value;
+      const isRegex = checkbox.checked;
       if (search.length > 0) {
         if (isRegex) {
           search = new RegExp(search);
@@ -45,7 +44,7 @@ export default class SearchDialog extends ADialog {
       popup.remove();
     };
 
-    popup.select('input[type="checkbox"]').on('change', updateImpl);
+    checkbox.addEventListener('change', updateImpl);
 
     this.onButton(popup, {
       cancel: () => undefined,

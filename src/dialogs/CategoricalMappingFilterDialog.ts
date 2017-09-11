@@ -9,11 +9,11 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
   /**
    * opens the mapping editor for a given CategoricalNumberColumn, i.e. to map categories to numbers
    * @param column the column to rename
-   * @param $header the visual header element of this column
+   * @param header the visual header element of this column
    * @param title mapping title
    */
-  constructor(column: CategoricalNumberColumn, $header: d3.Selection<CategoricalNumberColumn>, title = 'Edit Categorical Mapping') {
-    super(column, $header, title);
+  constructor(column: CategoricalNumberColumn, header: HTMLElement, title = 'Edit Categorical Mapping') {
+    super(column, header, title);
   }
 
   openDialog() {
@@ -24,7 +24,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
 
     const scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 
-    const $popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>
+    const popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>
         ${filterMissingMarkup(bakMissing)}<br>`);
 
     const range = this.column.getScale().range,
@@ -41,30 +41,33 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
       };
     }).sort(sortByProperty('label'));
 
-    const $rows = $popup.select('tbody').selectAll('tr').data(trData);
-    const $rowsEnter = $rows.enter().append('tr');
-    $rowsEnter.append('td').attr('class', 'checkmark').on('click', (d) => {
-      d.isChecked = !d.isChecked;
-      redraw();
+    const base = popup.querySelector('table')!;
+    const rows = trData.map((d) => {
+      base.insertAdjacentHTML('beforeend', `<tr>
+          <td class="checkmark"></td>
+          <td><input type="number" value="${d.range}" min="0" max="100" size="5"></td>
+          <td><div class="bar" style="background-color: ${d.color}"></div></td>
+          <td class="datalabel">${d.label}</td>
+         </tr>`);
+      const row = <HTMLElement>base.lastElementChild!;
+      row.querySelector('td.checkmark')!.addEventListener('click', () => {
+        d.isChecked = !d.isChecked;
+        redraw();
+      });
+      row.querySelector('input')!.addEventListener('input', function(this: HTMLInputElement) {
+        d.range = parseFloat(this.value);
+        redraw();
+      });
+      return row;
     });
-    $rowsEnter.append('td')
-      .append('input').attr({
-      type: 'number',
-      value: (d) => d.range,
-      min: 0,
-      max: 100,
-      size: 5
-    }).on('input', function (this: HTMLInputElement, d) {
-      d.range = parseFloat(this.value);
-      redraw();
-    });
-    $rowsEnter.append('td').append('div').attr('class', 'bar').style('background-color', (d) => d.color);
-    $rowsEnter.append('td').attr('class', 'datalabel').text((d) => d.label);
 
     function redraw() {
-      $rows.select('.checkmark').html((d) => `<i class="fa fa-${(d.isChecked) ? 'check-' : ''}square-o"></i>`);
-      $rows.select('.bar').transition().style('width', (d) => `${scale(d.range)}px`);
-      $rows.select('.datalabel').style('opacity', (d) => d.isChecked ? '1.0' : '.8');
+      rows.forEach((row, i) => {
+        const d = trData[i];
+        (<HTMLElement>row.querySelector('.checkmark')).innerHTML = `<i class="fa fa-${(d.isChecked) ? 'check-' : ''}square-o"></i>`;
+        (<HTMLElement>row.querySelector('.bar')).style.width = `${scale(d.range)}px`;
+        (<HTMLElement>row.querySelector('.datalabel')).style.opacity = d.isChecked ? '1.0' : '.8';
+      });
     }
 
     redraw();
@@ -72,14 +75,14 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     let isCheckedAll = true;
 
     function redrawSelectAll() {
-      $popup.select('.selectAll').html(`<i class="fa fa-${(isCheckedAll) ? 'check-' : ''}square-o"></i>`);
-      $popup.select('thead').on('click', () => {
-        isCheckedAll = !isCheckedAll;
-        trData.forEach((row) => row.isChecked = isCheckedAll);
-        redraw();
-        redrawSelectAll();
-      });
+      (<HTMLElement>popup.querySelector('.selectAll')).innerHTML = `<i class="fa fa-${(isCheckedAll) ? 'check-' : ''}square-o"></i>`;
     }
+    popup.querySelector('thead')!.addEventListener('click', () => {
+      isCheckedAll = !isCheckedAll;
+      trData.forEach((row) => row.isChecked = isCheckedAll);
+      redraw();
+      redrawSelectAll();
+    });
 
     redrawSelectAll();
 
@@ -89,7 +92,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
       this.column.setFilter(noFilter ? null : {filter: filter!, filterMissing});
     };
 
-    this.onButton($popup, {
+    this.onButton(popup, {
       cancel: () => {
         updateData(bak, bakMissing);
         this.column.setMapping(range);
@@ -108,7 +111,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
         if (f.length === trData.length) {
           f = null;
         }
-        const filterMissing = $popup.select('input[type="checkbox"].lu_filter_missing').property('checked');
+        const filterMissing = (<HTMLInputElement>popup.querySelector('input[type="checkbox"].lu_filter_missing')!).checked;
         updateData(f, filterMissing);
         this.column.setMapping(trData.map((d) => d.range / 100));
         return true;

@@ -1,5 +1,4 @@
 import LinkColumn from '../model/LinkColumn';
-import Column from '../model/Column';
 import ADialog from './ADialog';
 
 export default class EditLinkDialog extends ADialog {
@@ -7,13 +6,13 @@ export default class EditLinkDialog extends ADialog {
   /**
    * opens a dialog for editing the link of a column
    * @param column the column to rename
-   * @param $header the visual header element of this column
+   * @param header the visual header element of this column
    * @param templates list of possible link templates
    * @param idPrefix dom id prefix
    * @param title optional title
    */
-  constructor(private readonly column: LinkColumn, $header: d3.Selection<Column>, private readonly idPrefix: string, private readonly templates: string[] = [], title: string = 'Edit Link ($ as Placeholder)') {
-    super($header, title);
+  constructor(private readonly column: LinkColumn, header: HTMLElement, private readonly idPrefix: string, private readonly templates: string[] = [], title = 'Edit Link ($ as Placeholder)') {
+    super(header, title);
   }
 
   openDialog() {
@@ -36,7 +35,7 @@ export default class EditLinkDialog extends ADialog {
       cancel: () => undefined,
       reset: () => undefined,
       submit: () => {
-        const newValue = popup.select('input[type="text"]').property('value');
+        const newValue = popup.querySelector('input')!.value;
         this.column.setLink(newValue);
         return true;
       }

@@ -1,7 +1,5 @@
-import Column from '../model/Column';
 import ADialog from './ADialog';
 import ScriptColumn from '../model/ScriptColumn';
-import {Selection} from 'd3';
 
 
 export default class ScriptEditDialog extends ADialog {
@@ -9,16 +7,16 @@ export default class ScriptEditDialog extends ADialog {
   /**
    * opens a dialog for editing the script code
    * @param column the column to edit
-   * @param $header the visual header element of this column
+   * @param header the visual header element of this column
    * @param title optional title
    */
-  constructor(private readonly column: ScriptColumn, $header: Selection<Column>, title: string = 'Edit Script') {
-    super($header, title);
+  constructor(private readonly column: ScriptColumn, header: HTMLElement, title = 'Edit Script') {
+    super(header, title);
   }
 
   openDialog() {
     const bak = this.column.getScript();
-    const $popup = this.makePopup(`<div class="script-description">
+    const popup = this.makePopup(`<div class="script-description">
       <p>You can write any valid JavaScript code. It will be embedded in a function. Therefore the last statement has to return a value.
       In case of a single line statement the code piece statement <code>return</code> will be automatically prefixed.</p>
       <p>The function signature is: <br><code>(row: any, index: number, children: Column[], values: any[], raws: (number|null)[]) => number</code>
@@ -63,17 +61,17 @@ export default class ScriptEditDialog extends ADialog {
 
     const updateImpl = () => {
       //get value
-      const script = $popup.select('textarea').property('value');
+      const script = popup.querySelector('textarea')!.value;
       updateData(script);
     };
 
-    this.onButton($popup, {
+    this.onButton(popup, {
       cancel: () => {
-        $popup.select('textarea').property('value', bak);
+        popup.querySelector('textarea')!.value = bak;
         updateData(bak);
       },
       reset: () => {
-        $popup.select('textarea').property('value', ScriptColumn.DEFAULT_SCRIPT);
+        popup.querySelector('textarea')!.value = ScriptColumn.DEFAULT_SCRIPT;
         updateData(ScriptColumn.DEFAULT_SCRIPT);
       },
       submit: () => {

@@ -1,11 +1,10 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
-import * as d3 from 'd3';
 
 
 export default class ChangeRendererDialog extends ADialog {
-  constructor(private readonly column: Column, $header: d3.Selection<Column>, title: string = 'Change Visualization') {
-    super($header, title);
+  constructor(private readonly column: Column, header: HTMLElement, title = 'Change Visualization') {
+    super(header, title);
   }
 
   openDialog() {
@@ -30,14 +29,13 @@ export default class ChangeRendererDialog extends ADialog {
       }).join('\n');
     }
 
-    this.makeChoosePopup(html);
+    const popup = this.makeChoosePopup(html);
 
-    const that = this;
-    d3.selectAll('input[name="renderertype"]').on('change', function (this: HTMLInputElement) {
-      that.column.setRendererType(this.value);
+    Array.from(popup.querySelectorAll('input[name="renderertype"]')).forEach((n: HTMLInputElement) => {
+      n.addEventListener('change', () => this.column.setRendererType(n.value));
     });
-    d3.selectAll('input[name="grouptype"]').on('change', function (this: HTMLInputElement) {
-      that.column.setGroupRenderer(this.value);
+    Array.from(popup.querySelectorAll('input[name="grouptype"]')).forEach((n: HTMLInputElement) => {
+      n.addEventListener('change', () => this.column.setGroupRenderer(n.value));
     });
   }
 }
