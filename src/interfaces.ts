@@ -1,6 +1,6 @@
-import {IBodyRendererOptions, IHeaderRendererOptions} from 'lineupjs/src/ui/interfaces';
-import {IPoolRendererOptions} from 'lineupjs/src/ui/PoolRenderer';
-import ICellRendererFactory from 'lineupjs/src/renderer/ICellRendererFactory';
+import {IBodyRendererOptions, IHeaderRendererOptions} from './ui/interfaces';
+import {IPoolRendererOptions} from './ui/PoolRenderer';
+import ICellRendererFactory from './renderer/ICellRendererFactory';
 
 export interface IBodyOptions {
   renderer: string;

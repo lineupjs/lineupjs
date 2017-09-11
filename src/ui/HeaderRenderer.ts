@@ -18,7 +18,7 @@ import {createToolbarImpl, MIMETYPE_PREFIX, toFullTooltip} from './engine/header
 import {defaultConfig, dummyRankingButtonHook} from '../config';
 import ADialog from '../dialogs/ADialog';
 import {IRankingHeaderContext} from './engine/interfaces';
-import {IHeaderRendererOptions} from 'lineupjs/src/ui/interfaces';
+import {IHeaderRendererOptions} from './interfaces';
 
 
 function countMultiLevel(c: Column): number {
