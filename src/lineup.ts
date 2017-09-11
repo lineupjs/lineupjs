@@ -5,84 +5,13 @@
 
 import Column, {IColumnDesc} from './model/Column';
 import DataProvider from './provider/ADataProvider';
-import {createRenderer, ILineUpRenderer, IPoolRendererOptions, PoolRenderer} from './ui';
-import {IHeaderRendererOptions} from './ui/HeaderRenderer';
-import {default as ABodyRenderer, IBodyRendererOptions} from './ui/ABodyRenderer';
+import {IPoolRendererOptions, PoolRenderer} from './ui';
 import {AEventDispatcher, merge} from './utils';
 import {scale as d3scale, select, selection, Selection} from 'd3';
-import ICellRendererFactory from './renderer/ICellRendererFactory';
 import {defaultConfig} from './config';
-
-export interface IBodyOptions {
-  renderer: string;
-  visibleRowsOnly: boolean;
-  backupScrollRows: number;
-}
-
-export interface IRenderingOptions {
-  /**
-   * show combined bars as stacked bars
-   */
-  stacked: boolean;
-  /**
-   * use animation for reordering
-   */
-  animation: boolean;
-  /**
-   * show histograms of the headers (just settable at the beginning)
-   * @deprecated use summary instead
-   */
-  histograms: boolean;
-  /**
-   * show column summaries in the header
-   */
-  summary: boolean;
-  /**
-   * show a mean line for single numberial columns
-   */
-  meanLine: boolean;
-}
-
-export interface ILineUpConfig {
-  /**
-   * a prefix used for all generated html ids
-   */
-  idPrefix: string;
-
-  /**
-   * options related to the header html layout
-   */
-  header: Partial<IHeaderRendererOptions>;
-  /**
-   * old name for header
-   */
-  htmlLayout: Partial<IHeaderRendererOptions>;
-  /**
-   * visual representation options
-   */
-  renderingOptions: IRenderingOptions;
-  /**
-   * options related to the rendering of the body
-   */
-  body: Partial<IBodyOptions & IBodyRendererOptions>;
-  /**
-   * old name for body
-   */
-  svgLayout: Partial<IBodyOptions & IBodyRendererOptions>;
-  /**
-   *  enables manipulation features, remove column, reorder,...
-   */
-  manipulative: boolean;
-  /**
-   * automatically add a column pool at the end
-   */
-  pool: boolean | IPoolRendererOptions;
-
-  /**
-   * the renderer to use for rendering the columns
-   */
-  renderers: { [key: string]: ICellRendererFactory };
-}
+import {ILineUpRenderer, RENDERER_EVENT_HOVER_CHANGED, RENDERER_EVENT_RENDER_FINISHED} from './ui/interfaces';
+import {ILineUpConfig, IRenderingOptions} from './interfaces';
+import {createRenderer} from './ui/factory';
 
 /**
  * main LineUp class managing data and rendering
@@ -92,7 +21,7 @@ export default class LineUp extends AEventDispatcher {
    * triggered when the mouse is over a specific row
    * @argument data_index:number the selected data index or <0 if no row
    */
-  static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
+  static readonly EVENT_HOVER_CHANGED = RENDERER_EVENT_HOVER_CHANGED;
 
   /**
    * triggered when the user click on a row
@@ -130,8 +59,6 @@ export default class LineUp extends AEventDispatcher {
     super();
     const $base = container instanceof selection ? <Selection<any>>container : select(<Element>container);
     this.$container = $base.append('div').classed('lu', true);
-    this.config.svgLayout = this.config.body;
-    this.config.htmlLayout = this.config.header;
 
     merge(this.config, config);
     //backwards compatibility
@@ -262,7 +189,7 @@ export default class LineUp extends AEventDispatcher {
     this.renderer.update();
     this.pools.forEach((p) => p.update());
 
-    this.renderer.on(`${ABodyRenderer.EVENT_RENDER_FINISHED}.main`, () => {
+    this.renderer.on(`${RENDERER_EVENT_RENDER_FINISHED}.main`, () => {
       waitForBodyRenderer -= 1;
       if (waitForBodyRenderer === 0) {
         this.fire(LineUp.EVENT_UPDATE_FINISHED);

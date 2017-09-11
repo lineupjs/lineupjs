@@ -1,9 +1,8 @@
 /**
  * Created by Samuel Gratzl on 15.08.2017.
  */
-import {IBodyOptions, ILineUpConfig} from './lineup';
-import {IHeaderRendererOptions, IRankingHook} from './ui/HeaderRenderer';
-import {IBodyRendererOptions} from './ui/ABodyRenderer';
+import {IBodyOptions, ILineUpConfig} from './interfaces';
+import {IHeaderRendererOptions, IRankingHook, IBodyRendererOptions} from './ui/interfaces';
 import {renderers as defaultRenderers} from './renderer';
 import {filters as defaultFilters} from './dialogs';
 import StringColumn from './model/StringColumn';
@@ -51,7 +50,6 @@ export function defaultConfig(): IFullLineUpConfig {
 
       rankingButtons: <IRankingHook>dummyRankingButtonHook
     },
-    htmlLayout: {},
     renderingOptions: {
       stacked: true,
       animation: true,
@@ -82,7 +80,6 @@ export function defaultConfig(): IFullLineUpConfig {
 
       freezeCols: 0
     },
-    svgLayout: {},
     manipulative: true,
     pool: false,
     renderers

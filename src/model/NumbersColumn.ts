@@ -94,7 +94,8 @@ export interface INumbersColumn extends INumberColumn {
 
   getDataLength(): number;
 
-  getRawColorScale(): d3scale.Linear<string, string>;
+  getColorRange(): string[];
+  getRawColorScale(): (v: number) => string;
 
   getThreshold(): number;
 
@@ -172,6 +173,10 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
 
   compare(a: any, b: any, aIndex: number, bIndex: number): number {
     return compareBoxPlot(this, a, b, aIndex, bIndex);
+  }
+
+  getColorRange() {
+    return this.colorRange.slice();
   }
 
   getRawColorScale() {

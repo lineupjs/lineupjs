@@ -13,41 +13,13 @@ import {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColum
 import {createDesc as createStackDesc} from '../model/StackColumn';
 import {createDesc as createNestedDesc} from '../model/NestedColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
-import {IFilterDialog} from '../dialogs/AFilterDialog';
 import SelectionColumn from '../model/SelectionColumn';
 import {createToolbarImpl, MIMETYPE_PREFIX, toFullTooltip} from './engine/header';
 import {defaultConfig, dummyRankingButtonHook} from '../config';
 import ADialog from '../dialogs/ADialog';
 import {IRankingHeaderContext} from './engine/interfaces';
+import {IHeaderRendererOptions} from 'lineupjs/src/ui/interfaces';
 
-export interface IRankingHook {
-  ($node: d3.Selection<Ranking>): void;
-}
-
-export interface IHeaderRendererOptions {
-  idPrefix: string;
-  slopeWidth: number;
-  columnPadding: number;
-  headerHistogramHeight: number;
-  headerHeight: number;
-  manipulative: boolean;
-  summary: boolean;
-
-  filters: { [type: string]: IFilterDialog };
-  linkTemplates: string[];
-
-  searchAble(col: Column): boolean;
-
-  sortOnLabel: boolean;
-
-  autoRotateLabels: boolean;
-  rotationHeight: number;
-  rotationDegree: number;
-
-  freezeCols: number;
-
-  rankingButtons: IRankingHook;
-}
 
 function countMultiLevel(c: Column): number {
   if (isMultiLevelColumn(c) && !(<IMultiLevelColumn>c).getCollapsed() && !c.getCompressed()) {
@@ -301,7 +273,7 @@ export default class HeaderRenderer {
       const $this = d3.select(this);
       const addIcon = (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
         const proxy: { onclick: (e: MouseEvent) => any } = {onclick: () => undefined};
-        $this.append('i').attr('title', title).html(`<span aria-hidden="true">${title}</span>`).on('click', function () {
+        $this.append('i').attr('title', title).html(`<span aria-hidden>${title}</span>`).on('click', function () {
           proxy.onclick(<MouseEvent>d3.event);
         });
         if (!dialogClass) {

@@ -12,6 +12,10 @@ import IRenderContext from '../renderer/IRenderContext';
 import ICellRendererFactory from '../renderer/ICellRendererFactory';
 import {IGroup} from '../model/Group';
 import {defaultConfig} from '../config';
+import {
+  IBodyRendererOptions, RENDERER_EVENT_HOVER_CHANGED,
+  RENDERER_EVENT_RENDER_FINISHED
+} from './interfaces';
 
 export interface ISlicer {
   (start: number, length: number, row2y: (i: number) => number): { from: number; to: number };
@@ -74,30 +78,6 @@ export interface IRankingData {
   readonly columns: IRankingColumnData[];
 }
 
-export interface IBodyRendererOptions {
-  rowHeight: number;
-  textHeight: number;
-  groupHeight: number;
-  rowPadding: number;
-  rowBarPadding: number;
-  rowBarTopPadding: number;
-  rowBarBottomPadding: number;
-  idPrefix: string;
-  slopeWidth: number;
-  columnPadding: number;
-  stacked: boolean;
-  animation: boolean;
-  animationDuration: number;
-
-  renderers: { [key: string]: ICellRendererFactory };
-
-  meanLine: boolean;
-
-  actions: { name: string, icon: string, action(v: any): void }[];
-
-  freezeCols: number;
-}
-
 export enum ERenderReason {
   DIRTY,
   SCROLLED
@@ -108,8 +88,8 @@ interface ICreatorFunc {
 }
 
 abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
-  static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
-  static readonly EVENT_RENDER_FINISHED = 'renderFinished';
+  static readonly EVENT_HOVER_CHANGED = RENDERER_EVENT_HOVER_CHANGED;
+  static readonly EVENT_RENDER_FINISHED = RENDERER_EVENT_RENDER_FINISHED;
 
   protected readonly options: IBodyRendererOptions = defaultConfig().body;
 
@@ -168,10 +148,10 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
       option: findOption(options),
 
-      renderer(col: Column) {
+      renderer(this: IBodyRenderContext, col: Column) {
         return creator(col, options.renderers, this);
       },
-      groupRenderer(col: Column) {
+      groupRenderer(this: IBodyRenderContext, col: Column) {
         return groupCreator(col, options.renderers, this);
       }
     };

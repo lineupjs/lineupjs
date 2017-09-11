@@ -10,7 +10,7 @@ export default class ThresholdCellRenderer extends ANumbersCellRenderer {
 
   protected createDOMContext(col: INumbersColumn & Column) {
     const threshold = col.getThreshold();
-    const colorValues = col.getRawColorScale().range();
+    const colorValues = col.getColorRange();
     let templateRows = '';
     for (let i = 0; i < col.getDataLength(); ++i) {
       templateRows += `<div style="background-color: white" title=""></div>`;
@@ -34,7 +34,7 @@ export default class ThresholdCellRenderer extends ANumbersCellRenderer {
   protected createCanvasContext(col: INumbersColumn & Column, context: ICanvasRenderContext) {
     const cellDimension = context.colWidth(col) / col.getDataLength();
     const threshold = col.getThreshold();
-    const colorValues = col.getRawColorScale().range();
+    const colorValues = col.getColorRange();
     return (ctx: CanvasRenderingContext2D, d: IDataRow, offset: number, rowHeight: number) => {
       const data = col.getRawNumbers(d.v, d.dataIndex);
       data.forEach((d, j) => {
