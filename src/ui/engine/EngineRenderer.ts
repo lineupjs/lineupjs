@@ -31,6 +31,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   readonly ctx: IRankingBodyContext & { data: (IGroupItem | IGroupData)[] };
 
   private readonly renderer: EngineRankingRenderer;
+  private readonly updateAbles: ((ctx: IRankingBodyContext)=>void)[] = [];
 
   constructor(private data: DataProvider, parent: Element, options: Readonly<ILineUpConfig>) {
     super();
@@ -65,6 +66,10 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.renderer = new EngineRankingRenderer(this.node, this.options.idPrefix, this.ctx);
 
     this.initProvider(data);
+  }
+
+  pushUpdateAble(updateAble: (ctx: IRankingBodyContext)=>void) {
+    this.updateAbles.push(updateAble);
   }
 
   protected createEventList() {
@@ -116,6 +121,8 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     });
 
     this.renderer.updateHeaders();
+
+    this.updateAbles.forEach((u) => u(this.ctx));
   }
 
   update() {
