@@ -56,7 +56,7 @@ export function computeStats(arr: any[], indices: number[], acc: (row: any, inde
   if (bins) {
     hist.bins(bins);
   } else {
-    hist.bins(getNumberOfBins(vs.length));
+    hist.bins(getNumberOfBins(arr.length));
   }
   const ex = d3.extent(vs);
   const histData = hist(vs);
