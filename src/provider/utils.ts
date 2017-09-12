@@ -1,8 +1,10 @@
 /**
  * Created by Samuel Gratzl on 15.08.2017.
  */
-import {IColumnDesc} from '../model/Column';
+import {default as Column, IColumnDesc} from '../model/Column';
 import {extent} from 'd3';
+import {isNumberColumn, isSupportType} from '../model';
+import Ranking from '../model/Ranking';
 
 
 export interface IDeriveOptions {
@@ -57,4 +59,79 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
   }
   //objects
   return Object.keys(first).map((key) => deriveType(key, first[key], key, data, config));
+}
+
+
+export interface IExportOptions {
+  /**
+   * export separator, default: '\t'
+   */
+  separator: string;
+  /**
+   * new line character, default: '\n'
+   */
+  newline: string;
+  /**
+   * should a header be generated, default: true
+   */
+  header: boolean;
+  /**
+   * quote strings, default: false
+   */
+  quote: boolean;
+  /**
+   * quote string to use, default: '"'
+   */
+  quoteChar: string;
+  /**
+   * filter specific column types, default: exclude all support types (selection, action, rank)
+   * @param col the column description to filter
+   */
+  filter: (col: IColumnDesc) => boolean; //!isSupportType
+
+  /**
+   * whether the description should be part of the column header
+   */
+  verboseColumnHeaders: boolean;
+}
+
+/**
+ * utility to export a ranking to a table with the given separator
+ * @param ranking
+ * @param data
+ * @param options
+ * @returns {Promise<string>}
+ */
+export function exportRanking(ranking: Ranking, data: any[], options: Partial<IExportOptions> = {}) {
+  const opts = <IExportOptions>Object.assign({
+    separator: '\t',
+    newline: '\n',
+    header: true,
+    quote: false,
+    quoteChar: '"',
+    filter: (c: IColumnDesc) => !isSupportType(c),
+    verboseColumnHeaders: false
+  }, options);
+
+  //optionally quote not numbers
+  const escape = new RegExp(`[${opts.quoteChar}]`, 'g');
+
+  function quote(l: string, c?: Column) {
+    if ((opts.quote || l.indexOf('\n') >= 0) && (!c || !isNumberColumn(c))) {
+      return `${opts.quoteChar}${l.replace(escape, opts.quoteChar + opts.quoteChar)}${opts.quoteChar}`;
+    }
+    return l;
+  }
+
+  const columns = ranking.flatColumns.filter((c) => opts.filter!(c.desc));
+  const order = ranking.getOrder();
+
+  const r: string[] = [];
+  if (opts.header) {
+    r.push(columns.map((d) => quote(`${d.label}${opts.verboseColumnHeaders && d.description ? `\n${d.description}` : ''}`)).join(opts.separator));
+  }
+  data.forEach((row, i) => {
+    r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(opts.separator));
+  });
+  return r.join(opts.newline);
 }

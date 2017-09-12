@@ -8,7 +8,6 @@ import {
   createSelectionDesc,
   createStackDesc,
   IColumnDesc,
-  isNumberColumn,
   isSupportType,
   models
 } from '../model';
@@ -24,6 +23,8 @@ import {ISelectionColumnDesc} from '../model/SelectionColumn';
 import {IGroup, IOrderedGroup, toGroupID} from '../model/Group';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 import OrderedSet from './OrderedSet';
+import {IExportOptions, exportRanking} from './utils';
+export {IExportOptions} from './utils';
 
 /**
  * a data row for rendering
@@ -39,38 +40,6 @@ export interface IDataRow {
   dataIndex: number;
 }
 
-export interface IExportOptions {
-  /**
-   * export separator, default: '\t'
-   */
-  separator: string;
-  /**
-   * new line character, default: '\n'
-   */
-  newline: string;
-  /**
-   * should a header be generated, default: true
-   */
-  header: boolean;
-  /**
-   * quote strings, default: false
-   */
-  quote: boolean;
-  /**
-   * quote string to use, default: '"'
-   */
-  quoteChar: string;
-  /**
-   * filter specific column types, default: exclude all support types (selection, action, rank)
-   * @param col the column description to filter
-   */
-  filter: (col: IColumnDesc) => boolean; //!isSupportType
-
-  /**
-   * whether the description should be part of the column header
-   */
-  verboseColumnHeaders: boolean;
-}
 
 export interface IStatsBuilder {
   stats(col: INumberColumn): Promise<IStatistics> | IStatistics;
@@ -805,40 +774,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @returns {Promise<string>}
    */
   exportTable(ranking: Ranking, options: Partial<IExportOptions> = {}) {
-    const opts = <IExportOptions>Object.assign({
-      separator: '\t',
-      newline: '\n',
-      header: true,
-      quote: false,
-      quoteChar: '"',
-      filter: (c: IColumnDesc) => !isSupportType(c),
-      verboseColumnHeaders: false
-    }, options);
-
-    //optionally quote not numbers
-    const escape = new RegExp(`[${opts.quoteChar}]`, 'g');
-
-    function quote(l: string, c?: Column) {
-      if ((opts.quote || l.indexOf('\n') >= 0) && (!c || !isNumberColumn(c))) {
-        return `${opts.quoteChar}${l.replace(escape, opts.quoteChar + opts.quoteChar)}${opts.quoteChar}`;
-      }
-      return l;
-    }
-
-    const columns = ranking.flatColumns.filter((c) => opts.filter!(c.desc));
-    const order = ranking.getOrder();
-    return Promise.resolve(this.view(order)).then((data) => {
-      const r: string[] = [];
-      if (opts.header) {
-        r.push(columns.map((d) => quote(`${d.label}${opts.verboseColumnHeaders && d.description ? `\n${d.description}` : ''}`)).join(opts.separator));
-      }
-      data.forEach((row, i) => {
-        r.push(columns.map((c) => quote(c.getLabel(row, order[i]), c)).join(opts.separator));
-      });
-      return r.join(opts.newline);
-    });
+    return Promise.resolve(this.view(ranking.getOrder())).then((data) => exportRanking(ranking, data, options));
   }
-
 }
 
 export default ADataProvider;
