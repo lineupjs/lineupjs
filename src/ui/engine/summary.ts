@@ -89,19 +89,20 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
     };
   });
 
-  if (withLabels) {
-    node.insertAdjacentHTML('beforeend', filterMissingMarkup(start !== null && start.filterMissing));
-    filterMissing = <HTMLInputElement>node.querySelector('input');
-    filterMissing.addEventListener('change', () => {
-      // toggle filter
-      const old = ccol.getFilter();
-      if (old === null) {
-        ccol.setFilter({filterMissing: filterMissing!.checked, filter: []});
-      } else {
-        ccol.setFilter({filterMissing: filterMissing!.checked, filter: old.filter});
-      }
-    });
+  if (!withLabels) {
+    return;
   }
+  node.insertAdjacentHTML('beforeend', filterMissingMarkup(start !== null && start.filterMissing));
+  filterMissing = <HTMLInputElement>node.querySelector('input');
+  filterMissing.addEventListener('change', () => {
+    // toggle filter
+    const old = ccol.getFilter();
+    if (old === null) {
+      ccol.setFilter({filterMissing: filterMissing!.checked, filter: []});
+    } else {
+      ccol.setFilter({filterMissing: filterMissing!.checked, filter: old.filter});
+    }
+  });
 }
 
 function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats: IStatistics, interactive: boolean) {
