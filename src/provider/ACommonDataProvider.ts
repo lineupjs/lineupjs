@@ -130,6 +130,7 @@ abstract class ACommonDataProvider extends ADataProvider {
   clearColumns() {
     this.clearRankings();
     this.columns.splice(0, this.columns.length);
+    this.fire(ADataProvider.EVENT_CLEAR_DESC);
   }
 
   getColumns(): IColumnDesc[] {

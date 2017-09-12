@@ -113,6 +113,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   static readonly EVENT_DIRTY_VALUES = Ranking.EVENT_DIRTY_VALUES;
   static readonly EVENT_ORDER_CHANGED = Ranking.EVENT_ORDER_CHANGED;
   static readonly EVENT_ADD_DESC = 'addDesc';
+  static readonly EVENT_CLEAR_DESC = 'clearDesc';
   static readonly EVENT_JUMP_TO_NEAREST = 'jumpToNearest';
   static readonly EVENT_GROUP_AGGREGATION_CHANGED = AggregateGroupColumn.EVENT_AGGREGATE;
 
@@ -161,7 +162,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       ADataProvider.EVENT_ADD_COLUMN, ADataProvider.EVENT_REMOVE_COLUMN,
       ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_REMOVE_RANKING,
       ADataProvider.EVENT_DIRTY, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES,
-      ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED, ADataProvider.EVENT_ADD_DESC,
+      ADataProvider.EVENT_ORDER_CHANGED, ADataProvider.EVENT_SELECTION_CHANGED,
+      ADataProvider.EVENT_ADD_DESC, ADataProvider.EVENT_CLEAR_DESC,
       ADataProvider.EVENT_JUMP_TO_NEAREST, ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED]);
   }
 

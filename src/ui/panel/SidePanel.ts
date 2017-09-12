@@ -78,7 +78,7 @@ export default class SidePanel {
     const that = this;
     if (old) {
       old.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
-        DataProvider.EVENT_ADD_DESC), null);
+        DataProvider.EVENT_ADD_DESC, DataProvider.EVENT_CLEAR_DESC), null);
     }
     this.descs.forEach((v) => v.destroyVis());
     this.descs.clear();
@@ -122,6 +122,11 @@ export default class SidePanel {
     data.on(`${DataProvider.EVENT_ADD_DESC}.panel`, (desc) => {
       const v = new SidePanelEntry(desc);
       that.descs.set(desc, v);
+      this.updateChooser();
+    });
+
+    data.on(`${DataProvider.EVENT_CLEAR_DESC}.panel`, () => {
+      that.descs.clear();
       this.updateChooser();
     });
 
