@@ -16,11 +16,12 @@ export function getNumberOfBins(length: number) {
  * @param arr the data array
  * @param indices array data indices
  * @param acc accessor function
+ * @param missing accessor if the value is missing
  * @param range the total value range
  * @param bins the number of bins
  * @returns {{min: number, max: number, count: number, hist: histogram.Bin<number>[]}}
  */
-export function computeStats(arr: any[], indices: number[], acc: (row: any, index: number) => number, range?: [number, number], bins?: number): IStatistics {
+export function computeStats(arr: any[], indices: number[], acc: (row: any, index: number) => number, missing: (row: any, index: number) => boolean, range?: [number, number], bins?: number): IStatistics {
   if (arr.length === 0) {
     return {
       min: NaN,
@@ -28,28 +29,45 @@ export function computeStats(arr: any[], indices: number[], acc: (row: any, inde
       mean: NaN,
       count: 0,
       maxBin: 0,
-      hist: []
+      hist: [],
+      missing: 0
     };
   }
-  const indexAccessor = (a: any, i: number) => acc(a, indices[i]);
-  const hist = d3.layout.histogram().value(indexAccessor);
+
+  let missingCount = 0;
+  const vs = arr.map((a, i) => {
+    if (missing(a, indices[i])) {
+      return NaN;
+    }
+    return acc(a, indices[i]);
+  }).reduce((acc, act) => {
+    if (isNaN(act)) {
+      missingCount ++;
+    } else {
+      acc.push(act);
+    }
+    return acc;
+  }, <number[]>[]);
+
+  const hist = d3.layout.histogram();
   if (range) {
     hist.range(() => range);
   }
   if (bins) {
     hist.bins(bins);
   } else {
-    hist.bins(getNumberOfBins(arr.length));
+    hist.bins(getNumberOfBins(vs.length));
   }
-  const ex = d3.extent(arr, indexAccessor);
-  const histData = hist(arr);
+  const ex = d3.extent(vs);
+  const histData = hist(vs);
   return {
     min: ex[0],
     max: ex[1],
-    mean: d3.mean(arr, indexAccessor),
+    mean: d3.mean(vs),
     count: arr.length,
     maxBin: Math.max(...histData.map((d) => d.y)),
-    hist: histData
+    hist: histData,
+    missing: missingCount
   };
 }
 
@@ -63,11 +81,13 @@ export function computeStats(arr: any[], indices: number[], acc: (row: any, inde
  */
 export function computeHist(arr: any[], indices: number[], acc: (row: any, index: number) => string[], categories: string[]): ICategoricalStatistics {
   const m = new Map<string, number>();
+  let missingCount = 0;
   categories.forEach((cat) => m.set(cat, 0));
 
   arr.forEach((a, i) => {
     const vs = acc(a, indices[i]);
     if (vs == null) {
+      missingCount += 1;
       return;
     }
     vs.forEach((v) => {
@@ -78,6 +98,7 @@ export function computeHist(arr: any[], indices: number[], acc: (row: any, index
   m.forEach((v, k) => entries.push({cat: k, y: v}));
   return {
     maxBin: Math.max(...entries.map((d) => d.y)),
-    hist: entries
+    hist: entries,
+    missing: missingCount
   };
 }

@@ -24,7 +24,7 @@ export default class HistogramGroupRenderer implements ICellRendererFactory {
       template: `<div>${bins}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: IStatistics | null) => {
         const bins = globalHist ? globalHist.hist.length : guessedBins;
-        const {maxBin, hist} = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), [0, 1], bins);
+        const {maxBin, hist} = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), (r: IDataRow) => col.isMissing(r.v, r.dataIndex), [0, 1], bins);
 
         const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
 
@@ -52,7 +52,7 @@ export default class HistogramGroupRenderer implements ICellRendererFactory {
       const total = context.groupHeight(group) - padding;
       const bins = globalHist ? globalHist.hist.length : guessedBins;
       const widthPerBin = context.colWidth(col) / bins;
-      const {maxBin, hist} = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), [0, 1], bins);
+      const {maxBin, hist} = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), (r: IDataRow) => col.isMissing(r.v, r.dataIndex), [0, 1], bins);
       const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
 
       ctx.fillStyle = context.option('style.histogram', 'lightgray');

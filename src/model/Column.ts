@@ -83,11 +83,13 @@ export interface IStatistics {
   readonly count: number;
   readonly maxBin: number;
   readonly hist: { x: number; dx: number; y: number; }[];
+  readonly missing: number;
 }
 
 export interface ICategoricalStatistics {
   readonly maxBin: number;
   readonly hist: { cat: string; y: number }[];
+  readonly missing: number;
 }
 
 export interface IColumnMetaData {
