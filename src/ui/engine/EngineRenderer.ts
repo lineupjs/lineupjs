@@ -32,6 +32,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   private readonly renderer: EngineRankingRenderer;
   private readonly updateAbles: ((ctx: IRankingBodyContext)=>void)[] = [];
+  private zoomFactor = 1;
 
   constructor(private data: DataProvider, parent: Element, options: Readonly<ILineUpConfig>) {
     super();
@@ -66,6 +67,16 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.renderer = new EngineRankingRenderer(this.node, this.options.idPrefix, this.ctx);
 
     this.initProvider(data);
+  }
+
+  zoomOut() {
+    this.zoomFactor = Math.max(this.zoomFactor - 0.1, 0.5);
+    this.update();
+  }
+
+  zoomIn() {
+    this.zoomFactor = Math.min(this.zoomFactor + 0.1, 2.0);
+    this.update();
   }
 
   pushUpdateAble(updateAble: (ctx: IRankingBodyContext)=>void) {
@@ -182,7 +193,10 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       this.updateHist();
     }
 
-    const rowContext = nonUniformContext(this.ctx.data.map((d) => isGroup(d) ? this.options.body.groupHeight! : this.options.body.rowHeight!), this.options.body.rowHeight!);
+    this.renderer.setZoomFactor(this.zoomFactor);
+    const itemHeight = Math.round(this.zoomFactor * this.options.body.rowHeight!);
+    const groupHeight = Math.round(this.zoomFactor * this.options.body.groupHeight!);
+    const rowContext = nonUniformContext(this.ctx.data.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight);
 
     this.renderer.render(columns, rowContext);
   }

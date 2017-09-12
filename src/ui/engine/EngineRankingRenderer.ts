@@ -161,6 +161,13 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     });
   }
 
+  setZoomFactor(zoomFactor: number) {
+    if (this.initialized !== 'ready') {
+      return;
+    }
+    this.body.style.fontSize = `${zoomFactor * 100}%`;
+  }
+
   destroy() {
     this.root.remove();
 
