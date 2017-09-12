@@ -1,9 +1,8 @@
 /**
  * Created by Samuel Gratzl on 25.07.2017.
  */
-import Column from '../../model/Column';
+import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {default as CategoricalColumn, ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
-import {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import NumberColumn, {INumberColumn, isNumberColumn,} from '../../model/NumberColumn';
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';
@@ -45,10 +44,12 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   if (!(col instanceof CategoricalColumn || col instanceof CategoricalNumberColumn)) {
     return;
   }
-  node.dataset.summary = 'interactive-hist';
+  node.dataset.summary = withLabels ? 'interactive-filter-hist' : 'interactive-hist';
   // make histogram interactive
   const ccol = <CategoricalColumn | CategoricalNumberColumn>col;
   const start = ccol.getFilter();
+
+  let filterMissing: HTMLInputElement|null = null;
 
   Array.from(node.children).forEach((bin: HTMLElement, i) => {
     const cat = bin.dataset.cat!;
@@ -65,7 +66,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
         bin.dataset.filtered = 'filtered';
         without.splice(i, 1);
         ccol.setFilter({
-          filterMissing: false,
+          filterMissing: filterMissing ? filterMissing.checked : false,
           filter: without
         });
         return;
@@ -82,11 +83,25 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
         filter.push(cat);
       }
       ccol.setFilter({
-        filterMissing: old.filterMissing,
+        filterMissing: filterMissing ? filterMissing.checked : old.filterMissing,
         filter
       });
     };
   });
+
+  if (withLabels) {
+    node.insertAdjacentHTML('beforeend', filterMissingMarkup(start !== null && start.filterMissing));
+    filterMissing = <HTMLInputElement>node.querySelector('input');
+    filterMissing.addEventListener('change', () => {
+      // toggle filter
+      const old = ccol.getFilter();
+      if (old === null) {
+        ccol.setFilter({filterMissing: filterMissing!.checked, filter: []});
+      } else {
+        ccol.setFilter({filterMissing: filterMissing!.checked, filter: old.filter});
+      }
+    });
+  }
 }
 
 function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats: IStatistics, interactive: boolean) {

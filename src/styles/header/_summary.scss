@@ -1,8 +1,6 @@
 @import '../vars';
 
-&[data-summary=hist],
-&[data-summary=interactive-hist],
-&[data-summary=slider-hist] {
+&[data-summary$=hist] {
   display: flex;
   align-items: flex-end;
 
@@ -38,9 +36,16 @@
   }
 }
 
-&[data-summary=interactive-hist] {
+&[data-summary^=interactive] {
   > * {
     cursor: pointer;
+  }
+}
+
+&[data-summary=interactive-filter-hist] {
+  label {
+    position: absolute;
+    bottom: -2.75em;
   }
 }
 
