@@ -13,7 +13,7 @@ import Column from '../../model/Column';
 export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
   protected _context: ICellRenderContext<RenderColumn>;
 
-  private initialized: boolean = false;
+  private initialized: 'ready'|'waiting'|'no' = 'no';
 
   constructor(root: HTMLElement, private readonly id: string, private readonly ctx: IRankingContext, private readonly extraRowUpdate?: (row: HTMLElement, rowIndex: number) => void) {
     super(root);
@@ -194,11 +194,14 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
       c.c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounce(() => this.updateColumn(i), 25));
     });
 
-    if (this.initialized) {
+    if (this.initialized === 'ready') {
       super.recreate();
-    } else {
-      this.initialized = true;
-      setTimeout(() => super.init(), 100);
+    } else if (this.initialized !== 'waiting') {
+      this.initialized = 'waiting';
+      setTimeout(() => {
+          super.init();
+          this.initialized = 'ready';
+        }, 100);
     }
   }
 }

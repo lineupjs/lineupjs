@@ -92,7 +92,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, () => this.updateHist());
     data.on(`${DataProvider.EVENT_DIRTY}.body`, debounce(function (this: { primaryType: string }) {
       if (this.primaryType !== Column.EVENT_WIDTH_CHANGED && this.primaryType !== StackColumn.EVENT_WEIGHTS_CHANGED) {
-        console.log('update');
+        // console.log('update');
         that.update();
       }
     }));
