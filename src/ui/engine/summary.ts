@@ -7,7 +7,7 @@ import NumberColumn, {INumberColumn, isNumberColumn,} from '../../model/NumberCo
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
-import {filterMissingMarkup} from '../../dialogs/AFilterDialog';
+import {filterMissingNumberMarkup} from '../../dialogs/AFilterDialog';
 import {stringFilter} from '../../dialogs/StringFilterDialog';
 import {IDataProvider} from '../../provider/ADataProvider';
 import {behavior, DragEvent, event as d3event, select, selectAll} from 'd3';
@@ -92,7 +92,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   if (!withLabels) {
     return;
   }
-  node.insertAdjacentHTML('beforeend', filterMissingMarkup(start !== null && start.filterMissing));
+  node.insertAdjacentHTML('beforeend', filterMissingNumberMarkup(start !== null && start.filterMissing, stats.missing));
   filterMissing = <HTMLInputElement>node.querySelector('input');
   filterMissing.addEventListener('change', () => {
     // toggle filter
@@ -133,7 +133,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats:
     <div data-handle="max-hint" style="width: ${Math.round(100 - percent(filterMax))}%"></div>
     <div data-handle="min" data-value="${round(filterMin, 2)}" style="left: ${Math.round(percent(filterMin))}%"></div>
     <div data-handle='max' data-value="${round(filterMax, 2)}" style="right: ${Math.round(100 - percent(filterMax))}%"></div>
-    ${filterMissingMarkup(filter.filterMissing)}
+    ${filterMissingNumberMarkup(filter.filterMissing, stats.missing)}
   `);
 
   const min = <HTMLElement>node.querySelector('[data-handle=min]');
