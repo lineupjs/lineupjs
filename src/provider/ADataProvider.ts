@@ -23,6 +23,7 @@ import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
 import {IGroup, IOrderedGroup, toGroupID} from '../model/Group';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
+import OrderedSet from './OrderedSet';
 
 /**
  * a data row for rendering
@@ -154,9 +155,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   private rankings: Ranking[] = [];
   /**
    * the current selected indices
-   * @type {Set}
+   * @type {OrderedSet}
    */
-  private selection = new Set<number>();
+  private readonly selection = new OrderedSet<number>();
 
   //ranking.id@group.name
   private aggregations = new Set<string>();
@@ -675,7 +676,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       return; //no change
     }
     if (!this.multiSelections && this.selection.size > 0) {
-      this.selection = new Set<number>();
+      this.selection.clear();
     }
     this.selection.add(index);
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
@@ -704,7 +705,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       return; //no change
     }
     if (!this.multiSelections) {
-      this.selection = new Set<number>();
+      this.selection.clear();
       indices = indices.slice(0, 1); //just the first one
     }
     indices.forEach((index) => {
@@ -728,7 +729,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (this.selection.size === indices.length && indices.every((i) => this.selection.has(i))) {
       return; //no change
     }
-    this.selection = new Set<number>();
+    this.selection.clear();
     this.selectAll(indices);
   }
 
@@ -793,7 +794,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (this.selection.size === 0) {
       return; //no change
     }
-    this.selection = new Set<number>();
+    this.selection.clear();
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, [], false);
   }
 
