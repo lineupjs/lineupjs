@@ -3,7 +3,7 @@ import ADialog from './ADialog';
 
 
 export default class ChangeRendererDialog extends ADialog {
-  constructor(private readonly column: Column, header: HTMLElement, title = 'Change Visualization') {
+  constructor(private readonly column: Column, header: HTMLElement, title = 'Item Visualization') {
     super(header, title);
   }
 
