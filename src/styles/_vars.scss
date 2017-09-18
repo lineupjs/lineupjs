@@ -29,6 +29,7 @@ $lu_hist_color: #c1c1c1;
 $lu_engine_grip_gap: 3px !default;
 
 $lu_missing_bg: repeating-linear-gradient(-45deg, transparent, transparent 12px, #eee 12px, #eee 15px) !default;
+
 /* use slightly darker pattern when background color is also darker */
 $lu_missing_bg_darker: repeating-linear-gradient(-45deg, transparent, transparent 12px, #eaeaea 12px, #eaeaea 15px) !default;
 
