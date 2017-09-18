@@ -26,7 +26,9 @@ $lu_upset_stroke: black !default;
 
 $lu_engine_grip_gap: 5px !default;
 
-$lu_missing_bg: repeating-linear-gradient(-45deg, transparent, transparent 7px, #ddd 7px, #ddd 10px) !default;
+$lu_missing_bg: repeating-linear-gradient(-45deg, transparent, transparent 12px, #eee 12px, #eee 15px) !default;
+/* use slightly darker pattern when background color is also darker */
+$lu_missing_bg_darker: repeating-linear-gradient(-45deg, transparent, transparent 12px, #eaeaea 12px, #eaeaea 15px) !default;
 
 $lu_side_panel_bg_color: #f0f0f0 !default;
 $lu_side_panel_toolbar_bg: white !default;
