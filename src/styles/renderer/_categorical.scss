@@ -7,7 +7,6 @@
   :first-child {
     flex: 0 0 16px;
     line-height: 100%;
-    max-height: 16px;
     margin-right: 0.5em;
 
     /* border-radius: 8px; */
@@ -18,4 +17,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+}
+
+[data-agg=group] [data-renderer=catcolor] {
+  /* center the text for the renderer "Most Frequent Category Color" */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: center;
 }
