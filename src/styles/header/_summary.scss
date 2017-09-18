@@ -7,7 +7,6 @@
   > * {
     flex: 1 1 auto;
     position: relative;
-    background: $lu_hist_color;
     margin: 0 1px;
     display: flex;
     flex-direction: row;
@@ -52,6 +51,10 @@
 &[data-summary=slider-hist] {
   margin-bottom: 2.75em;
   position: relative;
+  
+  > div {
+    background: $lu_hist_color;
+  }
 
   > [data-handle=min],
   > [data-handle=max] {
