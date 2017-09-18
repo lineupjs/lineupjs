@@ -9,14 +9,15 @@
 
   cursor: pointer;
   text-align: center;
-  color: white;
+  color: black;
   overflow: hidden;
-  background: #c1c1c1;
+  background: #eaeaea;
   margin-right: -$lu_engine_grip_gap;
 
   > .#{$lu_css_prefix}-label {
     padding-left: 0.8em;
     margin-right: $lu-engine_grip_gap;
+    font-weight: 500;
   }
 
   > .#{$lu_css_prefix}-sort {
@@ -42,7 +43,7 @@
   > .#{$lu_css_prefix}-handle {
     position: absolute;
     right: 0;
-    width: 5px;
+    width: $lu_engine_grip_gap;
     height: 100%;
     background-color: white;
     cursor: col-resize;
