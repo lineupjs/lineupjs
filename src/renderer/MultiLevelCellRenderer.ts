@@ -11,6 +11,7 @@ import {IGroup} from '../model/Group';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {IMultiLevelColumn} from '../model/CompositeColumn';
 import Column from '../model/Column';
+import {isEdge} from 'lineupengine/src/style';
 
 export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;
@@ -68,6 +69,10 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           if (!useGrid) {
             cnode.style.width = `${round(weight * 100, 2)}%`;
             cnode.style.marginRight = stacked ? null : `${padding}px`;
+          } else if (isEdge) {
+            cnode.style.msGridColumn = (ci + 1).toString();
+          } else {
+            (<any>cnode.style).gridColumnStart = (ci + 1).toString();
           }
           col.renderer.update(cnode, d, i, group);
           if (stacked) {
