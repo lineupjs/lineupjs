@@ -13,6 +13,7 @@ import {IDataProvider} from '../../provider/ADataProvider';
 import {behavior, DragEvent, event as d3event, select, selectAll} from 'd3';
 import {round} from '../../utils';
 import {IRankingHeaderContext} from './interfaces';
+import AggregateGroupColumn from '../../model/AggregateGroupColumn';
 
 export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
   if (col instanceof StringColumn) {
@@ -23,6 +24,8 @@ export default function createSummary(node: HTMLElement, col: Column, ctx: IRank
     summaryNumerical(col, node, <IStatistics>ctx.statsOf(col), interactive);
   } else if (col instanceof SelectionColumn) {
     summarySelection(col, node, ctx.provider);
+  } else if (col instanceof AggregateGroupColumn) {
+    summaryAggregation(col, node);
   }
 }
 
@@ -206,5 +209,23 @@ function summarySelection(col: SelectionColumn, node: HTMLElement, provider: IDa
     }
     button.classList.toggle('fa-square-o');
     button.classList.toggle('fa-check-square-o');
+  };
+}
+
+function summaryAggregation(col: AggregateGroupColumn, node: HTMLElement) {
+  node.dataset.summary = 'aggregation';
+  node.innerHTML = `<i class='fa fa-caret-down' title='(Un)Aggregate All'></i>`;
+  const button = (<HTMLElement>node.firstElementChild);
+  button.onclick = (evt) => {
+    evt.stopPropagation();
+    const ranking = col.findMyRanker();
+    if (!ranking) {
+      return;
+    }
+    const groups = ranking.getGroups();
+    const aggregate = button.classList.contains('fa-caret-down');
+    button.classList.toggle('fa-caret-down');
+    button.classList.toggle('fa-caret-right');
+    groups.forEach((g) => col.setAggregated(g, aggregate));
   };
 }

@@ -355,11 +355,11 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
         {type: 'number', label: 'Bar'},
         {type: 'circle', label: 'Circle'},
         {type: 'default', label: 'String'},
-        {type: 'heatmap', label: 'Heatmap'}
+        {type: 'heatmap', label: 'Brightness'}
       ],
       [
         {type: 'histogram', label: 'Histogram'},
-        {type: 'boxplot', label: 'BoxPlot'},
+        {type: 'boxplot', label: 'Box Plot'},
         {type: 'number', label: 'Median Bar'},
         {type: 'circle', label: 'Median Circle'},
         {type: 'heatmap', label: 'Median Heatmap'}

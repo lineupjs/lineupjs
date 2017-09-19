@@ -140,7 +140,8 @@
         }
       }
 
-      &.selection {
+      &.selection,
+      &.aggregation {
         div.summary {
           text-align: left;
           display: block;

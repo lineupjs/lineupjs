@@ -38,6 +38,11 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     mc.children.forEach((c, i) => {
       const n = createHeader(c, document, ctx);
       n.style.marginLeft = i > 0 ? `${this.columnPadding * 2}px`: null;
+      if (isEdge) {
+        n.style.msGridColumn = (i + 1).toString();
+      } else {
+        (<any>n.style).gridColumnStart = (i + 1).toString();
+      }
       wrapper.appendChild(n);
     });
 

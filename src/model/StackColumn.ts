@@ -49,11 +49,11 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
         {type: 'number', label: 'Bar'},
         {type: 'circle', label: 'Circle'},
         {type: 'default', label: 'String'},
-        {type: 'heatmap', label: 'Heatmap'}
+        {type: 'heatmap', label: 'Brightness'}
       ],
       [
         {type: 'histogram', label: 'Histogram'},
-        {type: 'boxplot', label: 'BoxPlot'},
+        {type: 'boxplot', label: 'Box Plot'},
         {type: 'stack', label: 'Median Stacked Bar'},
         {type: 'number', label: 'Median Bar'},
         {type: 'circle', label: 'Median Circle'},

@@ -6,17 +6,20 @@
 
   counter-increment: side-panel-counter;
   background-color: #fff;
+  margin-bottom: 0.8em;
 
   > header {
     display: flex;
     align-content: space-between;
     background: $lu_side_panel_bg_color;
-    padding: 0.5em;
+    padding: 0.2em 0.5em;
     position: relative;
     font-size: $lu_side_panel_font_size;
+    font-weight: 500;
 
     &::before {
       color: #999;
+      padding-right: 0.2em;
       content: counter(side-panel-counter);
     }
 
@@ -36,7 +39,7 @@
 
     .#{$lu_css_prefix}-label {
       margin: 0 1em 0 0;
-      padding: 0 0 0 0.2em;
+      padding: 0 0 0 0.4em;
       overflow: hidden !important;
       cursor: pointer;
     }
@@ -45,11 +48,9 @@
   .#{$lu_css_prefix}-toolbar {
     background: $lu_side_panel_toolbar_bg;
     font-size: $lu_side_panel_toolbar_font_size;
-    top: 5px;
-
-    > i:hover {
-      color: #3e89db;
-    }
+    top: 0;
+    right: 0;
+    color: white;
   }
 
   > .#{$lu_css_prefix}-sort-handle {
@@ -72,7 +73,7 @@
 
     &[data-summary=slider-hist] > div,
     &[data-summary=hist] > div {
-      background: #dcdcdc;
+      background: $lu_hist_color;
     }
 
     &[data-summary=interactive-filter-hist] {
@@ -81,6 +82,7 @@
 
     &[data-summary=string] {
       display: block;
+      height: auto;
     }
   }
 }

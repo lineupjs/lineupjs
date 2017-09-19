@@ -32,7 +32,7 @@ export function defaultConfig(): IFullLineUpConfig {
     header: {
       idPrefix,
       slopeWidth: 150,
-      columnPadding: 5,
+      columnPadding: 3,
       headerHistogramHeight: 40,
       headerHeight: 20,
       manipulative: true,
@@ -70,7 +70,7 @@ export function defaultConfig(): IFullLineUpConfig {
       rowBarBottomPadding: 1,
       idPrefix: '',
       slopeWidth: 150,
-      columnPadding: 5,
+      columnPadding: 3,
       stacked: true,
       animation: false, //200
       animationDuration: 1000,

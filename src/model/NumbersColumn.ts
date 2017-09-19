@@ -158,7 +158,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     this.dataLength = desc.dataLength;
     this.threshold = desc.threshold || 0;
     this.colorRange = desc.colorRange || ['blue', 'red'];
-    this.sort = desc.sort || SORT_METHOD.min;
+    this.sort = desc.sort || SORT_METHOD.median;
 
     this.setRendererList([
       {type: 'numbers', label: 'Heatmap'},
@@ -169,6 +169,8 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
       {type: 'number', label: 'Bar'},
       {type: 'circle', label: 'Circle'}]);
 
+    // better initialize the default with based on the data length
+    this.setWidth(Math.min(Math.max(100, this.dataLength * 10), 500));
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number): number {

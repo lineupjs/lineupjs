@@ -3,7 +3,7 @@ import ADialog from './ADialog';
 
 
 export default class ChangeRendererDialog extends ADialog {
-  constructor(private readonly column: Column, header: HTMLElement, title = 'Change Visualization') {
+  constructor(private readonly column: Column, header: HTMLElement, title = 'Item Visualization') {
     super(header, title);
   }
 
@@ -19,13 +19,13 @@ export default class ChangeRendererDialog extends ADialog {
     let html = '';
 
     html += possible.map((d) => {
-      return `<input type="radio" name="renderertype" value=${d.type}  ${(current === d.type) ? 'checked' : ''}> ${d.label}<br>`;
+      return `<label><input type="radio" name="renderertype" value=${d.type}  ${(current === d.type) ? 'checked' : ''}> ${d.label}</label><br>`;
     }).join('\n');
 
     if (currentGroup.length > 1) {
       html += '<strong>Group Visualization</strong><br>';
       html += possibleGroup.map((d) => {
-        return `<input type="radio" name="grouptype" value=${d.type}  ${(currentGroup === d.type) ? 'checked' : ''}> ${d.label}<br>`;
+        return `<label><input type="radio" name="grouptype" value=${d.type}  ${(currentGroup === d.type) ? 'checked' : ''}> ${d.label}</label><br>`;
       }).join('\n');
     }
 
