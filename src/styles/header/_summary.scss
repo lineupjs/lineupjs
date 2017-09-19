@@ -51,7 +51,7 @@
 &[data-summary=slider-hist] {
   margin-bottom: 2.75em;
   position: relative;
-  
+
   > div {
     background: $lu_hist_color;
   }
@@ -121,4 +121,10 @@
 &[data-summary=string],
 &[data-summary=selection] {
   display: block;
+}
+
+label.#{$lu_css_prefix}-disabled {
+  color: gray;
+  user-select: none;
+  cursor: not-allowed;
 }
