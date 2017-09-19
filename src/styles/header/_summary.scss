@@ -7,7 +7,6 @@
   > * {
     flex: 1 1 auto;
     position: relative;
-    background: rgba(255, 255, 255, 0.5);
     margin: 0 1px;
     display: flex;
     flex-direction: row;
@@ -52,13 +51,17 @@
 &[data-summary=slider-hist] {
   margin-bottom: 2.75em;
   position: relative;
+  
+  > div {
+    background: $lu_hist_color;
+  }
 
   > [data-handle=min],
   > [data-handle=max] {
     position: absolute;
     height: 100%;
     border-right: 1px solid black;
-    transition: border-width 0.5s linear;
+    transition: border-width 0.2s ease;
     width: 1px;
     cursor: ew-resize;
 

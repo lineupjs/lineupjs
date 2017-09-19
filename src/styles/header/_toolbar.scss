@@ -11,6 +11,7 @@
   border-radius: 3px 0 0 3px;
   cursor: auto;
   background: $lu_header_background;
+  color: white;
   font-size: $lu_toolbar_font_size;
   z-index: 1;
 
@@ -21,7 +22,7 @@
     cursor: pointer;
 
     &:hover {
-      color: darkblue;
+      color: $lu_header_active_filter_color;
     }
 
     &[title=Rename]::before {
