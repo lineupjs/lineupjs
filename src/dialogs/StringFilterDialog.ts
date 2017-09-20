@@ -55,7 +55,17 @@ export function stringFilter(col: StringColumn) {
   <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
   <br>${filterMissingMarkup(bakMissing)}
   <br>`,
-    init(node: HTMLElement, filterCallback?: (filtered: boolean) => void) {
+    update(node: HTMLElement) {
+      const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
+      const filterMissing = <HTMLInputElement>node.querySelector('input[type="checkbox"].lu_filter_missing');
+      const input = <HTMLInputElement>node.querySelector('input[type="text"]');
+      isRegex.checked = bak instanceof RegExp;
+      filterMissing.checked = bakMissing;
+      if (input.value !== bak) {
+        input.value = (bak instanceof RegExp) ? bak.source : bak;
+      }
+    },
+   init(node: HTMLElement, filterCallback?: (filtered: boolean) => void) {
 
       const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
       const filterMissing = <HTMLInputElement>node.querySelector('input[type="checkbox"].lu_filter_missing');
@@ -88,9 +98,9 @@ export function stringFilter(col: StringColumn) {
         updateData(search);
       }
 
-      isRegex.addEventListener('change', () => updateImpl(false));
-      filterMissing.addEventListener('change', () => updateImpl(false));
-      input.addEventListener('input', () => updateImpl(false));
+      isRegex.onchange = () => updateImpl(false);
+      filterMissing.onchange = () => updateImpl(false);
+      input.oninput = () => updateImpl(false);
 
       return updateImpl;
     }

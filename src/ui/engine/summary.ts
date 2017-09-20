@@ -30,31 +30,43 @@ export default function createSummary(node: HTMLElement, col: Column, ctx: IRank
 }
 
 function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement, stats: ICategoricalStatistics, withLabels: boolean) {
-  node.innerHTML = '';
+  const old = node.dataset.summary;
+
   if (!stats) {
+    node.innerHTML = '';
     return;
   }
-  node.dataset.summary = 'hist';
   const cats = col.categories;
   const colors = col.categoryColors;
   const labels = col.categoryLabels;
 
-  stats.hist.forEach(({cat, y}) => {
-    const i = cats.indexOf(cat);
-    node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}" title="${labels[i]}: ${y}" data-cat="${cat}" ${withLabels ? `data-title="${labels[i]}"` : ''}></div>`);
-  });
+  if (!old || !old.endsWith('hist')) {
+    stats.hist.forEach(({cat, y}) => {
+      const i = cats.indexOf(cat);
+      node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}" title="${labels[i]}: ${y}" data-cat="${cat}" ${withLabels ? `data-title="${labels[i]}"` : ''}></div>`);
+    });
+  } else {
+    const bins = <HTMLElement[]>Array.from(node.children);
+    stats.hist.forEach(({y}, i) => {
+      const bin = bins[i];
+      bin.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
+      bin.title = `${labels[i]}: ${y}`;
+    });
+  }
 
   if (!(col instanceof CategoricalColumn || col instanceof CategoricalNumberColumn)) {
+    node.dataset.summary = 'hist';
     return;
   }
+
   node.dataset.summary = withLabels ? 'interactive-filter-hist' : 'interactive-hist';
   // make histogram interactive
   const ccol = <CategoricalColumn | CategoricalNumberColumn>col;
   const start = ccol.getFilter();
 
-  let filterMissing: HTMLInputElement|null = null;
+  let filterMissing: HTMLInputElement | null = null;
 
-  Array.from(node.children).forEach((bin: HTMLElement, i) => {
+  Array.from(node.children).slice(0, cats.length).forEach((bin: HTMLElement, i) => {
     const cat = bin.dataset.cat!;
     bin.dataset.filtered = CategoricalColumn.filter(start, cat) ? '' : 'filtered';
     bin.onclick = (evt) => {
@@ -95,9 +107,16 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   if (!withLabels) {
     return;
   }
-  node.insertAdjacentHTML('beforeend', filterMissingNumberMarkup(start !== null && start.filterMissing, stats.missing));
-  filterMissing = <HTMLInputElement>node.querySelector('input');
-  filterMissing.addEventListener('change', () => {
+
+  if (old !== 'interactive-filter-hist') {
+    node.insertAdjacentHTML('beforeend', filterMissingNumberMarkup(start !== null && start.filterMissing, stats.missing));
+    filterMissing = <HTMLInputElement>node.querySelector('input');
+  } else {
+    filterMissing = <HTMLInputElement>node.querySelector('input');
+    filterMissing.checked = start !== null && start.filterMissing;
+  }
+
+  filterMissing.onchange = () => {
     // toggle filter
     const old = ccol.getFilter();
     if (old === null) {
@@ -105,24 +124,24 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
     } else {
       ccol.setFilter({filterMissing: filterMissing!.checked, filter: old.filter});
     }
-  });
+  };
 }
 
 function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats: IStatistics, interactive: boolean) {
-  node.innerHTML = '';
+  const old = node.dataset.summary;
+
   if (!stats) {
+    node.innerHTML = '';
     return;
   }
-  node.dataset.summary = 'hist';
-  stats.hist.forEach(({x, y}, i) => {
-    node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
-  });
-
   if (!interactive || !(col instanceof NumberColumn)) {
+    node.dataset.summary = 'hist';
+    node.innerHTML = '';
+    stats.hist.forEach(({x, y}, i) => {
+      node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
+    });
     return;
   }
-
-  node.dataset.summary = 'slider-hist';
 
   const ncol = <NumberColumn>col;
   const filter = ncol.getFilter();
@@ -131,19 +150,48 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats:
   const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
   const filterMin = isFinite(filter.min) ? filter.min : domain[0];
   const filterMax = isFinite(filter.max) ? filter.max : domain[1];
-  node.insertAdjacentHTML('beforeend', `
-    <div data-handle="min-hint" style="width: ${Math.round(percent(filterMin))}%"></div>
-    <div data-handle="max-hint" style="width: ${Math.round(100 - percent(filterMax))}%"></div>
-    <div data-handle="min" data-value="${round(filterMin, 2)}" style="left: ${Math.round(percent(filterMin))}%"></div>
-    <div data-handle='max' data-value="${round(filterMax, 2)}" style="right: ${Math.round(100 - percent(filterMax))}%"></div>
-    ${filterMissingNumberMarkup(filter.filterMissing, stats.missing)}
-  `);
+
+  if (old === 'slider-hist') {
+    const bins = <HTMLElement[]>Array.from(node.children);
+    stats.hist.forEach(({x, y}, i) => {
+      const bin = bins[i];
+      bin.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
+      bin.title = `Bin ${i}: ${y}`;
+      bin.dataset.x = x.toString();
+    });
+  } else {
+    node.dataset.summary = 'slider-hist';
+    stats.hist.forEach(({x, y}, i) => {
+      node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
+    });
+
+    node.insertAdjacentHTML('beforeend', `
+      <div data-handle="min-hint" style="width: ${Math.round(percent(filterMin))}%"></div>
+      <div data-handle="max-hint" style="width: ${Math.round(100 - percent(filterMax))}%"></div>
+      <div data-handle="min" data-value="${round(filterMin, 2)}" style="left: ${Math.round(percent(filterMin))}%"></div>
+      <div data-handle='max' data-value="${round(filterMax, 2)}" style="right: ${Math.round(100 - percent(filterMax))}%"></div>
+      ${filterMissingNumberMarkup(filter.filterMissing, stats.missing)}
+    `);
+  }
 
   const min = <HTMLElement>node.querySelector('[data-handle=min]');
   const max = <HTMLElement>node.querySelector('[data-handle=max]');
   const minHint = <HTMLElement>node.querySelector('[data-handle=min-hint]');
   const maxHint = <HTMLElement>node.querySelector('[data-handle=max-hint]');
   const filterMissing = <HTMLInputElement>node.querySelector('input');
+
+  if (old === 'slider-hist') {
+    // just update
+    minHint.style.width = `${Math.round(percent(filterMin))}%`;
+    maxHint.style.width = `${Math.round(100 - percent(filterMax))}%`;
+    min.dataset.value= round(filterMin, 2).toString();
+    max.dataset.value = round(filterMax, 2).toString();
+    min.style.left = `${Math.round(percent(filterMin))}%`;
+    max.style.right = `${Math.round(100 - percent(filterMax))}%`;
+    filterMissing.checked = filter.filterMissing;
+    return;
+  }
+
 
   const update = () => {
     const minValue = unpercent(parseFloat(min.style.left!));
@@ -155,7 +203,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats:
     });
   };
 
-  filterMissing.addEventListener('change', () => update());
+  filterMissing.onchange = () => update();
 
   selectAll([min, max]).call(behavior.drag()
     .on('dragstart', function (this: HTMLElement) {
@@ -183,22 +231,30 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats:
 }
 
 export function summaryString(col: StringColumn, node: HTMLElement, interactive: boolean) {
+  const old = node.dataset.summary;
   node.dataset.summary = 'string';
   if (!interactive) {
     const filter = col.getFilter() || '';
     node.textContent = filter === StringColumn.FILTER_MISSING ? '' : String(filter);
     return;
   }
-
   const base = stringFilter(col);
-
+  if (old === 'string') {
+    base.update(node);
+    return;
+  }
+  // init
   node.innerHTML = base.template;
   base.init(node);
 }
 
 function summarySelection(col: SelectionColumn, node: HTMLElement, provider: IDataProvider) {
+  const old = node.dataset.summary;
   node.dataset.summary = 'selection';
-  node.innerHTML = `<i class='fa fa-square-o' title='(Un)Select All'></i>`;
+  if (old !== 'selection') {
+    //init
+    node.innerHTML = `<i class='fa fa-square-o' title='(Un)Select All'></i>`;
+  }
   const button = (<HTMLElement>node.firstElementChild);
   button.onclick = (evt) => {
     evt.stopPropagation();
@@ -213,8 +269,12 @@ function summarySelection(col: SelectionColumn, node: HTMLElement, provider: IDa
 }
 
 function summaryAggregation(col: AggregateGroupColumn, node: HTMLElement) {
+  const old = node.dataset.summary;
   node.dataset.summary = 'aggregation';
-  node.innerHTML = `<i class='fa fa-caret-down' title='(Un)Aggregate All'></i>`;
+  if (old !== 'aggregation') {
+    //init
+    node.innerHTML = `<i class='fa fa-caret-down' title='(Un)Aggregate All'></i>`;
+  }
   const button = (<HTMLElement>node.firstElementChild);
   button.onclick = (evt) => {
     evt.stopPropagation();
