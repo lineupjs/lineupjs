@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
-  "version": "1.1.2-SNAPSHOT",
+  "version": "2.0.0-SNAPSHOT",
   "author": {
     "name": "Caleydo Team",
     "email": "contact@caleydo.org",
