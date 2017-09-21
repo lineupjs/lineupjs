@@ -10,9 +10,9 @@
   cursor: pointer;
   text-align: center;
   color: black;
-  overflow: hidden;
-  background: #eaeaea;
+  overflow: unset !important;
   margin-right: -$lu_engine_grip_gap;
+  border-bottom: 1px solid black;
 
   > .#{$lu_css_prefix}-label {
     padding-left: 0.8em;
@@ -52,9 +52,15 @@
     height: 100%;
     background-color: white;
     cursor: col-resize;
+    border-bottom: 1px solid white;
+    bottom: -1px;
 
     &.#{$lu_css_prefix}-dragover {
       background-color: $lu_drag_over;
+    }
+
+    &:hover {
+      background-color: $lu_hover_color;
     }
   }
 }
