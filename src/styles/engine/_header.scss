@@ -14,6 +14,10 @@
   margin-right: -$lu_engine_grip_gap;
   border-bottom: 1px solid black;
 
+  &:hover {
+    background-color: $lu_even_bg;
+  }
+
   > .#{$lu_css_prefix}-label {
     padding-left: 0.8em;
     margin-right: $lu-engine_grip_gap;

@@ -25,6 +25,32 @@ abstract class ADialog {
    * @param body
    * @returns {Selection<any>}
    */
+  makeMenuPopup(body: string) {
+    const pos = offset(this.attachment);
+    const parent = this.attachment.ownerDocument.body;
+    parent.insertAdjacentHTML('beforeend', `
+      <div class="lu-popup2 lu-popup-menu" style="left: ${pos.left}px; top: ${pos.top}px">${body}</div>`);
+    const popup = <HTMLElement>parent.lastElementChild!;
+
+    const escKey = (evt:KeyboardEvent) => {
+      if (evt.which === 27) {
+        document.removeEventListener('keyup', escKey);
+        popup.remove();
+      }
+    };
+
+    document.addEventListener('keyup', escKey);
+
+    ADialog.registerPopup(popup)
+    this.hidePopupOnClickOutside(popup);
+    return popup;
+  }
+
+  /**
+   * creates a simple popup dialog under the given attachment
+   * @param body
+   * @returns {Selection<any>}
+   */
   makePopup(body: string) {
     const pos = offset(this.attachment);
     const parent = this.attachment.ownerDocument.body;
@@ -32,17 +58,21 @@ abstract class ADialog {
       <div class="lu-popup2" style="left: ${pos.left}px; top: ${pos.top}px">${this.dialogForm(body)}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
 
-    popup.addEventListener('keydown', (evt) => {
+    const escKey = (evt:KeyboardEvent) => {
       if (evt.which === 27) {
+        document.removeEventListener('keyup', escKey);
         popup.remove();
       }
-    });
+    };
+
+    document.addEventListener('keyup', escKey);
 
     const auto = <HTMLInputElement>popup.querySelector('input[autofocus]');
     if (auto) {
       auto.focus();
     }
     ADialog.registerPopup(popup);
+    this.hidePopupOnClickOutside(popup);
     return popup;
   }
 
@@ -52,6 +82,16 @@ abstract class ADialog {
     parent.insertAdjacentHTML('beforeend', `
       <div class="lu-popup2 chooser" style="left: ${pos.left}px; top: ${pos.top}px">${this.basicDialog(body)}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
+
+    const escKey = (evt:KeyboardEvent) => {
+      if (evt.which === 27) {
+        document.removeEventListener('keyup', escKey);
+        popup.remove();
+      }
+    };
+
+    document.addEventListener('keyup', escKey);
+
     ADialog.registerPopup(popup);
     this.hidePopupOnClickOutside(popup);
     return popup;

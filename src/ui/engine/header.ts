@@ -29,6 +29,7 @@ import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 import createSummary from './summary';
 import {IRankingHeaderContext} from './interfaces';
 import {equalArrays} from '../../utils';
+import MoreColumnOptionsDialog from '../../dialogs/MoreColumnOptionsDialog';
 
 export {default as createSummary} from './summary';
 
@@ -46,7 +47,13 @@ export function toFullTooltip(col: { label: string, description?: string }) {
 
 export function createHeader(col: Column, document: Document, ctx: IRankingHeaderContext) {
   const node = document.createElement('section');
-  node.innerHTML = `<div class="lu-toolbar"></div><i class="lu-sort"></i><div class="lu-handle"></div><div class="lu-label">${col.label}</div><div class="lu-summary"></div>`;
+  node.innerHTML = `
+    <i class="lu-sort"></i>
+    <div class="lu-label">${col.label}</div>
+    <div class="lu-toolbar"></div>
+    <div class="lu-summary"></div>
+    <div class="lu-handle"></div>
+  `;
   createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, col, ctx);
 
   node.addEventListener('click', (evt) => {
@@ -84,7 +91,7 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeade
     }
     i.onclick = (evt) => {
       evt.stopPropagation();
-      const dialog = new dialogClass(col, node.parentElement!, ...dialogArgs);
+      const dialog = new dialogClass(col, i, ...dialogArgs);
       dialog.openDialog();
     };
     return i;
@@ -97,6 +104,29 @@ interface IAddIcon {
 }
 
 export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+
+  //stratify
+  if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
+    addIcon('Stratify By').onclick = (evt) => {
+      evt.stopPropagation();
+      col.groupByMe();
+    };
+  }
+
+  if (col instanceof NumberColumn) {
+    addIcon('Stratify By Threshold', StratifyThresholdDialog);
+  }
+
+  if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
+    //Numbers Sort
+    addIcon('Sort By', SortDialog);
+  }
+
+  addIcon('More', MoreColumnOptionsDialog, '', addIcon, col, ctx);
+
+}
+
+export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
   const isSupportColumn = isSupportType(col.desc);
 
   if (!isSupportColumn) {

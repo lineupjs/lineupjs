@@ -17,10 +17,10 @@
 
   .#{$lu_css_prefix}-popup,
   .#{$lu_css_prefix}-popup2 {
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: white;
+    border: 1px solid black;
     position: absolute;
-    padding: 2px;
-    box-shadow: 5px 5px 3px #888;
+    padding: 5px;
     z-index: 9;
     font-size: 8pt;
     clear: right;
