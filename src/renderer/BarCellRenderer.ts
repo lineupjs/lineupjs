@@ -6,7 +6,6 @@ import {ISVGCellRenderer, IHTMLCellRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import * as hatching from '../assets/hatching.png';
 
 
 /**
@@ -122,10 +121,11 @@ export default class BarCellRenderer implements ICellRendererFactory {
 
 
 export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
-  // create a hatching pattern over the full width
-
-  const missingImage = new Image();
-  missingImage.src = hatching;
-  ctx.fillStyle = ctx.createPattern(missingImage, 'repeat');
-  ctx.fillRect(x, y, width, height);
+  const dashColor = '#c1c1c1';
+  const dashWidth = 10;
+  const dashHeight = 3;
+  const dashX = (width - x - dashWidth) / 2; // center horizontally
+  const dashY = (height - y - dashHeight) / 2; // center vertically
+  ctx.fillStyle = dashColor;
+  ctx.fillRect(dashX, dashY, dashWidth, dashHeight);
 }
