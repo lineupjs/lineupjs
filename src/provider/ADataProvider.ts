@@ -213,7 +213,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   protected triggerReorder(ranking: Ranking) {
     Promise.resolve(this.sort(ranking)).then((order) => {
       unifyParents(order);
-      ranking.setGroups(order)
+      ranking.setGroups(order);
     });
   }
 
