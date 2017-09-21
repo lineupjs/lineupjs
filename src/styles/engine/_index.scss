@@ -13,14 +13,6 @@
     > * {
       @import './row';
     }
-
-    &:not(.odd) > div:nth-child(even),
-    &.odd > div:nth-child(odd),
-    &:not(.odd) > div:nth-child(even) > *.frozen,
-    &.odd > div:nth-child(odd) > *.frozen {
-      /* use slightly darker pattern when background color is also darker */
-      @import '../renderer/missing_darker';
-    }
   }
 }
 

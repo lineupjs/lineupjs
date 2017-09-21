@@ -29,10 +29,9 @@ $lu_hist_color: #c1c1c1;
 $lu_engine_grip_gap: 3px !default; // change `columnPadding` in config.ts accordingly
 $lu_engine_row_outline: 2px !default;
 
-$lu_missing_bg_color: #ccc !default;
-
-/* use slightly darker pattern when background color is also darker */
-$lu_missing_bg_color_darker: #cacaca !default;
+$lu_missing_dash_height: 3px !default;
+$lu_missing_dash_width: 10px !default;
+$lu_missing_dash_color: #c1c1c1 !default;
 
 $lu_side_panel_bg_color: #f0f0f0 !default;
 $lu_side_panel_toolbar_bg: #6d6c6c !default;
