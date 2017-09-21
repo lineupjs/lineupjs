@@ -364,6 +364,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
         {type: 'circle', label: 'Median Circle'},
         {type: 'heatmap', label: 'Median Heatmap'}
       ]);
+    this.setGroupRenderer('histogram');
   }
 
   dump(toDescRef: (desc: any) => any) {
