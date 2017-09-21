@@ -19,10 +19,21 @@
   }
 }
 
-[data-agg=group] [data-renderer=catcolor] {
+[data-agg=group] [data-renderer=catcolor],
+[data-agg=group] [data-renderer=catcolorshifted] {
   /* center the text for the renderer "Most Frequent Category Color" */
   display: flex;
   align-items: flex-start;
   justify-content: center;
   text-align: center;
+  position: relative;
+
+  > div {
+    position: absolute;
+    height: 100%;
+  }
+
+  > span {
+    z-index: 1;
+  }
 }

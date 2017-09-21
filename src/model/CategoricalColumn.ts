@@ -131,7 +131,8 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       {type: 'catcolor', label: 'Color'},
       {type: 'upset', label: 'Matrix'}
     ], [{type: 'categorical', label: 'Histogram'},
-      {type: 'catcolor', label: 'Most Frequent Category Color + Label'}]);
+      {type: 'catcolor', label: 'Most Frequent Category Color + Label'},
+      {type: 'catcolorshifted', label: 'Relative Most Frequent Category Color + Label'}]);
   }
 
   initCategories(desc: IBaseCategoricalDesc) {
@@ -337,5 +338,14 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     }
     const color = this.getColor(row, index)!;
     return {name, color};
+  }
+
+  getGroupRenderer() {
+    const current = super.getGroupRenderer();
+    if (current === this.desc.type && this.isGroupedBy() >= 0) {
+      // still the default and the stratification criteria
+      return 'catcolorshifted';
+    }
+    return current;
   }
 }

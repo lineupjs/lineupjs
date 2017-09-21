@@ -31,6 +31,7 @@ import RankCellRenderer from './RankCellRenderer';
 import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
 import HistogramGroupRenderer from './HistogramGroupRenderer';
+import CategoricalColorShiftedCellRenderer from './CategoricalColorShiftedCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -54,6 +55,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   nested: new MultiLevelCellRenderer(false),
   categorical: new CategoricalCellRenderer(),
   catcolor: new CategoricalColorCellRenderer(),
+  catcolorshifted: new CategoricalColorShiftedCellRenderer(),
   max: combineCellRenderer,
   min: combineCellRenderer,
   mean: combineCellRenderer,

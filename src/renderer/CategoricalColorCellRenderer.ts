@@ -29,7 +29,7 @@ export default class CategoricalColorCellRenderer implements ICellRendererFactor
     };
   }
 
-  private static choose(col: ICategoricalColumn & Column, rows: IDataRow[]) {
+  static choose(col: ICategoricalColumn & Column, rows: IDataRow[]) {
     const hist = new Map<string, number>();
     col.categories.forEach((cat) => hist.set(cat, 0));
     rows.forEach((row) =>
