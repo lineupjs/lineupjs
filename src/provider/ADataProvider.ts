@@ -20,7 +20,7 @@ import {INumberColumn} from '../model/NumberColumn';
 import {AEventDispatcher, debounce, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
-import {IGroup, IOrderedGroup, toGroupID} from '../model/Group';
+import {IGroup, IOrderedGroup, toGroupID, unifyParents} from '../model/Group';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 import OrderedSet from './OrderedSet';
 import {IExportOptions, exportRanking} from './utils';
@@ -211,7 +211,10 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   protected triggerReorder(ranking: Ranking) {
-    Promise.resolve(this.sort(ranking)).then((order) => ranking.setGroups(order));
+    Promise.resolve(this.sort(ranking)).then((order) => {
+      unifyParents(order);
+      ranking.setGroups(order)
+    });
   }
 
   /**

@@ -273,7 +273,15 @@ function summaryAggregation(col: AggregateGroupColumn, node: HTMLElement) {
   node.dataset.summary = 'aggregation';
   if (old !== 'aggregation') {
     //init
-    node.innerHTML = `<i class='fa fa-caret-down' title='(Un)Aggregate All'></i>`;
+    let defaultValue = 'down';
+    const ranking = col.findMyRanker();
+    if (ranking) {
+      const all = ranking.getGroups().every((g) => col.isAggregated(g));
+      if (all) {
+        defaultValue = 'right';
+      }
+    }
+    node.innerHTML = `<i class='fa fa-caret-${defaultValue}' title='(Un)Aggregate All'></i>`;
   }
   const button = (<HTMLElement>node.firstElementChild);
   button.onclick = (evt) => {
