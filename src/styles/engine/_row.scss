@@ -23,7 +23,17 @@
  */
 &.lu-selected {
   z-index: 10;
-  outline: 2px solid $lu_selected_color;
+  position: relative;
+
+  /* use box-shadow to create collapsing border (@see https://stackoverflow.com/a/28807765) */
+
+  box-shadow:
+    2px 0 0 0 $lu_selected_color,
+    0 2px 0 0 $lu_selected_color,
+    /* next line just to fix the corner */
+    2px 2px 0 0 $lu_selected_color,
+    2px 0 0 0 $lu_selected_color inset,
+    0 2px 0 0 $lu_selected_color inset !important;
 
   .lu-selection-only {
     display: block;
