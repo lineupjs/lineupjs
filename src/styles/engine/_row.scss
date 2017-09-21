@@ -1,4 +1,5 @@
 @import '../vars';
+@import '~lineupengine/src/styles/mixins';
 
 .lu-hover-only,
 .lu-selection-only {
@@ -23,7 +24,9 @@
  */
 &.lu-selected {
   z-index: 10;
-  outline: 2px solid $lu_selected_color;
+  position: relative;
+
+  @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
 
   .lu-selection-only {
     display: block;
