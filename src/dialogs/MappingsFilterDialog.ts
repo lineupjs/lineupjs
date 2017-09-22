@@ -32,11 +32,6 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
         <div class="lu-popup" style="left: ${pos.left}px; top: ${pos.top}px">${this.dialogForm('<div class="mappingArea"></div>')}</div>`);
       const popup = <HTMLElement>parent.lastElementChild!;
 
-      popup.addEventListener('keydown', (evt) => {
-        if (evt.which === 27) {
-          popup.remove();
-        }
-      });
     const applyMapping = (newscale: IMappingFunction, filter: { min: number, max: number, filterMissing: boolean }) => {
       act = newscale;
       actfilter = filter;
@@ -75,5 +70,6 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
       }
     });
     MappingsFilterDialog.registerPopup(popup);
+    this.hidePopupOnClickOutside(popup);
   }
 }
