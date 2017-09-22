@@ -1,6 +1,11 @@
 $lu_css_prefix: 'lu' !default;
-$lu_toolbar_font_size: 10pt !default;
-$lu_dialog_font_size: 10pt !default;
+
+$lu_dialog_font_size: 11pt !default;
+$lu_toolbar_font_size: 11pt !default;
+$lu_toolbar_color_base: #c1c1c1 !default;
+$lu_toolbar_color_base2: black !default;
+$lu_toolbar_color_hover: #979797 !default;
+
 
 $lu_hover_color: #e5e5e5 !default;
 $lu_selected_color: #ffa500 !default;

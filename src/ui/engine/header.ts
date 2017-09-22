@@ -117,13 +117,7 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
     addIcon('Stratify By Threshold', StratifyThresholdDialog);
   }
 
-  if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
-    //Numbers Sort
-    addIcon('Sort By', SortDialog);
-  }
-
   addIcon('More', MoreColumnOptionsDialog, '', col, ctx);
-
 }
 
 export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {

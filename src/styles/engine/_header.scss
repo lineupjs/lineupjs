@@ -16,6 +16,14 @@
 
   &:hover {
     background-color: $lu_even_bg;
+
+    > .#{$lu_css_prefix}-toolbar {
+      color: $lu_toolbar_color_base2;
+    }
+  }
+
+  > .#{$lu_css_prefix}-toolbar {
+    color: $lu_toolbar_color_base;
   }
 
   > .#{$lu_css_prefix}-label {

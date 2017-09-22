@@ -14,7 +14,7 @@
     cursor: pointer;
 
     &:hover {
-      color: $lu_header_active_filter_color;
+      color: $lu_toolbar_color_hover;
     }
   }
 }
@@ -65,7 +65,7 @@
 
       &[title='Stratify By']::before,
       &[title='Stratify By Threshold']::before {
-        content: $fa-var-window-maximize;
+        content: $fa-var-bars;
       }
 
       &[title='Set Cut Off']::before {
