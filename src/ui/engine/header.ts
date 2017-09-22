@@ -133,6 +133,18 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
     addIcon('Stratify By Threshold &hellip;', StratifyThresholdDialog);
   }
 
+  if (!(col instanceof RankColumn)) {
+    addIcon('Remove').onclick = (evt) => {
+      evt.stopPropagation();
+      if (!(col instanceof RankColumn)) {
+        col.removeMe();
+        return;
+      }
+      ctx.provider.removeRanking(col.findMyRanker()!);
+      ctx.provider.ensureOneRanking();
+    };
+  }
+
   addIcon('More &hellip;', MoreColumnOptionsDialog, '', col, ctx);
 }
 
