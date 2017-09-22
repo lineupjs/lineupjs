@@ -141,7 +141,7 @@ export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRanking
 
   if (!isSupportColumn) {
     //rename
-    addIcon('Rename &hellip;', RenameDialog);
+    addIcon('Rename + Color &hellip;', RenameDialog);
     //clone
     addIcon('Generate Snapshot').onclick = (evt) => {
       evt.stopPropagation();

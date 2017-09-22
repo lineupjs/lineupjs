@@ -35,7 +35,7 @@
         @include fa-icon();
       }
 
-      &[title='Rename …']::before {
+      &[title='Rename + Color …']::before {
         content: $fa-var-pencil-square-o;
       }
 
