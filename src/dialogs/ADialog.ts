@@ -1,12 +1,5 @@
 import {offset} from '../utils';
 
-function escKeyListener(evt:KeyboardEvent) {
-  if (evt.which === 27) {
-    const popup = ADialog.visiblePopups[ADialog.visiblePopups.length - 1];
-    ADialog.removePopup(popup);
-  }
-}
-
 abstract class ADialog {
 
   static readonly visiblePopups: HTMLElement[] = [];
@@ -56,7 +49,7 @@ abstract class ADialog {
       <div class="lu-popup2 lu-popup-menu" style="left: ${pos.left}px; top: ${pos.top}px">${body}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
 
-    ADialog.registerPopup(popup, true)
+    ADialog.registerPopup(popup, true);
     this.hidePopupOnClickOutside(popup);
     return popup;
   }
@@ -149,3 +142,10 @@ export function sortByProperty(prop: string) {
 }
 
 export default ADialog;
+
+function escKeyListener(evt:KeyboardEvent) {
+  if (evt.which === 27) {
+    const popup = ADialog.visiblePopups[ADialog.visiblePopups.length - 1];
+    ADialog.removePopup(popup);
+  }
+}
