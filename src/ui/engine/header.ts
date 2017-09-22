@@ -122,7 +122,7 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
     addIcon('Sort By', SortDialog);
   }
 
-  addIcon('More', MoreColumnOptionsDialog, '', addIcon, col, ctx);
+  addIcon('More', MoreColumnOptionsDialog, '', col, ctx);
 
 }
 
@@ -157,7 +157,7 @@ export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRanking
 
   if (col.getRendererList().length > 1 || col.getGroupRenderers().length > 1) {
     //Renderer Change
-    addIcon('Change Visualization', ChangeRendererDialog);
+    addIcon('Visualization', ChangeRendererDialog);
   }
 
   if (col instanceof LinkColumn) {
@@ -209,7 +209,7 @@ export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRanking
     };
   }
 
-  addIcon('Hide').onclick = (evt) => {
+  addIcon('Remove').onclick = (evt) => {
     evt.stopPropagation();
     if (!(col instanceof RankColumn)) {
       col.removeMe();

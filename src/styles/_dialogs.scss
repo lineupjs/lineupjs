@@ -22,7 +22,7 @@
     position: absolute;
     padding: 5px;
     z-index: 9;
-    font-size: 8pt;
+    font-size: $lu_dialog_font_size;
     clear: right;
 
     input {
