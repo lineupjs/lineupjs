@@ -18,7 +18,7 @@
     font-weight: 500;
 
     &::before {
-      color: #999;
+      color: $lu_toolbar_color_base2;
       padding-right: 0.2em;
       content: counter(side-panel-counter);
     }
@@ -29,6 +29,10 @@
       overflow: hidden !important;
       cursor: pointer;
       flex: 1;
+    }
+
+    > .#{$lu_css_prefix}-toolbar {
+      color: $lu_toolbar_color_base2;
     }
   }
 
