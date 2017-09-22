@@ -48,7 +48,6 @@ export function toFullTooltip(col: { label: string, description?: string }) {
 export function createHeader(col: Column, document: Document, ctx: IRankingHeaderContext) {
   const node = document.createElement('section');
   node.innerHTML = `
-    <i class="lu-sort"></i>
     <div class="lu-label">${col.label}</div>
     <div class="lu-toolbar"></div>
     <div class="lu-summary"></div>
@@ -73,11 +72,23 @@ export function createHeader(col: Column, document: Document, ctx: IRankingHeade
 export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
   node.querySelector('.lu-label')!.innerHTML = col.label;
   node.title = toFullTooltip(col);
-  const sort = <HTMLElement>node.querySelector('.lu-sort')!;
+
+  const sort = <HTMLElement>node.querySelector(`i[title='Sort']`)!;
+  if(sort) {
+    const {asc, priority} = col.isSortedByMe();
+    sort.dataset.sort = asc;
+    sort.dataset.priority = priority !== undefined ? priority : '';
+  }
+
   const groupedBy = col.isGroupedBy();
-  const {asc, priority} = col.isSortedByMe();
-  sort.dataset.sort = (groupedBy >= 0 ? 'stratify' : asc || '');
-  sort.dataset.priority = groupedBy >= 0 ? groupedBy.toString() : (priority !== undefined ? priority : '');
+  let stratify = <HTMLElement>node.querySelector(`i[title='Stratify']`)!;
+  if(!stratify) {
+    stratify = <HTMLElement>node.querySelector(`i[title='Stratify By Threshold …']`)!;
+  }
+  if(stratify) {
+    stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
+    stratify.dataset.priority = groupedBy >= 0 ? groupedBy.toString() : '';
+  }
 
   createSummary(<HTMLElement>node.querySelector('.lu-summary')!, col, ctx, interactive);
 }
@@ -105,19 +116,24 @@ interface IAddIcon {
 
 export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
 
+  addIcon('Sort').onclick = (evt) => {
+    evt.stopPropagation();
+    col.toggleMySorting();
+  };
+
   //stratify
   if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
-    addIcon('Stratify By').onclick = (evt) => {
+    addIcon('Stratify').onclick = (evt) => {
       evt.stopPropagation();
       col.groupByMe();
     };
   }
 
   if (col instanceof NumberColumn) {
-    addIcon('Stratify By Threshold', StratifyThresholdDialog);
+    addIcon('Stratify By Threshold &hellip;', StratifyThresholdDialog);
   }
 
-  addIcon('More', MoreColumnOptionsDialog, '', col, ctx);
+  addIcon('More &hellip;', MoreColumnOptionsDialog, '', col, ctx);
 }
 
 export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
@@ -125,7 +141,7 @@ export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRanking
 
   if (!isSupportColumn) {
     //rename
-    addIcon('Rename', RenameDialog);
+    addIcon('Rename &hellip;', RenameDialog);
     //clone
     addIcon('Generate Snapshot').onclick = (evt) => {
       evt.stopPropagation();
@@ -134,54 +150,54 @@ export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRanking
   }
   //stratify
   if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
-    addIcon('Stratify By').onclick = (evt) => {
+    addIcon('Stratify').onclick = (evt) => {
       evt.stopPropagation();
       col.groupByMe();
     };
   }
 
   if (col instanceof NumberColumn) {
-    addIcon('Stratify By Threshold', StratifyThresholdDialog);
+    addIcon('Stratify By Threshold &hellip;', StratifyThresholdDialog);
   }
 
   if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
     //Numbers Sort
-    addIcon('Sort By', SortDialog);
+    addIcon('Sort By &hellip;', SortDialog);
   }
 
   if (col.getRendererList().length > 1 || col.getGroupRenderers().length > 1) {
     //Renderer Change
-    addIcon('Visualization', ChangeRendererDialog);
+    addIcon('Visualization &hellip;', ChangeRendererDialog);
   }
 
   if (col instanceof LinkColumn) {
     //edit link
-    addIcon('Edit Link Pattern', EditLinkDialog, ctx.idPrefix, (<string[]>[]).concat((<any>col.desc).templates || [], ctx.linkTemplates));
+    addIcon('Edit Link Pattern &hellip;', EditLinkDialog, ctx.idPrefix, (<string[]>[]).concat((<any>col.desc).templates || [], ctx.linkTemplates));
   }
 
   if (col instanceof ScriptColumn) {
     //edit script
-    addIcon('Edit Combine Script', ScriptEditDialog);
+    addIcon('Edit Combine Script &hellip;', ScriptEditDialog);
   }
 
   //filter
   if (ctx.filters.hasOwnProperty(col.desc.type)) {
-    addIcon('Filter', ctx.filters[col.desc.type], '', ctx.provider, ctx.idPrefix);
+    addIcon('Filter &hellip;', ctx.filters[col.desc.type], '', ctx.provider, ctx.idPrefix);
   }
 
   if (col instanceof HierarchyColumn) {
     //cutoff
-    addIcon('Set Cut Off', CutOffHierarchyDialog, ctx.idPrefix);
+    addIcon('Set Cut Off &hellip;', CutOffHierarchyDialog, ctx.idPrefix);
   }
 
   if (ctx.searchAble(col)) {
     //search
-    addIcon('Search', SearchDialog, ctx.provider);
+    addIcon('Search &hellip;', SearchDialog, ctx.provider);
   }
 
   if (col instanceof StackColumn) {
     //edit weights
-    addIcon('Edit Weights', WeightsEditDialog);
+    addIcon('Edit Weights &hellip;', WeightsEditDialog);
   }
 
   if (!isSupportColumn) {

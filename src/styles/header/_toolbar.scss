@@ -35,7 +35,7 @@
         @include fa-icon();
       }
 
-      &[title='Rename']::before {
+      &[title='Rename …']::before {
         content: $fa-var-pencil-square-o;
       }
 
@@ -43,40 +43,45 @@
         content: $fa-var-code-fork;
       }
 
-      &[title='Sort By']::before {
+      &[title='Sort By …']::before {
         content: $fa-var-sort;
       }
 
-      &[title='Visualization']::before {
+      &[title='Visualization …']::before {
         content: $fa-var-exchange;
       }
 
-      &[title='Edit Link Pattern']::before {
+      &[title='Edit Link Pattern …']::before {
         content: $fa-var-external-link;
       }
 
-      &[title='Edit Combine Script']::before {
+      &[title='Edit Combine Script …']::before {
         content: $fa-var-gears;
       }
 
-      &[title='Filter']::before {
+      &[title='Filter …']::before {
         content: $fa-var-filter;
       }
 
-      &[title='Stratify By']::before,
-      &[title='Stratify By Threshold']::before {
+      &[title='Stratify']::before,
+      &[title='Stratify By Threshold …']::before {
         content: $fa-var-bars;
       }
 
-      &[title='Set Cut Off']::before {
+      &[title='Stratify'][data-stratify='true']::before,
+      &[title='Stratify By Threshold …'][data-stratify='true']::before {
+        color: $lu_selected_color;
+      }
+
+      &[title='Set Cut Off …']::before {
         content: $fa-var-scissors;
       }
 
-      &[title='Search']::before {
+      &[title='Search …']::before {
         content: $fa-var-search;
       }
 
-      &[title='Edit Weights']::before {
+      &[title='Edit Weights …']::before {
         content: $fa-var-tasks;
       }
 
@@ -100,8 +105,52 @@
         content: $fa-var-trash;
       }
 
-      &[title='More']::before {
+      &[title='More …']::before {
         content: $fa-var-ellipsis-h;
+      }
+
+      &[title='Sort']::before,
+      &[title='Sort'][data-sort='asc']::before {
+        content: $fa-var-sort-amount-asc;
+      }
+
+      &[title='Sort'][data-sort='desc']::before {
+        content: $fa-var-sort-amount-desc;
+      }
+    }
+  }
+
+  /* Override alphabetical sort icons */
+  .categorical,
+  .string,
+  [data-type='string'],
+  [data-type='categorical'] {
+    .#{$lu_css_prefix}-toolbar i,
+    .#{$lu_css_prefix}-more-options i {
+      &[title='Sort']::before,
+      &[title='Sort'][data-sort='asc']::before {
+        content: $fa-var-sort-alpha-asc;
+      }
+
+      &[title='Sort'][data-sort='desc']::before {
+        content: $fa-var-sort-alpha-desc;
+      }
+    }
+  }
+
+  /* Override numerical sort icons */
+  .rank,
+  .number,
+  [data-type='number'] {
+    .#{$lu_css_prefix}-toolbar i,
+    .#{$lu_css_prefix}-more-options i {
+      &[title='Sort']::before,
+      &[title='Sort'][data-sort='asc']::before {
+        content: $fa-var-sort-numeric-asc;
+      }
+
+      &[title='Sort'][data-sort='desc']::before {
+        content: $fa-var-sort-numeric-desc;
       }
     }
   }
