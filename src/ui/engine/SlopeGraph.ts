@@ -47,23 +47,25 @@ export default class SlopeGraph {
 
   constructor(document: Document) {
     this.node = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.node.classList.add('lu-slopegraph');
+    this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
   }
 
-  rebuild(left: (IGroupItem|IGroupData)[], leftContext: IExceptionContext, right: (IGroupItem|IGroupData)[], rightContext: IExceptionContext) {
+  rebuild(left: (IGroupItem | IGroupData)[], leftContext: IExceptionContext, right: (IGroupItem | IGroupData)[], rightContext: IExceptionContext) {
     this.index2slope.splice(0, this.index2slope.length);
     this.slopes.splice(0, this.slopes.length);
 
-    const lookup = new Map<number,IPos>();
+    const lookup = new Map<number, IPos>();
     let acc = 0;
     right.forEach((r, i) => {
       const height = rightContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight;
 
       if (isGroup(r)) {
-        const p = { rows: r.rows.slice(), start: acc, heightPerRow: height / r.rows.length, offset: 0};
+        const p = {rows: r.rows.slice(), start: acc, heightPerRow: height / r.rows.length, offset: 0};
         r.rows.forEach((ri) => lookup.set(ri.dataIndex, p));
       } else {
         const dataIndex = (<IGroupItem>r).dataIndex;
-        lookup.set(dataIndex, { rows: [<IGroupItem>r], start: acc, heightPerRow: height, offset: 0});
+        lookup.set(dataIndex, {rows: [<IGroupItem>r], start: acc, heightPerRow: height, offset: 0});
       }
       acc += height;
     });
@@ -88,7 +90,7 @@ export default class SlopeGraph {
           //
           const intersection = 1 + p.rows.reduce((acc, r) => acc + (free.delete(r) ? 1 : 0), 0);
           if (intersection === 1) {
-            this.slopes.push(new ItemSlope(acc + offset + heightPerItem/2, p.start + p.offset + p.heightPerRow / 2));
+            this.slopes.push(new ItemSlope(acc + offset + heightPerItem / 2, p.start + p.offset + p.heightPerRow / 2));
           } else {
             this.slopes.push(new GroupSlope([acc + offset, acc + offset + heightPerItem * intersection], [p.start + p.offset, p.start + p.offset + p.heightPerRow * intersection]));
           }
@@ -113,21 +115,22 @@ export default class SlopeGraph {
     const end = this.index2slope[leftVisibleLast];
 
     const slopes = this.slopes.slice(start, end + 1);
-    const paths = <SVGPathElement[]>Array.from(this.node.children);
+    const g = this.node.firstElementChild!;
+    const paths = <SVGPathElement[]>Array.from(g.children);
     //match lengths
-    for (let i =  slopes.length; i < paths.length; ++i) {
+    for (let i = slopes.length; i < paths.length; ++i) {
       const elem = paths[i];
       this.pool.push(elem);
       elem.remove();
     }
-    for(let i = paths.length; i < slopes.length; ++i) {
+    for (let i = paths.length; i < slopes.length; ++i) {
       const elem = this.pool.pop();
       if (elem) {
-        this.node.appendChild(elem);
+        g.appendChild(elem);
         paths.push(elem);
       } else {
-        const path = this.node.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
-        this.node.appendChild(path);
+        const path = g.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
+        g.appendChild(path);
         paths.push(path);
       }
     }
