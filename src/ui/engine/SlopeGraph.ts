@@ -4,6 +4,7 @@
 import {IExceptionContext} from 'lineupengine/src/logic';
 import {IGroupData, IGroupItem, isGroup} from './interfaces';
 import {IDataRow} from '../../provider/ADataProvider';
+import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 
 interface ISlope {
   update(path: SVGPathElement): void;
@@ -38,17 +39,46 @@ interface IPos {
   offset: number;
 }
 
-export default class SlopeGraph {
+export default class SlopeGraph implements ITableSection {
   readonly node: SVGSVGElement;
 
   private readonly index2slope: number[];
   private readonly slopes: ISlope[];
   private readonly pool: SVGPathElement[] = [];
 
-  constructor(document: Document) {
-    this.node = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  readonly width = 200;
+
+  constructor(header: HTMLElement, body: HTMLElement) {
+    this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.node.classList.add('lu-slopegraph');
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
+    header.classList.add('lu-slopegraph');
+    body.appendChild(this.node);
+  }
+
+  init() {
+    // dummy
+  }
+
+
+  get hidden() {
+    return this.node.classList.contains('loading');
+  }
+
+  set hidden(value: boolean) {
+    this.node.classList.toggle('loading', value);
+  }
+
+  hide() {
+    this.hidden = true;
+  }
+
+  show() {
+    this.hidden = false;
+  }
+
+  destroy() {
+    this.node.remove();
   }
 
   rebuild(left: (IGroupItem | IGroupData)[], leftContext: IExceptionContext, right: (IGroupItem | IGroupData)[], rightContext: IExceptionContext) {

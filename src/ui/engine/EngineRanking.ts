@@ -1,24 +1,36 @@
 /**
- * Created by Samuel Gratzl on 18.07.2017.
+ * Created by Samuel Gratzl on 27.09.2017.
  */
-import {ACellRenderer, ICellRenderContext, nonUniformContext} from 'lineupengine/src';
+import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
+import {ACellTableSection, ICellRenderContext} from 'lineupengine/src/table/ACellTableSection';
+import GridStyleManager from 'lineupengine/src/style/GridStyleManager';
+import Ranking from '../../model/Ranking';
 import RenderColumn from './RenderColumn';
-import {IRankingContext, IRankingHeaderContext} from './interfaces';
-import {IExceptionContext} from 'lineupengine/src/logic';
-import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import {debounce} from '../../utils';
+import Column, {IFlatColumn} from '../../model/Column';
+import MultiLevelRenderColumn from './MultiLevelRenderColumn';
+import {IExceptionContext} from 'lineupengine/src/logic';
 import StackColumn from '../../model/StackColumn';
-import Column from '../../model/Column';
+import {nonUniformContext} from 'lineupengine/src/index';
+import {isMultiLevelColumn} from '../../model/CompositeColumn';
+import {IGroupData, IGroupItem, IRankingBodyContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
+import {createDOM, createDOMGroup} from '../../renderer/index';
+import ICellRendererFactory from '../../renderer/ICellRendererFactory';
 
-export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
-  protected _context: ICellRenderContext<RenderColumn>;
+export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection {
+  private _context: ICellRenderContext<RenderColumn>;
+  private readonly ctx: IRankingBodyContext;
+  private data: (IGroupItem|IGroupData)[];
 
-  private initialized: 'ready'|'waiting'|'no' = 'no';
+  constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, ctx: IRankingHeaderContextContainer & IDOMRenderContext) {
+    super(header, body, tableId, style);
 
-  constructor(root: HTMLElement, id: string, private readonly ctx: IRankingHeaderContext & IDOMRenderContext, private readonly extraRowUpdate?: (row: HTMLElement, rowIndex: number) => void) {
-    super(root, `#${id}`);
-    root.id = id;
+    this.ctx = Object.assign({
+      isGroup: (index: number) => isGroup(this.data[index]),
+      getRow: (index: number) => <IGroupItem>this.data[index],
+      getGroup: (index: number) => <IGroupData>this.data[index]
+    }, ctx);
   }
 
   protected get context() {
@@ -67,10 +79,6 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     super.createRow(node, rowIndex, ...extras);
     const isGroup = this.ctx.isGroup(rowIndex);
 
-    if (this.extraRowUpdate) {
-      this.extraRowUpdate(node, rowIndex);
-    }
-
     if (isGroup) {
       node.dataset.agg = 'group';
       return;
@@ -93,10 +101,6 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
   protected updateRow(node: HTMLElement, rowIndex: number, ...extras: any[]): void {
     const isGroup = this.ctx.isGroup(rowIndex);
     const wasGroup = node.dataset.agg === 'group';
-
-    if (this.extraRowUpdate) {
-      this.extraRowUpdate(node, rowIndex);
-    }
 
     if (isGroup !== wasGroup) {
       // change of mode clear the children to reinitialize them
@@ -140,11 +144,7 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     }, true);
   }
 
-  getStyleManager() {
-    return this.style;
-  }
-
-  updateColumnWidths() {
+  private updateColumnWidth() {
     const context = this.context;
     this.style.update(context.defaultRowHeight, context.columns, context.column.defaultRowHeight);
     //no data update needed since just width changed
@@ -156,60 +156,36 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
   }
 
   private updateColumn(index: number) {
-    const column = this._context.columns[index];
+    const column = this.context.columns[index];
     this.forEachRow((row, rowIndex) => {
       this.updateCell(<HTMLElement>row.children[index], rowIndex, column);
     });
   }
 
-  setZoomFactor(zoomFactor: number) {
-    if (this.initialized !== 'ready') {
-      return;
-    }
-    this.body.style.fontSize = `${zoomFactor * 100}%`;
-  }
-
   destroy() {
-    this.root.remove();
-
-    this._context.columns.forEach((c) => {
-      c.c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
-      if (!(c instanceof MultiLevelRenderColumn)) {
+    super.destroy();
+    this.ranking.flatColumns.forEach((c) => {
+      c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
+      if (!(isMultiLevelColumn(c))) {
         return;
       }
-      c.c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
-      c.c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
+      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
+      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
     });
   }
 
-  render(columns: RenderColumn[], rowContext: IExceptionContext) {
+  render(data: (IGroupItem|IGroupData)[], rowContext: IExceptionContext) {
+    this.data = data;
+    (<any>this.ctx).totalNumberOfRows = data.length;
+
+    const columns = this.createColumns();
+
     this._context = Object.assign({
       columns,
       column: nonUniformContext(columns.map((w) => w.width), 100)
     }, rowContext);
 
-    columns.forEach((c, i) => {
-      c.c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
-        this.updateColumnWidths();
-      });
-      if (!(c instanceof MultiLevelRenderColumn)) {
-        return;
-      }
-      c.c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
-        c.updateWidthRule(this.getStyleManager());
-      });
-      c.c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounce(() => this.updateColumn(i), 25));
-    });
-
-    if (this.initialized === 'ready') {
-      super.recreate();
-    } else if (this.initialized !== 'waiting') {
-      this.initialized = 'waiting';
-      setTimeout(() => {
-          super.init();
-          this.initialized = 'ready';
-        }, 100);
-    }
+    super.recreate();
   }
 
   fakeHover(dataIndex: number) {
@@ -221,5 +197,21 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     if (item) {
       item.classList.add('lu-hovered');
     }
+  }
+
+  private createColumns(rendererMap: { [key: string]: ICellRendererFactory }, columnPadding: number) {
+    const flatCols: IFlatColumn[] = [];
+    this.ranking.flatten(flatCols, 0, 1, 0);
+    const cols = flatCols.map((c) => c.col);
+    return cols.map((c, i) => {
+      const single = createDOM(c, rendererMap, this.ctx);
+      const group = createDOMGroup(c, rendererMap, this.ctx);
+      const renderers = {single, group, singleId: c.getRendererType(), groupId: c.getGroupRenderer()};
+
+      if (isMultiLevelColumn(c)) {
+        return new MultiLevelRenderColumn(c, renderers, i, columnPadding);
+      }
+      return new RenderColumn(c, renderers, i);
+    });
   }
 }
