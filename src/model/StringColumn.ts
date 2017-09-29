@@ -107,6 +107,6 @@ export default class StringColumn extends ValueColumn<string> {
     } else if ((bValue = this.getValue(b, bIndex)) === '') {
       return -1;
     }
-    return aValue.localeCompare(bValue);
+    return aValue.toLowerCase().localeCompare(bValue.toLowerCase());
   }
 }
