@@ -76,6 +76,7 @@ export function models() {
   return {
     number: NumberColumn,
     date: DateColumn,
+    image: LinkColumn,
     numbers: NumbersColumn,
     string: StringColumn,
     link: LinkColumn,

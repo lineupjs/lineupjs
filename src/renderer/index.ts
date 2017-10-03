@@ -32,6 +32,7 @@ import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
 import HistogramGroupRenderer from './HistogramGroupRenderer';
 import CategoricalColorShiftedCellRenderer from './CategoricalColorShiftedCellRenderer';
+import ImageCellRenderer from './ImageCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -49,6 +50,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   string: new StringCellRenderer(),
   selection: new SelectionRenderer(),
   heatmap: new HeatmapCellRenderer(),
+  image: new ImageCellRenderer(),
   link: new LinkCellRenderer(),
   annotate: new AnnotationRenderer(),
   actions: new ActionRenderer(),
