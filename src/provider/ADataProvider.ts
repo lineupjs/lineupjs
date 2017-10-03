@@ -96,6 +96,8 @@ export interface IDataProvider extends AEventDispatcher {
   getLastRanking(): Ranking;
 
   getColumns(): IColumnDesc[];
+
+  isAggregated(ranking: Ranking, group: IGroup): boolean;
 }
 
 
@@ -616,7 +618,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   abstract view(indices: number[]): Promise<any[]> | any[];
 
-  abstract fetch(orders: number[][]): Promise<IDataRow>[][] | (IDataRow[][]);
+  abstract fetch(orders: number[][]): (Promise<IDataRow>|IDataRow)[][];
 
   /**
    * returns a data sample used for the mapping editor
