@@ -2,18 +2,30 @@
  * Created by Samuel Gratzl on 21.09.2017.
  */
 import {IExceptionContext, range} from 'lineupengine/src/logic';
-import {IGroupData, IGroupItem, isGroup} from './interfaces';
+import {IGroupData, IGroupItem, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 
 const SLOPEGRAPH_WIDTH = 200;
 
 interface ISlope {
+  isSelected(selection: {has(dataIndex: number):boolean}): boolean;
+
   update(path: SVGPathElement): void;
+
+  readonly dataIndices: number[];
 }
 
 class ItemSlope implements ISlope {
-  constructor(private readonly left: number, private readonly right: number) {
+  constructor(private readonly left: number, private readonly right: number, public readonly dataIndex: number) {
 
+  }
+
+  get dataIndices() {
+    return [this.dataIndex];
+  }
+
+  isSelected(selection: {has(dataIndex: number):boolean}) {
+    return selection.has(this.dataIndex);
   }
 
   update(path: SVGPathElement) {
@@ -23,8 +35,12 @@ class ItemSlope implements ISlope {
 }
 
 class GroupSlope implements ISlope {
-  constructor(private readonly left: [number, number], private readonly right: [number, number]) {
+  constructor(private readonly left: [number, number], private readonly right: [number, number], public readonly dataIndices: number[]) {
 
+  }
+
+  isSelected(selection: {has(dataIndex: number):boolean}) {
+    return this.dataIndices.some((s) => selection.has(s));
   }
 
   update(path: SVGPathElement) {
@@ -55,7 +71,7 @@ export default class SlopeGraph implements ITableSection {
   private leftContext: IExceptionContext;
   private rightContext: IExceptionContext;
 
-  constructor(private readonly header: HTMLElement, private readonly body: HTMLElement, public readonly id: string) {
+  constructor(private readonly header: HTMLElement, private readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer) {
     this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
     header.classList.add('lu-slopegraph');
@@ -160,18 +176,21 @@ export default class SlopeGraph implements ITableSection {
             return; // no matching
           }
           //
-          const intersection = 1 + p.rows.reduce((acc, r) => acc + (free.delete(r) ? 1 : 0), 0);
-          const s = intersection === 1 ? new ItemSlope(acc + offset + heightPerItem / 2, p.start + p.offset + p.heightPerRow / 2) : new GroupSlope([acc + offset, acc + offset + heightPerItem * intersection], [p.start + p.offset, p.start + p.offset + p.heightPerRow * intersection]);
+          const intersection = p.rows.filter((r) => free.delete(r));
+          intersection.push(d.dataIndex); //self
+          const common = intersection.length;
+          const s =common === 1 ? new ItemSlope(acc + offset + heightPerItem / 2, p.start + p.offset + p.heightPerRow / 2, d.dataIndex) :
+            new GroupSlope([acc + offset, acc + offset + heightPerItem * intersection.length], [p.start + p.offset, p.start + p.offset + p.heightPerRow * common], intersection);
           slopes.push(s);
           this.rightSlopes[p.ref].push(s);
-          p.offset += intersection * p.heightPerRow;
-          offset += intersection * heightPerItem;
+          p.offset += common * p.heightPerRow;
+          offset += common * heightPerItem;
         });
       } else {
         const dataIndex = (<IGroupItem>r).dataIndex;
         const p = lookup.get(dataIndex);
         if (p) {
-          const s = new ItemSlope(acc + height / 2, p.start + p.offset + p.heightPerRow / 2);
+          const s = new ItemSlope(acc + height / 2, p.start + p.offset + p.heightPerRow / 2, dataIndex);
           slopes.push(s);
           this.rightSlopes[p.ref].push(s);
           p.offset += p.heightPerRow; // shift by one item
@@ -226,13 +245,50 @@ export default class SlopeGraph implements ITableSection {
         paths.push(elem);
       } else {
         const path = g.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.onclick = (evt) => {
+          const s: ISlope = (<any>path).__data__;
+          const p = this.ctx.provider;
+          const ids = s.dataIndices;
+          if (evt.ctrlKey) {
+            ids.forEach((id) => p.toggleSelection(id, true));
+          } else {
+            // either unset or set depending on the first state
+            const isSelected = p.isSelected(ids[0]!);
+            p.setSelection(isSelected ? []: ids);
+          }
+        };
         g.appendChild(path);
         paths.push(path);
       }
     }
 
+    const p = this.ctx.provider;
+    const selectionLookup = {has: (dataIndex: number) => p.isSelected(dataIndex)};
     // update paths
     let i = 0;
-    slopes.forEach((s) => s.update(paths[i++]));
+    slopes.forEach((s) => {
+      const p = paths[i++];
+      s.update(p);
+      (<any>p).__data__ = s; // data binding
+      const selected = s.isSelected(selectionLookup);
+      p.classList.toggle('lu-selected', selected);
+      if (selected) {
+        g.appendChild(p); // to put it on top
+      }
+    });
+  }
+
+  updateSelection(selectedDataIndices: Set<number>) {
+    const g = this.node.firstElementChild!;
+    const paths = <SVGPathElement[]>Array.from(g.children);
+
+    paths.forEach((p) => {
+      const s: ISlope = (<any>p).__data__;
+      const selected = s.isSelected(selectedDataIndices);
+      p.classList.toggle('lu-selected', selected);
+      if (selected) {
+        g.appendChild(p); // to put it on top
+      }
+    });
   }
 }

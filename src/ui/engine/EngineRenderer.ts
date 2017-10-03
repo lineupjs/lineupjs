@@ -138,6 +138,8 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   private updateSelection(dataIndices: number[]) {
     const s = new Set(dataIndices);
     this.rankings.forEach((r) => r.updateSelection(s));
+
+    this.slopeGraphs.forEach((r) => r.updateSelection(s));
   }
 
   private updateHist(ranking?: EngineRanking) {
@@ -165,7 +167,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   private addRanking(ranking: Ranking) {
     if (this.rankings.length > 0) {
       // add slope graph first
-      const s = this.table.pushSeparator((header, body) => new SlopeGraph(header, body, `${ranking.id}S`));
+      const s = this.table.pushSeparator((header, body) => new SlopeGraph(header, body, `${ranking.id}S`, this.ctx));
       this.slopeGraphs.push(s);
     }
 
