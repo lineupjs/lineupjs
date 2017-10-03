@@ -26,6 +26,7 @@ export interface IEngineRankingContext extends IRankingHeaderContextContainer, I
 export interface ICallbacks {
   widthChanged(): void;
   updateData(): void;
+  updateRow?(row: HTMLElement, rowIndex: number): void;
 }
 
 export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection {
@@ -127,6 +128,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return;
     }
 
+    if (this.callbacks.updateRow) {
+      this.callbacks.updateRow(node, rowIndex);
+    }
+
     const dataIndex = this.renderCtx.getRow(rowIndex).dataIndex;
     node.dataset.dataIndex = dataIndex.toString();
     node.dataset.agg = 'detail'; //or 'group'
@@ -162,6 +167,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
     }
 
+    if (this.callbacks.updateRow) {
+      this.callbacks.updateRow(node, rowIndex);
+    }
+
     if (!isGroup) {
       const dataIndex = this.renderCtx.getRow(rowIndex).dataIndex;
       node.dataset.dataIndex = dataIndex.toString();
@@ -175,7 +184,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     super.updateRow(node, rowIndex);
   }
 
-  updateSelection(selectedDataIndices: Set<number>) {
+  updateSelection(selectedDataIndices: {has(dataIndex: number): boolean}) {
     this.forEachRow((node: HTMLElement) => {
       const dataIndex = parseInt(node.dataset.dataIndex!, 10);
       if (selectedDataIndices.has(dataIndex)) {
