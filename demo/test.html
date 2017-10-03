@@ -46,10 +46,11 @@
 
 <script>
   (function () {
+    const parser = d3.time.format('%d.%m.%Y').parse;
     const arr = [
-      {a: 10, b: 20, c: 30, d: 'Row1', e: false, l: {alt: 'Google', href: 'https://google.com'}, cat: 'c2'},
-      {a: 100, b: 100, c: 50, d: 'Row2', e: true, l: {alt: 'ORF', href: 'https://orf.at'}, cat: 'c3'},
-      {a: 2, b: 7, c: 100, d: 'Row3', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
+      {a: 10, b: 20, c: 30, d: 'Row1', e: false, l: {alt: 'Google', href: 'https://google.com'}, cat: 'c2', date: '12/11/2005'},
+      {a: 100, b: 100, c: 50, d: 'Row2', e: true, l: {alt: 'ORF', href: 'https://orf.at'}, cat: 'c3', date: parser('12.12.2005')},
+      {a: 2, b: 7, c: 100, d: 'Row3', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2', date: parser('12.12.2027')},
       {
         a: 7,
         b: 1,
@@ -57,15 +58,17 @@
         d: 'Row4dasfa dsfasdf  adsf asdf asdf',
         e: false,
         l: {alt: 'Google', href: 'https://google.com'},
-        cat: 'c1;c3'
+        cat: 'c1;c3',
+        date: parser('11.12.2017')
       },
-      {a: 2, b: 4, c: 30, d: 'Row5', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'},
-      {a: NaN, b: '', c: 30, d: '', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2'}];
+      {a: 2, b: 4, c: 30, d: 'Row5', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2', date: parser('17.12.2017')},
+      {a: NaN, b: '', c: 30, d: '', e: false, l: {alt: 'heise.de', href: 'https://heise.de'}, cat: 'c2', date: parser('12.05.2017')}];
     const desc = [
       {label: 'D', type: 'string', column: 'd', cssClass: 'orange'},
       {label: 'A', type: 'number', column: 'a', 'domain': [0, 100], color: 'red'},
       {label: 'B', type: 'number', column: 'b', 'domain': [0, 100], color: 'blue'},
       {label: 'C', type: 'number', column: 'c', 'domain': [0, 100], color: 'green'},
+      {label: 'Date', type: 'date', column: 'date'},
       {label: 'L', type: 'link', column: 'l'},
       {label: 'L2', type: 'link', column: 'a', link: 'https://duckduckgo.com/?q=$1'},
       {

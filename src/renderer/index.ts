@@ -43,6 +43,7 @@ const combineCellRenderer = new BarCellRenderer(false, (d, i, col: CompositeNumb
 export const renderers: { [key: string]: ICellRendererFactory } = {
   rank: new RankCellRenderer(),
   boolean: new DefaultCellRenderer('boolean', 'center'),
+  date: defaultCellRenderer,
   number: new BarCellRenderer(),
   ordinal: new BarCellRenderer(true, (d, i, col: CategoricalNumberColumn) => col.getColor(d, i)),
   string: new StringCellRenderer(),

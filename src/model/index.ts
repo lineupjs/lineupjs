@@ -24,6 +24,7 @@ import NumbersColumn from './NumbersColumn';
 import BoxPlotColumn from './BoxPlotColumn';
 import AggregateGroupColumn from './AggregateGroupColumn';
 import HierarchyColumn from './HierarchyColumn';
+import DateColumn from './DateColumn';
 
 export {default as Column, IColumnDesc} from './Column';
 export {default as CompositeColumn} from './CompositeColumn';
@@ -74,6 +75,7 @@ export function defineColumn<T>(name: string, functions: any = {}) {
 export function models() {
   return {
     number: NumberColumn,
+    date: DateColumn,
     numbers: NumbersColumn,
     string: StringColumn,
     link: LinkColumn,
