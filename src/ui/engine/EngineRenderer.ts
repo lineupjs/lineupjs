@@ -1,26 +1,22 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, debounce, findOption} from '../../utils';
+import {AEventDispatcher, findOption} from '../../utils';
 import {default as ABodyRenderer} from '../ABodyRenderer';
-import DataProvider, {default as ADataProvider} from '../../provider/ADataProvider';
-import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
+import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
+import {default as Column, ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {createDOM, createDOMGroup} from '../../renderer';
-import {default as RenderColumn} from './RenderColumn';
-import {IGroupData, IGroupItem, IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
+import {IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {ILineUpRenderer} from '../interfaces';
 import {ILineUpConfig, IRenderingOptions} from '../../interfaces';
 import {ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
 import NumberColumn from '../../model/NumberColumn';
 import {nonUniformContext} from 'lineupengine/src/logic';
-import {isMultiLevelColumn} from '../../model/CompositeColumn';
-import MultiLevelRenderColumn from './MultiLevelRenderColumn';
-import StackColumn from '../../model/StackColumn';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer';
 import Ranking from '../../model/Ranking';
 import SlopeGraph from './SlopeGraph';
-import EngineRanking from './EngineRanking';
+import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
   static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
@@ -35,7 +31,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   private readonly rankings: EngineRanking[] = [];
   private readonly slopeGraphs: SlopeGraph[] = [];
 
-  readonly ctx: IRankingHeaderContextContainer & IDOMRenderContext;
+  readonly ctx: IRankingHeaderContextContainer & IDOMRenderContext & IEngineRankingContext;
 
   private readonly updateAbles: ((ctx: IRankingHeaderContext)=>void)[] = [];
   private zoomFactor = 1;
@@ -63,7 +59,13 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       renderer: (col: Column) => createDOM(col, this.options.renderers, this.ctx),
       groupRenderer: (col: Column) => createDOMGroup(col, this.options.renderers, this.ctx),
       idPrefix: this.options.idPrefix,
-      totalNumberOfRows: 0
+      totalNumberOfRows: 0,
+      createRenderer: (col: Column) => {
+        const single = createDOM(col, this.options.renderers, this.ctx);
+        const group = createDOMGroup(col, this.options.renderers, this.ctx);
+        return {single, group, singleId: col.getRendererType(), groupId: col.getGroupRenderer()};
+      },
+      columnPadding: this.options.body.columnPadding || 5
     };
 
     this.node.id = this.options.idPrefix;
@@ -108,8 +110,6 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   private takeDownProvider() {
     this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
-    this.data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, null);
-    this.data.on(`${DataProvider.EVENT_DIRTY}.body`, null);
     this.data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, null);
     this.data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, null);
 
@@ -118,15 +118,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   }
 
   private initProvider(data: DataProvider) {
-    const that = this;
     data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.updateSelection(data.getSelection()));
-    data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, () => this.updateHist());
-    data.on(`${DataProvider.EVENT_DIRTY}.body`, debounce(function (this: { primaryType: string }) {
-      if (this.primaryType !== Column.EVENT_WIDTH_CHANGED && this.primaryType !== StackColumn.EVENT_WEIGHTS_CHANGED) {
-        // console.log('update');
-        that.update();
-      }
-    }));
     data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, (ranking: Ranking) => {
       this.addRanking(ranking);
     });
@@ -138,15 +130,17 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   }
 
   private updateSelection(dataIndices: number[]) {
-    this.rankings.forEach((r) => r.updateSelection(dataIndices));
+    const s = new Set(dataIndices);
+    this.rankings.forEach((r) => r.updateSelection(s));
   }
 
-  private updateHist() {
+  private updateHist(ranking?: EngineRanking) {
     if (!this.options.header.summary) {
       return;
     }
-    const rankings = this.data.getRankings();
-    rankings.forEach((ranking) => {
+    const rankings = ranking ? [ranking] : this.rankings;
+    rankings.forEach((r) => {
+      const ranking = r.ranking;
       const order = ranking.getOrder();
       const cols = ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
@@ -156,9 +150,8 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn & Column) => {
         this.histCache.set(col.id, histo === null ? null : histo.hist(col));
       });
+      r.updateHeaders();
     });
-
-    this.rankings.forEach((r) => r.updateHeaders());
 
     this.updateAbles.forEach((u) => u(this.ctx));
   }
@@ -169,9 +162,14 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       const s = this.table.pushSeparator((header, body) => new SlopeGraph(header, body));
       this.slopeGraphs.push(s);
     }
-    const r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx));
+
+    const r: EngineRanking = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
+      widthChanged: () => this.table.widthChanged(),
+      updateData: () => this.update([r])
+    }));
+    ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.renderer`, () => this.updateHist(r));
     this.rankings.push(r);
-    this.update();
+    this.update([r]);
   }
 
   private removeRanking(ranking: Ranking) {
@@ -185,72 +183,27 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     if (slope) {
      this.table.remove(slope);
     }
-    this.update();
   }
 
-  update() {
-    // TODO support multiple rankings connected with slopegraphs
-    const ranking = this.data.getRankings()[0];
-    const groups = ranking.getGroups();
-
-    const order = ranking.getOrder();
-    const data = this.data.view(order);
-    const localData = (Array.isArray(data) ? data : []).map((v, i) => ({v, dataIndex: order[i]}));
-
-    if (groups.length === 1) {
-      // simple case
-      if (this.data.isAggregated(ranking, groups[0])) {
-        // just a single row
-        this.ctx.data = [Object.assign({rows: localData}, groups[0])];
-      } else {
-        // simple ungrouped case
-        this.ctx.data = localData.map((r, i) => Object.assign({group: groups[0], relativeIndex: i}, r));
-      }
-    } else {
-      //multiple groups
-      let offset = 0;
-      const r = <(IGroupItem | IGroupData)[]>[];
-      groups.forEach((group) => {
-        const length = group.order.length;
-        const groupData = localData.slice(offset, offset + length);
-        offset += length;
-
-        if (this.data.isAggregated(ranking, group)) {
-          r.push(Object.assign({rows: groupData}, group));
-        } else {
-          r.push(...groupData.map((r, i) => Object.assign({group, relativeIndex: i}, r)));
-        }
-      });
-      this.ctx.data = r;
-    }
-
-    (<any>this.ctx).totalNumberOfRows = this.ctx.data.length;
-
-    const flatCols: IFlatColumn[] = [];
-    ranking.flatten(flatCols, 0, 1, 0);
-    const cols = flatCols.map((c) => c.col);
-    const columnPadding = this.options.header.columnPadding === undefined ? 5 : this.options.header.columnPadding;
-    const columns = cols.map((c, i) => {
-      const single = createDOM(c, this.options.renderers, this.ctx);
-      const group = createDOMGroup(c, this.options.renderers, this.ctx);
-      const renderers = {single, group, singleId: c.getRendererType(), groupId: c.getGroupRenderer()};
-
-      if (isMultiLevelColumn(c)) {
-        return new MultiLevelRenderColumn(c, renderers, i, columnPadding);
-      }
-      return new RenderColumn(c, renderers, i);
-    });
+  update(rankings: EngineRanking[] = this.rankings) {
+    const orders = rankings.map((r) => r.ranking.getOrder());
+    const data = this.data.fetch(orders);
+    // TODO support async
+    const localData = data.map((d) => d.map((d) => <IDataRow>d));
 
     if (this.histCache.size === 0) {
       this.updateHist();
     }
 
-    this.renderer.setZoomFactor(this.zoomFactor);
     const itemHeight = Math.round(this.zoomFactor * this.options.body.rowHeight!);
     const groupHeight = Math.round(this.zoomFactor * this.options.body.groupHeight!);
-    const rowContext = nonUniformContext(this.ctx.data.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight);
 
-    this.renderer.render(columns, rowContext);
+    rankings.forEach((r, i) => {
+      const grouped = r.groupData(localData[i]);
+      const rowContext = nonUniformContext(grouped.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight);
+      r.render(grouped, rowContext);
+    });
+    this.table.widthChanged();
   }
 
   fakeHover(dataIndex: number) {

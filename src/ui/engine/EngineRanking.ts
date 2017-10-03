@@ -5,32 +5,57 @@ import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 import {ACellTableSection, ICellRenderContext} from 'lineupengine/src/table/ACellTableSection';
 import GridStyleManager from 'lineupengine/src/style/GridStyleManager';
 import Ranking from '../../model/Ranking';
-import RenderColumn from './RenderColumn';
-import {debounce} from '../../utils';
+import RenderColumn, {IRenderers} from './RenderColumn';
 import Column, {IFlatColumn} from '../../model/Column';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
-import {IExceptionContext} from 'lineupengine/src/logic';
+import {IExceptionContext, uniformContext} from 'lineupengine/src/logic';
 import StackColumn from '../../model/StackColumn';
 import {nonUniformContext} from 'lineupengine/src/index';
 import {isMultiLevelColumn} from '../../model/CompositeColumn';
 import {IGroupData, IGroupItem, IRankingBodyContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
-import {createDOM, createDOMGroup} from '../../renderer/index';
-import ICellRendererFactory from '../../renderer/ICellRendererFactory';
+import {IDataRow} from '../../provider/ADataProvider';
+import {debounce} from '../../utils';
+
+export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
+  columnPadding: number;
+
+  createRenderer(c: Column): IRenderers;
+}
+
+export interface ICallbacks {
+  widthChanged(): void;
+  updateData(): void;
+}
 
 export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection {
-  private _context: ICellRenderContext<RenderColumn>;
-  private readonly ctx: IRankingBodyContext;
-  private data: (IGroupItem|IGroupData)[];
+  private _context: ICellRenderContext<RenderColumn> = Object.assign({
+    column: uniformContext(0, 100),
+    columns: [],
+    numberOfRows: 0,
+  }, uniformContext(0, 20));
 
-  constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, ctx: IRankingHeaderContextContainer & IDOMRenderContext) {
+  private readonly renderCtx: IRankingBodyContext;
+  private data: (IGroupItem | IGroupData)[];
+
+  constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, private readonly callbacks: ICallbacks) {
     super(header, body, tableId, style);
 
-    this.ctx = Object.assign({
+    ranking.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, debounce(() => this.updateHeaders(), 50));
+    ranking.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, debounce(() => this.updateBody(), 50));
+    ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, () => {
+      this.callbacks.updateData();
+    });
+
+    this.renderCtx = Object.assign({
       isGroup: (index: number) => isGroup(this.data[index]),
       getRow: (index: number) => <IGroupItem>this.data[index],
       getGroup: (index: number) => <IGroupData>this.data[index]
     }, ctx);
+  }
+
+  updateHeaders() {
+    return super.updateHeaders();
   }
 
   protected get context() {
@@ -41,29 +66,26 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (column instanceof MultiLevelRenderColumn) {
       column.updateWidthRule(this.style);
     }
-    return column.createHeader(document, this.ctx);
+    return column.createHeader(document, this.renderCtx);
   }
 
   protected updateHeader(node: HTMLElement, column: RenderColumn) {
     if (column instanceof MultiLevelRenderColumn) {
       column.updateWidthRule(this.style);
     }
-    return column.updateHeader(node, this.ctx);
+    return column.updateHeader(node, this.renderCtx);
   }
 
   protected createCell(document: Document, index: number, column: RenderColumn) {
-    return column.createCell(index, document, this.ctx);
+    return column.createCell(index, document, this.renderCtx);
   }
 
   protected updateCell(node: HTMLElement, index: number, column: RenderColumn) {
-    return column.updateCell(node, index, this.ctx);
+    return column.updateCell(node, index, this.renderCtx);
   }
 
-  updateHeaders() {
-    if (!this._context) {
-      return;
-    }
-    super.updateHeaders();
+  updateBody() {
+    this.forEachRow((row, rowIndex) => this.updateRow(row, rowIndex));
   }
 
   updateHeaderOf(i: number) {
@@ -75,16 +97,16 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.updateHeader(node, column);
   }
 
-  protected createRow(node: HTMLElement, rowIndex: number, ...extras: any[]): void {
-    super.createRow(node, rowIndex, ...extras);
-    const isGroup = this.ctx.isGroup(rowIndex);
+  protected createRow(node: HTMLElement, rowIndex: number): void {
+    super.createRow(node, rowIndex);
+    const isGroup = this.renderCtx.isGroup(rowIndex);
 
     if (isGroup) {
       node.dataset.agg = 'group';
       return;
     }
 
-    const dataIndex = this.ctx.getRow(rowIndex).dataIndex;
+    const dataIndex = this.renderCtx.getRow(rowIndex).dataIndex;
     node.dataset.dataIndex = dataIndex.toString();
     node.dataset.agg = 'detail'; //or 'group'
     if (this.ctx.provider.isSelected(dataIndex)) {
@@ -98,8 +120,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     };
   }
 
-  protected updateRow(node: HTMLElement, rowIndex: number, ...extras: any[]): void {
-    const isGroup = this.ctx.isGroup(rowIndex);
+  protected updateRow(node: HTMLElement, rowIndex: number): void {
+    const isGroup = this.renderCtx.isGroup(rowIndex);
     const wasGroup = node.dataset.agg === 'group';
 
     if (isGroup !== wasGroup) {
@@ -120,7 +142,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
 
     if (!isGroup) {
-      const dataIndex = this.ctx.getRow(rowIndex).dataIndex;
+      const dataIndex = this.renderCtx.getRow(rowIndex).dataIndex;
       node.dataset.dataIndex = dataIndex.toString();
       if (this.ctx.provider.isSelected(dataIndex)) {
         node.classList.add('lu-selected');
@@ -129,14 +151,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
     }
 
-    super.updateRow(node, rowIndex, ...extras);
+    super.updateRow(node, rowIndex);
   }
 
-  updateSelection(dataIndices: number[]) {
-    const selected = new Set(dataIndices);
+  updateSelection(selectedDataIndices: Set<number>) {
     this.forEachRow((node: HTMLElement) => {
       const dataIndex = parseInt(node.dataset.dataIndex!, 10);
-      if (selected.has(dataIndex)) {
+      if (selectedDataIndices.has(dataIndex)) {
         node.classList.add('lu-selected');
       } else {
         node.classList.remove('lu-selected');
@@ -144,15 +165,16 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }, true);
   }
 
-  private updateColumnWidth() {
+  updateColumnWidths() {
     const context = this.context;
-    this.style.update(context.defaultRowHeight, context.columns, context.column.defaultRowHeight);
+    this.style.update(context.defaultRowHeight, context.columns, context.column.defaultRowHeight, this.tableId);
     //no data update needed since just width changed
     context.columns.forEach((column) => {
       if (column instanceof MultiLevelRenderColumn) {
         column.updateWidthRule(this.style);
       }
     });
+    this.callbacks.widthChanged();
   }
 
   private updateColumn(index: number) {
@@ -174,9 +196,39 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     });
   }
 
-  render(data: (IGroupItem|IGroupData)[], rowContext: IExceptionContext) {
+  groupData(data: IDataRow[]) {
+    const groups = this.ranking.getGroups();
+    const provider = this.ctx.provider;
+    if (groups.length === 1) {
+      // simple case
+      if (provider.isAggregated(this.ranking, groups[0])) {
+        // just a single row
+        return [Object.assign({rows: data}, groups[0])];
+      }
+      // simple ungrouped case
+      return data.map((r, i) => Object.assign({group: groups[0], relativeIndex: i}, r));
+    }
+
+    //multiple groups
+    let offset = 0;
+    const r = <(IGroupItem | IGroupData)[]>[];
+    groups.forEach((group) => {
+      const length = group.order.length;
+      const groupData = data.slice(offset, offset + length);
+      offset += length;
+
+      if (provider.isAggregated(this.ranking, group)) {
+        r.push(Object.assign({rows: groupData}, group));
+      } else {
+        r.push(...groupData.map((r, i) => Object.assign({group, relativeIndex: i}, r)));
+      }
+    });
+    return r;
+  }
+
+  render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     this.data = data;
-    (<any>this.ctx).totalNumberOfRows = data.length;
+    (<any>this.renderCtx).totalNumberOfRows = data.length;
 
     const columns = this.createColumns();
 
@@ -199,17 +251,25 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
   }
 
-  private createColumns(rendererMap: { [key: string]: ICellRendererFactory }, columnPadding: number) {
+  private createColumns() {
     const flatCols: IFlatColumn[] = [];
     this.ranking.flatten(flatCols, 0, 1, 0);
     const cols = flatCols.map((c) => c.col);
     return cols.map((c, i) => {
-      const single = createDOM(c, rendererMap, this.ctx);
-      const group = createDOMGroup(c, rendererMap, this.ctx);
-      const renderers = {single, group, singleId: c.getRendererType(), groupId: c.getGroupRenderer()};
+      const renderers = this.ctx.createRenderer(c);
+
+      c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
+        this.updateColumnWidths();
+      });
 
       if (isMultiLevelColumn(c)) {
-        return new MultiLevelRenderColumn(c, renderers, i, columnPadding);
+        const r = new MultiLevelRenderColumn(c, renderers, i, this.ctx.columnPadding);
+        c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
+          r.updateWidthRule(this.style);
+        });
+        c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounce(() => this.updateColumn(i), 25));
+
+        return r;
       }
       return new RenderColumn(c, renderers, i);
     });
