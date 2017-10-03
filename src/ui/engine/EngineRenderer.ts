@@ -18,6 +18,8 @@ import Ranking from '../../model/Ranking';
 import SlopeGraph from './SlopeGraph';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 
+const ROW_PADDING = 2;
+
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
   static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
   static readonly EVENT_RENDER_FINISHED = ABodyRenderer.EVENT_RENDER_FINISHED;
@@ -33,7 +35,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
   readonly ctx: IRankingHeaderContextContainer & IDOMRenderContext & IEngineRankingContext;
 
-  private readonly updateAbles: ((ctx: IRankingHeaderContext)=>void)[] = [];
+  private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
 
   constructor(private data: DataProvider, parent: Element, options: Readonly<ILineUpConfig>) {
@@ -91,7 +93,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     body.style.fontSize = `${this.zoomFactor * 100}%`;
   }
 
-  pushUpdateAble(updateAble: (ctx: IRankingHeaderContext)=>void) {
+  pushUpdateAble(updateAble: (ctx: IRankingHeaderContext) => void) {
     this.updateAbles.push(updateAble);
   }
 
@@ -105,7 +107,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.data = data;
     this.ctx.provider = data;
 
-     this.initProvider(data);
+    this.initProvider(data);
   }
 
   private takeDownProvider() {
@@ -186,7 +188,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     const slope = this.slopeGraphs.splice(index - 1, 1)[0];
     this.table.remove(section);
     if (slope) {
-     this.table.remove(slope);
+      this.table.remove(slope);
     }
   }
 
@@ -209,7 +211,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
     rankings.forEach((r, i) => {
       const grouped = r.groupData(localData[i]);
-      const rowContext = nonUniformContext(grouped.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight);
+      const rowContext = nonUniformContext(grouped.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight, ROW_PADDING);
       r.render(grouped, rowContext);
     });
 

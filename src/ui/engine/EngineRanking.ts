@@ -53,7 +53,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const columns = this.createColumns();
     this._context = Object.assign({
       columns,
-      column: nonUniformContext(columns.map((w) => w.width + this.ctx.columnPadding), 100)
+      column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
     }, uniformContext(0, 20));
   }
 
@@ -187,10 +187,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   updateColumnWidths() {
-    const context = this.context;
-    this.style.update(context.defaultRowHeight, context.columns, context.column.defaultRowHeight, this.tableId);
+    super.updateColumnWidths();
+    const {columns} = this.context;
     //no data update needed since just width changed
-    context.columns.forEach((column) => {
+    columns.forEach((column) => {
       if (column instanceof MultiLevelRenderColumn) {
         column.updateWidthRule(this.style);
       }
@@ -255,7 +255,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     this._context = Object.assign({
       columns,
-      column: nonUniformContext(columns.map((w) => w.width + this.ctx.columnPadding), 100)
+      column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
     }, rowContext);
 
     super.recreate();
