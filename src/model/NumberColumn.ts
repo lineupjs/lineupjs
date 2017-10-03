@@ -362,7 +362,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
         {type: 'boxplot', label: 'Box Plot'},
         {type: 'number', label: 'Median Bar'},
         {type: 'circle', label: 'Median Circle'},
-        {type: 'heatmap', label: 'Median Heatmap'}
+        {type: 'heatmap', label: 'Median Brightness'}
       ]);
     this.setGroupRenderer('boxplot');
   }
