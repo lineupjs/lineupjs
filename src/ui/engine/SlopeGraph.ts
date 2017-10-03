@@ -204,16 +204,16 @@ export default class SlopeGraph implements ITableSection {
   }
 
   private onScrolledVertically(scrollTop: number, clientHeight: number) {
-    const {first, firstRowPos, last, endPos} = range(scrollTop, clientHeight, this.leftContext.defaultRowHeight, this.leftContext.exceptions, this.leftContext.numberOfRows);
+    const left = range(scrollTop, clientHeight, this.leftContext.defaultRowHeight, this.leftContext.exceptions, this.leftContext.numberOfRows);
+    const right = range(scrollTop, clientHeight, this.rightContext.defaultRowHeight, this.rightContext.exceptions, this.rightContext.numberOfRows);
 
-    this.body.style.transform = `translate(0, ${firstRowPos.toFixed(0)}px)`;
-    this.body.style.height = `${(endPos - firstRowPos).toFixed(0)}px`;
-    (this.node.firstElementChild!).setAttribute('transform', `translate(0,-${firstRowPos.toFixed(0)})`);
+    const start = Math.min(left.firstRowPos, right.firstRowPos);
+    const end = Math.max(left.endPos, right.endPos);
+    this.body.style.transform = `translate(0, ${start.toFixed(0)}px)`;
+    this.body.style.height = `${(end - start).toFixed(0)}px`;
+    (this.node.firstElementChild!).setAttribute('transform', `translate(0,-${start.toFixed(0)})`);
 
-    const {first: firstRight, last: lastRight} = range(scrollTop, clientHeight, this.rightContext.defaultRowHeight, this.rightContext.exceptions, this.rightContext.numberOfRows);
-
-    this.choose(first, last, firstRight, lastRight);
-
+    this.choose(left.first, left.last, right.first, right.last);
   }
 
   private choose(leftVisibleFirst: number, leftVisibleLast: number, rightVisibleFirst: number, rightVisibleLast: number) {
