@@ -2,17 +2,19 @@
 
 section.#{$lu-css_prefix}-slopegraph {
   svg {
+    shape-rendering: geometricprecision;
+
     path {
       &.#{$lu-css_prefix}-slope {
         fill: none;
-        stroke: black;
-        stroke-width: 2;
+        stroke: $lu_slope_color;
+        stroke-width: $lu_slope_stroke_width;
         stroke-linecap: round;
       }
 
-      &.#{$lu-css_prefix}-lu-group-slope {
-        fill: #d5d5d5;
-        stroke: black;
+      &.#{$lu-css_prefix}-group-slope {
+        fill: $lu_slope_group_color;
+        stroke: $lu_slope_color;
         stroke-linejoin: round;
       }
     }

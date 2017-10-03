@@ -3,7 +3,6 @@
  */
 import {IExceptionContext, range} from 'lineupengine/src/logic';
 import {IGroupData, IGroupItem, isGroup} from './interfaces';
-import {IDataRow} from '../../provider/ADataProvider';
 import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 
 const SLOPEGRAPH_WIDTH = 200;
@@ -37,7 +36,7 @@ class GroupSlope implements ISlope {
 interface IPos {
   start: number;
   heightPerRow: number;
-  rows: IDataRow[];
+  rows: number[]; // data indices
   offset: number;
 }
 
@@ -127,11 +126,11 @@ export default class SlopeGraph implements ITableSection {
       const height = rightContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight;
 
       if (isGroup(r)) {
-        const p = {rows: r.rows.slice(), start: acc, heightPerRow: height / r.rows.length, offset: 0};
+        const p = {rows: r.rows.map((d) => d.dataIndex), start: acc, heightPerRow: height / r.rows.length, offset: 0};
         r.rows.forEach((ri) => lookup.set(ri.dataIndex, p));
       } else {
         const dataIndex = (<IGroupItem>r).dataIndex;
-        lookup.set(dataIndex, {rows: [<IGroupItem>r], start: acc, heightPerRow: height, offset: 0});
+        lookup.set(dataIndex, {rows: [dataIndex], start: acc, heightPerRow: height, offset: 0});
       }
       acc += height;
     });
@@ -141,14 +140,14 @@ export default class SlopeGraph implements ITableSection {
       const height = leftContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight;
       this.index2slope.push(this.slopes.length);
       if (isGroup(r)) {
-        const free = new Set(r.rows);
+        const free = new Set(r.rows.map((d) => d.dataIndex));
         const heightPerItem = height / r.rows.length;
         let offset = 0;
         r.rows.forEach((d) => {
-          if (!free.has(d)) {
+          if (!free.has(d.dataIndex)) {
             return; // already handled
           }
-          free.delete(d);
+          free.delete(d.dataIndex);
           const p = lookup.get(d.dataIndex);
           if (!p) {
             return; // no matching
