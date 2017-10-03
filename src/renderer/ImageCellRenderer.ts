@@ -43,19 +43,20 @@ export default class ImageCellRenderer extends ANoGroupRenderer implements ICell
         return;
       }
       const image = this.getImage(col, d.v, d.dataIndex);
-      if (image) {
-        const w = context.colWidth(col);
-        const h = context.rowHeight(i);
-        const iw = image.width;
-        const ih = image.height;
-        if (iw === 0 || ih === 0) {
-          return;
-        }
-        const factor = Math.min(w / iw, h / ih);
-        const rw = iw * factor;
-        const rh = ih * factor;
-        ctx.drawImage(image, (w - rw)/2, (h - rh)/2, rw, rh);
+      if (!image) {
+        return;
       }
+      const iw = image.width;
+      const ih = image.height;
+      if (iw === 0 || ih === 0) {
+        return;
+      }
+      const w = context.colWidth(col);
+      const h = context.rowHeight(i);
+      const factor = Math.min(w / iw, h / ih);
+      const rw = iw * factor;
+      const rh = ih * factor;
+      ctx.drawImage(image, (w - rw)/2, (h - rh)/2, rw, rh);
     };
   }
 }
