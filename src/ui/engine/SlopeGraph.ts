@@ -38,13 +38,14 @@ interface IPos {
   heightPerRow: number;
   rows: number[]; // data indices
   offset: number;
+  ref: number;
 }
 
 export default class SlopeGraph implements ITableSection {
   readonly node: SVGSVGElement;
 
-  private readonly index2slope: number[] = [];
-  private readonly slopes: ISlope[] = [];
+  private leftSlopes: ISlope[][] = [];
+  private rightSlopes: ISlope[][] = [];
   private readonly pool: SVGPathElement[] = [];
 
   private scrollListener: () => void;
@@ -52,6 +53,7 @@ export default class SlopeGraph implements ITableSection {
   readonly width = SLOPEGRAPH_WIDTH;
 
   private leftContext: IExceptionContext;
+  private rightContext: IExceptionContext;
 
   constructor(private readonly header: HTMLElement, private readonly body: HTMLElement, public readonly id: string) {
     this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -116,28 +118,34 @@ export default class SlopeGraph implements ITableSection {
 
   rebuild(left: (IGroupItem | IGroupData)[], leftContext: IExceptionContext, right: (IGroupItem | IGroupData)[], rightContext: IExceptionContext) {
     this.leftContext = leftContext;
-    this.index2slope.splice(0, this.index2slope.length);
-    this.slopes.splice(0, this.slopes.length);
+    this.rightContext = rightContext;
 
     const lookup = new Map<number, IPos>();
     let acc = 0;
-    right.forEach((r, i) => {
+    this.rightSlopes = right.map((r, i) => {
       const height = rightContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight;
 
       if (isGroup(r)) {
-        const p = {rows: r.rows.map((d) => d.dataIndex), start: acc, heightPerRow: height / r.rows.length, offset: 0};
+        const p = {
+          rows: r.rows.map((d) => d.dataIndex),
+          start: acc,
+          heightPerRow: height / r.rows.length,
+          offset: 0,
+          ref: i
+        };
         r.rows.forEach((ri) => lookup.set(ri.dataIndex, p));
       } else {
         const dataIndex = (<IGroupItem>r).dataIndex;
-        lookup.set(dataIndex, {rows: [dataIndex], start: acc, heightPerRow: height, offset: 0});
+        lookup.set(dataIndex, {rows: [dataIndex], start: acc, heightPerRow: height, offset: 0, ref: i});
       }
       acc += height;
+      return <ISlope[]>[];
     });
 
     acc = 0;
-    left.forEach((r, i) => {
+    this.leftSlopes = left.map((r, i) => {
       const height = leftContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight;
-      this.index2slope.push(this.slopes.length);
+      const slopes = <ISlope[]>[];
       if (isGroup(r)) {
         const free = new Set(r.rows.map((d) => d.dataIndex));
         const heightPerItem = height / r.rows.length;
@@ -153,11 +161,9 @@ export default class SlopeGraph implements ITableSection {
           }
           //
           const intersection = 1 + p.rows.reduce((acc, r) => acc + (free.delete(r) ? 1 : 0), 0);
-          if (intersection === 1) {
-            this.slopes.push(new ItemSlope(acc + offset + heightPerItem / 2, p.start + p.offset + p.heightPerRow / 2));
-          } else {
-            this.slopes.push(new GroupSlope([acc + offset, acc + offset + heightPerItem * intersection], [p.start + p.offset, p.start + p.offset + p.heightPerRow * intersection]));
-          }
+          const s = intersection === 1 ? new ItemSlope(acc + offset + heightPerItem / 2, p.start + p.offset + p.heightPerRow / 2) : new GroupSlope([acc + offset, acc + offset + heightPerItem * intersection], [p.start + p.offset, p.start + p.offset + p.heightPerRow * intersection]);
+          slopes.push(s);
+          this.rightSlopes[p.ref].push(s);
           p.offset += intersection * p.heightPerRow;
           offset += intersection * heightPerItem;
         });
@@ -165,11 +171,14 @@ export default class SlopeGraph implements ITableSection {
         const dataIndex = (<IGroupItem>r).dataIndex;
         const p = lookup.get(dataIndex);
         if (p) {
-          this.slopes.push(new ItemSlope(acc + height / 2, p.start + p.offset + p.heightPerRow / 2));
+          const s = new ItemSlope(acc + height / 2, p.start + p.offset + p.heightPerRow / 2);
+          slopes.push(s);
+          this.rightSlopes[p.ref].push(s);
           p.offset += p.heightPerRow; // shift by one item
         }
       }
       acc += height;
+      return slopes;
     });
 
     this.revalidate();
@@ -181,24 +190,36 @@ export default class SlopeGraph implements ITableSection {
     this.body.style.transform = `translate(0, ${firstRowPos.toFixed(0)}px)`;
     this.body.style.height = `${(endPos - firstRowPos).toFixed(0)}px`;
     (this.node.firstElementChild!).setAttribute('transform', `translate(0,-${firstRowPos.toFixed(0)})`);
-    this.render(first, last);
+
+    const {first: firstRight, last: lastRight} = range(scrollTop, clientHeight, this.rightContext.defaultRowHeight, this.rightContext.exceptions, this.rightContext.numberOfRows);
+
+    this.choose(first, last, firstRight, lastRight);
+
   }
 
-  render(leftVisibleFirst: number, leftVisibleLast: number) {
+  private choose(leftVisibleFirst: number, leftVisibleLast: number, rightVisibleFirst: number, rightVisibleLast: number) {
     // assume no separate scrolling
-    const start = this.index2slope[leftVisibleFirst];
-    const end = this.index2slope[leftVisibleLast];
 
-    const slopes = this.slopes.slice(start, end + 1);
+    const slopes = new Set<ISlope>();
+    for (let i = leftVisibleFirst; i <= leftVisibleLast; ++i) {
+      this.leftSlopes[i].forEach((s) => slopes.add(s));
+    }
+    for (let i = rightVisibleFirst; i <= rightVisibleLast; ++i) {
+      this.rightSlopes[i].forEach((s) => slopes.add(s));
+    }
+    this.render(slopes);
+  }
+
+  private render(slopes: Set<ISlope>) {
     const g = this.node.firstElementChild!;
     const paths = <SVGPathElement[]>Array.from(g.children);
     //match lengths
-    for (let i = slopes.length; i < paths.length; ++i) {
+    for (let i = slopes.size; i < paths.length; ++i) {
       const elem = paths[i];
       this.pool.push(elem);
       elem.remove();
     }
-    for (let i = paths.length; i < slopes.length; ++i) {
+    for (let i = paths.length; i < slopes.size; ++i) {
       const elem = this.pool.pop();
       if (elem) {
         g.appendChild(elem);
@@ -211,6 +232,7 @@ export default class SlopeGraph implements ITableSection {
     }
 
     // update paths
-    slopes.forEach((s, i) => s.update(paths[i]));
+    let i = 0;
+    slopes.forEach((s) => s.update(paths[i++]));
   }
 }
