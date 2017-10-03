@@ -50,9 +50,9 @@ export default class SlopeGraph implements ITableSection {
 
   constructor(header: HTMLElement, body: HTMLElement) {
     this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    this.node.classList.add('lu-slopegraph');
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
     header.classList.add('lu-slopegraph');
+    body.classList.add('lu-slopegraph');
     body.appendChild(this.node);
   }
 

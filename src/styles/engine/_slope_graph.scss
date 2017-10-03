@@ -1,20 +1,23 @@
 @import '../vars';
 
-.#{$lu-css_prefix}-slope-graph {
-  flex: 0 0 auto;
+section.#{$lu-css_prefix}-slopegraph {
+  flex: 0 0 300px;
 
-  path {
-    &.#{$lu-css_prefix}-slope {
-      fill: none;
-      stroke: black;
-      stroke-width: 2;
-      stroke-linecap: round;
-    }
+  svg {
+    path {
+      &.#{$lu-css_prefix}-slope {
+        fill: none;
+        stroke: black;
+        stroke-width: 2;
+        stroke-linecap: round;
+      }
 
-    &.#{$lu-css_prefix}-lu-group-slope {
-      fill: #d5d5d5;
-      stroke: black;
-      stroke-linejoin: round;
+      &.#{$lu-css_prefix}-lu-group-slope {
+        fill: #d5d5d5;
+        stroke: black;
+        stroke-linejoin: round;
+      }
     }
   }
 }
+
