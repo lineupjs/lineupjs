@@ -163,13 +163,14 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   private addRanking(ranking: Ranking) {
     if (this.rankings.length > 0) {
       // add slope graph first
-      const s = this.table.pushSeparator((header, body) => new SlopeGraph(header, body));
+      const s = this.table.pushSeparator((header, body) => new SlopeGraph(header, body, `${ranking.id}S`));
       this.slopeGraphs.push(s);
     }
 
-    const r: EngineRanking = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
+    let r: EngineRanking;
+    r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
       widthChanged: () => this.table.widthChanged(),
-      updateData: () => this.update([r])
+      updateData: () => r ? this.update([r]) : null
     }));
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.renderer`, () => this.updateHist(r));
     this.rankings.push(r);
@@ -190,6 +191,10 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   }
 
   update(rankings: EngineRanking[] = this.rankings) {
+    rankings = rankings.filter((d) => !d.hidden);
+    if (rankings.length === 0) {
+      return;
+    }
     const orders = rankings.map((r) => r.ranking.getOrder());
     const data = this.data.fetch(orders);
     // TODO support async
@@ -207,7 +212,27 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       const rowContext = nonUniformContext(grouped.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight);
       r.render(grouped, rowContext);
     });
+
+    this.updateSlopeGraphs(rankings);
+
     this.table.widthChanged();
+  }
+
+  private updateSlopeGraphs(rankings: EngineRanking[] = this.rankings) {
+    const indices = new Set(rankings.map((d) => this.rankings.indexOf(d)));
+    this.slopeGraphs.forEach((s, i) => {
+      if (s.hidden) {
+        return;
+      }
+      const left = i;
+      const right = i + 1;
+      if (!indices.has(left) && !indices.has(right)) {
+        return;
+      }
+      const leftRanking = this.rankings[left];
+      const rightRanking = this.rankings[right];
+      s.rebuild(leftRanking.currentData, leftRanking.context, rightRanking.currentData, rightRanking.context);
+    });
   }
 
   fakeHover(dataIndex: number) {

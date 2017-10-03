@@ -1,10 +1,12 @@
 /**
  * Created by Samuel Gratzl on 21.09.2017.
  */
-import {IExceptionContext} from 'lineupengine/src/logic';
+import {IExceptionContext, range} from 'lineupengine/src/logic';
 import {IGroupData, IGroupItem, isGroup} from './interfaces';
 import {IDataRow} from '../../provider/ADataProvider';
 import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
+
+const SLOPEGRAPH_WIDTH = 200;
 
 interface ISlope {
   update(path: SVGPathElement): void;
@@ -16,8 +18,8 @@ class ItemSlope implements ISlope {
   }
 
   update(path: SVGPathElement) {
-    path.className = 'lu-slope';
-    path.setAttribute('d', `M0,${this.left}L100%,${this.right}`);
+    path.setAttribute('class', 'lu-slope');
+    path.setAttribute('d', `M0,${this.left}L${SLOPEGRAPH_WIDTH},${this.right}`);
   }
 }
 
@@ -27,8 +29,8 @@ class GroupSlope implements ISlope {
   }
 
   update(path: SVGPathElement) {
-    path.className = 'lu-group-slope';
-    path.setAttribute('d', `M0,${this.left[0]}L100%,${this.right[0]}L100%,${this.right[1]}L0,${this.left[1]}Z`);
+    path.setAttribute('class', 'lu-group-slope');
+    path.setAttribute('d', `M0,${this.left[0]}L${SLOPEGRAPH_WIDTH},${this.right[0]}L${SLOPEGRAPH_WIDTH},${this.right[1]}L0,${this.left[1]}Z`);
   }
 }
 
@@ -42,14 +44,19 @@ interface IPos {
 export default class SlopeGraph implements ITableSection {
   readonly node: SVGSVGElement;
 
-  private readonly index2slope: number[];
-  private readonly slopes: ISlope[];
+  private readonly index2slope: number[] = [];
+  private readonly slopes: ISlope[] = [];
   private readonly pool: SVGPathElement[] = [];
 
-  readonly width = 200;
+  private scrollListener: () => void;
 
-  constructor(header: HTMLElement, body: HTMLElement) {
+  readonly width = SLOPEGRAPH_WIDTH;
+
+  private leftContext: IExceptionContext;
+
+  constructor(private readonly header: HTMLElement, private readonly body: HTMLElement, public readonly id: string) {
     this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.node.setAttribute('width', String(this.width));
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
     header.classList.add('lu-slopegraph');
     body.classList.add('lu-slopegraph');
@@ -57,16 +64,31 @@ export default class SlopeGraph implements ITableSection {
   }
 
   init() {
-    // dummy
+    this.hide(); // hide by default
+
+    const scroller = this.body.parentElement!;
+
+    //sync scrolling of header and body
+    let oldTop = scroller.scrollTop;
+    this.scrollListener = () => {
+      const top = scroller.scrollTop;
+      if (oldTop === top) {
+        return;
+      }
+      oldTop = top;
+      this.onScrolledVertically(top, scroller.clientHeight);
+    };
+    scroller.addEventListener('scroll', this.scrollListener);
   }
 
 
   get hidden() {
-    return this.node.classList.contains('loading');
+    return this.header.classList.contains('loading');
   }
 
   set hidden(value: boolean) {
-    this.node.classList.toggle('loading', value);
+    this.header.classList.toggle('loading', value);
+    this.body.classList.toggle('loading', value);
   }
 
   hide() {
@@ -74,14 +96,28 @@ export default class SlopeGraph implements ITableSection {
   }
 
   show() {
+    const was = this.hidden;
     this.hidden = false;
+    if (was) {
+      this.revalidate();
+    }
   }
 
   destroy() {
     this.node.remove();
+    this.body.parentElement!.removeEventListener('scroll', this.scrollListener);
+  }
+
+  private revalidate() {
+    if (!this.leftContext || this.hidden) {
+      return;
+    }
+    const p = this.body.parentElement!;
+    this.onScrolledVertically(p.scrollTop, p.clientHeight);
   }
 
   rebuild(left: (IGroupItem | IGroupData)[], leftContext: IExceptionContext, right: (IGroupItem | IGroupData)[], rightContext: IExceptionContext) {
+    this.leftContext = leftContext;
     this.index2slope.splice(0, this.index2slope.length);
     this.slopes.splice(0, this.slopes.length);
 
@@ -137,6 +173,16 @@ export default class SlopeGraph implements ITableSection {
       }
       acc += height;
     });
+
+    this.revalidate();
+  }
+
+  private onScrolledVertically(scrollTop: number, clientHeight: number) {
+    const {first, last} = range(scrollTop, clientHeight, this.leftContext.defaultRowHeight, this.leftContext.exceptions, this.leftContext.numberOfRows);
+
+    this.node.setAttribute('height', clientHeight.toString());
+    (this.node.firstElementChild!).setAttribute('transform', `translate(0,-${scrollTop})`);
+    this.render(first, last);
   }
 
   render(leftVisibleFirst: number, leftVisibleLast: number) {

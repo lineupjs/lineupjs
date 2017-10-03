@@ -1,8 +1,6 @@
 @import '../vars';
 
 section.#{$lu-css_prefix}-slopegraph {
-  flex: 0 0 300px;
-
   svg {
     path {
       &.#{$lu-css_prefix}-slope {
@@ -21,3 +19,7 @@ section.#{$lu-css_prefix}-slopegraph {
   }
 }
 
+main > section.#{$lu-css_prefix}-slopegraph {
+  position: sticky;
+  top: 0;
+}

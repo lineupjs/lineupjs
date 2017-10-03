@@ -29,14 +29,10 @@ export interface ICallbacks {
 }
 
 export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection {
-  private _context: ICellRenderContext<RenderColumn> = Object.assign({
-    column: uniformContext(0, 100),
-    columns: [],
-    numberOfRows: 0,
-  }, uniformContext(0, 20));
+  private _context: ICellRenderContext<RenderColumn>;
 
   private readonly renderCtx: IRankingBodyContext;
-  private data: (IGroupItem | IGroupData)[];
+  private data: (IGroupItem | IGroupData)[] = [];
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, private readonly callbacks: ICallbacks) {
     super(header, body, tableId, style);
@@ -52,13 +48,35 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       getRow: (index: number) => <IGroupItem>this.data[index],
       getGroup: (index: number) => <IGroupData>this.data[index]
     }, ctx);
+
+    // default context
+    const columns = this.createColumns();
+    this._context = Object.assign({
+      columns,
+      column: nonUniformContext(columns.map((w) => w.width + this.ctx.columnPadding), 100)
+    }, uniformContext(0, 20));
+  }
+
+  get id() {
+    return this.ranking.id;
+  }
+
+  protected onVisibilityChanged(visible: boolean) {
+    super.onVisibilityChanged(visible);
+    if (visible) {
+      this.callbacks.updateData();
+    }
   }
 
   updateHeaders() {
     return super.updateHeaders();
   }
 
-  protected get context() {
+  get currentData() {
+    return this.data;
+  }
+
+  get context() {
     return this._context;
   }
 
@@ -85,6 +103,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   updateBody() {
+    if (this.hidden) {
+      return;
+    }
     this.forEachRow((row, rowIndex) => this.updateRow(row, rowIndex));
   }
 
@@ -234,7 +255,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     this._context = Object.assign({
       columns,
-      column: nonUniformContext(columns.map((w) => w.width), 100)
+      column: nonUniformContext(columns.map((w) => w.width + this.ctx.columnPadding), 100)
     }, rowContext);
 
     super.recreate();
