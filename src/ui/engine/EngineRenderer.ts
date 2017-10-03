@@ -112,6 +112,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
     this.data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, null);
     this.data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, null);
+    this.data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
 
     this.rankings.forEach((r) => this.table.remove(r));
     this.slopeGraphs.forEach((s) => this.table.remove(s));
@@ -124,6 +125,9 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     });
     data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, (ranking: Ranking) => {
       this.removeRanking(ranking);
+    });
+    data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, (ranking: Ranking) => {
+      this.update(this.rankings.filter((r) => r.ranking === ranking));
     });
 
     this.data.getRankings().forEach((r) => this.addRanking(r));
