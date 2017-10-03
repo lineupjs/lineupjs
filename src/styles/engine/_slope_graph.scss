@@ -3,6 +3,7 @@
 section.#{$lu-css_prefix}-slopegraph {
   svg {
     shape-rendering: geometricprecision;
+    height: 100%;
 
     path {
       &.#{$lu-css_prefix}-slope {
@@ -19,9 +20,4 @@ section.#{$lu-css_prefix}-slopegraph {
       }
     }
   }
-}
-
-main > section.#{$lu-css_prefix}-slopegraph {
-  position: sticky;
-  top: 0;
 }

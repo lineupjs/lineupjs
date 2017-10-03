@@ -55,7 +55,6 @@ export default class SlopeGraph implements ITableSection {
 
   constructor(private readonly header: HTMLElement, private readonly body: HTMLElement, public readonly id: string) {
     this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    this.node.setAttribute('width', String(this.width));
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
     header.classList.add('lu-slopegraph');
     body.classList.add('lu-slopegraph');
@@ -177,10 +176,11 @@ export default class SlopeGraph implements ITableSection {
   }
 
   private onScrolledVertically(scrollTop: number, clientHeight: number) {
-    const {first, last} = range(scrollTop, clientHeight, this.leftContext.defaultRowHeight, this.leftContext.exceptions, this.leftContext.numberOfRows);
+    const {first, firstRowPos, last, endPos} = range(scrollTop, clientHeight, this.leftContext.defaultRowHeight, this.leftContext.exceptions, this.leftContext.numberOfRows);
 
-    this.node.setAttribute('height', clientHeight.toString());
-    (this.node.firstElementChild!).setAttribute('transform', `translate(0,-${scrollTop})`);
+    this.body.style.transform = `translate(0, ${firstRowPos.toFixed(0)}px)`;
+    this.body.style.height = `${(endPos - firstRowPos).toFixed(0)}px`;
+    (this.node.firstElementChild!).setAttribute('transform', `translate(0,-${firstRowPos.toFixed(0)})`);
     this.render(first, last);
   }
 
