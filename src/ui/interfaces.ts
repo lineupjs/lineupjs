@@ -7,6 +7,7 @@ import {IFilterDialog} from '../dialogs/AFilterDialog';
 import Ranking from '../model/Ranking';
 import Column from '../model/Column';
 import {IRankingHeaderContext} from './engine/interfaces';
+import {Selection} from 'd3';
 
 export interface ILineUpRenderer extends AEventDispatcher {
   destroy(): void;
@@ -51,7 +52,7 @@ export interface IBodyRendererOptions {
 
 
 export interface IRankingHook {
-  ($node: d3.Selection<Ranking>): void;
+  ($node: Selection<Ranking>): void;
 }
 
 
@@ -80,5 +81,8 @@ export interface IHeaderRendererOptions {
 
   freezeCols: number;
 
+  /**
+   * @deprecated
+   */
   rankingButtons: IRankingHook;
 }
