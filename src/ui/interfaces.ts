@@ -68,7 +68,7 @@ export interface IHeaderRendererOptions {
   summary: boolean;
 
   filters: { [type: string]: IFilterDialog };
-  summaries: { [type: string]: ISummaryFunction},
+  summaries: { [type: string]: ISummaryFunction};
   linkTemplates: string[];
 
   searchAble(col: Column): boolean;
