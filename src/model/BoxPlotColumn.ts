@@ -40,6 +40,10 @@ export interface IBoxPlotColumn extends INumberColumn {
   setSortMethod(sortMethod: string): void;
 }
 
+export function isBoxPlotColumn(col: any): col is IBoxPlotColumn {
+  return typeof (<IBoxPlotColumn>col).getBoxPlotData === 'function';
+}
+
 export interface IBoxPlotDesc {
   /**
    * dump of mapping function

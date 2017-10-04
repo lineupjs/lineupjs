@@ -7,6 +7,7 @@ import {renderers as defaultRenderers} from './renderer';
 import {filters as defaultFilters} from './dialogs';
 import StringColumn from './model/StringColumn';
 import {Column} from './model';
+import {defaultSummaries} from './ui/engine/summary';
 
 export interface IFullLineUpConfig extends ILineUpConfig {
   /**
@@ -18,7 +19,6 @@ export interface IFullLineUpConfig extends ILineUpConfig {
    */
   body: IBodyOptions & IBodyRendererOptions;
 }
-
 
 export function dummyRankingButtonHook(): any {
   return null;
@@ -38,6 +38,7 @@ export function defaultConfig(): IFullLineUpConfig {
       manipulative: true,
       summary: false,
       filters: Object.assign({}, defaultFilters),
+      summaries: Object.assign({}, defaultSummaries),
       linkTemplates: [],
       searchAble: (col: Column) => col instanceof StringColumn,
       sortOnLabel: true,

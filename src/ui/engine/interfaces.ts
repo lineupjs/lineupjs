@@ -8,6 +8,8 @@ import {INumberColumn} from '../../model/NumberColumn';
 import {ICategoricalColumn} from '../../model/CategoricalColumn';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import {IGroup} from '../../model/Group';
+import {ISummaryFunction} from '../interfaces';
+
 
 export interface IRankingHeaderContextContainer {
   readonly idPrefix: string;
@@ -18,6 +20,7 @@ export interface IRankingHeaderContextContainer {
 
   autoRotateLabels: boolean;
   filters: { [type: string]: IFilterDialog };
+  summaries: { [type: string]: ISummaryFunction };
 
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 }

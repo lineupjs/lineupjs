@@ -2,34 +2,29 @@
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
-import {default as CategoricalColumn, ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
-import NumberColumn, {INumberColumn, isNumberColumn,} from '../../model/NumberColumn';
+import {default as CategoricalColumn, ICategoricalColumn} from '../../model/CategoricalColumn';
+import NumberColumn, {INumberColumn} from '../../model/NumberColumn';
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import {filterMissingNumberMarkup} from '../../dialogs/AFilterDialog';
 import {stringFilter} from '../../dialogs/StringFilterDialog';
-import {IDataProvider} from '../../provider/ADataProvider';
 import {behavior, DragEvent, event as d3event, select, selectAll} from 'd3';
 import {round} from '../../utils';
 import {IRankingHeaderContext} from './interfaces';
 import AggregateGroupColumn from '../../model/AggregateGroupColumn';
+import {ISummaryFunction} from '../interfaces';
 
-export default function createSummary(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
-  if (col instanceof StringColumn) {
-    summaryString(col, node, interactive);
-  } else if (isCategoricalColumn(col)) {
-    summaryCategorical(col, node, <ICategoricalStatistics>ctx.statsOf(col), interactive);
-  } else if (isNumberColumn(col)) {
-    summaryNumerical(col, node, <IStatistics>ctx.statsOf(col), interactive);
-  } else if (col instanceof SelectionColumn) {
-    summarySelection(col, node, ctx.provider);
-  } else if (col instanceof AggregateGroupColumn) {
-    summaryAggregation(col, node);
-  }
-}
+export const defaultSummaries: {[key: string]: ISummaryFunction} = {
+  stringLike: summaryString,
+  categoricalLike: summaryCategorical,
+  numberLike: summaryNumerical,
+  selection: summarySelection,
+  aggregate: summaryAggregation
+};
 
-function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement, stats: ICategoricalStatistics, withLabels: boolean) {
+function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement, interactive: boolean, ctx: IRankingHeaderContext) {
+  const stats = <ICategoricalStatistics>ctx.statsOf(col);
   const old = node.dataset.summary;
 
   if (!stats) {
@@ -43,7 +38,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   if (!old || !old.endsWith('hist')) {
     stats.hist.forEach(({cat, y}) => {
       const i = cats.indexOf(cat);
-      node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}" title="${labels[i]}: ${y}" data-cat="${cat}" ${withLabels ? `data-title="${labels[i]}"` : ''}></div>`);
+      node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}" title="${labels[i]}: ${y}" data-cat="${cat}" ${interactive ? `data-title="${labels[i]}"` : ''}></div>`);
     });
   } else {
     const bins = <HTMLElement[]>Array.from(node.children);
@@ -59,7 +54,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
     return;
   }
 
-  node.dataset.summary = withLabels ? 'interactive-filter-hist' : 'interactive-hist';
+  node.dataset.summary = interactive ? 'interactive-filter-hist' : 'interactive-hist';
   // make histogram interactive
   const ccol = <CategoricalColumn | CategoricalNumberColumn>col;
   const start = ccol.getFilter();
@@ -104,7 +99,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
     };
   });
 
-  if (!withLabels) {
+  if (!interactive) {
     return;
   }
 
@@ -127,7 +122,8 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   };
 }
 
-function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, stats: IStatistics, interactive: boolean) {
+function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, interactive: boolean, ctx: IRankingHeaderContext) {
+  const stats = <IStatistics>ctx.statsOf(col);
   const old = node.dataset.summary;
 
   if (!stats) {
@@ -248,7 +244,8 @@ export function summaryString(col: StringColumn, node: HTMLElement, interactive:
   base.init(node);
 }
 
-function summarySelection(col: SelectionColumn, node: HTMLElement, provider: IDataProvider) {
+function summarySelection(col: SelectionColumn, node: HTMLElement, _interactive: boolean, ctx: IRankingHeaderContext) {
+  const provider = ctx.provider;
   const old = node.dataset.summary;
   node.dataset.summary = 'selection';
   if (old !== 'selection') {

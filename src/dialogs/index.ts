@@ -10,11 +10,11 @@ import CategoricalMappingFilterDialog from './CategoricalMappingFilterDialog';
 
 
 export const filters = <{ [type: string]: IFilterDialog }>{
-  'string': StringFilterDialog,
-  'boolean': BooleanFilterDialog,
-  'categorical': CategoricalFilterDialog,
-  'number': MappingsFilterDialog,
-  'ordinal': CategoricalMappingFilterDialog,
-  'boxplot': MappingsFilterDialog,
-  'numbers': MappingsFilterDialog
+  stringLike: StringFilterDialog,
+  boolean: BooleanFilterDialog,
+  categorical: CategoricalFilterDialog,
+  number: MappingsFilterDialog,
+  ordinal: CategoricalMappingFilterDialog,
+  boxplot: MappingsFilterDialog,
+  numbers: MappingsFilterDialog
 };

@@ -68,13 +68,11 @@
     p.getLastRanking().push(p.create(desc[1]));
 
     const instance = LineUpJS.create(p, document.body, {
+      header: {
+        summary: true
+      },
       body: {
         renderer: 'engine'
-      },
-      renderingOptions: {
-        animation: false,
-        summary: true,
-        meanLine: true
       }
     });
     instance.update();
