@@ -1,0 +1,8 @@
+@import '../vars';
+
+[data-renderer=image] {
+  background: url('~lineupengine/src/assets/loading.svg');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}

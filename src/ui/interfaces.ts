@@ -6,6 +6,8 @@ import ICellRendererFactory from '../renderer/ICellRendererFactory';
 import {IFilterDialog} from '../dialogs/AFilterDialog';
 import Ranking from '../model/Ranking';
 import Column from '../model/Column';
+import {IRankingHeaderContext} from './engine/interfaces';
+import {Selection} from 'd3';
 
 export interface ILineUpRenderer extends AEventDispatcher {
   destroy(): void;
@@ -50,8 +52,11 @@ export interface IBodyRendererOptions {
 
 
 export interface IRankingHook {
-  ($node: d3.Selection<Ranking>): void;
+  ($node: Selection<Ranking>): void;
 }
+
+
+export declare type ISummaryFunction = ((col: Column, node: HTMLElement, interactive: boolean, ctx: IRankingHeaderContext)=>void);
 
 export interface IHeaderRendererOptions {
   idPrefix: string;
@@ -63,6 +68,7 @@ export interface IHeaderRendererOptions {
   summary: boolean;
 
   filters: { [type: string]: IFilterDialog };
+  summaries: { [type: string]: ISummaryFunction};
   linkTemplates: string[];
 
   searchAble(col: Column): boolean;
@@ -75,5 +81,8 @@ export interface IHeaderRendererOptions {
 
   freezeCols: number;
 
+  /**
+   * @deprecated
+   */
   rankingButtons: IRankingHook;
 }

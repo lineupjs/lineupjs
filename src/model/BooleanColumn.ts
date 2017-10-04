@@ -6,7 +6,7 @@ import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './CategoricalColumn';
 
-export interface IBooleanDesc extends IValueColumnDesc<boolean> {
+export interface IBooleanDesc {
   /**
    * string to show for true
    * @default X

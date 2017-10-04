@@ -1,6 +1,7 @@
 
 [data-agg=detail] [data-renderer=categorical],
-[data-agg=detail] [data-renderer=heatmap] {
+[data-agg=detail] [data-renderer=heatmap],
+[data-agg=group] [data-renderer=heatmap] > div {
   display: flex;
   white-space: nowrap;
 
@@ -16,6 +17,15 @@
     flex: 1 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+}
+
+[data-agg=group] [data-renderer=heatmap] {
+  display: flex;
+  align-items: center;
+
+  > div {
+    width: 100%;
   }
 }
 

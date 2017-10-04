@@ -70,11 +70,11 @@
     p.pushRanking(p.getLastRanking());
 
     const instance = LineUpJS.create(p, document.body, {
-      body: {
-        renderer: 'engine'
-      },
       header: {
         summary: true
+      },
+      body: {
+        renderer: 'engine'
       }
     });
     instance.update();
