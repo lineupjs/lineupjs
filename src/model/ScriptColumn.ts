@@ -6,7 +6,9 @@ import Column from './Column';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {isNumberColumn} from './NumberColumn';
 
-const DEFAULT_SCRIPT = 'max(values)';
+const DEFAULT_SCRIPT = `let s = 0;
+values.forEach((v) => s += v);
+return s / values.length`;
 
 /**
  * factory for creating a description creating a mean column
@@ -110,7 +112,10 @@ export default class ScriptColumn extends CompositeNumberColumn {
     const children = this._children;
     const values = this._children.map((d) => d.getValue(row, index));
     const raws = <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row, index) : null);
-    const col = new ColumnContext(children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])));
+    const col = new ColumnContext(children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])), () => {
+      const cols = this.findMyRanker()!.flatColumns;
+      return new ColumnContext(cols.map((c) =>  new ColumnWrapper(c, c.getValue(row, index), isNumberColumn(c) ? c.getRawNumber(row, index): null)));
+    });
     return this.f.call(this, children, values, raws, col, row, index);
   }
 
@@ -127,8 +132,11 @@ export default class ScriptColumn extends CompositeNumberColumn {
   }
 }
 
+/**
+ * wrapper class for simpler column accessing
+ */
 class ColumnWrapper {
-  constructor(private readonly c: Column, public readonly v: any, public readonly raw: number) {
+  constructor(private readonly c: Column, public readonly v: any, public readonly raw: number|null) {
 
   }
 
@@ -145,29 +153,63 @@ class ColumnWrapper {
   }
 }
 
+/**
+ * helper context for accessing columns within a scripted columns
+ */
 class ColumnContext {
   private readonly lookup = new Map<string, ColumnWrapper>();
+  private _all: ColumnContext|null = null;
 
-  constructor(private readonly children: ColumnWrapper[]) {
+  constructor(private readonly children: ColumnWrapper[], private readonly allFactory?: ()=>ColumnContext) {
     children.forEach((c) => {
       this.lookup.set(`ID@${c.id}`, c);
       this.lookup.set(`NAME@${c.name}`, c);
     });
   }
 
+  /**
+   * get a column by name
+   * @param {string} name
+   * @return {ColumnWrapper}
+   */
   byName(name: string) {
     return this.lookup.get(`NAME@${name}`);
   }
 
+  /**
+   * get a column by id
+   * @param {string} id
+   * @return {ColumnWrapper}
+   */
   byID(id: string) {
     return this.lookup.get(`ID@${id}`);
   }
 
+  /**
+   * get a column by index
+   * @param {number} index
+   * @return {ColumnWrapper}
+   */
   byIndex(index: number) {
     return this.children[index];
   }
 
+  /**
+   * number of columns
+   * @return {number}
+   */
   get length() {
     return this.children.length;
+  }
+
+  /**
+   * get the all context, i.e one with all columns of this ranking
+   * @return {ColumnContext}
+   */
+  get all() {
+    if (this._all === null) {
+      this._all = this.allFactory ? this.allFactory() : null;
+    }
+    return this._all!;
   }
 }
