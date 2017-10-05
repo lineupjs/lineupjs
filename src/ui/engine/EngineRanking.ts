@@ -17,7 +17,7 @@ import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import {IDataRow} from '../../provider/ADataProvider';
 import {debounce} from '../../utils';
 import {IAnimationContext} from 'lineupengine/src/animation/index';
-import KeyFinder from '../../../../lineupengine/src/animation/KeyFinder';
+import KeyFinder from 'lineupengine/src/animation/KeyFinder';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
