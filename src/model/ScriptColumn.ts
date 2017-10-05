@@ -105,14 +105,13 @@ export default class ScriptColumn extends CompositeNumberColumn {
 
   protected compute(row: any, index: number) {
     if (this.f == null) {
-      this.f = new Function('children', 'values', 'raws', 'row', 'index', wrapWithContext(this.script));
+      this.f = new Function('children', 'values', 'raws', 'col', 'row', 'index', wrapWithContext(this.script));
     }
-    return this.f.call(this,
-      this._children,
-      this._children.map((d) => d.getValue(row, index)),
-      <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row, index) : null),
-      row,
-      index);
+    const children = this._children;
+    const values = this._children.map((d) => d.getValue(row, index));
+    const raws = <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row, index) : null);
+    const col = new ColumnContext(children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])));
+    return this.f.call(this, children, values, raws, col, row, index);
   }
 
   /**
@@ -125,5 +124,50 @@ export default class ScriptColumn extends CompositeNumberColumn {
       code: this.script,
       operands: this._children.map((c) => c.toSortingDesc(toId))
     };
+  }
+}
+
+class ColumnWrapper {
+  constructor(private readonly c: Column, public readonly v: any, public readonly raw: number) {
+
+  }
+
+  get type() {
+    return this.c.desc.type;
+  }
+
+  get name() {
+    return this.c.getMetaData().label;
+  }
+
+  get id() {
+    return this.c.id;
+  }
+}
+
+class ColumnContext {
+  private readonly lookup = new Map<string, ColumnWrapper>();
+
+  constructor(private readonly children: ColumnWrapper[]) {
+    children.forEach((c) => {
+      this.lookup.set(`ID@${c.id}`, c);
+      this.lookup.set(`NAME@${c.name}`, c);
+    });
+  }
+
+  byName(name: string) {
+    return this.lookup.get(`NAME@${name}`);
+  }
+
+  byID(id: string) {
+    return this.lookup.get(`ID@${id}`);
+  }
+
+  byIndex(index: number) {
+    return this.children[index];
+  }
+
+  get length() {
+    return this.children.length;
   }
 }
