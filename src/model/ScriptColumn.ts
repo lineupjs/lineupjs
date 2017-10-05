@@ -7,8 +7,8 @@ import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColu
 import {isNumberColumn} from './NumberColumn';
 
 const DEFAULT_SCRIPT = `let s = 0;
-values.forEach((v) => s += v);
-return s / values.length`;
+col.forEach((c) => s += c.v);
+return s / col.length`;
 
 /**
  * factory for creating a description creating a mean column
@@ -22,7 +22,7 @@ export function createDesc(label: string = 'script') {
 
 function wrapWithContext(code: string) {
   let clean = code.trim();
-  if (!clean.startsWith('return')) {
+  if (!clean.includes('return')) {
     clean = `return (${clean});`;
   }
   return `
@@ -192,6 +192,10 @@ class ColumnContext {
    */
   byIndex(index: number) {
     return this.children[index];
+  }
+
+  forEach(callback: ((c: ColumnWrapper, index: number)=>void)) {
+    return this.children.forEach(callback);
   }
 
   /**
