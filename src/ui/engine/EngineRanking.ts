@@ -16,6 +16,7 @@ import {IGroupData, IGroupItem, IRankingBodyContext, IRankingHeaderContextContai
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import {IDataRow} from '../../provider/ADataProvider';
 import {debounce} from '../../utils';
+import {IAnimationContext} from 'lineupengine/src/animation/index';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
@@ -256,7 +257,17 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return r;
   }
 
+  static toKey(item: IGroupItem | IGroupData) {
+    if (isGroup(item)) {
+      return item.name;
+    }
+    return (<IGroupItem>item).dataIndex.toString();
+  }
+
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
+    const previous = this._context;
+    const previousData = this.data;
+    const previousKey = (index: number) => EngineRanking.toKey(previousData[index]);
     this.data = data;
     (<any>this.renderCtx).totalNumberOfRows = data.length;
 
@@ -267,7 +278,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
     }, rowContext);
 
-    super.recreate();
+    const currentKey = (index: number) => EngineRanking.toKey(this.data[index]);
+
+    const animCtx: IAnimationContext = {
+      previous, previousKey, currentKey
+    };
+    super.recreate(animCtx);
   }
 
   fakeHover(dataIndex: number) {
