@@ -17,6 +17,7 @@ import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import {IDataRow} from '../../provider/ADataProvider';
 import {debounce} from '../../utils';
 import {IAnimationContext} from 'lineupengine/src/animation/index';
+import KeyFinder from '../../../../lineupengine/src/animation/KeyFinder';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
@@ -257,11 +258,24 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return r;
   }
 
-  static toKey(item: IGroupItem | IGroupData) {
+  private static toKey(item: IGroupItem | IGroupData) {
     if (isGroup(item)) {
       return item.name;
     }
     return (<IGroupItem>item).dataIndex.toString();
+  }
+
+  private static toGroupLookup(items: (IGroupItem | IGroupData)[]): IGroupLookUp {
+    const item2groupIndex = new Map<number, number>();
+    const group2firstItemIndex = new Map<string, number>();
+    items.forEach((item, i) => {
+      if (isGroup(item)) {
+        item.rows.forEach((d) => item2groupIndex.set(d.dataIndex, i));
+      } else if (item.relativeIndex === 0 && item.group) {
+        group2firstItemIndex.set(item.group.name, i);
+      }
+    });
+    return {item2groupIndex, group2firstItemIndex};
   }
 
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
@@ -283,6 +297,56 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const animCtx: IAnimationContext = {
       previous, previousKey, currentKey
     };
+
+    animCtx.animate = (node: HTMLElement, _currentRowIndex: number, phase) => {
+      switch(phase) {
+        case 'beforeNew':
+          node.style.opacity = '0';
+          break;
+        case 'beforeUpdate':
+          break;
+        case 'after':
+          node.style.opacity = null;
+          break;
+      }
+    };
+    animCtx.removeAnimate = (node: HTMLElement, _currentRowIndex: number, phase) => {
+      switch(phase) {
+        case 'before':
+          break;
+        case 'after':
+          node.style.opacity = '0';
+          break;
+        case 'cleanup':
+          node.style.opacity = null;
+          break;
+      }
+    };
+
+    if (this.ranking.getGroupCriteria().length > 0) {
+      // potential for aggregation changes
+      // try to appear where the group was uncollapsed and vice versa
+      const prevHelper: IGroupLookUp = EngineRanking.toGroupLookup(previousData);
+      const currHelper: IGroupLookUp = EngineRanking.toGroupLookup(this.data);
+      animCtx.appearPosition = (currentRowIndex: number, previousFinder: KeyFinder) => {
+        const item = this.data[currentRowIndex];
+        const referenceIndex = isGroup(item) ? prevHelper.group2firstItemIndex.get(item.name) : prevHelper.item2groupIndex.get(item.dataIndex);
+        if (referenceIndex === undefined) {
+          return this._context.totalHeight;
+        }
+        const pos = previousFinder.posByKey(previousKey(referenceIndex));
+        return pos >= 0 ? pos : this._context.totalHeight;
+      };
+      animCtx.removePosition = (previousRowIndex: number, currentFinder: KeyFinder) => {
+        const item = previousData[previousRowIndex];
+        const referenceIndex = isGroup(item) ? currHelper.group2firstItemIndex.get(item.name) : currHelper.item2groupIndex.get(item.dataIndex);
+        if (referenceIndex === undefined) {
+          return this._context.totalHeight;
+        }
+        const pos = currentFinder.posByKey(currentKey(referenceIndex));
+        return pos >= 0 ? pos : this._context.totalHeight;
+      };
+    }
     super.recreate(animCtx);
   }
 
@@ -320,4 +384,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return new RenderColumn(c, renderers, i);
     });
   }
+}
+
+interface IGroupLookUp {
+  item2groupIndex: Map<number, number>;
+  group2firstItemIndex: Map<string, number>;
 }
