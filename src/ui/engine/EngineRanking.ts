@@ -278,6 +278,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return {item2groupIndex, group2firstItemIndex};
   }
 
+  private static toColor(current: number, previous: number) {
+    if (current === previous || previous < 0 || current < 0) {
+      return null;
+    }
+    const delta = current - previous;
+    return `rgba(${delta > 0 ? 255: 0}, ${delta < 0 ? 255: 0}, 0, ${0.25 * Math.min(1,Math.abs(delta) / 10)})`;
+  }
+
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     const previous = this._context;
     const previousData = this.data;
@@ -298,24 +306,26 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       previous, previousKey, currentKey
     };
 
-    animCtx.animate = (node: HTMLElement, _currentRowIndex: number, phase) => {
+    animCtx.animate = (node: HTMLElement, currentRowIndex, previousRowIndex, phase) => {
       switch(phase) {
-        case 'beforeNew':
-          node.style.opacity = '0';
-          break;
-        case 'beforeUpdate':
+        case 'before':
+          node.style.opacity = previousRowIndex < 0 ? '0' : null;
+          node.style.backgroundColor = EngineRanking.toColor(currentRowIndex, previousRowIndex);
           break;
         case 'after':
           node.style.opacity = null;
+          node.style.backgroundColor = null;
           break;
       }
     };
-    animCtx.removeAnimate = (node: HTMLElement, _currentRowIndex: number, phase) => {
+    animCtx.removeAnimate = (node: HTMLElement, currentRowIndex, previousRowIndex, phase) => {
       switch(phase) {
         case 'before':
+          node.style.backgroundColor = EngineRanking.toColor(currentRowIndex, previousRowIndex);
           break;
         case 'after':
           node.style.opacity = '0';
+          node.style.backgroundColor = null;
           break;
         case 'cleanup':
           node.style.opacity = null;
@@ -335,7 +345,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
           return this._context.totalHeight;
         }
         const pos = previousFinder.posByKey(previousKey(referenceIndex));
-        return pos >= 0 ? pos : this._context.totalHeight;
+        return pos.pos >= 0 ? pos.pos : this._context.totalHeight;
       };
       animCtx.removePosition = (previousRowIndex: number, currentFinder: KeyFinder) => {
         const item = previousData[previousRowIndex];
@@ -344,7 +354,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
           return this._context.totalHeight;
         }
         const pos = currentFinder.posByKey(currentKey(referenceIndex));
-        return pos >= 0 ? pos : this._context.totalHeight;
+        return pos.pos >= 0 ? pos.pos : this._context.totalHeight;
       };
     }
     super.recreate(animCtx);
