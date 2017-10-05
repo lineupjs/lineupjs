@@ -26,12 +26,11 @@ import Ranking from '../../model/Ranking';
 import BooleanColumn from '../../model/BooleanColumn';
 import CategoricalColumn, {isCategoricalColumn} from '../../model/CategoricalColumn';
 import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
-import createSummary from './summary';
 import {IRankingHeaderContext} from './interfaces';
 import {equalArrays} from '../../utils';
 import MoreColumnOptionsDialog from '../../dialogs/MoreColumnOptionsDialog';
+import {findTypeLike} from '../../model/utils';
 
-export {default as createSummary} from './summary';
 
 /**
  * utility function to generate the tooltip text with description
@@ -90,7 +89,10 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
     stratify.dataset.priority = groupedBy >= 0 ? groupedBy.toString() : '';
   }
 
-  createSummary(<HTMLElement>node.querySelector('.lu-summary')!, col, ctx, interactive);
+  const summary = findTypeLike(col, ctx.summaries);
+  if (summary) {
+    summary(col, <HTMLElement>node.querySelector('.lu-summary')!, interactive, ctx);
+  }
 }
 
 export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
@@ -193,7 +195,8 @@ export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRanking
   }
 
   //filter
-  if (ctx.filters.hasOwnProperty(col.desc.type)) {
+  const filter = findTypeLike(col, ctx.filters);
+  if (filter) {
     addIcon('Filter &hellip;', ctx.filters[col.desc.type], '', ctx.provider, ctx.idPrefix);
   }
 

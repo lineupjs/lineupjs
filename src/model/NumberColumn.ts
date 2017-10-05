@@ -8,7 +8,7 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays, similar} from '../utils';
 
 export function isMissingValue(v: any) {
-  return typeof(v) === 'undefined' || v == null || isNaN(v) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
+  return typeof(v) === 'undefined' || v == null || (typeof v === 'number' && isNaN(v)) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
 }
 
 function isUnknown(v?: number | null) {
@@ -362,7 +362,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
         {type: 'boxplot', label: 'Box Plot'},
         {type: 'number', label: 'Median Bar'},
         {type: 'circle', label: 'Median Circle'},
-        {type: 'heatmap', label: 'Median Heatmap'}
+        {type: 'heatmap', label: 'Median Brightness'}
       ]);
     this.setGroupRenderer('boxplot');
   }

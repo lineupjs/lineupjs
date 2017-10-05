@@ -32,6 +32,7 @@ import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
 import HistogramGroupRenderer from './HistogramGroupRenderer';
 import CategoricalColorShiftedCellRenderer from './CategoricalColorShiftedCellRenderer';
+import ImageCellRenderer from './ImageCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -43,11 +44,13 @@ const combineCellRenderer = new BarCellRenderer(false, (d, i, col: CompositeNumb
 export const renderers: { [key: string]: ICellRendererFactory } = {
   rank: new RankCellRenderer(),
   boolean: new DefaultCellRenderer('boolean', 'center'),
+  date: defaultCellRenderer,
   number: new BarCellRenderer(),
   ordinal: new BarCellRenderer(true, (d, i, col: CategoricalNumberColumn) => col.getColor(d, i)),
   string: new StringCellRenderer(),
   selection: new SelectionRenderer(),
   heatmap: new HeatmapCellRenderer(),
+  image: new ImageCellRenderer(),
   link: new LinkCellRenderer(),
   annotate: new AnnotationRenderer(),
   actions: new ActionRenderer(),

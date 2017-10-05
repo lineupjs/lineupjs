@@ -11,6 +11,11 @@ export interface ILinkDesc {
    * link pattern to use, where $1 will be replaced with the actual value
    */
   link?: string;
+
+  /**
+   * optional list of templates
+   */
+  templates?: string[];
 }
 
 export declare type ILinkColumnDesc = ILinkDesc & IStringColumnDesc;

@@ -5,6 +5,9 @@
   @import './boxplot';
   @import './categorical';
   @import './heatmap';
+  @import './histogram';
+  @import './image';
+  @import './missing';
   @import './rank';
   @import './selection';
   @import './sparkline';
@@ -12,6 +15,4 @@
   @import './string';
   @import './threshold';
   @import './upset';
-  @import './histogram';
-  @import './missing';
 }
