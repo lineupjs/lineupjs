@@ -30,7 +30,7 @@ export default class ImageCellRenderer extends ANoGroupRenderer implements ICell
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         n.title = col.getLabel(d.v, d.dataIndex);
-        n.style.backgroundImage = !col.isLink(d.v, d.dataIndex) ? null : `url(${col.getValue(d.v, d.dataIndex)})`;
+        n.style.backgroundImage = !col.isLink(d.v, d.dataIndex) ? null : `url('${col.getValue(d.v, d.dataIndex)}')`;
       }
     };
   }
