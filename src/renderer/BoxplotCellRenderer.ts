@@ -7,7 +7,7 @@ import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {INumberColumn} from '../model/NumberColumn';
 import {IGroup} from '../model/Group';
-import {LazyBoxPlotData} from '../model/NumbersColumn';
+import {INumbersColumn, isNumbersColumn, LazyBoxPlotData} from '../model/NumbersColumn';
 import {renderMissingValue} from './BarCellRenderer';
 
 export function computeLabel(v: IBoxPlotData) {
@@ -86,6 +86,11 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
+  private static createAggregatedBoxPlot(col: INumbersColumn & Column, rows: IDataRow[]): IBoxPlotData {
+    // concat all values
+    const vs = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r.v, r.dataIndex)));
+    return new LazyBoxPlotData(vs);
+  }
 
   createGroupDOM(col: INumberColumn & Column): IDOMGroupRenderer {
     return {
@@ -93,7 +98,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
                     <div><div></div><div></div></div>
                  </div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const box = new LazyBoxPlotData(rows.map((row) => col.getValue(row.v, row.dataIndex)));
+        const box = isNumbersColumn(col) ? BoxplotCellRenderer.createAggregatedBoxPlot(col, rows) : new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
         renderDOMBoxPlot(n, box, box);
       }
     };
@@ -104,7 +109,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     const width = context.colWidth(col);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group);
-      const data = new LazyBoxPlotData(rows.map((row) => col.getValue(row.v, row.dataIndex)));
+      const data = isNumbersColumn(col) ? BoxplotCellRenderer.createAggregatedBoxPlot(col, rows) : new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
 
       const scaled = {
         min: data.min * width,
