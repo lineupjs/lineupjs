@@ -17,7 +17,7 @@ import NumberColumn, {
   IMapAbleColumn,
   IMappingFunction,
   INumberColumn,
-  INumberFilter, isNumberColumn,
+  INumberFilter, isMissingValue, isNumberColumn,
   noNumberFilter,
   ScaleMappingFunction
 } from './NumberColumn';
@@ -43,8 +43,11 @@ export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
  */
 export class LazyBoxPlotData implements IAdvancedBoxPlotData {
   private _sorted: number[] | null = null;
+  private readonly values: number[];
 
-  constructor(private readonly values: number[], private readonly scale?: IMappingFunction) {
+  constructor(values: number[], private readonly scale?: IMappingFunction) {
+    // filter out NaN
+    this.values = values.filter((d) => !isMissingValue(d));
   }
 
   /**
