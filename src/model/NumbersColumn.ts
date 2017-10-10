@@ -133,9 +133,14 @@ export interface INumbersDesc {
 
 export declare type INumbersColumnDesc = INumbersDesc & IValueColumnDesc<number[]>;
 
+export interface ISplicer {
+  length: number;
+  splice(values: number[]): number[];
+}
 
 export default class NumbersColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly EVENT_SPLICE_CHANGED = 'spliceChanged';
 
   private sort: SortMethod;
   private readonly threshold: number;
@@ -145,6 +150,8 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   private mapping: IMappingFunction;
 
   private original: IMappingFunction;
+
+  private splicer: ISplicer;
   /**
    * currently active filter
    * @type {{min: number, max: number}}
@@ -185,6 +192,19 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
 
     // better initialize the default with based on the data length
     this.setWidth(Math.min(Math.max(100, this.dataLength * 10), 500));
+
+    this.splicer = {
+      length: this.dataLength,
+      splice: (v) => v
+    };
+  }
+
+  setSplicer(splicer: ISplicer) {
+    this.fire([NumbersColumn.EVENT_SPLICE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.splicer, this.splicer = splicer);
+  }
+
+  getSplicer() {
+    return this.splicer;
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number): number {
@@ -216,6 +236,9 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   getDataLength() {
+    if (this.splicer) {
+      return this.splicer.length;
+    }
     return this.dataLength;
   }
 
@@ -256,12 +279,15 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   getValue(row: any, index: number) {
-    const values = this.getRawValue(row, index);
+    let values = this.getRawValue(row, index);
     return values.map((d) => this.mapping.apply(d));
   }
 
   getRawValue(row: any, index: number) {
-    const r = super.getValue(row, index);
+    let r = super.getValue(row, index);
+    if (this.splicer && r !== null) {
+      r = this.splicer.splice(r);
+    }
     return r === null ? [] : r;
   }
 
@@ -312,7 +338,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED, NumbersColumn.EVENT_SPLICE_CHANGED]);
   }
 
   getOriginalMapping() {
