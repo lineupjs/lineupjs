@@ -1,6 +1,5 @@
 import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
-import {IDataRow} from '../provider/ADataProvider';
 import Column from '../model/Column';
 import {attr, forEachChild} from '../utils';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
@@ -18,9 +17,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
     }
     return {
       templateRow: templateRows,
-      render: (row: HTMLElement, d: IDataRow) => {
-        const data = col.getRawNumbers(d.v, d.dataIndex);
-
+      render: (row: HTMLElement, data: number[]) => {
         forEachChild(row, (d, i) => {
           const v = data[i];
           const top = v < threshold ? v : threshold;
@@ -43,8 +40,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
     const domain = col.getMapping().domain;
     const threshold = col.getThreshold();
     const range = domain[1] - domain[0];
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, offset: number, rowHeight: number) => {
-      const data = col.getRawNumbers(d.v, d.dataIndex);
+    return (ctx: CanvasRenderingContext2D, data: number[], offset: number, rowHeight: number) => {
       const scale = rowHeight / range;
       data.forEach((v, j) => {
         const top = v < threshold ? v : threshold;

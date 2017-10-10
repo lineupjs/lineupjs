@@ -1,6 +1,5 @@
 import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
-import {IDataRow} from '../provider/ADataProvider';
 import {attr, forEachChild} from '../utils';
 import Column from '../model/Column';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
@@ -15,8 +14,7 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
     }
     return {
       templateRow: templateRows,
-      render: (row: HTMLElement, d: IDataRow) => {
-        const data = col.getRawNumbers(d.v, d.dataIndex);
+      render: (row: HTMLElement, data: number[]) => {
         forEachChild(row, (d, i) => {
           const v = data[i];
           attr(<HTMLDivElement>d, {
@@ -34,8 +32,7 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     const colorScale = col.getRawColorScale();
 
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, offset: number, rowHeight: number) => {
-      const data = col.getRawNumbers(d.v, d.dataIndex);
+    return (ctx: CanvasRenderingContext2D, data: number[], offset: number, rowHeight: number) => {
       data.forEach((d: number, j: number) => {
         const x = j * cellDimension;
         ctx.beginPath();

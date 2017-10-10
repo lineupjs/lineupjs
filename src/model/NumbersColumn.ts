@@ -17,7 +17,7 @@ import NumberColumn, {
   IMapAbleColumn,
   IMappingFunction,
   INumberColumn,
-  INumberFilter,
+  INumberFilter, isMissingValue, isNumberColumn,
   noNumberFilter,
   ScaleMappingFunction
 } from './NumberColumn';
@@ -43,8 +43,11 @@ export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
  */
 export class LazyBoxPlotData implements IAdvancedBoxPlotData {
   private _sorted: number[] | null = null;
+  private readonly values: number[];
 
-  constructor(private readonly values: number[], private readonly scale?: IMappingFunction) {
+  constructor(values: number[], private readonly scale?: IMappingFunction) {
+    // filter out NaN
+    this.values = values.filter((d) => !isMissingValue(d));
   }
 
   /**
@@ -101,6 +104,11 @@ export interface INumbersColumn extends INumberColumn {
 
   getMapping(): IMappingFunction;
 }
+
+export function isNumbersColumn(col: any): col is INumbersColumn {
+  return (<INumbersColumn>col).getNumbers !== undefined && isNumberColumn(col);
+}
+
 
 export interface INumbersDesc {
   /**
@@ -167,7 +175,13 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
       {type: 'threshold', label: 'Threshold'},
       {type: 'verticalbar', label: 'VerticalBar'},
       {type: 'number', label: 'Bar'},
-      {type: 'circle', label: 'Circle'}]);
+      {type: 'circle', label: 'Circle'}], [
+      {type: 'numbers', label: 'Heatmap'},
+      {type: 'sparkline', label: 'Sparkline'},
+      {type: 'boxplot', label: 'Boxplot'},
+      {type: 'number', label: 'Bar'},
+      {type: 'circle', label: 'Circle'}
+    ]);
 
     // better initialize the default with based on the data length
     this.setWidth(Math.min(Math.max(100, this.dataLength * 10), 500));
