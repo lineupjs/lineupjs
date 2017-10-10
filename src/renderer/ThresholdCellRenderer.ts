@@ -1,6 +1,5 @@
 import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
-import {IDataRow} from '../provider/ADataProvider';
 import {attr, forEachChild} from '../utils';
 import Column from '../model/Column';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
@@ -17,8 +16,7 @@ export default class ThresholdCellRenderer extends ANumbersCellRenderer {
     }
     return {
       templateRow: templateRows,
-      render: (row: HTMLElement, d: IDataRow) => {
-        const data = col.getRawNumbers(d.v, d.dataIndex);
+      render: (row: HTMLElement, data: number[]) => {
         forEachChild(row, (d, i) => {
           const v = data[i];
           attr(<HTMLDivElement>d, {}, {
@@ -35,8 +33,7 @@ export default class ThresholdCellRenderer extends ANumbersCellRenderer {
     const cellDimension = context.colWidth(col) / col.getDataLength();
     const threshold = col.getThreshold();
     const colorValues = col.getColorRange();
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, offset: number, rowHeight: number) => {
-      const data = col.getRawNumbers(d.v, d.dataIndex);
+    return (ctx: CanvasRenderingContext2D, data: number[], offset: number, rowHeight: number) => {
       data.forEach((d, j) => {
         ctx.beginPath();
         const xpos = j * cellDimension;
