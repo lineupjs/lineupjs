@@ -313,6 +313,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
           node.style.backgroundColor = EngineRanking.toColor(currentRowIndex, previousRowIndex);
           break;
         case 'after':
+        case 'cleanup':
           node.style.opacity = null;
           node.style.backgroundColor = null;
           break;
