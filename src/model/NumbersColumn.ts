@@ -134,7 +134,6 @@ export interface INumbersDesc {
 export declare type INumbersColumnDesc = INumbersDesc & IValueColumnDesc<number[]>;
 
 export interface ISplicer {
-  name: string;
   length: number;
   splice(values: number[]): number[];
 }
@@ -195,7 +194,6 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     this.setWidth(Math.min(Math.max(100, this.dataLength * 10), 500));
 
     this.splicer = {
-      name: 'Default',
       length: this.dataLength,
       splice: (v) => v
     };
