@@ -23,6 +23,8 @@ export function renderMissingDOM(node: HTMLElement, col: Column, d: IDataRow) {
 
 export function renderMissingCanvas(ctx: CanvasRenderingContext2D, col: Column, d: IDataRow, height: number, x = 0, y = 0) {
   const missing = col.isMissing(d.v, d.dataIndex);
-  renderMissingValue(ctx, col.getActualWidth(), height, x, y);
+  if (missing) {
+    renderMissingValue(ctx, col.getActualWidth(), height, x, y);
+  }
   return missing;
 }

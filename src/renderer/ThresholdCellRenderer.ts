@@ -1,6 +1,6 @@
 import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
-import {attr, forEachChild} from '../utils';
+import {forEachChild} from '../utils';
 import Column from '../model/Column';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 
@@ -17,13 +17,11 @@ export default class ThresholdCellRenderer extends ANumbersCellRenderer {
     return {
       templateRow: templateRows,
       render: (row: HTMLElement, data: number[]) => {
-        forEachChild(row, (d, i) => {
+        forEachChild(row, (d: HTMLDivElement, i) => {
           const v = data[i];
-          attr(<HTMLDivElement>d, {}, {
-            'background-color': (v < threshold) ? colorValues[0] : colorValues[colorValues.length - 1],
-            class: (v < threshold) ? 'down' : '',
-            title: NumbersColumn.DEFAULT_FORMATTER(v)
-          });
+          d.className = (v < threshold) ? 'down' : '';
+          d.title = NumbersColumn.DEFAULT_FORMATTER(v);
+          d.style.backgroundColor = (v < threshold) ? colorValues[0] : colorValues[colorValues.length - 1];
         });
       }
     };
