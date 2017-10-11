@@ -1,22 +1,22 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, debounce, findOption} from '../../utils';
+import {AEventDispatcher, findOption} from '../../utils';
 import {default as ABodyRenderer} from '../ABodyRenderer';
-import DataProvider, {default as ADataProvider} from '../../provider/ADataProvider';
-import {default as Column, ICategoricalStatistics, IFlatColumn, IStatistics} from '../../model/Column';
+import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
+import {default as Column, ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {createDOM, createDOMGroup} from '../../renderer';
-import {default as RenderColumn} from './RenderColumn';
-import {IGroupData, IGroupItem, IRankingBodyContext, isGroup} from './interfaces';
-import EngineRankingRenderer from './EngineRankingRenderer';
+import {IGroupItem, IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {ILineUpRenderer} from '../interfaces';
 import {ILineUpConfig, IRenderingOptions} from '../../interfaces';
 import {ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
 import NumberColumn from '../../model/NumberColumn';
 import {nonUniformContext} from 'lineupengine/src/logic';
-import {isMultiLevelColumn} from '../../model/CompositeColumn';
-import MultiLevelRenderColumn from './MultiLevelRenderColumn';
-import StackColumn from '../../model/StackColumn';
+import {IDOMRenderContext} from '../../renderer/RendererContexts';
+import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer';
+import Ranking from '../../model/Ranking';
+import SlopeGraph from './SlopeGraph';
+import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
   static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
@@ -27,11 +27,13 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   private readonly histCache = new Map<string, IStatistics | ICategoricalStatistics | null | Promise<IStatistics | ICategoricalStatistics>>();
 
   readonly node: HTMLElement;
+  private readonly table: MultiTableRowRenderer;
+  private readonly rankings: EngineRanking[] = [];
+  private readonly slopeGraphs: SlopeGraph[] = [];
 
-  readonly ctx: IRankingBodyContext & { data: (IGroupItem | IGroupData)[] };
+  readonly ctx: IRankingHeaderContextContainer & IDOMRenderContext & IEngineRankingContext;
 
-  private readonly renderer: EngineRankingRenderer;
-  private readonly updateAbles: ((ctx: IRankingBodyContext)=>void)[] = [];
+  private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
 
   constructor(private data: DataProvider, parent: Element, options: Readonly<ILineUpConfig>) {
@@ -58,29 +60,39 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       renderer: (col: Column) => createDOM(col, this.options.renderers, this.ctx),
       groupRenderer: (col: Column) => createDOMGroup(col, this.options.renderers, this.ctx),
       idPrefix: this.options.idPrefix,
-      data: [],
-      isGroup: (index: number) => isGroup(this.ctx.data[index]),
-      getGroup: (index: number) => <IGroupData>this.ctx.data[index],
-      getRow: (index: number) => <IGroupItem>this.ctx.data[index],
-      totalNumberOfRows: 0
+      totalNumberOfRows: 0,
+      createRenderer: (col: Column) => {
+        const single = createDOM(col, this.options.renderers, this.ctx);
+        const group = createDOMGroup(col, this.options.renderers, this.ctx);
+        return {single, group, singleId: col.getRendererType(), groupId: col.getGroupRenderer()};
+      },
+      columnPadding: this.options.body.columnPadding || 5
     };
 
-    this.renderer = new EngineRankingRenderer(this.node, this.options.idPrefix, this.ctx);
+    this.node.id = this.options.idPrefix;
+    this.table = new MultiTableRowRenderer(this.node, `#${options.idPrefix}`);
 
     this.initProvider(data);
   }
 
   zoomOut() {
     this.zoomFactor = Math.max(this.zoomFactor - 0.1, 0.5);
+    this.updateZoomFactor();
     this.update();
   }
 
   zoomIn() {
     this.zoomFactor = Math.min(this.zoomFactor + 0.1, 2.0);
+    this.updateZoomFactor();
     this.update();
   }
 
-  pushUpdateAble(updateAble: (ctx: IRankingBodyContext)=>void) {
+  private updateZoomFactor() {
+    const body = <HTMLElement>this.node.querySelector('main')!;
+    body.style.fontSize = `${this.zoomFactor * 100}%`;
+  }
+
+  pushUpdateAble(updateAble: (ctx: IRankingHeaderContext) => void) {
     this.updateAbles.push(updateAble);
   }
 
@@ -94,33 +106,48 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.data = data;
     this.ctx.provider = data;
 
-     this.initProvider(data);
+    this.initProvider(data);
   }
 
   private takeDownProvider() {
     this.data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, null);
-    this.data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, null);
-    this.data.on(`${DataProvider.EVENT_DIRTY}.body`, null);
+    this.data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, null);
+    this.data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, null);
+    this.data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
+
+    this.rankings.forEach((r) => this.table.remove(r));
+    this.slopeGraphs.forEach((s) => this.table.remove(s));
   }
 
   private initProvider(data: DataProvider) {
-    const that = this;
-    data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.renderer.updateSelection(data.getSelection()));
-    data.on(`${DataProvider.EVENT_ORDER_CHANGED}.body`, () => this.updateHist());
-    data.on(`${DataProvider.EVENT_DIRTY}.body`, debounce(function (this: { primaryType: string }) {
-      if (this.primaryType !== Column.EVENT_WIDTH_CHANGED && this.primaryType !== StackColumn.EVENT_WEIGHTS_CHANGED) {
-        // console.log('update');
-        that.update();
-      }
-    }));
+    data.on(`${ADataProvider.EVENT_SELECTION_CHANGED}.body`, () => this.updateSelection(data.getSelection()));
+    data.on(`${DataProvider.EVENT_ADD_RANKING}.body`, (ranking: Ranking) => {
+      this.addRanking(ranking);
+    });
+    data.on(`${DataProvider.EVENT_REMOVE_RANKING}.body`, (ranking: Ranking) => {
+      this.removeRanking(ranking);
+    });
+    data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, (ranking: Ranking) => {
+      this.update(this.rankings.filter((r) => r.ranking === ranking));
+    });
+
+    this.data.getRankings().forEach((r) => this.addRanking(r));
   }
 
-  private updateHist() {
+  private updateSelection(dataIndices: number[]) {
+    const s = new Set(dataIndices);
+    this.rankings.forEach((r) => r.updateSelection(s));
+
+    this.slopeGraphs.forEach((r) => r.updateSelection(s));
+  }
+
+  private updateHist(ranking?: EngineRanking) {
     if (!this.options.header.summary) {
       return;
     }
-    const rankings = this.data.getRankings();
-    rankings.forEach((ranking) => {
+    const rankings = ranking ? [ranking] : this.rankings;
+    rankings.forEach((r) => {
+      const ranking = r.ranking;
       const order = ranking.getOrder();
       const cols = ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
@@ -130,92 +157,101 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       cols.filter((d) => isCategoricalColumn(d) && !d.isHidden()).forEach((col: ICategoricalColumn & Column) => {
         this.histCache.set(col.id, histo === null ? null : histo.hist(col));
       });
+      r.updateHeaders();
     });
-
-    this.renderer.updateHeaders();
 
     this.updateAbles.forEach((u) => u(this.ctx));
   }
 
-  update() {
-    // TODO support multiple rankings connected with slopegraphs
-    const ranking = this.data.getRankings()[0];
-    const groups = ranking.getGroups();
-
-    const order = ranking.getOrder();
-    const data = this.data.view(order);
-    const localData = (Array.isArray(data) ? data : []).map((v, i) => ({v, dataIndex: order[i]}));
-
-    if (groups.length === 1) {
-      // simple case
-      if (this.data.isAggregated(ranking, groups[0])) {
-        // just a single row
-        this.ctx.data = [Object.assign({rows: localData}, groups[0])];
-      } else {
-        // simple ungrouped case
-        this.ctx.data = localData.map((r, i) => Object.assign({group: groups[0], relativeIndex: i}, r));
-      }
-    } else {
-      //multiple groups
-      let offset = 0;
-      const r = <(IGroupItem | IGroupData)[]>[];
-      groups.forEach((group) => {
-        const length = group.order.length;
-        const groupData = localData.slice(offset, offset + length);
-        offset += length;
-
-        if (this.data.isAggregated(ranking, group)) {
-          r.push(Object.assign({rows: groupData}, group));
-        } else {
-          r.push(...groupData.map((r, i) => Object.assign({group, relativeIndex: i}, r)));
-        }
-      });
-      this.ctx.data = r;
+  private addRanking(ranking: Ranking) {
+    if (this.rankings.length > 0) {
+      // add slope graph first
+      const s = this.table.pushSeparator((header, body) => new SlopeGraph(header, body, `${ranking.id}S`, this.ctx));
+      this.slopeGraphs.push(s);
     }
 
-    (<any>this.ctx).totalNumberOfRows = this.ctx.data.length;
+    let r: EngineRanking;
+    r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
+      widthChanged: () => this.table.widthChanged(),
+      updateData: () => r ? this.update([r]) : null
+    }));
+    ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.renderer`, () => this.updateHist(r));
+    this.rankings.push(r);
+    this.update([r]);
+  }
 
-    const flatCols: IFlatColumn[] = [];
-    ranking.flatten(flatCols, 0, 1, 0);
-    const cols = flatCols.map((c) => c.col);
-    const columnPadding = this.options.header.columnPadding === undefined ? 5 : this.options.header.columnPadding;
-    const columns = cols.map((c, i) => {
-      const single = createDOM(c, this.options.renderers, this.ctx);
-      const group = createDOMGroup(c, this.options.renderers, this.ctx);
-      const renderers = {single, group, singleId: c.getRendererType(), groupId: c.getGroupRenderer()};
+  private removeRanking(ranking: Ranking) {
+    const index = this.rankings.findIndex((r) => r.ranking === ranking);
+    if (index < 0) {
+      return; // error
+    }
+    const section = this.rankings.splice(index, 1)[0]!;
+    const slope = this.slopeGraphs.splice(index - 1, 1)[0];
+    this.table.remove(section);
+    if (slope) {
+      this.table.remove(slope);
+    }
+  }
 
-      if (isMultiLevelColumn(c)) {
-        return new MultiLevelRenderColumn(c, renderers, i, columnPadding);
-      }
-      return new RenderColumn(c, renderers, i);
-    });
+  update(rankings: EngineRanking[] = this.rankings) {
+    rankings = rankings.filter((d) => !d.hidden);
+    if (rankings.length === 0) {
+      return;
+    }
+    const orders = rankings.map((r) => r.ranking.getOrder());
+    const data = this.data.fetch(orders);
+    // TODO support async
+    const localData = data.map((d) => d.map((d) => <IDataRow>d));
 
     if (this.histCache.size === 0) {
       this.updateHist();
     }
 
-    this.renderer.setZoomFactor(this.zoomFactor);
     const itemHeight = Math.round(this.zoomFactor * this.options.body.rowHeight!);
     const groupHeight = Math.round(this.zoomFactor * this.options.body.groupHeight!);
-    const rowContext = nonUniformContext(this.ctx.data.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight);
+    const groupPadding = Math.round(this.zoomFactor * this.options.body.groupPadding!);
+    const rowPadding = Math.round(this.zoomFactor * this.options.body.rowPadding!);
 
-    this.renderer.render(columns, rowContext);
+    rankings.forEach((r, i) => {
+      const grouped = r.groupData(localData[i]);
+      const rowContext = nonUniformContext(grouped.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight, (index) => {
+        if (index >= 0 && grouped[index] && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last')) {
+          return groupPadding + rowPadding;
+        }
+        return rowPadding;
+      });
+      r.render(grouped, rowContext);
+    });
+
+    this.updateSlopeGraphs(rankings);
+
+    this.table.widthChanged();
+  }
+
+  private updateSlopeGraphs(rankings: EngineRanking[] = this.rankings) {
+    const indices = new Set(rankings.map((d) => this.rankings.indexOf(d)));
+    this.slopeGraphs.forEach((s, i) => {
+      if (s.hidden) {
+        return;
+      }
+      const left = i;
+      const right = i + 1;
+      if (!indices.has(left) && !indices.has(right)) {
+        return;
+      }
+      const leftRanking = this.rankings[left];
+      const rightRanking = this.rankings[right];
+      s.rebuild(leftRanking.currentData, leftRanking.context, rightRanking.currentData, rightRanking.context);
+    });
   }
 
   fakeHover(dataIndex: number) {
-    const old = this.node.querySelector(`[data-data-index].lu-hovered`);
-    if (old) {
-      old.classList.remove('lu-hovered');
-    }
-    const item = this.node.querySelector(`[data-data-index="${dataIndex}"]`);
-    if (item) {
-      item.classList.add('lu-hovered');
-    }
+    this.rankings.forEach((r) => r.fakeHover(dataIndex));
   }
 
   destroy() {
     this.takeDownProvider();
-    this.renderer.destroy();
+    this.table.destroy();
     this.node.remove();
   }
 

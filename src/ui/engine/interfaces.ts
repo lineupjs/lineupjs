@@ -28,6 +28,7 @@ export interface IRankingHeaderContextContainer {
 export interface IGroupItem extends IDataRow {
   group: IGroup;
   relativeIndex: number;
+  meta?: 'first'|'last';
 }
 
 export interface IGroupData extends IGroup {
@@ -35,7 +36,7 @@ export interface IGroupData extends IGroup {
 }
 
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
-  return (<IGroupData>item).name !== undefined; // use .name as separator
+  return item && (<IGroupData>item).name !== undefined; // use .name as separator
 }
 
 export interface IRankingBodyContext extends IRankingHeaderContextContainer, IDOMRenderContext {

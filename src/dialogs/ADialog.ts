@@ -69,17 +69,23 @@ abstract class ADialog {
   }
 
   protected onButton(popup: HTMLElement, handler: { submit: () => boolean, reset: () => void, cancel: () => void }) {
-    popup.querySelector('.cancel')!.addEventListener('click', () => {
+    popup.querySelector('.cancel')!.addEventListener('click', (evt) => {
       handler.cancel();
       popup.remove();
+      evt.stopPropagation();
+      evt.preventDefault();
     });
-    popup.querySelector('.reset')!.addEventListener('click', () => {
+    popup.querySelector('.reset')!.addEventListener('click', (evt) => {
       handler.reset();
+      evt.stopPropagation();
+      evt.preventDefault();
     });
-    popup.querySelector('.ok')!.addEventListener('click', () => {
+    popup.querySelector('.ok')!.addEventListener('click', (evt) => {
       if (handler.submit()) {
         popup.remove();
       }
+      evt.stopPropagation();
+      evt.preventDefault();
     });
   }
 
