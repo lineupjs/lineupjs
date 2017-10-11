@@ -4,10 +4,6 @@
 
 import * as d3 from 'd3';
 import {ICategoricalStatistics, IStatistics} from '../model/Column';
-import Column from '../model/Column';
-import {INumberColumn} from '../model/NumberColumn';
-import {IDataRow} from './ADataProvider';
-import {numberCompare} from '../model/utils';
 
 
 export function getNumberOfBins(length: number) {
@@ -105,17 +101,4 @@ export function computeHist(arr: any[], indices: number[], acc: (row: any, index
     hist: entries,
     missing: missingCount
   };
-}
-
-
-
-export function medianIndex(rows: IDataRow[], col: INumberColumn & Column): number {
-  //return the median row
-  const data = rows.map((r, i) => ({i, v: col.getNumber(r.v, r.dataIndex), m: col.isMissing(r.v, r.dataIndex)}));
-  const sorted = data.filter((r) => !r.m).sort((a, b) => numberCompare(a.v, b.v));
-  const index = sorted[Math.floor(sorted.length / 2.0)];
-  if (index === undefined) {
-    return 0; //error case
-  }
-  return index.i;
 }

@@ -8,7 +8,7 @@ import Column, {ICategoricalStatistics, IFlatColumn, IStatistics} from '../model
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import NumberColumn, {INumberColumn, isNumberColumn} from '../model/NumberColumn';
+import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import {createDesc as createStackDesc} from '../model/StackColumn';
 import {createDesc as createNestedDesc} from '../model/NestedColumn';
@@ -19,6 +19,7 @@ import {defaultConfig, dummyRankingButtonHook} from '../config';
 import ADialog from '../dialogs/ADialog';
 import {IRankingHeaderContext} from './engine/interfaces';
 import {IHeaderRendererOptions} from './interfaces';
+import NumberColumn from '../model/NumberColumn';
 
 
 function countMultiLevel(c: Column): number {

@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn} from '../model/NumberColumn';
+import {INumberColumn, medianIndex} from '../model/INumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -8,7 +8,6 @@ import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {medianIndex} from '../provider/math';
 
 
 /**

@@ -58,6 +58,10 @@
       content: $fa-var-window-maximize;
     }
 
+    &[title='Sort Groupy By']::before {
+      content: $fa-var-sort;
+    }
+
     &[title='Set Cut Off']::before {
       content: $fa-var-scissors;
     }

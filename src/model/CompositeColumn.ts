@@ -3,7 +3,7 @@
  */
 
 import Column, {IColumnDesc, IColumnParent, IFlatColumn} from './Column';
-import {isNumberColumn} from './NumberColumn';
+import {isNumberColumn} from './INumberColumn';
 import ValueColumn from './ValueColumn';
 import {suffix} from '../utils';
 

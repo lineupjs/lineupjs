@@ -12,7 +12,7 @@ import {IMultiLevelColumn} from '../model/CompositeColumn';
 import Column from '../model/Column';
 import {isEdge} from 'lineupengine/src/style';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {medianIndex} from '../provider/math';
+import {medianIndex} from '../model/INumberColumn';
 
 export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;

@@ -3,20 +3,14 @@
  */
 
 import {format, scale} from 'd3';
-import Column, {IColumnDesc} from './Column';
+import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays, similar} from '../utils';
 import {isMissingValue, isUnknown} from './missing';
-import {numberCompare} from './utils';
 import {IGroupData} from '../ui/engine/interfaces';
-import {medianIndex} from '../provider/math';
+import {default as INumberColumn, INumberDesc, numberCompare, medianIndex} from './INumberColumn';
 
-export interface INumberColumn {
-  getNumber(row: any, index: number): number;
-
-  getRawNumber(row: any, index: number): number;
-}
-
+export {default as INumberColumn} from './INumberColumn';
 /**
  * interface of a d3 scale
  */
@@ -55,16 +49,6 @@ export interface INumberFilter {
   filterMissing: boolean;
 }
 
-/**
- * checks whether the given column or description is a number column, i.e. the value is a number
- * @param col
- * @returns {boolean}
- */
-export function isNumberColumn(col: Column): col is INumberColumn & Column;
-export function isNumberColumn(col: IColumnDesc): col is INumberDesc & IColumnDesc;
-export function isNumberColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
-}
 
 function toScale(type = 'linear'): IScale {
   switch (type) {
@@ -233,33 +217,10 @@ export function createMappingFunction(dump: any): IMappingFunction {
   return l;
 }
 
-export interface INumberDesc {
-  /**
-   * dump of mapping function
-   */
-  readonly map?: any;
-  /**
-   * either map or domain should be available
-   */
-  readonly domain?: [number, number];
-  /**
-   * @default [0,1]
-   */
-  readonly range?: [number, number];
-  /**
-   * d3 formatting option
-   * @default .3n
-   */
-  readonly numberFormat?: string;
-
-  /**
-   * missing value to use
-   * @default 0
-   */
-  readonly missingValue?: number;
-}
 
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
+
+
 
 export interface IMapAbleColumn {
   getOriginalMapping(): IMappingFunction;

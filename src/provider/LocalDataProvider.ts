@@ -3,7 +3,7 @@
  */
 
 import Column, {IColumnDesc} from '../model/Column';
-import NumberColumn, {INumberColumn} from '../model/NumberColumn';
+import {INumberColumn} from '../model/INumberColumn';
 import Ranking from '../model/Ranking';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import {IDataProviderOptions, IDataRow, IStatsBuilder} from './ADataProvider';
@@ -208,11 +208,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
   }
 
 
-  mappingSample(col: NumberColumn): number[] {
+  mappingSample(col: INumberColumn & Column): number[] {
     const MAX_SAMPLE = 500; //at most 500 sample lines
     const l = this._data.length;
     if (l <= MAX_SAMPLE) {
-      return <number[]>this._data.map(col.getRawValue.bind(col));
+      return <number[]>this._data.map(col.getRawNumber.bind(col));
     }
     //randomly select 500 elements
     const indices: number[] = [];
@@ -223,7 +223,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       }
       indices.push(j);
     }
-    return indices.map((i) => col.getRawValue(this.data[i], i));
+    return indices.map((i) => col.getRawNumber(this.data[i], i));
   }
 
   searchAndJump(search: string | RegExp, col: Column) {

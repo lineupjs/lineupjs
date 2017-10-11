@@ -3,13 +3,12 @@
  */
 import Column from './Column';
 import {isCategoricalColumn} from './CategoricalColumn';
-import {isNumberColumn} from './NumberColumn';
+import {isNumberColumn} from './INumberColumn';
 import {isBoxPlotColumn} from './BoxPlotColumn';
 import StringColumn from './StringColumn';
 import {isMultiLevelColumn} from './CompositeColumn';
 import CompositeColumn from './CompositeColumn';
 import CompositeNumberColumn from './CompositeNumberColumn';
-import {FIRST_IS_NAN} from './missing';
 
 
 export function findTypeLike<T>(col: Column, lookup: { [key: string]: T }): T|undefined {
@@ -47,25 +46,4 @@ function typeAliases(col: Column) {
     aliases.push('compositeNumberLike');
   }
   return aliases.reverse(); // more specific first
-}
-
-
-/**
- * save number comparison
- * @param a
- * @param b
- * @param aMissing
- * @param bMissing
- * @return {number}
- */
-export function numberCompare(a: number | null, b: number | null, aMissing = false, bMissing = false) {
-  aMissing = aMissing || a === null || isNaN(a);
-  bMissing = bMissing || b === null || isNaN(b);
-  if (aMissing) { //NaN are smaller
-    return bMissing ? 0 : FIRST_IS_NAN;
-  }
-  if (bMissing) {
-    return FIRST_IS_NAN * -1;
-  }
-  return a! - b!;
 }
