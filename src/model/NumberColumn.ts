@@ -39,8 +39,6 @@ export function numberCompare(a: number | null, b: number | null, aMissing = fal
 
 
 export interface INumberColumn {
-  isMissing(row: any, index: number): boolean;
-
   getNumber(row: any, index: number): number;
 
   getRawNumber(row: any, index: number): number;

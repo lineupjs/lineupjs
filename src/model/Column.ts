@@ -5,6 +5,7 @@
 import {AEventDispatcher, similar} from '../utils';
 import Ranking from './Ranking';
 import {defaultGroup} from './Group';
+import {isMissingValue} from './NumberColumn';
 
 /**
  * converts a given id to css compatible one
@@ -502,6 +503,10 @@ export default class Column extends AEventDispatcher {
    */
   getValue(_row: any, _index: number): any {
     return ''; //no value
+  }
+
+  isMissing(row: any, index: number) {
+    return isMissingValue(this.getValue(row, index));
   }
 
   /**

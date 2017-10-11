@@ -262,10 +262,6 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return new LazyBoxPlotData(data);
   }
 
-  isMissing(row: any, index: number) {
-    return this.getValue(row, index) == null;
-  }
-
   getNumbers(row: any, index: number) {
     return this.getValue(row, index);
   }

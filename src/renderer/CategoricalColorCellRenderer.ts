@@ -7,6 +7,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
 import {clipText} from '../utils';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 /**
  * renders categorical columns as a colored rect with label
@@ -16,7 +17,8 @@ export default class CategoricalColorCellRenderer implements ICellRendererFactor
     return {
       template: `<div style="background-color: transparent" title=""></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        n.style.backgroundColor = col.getColor(d.v, d.dataIndex);
+        const missing = renderMissingDOM(n, col, d);
+        n.style.backgroundColor = missing ? null : col.getColor(d.v, d.dataIndex);
         n.title = col.getLabel(d.v, d.dataIndex);
       }
     };
@@ -24,6 +26,9 @@ export default class CategoricalColorCellRenderer implements ICellRendererFactor
 
   createCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
+        return;
+      }
       ctx.fillStyle = col.getColor(d.v, d.dataIndex) || '';
       ctx.fillRect(0, 0, context.colWidth(col), context.rowHeight(i));
     };

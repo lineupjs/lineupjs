@@ -161,6 +161,4 @@ export interface IMultiLevelColumn extends CompositeColumn {
   getCollapsed(): boolean;
 
   setCollapsed(value: boolean): void;
-
-  isMissing(row: any, index: number): boolean;
 }

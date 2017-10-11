@@ -138,10 +138,6 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return this.getValue(row, index);
   }
 
-  isMissing(row: any, index: number) {
-    return this.getValue(row, index) == null;
-  }
-
   getRawBoxPlotData(row: any, index: number): IBoxPlotData | null {
     return this.getRawValue(row, index);
   }

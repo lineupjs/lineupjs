@@ -6,7 +6,8 @@ import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import AAggregatedGroupRenderer from './AAggregatedGroupRenderer';
-import {medianIndex, renderMissingValue} from './BarCellRenderer';
+import {medianIndex} from './BarCellRenderer';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
 
@@ -22,8 +23,7 @@ export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumber
       update: (n: HTMLElement, d: IDataRow) => {
         const v = col.getNumber(d.v, d.dataIndex);
         const p = Math.round(v * 100);
-        const missing = col.isMissing(d.v, d.dataIndex);
-        n.classList.toggle('lu-missing', missing);
+        const missing = renderMissingDOM(n, col, d);
         attr(<HTMLElement>n, {}, {
           background: missing ? null : `radial-gradient(circle closest-side, ${this.colorOf(d.v, d.dataIndex, col)} ${p}%, transparent ${p}%)`
         },);
@@ -35,10 +35,10 @@ export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumber
 
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      if (col.isMissing(d.v, d.dataIndex)) {
-        renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
+
       const value = col.getNumber(d.v, d.dataIndex);
       const posy = (context.rowHeight(i) / 2);
       const posx = (context.colWidth(col) / 2);

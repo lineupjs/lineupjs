@@ -8,7 +8,8 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {medianIndex, renderMissingValue} from './BarCellRenderer';
+import {medianIndex} from './BarCellRenderer';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
   let v = col.getNumber(d, index);
@@ -28,8 +29,7 @@ export default class HeatmapCellRenderer extends AAggregatedGroupRenderer<INumbe
         <div style="background-color: ${col.color}"></div><div> </div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        const missing = col.isMissing(d.v, d.dataIndex);
-        n.classList.toggle('lu-missing', missing);
+        const missing = renderMissingDOM(n, col, d);
         n.title = col.getLabel(d.v, d.dataIndex);
         (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = missing ? null : toHeatMapColor(d.v, d.dataIndex, col);
         setText(<HTMLSpanElement>n.lastElementChild!, col.getCompressed() ? '' : n.title);
@@ -40,11 +40,10 @@ export default class HeatmapCellRenderer extends AAggregatedGroupRenderer<INumbe
   createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const w = context.rowHeight(i) - padding * 2;
-      if (col.isMissing(d.v, d.dataIndex)) {
-        renderMissingValue(ctx, w, w, padding, padding);
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
+      const w = context.rowHeight(i) - padding * 2;
       ctx.fillStyle = toHeatMapColor(d.v, d.dataIndex, col);
       if (col.getCompressed()) {
         ctx.fillRect(padding, padding, w, w);

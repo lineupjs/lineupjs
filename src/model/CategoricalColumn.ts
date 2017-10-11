@@ -6,6 +6,7 @@ import {scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
+import {FIRST_IS_NAN} from './NumberColumn';
 
 export interface ICategoricalColumn {
   readonly categories: string[];
@@ -193,7 +194,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return l.length > 0 ? l[0] : null;
   }
 
-
   getLabels(row: any, index: number) {
     const v = StringColumn.prototype.getValue.call(this, row, index);
     const r = v ? v.split(this.separator) : [];
@@ -215,6 +215,11 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   getValues(row: any, index: number): string[] {
     const v = StringColumn.prototype.getValue.call(this, row, index);
     return v ? v.split(this.separator) : [];
+  }
+
+  isMissing(row: any, index: number) {
+    const v = this.getValues(row, index);
+    return v && v.length > 0;
   }
 
   getCategories(row: any, index: number) {
@@ -320,6 +325,13 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   compare(a: any, b: any, aIndex: number, bIndex: number) {
     const va = this.getValues(a, aIndex);
     const vb = this.getValues(b, bIndex);
+    if (va.length === 0) {
+      // missing
+      return vb.length === 0 ? 0 : FIRST_IS_NAN;
+    }
+    if (vb.length === 0) {
+      return FIRST_IS_NAN * -1;
+    }
     //check all categories
     for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
       const ci = va[i].localeCompare(vb[i]);

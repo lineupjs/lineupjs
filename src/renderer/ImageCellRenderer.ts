@@ -6,6 +6,7 @@ import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 import {ANoGroupRenderer} from './ANoGroupRenderer';
 import LinkColumn from '../model/LinkColumn';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export default class ImageCellRenderer extends ANoGroupRenderer implements ICellRendererFactory {
 
@@ -29,14 +30,18 @@ export default class ImageCellRenderer extends ANoGroupRenderer implements ICell
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
+        const missing = renderMissingDOM(n, col, d);
         n.title = col.getLabel(d.v, d.dataIndex);
-        n.style.backgroundImage = !col.isLink(d.v, d.dataIndex) ? null : `url('${col.getValue(d.v, d.dataIndex)}')`;
+        n.style.backgroundImage = missing || !col.isLink(d.v, d.dataIndex) ? null : `url('${col.getValue(d.v, d.dataIndex)}')`;
       }
     };
   }
 
   createCanvas(col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
+        return;
+      }
       const isLink = col.isLink(d.v, d.dataIndex);
       if (!isLink) {
         clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, context.colWidth(col), context.textHints);

@@ -6,6 +6,7 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {clipText, showOverlay} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 import {ANoGroupRenderer} from './ANoGroupRenderer';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 
 export default class LinkCellRenderer extends ANoGroupRenderer implements ICellRendererFactory {
@@ -13,13 +14,17 @@ export default class LinkCellRenderer extends ANoGroupRenderer implements ICellR
     return {
       template: `<div class='link text'></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
+        renderMissingDOM(n, col, d);
         n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class="link" href="${col.getValue(d.v, d.dataIndex)}" target="_blank">${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
       }
     };
   }
 
   createCanvas(col: LinkColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, dx: number, dy: number) => {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number) => {
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
+        return;
+      }
       const isLink = col.isLink(d.v, d.dataIndex);
       if (!isLink) {
         clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, context.colWidth(col), context.textHints);

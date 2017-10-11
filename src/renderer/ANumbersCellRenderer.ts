@@ -8,6 +8,7 @@ import Column from '../model/Column';
 import {IGroup} from '../model/Group';
 import {mean} from 'd3';
 import {isMissingValue} from '../model/NumberColumn';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export abstract class ANumbersCellRenderer implements ICellRendererFactory {
 
@@ -36,6 +37,9 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
     return {
       template: `<div>${templateRow}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
+        if (renderMissingDOM(n, col, d)) {
+          return;
+        }
         render(n, col.getRawNumbers(d.v,d.dataIndex));
       }
     };
@@ -58,6 +62,9 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
   createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const render = this.createCanvasContext(col, context);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
+        return;
+      }
       const rowHeight = context.rowHeight(i);
       render(ctx, col.getRawNumbers(d.v, d.dataIndex), 0, rowHeight);
     };
