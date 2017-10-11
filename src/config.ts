@@ -64,6 +64,7 @@ export function defaultConfig(): IFullLineUpConfig {
       backupScrollRows: 5,
       rowHeight: 18,
       groupHeight: 50,
+      groupPadding: 10,
       textHeight: 13, //10pt
       rowPadding: 1,
       rowBarPadding: 1,

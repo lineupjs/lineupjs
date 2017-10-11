@@ -146,6 +146,16 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     const data = this.data.view(order);
     const localData = (Array.isArray(data) ? data : []).map((v, i) => ({v, dataIndex: order[i]}));
 
+    const toMeta = (relativeIndex: number, length: number): 'first'|'last'|undefined => {
+      if (relativeIndex === 0) {
+        return 'first';
+      }
+      if (relativeIndex === length -1) {
+        return 'last';
+      }
+      return undefined;
+    };
+
     if (groups.length === 1) {
       // simple case
       if (this.data.isAggregated(ranking, groups[0])) {
@@ -153,7 +163,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
         this.ctx.data = [Object.assign({rows: localData}, groups[0])];
       } else {
         // simple ungrouped case
-        this.ctx.data = localData.map((r, i) => Object.assign({group: groups[0], relativeIndex: i}, r));
+        this.ctx.data = localData.map((r, i) => Object.assign({group: groups[0], relativeIndex: i, meta: toMeta(i, localData.length)}, r));
       }
     } else {
       //multiple groups
@@ -167,7 +177,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
         if (this.data.isAggregated(ranking, group)) {
           r.push(Object.assign({rows: groupData}, group));
         } else {
-          r.push(...groupData.map((r, i) => Object.assign({group, relativeIndex: i}, r)));
+          r.push(...groupData.map((r, i) => Object.assign({group, relativeIndex: i, meta: toMeta(i, groupData.length)}, r)));
         }
       });
       this.ctx.data = r;
@@ -197,7 +207,8 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.renderer.setZoomFactor(this.zoomFactor);
     const itemHeight = Math.round(this.zoomFactor * this.options.body.rowHeight!);
     const groupHeight = Math.round(this.zoomFactor * this.options.body.groupHeight!);
-    const rowContext = nonUniformContext(this.ctx.data.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight);
+    const groupPadding = Math.round(this.zoomFactor * this.options.body.groupPadding!);
+    const rowContext = nonUniformContext(this.ctx.data.map((d) => isGroup(d) ? groupHeight + groupPadding : itemHeight + (d.meta === 'last' ? groupPadding: 0)), itemHeight);
 
     this.renderer.render(columns, rowContext);
   }

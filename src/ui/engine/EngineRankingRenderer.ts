@@ -75,9 +75,10 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
       return;
     }
 
-    const dataIndex = this.ctx.getRow(rowIndex).dataIndex;
+    const {dataIndex, meta} = this.ctx.getRow(rowIndex);
     node.dataset.dataIndex = dataIndex.toString();
     node.dataset.agg = 'detail'; //or 'group'
+    node.dataset.meta = meta || '';
     if (this.ctx.provider.isSelected(dataIndex)) {
       node.classList.add('lu-selected');
     } else {
@@ -115,8 +116,9 @@ export default class EngineRankingRenderer extends ACellRenderer<RenderColumn> {
     }
 
     if (!isGroup) {
-      const dataIndex = this.ctx.getRow(rowIndex).dataIndex;
+      const {dataIndex, meta} = this.ctx.getRow(rowIndex);
       node.dataset.dataIndex = dataIndex.toString();
+      node.dataset.meta = meta || '';
       if (this.ctx.provider.isSelected(dataIndex)) {
         node.classList.add('lu-selected');
       } else {

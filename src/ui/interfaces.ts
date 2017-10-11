@@ -30,6 +30,7 @@ export interface IBodyRendererOptions {
   rowHeight: number;
   textHeight: number;
   groupHeight: number;
+  groupPadding: number;
   rowPadding: number;
   rowBarPadding: number;
   rowBarTopPadding: number;
