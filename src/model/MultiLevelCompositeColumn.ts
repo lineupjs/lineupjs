@@ -5,7 +5,7 @@
 import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn} from './CompositeColumn';
 import Column, {IColumnDesc, IFlatColumn} from './Column';
 import StackColumn from './StackColumn';
-import {isNumberColumn} from './NumberColumn';
+import {isNumberColumn} from './INumberColumn';
 import {similar} from '../utils';
 
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {

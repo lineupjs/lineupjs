@@ -5,8 +5,9 @@
 import {format} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import NumberColumn, {INumberColumn, numberCompare} from './NumberColumn';
+import NumberColumn, {INumberColumn} from './NumberColumn';
 import {isMissingValue} from './missing';
+import {IGroupData} from '../ui/engine/interfaces';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
@@ -100,7 +101,11 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return numberCompare(this.getNumber(a, aIndex), this.getNumber(b, bIndex));
+    return NumberColumn.prototype.compare.call(this, a, b, aIndex, bIndex);
+  }
+
+  groupCompare(a: IGroupData, b: IGroupData) {
+    return NumberColumn.prototype.groupCompare.call(this, a, b);
   }
 
   getRendererType(): string {

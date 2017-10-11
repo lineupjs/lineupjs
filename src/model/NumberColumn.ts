@@ -3,39 +3,14 @@
  */
 
 import {format, scale} from 'd3';
-import Column, {IColumnDesc} from './Column';
+import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays, similar} from '../utils';
-import {FIRST_IS_NAN, isMissingValue, isUnknown} from './missing';
+import {isMissingValue, isUnknown} from './missing';
+import {IGroupData} from '../ui/engine/interfaces';
+import {default as INumberColumn, INumberDesc, numberCompare, medianIndex} from './INumberColumn';
 
-
-/**
- * save number comparison
- * @param a
- * @param b
- * @param aMissing
- * @param bMissing
- * @return {number}
- */
-export function numberCompare(a: number | null, b: number | null, aMissing = false, bMissing = false) {
-  aMissing = aMissing || a === null || isNaN(a);
-  bMissing = bMissing || b === null || isNaN(b);
-  if (aMissing) { //NaN are smaller
-    return bMissing ? 0 : FIRST_IS_NAN;
-  }
-  if (bMissing) {
-    return FIRST_IS_NAN * -1;
-  }
-  return a! - b!;
-}
-
-
-export interface INumberColumn {
-  getNumber(row: any, index: number): number;
-
-  getRawNumber(row: any, index: number): number;
-}
-
+export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 /**
  * interface of a d3 scale
  */
@@ -74,16 +49,6 @@ export interface INumberFilter {
   filterMissing: boolean;
 }
 
-/**
- * checks whether the given column or description is a number column, i.e. the value is a number
- * @param col
- * @returns {boolean}
- */
-export function isNumberColumn(col: Column): col is INumberColumn & Column;
-export function isNumberColumn(col: IColumnDesc): col is INumberDesc & IColumnDesc;
-export function isNumberColumn(col: Column | IColumnDesc) {
-  return (col instanceof Column && typeof (<any>col).getNumber === 'function' || (!(col instanceof Column) && (<IColumnDesc>col).type.match(/(number|stack|ordinal)/) != null));
-}
 
 function toScale(type = 'linear'): IScale {
   switch (type) {
@@ -252,33 +217,10 @@ export function createMappingFunction(dump: any): IMappingFunction {
   return l;
 }
 
-export interface INumberDesc {
-  /**
-   * dump of mapping function
-   */
-  readonly map?: any;
-  /**
-   * either map or domain should be available
-   */
-  readonly domain?: [number, number];
-  /**
-   * @default [0,1]
-   */
-  readonly range?: [number, number];
-  /**
-   * d3 formatting option
-   * @default .3n
-   */
-  readonly numberFormat?: string;
-
-  /**
-   * missing value to use
-   * @default 0
-   */
-  readonly missingValue?: number;
-}
 
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
+
+
 
 export interface IMapAbleColumn {
   getOriginalMapping(): IMappingFunction;
@@ -439,7 +381,15 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex), this.isMissing(a, aIndex), this.isMissing(b, bIndex));
+    return numberCompare(this.getNumber(a, aIndex), this.getNumber(b, bIndex), this.isMissing(a, aIndex), this.isMissing(b, bIndex));
+  }
+
+  groupCompare(a: IGroupData, b: IGroupData) {
+    const aMedian = medianIndex(a.rows, this);
+    const bMedian = medianIndex(b.rows, this);
+    const av = a.rows[aMedian];
+    const bv = b.rows[bMedian];
+    return numberCompare(this.getNumber(av.v, av.dataIndex), this.getNumber(bv.v, bv.dataIndex), this.isMissing(av.v, av.dataIndex), this.isMissing(bv.v, bv.dataIndex));
   }
 
   getOriginalMapping() {

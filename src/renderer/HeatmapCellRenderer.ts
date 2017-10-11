@@ -1,4 +1,4 @@
-import {INumberColumn} from '../model/NumberColumn';
+import {INumberColumn, medianIndex} from '../model/INumberColumn';
 import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
@@ -8,7 +8,6 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {medianIndex} from './BarCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {

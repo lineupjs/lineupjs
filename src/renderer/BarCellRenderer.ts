@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn, numberCompare} from '../model/NumberColumn';
+import {INumberColumn, medianIndex} from '../model/INumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -69,15 +69,4 @@ export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberCol
   protected aggregatedIndex(rows: IDataRow[], col: INumberColumn & Column) {
     return medianIndex(rows, col);
   }
-}
-
-export function medianIndex(rows: IDataRow[], col: INumberColumn & Column): number {
-  //return the median row
-  const data = rows.map((r, i) => ({i, v: col.getNumber(r.v, r.dataIndex), m: col.isMissing(r.v, r.dataIndex)}));
-  const sorted = data.filter((r) => !r.m).sort((a, b) => numberCompare(a.v, b.v));
-  const index = sorted[Math.floor(sorted.length / 2.0)];
-  if (index === undefined) {
-    return 0; //error case
-  }
-  return index.i;
 }
