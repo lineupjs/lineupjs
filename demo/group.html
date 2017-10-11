@@ -67,6 +67,8 @@
     p.getLastRanking().insert(p.create({ type: 'aggregate', label: 'A'}), 0);
     p.getLastRanking().push(p.create(desc[1]));
 
+    p.pushRanking(p.getLastRanking());
+
     const instance = LineUpJS.create(p, document.body, {
       header: {
         summary: true
