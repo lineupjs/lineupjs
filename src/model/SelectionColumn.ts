@@ -30,7 +30,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     color: 'orange'
   };
   private static NOT_SELECTED_GROUP: IGroup = {
-    name: 'Not Selected',
+    name: 'Unselected',
     color: 'gray'
   };
   static readonly EVENT_SELECT = 'select';

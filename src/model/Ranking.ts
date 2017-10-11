@@ -69,7 +69,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   readonly groupComparator = (a: IGroupData, b: IGroupData) => {
     if (this.groupSortCriteria.length === 0) {
-      return 0;
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
     }
     for (const sort of this.groupSortCriteria) {
       const r = sort.col!.groupCompare(a, b);
