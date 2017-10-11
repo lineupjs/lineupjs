@@ -65,14 +65,15 @@ export function defaultConfig(): IFullLineUpConfig {
       rowHeight: 18,
       groupHeight: 50,
       groupPadding: 10,
+      rowPadding: 2,
+      columnPadding: 3,
+
       textHeight: 13, //10pt
-      rowPadding: 1,
       rowBarPadding: 1,
       rowBarTopPadding: 1,
       rowBarBottomPadding: 1,
       idPrefix: '',
       slopeWidth: 150,
-      columnPadding: 3,
       stacked: true,
       animation: false, //200
       animationDuration: 1000,

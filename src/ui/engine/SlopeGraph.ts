@@ -139,20 +139,21 @@ export default class SlopeGraph implements ITableSection {
     const lookup = new Map<number, IPos>();
     let acc = 0;
     this.rightSlopes = right.map((r, i) => {
-      const height = rightContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight;
+      const height = (rightContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight);
+      const padded = height - rightContext.padding(i);
 
       if (isGroup(r)) {
         const p = {
           rows: r.rows.map((d) => d.dataIndex),
           start: acc,
-          heightPerRow: height / r.rows.length,
+          heightPerRow: padded / r.rows.length,
           offset: 0,
           ref: i
         };
         r.rows.forEach((ri) => lookup.set(ri.dataIndex, p));
       } else {
         const dataIndex = (<IGroupItem>r).dataIndex;
-        lookup.set(dataIndex, {rows: [dataIndex], start: acc, heightPerRow: height, offset: 0, ref: i});
+        lookup.set(dataIndex, {rows: [dataIndex], start: acc, heightPerRow: padded, offset: 0, ref: i});
       }
       acc += height;
       return <ISlope[]>[];
@@ -160,11 +161,12 @@ export default class SlopeGraph implements ITableSection {
 
     acc = 0;
     this.leftSlopes = left.map((r, i) => {
-      const height = leftContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight;
+      const height = (leftContext.exceptionsLookup.get(i) || rightContext.defaultRowHeight);
+      const padded = height - rightContext.padding(i);
       const slopes = <ISlope[]>[];
       if (isGroup(r)) {
         const free = new Set(r.rows.map((d) => d.dataIndex));
-        const heightPerItem = height / r.rows.length;
+        const heightPerItem = padded / r.rows.length;
         let offset = 0;
         r.rows.forEach((d) => {
           if (!free.has(d.dataIndex)) {
@@ -190,7 +192,7 @@ export default class SlopeGraph implements ITableSection {
         const dataIndex = (<IGroupItem>r).dataIndex;
         const p = lookup.get(dataIndex);
         if (p) {
-          const s = new ItemSlope(acc + height / 2, p.start + p.offset + p.heightPerRow / 2, dataIndex);
+          const s = new ItemSlope(acc + padded / 2, p.start + p.offset + p.heightPerRow / 2, dataIndex);
           slopes.push(s);
           this.rightSlopes[p.ref].push(s);
           p.offset += p.heightPerRow; // shift by one item

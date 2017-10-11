@@ -215,7 +215,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     rankings.forEach((r, i) => {
       const grouped = r.groupData(localData[i]);
       const rowContext = nonUniformContext(grouped.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight, (index) => {
-        if (index >= 0 && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last')) {
+        if (index >= 0 && grouped[index] && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last')) {
           return groupPadding + rowPadding;
         }
         return rowPadding;

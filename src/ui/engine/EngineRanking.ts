@@ -28,7 +28,6 @@ export interface IEngineRankingContext extends IRankingHeaderContextContainer, I
 export interface ICallbacks {
   widthChanged(): void;
   updateData(): void;
-  updateRow?(row: HTMLElement, rowIndex: number): void;
 }
 
 export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection {
@@ -130,13 +129,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return;
     }
 
-    if (this.callbacks.updateRow) {
-      this.callbacks.updateRow(node, rowIndex);
-    }
-
-    const dataIndex = this.renderCtx.getRow(rowIndex).dataIndex;
+    const {dataIndex, meta} = this.renderCtx.getRow(rowIndex);
     node.dataset.dataIndex = dataIndex.toString();
     node.dataset.agg = 'detail'; //or 'group'
+    node.dataset.meta = meta || '';
     if (this.ctx.provider.isSelected(dataIndex)) {
       node.classList.add('lu-selected');
     } else {
@@ -169,13 +165,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
     }
 
-    if (this.callbacks.updateRow) {
-      this.callbacks.updateRow(node, rowIndex);
-    }
-
     if (!isGroup) {
-      const dataIndex = this.renderCtx.getRow(rowIndex).dataIndex;
+      const {dataIndex, meta} = this.renderCtx.getRow(rowIndex);
       node.dataset.dataIndex = dataIndex.toString();
+      node.dataset.meta = meta || '';
       if (this.ctx.provider.isSelected(dataIndex)) {
         node.classList.add('lu-selected');
       } else {
