@@ -29,6 +29,7 @@ import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 import {IRankingHeaderContext} from './interfaces';
 import {equalArrays} from '../../utils';
 import {findTypeLike} from '../../model/utils';
+import SelectionColumn from '../../model/SelectionColumn';
 
 
 /**
@@ -111,7 +112,7 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
     };
   }
   //stratify
-  if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
+  if (col instanceof BooleanColumn || col instanceof CategoricalColumn || col instanceof SelectionColumn) {
     addIcon('Stratify By').onclick = (evt) => {
       evt.stopPropagation();
       col.groupByMe();
