@@ -16,11 +16,11 @@ import NumberColumn, {
   createMappingFunction,
   IMapAbleColumn,
   IMappingFunction,
-  INumberColumn,
-  INumberFilter, isNumberColumn,
+  INumberFilter,
   noNumberFilter,
   ScaleMappingFunction
 } from './NumberColumn';
+import {INumberColumn, isNumberColumn} from './INumberColumn';
 import {isMissingValue} from './missing';
 
 

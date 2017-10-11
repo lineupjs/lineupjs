@@ -8,13 +8,12 @@ import NumberColumn, {
   createMappingFunction,
   IMapAbleColumn,
   IMappingFunction,
-  INumberColumn,
   INumberFilter,
   noNumberFilter,
-  numberCompare,
   ScaleMappingFunction
 } from './NumberColumn';
 import {FIRST_IS_NAN} from './missing';
+import INumberColumn, {numberCompare} from './INumberColumn';
 
 export const SORT_METHOD = {
   min: 'min',

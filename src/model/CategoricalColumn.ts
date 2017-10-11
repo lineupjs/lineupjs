@@ -219,7 +219,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
 
   isMissing(row: any, index: number) {
     const v = this.getValues(row, index);
-    return v && v.length > 0;
+    return !v || v.length === 0;
   }
 
   getCategories(row: any, index: number) {

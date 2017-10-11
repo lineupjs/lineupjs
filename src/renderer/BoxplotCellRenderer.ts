@@ -5,7 +5,7 @@ import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {INumberColumn} from '../model/NumberColumn';
+import {INumberColumn} from '../model/INumberColumn';
 import {IGroup} from '../model/Group';
 import {INumbersColumn, isNumbersColumn, LazyBoxPlotData} from '../model/NumbersColumn';
 import {renderMissingCanvas, renderMissingDOM} from './missing';

@@ -38,6 +38,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     mc.children.forEach((c, i) => {
       const n = createHeader(c, document, ctx);
       n.style.marginLeft = i > 0 ? `${this.columnPadding * 2}px`: null;
+      n.classList.add('lu-header');
       if (isEdge) {
         n.style.msGridColumn = (i + 1).toString();
       } else {
@@ -80,7 +81,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     const children = <HTMLElement[]>Array.from(wrapper.children);
     sub.forEach((c, i) => {
       const node = children[i];
-      node.className = `${c.cssClass ? ` ${c.cssClass}` : ''}${this.c.headerCssClass}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
+      node.className = `lu-header ${c.cssClass ? ` ${c.cssClass}` : ''}${this.c.headerCssClass}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
       updateHeader(node, c, ctx);
     });
   }

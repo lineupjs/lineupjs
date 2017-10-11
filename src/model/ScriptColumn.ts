@@ -4,7 +4,7 @@
 
 import Column from './Column';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {isNumberColumn} from './NumberColumn';
+import {isNumberColumn} from './INumberColumn';
 
 const DEFAULT_SCRIPT = `let s = 0;
 col.forEach((c) => s += c.v);

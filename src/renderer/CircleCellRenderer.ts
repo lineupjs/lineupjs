@@ -1,12 +1,11 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn} from '../model/NumberColumn';
+import {INumberColumn, medianIndex} from '../model/INumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import AAggregatedGroupRenderer from './AAggregatedGroupRenderer';
-import {medianIndex} from './BarCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {

@@ -4,7 +4,7 @@
 import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {IDataProvider, IDataRow} from '../../provider/ADataProvider';
 import {IFilterDialog} from '../../dialogs/AFilterDialog';
-import {INumberColumn} from '../../model/NumberColumn';
+import {INumberColumn} from '../../model/INumberColumn';
 import {ICategoricalColumn} from '../../model/CategoricalColumn';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import {IGroup} from '../../model/Group';
