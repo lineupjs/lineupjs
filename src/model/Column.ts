@@ -5,7 +5,7 @@
 import {AEventDispatcher, similar} from '../utils';
 import Ranking from './Ranking';
 import {defaultGroup} from './Group';
-import {isMissingValue} from './NumberColumn';
+import {isMissingValue} from './missing';
 
 /**
  * converts a given id to css compatible one

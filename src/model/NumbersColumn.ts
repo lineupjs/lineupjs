@@ -17,10 +17,11 @@ import NumberColumn, {
   IMapAbleColumn,
   IMappingFunction,
   INumberColumn,
-  INumberFilter, isMissingValue, isNumberColumn,
+  INumberFilter, isNumberColumn,
   noNumberFilter,
   ScaleMappingFunction
 } from './NumberColumn';
+import {isMissingValue} from './missing';
 
 
 export const SORT_METHOD = Object.assign({

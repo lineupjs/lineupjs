@@ -6,7 +6,6 @@ import Column from './Column';
 import {format} from 'd3';
 import NumberColumn, {
   createMappingFunction,
-  FIRST_IS_NAN,
   IMapAbleColumn,
   IMappingFunction,
   INumberColumn,
@@ -15,6 +14,7 @@ import NumberColumn, {
   numberCompare,
   ScaleMappingFunction
 } from './NumberColumn';
+import {FIRST_IS_NAN} from './missing';
 
 export const SORT_METHOD = {
   min: 'min',

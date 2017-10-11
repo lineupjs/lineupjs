@@ -196,8 +196,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
     };
 
     return {
-      stats: (col: INumberColumn) => computeStats(getD(), indices, col.getNumber.bind(col), col.isMissing.bind(col), [0, 1]),
-      hist: (col: ICategoricalColumn) => computeHist(getD(), indices, col.getCategories.bind(col), col.categories)
+      stats: (col: INumberColumn&Column) => computeStats(getD(), indices, col.getNumber.bind(col), col.isMissing.bind(col), [0, 1]),
+      hist: (col: ICategoricalColumn&Column) => computeHist(getD(), indices, col.getCategories.bind(col), col.categories)
     };
   }
 

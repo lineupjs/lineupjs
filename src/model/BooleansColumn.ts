@@ -3,7 +3,7 @@
  */
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './CategoricalColumn';
-import {FIRST_IS_NAN} from './NumberColumn';
+import {FIRST_IS_NAN} from './missing';
 
 export interface IBooleansDesc {
   readonly dataLength: number;

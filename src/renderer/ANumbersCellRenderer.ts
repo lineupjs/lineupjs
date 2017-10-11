@@ -7,8 +7,8 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import Column from '../model/Column';
 import {IGroup} from '../model/Group';
 import {mean} from 'd3';
-import {isMissingValue} from '../model/NumberColumn';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {isMissingValue} from '../model/missing';
 
 export abstract class ANumbersCellRenderer implements ICellRendererFactory {
 

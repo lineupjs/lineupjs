@@ -86,7 +86,7 @@ export function computeHist(arr: any[], indices: number[], acc: (row: any, index
 
   arr.forEach((a, i) => {
     const vs = acc(a, indices[i]);
-    if (vs == null) {
+    if (vs == null || vs.length === 0) {
       missingCount += 1;
       return;
     }

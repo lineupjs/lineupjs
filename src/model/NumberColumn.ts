@@ -6,16 +6,8 @@ import {format, scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays, similar} from '../utils';
+import {FIRST_IS_NAN, isMissingValue, isUnknown} from './missing';
 
-export function isMissingValue(v: any) {
-  return typeof(v) === 'undefined' || v == null || (typeof v === 'number' && isNaN(v)) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na'));
-}
-
-function isUnknown(v?: number | null) {
-  return v === null || v === undefined || isNaN(v);
-}
-
-export const FIRST_IS_NAN = -1;
 
 /**
  * save number comparison
