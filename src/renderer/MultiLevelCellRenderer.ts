@@ -6,13 +6,13 @@ import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {matchColumns, round} from '../utils';
-import {medianIndex} from './BarCellRenderer';
 import {IGroup} from '../model/Group';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {IMultiLevelColumn} from '../model/CompositeColumn';
 import Column from '../model/Column';
 import {isEdge} from 'lineupengine/src/style';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {medianIndex} from '../provider/math';
 
 export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;

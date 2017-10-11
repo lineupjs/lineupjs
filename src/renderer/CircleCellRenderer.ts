@@ -6,8 +6,8 @@ import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import AAggregatedGroupRenderer from './AAggregatedGroupRenderer';
-import {medianIndex} from './BarCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {medianIndex} from '../provider/math';
 
 export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
 

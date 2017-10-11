@@ -11,10 +11,10 @@ import NumberColumn, {
   INumberColumn,
   INumberFilter,
   noNumberFilter,
-  numberCompare,
   ScaleMappingFunction
 } from './NumberColumn';
 import {FIRST_IS_NAN} from './missing';
+import {numberCompare} from './utils';
 
 export const SORT_METHOD = {
   min: 'min',

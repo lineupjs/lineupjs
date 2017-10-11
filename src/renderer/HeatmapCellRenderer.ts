@@ -8,8 +8,8 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {medianIndex} from './BarCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {medianIndex} from '../provider/math';
 
 export function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
   let v = col.getNumber(d, index);

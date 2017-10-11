@@ -6,29 +6,8 @@ import {format, scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays, similar} from '../utils';
-import {FIRST_IS_NAN, isMissingValue, isUnknown} from './missing';
-
-
-/**
- * save number comparison
- * @param a
- * @param b
- * @param aMissing
- * @param bMissing
- * @return {number}
- */
-export function numberCompare(a: number | null, b: number | null, aMissing = false, bMissing = false) {
-  aMissing = aMissing || a === null || isNaN(a);
-  bMissing = bMissing || b === null || isNaN(b);
-  if (aMissing) { //NaN are smaller
-    return bMissing ? 0 : FIRST_IS_NAN;
-  }
-  if (bMissing) {
-    return FIRST_IS_NAN * -1;
-  }
-  return a! - b!;
-}
-
+import {isMissingValue, isUnknown} from './missing';
+import {numberCompare} from './utils';
 
 export interface INumberColumn {
   getNumber(row: any, index: number): number;
