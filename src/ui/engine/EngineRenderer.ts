@@ -6,7 +6,7 @@ import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {createDOM, createDOMGroup} from '../../renderer';
-import {IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
+import {IGroupItem, IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {ILineUpRenderer} from '../interfaces';
 import {ILineUpConfig, IRenderingOptions} from '../../interfaces';
 import {ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
@@ -17,8 +17,6 @@ import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer'
 import Ranking from '../../model/Ranking';
 import SlopeGraph from './SlopeGraph';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
-
-const ROW_PADDING = 2;
 
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
   static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
@@ -212,10 +210,16 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     const itemHeight = Math.round(this.zoomFactor * this.options.body.rowHeight!);
     const groupHeight = Math.round(this.zoomFactor * this.options.body.groupHeight!);
     const groupPadding = Math.round(this.zoomFactor * this.options.body.groupPadding!);
+    const rowPadding = Math.round(this.zoomFactor * this.options.body.rowPadding!);
 
     rankings.forEach((r, i) => {
       const grouped = r.groupData(localData[i]);
-      const rowContext = nonUniformContext(grouped.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight, ROW_PADDING);
+      const rowContext = nonUniformContext(grouped.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight, (index) => {
+        if (index >= 0 && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last')) {
+          return groupPadding + rowPadding;
+        }
+        return rowPadding;
+      });
       r.render(grouped, rowContext);
     });
 

@@ -228,7 +228,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     });
   }
 
-  groupData(data: IDataRow[]) {
+  groupData(data: IDataRow[]): (IGroupItem | IGroupData)[] {
     const groups = this.ranking.getGroups();
     const provider = this.ctx.provider;
     if (groups.length === 1) {
