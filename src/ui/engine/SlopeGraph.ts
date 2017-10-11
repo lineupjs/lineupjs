@@ -76,6 +76,7 @@ export default class SlopeGraph implements ITableSection {
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
     header.classList.add('lu-slopegraph');
     body.classList.add('lu-slopegraph');
+    this.body.style.height = `1px`;
     body.appendChild(this.node);
   }
 
