@@ -67,6 +67,8 @@ export interface IDataProvider extends AEventDispatcher {
 
   selectAllOf(ranking: Ranking): void;
 
+  getSelection(): number[];
+
   setSelection(dataIndices: number[]): void;
 
   toggleSelection(dataIndex: number, additional?: boolean): boolean;
