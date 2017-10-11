@@ -10,7 +10,7 @@ import {isMissingValue, isUnknown} from './missing';
 import {IGroupData} from '../ui/engine/interfaces';
 import {default as INumberColumn, INumberDesc, numberCompare, medianIndex} from './INumberColumn';
 
-export {default as INumberColumn} from './INumberColumn';
+export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 /**
  * interface of a d3 scale
  */
