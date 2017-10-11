@@ -19,6 +19,11 @@
   }
 }
 
+&[data-agg=group],
+&[data-meta=last] {
+  margin-bottom: 10px; // see also groupPadding in body options and GROUP_PADDING in ANode
+}
+
 /**
   selected state extends hover state
  */

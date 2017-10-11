@@ -17,7 +17,7 @@ import NumberColumn, {
   IMapAbleColumn,
   IMappingFunction,
   INumberColumn,
-  INumberFilter,
+  INumberFilter, isMissingValue, isNumberColumn,
   noNumberFilter,
   ScaleMappingFunction
 } from './NumberColumn';
@@ -43,8 +43,11 @@ export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
  */
 export class LazyBoxPlotData implements IAdvancedBoxPlotData {
   private _sorted: number[] | null = null;
+  private readonly values: number[];
 
-  constructor(private readonly values: number[], private readonly scale?: IMappingFunction) {
+  constructor(values: number[], private readonly scale?: IMappingFunction) {
+    // filter out NaN
+    this.values = values.filter((d) => !isMissingValue(d));
   }
 
   /**
@@ -102,6 +105,11 @@ export interface INumbersColumn extends INumberColumn {
   getMapping(): IMappingFunction;
 }
 
+export function isNumbersColumn(col: any): col is INumbersColumn {
+  return (<INumbersColumn>col).getNumbers !== undefined && isNumberColumn(col);
+}
+
+
 export interface INumbersDesc {
   /**
    * dump of mapping function
@@ -125,9 +133,14 @@ export interface INumbersDesc {
 
 export declare type INumbersColumnDesc = INumbersDesc & IValueColumnDesc<number[]>;
 
+export interface ISplicer {
+  length: number;
+  splice(values: number[]): number[];
+}
 
 export default class NumbersColumn extends ValueColumn<number[]> implements IAdvancedBoxPlotColumn, INumbersColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
+  static readonly EVENT_SPLICE_CHANGED = 'spliceChanged';
 
   private sort: SortMethod;
   private readonly threshold: number;
@@ -137,6 +150,8 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   private mapping: IMappingFunction;
 
   private original: IMappingFunction;
+
+  private splicer: ISplicer;
   /**
    * currently active filter
    * @type {{min: number, max: number}}
@@ -167,10 +182,29 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
       {type: 'threshold', label: 'Threshold'},
       {type: 'verticalbar', label: 'VerticalBar'},
       {type: 'number', label: 'Bar'},
-      {type: 'circle', label: 'Circle'}]);
+      {type: 'circle', label: 'Circle'}], [
+      {type: 'numbers', label: 'Heatmap'},
+      {type: 'sparkline', label: 'Sparkline'},
+      {type: 'boxplot', label: 'Boxplot'},
+      {type: 'number', label: 'Bar'},
+      {type: 'circle', label: 'Circle'}
+    ]);
 
     // better initialize the default with based on the data length
     this.setWidth(Math.min(Math.max(100, this.dataLength * 10), 500));
+
+    this.splicer = {
+      length: this.dataLength,
+      splice: (v) => v
+    };
+  }
+
+  setSplicer(splicer: ISplicer) {
+    this.fire([NumbersColumn.EVENT_SPLICE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY], this.splicer, this.splicer = splicer);
+  }
+
+  getSplicer() {
+    return this.splicer;
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number): number {
@@ -202,6 +236,9 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   getDataLength() {
+    if (this.splicer) {
+      return this.splicer.length;
+    }
     return this.dataLength;
   }
 
@@ -247,7 +284,10 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   getRawValue(row: any, index: number) {
-    const r = super.getValue(row, index);
+    let r = super.getValue(row, index);
+    if (this.splicer && r !== null) {
+      r = this.splicer.splice(r);
+    }
     return r === null ? [] : r;
   }
 
@@ -298,7 +338,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   protected createEventList() {
-    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED]);
+    return super.createEventList().concat([NumbersColumn.EVENT_MAPPING_CHANGED, NumbersColumn.EVENT_SPLICE_CHANGED]);
   }
 
   getOriginalMapping() {

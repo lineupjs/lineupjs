@@ -211,6 +211,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
     const itemHeight = Math.round(this.zoomFactor * this.options.body.rowHeight!);
     const groupHeight = Math.round(this.zoomFactor * this.options.body.groupHeight!);
+    const groupPadding = Math.round(this.zoomFactor * this.options.body.groupPadding!);
 
     rankings.forEach((r, i) => {
       const grouped = r.groupData(localData[i]);
