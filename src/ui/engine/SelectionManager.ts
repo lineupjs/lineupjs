@@ -3,6 +3,8 @@
  */
 import {IDataProvider} from '../../provider/ADataProvider';
 import {AEventDispatcher} from '../../utils';
+import OrderedSet from '../../provider/OrderedSet';
+import {IGroupData, IGroupItem, isGroup} from './interfaces';
 
 interface IPoint {
   x: number;
@@ -100,6 +102,25 @@ export default class SelectionManager extends AEventDispatcher {
         this.endNode = node;
       }
     };
+  }
+
+  selectRange(rows: {forEach: (c: (item: (IGroupItem|IGroupData))=>void)=>void}, additional: boolean = false) {
+    const current = new OrderedSet<number>(additional ? this.ctx.provider.getSelection(): []);
+    const toggle = (dataIndex: number) => {
+      if (current.has(dataIndex)) {
+        current.delete(dataIndex);
+      } else {
+        current.add(dataIndex);
+      }
+    };
+    rows.forEach((d) => {
+      if (isGroup(d)) {
+        d.rows.forEach((r) => toggle(r.dataIndex));
+      } else {
+        toggle(d.dataIndex);
+      }
+    });
+    this.ctx.provider.setSelection(Array.from(current));
   }
 
   updateState(node: HTMLElement, dataIndex: number) {

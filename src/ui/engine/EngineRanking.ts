@@ -19,7 +19,6 @@ import {debounce} from '../../utils';
 import {IAnimationContext} from 'lineupengine/src/animation/index';
 import KeyFinder from 'lineupengine/src/animation/KeyFinder';
 import SelectionManager from './SelectionManager';
-import OrderedSet from '../../provider/OrderedSet';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
@@ -51,7 +50,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     this.selection = new SelectionManager(this.ctx, body);
     this.selection.on(SelectionManager.EVENT_SELECT_RANGE, (from: number, to: number, additional: boolean) => {
-      this.selectRange(from, to, additional);
+      this.selection.selectRange(this.data.slice(from, to + 1), additional);
     });
 
     this.renderCtx = Object.assign({
@@ -191,26 +190,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.forEachRow((node: HTMLElement) => {
       this.selection.update(node, selectedDataIndices);
     }, true);
-  }
-
-  private selectRange(fromIndex: number, toIndex: number, additional: boolean = false) {
-    const current = new OrderedSet<number>(additional ? this.ctx.provider.getSelection(): []);
-    const toggle = (dataIndex: number) => {
-      if (current.has(dataIndex)) {
-        current.delete(dataIndex);
-      } else {
-        current.add(dataIndex);
-      }
-    };
-    for(let i = fromIndex; i <= toIndex; ++i) {
-      const d = this.data[i];
-      if (isGroup(d)) {
-        d.rows.forEach((r) => toggle(r.dataIndex));
-      } else {
-        toggle(d.dataIndex);
-      }
-    }
-    this.ctx.provider.setSelection(Array.from(current));
   }
 
   updateColumnWidths() {
