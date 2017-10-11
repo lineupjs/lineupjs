@@ -163,15 +163,6 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
     addIcon('Edit Weights', WeightsEditDialog);
   }
 
-  if (!isSupportColumn) {
-    addIcon(col.getCompressed() ? 'UnCollapse' : 'Collapse').onclick = (evt) => {
-      evt.stopPropagation();
-      col.setCompressed(!col.getCompressed());
-      const i = <HTMLElement>evt.currentTarget;
-      i.title = col.getCompressed() ? 'UnCollapse' : 'Collapse';
-    };
-  }
-
   if (isMultiLevelColumn(col)) {
     const mcol = <IMultiLevelColumn>col;
     addIcon(mcol.getCollapsed() ? 'Expand' : 'Compress').onclick = (evt) => {

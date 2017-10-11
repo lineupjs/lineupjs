@@ -131,17 +131,11 @@ export default class Column extends AEventDispatcher {
    * @type {number}
    */
   static readonly FLAT_ALL_COLUMNS = -1;
-  /**
-   * width of a compressed column
-   * @type {number}
-   */
-  static readonly COMPRESSED_WIDTH = 16;
 
   static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
   static readonly EVENT_FILTER_CHANGED = 'filterChanged';
   static readonly EVENT_LABEL_CHANGED = 'labelChanged';
   static readonly EVENT_METADATA_CHANGED = 'metaDataChanged';
-  static readonly EVENT_COMPRESS_CHANGED = 'compressChanged';
   static readonly EVENT_ADD_COLUMN = 'addColumn';
   static readonly EVENT_REMOVE_COLUMN = 'removeColumn';
   static readonly EVENT_DIRTY = 'dirty';
@@ -174,14 +168,6 @@ export default class Column extends AEventDispatcher {
    * alternative to specifying a color is defining a css class that should be used
    */
   readonly cssClass: string;
-
-  /**
-   * whether this column is compressed i.e. just shown in a minimal version
-   * @type {boolean}
-   * @private
-   */
-  private compressed = false;
-
 
   private readonly rendererInfo: IRendererInfo;
 
@@ -258,17 +244,13 @@ export default class Column extends AEventDispatcher {
    */
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
-      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED, Column.EVENT_COMPRESS_CHANGED,
+      Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED,
       Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_GROUPING_CHANGED]);
   }
 
   getWidth() {
     return this.width;
-  }
-
-  getActualWidth() {
-    return this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
   }
 
   /**
@@ -283,17 +265,6 @@ export default class Column extends AEventDispatcher {
     return this.setWidth(0);
   }
 
-  setCompressed(value: boolean) {
-    if (this.compressed === value) {
-      return;
-    }
-    this.fire([Column.EVENT_COMPRESS_CHANGED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.compressed, this.compressed = value);
-  }
-
-  getCompressed() {
-    return this.compressed;
-  }
-
   /**
    * visitor pattern for flattening the columns
    * @param {IFlatColumn} r the result array
@@ -303,7 +274,7 @@ export default class Column extends AEventDispatcher {
    * @returns {number} the used width by this column
    */
   flatten(r: IFlatColumn[], offset: number, _levelsToGo = 0, _padding = 0): number {
-    const w = this.compressed ? Column.COMPRESSED_WIDTH : this.getWidth();
+    const w = this.getWidth();
     r.push({col: this, offset, width: w});
     return w;
   }
@@ -449,8 +420,7 @@ export default class Column extends AEventDispatcher {
     const r: any = {
       id: this.id,
       desc: toDescRef(this.desc),
-      width: this.width,
-      compressed: this.compressed
+      width: this.width
     };
     if (this.label !== (this.desc.label || this.id)) {
       r.label = this.label;
@@ -476,7 +446,6 @@ export default class Column extends AEventDispatcher {
       color: dump.color || this.color,
       description: this.description
     };
-    this.compressed = dump.compressed === true;
     if (dump.rendererType) {
       this.rendererInfo.renderer = dump.rendererType;
     }
@@ -589,7 +558,6 @@ export default class Column extends AEventDispatcher {
     this.rendererInfo.renderers = renderers;
     this.rendererInfo.groupRenderers = groupRenderers;
   }
-
 
   /**
    * describe the column if it is a sorting criteria

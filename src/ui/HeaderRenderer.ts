@@ -22,7 +22,7 @@ import {IHeaderRendererOptions} from './interfaces';
 
 
 function countMultiLevel(c: Column): number {
-  if (isMultiLevelColumn(c) && !(<IMultiLevelColumn>c).getCollapsed() && !c.getCompressed()) {
+  if (isMultiLevelColumn(c) && !(<IMultiLevelColumn>c).getCollapsed()) {
     return 1 + Math.max.apply(Math, (<IMultiLevelColumn>c).children.map(countMultiLevel));
   }
   return 1;
@@ -353,7 +353,7 @@ export default class HeaderRenderer {
       'background-color': (d) => d.color!
     });
     $headers.attr({
-      'class': (d) => `${clazz} ${d.cssClass || ''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''} ${d.isGroupedBy() >= 0 ? 'grouped' : ''}`,
+      'class': (d) => `${clazz} ${d.cssClass || ''} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''} ${d.isGroupedBy() >= 0 ? 'grouped' : ''}`,
       title: (d) => toFullTooltip(d),
       'data-id': (d) => d.id
     });
@@ -390,7 +390,7 @@ export default class HeaderRenderer {
     };
 
     const renderMultiLevel = function (this: HTMLElement, col: IMultiLevelColumn) {
-      if (col.getCollapsed() || col.getCompressed()) {
+      if (col.getCollapsed()) {
         d3.select(this).selectAll(`div.${clazz}_i`).remove();
         return;
       }

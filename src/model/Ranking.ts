@@ -23,7 +23,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   static readonly EVENT_WIDTH_CHANGED = Column.EVENT_WIDTH_CHANGED;
   static readonly EVENT_FILTER_CHANGED = Column.EVENT_FILTER_CHANGED;
   static readonly EVENT_LABEL_CHANGED = Column.EVENT_LABEL_CHANGED;
-  static readonly EVENT_COMPRESS_CHANGED = Column.EVENT_COMPRESS_CHANGED;
   static readonly EVENT_ADD_COLUMN = Column.EVENT_ADD_COLUMN;
   static readonly EVENT_REMOVE_COLUMN = Column.EVENT_REMOVE_COLUMN;
   static readonly EVENT_DIRTY = Column.EVENT_DIRTY;
@@ -94,7 +93,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   protected createEventList() {
     return super.createEventList().concat([
       Ranking.EVENT_WIDTH_CHANGED, Ranking.EVENT_FILTER_CHANGED,
-      Ranking.EVENT_LABEL_CHANGED, Ranking.EVENT_COMPRESS_CHANGED, Ranking.EVENT_GROUPS_CHANGED,
+      Ranking.EVENT_LABEL_CHANGED, Ranking.EVENT_GROUPS_CHANGED,
       Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_GROUP_CRITERIA_CHANGED,
       Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES,
       Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIAS_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_ORDER_CHANGED]);

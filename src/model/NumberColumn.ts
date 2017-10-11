@@ -302,8 +302,6 @@ export function noNumberFilter() {
  */
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
-  static readonly COMPRESSED_RENDERER = 'heatmap';
-
 
   missingValue = 0;
 
@@ -565,12 +563,5 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
           color: 'gray'
         };
     }
-  }
-
-  getRendererType(): string {
-    if (this.getCompressed()) {
-      return NumberColumn.COMPRESSED_RENDERER;
-    }
-    return super.getRendererType();
   }
 }

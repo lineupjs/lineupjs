@@ -38,7 +38,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     let w = 0;
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
+      w = this.getWidth();
       r.push({col: this, offset, width: w});
       if (levelsToGo === 0) {
         return w;

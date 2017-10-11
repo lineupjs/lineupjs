@@ -101,7 +101,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
           columns.forEach((col, ci) => {
             const cnode: any = node.childNodes[ci];
             // use the shift if possible since it considers more cornercases
-            cnode.style.width = `${ci < columns.length - 2 ? (columns[ci + 1].shift - col.shift) : col.column.getActualWidth()}px`;
+            cnode.style.width = `${ci < columns.length - 2 ? (columns[ci + 1].shift - col.shift) : col.column.getWidth()}px`;
             col.renderer.update(cnode, row, i, group.group);
           });
         };
@@ -160,7 +160,7 @@ export default class DOMBodyRenderer extends ABodyRenderer {
           return Promise.all(columns.map((col, ci) => {
             return Promise.resolve(this.histCache.get(col.column.id)!).then((hist) => {
               const cnode: any = node.childNodes[ci];
-              cnode.style.width = `${ci < columns.length - 2 ? (columns[ci + 1].shift - col.shift) : col.column.getActualWidth()}px`;
+              cnode.style.width = `${ci < columns.length - 2 ? (columns[ci + 1].shift - col.shift) : col.column.getWidth()}px`;
               col.groupRenderer.update(cnode, r.group, rows, hist);
             });
           }));

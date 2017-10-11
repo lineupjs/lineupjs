@@ -344,7 +344,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
     (<any>base).bodyDOMElement = <HTMLElement>this.$node.node();
     base.rowHeight = () => this.options.rowHeight;
     base.groupHeight = () => this.options.groupHeight;
-    base.colWidth = (col: Column) => col.getActualWidth();
+    base.colWidth = (col: Column) => col.getWidth();
     return base;
   }
 

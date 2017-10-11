@@ -21,7 +21,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   }
 
   get width() {
-    return this.c.getActualWidth() + this.columnPadding * this.mc.length;
+    return this.c.getWidth() + this.columnPadding * this.mc.length;
   }
 
   createHeader(document: Document, ctx: IRankingContext) {
@@ -32,7 +32,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     wrapper.classList.add(gridClass(this.c));
     node.appendChild(wrapper);
     const mc = this.mc;
-    if (mc.getCollapsed() || mc.getCompressed()) {
+    if (mc.getCollapsed()) {
       return node;
     }
     mc.children.forEach((c, i) => {
@@ -62,7 +62,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   updateWidthRule(style: StyleManager) {
     const mc = this.mc;
     const total = this.width;
-    const widths = mc.children.map((c) => `${round(100 * c.getActualWidth() / total, 2)}%`);
+    const widths = mc.children.map((c) => `${round(100 * c.getWidth() / total, 2)}%`);
     const clazz = gridClass(this.c);
     style.updateRule(`stacked-${this.c.id}`, `.lineup-engine .${clazz} {
       display: ${isEdge ? '-ms-grid' : 'grid'};
@@ -73,7 +73,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
 
   private updateNested(wrapper: HTMLElement, ctx: IRankingContext) {
     const mc = this.mc;
-    if (mc.getCollapsed() || mc.getCompressed()) {
+    if (mc.getCollapsed()) {
       return;
     }
     const sub = this.mc.children;

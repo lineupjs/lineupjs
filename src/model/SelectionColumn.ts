@@ -28,7 +28,7 @@ export default class SelectionColumn extends ValueColumn<boolean> {
 
   constructor(id: string, desc: ISelectionColumnDesc) {
     super(id, desc);
-    this.setCompressed(true);
+    this.setWidth(20);
   }
 
   protected createEventList() {
