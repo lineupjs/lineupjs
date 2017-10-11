@@ -10,6 +10,7 @@ import {IDataProviderOptions, IDataRow, IStatsBuilder} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 import {computeHist, computeStats} from './math';
 import {defaultGroup, IGroup, IOrderedGroup} from '../model/Group';
+import {IGroupData} from '../ui/engine/interfaces';
 
 
 export interface ILocalDataProviderOptions {
@@ -116,28 +117,28 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return [];
     }
     //wrap in a helper and store the initial index
-    let helper = this._data.map((r, i) => ({row: r, i, group: <IGroup | null>null}));
+    let helper = this._data.map((r, i) => ({v: r, dataIndex: i, group: <IGroup | null>null}));
 
     //do the optional filtering step
     if (this.options.filterGlobally) {
       const filtered = this.getRankings().filter((d) => d.isFiltered());
       if (filtered.length > 0) {
-        helper = helper.filter((d) => filtered.every((f) => f.filter(d.row, d.i)));
+        helper = helper.filter((d) => filtered.every((f) => f.filter(d.v, d.dataIndex)));
       }
     } else if (ranking.isFiltered()) {
-      helper = helper.filter((d) => ranking.filter(d.row, d.i));
+      helper = helper.filter((d) => ranking.filter(d.v, d.dataIndex));
     }
 
     //create the groups for each row
-    helper.forEach((r) => r.group = ranking.grouper(r.row, r.i) || defaultGroup);
+    helper.forEach((r) => r.group = ranking.grouper(r.v, r.dataIndex) || defaultGroup);
     if ((new Set<string>(helper.map((r) => r.group!.name))).size === 1) {
       const group = helper[0].group;
       //no need to split
       //sort by the ranking column
-      helper.sort((a, b) => ranking.comparator(a.row, b.row, a.i, b.i));
+      helper.sort((a, b) => ranking.comparator(a.v, b.v, a.dataIndex, b.dataIndex));
 
       //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-      const order = helper.map((r) => r.i);
+      const order = helper.map((r) => r.dataIndex);
       return [Object.assign({order}, group!)];
     }
     //sort by group and within by order
@@ -147,20 +148,25 @@ export default class LocalDataProvider extends ACommonDataProvider {
       if (ga.name !== gb.name) {
         return ga.name.toLowerCase().localeCompare(gb.name.toLowerCase());
       }
-      return ranking.comparator(a.row, b.row, a.i, b.i);
+      return ranking.comparator(a.v, b.v, a.dataIndex, b.dataIndex);
     });
     //iterate over groups and create within orders
-    const groups: IOrderedGroup[] = [Object.assign({order: []}, helper[0].group!)];
+    const groups: (IOrderedGroup&IGroupData)[] = [Object.assign({order: [], rows: []}, helper[0].group!)];
     let group = groups[0];
     helper.forEach((row) => {
       const rowGroup = row.group!;
       if (rowGroup.name === group.name) {
-        group.order.push(row.i);
+        group.order.push(row.dataIndex);
+        group.rows.push(row);
       } else { // change in groups
-        group = Object.assign({order: [row.i]}, rowGroup);
+        group = Object.assign({order: [row.dataIndex], rows: [row]}, rowGroup);
         groups.push(group);
       }
     });
+
+    // sort groups
+    groups.sort((a,b) => ranking.groupComparator(a, b));
+
     return groups;
   }
 

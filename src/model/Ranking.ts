@@ -6,6 +6,7 @@ import Column, {fixCSS, IColumnDesc, IColumnParent, IFlatColumn} from './Column'
 import StringColumn from './StringColumn';
 import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
 import {AEventDispatcher, equalArrays, suffix} from '../utils';
+import {IGroupData} from '../ui/engine/interfaces';
 
 export interface ISortCriteria {
   readonly col: Column;
@@ -31,6 +32,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   static readonly EVENT_DIRTY_VALUES = Column.EVENT_DIRTY_VALUES;
   static readonly EVENT_SORT_CRITERIA_CHANGED = 'sortCriteriaChanged';
   static readonly EVENT_GROUP_CRITERIA_CHANGED = 'groupCriteriaChanged';
+  static readonly EVENT_GROUP_SORT_CRITERIA_CHANGED = 'groupSortCriteriaChanged';
   static readonly EVENT_SORT_CRITERIAS_CHANGED = 'sortCriteriasChanged';
   static readonly EVENT_DIRTY_ORDER = 'dirtyOrder';
   static readonly EVENT_ORDER_CHANGED = 'orderChanged';
@@ -42,6 +44,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    * @type {Array}
    */
   private readonly sortCriteria: ISortCriteria[] = [];
+  private readonly groupSortCriteria: ISortCriteria[] = [];
 
   private readonly groupColumns: Column[] = [];
 
@@ -58,6 +61,19 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     }
     for (const sort of this.sortCriteria) {
       const r = sort.col!.compare(a, b, aIndex, bIndex);
+      if (r !== 0) {
+        return sort.asc ? r : -r;
+      }
+    }
+    return 0;
+  };
+
+  readonly groupComparator = (a: IGroupData, b: IGroupData) => {
+    if (this.groupSortCriteria.length === 0) {
+      return 0;
+    }
+    for (const sort of this.groupSortCriteria) {
+      const r = sort.col!.groupCompare(a, b);
       if (r !== 0) {
         return sort.asc ? r : -r;
       }
@@ -97,6 +113,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       Ranking.EVENT_LABEL_CHANGED, Ranking.EVENT_COMPRESS_CHANGED, Ranking.EVENT_GROUPS_CHANGED,
       Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_GROUP_CRITERIA_CHANGED,
       Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES,
+      Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED,
       Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIAS_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_ORDER_CHANGED]);
   }
 
@@ -156,16 +173,23 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       const groupColumns = dump.groupColumns.map((id: string) => this.columns.find((d) => d.id === id));
       this.groupBy(groupColumns);
     }
-    if (!dump.sortCriterias) {
-      return;
+
+    const restoreSortCriteria = (dumped: any) => {
+      return dumped.map((s: { asc: boolean, sortBy: string }) => {
+        return {
+          asc: s.asc,
+          col: this.columns.find((d) => d.id === s.sortBy) || null
+        };
+      }).filter((s: any) => s.col);
+    };
+
+    if (dump.sortCriterias) {
+      this.setSortCriteria(restoreSortCriteria(dump.sortCriterias));
     }
-    const sortCriterias = dump.sortCriterias.map((s: { asc: boolean, sortBy: string }) => {
-      return {
-        asc: s.asc,
-        col: this.columns.find((d) => d.id === s.sortBy) || null
-      };
-    }).filter((s: any) => s.col);
-    this.setSortCriteria(sortCriterias);
+
+    if (dump.groupSortCriterias) {
+      this.setGroupSortCriteria(restoreSortCriteria(dump.groupSortCriterias));
+    }
   }
 
   flatten(r: IFlatColumn[], offset: number, levelsToGo = 0, padding = 0) {
@@ -194,6 +218,10 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   getSortCriterias(): ISortCriteria[] {
     return this.sortCriteria.map((d) => Object.assign({}, d));
+  }
+
+  getGroupSortCriteria(): ISortCriteria[] {
+    return this.groupSortCriteria.map((d) => Object.assign({}, d));
   }
 
   toggleSorting(col: Column) {
@@ -268,6 +296,12 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return true;
   }
 
+  toggleGroupSorting(col: Column) {
+    const first = this.groupSortCriteria[0];
+    const asc = first && first.col === col && !first.asc;
+    return this.setGroupSortCriteria({col, asc});
+  }
+
   setMaxSortCriteria(maxSortCriteria: number) {
     const old = this.maxSortCriteria;
     if (old === maxSortCriteria) {
@@ -300,6 +334,18 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   getMaxGroupColumns() {
     return this.maxGroupColumns;
+  }
+
+  setGroupSortCriteria(value: ISortCriteria | ISortCriteria[]) {
+    let values = Array.isArray(value) ? value : [value];
+    // trim
+    if (values.length > this.maxSortCriteria) {
+      values = values.slice(0, this.maxSortCriteria);
+    }
+
+    this.groupSortCriteria.splice(0, this.groupSortCriteria.length, ...values.slice());
+    this.triggerResort(this.sortCriteria.slice());
+    return true;
   }
 
   sortBy(col: Column | null, ascending: boolean = false) {
