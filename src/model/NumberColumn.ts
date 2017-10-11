@@ -8,6 +8,8 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays, similar} from '../utils';
 import {isMissingValue, isUnknown} from './missing';
 import {numberCompare} from './utils';
+import {IGroupData} from '../ui/engine/interfaces';
+import {medianIndex} from '../provider/math';
 
 export interface INumberColumn {
   getNumber(row: any, index: number): number;
@@ -418,7 +420,15 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return numberCompare(this.getValue(a, aIndex), this.getValue(b, bIndex), this.isMissing(a, aIndex), this.isMissing(b, bIndex));
+    return numberCompare(this.getNumber(a, aIndex), this.getNumber(b, bIndex), this.isMissing(a, aIndex), this.isMissing(b, bIndex));
+  }
+
+  groupCompare(a: IGroupData, b: IGroupData) {
+    const aMedian = medianIndex(a.rows, this);
+    const bMedian = medianIndex(b.rows, this);
+    const av = a.rows[aMedian];
+    const bv = b.rows[bMedian];
+    return numberCompare(this.getNumber(av.v, av.dataIndex), this.getNumber(bv.v, bv.dataIndex), this.isMissing(av.v, av.dataIndex), this.isMissing(bv.v, bv.dataIndex));
   }
 
   getOriginalMapping() {
