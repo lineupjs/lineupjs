@@ -30,7 +30,6 @@ export default class ImageCellRenderer extends ANoGroupRenderer implements ICell
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        debugger;
         const missing = renderMissingDOM(n, col, d);
         n.title = col.getLabel(d.v, d.dataIndex);
         n.style.backgroundImage = missing || !col.isLink(d.v, d.dataIndex) ? null : `url('${col.getValue(d.v, d.dataIndex)}')`;
