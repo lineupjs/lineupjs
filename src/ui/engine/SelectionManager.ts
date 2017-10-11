@@ -109,4 +109,12 @@ export default class SelectionManager extends AEventDispatcher {
       node.classList.remove('lu-selected');
     }
   }
+  update(node: HTMLElement, selectedDataIndices: {has(dataIndex: number): boolean}) {
+    const dataIndex = parseInt(node.dataset.dataIndex!, 10);
+    if (selectedDataIndices.has(dataIndex)) {
+      node.classList.add('lu-selected');
+    } else {
+      node.classList.remove('lu-selected');
+    }
+  }
 }

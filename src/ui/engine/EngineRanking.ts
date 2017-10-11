@@ -189,12 +189,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   updateSelection(selectedDataIndices: {has(dataIndex: number): boolean}) {
     this.forEachRow((node: HTMLElement) => {
-      const dataIndex = parseInt(node.dataset.dataIndex!, 10);
-      if (selectedDataIndices.has(dataIndex)) {
-        node.classList.add('lu-selected');
-      } else {
-        node.classList.remove('lu-selected');
-      }
+      this.selection.update(node, selectedDataIndices);
     }, true);
   }
 
