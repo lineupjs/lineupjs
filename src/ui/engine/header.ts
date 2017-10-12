@@ -250,27 +250,28 @@ export function createMoreMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankin
   };
 }
 
+function toggleToolbarIcons(node: HTMLElement, col: Column) {
+  const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
+  const moreIcon = toolbar.querySelector('[title^=More]')!;
+  const availableWidth = col.getWidth() - moreIcon.clientWidth;
+  const toggableIcons = Array.from(toolbar.querySelectorAll(':scope > :not([title^=More])'))
+    .reverse(); // start hiding with the last icon
+
+  toggableIcons
+    .map((icon) => {
+      icon.classList.remove('hidden'); // first show all icons to calculate the correct `clientWidth`
+      return icon;
+    })
+    .forEach((icon) => {
+      const currentWidth = toggableIcons.map((d) => d.clientWidth).reduce((a, b) => a + b, 0);
+      icon.classList.toggle('hidden', (currentWidth > availableWidth)); // hide icons if necessary
+    });
+}
+
 export function dragWidth(col: Column, node: HTMLElement) {
   let ueberElement: HTMLElement;
   const handle = <HTMLElement>node.querySelector('.lu-handle');
 
-  const toggleToolbarIcons = (width:number) => {
-    const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
-    const moreIcon = toolbar.querySelector('[title^=More]')!;
-    const availableWidth = width - moreIcon.clientWidth;
-    const toggableIcons = Array.from(toolbar.querySelectorAll(':scope > :not([title^=More])'))
-      .reverse(); // start hiding with the last icon
-
-    toggableIcons
-      .map((icon) => {
-        icon.classList.remove('hidden'); // first show all icons to calculate the correct `clientWidth`
-        return icon;
-      })
-      .forEach((icon) => {
-        const currentWidth = toggableIcons.map((d) => d.clientWidth).reduce((a, b) => a + b, 0);
-        icon.classList.toggle('hidden', (currentWidth > availableWidth)); // hide icons if necessary
-      });
-  };
 
   let start = 0;
   const mouseMove = (evt: MouseEvent) => {
@@ -285,7 +286,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
     start = end;
     const width = Math.max(0, col.getWidth() + delta);
     col.setWidth(width);
-    toggleToolbarIcons(width);
+    toggleToolbarIcons(node, col);
   };
 
   const mouseUp = (evt: MouseEvent) => {
@@ -305,7 +306,7 @@ export function dragWidth(col: Column, node: HTMLElement) {
     const delta = end - start;
     const width = Math.max(0, col.getWidth() + delta);
     col.setWidth(width);
-    toggleToolbarIcons(width);
+    toggleToolbarIcons(node, col);
   };
   handle.onmousedown = (evt) => {
     evt.stopPropagation();
