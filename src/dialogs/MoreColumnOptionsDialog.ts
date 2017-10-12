@@ -1,6 +1,6 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
-import {createToolbarImpl2} from '../ui/engine/header';
+import {createMoreMenuItems} from '../ui/engine/header';
 import {IRankingHeaderContext} from '../ui/engine/interfaces';
 
 
@@ -35,6 +35,6 @@ export default class MoreColumnOptionsDialog extends ADialog {
       return i;
     };
 
-    createToolbarImpl2(<any>addIcon, this.column, this.ctx);
+    createMoreMenuItems(<any>addIcon, this.column, this.ctx);
   }
 }
