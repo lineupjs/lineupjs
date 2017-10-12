@@ -128,8 +128,14 @@
   /* Override alphabetical sort icons */
   .categorical,
   .string,
+  .link,
+  .annotate,
+  .hierarchy,
   [data-type='string'],
-  [data-type='categorical'] {
+  [data-type='categorical'],
+  [data-type='link'],
+  [data-type='annotate'],
+  [data-type='hierarchy'] {
     .#{$lu_css_prefix}-toolbar i,
     .#{$lu_css_prefix}-more-options i {
       &[title='Sort']::before,

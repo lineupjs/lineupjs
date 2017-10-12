@@ -81,10 +81,7 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
   }
 
   const groupedBy = col.isGroupedBy();
-  let stratify = <HTMLElement>node.querySelector(`i[title='Stratify']`)!;
-  if(!stratify) {
-    stratify = <HTMLElement>node.querySelector(`i[title='Stratify By Threshold …']`)!;
-  }
+  const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
   if(stratify) {
     stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
     stratify.dataset.priority = groupedBy >= 0 ? groupedBy.toString() : '';
