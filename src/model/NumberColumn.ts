@@ -260,7 +260,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
    */
   private currentFilter: INumberFilter = noNumberFilter();
 
-  private numberFormat: (n: number) => string = format('.3n');
+  private numberFormat: (n: number) => string = format('.2f');
 
   private currentStratifyThresholds: number[] = [];
 
