@@ -10,7 +10,8 @@
   cursor: pointer;
   text-align: center;
   color: black;
-  overflow: hidden visible;
+  overflow-x: hidden;
+  overflow-y: visible;
   background: #eaeaea;
   margin-right: -$lu_engine_grip_gap;
 

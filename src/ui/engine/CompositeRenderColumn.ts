@@ -18,6 +18,10 @@ export default class CompositeRenderColumn extends RenderColumn {
   createHeader(document: Document, ctx: IRankingContext) {
     const node = super.createHeader(document, ctx);
 
+    node.addEventListener('mouseenter', () => {
+      this.showOverlay(node);
+    });
+    node.addEventListener('mouseleave', () => {})
     const wrapper = document.createElement('div');
     wrapper.classList.add('lu-sub-nested');
     node.appendChild(wrapper);
