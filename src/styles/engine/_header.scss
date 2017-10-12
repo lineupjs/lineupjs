@@ -54,7 +54,11 @@
   }
 
   > .#{$lu_css_prefix}-nested {
-    grid-column-gap: $lu_engine_grip_gap;
+    grid-column-gap: 1px;
+
+    > section {
+      border-bottom: none; // disable header line for stacked bar
+    }
   }
 
   > .#{$lu_css_prefix}-handle {
