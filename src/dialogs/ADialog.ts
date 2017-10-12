@@ -26,7 +26,7 @@ abstract class ADialog {
     document.removeEventListener('keyup', escKeyListener);
   }
 
-  protected static registerPopup(popup: HTMLElement, replace: boolean = false) {
+  protected static registerPopup(popup: HTMLElement, replace: boolean) {
     if(replace) {
       ADialog.removeAllPopups();
     }
@@ -74,7 +74,7 @@ abstract class ADialog {
     if (auto) {
       auto.focus();
     }
-    ADialog.registerPopup(popup);
+    ADialog.registerPopup(popup, false);
     this.hidePopupOnClickOutside(popup);
     return popup;
   }
@@ -85,7 +85,7 @@ abstract class ADialog {
     parent.insertAdjacentHTML('beforeend', `
       <div class="lu-popup2 chooser" style="left: ${pos.left}px; top: ${pos.top}px">${this.basicDialog(body)}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
-    ADialog.registerPopup(popup);
+    ADialog.registerPopup(popup, false);
     this.hidePopupOnClickOutside(popup);
     return popup;
   }

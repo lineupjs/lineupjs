@@ -69,7 +69,7 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
         return true;
       }
     });
-    MappingsFilterDialog.registerPopup(popup);
+    MappingsFilterDialog.registerPopup(popup, false);
     this.hidePopupOnClickOutside(popup);
   }
 }
