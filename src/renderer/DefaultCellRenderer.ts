@@ -6,6 +6,7 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IDataRow} from '../provider/ADataProvider';
 import {clipText, setText} from '../utils';
 import {IGroup} from '../model/Group';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 /**
  * default renderer instance rendering the value as a text
@@ -23,13 +24,17 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     return {
       template: `<div class="${this.textClass} ${this.align}"> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
+        renderMissingDOM(n, col, d);
         setText(n, col.getLabel(d.v, d.dataIndex));
       }
     };
   }
 
   createCanvas(col: Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
+        return;
+      }
       const bak = ctx.textAlign;
       ctx.textAlign = this.align;
       const w = context.colWidth(col);

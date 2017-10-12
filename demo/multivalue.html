@@ -45,15 +45,15 @@ window.onload = function () {
       {label: 'ISO', type: 'string', column: 'iso'},
       {label: 'Region', type: 'categorical', column: 'region', categories: Array.from(new Set(data.map((d) => d.region)))},
       {label: 'PI Region', type: 'categorical', column: 'piregion', categories: Array.from(new Set(data.map((d) => d.piregion)))},
-    ].concat(groups.map((group) => {
-      return {
+    ].concat(...groups.map((group, i) => {
+      return  ['boxplot', 'threshold', 'sparkline', 'numbers', 'verticalbar'].map((rendererType) => ({
         label: group,
         type: 'numbers',
         dataLength: years.length,
-          rendererType:'boxplot',
+        rendererType,
         column: group,
         domain: d3.extent([].concat(...data.map((d) => d[group])))
-      };
+      }));
     }));
 
     //artificial booleans column
@@ -70,7 +70,7 @@ window.onload = function () {
 
     const lineup = LineUpJS.create(p, document.body, {
       body: {
-        renderer: 'svg',
+        renderer: 'engine',
       },
     });
     lineup.update();

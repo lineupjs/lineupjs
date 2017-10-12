@@ -16,11 +16,12 @@ import NumberColumn, {
   createMappingFunction,
   IMapAbleColumn,
   IMappingFunction,
-  INumberColumn,
-  INumberFilter, isMissingValue, isNumberColumn,
+  INumberFilter,
   noNumberFilter,
   ScaleMappingFunction
 } from './NumberColumn';
+import {INumberColumn, isNumberColumn} from './INumberColumn';
+import {isMissingValue} from './missing';
 
 
 export const SORT_METHOD = Object.assign({
@@ -260,10 +261,6 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
       return null;
     }
     return new LazyBoxPlotData(data);
-  }
-
-  isMissing(row: any, index: number) {
-    return this.getValue(row, index) == null;
   }
 
   getNumbers(row: any, index: number) {

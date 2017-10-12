@@ -6,15 +6,14 @@ import Column from './Column';
 import {format} from 'd3';
 import NumberColumn, {
   createMappingFunction,
-  FIRST_IS_NAN,
   IMapAbleColumn,
   IMappingFunction,
-  INumberColumn,
   INumberFilter,
   noNumberFilter,
-  numberCompare,
   ScaleMappingFunction
 } from './NumberColumn';
+import {FIRST_IS_NAN} from './missing';
+import INumberColumn, {numberCompare} from './INumberColumn';
 
 export const SORT_METHOD = {
   min: 'min',
@@ -136,10 +135,6 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   getBoxPlotData(row: any, index: number): IBoxPlotData | null {
     return this.getValue(row, index);
-  }
-
-  isMissing(row: any, index: number) {
-    return this.getValue(row, index) == null;
   }
 
   getRawBoxPlotData(row: any, index: number): IBoxPlotData | null {

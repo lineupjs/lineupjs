@@ -6,6 +6,15 @@ import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
 
+  private static compute(v: number, threshold: number, domain: number[]) {
+    if (v < threshold) {
+      //threshold to down
+      return {height: (threshold - v), bottom: (v - domain[0])};
+    }
+    //from top to down
+    return {height: (v - threshold), bottom: (threshold - domain[0])};
+  }
+
   protected createDOMContext(col: INumbersColumn & Column) {
     const colorScale = col.getRawColorScale();
     const domain = col.getMapping().domain;
@@ -20,14 +29,13 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
       render: (row: HTMLElement, data: number[]) => {
         forEachChild(row, (d, i) => {
           const v = data[i];
-          const top = v < threshold ? v : threshold;
-          const height = v < threshold ? (threshold - v) : (v - threshold);
+          const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, domain);
           attr(<HTMLElement>d, {
             title: NumbersColumn.DEFAULT_FORMATTER(v)
           }, {
-            'background-color': colorScale(v),
-            height: `${Math.round(100 * top / range)}%`,
-            top: `${Math.round(100 * height / range)}%`
+            'background-color': colorScale(v ),
+            bottom: `${Math.round((100 * bottom) / range)}%`,
+            height: `${Math.round((100 * height) / range)}%`
           });
         });
       }
@@ -43,11 +51,10 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
     return (ctx: CanvasRenderingContext2D, data: number[], offset: number, rowHeight: number) => {
       const scale = rowHeight / range;
       data.forEach((v, j) => {
-        const top = v < threshold ? v : threshold;
-        const height = v < threshold ? (threshold - v) : (v - threshold);
-        const xpos = (j * cellDimension);
         ctx.fillStyle = colorScale(v);
-        ctx.fillRect(xpos, top * scale + offset, cellDimension, height * scale);
+        const xpos = (j * cellDimension);
+        const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, domain);
+        ctx.fillRect(xpos, (range - height - bottom) * scale + offset, cellDimension, height * scale);
       });
     };
   }

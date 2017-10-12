@@ -28,7 +28,8 @@ import DateColumn from './DateColumn';
 
 export {default as Column, IColumnDesc} from './Column';
 export {default as CompositeColumn} from './CompositeColumn';
-export {createMappingFunction, ScaleMappingFunction, ScriptMappingFunction, isNumberColumn} from './NumberColumn';
+export {createMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './NumberColumn';
+export {isNumberColumn} from './INumberColumn';
 export {isCategoricalColumn} from './CategoricalColumn';
 export {default as Ranking, isSupportType} from './Ranking';
 export {createDesc as createMinDesc} from './MinColumn';

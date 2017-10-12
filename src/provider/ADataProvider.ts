@@ -16,7 +16,7 @@ import Ranking from '../model/Ranking';
 import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
-import {INumberColumn} from '../model/NumberColumn';
+import {INumberColumn} from '../model/INumberColumn';
 import {AEventDispatcher, debounce, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
@@ -66,6 +66,8 @@ export interface IDataProvider extends AEventDispatcher {
   takeSnapshot(col: Column): void;
 
   selectAllOf(ranking: Ranking): void;
+
+  getSelection(): number[];
 
   setSelection(dataIndices: number[]): void;
 

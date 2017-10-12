@@ -4,6 +4,7 @@
 
 import Column from './Column';
 import StringColumn, {IStringColumnDesc} from './StringColumn';
+import {isMissingValue} from './missing';
 
 
 export interface ILinkDesc {
@@ -83,13 +84,10 @@ export default class LinkColumn extends StringColumn {
   }
 
   isLink(row: any, index: number) {
-    if (this.link) {
-      return true;
-    }
     //get original value
     const v: any = super.getRaw(row, index);
     //convert to link
-    return v && v.href != null;
+    return !isMissingValue(v) && (v.href != null || this.link);
   }
 
   getValue(row: any, index: number) {

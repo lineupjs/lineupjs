@@ -8,6 +8,7 @@ import {clipText, forEachChild, setText} from '../utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
 import {computeHist} from '../provider/math';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 /**
  * renders categorical columns as a colored rect with label
@@ -19,6 +20,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         <div></div><div></div>
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
+        renderMissingDOM(n, col, d);
         (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = col.getColor(d.v, d.dataIndex);
         setText(<HTMLSpanElement>n.lastElementChild!, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
       }
@@ -28,6 +30,9 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   createCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
+        return;
+      }
       ctx.fillStyle = col.getColor(d.v, d.dataIndex) || '';
       if (col.getCompressed()) {
         const cell = Math.min(Column.COMPRESSED_WIDTH - padding * 2, Math.max(context.rowHeight(i) - padding * 2, 0));

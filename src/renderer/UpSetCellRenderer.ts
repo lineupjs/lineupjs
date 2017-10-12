@@ -7,6 +7,7 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {ICategoricalColumn} from '../model/CategoricalColumn';
 import Column from '../model/Column';
 import {IGroup} from '../model/Group';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 
 export default class UpSetCellRenderer implements ICellRendererFactory {
@@ -64,6 +65,9 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
     return {
       template: `<div><div></div>${templateRow}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
+        if (renderMissingDOM(n, col, d)) {
+          return;
+        }
         const values = new Set(col.getCategories(d.v, d.dataIndex));
         const value = col.categories.map((cat) => values.has(cat));
         render(n, value);
@@ -121,6 +125,9 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   createCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
     const render = UpSetCellRenderer.createCanvasContext(col, context);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
+        return;
+      }
       // Circle
       const values = new Set(col.getCategories(d.v, d.dataIndex));
       const data = col.categories.map((cat) => values.has(cat));

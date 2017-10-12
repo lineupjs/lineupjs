@@ -3,6 +3,7 @@
  */
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './CategoricalColumn';
+import {FIRST_IS_NAN} from './missing';
 
 export interface IBooleansDesc {
   readonly dataLength: number;
@@ -48,10 +49,10 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
     const aVal = this.getValue(a, aIndex);
     const bVal = this.getValue(b, bIndex);
     if (aVal === null) {
-      return bVal === null ? 0 : +1;
+      return bVal === null ? 0 : FIRST_IS_NAN;
     }
     if (bVal === null) {
-      return -1;
+      return FIRST_IS_NAN * -1;
     }
 
     const aCat = aVal.filter((x) => x).length;

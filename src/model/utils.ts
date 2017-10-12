@@ -3,7 +3,7 @@
  */
 import Column from './Column';
 import {isCategoricalColumn} from './CategoricalColumn';
-import {isNumberColumn} from './NumberColumn';
+import {isNumberColumn} from './INumberColumn';
 import {isBoxPlotColumn} from './BoxPlotColumn';
 import StringColumn from './StringColumn';
 import {isMultiLevelColumn} from './CompositeColumn';

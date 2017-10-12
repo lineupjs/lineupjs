@@ -6,12 +6,13 @@ import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {matchColumns, round} from '../utils';
-import {medianIndex, renderMissingValue} from './BarCellRenderer';
 import {IGroup} from '../model/Group';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {IMultiLevelColumn} from '../model/CompositeColumn';
 import Column from '../model/Column';
 import {isEdge} from 'lineupengine/src/style';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {medianIndex} from '../model/INumberColumn';
 
 export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;
@@ -51,13 +52,10 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     return {
       template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)} ${useGrid ? gridClass(col): ''}${useGrid && !stacked ? ' lu-grid-space': ''}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
-        if (col.isMissing(d.v, d.dataIndex)) {
-          // everything is missing or at least a part of it
-          n.classList.add('lu-missing');
+        if (renderMissingDOM(n, col, d)) {
           return;
         }
         matchColumns(n, cols, 'detail', 'html');
-        n.classList.remove('lu-missing');
 
         const children = <HTMLElement[]>Array.from(n.children);
         const total = col.getActualWidth();
@@ -88,9 +86,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
   createCanvas(col: StackColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const {cols, stacked} = createData(col, context, this.nestingPossible);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number, group: IGroup) => {
-      if (col.isMissing(d.v, d.dataIndex)) {
-        // everything is missing or at least a part of it
-        renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
       let stackShift = 0;

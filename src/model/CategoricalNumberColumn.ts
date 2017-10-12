@@ -7,6 +7,7 @@ import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import CategoricalColumn, {IBaseCategoricalDesc, ICategoricalColumn, ICategoricalFilter} from './CategoricalColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
+import {IGroupData} from '../ui/engine/interfaces';
 
 export declare type ICategoricalNumberColumnDesc = IBaseCategoricalDesc & IValueColumnDesc<number>;
 
@@ -188,6 +189,10 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
     return NumberColumn.prototype.compare.call(this, a, b, aIndex, bIndex);
+  }
+
+  groupCompare(a: IGroupData, b: IGroupData) {
+    return NumberColumn.prototype.groupCompare.call(this, a, b);
   }
 
   getRendererType(): string {

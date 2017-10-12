@@ -5,10 +5,10 @@ import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {INumberColumn} from '../model/NumberColumn';
+import {INumberColumn} from '../model/INumberColumn';
 import {IGroup} from '../model/Group';
 import {INumbersColumn, isNumbersColumn, LazyBoxPlotData} from '../model/NumbersColumn';
-import {renderMissingValue} from './BarCellRenderer';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v === null) {
@@ -29,14 +29,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
                  </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getBoxPlotData(d.v, d.dataIndex);
-        if (col.isMissing(d.v, d.dataIndex) || !data) {
-          // everything is missing or at least a part of it
-          n.classList.add('lu-missing');
+        const missing = !data || renderMissingDOM(n, col, d);
+        if (missing) {
           return;
         }
-        n.classList.remove('lu-missing');
         const label = col.getRawBoxPlotData(d.v, d.dataIndex)!;
-        renderDOMBoxPlot(n, data, label);
+        renderDOMBoxPlot(n, data!, label);
         const wiskers = <HTMLElement>n.firstElementChild;
         wiskers.dataset.sort = sortedByMe ? sortMethod : '';
       }
@@ -53,9 +51,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const rowHeight = context.rowHeight(i);
 
-      if (col.isMissing(d.v, d.dataIndex)) {
-        // missing
-        renderMissingValue(ctx, col.getWidth(), rowHeight);
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
 

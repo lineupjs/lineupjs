@@ -21,7 +21,8 @@ import CutOffHierarchyDialog from '../../dialogs/CutOffHierarchyDialog';
 import SearchDialog from '../../dialogs/SearchDialog';
 import HierarchyColumn from '../../model/HierarchyColumn';
 import {dragAble, dropAble, IDropResult} from './dnd';
-import {default as NumberColumn, isNumberColumn} from '../../model/NumberColumn';
+import NumberColumn from '../../model/NumberColumn';
+import {isNumberColumn} from '../../model/INumberColumn';
 import Ranking from '../../model/Ranking';
 import BooleanColumn from '../../model/BooleanColumn';
 import CategoricalColumn, {isCategoricalColumn} from '../../model/CategoricalColumn';
@@ -167,6 +168,13 @@ export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRanking
     addIcon('Stratify').onclick = (evt) => {
       evt.stopPropagation();
       col.groupByMe();
+    };
+  }
+
+  if (isNumberColumn(col) || col instanceof CategoricalColumn) {
+    addIcon('Sort Groupy By').onclick = (evt) => {
+      evt.stopPropagation();
+      col.toggleMyGroupSorting();
     };
   }
 

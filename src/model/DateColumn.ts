@@ -3,7 +3,7 @@
  */
 
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import {FIRST_IS_NAN, isMissingValue} from './NumberColumn';
+import {FIRST_IS_NAN, isMissingValue} from './missing';
 import {time} from 'd3';
 
 export interface IDateDesc {

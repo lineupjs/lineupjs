@@ -3,8 +3,10 @@
  */
 
 import {AEventDispatcher, similar} from '../utils';
-import Ranking from './Ranking';
+import Ranking, {ISortCriteria} from './Ranking';
 import {defaultGroup} from './Group';
+import {isMissingValue} from './missing';
+import {IGroupData} from '../ui/engine/interfaces';
 
 /**
  * converts a given id to css compatible one
@@ -389,12 +391,12 @@ export default class Column extends AEventDispatcher {
     return false;
   }
 
-  isSortedByMe(): { asc: 'asc' | 'desc' | undefined, priority: string | undefined } {
+  private isSortedByMeImpl(selector: ((r: Ranking) => ISortCriteria[])): { asc: 'asc' | 'desc' | undefined, priority: string | undefined } {
     const ranker = this.findMyRanker();
     if (!ranker) {
       return {asc: undefined, priority: undefined};
     }
-    const criterias = ranker.getSortCriterias();
+    const criterias = selector(ranker);
     const index = criterias.findIndex((c) => c.col === this);
     if (index < 0) {
       return {asc: undefined, priority: undefined};
@@ -403,6 +405,22 @@ export default class Column extends AEventDispatcher {
       asc: criterias[index].asc ? 'asc' : 'desc',
       priority: index.toString()
     };
+  }
+
+  isSortedByMe() {
+    return this.isSortedByMeImpl((r) => r.getSortCriterias());
+  }
+
+  toggleMyGroupSorting() {
+    const r = this.findMyRanker();
+    if (r) {
+      return r.toggleGroupSorting(this);
+    }
+    return false;
+  }
+
+  isGroupSortedByMe() {
+    return this.isSortedByMeImpl((r) => r.getGroupSortCriteria());
   }
 
   /**
@@ -504,6 +522,10 @@ export default class Column extends AEventDispatcher {
     return ''; //no value
   }
 
+  isMissing(row: any, index: number) {
+    return isMissingValue(this.getValue(row, index));
+  }
+
   /**
    * compare function used to determine the order according to the values of the current column
    * @param _a first element
@@ -524,6 +546,16 @@ export default class Column extends AEventDispatcher {
    */
   group(_row: any, _index: number) {
     return defaultGroup;
+  }
+
+  /**
+   * compares groups
+   * @param {IGroupData} a
+   * @param {IGroupData} b
+   * @return {number}
+   */
+  groupCompare(a: IGroupData, b: IGroupData) {
+    return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
   }
 
   /**

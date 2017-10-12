@@ -72,4 +72,18 @@
   .#{$lu_css_prefix}-nested {
     position: relative;
   }
+
+  .#{$lu_css_prefix}-sub-nested {
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  &:hover .#{$lu_css_prefix}-sub-nested {
+    display: block;
+    opacity: 1;
+  }
 }

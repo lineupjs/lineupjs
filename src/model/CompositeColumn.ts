@@ -3,7 +3,7 @@
  */
 
 import Column, {IColumnDesc, IColumnParent, IFlatColumn} from './Column';
-import {isNumberColumn} from './NumberColumn';
+import {isNumberColumn} from './INumberColumn';
 import ValueColumn from './ValueColumn';
 import {suffix} from '../utils';
 
@@ -161,6 +161,4 @@ export interface IMultiLevelColumn extends CompositeColumn {
   getCollapsed(): boolean;
 
   setCollapsed(value: boolean): void;
-
-  isMissing(row: any, index: number): boolean;
 }

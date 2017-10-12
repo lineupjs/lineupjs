@@ -1,12 +1,13 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn, numberCompare} from '../model/NumberColumn';
+import {INumberColumn, medianIndex} from '../model/INumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 
 /**
@@ -31,12 +32,10 @@ export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberCol
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number) => {
         const value = col.getNumber(d.v, d.dataIndex);
-        const missing = col.isMissing(d.v, d.dataIndex);
+        const missing = renderMissingDOM(n, col, d);
         const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
         const title = col.getLabel(d.v, d.dataIndex);
         n.title = title;
-
-        n.classList.toggle('lu-missing', missing);
 
         const bar = n.firstElementChild!;
         attr(<HTMLElement>bar, {
@@ -54,8 +53,7 @@ export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberCol
     const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
     const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      if (col.isMissing(d.v, d.dataIndex)) {
-        renderMissingValue(ctx, col.getWidth(), context.rowHeight(i));
+      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
       ctx.fillStyle = this.colorOf(d.v, i, col) || '';
@@ -71,25 +69,4 @@ export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberCol
   protected aggregatedIndex(rows: IDataRow[], col: INumberColumn & Column) {
     return medianIndex(rows, col);
   }
-}
-
-export function medianIndex(rows: IDataRow[], col: INumberColumn): number {
-  //return the median row
-  const data = rows.map((r, i) => ({i, v: col.getNumber(r.v, r.dataIndex), m: col.isMissing(r.v, r.dataIndex)}));
-  const sorted = data.filter((r) => !r.m).sort((a, b) => numberCompare(a.v, b.v));
-  const index = sorted[Math.floor(sorted.length / 2.0)];
-  if (index === undefined) {
-    return 0; //error case
-  }
-  return index.i;
-}
-
-export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
-  const dashColor = '#c1c1c1';
-  const dashWidth = 10;
-  const dashHeight = 3;
-  const dashX = (width - x - dashWidth) / 2; // center horizontally
-  const dashY = (height - y - dashHeight) / 2; // center vertically
-  ctx.fillStyle = dashColor;
-  ctx.fillRect(dashX, dashY, dashWidth, dashHeight);
 }

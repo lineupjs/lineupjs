@@ -14,14 +14,14 @@ export function line(data: number[]) {
     return '';
   }
   const first = data[0];
-  return `M0,${1 - first} ${data.slice(1).map((d, i) => `L${i},${1 - d}`).join(' ')}`;
+  return `M0,${1 - first} ${data.slice(1).map((d, i) => `L${i + 1},${1 - d}`).join(' ')}`;
 }
 
 export default class SparklineCellRenderer implements ICellRendererFactory {
 
   createDOM(col: INumbersColumn & Column): IDOMCellRenderer {
     return {
-      template: `<svg viewBox="0 0 ${col.getDataLength()} 1" preserveAspectRatio="meet"><path></path></svg>`,
+      template: `<svg viewBox="0 0 ${col.getDataLength() - 1} 1" preserveAspectRatio="none meet"><path></path></svg>`,
       update: (n: HTMLElement, d: IDataRow) => {
         n.firstElementChild!.setAttribute('d', line(col.getNumbers(d.v, d.dataIndex)));
       }
@@ -35,12 +35,13 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
         return;
       }
       ctx.save();
-      ctx.scale(context.colWidth(col) / col.getDataLength(), context.rowHeight(i));
+      const w = context.colWidth(col) / (col.getDataLength()-1);
+      const h = context.rowHeight(i);
       ctx.strokeStyle = 'black';
       ctx.beginPath();
-      ctx.moveTo(0, 1 - data[0]);
+      ctx.moveTo(0, (1 - data[0]) * h);
       for (let i = 1; i < data.length; ++i) {
-        ctx.lineTo(i, 1 - data[i]);
+        ctx.lineTo(i * w, (1 - data[i]) * h);
       }
       ctx.stroke();
       ctx.restore();
@@ -49,7 +50,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
 
   createGroupDOM(col: INumbersColumn & Column): IDOMGroupRenderer {
     return {
-      template: `<svg viewBox="0 0 ${col.getDataLength()} 1" preserveAspectRatio="meet"><path></path></svg>`,
+      template: `<svg viewBox="0 0 ${col.getDataLength()} 1" preserveAspectRatio="none meet"><path></path></svg>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         //overlapping ones
         matchRows(n, rows, `<path></path>`);

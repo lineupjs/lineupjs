@@ -59,6 +59,10 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return v === true || v === 'true' || v === 'yes' || v === 'x';
   }
 
+  isMissing() {
+    return false;
+  }
+
   getCategories(row: any, index: number) {
     const v = this.getValue(row, index);
     return v ? [this.trueMarker] : [this.falseMarker];

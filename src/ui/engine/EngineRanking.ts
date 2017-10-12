@@ -18,6 +18,7 @@ import {IDataRow} from '../../provider/ADataProvider';
 import {debounce} from '../../utils';
 import {IAnimationContext} from 'lineupengine/src/animation/index';
 import KeyFinder from 'lineupengine/src/animation/KeyFinder';
+import SelectionManager from './SelectionManager';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
@@ -35,6 +36,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private readonly renderCtx: IRankingBodyContext;
   private data: (IGroupItem | IGroupData)[] = [];
+  private readonly selection: SelectionManager;
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, private readonly callbacks: ICallbacks) {
     super(header, body, tableId, style);
@@ -44,6 +46,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`], debounce(() => this.updateAll(), 50));
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, () => {
       this.callbacks.updateData();
+    });
+
+    this.selection = new SelectionManager(this.ctx, body);
+    this.selection.on(SelectionManager.EVENT_SELECT_RANGE, (from: number, to: number, additional: boolean) => {
+      this.selection.selectRange(this.data.slice(from, to + 1), additional);
     });
 
     this.renderCtx = Object.assign({
@@ -146,15 +153,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.dataset.dataIndex = dataIndex.toString();
     node.dataset.agg = 'detail'; //or 'group'
     node.dataset.meta = meta || '';
-    if (this.ctx.provider.isSelected(dataIndex)) {
-      node.classList.add('lu-selected');
-    } else {
-      node.classList.remove('lu-selected');
-    }
-    node.onclick = (evt) => {
-      const dataIndex = parseInt(node.dataset.dataIndex!, 10);
-      this.ctx.provider.toggleSelection(dataIndex, evt.ctrlKey);
-    };
+
+    this.selection.updateState(node, dataIndex);
+    this.selection.add(node);
   }
 
   protected updateRow(node: HTMLElement, rowIndex: number): void {
@@ -169,12 +170,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       node.dataset.agg = isGroup ? 'group' : 'detail';
       if (isGroup) {
         node.dataset.dataIndex = '';
-        node.onclick = <any>undefined;
+        this.selection.remove(node);
       } else {
-        node.onclick = (evt) => {
-          const dataIndex = parseInt(node.dataset.dataIndex!, 10);
-          this.ctx.provider.toggleSelection(dataIndex, evt.ctrlKey);
-        };
+        this.selection.add(node);
       }
     }
 
@@ -182,11 +180,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const {dataIndex, meta} = this.renderCtx.getRow(rowIndex);
       node.dataset.dataIndex = dataIndex.toString();
       node.dataset.meta = meta || '';
-      if (this.ctx.provider.isSelected(dataIndex)) {
-        node.classList.add('lu-selected');
-      } else {
-        node.classList.remove('lu-selected');
-      }
+      this.selection.updateState(node, dataIndex);
     }
 
     super.updateRow(node, rowIndex);
@@ -194,12 +188,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   updateSelection(selectedDataIndices: {has(dataIndex: number): boolean}) {
     this.forEachRow((node: HTMLElement) => {
-      const dataIndex = parseInt(node.dataset.dataIndex!, 10);
-      if (selectedDataIndices.has(dataIndex)) {
-        node.classList.add('lu-selected');
-      } else {
-        node.classList.remove('lu-selected');
-      }
+      this.selection.update(node, selectedDataIndices);
     }, true);
   }
 
@@ -237,6 +226,15 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   groupData(data: IDataRow[]): (IGroupItem | IGroupData)[] {
     const groups = this.ranking.getGroups();
     const provider = this.ctx.provider;
+    const toMeta = (relativeIndex: number, length: number): 'first'|'last'|undefined => {
+      if (relativeIndex === 0) {
+        return 'first';
+      }
+      if (relativeIndex === length -1) {
+        return 'last';
+      }
+      return undefined;
+    };
     if (groups.length === 1) {
       // simple case
       if (provider.isAggregated(this.ranking, groups[0])) {
@@ -244,7 +242,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         return [Object.assign({rows: data}, groups[0])];
       }
       // simple ungrouped case
-      return data.map((r, i) => Object.assign({group: groups[0], relativeIndex: i}, r));
+      return data.map((r, i) => Object.assign({group: groups[0], relativeIndex: i, meta: toMeta(i, data.length)}, r));
     }
 
     //multiple groups
@@ -258,7 +256,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       if (provider.isAggregated(this.ranking, group)) {
         r.push(Object.assign({rows: groupData}, group));
       } else {
-        r.push(...groupData.map((r, i) => Object.assign({group, relativeIndex: i}, r)));
+        r.push(...groupData.map((r, i) => Object.assign({group, relativeIndex: i, meta: toMeta(i, groupData.length)}, r)));
       }
     });
     return r;
