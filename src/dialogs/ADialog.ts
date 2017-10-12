@@ -11,7 +11,7 @@ abstract class ADialog {
       popup.remove();
     }
     if(ADialog.visiblePopups.length === 0) {
-      document.removeEventListener('keyup', escKeyListener);
+      popup.ownerDocument.removeEventListener('keyup', escKeyListener);
     }
   }
 
@@ -21,9 +21,9 @@ abstract class ADialog {
     }
 
     ADialog.visiblePopups.splice(0, ADialog.visiblePopups.length).forEach((d) => {
+      d.ownerDocument.removeEventListener('keyup', escKeyListener);
       d.remove();
     });
-    document.removeEventListener('keyup', escKeyListener);
   }
 
   protected static registerPopup(popup: HTMLElement, replace: boolean) {
@@ -31,7 +31,7 @@ abstract class ADialog {
       ADialog.removeAllPopups();
     }
     if(ADialog.visiblePopups.length === 0) {
-      document.addEventListener('keyup', escKeyListener);
+      popup.ownerDocument.addEventListener('keyup', escKeyListener);
     }
     ADialog.visiblePopups.push(popup);
   }
