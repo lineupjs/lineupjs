@@ -32,7 +32,7 @@ export function defaultConfig(): IFullLineUpConfig {
     header: {
       idPrefix,
       slopeWidth: 150,
-      columnPadding: 3,
+      columnPadding: 5,
       headerHistogramHeight: 40,
       headerHeight: 20,
       manipulative: true,
@@ -63,10 +63,10 @@ export function defaultConfig(): IFullLineUpConfig {
       visibleRowsOnly: true,
       backupScrollRows: 5,
       rowHeight: 18,
-      groupHeight: 50,
-      groupPadding: 10,
+      groupHeight: 70,
+      groupPadding: 5,
       rowPadding: 2,
-      columnPadding: 3,
+      columnPadding: 5,
 
       textHeight: 13, //10pt
       rowBarPadding: 1,
