@@ -16,6 +16,10 @@ abstract class ADialog {
   }
 
   private static removeAllPopups() {
+    if(ADialog.visiblePopups.length === 0) {
+      return;
+    }
+
     ADialog.visiblePopups.splice(0, ADialog.visiblePopups.length).forEach((d) => {
       d.remove();
     });
@@ -42,7 +46,7 @@ abstract class ADialog {
    * @param body
    * @returns {Selection<any>}
    */
-  makeMenuPopup(body: string) {
+  protected makeMenuPopup(body: string) {
     const pos = offset(this.attachment);
     const parent = this.attachment.ownerDocument.body;
     parent.insertAdjacentHTML('beforeend', `
@@ -150,7 +154,7 @@ export function sortByProperty(prop: string) {
 export default ADialog;
 
 function escKeyListener(evt:KeyboardEvent) {
-  if (evt.which === 27) {
+  if (evt.which === 27 && ADialog.visiblePopups.length > 0) {
     const popup = ADialog.visiblePopups[ADialog.visiblePopups.length - 1];
     ADialog.removePopup(popup);
   }

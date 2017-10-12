@@ -4,15 +4,16 @@ import {createToolbarImpl2} from '../ui/engine/header';
 import {IRankingHeaderContext} from '../ui/engine/interfaces';
 
 
-export default class ColumnOptionsDialog extends ADialog {
+export default class MoreColumnOptionsDialog extends ADialog {
 
   /**
    * opens a rename dialog for the given column
    * @param column the column to rename
    * @param header the visual header element of this column
    * @param title optional title
+   * @param ctx
    */
-  constructor(readonly column: Column, header: HTMLElement, title = 'More', private col: Column,  private ctx: IRankingHeaderContext) {
+  constructor(readonly column: Column, header: HTMLElement, title = 'More', private ctx: IRankingHeaderContext) {
     super(header, title);
   }
 
@@ -28,12 +29,12 @@ export default class ColumnOptionsDialog extends ADialog {
       }
       i.onclick = (evt) => {
         evt.stopPropagation();
-        const dialog = new dialogClass(this.col, i, ...dialogArgs);
+        const dialog = new dialogClass(this.column, i, ...dialogArgs);
         dialog.openDialog();
       };
       return i;
     };
 
-    createToolbarImpl2(<any>addIcon, this.col, this.ctx);
+    createToolbarImpl2(<any>addIcon, this.column, this.ctx);
   }
 }

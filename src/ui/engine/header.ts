@@ -148,7 +148,7 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
     };
   }
 
-  addIcon('More &hellip;', MoreColumnOptionsDialog, '', col, ctx);
+  addIcon('More &hellip;', MoreColumnOptionsDialog, '', ctx);
 }
 
 export function createToolbarImpl2(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
