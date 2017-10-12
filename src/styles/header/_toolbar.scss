@@ -17,6 +17,10 @@
     &:hover {
       color: $lu_toolbar_color_hover;
     }
+
+    &.hidden {
+      display: none;
+    }
   }
 }
 
