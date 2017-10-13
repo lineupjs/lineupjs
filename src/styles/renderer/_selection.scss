@@ -4,6 +4,7 @@
 
 [data-renderer=selection] {
   @include fa-icon();
+  text-align: center;
 
   &::before {
     content: $fa-var-square-o;
