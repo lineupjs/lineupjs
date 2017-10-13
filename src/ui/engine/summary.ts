@@ -46,9 +46,9 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
       node.insertAdjacentHTML('beforeend', `<div style="background-color: ${colors[i]}" data-cat="${stats.hist[i].cat}" ${interactive ? `data-title="${labels[i]}"` : ''}></div>`);
       const n = <HTMLElement>node.lastElementChild!;
       if (bins.length === 0) {
-        node.insertBefore(node.firstElementChild, n);
+        node.insertBefore(node.firstElementChild!, n);
       } else {
-        node.insertBefore(node.children[i], n);
+        node.insertBefore(node.children[i]!, n);
       }
       bins.push(n);
     }
