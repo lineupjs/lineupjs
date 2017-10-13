@@ -41,7 +41,17 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
       node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}" title="${labels[i]}: ${y}" data-cat="${cat}" ${interactive ? `data-title="${labels[i]}"` : ''}></div>`);
     });
   } else {
-    const bins = <HTMLElement[]>Array.from(node.children);
+    const bins = <HTMLElement[]>Array.from(node.querySelectorAll('div[data-cat]'));
+    for(let i = bins.length; i < stats.hist.length; ++i) {
+      node.insertAdjacentHTML('beforeend', `<div style="background-color: ${colors[i]}" data-cat="${stats.hist[i].cat}" ${interactive ? `data-title="${labels[i]}"` : ''}></div>`);
+      const n = <HTMLElement>node.lastElementChild!;
+      if (bins.length === 0) {
+        node.insertBefore(node.firstElementChild, n);
+      } else {
+        node.insertBefore(node.children[i], n);
+      }
+      bins.push(n);
+    }
     stats.hist.forEach(({y}, i) => {
       const bin = bins[i];
       bin.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
@@ -148,7 +158,11 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
   const filterMax = isFinite(filter.max) ? filter.max : domain[1];
 
   if (old === 'slider-hist') {
-    const bins = <HTMLElement[]>Array.from(node.children);
+    const bins = <HTMLElement[]>Array.from(node.querySelectorAll('div[data-x]'));
+    for(let i = bins.length; i < stats.hist.length; ++i) {
+      node.insertAdjacentHTML('afterbegin', `<div></div>`);
+      bins.unshift(<HTMLElement>node.firstElementChild!);
+    }
     stats.hist.forEach(({x, y}, i) => {
       const bin = bins[i];
       bin.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
