@@ -35,7 +35,7 @@ abstract class ADialog {
     }
 
     const closePopupOnMouseLeave = () => {
-      if(ADialog.visiblePopups.indexOf(popup) < ADialog.visiblePopups.length - 1) {
+      if(ADialog.visiblePopups[ADialog.visiblePopups.length - 1] !== popup) {
         return;
       }
       popup.removeEventListener('mouseleave', closePopupOnMouseLeave);
