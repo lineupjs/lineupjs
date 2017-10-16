@@ -55,12 +55,6 @@ export function createHeader(col: Column, document: Document, ctx: IRankingHeade
   `;
   createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, col, ctx);
 
-  node.addEventListener('click', (evt) => {
-    evt.preventDefault();
-    evt.stopPropagation();
-    col.toggleMySorting();
-  });
-
   dragAbleColumn(node, col, ctx);
   mergeDropAble(node, col, ctx);
   rearrangeDropAble(<HTMLElement>node.querySelector('.lu-handle')!, col, ctx);
