@@ -17,15 +17,15 @@ export interface ISidePanelOptions {
 
 export default class SidePanel {
 
-  private readonly options: ISidePanelOptions = {
+  protected readonly options: ISidePanelOptions = {
     additionalDescs: [],
     chooser: true
   };
 
   readonly node: HTMLElement;
-  private readonly descs = new Map<IColumnDesc, SidePanelEntry>();
+  protected readonly descs = new Map<IColumnDesc, SidePanelEntry>();
 
-  constructor(private ctx: IRankingHeaderContext, document: Document, options: Partial<ISidePanelOptions> = {}) {
+  constructor(protected ctx: IRankingHeaderContext, document: Document, options: Partial<ISidePanelOptions> = {}) {
     Object.assign(this.options, options);
 
     this.node = document.createElement('aside');
@@ -42,7 +42,7 @@ export default class SidePanel {
     this.changeDataStorage(null, this.data);
   }
 
-  private initChooser() {
+  protected initChooser() {
     if (!this.options.chooser) {
       return;
     }
@@ -70,7 +70,7 @@ export default class SidePanel {
     });
   }
 
-  private get data() {
+  protected get data() {
     return this.ctx.provider;
   }
 
@@ -250,7 +250,7 @@ export default class SidePanel {
   }
 
 
-  private static groupByType(entries: SidePanelEntry[]): { key: string, values: SidePanelEntry[] }[] {
+  protected static groupByType(entries: SidePanelEntry[]): { key: string, values: SidePanelEntry[] }[] {
     const order = ['label', 'categorical', 'numerical', 'matrix', 'combined', 'others'];
     return nest<SidePanelEntry>().key((entry) => {
       switch (entry.desc.type) {
@@ -280,7 +280,7 @@ export default class SidePanel {
       .entries(entries);
   }
 
-  private updateChooser() {
+  protected updateChooser() {
     if (!this.options.chooser) {
       return;
     }
