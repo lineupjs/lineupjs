@@ -89,9 +89,9 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
   }
 }
 
-export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
-  const addIcon = (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}"><span aria-hidden="true">${title}</span> </i>`);
+export function addIconDOM(node: HTMLElement, col: Column, showLabel: boolean) {
+  return (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
+    node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"': ''}>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     if (!dialogClass) {
       return i;
@@ -103,19 +103,24 @@ export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeade
     };
     return i;
   };
-  return createToolbarImpl(<any>addIcon, col, ctx);
+}
+
+export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
+  return createShortcutMenuItems(<any>addIconDOM(node, col, false), col, ctx);
 }
 
 interface IAddIcon {
   (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]): { onclick: (evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }) => any };
 }
 
-export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
 
-  addIcon('Sort').onclick = (evt) => {
-    evt.stopPropagation();
-    col.toggleMySorting();
-  };
+  if (!isSupportType(col.desc) || col instanceof SelectionColumn) {
+    addIcon('Sort').onclick = (evt) => {
+      evt.stopPropagation();
+      col.toggleMySorting();
+    };
+  }
 
   //stratify
   if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
@@ -144,7 +149,7 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
   addIcon('More &hellip;', MoreColumnOptionsDialog, '', ctx);
 }
 
-export function createMoreMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
   const isSupportColumn = isSupportType(col.desc);
 
   if (!isSupportColumn) {
@@ -198,7 +203,7 @@ export function createMoreMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankin
   //filter
   const filter = findTypeLike(col, ctx.filters);
   if (filter) {
-    addIcon('Filter &hellip;', ctx.filters[col.desc.type], '', ctx.provider, ctx.idPrefix);
+    addIcon('Filter &hellip;', filter, '', ctx.provider, ctx.idPrefix);
   }
 
   if (col instanceof HierarchyColumn) {

@@ -1,6 +1,6 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
-import {createMoreMenuItems} from '../ui/engine/header';
+import {addIconDOM, createToolbarMenuItems} from '../ui/engine/header';
 import {IRankingHeaderContext} from '../ui/engine/interfaces';
 
 
@@ -21,20 +21,6 @@ export default class MoreColumnOptionsDialog extends ADialog {
     const popup = this.makeMenuPopup('');
     popup.classList.add('lu-more-options');
 
-    const addIcon = (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
-      popup.insertAdjacentHTML('beforeend', `<i title="${title}"><span>${title}</span> </i>`);
-      const i = <HTMLElement>popup.lastElementChild;
-      if (!dialogClass) {
-        return i;
-      }
-      i.onclick = (evt) => {
-        evt.stopPropagation();
-        const dialog = new dialogClass(this.column, i, ...dialogArgs);
-        dialog.openDialog();
-      };
-      return i;
-    };
-
-    createMoreMenuItems(<any>addIcon, this.column, this.ctx);
+    createToolbarMenuItems(<any>addIconDOM(popup, this.column, true), this.column, this.ctx);
   }
 }
