@@ -47,7 +47,20 @@ export function toFullTooltip(col: { label: string, description?: string }) {
   return base;
 }
 
-export function createHeader(col: Column, document: Document, ctx: IRankingHeaderContext) {
+export interface IHeaderOptions {
+  dragAble: boolean;
+  mergeDropAble: boolean;
+  rearrangeAble: boolean;
+  resizeable: boolean;
+}
+
+export function createHeader(col: Column, document: Document, ctx: IRankingHeaderContext, options: Partial<IHeaderOptions> = {}) {
+  options = Object.assign({
+    dragAble: true,
+    mergeDropAble: true,
+    rearrangeAble: true,
+    resizeable: true
+  }, options);
   const node = document.createElement('section');
   node.innerHTML = `
     <div class="lu-label">${col.label}</div>
@@ -60,11 +73,18 @@ export function createHeader(col: Column, document: Document, ctx: IRankingHeade
 
   toggleToolbarIcons(node, col);
 
-  dragAbleColumn(node, col, ctx);
-  mergeDropAble(node, col, ctx);
-  rearrangeDropAble(<HTMLElement>node.querySelector('.lu-handle')!, col, ctx);
-
-  dragWidth(col, node);
+  if (options.dragAble) {
+    dragAbleColumn(node, col, ctx);
+  }
+  if (options.mergeDropAble) {
+    mergeDropAble(node, col, ctx);
+  }
+  if (options.rearrangeAble) {
+    rearrangeDropAble(<HTMLElement>node.querySelector('.lu-handle')!, col, ctx);
+  }
+  if (options.resizeable) {
+    dragWidth(col, node);
+  }
   return node;
 }
 
@@ -79,9 +99,9 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
     sort.dataset.priority = priority !== undefined ? priority : '';
   }
 
-  const groupedBy = col.isGroupedBy();
   const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
   if(stratify) {
+    const groupedBy = col.isGroupedBy();
     stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
     stratify.dataset.priority = groupedBy >= 0 ? groupedBy.toString() : '';
   }

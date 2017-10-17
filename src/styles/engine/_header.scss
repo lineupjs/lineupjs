@@ -79,3 +79,16 @@ section.#{$lu_css_prefix}-header {
     }
   }
 }
+
+.#{$lu_css_prefix}-sub-nested > section {
+  margin-bottom: $lu_engine_grip_gap;
+
+  > .#{$lu_css_prefix}-handle {
+    height: $lu_engine_grip_gap;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    cursor: inherit;
+  }
+}
