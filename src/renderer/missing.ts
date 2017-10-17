@@ -5,7 +5,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import Column from '../model/Column';
 
 
-function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
+export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number, height: number, x = 0, y = 0) {
   const dashColor = '#c1c1c1';
   const dashWidth = 10;
   const dashHeight = 3;
