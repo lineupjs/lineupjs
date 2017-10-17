@@ -42,7 +42,7 @@ export default class BodyCanvasRenderer extends ABodyRenderer {
       boxplot: {
         box: '#e0e0e0',
         stroke: 'black',
-        sortIndicator: '#ff0700'
+        sortIndicator: '#ffa500'
       },
       upset: {
         circle: 'black',
