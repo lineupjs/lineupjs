@@ -13,7 +13,7 @@ export interface ICategoryNode extends ICategory {
 
 export interface IHierarchyDesc {
   readonly hierarchy: ICategoryNode;
-  readonly hiearchySeparator?: string;
+  readonly hierarchySeparator?: string;
 }
 
 export declare type IHierarchyColumnDesc = IHierarchyDesc & IValueColumnDesc<string>;
@@ -41,7 +41,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
 
   constructor(id: string, desc: IHierarchyColumnDesc) {
     super(id, desc);
-    this.hierarchySeparator = desc.hiearchySeparator || '.';
+    this.hierarchySeparator = desc.hierarchySeparator || '.';
     this.hierarchy = this.initHierarchy(desc.hierarchy);
     this.currentNode = this.hierarchy;
     this.currentLeaves = computeLeaves(this.currentNode, this.currentMaxDepth);
@@ -191,4 +191,34 @@ export function resolveInnerNodes(node: ICategoryInternalNode) {
     queue.push(...next.children);
   }
   return queue;
+}
+
+export function isHierarchical(categories: (string|ICategory)[]) {
+  if (categories.length === 0 || typeof categories[0] === 'string') {
+    return false;
+  }
+  // check if any has a given parent name
+  return categories.some((c) => (<any>c).parent != null);
+}
+
+export function deriveHierarchy(categories: (ICategory&{parent: string|null})[]) {
+  const lookup = new Map<string, ICategoryNode>();
+  categories.forEach((c) => {
+    const p = c.parent || null;
+    // set and fill up proxy
+    const item = Object.assign({ children: []}, lookup.get(c.name) || {}, c);
+    lookup.set(c.name, item);
+
+    if (!lookup.has(p)) {
+      // create proxy
+      lookup.set(p, {name: p || '', children: []});
+    }
+    lookup.get(p)!.children.push(item);
+  });
+  const root = lookup.get(null)!;
+  console.assert(root !== undefined, 'hierarchy with no root');
+  if (root.children.length === 1) {
+    return root.children[1];
+  }
+  return root;
 }
