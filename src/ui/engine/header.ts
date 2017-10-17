@@ -50,6 +50,7 @@ export function createHeader(col: Column, document: Document, ctx: IRankingHeade
   node.innerHTML = `
     <div class="lu-label">${col.label}</div>
     <div class="lu-toolbar"></div>
+    <div class="lu-spacing"></div>
     <div class="lu-summary"></div>
     <div class="lu-handle"></div>
   `;

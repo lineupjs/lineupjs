@@ -61,6 +61,10 @@
     }
   }
 
+  .#{$lu_css_prefix}-spacing {
+    flex: 1;
+  }
+
   .#{$lu_css_prefix}-summary {
     position: relative;
     display: none;

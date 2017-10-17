@@ -25,6 +25,16 @@
     font-size: $lu_dialog_font_size;
     clear: right;
 
+    &::before {
+      content: '';
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      position: absolute;
+      z-index: -1;
+    }
+
     input {
       font-size: 8pt;
     }

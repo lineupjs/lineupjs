@@ -1,4 +1,4 @@
-import {offset} from '../utils';
+import Popper from 'popper.js';
 
 abstract class ADialog {
 
@@ -6,7 +6,7 @@ abstract class ADialog {
 
   static removePopup(popup: HTMLElement) {
     const index = ADialog.visiblePopups.indexOf(popup);
-    if(index > -1) {
+    if(index > -1 && popup) {
       ADialog.visiblePopups.splice(index, 1);
       popup.remove();
     }
@@ -26,13 +26,25 @@ abstract class ADialog {
     });
   }
 
-  protected static registerPopup(popup: HTMLElement, replace: boolean) {
+  protected static registerPopup(popup: HTMLElement, popper: Popper, replace: boolean) {
     if(replace) {
       ADialog.removeAllPopups();
     }
     if(ADialog.visiblePopups.length === 0) {
       popup.ownerDocument.addEventListener('keyup', escKeyListener);
     }
+
+    const closePopupOnMouseLeave = () => {
+      if(ADialog.visiblePopups[ADialog.visiblePopups.length - 1] !== popup) {
+        return;
+      }
+      popup.removeEventListener('mouseleave', closePopupOnMouseLeave);
+      popper.destroy();
+      ADialog.removePopup(popup);
+    };
+
+    popup.addEventListener('mouseleave', closePopupOnMouseLeave);
+
     ADialog.visiblePopups.push(popup);
   }
 
@@ -47,14 +59,18 @@ abstract class ADialog {
    * @returns {Selection<any>}
    */
   protected makeMenuPopup(body: string) {
-    const pos = offset(this.attachment);
     const parent = this.attachment.ownerDocument.body;
-    parent.insertAdjacentHTML('beforeend', `
-      <div class="lu-popup2 lu-popup-menu" style="left: ${pos.left}px; top: ${pos.top}px">${body}</div>`);
+    parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2 lu-popup-menu">${body}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
 
-    ADialog.registerPopup(popup, true);
+    const popper = new Popper(this.attachment, popup, {
+      placement: 'bottom-start',
+      removeOnDestroy: true
+    });
+
+    ADialog.registerPopup(popup, popper, true);
     this.hidePopupOnClickOutside(popup);
+
     return popup;
   }
 
@@ -64,28 +80,36 @@ abstract class ADialog {
    * @returns {Selection<any>}
    */
   makePopup(body: string) {
-    const pos = offset(this.attachment);
     const parent = this.attachment.ownerDocument.body;
-    parent.insertAdjacentHTML('beforeend', `
-      <div class="lu-popup2" style="left: ${pos.left}px; top: ${pos.top}px">${this.dialogForm(body)}</div>`);
+    parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2">${this.dialogForm(body)}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
 
     const auto = <HTMLInputElement>popup.querySelector('input[autofocus]');
     if (auto) {
       auto.focus();
     }
-    ADialog.registerPopup(popup, false);
+
+    const popper = new Popper(this.attachment, popup, {
+      placement: 'bottom-start',
+      removeOnDestroy: true
+    });
+
+    ADialog.registerPopup(popup, popper, false);
     this.hidePopupOnClickOutside(popup);
     return popup;
   }
 
   makeChoosePopup(body: string) {
-    const pos = offset(this.attachment);
     const parent = this.attachment.ownerDocument.body;
-    parent.insertAdjacentHTML('beforeend', `
-      <div class="lu-popup2 chooser" style="left: ${pos.left}px; top: ${pos.top}px">${this.basicDialog(body)}</div>`);
+    parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2 chooser">${this.basicDialog(body)}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
-    ADialog.registerPopup(popup, false);
+
+    const popper = new Popper(this.attachment, popup, {
+      placement: 'bottom-start',
+      removeOnDestroy: true
+    });
+
+    ADialog.registerPopup(popup, popper, false);
     this.hidePopupOnClickOutside(popup);
     return popup;
   }
