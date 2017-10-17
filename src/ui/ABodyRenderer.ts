@@ -130,7 +130,7 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
   protected showMeanLine(col: Column) {
     //show mean line if option is enabled and top level
-    return this.options.meanLine && isNumberColumn(col) && !col.getCompressed() && col.parent instanceof Ranking;
+    return this.options.meanLine && isNumberColumn(col) && col.parent instanceof Ranking;
   }
 
   private fireFinished() {
@@ -229,8 +229,8 @@ abstract class ABodyRenderer extends AEventDispatcher implements IBodyRenderer {
 
       const colData = cols.map((o) => {
         const colShift = width;
-        width += (o.getCompressed() ? Column.COMPRESSED_WIDTH : o.getWidth()) + padding;
-        if (isMultiLevelColumn(o) && !(<IMultiLevelColumn>o).getCollapsed() && !o.getCompressed()) {
+        width += o.getWidth() + padding;
+        if (isMultiLevelColumn(o) && !(<IMultiLevelColumn>o).getCollapsed()) {
           width += padding * ((<IMultiLevelColumn>o).length - 1);
         }
         return {

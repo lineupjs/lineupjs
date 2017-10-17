@@ -14,7 +14,7 @@ import {createDesc as createStackDesc} from '../model/StackColumn';
 import {createDesc as createNestedDesc} from '../model/NestedColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import SelectionColumn from '../model/SelectionColumn';
-import {createToolbarImpl, MIMETYPE_PREFIX, toFullTooltip} from './engine/header';
+import {createShortcutMenuItems, MIMETYPE_PREFIX, toFullTooltip} from './engine/header';
 import {defaultConfig, dummyRankingButtonHook} from '../config';
 import ADialog from '../dialogs/ADialog';
 import {IRankingHeaderContext} from './engine/interfaces';
@@ -23,7 +23,7 @@ import NumberColumn from '../model/NumberColumn';
 
 
 function countMultiLevel(c: Column): number {
-  if (isMultiLevelColumn(c) && !(<IMultiLevelColumn>c).getCollapsed() && !c.getCompressed()) {
+  if (isMultiLevelColumn(c) && !(<IMultiLevelColumn>c).getCollapsed()) {
     return 1 + Math.max.apply(Math, (<IMultiLevelColumn>c).children.map(countMultiLevel));
   }
   return 1;
@@ -287,7 +287,7 @@ export default class HeaderRenderer {
         };
         return proxy;
       };
-      createToolbarImpl(addIcon, col, ctx);
+      createShortcutMenuItems(addIcon, col, ctx);
     });
   }
 
@@ -354,7 +354,7 @@ export default class HeaderRenderer {
       'background-color': (d) => d.color!
     });
     $headers.attr({
-      'class': (d) => `${clazz} ${d.cssClass || ''} ${(d.getCompressed() ? 'compressed' : '')} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''} ${d.isGroupedBy() >= 0 ? 'grouped' : ''}`,
+      'class': (d) => `${clazz} ${d.cssClass || ''} ${d.headerCssClass} ${this.options.autoRotateLabels ? 'rotateable' : ''} ${d.isFiltered() ? 'filtered' : ''} ${d.isGroupedBy() >= 0 ? 'grouped' : ''}`,
       title: (d) => toFullTooltip(d),
       'data-id': (d) => d.id
     });
@@ -391,7 +391,7 @@ export default class HeaderRenderer {
     };
 
     const renderMultiLevel = function (this: HTMLElement, col: IMultiLevelColumn) {
-      if (col.getCollapsed() || col.getCompressed()) {
+      if (col.getCollapsed()) {
         d3.select(this).selectAll(`div.${clazz}_i`).remove();
         return;
       }

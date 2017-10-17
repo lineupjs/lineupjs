@@ -1,3 +1,4 @@
+@import '../vars';
 
 [data-agg=group] [data-renderer=categorical],
 [data-renderer=histogram] {
@@ -9,7 +10,7 @@
     flex: 1 1 auto;
     position: relative;
     background: rgba(0, 0, 0, 0.26);
-    margin: 0 2px;
+    margin: 0 1px;
     display: flex;
     flex-direction: row;
     align-items: flex-end;

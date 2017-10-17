@@ -17,13 +17,23 @@
 
   .#{$lu_css_prefix}-popup,
   .#{$lu_css_prefix}-popup2 {
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: white;
+    border: 1px solid black;
     position: absolute;
-    padding: 2px;
-    box-shadow: 5px 5px 3px #888;
+    padding: 5px;
     z-index: 9;
-    font-size: 8pt;
+    font-size: $lu_dialog_font_size;
     clear: right;
+
+    &::before {
+      content: '';
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      position: absolute;
+      z-index: -1;
+    }
 
     input {
       font-size: 8pt;

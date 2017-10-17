@@ -29,7 +29,9 @@ import CategoricalColumn, {isCategoricalColumn} from '../../model/CategoricalCol
 import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 import {IRankingHeaderContext} from './interfaces';
 import {equalArrays} from '../../utils';
+import MoreColumnOptionsDialog from '../../dialogs/MoreColumnOptionsDialog';
 import {findTypeLike} from '../../model/utils';
+import SelectionColumn from '../../model/SelectionColumn';
 
 
 /**
@@ -46,14 +48,16 @@ export function toFullTooltip(col: { label: string, description?: string }) {
 
 export function createHeader(col: Column, document: Document, ctx: IRankingHeaderContext) {
   const node = document.createElement('section');
-  node.innerHTML = `<div class="lu-toolbar"></div><i class="lu-sort"></i><div class="lu-handle"></div><div class="lu-label">${col.label}</div><div class="lu-summary"></div>`;
+  node.innerHTML = `
+    <div class="lu-label">${col.label}</div>
+    <div class="lu-toolbar"></div>
+    <div class="lu-spacing"></div>
+    <div class="lu-summary"></div>
+    <div class="lu-handle"></div>
+  `;
   createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, col, ctx);
 
-  node.addEventListener('click', (evt) => {
-    evt.preventDefault();
-    evt.stopPropagation();
-    col.toggleMySorting();
-  });
+  toggleToolbarIcons(node, col);
 
   dragAbleColumn(node, col, ctx);
   mergeDropAble(node, col, ctx);
@@ -66,11 +70,20 @@ export function createHeader(col: Column, document: Document, ctx: IRankingHeade
 export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
   node.querySelector('.lu-label')!.innerHTML = col.label;
   node.title = toFullTooltip(col);
-  const sort = <HTMLElement>node.querySelector('.lu-sort')!;
+
+  const sort = <HTMLElement>node.querySelector(`i[title='Sort']`)!;
+  if(sort) {
+    const {asc, priority} = col.isSortedByMe();
+    sort.dataset.sort = asc !== undefined ? asc : '';
+    sort.dataset.priority = priority !== undefined ? priority : '';
+  }
+
   const groupedBy = col.isGroupedBy();
-  const {asc, priority} = col.isSortedByMe();
-  sort.dataset.sort = (groupedBy >= 0 ? 'stratify' : asc || '');
-  sort.dataset.priority = groupedBy >= 0 ? groupedBy.toString() : (priority !== undefined ? priority : '');
+  const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
+  if(stratify) {
+    stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
+    stratify.dataset.priority = groupedBy >= 0 ? groupedBy.toString() : '';
+  }
 
   const summary = findTypeLike(col, ctx.summaries);
   if (summary) {
@@ -78,106 +91,132 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
   }
 }
 
-export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
-  const addIcon = (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}"><span aria-hidden="true">${title}</span> </i>`);
+export function addIconDOM(node: HTMLElement, col: Column, showLabel: boolean) {
+  return (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
+    node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"': ''}>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     if (!dialogClass) {
       return i;
     }
     i.onclick = (evt) => {
       evt.stopPropagation();
-      const dialog = new dialogClass(col, node.parentElement!, ...dialogArgs);
+      const dialog = new dialogClass(col, i, ...dialogArgs);
       dialog.openDialog();
     };
     return i;
   };
-  return createToolbarImpl(<any>addIcon, col, ctx);
+}
+
+export function createToolbar(node: HTMLElement, col: Column, ctx: IRankingHeaderContext) {
+  return createShortcutMenuItems(<any>addIconDOM(node, col, false), col, ctx);
 }
 
 interface IAddIcon {
   (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]): { onclick: (evt: { stopPropagation: () => void, currentTarget: Element, [key: string]: any }) => any };
 }
 
-export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
-  const isSupportColumn = isSupportType(col.desc);
+export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
 
-  if (!isSupportColumn) {
-    //rename
-    addIcon('Rename', RenameDialog);
-    //clone
-    addIcon('Generate Snapshot').onclick = (evt) => {
+  if (!isSupportType(col.desc) || col instanceof SelectionColumn) {
+    addIcon('Sort').onclick = (evt) => {
       evt.stopPropagation();
-      ctx.provider.takeSnapshot(col);
+      col.toggleMySorting();
     };
   }
+
   //stratify
   if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
-    addIcon('Stratify By').onclick = (evt) => {
+    addIcon('Stratify').onclick = (evt) => {
       evt.stopPropagation();
       col.groupByMe();
     };
   }
 
+  if (col instanceof NumberColumn) {
+    addIcon('Stratify By Threshold &hellip;', StratifyThresholdDialog);
+  }
+
+  if (!(col instanceof RankColumn)) {
+    addIcon('Remove').onclick = (evt) => {
+      evt.stopPropagation();
+      if (!(col instanceof RankColumn)) {
+        col.removeMe();
+        return;
+      }
+      ctx.provider.removeRanking(col.findMyRanker()!);
+      ctx.provider.ensureOneRanking();
+    };
+  }
+
+  addIcon('More &hellip;', MoreColumnOptionsDialog, '', ctx);
+}
+
+export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankingHeaderContext) {
+  const isSupportColumn = isSupportType(col.desc);
+
+  if (!isSupportColumn) {
+    //rename
+    addIcon('Rename + Color &hellip;', RenameDialog);
+  }
+
   if (isNumberColumn(col) || col instanceof CategoricalColumn) {
-    addIcon('Sort Groupy By').onclick = (evt) => {
+    addIcon('Sort Groupy By &hellip;').onclick = (evt) => {
       evt.stopPropagation();
       col.toggleMyGroupSorting();
     };
   }
 
-  if (col instanceof NumberColumn) {
-    addIcon('Stratify By Threshold', StratifyThresholdDialog);
-  }
-
   if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
     //Numbers Sort
-    addIcon('Sort By', SortDialog);
+    addIcon('Sort By &hellip;', SortDialog);
+  }
+
+  //stratify
+  if (col instanceof BooleanColumn || col instanceof CategoricalColumn || col instanceof SelectionColumn) {
+    addIcon('Stratify').onclick = (evt) => {
+      evt.stopPropagation();
+      col.groupByMe();
+    };
+  }
+
+  if (col instanceof NumberColumn) {
+    addIcon('Stratify By Threshold &hellip;', StratifyThresholdDialog);
   }
 
   if (col.getRendererList().length > 1 || col.getGroupRenderers().length > 1) {
     //Renderer Change
-    addIcon('Change Visualization', ChangeRendererDialog);
+    addIcon('Visualization &hellip;', ChangeRendererDialog);
   }
 
   if (col instanceof LinkColumn) {
     //edit link
-    addIcon('Edit Link Pattern', EditLinkDialog, ctx.idPrefix, (<string[]>[]).concat((<any>col.desc).templates || [], ctx.linkTemplates));
+    addIcon('Edit Link Pattern &hellip;', EditLinkDialog, ctx.idPrefix, (<string[]>[]).concat((<any>col.desc).templates || [], ctx.linkTemplates));
   }
 
   if (col instanceof ScriptColumn) {
     //edit script
-    addIcon('Edit Combine Script', ScriptEditDialog);
+    addIcon('Edit Combine Script &hellip;', ScriptEditDialog);
   }
 
   //filter
   const filter = findTypeLike(col, ctx.filters);
   if (filter) {
-    addIcon('Filter', filter, '', ctx.provider, ctx.idPrefix);
+    addIcon('Filter &hellip;', filter, '', ctx.provider, ctx.idPrefix);
   }
 
   if (col instanceof HierarchyColumn) {
     //cutoff
-    addIcon('Set Cut Off', CutOffHierarchyDialog, ctx.idPrefix);
+    addIcon('Set Cut Off &hellip;', CutOffHierarchyDialog, ctx.idPrefix);
   }
 
   if (ctx.searchAble(col)) {
     //search
-    addIcon('Search', SearchDialog, ctx.provider);
+    addIcon('Search &hellip;', SearchDialog, ctx.provider);
   }
 
   if (col instanceof StackColumn) {
     //edit weights
-    addIcon('Edit Weights', WeightsEditDialog);
-  }
-
-  if (!isSupportColumn) {
-    addIcon(col.getCompressed() ? 'UnCollapse' : 'Collapse').onclick = (evt) => {
-      evt.stopPropagation();
-      col.setCompressed(!col.getCompressed());
-      const i = <HTMLElement>evt.currentTarget;
-      i.title = col.getCompressed() ? 'UnCollapse' : 'Collapse';
-    };
+    addIcon('Edit Weights &hellip;', WeightsEditDialog);
   }
 
   if (isMultiLevelColumn(col)) {
@@ -190,7 +229,15 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
     };
   }
 
-  addIcon('Hide').onclick = (evt) => {
+  if (!isSupportColumn) {
+    //clone
+    addIcon('Generate Snapshot').onclick = (evt) => {
+      evt.stopPropagation();
+      ctx.provider.takeSnapshot(col);
+    };
+  }
+
+  addIcon('Remove').onclick = (evt) => {
     evt.stopPropagation();
     if (!(col instanceof RankColumn)) {
       col.removeMe();
@@ -201,9 +248,35 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
   };
 }
 
+function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
+  const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
+  const moreIcon = toolbar.querySelector('[title^=More]')!;
+  const availableWidth = col.getWidth() - (moreIcon.clientWidth || defaultVisibleClientWidth);
+  const toggableIcons = Array.from(toolbar.children).filter((d) => d !== moreIcon)
+    .reverse(); // start hiding with the last icon
+
+  toggableIcons.forEach((icon) => {
+    icon.classList.remove('hidden'); // first show all icons to calculate the correct `clientWidth`
+  });
+  toggableIcons.forEach((icon) => {
+    const currentWidth = toggableIcons.reduce((a, b) => {
+      const realWidth = b.clientWidth;
+      if (realWidth > 0) {
+        return a + realWidth;
+      }
+      if (!b.classList.contains('hidden')) { // since it may have not yet been layouted
+        return a + defaultVisibleClientWidth;
+      }
+      return a;
+    }, 0);
+    icon.classList.toggle('hidden', (currentWidth > availableWidth)); // hide icons if necessary
+  });
+}
+
 export function dragWidth(col: Column, node: HTMLElement) {
   let ueberElement: HTMLElement;
   const handle = <HTMLElement>node.querySelector('.lu-handle');
+
 
   let start = 0;
   const mouseMove = (evt: MouseEvent) => {
@@ -216,7 +289,9 @@ export function dragWidth(col: Column, node: HTMLElement) {
     }
     const delta = end - start;
     start = end;
-    col.setWidth(Math.max(0, col.getWidth() + delta));
+    const width = Math.max(0, col.getWidth() + delta);
+    col.setWidth(width);
+    toggleToolbarIcons(node, col);
   };
 
   const mouseUp = (evt: MouseEvent) => {
@@ -234,7 +309,9 @@ export function dragWidth(col: Column, node: HTMLElement) {
       return;
     }
     const delta = end - start;
-    col.setWidth(Math.max(0, col.getWidth() + delta));
+    const width = Math.max(0, col.getWidth() + delta);
+    col.setWidth(width);
+    toggleToolbarIcons(node, col);
   };
   handle.onmousedown = (evt) => {
     evt.stopPropagation();

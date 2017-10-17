@@ -22,7 +22,7 @@ export default class SidePanelEntryVis {
 
   private init() {
     this.node.innerHTML = `
-      <div class="lu-sort-handle"></div><header><i class="lu-sort"></i><div class="lu-label"></div><div class="lu-toolbar"></div></header>
+      <div class="lu-sort-handle"></div><header><div class="lu-label"></div><div class="lu-toolbar"></div></header>
       <main class="lu-summary"></main>`;
     createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), this.column, this.ctx);
     this.node.querySelector('.lu-label')!.addEventListener('click', (evt) => {

@@ -31,7 +31,7 @@ export default class HeatmapCellRenderer extends AAggregatedGroupRenderer<INumbe
         const missing = renderMissingDOM(n, col, d);
         n.title = col.getLabel(d.v, d.dataIndex);
         (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = missing ? null : toHeatMapColor(d.v, d.dataIndex, col);
-        setText(<HTMLSpanElement>n.lastElementChild!, col.getCompressed() ? '' : n.title);
+        setText(<HTMLSpanElement>n.lastElementChild!, n.title);
       }
     };
   }
@@ -42,12 +42,7 @@ export default class HeatmapCellRenderer extends AAggregatedGroupRenderer<INumbe
       if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
-      const w = context.rowHeight(i) - padding * 2;
       ctx.fillStyle = toHeatMapColor(d.v, d.dataIndex, col);
-      if (col.getCompressed()) {
-        ctx.fillRect(padding, padding, w, w);
-        return;
-      }
       const cell = Math.min(context.colWidth(col) * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
       ctx.fillRect(0, 0, cell, cell);
       ctx.fillStyle = context.option('style.text', 'black');

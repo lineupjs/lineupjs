@@ -7,13 +7,23 @@
 .lineup-engine > header section.#{$lu_css_prefix}-header {
   @extend %lu-header;
 
-  cursor: pointer;
   text-align: center;
   color: black;
-  overflow-x: hidden;
-  overflow-y: visible;
-  background: #eaeaea;
+  overflow: unset !important;
   margin-right: -$lu_engine_grip_gap;
+  border-bottom: 1px solid black;
+
+  &:hover {
+    background-color: $lu_even_bg;
+
+    > .#{$lu_css_prefix}-toolbar {
+      color: $lu_toolbar_color_base2;
+    }
+  }
+
+  > .#{$lu_css_prefix}-toolbar {
+    color: $lu_toolbar_color_base;
+  }
 
   > .#{$lu_css_prefix}-label {
     padding-left: 0.8em;
@@ -43,7 +53,11 @@
   }
 
   > .#{$lu_css_prefix}-nested {
-    grid-column-gap: $lu_engine_grip_gap;
+    grid-column-gap: 1px;
+
+    > section {
+      border-bottom: none; // disable header line for stacked bar
+    }
   }
 
   > .#{$lu_css_prefix}-handle {
@@ -53,9 +67,15 @@
     height: 100%;
     background-color: white;
     cursor: col-resize;
+    border-bottom: 1px solid white;
+    bottom: -1px;
 
     &.#{$lu_css_prefix}-dragover {
       background-color: $lu_drag_over;
+    }
+
+    &:hover {
+      background-color: $lu_hover_color;
     }
   }
 }

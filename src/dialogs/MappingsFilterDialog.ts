@@ -1,9 +1,10 @@
 import AFilterDialog from './AFilterDialog';
 import {IMapAbleColumn, IMappingFunction, noNumberFilter} from '../model/NumberColumn';
 import Column from '../model/Column';
-import {offset} from '../utils';
 import {IDataProvider} from '../provider/ADataProvider';
 import MappingEditor from '../mappingeditor';
+import Popper from 'popper.js';
+import ADialog from './ADialog';
 
 export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn & Column> {
 
@@ -20,23 +21,16 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
   }
 
   openDialog() {
-    const pos = offset(this.attachment),
-      original = this.column.getOriginalMapping();
+    const original = this.column.getOriginalMapping();
     let bakfilter = this.column.getFilter(),
       bak = this.column.getMapping(),
       act: IMappingFunction = bak.clone(),
       actfilter = bakfilter;
 
-      const parent = this.attachment.ownerDocument.body;
-      parent.insertAdjacentHTML('beforeend', `
-        <div class="lu-popup" style="left: ${pos.left}px; top: ${pos.top}px">${this.dialogForm('<div class="mappingArea"></div>')}</div>`);
-      const popup = <HTMLElement>parent.lastElementChild!;
+    const parent = this.attachment.ownerDocument.body;
+    parent.insertAdjacentHTML('beforeend', `<div class="lu-popup">${this.dialogForm('<div class="mappingArea"></div>')}</div>`);
+    const popup = <HTMLElement>parent.lastElementChild!;
 
-      popup.addEventListener('keydown', (evt) => {
-        if (evt.which === 27) {
-          popup.remove();
-        }
-      });
     const applyMapping = (newscale: IMappingFunction, filter: { min: number, max: number, filterMissing: boolean }) => {
       act = newscale;
       actfilter = filter;
@@ -74,6 +68,13 @@ export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn &
         return true;
       }
     });
-    MappingsFilterDialog.registerPopup(popup);
+
+    const popper = new Popper(this.attachment, popup, {
+      placement: 'bottom-start',
+      removeOnDestroy: true
+    });
+
+    ADialog.registerPopup(popup, popper, false);
+    this.hidePopupOnClickOutside(popup);
   }
 }

@@ -1,5 +1,10 @@
 $lu_css_prefix: 'lu' !default;
-$lu_toolbar_font_size: 8pt !default;
+
+$lu_dialog_font_size: 11pt !default;
+$lu_toolbar_font_size: 11pt !default;
+$lu_toolbar_color_base: #c1c1c1 !default;
+$lu_toolbar_color_base2: #999 !default;
+$lu_toolbar_color_hover: black !default;
 
 $lu_hover_color: #e5e5e5 !default;
 $lu_selected_color: #ffa500 !default;
@@ -23,13 +28,13 @@ $lu_renderer_boxplot_box: #e0e0e0 !default;
 $lu_renderer_boxplot_stroke: black !default;
 $lu_renderer_boxplot_sort_indicator: #ff0700 !default;
 
-$lu_upset_circle_color: black !default;
+$lu_upset_circle_color: #676767 !default;
 $lu_upset_inactive_opacity: 0.1 !default;
 $lu_upset_stroke: black !default;
 
 $lu_hist_color: #c1c1c1;
 
-$lu_engine_grip_gap: 3px !default; // change `columnPadding` in config.ts accordingly
+$lu_engine_grip_gap: 5px !default; // change `columnPadding` in config.ts accordingly
 $lu_engine_row_outline_width: 2px !default;
 
 $lu_missing_dash_height: 3px !default;

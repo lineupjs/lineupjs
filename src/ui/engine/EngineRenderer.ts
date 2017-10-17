@@ -45,7 +45,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.ctx = {
       provider: data,
       filters: this.options.header.filters!,
-      summaries: this.options.header.summaries!,
+      summaries: this.options.header.summaries ? this.options.header.summaries! : {},
       linkTemplates: this.options.header.linkTemplates!,
       autoRotateLabels: this.options.header.autoRotateLabels!,
       searchAble: this.options.header.searchAble!,

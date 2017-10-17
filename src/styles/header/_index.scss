@@ -7,7 +7,7 @@
   user-select: none;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
 
   @import './toolbar';
 
@@ -15,52 +15,6 @@
     white-space: nowrap;
     overflow-x: hidden;
     text-overflow: ellipsis;
-  }
-
-  .#{$lu_css_prefix}-sort {
-    @include fa-icon();
-
-    opacity: 0;
-
-    &[data-sort=asc]::before {
-      content: $fa-var-sort-asc;
-    }
-
-    &[data-sort=desc]::before {
-      content: $fa-var-sort-desc;
-    }
-
-    &[data-sort=stratify]::before {
-      content: $fa-var-window-maximize;
-    }
-
-    &[data-priority] {
-      opacity: 0.2;
-    }
-
-    &[data-priority='0'] {
-      opacity: 1;
-    }
-
-    &[data-priority='1'] {
-      opacity: 0.9;
-    }
-
-    &[data-priority='2'] {
-      opacity: 0.7;
-    }
-
-    &[data-priority='3'] {
-      opacity: 0.6;
-    }
-
-    &[data-priority='4'] {
-      opacity: 0.5;
-    }
-
-    &[data-priority='5'] {
-      opacity: 0.4;
-    }
   }
 
   &.#{$lu_css_prefix}-dragging {
@@ -83,28 +37,8 @@
     background: $lu_drag_over;
   }
 
-  &.#{$lu_css_prefix}-compressed {
-    .#{$lu_css_prefix}-label {
-      visibility: hidden;
-    }
-
-    .#{$lu_css_prefix}-toolbar i:not([title='UnCollapse']),
-    .#{$lu_css_prefix}-summary {
-      display: none;
-    }
-
-    .#{$lu_css_prefix}-summary {
-      &[data-summary=selection],
-      &[data-summary=aggregation] {
-        display: block;
-      }
-    }
-
-    &:hover {
-      .#{$lu_css_prefix}-toolbar {
-        display: block;
-      }
-    }
+  .#{$lu_css_prefix}-spacing {
+    flex: 1;
   }
 
   .#{$lu_css_prefix}-summary {

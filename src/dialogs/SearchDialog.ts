@@ -41,7 +41,7 @@ export default class SearchDialog extends ADialog {
         }
         this.provider.searchAndJump(search, this.column);
       }
-      popup.remove();
+      ADialog.removePopup(popup);
     };
 
     checkbox.addEventListener('change', updateImpl);

@@ -18,23 +18,9 @@
     font-weight: 500;
 
     &::before {
-      color: #999;
+      color: $lu_toolbar_color_base2;
       padding-right: 0.2em;
       content: counter(side-panel-counter);
-    }
-
-    .#{$lu_css_prefix}-sort {
-      width: 0.5em;
-
-      &[data-sort=asc] {
-        margin-top: 0.3em;
-      }
-
-      &[data-sort=stratify] {
-        font-size: 80%;
-        margin-top: 0.3em;
-        width: 1em;
-      }
     }
 
     .#{$lu_css_prefix}-label {
@@ -42,15 +28,16 @@
       padding: 0 0 0 0.4em;
       overflow: hidden !important;
       cursor: pointer;
+      flex: 1;
+    }
+
+    > .#{$lu_css_prefix}-toolbar {
+      color: $lu_toolbar_color_base2;
     }
   }
 
   .#{$lu_css_prefix}-toolbar {
-    background: $lu_side_panel_toolbar_bg;
-    font-size: $lu_side_panel_toolbar_font_size;
-    top: 0;
-    right: 0;
-    color: white;
+    padding: 0;
   }
 
   > .#{$lu_css_prefix}-sort-handle {
@@ -60,10 +47,6 @@
     &.#{$lu_css_prefix}-dragover {
       background-color: $lu_drag_over;
     }
-  }
-
-  &:not(.#{$lu_css_prefix}-compressed):hover .#{$lu_css_prefix}-toolbar::before {
-    font-size: $lu_side_panel_toolbar_font_size - 1pt;
   }
 
   main.#{$lu_css_prefix}-summary {

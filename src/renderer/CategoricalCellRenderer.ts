@@ -22,7 +22,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
       update: (n: HTMLElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = col.getColor(d.v, d.dataIndex);
-        setText(<HTMLSpanElement>n.lastElementChild!, col.getCompressed() ? '' : col.getLabel(d.v, d.dataIndex));
+        setText(<HTMLSpanElement>n.lastElementChild!, col.getLabel(d.v, d.dataIndex));
       }
     };
   }
@@ -34,15 +34,10 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         return;
       }
       ctx.fillStyle = col.getColor(d.v, d.dataIndex) || '';
-      if (col.getCompressed()) {
-        const cell = Math.min(Column.COMPRESSED_WIDTH - padding * 2, Math.max(context.rowHeight(i) - padding * 2, 0));
-        ctx.fillRect(padding, padding, cell, cell);
-      } else {
-        const cell = Math.min(context.colWidth(col) * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
-        ctx.fillRect(0, 0, cell, cell);
-        ctx.fillStyle = context.option('style.text', 'black');
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
-      }
+      const cell = Math.min(context.colWidth(col) * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
+      ctx.fillRect(0, 0, cell, cell);
+      ctx.fillStyle = context.option('style.text', 'black');
+      clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
     };
   }
 
