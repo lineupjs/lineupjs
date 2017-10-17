@@ -37,30 +37,6 @@
     background: $lu_drag_over;
   }
 
-  &.#{$lu_css_prefix}-compressed {
-    .#{$lu_css_prefix}-label {
-      visibility: hidden;
-    }
-
-    .#{$lu_css_prefix}-toolbar i:not([title='UnCollapse']),
-    .#{$lu_css_prefix}-summary {
-      display: none;
-    }
-
-    .#{$lu_css_prefix}-summary {
-      &[data-summary=selection],
-      &[data-summary=aggregation] {
-        display: block;
-      }
-    }
-
-    &:hover {
-      .#{$lu_css_prefix}-toolbar {
-        display: block;
-      }
-    }
-  }
-
   .#{$lu_css_prefix}-spacing {
     flex: 1;
   }

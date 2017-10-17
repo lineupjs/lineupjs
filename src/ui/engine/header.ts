@@ -31,6 +31,7 @@ import {IRankingHeaderContext} from './interfaces';
 import {equalArrays} from '../../utils';
 import MoreColumnOptionsDialog from '../../dialogs/MoreColumnOptionsDialog';
 import {findTypeLike} from '../../model/utils';
+import SelectionColumn from '../../model/SelectionColumn';
 
 
 /**
@@ -156,7 +157,7 @@ export function createMoreMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankin
     };
   }
   //stratify
-  if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
+  if (col instanceof BooleanColumn || col instanceof CategoricalColumn || col instanceof SelectionColumn) {
     addIcon('Stratify').onclick = (evt) => {
       evt.stopPropagation();
       col.groupByMe();
@@ -213,15 +214,6 @@ export function createMoreMenuItems(addIcon: IAddIcon, col: Column, ctx: IRankin
   if (col instanceof StackColumn) {
     //edit weights
     addIcon('Edit Weights &hellip;', WeightsEditDialog);
-  }
-
-  if (!isSupportColumn) {
-    addIcon(col.getCompressed() ? 'UnCollapse' : 'Collapse').onclick = (evt) => {
-      evt.stopPropagation();
-      col.setCompressed(!col.getCompressed());
-      const i = <HTMLElement>evt.currentTarget;
-      i.title = col.getCompressed() ? 'UnCollapse' : 'Collapse';
-    };
   }
 
   if (isMultiLevelColumn(col)) {
