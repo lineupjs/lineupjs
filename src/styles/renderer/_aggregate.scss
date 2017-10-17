@@ -12,6 +12,10 @@
   }
 }
 
+[data-agg=group] [data-renderer=aggregate] {
+  border-right: 1px solid black;
+}
+
 [data-agg=group] [data-renderer=aggregate]::before {
   content: $fa-var-caret-right;
 }
