@@ -4,7 +4,7 @@
 /**
   needs to be the full path without any super import otherwise the @extend won't work properly
  */
-.lineup-engine > header section.#{$lu_css_prefix}-header {
+section.#{$lu_css_prefix}-header {
   @extend %lu-header;
 
   text-align: center;

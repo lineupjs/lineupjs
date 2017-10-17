@@ -123,6 +123,10 @@
       &[title^='More']::before {
         content: $fa-var-ellipsis-h;
       }
+
+      &[title^='Contained Columns']::before {
+        content: $fa-var-sitemap;
+      }
     }
   }
 

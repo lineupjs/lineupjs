@@ -32,6 +32,7 @@ import {equalArrays} from '../../utils';
 import MoreColumnOptionsDialog from '../../dialogs/MoreColumnOptionsDialog';
 import {findTypeLike} from '../../model/utils';
 import SelectionColumn from '../../model/SelectionColumn';
+import CompositeChildrenDialog from '../../dialogs/CompositeChildrenDialog';
 
 
 /**
@@ -227,6 +228,10 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
       const i = <HTMLElement>evt.currentTarget;
       i.title = mcol.getCollapsed() ? 'Expand' : 'Compress';
     };
+  }
+
+  if (col instanceof CompositeColumn && (!isMultiLevelColumn(col) || col.getCollapsed())) {
+    addIcon('Contained Columns &hellip;', CompositeChildrenDialog, ctx);
   }
 
   if (!isSupportColumn) {

@@ -11,7 +11,7 @@ import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import {IExceptionContext, uniformContext} from 'lineupengine/src/logic';
 import StackColumn from '../../model/StackColumn';
 import {nonUniformContext} from 'lineupengine/src/index';
-import {default as CompositeColumn, isMultiLevelColumn} from '../../model/CompositeColumn';
+import {isMultiLevelColumn} from '../../model/CompositeColumn';
 import {IGroupData, IGroupItem, IRankingBodyContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import {IDataRow} from '../../provider/ADataProvider';
@@ -19,7 +19,6 @@ import {debounce} from '../../utils';
 import {IAnimationContext} from 'lineupengine/src/animation/index';
 import KeyFinder from 'lineupengine/src/animation/KeyFinder';
 import SelectionManager from './SelectionManager';
-import CompositeRenderColumn from './CompositeRenderColumn';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
@@ -396,9 +395,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounce(() => this.updateColumn(i), 25));
 
         return r;
-      }
-      if (c instanceof CompositeColumn) {
-        return new CompositeRenderColumn(c, renderers, i);
       }
       return new RenderColumn(c, renderers, i);
     });
