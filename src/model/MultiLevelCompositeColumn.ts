@@ -95,7 +95,7 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
 
   setWidth(value: number) {
     const act = this.getWidth();
-    const factor = this.length / act;
+    const factor = value / act;
     this._children.forEach((child) => {
       //disable since we change it
       child.setWidthImpl(child.getWidth() * factor);
