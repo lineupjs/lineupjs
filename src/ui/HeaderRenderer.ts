@@ -14,7 +14,7 @@ import {createDesc as createStackDesc} from '../model/StackColumn';
 import {createDesc as createNestedDesc} from '../model/NestedColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';
 import SelectionColumn from '../model/SelectionColumn';
-import {createToolbarImpl, MIMETYPE_PREFIX, toFullTooltip} from './engine/header';
+import {createShortcutMenuItems, MIMETYPE_PREFIX, toFullTooltip} from './engine/header';
 import {defaultConfig, dummyRankingButtonHook} from '../config';
 import ADialog from '../dialogs/ADialog';
 import {IRankingHeaderContext} from './engine/interfaces';
@@ -287,7 +287,7 @@ export default class HeaderRenderer {
         };
         return proxy;
       };
-      createToolbarImpl(addIcon, col, ctx);
+      createShortcutMenuItems(addIcon, col, ctx);
     });
   }
 
