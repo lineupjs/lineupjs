@@ -49,10 +49,6 @@
     }
   }
 
-  &:hover .#{$lu_css_prefix}-toolbar::before {
-    font-size: $lu_side_panel_toolbar_font_size - 1pt;
-  }
-
   main.#{$lu_css_prefix}-summary {
     margin: 0.5em;
     height: 50px;
