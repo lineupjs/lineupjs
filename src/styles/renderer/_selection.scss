@@ -3,11 +3,12 @@
 @import '../vars';
 
 [data-renderer=selection] {
-  @include fa-icon();
   text-align: center;
 
   &::before {
+    @include fa-icon();
     content: $fa-var-square-o;
+    padding-top: 2px;
   }
 }
 
@@ -15,4 +16,5 @@
 .selected [data-renderer=selection]::before,
 .#{$lu_css_prefix}-group-selected[data-renderer=selection]::before {
   content: $fa-var-check-square-o;
+  padding-left: 2px;
 }
