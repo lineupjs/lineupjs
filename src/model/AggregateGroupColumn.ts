@@ -25,7 +25,7 @@ export default class AggregateGroupColumn extends Column {
 
   constructor(id: string, desc: IAggregateGroupColumnDesc) {
     super(id, desc);
-    this.setCompressed(true);
+    this.setWidth(20);
   }
 
   protected createEventList() {

@@ -62,7 +62,7 @@
     }
   }
 
-  &:not(.#{$lu_css_prefix}-compressed):hover .#{$lu_css_prefix}-toolbar::before {
+  &:hover .#{$lu_css_prefix}-toolbar::before {
     font-size: $lu_side_panel_toolbar_font_size - 1pt;
   }
 

@@ -30,6 +30,7 @@ import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 import {IRankingHeaderContext} from './interfaces';
 import {equalArrays} from '../../utils';
 import {findTypeLike} from '../../model/utils';
+import SelectionColumn from '../../model/SelectionColumn';
 
 
 /**
@@ -112,7 +113,7 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
     };
   }
   //stratify
-  if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
+  if (col instanceof BooleanColumn || col instanceof CategoricalColumn || col instanceof SelectionColumn) {
     addIcon('Stratify By').onclick = (evt) => {
       evt.stopPropagation();
       col.groupByMe();
@@ -169,15 +170,6 @@ export function createToolbarImpl(addIcon: IAddIcon, col: Column, ctx: IRankingH
   if (col instanceof StackColumn) {
     //edit weights
     addIcon('Edit Weights', WeightsEditDialog);
-  }
-
-  if (!isSupportColumn) {
-    addIcon(col.getCompressed() ? 'UnCollapse' : 'Collapse').onclick = (evt) => {
-      evt.stopPropagation();
-      col.setCompressed(!col.getCompressed());
-      const i = <HTMLElement>evt.currentTarget;
-      i.title = col.getCompressed() ? 'UnCollapse' : 'Collapse';
-    };
   }
 
   if (isMultiLevelColumn(col)) {

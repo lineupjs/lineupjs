@@ -3,6 +3,7 @@
  */
 
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {IGroup} from './Group';
 
 /**
  * factory for creating a description creating a rank column
@@ -24,11 +25,19 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
  * a checkbox column for selections
  */
 export default class SelectionColumn extends ValueColumn<boolean> {
+  private static SELECTED_GROUP: IGroup = {
+    name: 'Selected',
+    color: 'orange'
+  };
+  private static NOT_SELECTED_GROUP: IGroup = {
+    name: 'Unselected',
+    color: 'gray'
+  };
   static readonly EVENT_SELECT = 'select';
 
   constructor(id: string, desc: ISelectionColumnDesc) {
     super(id, desc);
-    this.setCompressed(true);
+    this.setWidth(20);
   }
 
   protected createEventList() {
@@ -61,5 +70,10 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     const va = this.getValue(a, aIndex) === true;
     const vb = this.getValue(b, bIndex) === true;
     return va === vb ? 0 : (va < vb ? -1 : +1);
+  }
+
+  group(row: any, index: number) {
+    const isSelected = this.getValue(row, index);
+    return isSelected ? SelectionColumn.SELECTED_GROUP: SelectionColumn.NOT_SELECTED_GROUP;
   }
 }

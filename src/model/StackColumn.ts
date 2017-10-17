@@ -85,8 +85,8 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     const children = levelsToGo <= Column.FLAT_ALL_COLUMNS ? this._children : this._children.filter((c) => !c.isHidden());
     //no more levels or just this one
     if (levelsToGo === 0 || levelsToGo <= Column.FLAT_ALL_COLUMNS) {
-      let w = this.getCompressed() ? Column.COMPRESSED_WIDTH : this.getWidth();
-      if (!this.collapsed && !this.getCompressed()) {
+      let w = this.getWidth();
+      if (!this.collapsed) {
         w += (children.length - 1) * padding;
       }
       r.push(self = {col: this, offset, width: w});

@@ -24,7 +24,7 @@ export function createData(col: IMultiLevelColumn & Column, context: IRenderCont
   let offset = 0;
   const cols = col.children.map((d) => {
     const shift = offset;
-    const width = d.getActualWidth();
+    const width = d.getWidth();
     offset += width;
     offset += (!stacked ? padding : 0);
     return {
@@ -58,10 +58,10 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         matchColumns(n, cols, 'detail', 'html');
 
         const children = <HTMLElement[]>Array.from(n.children);
-        const total = col.getActualWidth();
+        const total = col.getWidth();
         let missingWeight = 0;
         cols.forEach((col, ci) => {
-          const weight = col.column.getActualWidth() / total;
+          const weight = col.column.getWidth() / total;
           const cnode = children[ci];
           cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)`: null;
           if (!useGrid) {
