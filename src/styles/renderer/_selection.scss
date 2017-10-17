@@ -7,6 +7,7 @@
 
   &::before {
     @include fa-icon();
+
     content: $fa-var-square-o;
     padding-top: 2px;
   }

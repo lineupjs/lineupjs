@@ -3,8 +3,8 @@
 
 [data-renderer=aggregate] {
   @include fa-icon();
-  text-align: center;
 
+  text-align: center;
   cursor: pointer;
 
   &::before {
