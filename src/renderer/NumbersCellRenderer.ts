@@ -37,12 +37,11 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
 
     return (ctx: CanvasRenderingContext2D, data: number[], offset: number, rowHeight: number) => {
       data.forEach((d: number, j: number) => {
+        const x = j * cellDimension;
         if (isMissingValue(d)) {
           renderMissingValue(ctx, cellDimension, rowHeight, x, padding + offset);
           return;
         }
-
-        const x = j * cellDimension;
         ctx.beginPath();
         ctx.fillStyle = colorScale(d);
         ctx.fillRect(x, padding + offset, cellDimension, rowHeight);
