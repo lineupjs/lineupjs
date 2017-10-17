@@ -57,6 +57,8 @@ export function createHeader(col: Column, document: Document, ctx: IRankingHeade
   `;
   createToolbar(<HTMLElement>node.querySelector('div.lu-toolbar')!, col, ctx);
 
+  toggleToolbarIcons(node, col);
+
   dragAbleColumn(node, col, ctx);
   mergeDropAble(node, col, ctx);
   rearrangeDropAble(<HTMLElement>node.querySelector('.lu-handle')!, col, ctx);
@@ -242,22 +244,29 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
   };
 }
 
-function toggleToolbarIcons(node: HTMLElement, col: Column) {
+function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClientWidth = 22.5) {
   const toolbar = <HTMLElement>node.querySelector('.lu-toolbar');
   const moreIcon = toolbar.querySelector('[title^=More]')!;
-  const availableWidth = col.getWidth() - moreIcon.clientWidth;
-  const toggableIcons = Array.from(toolbar.querySelectorAll(':scope > :not([title^=More])'))
+  const availableWidth = col.getWidth() - (moreIcon.clientWidth || defaultVisibleClientWidth);
+  const toggableIcons = Array.from(toolbar.children).filter((d) => d !== moreIcon)
     .reverse(); // start hiding with the last icon
 
-  toggableIcons
-    .map((icon) => {
-      icon.classList.remove('hidden'); // first show all icons to calculate the correct `clientWidth`
-      return icon;
-    })
-    .forEach((icon) => {
-      const currentWidth = toggableIcons.map((d) => d.clientWidth).reduce((a, b) => a + b, 0);
-      icon.classList.toggle('hidden', (currentWidth > availableWidth)); // hide icons if necessary
-    });
+  toggableIcons.forEach((icon) => {
+    icon.classList.remove('hidden'); // first show all icons to calculate the correct `clientWidth`
+  });
+  toggableIcons.forEach((icon) => {
+    const currentWidth = toggableIcons.reduce((a, b) => {
+      const realWidth = b.clientWidth;
+      if (realWidth > 0) {
+        return a + realWidth;
+      }
+      if (!b.classList.contains('hidden')) { // since it may have not yet been layouted
+        return a + defaultVisibleClientWidth;
+      }
+      return a;
+    }, 0);
+    icon.classList.toggle('hidden', (currentWidth > availableWidth)); // hide icons if necessary
+  });
 }
 
 export function dragWidth(col: Column, node: HTMLElement) {
