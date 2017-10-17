@@ -42,6 +42,13 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
       ctx.save();
       const w = context.colWidth(col) / (col.getDataLength()-1);
       const h = context.rowHeight(i);
+
+      ctx.strokeStyle = '#c1c1c1';
+      ctx.beginPath();
+      ctx.moveTo(0, h);
+      ctx.lineTo(w * (data.length-1), h);
+      ctx.stroke();
+
       ctx.strokeStyle = 'black';
       ctx.beginPath();
       ctx.moveTo(0, (1 - data[0]) * h);
@@ -73,6 +80,13 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
       const groupHeight = context.groupHeight(group);
       ctx.save();
       ctx.scale(context.colWidth(col) / col.getDataLength(), groupHeight);
+
+      ctx.strokeStyle = '#c1c1c1';
+      ctx.beginPath();
+      ctx.moveTo(0, groupHeight);
+      ctx.lineTo(context.colWidth(col) / col.getDataLength(), groupHeight);
+      ctx.stroke();
+
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
 
       rows.forEach((d) => {
