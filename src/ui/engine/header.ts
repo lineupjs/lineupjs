@@ -74,7 +74,7 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
   const sort = <HTMLElement>node.querySelector(`i[title='Sort']`)!;
   if(sort) {
     const {asc, priority} = col.isSortedByMe();
-    sort.dataset.sort = asc;
+    sort.dataset.sort = asc !== undefined ? asc : '';
     sort.dataset.priority = priority !== undefined ? priority : '';
   }
 

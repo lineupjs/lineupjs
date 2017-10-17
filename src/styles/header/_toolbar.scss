@@ -71,13 +71,20 @@
         content: $fa-var-filter;
       }
 
-      &[title='Stratify']::before,
-      &[title^='Stratify By Threshold']::before {
+      &[title^='Stratify']::before {
         content: $fa-var-bars;
       }
 
-      &[title='Stratify'][data-stratify='true']::before,
-      &[title^='Stratify By Threshold'][data-stratify='true']::before {
+      &[title='Sort']::before {
+        content: $fa-var-sort-amount-asc;
+      }
+
+      &[title='Sort'][data-sort='desc']::before {
+        content: $fa-var-sort-amount-desc;
+      }
+
+      &[title='Sort'][data-sort$='sc']::before,
+      &[title^='Stratify'][data-stratify='true']::before {
         color: $lu_selected_color;
       }
 
@@ -116,15 +123,6 @@
       &[title^='More']::before {
         content: $fa-var-ellipsis-h;
       }
-
-      &[title='Sort']::before,
-      &[title='Sort'][data-sort='asc']::before {
-        content: $fa-var-sort-amount-asc;
-      }
-
-      &[title='Sort'][data-sort='desc']::before {
-        content: $fa-var-sort-amount-desc;
-      }
     }
   }
 
@@ -141,8 +139,7 @@
   [data-type='hierarchy'] {
     .#{$lu_css_prefix}-toolbar i,
     .#{$lu_css_prefix}-more-options i {
-      &[title='Sort']::before,
-      &[title='Sort'][data-sort='asc']::before {
+      &[title='Sort']::before {
         content: $fa-var-sort-alpha-asc;
       }
 
@@ -155,11 +152,17 @@
   /* Override numerical sort icons */
   .rank,
   .number,
-  [data-type='number'] {
+  [data-type='number'],
+  [data-type='numbers'],
+  [data-type='ordinal'],
+  [data-type='boxplot'],
+  [data-type='script'],
+  [data-type='min'],
+  [data-type='max'],
+  [data-type='stack'] {
     .#{$lu_css_prefix}-toolbar i,
     .#{$lu_css_prefix}-more-options i {
-      &[title='Sort']::before,
-      &[title='Sort'][data-sort='asc']::before {
+      &[title='Sort']::before {
         content: $fa-var-sort-numeric-asc;
       }
 
