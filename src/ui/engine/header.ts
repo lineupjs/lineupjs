@@ -157,12 +157,20 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
   if (!isSupportColumn) {
     //rename
     addIcon('Rename + Color &hellip;', RenameDialog);
-    //clone
-    addIcon('Generate Snapshot').onclick = (evt) => {
+  }
+
+  if (isNumberColumn(col) || col instanceof CategoricalColumn) {
+    addIcon('Sort Groupy By &hellip;').onclick = (evt) => {
       evt.stopPropagation();
-      ctx.provider.takeSnapshot(col);
+      col.toggleMyGroupSorting();
     };
   }
+
+  if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
+    //Numbers Sort
+    addIcon('Sort By &hellip;', SortDialog);
+  }
+
   //stratify
   if (col instanceof BooleanColumn || col instanceof CategoricalColumn || col instanceof SelectionColumn) {
     addIcon('Stratify').onclick = (evt) => {
@@ -171,20 +179,8 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
     };
   }
 
-  if (isNumberColumn(col) || col instanceof CategoricalColumn) {
-    addIcon('Sort Groupy By').onclick = (evt) => {
-      evt.stopPropagation();
-      col.toggleMyGroupSorting();
-    };
-  }
-
   if (col instanceof NumberColumn) {
     addIcon('Stratify By Threshold &hellip;', StratifyThresholdDialog);
-  }
-
-  if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
-    //Numbers Sort
-    addIcon('Sort By &hellip;', SortDialog);
   }
 
   if (col.getRendererList().length > 1 || col.getGroupRenderers().length > 1) {
@@ -230,6 +226,14 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
       mcol.setCollapsed(!mcol.getCollapsed());
       const i = <HTMLElement>evt.currentTarget;
       i.title = mcol.getCollapsed() ? 'Expand' : 'Compress';
+    };
+  }
+
+  if (!isSupportColumn) {
+    //clone
+    addIcon('Generate Snapshot').onclick = (evt) => {
+      evt.stopPropagation();
+      ctx.provider.takeSnapshot(col);
     };
   }
 

@@ -59,7 +59,7 @@
         content: $fa-var-external-link;
       }
 
-      &[title='Sort Groupy By']::before {
+      &[title^='Sort Groupy By']::before {
         content: $fa-var-sort;
       }
 
