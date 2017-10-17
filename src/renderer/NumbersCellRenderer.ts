@@ -38,7 +38,7 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
     return (ctx: CanvasRenderingContext2D, data: number[], offset: number, rowHeight: number) => {
       data.forEach((d: number, j: number) => {
         if (isMissingValue(d)) {
-          renderMissingValue(ctx, col.getWidth(), context.rowHeight(j));
+          renderMissingValue(ctx, cellDimension, rowHeight, x, padding + offset);
           return;
         }
 
