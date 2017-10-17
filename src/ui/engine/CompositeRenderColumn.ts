@@ -19,16 +19,13 @@ export default class CompositeRenderColumn extends RenderColumn {
     const node = super.createHeader(document, ctx);
 
     node.addEventListener('mouseenter', () => {
-      this.showOverlay(node);
+      //this.showOverlay(node);
     });
     node.addEventListener('mouseleave', () => {})
     const wrapper = document.createElement('div');
     wrapper.classList.add('lu-sub-nested');
     node.appendChild(wrapper);
     const mc = this.mc;
-    if (mc.getCompressed()) {
-      return node;
-    }
     mc.children.forEach((c) => {
       const n = createHeader(c, document, ctx);
       n.classList.add('lu-header');
@@ -50,9 +47,6 @@ export default class CompositeRenderColumn extends RenderColumn {
 
   private updateNested(wrapper: HTMLElement, ctx: IRankingContext) {
     const mc = this.mc;
-    if (mc.getCompressed()) {
-      return;
-    }
     const sub = this.mc.children;
     const children = <HTMLElement[]>Array.from(wrapper.children);
     sub.forEach((c, i) => {
