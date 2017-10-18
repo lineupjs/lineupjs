@@ -116,7 +116,9 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.data.on(`${DataProvider.EVENT_GROUP_AGGREGATION_CHANGED}.body`, null);
 
     this.rankings.forEach((r) => this.table.remove(r));
+    this.rankings.splice(0, this.rankings.length);
     this.slopeGraphs.forEach((s) => this.table.remove(s));
+    this.slopeGraphs.splice(0, this.slopeGraphs.length);
   }
 
   private initProvider(data: DataProvider) {
