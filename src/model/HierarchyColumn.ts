@@ -204,18 +204,18 @@ export function isHierarchical(categories: (string|ICategory)[]) {
 export function deriveHierarchy(categories: (ICategory&{parent: string|null})[]) {
   const lookup = new Map<string, ICategoryNode>();
   categories.forEach((c) => {
-    const p = c.parent || null;
+    const p = c.parent || '';
     // set and fill up proxy
     const item = Object.assign({ children: []}, lookup.get(c.name) || {}, c);
     lookup.set(c.name, item);
 
     if (!lookup.has(p)) {
       // create proxy
-      lookup.set(p, {name: p || '', children: []});
+      lookup.set(p, {name: p, children: []});
     }
     lookup.get(p)!.children.push(item);
   });
-  const root = lookup.get(null)!;
+  const root = lookup.get('')!;
   console.assert(root !== undefined, 'hierarchy with no root');
   if (root.children.length === 1) {
     return root.children[1];
