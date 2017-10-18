@@ -3,13 +3,17 @@
 
 [data-renderer=aggregate] {
   @include fa-icon();
-  text-align: center;
 
+  text-align: center;
   cursor: pointer;
 
   &::before {
     content: $fa-var-caret-down;
   }
+}
+
+[data-agg=group] [data-renderer=aggregate] {
+  border-right: 1px solid black;
 }
 
 [data-agg=group] [data-renderer=aggregate]::before {
