@@ -7,6 +7,7 @@ import {
   createRankDesc,
   createSelectionDesc,
   createStackDesc,
+  createAggregateDesc,
   IColumnDesc,
   isSupportType,
   models
@@ -539,6 +540,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
           return this.create(createRankDesc());
         case 'selection':
           return this.create(createSelectionDesc());
+        case 'aggregate':
+          return this.create(createAggregateDesc());
         case 'actions':
           const actions = this.create(createActionDesc(column.label || 'actions'))!;
           actions.restore(column, this.createHelper);
