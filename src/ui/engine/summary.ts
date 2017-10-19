@@ -167,7 +167,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
       const bin = bins[i];
       bin.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
       bin.title = `Bin ${i}: ${y}`;
-      bin.dataset.x = x.toString();
+      bin.dataset.x = String(x);
     });
   } else {
     node.dataset.summary = 'slider-hist';

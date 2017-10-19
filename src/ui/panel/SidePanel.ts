@@ -24,12 +24,14 @@ export default class SidePanel {
 
   readonly node: HTMLElement;
   protected readonly descs = new Map<IColumnDesc, SidePanelEntry>();
+  protected data: IDataProvider;
 
   constructor(protected ctx: IRankingHeaderContext, document: Document, options: Partial<ISidePanelOptions> = {}) {
     Object.assign(this.options, options);
 
     this.node = document.createElement('aside');
     this.node.classList.add('lu-side-panel');
+    this.data = ctx.provider;
     this.init();
     this.update(ctx);
   }
@@ -70,16 +72,13 @@ export default class SidePanel {
     });
   }
 
-  protected get data() {
-    return this.ctx.provider;
-  }
-
   private changeDataStorage(old: IDataProvider | null, data: IDataProvider) {
     const that = this;
     if (old) {
       old.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
         DataProvider.EVENT_ADD_DESC, DataProvider.EVENT_CLEAR_DESC), null);
     }
+    this.data = data;
     this.descs.forEach((v) => v.destroyVis());
     this.descs.clear();
     data.getColumns().concat(this.options.additionalDescs).forEach((col) => {
