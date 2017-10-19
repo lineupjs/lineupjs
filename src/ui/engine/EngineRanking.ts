@@ -32,18 +32,23 @@ export interface IEngineRankingOptions {
   customRowUpdate: (row: HTMLElement, rowIndex: number)=>void;
 }
 
+
+
 class RankingEvents extends AEventDispatcher {
+  static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
+  static readonly EVENT_UPDATE_DATA = 'updateData';
+
   fire(type: string | string[], ...args: any[]) {
     super.fire(type, ...args);
   }
   protected createEventList() {
-    return super.createEventList().concat([EngineRanking.EVENT_WIDTH_CHANGED, EngineRanking.EVENT_UPDATE_DATA]);
+    return super.createEventList().concat([RankingEvents.EVENT_WIDTH_CHANGED, RankingEvents.EVENT_UPDATE_DATA]);
   }
 }
 
 export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection {
-  static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
-  static readonly EVENT_UPDATE_DATA = 'updateData';
+  static readonly EVENT_WIDTH_CHANGED = RankingEvents.EVENT_WIDTH_CHANGED;
+  static readonly EVENT_UPDATE_DATA = RankingEvents.EVENT_UPDATE_DATA;
 
   private _context: ICellRenderContext<RenderColumn>;
 
@@ -56,7 +61,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private options: Readonly<IEngineRankingOptions> = {
     animation: true,
-    customRowUpdate: ()=>undefined
+    customRowUpdate: () => undefined
   };
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
