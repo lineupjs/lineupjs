@@ -39,6 +39,7 @@ export interface IEngineRendererOptions {
     rowPadding: number;
     rowHeight: number;
     dynamicHeight?: (data: (IGroupItem|IGroupData)[], ranking: Ranking)=>{defaultHeight: number, height: (item: IGroupItem|IGroupData)=>number};
+    customRowUpdate?: (row: HTMLElement, rowIndex: number)=>void;
   };
 
   renderers: { [key: string]: ICellRendererFactory };
@@ -199,7 +200,10 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       this.slopeGraphs.push(s);
     }
 
-    const r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx));
+    const r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
+      animation: this.options.body.animation,
+      customRowUpdate: this.options.body.customRowUpdate
+    }));
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
 

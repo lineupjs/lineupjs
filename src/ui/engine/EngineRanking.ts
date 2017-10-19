@@ -29,6 +29,7 @@ export interface IEngineRankingContext extends IRankingHeaderContextContainer, I
 
 export interface IEngineRankingOptions {
   animation: boolean;
+  customRowUpdate: (row: HTMLElement, rowIndex: number)=>void;
 }
 
 class RankingEvents extends AEventDispatcher {
@@ -54,7 +55,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   readonly on = this.events.on.bind(this.events);
 
   private options: Readonly<IEngineRankingOptions> = {
-    animation: true
+    animation: true,
+    customRowUpdate: ()=>undefined
   };
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
@@ -164,6 +166,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     super.createRow(node, rowIndex);
     const isGroup = this.renderCtx.isGroup(rowIndex);
 
+    this.options.customRowUpdate(node, rowIndex);
+
     if (isGroup) {
       node.dataset.agg = 'group';
       return;
@@ -181,6 +185,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   protected updateRow(node: HTMLElement, rowIndex: number): void {
     const isGroup = this.renderCtx.isGroup(rowIndex);
     const wasGroup = node.dataset.agg === 'group';
+
+    this.options.customRowUpdate(node, rowIndex);
 
     if (isGroup !== wasGroup) {
       // change of mode clear the children to reinitialize them
