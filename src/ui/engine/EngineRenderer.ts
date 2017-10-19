@@ -17,8 +17,8 @@ import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer'
 import Ranking from '../../model/Ranking';
 import SlopeGraph from './SlopeGraph';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
-import {IFilterDialog} from 'lineupjs/src/dialogs/AFilterDialog';
-import ICellRendererFactory from 'lineupjs/src/renderer/ICellRendererFactory';
+import {IFilterDialog} from '../../dialogs/AFilterDialog';
+import ICellRendererFactory from '../../renderer/ICellRendererFactory';
 
 export interface IEngineRendererOptions {
   header: {
