@@ -6,9 +6,9 @@ import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {createDOM, createDOMGroup} from '../../renderer';
-import {IGroupItem, IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
-import {ILineUpRenderer} from '../interfaces';
-import {ILineUpConfig, IRenderingOptions} from '../../interfaces';
+import {IGroupData, IGroupItem, IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
+import {ILineUpRenderer, ISummaryFunction} from '../interfaces';
+import {IRenderingOptions} from '../../interfaces';
 import {ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
 import NumberColumn from '../../model/NumberColumn';
 import {nonUniformContext} from 'lineupengine/src/logic';
@@ -17,12 +17,38 @@ import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer'
 import Ranking from '../../model/Ranking';
 import SlopeGraph from './SlopeGraph';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
+import {IFilterDialog} from 'lineupjs/src/dialogs/AFilterDialog';
+import ICellRendererFactory from 'lineupjs/src/renderer/ICellRendererFactory';
+
+export interface IEngineRendererOptions {
+  header: {
+    filters: { [type: string]: IFilterDialog },
+    summaries: { [type: string]: ISummaryFunction};
+    summary: boolean;
+    linkTemplates: string[];
+
+    searchAble(col: Column): boolean;
+  };
+
+  body: {
+    columnPadding: number;
+    actions: { name: string, icon: string, action(v: any): void }[];
+    groupHeight: number;
+    groupPadding: number;
+    rowPadding: number;
+    rowHeight: number;
+    dynamicHeight?: (data: (IGroupItem|IGroupData)[], ranking: Ranking)=>{defaultHeight: number, height: (item: IGroupItem|IGroupData)=>number};
+  };
+
+  renderers: { [key: string]: ICellRendererFactory };
+  idPrefix: string;
+}
 
 export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
   static readonly EVENT_HOVER_CHANGED = ABodyRenderer.EVENT_HOVER_CHANGED;
   static readonly EVENT_RENDER_FINISHED = ABodyRenderer.EVENT_RENDER_FINISHED;
 
-  protected readonly options: Readonly<ILineUpConfig>;
+  protected readonly options: Readonly<IEngineRendererOptions>;
 
   private readonly histCache = new Map<string, IStatistics | ICategoricalStatistics | null | Promise<IStatistics | ICategoricalStatistics>>();
 
@@ -36,7 +62,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
 
-  constructor(private data: DataProvider, parent: Element, options: Readonly<ILineUpConfig>) {
+  constructor(private data: DataProvider, parent: Element, options: Readonly<IEngineRendererOptions>) {
     super();
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');
@@ -47,7 +73,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       filters: this.options.header.filters!,
       summaries: this.options.header.summaries ? this.options.header.summaries! : {},
       linkTemplates: this.options.header.linkTemplates!,
-      autoRotateLabels: this.options.header.autoRotateLabels!,
+      autoRotateLabels: false,
       searchAble: this.options.header.searchAble!,
       option: findOption(Object.assign({useGridLayout: true}, this.options.body)),
       statsOf: (col: Column) => {
@@ -209,14 +235,31 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       this.updateHist();
     }
 
-    const itemHeight = Math.round(this.zoomFactor * this.options.body.rowHeight!);
-    const groupHeight = Math.round(this.zoomFactor * this.options.body.groupHeight!);
+
+    const heightsFor = (ranking: Ranking, data: (IGroupItem|IGroupData)[]) => {
+      if (this.options.body.dynamicHeight) {
+        const impl = this.options.body.dynamicHeight(data, ranking);
+        return {
+          defaultHeight: Math.round(this.zoomFactor * impl.defaultHeight),
+          height: (d: IGroupItem|IGroupData) => Math.round(this.zoomFactor * impl.height(d))
+        };
+      }
+      const item = Math.round(this.zoomFactor * this.options.body.rowHeight!);
+      const group = Math.round(this.zoomFactor * this.options.body.groupHeight!);
+      return {
+        defaultHeight: item,
+        height: (d: IGroupItem|IGroupData) => isGroup(d) ? group : item
+      };
+    };
     const groupPadding = Math.round(this.zoomFactor * this.options.body.groupPadding!);
     const rowPadding = Math.round(this.zoomFactor * this.options.body.rowPadding!);
 
     rankings.forEach((r, i) => {
       const grouped = r.groupData(localData[i]);
-      const rowContext = nonUniformContext(grouped.map((d) => isGroup(d) ? groupHeight : itemHeight), itemHeight, (index) => {
+
+      const {height, defaultHeight} = heightsFor(r.ranking, grouped);
+
+      const rowContext = nonUniformContext(grouped.map(height), defaultHeight, (index) => {
         if (index >= 0 && grouped[index] && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last')) {
           return groupPadding + rowPadding;
         }
