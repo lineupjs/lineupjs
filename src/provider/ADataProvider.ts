@@ -762,7 +762,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * @returns {Array}
    */
   getSelection() {
-    return Array.from(this.selection).sort((a, b) => a - b);
+    return Array.from(this.selection);
   }
 
   /**
