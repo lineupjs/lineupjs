@@ -15,7 +15,7 @@ import {isMultiLevelColumn} from '../../model/CompositeColumn';
 import {IGroupData, IGroupItem, IRankingBodyContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import {IDataRow} from '../../provider/ADataProvider';
-import {debounce} from '../../utils';
+import {AEventDispatcher, debounce} from '../../utils';
 import {IAnimationContext} from 'lineupengine/src/animation/index';
 import KeyFinder from 'lineupengine/src/animation/KeyFinder';
 import SelectionManager from './SelectionManager';
@@ -26,26 +26,46 @@ export interface IEngineRankingContext extends IRankingHeaderContextContainer, I
   createRenderer(c: Column): IRenderers;
 }
 
-export interface ICallbacks {
-  widthChanged(): void;
-  updateData(): void;
+
+export interface IEngineRankingOptions {
+  animation: boolean;
+}
+
+class RankingEvents extends AEventDispatcher {
+  fire(type: string | string[], ...args: any[]) {
+    super.fire(type, ...args);
+  }
+  protected createEventList() {
+    return super.createEventList().concat([EngineRanking.EVENT_WIDTH_CHANGED, EngineRanking.EVENT_UPDATE_DATA]);
+  }
 }
 
 export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection {
+  static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
+  static readonly EVENT_UPDATE_DATA = 'updateData';
+
   private _context: ICellRenderContext<RenderColumn>;
 
   private readonly renderCtx: IRankingBodyContext;
   private data: (IGroupItem | IGroupData)[] = [];
   private readonly selection: SelectionManager;
 
-  constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, private readonly callbacks: ICallbacks) {
+  private readonly events = new RankingEvents();
+  readonly on = this.events.on.bind(this.events);
+
+  private options: Readonly<IEngineRankingOptions> = {
+    animation: true
+  };
+
+  constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
     super(header, body, tableId, style);
+    Object.assign(this.options, options);
 
     ranking.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, debounce(() => this.updateHeaders(), 50));
     ranking.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, debounce(() => this.updateBody(), 50));
     ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`], debounce(() => this.updateAll(), 50));
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, () => {
-      this.callbacks.updateData();
+      this.events.fire(EngineRanking.EVENT_UPDATE_DATA);
     });
 
     this.selection = new SelectionManager(this.ctx, body);
@@ -74,7 +94,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   protected onVisibilityChanged(visible: boolean) {
     super.onVisibilityChanged(visible);
     if (visible) {
-      this.callbacks.updateData();
+      this.events.fire(EngineRanking.EVENT_UPDATE_DATA);
     }
   }
 
@@ -121,7 +141,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     });
 
     super.recreate();
-    this.callbacks.widthChanged();
+    this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
   }
 
   updateBody() {
@@ -201,7 +221,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         column.updateWidthRule(this.style);
       }
     });
-    this.callbacks.widthChanged();
+    this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
   }
 
   private updateColumn(index: number) {
@@ -293,7 +313,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     const previous = this._context;
     const previousData = this.data;
-    const previousKey = (index: number) => EngineRanking.toKey(previousData[index]);
     this.data = data;
     (<any>this.renderCtx).totalNumberOfRows = data.length;
 
@@ -304,6 +323,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
     }, rowContext);
 
+    if (!this.options.animation) {
+      return super.recreate();
+    }
+
+    const previousKey = (index: number) => EngineRanking.toKey(previousData[index]);
     const currentKey = (index: number) => EngineRanking.toKey(this.data[index]);
 
     const animCtx: IAnimationContext = {

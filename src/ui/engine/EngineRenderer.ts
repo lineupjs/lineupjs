@@ -31,6 +31,7 @@ export interface IEngineRendererOptions {
   };
 
   body: {
+    animation: boolean;
     columnPadding: number;
     actions: { name: string, icon: string, action(v: any): void }[];
     groupHeight: number;
@@ -198,12 +199,12 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       this.slopeGraphs.push(s);
     }
 
-    let r: EngineRanking;
-    r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
-      widthChanged: () => this.table.widthChanged(),
-      updateData: () => r ? this.update([r]) : null
-    }));
+    const r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx));
+    r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
+    r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
+
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.renderer`, () => this.updateHist(r));
+
     this.rankings.push(r);
     this.update([r]);
   }
