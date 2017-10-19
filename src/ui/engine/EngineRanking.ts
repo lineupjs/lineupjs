@@ -64,6 +64,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     customRowUpdate: () => undefined
   };
 
+  private readonly delayedUpdate = debounce(() => this.events.fire(EngineRanking.EVENT_UPDATE_DATA), 50);
+
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
     super(header, body, tableId, style);
     Object.assign(this.options, options);
@@ -72,7 +74,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ranking.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, debounce(() => this.updateBody(), 50));
     ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`], debounce(() => this.updateAll(), 50));
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, () => {
-      this.events.fire(EngineRanking.EVENT_UPDATE_DATA);
+      this.delayedUpdate();
     });
 
     this.selection = new SelectionManager(this.ctx, body);
@@ -101,7 +103,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   protected onVisibilityChanged(visible: boolean) {
     super.onVisibilityChanged(visible);
     if (visible) {
-      this.events.fire(EngineRanking.EVENT_UPDATE_DATA);
+      this.delayedUpdate();
     }
   }
 
@@ -313,13 +315,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return {item2groupIndex, group2firstItemIndex};
   }
 
-  private static toColor(current: number, previous: number) {
-    if (current === previous || previous < 0 || current < 0) {
-      return null;
-    }
-    const delta = current - previous;
-    return `rgba(${delta > 0 ? 255: 0}, ${delta < 0 ? 255: 0}, 0, ${0.25 * Math.min(1,Math.abs(delta) / 10)})`;
-  }
+  //private static toColor(current: number, previous: number) {
+  //  if (current === previous || previous < 0 || current < 0) {
+  //    return null;
+  //  }
+  //  const delta = current - previous;
+  //  return `rgba(${delta > 0 ? 255: 0}, ${delta < 0 ? 255: 0}, 0, ${0.25 * Math.min(1,Math.abs(delta) / 10)})`;
+  //}
 
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     const previous = this._context;
@@ -345,27 +347,27 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       previous, previousKey, currentKey
     };
 
-    animCtx.animate = (node: HTMLElement, currentRowIndex, previousRowIndex, phase) => {
+    animCtx.animate = (node: HTMLElement, _currentRowIndex, previousRowIndex, phase) => {
       switch(phase) {
         case 'before':
           node.style.opacity = previousRowIndex < 0 ? '0' : null;
-          node.style.backgroundColor = EngineRanking.toColor(currentRowIndex, previousRowIndex);
+          //node.style.backgroundColor = EngineRanking.toColor(currentRowIndex, previousRowIndex);
           break;
         case 'after':
         case 'cleanup':
           node.style.opacity = null;
-          node.style.backgroundColor = null;
+          //node.style.backgroundColor = null;
           break;
       }
     };
-    animCtx.removeAnimate = (node: HTMLElement, currentRowIndex, previousRowIndex, phase) => {
+    animCtx.removeAnimate = (node: HTMLElement, _currentRowIndex, _previousRowIndex, phase) => {
       switch(phase) {
         case 'before':
-          node.style.backgroundColor = EngineRanking.toColor(currentRowIndex, previousRowIndex);
+          //node.style.backgroundColor = EngineRanking.toColor(currentRowIndex, previousRowIndex);
           break;
         case 'after':
           node.style.opacity = '0';
-          node.style.backgroundColor = null;
+          //node.style.backgroundColor = null;
           break;
         case 'cleanup':
           node.style.opacity = null;
