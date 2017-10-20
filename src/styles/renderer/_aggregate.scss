@@ -15,7 +15,7 @@
   @else if($top == true and $bottom == false) {
     background-image: $vertical-stroke, $top-stroke;
   }
-  @else if($top == bottom and $bottom == true) {
+  @else if($top == false and $bottom == true) {
     background-image: $vertical-stroke, $bottom-stroke;
   }
   @else {
