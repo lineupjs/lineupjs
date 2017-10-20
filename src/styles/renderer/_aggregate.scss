@@ -13,7 +13,13 @@
 }
 
 [data-agg=group] [data-renderer=aggregate] {
-  border-right: 1px solid black;
+  background-image:
+    linear-gradient(to left, transparent 3px, #000000 3px, #000000 4px, transparent 4px),
+    linear-gradient(to bottom, #000000 1px, transparent 1px),
+    linear-gradient(to top, #000000 1px, transparent 1px);
+  background-size: 4px 100%;
+  background-repeat: no-repeat;
+  background-position: center right;
 }
 
 [data-agg=group] [data-renderer=aggregate]::before {
