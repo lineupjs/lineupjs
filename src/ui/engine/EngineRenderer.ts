@@ -202,7 +202,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
 
     const r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
       animation: this.options.body.animation,
-      customRowUpdate: this.options.body.customRowUpdate
+      customRowUpdate: this.options.body.customRowUpdate || (() => undefined)
     }));
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
