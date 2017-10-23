@@ -1,4 +1,4 @@
-import CategoricalColumn from '../model/CategoricalColumn';
+import CategoricalColumn, {isEmptyFilter} from '../model/CategoricalColumn';
 import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
 import {Selection} from 'd3';
 
@@ -59,7 +59,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     redrawSelectAll();
 
     const updateData = (filter: string[], filterMissing: boolean) => {
-      const noFilter = filter === null && filterMissing === false;
+      const noFilter = isEmptyFilter({filter, filterMissing});
       this.markFiltered(!noFilter);
       this.column.setFilter(noFilter ? null : {filter, filterMissing});
     };
