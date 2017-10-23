@@ -513,11 +513,14 @@ export default class HeaderRenderer {
     });
     $headers.select('span.lu-label').text((d) => d.label);
 
-    const resolveDrop = (data: {[key: string]: string}, copy: boolean, numbersOnly: boolean) => {
+    const resolveDrop = (self: Column, data: {[key: string]: string}, copy: boolean, numbersOnly: boolean) => {
       const prefix = `application/caleydo-lineup-column${numbersOnly?'-number':''}`;
       if (`${prefix}-ref` in data) {
         const id = data[`${prefix}-ref`];
         let col: Column = this.data.find(id);
+        if (col === self) {
+          return null; // cannot drop onto one self
+        }
         if (copy) {
           col = this.data.clone(col);
         } else if (col) {
@@ -543,19 +546,22 @@ export default class HeaderRenderer {
     };
 
     $headers.filter((d) => isMultiLevelColumn(d) && (<IMultiLevelColumn>d).canJustAddNumbers).each(renderMultiLevel).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-number-ref', 'application/caleydo-lineup-column-number'], (data, d: IMultiLevelColumn, copy) => {
-      const col: Column = resolveDrop(data, copy, true);
-      return d.push(col) != null;
+      const col: Column = resolveDrop(d, data, copy, true);
+      return col && d.push(col) != null;
     }));
 
     $headers.filter((d) => isMultiLevelColumn(d) && !(<IMultiLevelColumn>d).canJustAddNumbers).each(renderMultiLevel).select('div.lu-label').call(dropAble(['application/caleydo-lineup-column-ref', 'application/caleydo-lineup-number'], (data, d: IMultiLevelColumn, copy) => {
-      const col: Column = resolveDrop(data, copy, false);
-      return d.push(col) != null;
+      const col: Column = resolveDrop(d, data, copy, false);
+      return col && d.push(col) != null;
     }));
 
     const justNumbers = (d: Column) => (d instanceof CompositeColumn && d.canJustAddNumbers) || (isNumberColumn(d) && d.parent instanceof Ranking);
     const dropOrMerge = (justNumbers: boolean) => {
       return (data, d: CompositeColumn|(Column & INumberColumn), copy) => {
-        const col: Column = resolveDrop(data, copy, justNumbers);
+        const col: Column = resolveDrop(d, data, copy, justNumbers);
+        if (!col) {
+          return;
+        }
         if (d instanceof CompositeColumn) {
           return (d.push(col) !== null);
         }
