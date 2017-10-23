@@ -527,11 +527,14 @@ export default class MappingEditor {
 
     $root.select('select').on('change', function () {
       const v = this.value;
+      if (v === '') {
+        return;
+      }
       if (v === 'linear_invert') {
-        that.scale = new ScaleMappingFunction(raw2pixel.domain(), 'linear', [1, 0]);
+        that.scale = new ScaleMappingFunction(raw2pixel.domain(), 'linear_invert', [1, 0]);
       } else if (v === 'linear_abs') {
         const d = raw2pixel.domain();
-        that.scale = new ScaleMappingFunction([d[0], (d[1] - d[0]) / 2, d[1]], 'linear', [1, 0, 1]);
+        that.scale = new ScaleMappingFunction([d[0], (d[1] - d[0]) / 2, d[1]], 'linear_abs', [1, 0, 1]);
       } else if (v === 'script') {
         that.scale = new ScriptMappingFunction(raw2pixel.domain());
       } else {
