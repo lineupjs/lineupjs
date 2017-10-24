@@ -37,22 +37,28 @@ export function similar(a: number, b: number, delta = 0.5) {
   return Math.abs(a - b) < delta;
 }
 
+interface IDebounceContext {
+  self: any;
+  args: any[];
+}
+
 /**
  * create a delayed call, can be called multiple times but only the last one at most delayed by timeToDelay will be executed
  * @param {(...args: any[]) => void} callback the callback to call
  * @param {number} timeToDelay delay the call in milliseconds
- * @param {delayedCall} thisCallback this argument of the callback
  * @return {(...args: any[]) => any} a function that can be called with the same interface as the callback but delayed
  */
-export function debounce(callback: (...args: any[]) => void, timeToDelay = 100, thisCallback = null) {
+export function debounce(callback: (...args: any[]) => void, timeToDelay = 100, choose?: (current: IDebounceContext, next: IDebounceContext)=>IDebounceContext) {
   let tm = -1;
+  let ctx: IDebounceContext;
   return function (this: any, ...args: any[]) {
     if (tm >= 0) {
       clearTimeout(tm);
       tm = -1;
     }
-    args.unshift(thisCallback === null ? this : thisCallback);
-    tm = setTimeout(callback.bind.apply(callback, args), timeToDelay);
+    const next = { self: this, args};
+    ctx = ctx && choose ? choose(ctx, next) : next;
+    tm = setTimeout(callback.bind(ctx.self, ...ctx.args), timeToDelay);
   };
 }
 

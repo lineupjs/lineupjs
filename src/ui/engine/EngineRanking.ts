@@ -8,16 +8,13 @@ import Ranking from '../../model/Ranking';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import Column, {IFlatColumn} from '../../model/Column';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
-import {IExceptionContext, uniformContext} from 'lineupengine/src/logic';
+import {IExceptionContext, nonUniformContext, uniformContext} from 'lineupengine/src/logic';
 import StackColumn from '../../model/StackColumn';
-import {nonUniformContext} from 'lineupengine/src/index';
 import {isMultiLevelColumn} from '../../model/CompositeColumn';
 import {IGroupData, IGroupItem, IRankingBodyContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import {IDataRow} from '../../provider/ADataProvider';
 import {AEventDispatcher, debounce} from '../../utils';
-import {IAnimationContext} from 'lineupengine/src/animation/index';
-import KeyFinder from 'lineupengine/src/animation/KeyFinder';
 import SelectionManager from './SelectionManager';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
@@ -64,18 +61,29 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     customRowUpdate: () => undefined
   };
 
-  private readonly delayedUpdate = debounce(() => this.events.fire(EngineRanking.EVENT_UPDATE_DATA), 50);
+  private readonly delayedUpdate: (this: {type: string})=>void;
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
     super(header, body, tableId, style);
     Object.assign(this.options, options);
 
-    ranking.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, debounce(() => this.updateHeaders(), 50));
-    ranking.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, debounce(() => this.updateBody(), 50));
-    ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`], debounce(() => this.updateAll(), 50));
-    ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, () => {
-      this.delayedUpdate();
+    const that = this;
+    this.delayedUpdate = debounce((function(this: {type: string}) {
+      if (this.type === Ranking.EVENT_DIRTY_VALUES) {
+        that.updateBody();
+      } else {
+        that.events.fire(EngineRanking.EVENT_UPDATE_DATA);
+      }
+    }), 50, (current, next) => {
+      const currentEvent = current.self.type;
+      // order changed is more important
+      return currentEvent === Ranking.EVENT_ORDER_CHANGED ? current : next;
     });
+
+    ranking.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, debounce(() => this.updateHeaders(), 50));
+    ranking.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, this.delayedUpdate);
+    ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`], debounce(() => this.updateAll(), 50));
+    ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, this.delayedUpdate);
 
     this.selection = new SelectionManager(this.ctx, body);
     this.selection.on(SelectionManager.EVENT_SELECT_RANGE, (from: number, to: number, additional: boolean) => {
@@ -103,7 +111,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   protected onVisibilityChanged(visible: boolean) {
     super.onVisibilityChanged(visible);
     if (visible) {
-      this.delayedUpdate();
+      this.delayedUpdate.call({type: Ranking.EVENT_ORDER_CHANGED});
     }
   }
 
@@ -302,27 +310,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return (<IGroupItem>item).dataIndex.toString();
   }
 
-  private static toGroupLookup(items: (IGroupItem | IGroupData)[]): IGroupLookUp {
-    const item2groupIndex = new Map<number, number>();
-    const group2firstItemIndex = new Map<string, number>();
-    items.forEach((item, i) => {
-      if (isGroup(item)) {
-        item.rows.forEach((d) => item2groupIndex.set(d.dataIndex, i));
-      } else if (item.relativeIndex === 0 && item.group) {
-        group2firstItemIndex.set(item.group.name, i);
-      }
-    });
-    return {item2groupIndex, group2firstItemIndex};
-  }
-
-  //private static toColor(current: number, previous: number) {
-  //  if (current === previous || previous < 0 || current < 0) {
-  //    return null;
-  //  }
-  //  const delta = current - previous;
-  //  return `rgba(${delta > 0 ? 255: 0}, ${delta < 0 ? 255: 0}, 0, ${0.25 * Math.min(1,Math.abs(delta) / 10)})`;
-  //}
-
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     const previous = this._context;
     const previousData = this.data;
@@ -343,63 +330,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const previousKey = (index: number) => EngineRanking.toKey(previousData[index]);
     const currentKey = (index: number) => EngineRanking.toKey(this.data[index]);
 
-    const animCtx: IAnimationContext = {
-      previous, previousKey, currentKey
-    };
-
-    animCtx.animate = (node: HTMLElement, _currentRowIndex, previousRowIndex, phase) => {
-      switch(phase) {
-        case 'before':
-          node.style.opacity = previousRowIndex < 0 ? '0' : null;
-          //node.style.backgroundColor = EngineRanking.toColor(currentRowIndex, previousRowIndex);
-          break;
-        case 'after':
-        case 'cleanup':
-          node.style.opacity = null;
-          //node.style.backgroundColor = null;
-          break;
-      }
-    };
-    animCtx.removeAnimate = (node: HTMLElement, _currentRowIndex, _previousRowIndex, phase) => {
-      switch(phase) {
-        case 'before':
-          //node.style.backgroundColor = EngineRanking.toColor(currentRowIndex, previousRowIndex);
-          break;
-        case 'after':
-          node.style.opacity = '0';
-          //node.style.backgroundColor = null;
-          break;
-        case 'cleanup':
-          node.style.opacity = null;
-          break;
-      }
-    };
-
-    if (this.ranking.getGroupCriteria().length > 0) {
-      // potential for aggregation changes
-      // try to appear where the group was uncollapsed and vice versa
-      const prevHelper: IGroupLookUp = EngineRanking.toGroupLookup(previousData);
-      const currHelper: IGroupLookUp = EngineRanking.toGroupLookup(this.data);
-      animCtx.appearPosition = (currentRowIndex: number, previousFinder: KeyFinder) => {
-        const item = this.data[currentRowIndex];
-        const referenceIndex = isGroup(item) ? prevHelper.group2firstItemIndex.get(item.name) : prevHelper.item2groupIndex.get(item.dataIndex);
-        if (referenceIndex === undefined) {
-          return this._context.totalHeight;
-        }
-        const pos = previousFinder.posByKey(previousKey(referenceIndex));
-        return pos.pos >= 0 ? pos.pos : this._context.totalHeight;
-      };
-      animCtx.removePosition = (previousRowIndex: number, currentFinder: KeyFinder) => {
-        const item = previousData[previousRowIndex];
-        const referenceIndex = isGroup(item) ? currHelper.group2firstItemIndex.get(item.name) : currHelper.item2groupIndex.get(item.dataIndex);
-        if (referenceIndex === undefined) {
-          return this._context.totalHeight;
-        }
-        const pos = currentFinder.posByKey(currentKey(referenceIndex));
-        return pos.pos >= 0 ? pos.pos : this._context.totalHeight;
-      };
-    }
-    super.recreate(animCtx);
+    super.recreate({previous, previousKey, currentKey});
   }
 
   fakeHover(dataIndex: number) {
@@ -436,9 +367,4 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return new RenderColumn(c, renderers, i);
     });
   }
-}
-
-interface IGroupLookUp {
-  item2groupIndex: Map<number, number>;
-  group2firstItemIndex: Map<string, number>;
 }
