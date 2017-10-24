@@ -120,6 +120,10 @@
   font-size: 150%;
 }
 
+&[data-summary=aggregation] > i {
+  padding-right: $lu_aggregate_square_bracket_width;
+}
+
 &[data-summary=string],
 &[data-summary=selection],
 &[data-summary=aggregation] {
