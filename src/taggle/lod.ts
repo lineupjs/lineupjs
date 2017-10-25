@@ -1,4 +1,3 @@
-
 export const GROUP_SPACING = 5;
 export const ROW_SPACING = 2;
 
@@ -8,7 +7,7 @@ export const leafMargins: { [key: string]: number } = {
   low: 0
 };
 
-export function levelOfDetailInner(height: number): 'high'|'medium'|'low' {
+export function levelOfDetailInner(height: number): 'high' | 'medium' | 'low' {
   if (height >= 35) {
     return 'high';
   }
@@ -18,7 +17,7 @@ export function levelOfDetailInner(height: number): 'high'|'medium'|'low' {
   return 'low';
 }
 
-export function levelOfDetailLeaf(height: number): 'high'|'medium'|'low' {
+export function levelOfDetailLeaf(height: number): 'high' | 'medium' | 'low' {
   if (height >= 18) {
     return 'high';
   }

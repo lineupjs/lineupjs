@@ -97,7 +97,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
       UP: 38,
       DOWN: 40
     };
-    switch(evt.which) {
+    switch (evt.which) {
       case KEYS.ESC:
         this.search.blur();
         break;
@@ -133,7 +133,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
     return <HTMLElement>this.body.querySelector('.lu-search-highlighted') || null;
   }
 
-  private set highlighted(value: HTMLElement|null) {
+  private set highlighted(value: HTMLElement | null) {
     const old = this.highlighted;
     if (old === value) {
       return;
