@@ -1,9 +1,63 @@
 @import '../vars';
 
+.#{$lu_css_prefix}-search {
+  position: relative;
 
+  > input {
+    width: 100%;
+  }
 
-@at-root {
-  /*
-  popup related
-   */
+  > div {
+    display: none;
+    position: absolute;
+    overflow: auto;
+    z-index: 1000;
+    max-height: 0;
+    background: white;
+    text-align: left;
+    padding: 0.2em;
+    margin: 1px;
+    transition: all linear 0.5s;
+    pointer-events: none;
+
+    box-shadow: 0 0 1px 1px $lu_side_panel_bg_color $lu_side_panel_bg_color;
+
+    &.lu-search-empty::before {
+      content: 'No results found';
+    }
+
+    ul,
+    li {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    li > span {
+      padding: 0.2em;
+      display: block;
+    }
+
+    li.#{$lu_css_prefix}-search-group > span {
+      background: $lu_side_panel_bg_color;
+      text-transform: capitalize;
+    }
+
+    li.#{$lu_css_prefix}-search-item > span {
+      cursor: pointer;
+      padding-left: 0.4em;
+      pointer-events: auto;
+
+      &:hover {
+        background-color: #f8f8f8;
+      }
+    }
+  }
+
+  &.#{$lu_css_prefix}-search-open {
+    > div {
+      display: block;
+      max-height: 70vh;
+    }
+  }
 }

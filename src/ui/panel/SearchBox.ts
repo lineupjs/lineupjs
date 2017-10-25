@@ -2,7 +2,6 @@
  * Created by Samuel Gratzl on 25.10.2017.
  */
 import {AEventDispatcher} from '../../utils';
-import ADialog from '../../dialogs/ADialog';
 
 export interface IItem {
   id: string;
@@ -24,7 +23,6 @@ export interface ISearchBoxOptions<T extends IItem> {
   formatItem(item: T | IGroupItem<T>, node: HTMLElement): string;
 
   placeholder: string;
-  noResults: string;
 }
 
 export default class SearchBox<T extends IItem> extends AEventDispatcher {
@@ -33,39 +31,29 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   private readonly options: Readonly<ISearchBoxOptions<T>> = {
     formatItem: (item) => item.text,
     doc: document,
-    placeholder: 'Select...',
-    noResults: 'No results found'
+    placeholder: 'Select...'
   };
 
-  readonly node: HTMLInputElement;
-  readonly body: HTMLElement;
-  private readonly dialog: ADialog;
+  readonly node: HTMLElement;
+  private search: HTMLInputElement;
+  private body: HTMLElement;
 
   private values: (T | IGroupItem<T>)[] = [];
-  private current: HTMLElement | null = null;
 
   constructor(options: Partial<ISearchBoxOptions<T>> = {}) {
     super();
     Object.assign(this.options, options);
 
-    this.node = this.options.doc.createElement('input');
-    this.node.type = 'search';
-    this.node.placeholder = this.options.placeholder;
-    this.node.onfocus = () => this.focus();
-    this.node.onblur = () => this.blur();
-    this.node.oninput = () => this.filterResults(this.body, this.node.value.toLowerCase());
+    this.node = this.options.doc.createElement('div');
+    this.node.classList.add('lu-search');
+    this.node.innerHTML = `<input type="search" placeholder="${this.options.placeholder}"><div></div>`;
 
-    this.body = this.options.doc.createElement('div');
+    this.search = this.node.querySelector('input')!;
+    this.body = this.node.querySelector('div')!;
 
-    const that = this;
-    this.dialog = new (class extends ADialog {
-      openDialog() {
-        const p = this.makeMenuPopup('');
-        p.classList.add('lu-search-box');
-        p.appendChild(that.body);
-        that.current = p;
-      }
-    })(this.node, this.options.placeholder);
+    this.search.onfocus = () => this.focus();
+    this.search.onblur = () => this.blur();
+    this.search.oninput = () => this.filter();
   }
 
   get data() {
@@ -74,6 +62,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
 
   set data(data: (T | IGroupItem<T>)[]) {
     this.values = data;
+    this.body.innerHTML = '';
     this.buildDialog(this.body, this.values);
   }
 
@@ -81,11 +70,12 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
     values.forEach((v) => {
       if (isItem(v)) {
         node.insertAdjacentHTML('beforeend', `<li class="lu-search-item"><span></span></li>`);
-        (<HTMLElement>node.lastElementChild!).onclick = (evt) => {
+        const span = (<HTMLElement>node.lastElementChild!);
+        span.onmousedown = (evt) => {
+          // see https://stackoverflow.com/questions/10652852/jquery-fire-click-before-blur-event#10653160
           evt.preventDefault();
-          evt.stopPropagation();
-          this.select(v);
-        }
+        };
+        span.onclick = () => this.select(v);
       } else {
         node.insertAdjacentHTML('beforeend', `<li class="lu-search-group"><span></span><ul></ul></li>`);
         const ul = <HTMLElement>node.lastElementChild!.lastElementChild!;
@@ -97,22 +87,27 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   }
 
   private select(item: T) {
-    this.node.value = ''; // reset
+    this.search.value = ''; // reset
+    this.search.blur();
     this.filterResults(this.body, '');
     this.fire(SearchBox.EVENT_SELECT, item);
   }
 
   private focus() {
-    this.dialog.openDialog();
+    this.search.focus();
+    this.body.style.width = `${this.search.offsetWidth}px`;
+    this.node.classList.add('lu-search-open');
   }
 
   private blur() {
-    if (!this.current) {
-      return;
-    }
-    ADialog.removePopup(this.current!);
-    this.node.value = '';
-    this.current = null;
+    console.log('blur');
+    this.search.value = '';
+    this.node.classList.remove('lu-search-open');
+  }
+
+  private filter() {
+    const empty = this.filterResults(this.body, this.search.value.toLowerCase());
+    this.body.classList.toggle('lu-search-empty', empty);
   }
 
   private filterResults(node: HTMLElement, text: string) {
@@ -123,7 +118,8 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
     }
     const children = Array.from(node.children);
     children.forEach((d) => {
-      let hidden = d.firstElementChild!.innerHTML.toLowerCase().includes(text) !== null;
+      const content = d.firstElementChild!.innerHTML.toLowerCase();
+      let hidden = !content.includes(text);
       if (d.classList.contains('lu-search-group')) {
         const ul = <HTMLElement>d.lastElementChild!;
         const allChildrenHidden = this.filterResults(ul, text);
