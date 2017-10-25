@@ -64,7 +64,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         return sort.asc ? r : -r;
       }
     }
-    return 0;
+    return aIndex - bIndex; //to have a deterministic order
   };
 
   readonly groupComparator = (a: IGroupData, b: IGroupData) => {
@@ -77,7 +77,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         return sort.asc ? r : -r;
       }
     }
-    return 0;
+    return a.name.localeCompare(b.name);
   };
 
   readonly grouper = (row: any, index: number) => {
