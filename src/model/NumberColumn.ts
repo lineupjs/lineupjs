@@ -379,7 +379,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return numberCompare(this.getNumber(a, aIndex), this.getNumber(b, bIndex), this.isMissing(a, aIndex), this.isMissing(b, bIndex));
   }
 
-  groupCompare(a: IGroupData, b: IGroupData) {
+  groupCompare(a: IGroupData, b: IGroupData): number {
     const aMedian = medianIndex(a.rows, this);
     const bMedian = medianIndex(b.rows, this);
     const av = a.rows[aMedian];
