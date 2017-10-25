@@ -317,7 +317,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
     }, rowContext);
 
-    return super.recreate(this.options.animation ? lineupAnimation(previous, previousData, this.data): undefined);
+    return super.recreate(this.options.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
   }
 
   fakeHover(dataIndex: number) {
