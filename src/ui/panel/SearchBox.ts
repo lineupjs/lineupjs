@@ -25,6 +25,7 @@ export interface ISearchBoxOptions<T extends IItem> {
   placeholder: string;
 }
 
+
 export default class SearchBox<T extends IItem> extends AEventDispatcher {
   static readonly EVENT_SELECT = 'select';
 
@@ -46,14 +47,15 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
 
     this.node = this.options.doc.createElement('div');
     this.node.classList.add('lu-search');
-    this.node.innerHTML = `<input type="search" placeholder="${this.options.placeholder}"><div></div>`;
+    this.node.innerHTML = `<input type="search" placeholder="${this.options.placeholder}"><ul></ul>`;
 
     this.search = this.node.querySelector('input')!;
-    this.body = this.node.querySelector('div')!;
+    this.body = this.node.querySelector('ul')!;
 
     this.search.onfocus = () => this.focus();
     this.search.onblur = () => this.blur();
     this.search.oninput = () => this.filter();
+    this.search.onkeydown = (evt) => this.handleKey(evt);
   }
 
   get data() {
@@ -76,6 +78,8 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
           evt.preventDefault();
         };
         span.onclick = () => this.select(v);
+        span.onmouseenter = () => this.highlighted = span;
+        span.onmouseleave = () => this.highlighted = null;
       } else {
         node.insertAdjacentHTML('beforeend', `<li class="lu-search-group"><span></span><ul></ul></li>`);
         const ul = <HTMLElement>node.lastElementChild!.lastElementChild!;
@@ -86,6 +90,32 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
     });
   }
 
+  private handleKey(evt: KeyboardEvent) {
+    const KEYS = {
+      ESC: 27,
+      ENTER: 13,
+      UP: 38,
+      DOWN: 40
+    };
+    switch(evt.which) {
+      case KEYS.ESC:
+        this.search.blur();
+        break;
+      case KEYS.ENTER:
+        const h = this.highlighted;
+        if (h) {
+          h.click();
+        }
+        break;
+      case KEYS.UP:
+        this.highlightPrevious();
+        break;
+      case KEYS.DOWN:
+        this.highlightNext();
+        break;
+    }
+  }
+
   private select(item: T) {
     this.search.value = ''; // reset
     this.search.blur();
@@ -94,13 +124,53 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
   }
 
   private focus() {
-    this.search.focus();
     this.body.style.width = `${this.search.offsetWidth}px`;
+    this.highlighted = <HTMLElement>this.body.firstElementChild || null;
     this.node.classList.add('lu-search-open');
   }
 
+  private get highlighted() {
+    return <HTMLElement>this.body.querySelector('.lu-search-highlighted') || null;
+  }
+
+  private set highlighted(value: HTMLElement|null) {
+    const old = this.highlighted;
+    if (old === value) {
+      return;
+    }
+    if (old) {
+      old.classList.remove('lu-search-highlighted');
+    }
+    if (value) {
+      value.classList.add('lu-search-highlighted');
+    }
+  }
+
+  private highlightNext() {
+    const h = this.highlighted;
+    if (!h || h.classList.contains('hidden')) {
+      this.highlighted = <HTMLElement>this.body.querySelector('.lu-search-item:not(.hidden)') || null;
+      return;
+    }
+
+    const items = <HTMLElement[]>Array.from(this.body.querySelectorAll('.lu-search-item:not(.hidden)'));
+    const index = items.indexOf(h);
+    this.highlighted = items[index + 1] || null;
+  }
+
+  private highlightPrevious() {
+    const h = this.highlighted;
+    const items = <HTMLElement[]>Array.from(this.body.querySelectorAll('.lu-search-item:not(.hidden)'));
+
+    if (!h || h.classList.contains('hidden')) {
+      this.highlighted = items[items.length - 1] || null;
+      return;
+    }
+    const index = items.indexOf(h);
+    this.highlighted = items[index - 1] || null;
+  }
+
   private blur() {
-    console.log('blur');
     this.search.value = '';
     this.node.classList.remove('lu-search-open');
   }

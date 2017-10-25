@@ -7,7 +7,7 @@
     width: 100%;
   }
 
-  > div {
+  > ul {
     display: none;
     position: absolute;
     overflow: auto;
@@ -19,6 +19,7 @@
     margin: 1px;
     transition: all linear 0.5s;
     pointer-events: none;
+    list-style: none;
 
     box-shadow: 0 0 1px 1px $lu_side_panel_bg_color $lu_side_panel_bg_color;
 
@@ -52,10 +53,13 @@
         background-color: #f8f8f8;
       }
     }
+    li.#{$lu_css_prefix}-search-highlighted > span {
+      background-color: #f8f8f8;
+    }
   }
 
   &.#{$lu_css_prefix}-search-open {
-    > div {
+    > ul {
       display: block;
       max-height: 70vh;
     }
