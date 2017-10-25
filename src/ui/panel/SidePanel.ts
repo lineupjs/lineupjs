@@ -9,9 +9,9 @@ import {default as Column, IColumnDesc} from '../../model/Column';
 import SidePanelEntry from './SidePanelEntry';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../engine/interfaces';
-import SearchBox from './SearchBox';
+import SearchBox, {ISearchBoxOptions} from './SearchBox';
 
-export interface ISidePanelOptions {
+export interface ISidePanelOptions extends Partial<ISearchBoxOptions<SidePanelEntry>> {
   additionalDescs: IColumnDesc[];
   chooser: boolean;
 }
@@ -20,13 +20,12 @@ export default class SidePanel {
 
   protected readonly options: ISidePanelOptions = {
     additionalDescs: [],
-    chooser: true
+    chooser: true,
+    placeholder: 'Add Column...'
   };
 
   readonly node: HTMLElement;
-  private readonly search = new SearchBox<SidePanelEntry>({
-    placeholder: 'Add Column...'
-  });
+  private readonly search: SearchBox<SidePanelEntry>;
   protected readonly descs = new Map<IColumnDesc, SidePanelEntry>();
   protected data: IDataProvider;
 
@@ -35,6 +34,9 @@ export default class SidePanel {
 
     this.node = document.createElement('aside');
     this.node.classList.add('lu-side-panel');
+
+    this.search = new SearchBox<SidePanelEntry>(this.options);
+
     this.data = ctx.provider;
     this.init();
     this.update(ctx);

@@ -21,16 +21,16 @@ import {IFilterDialog} from '../../dialogs/AFilterDialog';
 import ICellRendererFactory from '../../renderer/ICellRendererFactory';
 
 export interface IEngineRendererOptions {
-  header: {
+  header: Partial<{
     filters: { [type: string]: IFilterDialog },
     summaries: { [type: string]: ISummaryFunction};
     summary: boolean;
     linkTemplates: string[];
 
     searchAble(col: Column): boolean;
-  };
+  }>;
 
-  body: {
+  body: Partial<{
     animation: boolean;
     columnPadding: number;
     actions: { name: string, icon: string, action(v: any): void }[];
@@ -40,7 +40,7 @@ export interface IEngineRendererOptions {
     rowHeight: number;
     dynamicHeight?: (data: (IGroupItem|IGroupData)[], ranking: Ranking)=>{defaultHeight: number, height: (item: IGroupItem|IGroupData)=>number};
     customRowUpdate?: (row: HTMLElement, rowIndex: number)=>void;
-  };
+  }>;
 
   renderers: { [key: string]: ICellRendererFactory };
   idPrefix: string;
