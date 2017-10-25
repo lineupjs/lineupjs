@@ -101,6 +101,8 @@ export interface IDataProvider extends AEventDispatcher {
   getColumns(): IColumnDesc[];
 
   isAggregated(ranking: Ranking, group: IGroup): boolean;
+
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean): void;
 }
 
 
@@ -210,7 +212,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     //delayed reordering per ranking
     r.on(`${Ranking.EVENT_DIRTY_ORDER}.provider`, debounce(function (this: { source: Ranking }) {
       that.triggerReorder(this.source);
-    }, 100, null));
+    }, 100));
     this.fire([ADataProvider.EVENT_ADD_RANKING, ADataProvider.EVENT_DIRTY_HEADER, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], r, index);
     this.triggerReorder(r);
   }
@@ -607,6 +609,19 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       this.aggregations.delete(key);
     }
     this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, group, value);
+  }
+
+  aggregateAllOf(ranking: Ranking, aggregateAll: boolean) {
+    const groups = ranking.getGroups();
+    groups.forEach((group) => {
+      const key = `${ranking.id}@${toGroupID(group)}`;
+      if (aggregateAll) {
+        this.aggregations.add(key);
+      } else {
+        this.aggregations.delete(key);
+      }
+    });
+    this.fire([ADataProvider.EVENT_GROUP_AGGREGATION_CHANGED, ADataProvider.EVENT_DIRTY_VALUES, ADataProvider.EVENT_DIRTY], ranking, groups, aggregateAll);
   }
 
   /**

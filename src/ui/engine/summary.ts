@@ -279,7 +279,7 @@ function summarySelection(col: SelectionColumn, node: HTMLElement, _interactive:
   };
 }
 
-function summaryAggregation(col: AggregateGroupColumn, node: HTMLElement) {
+function summaryAggregation(col: AggregateGroupColumn, node: HTMLElement, _interactive: boolean, ctx: IRankingHeaderContext) {
   const old = node.dataset.summary;
   node.dataset.summary = 'aggregation';
   if (old !== 'aggregation') {
@@ -301,10 +301,9 @@ function summaryAggregation(col: AggregateGroupColumn, node: HTMLElement) {
     if (!ranking) {
       return;
     }
-    const groups = ranking.getGroups();
     const aggregate = button.classList.contains('fa-caret-down');
     button.classList.toggle('fa-caret-down');
     button.classList.toggle('fa-caret-right');
-    groups.forEach((g) => col.setAggregated(g, aggregate));
+    ctx.provider.aggregateAllOf(ranking, aggregate);
   };
 }
