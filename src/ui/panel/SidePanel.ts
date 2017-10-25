@@ -9,6 +9,7 @@ import {default as Column, IColumnDesc} from '../../model/Column';
 import SidePanelEntry from './SidePanelEntry';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../engine/interfaces';
+import SearchBox from './SearchBox';
 
 export interface ISidePanelOptions {
   additionalDescs: IColumnDesc[];
@@ -23,6 +24,9 @@ export default class SidePanel {
   };
 
   readonly node: HTMLElement;
+  private readonly search = new SearchBox<SidePanelEntry>({
+    placeholder: 'Add Column...'
+  });
   protected readonly descs = new Map<IColumnDesc, SidePanelEntry>();
   protected data: IDataProvider;
 
@@ -49,22 +53,12 @@ export default class SidePanel {
       return;
     }
     this.node.insertAdjacentHTML('afterbegin', `<header>
-        <form>
-            <select>
-                <option value="">Add Column...</option>
-            </select>
-        </form>
+        <form></form>
       </header>`);
-    this.node.querySelector('header select')!.addEventListener('change', (evt) => {
-      evt.preventDefault();
-      const id = (<HTMLSelectElement>evt.currentTarget).value;
-      if (id === '') {
-        return;
-      }
-      const entry = Array.from(this.descs.values()).find((d) => d.id === id)!;
-      console.assert(Boolean(entry));
 
-      const col = this.data.create(entry.desc);
+    this.node.querySelector('form')!.appendChild(this.search.node);
+    this.search.on(SearchBox.EVENT_SELECT, (panel: SidePanelEntry) => {
+      const col = this.data.create(panel.desc);
       if (!col) {
         return;
       }
@@ -275,7 +269,7 @@ export default class SidePanel {
           return order[5];
       }
     }).sortKeys((a, b) => order.indexOf(a) - order.indexOf(b))
-      .sortValues((a, b) => a.name.localeCompare(b.name))
+      .sortValues((a, b) => a.text.localeCompare(b.text))
       .entries(entries);
   }
 
@@ -283,18 +277,13 @@ export default class SidePanel {
     if (!this.options.chooser) {
       return;
     }
-    const select = <HTMLSelectElement>this.node.querySelector('header select')!;
     const groups = SidePanel.groupByType(Array.from(this.descs.values()));
 
-    const renderGroup = ({key, values}: { key: string, values: SidePanelEntry[] }) => {
-      return `<optgroup label="${key[0].toUpperCase()}${key.slice(1)}">
-          ${values.map((v) => `<option value="${v.id}">${v.name}</option>`).join('')}
-      </optgroup>`;
-    };
-
-    select.innerHTML = `
-      <option>Add Column...</option>
-      ${groups.map(renderGroup).join('')}
-    `;
+    this.search.data = groups.map((g)=> {
+      return {
+        text: g.key,
+        children: g.values
+      };
+    });
   }
 }
