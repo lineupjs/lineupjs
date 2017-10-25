@@ -16,6 +16,7 @@ import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import {IDataRow} from '../../provider/ADataProvider';
 import {AEventDispatcher, debounce} from '../../utils';
 import SelectionManager from './SelectionManager';
+import {lineupAnimation} from './animation';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
@@ -303,13 +304,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return r;
   }
 
-  private static toKey(item: IGroupItem | IGroupData) {
-    if (isGroup(item)) {
-      return item.name;
-    }
-    return (<IGroupItem>item).dataIndex.toString();
-  }
-
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     const previous = this._context;
     const previousData = this.data;
@@ -323,14 +317,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
     }, rowContext);
 
-    if (!this.options.animation) {
-      return super.recreate();
-    }
-
-    const previousKey = (index: number) => EngineRanking.toKey(previousData[index]);
-    const currentKey = (index: number) => EngineRanking.toKey(this.data[index]);
-
-    super.recreate({previous, previousKey, currentKey});
+    return super.recreate(this.options.animation ? lineupAnimation(previous, previousData, this.data): undefined);
   }
 
   fakeHover(dataIndex: number) {
