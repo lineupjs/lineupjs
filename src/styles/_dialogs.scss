@@ -35,9 +35,12 @@
       z-index: -1;
     }
 
+    form {
+      display: block;
+    }
+
     label {
       font-weight: normal;
-      display: block;
     }
 
     input {
