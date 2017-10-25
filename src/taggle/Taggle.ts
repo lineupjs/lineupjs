@@ -1,9 +1,8 @@
 import {IGroupData, IGroupItem, isGroup} from '../ui/engine/interfaces';
-import {IEngineRendererOptions} from '../ui/engine/EngineRenderer';
+import EngineRenderer, {IEngineRendererOptions} from '../ui/engine/EngineRenderer';
 import {IRule, regular, spacefilling} from './LineUpRuleSet';
 import {defaultConfig} from '../config';
 import {RENDERER_EVENT_HOVER_CHANGED} from '../ui/interfaces';
-import EngineRenderer from '../ui/engine/EngineRenderer';
 import {GROUP_SPACING} from './lod';
 import SidePanel from '../ui/panel/SidePanel';
 import DataProvider from '../provider/ADataProvider';
@@ -28,7 +27,7 @@ export default class Taggle extends AEventDispatcher {
   private isDynamicLeafHeight: boolean = true;
 
   private rule: IRule = regular;
-  private levelOfDetail: (row: HTMLElement, rowIndex: number)=>void;
+  private levelOfDetail: (row: HTMLElement, rowIndex: number) => void;
   private readonly spaceFilling: HTMLElement;
   private readonly resizeListener = () => this.update();
   private readonly renderer: EngineRenderer;
@@ -39,7 +38,7 @@ export default class Taggle extends AEventDispatcher {
     super();
 
     this.node.classList.add('lu-taggle');
-    this.node.innerHTML= `<aside class="panel">
+    this.node.innerHTML = `<aside class="panel">
         <div class="lu-rule-button-chooser">
             <div><span>Overview</span>
               <code></code>
@@ -51,7 +50,7 @@ export default class Taggle extends AEventDispatcher {
       this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser :first-child')!;
       this.spaceFilling.addEventListener('click', () => {
         const selected = this.spaceFilling.classList.toggle('chosen');
-        this.switchRule(selected ? spacefilling: regular);
+        this.switchRule(selected ? spacefilling : regular);
       });
     }
 
@@ -96,13 +95,13 @@ export default class Taggle extends AEventDispatcher {
     }
   }
 
-  private dynamicHeight(data: (IGroupData|IGroupItem)[]) {
+  private dynamicHeight(data: (IGroupData | IGroupItem)[]) {
     const availableHeight = this.node.querySelector('main > main')!.clientHeight;
     const instance = this.rule.apply(data, availableHeight, new Set(this.data.getSelection()));
     this.isDynamicLeafHeight = typeof instance.item === 'function';
     this.setViolation(instance.violation);
 
-    const height = (item: IGroupItem|IGroupData) => {
+    const height = (item: IGroupItem | IGroupData) => {
       if (isGroup(item)) {
         return typeof instance.group === 'number' ? instance.group : instance.group(item);
       }
@@ -117,7 +116,7 @@ export default class Taggle extends AEventDispatcher {
     return {
       defaultHeight: typeof instance.item === 'number' ? instance.item : NaN,
       height
-    }
+    };
   }
 
   protected createEventList() {
@@ -132,7 +131,7 @@ export default class Taggle extends AEventDispatcher {
   private setViolation(violation?: string) {
     violation = violation || '';
     this.spaceFilling.classList.toggle('violated', Boolean(violation));
-    this.spaceFilling.lastElementChild!.textContent = violation.replace(/\n/g,'<br>');
+    this.spaceFilling.lastElementChild!.textContent = violation.replace(/\n/g, '<br>');
   }
 
   destroy() {

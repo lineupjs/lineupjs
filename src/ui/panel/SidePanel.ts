@@ -281,7 +281,7 @@ export default class SidePanel {
     }
     const groups = SidePanel.groupByType(Array.from(this.descs.values()));
 
-    this.search.data = groups.map((g)=> {
+    this.search.data = groups.map((g) => {
       return {
         text: g.key,
         children: g.values
