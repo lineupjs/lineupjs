@@ -64,7 +64,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
 
-  constructor(private data: DataProvider, parent: Element, options: Readonly<IEngineRendererOptions>) {
+  constructor(protected data: DataProvider, parent: Element, options: Readonly<IEngineRendererOptions>) {
     super();
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');

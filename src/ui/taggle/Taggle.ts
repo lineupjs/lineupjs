@@ -8,6 +8,7 @@ import SidePanel from '../panel/SidePanel';
 import DataProvider from '../../provider/ADataProvider';
 import {AEventDispatcher, merge} from '../../utils';
 import SidePanelEntry from '../panel/SidePanelEntry';
+import TaggleRenderer from './TaggleRenderer';
 
 export declare type ITaggleOptions = IEngineRendererOptions;
 
@@ -24,13 +25,8 @@ export default class Taggle extends AEventDispatcher {
    */
   static readonly EVENT_SELECTION_CHANGED = DataProvider.EVENT_SELECTION_CHANGED;
 
-  private isDynamicLeafHeight: boolean = true;
-
-  private rule: IRule = regular;
-  private levelOfDetail: (row: HTMLElement, rowIndex: number) => void;
   private readonly spaceFilling: HTMLElement;
-  private readonly resizeListener = () => this.update();
-  private readonly renderer: EngineRenderer;
+  private readonly renderer: TaggleRenderer;
   private readonly panel: SidePanel;
 
 
@@ -50,13 +46,13 @@ export default class Taggle extends AEventDispatcher {
       this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser :first-child')!;
       this.spaceFilling.addEventListener('click', () => {
         const selected = this.spaceFilling.classList.toggle('chosen');
-        this.switchRule(selected ? spacefilling : regular);
+        this.renderer.switchRule(selected ? spacefilling : regular);
       });
     }
 
-    const config = this.createConfig(options);
-
-    this.renderer = new EngineRenderer(data, this.node, config);
+    this.renderer = new TaggleRenderer(this.node, data, Object.assign({
+      violationChanged: (_rule, violation) => this.setViolation(violation)
+    }, options));
     this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
       formatItem: (item: SidePanelEntry) => `<span data-type="${item.desc ? item.desc.type : item.text}"><span>${item.text}</span></span>`
     });
@@ -64,14 +60,7 @@ export default class Taggle extends AEventDispatcher {
     this.node.firstElementChild!.appendChild(this.panel.node);
 
     this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
-    this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, () => {
-      if (this.isDynamicLeafHeight) {
-        this.update();
-      }
-    });
     this.forward(this.renderer, `${RENDERER_EVENT_HOVER_CHANGED}.main`);
-
-    window.addEventListener('resize', this.resizeListener);
   }
 
   private createConfig(options: Partial<IEngineRendererOptions>): IEngineRendererOptions {
@@ -82,50 +71,13 @@ export default class Taggle extends AEventDispatcher {
       body: {
         animation: true,
         rowPadding: 0, //since padding is used
-        groupPadding: GROUP_SPACING,
-        dynamicHeight: this.dynamicHeight.bind(this),
-        customRowUpdate: this.customRowUpdate.bind(this)
+        groupPadding: GROUP_SPACING
       }
     });
   }
 
-  private customRowUpdate(row: HTMLElement, rowIndex: number) {
-    if (this.levelOfDetail) {
-      this.levelOfDetail(row, rowIndex);
-    }
-  }
-
-  private dynamicHeight(data: (IGroupData | IGroupItem)[]) {
-    const availableHeight = this.node.querySelector('main > main')!.clientHeight;
-    const instance = this.rule.apply(data, availableHeight, new Set(this.data.getSelection()));
-    this.isDynamicLeafHeight = typeof instance.item === 'function';
-    this.setViolation(instance.violation);
-
-    const height = (item: IGroupItem | IGroupData) => {
-      if (isGroup(item)) {
-        return typeof instance.group === 'number' ? instance.group : instance.group(item);
-      }
-      return typeof instance.item === 'number' ? instance.item : instance.item(item);
-    };
-
-    this.levelOfDetail = (row: HTMLElement, rowIndex: number) => {
-      const item = data[rowIndex];
-      row.dataset.lod = this.rule.levelOfDetail(item, height(item));
-    };
-
-    return {
-      defaultHeight: typeof instance.item === 'number' ? instance.item : NaN,
-      height
-    };
-  }
-
   protected createEventList() {
     return super.createEventList().concat([Taggle.EVENT_HOVER_CHANGED, Taggle.EVENT_SELECTION_CHANGED]);
-  }
-
-  private switchRule(rule: IRule) {
-    this.rule = rule;
-    this.update();
   }
 
   private setViolation(violation?: string) {
@@ -137,7 +89,6 @@ export default class Taggle extends AEventDispatcher {
   destroy() {
     this.renderer.destroy();
     this.node.remove();
-    window.removeEventListener('resize', this.resizeListener);
   }
 
   dump() {
@@ -150,19 +101,13 @@ export default class Taggle extends AEventDispatcher {
 
   changeDataStorage(data: DataProvider, dump?: any) {
     if (this.data) {
-      this.unforward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
-      this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, null);
+      this.unforward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
     }
     this.data = data;
     if (dump) {
       this.data.restore(dump);
     }
-    this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
-    this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, () => {
-      if (this.isDynamicLeafHeight) {
-        this.update();
-      }
-    });
+    this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
     this.renderer.changeDataStorage(data);
     this.update();
     this.panel.update(this.renderer.ctx);
