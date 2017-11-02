@@ -7,7 +7,7 @@ import './taggle.scss';
 import * as model_ from './model';
 import * as provider_ from './provider';
 import LineUp, {ILineUpConfig} from './lineup';
-import Taggle, {ITaggleOptions} from './taggle/index';
+import Taggle, {ITaggleOptions} from './ui/taggle/index';
 
 export {deriveColors} from './utils';
 export {deriveColumnDescriptions} from './provider';

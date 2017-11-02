@@ -1,13 +1,13 @@
-import {IGroupData, IGroupItem, isGroup} from '../ui/engine/interfaces';
-import EngineRenderer, {IEngineRendererOptions} from '../ui/engine/EngineRenderer';
+import {IGroupData, IGroupItem, isGroup} from '../engine/interfaces';
+import EngineRenderer, {IEngineRendererOptions} from '../engine/EngineRenderer';
 import {IRule, regular, spacefilling} from './LineUpRuleSet';
-import {defaultConfig} from '../config';
-import {RENDERER_EVENT_HOVER_CHANGED} from '../ui/interfaces';
+import {defaultConfig} from '../../config';
+import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import {GROUP_SPACING} from './lod';
-import SidePanel from '../ui/panel/SidePanel';
-import DataProvider from '../provider/ADataProvider';
-import {AEventDispatcher, merge} from '../utils';
-import SidePanelEntry from '../ui/panel/SidePanelEntry';
+import SidePanel from '../panel/SidePanel';
+import DataProvider from '../../provider/ADataProvider';
+import {AEventDispatcher, merge} from '../../utils';
+import SidePanelEntry from '../panel/SidePanelEntry';
 
 export declare type ITaggleOptions = IEngineRendererOptions;
 
