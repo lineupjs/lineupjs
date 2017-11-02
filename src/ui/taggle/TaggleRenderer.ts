@@ -39,7 +39,6 @@ export default class TaggleRenderer extends AEventDispatcher {
 
     this.renderer = new EngineRenderer(data, parent, config);
 
-    this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
     this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, () => {
       if (this.isDynamicLeafHeight) {
         this.update();
