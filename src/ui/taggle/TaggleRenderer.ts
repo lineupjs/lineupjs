@@ -108,6 +108,14 @@ export default class TaggleRenderer extends AEventDispatcher {
     return super.createEventList().concat([TaggleRenderer.EVENT_HOVER_CHANGED]);
   }
 
+  zoomOut() {
+    this.renderer.zoomOut();
+  }
+
+  zoomIn() {
+    this.renderer.zoomIn();
+  }
+
   switchRule(rule: IRule) {
     this.rule = rule;
     this.update();
