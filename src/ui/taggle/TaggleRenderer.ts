@@ -80,7 +80,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   }
 
   private dynamicHeight(data: (IGroupData | IGroupItem)[]) {
-    const availableHeight = this.renderer.node.clientHeight;
+    const availableHeight = this.renderer ? this.renderer.node.clientHeight : 100;
     const instance = this.rule.apply(data, availableHeight, new Set(this.data.getSelection()));
     this.isDynamicLeafHeight = typeof instance.item === 'function';
 

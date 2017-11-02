@@ -1,12 +1,9 @@
-import {IGroupData, IGroupItem, isGroup} from '../engine/interfaces';
-import EngineRenderer, {IEngineRendererOptions} from '../engine/EngineRenderer';
-import {IRule, regular, spacefilling} from './LineUpRuleSet';
-import {defaultConfig} from '../../config';
+import {IEngineRendererOptions} from '../engine/EngineRenderer';
+import {regular, spacefilling} from './LineUpRuleSet';
 import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
-import {GROUP_SPACING} from './lod';
 import SidePanel from '../panel/SidePanel';
 import DataProvider from '../../provider/ADataProvider';
-import {AEventDispatcher, merge} from '../../utils';
+import {AEventDispatcher} from '../../utils';
 import SidePanelEntry from '../panel/SidePanelEntry';
 import TaggleRenderer from './TaggleRenderer';
 
@@ -51,7 +48,7 @@ export default class Taggle extends AEventDispatcher {
     }
 
     this.renderer = new TaggleRenderer(this.node, data, Object.assign({
-      violationChanged: (_rule, violation) => this.setViolation(violation)
+      violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
     }, options));
     this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
       formatItem: (item: SidePanelEntry) => `<span data-type="${item.desc ? item.desc.type : item.text}"><span>${item.text}</span></span>`
@@ -61,19 +58,6 @@ export default class Taggle extends AEventDispatcher {
 
     this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
     this.forward(this.renderer, `${RENDERER_EVENT_HOVER_CHANGED}.main`);
-  }
-
-  private createConfig(options: Partial<IEngineRendererOptions>): IEngineRendererOptions {
-    return merge(defaultConfig(), options, {
-      header: {
-        summary: true
-      },
-      body: {
-        animation: true,
-        rowPadding: 0, //since padding is used
-        groupPadding: GROUP_SPACING
-      }
-    });
   }
 
   protected createEventList() {
