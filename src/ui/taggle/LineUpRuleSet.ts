@@ -32,24 +32,18 @@ function spacefillingItemHeight(data: (IGroupData | IGroupItem)[], availableHeig
   const visibleHeight = availableHeight - paddingBottom;
   const items = <IGroupItem[]>data.filter((d) => !isGroup(d));
   const groups = data.length - items.length;
+  const lastItems = items.reduce((a, d) => a + (d.meta === 'last' ? 1 : 0), 0);
   const selected = items.reduce((a, d) => a + (selection.has(d.dataIndex) ? 1 : 0), 0);
   const unselected = items.length - selected;
+  const groupSeparators = groups + lastItems;
 
   if (unselected <= 0) {
     // doesn't matter since all are selected anyhow
     return {height: defaultItemHeight, violation: ''};
   }
-  const available = visibleHeight - groups * defaultAggrHeight - groups * GROUP_SPACING - selected * (defaultItemHeight + leafMargins.high);
+  const available = visibleHeight - groups * defaultAggrHeight - groupSeparators * GROUP_SPACING - selected * defaultItemHeight;
 
   let height = available / unselected;
-  const guess = levelOfDetailLeaf(height);
-  const heightWithMargin = height - leafMargins[guess];
-  if (guess !== levelOfDetailLeaf(heightWithMargin)) {
-    // below the border to next change such that it is just below the threshold
-    height = defaultItemHeight - 0.1;
-  } else {
-    height = heightWithMargin;
-  }
   if (height < minItemHeight) {
     return {
       height: minItemHeight,

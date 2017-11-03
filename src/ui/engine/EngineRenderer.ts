@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, findOption} from '../../utils';
+import {AEventDispatcher, findOption, round} from '../../utils';
 import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IStatistics} from '../../model/Column';
@@ -240,24 +240,26 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       this.updateHist();
     }
 
+    const round2 = (v: number) => round(v, 2);
+
 
     const heightsFor = (ranking: Ranking, data: (IGroupItem|IGroupData)[]) => {
       if (this.options.body.dynamicHeight) {
         const impl = this.options.body.dynamicHeight(data, ranking);
         return {
-          defaultHeight: Math.round(this.zoomFactor * impl.defaultHeight),
-          height: (d: IGroupItem|IGroupData) => Math.round(this.zoomFactor * impl.height(d))
+          defaultHeight: round2(this.zoomFactor * impl.defaultHeight),
+          height: (d: IGroupItem|IGroupData) => round2(this.zoomFactor * impl.height(d))
         };
       }
-      const item = Math.round(this.zoomFactor * this.options.body.rowHeight!);
-      const group = Math.round(this.zoomFactor * this.options.body.groupHeight!);
+      const item = round2(this.zoomFactor * this.options.body.rowHeight!);
+      const group = round2(this.zoomFactor * this.options.body.groupHeight!);
       return {
         defaultHeight: item,
         height: (d: IGroupItem|IGroupData) => isGroup(d) ? group : item
       };
     };
-    const groupPadding = Math.round(this.zoomFactor * this.options.body.groupPadding!);
-    const rowPadding = Math.round(this.zoomFactor * this.options.body.rowPadding!);
+    const groupPadding = round2(this.zoomFactor * this.options.body.groupPadding!);
+    const rowPadding = round2(this.zoomFactor * this.options.body.rowPadding!);
 
     rankings.forEach((r, i) => {
       const grouped = r.groupData(localData[i]);
@@ -313,3 +315,4 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     // TODO
   }
 }
+
