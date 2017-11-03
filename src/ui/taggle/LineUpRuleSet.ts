@@ -1,5 +1,5 @@
 import {IGroupData, IGroupItem, isGroup} from '../engine/interfaces';
-import {GROUP_SPACING, leafMargins, levelOfDetailInner, levelOfDetailLeaf} from './lod';
+import {GROUP_SPACING, levelOfDetailInner, levelOfDetailLeaf} from './lod';
 
 const defaultItemHeight = 20;
 const minItemHeight = 1;
