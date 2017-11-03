@@ -137,6 +137,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return this.getValue(row, index);
   }
 
+  getRange() {
+    return this.mapping.getRange(BoxPlotColumn.DEFAULT_FORMATTER);
+  }
+
   getRawBoxPlotData(row: any, index: number): IBoxPlotData | null {
     return this.getRawValue(row, index);
   }

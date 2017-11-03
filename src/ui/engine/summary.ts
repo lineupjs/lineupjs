@@ -3,7 +3,7 @@
  */
 import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {default as CategoricalColumn, ICategoricalColumn} from '../../model/CategoricalColumn';
-import NumberColumn, {INumberColumn} from '../../model/NumberColumn';
+import NumberColumn, {INumberColumn, isMapAbleColumn} from '../../model/NumberColumn';
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
@@ -146,6 +146,10 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
     stats.hist.forEach(({x, y}, i) => {
       node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
     });
+    if (isMapAbleColumn(col)) {
+      const range = col.getRange();
+      node.insertAdjacentHTML('beforeend', `<span>${range[0]}</span><span>${range[1]}</span>`);
+    }
     return;
   }
 

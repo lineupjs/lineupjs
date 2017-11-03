@@ -250,6 +250,10 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return new LazyBoxPlotData(data, this.mapping);
   }
 
+  getRange() {
+    return this.mapping.getRange(NumbersColumn.DEFAULT_FORMATTER);
+  }
+
   getRawBoxPlotData(row: any, index: number) {
     const data = this.getRawValue(row, index);
     if (data === null) {
