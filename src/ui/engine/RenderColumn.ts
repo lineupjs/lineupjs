@@ -6,6 +6,7 @@ import Column from '../../model/Column';
 import {createHeader, updateHeader} from './header';
 import {IDOMCellRenderer, IDOMGroupRenderer} from '../../renderer/IDOMCellRenderers';
 import {IRankingContext} from './interfaces';
+import {isSupportType} from '../../model/Ranking';
 
 
 export interface IRenderers {
@@ -29,7 +30,7 @@ export default class RenderColumn implements IColumn {
   }
 
   get frozen() {
-    return false;
+    return isSupportType(this.c.desc) || (<any>this.c.desc).frozen === true;
   }
 
   createHeader(document: Document, ctx: IRankingContext) {
@@ -40,6 +41,7 @@ export default class RenderColumn implements IColumn {
 
   updateHeader(node: HTMLElement, ctx: IRankingContext) {
     node.className = `lu-header ${this.c.cssClass ? ` ${this.c.cssClass}` : ''} ${this.c.headerCssClass}${ctx.autoRotateLabels ? ' rotateable' : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
+    node.classList.toggle('frozen', this.frozen);
     updateHeader(node, this.c, ctx);
   }
 
@@ -53,6 +55,7 @@ export default class RenderColumn implements IColumn {
   }
 
   updateCell(node: HTMLElement, index: number, ctx: IRankingContext): HTMLElement | void {
+    node.classList.toggle('frozen', this.frozen);
     const isGroup = ctx.isGroup(index);
     // assert that we have the template of the right mode
     const oldRenderer = node.dataset.renderer;
