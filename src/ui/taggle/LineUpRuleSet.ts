@@ -43,7 +43,7 @@ function spacefillingItemHeight(data: (IGroupData | IGroupItem)[], availableHeig
   }
   const available = visibleHeight - groups * defaultAggrHeight - groupSeparators * GROUP_SPACING - selected * defaultItemHeight;
 
-  let height = available / unselected;
+  const height = available / unselected;
   if (height < minItemHeight) {
     return {
       height: minItemHeight,
