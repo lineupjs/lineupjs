@@ -17,6 +17,7 @@ import {IDataRow} from '../../provider/ADataProvider';
 import {AEventDispatcher, debounce} from '../../utils';
 import SelectionManager from './SelectionManager';
 import {lineupAnimation} from './animation';
+import PrefetchMixin from 'lineupengine/src/mixin/PrefetchMixin';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
@@ -65,7 +66,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private readonly delayedUpdate: (this: {type: string})=>void;
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
-    super(header, body, tableId, style);
+    super(header, body, tableId, style, PrefetchMixin);
     Object.assign(this.options, options);
 
     const that = this;
