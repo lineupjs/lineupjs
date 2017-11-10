@@ -17,6 +17,8 @@ export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 export interface IScale {
   (v: number): number;
 
+  invert(r: number): number;
+
   domain(): number[];
 
   domain(domain: number[]): this;
@@ -40,6 +42,8 @@ export interface IMappingFunction {
   clone(): IMappingFunction;
 
   eq(other: IMappingFunction): boolean;
+
+  getRange(formatter: (v: number)=>string): [string, string];
 
 }
 
@@ -109,8 +113,16 @@ export class ScaleMappingFunction implements IMappingFunction {
     this.s.range(range);
   }
 
+  getRange(format: (v: number)=>string): [string, string] {
+    return [format(this.invert(0)), format(this.invert(1))];
+  }
+
   apply(v: number): number {
     return this.s(v);
+  }
+
+  invert(r: number) {
+    return this.s.invert(r);
   }
 
   get scaleType() {
@@ -163,6 +175,10 @@ export class ScriptMappingFunction implements IMappingFunction {
     }
     this._code = code;
     this.f = new Function('value', code);
+  }
+
+  getRange(): [string, string] {
+    return ['?', '?'];
   }
 
   apply(v: number): number {
@@ -232,6 +248,12 @@ export interface IMapAbleColumn {
   getFilter(): INumberFilter;
 
   setFilter(value?: INumberFilter): void;
+
+  getRange(): [string, string];
+}
+
+export function isMapAbleColumn(col: any): col is IMapAbleColumn {
+  return typeof col.getMapping === 'function';
 }
 
 
@@ -345,6 +367,10 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       return this.numberFormat(+v);
     }
     return String(v);
+  }
+
+  getRange() {
+    return this.mapping.getRange(this.numberFormat);
   }
 
   getRawValue(row: any, index: number, missingValue = this.missingValue) {
@@ -498,15 +524,15 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       case -1:
         //bigger than the last threshold
         return {
-          name: `v > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length - 1]}`,
+          name: `${this.label} > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length - 1]}`,
           color: 'gray'
         };
       case 0:
         //smallest
-        return {name: `v <= ${this.currentStratifyThresholds[0]}`, color: 'gray'};
+        return {name: `${this.label} <= ${this.currentStratifyThresholds[0]}`, color: 'gray'};
       default:
         return {
-          name: `${this.currentStratifyThresholds[index - 1]} <= v <= ${this.currentStratifyThresholds[index]}`,
+          name: `${this.currentStratifyThresholds[index - 1]} <= ${this.label} <= ${this.currentStratifyThresholds[index]}`,
           color: 'gray'
         };
     }
