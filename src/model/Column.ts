@@ -333,7 +333,7 @@ export default class Column extends AEventDispatcher {
   groupByMe() {
     const r = this.findMyRanker();
     if (r) {
-      return r.groupBy(this.isGroupedBy() >= 0 ? null : this);
+      return r.toggleGrouping(this);
     }
     return false;
   }

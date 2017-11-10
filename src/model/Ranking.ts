@@ -231,12 +231,65 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.sortBy(col);
   }
 
+  toggleGrouping(col: Column){
+    const old = this.groupColumns.indexOf(col);
+    if (old >= 0) {
+      const newGroupings = this.groupColumns.slice();
+      newGroupings.splice(old, 1);
+      return this.groupBy(newGroupings);
+    }
+    return this.groupBy([col].concat(this.groupColumns));
+  }
+
   getGroupCriteria() {
     return this.groupColumns.slice();
   }
 
   setGroupCriteria(columns: Column[]) {
     return this.groupBy(columns);
+  }
+
+  sortBy(col: Column | null, ascending: boolean = false) {
+    if (col !== null && col.findMyRanker() !== this) {
+      return false; //not one of mine
+    }
+    const primary = this.primarySortCriteria;
+    if ((col === null && primary === null) || (primary && primary.col === col && primary.asc === ascending)) {
+      return true; //already in this order
+    }
+    const bak = this.getSortCriteria();
+
+    if (col) {
+      const existing = this.sortCriteria.findIndex((d) => d.col === col);
+      if (existing >= 0) { //remove index
+        this.sortCriteria.splice(existing, 1);
+        // can skip deregister will be reregistered anyhow
+      } else if (this.sortCriteria.length === this.maxSortCriteria) {
+        // remove the last one
+        const last = this.sortCriteria.pop()!;
+        last.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null);
+        last.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null);
+      }
+    } else {
+      this.sortCriteria.forEach((s) => {
+        s.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null);
+        s.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null);
+      });
+      this.sortCriteria.splice(0, this.sortCriteria.length);
+    }
+
+    if (col) { //enable dirty listening
+      // add as first
+      this.sortCriteria.unshift({
+        col,
+        asc: ascending
+      });
+      col.on(`${Column.EVENT_DIRTY_VALUES}.order`, this.dirtyOrder);
+      // order is dirty if the sort method has changed
+      col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, this.dirtyOrder);
+    }
+    this.triggerResort(bak);
+    return true;
   }
 
   groupBy(col: Column | null | Column[]) {
@@ -344,49 +397,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
     this.groupSortCriteria.splice(0, this.groupSortCriteria.length, ...values.slice());
     this.triggerResort(this.sortCriteria.slice());
-    return true;
-  }
-
-  sortBy(col: Column | null, ascending: boolean = false) {
-    if (col !== null && col.findMyRanker() !== this) {
-      return false; //not one of mine
-    }
-    const primary = this.primarySortCriteria;
-    if ((col === null && primary === null) || (primary && primary.col === col && primary.asc === ascending)) {
-      return true; //already in this order
-    }
-    const bak = this.getSortCriteria();
-
-    if (col) {
-      const existing = this.sortCriteria.findIndex((d) => d.col === col);
-      if (existing >= 0) { //remove index
-        this.sortCriteria.splice(existing, 1);
-        // can skip deregister will be reregistered anyhow
-      } else if (this.sortCriteria.length === this.maxSortCriteria) {
-        // remove the last one
-        const last = this.sortCriteria.pop()!;
-        last.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null);
-        last.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null);
-      }
-    } else {
-      this.sortCriteria.forEach((s) => {
-        s.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null);
-        s.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null);
-      });
-      this.sortCriteria.splice(0, this.sortCriteria.length);
-    }
-
-    if (col) { //enable dirty listening
-      // add as first
-      this.sortCriteria.unshift({
-        col,
-        asc: ascending
-      });
-      col.on(`${Column.EVENT_DIRTY_VALUES}.order`, this.dirtyOrder);
-      // order is dirty if the sort method has changed
-      col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, this.dirtyOrder);
-    }
-    this.triggerResort(bak);
     return true;
   }
 
