@@ -524,15 +524,15 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       case -1:
         //bigger than the last threshold
         return {
-          name: `v > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length - 1]}`,
+          name: `${this.label} > ${this.currentStratifyThresholds[this.currentStratifyThresholds.length - 1]}`,
           color: 'gray'
         };
       case 0:
         //smallest
-        return {name: `v <= ${this.currentStratifyThresholds[0]}`, color: 'gray'};
+        return {name: `${this.label} <= ${this.currentStratifyThresholds[0]}`, color: 'gray'};
       default:
         return {
-          name: `${this.currentStratifyThresholds[index - 1]} <= v <= ${this.currentStratifyThresholds[index]}`,
+          name: `${this.currentStratifyThresholds[index - 1]} <= ${this.label} <= ${this.currentStratifyThresholds[index]}`,
           color: 'gray'
         };
     }
