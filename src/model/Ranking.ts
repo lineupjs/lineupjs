@@ -231,7 +231,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.sortBy(col);
   }
 
-  toggleGrouping(col: Column){
+  toggleGrouping(col: Column) {
     const old = this.groupColumns.indexOf(col);
     if (old >= 0) {
       const newGroupings = this.groupColumns.slice();
