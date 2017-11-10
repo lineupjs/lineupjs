@@ -69,7 +69,7 @@
 &[data-summary=interactive-filter-hist] {
   label {
     position: absolute;
-    bottom: -2.75em;
+    bottom: -3.5em;
   }
 }
 
@@ -135,7 +135,7 @@
 
   label {
     position: absolute;
-    bottom: -2.75em;
+    bottom: -3.5em;
   }
 }
 
@@ -159,4 +159,31 @@ label.#{$lu_css_prefix}-disabled {
   color: gray;
   user-select: none;
   cursor: not-allowed;
+}
+
+input[type=text] {
+  width: 100%;
+  border: 1px solid $lu_side_panel_input_border;
+  border-radius: $lu_side_panel_input_border_radius;
+  padding: 3px 5px;
+}
+
+select {
+  width: 100%;
+  border: 1px solid $lu_side_panel_input_border;
+  border-radius: $lu_side_panel_input_border_radius;
+  padding: 3px 5px;
+  outline: none;
+  cursor: pointer;
+}
+
+label {
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+
+  input[type=checkbox] {
+    margin: 0 5px 0 0;
+  }
 }

@@ -25,7 +25,7 @@
     list-style: none;
 
     border: 1px solid $lu_side_panel_input_border;
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 $lu_side_panel_input_border_radius $lu_side_panel_input_border_radius;
 
     &.lu-search-empty::before {
       content: 'No results found';
@@ -66,7 +66,7 @@
 
   &.#{$lu_css_prefix}-search-open {
     > input {
-      border-radius: 4px 4px 0 0;
+      border-radius: $lu_side_panel_input_border_radius $lu_side_panel_input_border_radius 0 0;
     }
 
     > ul {
