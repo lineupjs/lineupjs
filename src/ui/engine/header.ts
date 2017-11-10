@@ -374,10 +374,10 @@ export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRanki
     // find by reference
     const id = data[`${MIMETYPE_PREFIX}-ref`];
     col = ctx.provider.find(id);
-    if (!col || (col === column && result.effect === 'move')) {
+    if (!col || (col === column && !result.effect.startsWith('copy'))) {
       return false;
     }
-    if (result.effect === 'copy') {
+    if (result.effect.startsWith('copy')) {
       col = ctx.provider.clone(col!);
       return col && column.insertAfterMe(col) != null;
     }
