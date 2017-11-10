@@ -8,7 +8,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
   readonly title = 'Bar Chart';
 
   canRender(col: Column, isGroup: boolean) {
-    return super.canRender(col, isGroup) && isGroup;
+    return super.canRender(col, isGroup) && !isGroup;
   }
 
   private static compute(v: number, threshold: number, domain: number[]) {

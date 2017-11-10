@@ -8,6 +8,8 @@ import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
 import {computeStats, getNumberOfBins} from '../provider/math';
 import {forEachChild} from '../utils';
+import {isNumbersColumn} from '../model/NumbersColumn';
+import {isMissingValue} from '../model/missing';
 
 
 /**
@@ -29,10 +31,7 @@ export default class HistogramGroupRenderer implements ICellRendererFactory {
     return {
       template: `<div>${bins}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: IStatistics | null) => {
-        const bins = globalHist ? globalHist.hist.length : guessedBins;
-        const {maxBin, hist} = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), (r: IDataRow) => col.isMissing(r.v, r.dataIndex), [0, 1], bins);
-
-        const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
+        const {bins, max, hist} = this.createHist(globalHist, guessedBins, rows, col);
 
         //adapt the number of children
         if (n.children.length !== bins) {
@@ -51,15 +50,28 @@ export default class HistogramGroupRenderer implements ICellRendererFactory {
     };
   }
 
+  private createHist(globalHist: IStatistics | null, guessedBins: number, rows: IDataRow[], col: INumberColumn & Column) {
+    const bins = globalHist ? globalHist.hist.length : guessedBins;
+    let stats: IStatistics;
+    if (isNumbersColumn(col)) {
+      //multiple values
+      const values = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r.v, r.dataIndex)));
+      stats = computeStats(values, [], (v: number) => v,  isMissingValue, [0, 1], bins);
+    } else {
+      stats = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), (r: IDataRow) => col.isMissing(r.v, r.dataIndex), [0, 1], bins);
+    }
+
+    const max = Math.max(stats.maxBin, globalHist ? globalHist.maxBin : 0);
+    return {bins, max, hist: stats.hist};
+  }
+
   createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const guessedBins = getNumberOfBins(context.totalNumberOfRows);
     const padding = context.option('rowBarPadding', 1);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], _dx: number, _dy: number, globalHist: IStatistics | null) => {
       const total = context.groupHeight(group) - padding;
-      const bins = globalHist ? globalHist.hist.length : guessedBins;
+      const {max, bins, hist} = this.createHist(globalHist, guessedBins, rows, col);
       const widthPerBin = context.colWidth(col) / bins;
-      const {maxBin, hist} = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), (r: IDataRow) => col.isMissing(r.v, r.dataIndex), [0, 1], bins);
-      const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
 
       ctx.fillStyle = context.option('style.histogram', 'lightgray');
       hist.forEach(({y}, i) => {
