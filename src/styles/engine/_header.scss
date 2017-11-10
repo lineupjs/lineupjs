@@ -21,6 +21,12 @@
     }
   }
 
+  &[draggable=true] {
+    cursor: pointer;
+    cursor: -moz-grab;
+    cursor: -webkit-grab; // indicate grab able
+  }
+
   > .#{$lu_css_prefix}-toolbar {
     color: $lu_toolbar_color_base;
   }
