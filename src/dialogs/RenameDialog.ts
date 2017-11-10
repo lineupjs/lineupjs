@@ -16,10 +16,11 @@ export default class RenameDialog extends ADialog {
 
   openDialog() {
     const popup = this.makePopup(`
-      <input type="text" size="15" value="${this.column.label}" required autofocus placeholder="name"><br>
-      <input type="color" size="15" value="${this.column.color}" required placeholder="color"><br>
-      <textarea rows="5">${this.column.description}</textarea><br>`
+      <input type="text" value="${this.column.label}" required autofocus placeholder="name">
+      <input type="color" value="${this.column.color}" required placeholder="color">
+      <textarea rows="5">${this.column.description}</textarea><br>`, false
     );
+    popup.classList.add('lu-rename-dialog');
 
     this.onButton(popup, {
       cancel: () => undefined,

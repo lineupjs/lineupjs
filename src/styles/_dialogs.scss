@@ -95,6 +95,13 @@
     .lu-sub-nested {
       width: 100px;
     }
+
+    &.lu-rename-dialog {
+      input {
+        width: 100%;
+        display: block;
+      }
+    }
   }
 
   .#{$lu_css_prefix}-popup2 {

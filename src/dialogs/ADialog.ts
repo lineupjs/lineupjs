@@ -26,7 +26,7 @@ abstract class ADialog {
     });
   }
 
-  protected static registerPopup(popup: HTMLElement, popper: Popper, replace: boolean) {
+  protected static registerPopup(popup: HTMLElement, popper: Popper, replace: boolean, enableCloseOnOutside = true) {
     if(replace) {
       ADialog.removeAllPopups();
     }
@@ -43,7 +43,9 @@ abstract class ADialog {
       ADialog.removePopup(popup);
     };
 
-    popup.addEventListener('mouseleave', closePopupOnMouseLeave);
+    if (enableCloseOnOutside) {
+      popup.addEventListener('mouseleave', closePopupOnMouseLeave);
+    }
 
     ADialog.visiblePopups.push(popup);
   }
@@ -77,9 +79,10 @@ abstract class ADialog {
   /**
    * creates a simple popup dialog under the given attachment
    * @param body
+   * @param enableCloseOnOutside hide when the user it outside the visible one
    * @returns {Selection<any>}
    */
-  makePopup(body: string) {
+  makePopup(body: string, enableCloseOnOutside= true) {
     const parent = this.attachment.ownerDocument.body;
     parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2">${this.dialogForm(body)}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
@@ -94,7 +97,7 @@ abstract class ADialog {
       removeOnDestroy: true
     });
 
-    ADialog.registerPopup(popup, popper, false);
+    ADialog.registerPopup(popup, popper, false, enableCloseOnOutside);
     this.hidePopupOnClickOutside(popup);
     return popup;
   }
