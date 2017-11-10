@@ -15,7 +15,7 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 export default class CategoricalColorCellRenderer implements ICellRendererFactory {
   readonly title = 'Color';
 
-  canRender(col: Column) {
+  canRender() {
     return false; // only direct selection
   }
 
