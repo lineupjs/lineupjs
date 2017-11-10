@@ -234,6 +234,9 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     }
     const orders = rankings.map((r) => r.ranking.getOrder());
     const data = this.data.fetch(orders);
+
+    (<any>this.ctx).totalNumberOfRows = Math.max(...data.map((d) => d.length));
+
     // TODO support async
     const localData = data.map((d) => d.map((d) => <IDataRow>d));
 
