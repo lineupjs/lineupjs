@@ -343,7 +343,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         this.updateColumnWidths();
       });
 
-      if (isMultiLevelColumn(c)) {
+      if (isMultiLevelColumn(c) && !c.getCollapsed()) {
         const r = new MultiLevelRenderColumn(c, renderers, i, this.ctx.columnPadding);
         c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
           r.updateWidthRule(this.style);

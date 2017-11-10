@@ -36,7 +36,6 @@ import ImageCellRenderer from './ImageCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
-const combineCellRenderer = new BarCellRenderer(false, (d, i, col: CompositeNumberColumn) => col.getColor(d, i));
 
 /**
  * default render factories
@@ -59,10 +58,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   categorical: new CategoricalCellRenderer(),
   catcolor: new CategoricalColorCellRenderer(),
   catcolorshifted: new CategoricalColorShiftedCellRenderer(),
-  max: combineCellRenderer,
-  min: combineCellRenderer,
-  mean: combineCellRenderer,
-  script: combineCellRenderer,
+  compositenumber: new BarCellRenderer(false, (d, i, col: CompositeNumberColumn) => col.getColor(d, i)),
   numbers: new NumbersCellRenderer(),
   threshold: new ThresholdCellRenderer(),
   sparkline: new SparklineCellRenderer(),

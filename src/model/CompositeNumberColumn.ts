@@ -43,6 +43,10 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     if (desc.missingValue !== undefined) {
       this.missingValue = desc.missingValue;
     }
+
+    if (this.getRendererType() === desc.type) {
+      this.setRendererType('compositenumber');
+    }
   }
 
 
