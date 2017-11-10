@@ -30,7 +30,7 @@ export default class DateColumn extends ValueColumn<Date|string> {
     super(id, desc);
     this.format = time.format(desc.dateFormat || '%x');
     this.parse = desc.dateParse ? time.format(desc.dateParse).parse : this.format.parse;
-    this.setRendererType('default');
+    this.setDefaultRenderer('default');
   }
 
   getValue(row: any, index: number): Date|null {

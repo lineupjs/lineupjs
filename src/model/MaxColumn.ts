@@ -21,7 +21,7 @@ export default class MaxColumn extends CompositeNumberColumn {
 
   constructor(id: string, desc: ICompositeNumberColumnDesc) {
     super(id, desc);
-    this.setRendererType('interleaving');
+    this.setDefaultRenderer('interleaving');
   }
 
   getColor(row: any, index: number) {

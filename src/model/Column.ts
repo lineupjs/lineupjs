@@ -562,12 +562,26 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.renderer, this.rendererInfo.renderer = renderer);
   }
 
+  protected setDefaultRenderer(renderer: string) {
+    if (this.rendererInfo.renderer !== this.desc.type) {
+      return;
+    }
+    return this.setRendererType(renderer);
+  }
+
   setGroupRenderer(renderer: string) {
     if (renderer === this.rendererInfo.groupRenderer) {
       // nothing changes
       return;
     }
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.groupRenderer, this.rendererInfo.groupRenderer = renderer);
+  }
+
+  protected setDefaultGroupRenderer(renderer: string) {
+    if (this.rendererInfo.groupRenderer !== this.desc.type) {
+      return;
+    }
+    return this.setGroupRenderer(renderer);
   }
 
   /**

@@ -46,8 +46,8 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
       const values = desc.categories.map((d) => ((typeof d !== 'string' && typeof (d.value) === 'number')) ? d.value : 0.5);
       this.scale.range(values);
     }
-    this.setRendererType('number');
-    this.setGroupRenderer('boxplot');
+    this.setDefaultRenderer('number');
+    this.setDefaultGroupRenderer('boxplot');
   }
 
   protected createEventList() {
