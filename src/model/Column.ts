@@ -30,6 +30,10 @@ export interface IColumnParent {
 
   insertAfter(col: Column, reference: Column): Column | null;
 
+  move(col: Column, index?: number): Column | null;
+
+  moveAfter(col: Column, reference: Column): Column | null;
+
   findMyRanker(): Ranking | null;
 
   readonly fqid: string;
@@ -138,6 +142,7 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_LABEL_CHANGED = 'labelChanged';
   static readonly EVENT_METADATA_CHANGED = 'metaDataChanged';
   static readonly EVENT_ADD_COLUMN = 'addColumn';
+  static readonly EVENT_MOVE_COLUMN = 'moveColumn';
   static readonly EVENT_REMOVE_COLUMN = 'removeColumn';
   static readonly EVENT_DIRTY = 'dirty';
   static readonly EVENT_DIRTY_HEADER = 'dirtyHeader';
@@ -246,7 +251,7 @@ export default class Column extends AEventDispatcher {
   protected createEventList() {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED,
-      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED,
+      Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_MOVE_COLUMN,
       Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_GROUPING_CHANGED]);
   }
 

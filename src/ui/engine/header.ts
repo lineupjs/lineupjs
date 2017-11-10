@@ -298,6 +298,9 @@ function toggleToolbarIcons(node: HTMLElement, col: Column, defaultVisibleClient
   });
 }
 
+/**
+ * allow to change the width of a column using dragging the handle
+ */
 export function dragWidth(col: Column, node: HTMLElement) {
   let ueberElement: HTMLElement;
   const handle = <HTMLElement>node.querySelector('.lu-handle');
@@ -358,6 +361,9 @@ export function dragWidth(col: Column, node: HTMLElement) {
 
 export const MIMETYPE_PREFIX = 'text/x-caleydo-lineup-column';
 
+/**
+ * allow to drag the column away
+ */
 export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   dragAble(node, () => {
     const ref = JSON.stringify(ctx.provider.toDescRef(column.desc));
@@ -377,32 +383,46 @@ export function dragAbleColumn(node: HTMLElement, column: Column, ctx: IRankingH
   }, true);
 }
 
+/**
+ * dropper for allowing to rearrange (move, copy) columns
+ */
 export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
     let col: Column | null = null;
     const data = result.data;
-    if (`${MIMETYPE_PREFIX}-ref` in data) {
-      const id = data[`${MIMETYPE_PREFIX}-ref`];
-      col = ctx.provider.find(id);
-      if (!col || (col === column && result.effect === 'move')) {
-        return false;
-      }
-      if (result.effect === 'copy') {
-        col = ctx.provider.clone(col!);
-      } else {
-        col.removeMe();
-      }
-    } else {
+    if (!(`${MIMETYPE_PREFIX}-ref` in data)) {
       const desc = JSON.parse(data[MIMETYPE_PREFIX]);
       col = ctx.provider.create(ctx.provider.fromDescRef(desc));
+      return col != null && column.insertAfterMe(col) != null;
     }
-    if (!col || col === column) {
+
+    // find by reference
+    const id = data[`${MIMETYPE_PREFIX}-ref`];
+    col = ctx.provider.find(id);
+    if (!col || (col === column && !result.effect.startsWith('copy'))) {
       return false;
     }
+    if (result.effect.startsWith('copy')) {
+      col = ctx.provider.clone(col!);
+      return col != null && column.insertAfterMe(col) != null;
+    }
+    // detect whether it is an internal move operation or an real remove/insert operation
+    const toInsertParent = col.parent;
+    if (!toInsertParent) { // no parent will always be a move
+      return column.insertAfterMe(col) != null;
+    }
+    if (toInsertParent === column.parent) {
+      // move operation
+      return toInsertParent.moveAfter(col, column) != null;
+    }
+    col.removeMe();
     return column.insertAfterMe(col) != null;
   }, null, true);
 }
 
+/**
+ * dropper for allowing to change the order by dropping it at a certain position
+ */
 export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext, where: 'before' | 'after', autoGroup: boolean) {
   dropAble(node, [`${MIMETYPE_PREFIX}-ref`, MIMETYPE_PREFIX], (result) => {
     let col: Column | null = null;
@@ -475,6 +495,9 @@ export function resortDropAble(node: HTMLElement, column: Column, ctx: IRankingH
   }, null, true);
 }
 
+/**
+ * dropper for merging columns
+ */
 export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHeaderContext) {
   const resolveDrop = (result: IDropResult, numbersOnly: boolean) => {
     const data = result.data;

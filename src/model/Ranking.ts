@@ -25,6 +25,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   static readonly EVENT_FILTER_CHANGED = Column.EVENT_FILTER_CHANGED;
   static readonly EVENT_LABEL_CHANGED = Column.EVENT_LABEL_CHANGED;
   static readonly EVENT_ADD_COLUMN = Column.EVENT_ADD_COLUMN;
+  static readonly EVENT_MOVE_COLUMN = Column.EVENT_MOVE_COLUMN;
   static readonly EVENT_REMOVE_COLUMN = Column.EVENT_REMOVE_COLUMN;
   static readonly EVENT_DIRTY = Column.EVENT_DIRTY;
   static readonly EVENT_DIRTY_HEADER = Column.EVENT_DIRTY_HEADER;
@@ -110,7 +111,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return super.createEventList().concat([
       Ranking.EVENT_WIDTH_CHANGED, Ranking.EVENT_FILTER_CHANGED,
       Ranking.EVENT_LABEL_CHANGED, Ranking.EVENT_GROUPS_CHANGED,
-      Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_GROUP_CRITERIA_CHANGED,
+      Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_MOVE_COLUMN,
       Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES,
       Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED,
       Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIAS_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_ORDER_CHANGED]);
@@ -418,7 +419,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   insert(col: Column, index: number = this.columns.length) {
-
     this.columns.splice(index, 0, col);
     col.parent = this;
     this.forward(col, ...suffix('.ranking', Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
@@ -431,6 +431,34 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       this.sortBy(col, col instanceof StringColumn);
     }
     return col;
+  }
+
+  move(col: Column, index: number = this.columns.length) {
+    if (col.parent !== this) {
+      // not a move operation!
+      console.error('invalid move operation: ', col);
+      return null;
+    }
+    const old = this.columns.indexOf(col);
+    if (index === old) {
+      // no move needed
+      return col;
+    }
+    //delete first
+    this.columns.splice(old, 1);
+    // adapt target index based on previous index, i.e shift by one
+    this.columns.splice(old < index ? index -1 : index, 0, col);
+
+    this.fire([Ranking.EVENT_MOVE_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, index, old);
+    return col;
+  }
+
+  moveAfter(col: Column, reference: Column) {
+    const i = this.columns.indexOf(reference);
+    if (i < 0) {
+      return null;
+    }
+    return this.move(col, i + 1);
   }
 
   get fqpath() {
