@@ -11,6 +11,7 @@ section.#{$lu_css_prefix}-header {
   color: black;
   overflow: unset !important;
   margin-right: -$lu_engine_grip_gap;
+  margin-bottom: 15px;
   border-bottom: 1px solid black;
 
   &:hover {
@@ -19,6 +20,12 @@ section.#{$lu_css_prefix}-header {
     > .#{$lu_css_prefix}-toolbar {
       color: $lu_toolbar_color_base2;
     }
+  }
+
+  &[draggable=true] {
+    cursor: pointer;
+    cursor: -moz-grab;
+    cursor: -webkit-grab; // indicate grab able
   }
 
   > .#{$lu_css_prefix}-toolbar {
