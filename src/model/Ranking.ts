@@ -435,7 +435,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     // adapt target index based on previous index, i.e shift by one
     this.columns.splice(old < index ? index -1 : index, 0, col);
 
-    this.fire([Ranking.EVENT_MOVE_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, index);
+    this.fire([Ranking.EVENT_MOVE_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, index, old);
     return col;
   }
 

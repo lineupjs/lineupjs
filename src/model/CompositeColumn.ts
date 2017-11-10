@@ -94,7 +94,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     // adapt target index based on previous index, i.e shift by one
     this._children.splice(old < index ? index -1 : index, 0, col);
     //listen and propagate events
-    return this.moveImpl(col, index);
+    return this.moveImpl(col, index, old);
   }
 
   protected insertImpl(col: Column, index: number) {
@@ -104,8 +104,8 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return col;
   }
 
-  protected moveImpl(col: Column, index: number) {
-    this.fire([Column.EVENT_MOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index);
+  protected moveImpl(col: Column, index: number, oldIndex: number) {
+    this.fire([Column.EVENT_MOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index, oldIndex);
     return col;
   }
 
