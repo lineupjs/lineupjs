@@ -492,7 +492,7 @@ export default class MappingEditor {
       }));
     }
 
-    this.computeFilter = function () {
+    this.computeFilter = () => {
       return {
         min: this._filter.min,
         max: this._filter.max,

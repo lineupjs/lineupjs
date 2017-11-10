@@ -178,17 +178,12 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
 
     this.setRendererList([
       {type: 'numbers', label: 'Heatmap'},
-      {type: 'boxplot', label: 'Boxplot'},
+      {type: 'boxplot', label: 'Box Plot'},
       {type: 'sparkline', label: 'Sparkline'},
-      {type: 'threshold', label: 'Threshold'},
-      {type: 'verticalbar', label: 'VerticalBar'},
-      {type: 'number', label: 'Bar'},
-      {type: 'circle', label: 'Circle'}], [
+      {type: 'verticalbar', label: 'Bar Chart'}], [
       {type: 'numbers', label: 'Heatmap'},
       {type: 'sparkline', label: 'Sparkline'},
-      {type: 'boxplot', label: 'Boxplot'},
-      {type: 'number', label: 'Bar'},
-      {type: 'circle', label: 'Circle'}
+      {type: 'boxplot', label: 'Box Plot'}
     ]);
 
     // better initialize the default with based on the data length
@@ -253,6 +248,10 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
       return null;
     }
     return new LazyBoxPlotData(data, this.mapping);
+  }
+
+  getRange() {
+    return this.mapping.getRange(NumbersColumn.DEFAULT_FORMATTER);
   }
 
   getRawBoxPlotData(row: any, index: number) {

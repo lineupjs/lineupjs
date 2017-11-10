@@ -9,8 +9,10 @@ import {default as Column, IColumnDesc} from '../../model/Column';
 import SidePanelEntry from './SidePanelEntry';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../engine/interfaces';
+import SearchBox, {ISearchBoxOptions} from './SearchBox';
+import {createStackDesc, createScriptDesc, createNestedDesc, createMaxDesc, createMeanDesc, createMinDesc} from '../../model';
 
-export interface ISidePanelOptions {
+export interface ISidePanelOptions extends Partial<ISearchBoxOptions<SidePanelEntry>> {
   additionalDescs: IColumnDesc[];
   chooser: boolean;
 }
@@ -18,18 +20,32 @@ export interface ISidePanelOptions {
 export default class SidePanel {
 
   protected readonly options: ISidePanelOptions = {
-    additionalDescs: [],
-    chooser: true
+    additionalDescs: [
+      createStackDesc('Weighted Sum'),
+      createScriptDesc('Scripted Formula'),
+      createNestedDesc('Nested'),
+      createMaxDesc(),
+      createMinDesc(),
+      createMeanDesc(),
+    ],
+    chooser: true,
+    placeholder: 'Add Column...'
   };
 
   readonly node: HTMLElement;
+  private readonly search: SearchBox<SidePanelEntry>;
   protected readonly descs = new Map<IColumnDesc, SidePanelEntry>();
+  protected data: IDataProvider;
 
   constructor(protected ctx: IRankingHeaderContext, document: Document, options: Partial<ISidePanelOptions> = {}) {
     Object.assign(this.options, options);
 
     this.node = document.createElement('aside');
     this.node.classList.add('lu-side-panel');
+
+    this.search = new SearchBox<SidePanelEntry>(this.options);
+
+    this.data = ctx.provider;
     this.init();
     this.update(ctx);
   }
@@ -47,31 +63,17 @@ export default class SidePanel {
       return;
     }
     this.node.insertAdjacentHTML('afterbegin', `<header>
-        <form>
-            <select>
-                <option value="">Add Column...</option>
-            </select>
-        </form>
+        <form></form>
       </header>`);
-    this.node.querySelector('header select')!.addEventListener('change', (evt) => {
-      evt.preventDefault();
-      const id = (<HTMLSelectElement>evt.currentTarget).value;
-      if (id === '') {
-        return;
-      }
-      const entry = Array.from(this.descs.values()).find((d) => d.id === id)!;
-      console.assert(Boolean(entry));
 
-      const col = this.data.create(entry.desc);
+    this.node.querySelector('form')!.appendChild(this.search.node);
+    this.search.on(SearchBox.EVENT_SELECT, (panel: SidePanelEntry) => {
+      const col = this.data.create(panel.desc);
       if (!col) {
         return;
       }
       this.data.getLastRanking().push(col);
     });
-  }
-
-  protected get data() {
-    return this.ctx.provider;
   }
 
   private changeDataStorage(old: IDataProvider | null, data: IDataProvider) {
@@ -80,6 +82,7 @@ export default class SidePanel {
       old.on(suffix('.panel', DataProvider.EVENT_ADD_RANKING, DataProvider.EVENT_REMOVE_RANKING,
         DataProvider.EVENT_ADD_DESC, DataProvider.EVENT_CLEAR_DESC), null);
     }
+    this.data = data;
     this.descs.forEach((v) => v.destroyVis());
     this.descs.clear();
     data.getColumns().concat(this.options.additionalDescs).forEach((col) => {
@@ -276,7 +279,7 @@ export default class SidePanel {
           return order[5];
       }
     }).sortKeys((a, b) => order.indexOf(a) - order.indexOf(b))
-      .sortValues((a, b) => a.name.localeCompare(b.name))
+      .sortValues((a, b) => a.text.localeCompare(b.text))
       .entries(entries);
   }
 
@@ -284,18 +287,13 @@ export default class SidePanel {
     if (!this.options.chooser) {
       return;
     }
-    const select = <HTMLSelectElement>this.node.querySelector('header select')!;
     const groups = SidePanel.groupByType(Array.from(this.descs.values()));
 
-    const renderGroup = ({key, values}: { key: string, values: SidePanelEntry[] }) => {
-      return `<optgroup label="${key[0].toUpperCase()}${key.slice(1)}">
-          ${values.map((v) => `<option value="${v.id}">${v.name}</option>`).join('')}
-      </optgroup>`;
-    };
-
-    select.innerHTML = `
-      <option>Add Column...</option>
-      ${groups.map(renderGroup).join('')}
-    `;
+    this.search.data = groups.map((g) => {
+      return {
+        text: g.key,
+        children: g.values
+      };
+    });
   }
 }

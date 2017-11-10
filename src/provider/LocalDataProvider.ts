@@ -29,6 +29,7 @@ export interface ILocalDataProviderOptions {
    * the maximum number of nested sorting criteria
    */
   maxNestedSortingCriteria: number;
+  maxGroupColumns: number;
 }
 
 /**
@@ -43,7 +44,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
 
     jumpToSearchResult: false,
 
-    maxNestedSortingCriteria: 1
+    maxNestedSortingCriteria: 1,
+    maxGroupColumns: 1
   };
 
   private readonly reorderAll: () => void;
@@ -63,6 +65,11 @@ export default class LocalDataProvider extends ACommonDataProvider {
         }
       });
     };
+  }
+
+
+  protected getMaxGroupColumns() {
+    return this.options.maxGroupColumns;
   }
 
   protected getMaxNestedSortingCriteria() {

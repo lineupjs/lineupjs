@@ -13,6 +13,11 @@ export default class StratifyThresholdDialog extends ADialog {
   }
 
   openDialog() {
+    if (this.column.isGroupedBy() >= 0) {
+      // disable grouping
+      this.column.groupByMe();
+      return;
+    }
     const domain = this.column.getOriginalMapping().domain;
     const bak = this.column.getStratifyTresholds();
 

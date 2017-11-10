@@ -11,13 +11,18 @@ interface IPoint {
   y: number;
 }
 
+interface IShift {
+  xShift: number;
+  yShift: number;
+}
+
 export default class SelectionManager extends AEventDispatcher {
   static readonly EVENT_SELECT_RANGE = 'selectRange';
   private static readonly MIN_DISTANCE = 10;
 
   private readonly hr: HTMLHRElement;
 
-  private start: IPoint|null = null;
+  private start: (IPoint & IShift)|null = null;
   private startNode: HTMLElement|null = null;
   private endNode: HTMLElement|null = null;
 
@@ -38,7 +43,8 @@ export default class SelectionManager extends AEventDispatcher {
       this.showHint(this.start, evt);
     });
     body.addEventListener('mousedown', (evt) => {
-      this.start = {x: evt.x, y: evt.y};
+      const r = root.getBoundingClientRect();
+      this.start = {x: evt.x, y: evt.y, xShift: r.left, yShift: r.top};
     });
     const end = (evt: MouseEvent) => {
       this.select(evt.ctrlKey);
@@ -73,16 +79,15 @@ export default class SelectionManager extends AEventDispatcher {
     this.fire(SelectionManager.EVENT_SELECT_RANGE, from, end, additional);
   }
 
-  private showHint(start: IPoint, end: IPoint) {
+  private showHint(start: IPoint & IShift, end: IPoint) {
     this.start = start;
-
     const sy = start.y;
     const ey = end.y;
 
     const visible = Math.abs(sy - ey) > SelectionManager.MIN_DISTANCE;
     this.body.classList.toggle('lu-selection-active', visible);
     this.hr.classList.toggle('lu-selection-active', visible);
-    this.hr.style.transform = `translate(${start.x}px,${sy}px)scale(1,${Math.abs(ey - sy)})rotate(${ey>sy ? 90 : -90}deg)`;
+    this.hr.style.transform = `translate(${start.x - start.xShift}px,${sy - start.yShift}px)scale(1,${Math.abs(ey - sy)})rotate(${ey>sy ? 90 : -90}deg)`;
   }
 
   remove(node: HTMLElement) {

@@ -122,9 +122,9 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     this.sort = desc.sort || SORT_METHOD.min;
 
     this.setRendererList([
-      {type: 'boxplot', label: 'Boxplot'},
+      {type: 'boxplot', label: 'Box Plot'},
       {type: 'number', label: 'Bar'},
-      {type: 'circle', label: 'Circle'}
+      {type: 'circle', label: 'Proportional Symbol'}
     ]);
 
   }
@@ -135,6 +135,10 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   getBoxPlotData(row: any, index: number): IBoxPlotData | null {
     return this.getValue(row, index);
+  }
+
+  getRange() {
+    return this.mapping.getRange(BoxPlotColumn.DEFAULT_FORMATTER);
   }
 
   getRawBoxPlotData(row: any, index: number): IBoxPlotData | null {

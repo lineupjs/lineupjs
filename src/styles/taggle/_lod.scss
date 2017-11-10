@@ -1,0 +1,88 @@
+
+.lineup-engine {
+  [data-lod=low][data-agg=detail]:hover,
+  [data-lod=medium][data-agg=detail]:hover {
+    /* show regular height for hovered rows in low + medium LOD */
+    height: 20px !important;
+  }
+
+  [data-lod=low][data-agg=detail]:not(:hover),
+  [data-lod=medium][data-agg=detail]:not(:hover) {
+    /* shrink rows in low + medium LOD that are not hovered */
+
+    padding-top: 0;
+
+    .lu-hover-only,
+    .lu-selection-only,
+    [data-renderer=rank],
+    [data-renderer=string],
+    [data-renderer=circle],
+    [data-renderer=selection],
+    [data-renderer=sparkline],
+    [data-renderer=threshold] {
+      display: none !important;
+    }
+
+    [data-renderer=aggregate] {
+      overflow: visible !important;
+
+      &::before {
+        position: absolute;
+        left: 0;
+        right: 0;
+      }
+    }
+
+    [data-renderer=number] > * {
+      top: 0;
+      bottom: 0;
+    }
+
+    [data-renderer=boxplot] {
+      > div {
+        height: 100%;
+
+        &::before,
+        > div:last-child,
+        > div:first-child::after {
+          display: none;
+        }
+
+        > div:first-child {
+          top: 0;
+          height: 100%;
+          background: #c1c1c1;
+        }
+      }
+    }
+
+    [data-renderer=upset] {
+      align-items: stretch;
+
+      > div:first-child {
+        display: none;
+      }
+
+      > div:nth-child(n + 2) {
+        border-radius: 0;
+        height: 100%;
+
+        &:not(.enabled) {
+          visibility: hidden;
+        }
+      }
+    }
+
+    [data-renderer=categorical],
+    [data-renderer=heatmap] {
+      > div:first-of-type {
+        margin-right: 0;
+        flex: 1 1 auto;
+      }
+
+      > div:last-of-type {
+        display: none;
+      }
+    }
+  }
+}

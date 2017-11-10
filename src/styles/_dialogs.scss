@@ -35,6 +35,14 @@
       z-index: -1;
     }
 
+    form {
+      display: block;
+    }
+
+    label {
+      font-weight: normal;
+    }
+
     input {
       font-size: 8pt;
     }
@@ -82,6 +90,10 @@
           padding-left: 1em;
         }
       }
+    }
+
+    .lu-sub-nested {
+      width: 100px;
     }
   }
 
