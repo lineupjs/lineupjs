@@ -368,7 +368,7 @@ export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRanki
     if (!(`${MIMETYPE_PREFIX}-ref` in data)) {
       const desc = JSON.parse(data[MIMETYPE_PREFIX]);
       col = ctx.provider.create(ctx.provider.fromDescRef(desc));
-      return col && column.insertAfterMe(col) != null;
+      return col != null && column.insertAfterMe(col) != null;
     }
 
     // find by reference
@@ -379,7 +379,7 @@ export function rearrangeDropAble(node: HTMLElement, column: Column, ctx: IRanki
     }
     if (result.effect.startsWith('copy')) {
       col = ctx.provider.clone(col!);
-      return col && column.insertAfterMe(col) != null;
+      return col != null && column.insertAfterMe(col) != null;
     }
     // detect whether it is an internal move operation or an real remove/insert operation
     const toInsertParent = col.parent;
