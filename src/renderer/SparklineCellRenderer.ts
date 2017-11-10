@@ -8,6 +8,7 @@ import Column from '../model/Column';
 import {matchRows} from './ANumbersCellRenderer';
 import {forEachChild} from '../utils';
 import {IGroup} from '../model/Group';
+import {isMissingValue} from '../model/missing';
 
 export function line(data: number[]) {
   if (data.length === 0) {
@@ -46,7 +47,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
 
       ctx.strokeStyle = '#c1c1c1';
       ctx.beginPath();
-      ctx.moveTo(0, h);
+      ctx.moveTo(0, 1 - col.getMapping().apply(col.getThreshold()));
       ctx.lineTo(w * (data.length-1), h);
       ctx.stroke();
 
@@ -85,7 +86,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
 
       ctx.strokeStyle = '#c1c1c1';
       ctx.beginPath();
-      ctx.moveTo(0, groupHeight);
+      ctx.moveTo(0, 1 - col.getMapping().apply(col.getThreshold()));
       ctx.lineTo(context.colWidth(col) / col.getDataLength(), groupHeight);
       ctx.stroke();
 
