@@ -207,6 +207,9 @@ export default class SlopeGraph implements ITableSection {
   }
 
   private onScrolledVertically(scrollTop: number, clientHeight: number) {
+    if (!this.leftContext || !this.rightContext) {
+      return;
+    }
     const left = range(scrollTop, clientHeight, this.leftContext.defaultRowHeight, this.leftContext.exceptions, this.leftContext.numberOfRows);
     const right = range(scrollTop, clientHeight, this.rightContext.defaultRowHeight, this.rightContext.exceptions, this.rightContext.numberOfRows);
 

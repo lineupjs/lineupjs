@@ -76,9 +76,13 @@ abstract class ACommonDataProvider extends ADataProvider {
     return 1;
   }
 
+  protected getMaxGroupColumns() {
+    return 1;
+  }
+
   cloneRanking(existing?: Ranking) {
     const id = this.nextRankingId();
-    const clone = new Ranking(id, this.getMaxNestedSortingCriteria());
+    const clone = new Ranking(id, this.getMaxNestedSortingCriteria(), this.getMaxGroupColumns());
 
     if (existing) { //copy the ranking of the other one
       //copy the ranking

@@ -1,6 +1,8 @@
-
 [data-renderer=number],
 [data-renderer=script],
+[data-renderer=min],
+[data-renderer=max],
+[data-renderer=mean],
 [data-renderer=circle] {
   position: relative;
   white-space: nowrap;
@@ -21,7 +23,7 @@
 }
 
 [data-agg=group] {
-  [data-renderer=number] {
+  [data-renderer$=number] {
     > div > div {
       display: flex;
       align-items: center;
@@ -29,7 +31,7 @@
   }
 }
 
-[data-renderer=stack] [data-renderer=number] > div {
+[data-renderer=stack] [data-renderer$=number] > div {
   overflow-x: hidden;
   text-overflow: ellipsis;
 }

@@ -12,7 +12,7 @@ import {IMultiLevelColumn} from '../model/CompositeColumn';
 import Column from '../model/Column';
 import {isEdge} from 'lineupengine/src/style';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {medianIndex} from '../model/INumberColumn';
+import {default as INumberColumn, isNumberColumn, medianIndex} from '../model/INumberColumn';
 
 export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;
@@ -82,7 +82,6 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
   }
 
 
-
   createCanvas(col: StackColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const {cols, stacked} = createData(col, context, this.nestingPossible);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number, group: IGroup) => {
@@ -102,7 +101,54 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     };
   }
 
-  protected aggregatedIndex(rows: IDataRow[], col: StackColumn) {
-    return medianIndex(rows, col);
+  createGroupDOM(col: IMultiLevelColumn & Column, context: IDOMRenderContext) {
+    if (this.nestingPossible && isNumberColumn(col)) {
+      return super.createGroupDOM(col, context);
+    }
+
+    const {cols, padding} = createData(col, context, false);
+    const useGrid = context.option('useGridLayout', false);
+    return {
+      template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)} ${useGrid ? gridClass(col): ''}${useGrid ? ' lu-grid-space': ''}'>${cols.map((d) => d.groupRenderer.template).join('')}</div>`,
+      update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
+        matchColumns(n, cols, 'detail', 'html');
+
+        const children = <HTMLElement[]>Array.from(n.children);
+        const total = col.getWidth();
+        cols.forEach((col, ci) => {
+          const weight = col.column.getWidth() / total;
+          const cnode = children[ci];
+          if (!useGrid) {
+            cnode.style.width = `${round(weight * 100, 2)}%`;
+            cnode.style.marginRight = `${padding}px`;
+          } else if (isEdge) {
+            cnode.style.msGridColumn = (ci + 1).toString();
+          } else {
+            (<any>cnode.style).gridColumnStart = (ci + 1).toString();
+          }
+          col.groupRenderer.update(cnode, group, rows);
+        });
+      }
+    };
+  }
+
+  createGroupCanvas(col: IMultiLevelColumn & Column, context: ICanvasRenderContext) {
+    if (this.nestingPossible && isNumberColumn(col)) {
+      return super.createGroupCanvas(col, context);
+    }
+    const {cols} = createData(col, context, false);
+    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number) => {
+      cols.forEach((col) => {
+        const shift = col.shift;
+        ctx.translate(shift, 0);
+        col.groupRenderer(ctx, group, rows, dx + shift, dy, group);
+        ctx.translate(-shift, 0);
+      });
+    };
+  }
+
+  protected aggregatedIndex(rows: IDataRow[], col: IMultiLevelColumn & Column) {
+    console.assert(isNumberColumn(col));
+    return medianIndex(rows, (<INumberColumn & Column><any>col));
   }
 }
