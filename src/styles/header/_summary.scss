@@ -36,17 +36,26 @@
 
   > span {
     position: absolute;
+    bottom: -15px;
     pointer-events: none;
     user-select: none;
     line-height: 100%;
 
+    // create axis tick as background image and position it left or right
+    background-image: linear-gradient(to bottom, #000 3px, transparent);
+    background-repeat: no-repeat;
+    background-size: 1px 3px;
+    padding-top: 5px;
+
     &:first-of-type {
       left: 0;
+      background-position: left top;
     }
 
     &:last-of-type {
       right: 0;
       text-align: right;
+      background-position: right top;
     }
   }
 }
