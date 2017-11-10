@@ -2,8 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import CompositeNumberColumn from './CompositeNumberColumn';
-import {ICompositeNumberColumnDesc} from 'lineupjs/src/model/CompositeNumberColumn';
+import CompositeNumberColumn, {ICompositeNumberColumnDesc} from './CompositeNumberColumn';
 
 /**
  *  factory for creating a description creating a max column

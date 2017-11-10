@@ -20,6 +20,7 @@ import ADialog from '../dialogs/ADialog';
 import {IRankingHeaderContext} from './engine/interfaces';
 import {IHeaderRendererOptions} from './interfaces';
 import NumberColumn from '../model/NumberColumn';
+import {possibleGroupRenderer, possibleRenderer} from '../renderer';
 
 
 function countMultiLevel(c: Column): number {
@@ -265,9 +266,13 @@ export default class HeaderRenderer {
   }
 
   private createToolbar($node: d3.Selection<Column>) {
+    const renderers = defaultConfig().renderers;
     const ctx: IRankingHeaderContext = Object.assign({
       provider: this.data,
-      statsOf: () => null
+      statsOf: () => null,
+      getPossibleRenderer: (col: Column): {item: {type: string, label: string}[], group: {type: string, label: string}[]} => {
+        return {item: possibleRenderer(col, renderers), group: possibleGroupRenderer(col, renderers)};
+      }
     }, this.options);
 
     $node.each(function (this: HTMLElement, col) {
