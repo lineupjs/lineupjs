@@ -128,8 +128,8 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   const box = <HTMLElement>whiskers.firstElementChild;
   const median = <HTMLElement>whiskers.lastElementChild;
 
-  const leftWhisker = Math.max(data.q1 - 1.5 * (data.q3 - data.q1), data.min);
-  const rightWhisker = Math.min(data.q3 + 1.5 * (data.q3 - data.q1), data.max);
+  const leftWhisker = Math.max(data.q1 - 1.5 * (data.q3 - data.q1), 0);
+  const rightWhisker = Math.min(data.q3 + 1.5 * (data.q3 - data.q1), 1);
   whiskers.style.left = `${Math.round(leftWhisker * 100)}%`;
   const range = rightWhisker - leftWhisker;
   whiskers.style.width = `${Math.round(range * 100)}%`;
@@ -169,8 +169,8 @@ function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, height:
 
   const boxTopPadding = topPadding + ((height - topPadding * 2) * 0.1);
 
-  const left = Math.max((box.q1 - 1.5 * (box.q3 - box.q1)), box.min);
-  const right = Math.min((box.q3 + 1.5 * (box.q3 - box.q1)), box.max);
+  const left = Math.max((box.q1 - 1.5 * (box.q3 - box.q1)), 0);
+  const right = Math.min((box.q3 + 1.5 * (box.q3 - box.q1)), 1);
 
   ctx.fillStyle = boxColor;
   ctx.strokeStyle = boxStroke;
