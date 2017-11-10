@@ -50,7 +50,7 @@ interface IDebounceContext {
  */
 export function debounce(callback: (...args: any[]) => void, timeToDelay = 100, choose?: (current: IDebounceContext, next: IDebounceContext)=>IDebounceContext) {
   let tm = -1;
-  let ctx: IDebounceContext;
+  let ctx: IDebounceContext|null = null;
   return function (this: any, ...args: any[]) {
     if (tm >= 0) {
       clearTimeout(tm);
@@ -58,7 +58,11 @@ export function debounce(callback: (...args: any[]) => void, timeToDelay = 100, 
     }
     const next = { self: this, args};
     ctx = ctx && choose ? choose(ctx, next) : next;
-    tm = setTimeout(callback.bind(ctx.self, ...ctx.args), timeToDelay);
+    tm = <any>setTimeout(() => {
+      console.assert(ctx != null);
+      callback.call(ctx!.self, ...ctx!.args);
+      ctx = null;
+    }, timeToDelay);
   };
 }
 
