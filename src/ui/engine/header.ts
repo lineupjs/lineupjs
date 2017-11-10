@@ -181,7 +181,7 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
   }
 
   if (isNumberColumn(col) || col instanceof CategoricalColumn) {
-    addIcon('Sort Groupy By &hellip;').onclick = (evt) => {
+    addIcon('Sort Group By').onclick = (evt) => {
       evt.stopPropagation();
       col.toggleMyGroupSorting();
     };
