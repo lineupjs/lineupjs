@@ -23,7 +23,7 @@ export default class SidePanel {
     additionalDescs: [
       createStackDesc('Weighted Sum'),
       createScriptDesc('Scripted Formula'),
-      createNestedDesc('Group'),
+      createNestedDesc('Nested'),
       createMaxDesc(),
       createMinDesc(),
       createMeanDesc(),
