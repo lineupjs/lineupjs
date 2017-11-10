@@ -66,7 +66,8 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         median: data.median * width,
         q1: data.q1 * width,
         q3: data.q3 * width,
-        max: data.max * width
+        max: data.max * width,
+        outlier: data.outlier ? data.outlier.map((d) => d * width): undefined
       };
       renderBoxPlot(ctx, scaled, rowHeight, topPadding, context);
 
@@ -75,8 +76,8 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       }
       ctx.strokeStyle = boxSortIndicator;
       ctx.beginPath();
-      ctx.moveTo(scaled[sortMethod], topPadding);
-      ctx.lineTo(scaled[sortMethod], rowHeight - topPadding);
+      ctx.moveTo(<number>scaled[sortMethod], topPadding);
+      ctx.lineTo(<number>scaled[sortMethod], rowHeight - topPadding);
       ctx.stroke();
       ctx.fill();
     };
@@ -112,7 +113,8 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         median: data.median * width,
         q1: data.q1 * width,
         q3: data.q3 * width,
-        max: data.max * width
+        max: data.max * width,
+        outlier: data.outlier ? data.outlier.map((d) => d * width): undefined
       };
       renderBoxPlot(ctx, scaled, height, topPadding, context);
     };
@@ -122,20 +124,43 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData) {
   n.title = computeLabel(label);
 
-  const wiskers = <HTMLElement>n.firstElementChild;
-  const box = <HTMLElement>wiskers.firstElementChild;
-  const median = <HTMLElement>wiskers.lastElementChild;
+  const whiskers = <HTMLElement>n.firstElementChild;
+  const box = <HTMLElement>whiskers.firstElementChild;
+  const median = <HTMLElement>whiskers.lastElementChild;
 
-  wiskers.style.left = `${Math.round(data.min * 100)}%`;
-  const range = data.max - data.min;
-  wiskers.style.width = `${Math.round(range * 100)}%`;
+  const leftWhisker = (data.q1 - 1.5 * (data.q3 - data.q1));
+  const rightWhisker = (data.q3 + 1.5 * (data.q3 - data.q1));
+  whiskers.style.left = `${Math.round(leftWhisker * 100)}%`;
+  const range = rightWhisker - leftWhisker;
+  whiskers.style.width = `${Math.round(range * 100)}%`;
 
-  //relative within the wiskers
-  box.style.left = `${Math.round((data.q1 - data.min) / range * 100)}%`;
+  //relative within the whiskers
+  box.style.left = `${Math.round((data.q1 - leftWhisker) / range * 100)}%`;
   box.style.width = `${Math.round((data.q3 - data.q1) / range * 100)}%`;
 
-  //relative within the wiskers
-  median.style.left = `${Math.round((data.median - data.min) / range * 100)}%`;
+  //relative within the whiskers
+  median.style.left = `${Math.round((data.median - leftWhisker) / range * 100)}%`;
+
+  if (!data.outlier || data.outlier.length === 0) {
+    if (n.children.length > 1) {
+      n.innerHTML = '';
+      n.appendChild(whiskers);
+    }
+    return
+  }
+
+  // match lengths
+  const outliers = <HTMLElement[]>Array.from(n.children).slice(1);
+  outliers.slice(data.outlier.length).forEach((v) => v.remove());
+  for(let i = outliers.length; i < data.outlier.length; ++i) {
+    const p = n.ownerDocument.createElement('div');
+    outliers.push(p);
+    n.appendChild(p);
+  }
+
+  data.outlier.forEach((v, i) => {
+    outliers[i].style.left = `${Math.round((v / range) * 100)}%`;
+  });
 }
 
 function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, height: number, topPadding: number, context: ICanvasRenderContext) {
@@ -143,12 +168,14 @@ function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, height:
   const boxStroke = context.option('style.boxplot.stroke', 'black');
 
   const boxTopPadding = topPadding + ((height - topPadding * 2) * 0.1);
-  const minPos = box.min, maxPos = box.max, medianPos = box.median, q3Pos = box.q3, q1Pos = box.q1;
+
+  const left = (box.q1 - 1.5 * (box.q3 - box.q1));
+  const right = (box.q3 + 1.5 * (box.q3 - box.q1));
 
   ctx.fillStyle = boxColor;
   ctx.strokeStyle = boxStroke;
   ctx.beginPath();
-  ctx.rect(q1Pos, boxTopPadding, q3Pos - q1Pos, height - (boxTopPadding * 2));
+  ctx.rect(box.q1, boxTopPadding, box.q3 - box.q1, height - (boxTopPadding * 2));
   ctx.fill();
   ctx.stroke();
 
@@ -157,16 +184,23 @@ function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, height:
   const middlePos = height / 2;
 
   ctx.beginPath();
-  ctx.moveTo(minPos, middlePos);
-  ctx.lineTo(q1Pos, middlePos);
-  ctx.moveTo(minPos, topPadding);
-  ctx.lineTo(minPos, bottomPos);
-  ctx.moveTo(medianPos, boxTopPadding);
-  ctx.lineTo(medianPos, height - boxTopPadding);
-  ctx.moveTo(q3Pos, middlePos);
-  ctx.lineTo(maxPos, middlePos);
-  ctx.moveTo(maxPos, topPadding);
-  ctx.lineTo(maxPos, bottomPos);
+  ctx.moveTo(left, middlePos);
+  ctx.lineTo(box.q1, middlePos);
+  ctx.moveTo(left, topPadding);
+  ctx.lineTo(left, bottomPos);
+  ctx.moveTo(box.median, boxTopPadding);
+  ctx.lineTo(box.median, height - boxTopPadding);
+  ctx.moveTo(box.q3, middlePos);
+  ctx.lineTo(right, middlePos);
+  ctx.moveTo(right, topPadding);
+  ctx.lineTo(right, bottomPos);
   ctx.stroke();
   ctx.fill();
+
+  if (box.outlier) {
+    box.outlier.forEach((v) => {
+      // currently dots with 3px
+      ctx.fillRect(v - 1, middlePos - 1, 3, 3);
+    })
+  }
 }

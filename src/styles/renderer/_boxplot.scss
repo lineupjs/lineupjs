@@ -5,7 +5,7 @@
   flex-direction: row;
   align-items: center;
 
-  > div { // wiskers + contains everything
+  > div:first-of-type { // wiskers + contains everything
     position: relative;
     border-left: 1px solid $lu_renderer_boxplot_stroke;
     border-right: 1px solid $lu_renderer_boxplot_stroke;
@@ -70,5 +70,16 @@
     &[data-sort=median] > div:last-child {
       background-color: $lu_renderer_boxplot_sort_indicator;
     }
+  }
+
+  /**
+  outlier
+   */
+  > div:nth-last-of-type(2n) {
+    top: 45%;
+    height: 10%;
+    min-height: 3px;
+    background: $lu_renderer_boxplot_outlier;
+    border-radius: 1px;
   }
 }
