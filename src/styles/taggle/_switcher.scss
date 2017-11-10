@@ -1,0 +1,68 @@
+@import '~font-awesome/scss/variables';
+@import '~font-awesome/scss/mixins';
+@import '../vars';
+
+.#{$lu_css_prefix}-rule-button-chooser {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+
+  > div {
+    margin: 1em;
+    padding: 5px;
+    flex: 1 1 auto;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 0 30px 0 #b7b7b7;
+    transition: box-shadow 0.5s ease;
+    display: flex;
+    align-items: center;
+
+    span {
+      padding-left: 0.2em;
+    }
+
+    code {
+      display: none;
+      opacity: 0;
+      position: absolute;
+      background: white;
+      top: 72%;
+      left: 5%;
+      width: 86%;
+      padding: 2%;
+      max-height: 300px;
+      overflow: auto;
+      text-overflow: ellipsis;
+      z-index: 100;
+      transition: all 0.5s linear;
+      box-shadow: 0 0 30px 0 yellow;
+    }
+
+    &:hover {
+      code:not(:empty) {
+        display: block;
+        opacity: 1;
+      }
+    }
+
+    &::before {
+      @include fa-icon();
+
+      content: $fa-var-square-o;
+    }
+
+    &.chosen {
+      box-shadow: 0 0 30px 0 green;
+
+      &::before {
+        content: $fa-var-check-square-o;
+      }
+    }
+
+    &.violated {
+      box-shadow: 0 0 30px 0 yellow;
+    }
+  }
+}

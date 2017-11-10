@@ -14,7 +14,7 @@ export default class SidePanelEntry {
 
   }
 
-  get name() {
+  get text() {
     return this.desc.label;
   }
 

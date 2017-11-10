@@ -128,12 +128,9 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     //TODO infer categories from data
 
     this.setRendererList([
-      {type: 'categorical', label: 'Color + Label'},
-      {type: 'catcolor', label: 'Color'},
+      {type: 'categorical', label: 'Color'},
       {type: 'upset', label: 'Matrix'}
-    ], [{type: 'categorical', label: 'Histogram'},
-      {type: 'catcolor', label: 'Most Frequent Category Color + Label'},
-      {type: 'catcolorshifted', label: 'Relative Most Frequent Category Color + Label'}]);
+    ], [{type: 'categorical', label: 'Histogram'}]);
   }
 
   initCategories(desc: IBaseCategoricalDesc) {

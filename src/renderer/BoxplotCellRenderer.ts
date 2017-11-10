@@ -46,7 +46,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     const topPadding = context.option('rowBarPadding', 1);
     const sortedByMe = col.isSortedByMe().asc !== undefined;
     const width = context.colWidth(col);
-    const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ff0700');
+    const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ffa500');
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const rowHeight = context.rowHeight(i);
