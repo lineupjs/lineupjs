@@ -146,7 +146,7 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
       n.innerHTML = '';
       n.appendChild(whiskers);
     }
-    return
+    return;
   }
 
   // match lengths
@@ -197,10 +197,11 @@ function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, height:
   ctx.stroke();
   ctx.fill();
 
-  if (box.outlier) {
-    box.outlier.forEach((v) => {
-      // currently dots with 3px
-      ctx.fillRect(v - 1, middlePos - 1, 3, 3);
-    })
+  if (!box.outlier) {
+    return;
   }
+  box.outlier.forEach((v) => {
+    // currently dots with 3px
+    ctx.fillRect(v - 1, middlePos - 1, 3, 3);
+  });
 }
