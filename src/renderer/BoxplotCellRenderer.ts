@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {default as BoxPlotColumn, IBoxPlotColumn, IBoxPlotData} from '../model/BoxPlotColumn';
+import {default as BoxPlotColumn, IBoxPlotColumn, IBoxPlotData, isBoxPlotColumn} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -19,6 +19,11 @@ export function computeLabel(v: IBoxPlotData) {
 }
 
 export default class BoxplotCellRenderer implements ICellRendererFactory {
+  readonly title = 'Box Plot';
+
+  canRender(col: Column) {
+    return isBoxPlotColumn(col);
+  }
 
   createDOM(col: IBoxPlotColumn & Column): IDOMCellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();

@@ -7,10 +7,17 @@ import ICellRendererFactory from './ICellRendererFactory';
 import {ANoGroupRenderer} from './ANoGroupRenderer';
 import LinkColumn from '../model/LinkColumn';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import Column from '../model/Column';
 
 export default class ImageCellRenderer extends ANoGroupRenderer implements ICellRendererFactory {
 
   private readonly imageCache = new Map<string, HTMLImageElement>();
+
+  readonly title = 'Image';
+
+  canRender(col: Column) {
+    return col instanceof LinkColumn;
+  }
 
   private getImage(col: LinkColumn, row: any, index: number) {
     if (!col.isLink(row, index)) {

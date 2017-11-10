@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {INumbersColumn} from '../model/NumbersColumn';
+import {INumbersColumn, isNumbersColumn} from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -18,6 +18,11 @@ export function line(data: number[]) {
 }
 
 export default class SparklineCellRenderer implements ICellRendererFactory {
+  readonly title = 'Sparkline';
+
+  canRender(col: Column) {
+    return isNumbersColumn(col);
+  }
 
   createDOM(col: INumbersColumn & Column): IDOMCellRenderer {
     return {

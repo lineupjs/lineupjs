@@ -5,6 +5,7 @@ import Column from '../model/Column';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 
 export default class NumbersCellRenderer extends ANumbersCellRenderer {
+  readonly title = 'Heatmap';
 
   protected createDOMContext(col: INumbersColumn & Column) {
     const colorScale = col.getRawColorScale();

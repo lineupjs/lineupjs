@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column, {IStatistics} from '../model/Column';
-import {INumberColumn} from '../model/INumberColumn';
+import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -14,6 +14,12 @@ import {forEachChild} from '../utils';
  * a renderer rendering a bar for numerical columns
  */
 export default class HistogramGroupRenderer implements ICellRendererFactory {
+  readonly title = 'Histogram';
+
+  canRender(col: Column, isGroup: boolean) {
+    return isNumberColumn(col) && isGroup;
+  }
+
   createGroupDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMGroupRenderer {
     const guessedBins = getNumberOfBins(context.totalNumberOfRows);
     let bins = '';

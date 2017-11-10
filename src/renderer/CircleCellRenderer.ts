@@ -1,17 +1,21 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn, medianIndex} from '../model/INumberColumn';
+import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import AAggregatedGroupRenderer from './AAggregatedGroupRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
-export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
+export default class CircleCellRenderer implements ICellRendererFactory {
+  readonly title: 'Proportional Symbol';
 
   constructor(private colorOf: (d: any, i: number, col: Column) => string | null = (_d, _i, col) => col.color) {
-    super();
+
+  }
+
+  canRender(col: Column, isGroup: boolean) {
+    return isNumberColumn(col) && !isGroup;
   }
 
   createDOM(col: INumberColumn & Column) {
@@ -52,9 +56,5 @@ export default class CircleCellRenderer extends AAggregatedGroupRenderer<INumber
         clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, context.colWidth(col) - 1, context.textHints);
       }
     };
-  }
-
-  protected aggregatedIndex(rows: IDataRow[], col: INumberColumn & Column) {
-    return medianIndex(rows, col);
   }
 }

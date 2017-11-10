@@ -6,6 +6,11 @@ import {IDataRow} from '../provider/ADataProvider';
 import {IGroup} from '../model/Group';
 
 export class EmptyCellRenderer implements ICellRendererFactory {
+  readonly title = 'Nothing';
+
+  canRender() {
+    return true;
+  }
 
   createDOM(col: Column): IDOMCellRenderer {
     return {

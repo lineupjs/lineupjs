@@ -1,4 +1,4 @@
-import {INumberColumn, medianIndex} from '../model/INumberColumn';
+import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
@@ -7,7 +7,6 @@ import {clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
-import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
@@ -21,7 +20,13 @@ export function toHeatMapColor(d: any, index: number, col: INumberColumn & Colum
   return color.toString();
 }
 
-export default class HeatmapCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
+export default class HeatmapCellRenderer implements ICellRendererFactory {
+  readonly title: 'Brightness';
+
+  canRender(col: Column, isGroup: boolean) {
+    return isNumberColumn(col) && !isGroup;
+  }
+
   createDOM(col: INumberColumn & Column): IDOMCellRenderer {
     return {
       template: `<div title="">
@@ -48,9 +53,5 @@ export default class HeatmapCellRenderer extends AAggregatedGroupRenderer<INumbe
       ctx.fillStyle = context.option('style.text', 'black');
       clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
     };
-  }
-
-  protected aggregatedIndex(rows: IDataRow[], col: INumberColumn & Column) {
-    return medianIndex(rows, col);
   }
 }

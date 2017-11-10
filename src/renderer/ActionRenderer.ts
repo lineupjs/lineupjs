@@ -6,9 +6,16 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
 import {default as ActionColumn, IAction, IGroupAction} from '../model/ActionColumn';
 import {IGroup} from '../model/Group';
+import Column from '../model/Column';
 
 
 export default class ActionRenderer implements ICellRendererFactory {
+  readonly title = 'Default';
+
+  canRender(col: Column) {
+    return col instanceof ActionColumn;
+  }
+
   createDOM(col: ActionColumn, context: IDOMRenderContext): IDOMCellRenderer {
     const actions = (<IAction[]>context.option('actions', [])).concat(col.actions);
     return {

@@ -4,6 +4,7 @@ import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
+import Column from '../model/Column';
 
 
 /**
@@ -16,6 +17,12 @@ export default class StringCellRenderer implements ICellRendererFactory {
     right: new DefaultCellRenderer('text_right', 'right'),
     center: new DefaultCellRenderer('text_center', 'center')
   };
+
+  readonly title = 'Default';
+
+  canRender(col: Column) {
+    return col instanceof StringColumn;
+  }
 
   createDOM(col: StringColumn): IDOMCellRenderer {
     return this.alignments[col.alignment].createDOM(col);

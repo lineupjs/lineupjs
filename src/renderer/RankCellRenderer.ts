@@ -6,10 +6,17 @@ import {IGroup} from '../model/Group';
 import RankColumn from '../model/RankColumn';
 import {clipText} from '../utils';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';
+import Column from '../model/Column';
 
 export default class RankCellRenderer extends DefaultCellRenderer {
+  readonly title = 'String';
+
   constructor() {
     super('rank', 'right');
+  }
+
+  canRender(col: Column) {
+    return col instanceof RankColumn;
   }
 
   createGroupDOM(col: RankColumn): IDOMGroupRenderer {

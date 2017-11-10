@@ -178,9 +178,7 @@ export default class Column extends AEventDispatcher {
     this.uid = fixCSS(id);
     this.rendererInfo = {
       renderer: this.desc.rendererType || this.desc.type,
-      renderers: [],
-      groupRenderer: this.desc.groupRenderer || this.desc.type,
-      groupRenderers: []
+      groupRenderer: this.desc.groupRenderer || this.desc.type
     };
 
     this.cssClass = desc.cssClass || '';
@@ -571,19 +569,6 @@ export default class Column extends AEventDispatcher {
       return;
     }
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.groupRenderer, this.rendererInfo.groupRenderer = renderer);
-  }
-
-  getRendererList() {
-    return this.rendererInfo.renderers;
-  }
-
-  getGroupRenderers() {
-    return this.rendererInfo.groupRenderers;
-  }
-
-  protected setRendererList(renderers: { type: string, label: string }[], groupRenderers: { type: string, label: string }[] = []) {
-    this.rendererInfo.renderers = renderers;
-    this.rendererInfo.groupRenderers = groupRenderers;
   }
 
   /**

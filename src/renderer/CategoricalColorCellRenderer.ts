@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {ICategoricalColumn} from '../model/CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
@@ -13,6 +13,12 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
  * renders categorical columns as a colored rect with label
  */
 export default class CategoricalColorCellRenderer implements ICellRendererFactory {
+  readonly title = 'Color';
+
+  canRender(col: Column) {
+    return isCategoricalColumn(col);
+  }
+
   createDOM(col: ICategoricalColumn & Column): IDOMCellRenderer {
     return {
       template: `<div style="background-color: transparent" title=""></div>`,

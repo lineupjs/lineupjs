@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {ICategoricalColumn} from '../model/CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import Column, {ICategoricalStatistics} from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
@@ -14,6 +14,13 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
  * renders categorical columns as a colored rect with label
  */
 export default class CategoricalCellRenderer implements ICellRendererFactory {
+  readonly title = 'Color';
+  readonly groupTitle = 'Histogram';
+
+  canRender(col: Column) {
+    return isCategoricalColumn(col);
+  }
+
   createDOM(col: ICategoricalColumn & Column): IDOMCellRenderer {
     return {
       template: `<div>

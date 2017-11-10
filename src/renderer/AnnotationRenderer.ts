@@ -6,8 +6,15 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {clipText, showOverlay} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 import {ANoGroupRenderer} from './ANoGroupRenderer';
+import Column from '../model/Column';
 
 export default class AnnotationRenderer extends ANoGroupRenderer implements ICellRendererFactory {
+  readonly title = 'Default';
+
+  canRender(col: Column) {
+    return col instanceof AnnotateColumn;
+  }
+
   createDOM(col: AnnotateColumn): IDOMCellRenderer {
     return {
       template: `<div class='annotations text'>

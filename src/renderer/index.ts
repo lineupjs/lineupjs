@@ -3,9 +3,6 @@
  */
 
 import Column from '../model/Column';
-import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
-import CompositeNumberColumn from '../model/CompositeNumberColumn';
-
 import ICellRendererFactory from './ICellRendererFactory';
 import BarCellRenderer from './BarCellRenderer';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
@@ -23,7 +20,6 @@ import UpSetCellRenderer from './UpSetCellRenderer';
 import CircleCellRenderer from './CircleCellRenderer';
 import BoxplotCellRenderer from './BoxplotCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
-import ThresholdCellRenderer from './ThresholdCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import {EmptyCellRenderer} from './EmptyCellRenderer';
@@ -36,17 +32,16 @@ import ImageCellRenderer from './ImageCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
-const combineCellRenderer = new BarCellRenderer(false, (d, i, col: CompositeNumberColumn) => col.getColor(d, i));
-
+const barCellRenderer = new BarCellRenderer();
 /**
  * default render factories
  */
 export const renderers: { [key: string]: ICellRendererFactory } = {
   rank: new RankCellRenderer(),
   boolean: new DefaultCellRenderer('boolean', 'center'),
+  ordinal: barCellRenderer,
   date: defaultCellRenderer,
-  number: new BarCellRenderer(),
-  ordinal: new BarCellRenderer(true, (d, i, col: CategoricalNumberColumn) => col.getColor(d, i)),
+  number: barCellRenderer,
   string: new StringCellRenderer(),
   selection: new SelectionRenderer(),
   heatmap: new HeatmapCellRenderer(),
@@ -59,12 +54,11 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   categorical: new CategoricalCellRenderer(),
   catcolor: new CategoricalColorCellRenderer(),
   catcolorshifted: new CategoricalColorShiftedCellRenderer(),
-  max: combineCellRenderer,
-  min: combineCellRenderer,
-  mean: combineCellRenderer,
-  script: combineCellRenderer,
+  max: barCellRenderer,
+  min: barCellRenderer,
+  mean: barCellRenderer,
+  script: barCellRenderer,
   numbers: new NumbersCellRenderer(),
-  threshold: new ThresholdCellRenderer(),
   sparkline: new SparklineCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
   set: new UpSetCellRenderer(),
@@ -77,6 +71,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   histogram: new HistogramGroupRenderer(),
   default: defaultCellRenderer
 };
+
 
 function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getRendererType()];
