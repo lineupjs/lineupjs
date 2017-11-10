@@ -4,15 +4,16 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  position: relative;
 
-  > div:first-of-type { // wiskers + contains everything
+  > div:first-of-type { // whiskers + contains everything
     position: relative;
     border-left: 1px solid $lu_renderer_boxplot_stroke;
     border-right: 1px solid $lu_renderer_boxplot_stroke;
     height: 90%;
     max-height: 30px;
 
-    &::before { // wiskers line
+    &::before { // whiskers line
       content: '';
       position: absolute;
       top: 0;
@@ -75,11 +76,13 @@
   /**
   outlier
    */
-  > div:nth-last-of-type(2n) {
-    top: 45%;
-    height: 10%;
-    min-height: 3px;
+  > div:nth-of-type(n + 2) {
+    position: absolute;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    margin: -2.5px;
     background: $lu_renderer_boxplot_outlier;
-    border-radius: 1px;
+    border-radius: 50%;
   }
 }

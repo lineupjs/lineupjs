@@ -100,7 +100,7 @@ export class LazyBoxPlotData implements IAdvancedBoxPlotData {
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
     const right = q3 + 1.5 * iqr;
-    this._outlier = this.sorted.filter((v) => v < left || v > right);
+    this._outlier = this.sorted.filter((v) => (v < left || v > right) && !isMissingValue(v));
     if (this.scale) {
       this._outlier = this._outlier.map((v) => this.scale!.apply(v));
     }
