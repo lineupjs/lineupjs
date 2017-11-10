@@ -8,7 +8,6 @@ import Column from '../model/Column';
 import {matchRows} from './ANumbersCellRenderer';
 import {forEachChild} from '../utils';
 import {IGroup} from '../model/Group';
-import {isMissingValue} from '../model/missing';
 
 export function line(data: number[]) {
   if (data.length === 0) {
