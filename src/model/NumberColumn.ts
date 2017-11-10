@@ -348,6 +348,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       if (isNaN(raw)) {
         return 'NaN';
       }
+      if (!isFinite(raw)) {
+        return raw.toString();
+      }
       return this.numberFormat(raw);
     }
     const v = super.getValue(row, index);
