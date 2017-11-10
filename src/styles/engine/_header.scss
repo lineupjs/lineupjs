@@ -4,7 +4,7 @@
 /**
   needs to be the full path without any super import otherwise the @extend won't work properly
  */
-.lineup-engine > header section.#{$lu_css_prefix}-header {
+section.#{$lu_css_prefix}-header {
   @extend %lu-header;
 
   text-align: center;
@@ -83,5 +83,18 @@
     &:hover {
       background-color: $lu_hover_color;
     }
+  }
+}
+
+.#{$lu_css_prefix}-sub-nested > section {
+  margin-bottom: $lu_engine_grip_gap;
+
+  > .#{$lu_css_prefix}-handle {
+    height: $lu_engine_grip_gap;
+    width: 100%;
+    bottom: ($lu_engine_grip_gap * -1) - 1px;
+    left: 0;
+    right: 0;
+    cursor: inherit;
   }
 }

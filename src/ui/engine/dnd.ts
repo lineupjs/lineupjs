@@ -172,7 +172,8 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
     if (stopPropagation) {
       e.stopPropagation();
     }
-    const effect = <IDragEffect>e.dataTransfer.effectAllowed;
+    updateDropEffect(e);
+    const effect = <IDragEffect>e.dataTransfer.dropEffect;
 
     node.classList.remove('lu-dragover');
 

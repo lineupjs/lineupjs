@@ -40,15 +40,6 @@
     padding: 0;
   }
 
-  > .#{$lu_css_prefix}-sort-handle {
-    height: 5px;
-    background-color: white;
-
-    &.#{$lu_css_prefix}-dragover {
-      background-color: $lu_drag_over;
-    }
-  }
-
   main.#{$lu_css_prefix}-summary {
     margin: 0.5em;
     height: 50px;
