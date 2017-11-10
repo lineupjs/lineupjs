@@ -89,6 +89,10 @@ export default class CompositeColumn extends Column implements IColumnParent {
       return null;
     }
     const old = this._children.indexOf(col);
+    if (index === old) {
+      // no move needed
+      return col;
+    }
     //delete first
     this._children.splice(old, 1);
     // adapt target index based on previous index, i.e shift by one

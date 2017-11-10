@@ -430,6 +430,10 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       return null;
     }
     const old = this.columns.indexOf(col);
+    if (index === old) {
+      // no move needed
+      return col;
+    }
     //delete first
     this.columns.splice(old, 1);
     // adapt target index based on previous index, i.e shift by one
