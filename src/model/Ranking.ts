@@ -25,6 +25,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   static readonly EVENT_FILTER_CHANGED = Column.EVENT_FILTER_CHANGED;
   static readonly EVENT_LABEL_CHANGED = Column.EVENT_LABEL_CHANGED;
   static readonly EVENT_ADD_COLUMN = Column.EVENT_ADD_COLUMN;
+  static readonly EVENT_MOVE_COLUMN = Column.EVENT_MOVE_COLUMN;
   static readonly EVENT_REMOVE_COLUMN = Column.EVENT_REMOVE_COLUMN;
   static readonly EVENT_DIRTY = Column.EVENT_DIRTY;
   static readonly EVENT_DIRTY_HEADER = Column.EVENT_DIRTY_HEADER;
@@ -110,7 +111,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return super.createEventList().concat([
       Ranking.EVENT_WIDTH_CHANGED, Ranking.EVENT_FILTER_CHANGED,
       Ranking.EVENT_LABEL_CHANGED, Ranking.EVENT_GROUPS_CHANGED,
-      Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_GROUP_CRITERIA_CHANGED,
+      Ranking.EVENT_ADD_COLUMN, Ranking.EVENT_REMOVE_COLUMN, Ranking.EVENT_GROUP_CRITERIA_CHANGED, Ranking.EVENT_MOVE_COLUMN,
       Ranking.EVENT_DIRTY, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES,
       Ranking.EVENT_GROUP_SORT_CRITERIA_CHANGED,
       Ranking.EVENT_SORT_CRITERIA_CHANGED, Ranking.EVENT_SORT_CRITERIAS_CHANGED, Ranking.EVENT_DIRTY_ORDER, Ranking.EVENT_ORDER_CHANGED]);
@@ -231,12 +232,65 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.sortBy(col);
   }
 
+  toggleGrouping(col: Column) {
+    const old = this.groupColumns.indexOf(col);
+    if (old >= 0) {
+      const newGroupings = this.groupColumns.slice();
+      newGroupings.splice(old, 1);
+      return this.groupBy(newGroupings);
+    }
+    return this.groupBy([col].concat(this.groupColumns));
+  }
+
   getGroupCriteria() {
     return this.groupColumns.slice();
   }
 
   setGroupCriteria(columns: Column[]) {
     return this.groupBy(columns);
+  }
+
+  sortBy(col: Column | null, ascending: boolean = false) {
+    if (col !== null && col.findMyRanker() !== this) {
+      return false; //not one of mine
+    }
+    const primary = this.primarySortCriteria;
+    if ((col === null && primary === null) || (primary && primary.col === col && primary.asc === ascending)) {
+      return true; //already in this order
+    }
+    const bak = this.getSortCriteria();
+
+    if (col) {
+      const existing = this.sortCriteria.findIndex((d) => d.col === col);
+      if (existing >= 0) { //remove index
+        this.sortCriteria.splice(existing, 1);
+        // can skip deregister will be reregistered anyhow
+      } else if (this.sortCriteria.length === this.maxSortCriteria) {
+        // remove the last one
+        const last = this.sortCriteria.pop()!;
+        last.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null);
+        last.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null);
+      }
+    } else {
+      this.sortCriteria.forEach((s) => {
+        s.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null);
+        s.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null);
+      });
+      this.sortCriteria.splice(0, this.sortCriteria.length);
+    }
+
+    if (col) { //enable dirty listening
+      // add as first
+      this.sortCriteria.unshift({
+        col,
+        asc: ascending
+      });
+      col.on(`${Column.EVENT_DIRTY_VALUES}.order`, this.dirtyOrder);
+      // order is dirty if the sort method has changed
+      col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, this.dirtyOrder);
+    }
+    this.triggerResort(bak);
+    return true;
   }
 
   groupBy(col: Column | null | Column[]) {
@@ -347,49 +401,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return true;
   }
 
-  sortBy(col: Column | null, ascending: boolean = false) {
-    if (col !== null && col.findMyRanker() !== this) {
-      return false; //not one of mine
-    }
-    const primary = this.primarySortCriteria;
-    if ((col === null && primary === null) || (primary && primary.col === col && primary.asc === ascending)) {
-      return true; //already in this order
-    }
-    const bak = this.getSortCriteria();
-
-    if (col) {
-      const existing = this.sortCriteria.findIndex((d) => d.col === col);
-      if (existing >= 0) { //remove index
-        this.sortCriteria.splice(existing, 1);
-        // can skip deregister will be reregistered anyhow
-      } else if (this.sortCriteria.length === this.maxSortCriteria) {
-        // remove the last one
-        const last = this.sortCriteria.pop()!;
-        last.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null);
-        last.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null);
-      }
-    } else {
-      this.sortCriteria.forEach((s) => {
-        s.col.on(`${Column.EVENT_DIRTY_VALUES}.order`, null);
-        s.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, null);
-      });
-      this.sortCriteria.splice(0, this.sortCriteria.length);
-    }
-
-    if (col) { //enable dirty listening
-      // add as first
-      this.sortCriteria.unshift({
-        col,
-        asc: ascending
-      });
-      col.on(`${Column.EVENT_DIRTY_VALUES}.order`, this.dirtyOrder);
-      // order is dirty if the sort method has changed
-      col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.order`, this.dirtyOrder);
-    }
-    this.triggerResort(bak);
-    return true;
-  }
-
   private triggerResort(bak: ISortCriteria | ISortCriteria[] | null) {
     const sortCriterias = this.getSortCriterias();
     const bakSingle = Array.isArray(bak) ? bak[0] : bak;
@@ -408,7 +419,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   insert(col: Column, index: number = this.columns.length) {
-
     this.columns.splice(index, 0, col);
     col.parent = this;
     this.forward(col, ...suffix('.ranking', Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
@@ -421,6 +431,34 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       this.sortBy(col, col instanceof StringColumn);
     }
     return col;
+  }
+
+  move(col: Column, index: number = this.columns.length) {
+    if (col.parent !== this) {
+      // not a move operation!
+      console.error('invalid move operation: ', col);
+      return null;
+    }
+    const old = this.columns.indexOf(col);
+    if (index === old) {
+      // no move needed
+      return col;
+    }
+    //delete first
+    this.columns.splice(old, 1);
+    // adapt target index based on previous index, i.e shift by one
+    this.columns.splice(old < index ? index -1 : index, 0, col);
+
+    this.fire([Ranking.EVENT_MOVE_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, index, old);
+    return col;
+  }
+
+  moveAfter(col: Column, reference: Column) {
+    const i = this.columns.indexOf(reference);
+    if (i < 0) {
+      return null;
+    }
+    return this.move(col, i + 1);
   }
 
   get fqpath() {

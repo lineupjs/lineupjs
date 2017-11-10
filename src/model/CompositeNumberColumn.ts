@@ -44,7 +44,9 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
       this.missingValue = desc.missingValue;
     }
 
-    this.setRendererType('number');
+    if (this.getRendererType() === desc.type) {
+      this.setRendererType('number');
+    }
     this.setGroupRenderer('boxplot');
   }
 

@@ -86,7 +86,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     ranking.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, debounce(() => this.updateHeaders(), 50));
     ranking.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, this.delayedUpdate);
-    ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`], debounce(() => this.updateAll(), 50));
+    ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`, `${Ranking.EVENT_MOVE_COLUMN}.body`], debounce(() => this.updateAll(), 50));
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, this.delayedUpdate);
 
     this.selection = new SelectionManager(this.ctx, body);
@@ -357,7 +357,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       this.updateColumn(i);
     });
 
-    if (isMultiLevelColumn(c)) {
+    if (isMultiLevelColumn(c) && !c.getCollapsed()) {
       const r = new MultiLevelRenderColumn(c, renderers, i, this.ctx.columnPadding);
       c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
         r.updateWidthRule(this.style);
