@@ -5,6 +5,10 @@
 
   > input {
     width: 100%;
+    border: 1px solid $lu_side_panel_input_border;
+    border-radius: 4px;
+    padding: 3px 5px;
+    outline: none;
   }
 
   > ul {
@@ -15,13 +19,13 @@
     max-height: 0;
     background: white;
     text-align: left;
-    padding: 0.2em;
-    margin: 1px;
+    padding: 0;
+    margin-top: -1px;
     transition: all linear 0.5s;
-    pointer-events: none;
     list-style: none;
 
-    box-shadow: 0 0 1px 1px $lu_side_panel_bg_color;
+    border: 1px solid $lu_side_panel_input_border;
+    border-radius: 0 0 $lu_side_panel_input_border_radius $lu_side_panel_input_border_radius;
 
     &.lu-search-empty::before {
       content: 'No results found';
@@ -42,6 +46,8 @@
     li.#{$lu_css_prefix}-search-group > span {
       background: $lu_side_panel_bg_color;
       text-transform: capitalize;
+      padding-left: 0.4em;
+      font-weight: bold;
     }
 
     li.#{$lu_css_prefix}-search-item > span {
@@ -59,6 +65,10 @@
   }
 
   &.#{$lu_css_prefix}-search-open {
+    > input {
+      border-radius: $lu_side_panel_input_border_radius $lu_side_panel_input_border_radius 0 0;
+    }
+
     > ul {
       display: block;
       max-height: 70vh;
