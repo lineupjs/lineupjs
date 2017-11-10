@@ -4,7 +4,7 @@
   display: flex;
   align-items: flex-end;
 
-  > * {
+  > div {
     flex: 1 1 auto;
     position: relative;
     margin: 0 1px;
@@ -33,10 +33,26 @@
       text-align: center;
     }
   }
+
+  > span {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    line-height: 100%;
+
+    &:first-of-type {
+      left: 0;
+    }
+
+    &:last-of-type {
+      right: 0;
+      text-align: right;
+    }
+  }
 }
 
 &[data-summary^=interactive] {
-  > * {
+  > div {
     cursor: pointer;
   }
 }
@@ -118,6 +134,10 @@
 &[data-summary=aggregation] > i {
   cursor: pointer;
   font-size: 150%;
+}
+
+&[data-summary=aggregation] > i {
+  padding-right: $lu_aggregate_square_bracket_width;
 }
 
 &[data-summary=string],

@@ -47,7 +47,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       [
         {type: 'stack', label: 'Stacked Bar'},
         {type: 'number', label: 'Bar'},
-        {type: 'circle', label: 'Circle'},
+        {type: 'circle', label: 'Proportional Symbol'},
         {type: 'default', label: 'String'},
         {type: 'heatmap', label: 'Brightness'}
       ],
@@ -56,7 +56,7 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
         {type: 'boxplot', label: 'Box Plot'},
         {type: 'stack', label: 'Median Stacked Bar'},
         {type: 'number', label: 'Median Bar'},
-        {type: 'circle', label: 'Median Circle'},
+        {type: 'circle', label: 'Median Proportional Symbol'},
         {type: 'heatmap', label: 'Median Heatmap'}
       ]);
   }

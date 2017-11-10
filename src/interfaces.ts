@@ -1,6 +1,7 @@
 import {IBodyRendererOptions, IHeaderRendererOptions} from './ui/interfaces';
 import {IPoolRendererOptions} from './ui/PoolRenderer';
 import ICellRendererFactory from './renderer/ICellRendererFactory';
+import {IDataProvider} from './provider/ADataProvider';
 
 export interface IBodyOptions {
   renderer: string;
@@ -63,4 +64,9 @@ export interface ILineUpConfig {
    * the renderer to use for rendering the columns
    */
   renderers: { [key: string]: ICellRendererFactory };
+}
+
+export interface ILineUpLike {
+  data: IDataProvider;
+  dump(): any;
 }
