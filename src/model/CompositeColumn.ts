@@ -84,10 +84,28 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this.insertImpl(col, index);
   }
 
+  move(col: Column, index: number): Column | null {
+    if (col.parent !== this) { //not moving
+      return null;
+    }
+    const old = this._children.indexOf(col);
+    //delete first
+    this._children.splice(old, 1);
+    // adapt target index based on previous index, i.e shift by one
+    this._children.splice(old < index ? index -1 : index, 0, col);
+    //listen and propagate events
+    return this.moveImpl(col, index);
+  }
+
   protected insertImpl(col: Column, index: number) {
     col.parent = this;
     this.forward(col, ...suffix('.combine', Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY, Column.EVENT_FILTER_CHANGED));
     this.fire([Column.EVENT_ADD_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index);
+    return col;
+  }
+
+  protected moveImpl(col: Column, index: number) {
+    this.fire([Column.EVENT_MOVE_COLUMN, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], col, index);
     return col;
   }
 
@@ -109,6 +127,14 @@ export default class CompositeColumn extends Column implements IColumnParent {
       return null;
     }
     return this.insert(col, i + 1);
+  }
+
+  moveAfter(col: Column, ref: Column) {
+    const i = this.indexOf(ref);
+    if (i < 0) {
+      return null;
+    }
+    return this.move(col, i + 1);
   }
 
   remove(child: Column) {
