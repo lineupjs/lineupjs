@@ -71,12 +71,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     const that = this;
     this.delayedUpdate = debounce((function(this: {type: string, primaryType: string}) {
-      if (this.type === Ranking.EVENT_DIRTY_VALUES) {
-        if (this.primaryType !== Column.EVENT_RENDERER_TYPE_CHANGED) { // just the single column will be updated
-          that.updateBody();
-        }
-      } else {
+      if (this.type !== Ranking.EVENT_DIRTY_VALUES) {
         that.events.fire(EngineRanking.EVENT_UPDATE_DATA);
+        return;
+      }
+      if (this.primaryType !== Column.EVENT_RENDERER_TYPE_CHANGED) { // just the single column will be updated
+        that.updateBody();
       }
     }), 50, (current, next) => {
       const currentEvent = current.self.type;
