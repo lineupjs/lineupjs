@@ -75,7 +75,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
         that.events.fire(EngineRanking.EVENT_UPDATE_DATA);
         return;
       }
-      if (this.primaryType !== Column.EVENT_RENDERER_TYPE_CHANGED) { // just the single column will be updated
+      if (this.primaryType !== Column.EVENT_RENDERER_TYPE_CHANGED && this.primaryType !== Column.EVENT_LABEL_CHANGED) { // just the single column will be updated
         that.updateBody();
       }
     }), 50, (current, next) => {
@@ -262,14 +262,17 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   destroy() {
     super.destroy();
-    this.ranking.flatColumns.forEach((c) => {
-      c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
-      if (!(isMultiLevelColumn(c))) {
-        return;
-      }
-      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
-      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
-    });
+    this.ranking.flatColumns.forEach((c) => this.disableListener(c));
+  }
+
+  private disableListener(c: Column) {
+    c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
+    c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
+    if (!(isMultiLevelColumn(c))) {
+      return;
+    }
+    c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
+    c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
   }
 
   groupData(data: IDataRow[]): (IGroupItem | IGroupData)[] {
@@ -313,6 +316,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     const previous = this._context;
+    previous.columns.forEach((c) => this.disableListener(c.c));
     const previousData = this.data;
     this.data = data;
     (<any>this.renderCtx).totalNumberOfRows = data.length;
@@ -351,7 +355,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
       this.updateColumnWidths();
     });
-    c.on(`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, () => {
+    c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], () => {
       // replace myself upon renderer type change
       this._context.columns[i] = this.createColumn(c, i);
       this.updateColumn(i);
