@@ -12,7 +12,7 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
  * default renderer instance rendering the value as a text
  */
 export class DefaultCellRenderer implements ICellRendererFactory {
-  readonly title = 'String';
+  title = 'String';
   /**
    * @param textClass {string} class to append to the text elements
    * @param align {string} the text alignment: left, center, right

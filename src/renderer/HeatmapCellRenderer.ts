@@ -21,7 +21,7 @@ export function toHeatMapColor(d: any, index: number, col: INumberColumn & Colum
 }
 
 export default class HeatmapCellRenderer implements ICellRendererFactory {
-  readonly title: 'Brightness';
+  readonly title = 'Brightness';
 
   canRender(col: Column, isGroup: boolean) {
     return isNumberColumn(col) && !isGroup;

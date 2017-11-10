@@ -8,7 +8,7 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
-  readonly title: 'Proportional Symbol';
+  readonly title = 'Proportional Symbol';
 
   constructor(private colorOf: (d: any, i: number, col: Column) => string | null = (_d, _i, col) => col.color) {
 

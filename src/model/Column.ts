@@ -104,17 +104,11 @@ export interface IColumnMetaData {
 export interface IRendererInfo {
 
   /*
-   Name of the current Renderer
+   name of the current renderer
    */
   renderer: string;
 
   groupRenderer: string;
-  /*
-   * Possible RendererList
-   */
-  renderers: { type: string, label: string }[];
-
-  groupRenderers: { type: string, label: string }[];
 }
 
 

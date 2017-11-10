@@ -302,17 +302,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.missingValue = desc.missingValue;
     }
 
-    this.setRendererList(
-      [
-        {type: 'number', label: 'Bar'},
-        {type: 'circle', label: 'Proportional Symbol'},
-        {type: 'default', label: 'String'},
-        {type: 'heatmap', label: 'Brightness'}
-      ],
-      [
-        {type: 'histogram', label: 'Histogram'},
-        {type: 'boxplot', label: 'Box Plot'}
-      ]);
     this.setGroupRenderer('boxplot');
   }
 

@@ -5,7 +5,7 @@ import {AEventDispatcher, findOption, round} from '../../utils';
 import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IStatistics} from '../../model/Column';
-import {createDOM, createDOMGroup} from '../../renderer';
+import {createDOM, createDOMGroup, possibleGroupRenderer, possibleRenderer} from '../../renderer';
 import {IGroupData, IGroupItem, IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {ILineUpRenderer, ISummaryFunction} from '../interfaces';
 import {IRenderingOptions} from '../../interfaces';
@@ -94,6 +94,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
         const group = createDOMGroup(col, this.options.renderers, this.ctx);
         return {single, group, singleId: col.getRendererType(), groupId: col.getGroupRenderer()};
       },
+      getPossibleRenderer: (col: Column) => ({item: possibleRenderer(col, this.options.renderers), group: possibleGroupRenderer(col, this.options.renderers)}),
       columnPadding: this.options.body.columnPadding || 5
     };
 

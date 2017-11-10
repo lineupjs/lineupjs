@@ -121,12 +121,6 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
     this.sort = desc.sort || SORT_METHOD.min;
 
-    this.setRendererList([
-      {type: 'boxplot', label: 'Box Plot'},
-      {type: 'number', label: 'Bar'},
-      {type: 'circle', label: 'Proportional Symbol'}
-    ]);
-
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number): number {

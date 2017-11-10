@@ -46,7 +46,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
 
   constructor(private readonly nestingPossible: boolean = true) {
     super();
-    this.title = this.nestingPossible ? 'Stack' : 'Nested';
+    this.title = this.nestingPossible ? 'Stacked Bar' : 'Nested';
   }
 
   canRender(col: Column) {

@@ -12,7 +12,7 @@ export default class LoadingCellRenderer implements ICellRendererFactory {
   readonly title = 'Loading';
 
   canRender() {
-    return true;
+    return false; // just direct selection
   }
 
   createDOM() {

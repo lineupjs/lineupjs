@@ -3,6 +3,7 @@
  */
 
 import CompositeNumberColumn from './CompositeNumberColumn';
+import {ICompositeNumberColumnDesc} from 'lineupjs/src/model/CompositeNumberColumn';
 
 /**
  *  factory for creating a description creating a max column
@@ -17,6 +18,11 @@ export function createDesc(label: string = 'Max') {
  * combines multiple columns by using the maximal value
  */
 export default class MaxColumn extends CompositeNumberColumn {
+
+  constructor(id: string, desc: ICompositeNumberColumnDesc) {
+    super(id, desc);
+    this.setRendererType('interleaving');
+  }
 
   getColor(row: any, index: number) {
     //compute the index of the maximal one

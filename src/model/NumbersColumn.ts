@@ -176,16 +176,6 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     this.colorRange = desc.colorRange || ['blue', 'red'];
     this.sort = desc.sort || SORT_METHOD.median;
 
-    this.setRendererList([
-      {type: 'numbers', label: 'Heatmap'},
-      {type: 'boxplot', label: 'Box Plot'},
-      {type: 'sparkline', label: 'Sparkline'},
-      {type: 'verticalbar', label: 'Bar Chart'}], [
-      {type: 'numbers', label: 'Heatmap'},
-      {type: 'sparkline', label: 'Sparkline'},
-      {type: 'boxplot', label: 'Box Plot'}
-    ]);
-
     // better initialize the default with based on the data length
     this.setWidth(Math.min(Math.max(100, this.dataLength * 10), 500));
 

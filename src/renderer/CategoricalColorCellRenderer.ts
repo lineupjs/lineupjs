@@ -16,7 +16,7 @@ export default class CategoricalColorCellRenderer implements ICellRendererFactor
   readonly title = 'Color';
 
   canRender(col: Column) {
-    return isCategoricalColumn(col);
+    return false; // only direct selection
   }
 
   createDOM(col: ICategoricalColumn & Column): IDOMCellRenderer {

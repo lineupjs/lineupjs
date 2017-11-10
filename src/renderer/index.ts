@@ -29,19 +29,17 @@ import AggregateGroupRenderer from './AggregateGroupRenderer';
 import HistogramGroupRenderer from './HistogramGroupRenderer';
 import CategoricalColorShiftedCellRenderer from './CategoricalColorShiftedCellRenderer';
 import ImageCellRenderer from './ImageCellRenderer';
+import BooleanCellRenderer from './BooleanCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
-const barCellRenderer = new BarCellRenderer();
 /**
  * default render factories
  */
 export const renderers: { [key: string]: ICellRendererFactory } = {
   rank: new RankCellRenderer(),
-  boolean: new DefaultCellRenderer('boolean', 'center'),
-  ordinal: barCellRenderer,
-  date: defaultCellRenderer,
-  number: barCellRenderer,
+  boolean: new BooleanCellRenderer(),
+  number: new BarCellRenderer(),
   string: new StringCellRenderer(),
   selection: new SelectionRenderer(),
   heatmap: new HeatmapCellRenderer(),
@@ -54,14 +52,9 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   categorical: new CategoricalCellRenderer(),
   catcolor: new CategoricalColorCellRenderer(),
   catcolorshifted: new CategoricalColorShiftedCellRenderer(),
-  max: barCellRenderer,
-  min: barCellRenderer,
-  mean: barCellRenderer,
-  script: barCellRenderer,
   numbers: new NumbersCellRenderer(),
   sparkline: new SparklineCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
-  set: new UpSetCellRenderer(),
   upset: new UpSetCellRenderer(),
   circle: new CircleCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
@@ -101,4 +94,18 @@ export function createDOMGroup(col: Column, renderers: { [key: string]: ICellRen
 export function createCanvasGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext) {
   const r = chooseGroupRenderer(col, renderers);
   return (r.createGroupCanvas ? r.createGroupCanvas.bind(r) : defaultCellRenderer.createGroupCanvas.bind(defaultCellRenderer))(col, context);
+}
+
+export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, isGroup: boolean = false): {type: string, label: string}[] {
+  const valid = Object.keys(renderers).filter((type) => {
+    const factory = renderers[type];
+    return factory.canRender(col, isGroup);
+  });
+  // TODO some magic to remove and order
+
+  return valid.map((type) => ({type, label: !isGroup ? renderers[type].title : (renderers[type].groupTitle || renderers[type].title)}));
+}
+
+export function possibleGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }) {
+  return possibleRenderer(col, renderers, true);
 }

@@ -9,7 +9,7 @@ export class EmptyCellRenderer implements ICellRendererFactory {
   readonly title = 'Nothing';
 
   canRender() {
-    return true;
+    return false; // just direct selection
   }
 
   createDOM(col: Column): IDOMCellRenderer {

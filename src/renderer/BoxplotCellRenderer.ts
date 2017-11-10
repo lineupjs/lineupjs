@@ -9,6 +9,7 @@ import {INumberColumn} from '../model/INumberColumn';
 import {IGroup} from '../model/Group';
 import {INumbersColumn, isNumbersColumn, LazyBoxPlotData} from '../model/NumbersColumn';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {isNumberColumn} from '../model';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v === null) {
@@ -21,8 +22,8 @@ export function computeLabel(v: IBoxPlotData) {
 export default class BoxplotCellRenderer implements ICellRendererFactory {
   readonly title = 'Box Plot';
 
-  canRender(col: Column) {
-    return isBoxPlotColumn(col);
+  canRender(col: Column, isGroup: boolean) {
+    return (isBoxPlotColumn(col) && !isGroup || (isNumberColumn(col) && isGroup));
   }
 
   createDOM(col: IBoxPlotColumn & Column): IDOMCellRenderer {

@@ -25,18 +25,18 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 
   createDOM(col: StringColumn): IDOMCellRenderer {
-    return this.alignments[col.alignment].createDOM(col);
+    return this.alignments[col.alignment || 'left'].createDOM(col);
   }
 
   createCanvas(col: StringColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return this.alignments[col.alignment].createCanvas(col, context);
+    return this.alignments[col.alignment || 'left'].createCanvas(col, context);
   }
 
   createGroupDOM(col: StringColumn) {
-    return this.alignments[col.alignment].createGroupDOM(col);
+    return this.alignments[col.alignment || 'left'].createGroupDOM(col);
   }
 
   createGroupCanvas(col: StringColumn, context: ICanvasRenderContext) {
-    return this.alignments[col.alignment].createGroupCanvas(col, context);
+    return this.alignments[col.alignment || 'left'].createGroupCanvas(col, context);
   }
 }
