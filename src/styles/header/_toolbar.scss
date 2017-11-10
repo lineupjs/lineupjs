@@ -72,7 +72,8 @@
       }
 
       &[title^='Stratify']::before {
-        content: $fa-var-bars;
+        content: $fa-var-columns;
+        transform: rotate(-90deg);
       }
 
       &[title='Sort']::before {
