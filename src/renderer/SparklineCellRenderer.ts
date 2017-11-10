@@ -20,8 +20,9 @@ export function line(data: number[]) {
 export default class SparklineCellRenderer implements ICellRendererFactory {
 
   createDOM(col: INumbersColumn & Column): IDOMCellRenderer {
+    const yPos = 1 - col.getMapping().apply(col.getThreshold());
     return {
-      template: `<svg viewBox="0 0 ${col.getDataLength() - 1} 1" preserveAspectRatio="none meet"><line x1="0" x2="${col.getDataLength() - 1}" y1="1" y2="1"></line><path></path></svg>`,
+      template: `<svg viewBox="0 0 ${col.getDataLength() - 1} 1" preserveAspectRatio="none meet"><line x1="0" x2="${col.getDataLength() - 1}" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const data = col.getNumbers(d.v, d.dataIndex);
         if(data.some((v) => isNaN(v))) {
@@ -61,8 +62,9 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
   }
 
   createGroupDOM(col: INumbersColumn & Column): IDOMGroupRenderer {
+    const yPos = 1 - col.getMapping().apply(col.getThreshold());
     return {
-      template: `<svg viewBox="0 0 ${col.getDataLength()} 1" preserveAspectRatio="none meet"><line x1="0" x2="${col.getDataLength() - 1}" y1="1" y2="1"></line><path></path></svg>`,
+      template: `<svg viewBox="0 0 ${col.getDataLength()} 1" preserveAspectRatio="none meet"><line x1="0" x2="${col.getDataLength() - 1}" y1="${yPos}" y2="${yPos}"></line><path></path></svg>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         //overlapping ones
         matchRows(n, rows, `<path></path>`);
