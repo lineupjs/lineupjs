@@ -3,6 +3,8 @@ import {ICanvasRenderContext} from './RendererContexts';
 import {attr, forEachChild} from '../utils';
 import Column from '../model/Column';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
+import {renderMissingValue} from './missing';
+import {isMissingValue} from '../model/missing';
 
 export default class NumbersCellRenderer extends ANumbersCellRenderer {
 
@@ -18,9 +20,10 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
         forEachChild(row, (d, i) => {
           const v = data[i];
           attr(<HTMLDivElement>d, {
-            title: NumbersColumn.DEFAULT_FORMATTER(v)
+            title: NumbersColumn.DEFAULT_FORMATTER(v),
+            'class': isMissingValue(v) ? 'lu-missing' : ''
           }, {
-            'background-color': colorScale(v)
+            'background-color': isMissingValue(v) ? null : colorScale(v)
           });
         });
       }
@@ -35,6 +38,10 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
     return (ctx: CanvasRenderingContext2D, data: number[], offset: number, rowHeight: number) => {
       data.forEach((d: number, j: number) => {
         const x = j * cellDimension;
+        if (isMissingValue(d)) {
+          renderMissingValue(ctx, cellDimension, rowHeight, x, padding + offset);
+          return;
+        }
         ctx.beginPath();
         ctx.fillStyle = colorScale(d);
         ctx.fillRect(x, padding + offset, cellDimension, rowHeight);
