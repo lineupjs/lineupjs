@@ -20,10 +20,10 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
         forEachChild(row, (d, i) => {
           const v = data[i];
           attr(<HTMLDivElement>d, {
-            'title': NumbersColumn.DEFAULT_FORMATTER(v),
+            title: NumbersColumn.DEFAULT_FORMATTER(v),
             'class': isMissingValue(v) ? 'lu-missing' : ''
           }, {
-            'background-color': isMissingValue(v) ? 'transparent' : colorScale(v)
+            'background-color': isMissingValue(v) ? null : colorScale(v)
           });
         });
       }
