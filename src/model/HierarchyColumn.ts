@@ -6,12 +6,18 @@ import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
 import {ICategoricalColumn, ICategory} from './CategoricalColumn';
+import {FIRST_IS_NAN} from './missing';
 
 export interface ICategoryNode extends ICategory {
   readonly children: ICategoryNode[];
 }
 
 export interface IHierarchyDesc {
+  /**
+   * separator to split  multi value
+   * @defualt ;
+   */
+  separator?: string;
   readonly hierarchy: ICategoryNode;
   readonly hierarchySeparator?: string;
 }
@@ -38,9 +44,15 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   private currentNode: ICategoryInternalNode;
   private currentMaxDepth: number = Infinity;
   private currentLeaves: ICategoryInternalNode[] = [];
+  /**
+   * split multiple categories
+   * @type {string}
+   */
+  private separator = ';';
 
   constructor(id: string, desc: IHierarchyColumnDesc) {
     super(id, desc);
+    this.separator = desc.separator || this.separator;
     this.hierarchySeparator = desc.hierarchySeparator || '.';
     this.hierarchy = this.initHierarchy(desc.hierarchy);
     this.currentNode = this.hierarchy;
@@ -117,32 +129,51 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.fire([HierarchyColumn.EVENT_CUTOFF_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getCutOff());
   }
 
-  private resolveCategory(row: any, index: number) {
-    const base = StringColumn.prototype.getValue.call(this, row, index);
-    if (base === null) {
-      return null;
+  private resolveCategories(row: any, index: number): ICategoryInternalNode[] {
+    const base: string = StringColumn.prototype.getValue.call(this, row, index);
+    if (base === null || base === '') {
+      return [];
     }
-    const node = this.currentLeaves.find((n) => {
-      //direct hit or is a child of it
-      return n.path === base || base.startsWith(n.path + this.hierarchySeparator);
-    });
-    //unify to null
-    return node || null;
+    return <ICategoryInternalNode[]>base.split(this.separator).map((v) => {
+      v = v.trim();
+      return this.currentLeaves.find((n) => {
+        //direct hit or is a child of it
+        return n.path === v || v.startsWith(n.path + this.hierarchySeparator);
+      });
+    }).filter((v) => Boolean(v));
+  }
+
+  private resolveCategory(row: any, index: number) {
+    const base = this.resolveCategories(row, index);
+    return base.length > 0 ? base[0]: null;
   }
 
   getValue(row: any, index: number) {
-    const base = this.resolveCategory(row, index);
-    return base ? base.name : null;
+    const base = this.getValues(row, index);
+    return base.length > 0 ? base[0]: null;
+  }
+
+  getValues(row: any, index: number) {
+    const base = this.resolveCategories(row, index);
+    return base.map((d) => d.name);
   }
 
   getLabel(row: any, index: number) {
-    const base = this.resolveCategory(row, index);
-    return base ? base.label : '';
+    return this.getLabels(row, index).join(this.separator);
+  }
+
+  getLabels(row: any, index: number) {
+    const base = this.resolveCategories(row, index);
+    return base.map((d) => d.label);
+  }
+
+  getFirstLabel(row: any, index: number) {
+    const l = this.getLabels(row, index);
+    return l.length > 0 ? l[0] : null;
   }
 
   getCategories(row: any, index: number) {
-    const v = this.getValue(row, index);
-    return v === null ? [] : [v];
+    return this.getValues(row, index);
   }
 
   getColor(row: any, index: number) {
@@ -151,18 +182,24 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   }
 
   compare(a: any, b: any, aIndex: number, bIndex: number) {
-    const va = this.resolveCategory(a, aIndex);
-    const vb = this.resolveCategory(b, bIndex);
-    if (va === vb) {
-      return 0;
+    const va = this.resolveCategories(a, aIndex);
+    const vb = this.resolveCategories(b, bIndex);
+    if (va.length === 0) {
+      // missing
+      return vb.length === 0 ? 0 : FIRST_IS_NAN;
     }
-    if (va === null) {
-      return +1;
+    if (vb.length === 0) {
+      return FIRST_IS_NAN * -1;
     }
-    if (vb === null) {
-      return -1;
+    //check all categories
+    for (let i = 0; i < Math.min(va.length, vb.length); ++i) {
+      const ci = va[i].path.localeCompare(vb[i].path);
+      if (ci !== 0) {
+        return ci;
+      }
     }
-    return va.path.localeCompare(vb.path);
+    //smaller length wins
+    return va.length - vb.length;
   }
 }
 
