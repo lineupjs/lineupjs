@@ -68,6 +68,7 @@ export interface IBoxPlotData {
   readonly median: number;
   readonly q1: number;
   readonly q3: number;
+  readonly outlier?: number[];
 }
 
 
@@ -81,7 +82,7 @@ export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: numb
     return FIRST_IS_NAN * -1;
   }
   const method = <keyof IBoxPlotData>col.getSortMethod();
-  return numberCompare(aVal[method], bVal[method]);
+  return numberCompare(<number>aVal[method], <number>bVal[method]);
 }
 
 export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number, mode: 'raw' | 'normalized'): number {
@@ -89,7 +90,7 @@ export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number, m
   if (data === null) {
     return NaN;
   }
-  return data[<keyof IBoxPlotData>col.getSortMethod()];
+  return <number>data[<keyof IBoxPlotData>col.getSortMethod()];
 }
 
 

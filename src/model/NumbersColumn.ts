@@ -44,6 +44,7 @@ export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
  */
 export class LazyBoxPlotData implements IAdvancedBoxPlotData {
   private _sorted: number[] | null = null;
+  private _outlier: number[] | null = null;
   private readonly values: number[];
 
   constructor(values: number[], private readonly scale?: IMappingFunction) {
@@ -88,6 +89,23 @@ export class LazyBoxPlotData implements IAdvancedBoxPlotData {
 
   get mean() {
     return this.map(mean(this.values));
+  }
+
+  get outlier() {
+    if (this._outlier) {
+      return this._outlier;
+    }
+    const q1 = quantile(this.sorted, 0.25);
+    const q3 = quantile(this.sorted, 0.75);
+    const iqr = q3 - q1;
+    const left = q1 - 1.5 * iqr;
+    const right = q3 + 1.5 * iqr;
+    this._outlier = this.sorted.filter((v) => (v < left || v > right) && !isMissingValue(v));
+    if (this.scale) {
+      this._outlier = this._outlier.map((v) => this.scale!.apply(v));
+    }
+    return this._outlier;
+
   }
 }
 
