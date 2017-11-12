@@ -27,7 +27,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   const stats = <ICategoricalStatistics>ctx.statsOf(col);
   const old = node.dataset.summary;
 
-  if (!stats) {
+  if (!stats || stats.hist.length > 20) {
     node.innerHTML = '';
     return;
   }
@@ -136,7 +136,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
   const stats = <IStatistics>ctx.statsOf(col);
   const old = node.dataset.summary;
 
-  if (!stats) {
+  if (!stats) { // no reason to render more than 20 categories
     node.innerHTML = '';
     return;
   }
