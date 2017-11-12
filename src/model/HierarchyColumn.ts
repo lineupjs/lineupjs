@@ -44,6 +44,8 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   private currentNode: ICategoryInternalNode;
   private currentMaxDepth: number = Infinity;
   private currentLeaves: ICategoryInternalNode[] = [];
+  private readonly currentLeavesNameCache = new Map<string, ICategoryInternalNode>();
+  private readonly currentLeavesPathCache = new Map<string, ICategoryInternalNode>();
   /**
    * split multiple categories
    * @type {string}
@@ -57,6 +59,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.hierarchy = this.initHierarchy(desc.hierarchy);
     this.currentNode = this.hierarchy;
     this.currentLeaves = computeLeaves(this.currentNode, this.currentMaxDepth);
+    this.updateCaches();
 
     this.setRendererType('categorical');
     this.setRendererList([
@@ -68,7 +71,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     const colors = scale.category10().range().slice();
     const s = this.hierarchySeparator;
     const add = (prefix: string, node: ICategoryNode): ICategoryInternalNode => {
-      const name = node.name || node.value;
+      const name = node.name === undefined ? node.value : node.name;
       let lastColorUsed = -1;
       const children = (node.children || []).map((child: ICategoryNode | string): ICategoryInternalNode => {
         if (typeof child === 'string') {
@@ -89,7 +92,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
         return r;
       });
       const path = prefix + name;
-      const label = node.label ? `${path}: ${node.label}` : path;
+      const label = node.label ? `${node.label}` : path;
       return {path, name, children, label, color: node.color!};
     };
     return add('', root);
@@ -126,6 +129,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.currentNode = node;
     this.currentMaxDepth = maxDepth;
     this.currentLeaves = computeLeaves(node, maxDepth);
+    this.updateCaches();
     this.fire([HierarchyColumn.EVENT_CUTOFF_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getCutOff());
   }
 
@@ -136,9 +140,15 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     }
     return <ICategoryInternalNode[]>base.split(this.separator).map((v) => {
       v = v.trim();
+      if (this.currentLeavesNameCache.has(v)) {
+        return this.currentLeavesNameCache.get(v);
+      }
+      if (this.currentLeavesPathCache.has(v)) {
+        return this.currentLeavesPathCache.get(v);
+      }
       return this.currentLeaves.find((n) => {
         //direct hit or is a child of it
-        return n.path === v || v.startsWith(n.path + this.hierarchySeparator);
+        return n.path === v || n.name === v || v.startsWith(n.path + this.hierarchySeparator);
       });
     }).filter((v) => Boolean(v));
   }
@@ -200,6 +210,16 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     }
     //smaller length wins
     return va.length - vb.length;
+  }
+
+  private updateCaches() {
+    this.currentLeavesPathCache.clear();
+    this.currentLeavesNameCache.clear();
+
+    this.currentLeaves.forEach((n) => {
+      this.currentLeavesPathCache.set(n.path, n);
+      this.currentLeavesNameCache.set(n.name, n);
+    });
   }
 }
 
