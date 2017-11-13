@@ -1,6 +1,15 @@
+@import '../vars';
 
 [data-agg=group] [data-renderer=string] {
   display: flex;
-  align-items: center;
   white-space: normal;
+  flex-direction: column;
+
+  > div {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: $lu_string_group_example_color;
+  }
 }

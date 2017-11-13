@@ -54,10 +54,23 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   }
 
   createGroupDOM(_col: Column): IDOMGroupRenderer {
+    const numExampleRows = 5;
     return {
       template: `<div class="${this.textClass} ${this.align}"> </div>`,
       update: (n: HTMLDivElement, group: IGroup, rows: IDataRow[]) => {
-        setText(n, `${group.name} (${rows.length})`);
+        let examples = rows
+          .slice(0, numExampleRows)
+          .map((r) => _col.getLabel(r.v, r.dataIndex))
+          .join(', ');
+
+        if(rows.length > numExampleRows) {
+          examples += ', &hellip;';
+        }
+
+        n.innerHTML = `
+            ${group.name} (${rows.length})
+            <div>${examples}</div>
+        `;
       }
     };
   }
