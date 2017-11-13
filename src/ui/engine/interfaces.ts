@@ -23,6 +23,8 @@ export interface IRankingHeaderContextContainer {
   summaries: { [type: string]: ISummaryFunction };
 
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
+
+  getPossibleRenderer(col: Column): {item: {type: string, label: string}[], group: {type: string, label: string}[]};
 }
 
 export interface IGroupItem extends IDataRow {

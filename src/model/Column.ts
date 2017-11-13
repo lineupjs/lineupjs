@@ -108,17 +108,11 @@ export interface IColumnMetaData {
 export interface IRendererInfo {
 
   /*
-   Name of the current Renderer
+   name of the current renderer
    */
   renderer: string;
 
   groupRenderer: string;
-  /*
-   * Possible RendererList
-   */
-  renderers: { type: string, label: string }[];
-
-  groupRenderers: { type: string, label: string }[];
 }
 
 
@@ -183,9 +177,7 @@ export default class Column extends AEventDispatcher {
     this.uid = fixCSS(id);
     this.rendererInfo = {
       renderer: this.desc.rendererType || this.desc.type,
-      renderers: [],
-      groupRenderer: this.desc.groupRenderer || this.desc.type,
-      groupRenderers: []
+      groupRenderer: this.desc.groupRenderer || this.desc.type
     };
 
     this.cssClass = desc.cssClass || '';
@@ -570,6 +562,13 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.renderer, this.rendererInfo.renderer = renderer);
   }
 
+  protected setDefaultRenderer(renderer: string) {
+    if (this.rendererInfo.renderer !== this.desc.type) {
+      return;
+    }
+    return this.setRendererType(renderer);
+  }
+
   setGroupRenderer(renderer: string) {
     if (renderer === this.rendererInfo.groupRenderer) {
       // nothing changes
@@ -578,17 +577,11 @@ export default class Column extends AEventDispatcher {
     this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.groupRenderer, this.rendererInfo.groupRenderer = renderer);
   }
 
-  getRendererList() {
-    return this.rendererInfo.renderers;
-  }
-
-  getGroupRenderers() {
-    return this.rendererInfo.groupRenderers;
-  }
-
-  protected setRendererList(renderers: { type: string, label: string }[], groupRenderers: { type: string, label: string }[] = []) {
-    this.rendererInfo.renderers = renderers;
-    this.rendererInfo.groupRenderers = groupRenderers;
+  protected setDefaultGroupRenderer(renderer: string) {
+    if (this.rendererInfo.groupRenderer !== this.desc.type) {
+      return;
+    }
+    return this.setGroupRenderer(renderer);
   }
 
   /**

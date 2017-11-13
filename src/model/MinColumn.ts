@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import CompositeNumberColumn from './CompositeNumberColumn';
+import CompositeNumberColumn, {ICompositeNumberColumnDesc} from './CompositeNumberColumn';
 
 /**
  * factory for creating a description creating a min column
@@ -13,8 +13,12 @@ export function createDesc(label: string = 'Min') {
   return {type: 'min', label};
 }
 
-
 export default class MinColumn extends CompositeNumberColumn {
+
+  constructor(id: string, desc: ICompositeNumberColumnDesc) {
+    super(id, desc);
+    this.setDefaultRenderer('interleaving');
+  }
 
   getColor(row: any, index: number) {
     //compute the index of the maximal one

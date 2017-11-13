@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import CompositeNumberColumn from './CompositeNumberColumn';
+import CompositeNumberColumn, {ICompositeNumberColumnDesc} from './CompositeNumberColumn';
 
 /**
  *  factory for creating a description creating a max column
@@ -17,6 +17,11 @@ export function createDesc(label: string = 'Max') {
  * combines multiple columns by using the maximal value
  */
 export default class MaxColumn extends CompositeNumberColumn {
+
+  constructor(id: string, desc: ICompositeNumberColumnDesc) {
+    super(id, desc);
+    this.setDefaultRenderer('interleaving');
+  }
 
   getColor(row: any, index: number) {
     //compute the index of the maximal one

@@ -1,18 +1,18 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
+import {IRankingHeaderContext} from '../ui/engine/interfaces';
 
 
 export default class ChangeRendererDialog extends ADialog {
-  constructor(private readonly column: Column, header: HTMLElement, title = 'Item Visualization') {
-    super(header, title);
+  constructor(private readonly column: Column, header: HTMLElement, private readonly ctx: IRankingHeaderContext) {
+    super(header, 'Visualization');
   }
 
   openDialog() {
     const current = this.column.getRendererType();
-    const possible = this.column.getRendererList();
 
     const currentGroup = this.column.getGroupRenderer();
-    const possibleGroup = this.column.getGroupRenderers();
+    const {item: possible, group: possibleGroup} = this.ctx.getPossibleRenderer(this.column);
 
     console.assert(possible.length > 1 || possibleGroup.length > 1); // otherwise no need to show this
 

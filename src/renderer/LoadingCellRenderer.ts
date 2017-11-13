@@ -9,6 +9,12 @@ import {IGroup} from '../model/Group';
 
 
 export default class LoadingCellRenderer implements ICellRendererFactory {
+  readonly title = 'Loading';
+
+  canRender() {
+    return false; // just direct selection
+  }
+
   createDOM() {
     return {
       template: `<div>Loading…</div>`,

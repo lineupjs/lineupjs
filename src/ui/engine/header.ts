@@ -204,9 +204,10 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
     addIcon('Stratify By Threshold &hellip;', StratifyThresholdDialog);
   }
 
-  if (col.getRendererList().length > 1 || col.getGroupRenderers().length > 1) {
+  const possible = ctx.getPossibleRenderer(col);
+  if (possible.item.length > 2 || possible.group.length > 2) { // default always possible
     //Renderer Change
-    addIcon('Visualization &hellip;', ChangeRendererDialog);
+    addIcon('Visualization &hellip;', ChangeRendererDialog, ctx);
   }
 
   if (col instanceof LinkColumn) {

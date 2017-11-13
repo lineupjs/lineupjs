@@ -302,17 +302,6 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.missingValue = desc.missingValue;
     }
 
-    this.setRendererList(
-      [
-        {type: 'number', label: 'Bar'},
-        {type: 'circle', label: 'Proportional Symbol'},
-        {type: 'default', label: 'String'},
-        {type: 'heatmap', label: 'Brightness'}
-      ],
-      [
-        {type: 'histogram', label: 'Histogram'},
-        {type: 'boxplot', label: 'Box Plot'}
-      ]);
     this.setGroupRenderer('boxplot');
   }
 
@@ -358,6 +347,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       //if a dedicated format and a number use the formatter in any case
       if (isNaN(raw)) {
         return 'NaN';
+      }
+      if (!isFinite(raw)) {
+        return raw.toString();
       }
       return this.numberFormat(raw);
     }

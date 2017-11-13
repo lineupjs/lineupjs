@@ -7,9 +7,16 @@ import {clipText, showOverlay} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 import {ANoGroupRenderer} from './ANoGroupRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import Column from '../model/Column';
 
 
 export default class LinkCellRenderer extends ANoGroupRenderer implements ICellRendererFactory {
+  readonly title = 'Default';
+
+  canRender(col: Column) {
+    return col instanceof LinkColumn;
+  }
+
   createDOM(col: LinkColumn): IDOMCellRenderer {
     return {
       template: `<div class='link text'></div>`,

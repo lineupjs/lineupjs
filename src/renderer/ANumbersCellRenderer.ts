@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {INumbersColumn} from '../model/NumbersColumn';
+import {INumbersColumn, isNumbersColumn} from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -11,6 +11,11 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isMissingValue} from '../model/missing';
 
 export abstract class ANumbersCellRenderer implements ICellRendererFactory {
+  abstract readonly title: string;
+
+  canRender(col: Column, _isGroup: boolean) {
+    return isNumbersColumn(col);
+  }
 
   protected abstract createDOMContext(col: INumbersColumn & Column): { templateRow: string, render: (row: HTMLElement, data: number[]) => void };
 

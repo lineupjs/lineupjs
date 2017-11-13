@@ -6,6 +6,7 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 import {IGroup} from '../model/Group';
+import Column from '../model/Column';
 
 function render(ctx: CanvasRenderingContext2D, icon: string, col: AggregateGroupColumn, context: ICanvasRenderContext) {
   const width = context.colWidth(col);
@@ -20,6 +21,12 @@ function render(ctx: CanvasRenderingContext2D, icon: string, col: AggregateGroup
 }
 
 export default class AggregateGroupRenderer implements ICellRendererFactory {
+  readonly title = 'Default';
+
+  canRender(col: Column) {
+    return col instanceof AggregateGroupColumn;
+  }
+
   createDOM(col: AggregateGroupColumn): IDOMCellRenderer {
     return {
       template: `<div title="Collapse Group"></div>`,

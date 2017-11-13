@@ -70,11 +70,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     Object.assign(this.options, options);
 
     const that = this;
-    this.delayedUpdate = debounce((function(this: {type: string}) {
-      if (this.type === Ranking.EVENT_DIRTY_VALUES) {
-        that.updateBody();
-      } else {
+    this.delayedUpdate = debounce((function(this: {type: string, primaryType: string}) {
+      if (this.type !== Ranking.EVENT_DIRTY_VALUES) {
         that.events.fire(EngineRanking.EVENT_UPDATE_DATA);
+        return;
+      }
+      if (this.primaryType !== Column.EVENT_RENDERER_TYPE_CHANGED && this.primaryType !== Column.EVENT_LABEL_CHANGED) { // just the single column will be updated
+        that.updateBody();
       }
     }), 50, (current, next) => {
       const currentEvent = current.self.type;
@@ -250,20 +252,27 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private updateColumn(index: number) {
     const column = this.context.columns[index];
     this.forEachRow((row, rowIndex) => {
-      this.updateCell(<HTMLElement>row.children[index], rowIndex, column);
+      const before = <HTMLElement>row.children[index];
+      const after = this.updateCell(before, rowIndex, column);
+      if (before !== after && after) {
+        row.replaceChild(after, before);
+      }
     });
   }
 
   destroy() {
     super.destroy();
-    this.ranking.flatColumns.forEach((c) => {
-      c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
-      if (!(isMultiLevelColumn(c))) {
-        return;
-      }
-      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
-      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
-    });
+    this.ranking.flatColumns.forEach((c) => this.disableListener(c));
+  }
+
+  private disableListener(c: Column) {
+    c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
+    c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
+    if (!(isMultiLevelColumn(c))) {
+      return;
+    }
+    c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
+    c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
   }
 
   groupData(data: IDataRow[]): (IGroupItem | IGroupData)[] {
@@ -307,6 +316,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     const previous = this._context;
+    previous.columns.forEach((c) => this.disableListener(c.c));
     const previousData = this.data;
     this.data = data;
     (<any>this.renderCtx).totalNumberOfRows = data.length;
@@ -336,23 +346,30 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const flatCols: IFlatColumn[] = [];
     this.ranking.flatten(flatCols, 0, 1, 0);
     const cols = flatCols.map((c) => c.col);
-    return cols.map((c, i) => {
-      const renderers = this.ctx.createRenderer(c);
+    return cols.map((c, i) => this.createColumn(c, i));
+  }
 
-      c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
-        this.updateColumnWidths();
-      });
+  private createColumn(c: Column, i: number) {
+    const renderers = this.ctx.createRenderer(c);
 
-      if (isMultiLevelColumn(c) && !c.getCollapsed()) {
-        const r = new MultiLevelRenderColumn(c, renderers, i, this.ctx.columnPadding);
-        c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
-          r.updateWidthRule(this.style);
-        });
-        c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounce(() => this.updateColumn(i), 25));
-
-        return r;
-      }
-      return new RenderColumn(c, renderers, i);
+    c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
+      this.updateColumnWidths();
     });
+    c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], () => {
+      // replace myself upon renderer type change
+      this._context.columns[i] = this.createColumn(c, i);
+      this.updateColumn(i);
+    });
+
+    if (isMultiLevelColumn(c) && !c.getCollapsed()) {
+      const r = new MultiLevelRenderColumn(c, renderers, i, this.ctx.columnPadding);
+      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
+        r.updateWidthRule(this.style);
+      });
+      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounce(() => this.updateColumn(i), 25));
+
+      return r;
+    }
+    return new RenderColumn(c, renderers, i);
   }
 }

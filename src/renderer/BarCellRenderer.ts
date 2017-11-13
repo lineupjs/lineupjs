@@ -1,26 +1,39 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn, medianIndex} from '../model/INumberColumn';
+import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import CompositeNumberColumn from '../model/CompositeNumberColumn';
+import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
 
 
 /**
  * a renderer rendering a bar for numerical columns
  */
-export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberColumn & Column> implements ICellRendererFactory {
+export default class BarCellRenderer implements ICellRendererFactory {
+  readonly title = 'Bar';
+
   /**
    * flag to always render the value
    * @type {boolean}
    */
 
-  constructor(private readonly renderValue: boolean = false, private colorOf: (d: any, i: number, col: Column) => string | null = (_d, _i, col) => col.color) {
-    super();
+  constructor(private readonly renderValue: boolean = false) {
+  }
+
+  private colorOf(d: any, i: number, col: Column) {
+    if (col instanceof CompositeNumberColumn || col instanceof CategoricalNumberColumn) {
+      return col.getColor(d, i);
+    }
+    return col.color;
+  }
+
+  canRender(col: Column, isGroup: boolean) {
+    return isNumberColumn(col) && !isGroup;
   }
 
   createDOM(col: INumberColumn & Column): IDOMCellRenderer {
@@ -64,9 +77,5 @@ export default class BarCellRenderer extends AAggregatedGroupRenderer<INumberCol
         clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, context.colWidth(col) - 1, context.textHints);
       }
     };
-  }
-
-  protected aggregatedIndex(rows: IDataRow[], col: INumberColumn & Column) {
-    return medianIndex(rows, col);
   }
 }
