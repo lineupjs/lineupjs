@@ -96,14 +96,14 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
   if(sort) {
     const {asc, priority} = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
-    sort.dataset.priority = priority !== undefined ? priority : '';
+    sort.dataset.priority = priority !== undefined ? `${(parseInt(priority) + 1)}.` : '';
   }
 
   const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
   if(stratify) {
     const groupedBy = col.isGroupedBy();
     stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
-    stratify.dataset.priority = groupedBy >= 0 ? groupedBy.toString() : '';
+    stratify.dataset.priority = groupedBy >= 0 ? `${(groupedBy + 1)}.` : '';
   }
 
   const summary = findTypeLike(col, ctx.summaries);
