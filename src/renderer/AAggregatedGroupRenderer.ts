@@ -10,6 +10,9 @@ import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
  * helper class that renders a group renderer as a selected (e.g. median) single item
  */
 export abstract class AAggregatedGroupRenderer<T extends Column> implements ICellRendererFactory {
+  abstract readonly title: string;
+  abstract canRender(col: Column): boolean;
+
   abstract createDOM(col: T, context: IDOMRenderContext): IDOMCellRenderer;
 
   abstract createCanvas(col: T, context: ICanvasRenderContext): ICanvasCellRenderer;

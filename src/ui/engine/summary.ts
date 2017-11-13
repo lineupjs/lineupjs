@@ -27,7 +27,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   const stats = <ICategoricalStatistics>ctx.statsOf(col);
   const old = node.dataset.summary;
 
-  if (!stats) {
+  if (!stats || stats.hist.length > 20) {
     node.innerHTML = '';
     return;
   }
@@ -136,7 +136,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
   const stats = <IStatistics>ctx.statsOf(col);
   const old = node.dataset.summary;
 
-  if (!stats) {
+  if (!stats) { // no reason to render more than 20 categories
     node.innerHTML = '';
     return;
   }
@@ -144,7 +144,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
     node.dataset.summary = 'hist';
     node.innerHTML = '';
     stats.hist.forEach(({x, y}, i) => {
-      node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
+      node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${col.getMetaData().color};" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
     });
     if (isMapAbleColumn(col)) {
       const range = col.getRange();
@@ -170,6 +170,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
     stats.hist.forEach(({x, y}, i) => {
       const bin = bins[i];
       bin.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
+      bin.style.backgroundColor = col.getMetaData().color;
       bin.title = `Bin ${i}: ${y}`;
       bin.dataset.x = String(x);
     });

@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {ICategoricalColumn} from '../model/CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';
@@ -14,6 +14,12 @@ import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
  * renders categorical columns as a colored rect with label
  */
 export default class CategoricalColorShiftedCellRenderer implements ICellRendererFactory {
+  readonly title = 'Shifted Most Frequent Category';
+
+  canRender(col: Column, isGroup: boolean) {
+    return isCategoricalColumn(col) && isGroup;
+  }
+
   static total(ranking: Ranking, group:  IGroup) {
     let before = 0;
     let total = 0;

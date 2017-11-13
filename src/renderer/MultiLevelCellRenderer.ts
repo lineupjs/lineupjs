@@ -8,7 +8,7 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {matchColumns, round} from '../utils';
 import {IGroup} from '../model/Group';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {IMultiLevelColumn} from '../model/CompositeColumn';
+import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import Column from '../model/Column';
 import {isEdge} from 'lineupengine/src/style';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
@@ -18,7 +18,7 @@ export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;
 }
 
-export function createData(col: IMultiLevelColumn & Column, context: IRenderContext<any, any>, nestingPossible: boolean) {
+export function createData(col: {children: Column[]} & Column, context: IRenderContext<any, any>, nestingPossible: boolean) {
   const stacked = nestingPossible && context.option('stacked', true);
   const padding = context.option('columnPadding', 0);
   let offset = 0;
@@ -42,8 +42,15 @@ export function createData(col: IMultiLevelColumn & Column, context: IRenderCont
  * renders a stacked column using composite pattern
  */
 export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMultiLevelColumn & Column> implements ICellRendererFactory {
+  readonly title: string;
+
   constructor(private readonly nestingPossible: boolean = true) {
     super();
+    this.title = this.nestingPossible ? 'Stacked Bar' : 'Nested';
+  }
+
+  canRender(col: Column) {
+    return isMultiLevelColumn(col);
   }
 
   createDOM(col: IMultiLevelColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {

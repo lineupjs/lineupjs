@@ -3,7 +3,7 @@
   [data-lod=low][data-agg=detail]:hover,
   [data-lod=medium][data-agg=detail]:hover {
     /* show regular height for hovered rows in low + medium LOD */
-    height: 20px !important;
+    height: 18px !important;
   }
 
   [data-lod=low][data-agg=detail]:not(:hover),

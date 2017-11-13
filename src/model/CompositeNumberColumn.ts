@@ -44,9 +44,8 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
       this.missingValue = desc.missingValue;
     }
 
-    if (this.getRendererType() === desc.type) {
-      this.setRendererType('compositenumber');
-    }
+    this.setDefaultRenderer('number');
+    this.setDefaultGroupRenderer('boxplot');
   }
 
 
@@ -72,7 +71,7 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     }
     const v = this.getValue(row, index);
     //keep non number if it is not a number else convert using formatter
-    return String(typeof v === 'number' ? this.numberFormat(v) : v);
+    return String(typeof v === 'number' && !isNaN(v) && isFinite(v) ? this.numberFormat(v) : v);
   }
 
   getValue(row: any, index: number) {

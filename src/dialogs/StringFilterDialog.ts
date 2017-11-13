@@ -53,8 +53,7 @@ export function stringFilter(col: StringColumn) {
     original,
     template: `<input type="text" placeholder="containing..." autofocus value="${(bak instanceof RegExp) ? bak.source : bak}" style="width: 100%">
   <br><label><input type="checkbox" ${(bak instanceof RegExp) ? 'checked="checked"' : ''}>RegExp</label>
-  <br>${filterMissingMarkup(bakMissing)}
-  <br>`,
+  ${filterMissingMarkup(bakMissing)}`,
     update(node: HTMLElement) {
       const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
       const filterMissing = <HTMLInputElement>node.querySelector('input[type="checkbox"].lu_filter_missing');

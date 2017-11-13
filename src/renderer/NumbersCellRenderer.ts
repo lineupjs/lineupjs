@@ -7,6 +7,7 @@ import {renderMissingValue} from './missing';
 import {isMissingValue} from '../model/missing';
 
 export default class NumbersCellRenderer extends ANumbersCellRenderer {
+  readonly title = 'Heatmap';
 
   protected createDOMContext(col: INumbersColumn & Column) {
     const colorScale = col.getRawColorScale();

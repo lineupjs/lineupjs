@@ -9,7 +9,7 @@ export default class StratifyThresholdDialog extends ADialog {
    * @param header the visual header element of this column
    */
   constructor(private readonly column: NumberColumn, header: HTMLElement) {
-    super(header, 'Stratify By Threshold');
+    super(header, 'Stratify by Threshold');
   }
 
   openDialog() {

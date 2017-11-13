@@ -23,7 +23,7 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
       this.categories.push(`Category #${i + 1}`);
     }
 
-    this.setRendererType('upset');
+    this.setDefaultRenderer('upset');
   }
 
   get categoryLabels() {

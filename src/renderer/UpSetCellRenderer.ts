@@ -4,13 +4,15 @@ import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr} from '../utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {ICategoricalColumn} from '../model/CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
 import Column from '../model/Column';
 import {IGroup} from '../model/Group';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 
 export default class UpSetCellRenderer implements ICellRendererFactory {
+  readonly title = 'Matrix';
+
   private static calculateSetPath(setData: boolean[], cellDimension: number) {
     const catindexes: number[] = [];
     setData.forEach((d: boolean, i: number) => (d) ? catindexes.push(i) : -1);
@@ -58,6 +60,10 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
       col.getCategories(d.v, d.dataIndex).forEach((cat) => values.add(cat));
     });
     return col.categories.map((cat) => values.has(cat));
+  }
+
+  canRender(col: Column) {
+    return isCategoricalColumn(col);
   }
 
   createDOM(col: ICategoricalColumn & Column): IDOMCellRenderer {

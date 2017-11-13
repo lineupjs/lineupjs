@@ -23,6 +23,8 @@
 
   &.#{$lu_css_prefix}-dragover::after {
     content: '+';
+    font-size: 250%;
+    color: #fff;
     position: absolute;
     top: 0;
     left: 0;

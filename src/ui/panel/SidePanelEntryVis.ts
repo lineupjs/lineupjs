@@ -13,7 +13,7 @@ export default class SidePanelEntryVis {
     this.node = document.createElement('article');
     this.node.dataset.type = column.desc.type;
 
-    this.column.on(`${Column.EVENT_FILTER_CHANGED}.panel, ${Column.EVENT_DIRTY_HEADER}.panel`, () => {
+    this.column.on([`${Column.EVENT_FILTER_CHANGED}.panel`, `${Column.EVENT_DIRTY_HEADER}.panel`], () => {
       this.update();
     });
     this.init();
@@ -41,7 +41,7 @@ export default class SidePanelEntryVis {
   }
 
   destroy() {
-    this.column.on(`${Column.EVENT_FILTER_CHANGED}.panel, ${Column.EVENT_DIRTY_HEADER}.panel`, null);
+    this.column.on([`${Column.EVENT_FILTER_CHANGED}.panel`, `${Column.EVENT_DIRTY_HEADER}.panel`], null);
     this.node.remove();
   }
 }

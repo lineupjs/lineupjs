@@ -13,6 +13,12 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
  * renders categorical columns as a colored rect with label
  */
 export default class CategoricalColorCellRenderer implements ICellRendererFactory {
+  readonly title = 'Color';
+
+  canRender() {
+    return false; // only direct selection
+  }
+
   createDOM(col: ICategoricalColumn & Column): IDOMCellRenderer {
     return {
       template: `<div style="background-color: transparent" title=""></div>`,

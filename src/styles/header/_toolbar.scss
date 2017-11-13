@@ -27,7 +27,7 @@
   color: $lu_header_active_filter_color;
 }
 
-&.grouped .#{$lu_css_prefix}-toolbar i[title='Stratify By'] {
+&.grouped .#{$lu_css_prefix}-toolbar i[title='Stratify by'] {
   color: $lu_header_active_filter_color;
 }
 
@@ -47,7 +47,7 @@
         content: $fa-var-code-fork;
       }
 
-      &[title^='Sort By']::before {
+      &[title^='Sort by']::before {
         content: $fa-var-sort;
       }
 
@@ -59,7 +59,7 @@
         content: $fa-var-external-link;
       }
 
-      &[title^='Sort Group By']::before {
+      &[title^='Sort Group by']::before {
         content: $fa-var-sort;
       }
 

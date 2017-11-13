@@ -6,8 +6,15 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
 import {IGroup} from '../model/Group';
+import Column from '../model/Column';
 
 export default class SelectionRenderer implements ICellRendererFactory {
+  readonly title = 'Default';
+
+  canRender(col: Column) {
+    return col instanceof SelectionColumn;
+  }
+
   createDOM(col: SelectionColumn): IDOMCellRenderer {
     return {
       template: `<div></div>`,

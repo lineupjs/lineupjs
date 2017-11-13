@@ -3,9 +3,6 @@
  */
 
 import Column from '../model/Column';
-import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
-import CompositeNumberColumn from '../model/CompositeNumberColumn';
-
 import ICellRendererFactory from './ICellRendererFactory';
 import BarCellRenderer from './BarCellRenderer';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
@@ -23,7 +20,6 @@ import UpSetCellRenderer from './UpSetCellRenderer';
 import CircleCellRenderer from './CircleCellRenderer';
 import BoxplotCellRenderer from './BoxplotCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
-import ThresholdCellRenderer from './ThresholdCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import {EmptyCellRenderer} from './EmptyCellRenderer';
@@ -33,19 +29,18 @@ import AggregateGroupRenderer from './AggregateGroupRenderer';
 import HistogramGroupRenderer from './HistogramGroupRenderer';
 import CategoricalColorShiftedCellRenderer from './CategoricalColorShiftedCellRenderer';
 import ImageCellRenderer from './ImageCellRenderer';
+import BooleanCellRenderer from './BooleanCellRenderer';
+import InterleavingCellRenderer from './InterleavingCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
-
 /**
  * default render factories
  */
 export const renderers: { [key: string]: ICellRendererFactory } = {
   rank: new RankCellRenderer(),
-  boolean: new DefaultCellRenderer('boolean', 'center'),
-  date: defaultCellRenderer,
+  boolean: new BooleanCellRenderer(),
   number: new BarCellRenderer(),
-  ordinal: new BarCellRenderer(true, (d, i, col: CategoricalNumberColumn) => col.getColor(d, i)),
   string: new StringCellRenderer(),
   selection: new SelectionRenderer(),
   heatmap: new HeatmapCellRenderer(),
@@ -58,12 +53,9 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   categorical: new CategoricalCellRenderer(),
   catcolor: new CategoricalColorCellRenderer(),
   catcolorshifted: new CategoricalColorShiftedCellRenderer(),
-  compositenumber: new BarCellRenderer(false, (d, i, col: CompositeNumberColumn) => col.getColor(d, i)),
   numbers: new NumbersCellRenderer(),
-  threshold: new ThresholdCellRenderer(),
   sparkline: new SparklineCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
-  set: new UpSetCellRenderer(),
   upset: new UpSetCellRenderer(),
   circle: new CircleCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
@@ -71,8 +63,10 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   empty: new EmptyCellRenderer(),
   aggregate: new AggregateGroupRenderer(),
   histogram: new HistogramGroupRenderer(),
+  interleaving: new InterleavingCellRenderer(),
   default: defaultCellRenderer
 };
+
 
 function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getRendererType()];
@@ -102,4 +96,18 @@ export function createDOMGroup(col: Column, renderers: { [key: string]: ICellRen
 export function createCanvasGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext) {
   const r = chooseGroupRenderer(col, renderers);
   return (r.createGroupCanvas ? r.createGroupCanvas.bind(r) : defaultCellRenderer.createGroupCanvas.bind(defaultCellRenderer))(col, context);
+}
+
+export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, isGroup: boolean = false): {type: string, label: string}[] {
+  const valid = Object.keys(renderers).filter((type) => {
+    const factory = renderers[type];
+    return factory.canRender(col, isGroup);
+  });
+  // TODO some magic to remove and order
+
+  return valid.map((type) => ({type, label: !isGroup ? renderers[type].title : (renderers[type].groupTitle || renderers[type].title)}));
+}
+
+export function possibleGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }) {
+  return possibleRenderer(col, renderers, true);
 }
