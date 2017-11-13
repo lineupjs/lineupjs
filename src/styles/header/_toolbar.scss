@@ -23,12 +23,12 @@
       display: none;
     }
 
-    &[title^='Stratify']:not([data-priority='']),
-    &[title^='Sort']:not([data-priority='']) {
+    &[title^='Stratify'][data-priority],
+    &[title^='Sort'][data-priority] {
       padding-left: 10px;
 
       &::after {
-        content: attr(data-priority);
+        content: attr(data-priority) '.';
         position: absolute;
         right: 0;
         z-index: 1;
@@ -44,7 +44,7 @@
       }
     }
 
-    &[title^='Stratify']:not([data-priority='']) {
+    &[title^='Stratify'][data-priority] {
       padding-left: 15px;
 
       &::after {
