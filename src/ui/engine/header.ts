@@ -96,7 +96,7 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
   if(sort) {
     const {asc, priority} = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
-    sort.dataset.priority = priority !== undefined ? `${(parseInt(priority) + 1)}.` : '';
+    sort.dataset.priority = priority !== undefined ? `${(parseInt(priority, 10) + 1)}.` : '';
   }
 
   const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
