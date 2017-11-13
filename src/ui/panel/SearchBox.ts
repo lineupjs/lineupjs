@@ -123,7 +123,7 @@ export default class SearchBox<T extends IItem> extends AEventDispatcher {
     this.fire(SearchBox.EVENT_SELECT, item);
   }
 
-  private focus() {
+  focus() {
     this.body.style.width = `${this.search.offsetWidth}px`;
     this.highlighted = <HTMLElement>this.body.firstElementChild || null;
     this.node.classList.add('lu-search-open');
