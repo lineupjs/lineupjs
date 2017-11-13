@@ -8,6 +8,16 @@
   background-color: #fff;
   margin-bottom: 0.8em;
 
+  .#{$lu_css_prefix}-sort-handle {
+    display: block;
+    height: 5px;
+    width: 100%;
+
+    &.#{$lu_css_prefix}-dragover {
+      background-color: $lu_header_background;
+    }
+  }
+
   > header {
     display: flex;
     align-content: space-between;
