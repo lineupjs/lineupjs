@@ -15,31 +15,7 @@
   }
 
   > div {
-    position: absolute;
-    background: lighten(#FFD700, 45%);
-    border: 1px solid black;
-    top: 110%;
-    left: 5px;
-    width: 96%;
-    hyphens: manual;
-    padding: 5px;
-    z-index: 100;
-    pointer-events: none;
-    opacity: 0;
-    visibility: hidden;
-    transition: visibility 0s ease 0.3s, opacity 0.3s ease 0s;
-
-    &::before {
-      content: '';
-      width: 0;
-      height: 0;
-      border-left: 5px solid transparent;
-      border-right: 5px solid transparent;
-      border-bottom: 5px solid black;
-      position: absolute;
-      top: -6px;
-      left: 29.4%;
-    }
+    display: none;
   }
 
   &:hover {
@@ -60,11 +36,42 @@
     content: $fa-var-check-square-o;
   }
 
-  &.violated::after {
-    @include fa-icon();
-    content: $fa-var-exclamation-triangle;
-    margin-top: -1px;
-    margin-left: 5px;
-    color: #FFD700;
+  &.violated {
+    > div {
+      display: block;
+      position: absolute;
+      background: lighten(#FFD700, 45%);
+      border: 1px solid black;
+      top: 110%;
+      left: 5px;
+      width: 96%;
+      hyphens: manual;
+      padding: 5px;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: visibility 0s ease 0.3s, opacity 0.3s ease 0s;
+
+      &::before {
+        content: '';
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 5px solid black;
+        position: absolute;
+        top: -6px;
+        left: 29.4%;
+      }
+    }
+
+    &::after {
+      @include fa-icon();
+      content: $fa-var-exclamation-triangle;
+      margin-top: -1px;
+      margin-left: 5px;
+      color: #FFD700;
+    }
   }
 }
