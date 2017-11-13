@@ -47,13 +47,7 @@ function spacefillingItemHeight(data: (IGroupData | IGroupItem)[], availableHeig
   if (height < minItemHeight) {
     return {
       height: minItemHeight,
-      violation: `Height of some items were smaller than their minimal allowed size, limiting to mini&shy;mal size`
-    };
-  }
-  if (height > maxItemHeight) {
-    return {
-      height: maxItemHeight,
-      violation: `Height of some items were bigger than their maximal allowed size, limiting to maxi&shy;mal size`
+      violation: `Not possible to fit all rows on the screen. Set filters or aggregate groups to make it fit again.`
     };
   }
   return {height, violation: ''};
