@@ -154,7 +154,7 @@ export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRa
   }
 
   if (col instanceof NumberColumn) {
-    addIcon('Stratify By Threshold &hellip;', StratifyThresholdDialog);
+    addIcon('Stratify by Threshold &hellip;', StratifyThresholdDialog);
   }
 
   if (!(col instanceof RankColumn)) {
@@ -181,7 +181,7 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
   }
 
   if (isNumberColumn(col) || col instanceof CategoricalColumn) {
-    addIcon('Sort Groupy By &hellip;').onclick = (evt) => {
+    addIcon('Sort Group by &hellip;').onclick = (evt) => {
       evt.stopPropagation();
       col.toggleMyGroupSorting();
     };
@@ -189,7 +189,7 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
 
   if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
     //Numbers Sort
-    addIcon('Sort By &hellip;', SortDialog);
+    addIcon('Sort by &hellip;', SortDialog);
   }
 
   //stratify
@@ -201,7 +201,7 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
   }
 
   if (col instanceof NumberColumn) {
-    addIcon('Stratify By Threshold &hellip;', StratifyThresholdDialog);
+    addIcon('Stratify by Threshold &hellip;', StratifyThresholdDialog);
   }
 
   const possible = ctx.getPossibleRenderer(col);
