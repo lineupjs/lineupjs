@@ -33,7 +33,7 @@ export default class Taggle extends AEventDispatcher {
     this.node.classList.add('lu-taggle');
     this.node.innerHTML = `<aside class="panel">
         <div class="lu-rule-button-chooser">
-          <span>Overview</span> 
+          <span>Overview</span>
           <div></div>
         </div>
     </aside>`;
