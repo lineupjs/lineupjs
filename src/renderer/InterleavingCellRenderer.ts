@@ -15,7 +15,7 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
  * a renderer rendering a bar for numerical columns
  */
 export default class InterleavingCellRenderer implements ICellRendererFactory {
-  readonly title = 'Interleaving';
+  readonly title = 'Interleaved';
 
   canRender(col: Column) {
     return col instanceof CompositeNumberColumn;
