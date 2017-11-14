@@ -13,6 +13,11 @@
 
     & * {
       pointer-events: none !important;
+
+      &::before,
+      &::after {
+        pointer-events: none !important;
+      }
     }
   }
 
