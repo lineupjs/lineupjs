@@ -22,7 +22,7 @@ export default class SidePanelEntryVis {
 
   private init() {
     this.node.innerHTML = `
-      <div class="lu-sort-handle"></div><header><div class="lu-label"></div><div class="lu-toolbar"></div></header>
+      <header><div class="lu-label"></div><div class="lu-toolbar"></div></header>
       <main class="lu-summary"></main>`;
     createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), this.column, this.ctx);
     this.node.querySelector('.lu-label')!.addEventListener('click', (evt) => {
@@ -32,7 +32,7 @@ export default class SidePanelEntryVis {
     });
 
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
-    resortDropAble(<HTMLElement>this.node.querySelector('.lu-sort-handle')!, this.column, this.ctx, 'before', true);
+    resortDropAble(<HTMLElement>this.node, this.column, this.ctx, 'before', true);
   }
 
   update(ctx: IRankingHeaderContext = this.ctx) {
