@@ -53,11 +53,27 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupDOM(_col: Column): IDOMGroupRenderer {
+  private static exampleText(col: Column, rows: IDataRow[]) {
+    const numExampleRows = 5;
+    let examples = rows
+      .slice(0, numExampleRows)
+      .map((r) => col.getLabel(r.v, r.dataIndex))
+      .join(', ');
+
+    if(rows.length > numExampleRows) {
+      examples += ', &hellip;';
+    }
+    return examples;
+  }
+
+  createGroupDOM(col: Column): IDOMGroupRenderer {
     return {
       template: `<div class="${this.textClass} ${this.align}"> </div>`,
       update: (n: HTMLDivElement, group: IGroup, rows: IDataRow[]) => {
-        setText(n, `${group.name} (${rows.length})`);
+        n.innerHTML = `
+            ${group.name} (${rows.length})
+            <div>${DefaultCellRenderer.exampleText(col, rows)}</div>
+        `;
       }
     };
   }
@@ -65,11 +81,11 @@ export class DefaultCellRenderer implements ICellRendererFactory {
   createGroupCanvas(col: Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const w = context.colWidth(col);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      const bak = ctx.textAlign;
-      ctx.textAlign = 'center';
-      const shift = w / 2;
-      clipText(ctx, `${group.name} (${rows.length})`, shift, context.groupHeight(group) / 2, w, context.textHints);
-      ctx.textAlign = bak;
+      clipText(ctx, `${group.name} (${rows.length})`, 0, 2, w, context.textHints);
+      const bak = ctx.font;
+      ctx.font = '8pt "Helvetica Neue", Helvetica, Arial, sans-serif';
+      clipText(ctx, DefaultCellRenderer.exampleText(col, rows), 0, 2 + 12, w, context.textHints);
+      ctx.font = bak;
     };
   }
 }
