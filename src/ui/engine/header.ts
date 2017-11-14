@@ -189,7 +189,7 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
   }
 
   if (isNumberColumn(col) || col instanceof CategoricalColumn) {
-    addIcon('Sort Group by &hellip;').onclick = (evt) => {
+    addIcon('Sort Group by Median').onclick = (evt) => {
       evt.stopPropagation();
       col.toggleMyGroupSorting();
     };
