@@ -12,6 +12,8 @@
   > i {
     padding: 2px 4px;
     cursor: pointer;
+    position: relative;
+    display: flex;
 
     &:hover {
       color: $lu_toolbar_color_hover;
@@ -19,6 +21,35 @@
 
     &.hidden {
       display: none;
+    }
+
+    &[title^='Stratify'][data-priority],
+    &[title^='Sort'][data-priority] {
+      padding-left: 10px;
+
+      &::after {
+        content: attr(data-priority) '.';
+        position: absolute;
+        right: 0;
+        z-index: 1;
+        margin-top: 2px;
+        margin-right: 65%;
+        text-align: right;
+        color: $lu_selected_color;
+        font-style: normal;
+        font-size: 10px;
+        font-weight: bold;
+        line-height: 1;
+        pointer-events: none;
+      }
+    }
+
+    &[title^='Stratify'][data-priority] {
+      padding-left: 15px;
+
+      &::after {
+        margin-right: 60%;
+      }
     }
   }
 }
@@ -74,6 +105,7 @@
       &[title^='Stratify']::before {
         content: $fa-var-columns;
         transform: rotate(-90deg);
+        height: 14px;
       }
 
       &[title='Sort']::before {
