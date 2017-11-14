@@ -492,7 +492,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     return !((isFinite(this.currentFilter.min) && vn < this.currentFilter.min) || (isFinite(this.currentFilter.max) && vn > this.currentFilter.max));
   }
 
-  getStratifyTresholds() {
+  getStratifyThresholds() {
     return this.currentStratifyThresholds.slice();
   }
 
@@ -500,7 +500,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (equalArrays(this.currentStratifyThresholds, value)) {
       return;
     }
-    const bak = this.getStratifyTresholds();
+    const bak = this.getStratifyThresholds();
     this.currentStratifyThresholds = value.slice();
     this.fire([Column.EVENT_GROUPING_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, value);
   }

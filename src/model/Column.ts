@@ -142,7 +142,7 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_DIRTY_HEADER = 'dirtyHeader';
   static readonly EVENT_DIRTY_VALUES = 'dirtyValues';
   static readonly EVENT_RENDERER_TYPE_CHANGED = 'rendererTypeChanged';
-  static readonly EVENT_GROUP_RENDERER_TYPE_CHANGED = 'groupRendererTypeChanged';
+  static readonly EVENT_GROUP_RENDERER_TYPE_CHANGED = 'groupRendererChanged';
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
 
