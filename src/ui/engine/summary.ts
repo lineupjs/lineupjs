@@ -27,7 +27,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   const stats = <ICategoricalStatistics>ctx.statsOf(col);
   const old = node.dataset.summary;
 
-  if (!stats || stats.hist.length > 20) {
+  if (!stats || stats.hist.length > 50) {
     node.innerHTML = '';
     return;
   }
