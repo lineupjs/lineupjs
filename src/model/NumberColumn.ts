@@ -267,7 +267,7 @@ export function noNumberFilter() {
 export default class NumberColumn extends ValueColumn<number> implements INumberColumn, IMapAbleColumn {
   static readonly EVENT_MAPPING_CHANGED = 'mappingChanged';
 
-  missingValue = 0;
+  missingValue = NaN;
 
   private mapping: IMappingFunction;
 
