@@ -259,6 +259,15 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
     };
   }
 
+  if (col instanceof CompositeColumn && col.parent instanceof Ranking) {
+    addIcon('Split Combined Column').onclick = (evt) => {
+      evt.stopPropagation();
+      // split the combined column into its children
+      col.children.reverse().forEach((c) => col.insertAfterMe(c));
+      col.removeMe();
+    };
+  }
+
   if (col instanceof CompositeColumn && (!isMultiLevelColumn(col) || col.getCollapsed())) {
     addIcon('Contained Columns &hellip;', CompositeChildrenDialog, ctx);
   }

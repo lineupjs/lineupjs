@@ -98,6 +98,10 @@
         content: $fa-var-gears;
       }
 
+      &[title='Split Combined Column']::before {
+        content: $fa-var-window-restore;
+      }
+
       &[title^='Filter']::before {
         content: $fa-var-filter;
       }
