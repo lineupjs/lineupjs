@@ -13,11 +13,11 @@ import {isNumbersColumn} from '../model/NumbersColumn';
 export function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
   let v = col.getNumber(d, index);
   if (isNaN(v)) {
-    v = 0;
+    v = 1; // max = brightest
   }
   //hsl space encoding, encode in lightness
   const color = hsl(col.color || Column.DEFAULT_COLOR);
-  color.l = v;
+  color.l = 1 - v; // largest value = darkest color
   return color.toString();
 }
 
