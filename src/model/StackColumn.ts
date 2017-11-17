@@ -42,6 +42,13 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     this.adaptChange = function (this: { source: Column }, oldValue, newValue) {
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
+
+    if (this.getRendererType() === 'interleaving') {
+      this.setRendererType('stack');
+    }
+    if (this.getGroupRenderer() === 'interleaving') {
+      this.setGroupRenderer('stack');
+    }
   }
 
   protected createEventList() {
