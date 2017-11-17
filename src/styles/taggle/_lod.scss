@@ -11,7 +11,7 @@
     /* shrink rows in low + medium LOD that are not hovered */
     padding-top: 0;
 
-    &[data-meta=first] {
+    &[data-meta~=first] {
       /* change rendering of the first row for a group to show the collapse arrow of `[data-renderer=aggregate]` */
       z-index: 11; // 11 overrules the `z-index: 10;` of `.lu-selected` in _row.scss
       position: relative;

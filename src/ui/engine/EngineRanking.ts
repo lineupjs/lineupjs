@@ -18,7 +18,7 @@ import {AEventDispatcher, debounce} from '../../utils';
 import SelectionManager from './SelectionManager';
 import {lineupAnimation} from './animation';
 import PrefetchMixin from 'lineupengine/src/mixin/PrefetchMixin';
-import {setColumn} from '../../../../lineupengine/src/style/GridStyleManager';
+import {setColumn} from 'lineupengine/src/style/GridStyleManager';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
@@ -280,7 +280,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   groupData(data: IDataRow[]): (IGroupItem | IGroupData)[] {
     const groups = this.ranking.getGroups();
     const provider = this.ctx.provider;
-    const toMeta = (relativeIndex: number, length: number): 'first'|'last'|undefined => {
+    const toMeta = (relativeIndex: number, length: number): 'first'|'last'|'first last'|undefined => {
+      if (length === 1) {
+        return 'first last';
+      }
       if (relativeIndex === 0) {
         return 'first';
       }

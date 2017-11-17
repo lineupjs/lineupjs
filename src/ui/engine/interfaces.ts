@@ -30,7 +30,7 @@ export interface IRankingHeaderContextContainer {
 export interface IGroupItem extends IDataRow {
   group: IGroup;
   relativeIndex: number;
-  meta?: 'first'|'last';
+  meta?: 'first'|'last'|'first last';
 }
 
 export interface IGroupData extends IGroup {

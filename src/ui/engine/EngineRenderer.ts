@@ -271,7 +271,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
       const {height, defaultHeight} = heightsFor(r.ranking, grouped);
 
       const rowContext = nonUniformContext(grouped.map(height), defaultHeight, (index) => {
-        if (index >= 0 && grouped[index] && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last')) {
+        if (index >= 0 && grouped[index] && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last' || (<IGroupItem>grouped[index]).meta === 'first last')) {
           return groupPadding + rowPadding;
         }
         return rowPadding;

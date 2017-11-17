@@ -20,7 +20,7 @@
 }
 
 &[data-agg=group],
-&[data-meta=last] {
+&[data-meta~=last] {
   margin-bottom: 5px; // see also groupPadding in body options and GROUP_SPACING in ANode
 }
 
