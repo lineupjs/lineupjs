@@ -12,6 +12,7 @@ import {
 import {IGroup} from '../model/Group';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isNumberColumn} from '../model';
+import NumberColumn from '../model/NumberColumn';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v === null) {
@@ -42,9 +43,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           return;
         }
         const label = col.getRawBoxPlotData(d.v, d.dataIndex)!;
-        renderDOMBoxPlot(n, data!, label);
-        const wiskers = <HTMLElement>n.firstElementChild;
-        wiskers.dataset.sort = sortedByMe ? sortMethod : '';
+        renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '');
       }
     };
   }
@@ -54,7 +53,6 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     const topPadding = context.option('rowBarPadding', 1);
     const sortedByMe = col.isSortedByMe().asc !== undefined;
     const width = context.colWidth(col);
-    const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ffa500');
 
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
       const rowHeight = context.rowHeight(i);
@@ -77,17 +75,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         max: data.max * width,
         outlier: data.outlier ? data.outlier.map((d) => d * width): undefined
       };
-      renderBoxPlot(ctx, scaled, rowHeight, topPadding, context);
-
-      if (!sortedByMe) {
-        return;
-      }
-      ctx.strokeStyle = boxSortIndicator;
-      ctx.beginPath();
-      ctx.moveTo(<number>scaled[sortMethod], topPadding);
-      ctx.lineTo(<number>scaled[sortMethod], rowHeight - topPadding);
-      ctx.stroke();
-      ctx.fill();
+      renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', rowHeight, topPadding, context);
     };
   }
 
@@ -98,13 +86,14 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   }
 
   createGroupDOM(col: INumberColumn & Column): IDOMGroupRenderer {
+    const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return {
       template: `<div title="">
                     <div><div></div><div></div></div>
                  </div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const box = isNumbersColumn(col) ? BoxplotCellRenderer.createAggregatedBoxPlot(col, rows) : new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
-        renderDOMBoxPlot(n, box, box);
+        renderDOMBoxPlot(n, box, box, sort);
       }
     };
   }
@@ -112,6 +101,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
   createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const topPadding = context.option('rowBarGroupPadding', 1);
     const width = context.colWidth(col);
+    const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group);
       const data = isNumbersColumn(col) ? BoxplotCellRenderer.createAggregatedBoxPlot(col, rows) : new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
@@ -124,12 +114,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         max: data.max * width,
         outlier: data.outlier ? data.outlier.map((d) => d * width): undefined
       };
-      renderBoxPlot(ctx, scaled, height, topPadding, context);
+      renderBoxPlot(ctx, scaled, sort, height, topPadding, context);
     };
   }
 }
 
-function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData) {
+function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotData, sort: string) {
   n.title = computeLabel(label);
 
   const whiskers = <HTMLElement>n.firstElementChild;
@@ -148,6 +138,8 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
 
   //relative within the whiskers
   median.style.left = `${Math.round((data.median - leftWhisker) / range * 100)}%`;
+
+  whiskers.dataset.sort = sort;
 
   if (!data.outlier || data.outlier.length === 0) {
     if (n.children.length > 1) {
@@ -171,9 +163,10 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   });
 }
 
-function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, height: number, topPadding: number, context: ICanvasRenderContext) {
+function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: string, height: number, topPadding: number, context: ICanvasRenderContext) {
   const boxColor = context.option('style.boxplot.box', '#e0e0e0');
   const boxStroke = context.option('style.boxplot.stroke', 'black');
+  const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ffa500');
 
   const boxTopPadding = topPadding + ((height - topPadding * 2) * 0.1);
 
@@ -204,6 +197,15 @@ function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, height:
   ctx.lineTo(right, bottomPos);
   ctx.stroke();
   ctx.fill();
+
+  if (sort !== '') {
+    ctx.strokeStyle = boxSortIndicator;
+    ctx.beginPath();
+    ctx.moveTo(<number>box[<keyof IBoxPlotData>sort], topPadding);
+    ctx.lineTo(<number>box[<keyof IBoxPlotData>sort], height - topPadding);
+    ctx.stroke();
+    ctx.fill();
+  }
 
   if (!box.outlier) {
     return;
