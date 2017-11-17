@@ -233,8 +233,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   updateSelection(selectedDataIndices: {has(dataIndex: number): boolean}) {
-    this.forEachRow((node: HTMLElement) => {
-      this.selection.update(node, selectedDataIndices);
+    this.forEachRow((node: HTMLElement, rowIndex: number) => {
+      if(this.renderCtx.isGroup(rowIndex)) {
+        this.updateRow(node, rowIndex);
+      } else {
+        // fast pass for item
+        this.selection.update(node, selectedDataIndices);
+      }
     }, true);
   }
 
