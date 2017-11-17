@@ -18,6 +18,7 @@ import {AEventDispatcher, debounce} from '../../utils';
 import SelectionManager from './SelectionManager';
 import {lineupAnimation} from './animation';
 import PrefetchMixin from 'lineupengine/src/mixin/PrefetchMixin';
+import {setColumn} from '../../../../lineupengine/src/style/GridStyleManager';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
@@ -255,6 +256,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const before = <HTMLElement>row.children[index];
       const after = this.updateCell(before, rowIndex, column);
       if (before !== after && after) {
+        setColumn(after, column);
         row.replaceChild(after, before);
       }
     });
