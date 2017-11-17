@@ -284,7 +284,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
 
   getValue(row: any, index: number) {
     const values = this.getRawValue(row, index);
-    return values.map((d) => this.mapping.apply(d));
+    return values.map((d) => isMissingValue(d) ? NaN : this.mapping.apply(d));
   }
 
   getRawValue(row: any, index: number) {

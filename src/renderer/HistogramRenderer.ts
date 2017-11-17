@@ -11,6 +11,7 @@ import {forEachChild} from '../utils';
 import {isNumbersColumn, default as NumbersColumn} from '../model/NumbersColumn';
 import {isMissingValue} from '../model/missing';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 
 /**
@@ -43,7 +44,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
       forEachChild(n, (d: HTMLElement, i) => {
         const {x, dx, y} = hist[i];
         d.style.height = `${Math.round(y * 100 / max)}%`;
-        d.title = `${x} - ${x + dx} (${y})`;
+        d.title = `${NumbersColumn.DEFAULT_FORMATTER(x)} - ${NumbersColumn.DEFAULT_FORMATTER(x + dx)} (${y})`;
       });
     };
     return {template: `<div>${bins}</div>`, render};
@@ -54,6 +55,9 @@ export default class HistogramRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement, row: IDataRow, _i: number, _group: IGroup, globalHist: IStatistics | null) => {
+        if (renderMissingDOM(n, col, row)) {
+          return;
+        }
         render(n, [row], globalHist);
       }
     };
@@ -104,6 +108,9 @@ export default class HistogramRenderer implements ICellRendererFactory {
   createCanvas(col: NumbersColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const r = HistogramRenderer.getHistCanvasRenderer(col, context);
     return (ctx: CanvasRenderingContext2D, row: IDataRow, i: number, _dx: number, _dy: number, _group: IGroup, globalHist: IStatistics | null) => {
+      if (renderMissingCanvas(ctx, col, row, context.rowHeight(i))) {
+          return;
+      }
       return r(ctx, context.rowHeight(i), [row], globalHist);
     }
   }
