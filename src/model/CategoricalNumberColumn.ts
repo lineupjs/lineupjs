@@ -181,6 +181,10 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return CategoricalColumn.prototype.filter.call(this, row, index);
   }
 
+  group(row: any, index: number) {
+    return CategoricalColumn.prototype.group.call(this, row, index);
+  }
+
   getFilter() {
     return this.currentFilter;
   }

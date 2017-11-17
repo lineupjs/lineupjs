@@ -24,7 +24,6 @@ import {dragAble, dropAble, IDropResult} from './dnd';
 import NumberColumn from '../../model/NumberColumn';
 import {isNumberColumn} from '../../model/INumberColumn';
 import Ranking from '../../model/Ranking';
-import BooleanColumn from '../../model/BooleanColumn';
 import CategoricalColumn, {isCategoricalColumn} from '../../model/CategoricalColumn';
 import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 import {IRankingHeaderContext} from './interfaces';
@@ -154,7 +153,7 @@ export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRa
   }
 
   //stratify
-  if (col instanceof BooleanColumn || col instanceof CategoricalColumn) {
+  if (isCategoricalColumn(col)) {
     addIcon('Stratify').onclick = (evt) => {
       evt.stopPropagation();
       col.groupByMe();
@@ -201,7 +200,7 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
   }
 
   //stratify
-  if (col instanceof BooleanColumn || col instanceof CategoricalColumn || col instanceof SelectionColumn) {
+  if (isCategoricalColumn(col) || col instanceof SelectionColumn) {
     addIcon('Stratify').onclick = (evt) => {
       evt.stopPropagation();
       col.groupByMe();

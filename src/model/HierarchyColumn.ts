@@ -209,6 +209,14 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return va.length - vb.length;
   }
 
+  group(row: any, index: number) {
+    const base = this.resolveCategory(row, index);
+    if (!base) {
+      return super.group(row, index);
+    }
+    return {name: base.name, color: base.color};
+  }
+
   private updateCaches() {
     this.currentLeavesPathCache.clear();
     this.currentLeavesNameCache.clear();
