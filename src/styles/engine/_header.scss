@@ -14,6 +14,20 @@ section.#{$lu_css_prefix}-header {
   margin-bottom: 15px;
   border-bottom: 1px solid black;
 
+  &.frozen::before {
+    /**
+    add a dummy white blocker for the margin-bottom
+     */
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 15px;
+    bottom: -15px;
+    background: white;
+    pointer-events: none;
+  }
+
   &:hover {
     background-color: $lu_even_bg;
 
