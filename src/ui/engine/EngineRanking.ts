@@ -239,6 +239,8 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   updateColumnWidths() {
+    // update the column context in place
+    (<any>this._context).column = nonUniformContext(this._context.columns.map((w) => w.width), 100, this.ctx.columnPadding);
     super.updateColumnWidths();
     const {columns} = this.context;
     //no data update needed since just width changed
