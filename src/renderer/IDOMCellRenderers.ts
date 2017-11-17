@@ -17,8 +17,9 @@ export interface IDOMCellRenderer {
    * @param d the data item
    * @param i the order relative index
    * @param group the group this row is part of
+   * @param hist the optional histogram of the whole column
    */
-  update(node: HTMLElement, d: IDataRow, i: number, group: IGroup): void;
+  update(node: HTMLElement, d: IDataRow, i: number, group: IGroup, hist: IStatistics | ICategoricalStatistics | null): void;
 }
 
 export default IDOMCellRenderer;

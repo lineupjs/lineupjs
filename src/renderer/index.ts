@@ -26,7 +26,7 @@ import {EmptyCellRenderer} from './EmptyCellRenderer';
 import RankCellRenderer from './RankCellRenderer';
 import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
-import HistogramGroupRenderer from './HistogramGroupRenderer';
+import HistogramRenderer from './HistogramRenderer';
 import CategoricalColorShiftedCellRenderer from './CategoricalColorShiftedCellRenderer';
 import ImageCellRenderer from './ImageCellRenderer';
 import BooleanCellRenderer from './BooleanCellRenderer';
@@ -62,7 +62,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   loading: new LoadingCellRenderer(),
   empty: new EmptyCellRenderer(),
   aggregate: new AggregateGroupRenderer(),
-  histogram: new HistogramGroupRenderer(),
+  histogram: new HistogramRenderer(),
   interleaving: new InterleavingCellRenderer(),
   default: defaultCellRenderer
 };

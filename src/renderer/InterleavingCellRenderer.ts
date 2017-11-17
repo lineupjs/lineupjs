@@ -25,14 +25,14 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     const {cols} = createData(col, context, false);
     return {
       template: `<div>${cols.map((r) => r.renderer.template).join('')}</div>`,
-      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
+      update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup, hist: IStatistics | ICategoricalStatistics | null) => {
         const missing = renderMissingDOM(n, col, d);
         if (missing) {
           return;
         }
         matchColumns(n, cols, 'detail', 'html');
         Array.from(n.children).forEach((ni: HTMLElement, j) => {
-          cols[j].renderer.update(ni, d, i, group);
+          cols[j].renderer.update(ni, d, i, group, hist);
         });
       }
     };
@@ -55,7 +55,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
     const children = col.children;
     const renderers = children.map((c) => context.renderer(c));
 
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number, group: IGroup) => {
+    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number, group: IGroup, hist: IStatistics | ICategoricalStatistics | null) => {
       if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
@@ -65,7 +65,7 @@ export default class InterleavingCellRenderer implements ICellRendererFactory {
       ctx.save();
       ctx.scale(1, 1 / children.length); // scale since internal use the height, too
       renderers.forEach((r, i) => {
-        r(ctx, d, i, dx, dy + heightI * i, group);
+        r(ctx, d, i, dx, dy + heightI * i, group, hist);
         ctx.translate(0, rowHeight);
       });
       ctx.restore();

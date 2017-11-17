@@ -72,7 +72,7 @@ export default class RenderColumn implements IColumn {
       this.renderers.group.update(node, g, g.rows, ctx.statsOf(<any>this.c));
     } else {
       const r = ctx.getRow(index);
-      this.renderers.single.update(node, r, r.relativeIndex, r.group);
+      this.renderers.single.update(node, r, r.relativeIndex, r.group, ctx.statsOf(<any>this.c));
     }
     return node;
   }
