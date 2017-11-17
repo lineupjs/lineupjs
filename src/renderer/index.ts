@@ -31,6 +31,7 @@ import CategoricalColorShiftedCellRenderer from './CategoricalColorShiftedCellRe
 import ImageCellRenderer from './ImageCellRenderer';
 import BooleanCellRenderer from './BooleanCellRenderer';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
+import DotCellRenderer from './DotCellRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -64,6 +65,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   aggregate: new AggregateGroupRenderer(),
   histogram: new HistogramRenderer(),
   interleaving: new InterleavingCellRenderer(),
+  dot: new DotCellRenderer(),
   default: defaultCellRenderer
 };
 

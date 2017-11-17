@@ -35,11 +35,11 @@ export default class HistogramRenderer implements ICellRendererFactory {
       const {bins, max, hist} = HistogramRenderer.createHist(globalHist, guessedBins, rows, col);
       //adapt the number of children
       if (n.children.length !== bins) {
-        let bins = '';
-        for (let i = 0; i < guessedBins; ++i) {
-          bins += `<div style="height: 0" title="Bin ${i}: 0"></div>`;
+        let tmp = '';
+        for (let i = 0; i < bins; ++i) {
+          tmp += `<div style="height: 0" title="Bin ${i}: 0"></div>`;
         }
-        n.innerHTML = bins;
+        n.innerHTML = tmp;
       }
       forEachChild(n, (d: HTMLElement, i) => {
         const {x, dx, y} = hist[i];
