@@ -8,19 +8,6 @@
   background-color: #fff;
   margin-bottom: 0.8em;
 
-  &.#{$lu_css_prefix}-dragover {
-    pointer-events: all !important;
-
-    & * {
-      pointer-events: none !important;
-
-      &::before,
-      &::after {
-        pointer-events: none !important;
-      }
-    }
-  }
-
   &.#{$lu_css_prefix}-dragover::after {
     display: none;
   }

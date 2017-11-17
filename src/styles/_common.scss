@@ -1,5 +1,6 @@
 @import 'vars';
 
+.lineup-engine,
 .#{$lu_css_prefix},
 .#{$lu_css_prefix}-header,
 .#{$lu_css_prefix}-pool,
@@ -13,5 +14,23 @@
     cursor: pointer;
     cursor: -moz-grab;
     cursor: -webkit-grab; // indicate grab able
+  }
+
+  .#{$lu_css_prefix}-dragover {
+    pointer-events: all !important;
+
+    &::before,
+    &::after {
+      pointer-events: none !important;
+    }
+
+    & * {
+      pointer-events: none !important;
+
+      &::before,
+      &::after {
+        pointer-events: none !important;
+      }
+    }
   }
 }
