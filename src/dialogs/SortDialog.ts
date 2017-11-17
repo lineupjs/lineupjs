@@ -32,7 +32,7 @@ export default class SortDialog extends ADialog {
         if (this.column instanceof NumberColumn) {
           this.column.groupSortByMe(n.value === 'asc');
         } else {
-          this.column.sortByMe(n.value === 'asc')
+          this.column.sortByMe(n.value === 'asc');
         }
       });
     });

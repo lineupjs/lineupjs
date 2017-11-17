@@ -524,7 +524,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
 
   getSortMethod() {
     return this.groupSortMethod;
-  };
+  }
 
   setSortMethod(sortMethod: string) {
     if (this.groupSortMethod === sortMethod) {
