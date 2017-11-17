@@ -164,8 +164,9 @@ export function dropAble(node: HTMLElement, mimeTypes: string[], onDrop: (result
     }
     return;
   });
-  node.addEventListener('dragleave', () => {
-    node.classList.remove('lu-dragover');
+  node.addEventListener('dragleave', (evt) => {
+    // same fix as in phovea
+    (<HTMLElement>evt.target).classList.remove('lu-dragover');
   });
   node.addEventListener('drop', (e) => {
     e.preventDefault();
