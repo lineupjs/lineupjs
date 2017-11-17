@@ -90,6 +90,10 @@
       }
     }
 
-
+    [data-renderer=dot] > div {
+      top: 0 !important;
+      height: 100%;
+      margin-top: 0;
+    }
   }
 }
