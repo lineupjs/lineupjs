@@ -9,6 +9,7 @@ import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
 import {default as NumbersColumn, isNumbersColumn} from '../model/NumbersColumn';
 import {IGroup} from '../model/Group';
+import {isMissingValue} from '../model/missing';
 
 
 /**
@@ -49,6 +50,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         attr(<HTMLElement>d, {
           title: labels[i]
         }, {
+          display: isMissingValue(v) ? 'none': null,
           left: `${Math.round(v * 100)}%`,
           // jitter
           top: vs.length > 1 ? `${Math.round(Math.random() * 80 + 10)}%` : null,
@@ -72,7 +74,8 @@ export default class DotCellRenderer implements ICellRendererFactory {
         if (!isNumbersColumn(col)) {
           return render(n, [v], [col.getLabel(row.v, row.dataIndex)], [color]);
         }
-        return render(n, <number[]>v, v.map(NumbersColumn.DEFAULT_FORMATTER), v.map((_: any) => color));
+        const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
+        return render(n, vs, vs.map(NumbersColumn.DEFAULT_FORMATTER), vs.map((_: any) => color));
       }
     };
   }
@@ -89,7 +92,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return render(n, vs, rows.map((r) => col.getLabel(r.v, r.dataIndex)), colors);
         }
         // concatenate all columns
-        const all = (<number[]>[]).concat(...vs);
+        const all = (<number[]>[]).concat(...vs.filter((vi: number) => !isMissingValue(vi)));
         return render(n, all, all.map(NumbersColumn.DEFAULT_FORMATTER), vs.map((_v: number[], i) => colors[i]));
       }
     };
