@@ -9,6 +9,7 @@
     display: flex;
     flex-direction: column;
     border-left: 1px solid $lu_taggle_border_color;
+    border-radius: 0;
   }
 
   > main {

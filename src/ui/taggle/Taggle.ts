@@ -33,14 +33,13 @@ export default class Taggle extends AEventDispatcher {
     this.node.classList.add('lu-taggle');
     this.node.innerHTML = `<aside class="panel">
         <div class="lu-rule-button-chooser">
-            <div><span>Overview</span>
-              <code></code>
-            </div>
+          <span>Overview</span>
+          <div></div>
         </div>
     </aside>`;
 
     {
-      this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser :first-child')!;
+      this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser')!;
       this.spaceFilling.addEventListener('click', () => {
         const selected = this.spaceFilling.classList.toggle('chosen');
         this.renderer.switchRule(selected ? spacefilling : regular);
@@ -67,7 +66,7 @@ export default class Taggle extends AEventDispatcher {
   private setViolation(violation?: string) {
     violation = violation || '';
     this.spaceFilling.classList.toggle('violated', Boolean(violation));
-    this.spaceFilling.lastElementChild!.textContent = violation.replace(/\n/g, '<br>');
+    this.spaceFilling.lastElementChild!.innerHTML = violation.replace(/\n/g, '<br>');
   }
 
   destroy() {
