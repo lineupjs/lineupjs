@@ -278,7 +278,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       return false;
     }
     const filterObj = filter.filter;
-    if (Array.isArray(filterObj) && filterObj.length > 0) { //array mode
+    if (Array.isArray(filterObj)) { //array mode
       return filterObj.indexOf(category) >= 0;
     }
     if (typeof filterObj === 'string' && filterObj.length > 0) { //search mode

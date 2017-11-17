@@ -136,6 +136,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
       helper = helper.filter((d) => ranking.filter(d.v, d.dataIndex));
     }
 
+    if (helper.length === 0) {
+      return [];
+    }
+
     //create the groups for each row
     helper.forEach((r) => r.group = ranking.grouper(r.v, r.dataIndex) || defaultGroup);
     if ((new Set<string>(helper.map((r) => r.group!.name))).size === 1) {
