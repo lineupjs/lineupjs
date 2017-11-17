@@ -1,11 +1,9 @@
 [data-renderer=interleaving] {
   display: flex;
   flex-direction: column;
-  align-content: stretch;
-  align-items: stretch;
 
   > div {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     overflow-y: hidden;
   }
 }
