@@ -25,7 +25,7 @@ export default class CategoricalColorShiftedCellRenderer implements ICellRendere
     let total = 0;
     let after = false;
     ranking.getGroups().forEach((g) => {
-      if (g === group) {
+      if (g === group || g.name === group.name) { // identity may not work
         after = true;
       }
       total += g.order.length;
