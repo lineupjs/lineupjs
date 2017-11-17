@@ -78,7 +78,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
     const padding = context.option('rowBarPadding', 1);
 
     return (ctx: CanvasRenderingContext2D, height: number, rows: IDataRow[], globalHist: IStatistics | null) => {
-      const {max, bins, hist} = this.createHist(globalHist, guessedBins, rows, col);
+      const {max, bins, hist} = HistogramRenderer.createHist(globalHist, guessedBins, rows, col);
       const widthPerBin = context.colWidth(col) / bins;
       const total = height - padding;
 
@@ -112,7 +112,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
           return;
       }
       return r(ctx, context.rowHeight(i), [row], globalHist);
-    }
+    };
   }
 
 
