@@ -380,6 +380,14 @@ export default class Column extends AEventDispatcher {
     return this.isSortedByMeImpl((r) => r.getSortCriterias());
   }
 
+  groupSortByMe(ascending = false) {
+    const r = this.findMyRanker();
+    if (r) {
+      return r.groupSortBy(this, ascending);
+    }
+    return false;
+  }
+
   toggleMyGroupSorting() {
     const r = this.findMyRanker();
     if (r) {

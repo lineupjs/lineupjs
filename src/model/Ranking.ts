@@ -355,6 +355,10 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return this.setGroupSortCriteria({col, asc});
   }
 
+  groupSortBy(col: Column, asc: boolean) {
+    return this.setGroupSortCriteria({col, asc});
+  }
+
   setMaxSortCriteria(maxSortCriteria: number) {
     const old = this.maxSortCriteria;
     if (old === maxSortCriteria) {
@@ -396,6 +400,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
       values = values.slice(0, this.maxSortCriteria);
     }
 
+    this.groupSortCriteria.forEach((d) => {
+      d.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.groupOrder`, null!);
+    });
+
+    values.forEach((d) => {
+      d.col.on(`${Column.EVENT_SORTMETHOD_CHANGED}.groupOrder`, this.dirtyOrder);
+    });
     this.groupSortCriteria.splice(0, this.groupSortCriteria.length, ...values.slice());
     this.triggerResort(this.sortCriteria.slice());
     return true;
