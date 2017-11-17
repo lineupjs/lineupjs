@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
+import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -9,7 +9,6 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
-import {isNumbersColumn} from '../model/NumbersColumn';
 
 
 /**

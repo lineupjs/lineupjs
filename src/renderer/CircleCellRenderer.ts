@@ -1,12 +1,11 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
+import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {isNumbersColumn} from '../model/NumbersColumn';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
   readonly title = 'Proportional Symbol';

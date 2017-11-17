@@ -1,5 +1,4 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {INumbersColumn, isNumbersColumn} from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -10,6 +9,7 @@ import {forEachChild} from '../utils';
 import {IGroup} from '../model/Group';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isMissingValue} from '../model/missing';
+import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 
 export function line(data: number[]) {
   if (data.length === 0) {

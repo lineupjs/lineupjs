@@ -1,8 +1,8 @@
-import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import Column from '../model/Column';
 import {attr, forEachChild} from '../utils';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
+import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
   readonly title = 'Bar Chart';
@@ -36,7 +36,7 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
           const v = data[i];
           const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, domain);
           attr(<HTMLElement>d, {
-            title: NumbersColumn.DEFAULT_FORMATTER(v)
+            title: DEFAULT_FORMATTER(v)
           }, {
             'background-color': colorScale(v ),
             bottom: `${Math.round((100 * bottom) / range)}%`,

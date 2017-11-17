@@ -1,13 +1,15 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {default as BoxPlotColumn, IBoxPlotColumn, IBoxPlotData, isBoxPlotColumn} from '../model/BoxPlotColumn';
+import {default as BoxPlotColumn, isBoxPlotColumn} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {INumberColumn} from '../model/INumberColumn';
+import {
+  IBoxPlotColumn, IBoxPlotData, INumberColumn, INumbersColumn, isNumbersColumn,
+  LazyBoxPlotData
+} from '../model/INumberColumn';
 import {IGroup} from '../model/Group';
-import {INumbersColumn, isNumbersColumn, LazyBoxPlotData} from '../model/NumbersColumn';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isNumberColumn} from '../model';
 

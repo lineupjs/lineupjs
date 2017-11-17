@@ -3,8 +3,9 @@
  */
 
 import {behavior, event as d3event, mouse, scale, select, selectAll, Selection} from 'd3';
-import {IMappingFunction, INumberFilter, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
+import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
 import {filterMissingText} from './dialogs/AFilterDialog';
+import {INumberFilter} from './model/INumberColumn';
 
 
 function clamp(v: number, min: number, max: number) {

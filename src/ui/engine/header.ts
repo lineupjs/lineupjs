@@ -24,7 +24,7 @@ import {dragAble, dropAble, IDropResult} from './dnd';
 import NumberColumn from '../../model/NumberColumn';
 import {isNumberColumn} from '../../model/INumberColumn';
 import Ranking from '../../model/Ranking';
-import CategoricalColumn, {isCategoricalColumn} from '../../model/CategoricalColumn';
+import {isCategoricalColumn} from '../../model/CategoricalColumn';
 import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
 import {IRankingHeaderContext} from './interfaces';
 import {equalArrays} from '../../utils';
@@ -32,6 +32,7 @@ import MoreColumnOptionsDialog from '../../dialogs/MoreColumnOptionsDialog';
 import {findTypeLike} from '../../model/utils';
 import SelectionColumn from '../../model/SelectionColumn';
 import CompositeChildrenDialog from '../../dialogs/CompositeChildrenDialog';
+import StringColumn from '../../model/StringColumn';
 
 
 /**
@@ -187,11 +188,15 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
     addIcon('Rename + Color &hellip;', RenameDialog);
   }
 
-  if (isNumberColumn(col) || col instanceof CategoricalColumn) {
-    addIcon('Sort Group by Median').onclick = (evt) => {
+  if (col instanceof StringColumn) {
+    addIcon('Sort Group by Name').onclick = (evt) => {
       evt.stopPropagation();
       col.toggleMyGroupSorting();
     };
+  }
+
+  if (col instanceof NumberColumn) {
+    addIcon('Sort Group by &hellip;', SortDialog);
   }
 
   if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {

@@ -1,132 +1,24 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import {ascending, format, mean, median, quantile, scale as d3scale} from 'd3';
+import {scale as d3scale} from 'd3';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
-import {
-  compareBoxPlot,
-  getBoxPlotNumber,
-  IBoxPlotColumn,
-  IBoxPlotData,
-  SORT_METHOD as BASE_SORT_METHOD,
-  SortMethod
-} from './BoxPlotColumn';
 import NumberColumn, {
   createMappingFunction,
   IMapAbleColumn,
   IMappingFunction,
-  INumberFilter,
-  noNumberFilter,
   ScaleMappingFunction
 } from './NumberColumn';
-import {INumberColumn, isNumberColumn} from './INumberColumn';
 import {isMissingValue} from './missing';
-
-
-export const SORT_METHOD = Object.assign({
-  mean: 'mean'
-}, BASE_SORT_METHOD);
-
-export interface IAdvancedBoxPlotData extends IBoxPlotData {
-  readonly mean: number;
-}
-
-
-export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
-  getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData | null;
-
-  getRawBoxPlotData(row: any, index: number): IAdvancedBoxPlotData | null;
-}
-
-/**
- * helper class to lazily compute box plotdata out of a given number array
- */
-export class LazyBoxPlotData implements IAdvancedBoxPlotData {
-  private _sorted: number[] | null = null;
-  private _outlier: number[] | null = null;
-  private readonly values: number[];
-
-  constructor(values: number[], private readonly scale?: IMappingFunction) {
-    // filter out NaN
-    this.values = values.filter((d) => !isMissingValue(d));
-  }
-
-  /**
-   * lazy compute sorted array
-   * @returns {number[]}
-   */
-  private get sorted() {
-    if (this._sorted === null) {
-      this._sorted = this.values.slice().sort(ascending);
-    }
-    return this._sorted;
-  }
-
-  private map(v: number) {
-    return this.scale ? this.scale.apply(v) : v;
-  }
-
-  get min() {
-    return this.map(Math.min(...this.values));
-  }
-
-  get max() {
-    return this.map(Math.max(...this.values));
-  }
-
-  get median() {
-    return this.map(median(this.sorted));
-  }
-
-  get q1() {
-    return this.map(quantile(this.sorted, 0.25));
-  }
-
-  get q3() {
-    return this.map(quantile(this.sorted, 0.75));
-  }
-
-  get mean() {
-    return this.map(mean(this.values));
-  }
-
-  get outlier() {
-    if (this._outlier) {
-      return this._outlier;
-    }
-    const q1 = quantile(this.sorted, 0.25);
-    const q3 = quantile(this.sorted, 0.75);
-    const iqr = q3 - q1;
-    const left = q1 - 1.5 * iqr;
-    const right = q3 + 1.5 * iqr;
-    this._outlier = this.sorted.filter((v) => (v < left || v > right) && !isMissingValue(v));
-    if (this.scale) {
-      this._outlier = this._outlier.map((v) => this.scale!.apply(v));
-    }
-    return this._outlier;
-
-  }
-}
-
-export interface INumbersColumn extends INumberColumn {
-  getNumbers(row: any, index: number): number[];
-
-  getRawNumbers(row: any, index: number): number[];
-
-  getDataLength(): number;
-
-  getColorRange(): string[];
-  getRawColorScale(): (v: number) => string;
-
-  getThreshold(): number;
-
-  getMapping(): IMappingFunction;
-}
-
-export function isNumbersColumn(col: any): col is INumbersColumn {
-  return (<INumbersColumn>col).getNumbers !== undefined && isNumberColumn(col);
-}
+import {
+  compareBoxPlot, DEFAULT_FORMATTER, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberFilter, INumbersColumn,
+  isSameFilter,
+  LazyBoxPlotData,
+  noNumberFilter, restoreFilter,
+  SORT_METHOD,
+  SortMethod
+} from './INumberColumn';
 
 
 export interface INumbersDesc {
@@ -177,8 +69,6 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
    * @private
    */
   private currentFilter: INumberFilter = noNumberFilter();
-
-  static readonly DEFAULT_FORMATTER = format('.3n');
 
   constructor(id: string, desc: INumbersColumnDesc) {
     super(id, desc);
@@ -259,7 +149,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   getRange() {
-    return this.mapping.getRange(NumbersColumn.DEFAULT_FORMATTER);
+    return this.mapping.getRange(DEFAULT_FORMATTER);
   }
 
   getRawBoxPlotData(row: any, index: number) {
@@ -300,7 +190,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     if (v === null) {
       return '';
     }
-    return `[${v.map(NumbersColumn.DEFAULT_FORMATTER).join(', ')}]`;
+    return `[${v.map(DEFAULT_FORMATTER).join(', ')}]`;
   }
 
   getSortMethod() {
@@ -321,7 +211,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
-    r.filter = this.currentFilter;
+    r.filter = !isSameFilter(this.currentFilter, noNumberFilter()) ? this.currentFilter : null;
     r.map = this.mapping.dump();
     return r;
   }
@@ -332,7 +222,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
       this.sort = dump.sortMethod;
     }
     if (dump.filter) {
-      this.currentFilter = dump.filter;
+      this.currentFilter = restoreFilter(dump.filter);
     }
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);

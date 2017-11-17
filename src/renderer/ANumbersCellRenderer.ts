@@ -1,5 +1,4 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {INumbersColumn, isNumbersColumn} from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -9,6 +8,7 @@ import {IGroup} from '../model/Group';
 import {mean} from 'd3';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isMissingValue} from '../model/missing';
+import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 
 export abstract class ANumbersCellRenderer implements ICellRendererFactory {
   abstract readonly title: string;

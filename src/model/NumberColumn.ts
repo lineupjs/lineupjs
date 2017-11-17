@@ -8,7 +8,10 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays, similar} from '../utils';
 import {isMissingValue, isUnknown} from './missing';
 import {IGroupData} from '../ui/engine/interfaces';
-import {default as INumberColumn, INumberDesc, numberCompare, medianIndex} from './INumberColumn';
+import {
+  default as INumberColumn, INumberDesc, numberCompare, groupCompare,
+  SortMethod, ADVANCED_SORT_METHOD, INumberFilter, noNumberFilter, isSameFilter, restoreFilter
+} from './INumberColumn';
 
 export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 /**
@@ -46,13 +49,6 @@ export interface IMappingFunction {
   getRange(formatter: (v: number)=>string): [string, string];
 
 }
-
-export interface INumberFilter {
-  min: number;
-  max: number;
-  filterMissing: boolean;
-}
-
 
 function toScale(type = 'linear'): IScale {
   switch (type) {
@@ -256,11 +252,6 @@ export function isMapAbleColumn(col: any): col is IMapAbleColumn {
   return typeof col.getMapping === 'function';
 }
 
-
-export function noNumberFilter() {
-  return ({min: -Infinity, max: Infinity, filterMissing: false});
-}
-
 /**
  * a number column mapped from an original input scale to an output range
  */
@@ -283,6 +274,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   private numberFormat: (n: number) => string = format('.2f');
 
   private currentStratifyThresholds: number[] = [];
+  private groupSortMethod: SortMethod = ADVANCED_SORT_METHOD.median;
 
   constructor(id: string, desc: INumberColumnDesc) {
     super(id, desc);
@@ -310,6 +302,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     r.map = this.mapping.dump();
     r.filter = isSameFilter(this.currentFilter, noNumberFilter()) ? null : this.currentFilter;
     r.missingValue = this.missingValue;
+    r.groupSortMethod = this.groupSortMethod;
     if (this.currentStratifyThresholds) {
       r.stratifyThreshholds = this.currentStratifyThresholds;
     }
@@ -322,6 +315,9 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.mapping = createMappingFunction(dump.map);
     } else if (dump.domain) {
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
+    }
+    if (dump.groupSortMethod) {
+      this.groupSortMethod = dump.groupSortMethod;
     }
     if (dump.filter) {
       this.currentFilter = restoreFilter(dump.filter);
@@ -398,11 +394,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   groupCompare(a: IGroupData, b: IGroupData): number {
-    const aMedian = medianIndex(a.rows, this);
-    const bMedian = medianIndex(b.rows, this);
-    const av = a.rows[aMedian];
-    const bv = b.rows[bMedian];
-    return numberCompare(this.getNumber(av.v, av.dataIndex), this.getNumber(bv.v, bv.dataIndex), this.isMissing(av.v, av.dataIndex), this.isMissing(bv.v, bv.dataIndex));
+    return groupCompare(a.rows, b.rows, this, <any>this.groupSortMethod);
   }
 
   getOriginalMapping() {
@@ -529,16 +521,19 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
         };
     }
   }
-}
 
-function isSameFilter(a: INumberFilter, b: INumberFilter) {
-  return similar(a.min, b.min, 0.001) && similar(a.max, b.max, 0.001) && a.filterMissing === b.filterMissing;
-}
-
-function restoreFilter(v: INumberFilter): INumberFilter {
-  return {
-    min: v.min !== null && isFinite(v.min)? v.min : -Infinity,
-    max: v.max !== null && isFinite(v.max)? v.max : +Infinity,
-    filterMissing: v.filterMissing
+  getSortMethod() {
+    return this.groupSortMethod;
   };
+
+  setSortMethod(sortMethod: string) {
+    if (this.groupSortMethod === sortMethod) {
+      return;
+    }
+    this.fire([Column.EVENT_SORTMETHOD_CHANGED], this.groupSortMethod, this.groupSortMethod = sortMethod);
+    // sort by me if not already sorted by me
+    if (!this.isGroupSortedByMe().asc) {
+      this.toggleMyGroupSorting();
+    }
+  }
 }

@@ -1,10 +1,11 @@
-import NumbersColumn, {INumbersColumn} from '../model/NumbersColumn';
+import NumbersColumn from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import {attr, forEachChild} from '../utils';
 import Column from '../model/Column';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {renderMissingValue} from './missing';
 import {isMissingValue} from '../model/missing';
+import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
 
 export default class NumbersCellRenderer extends ANumbersCellRenderer {
   readonly title = 'Heatmap';
@@ -21,7 +22,7 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
         forEachChild(row, (d, i) => {
           const v = data[i];
           attr(<HTMLDivElement>d, {
-            title: NumbersColumn.DEFAULT_FORMATTER(v),
+            title: DEFAULT_FORMATTER(v),
             'class': isMissingValue(v) ? 'lu-missing' : ''
           }, {
             'background-color': isMissingValue(v) ? null : colorScale(v)

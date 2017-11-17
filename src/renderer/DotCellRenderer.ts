@@ -1,13 +1,12 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
+import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, forEachChild} from '../utils';
 import {renderMissingDOM} from './missing';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
-import {default as NumbersColumn, isNumbersColumn} from '../model/NumbersColumn';
 import {IGroup} from '../model/Group';
 import {isMissingValue} from '../model/missing';
 
@@ -75,7 +74,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return render(n, [v], [col.getLabel(row.v, row.dataIndex)], [color]);
         }
         const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
-        return render(n, vs, vs.map(NumbersColumn.DEFAULT_FORMATTER), vs.map((_: any) => color));
+        return render(n, vs, vs.map(DEFAULT_FORMATTER), vs.map((_: any) => color));
       }
     };
   }
@@ -93,7 +92,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         }
         // concatenate all columns
         const all = (<number[]>[]).concat(...vs.filter((vi: number) => !isMissingValue(vi)));
-        return render(n, all, all.map(NumbersColumn.DEFAULT_FORMATTER), vs.map((_v: number[], i) => colors[i]));
+        return render(n, all, all.map(DEFAULT_FORMATTER), vs.map((_v: number[], i) => colors[i]));
       }
     };
   }

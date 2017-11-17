@@ -1,4 +1,4 @@
-import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
+import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
@@ -8,7 +8,6 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {isNumbersColumn} from '../model/NumbersColumn';
 
 export function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
   let v = col.getNumber(d, index);

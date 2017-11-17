@@ -8,36 +8,15 @@ import NumberColumn, {
   createMappingFunction,
   IMapAbleColumn,
   IMappingFunction,
-  INumberFilter,
-  noNumberFilter,
   ScaleMappingFunction
 } from './NumberColumn';
-import {FIRST_IS_NAN} from './missing';
-import INumberColumn, {numberCompare} from './INumberColumn';
+import {
+  compareBoxPlot, getBoxPlotNumber, IBoxPlotColumn, IBoxPlotData, INumberFilter, isSameFilter, noNumberFilter,
+  restoreFilter,
+  SORT_METHOD,
+  SortMethod
+} from './INumberColumn';
 
-export const SORT_METHOD = {
-  min: 'min',
-  max: 'max',
-  median: 'median',
-  q1: 'q1',
-  q3: 'q3'
-};
-
-// till it can be more specific
-export declare type SortMethod = string;
-
-
-export interface IBoxPlotColumn extends INumberColumn {
-  getBoxPlotData(row: any, index: number): IBoxPlotData | null;
-
-  getMapping(): IMappingFunction;
-
-  getRawBoxPlotData(row: any, index: number): IBoxPlotData | null;
-
-  getSortMethod(): string;
-
-  setSortMethod(sortMethod: string): void;
-}
 
 export function isBoxPlotColumn(col: any): col is IBoxPlotColumn {
   return typeof (<IBoxPlotColumn>col).getBoxPlotData === 'function';
@@ -62,36 +41,7 @@ export interface IBoxPlotDesc {
 
 export declare type IBoxPlotColumnDesc = IBoxPlotDesc & IValueColumnDesc<IBoxPlotData>;
 
-export interface IBoxPlotData {
-  readonly min: number;
-  readonly max: number;
-  readonly median: number;
-  readonly q1: number;
-  readonly q3: number;
-  readonly outlier?: number[];
-}
-
-
-export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: number, bIndex: number) {
-  const aVal = col.getBoxPlotData(a, aIndex);
-  const bVal = col.getBoxPlotData(b, bIndex);
-  if (aVal === null) {
-    return bVal === null ? 0 : FIRST_IS_NAN;
-  }
-  if (bVal === null) {
-    return FIRST_IS_NAN * -1;
-  }
-  const method = <keyof IBoxPlotData>col.getSortMethod();
-  return numberCompare(<number>aVal[method], <number>bVal[method]);
-}
-
-export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number, mode: 'raw' | 'normalized'): number {
-  const data = mode === 'normalized' ? col.getBoxPlotData(row, index) : col.getRawBoxPlotData(row, index);
-  if (data === null) {
-    return NaN;
-  }
-  return <number>data[<keyof IBoxPlotData>col.getSortMethod()];
-}
+export {IBoxPlotData} from './INumberColumn';
 
 
 export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements IBoxPlotColumn, IMapAbleColumn {
@@ -193,7 +143,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
   dump(toDescRef: (desc: any) => any): any {
     const r = super.dump(toDescRef);
     r.sortMethod = this.getSortMethod();
-    r.filter = this.currentFilter;
+    r.filter = !isSameFilter(this.currentFilter, noNumberFilter()) ? this.currentFilter : null;
     r.map = this.mapping.dump();
     return r;
   }
@@ -204,7 +154,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
       this.sort = dump.sortMethod;
     }
     if (dump.filter) {
-      this.currentFilter = dump.filter;
+      this.currentFilter = restoreFilter(dump.filter);
     }
     if (dump.map) {
       this.mapping = createMappingFunction(dump.map);

@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import Column, {IStatistics} from '../model/Column';
-import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
+import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -8,7 +8,7 @@ import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/Group';
 import {computeStats, getNumberOfBins} from '../provider/math';
 import {forEachChild} from '../utils';
-import {isNumbersColumn, default as NumbersColumn} from '../model/NumbersColumn';
+import NumbersColumn from '../model/NumbersColumn';
 import {isMissingValue} from '../model/missing';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
@@ -44,7 +44,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
       forEachChild(n, (d: HTMLElement, i) => {
         const {x, dx, y} = hist[i];
         d.style.height = `${Math.round(y * 100 / max)}%`;
-        d.title = `${NumbersColumn.DEFAULT_FORMATTER(x)} - ${NumbersColumn.DEFAULT_FORMATTER(x + dx)} (${y})`;
+        d.title = `${DEFAULT_FORMATTER(x)} - ${DEFAULT_FORMATTER(x + dx)} (${y})`;
       });
     };
     return {template: `<div>${bins}</div>`, render};
