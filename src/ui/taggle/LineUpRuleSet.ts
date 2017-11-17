@@ -3,6 +3,7 @@ import {GROUP_SPACING, levelOfDetailInner, levelOfDetailLeaf} from './lod';
 
 const defaultItemHeight = 18;
 const minItemHeight = 1;
+const maxItemHeight = defaultItemHeight;
 const defaultAggrHeight = 40;
 const paddingBottom = defaultItemHeight + 5;
 
@@ -47,6 +48,13 @@ function spacefillingItemHeight(data: (IGroupData | IGroupItem)[], availableHeig
     return {
       height: minItemHeight,
       violation: `Not possible to fit all rows on the screen. Set filters or aggregate groups to make it fit again.`
+    };
+  }
+  // clamp to max height
+  if (height > maxItemHeight) {
+    return {
+      height: maxItemHeight,
+      violation: ``
     };
   }
   return {height, violation: ''};
