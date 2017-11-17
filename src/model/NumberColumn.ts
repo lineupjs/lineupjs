@@ -308,7 +308,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   dump(toDescRef: (desc: any) => any) {
     const r = super.dump(toDescRef);
     r.map = this.mapping.dump();
-    r.filter = this.currentFilter;
+    r.filter = isSameFilter(this.currentFilter, noNumberFilter()) ? null : this.currentFilter;
     r.missingValue = this.missingValue;
     if (this.currentStratifyThresholds) {
       r.stratifyThreshholds = this.currentStratifyThresholds;
@@ -324,7 +324,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       this.mapping = new ScaleMappingFunction(dump.domain, 'linear', dump.range || [0, 1]);
     }
     if (dump.filter) {
-      this.currentFilter = dump.filter;
+      this.currentFilter = restoreFilter(dump.filter);
     }
     if (dump.stratifyThreshholds) {
       this.currentStratifyThresholds = dump.stratifyThresholds;
@@ -463,7 +463,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
   }
 
   setFilter(value: INumberFilter = {min: -Infinity, max: +Infinity, filterMissing: false}) {
-    if (similar(this.currentFilter.min, value.min, 0.001) && similar(this.currentFilter.max, value.max, 0.001) && this.currentFilter.filterMissing === value.filterMissing) {
+    if (isSameFilter(value, this.currentFilter)) {
       return;
     }
     const bak = this.getFilter();
@@ -528,5 +528,17 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
           color: 'gray'
         };
     }
+  }
+}
+
+function isSameFilter(a: INumberFilter, b: INumberFilter) {
+  return similar(a.min, b.min, 0.001) && similar(a.max, b.max, 0.001) && a.filterMissing === b.filterMissing;
+}
+
+function restoreFilter(v: INumberFilter): INumberFilter {
+  return {
+    min: v.min !== null && isFinite(v.min)? v.min : -Infinity,
+    max: v.max !== null && isFinite(v.max)? v.max : +Infinity,
+    filterMissing: v.filterMissing
   }
 }
