@@ -1,4 +1,3 @@
-import NumbersColumn from '../model/NumbersColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import {attr, forEachChild} from '../utils';
 import Column from '../model/Column';
