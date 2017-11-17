@@ -540,5 +540,5 @@ function restoreFilter(v: INumberFilter): INumberFilter {
     min: v.min !== null && isFinite(v.min)? v.min : -Infinity,
     max: v.max !== null && isFinite(v.max)? v.max : +Infinity,
     filterMissing: v.filterMissing
-  }
+  };
 }
