@@ -47,10 +47,11 @@
   }
 }
 
-[data-meta~=last] [data-renderer=aggregate] {
+[data-meta=last] [data-renderer=aggregate] {
   @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, false, true);
 }
 
+[data-meta='first last'] [data-renderer=aggregate],
 [data-agg=group] [data-renderer=aggregate] {
   padding-right: $lu_aggregate_square_bracket_width;
   cursor: pointer;
