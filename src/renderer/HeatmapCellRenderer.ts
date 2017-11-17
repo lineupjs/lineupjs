@@ -8,6 +8,7 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3';
 import ICellRendererFactory from './ICellRendererFactory';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {isNumbersColumn} from '../model/NumbersColumn';
 
 export function toHeatMapColor(d: any, index: number, col: INumberColumn & Column) {
   let v = col.getNumber(d, index);
@@ -24,7 +25,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
   readonly title = 'Brightness';
 
   canRender(col: Column, isGroup: boolean) {
-    return isNumberColumn(col) && !isGroup;
+    return isNumberColumn(col) && !isGroup && !isNumbersColumn(col);
   }
 
   createDOM(col: INumberColumn & Column): IDOMCellRenderer {

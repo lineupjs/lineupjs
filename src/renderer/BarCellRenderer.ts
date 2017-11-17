@@ -9,6 +9,7 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
+import {isNumbersColumn} from '../model/NumbersColumn';
 
 
 /**
@@ -33,7 +34,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
   }
 
   canRender(col: Column, isGroup: boolean) {
-    return isNumberColumn(col) && !isGroup;
+    return isNumberColumn(col) && !isGroup && !isNumbersColumn(col);
   }
 
   createDOM(col: INumberColumn & Column): IDOMCellRenderer {

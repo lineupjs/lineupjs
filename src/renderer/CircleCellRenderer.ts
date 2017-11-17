@@ -6,6 +6,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {isNumbersColumn} from '../model/NumbersColumn';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
   readonly title = 'Proportional Symbol';
@@ -15,7 +16,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
   }
 
   canRender(col: Column, isGroup: boolean) {
-    return isNumberColumn(col) && !isGroup;
+    return isNumberColumn(col) && !isGroup && !isNumbersColumn(col);
   }
 
   createDOM(col: INumberColumn & Column) {
