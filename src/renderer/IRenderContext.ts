@@ -1,4 +1,9 @@
 import Column from '../model/Column';
+import {IDataRow} from '../provider/ADataProvider';
+
+export interface IImposer {
+  color?(row: IDataRow|null): string|null;
+}
 
 /**
  * context for rendering, wrapped as an object for easy extensibility
@@ -8,13 +13,13 @@ interface IRenderContext<T, T2> {
    * render a column
    * @param col
    */
-  renderer(col: Column): T;
+  renderer(col: Column, imposer?: IImposer): T;
 
   /**
    * render a column
    * @param col
    */
-  groupRenderer(col: Column): T2;
+  groupRenderer(col: Column, imposer?: IImposer): T2;
 
   /**
    * prefix used for all generated id names

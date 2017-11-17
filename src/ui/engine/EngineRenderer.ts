@@ -19,6 +19,7 @@ import SlopeGraph from './SlopeGraph';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IFilterDialog} from '../../dialogs/AFilterDialog';
 import ICellRendererFactory from '../../renderer/ICellRendererFactory';
+import {IImposer} from '../../renderer/IRenderContext';
 
 export interface IEngineRendererOptions {
   header: Partial<{
@@ -85,13 +86,13 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
         }
         return r;
       },
-      renderer: (col: Column) => createDOM(col, this.options.renderers, this.ctx),
-      groupRenderer: (col: Column) => createDOMGroup(col, this.options.renderers, this.ctx),
+      renderer: (col: Column, imposer?: IImposer) => createDOM(col, this.options.renderers, this.ctx, imposer),
+      groupRenderer: (col: Column, imposer?: IImposer) => createDOMGroup(col, this.options.renderers, this.ctx, imposer),
       idPrefix: this.options.idPrefix,
       totalNumberOfRows: 0,
-      createRenderer: (col: Column) => {
-        const single = createDOM(col, this.options.renderers, this.ctx);
-        const group = createDOMGroup(col, this.options.renderers, this.ctx);
+      createRenderer: (col: Column, imposer?: IImposer) => {
+        const single = createDOM(col, this.options.renderers, this.ctx, imposer);
+        const group = createDOMGroup(col, this.options.renderers, this.ctx, imposer);
         return {single, group, singleId: col.getRendererType(), groupId: col.getGroupRenderer()};
       },
       getPossibleRenderer: (col: Column) => ({item: possibleRenderer(col, this.options.renderers), group: possibleGroupRenderer(col, this.options.renderers)}),

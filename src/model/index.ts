@@ -25,6 +25,7 @@ import BoxPlotColumn from './BoxPlotColumn';
 import AggregateGroupColumn from './AggregateGroupColumn';
 import HierarchyColumn from './HierarchyColumn';
 import DateColumn from './DateColumn';
+import ImpositionCompositeColumn from './ImpositionCompositeColumn';
 
 export {default as Column, IColumnDesc} from './Column';
 export {default as CompositeColumn} from './CompositeColumn';
@@ -42,6 +43,7 @@ export {createDesc as createNestedDesc} from './NestedColumn';
 export {createDesc as createStackDesc} from './StackColumn';
 export {createDesc as createActionDesc} from './ActionColumn';
 export {createDesc as createAggregateDesc} from './AggregateGroupColumn';
+export {createDesc as createImpositionDesc} from './ImpositionCompositeColumn';
 
 /**
  * defines a new column type
@@ -97,6 +99,7 @@ export function models() {
     nested: NestedColumn,
     boxplot: BoxPlotColumn,
     aggregate: AggregateGroupColumn,
-    hierarchy: HierarchyColumn
+    hierarchy: HierarchyColumn,
+    imposition: ImpositionCompositeColumn
   };
 }

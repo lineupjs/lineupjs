@@ -3,7 +3,7 @@ import {default as BoxPlotColumn, isBoxPlotColumn} from '../model/BoxPlotColumn'
 import Column from '../model/Column';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {ICanvasRenderContext} from './RendererContexts';
+import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {
   IBoxPlotColumn, IBoxPlotData, INumberColumn, INumbersColumn, isNumbersColumn,
@@ -13,6 +13,7 @@ import {IGroup} from '../model/Group';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isNumberColumn} from '../model';
 import NumberColumn from '../model/NumberColumn';
+import {colorOf, IImposer} from './impose';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v === null) {
@@ -29,7 +30,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return (isBoxPlotColumn(col) && !isGroup || (isNumberColumn(col) && isGroup));
   }
 
-  createDOM(col: IBoxPlotColumn & Column): IDOMCellRenderer {
+  createDOM(col: IBoxPlotColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const sortedByMe = col.isSortedByMe().asc !== undefined;
     return {
@@ -43,12 +44,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           return;
         }
         const label = col.getRawBoxPlotData(d.v, d.dataIndex)!;
-        renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', col.color);
+        renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       }
     };
   }
 
-  createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
+  createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext, imposer?: IImposer): ICanvasCellRenderer {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const topPadding = context.option('rowBarPadding', 1);
     const sortedByMe = col.isSortedByMe().asc !== undefined;
@@ -75,7 +76,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         max: data.max * width,
         outlier: data.outlier ? data.outlier.map((d) => d * width): undefined
       };
-      renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', col.color, rowHeight, topPadding, context);
+      renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', colorOf(col, d, imposer), rowHeight, topPadding, context);
     };
   }
 
@@ -85,7 +86,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return new LazyBoxPlotData(vs);
   }
 
-  createGroupDOM(col: INumberColumn & Column): IDOMGroupRenderer {
+  createGroupDOM(col: INumberColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMGroupRenderer {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return {
       template: `<div title="">
@@ -93,12 +94,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
                  </div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const box = isNumbersColumn(col) ? BoxplotCellRenderer.createAggregatedBoxPlot(col, rows) : new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
-        renderDOMBoxPlot(n, box, box, sort, col.color);
+        renderDOMBoxPlot(n, box, box, sort, colorOf(col, null, imposer));
       }
     };
   }
 
-  createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+  createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer): ICanvasGroupRenderer {
     const topPadding = context.option('rowBarGroupPadding', 1);
     const width = context.colWidth(col);
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
@@ -114,7 +115,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         max: data.max * width,
         outlier: data.outlier ? data.outlier.map((d) => d * width): undefined
       };
-      renderBoxPlot(ctx, scaled, sort, col.color, height, topPadding, context);
+      renderBoxPlot(ctx, scaled, sort, colorOf(col, null, imposer), height, topPadding, context);
     };
   }
 }

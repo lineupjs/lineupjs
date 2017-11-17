@@ -12,6 +12,8 @@ import NumbersColumn from '../model/NumbersColumn';
 import {isMissingValue} from '../model/missing';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {IImposer} from './IRenderContext';
+import {colorOf} from './impose';
 
 
 /**
@@ -24,7 +26,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
     return (isNumberColumn(col) && isGroup) || (isNumbersColumn(col) && !isGroup);
   }
 
-  private static getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn & Column) {
+  private static getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn & Column, imposer?: IImposer) {
     const guessedBins = getNumberOfBins(totalNumberOfRows);
     let bins = '';
     for (let i = 0; i < guessedBins; ++i) {
@@ -45,13 +47,14 @@ export default class HistogramRenderer implements ICellRendererFactory {
         const {x, dx, y} = hist[i];
         d.style.height = `${Math.round(y * 100 / max)}%`;
         d.title = `${DEFAULT_FORMATTER(x)} - ${DEFAULT_FORMATTER(x + dx)} (${y})`;
+        d.style.backgroundColor = colorOf(col, null, imposer);
       });
     };
     return {template: `<div>${bins}</div>`, render};
   }
 
-  createDOM(col: NumbersColumn, context: IDOMRenderContext): IDOMCellRenderer {
-    const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col);
+  createDOM(col: NumbersColumn, context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
+    const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
     return {
       template,
       update: (n: HTMLElement, row: IDataRow, _i: number, _group: IGroup, globalHist: IStatistics | null) => {
@@ -63,8 +66,8 @@ export default class HistogramRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupDOM(col: INumberColumn & Column, context: IDOMRenderContext): IDOMGroupRenderer {
-    const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col);
+  createGroupDOM(col: INumberColumn & Column, context: IDOMRenderContext, imposer?: IImposer): IDOMGroupRenderer {
+    const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
     return {
       template,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: IStatistics | null) => {
@@ -73,7 +76,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
     };
   }
 
-  private static getHistCanvasRenderer(col: INumberColumn & Column, context: ICanvasRenderContext) {
+  private static getHistCanvasRenderer(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer) {
     const guessedBins = getNumberOfBins(context.totalNumberOfRows);
     const padding = context.option('rowBarPadding', 1);
 
@@ -82,7 +85,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
       const widthPerBin = context.colWidth(col) / bins;
       const total = height - padding;
 
-      ctx.fillStyle = context.option('style.histogram', 'lightgray');
+      ctx.fillStyle = colorOf(col, null, imposer) || context.option('style.histogram', 'lightgray');
       hist.forEach(({y}, i) => {
         const height = (y / max) * total;
         ctx.fillRect(i * widthPerBin + padding, (total - height) + padding, widthPerBin - 2 * padding, height);
@@ -105,8 +108,8 @@ export default class HistogramRenderer implements ICellRendererFactory {
     return {bins, max, hist: stats.hist};
   }
 
-  createCanvas(col: NumbersColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const r = HistogramRenderer.getHistCanvasRenderer(col, context);
+  createCanvas(col: NumbersColumn, context: ICanvasRenderContext, imposer?: IImposer): ICanvasCellRenderer {
+    const r = HistogramRenderer.getHistCanvasRenderer(col, context, imposer);
     return (ctx: CanvasRenderingContext2D, row: IDataRow, i: number, _dx: number, _dy: number, _group: IGroup, globalHist: IStatistics | null) => {
       if (renderMissingCanvas(ctx, col, row, context.rowHeight(i))) {
           return;
@@ -116,8 +119,8 @@ export default class HistogramRenderer implements ICellRendererFactory {
   }
 
 
-  createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const r = HistogramRenderer.getHistCanvasRenderer(col, context);
+  createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer): ICanvasGroupRenderer {
+    const r = HistogramRenderer.getHistCanvasRenderer(col, context, imposer);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], _dx: number, _dy: number, globalHist: IStatistics | null) => {
       return r(ctx, context.groupHeight(group), rows, globalHist);
     };

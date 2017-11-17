@@ -1,6 +1,6 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import StackColumn from '../model/StackColumn';
-import IRenderContext from './IRenderContext';
+import IRenderContext, {IImposer} from './IRenderContext';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
@@ -18,7 +18,7 @@ export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;
 }
 
-export function createData(col: {children: Column[]} & Column, context: IRenderContext<any, any>, nestingPossible: boolean) {
+export function createData(col: {children: Column[]} & Column, context: IRenderContext<any, any>, nestingPossible: boolean, imposer?: IImposer) {
   const stacked = nestingPossible && context.option('stacked', true);
   const padding = context.option('columnPadding', 0);
   let offset = 0;
@@ -31,8 +31,8 @@ export function createData(col: {children: Column[]} & Column, context: IRenderC
       column: d,
       shift,
       width,
-      renderer: context.renderer(d),
-      groupRenderer: context.groupRenderer(d)
+      renderer: context.renderer(d, imposer),
+      groupRenderer: context.groupRenderer(d, imposer)
     };
   });
   return {cols, stacked, padding};
@@ -53,8 +53,8 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     return isMultiLevelColumn(col);
   }
 
-  createDOM(col: IMultiLevelColumn & Column, context: IDOMRenderContext): IDOMCellRenderer {
-    const {cols, stacked, padding} = createData(col, context, this.nestingPossible);
+  createDOM(col: IMultiLevelColumn & Column, context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
+    const {cols, stacked, padding} = createData(col, context, this.nestingPossible, imposer);
     const useGrid = context.option('useGridLayout', false);
     return {
       template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)} ${useGrid ? gridClass(col): ''}${useGrid && !stacked ? ' lu-grid-space': ''}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
@@ -89,8 +89,8 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
   }
 
 
-  createCanvas(col: StackColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const {cols, stacked} = createData(col, context, this.nestingPossible);
+  createCanvas(col: StackColumn, context: ICanvasRenderContext, imposer?: IImposer): ICanvasCellRenderer {
+    const {cols, stacked} = createData(col, context, this.nestingPossible, imposer);
     return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, dx: number, dy: number, group: IGroup) => {
       if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
@@ -108,12 +108,12 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     };
   }
 
-  createGroupDOM(col: IMultiLevelColumn & Column, context: IDOMRenderContext) {
+  createGroupDOM(col: IMultiLevelColumn & Column, context: IDOMRenderContext, imposer?: IImposer) {
     if (this.nestingPossible && isNumberColumn(col)) {
-      return super.createGroupDOM(col, context);
+      return super.createGroupDOM(col, context, imposer);
     }
 
-    const {cols, padding} = createData(col, context, false);
+    const {cols, padding} = createData(col, context, false, imposer);
     const useGrid = context.option('useGridLayout', false);
     return {
       template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)} ${useGrid ? gridClass(col): ''}${useGrid ? ' lu-grid-space': ''}'>${cols.map((d) => d.groupRenderer.template).join('')}</div>`,
@@ -139,11 +139,11 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     };
   }
 
-  createGroupCanvas(col: IMultiLevelColumn & Column, context: ICanvasRenderContext) {
+  createGroupCanvas(col: IMultiLevelColumn & Column, context: ICanvasRenderContext, imposer?: IImposer) {
     if (this.nestingPossible && isNumberColumn(col)) {
-      return super.createGroupCanvas(col, context);
+      return super.createGroupCanvas(col, context, imposer);
     }
-    const {cols} = createData(col, context, false);
+    const {cols} = createData(col, context, false, imposer);
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], dx: number, dy: number) => {
       cols.forEach((col) => {
         const shift = col.shift;

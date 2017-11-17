@@ -32,6 +32,7 @@ import ImageCellRenderer from './ImageCellRenderer';
 import BooleanCellRenderer from './BooleanCellRenderer';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
 import DotCellRenderer from './DotCellRenderer';
+import {IImposer} from './IRenderContext';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -80,24 +81,24 @@ function chooseGroupRenderer(col: Column, renderers: { [key: string]: ICellRende
   return r || defaultCellRenderer;
 }
 
-export function createDOM(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext) {
+export function createDOM(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext, imposer?: IImposer) {
   const r = chooseRenderer(col, renderers);
-  return (r.createDOM ? r.createDOM.bind(r) : defaultCellRenderer.createDOM.bind(defaultCellRenderer))(col, context);
+  return (r.createDOM ? r.createDOM.bind(r) : defaultCellRenderer.createDOM.bind(defaultCellRenderer))(col, context, imposer);
 }
 
-export function createCanvas(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext) {
+export function createCanvas(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext, imposer?: IImposer) {
   const r = chooseRenderer(col, renderers);
-  return (r.createCanvas ? r.createCanvas.bind(r) : defaultCellRenderer.createCanvas.bind(defaultCellRenderer))(col, context);
+  return (r.createCanvas ? r.createCanvas.bind(r) : defaultCellRenderer.createCanvas.bind(defaultCellRenderer))(col, context, imposer);
 }
 
-export function createDOMGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext) {
+export function createDOMGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext, imposer?: IImposer) {
   const r = chooseGroupRenderer(col, renderers);
-  return (r.createGroupDOM ? r.createGroupDOM.bind(r) : defaultCellRenderer.createGroupDOM.bind(defaultCellRenderer))(col, context);
+  return (r.createGroupDOM ? r.createGroupDOM.bind(r) : defaultCellRenderer.createGroupDOM.bind(defaultCellRenderer))(col, context, imposer);
 }
 
-export function createCanvasGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext) {
+export function createCanvasGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext, imposer?: IImposer) {
   const r = chooseGroupRenderer(col, renderers);
-  return (r.createGroupCanvas ? r.createGroupCanvas.bind(r) : defaultCellRenderer.createGroupCanvas.bind(defaultCellRenderer))(col, context);
+  return (r.createGroupCanvas ? r.createGroupCanvas.bind(r) : defaultCellRenderer.createGroupCanvas.bind(defaultCellRenderer))(col, context, imposer);
 }
 
 export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, isGroup: boolean = false): {type: string, label: string}[] {

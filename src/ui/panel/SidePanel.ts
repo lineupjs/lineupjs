@@ -10,7 +10,7 @@ import SidePanelEntry from './SidePanelEntry';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../engine/interfaces';
 import SearchBox, {ISearchBoxOptions} from './SearchBox';
-import {createStackDesc, createScriptDesc, createNestedDesc, createMaxDesc, createMeanDesc, createMinDesc} from '../../model';
+import {createStackDesc, createScriptDesc, createNestedDesc, createMaxDesc, createMeanDesc, createMinDesc, createImpositionDesc} from '../../model';
 
 export interface ISidePanelOptions extends Partial<ISearchBoxOptions<SidePanelEntry>> {
   additionalDescs: IColumnDesc[];
@@ -27,6 +27,7 @@ export default class SidePanel {
       createMaxDesc(),
       createMinDesc(),
       createMeanDesc(),
+      createImpositionDesc()
     ],
     chooser: true,
     placeholder: 'Add Column...'
@@ -274,6 +275,7 @@ export default class SidePanel {
         case 'mean':
         case 'script':
         case 'nested':
+        case 'imposition':
           return order[4];
         default:
           return order[5];

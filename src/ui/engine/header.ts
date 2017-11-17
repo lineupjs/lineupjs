@@ -33,6 +33,7 @@ import {findTypeLike} from '../../model/utils';
 import SelectionColumn from '../../model/SelectionColumn';
 import CompositeChildrenDialog from '../../dialogs/CompositeChildrenDialog';
 import StringColumn from '../../model/StringColumn';
+import ImpositionCompositeColumn from '../../model/ImpositionCompositeColumn';
 
 
 /**
@@ -556,7 +557,7 @@ export function mergeDropAble(node: HTMLElement, column: Column, ctx: IRankingHe
     return;
   }
 
-  const justNumbers = (d: Column) => (d instanceof CompositeColumn && d.canJustAddNumbers) || (isNumberColumn(d) && d.parent instanceof Ranking);
+  const justNumbers = (d: Column) => (d instanceof CompositeColumn && d.canJustAddNumbers) || (isNumberColumn(d) && d.parent instanceof Ranking && !(d instanceof ImpositionCompositeColumn));
   const dropOrMerge = (justNumbers: boolean) => {
     return (result: IDropResult) => {
       const col: Column | null = resolveDrop(result, justNumbers);

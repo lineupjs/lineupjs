@@ -5,10 +5,10 @@ import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr, forEachChild} from '../utils';
 import {renderMissingDOM} from './missing';
-import CompositeNumberColumn from '../model/CompositeNumberColumn';
-import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
 import {IGroup} from '../model/Group';
 import {isMissingValue} from '../model/missing';
+import {colorOf, IImposer} from './impose';
+import {IDOMRenderContext} from './RendererContexts';
 
 
 /**
@@ -16,13 +16,6 @@ import {isMissingValue} from '../model/missing';
  */
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title = 'Dot(s)';
-
-  private colorOf(d: any, i: number, col: Column) {
-    if (col instanceof CompositeNumberColumn || col instanceof CategoricalNumberColumn) {
-      return col.getColor(d, i);
-    }
-    return col.color;
-  }
 
   canRender(col: Column) {
     return isNumberColumn(col);
@@ -60,7 +53,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {template: `<div>${tmp}</div>`, render};
   }
 
-  createDOM(col: INumberColumn & Column): IDOMCellRenderer {
+  createDOM(col: INumberColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
     const {template, render} = DotCellRenderer.getDOMRenderer(col);
     return {
       template,
@@ -68,7 +61,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, row)) {
           return;
         }
-        const color = this.colorOf(row.v, row.dataIndex, col);
+        const color = colorOf(col, row, imposer);
         const v = col.getValue(row.v, row.dataIndex);
         if (!isNumbersColumn(col)) {
           return render(n, [v], [col.getLabel(row.v, row.dataIndex)], [color]);
@@ -79,13 +72,13 @@ export default class DotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  createGroupDOM(col: INumberColumn & Column): IDOMGroupRenderer {
+  createGroupDOM(col: INumberColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMGroupRenderer {
     const {template, render} = DotCellRenderer.getDOMRenderer(col);
     return {
       template,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
         const vs = rows.map((r) => col.getValue(r.v, r.dataIndex));
-        const colors = rows.map((r) => this.colorOf(r.v, r.dataIndex, col));
+        const colors = rows.map((r) => colorOf(col, r, imposer));
 
         if (!isNumbersColumn(col)) {
           return render(n, vs, rows.map((r) => col.getLabel(r.v, r.dataIndex)), colors);
