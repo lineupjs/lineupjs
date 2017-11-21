@@ -280,7 +280,7 @@ export function deriveHierarchy(categories: (ICategory&{parent: string|null})[])
   const root = lookup.get('')!;
   console.assert(root !== undefined, 'hierarchy with no root');
   if (root.children.length === 1) {
-    return root.children[1];
+    return root.children[0];
   }
   return root;
 }
