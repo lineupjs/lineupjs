@@ -105,6 +105,10 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.initProvider(data);
   }
 
+  get style() {
+    return this.table.style;
+  }
+
   zoomOut() {
     this.zoomFactor = Math.max(this.zoomFactor - 0.1, 0.5);
     this.updateZoomFactor();
