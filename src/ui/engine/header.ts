@@ -189,6 +189,18 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
     addIcon('Rename + Color &hellip;', RenameDialog);
   }
 
+  if (!isSupportType(col.desc) || col instanceof SelectionColumn) {
+    addIcon('Sort').onclick = (evt) => {
+      evt.stopPropagation();
+      col.toggleMySorting();
+    };
+  }
+
+  if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
+    //Numbers Sort
+    addIcon('Sort by &hellip;', SortDialog);
+  }
+
   if (col instanceof StringColumn) {
     addIcon('Sort Group by Name').onclick = (evt) => {
       evt.stopPropagation();
@@ -198,11 +210,6 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
 
   if (col instanceof NumberColumn) {
     addIcon('Sort Group by &hellip;', SortDialog);
-  }
-
-  if (col instanceof NumbersColumn || col instanceof BoxPlotColumn) {
-    //Numbers Sort
-    addIcon('Sort by &hellip;', SortDialog);
   }
 
   //stratify
