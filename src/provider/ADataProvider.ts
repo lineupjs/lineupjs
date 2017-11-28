@@ -768,9 +768,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    * returns a promise containing the selected rows
    * @return {Promise<any[]>}
    */
-  selectedRows(): Promise<IDataRow[]> | IDataRow[] {
+  selectedRows(): Promise<any[]> | any[] {
     if (this.selection.size === 0) {
-      return Promise.resolve([]);
+      return [];
     }
     return this.view(this.getSelection());
   }
