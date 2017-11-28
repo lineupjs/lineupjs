@@ -70,7 +70,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   getColor(row: any, index: number) {
     const flagged = this.getValue(row, index);
-    return flagged ? 'green' : 'red';
+    return flagged ? this.categoryColors[0]: this.categoryColors[1];
   }
 
   getLabel(row: any, index: number) {
