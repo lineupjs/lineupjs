@@ -82,7 +82,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   private static createAggregatedBoxPlot(col: INumbersColumn & Column, rows: IDataRow[], raw = false): IBoxPlotData {
     // concat all values
-    const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers : col.getNumber)(r.v, r.dataIndex)));
+    const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers(r.v, r.dataIndex) : col.getNumber(r.v, r.dataIndex))));
     return new LazyBoxPlotData(vs);
   }
 
