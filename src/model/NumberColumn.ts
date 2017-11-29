@@ -501,8 +501,14 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
     if (this.currentStratifyThresholds.length === 0) {
       return super.group(row, index);
     }
+    if (this.isMissing(row, index)) {
+      return {
+        name: 'missing values',
+        color: 'gray'
+      };
+    }
     const value = this.getRawNumber(row, index);
-    const treshholdIndex = this.currentStratifyThresholds.findIndex((t) => t <= value);
+    const treshholdIndex = this.currentStratifyThresholds.findIndex((t) => value <= t);
     // group by thresholds / bins
     switch (treshholdIndex) {
       case -1:
