@@ -12,6 +12,7 @@ import {
   default as INumberColumn, INumberDesc, numberCompare, groupCompare,
   SortMethod, ADVANCED_SORT_METHOD, INumberFilter, noNumberFilter, isSameFilter, restoreFilter
 } from './INumberColumn';
+import {missingGroup} from './Group';
 
 export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 /**
@@ -502,10 +503,7 @@ export default class NumberColumn extends ValueColumn<number> implements INumber
       return super.group(row, index);
     }
     if (this.isMissing(row, index)) {
-      return {
-        name: 'missing values',
-        color: 'gray'
-      };
+      return missingGroup;
     }
     const value = this.getRawNumber(row, index);
     const treshholdIndex = this.currentStratifyThresholds.findIndex((t) => value <= t);

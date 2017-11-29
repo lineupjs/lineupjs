@@ -7,6 +7,7 @@ import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
 import {FIRST_IS_NAN} from './missing';
+import {missingGroup} from './Group';
 
 export interface ICategoricalColumn {
   readonly categories: string[];
@@ -336,6 +337,9 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
   }
 
   group(row: any, index: number) {
+    if (this.isMissing(row, index)) {
+      return missingGroup;
+    }
     const name = this.getValue(row, index);
     if (!name) {
       return super.group(row, index);

@@ -7,6 +7,7 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
 import {ICategoricalColumn, ICategory} from './CategoricalColumn';
 import {FIRST_IS_NAN} from './missing';
+import {missingGroup} from './Group';
 
 export interface ICategoryNode extends ICategory {
   readonly children: ICategoryNode[];
@@ -210,6 +211,9 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   }
 
   group(row: any, index: number) {
+    if (this.isMissing(row, index)) {
+      return missingGroup;
+    }
     const base = this.resolveCategory(row, index);
     if (!base) {
       return super.group(row, index);
