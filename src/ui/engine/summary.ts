@@ -7,7 +7,7 @@ import NumberColumn, {INumberColumn, isMapAbleColumn} from '../../model/NumberCo
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
-import {filterMissingNumberMarkup} from '../../dialogs/AFilterDialog';
+import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../../dialogs/AFilterDialog';
 import {stringFilter} from '../../dialogs/StringFilterDialog';
 import {behavior, DragEvent, event as d3event, select, selectAll} from 'd3';
 import {round} from '../../utils';
@@ -118,8 +118,11 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
     filterMissing = <HTMLInputElement>node.querySelector('input');
   } else {
     filterMissing = <HTMLInputElement>node.querySelector('input');
+    updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, stats.missing);
+    filterMissing = <HTMLInputElement>node.querySelector('input');
     filterMissing.checked = start !== null && start.filterMissing;
   }
+
 
   filterMissing.onchange = () => {
     // toggle filter
@@ -174,6 +177,9 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
       bin.title = `Bin ${i}: ${y}`;
       bin.dataset.x = String(x);
     });
+
+    const filterMissingBefore = <HTMLInputElement>node.querySelector('input');
+    updateFilterMissingNumberMarkup(<HTMLElement>filterMissingBefore.parentElement, stats.missing);
   } else {
     node.dataset.summary = 'slider-hist';
     stats.hist.forEach(({x, y}, i) => {
