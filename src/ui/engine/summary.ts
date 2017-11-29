@@ -128,7 +128,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
     // toggle filter
     const old = ccol.getFilter();
     if (old === null) {
-      ccol.setFilter({filterMissing: filterMissing!.checked, filter: []});
+      ccol.setFilter({filterMissing: filterMissing!.checked, filter: cats});
     } else {
       ccol.setFilter({filterMissing: filterMissing!.checked, filter: old.filter});
     }
