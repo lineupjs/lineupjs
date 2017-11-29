@@ -80,9 +80,9 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static createAggregatedBoxPlot(col: INumbersColumn & Column, rows: IDataRow[]): IBoxPlotData {
+  private static createAggregatedBoxPlot(col: INumbersColumn & Column, rows: IDataRow[], raw = false): IBoxPlotData {
     // concat all values
-    const vs = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r.v, r.dataIndex)));
+    const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers : col.getNumber)(r.v, r.dataIndex)));
     return new LazyBoxPlotData(vs);
   }
 
@@ -93,8 +93,20 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
                     <div><div></div><div></div></div>
                  </div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const box = isNumbersColumn(col) ? BoxplotCellRenderer.createAggregatedBoxPlot(col, rows) : new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
-        renderDOMBoxPlot(n, box, box, sort, colorOf(col, null, imposer));
+        if (rows.every((row) => col.isMissing(row.v, row.dataIndex))) {
+          renderMissingDOM(n, col, rows[0]); // doesn't matter since all
+          return;
+        }
+        let box: IBoxPlotData, label: IBoxPlotData;
+
+        if (isNumbersColumn(col)) {
+          box = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows);
+          label = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows, true);
+        } else {
+          box = new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
+          label = new LazyBoxPlotData(rows.map((row) => col.getRawNumber(row.v, row.dataIndex)));
+        }
+        renderDOMBoxPlot(n, box, label, sort, colorOf(col, null, imposer));
       }
     };
   }
@@ -105,15 +117,26 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group);
-      const data = isNumbersColumn(col) ? BoxplotCellRenderer.createAggregatedBoxPlot(col, rows) : new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
+       if (rows.every((row) => col.isMissing(row.v, row.dataIndex))) {
+        renderMissingCanvas(ctx, col, rows[0], height); // doesn't matter since all
+        return;
+      }
+      let box: IBoxPlotData, label: IBoxPlotData;
 
+      if (isNumbersColumn(col)) {
+        box = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows);
+        label = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows, true);
+      } else {
+        box = new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
+        label = new LazyBoxPlotData(rows.map((row) => col.getRawNumber(row.v, row.dataIndex)));
+      }
       const scaled = {
-        min: data.min * width,
-        median: data.median * width,
-        q1: data.q1 * width,
-        q3: data.q3 * width,
-        max: data.max * width,
-        outlier: data.outlier ? data.outlier.map((d) => d * width): undefined
+        min: box.min * width,
+        median: box.median * width,
+        q1: box.q1 * width,
+        q3: box.q3 * width,
+        max: box.max * width,
+        outlier: box.outlier ? box.outlier.map((d) => d * width): undefined
       };
       renderBoxPlot(ctx, scaled, sort, colorOf(col, null, imposer), height, topPadding, context);
     };
