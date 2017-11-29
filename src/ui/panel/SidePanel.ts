@@ -170,22 +170,22 @@ export default class SidePanel {
       return [];
     }
     const hierarchy = ranking.getGroupCriteria();
-    const used = new Set(hierarchy);
+    const used = new Set(hierarchy.map((d) => d.desc));
 
     ranking.getSortCriterias().forEach(({col}) => {
-      if (used.has(col)) {
+      if (used.has(col.desc)) {
         return;
       }
       hierarchy.push(col);
-      used.add(col);
+      used.add(col.desc);
     });
     // add rest in ranking order
     ranking.flatColumns.forEach((c) => {
-      if (used.has(c)) {
+      if (used.has(c.desc)) {
         return;
       }
       hierarchy.push(c);
-      used.add(c);
+      used.add(c.desc);
     });
     return hierarchy;
   }
