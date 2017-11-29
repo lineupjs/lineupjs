@@ -118,7 +118,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     return {
       template: `<div class='${col.desc.type} component${context.option('stackLevel', 0)} ${useGrid ? gridClass(col): ''}${useGrid ? ' lu-grid-space': ''}'>${cols.map((d) => d.groupRenderer.template).join('')}</div>`,
       update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
-        matchColumns(n, cols, 'detail', 'html');
+        matchColumns(n, cols, 'group', 'html');
 
         const children = <HTMLElement[]>Array.from(n.children);
         const total = col.getWidth();
