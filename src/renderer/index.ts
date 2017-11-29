@@ -33,6 +33,7 @@ import BooleanCellRenderer from './BooleanCellRenderer';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
 import DotCellRenderer from './DotCellRenderer';
 import {IImposer} from './IRenderContext';
+import CategoricalStackedDistributionlRenderer from './CategoricalStackedDistributionlRenderer';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -55,6 +56,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   categorical: new CategoricalCellRenderer(),
   catcolor: new CategoricalColorCellRenderer(),
   catcolorshifted: new CategoricalColorShiftedCellRenderer(),
+  catdistributionbar: new CategoricalStackedDistributionlRenderer(),
   numbers: new NumbersCellRenderer(),
   sparkline: new SparklineCellRenderer(),
   verticalbar: new VerticalBarCellRenderer(),
