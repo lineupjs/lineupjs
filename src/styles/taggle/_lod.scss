@@ -38,6 +38,16 @@
       }
     }
 
+    [data-renderer=group] {
+      overflow: visible !important;
+
+      > * {
+        position: absolute;
+        left: 0;
+        right: 0;
+      }
+    }
+
     [data-renderer=number] > * {
       top: 0;
       bottom: 0;

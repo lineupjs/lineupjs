@@ -22,18 +22,18 @@ export default class GroupCellRenderer implements ICellRendererFactory {
 
   createDOM(): IDOMCellRenderer {
     return {
-      template: `<div></div>`,
+      template: `<div><div></div></div>`,
       update(node: HTMLElement, _row: IDataRow, i: number, group: IGroup) {
-        node.innerText = i === 0 ? group.name : '';
+        (<HTMLElement>node.firstElementChild!).innerText = i === 0 ? group.name : '';
       }
     };
   }
 
   createGroupDOM(): IDOMGroupRenderer {
     return {
-      template: `<div></div>`,
+      template: `<div><div></div></div>`,
       update(node: HTMLElement, group: IGroup, rows: IDataRow[]) {
-        node.innerText = `${group.name} (${rows.length})`;
+        (<HTMLElement>node.firstElementChild!).innerText = `${group.name} (${rows.length})`;
       }
     };
   }
