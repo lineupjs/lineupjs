@@ -19,6 +19,7 @@ import WeightsEditDialog from '../../dialogs/WeightsEditDialog';
 import StackColumn from '../../model/StackColumn';
 import CutOffHierarchyDialog from '../../dialogs/CutOffHierarchyDialog';
 import SearchDialog from '../../dialogs/SearchDialog';
+import SortGroupDialog from '../../dialogs/SortGroupDialog';
 import HierarchyColumn from '../../model/HierarchyColumn';
 import {dragAble, dropAble, IDropResult} from './dnd';
 import NumberColumn from '../../model/NumberColumn';
@@ -34,6 +35,7 @@ import SelectionColumn from '../../model/SelectionColumn';
 import CompositeChildrenDialog from '../../dialogs/CompositeChildrenDialog';
 import StringColumn from '../../model/StringColumn';
 import ImpositionCompositeColumn from '../../model/ImpositionCompositeColumn';
+import GroupColumn from '../../model/GroupColumn';
 
 
 /**
@@ -154,6 +156,10 @@ export function createShortcutMenuItems(addIcon: IAddIcon, col: Column, ctx: IRa
     };
   }
 
+  if (col instanceof GroupColumn) {
+    addIcon('Sort Group by &hellip;', SortGroupDialog);
+  }
+
   //stratify
   if (isCategoricalColumn(col)) {
     addIcon('Stratify').onclick = (evt) => {
@@ -210,6 +216,10 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
 
   if (col instanceof NumberColumn) {
     addIcon('Sort Group by &hellip;', SortDialog);
+  }
+
+  if (col instanceof GroupColumn) {
+    addIcon('Sort Group by &hellip;', SortGroupDialog);
   }
 
   //stratify

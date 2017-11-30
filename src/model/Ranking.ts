@@ -14,7 +14,7 @@ export interface ISortCriteria {
 }
 
 export function isSupportType(col: IColumnDesc) {
-  return ['rank', 'selection', 'actions', 'aggregate'].indexOf(col.type) >= 0;
+  return ['rank', 'selection', 'actions', 'aggregate', 'group'].indexOf(col.type) >= 0;
 }
 
 /**
