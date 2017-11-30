@@ -22,7 +22,7 @@ export default class CategoricalStackedDistributionlRenderer implements ICellRen
   createGroupDOM(col: ICategoricalColumn & Column): IDOMGroupRenderer {
     const colors = col.categoryColors;
     const labels = col.categoryLabels;
-    const bins = col.categories.map((c, i) => `<div style="background-color: ${colors[i]}" title="${labels[i]}: 0" data-cat="${c}"></div>`).join('');
+    const bins = col.categories.map((c, i) => `<div style="background-color: ${colors[i]}" title="${labels[i]}: 0" data-cat="${c}">${labels[i]}</div>`).join('');
 
     return {
       template: `<div>${bins}<div title="Missing Values"></div></div>`,

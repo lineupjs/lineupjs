@@ -199,6 +199,20 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return mapToLabel(r);
   }
 
+  groupByMe(): boolean {
+    const r = this.findMyRanker();
+    if (!r) {
+      return false;
+    }
+    const wasGrouped = this.isGroupedBy() >= 0;
+    if (wasGrouped) {
+      return r.toggleGrouping(this);
+    }
+    // group and sort
+    r.toggleSorting(this);
+    return r.toggleGrouping(this);
+  }
+
   getValue(row: any, index: number) {
     const r = this.getValues(row, index);
     return r.length > 0 ? r[0] : null;
@@ -351,7 +365,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     const current = super.getGroupRenderer();
     if (current === this.desc.type && this.isGroupedBy() >= 0) {
       // still the default and the stratification criteria
-      return 'catcolorshifted';
+      return 'catdistributionbar';
     }
     return current;
   }

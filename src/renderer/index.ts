@@ -27,7 +27,6 @@ import RankCellRenderer from './RankCellRenderer';
 import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
 import HistogramRenderer from './HistogramRenderer';
-import CategoricalColorShiftedCellRenderer from './CategoricalColorShiftedCellRenderer';
 import ImageCellRenderer from './ImageCellRenderer';
 import BooleanCellRenderer from './BooleanCellRenderer';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
@@ -57,7 +56,6 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   nested: new MultiLevelCellRenderer(false),
   categorical: new CategoricalCellRenderer(),
   catcolor: new CategoricalColorCellRenderer(),
-  catcolorshifted: new CategoricalColorShiftedCellRenderer(),
   catdistributionbar: new CategoricalStackedDistributionlRenderer(),
   numbers: new NumbersCellRenderer(),
   sparkline: new SparklineCellRenderer(),

@@ -1,4 +1,14 @@
 
 [data-renderer=catdistributionbar] {
   display: flex;
+
+  > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
 }
