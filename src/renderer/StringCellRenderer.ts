@@ -1,10 +1,13 @@
 import {DefaultCellRenderer} from './DefaultCellRenderer';
 import StringColumn from '../model/StringColumn';
 import {ICanvasRenderContext} from './RendererContexts';
-import IDOMCellRenderer from './IDOMCellRenderers';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
+import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
+import {IDataRow} from '../provider/ADataProvider';
+import {IGroup} from '../model/Group';
+import {clipText} from '../utils';
 
 
 /**
@@ -32,11 +35,35 @@ export default class StringCellRenderer implements ICellRendererFactory {
     return this.alignments[col.alignment || 'left'].createCanvas(col, context);
   }
 
-  createGroupDOM(col: StringColumn) {
-    return this.alignments[col.alignment || 'left'].createGroupDOM(col);
+  private static exampleText(col: Column, rows: IDataRow[]) {
+    const numExampleRows = 5;
+    let examples = rows
+      .slice(0, numExampleRows)
+      .map((r) => col.getLabel(r.v, r.dataIndex))
+      .join(', ');
+
+    if(rows.length > numExampleRows) {
+      examples += ', &hellip;';
+    }
+    return examples;
   }
 
-  createGroupCanvas(col: StringColumn, context: ICanvasRenderContext) {
-    return this.alignments[col.alignment || 'left'].createGroupCanvas(col, context);
+  createGroupDOM(col: Column): IDOMGroupRenderer {
+    return {
+      template: `<div class="text"> </div>`,
+      update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
+        n.innerHTML = `${StringCellRenderer.exampleText(col, rows)}`;
+      }
+    };
+  }
+
+  createGroupCanvas(col: Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
+    const w = context.colWidth(col);
+    return (ctx: CanvasRenderingContext2D, _group: IGroup, rows: IDataRow[]) => {
+      const bak = ctx.font;
+      ctx.font = '8pt "Helvetica Neue", Helvetica, Arial, sans-serif';
+      clipText(ctx, StringCellRenderer.exampleText(col, rows), 0, 2, w, context.textHints);
+      ctx.font = bak;
+    };
   }
 }

@@ -53,39 +53,19 @@ export class DefaultCellRenderer implements ICellRendererFactory {
     };
   }
 
-  private static exampleText(col: Column, rows: IDataRow[]) {
-    const numExampleRows = 5;
-    let examples = rows
-      .slice(0, numExampleRows)
-      .map((r) => col.getLabel(r.v, r.dataIndex))
-      .join(', ');
-
-    if(rows.length > numExampleRows) {
-      examples += ', &hellip;';
-    }
-    return examples;
-  }
-
-  createGroupDOM(col: Column): IDOMGroupRenderer {
+  createGroupDOM(_col: Column): IDOMGroupRenderer {
     return {
       template: `<div class="${this.textClass} ${this.align}"> </div>`,
-      update: (n: HTMLDivElement, group: IGroup, rows: IDataRow[]) => {
-        n.innerHTML = `
-            ${group.name} (${rows.length})
-            <div>${DefaultCellRenderer.exampleText(col, rows)}</div>
-        `;
+      update: (n: HTMLDivElement, _group: IGroup, ) => {
+        n.innerHTML = `No summary available`;
       }
     };
   }
 
   createGroupCanvas(col: Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
     const w = context.colWidth(col);
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      clipText(ctx, `${group.name} (${rows.length})`, 0, 2, w, context.textHints);
-      const bak = ctx.font;
-      ctx.font = '8pt "Helvetica Neue", Helvetica, Arial, sans-serif';
-      clipText(ctx, DefaultCellRenderer.exampleText(col, rows), 0, 2 + 12, w, context.textHints);
-      ctx.font = bak;
+    return (ctx: CanvasRenderingContext2D, _group: IGroup) => {
+      clipText(ctx, 'No summary available', 0, 2, w, context.textHints);
     };
   }
 }
