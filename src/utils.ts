@@ -717,7 +717,7 @@ export function deriveColors(columns: IColumnDesc[]) {
   columns.forEach((col: any) => {
     switch (col.type) {
       case 'number':
-        col.color = colors.shift();
+        col.color = colors.shift() || 'gray';
         break;
     }
   });

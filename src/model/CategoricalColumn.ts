@@ -92,6 +92,13 @@ function arrayEquals<T>(a: T[], b: T[]) {
   return a.every((ai, i) => ai === b[i]);
 }
 
+function colorPool() {
+  // dark, bright, and repeat
+  const colors = scale.category10().range().concat(scale.category20().range().filter((_d,i) => i % 2 === 1));
+  let act = 0;
+  return () => colors[(act ++) % colors.length];
+}
+
 /**
  * column for categorical values
  */
@@ -132,13 +139,15 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     if (!desc.categories) {
       return;
     }
-    const cats: string[] = [],
-      cols = this.colors.range().slice(), //work on a copy since it will be manipulated
-      labels = new Map<string, string>();
-    desc.categories.forEach((cat, i) => {
+    const nextColor = colorPool();
+    const cats: string[] = [];
+    const colors: string[] = [];
+    const labels = new Map<string, string>();
+    desc.categories.forEach((cat) => {
       if (typeof cat === 'string') {
         //just the category value
         cats.push(cat);
+        colors.push(nextColor());
         return;
       }
       //the name or value of the category
@@ -149,11 +158,13 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       }
       //optional color
       if (cat.color) {
-        cols[i] = cat.color;
+        colors.push(cat.color);
+      } else {
+        colors.push(nextColor());
       }
     });
     this.catLabels = labels;
-    this.colors.domain(cats).range(cols);
+    this.colors.domain(cats).range(colors);
   }
 
   get categories() {
