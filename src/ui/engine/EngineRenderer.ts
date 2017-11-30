@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, findOption, round} from '../../utils';
+import {AEventDispatcher, findOption, round, suffix} from '../../utils';
 import {default as ABodyRenderer} from '../ABodyRenderer';
 import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IStatistics} from '../../model/Column';
@@ -209,7 +209,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
 
-    ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.renderer`, () => this.updateHist(r));
+    ranking.on(suffix('.renderer', Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_ADD_COLUMN), () => this.updateHist(r));
 
     this.rankings.push(r);
     this.update([r]);
