@@ -1,6 +1,7 @@
 /**
  * Created by Samuel Gratzl on 11.10.2017.
  */
+import {IGroup} from './Group';
 
 
 export function isMissingValue(v: any) : boolean {
@@ -12,3 +13,9 @@ export function isUnknown(v?: number | null) {
 }
 
 export const FIRST_IS_NAN = -1;
+
+
+export const missingGroup: IGroup = {
+  name: 'Missing values',
+  color: 'gray'
+};

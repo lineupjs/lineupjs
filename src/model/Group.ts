@@ -21,11 +21,6 @@ export const defaultGroup: IGroup = {
   color: 'gray'
 };
 
-export const missingGroup: IGroup = {
-  name: 'Missing values',
-  color: 'gray'
-};
-
 export function joinGroups(groups: IGroup[]): IGroup {
   console.assert(groups.length > 0);
   if (groups.length === 1) {

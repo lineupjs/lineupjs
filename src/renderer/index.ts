@@ -34,6 +34,8 @@ import InterleavingCellRenderer from './InterleavingCellRenderer';
 import DotCellRenderer from './DotCellRenderer';
 import {IImposer} from './IRenderContext';
 import CategoricalStackedDistributionlRenderer from './CategoricalStackedDistributionlRenderer';
+import GroupCellRenderer from './GroupCellRenderer';
+
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -69,6 +71,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   histogram: new HistogramRenderer(),
   interleaving: new InterleavingCellRenderer(),
   dot: new DotCellRenderer(),
+  group: new GroupCellRenderer(),
   default: defaultCellRenderer
 };
 

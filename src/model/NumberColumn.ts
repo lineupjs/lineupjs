@@ -6,13 +6,12 @@ import {format, scale} from 'd3';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays, similar} from '../utils';
-import {isMissingValue, isUnknown} from './missing';
+import {isMissingValue, isUnknown, missingGroup} from './missing';
 import {IGroupData} from '../ui/engine/interfaces';
 import {
   default as INumberColumn, INumberDesc, numberCompare, groupCompare,
   SortMethod, ADVANCED_SORT_METHOD, INumberFilter, noNumberFilter, isSameFilter, restoreFilter
 } from './INumberColumn';
-import {missingGroup} from './Group';
 
 export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 /**

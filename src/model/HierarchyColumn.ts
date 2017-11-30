@@ -6,8 +6,7 @@ import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
 import {ICategoricalColumn, ICategory} from './CategoricalColumn';
-import {FIRST_IS_NAN} from './missing';
-import {missingGroup} from './Group';
+import {FIRST_IS_NAN, missingGroup} from './missing';
 
 export interface ICategoryNode extends ICategory {
   readonly children: ICategoryNode[];

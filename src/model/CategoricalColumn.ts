@@ -6,8 +6,7 @@ import {scale} from 'd3';
 import Column, {IColumnDesc} from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
-import {FIRST_IS_NAN} from './missing';
-import {missingGroup} from './Group';
+import {FIRST_IS_NAN, missingGroup} from './missing';
 
 export interface ICategoricalColumn {
   readonly categories: string[];

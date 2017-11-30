@@ -9,6 +9,7 @@ import {
   createStackDesc,
   createAggregateDesc,
   IColumnDesc,
+  createGroupDesc,
   isSupportType,
   models
 } from '../model';
@@ -542,6 +543,8 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
           return this.create(createRankDesc());
         case 'selection':
           return this.create(createSelectionDesc());
+        case 'group':
+          return this.create(createGroupDesc());
         case 'aggregate':
           return this.create(createAggregateDesc());
         case 'actions':
