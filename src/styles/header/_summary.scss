@@ -16,7 +16,7 @@
       opacity: 0.2;
     }
 
-    > .lu-selected {
+    > .#{$lu_css_prefix}-selected {
       flex: 1 1 auto;
       background-color: $lu_selected_color;
       border-radius: 5px 5px 0 0;
@@ -32,6 +32,10 @@
       text-overflow: ellipsis;
       text-align: center;
     }
+  }
+
+  &.#{$lu_css_prefix}-dense > div {
+    margin: 0;
   }
 
   > span {

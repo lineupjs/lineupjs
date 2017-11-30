@@ -14,6 +14,7 @@ import {round} from '../../utils';
 import {IRankingHeaderContext} from './interfaces';
 import AggregateGroupColumn from '../../model/AggregateGroupColumn';
 import {ISummaryFunction} from '../interfaces';
+import {DENSE_HISTOGRAM} from '../../renderer/HistogramRenderer';
 
 export const defaultSummaries: {[key: string]: ISummaryFunction} = {
   stringLike: summaryString,
@@ -34,6 +35,8 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   const cats = col.categories;
   const colors = col.categoryColors;
   const labels = col.categoryLabels;
+
+  node.classList.toggle('lu-dense', cats.length > DENSE_HISTOGRAM);
 
   if (!old || !old.endsWith('hist')) {
     stats.hist.forEach(({cat, y}) => {
@@ -143,6 +146,9 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
     node.innerHTML = '';
     return;
   }
+
+  node.classList.toggle('lu-dense', stats.hist.length > DENSE_HISTOGRAM);
+
   if (!interactive || !(col instanceof NumberColumn)) {
     node.dataset.summary = 'hist';
     node.innerHTML = '';

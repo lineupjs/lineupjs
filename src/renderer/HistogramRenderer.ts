@@ -16,6 +16,9 @@ import {IImposer} from './IRenderContext';
 import {colorOf} from './impose';
 
 
+/** number of bins before switching to dense mode
+ */
+export const DENSE_HISTOGRAM = 19;
 /**
  * a renderer rendering a bar for numerical columns
  */
@@ -43,6 +46,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
         }
         n.innerHTML = tmp;
       }
+      n.classList.toggle('lu-dense', bins > DENSE_HISTOGRAM);
       forEachChild(n, (d: HTMLElement, i) => {
         const {x, dx, y} = hist[i];
         d.style.height = `${Math.round(y * 100 / max)}%`;
@@ -50,7 +54,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
         d.style.backgroundColor = colorOf(col, null, imposer);
       });
     };
-    return {template: `<div>${bins}</div>`, render};
+    return {template: `<div${guessedBins > DENSE_HISTOGRAM ? ' class="lu-dense': ''}>${bins}</div>`, render};
   }
 
   createDOM(col: NumbersColumn, context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
@@ -78,7 +82,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
 
   private static getHistCanvasRenderer(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer) {
     const guessedBins = getNumberOfBins(context.totalNumberOfRows);
-    const padding = context.option('rowBarPadding', 1);
+    const padding = guessedBins > DENSE_HISTOGRAM ? 0 : context.option('rowBarPadding', 1);
 
     return (ctx: CanvasRenderingContext2D, height: number, rows: IDataRow[], globalHist: IStatistics | null) => {
       const {max, bins, hist} = HistogramRenderer.createHist(globalHist, guessedBins, rows, col);

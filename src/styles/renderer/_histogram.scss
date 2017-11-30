@@ -21,4 +21,8 @@
       border-radius: 5px 5px 0 0;
     }
   }
+
+  &.#{$lu_css_prefix}-dense > * {
+    margin: 0;
+  }
 }
