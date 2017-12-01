@@ -4,23 +4,14 @@
 
 import {scale} from 'd3';
 import Column from './Column';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import ValueColumn from './ValueColumn';
 import StringColumn from './StringColumn';
 import {FIRST_IS_NAN, missingGroup} from './missing';
-import {ICategory, ICategoricalColumn, ICategoricalFilter, isEqualFilter,} from './ICategoricalColumn';
+import {
+  IBaseCategoricalDesc, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter,
+  isEqualFilter,
+} from './ICategoricalColumn';
 
-
-export interface IBaseCategoricalDesc {
-  /**
-   * separator to split  multi value
-   * @defualt ;
-   */
-  separator?: string;
-
-  categories: (string | ICategory)[];
-}
-
-export declare type ICategoricalDesc = IValueColumnDesc<string> & IBaseCategoricalDesc;
 
 function colorPool() {
   // dark, bright, and repeat
@@ -138,20 +129,6 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
       return values.map((v) => this.catLabels.has(v) ? this.catLabels.get(v) : v);
     };
     return mapToLabel(r);
-  }
-
-  groupByMe(): boolean {
-    const r = this.findMyRanker();
-    if (!r) {
-      return false;
-    }
-    const wasGrouped = this.isGroupedBy() >= 0;
-    if (wasGrouped) {
-      return r.toggleGrouping(this);
-    }
-    // group and sort
-    r.toggleSorting(this);
-    return r.toggleGrouping(this);
   }
 
   getValue(row: any, index: number) {

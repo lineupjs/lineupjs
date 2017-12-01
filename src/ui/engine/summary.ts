@@ -2,7 +2,8 @@
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
-import {default as CategoricalColumn, ICategoricalColumn} from '../../model/CategoricalColumn';
+import {default as CategoricalColumn} from '../../model/CategoricalColumn';
+import {ICategoricalColumn} from '../../model/ICategoricalColumn';
 import NumberColumn, {INumberColumn, isMapAbleColumn} from '../../model/NumberColumn';
 import SelectionColumn from '../../model/SelectionColumn';
 import StringColumn from '../../model/StringColumn';

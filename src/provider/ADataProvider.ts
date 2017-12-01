@@ -17,7 +17,7 @@ import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
 import Ranking from '../model/Ranking';
 import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
-import {ICategoricalColumn} from '../model/CategoricalColumn';
+import {ICategoricalColumn} from '../model/ICategoricalColumn';
 import {INumberColumn} from '../model/INumberColumn';
 import {AEventDispatcher, debounce, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';

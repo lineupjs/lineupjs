@@ -5,7 +5,7 @@ import {scale} from 'd3';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
-import {ICategoricalColumn, ICategory} from './CategoricalColumn';
+import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
 import {FIRST_IS_NAN, missingGroup} from './missing';
 
 export interface ICategoryNode extends ICategory {

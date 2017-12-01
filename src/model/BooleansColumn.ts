@@ -2,7 +2,7 @@
  * Created by bikramkawan on 24/11/2016.
  */
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import {ICategoricalColumn} from './CategoricalColumn';
+import {ICategoricalColumn} from './ICategoricalColumn';
 import {FIRST_IS_NAN} from './missing';
 
 export interface IBooleansDesc {

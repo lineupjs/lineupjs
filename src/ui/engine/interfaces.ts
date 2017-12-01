@@ -5,7 +5,7 @@ import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {IDataProvider, IDataRow} from '../../provider/ADataProvider';
 import {IFilterDialog} from '../../dialogs/AFilterDialog';
 import {INumberColumn} from '../../model/INumberColumn';
-import {ICategoricalColumn} from '../../model/CategoricalColumn';
+import {ICategoricalColumn} from '../../model/ICategoricalColumn';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import {IGroup} from '../../model/Group';
 import {ISummaryFunction} from '../interfaces';

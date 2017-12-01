@@ -5,7 +5,7 @@
 import Column, {IColumnDesc} from '../model/Column';
 import {INumberColumn} from '../model/INumberColumn';
 import Ranking from '../model/Ranking';
-import {ICategoricalColumn} from '../model/CategoricalColumn';
+import {ICategoricalColumn} from '../model/ICategoricalColumn';
 import {IDataProviderOptions, IDataRow, IStatsBuilder} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 import {computeHist, computeStats} from './math';

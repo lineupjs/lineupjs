@@ -1,6 +1,18 @@
 import Column, {IColumnDesc} from './Column';
 import {IValueColumnDesc} from './ValueColumn';
 
+export interface IBaseCategoricalDesc {
+  /**
+   * separator to split  multi value
+   * @defualt ;
+   */
+  separator?: string;
+
+  categories: (string | ICategory)[];
+}
+
+export declare type ICategoricalDesc = IValueColumnDesc<string> & IBaseCategoricalDesc;
+
 export interface ICategoricalColumn {
   readonly categories: string[];
   readonly categoryLabels: string[];

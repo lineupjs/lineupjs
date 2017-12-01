@@ -4,7 +4,7 @@
 
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import {ICategoricalColumn} from './CategoricalColumn';
+import {ICategoricalColumn} from './ICategoricalColumn';
 
 export interface IBooleanDesc {
   /**

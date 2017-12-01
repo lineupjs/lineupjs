@@ -5,7 +5,8 @@
 import {max as d3max, min as d3min, scale} from 'd3';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import CategoricalColumn, {IBaseCategoricalDesc, ICategoricalColumn, ICategoricalFilter} from './CategoricalColumn';
+import CategoricalColumn from './CategoricalColumn';
+import {ICategoricalColumn, IBaseCategoricalDesc, ICategoricalFilter} from './ICategoricalColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 import {IGroupData} from '../ui/engine/interfaces';
 
