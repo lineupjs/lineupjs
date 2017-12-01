@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 04.10.2017.
  */
 import Column from './Column';
-import {isCategoricalColumn} from './CategoricalColumn';
+import {isCategoricalColumn} from './ICategoricalColumn';
 import {isNumberColumn} from './INumberColumn';
 import {isBoxPlotColumn} from './BoxPlotColumn';
 import StringColumn from './StringColumn';

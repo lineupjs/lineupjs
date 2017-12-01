@@ -1,5 +1,5 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from '../model/ICategoricalColumn';
 import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';

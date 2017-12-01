@@ -9,7 +9,7 @@ import {IColumnDesc} from './Column';
 import {IGroupData} from '../ui/engine/interfaces';
 import Column from './Column';
 import {isNumberColumn} from './INumberColumn';
-import {ICategoricalColumn, isCategoricalColumn} from './CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
 
 
 /**

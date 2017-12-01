@@ -9,7 +9,7 @@ import {createDOM, createDOMGroup, possibleGroupRenderer, possibleRenderer} from
 import {IGroupData, IGroupItem, IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {ILineUpRenderer, ISummaryFunction} from '../interfaces';
 import {IRenderingOptions} from '../../interfaces';
-import {ICategoricalColumn, isCategoricalColumn} from '../../model/CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from '../../model/ICategoricalColumn';
 import NumberColumn from '../../model/NumberColumn';
 import {nonUniformContext} from 'lineupengine/src/logic';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';

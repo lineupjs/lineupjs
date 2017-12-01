@@ -9,7 +9,7 @@ import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import {INumberColumn, isNumberColumn} from '../model/INumberColumn';
-import {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from '../model/ICategoricalColumn';
 import {createDesc as createStackDesc} from '../model/StackColumn';
 import {createDesc as createNestedDesc} from '../model/NestedColumn';
 import DataProvider, {IDataRow} from '../provider/ADataProvider';

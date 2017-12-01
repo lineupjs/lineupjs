@@ -4,7 +4,7 @@ import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {attr} from '../utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {ICategoricalColumn, isCategoricalColumn} from '../model/CategoricalColumn';
+import {ICategoricalColumn, isCategoricalColumn} from '../model/ICategoricalColumn';
 import Column from '../model/Column';
 import {IGroup} from '../model/Group';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
