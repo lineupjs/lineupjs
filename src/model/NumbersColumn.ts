@@ -79,7 +79,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     }
     this.original = this.mapping.clone();
 
-    this.dataLength = desc.dataLength;
+    this.dataLength = desc.dataLength || 0;
     this.threshold = desc.threshold || 0;
     this.colorRange = desc.colorRange || ['blue', 'red'];
     this.sort = desc.sort || SORT_METHOD.median;
