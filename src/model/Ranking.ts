@@ -242,7 +242,6 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (old > 0 && old === categoricals) {
       // kind of primary -> toggle
       newSort[old] = {col, asc: !newSort[old].asc};
-      return;
     } else if (old > 0) {
       //remove
       newSort.splice(old, 1);
