@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 05.09.2017.
  */
 import Column from '../../model/Column';
-import {createToolbar, dragAbleColumn, resortDropAble, updateHeader} from '../engine/header';
+import {createToolbar, dragAbleColumn, updateHeader} from '../engine/header';
 import {IRankingHeaderContext} from '../engine/interfaces';
 
 
@@ -26,7 +26,7 @@ export default class SidePanelEntryVis {
       <main class="lu-summary"></main>`;
     createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), this.column, this.ctx);
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
-    resortDropAble(<HTMLElement>this.node, this.column, this.ctx, 'before', false);
+    // resortDropAble(<HTMLElement>this.node, this.column, this.ctx, 'before', false);
   }
 
   update(ctx: IRankingHeaderContext = this.ctx) {
