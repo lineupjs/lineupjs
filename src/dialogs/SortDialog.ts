@@ -5,7 +5,7 @@ import {ADVANCED_SORT_METHOD, IBoxPlotColumn, SORT_METHOD} from '../model/INumbe
 import BoxPlotColumn from '../model/BoxPlotColumn';
 
 export default class SortDialog extends ADialog {
-  constructor(private readonly column: (IBoxPlotColumn|NumberColumn) & Column, header: HTMLElement, title = 'Change Sort Criteria') {
+  constructor(private readonly column: (IBoxPlotColumn|NumberColumn) & Column, header: HTMLElement, title = 'Sort Criteria') {
     super(header, title);
   }
 
