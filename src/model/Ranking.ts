@@ -7,6 +7,7 @@ import StringColumn from './StringColumn';
 import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
 import {AEventDispatcher, equalArrays, suffix} from '../utils';
 import {IGroupData} from '../ui/engine/interfaces';
+import {isCategoricalColumn} from './ICategoricalColumn';
 
 export interface ISortCriteria {
   readonly col: Column;
@@ -225,11 +226,30 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
   }
 
   toggleSorting(col: Column) {
-    const primary = this.primarySortCriteria;
-    if (primary && primary.col === col) {
-      return this.sortBy(col, !primary.asc);
+    const categoricals = this.groupColumns.reduce((acc, d) => acc + (isCategoricalColumn(d) ? 1 : 0), 0);
+
+    if (categoricals <= 0) {
+      const primary = this.primarySortCriteria;
+      if (primary && primary.col === col) {
+        return this.sortBy(col, !primary.asc);
+      }
+      return this.sortBy(col);
     }
-    return this.sortBy(col);
+
+    // need to preserve synced order
+    const old = this.sortCriteria.findIndex((d) => d.col === col);
+    const newSort = this.sortCriteria.slice();
+    if (old > 0 && old === categoricals) {
+      // kind of primary -> toggle
+      newSort[old] = {col, asc: !newSort[old].asc};
+      return;
+    } else if (old > 0) {
+      //remove
+      newSort.splice(old, 1);
+    } else {
+      newSort.splice(categoricals, 0, {col, asc: false});
+    }
+    return this.setSortCriteria(newSort);
   }
 
   toggleGrouping(col: Column) {
@@ -237,7 +257,19 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     if (old >= 0) {
       const newGroupings = this.groupColumns.slice();
       newGroupings.splice(old, 1);
+      if (isCategoricalColumn(col) && this.sortCriteria[old] && this.sortCriteria[old].col === col) {
+        // categorical synced sorting
+        this.sortCriteria.splice(old, 1);
+      }
       return this.groupBy(newGroupings);
+    }
+    if (isCategoricalColumn(col)) {
+      // sync with sorting
+      const oldSort = this.sortCriteria.findIndex((d) => d.col === col);
+      if (oldSort >= 0) {
+        this.sortCriteria.splice(oldSort, 1);
+      }
+      this.setSortCriteria([{col: <Column>col, asc: true}].concat(this.sortCriteria));
     }
     return this.groupBy([col].concat(this.groupColumns));
   }
