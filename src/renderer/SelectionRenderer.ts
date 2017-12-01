@@ -59,9 +59,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
           event.preventDefault();
           event.stopPropagation();
           const value = n.classList.toggle('lu-group-selected');
-          rows.forEach((row) => {
-            col.setValue(row.v, row.dataIndex, value);
-          });
+          col.setValues(rows.map((d) => d.v), rows.map((d) => d.dataIndex), value);
         };
       }
     };

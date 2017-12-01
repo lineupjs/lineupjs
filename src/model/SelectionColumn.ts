@@ -19,6 +19,10 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
    * setter for selecting/deselecting the given row
    */
   setter(row: any, index: number, value: boolean): void;
+  /**
+   * setter for selecting/deselecting the given row
+   */
+  setterAll(rows: any[], indices: number[], value: boolean): void;
 }
 
 /**
@@ -50,6 +54,17 @@ export default class SelectionColumn extends ValueColumn<boolean> {
       return true;
     }
     return this.setImpl(row, index, value);
+  }
+
+  setValues(rows: any[], indices: number[], value: boolean) {
+    if (rows.length === 0) {
+      return;
+    }
+    if ((<ISelectionColumnDesc>this.desc).setterAll) {
+      (<ISelectionColumnDesc>this.desc).setterAll(rows, indices, value);
+    }
+    this.fire(SelectionColumn.EVENT_SELECT, rows[0], value, rows);
+    return true;
   }
 
   private setImpl(row: any, index: number, value: boolean) {

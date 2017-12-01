@@ -345,6 +345,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     } else if (desc.type === 'selection') {
       (<ISelectionColumnDesc>desc).accessor = (_row: any, index: number) => this.isSelected(index);
       (<ISelectionColumnDesc>desc).setter = (_row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
+      (<ISelectionColumnDesc>desc).setterAll = (_rows: any[], indices: number[], value: boolean) => value ? this.selectAll(indices) : this.deselectAll(indices);
     } else if (desc.type === 'aggregate') {
       (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.isAggregated(ranking, group);
       (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: boolean) => this.setAggregated(ranking, group, value);
@@ -764,6 +765,19 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
       return; //no change
     }
     this.selection.delete(index);
+    this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
+  }
+  /**
+   * also select all the given rows
+   * @param indices
+   */
+  deselectAll(indices: number[]) {
+    if (indices.every((i) => !this.selection.has(i))) {
+      return; //no change
+    }
+    indices.forEach((index) => {
+      this.selection.delete(index);
+    });
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
   }
 
