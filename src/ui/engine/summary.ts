@@ -167,7 +167,6 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
   const filter = ncol.getFilter();
   const domain = ncol.getMapping().domain;
   const percent = (v: number) => 100 * (v - domain[0]) / (domain[1] - domain[0]);
-  const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
   const filterMin = isFinite(filter.min) ? filter.min : domain[0];
   const filterMax = isFinite(filter.max) ? filter.max : domain[1];
 
@@ -222,6 +221,8 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
 
 
   const update = () => {
+    const domain = ncol.getMapping().domain;
+    const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
     const minValue = unpercent(parseFloat(min.style.left!));
     const maxValue = unpercent(100 - parseFloat(max.style.right!));
     ncol.setFilter({
@@ -242,6 +243,8 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
       const total = node.clientWidth;
       const px = Math.max(0, Math.min(evt.x, total));
       const percent = Math.round(100 * px / total);
+      const domain = ncol.getMapping().domain;
+      const unpercent = (v: number) => ((v / 100) * (domain[1] - domain[0]) + domain[0]);
       this.dataset.value = round(unpercent(percent), 2).toString();
 
       if (this.dataset.handle === 'min') {
