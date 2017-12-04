@@ -37,18 +37,20 @@ export interface IEngineRankingOptions {
 class RankingEvents extends AEventDispatcher {
   static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
   static readonly EVENT_UPDATE_DATA = 'updateData';
+  static readonly EVENT_UPDATE_HIST = 'updateHist';
 
   fire(type: string | string[], ...args: any[]) {
     super.fire(type, ...args);
   }
   protected createEventList() {
-    return super.createEventList().concat([RankingEvents.EVENT_WIDTH_CHANGED, RankingEvents.EVENT_UPDATE_DATA]);
+    return super.createEventList().concat([RankingEvents.EVENT_WIDTH_CHANGED, RankingEvents.EVENT_UPDATE_DATA, RankingEvents.EVENT_UPDATE_HIST]);
   }
 }
 
 export default class EngineRanking extends ACellTableSection<RenderColumn> implements ITableSection {
   static readonly EVENT_WIDTH_CHANGED = RankingEvents.EVENT_WIDTH_CHANGED;
   static readonly EVENT_UPDATE_DATA = RankingEvents.EVENT_UPDATE_DATA;
+  static readonly EVENT_UPDATE_HIST = RankingEvents.EVENT_UPDATE_HIST;
 
   private _context: ICellRenderContext<RenderColumn>;
 
@@ -88,6 +90,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ranking.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, debounce(() => this.updateHeaders(), 50));
     ranking.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, this.delayedUpdate);
     ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`, `${Ranking.EVENT_MOVE_COLUMN}.body`], debounce(() => this.updateAll(), 50));
+    ranking.on(`${Ranking.EVENT_ADD_COLUMN}.hist`, (col) => {
+      col.on(`${Column.EVENT_DATA_LOADED}.hist`, () => this.updateHist(col));
+      this.updateHist(col);
+    });
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, this.delayedUpdate);
 
     this.selection = new SelectionManager(this.ctx, body);
@@ -257,6 +263,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
   }
 
+  private updateHist(col: Column) {
+    this.events.fire(EngineRanking.EVENT_UPDATE_HIST, col);
+  }
+
   private updateColumn(index: number) {
     const column = this.context.columns[index];
     this.forEachRow((row, rowIndex) => {
@@ -276,6 +286,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private disableListener(c: Column) {
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
+    c.on(`${Column.EVENT_DATA_LOADED}.hist`, null);
     c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
     if (!(isMultiLevelColumn(c))) {
       return;
@@ -367,6 +378,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
       this.updateColumnWidths();
     });
+    c.on(`${Column.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
     c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], () => {
       // replace myself upon renderer type change
       this._context.columns[i] = this.createColumn(c, i);

@@ -70,7 +70,7 @@ export default class ValueColumn<T> extends Column {
     if (this.loaded === loaded) {
       return;
     }
-    this.fire([Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.loaded, this.loaded = loaded);
+    this.fire([Column.EVENT_DATA_LOADED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.loaded, this.loaded = loaded);
   }
 
   getRendererType(): string {

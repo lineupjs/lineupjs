@@ -173,7 +173,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.slopeGraphs.forEach((r) => r.updateSelection(s));
   }
 
-  private updateHist(ranking?: EngineRanking) {
+  private updateHist(ranking?: EngineRanking, col?: Column) {
     if (!this.options.header.summary) {
       return;
     }
@@ -181,7 +181,7 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     rankings.forEach((r) => {
       const ranking = r.ranking;
       const order = ranking.getOrder();
-      const cols = ranking.flatColumns;
+      const cols = col ? [col] : ranking.flatColumns;
       const histo = order == null ? null : this.data.stats(order);
       cols.filter((d) => d instanceof NumberColumn && !d.isHidden()).forEach((col: NumberColumn) => {
         this.histCache.set(col.id, histo === null ? null : histo.stats(col));
@@ -208,8 +208,9 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     }));
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
+    r.on(EngineRanking.EVENT_UPDATE_HIST, (col: Column) => this.updateHist(r, col));
 
-    ranking.on(suffix('.renderer', Ranking.EVENT_ORDER_CHANGED, Ranking.EVENT_ADD_COLUMN), () => this.updateHist(r));
+    ranking.on(suffix('.renderer', Ranking.EVENT_ORDER_CHANGED), () => this.updateHist(r));
 
     this.rankings.push(r);
     this.update([r]);

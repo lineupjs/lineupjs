@@ -145,6 +145,7 @@ export default class Column extends AEventDispatcher {
   static readonly EVENT_GROUP_RENDERER_TYPE_CHANGED = 'groupRendererChanged';
   static readonly EVENT_SORTMETHOD_CHANGED = 'sortMethodChanged';
   static readonly EVENT_GROUPING_CHANGED = 'groupingChanged';
+  static readonly EVENT_DATA_LOADED = 'dataLoaded';
 
   /**
    * the id of this column
@@ -245,7 +246,7 @@ export default class Column extends AEventDispatcher {
     return super.createEventList().concat([Column.EVENT_WIDTH_CHANGED, Column.EVENT_FILTER_CHANGED,
       Column.EVENT_LABEL_CHANGED, Column.EVENT_METADATA_CHANGED,
       Column.EVENT_ADD_COLUMN, Column.EVENT_REMOVE_COLUMN, Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_SORTMETHOD_CHANGED, Column.EVENT_MOVE_COLUMN,
-      Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_GROUPING_CHANGED]);
+      Column.EVENT_DIRTY, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_GROUPING_CHANGED, Column.EVENT_DATA_LOADED]);
   }
 
   getWidth() {
