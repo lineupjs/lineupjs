@@ -24,11 +24,11 @@ export function findTypeLike<T>(col: Column, lookup: { [key: string]: T }): T|un
 
 function typeAliases(col: Column) {
   const aliases = ['default'];
-  if (isCategoricalColumn(col)) {
-    aliases.push('categoricalLike');
-  }
   if (isNumberColumn(col)) {
     aliases.push('numberLike');
+  }
+  if (isCategoricalColumn(col)) {
+    aliases.push('categoricalLike');
   }
   if (isBoxPlotColumn(col)) {
     aliases.push('boxplotLike');
