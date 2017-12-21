@@ -11,6 +11,11 @@ export interface IStringDesc {
    * @default left
    */
   readonly alignment?: 'left' | 'center' | 'right';
+
+  /**
+   * escape html tags
+   */
+  readonly escape?: boolean;
 }
 
 
@@ -25,16 +30,22 @@ export default class StringColumn extends ValueColumn<string> {
   private currentFilter: string | RegExp | null = null;
 
   private _alignment: 'left' | 'right' | 'center' = 'left';
+  private _escape: boolean = true;
 
   constructor(id: string, desc: IStringColumnDesc) {
     super(id, desc);
     this.setWidthImpl(200); //by default 200
     this._alignment = <any>desc.alignment || 'left';
+    this._escape = desc.escape !== false;
   }
 
   //readonly
   get alignment() {
     return this._alignment;
+  }
+
+  get escape() {
+    return this._escape;
   }
 
   getValue(row: any, index: number) {
@@ -53,6 +64,7 @@ export default class StringColumn extends ValueColumn<string> {
       r.filter = this.currentFilter;
     }
     r.alignment = this.alignment;
+    r.escape = this.escape;
     return r;
   }
 
@@ -64,6 +76,7 @@ export default class StringColumn extends ValueColumn<string> {
       this.currentFilter = dump.filter || null;
     }
     this._alignment = dump.alignment || this._alignment;
+    this._escape = dump._escape !== null ? dump._escape : this._escape;
   }
 
   isFiltered() {

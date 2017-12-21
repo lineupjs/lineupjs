@@ -15,10 +15,15 @@ import {clipText} from '../utils';
  * one instance factory shared among strings
  */
 export default class StringCellRenderer implements ICellRendererFactory {
-  private alignments = {
+  private readonly alignments = {
     left: new DefaultCellRenderer(),
     right: new DefaultCellRenderer('text_right', 'right'),
     center: new DefaultCellRenderer('text_center', 'center')
+  };
+  private readonly alignmentsNotEscape = {
+    left: new DefaultCellRenderer('text', 'left', false),
+    right: new DefaultCellRenderer('text_right', 'right', false),
+    center: new DefaultCellRenderer('text_center', 'center', false)
   };
 
   readonly title = 'Default';
@@ -28,11 +33,11 @@ export default class StringCellRenderer implements ICellRendererFactory {
   }
 
   createDOM(col: StringColumn): IDOMCellRenderer {
-    return this.alignments[col.alignment || 'left'].createDOM(col);
+    return (col.escape ? this.alignments: this.alignmentsNotEscape)[col.alignment || 'left'].createDOM(col);
   }
 
   createCanvas(col: StringColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return this.alignments[col.alignment || 'left'].createCanvas(col, context);
+    return (col.escape ? this.alignments: this.alignmentsNotEscape)[col.alignment || 'left'].createCanvas(col, context);
   }
 
   private static exampleText(col: Column, rows: IDataRow[]) {

@@ -17,7 +17,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
    * @param textClass {string} class to append to the text elements
    * @param align {string} the text alignment: left, center, right
    */
-  constructor(private readonly textClass: string = 'text', private readonly align: string = 'left') {
+  constructor(private readonly textClass: string = 'text', private readonly align: string = 'left', private readonly escape = true) {
   }
 
   canRender(_col: Column) {
@@ -29,7 +29,11 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       template: `<div class="${this.textClass} ${this.align}"> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
-        setText(n, col.getLabel(d.v, d.dataIndex));
+        if (this.escape) {
+          setText(n, col.getLabel(d.v, d.dataIndex));
+        } else {
+          n.innerHTML = col.getLabel(d.v, d.dataIndex);
+        }
       }
     };
   }
