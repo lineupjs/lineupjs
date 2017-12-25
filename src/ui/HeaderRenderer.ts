@@ -3,7 +3,8 @@
  */
 
 import * as d3 from 'd3';
-import {debounce, dragAble, dropAble, forEach, merge, suffix} from '../utils';
+import {debounce, forEach, merge, suffix} from '../utils';
+import {dragAble, dropAble} from '../dnd_d3';
 import Column, {ICategoricalStatistics, IFlatColumn, IStatistics} from '../model/Column';
 import StringColumn from '../model/StringColumn';
 import Ranking from '../model/Ranking';
