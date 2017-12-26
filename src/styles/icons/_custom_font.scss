@@ -1,0 +1,13 @@
+@import '../vars';
+
+@font-face {
+  font-family: 'lu-font';
+  src: url('#{$lu_assets}/font/lu-font.eot?57980309');
+  src: url('#{$lu_assets}/font/lu-font.eot?57980309#iefix') format('embedded-opentype'),
+       url('#{$lu_assets}/font/lu-font.woff2?57980309') format('woff2'),
+       url('#{$lu_assets}/font/lu-font.woff?57980309') format('woff'),
+       url('#{$lu_assets}/font/lu-font.ttf?57980309') format('truetype'),
+       url('#{$lu_assets}/font/lu-font.svg?57980309#lu-font') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}

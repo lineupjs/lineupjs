@@ -2,7 +2,7 @@
   popups, e.g., rename dialogs,...
  */
 @import './vars';
-@import './icons';
+@import './icons/index';
 
 @at-root {
   .#{$lu_css_prefix}-popup {
