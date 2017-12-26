@@ -1,10 +1,6 @@
 @import './index';
 @import '../vars';
-
-@if $lu_use_font_awesome == false {
-  @import './custom_font';
-}
-
+@import './custom_font';
 
 #{$lu-css_prefix}-checked::before,
 #{$lu-css_prefix}-unchecked::before,

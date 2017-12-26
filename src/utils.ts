@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {dispatch, Dispatch, event as d3event, select, Selection, scale as d3scale} from 'd3';
+import {dispatch, Dispatch, scale as d3scale} from 'd3';
 import Column, {IColumnDesc} from './model/Column';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
 
@@ -249,6 +249,8 @@ export class ContentScroller extends AEventDispatcher {
   private prevScrollTop = 0;
   private shift = 0;
 
+  private readonly scrollImpl = () => this.onScroll();
+
   /**
    * utility for scrolling
    * @param {Element} container the container element wrapping the content with a fixed height for enforcing scrolling
@@ -258,7 +260,7 @@ export class ContentScroller extends AEventDispatcher {
   constructor(private readonly container: Element, content: Element, options: IContentScrollerOptions = {}) {
     super();
     merge(this.options, options);
-    select(container).on('scroll.scroller', () => this.onScroll());
+    container.addEventListener('scroll', this.scrollImpl);
 
     //keep the previous state computing whether a redraw is needed
     this.prevScrollTop = container.scrollTop;
@@ -353,7 +355,7 @@ export class ContentScroller extends AEventDispatcher {
    * removes the listeners
    */
   destroy() {
-    select(this.container).on('scroll.scroller', null!);
+    this.container.removeEventListener('scroll', this.scrollImpl);
   }
 }
 
