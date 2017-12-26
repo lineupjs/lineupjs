@@ -122,9 +122,9 @@ abstract class ADialog {
             <form onsubmit="return false">
                 ${body}
                 ${addCloseButtons ?
-      '<button type = "submit" class="ok fa fa-check" title="ok"></button>' +
-      '<button type = "reset" class="cancel fa fa-times" title="cancel">' +
-      '</button><button type = "button" class="reset fa fa-undo" title="reset"></button></form>' : ''}
+      '<button type = "submit" class="ok" title="ok"></button>' +
+      '<button type = "reset" class="cancel" title="cancel">' +
+      '</button><button type = "button" class="reset" title="reset"></button></form>' : ''}
             </form>`;
   }
 

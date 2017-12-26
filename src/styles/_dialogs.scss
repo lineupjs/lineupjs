@@ -1,7 +1,8 @@
 /**
   popups, e.g., rename dialogs,...
  */
-@import 'vars';
+@import './vars';
+@import './icons';
 
 @at-root {
   .#{$lu_css_prefix}-popup {
@@ -101,6 +102,24 @@
         width: 100%;
         display: block;
       }
+    }
+
+    button[type=submit],
+    button.cancel,
+    button.reset {
+      &::before {
+        @include lu_icons();
+      }
+    }
+
+    button[type=submit]::before {
+      content: $lu_icon_check;
+    }
+    button.cancel::before {
+      content: $lu_icon_times;
+    }
+    button.reset::before {
+      content: $lu_icon_undo;
     }
   }
 

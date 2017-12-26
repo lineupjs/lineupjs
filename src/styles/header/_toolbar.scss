@@ -1,6 +1,5 @@
 @import '../vars';
-@import '~font-awesome/scss/variables';
-@import '~font-awesome/scss/mixins';
+@import '../icons';
 
 .#{$lu_css_prefix}-toolbar {
   position: relative;
@@ -67,57 +66,57 @@
   .#{$lu_css_prefix}-more-options {
     i {
       &::before {
-        @include fa-icon();
+        @include lu_icons();
       }
 
       &[title^='Rename + Color']::before {
-        content: $fa-var-pencil-square-o;
+        content: $lu_icon_pencil_square_o;
       }
 
       &[title='Generate Snapshot']::before {
-        content: $fa-var-code-fork;
+        content: $lu_icon_code_fork;
       }
 
       &[title^='Sort by']::before {
-        content: $fa-var-sort;
+        content: $lu_icon_sort;
       }
 
       &[title^='Visualization']::before {
-        content: $fa-var-exchange;
+        content: $lu_icon_exchange;
       }
 
       &[title^='Edit Link Pattern']::before {
-        content: $fa-var-external-link;
+        content: $lu_icon_external_link;
       }
 
       &[title^='Sort Group by']::before {
-        content: $fa-var-sort;
+        content: $lu_icon_sort;
       }
 
       &[title^='Edit Combine Script']::before {
-        content: $fa-var-gears;
+        content: $lu_icon_gears;
       }
 
       &[title='Split Combined Column']::before {
-        content: $fa-var-window-restore;
+        content: $lu_icon_window_restore;
       }
 
       &[title^='Filter']::before {
-        content: $fa-var-filter;
+        content: $lu_icon_filter;
       }
 
       &[title^='Stratify']::before {
-        content: $fa-var-columns;
+        content: $lu_icon_columns;
         transform: rotate(-90deg);
         height: 14px;
       }
 
       &[title='Sort']::before {
-        content: $fa-var-sort-amount-asc;
+        content: $lu_icon_sort_amount_asc;
       }
 
       &[title='Sort'][data-sort='desc']::before {
-        content: $fa-var-sort-amount-desc;
+        content: $lu_icon_sort_amount_desc;
       }
 
       &[title='Sort'][data-sort$='sc']::before,
@@ -126,43 +125,43 @@
       }
 
       &[title^='Set Cut Off']::before {
-        content: $fa-var-scissors;
+        content: $lu_icon_scissors;
       }
 
       &[title^='Search']::before {
-        content: $fa-var-search;
+        content: $lu_icon_search;
       }
 
       &[title='Edit Weights']::before {
-        content: $fa-var-tasks;
+        content: $lu_icon_tasks;
       }
 
       &[title='UnCollapse']::before {
-        content: $fa-var-toggle-right;
+        content: $lu_icon_toggle_right;
       }
 
       &[title='Collapse']::before {
-        content: $fa-var-toggle-left;
+        content: $lu_icon_toggle_left;
       }
 
       &[title='Expand']::before {
-        content: $fa-var-expand;
+        content: $lu_icon_expand;
       }
 
       &[title='Compress']::before {
-        content: $fa-var-compress;
+        content: $lu_icon_compress;
       }
 
       &[title='Remove']::before {
-        content: $fa-var-trash;
+        content: $lu_icon_trash;
       }
 
       &[title^='More']::before {
-        content: $fa-var-ellipsis-h;
+        content: $lu_icon_ellipsis_h;
       }
 
       &[title^='Contained Columns']::before {
-        content: $fa-var-sitemap;
+        content: $lu_icon_sitemap;
       }
     }
   }
@@ -181,11 +180,11 @@
     .#{$lu_css_prefix}-toolbar i,
     .#{$lu_css_prefix}-more-options i {
       &[title='Sort']::before {
-        content: $fa-var-sort-alpha-asc;
+        content: $lu_icon_sort-alpha-asc;
       }
 
       &[title='Sort'][data-sort='desc']::before {
-        content: $fa-var-sort-alpha-desc;
+        content: $lu_icon_sort-alpha-desc;
       }
     }
   }
@@ -204,11 +203,11 @@
     .#{$lu_css_prefix}-toolbar i,
     .#{$lu_css_prefix}-more-options i {
       &[title='Sort']::before {
-        content: $fa-var-sort-numeric-asc;
+        content: $lu_icon_sort-numeric-asc;
       }
 
       &[title='Sort'][data-sort='desc']::before {
-        content: $fa-var-sort-numeric-desc;
+        content: $lu_icon_sort-numeric-desc;
       }
     }
   }

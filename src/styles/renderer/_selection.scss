@@ -1,14 +1,13 @@
-@import '~font-awesome/scss/variables';
-@import '~font-awesome/scss/mixins';
 @import '../vars';
+@import '../icons';
 
 [data-renderer=selection] {
   text-align: center;
 
   &::before {
-    @include fa-icon();
+    @include lu_icons();
 
-    content: $fa-var-square-o;
+    content: $lu_icon_square_o;
     padding-top: 2px;
   }
 }
@@ -16,6 +15,6 @@
 .#{$lu_css_prefix}-selected [data-renderer=selection]::before,
 .selected [data-renderer=selection]::before,
 .#{$lu_css_prefix}-group-selected[data-renderer=selection]::before {
-  content: $fa-var-check-square-o;
+  content: $lu_icon_check_square_o;
   padding-left: 2px;
 }

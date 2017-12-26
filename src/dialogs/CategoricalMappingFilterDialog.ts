@@ -64,7 +64,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     function redraw() {
       rows.forEach((row, i) => {
         const d = trData[i];
-        (<HTMLElement>row.querySelector('.checkmark')).innerHTML = `<i class="fa fa-${(d.isChecked) ? 'check-' : ''}square-o"></i>`;
+        (<HTMLElement>row.querySelector('.checkmark')).innerHTML = `<i class="lu-${(d.isChecked) ? 'checked' : 'unchecked'}"></i>`;
         (<HTMLElement>row.querySelector('.bar')).style.width = `${scale(d.range)}px`;
         (<HTMLElement>row.querySelector('.datalabel')).style.opacity = d.isChecked ? '1.0' : '.8';
       });
@@ -75,7 +75,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     let isCheckedAll = true;
 
     function redrawSelectAll() {
-      (<HTMLElement>popup.querySelector('.selectAll')).innerHTML = `<i class="fa fa-${(isCheckedAll) ? 'check-' : ''}square-o"></i>`;
+      (<HTMLElement>popup.querySelector('.selectAll')).innerHTML = `<i class="lu-${isCheckedAll ? 'checked' : 'unchecked'}"></i>`;
     }
     popup.querySelector('thead')!.addEventListener('click', () => {
       isCheckedAll = !isCheckedAll;

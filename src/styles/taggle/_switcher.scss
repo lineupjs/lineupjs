@@ -1,6 +1,5 @@
-@import '~font-awesome/scss/variables';
-@import '~font-awesome/scss/mixins';
 @import '../vars';
+@import '../icons';
 
 .#{$lu_css_prefix}-rule-button-chooser {
   padding: 0.5em 0.5em 0;
@@ -27,13 +26,13 @@
   }
 
   &::before {
-    @include fa-icon();
+    @include lu_icons();
     margin-top: -1px;
-    content: $fa-var-square-o;
+    content: $lu_icon_square_o;
   }
 
   &.chosen::before {
-    content: $fa-var-check-square-o;
+    content: $lu_icon_check_square_o;
   }
 
   &.violated {
@@ -67,8 +66,8 @@
     }
 
     &::after {
-      @include fa-icon();
-      content: $fa-var-exclamation-triangle;
+      @include lu_icons();
+      content: $lu_icon_exclamation_triangle;
       margin-top: -1px;
       margin-left: 5px;
       color: #FFD700;

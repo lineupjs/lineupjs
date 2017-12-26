@@ -1,7 +1,5 @@
-@import '~font-awesome/scss/variables';
-@import '~font-awesome/scss/mixins';
 @import '../vars';
-
+@import '../icons';
 /**
  * Creates a background that displays an opening square bracket using multiple linear gradients.
  */
@@ -40,9 +38,9 @@
   @include square-bracket-bg($lu_aggregate_square_bracket_width, $lu_aggregate_square_bracket_stroke_color, $lu_aggregate_square_bracket_stroke_width, true, false);
 
   &::before {
-    @include fa-icon();
+    @include lu_icons();
 
-    content: $fa-var-caret-down;
+    content: $lu_icon_caret_down;
     padding-right: $lu_aggregate_square_bracket_width;
   }
 }
@@ -60,7 +58,7 @@
 }
 
 [data-agg=group] [data-renderer=aggregate]::before {
-  @include fa-icon();
+  @include lu_icons();
 
-  content: $fa-var-caret-right;
+  content: $lu_icon_caret_right;
 }

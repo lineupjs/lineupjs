@@ -285,18 +285,18 @@ function summarySelection(col: SelectionColumn, node: HTMLElement, _interactive:
   node.dataset.summary = 'selection';
   if (old !== 'selection') {
     //init
-    node.innerHTML = `<i class='fa fa-square-o' title='(Un)Select All'></i>`;
+    node.innerHTML = `<i class='lu-unchecked' title='(Un)Select All'></i>`;
   }
   const button = (<HTMLElement>node.firstElementChild);
   button.onclick = (evt) => {
     evt.stopPropagation();
-    if (button.classList.contains('fa-square-o')) {
+    if (button.classList.contains('lu-unchecked')) {
       provider.selectAllOf(col.findMyRanker()!);
     } else {
       provider.setSelection([]);
     }
-    button.classList.toggle('fa-square-o');
-    button.classList.toggle('fa-check-square-o');
+    button.classList.toggle('lu-unchecked');
+    button.classList.toggle('lu-checked');
   };
 }
 
@@ -313,7 +313,7 @@ function summaryAggregation(col: AggregateGroupColumn, node: HTMLElement, _inter
         defaultValue = 'right';
       }
     }
-    node.innerHTML = `<i class='fa fa-caret-${defaultValue}' title='(Un)Aggregate All'></i>`;
+    node.innerHTML = `<i class='ul-caret-${defaultValue}' title='(Un)Aggregate All'></i>`;
   }
   const button = (<HTMLElement>node.firstElementChild);
   button.onclick = (evt) => {
@@ -322,9 +322,9 @@ function summaryAggregation(col: AggregateGroupColumn, node: HTMLElement, _inter
     if (!ranking) {
       return;
     }
-    const aggregate = button.classList.contains('fa-caret-down');
-    button.classList.toggle('fa-caret-down');
-    button.classList.toggle('fa-caret-right');
+    const aggregate = button.classList.contains('ul-caret-down');
+    button.classList.toggle('ul-caret-down');
+    button.classList.toggle('ul-caret-right');
     ctx.provider.aggregateAllOf(ranking, aggregate);
   };
 }

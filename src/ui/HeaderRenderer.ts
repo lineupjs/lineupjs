@@ -367,15 +367,15 @@ export default class HeaderRenderer {
     $headers.select('i.sort_indicator').attr('class', (d) => {
       const r = d.findMyRanker();
       if (!r) {
-        return 'sort_indicator fa';
+        return 'sort_indicator';
       }
       const criterias = r.getSortCriterias();
       const index = criterias.findIndex((c) => c.col === d);
       if (index === 0) { // just show the primary for now
         // TODO handle if secondary, ... criteria
-        return `sort_indicator fa fa-sort-${criterias[index].asc ? 'asc' : 'desc'}`;
+        return `sort_indicator ul-sort-${criterias[index].asc ? 'asc' : 'desc'}`;
       }
-      return 'sort_indicator fa';
+      return 'sort_indicator';
     });
 
     $headers.select('span.lu-label').text((d) => d.label);
@@ -531,16 +531,16 @@ export default class HeaderRenderer {
     let $i = $this.select('i');
     if ($i.empty()) {
       $i = $this.append('i')
-        .attr('class', 'fa fa-square-o')
+        .attr('class', 'lu-unchecked')
         .attr('title', 'Toggle Select All');
     }
     $i.on('click', () => {
-      if ($i.classed('fa-square-o')) {
+      if ($i.classed('lu-unchecked')) {
         const all = col.findMyRanker()!.getOrder();
-        $i.attr('class', 'fa fa-check-square-o');
+        $i.attr('class', 'lu-checked');
         this.data.setSelection(all);
       } else {
-        $i.attr('class', 'fa fa-square-o');
+        $i.attr('class', 'lu-unchecked');
         this.data.clearSelection();
       }
     });
