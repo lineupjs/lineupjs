@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {max as d3max, min as d3min, scale} from 'd3';
+import {scale} from 'd3';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import CategoricalColumn from './CategoricalColumn';
@@ -11,6 +11,14 @@ import NumberColumn, {INumberColumn} from './NumberColumn';
 import {IGroupData} from '../ui/engine/interfaces';
 
 export declare type ICategoricalNumberColumnDesc = IBaseCategoricalDesc & IValueColumnDesc<number>;
+
+function max(v: number[]) {
+  return Math.max(...v);
+}
+
+function min(v: number[]) {
+  return Math.min(...v);
+}
 
 /**
  * similar to a categorical column but the categories are mapped to numbers
@@ -34,7 +42,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
    * @type {string}
    */
   private separator = ';';
-  private combiner = d3max;
+  private combiner = max;
 
   constructor(id: string, desc: ICategoricalNumberColumnDesc) {
     super(id, desc);
@@ -117,14 +125,14 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
   getColor(row: any, index: number): string | null {
     const vs = this.getValues(row, index);
     const cs = this.getColors(row, index);
-    if (this.combiner === d3max) {
+    if (this.combiner === max) {
       //use the max color
       return cs.slice(1).reduce((prev, act, i) => vs[i + 1] > prev.v ? {c: act, v: vs[i + 1]} : prev, {
         c: cs[0],
         v: vs[0]
       }).c;
     }
-    if (this.combiner === d3min) {
+    if (this.combiner === min) {
       //use the max color
       return cs.slice(1).reduce((prev, act, i) => vs[i + 1] < prev.v ? {c: act, v: vs[i + 1]} : prev, {
         c: cs[0],

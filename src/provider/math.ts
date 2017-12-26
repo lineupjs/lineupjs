@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 10.08.2017.
  */
 
-import * as d3 from 'd3';
+import {layout, extent, mean} from 'd3';
 import {ICategoricalStatistics, IStatistics} from '../model/Column';
 
 
@@ -49,7 +49,7 @@ export function computeStats(arr: any[], indices: number[], acc: (row: any, inde
     return acc;
   }, <number[]>[]);
 
-  const hist = d3.layout.histogram();
+  const hist = layout.histogram();
   if (range) {
     hist.range(() => range);
   }
@@ -58,12 +58,12 @@ export function computeStats(arr: any[], indices: number[], acc: (row: any, inde
   } else {
     hist.bins(getNumberOfBins(arr.length));
   }
-  const ex = d3.extent(vs);
+  const ex = extent(vs);
   const histData = hist(vs);
   return {
     min: ex[0],
     max: ex[1],
-    mean: d3.mean(vs),
+    mean: mean(vs),
     count: arr.length,
     maxBin: Math.max(...histData.map((d) => d.y)),
     hist: histData,

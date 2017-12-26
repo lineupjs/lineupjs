@@ -1,6 +1,5 @@
 import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
 import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
-import {scale as d3scale} from 'd3';
 import {sortByProperty} from './ADialog';
 
 
@@ -20,9 +19,6 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     const bakOri = this.column.getFilter() || {filter: [], filterMissing: false};
     const bak = <string[]>bakOri.filter;
     const bakMissing = bakOri.filterMissing;
-
-
-    const scale = d3scale.linear().domain([0, 100]).range([0, 120]);
 
     const popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th colspan="2">Scale</th><th>Category</th></thead><tbody></tbody></table></div>
         ${filterMissingMarkup(bakMissing)}<br>`);
@@ -65,7 +61,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
       rows.forEach((row, i) => {
         const d = trData[i];
         (<HTMLElement>row.querySelector('.checkmark')).innerHTML = `<i class="lu-${(d.isChecked) ? 'checked' : 'unchecked'}"></i>`;
-        (<HTMLElement>row.querySelector('.bar')).style.width = `${scale(d.range)}px`;
+        (<HTMLElement>row.querySelector('.bar')).style.width = `${d.range * 1.2}px`;
         (<HTMLElement>row.querySelector('.datalabel')).style.opacity = d.isChecked ? '1.0' : '.8';
       });
     }
