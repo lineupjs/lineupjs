@@ -285,6 +285,18 @@
       "search": [
         "icon_numerical"
       ]
+    },
+    {
+      "uid": "559647a6f430b3aeadbecd67194451dd",
+      "css": "menu",
+      "code": 61641,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "25a81737628d1e654a30ad412d7d6dd7",
+      "css": "align-justify",
+      "code": 59410,
+      "src": "fontawesome"
     }
   ]
 }

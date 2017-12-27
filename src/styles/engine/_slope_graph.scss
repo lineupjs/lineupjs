@@ -1,6 +1,5 @@
 @import '../vars';
-@import '~font-awesome/scss/variables';
-@import '~font-awesome/scss/mixins';
+@import '../icons/index';
 
 section.#{$lu-css_prefix}-slopegraph {
 
@@ -61,14 +60,14 @@ section.#{$lu-css_prefix}-slopegraph-header {
   }
 
   i::before {
-    @include fa-icon();
+    @include lu_icons();
   }
 
   i[title=Item]::before {
-    content: $fa-var-align-justify;
+    content: $lu_icon_align_justify;
   }
 
   i[title=Band]::before {
-    content: $fa-var-bars;
+    content: $lu_icon_bars;
   }
 }
