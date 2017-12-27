@@ -121,7 +121,7 @@ export default class SlopeGraph implements ITableSection {
         }
         this.mode = i;
         icons.forEach((d, j) => d.classList.toggle('active', j === i));
-      }
+      };
     });
   }
 
