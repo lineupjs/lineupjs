@@ -84,5 +84,9 @@
     margin: -2.5px;
     background: $lu_renderer_boxplot_outlier;
     border-radius: 50%;
+
+    &[data-sort] {
+      background: $lu_renderer_boxplot_sort_indicator;
+    }
   }
 }

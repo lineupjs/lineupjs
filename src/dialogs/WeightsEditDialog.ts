@@ -14,8 +14,8 @@ export default class WeightsEditDialog extends ADialog {
   }
 
   openDialog() {
-    const weights = this.column.getWeights(),
-      children = this.column.children.map((d, i) => ({col: d, weight: weights[i] * 100} ));
+    const weights = this.column.getWeights();
+    const children = this.column.children.map((d, i) => ({col: d, weight: Math.round(weights[i] * 100)} ));
 
     //map weights to pixels
     const scale = (v: number) => Math.round((v / 100) * 120);
@@ -27,10 +27,10 @@ export default class WeightsEditDialog extends ADialog {
     children.forEach((d) => {
       base.insertAdjacentHTML('beforeend', `<tr>
         <td><input type="number" value="${d.weight}" min="0" max="100" size="5"></td>
-        <td><div class="${d.col.cssClass} bar" style="background-color: ${d.col.color}"></div></td>
+        <td width="100px"><div class="${d.col.cssClass} bar" style="background-color: ${d.col.color}"></div></td>
         <td>${d.col.label}</td>
        </tr>`);
-      popup.lastElementChild!.querySelector('input')!.addEventListener('input', function (this: HTMLInputElement) {
+      base.lastElementChild!.querySelector('input')!.addEventListener('input', function (this: HTMLInputElement) {
         d.weight = +this.value;
         redraw();
       });
@@ -47,7 +47,7 @@ export default class WeightsEditDialog extends ADialog {
         this.column.setWeights(weights);
       },
       reset: () => {
-        children.forEach((d, i) => d.weight = weights[i] * 100);
+        children.forEach((d, i) => d.weight = Math.round(weights[i] * 100));
         Array.from(base.querySelectorAll('input')).forEach((n: HTMLInputElement, i) => n.value = children[i].weight.toString());
         redraw();
       },
