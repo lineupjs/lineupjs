@@ -15,8 +15,8 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
   }
 
   openDialog() {
-    const bakOri = this.column.getFilter() || {filter: [], filterMissing: false};
-    const bak = <string[]>bakOri.filter || [];
+    const bakOri = this.column.getFilter() || {filter: this.column.categories.slice(), filterMissing: false};
+    const bak = <string[]>bakOri.filter || this.column.categories.slice();
     const bakMissing = bakOri.filterMissing;
     const popup = this.makePopup(`<div class="selectionTable"><table><thead><th class="selectAll"></th><th>Category</th></thead><tbody></tbody></table></div>
         ${filterMissingMarkup(bakMissing)}<br>`);
@@ -25,7 +25,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     const colors = this.column.categoryColors,
       labels = this.column.categoryLabels;
     const trData = this.column.categories.map(function (d, i) {
-      return {cat: d, label: labels[i]!, isChecked: bak.length === 0 || bak.indexOf(d) >= 0, color: colors[i]!};
+      return {cat: d, label: labels[i]!, isChecked: bak.indexOf(d) >= 0, color: colors[i]!};
     }).sort(sortByProperty('label'));
 
     const base = popup.querySelector('table')!;
