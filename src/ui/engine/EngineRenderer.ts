@@ -23,35 +23,9 @@ import {IFilterDialog} from '../../dialogs/AFilterDialog';
 import ICellRendererFactory from '../../renderer/ICellRendererFactory';
 import {IImposer} from '../../renderer/IRenderContext';
 
-export interface IEngineRendererOptions {
-  header: Partial<{
-    filters: { [type: string]: IFilterDialog },
-    summaries: { [type: string]: ISummaryFunction};
-    summary: boolean;
-    linkTemplates: string[];
 
-    searchAble(col: Column): boolean;
-  }>;
-
-  body: Partial<{
-    animation: boolean;
-    columnPadding: number;
-    actions: { name: string, icon: string, action(v: any): void }[];
-    groupHeight: number;
-    groupPadding: number;
-    rowPadding: number;
-    rowHeight: number;
-    dynamicHeight?: (data: (IGroupItem|IGroupData)[], ranking: Ranking)=>{defaultHeight: number, height: (item: IGroupItem|IGroupData)=>number};
-    customRowUpdate?: (row: HTMLElement, rowIndex: number)=>void;
-  }>;
-
-  renderers: { [key: string]: ICellRendererFactory };
-  idPrefix: string;
-}
-
-export default class EngineRenderer extends AEventDispatcher implements ILineUpRenderer {
-  static readonly EVENT_HOVER_CHANGED = RENDERER_EVENT_HOVER_CHANGED;
-  static readonly EVENT_RENDER_FINISHED = RENDERER_EVENT_RENDER_FINISHED;
+export default class EngineRenderer extends AEventDispatcher {
+  static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
 
   protected readonly options: Readonly<IEngineRendererOptions>;
 
@@ -313,14 +287,6 @@ export default class EngineRenderer extends AEventDispatcher implements ILineUpR
     this.takeDownProvider();
     this.table.destroy();
     this.node.remove();
-  }
-
-  scrollIntoView(_index: number) {
-    // TODO
-  }
-
-  setBodyOption(_option: keyof IRenderingOptions, _value: boolean) {
-    // TODO
   }
 }
 

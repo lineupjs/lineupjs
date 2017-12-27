@@ -82,7 +82,7 @@ export default class Taggle extends AEventDispatcher {
     this.renderer.update();
   }
 
-  changeDataStorage(data: DataProvider, dump?: any) {
+  setDataProvider(data: DataProvider, dump?: any) {
     if (this.data) {
       this.unforward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
     }
@@ -91,7 +91,7 @@ export default class Taggle extends AEventDispatcher {
       this.data.restore(dump);
     }
     this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
-    this.renderer.changeDataStorage(data);
+    this.renderer.setDataProvider(data);
     this.update();
     this.panel.update(this.renderer.ctx);
   }

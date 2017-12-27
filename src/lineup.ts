@@ -39,16 +39,6 @@ export default class LineUp extends AEventDispatcher {
   static readonly EVENT_MULTISELECTION_CHANGED = 'multiSelectionChanged';
 
   /**
-   * triggered when LineUpJS.update() was called
-   */
-  static readonly EVENT_UPDATE_START = 'updateStart';
-
-  /**
-   * triggered when LineUpJS.update() was called and the rendering the body has finished
-   */
-  static readonly EVENT_UPDATE_FINISHED = 'updateFinished';
-
-  /**
    * default config of LineUp with all available options
    */
   readonly config: ILineUpConfig = defaultConfig();
@@ -144,8 +134,8 @@ export default class LineUp extends AEventDispatcher {
     }
     this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.main`, this.triggerSelection.bind(this));
     this.data.on(`${DataProvider.EVENT_JUMP_TO_NEAREST}.main`, this.jumpToNearest.bind(this));
-    this.renderer.changeDataStorage(data);
-    this.pools.forEach((p) => p.changeDataStorage(data));
+    this.renderer.setDataProvider(data);
+    this.pools.forEach((p) => p.setDataProvider(data));
     this.update();
   }
 

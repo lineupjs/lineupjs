@@ -129,7 +129,7 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.update();
   }
 
-  changeDataStorage(data: DataProvider) {
+  setDataProvider(data: DataProvider) {
     if (this.data) {
       this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, null);
     }
