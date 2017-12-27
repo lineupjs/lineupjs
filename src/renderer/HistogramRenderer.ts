@@ -33,7 +33,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
     const guessedBins = getNumberOfBins(totalNumberOfRows);
     let bins = '';
     for (let i = 0; i < guessedBins; ++i) {
-      bins += `<div style="height: 0" title="Bin ${i}: 0"></div>`;
+      bins += `<div title="Bin ${i}: 0"><div style="height: 0" ></div></div>`;
     }
 
     const render = (n: HTMLElement, rows: IDataRow[], globalHist: IStatistics | null) => {
@@ -42,16 +42,17 @@ export default class HistogramRenderer implements ICellRendererFactory {
       if (n.children.length !== bins) {
         let tmp = '';
         for (let i = 0; i < bins; ++i) {
-          tmp += `<div style="height: 0" title="Bin ${i}: 0"></div>`;
+          tmp += `<div title="Bin ${i}: 0">><div style="height: 0" ></div></div>`;
         }
         n.innerHTML = tmp;
       }
       n.classList.toggle('lu-dense', bins > DENSE_HISTOGRAM);
       forEachChild(n, (d: HTMLElement, i) => {
         const {x, dx, y} = hist[i];
-        d.style.height = `${Math.round(y * 100 / max)}%`;
+        const inner = <HTMLElement>d.firstElementChild!;
         d.title = `${DEFAULT_FORMATTER(x)} - ${DEFAULT_FORMATTER(x + dx)} (${y})`;
-        d.style.backgroundColor = colorOf(col, null, imposer);
+        inner.style.height = `${Math.round(y * 100 / max)}%`;
+        inner.style.backgroundColor = colorOf(col, null, imposer);
       });
     };
     return {template: `<div${guessedBins > DENSE_HISTOGRAM ? ' class="lu-dense': ''}>${bins}</div>`, render};

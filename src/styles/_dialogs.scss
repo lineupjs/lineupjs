@@ -28,10 +28,10 @@
 
     &::before {
       content: '';
-      top: -25px;
-      left: -25px;
-      right: -25px;
-      bottom: -25px;
+      top: -$lu_dialog_mouse_region;
+      left: -$lu_dialog_mouse_region;
+      right: -$lu_dialog_mouse_region;
+      bottom: -$lu_dialog_mouse_region;
       position: absolute;
       z-index: -1;
     }

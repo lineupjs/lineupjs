@@ -162,9 +162,8 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   //relative within the whiskers
   median.style.left = `${Math.round((data.median - leftWhisker) / range * 100)}%`;
 
-  whiskers.dataset.sort = sort;
-
   if (!data.outlier || data.outlier.length === 0) {
+    whiskers.dataset.sort = sort;
     if (n.children.length > 1) {
       n.innerHTML = '';
       n.appendChild(whiskers);
@@ -182,8 +181,17 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   }
 
   data.outlier.forEach((v, i) => {
+    delete outliers[i].dataset.sort;
     outliers[i].style.left = `${Math.round(v * 100)}%`;
   });
+
+  if (sort === 'min') {
+    whiskers.dataset.sort = '';
+    outliers[0].dataset.sort='min';
+  } else if (sort === 'max') {
+    whiskers.dataset.sort = '';
+    outliers[outliers.length - 1].dataset.sort='max';
+  }
 }
 
 function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: string, color: string | null, height: number, topPadding: number, context: ICanvasRenderContext) {
