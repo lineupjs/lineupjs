@@ -1,6 +1,9 @@
 @import '../vars';
+@import '~font-awesome/scss/variables';
+@import '~font-awesome/scss/mixins';
 
 section.#{$lu-css_prefix}-slopegraph {
+
   svg {
     shape-rendering: geometricprecision;
     height: 100%;
@@ -32,5 +35,43 @@ section.#{$lu-css_prefix}-slopegraph {
         }
       }
     }
+  }
+}
+
+section.#{$lu-css_prefix}-slopegraph-header {
+  display: flex;
+  padding-top: 1.4em;
+  justify-content: center;
+
+  i {
+    padding: 2px 4px;
+    opacity: 0.5;
+    transition: all 0.5s ease;
+    cursor: pointer;
+
+    &:hover {
+      color: $lu_toolbar_color_hover;
+    }
+
+    &.active {
+      opacity: 1;
+      cursor: not-allowed;
+    }
+  }
+
+  i::before {
+    @include fa-icon();
+  }
+
+  i[title=Item]::before {
+    content: $fa-var-align-left;
+  }
+
+  i[title=Hybrid]::before {
+    content: $fa-var-align-justify;
+  }
+
+  i[title=Band]::before {
+    content: $fa-var-align-right;
   }
 }

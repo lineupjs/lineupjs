@@ -57,6 +57,12 @@ interface IPos {
   ref: number;
 }
 
+export enum EMode {
+  ITEM,
+  HYBRID,
+  BAND
+}
+
 export default class SlopeGraph implements ITableSection {
   readonly node: SVGSVGElement;
 
@@ -70,11 +76,13 @@ export default class SlopeGraph implements ITableSection {
 
   private leftContext: IExceptionContext;
   private rightContext: IExceptionContext;
+  private _mode: EMode = EMode.ITEM;
 
   constructor(private readonly header: HTMLElement, private readonly body: HTMLElement, public readonly id: string, private readonly ctx: IRankingHeaderContextContainer) {
     this.node = header.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.node.innerHTML = `<g transform="translate(0,0)"></g>`;
-    header.classList.add('lu-slopegraph');
+    header.classList.add('lu-slopegraph-header');
+    this.initHeader(header);
     body.classList.add('lu-slopegraph');
     this.body.style.height = `1px`;
     body.appendChild(this.node);
@@ -96,6 +104,37 @@ export default class SlopeGraph implements ITableSection {
       this.onScrolledVertically(top, scroller.clientHeight);
     };
     scroller.addEventListener('scroll', this.scrollListener);
+  }
+
+  private initHeader(header: HTMLElement) {
+    header.innerHTML = `<i title="Item" class="active"><span aria-hidden="true">Item</span></i>
+        <i title="Hybrid"><span aria-hidden="true">Hybrid</span></i>
+        <i title="Band"><span aria-hidden="true">Band</span></i>`;
+
+    const icons = <HTMLElement[]>Array.from(header.children);
+    icons.forEach((n: HTMLElement, i) => {
+      n.onclick = (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        if (n.classList.contains('active')) {
+          return;
+        }
+        this.mode = i;
+        icons.forEach((d, j) => d.classList.toggle('active', j === i));
+      }
+    });
+  }
+
+  get mode() {
+    return this._mode;
+  }
+
+  set mode(value: EMode) {
+    if (value === this._mode) {
+      return;
+    }
+    this._mode = value;
+    // TODO change mode
   }
 
 
