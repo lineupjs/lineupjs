@@ -46,16 +46,16 @@ section.#{$lu-css_prefix}-slopegraph-header {
 
   i {
     padding: 2px 4px;
-    opacity: 0.5;
     transition: all 0.5s ease;
     cursor: pointer;
+    color: $lu_toolbar_color_base2;
 
     &:hover {
       color: $lu_toolbar_color_hover;
     }
 
     &.active {
-      opacity: 1;
+      color: $lu_selected_color;
       cursor: not-allowed;
     }
   }
@@ -65,14 +65,10 @@ section.#{$lu-css_prefix}-slopegraph-header {
   }
 
   i[title=Item]::before {
-    content: $fa-var-align-left;
-  }
-
-  i[title=Hybrid]::before {
     content: $fa-var-align-justify;
   }
 
   i[title=Band]::before {
-    content: $fa-var-align-right;
+    content: $fa-var-bars;
   }
 }
