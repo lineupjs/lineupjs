@@ -88,6 +88,7 @@
   > [data-handle=min],
   > [data-handle=max] {
     position: absolute;
+    top: 0;
     height: 100%;
     border-right: 1px solid black;
     transition: border-width 0.2s ease;
@@ -129,6 +130,7 @@
   > [data-handle$=hint] {
     pointer-events: none;
     position: absolute;
+    top: 0;
     height: 100%;
     background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 7px, #bababa 7px, #bababa 10px);
 
