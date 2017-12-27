@@ -63,6 +63,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
       redraw();
       redrawSelectAll();
     });
+    redrawSelectAll();
 
     const updateData = (filter: string[] | null, filterMissing: boolean) => {
       const noFilter = filter === null && filterMissing === false;
