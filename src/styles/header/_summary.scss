@@ -2,24 +2,27 @@
 
 &[data-summary$=hist] {
   display: flex;
-  align-items: flex-end;
 
   > div {
     flex: 1 1 auto;
     position: relative;
     margin: 0 1px;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
 
     &[data-filtered=filtered] {
       opacity: 0.2;
     }
 
+    > div {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 0;
+      width: 100%;
+      transition: height 0.5s linear;
+    }
+
     > .#{$lu_css_prefix}-selected {
-      flex: 1 1 auto;
       background-color: $lu_selected_color;
-      border-radius: 5px 5px 0 0;
     }
 
     &[data-title]::before {
@@ -80,10 +83,6 @@
 &[data-summary=slider-hist] {
   margin-bottom: 2.75em;
   position: relative;
-
-  > div {
-    background: $lu_hist_color;
-  }
 
   > [data-handle=min],
   > [data-handle=max] {
