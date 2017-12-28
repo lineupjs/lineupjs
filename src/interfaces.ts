@@ -27,7 +27,10 @@ export interface ILineUpConfig {
 }
 
 export interface ILineUpLike {
-  data: IDataProvider;
+  readonly node: HTMLElement;
+  readonly data: IDataProvider;
 
   dump(): any;
+
+  destroy(): void;
 }

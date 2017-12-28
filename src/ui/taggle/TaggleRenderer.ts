@@ -6,6 +6,7 @@ import {ILineUpConfig} from '../../interfaces';
 import AEventDispatcher from '../../internal/AEventDispatcher';
 import {IRule} from './interfaces';
 import Ranking from '../../model/Ranking';
+import debounce from '../../internal/debounce';
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;
@@ -22,7 +23,7 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   private rule: IRule|null = null;
   private levelOfDetail: (row: HTMLElement, rowIndex: number) => void;
-  private readonly resizeListener = () => this.update();
+  private readonly resizeListener = () => debounce(() => this.update(), 100);
   private readonly renderer: EngineRenderer;
 
   private readonly options: Readonly<ITaggleOptions> = {
