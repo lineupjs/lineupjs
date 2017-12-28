@@ -3,7 +3,7 @@ import Column from '../model/Column';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../model/interfaces';
-import {clipText, setText} from '../utils';
+import {clipText, setText} from './utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3-color';
 import ICellRendererFactory from './ICellRendererFactory';

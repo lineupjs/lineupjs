@@ -2,15 +2,9 @@
  * Created by Samuel Gratzl on 18.07.2017.
  */
 import {AEventDispatcher, findOption, round, suffix} from '../../utils';
-import DataProvider, {default as ADataProvider, IDataRow} from '../../provider/ADataProvider';
+import DataProvider, {default as ADataProvider} from '../../provider/ADataProvider';
 import {default as Column, ICategoricalStatistics, IStatistics} from '../../model/Column';
 import {createDOM, createDOMGroup, possibleGroupRenderer, possibleRenderer} from '../../renderer';
-import {IGroupData, IGroupItem, IRankingHeaderContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
-import {
-  ILineUpRenderer, ISummaryFunction, RENDERER_EVENT_HOVER_CHANGED,
-  RENDERER_EVENT_RENDER_FINISHED
-} from '../interfaces';
-import {IRenderingOptions} from '../../interfaces';
 import {ICategoricalColumn, isCategoricalColumn} from '../../model/ICategoricalColumn';
 import NumberColumn from '../../model/NumberColumn';
 import {nonUniformContext} from 'lineupengine/src/logic';
@@ -19,9 +13,9 @@ import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer'
 import Ranking from '../../model/Ranking';
 import SlopeGraph from './SlopeGraph';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
-import {IFilterDialog} from '../../dialogs/AFilterDialog';
-import ICellRendererFactory from '../../renderer/ICellRendererFactory';
 import {IImposer} from '../../renderer/IRenderContext';
+import {IRankingHeaderContext, IRankingHeaderContextContainer} from '../interfaces';
+import {IDataRow, IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
 
 
 export default class EngineRenderer extends AEventDispatcher {

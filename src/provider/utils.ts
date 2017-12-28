@@ -5,6 +5,7 @@ import {default as Column, IColumnDesc} from '../model/Column';
 import {extent} from 'd3-array';
 import {isNumberColumn, isSupportType} from '../model';
 import Ranking from '../model/Ranking';
+import {schemeCategory10} from 'd3-scale';
 
 
 export interface IDeriveOptions {
@@ -59,6 +60,25 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
   }
   //objects
   return Object.keys(first).map((key) => deriveType(key, first[key], key, data, config));
+}
+
+
+
+/**
+ * assigns colors to columns if they are numbers and not yet defined
+ * @param columns
+ * @returns {IColumnDesc[]}
+ */
+export function deriveColors(columns: IColumnDesc[]) {
+  const colors = schemeCategory10.slice();
+  columns.forEach((col: any) => {
+    switch (col.type) {
+      case 'number':
+        col.color = colors.shift() || 'gray';
+        break;
+    }
+  });
+  return columns;
 }
 
 

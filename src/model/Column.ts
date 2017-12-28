@@ -2,11 +2,12 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import {AEventDispatcher, similar} from '../utils';
+import {similar} from '../math';
 import Ranking, {ISortCriteria} from './Ranking';
 import {defaultGroup} from './Group';
 import {isMissingValue} from './missing';
 import {IDataRow, IGroupData} from './interfaces';
+import AEventDispatcher from '../internal/AEventDispatcher';
 
 /**
  * converts a given id to css compatible one

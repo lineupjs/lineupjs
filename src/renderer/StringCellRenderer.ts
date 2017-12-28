@@ -6,7 +6,7 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {IDataRow, IGroup} from '../model/interfaces';
-import {clipText} from '../utils';
+import {clipText} from './utils';
 
 
 /**

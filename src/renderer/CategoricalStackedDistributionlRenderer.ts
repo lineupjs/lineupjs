@@ -4,7 +4,7 @@ import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow, IGroup} from '../model/interfaces';
-import {forEachChild} from '../utils';
+import {forEachChild} from './utils';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {computeHist} from '../provider/math';
 

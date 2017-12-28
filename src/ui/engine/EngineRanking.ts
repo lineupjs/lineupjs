@@ -11,14 +11,14 @@ import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import {IExceptionContext, nonUniformContext, uniformContext} from 'lineupengine/src/logic';
 import StackColumn from '../../model/StackColumn';
 import {isMultiLevelColumn} from '../../model/CompositeColumn';
-import {IGroupData, IGroupItem, IRankingBodyContext, IRankingHeaderContextContainer, isGroup} from './interfaces';
 import {IDOMRenderContext} from '../../renderer/RendererContexts';
-import {IDataRow} from '../../provider/ADataProvider';
 import {AEventDispatcher, debounce} from '../../utils';
 import SelectionManager from './SelectionManager';
 import {lineupAnimation} from './animation';
 import PrefetchMixin from 'lineupengine/src/mixin/PrefetchMixin';
 import {setColumn} from 'lineupengine/src/style/GridStyleManager';
+import {IRankingBodyContext, IRankingHeaderContextContainer} from '../interfaces';
+import {IDataRow, IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;

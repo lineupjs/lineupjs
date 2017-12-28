@@ -3,7 +3,7 @@ import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../model/interfaces';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {clipText, showOverlay} from '../utils';
+import {clipText, showOverlay} from './utils';
 import ICellRendererFactory from './ICellRendererFactory';
 import {ANoGroupRenderer} from './ANoGroupRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';

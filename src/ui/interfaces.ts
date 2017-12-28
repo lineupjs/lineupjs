@@ -1,9 +1,9 @@
 import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
-import {IDataProvider, IDataRow} from '../provider/ADataProvider';
+import {IDataProvider} from '../provider/ADataProvider';
 import {IFilterDialog} from '../dialogs/AFilterDialog';
 import {ICategoricalColumn} from '../model/ICategoricalColumn';
 import {INumberColumn} from '../model/INumberColumn';
-import {IGroup} from '../model/Group';
+import {IGroupData, IGroupItem} from '../model/interfaces';
 import {IDOMRenderContext} from '../renderer/RendererContexts';
 
 export const RENDERER_EVENT_HOVER_CHANGED = 'hoverChanged';
@@ -14,11 +14,7 @@ export declare type ISummaryFunction = ((col: Column, node: HTMLElement, interac
 export interface IRankingHeaderContextContainer {
   readonly idPrefix: string;
   provider: IDataProvider;
-  linkTemplates: string[];
 
-  searchAble(col: Column): boolean;
-
-  autoRotateLabels: boolean;
   filters: { [type: string]: IFilterDialog };
   summaries: { [type: string]: ISummaryFunction };
 

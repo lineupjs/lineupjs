@@ -1,7 +1,7 @@
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
-import {forEachChild, showOverlay} from '../utils';
+import {forEachChild, showOverlay} from './utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
 import {default as ActionColumn, IAction, IGroupAction} from '../model/ActionColumn';

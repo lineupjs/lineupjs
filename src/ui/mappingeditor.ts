@@ -5,7 +5,7 @@
 import {event as d3event, mouse, select, selectAll, Selection} from 'd3-selection';
 import {D3DragEvent, drag} from 'd3-drag';
 import {scaleLinear} from 'd3-scale';
-import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from '../model/NumberColumn';
+import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from '../model/MappingFunction';
 import {filterMissingText} from '../dialogs/AFilterDialog';
 import {INumberFilter} from '../model/INumberColumn';
 

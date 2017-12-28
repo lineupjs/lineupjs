@@ -8,7 +8,7 @@ import Ranking, {isSupportType} from '../../model/Ranking';
 import {default as Column, IColumnDesc} from '../../model/Column';
 import SidePanelEntry from './SidePanelEntry';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
-import {IRankingHeaderContext} from '../engine/interfaces';
+import {IRankingHeaderContext} from '../interfaces';
 import SearchBox, {ISearchBoxOptions} from './SearchBox';
 import {createStackDesc, createScriptDesc, createNestedDesc, createMaxDesc, createMeanDesc, createMinDesc, createImpositionDesc} from '../../model';
 

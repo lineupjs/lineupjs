@@ -2,7 +2,7 @@ import SelectionColumn from '../model/SelectionColumn';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {clipText} from '../utils';
+import {clipText} from './utils';
 import ICellRendererFactory from './ICellRendererFactory';
 import {IDataRow, IGroup} from '../model/interfaces';
 import Column from '../model/Column';

@@ -1,5 +1,5 @@
 import {ICanvasRenderContext} from './RendererContexts';
-import {attr, forEachChild} from '../utils';
+import {attr, forEachChild} from './utils';
 import Column from '../model/Column';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {renderMissingValue} from './missing';

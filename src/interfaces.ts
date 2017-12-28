@@ -1,8 +1,9 @@
 import ICellRendererFactory from './renderer/ICellRendererFactory';
 import {IDataProvider} from './provider/ADataProvider';
-import {IGroupData, IGroupItem, ISummaryFunction} from './ui/interfaces';
+import {ISummaryFunction} from './ui/interfaces';
 import {IFilterDialog} from './dialogs/AFilterDialog';
 import Ranking from './model/Ranking';
+import {IGroupData, IGroupItem} from './model/interfaces';
 
 
 export interface ILineUpConfig {

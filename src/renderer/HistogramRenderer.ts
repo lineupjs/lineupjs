@@ -6,7 +6,7 @@ import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow, IGroup} from '../model/interfaces';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {computeStats, getNumberOfBins} from '../provider/math';
-import {forEachChild} from '../utils';
+import {forEachChild} from './utils';
 import NumbersColumn from '../model/NumbersColumn';
 import {isMissingValue} from '../model/missing';
 import ICanvasCellRenderer from './ICanvasCellRenderer';

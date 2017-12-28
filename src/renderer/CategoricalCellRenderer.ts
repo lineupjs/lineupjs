@@ -4,7 +4,7 @@ import Column, {ICategoricalStatistics} from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow, IGroup} from '../model/interfaces';
-import {clipText, forEachChild, setText} from '../utils';
+import {clipText, forEachChild, setText} from './utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {computeHist} from '../provider/math';
 import {renderMissingCanvas, renderMissingDOM} from './missing';

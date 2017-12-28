@@ -5,7 +5,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import GroupColumn from '../model/GroupColumn';
 import {IDataRow, IGroup} from '../model/interfaces';
-import {clipText} from '../utils';
+import {clipText} from './utils';
 
 
 /**

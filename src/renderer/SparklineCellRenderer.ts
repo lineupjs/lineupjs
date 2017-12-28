@@ -5,7 +5,7 @@ import {IDataRow, IGroup} from '../model/interfaces';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import Column from '../model/Column';
 import {matchRows} from './ANumbersCellRenderer';
-import {forEachChild} from '../utils';
+import {forEachChild} from './utils';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isMissingValue} from '../model/missing';
 import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';

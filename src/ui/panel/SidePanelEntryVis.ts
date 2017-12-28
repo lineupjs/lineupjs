@@ -3,7 +3,7 @@
  */
 import Column from '../../model/Column';
 import {createToolbar, dragAbleColumn, updateHeader} from '../engine/header';
-import {IRankingHeaderContext} from '../engine/interfaces';
+import {IRankingHeaderContext} from '../interfaces';
 
 
 export default class SidePanelEntryVis {

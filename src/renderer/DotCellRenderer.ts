@@ -3,7 +3,7 @@ import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow, IGroup} from '../model/interfaces';
-import {attr, forEachChild} from '../utils';
+import {attr, forEachChild} from './utils';
 import {renderMissingDOM} from './missing';
 import {isMissingValue} from '../model/missing';
 import {colorOf, IImposer} from './impose';

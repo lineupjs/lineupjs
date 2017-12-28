@@ -1,4 +1,4 @@
-import {IGroupData, IGroupItem, isGroup} from '../engine/interfaces';
+import {IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
 import {GROUP_SPACING, levelOfDetailInner, levelOfDetailLeaf} from './lod';
 
 const defaultItemHeight = 18;

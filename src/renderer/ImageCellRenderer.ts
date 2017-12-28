@@ -2,7 +2,7 @@ import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../model/interfaces';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {clipText} from '../utils';
+import {clipText} from './utils';
 import ICellRendererFactory from './ICellRendererFactory';
 import {ANoGroupRenderer} from './ANoGroupRenderer';
 import LinkColumn from '../model/LinkColumn';

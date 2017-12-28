@@ -13,10 +13,9 @@ import {stringFilter} from '../../dialogs/StringFilterDialog';
 import {drag, D3DragEvent} from 'd3-drag';
 import {event as d3event, selectAll} from 'd3-selection';
 import {round} from '../../utils';
-import {IRankingHeaderContext} from './interfaces';
 import AggregateGroupColumn from '../../model/AggregateGroupColumn';
 import {DENSE_HISTOGRAM} from '../../renderer/HistogramRenderer';
-import {ISummaryFunction} from '../../interfaces';
+import {IRankingHeaderContext, ISummaryFunction} from '../interfaces';
 
 export const defaultSummaries: {[key: string]: ISummaryFunction} = {
   stringLike: summaryString,
@@ -154,8 +153,8 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
   if (!interactive || !(col instanceof NumberColumn)) {
     node.dataset.summary = 'hist';
     node.innerHTML = '';
-    stats.hist.forEach(({x, y}, i) => {
-      node.insertAdjacentHTML('beforeend', `<div title="Bin ${i}: ${y}" data-x="${x}"><div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${col.getMetaData().color};"></div></div>`);
+    stats.hist.forEach(({x0, length}, i) => {
+      node.insertAdjacentHTML('beforeend', `<div title="Bin ${i}: ${length}" data-x="${x0}"><div style="height: ${Math.round(length * 100 / stats.maxBin)}%; background-color: ${col.getMetaData().color};"></div></div>`);
     });
     if (isMapAbleColumn(col)) {
       const range = col.getRange();
@@ -177,21 +176,21 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
       node.insertAdjacentHTML('afterbegin', `<div><div></div></div>`);
       bins.unshift(<HTMLElement>node.firstElementChild!);
     }
-    stats.hist.forEach(({x, y}, i) => {
+    stats.hist.forEach(({x0, length}, i) => {
       const bin = bins[i];
       const inner = <HTMLElement>bin.firstElementChild!;
-      inner.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
+      inner.style.height = `${Math.round(length * 100 / stats.maxBin)}%`;
       inner.style.backgroundColor = col.getMetaData().color;
-      bin.title = `Bin ${i}: ${y}`;
-      bin.dataset.x = String(x);
+      bin.title = `Bin ${i}: ${length}`;
+      bin.dataset.x = String(x0);
     });
 
     const filterMissingBefore = <HTMLInputElement>node.querySelector('input');
     updateFilterMissingNumberMarkup(<HTMLElement>filterMissingBefore.parentElement, stats.missing);
   } else {
     node.dataset.summary = 'slider-hist';
-    stats.hist.forEach(({x, y}, i) => {
-      node.insertAdjacentHTML('beforeend', `<div title="Bin ${i}: ${y}" data-x="${x}"><div style="height: ${Math.round(y * 100 / stats.maxBin)}%"></div></div>`);
+    stats.hist.forEach(({x0, length}, i) => {
+      node.insertAdjacentHTML('beforeend', `<div title="Bin ${i}: ${length}" data-x="${x0}"><div style="height: ${Math.round(length * 100 / stats.maxBin)}%"></div></div>`);
     });
 
     node.insertAdjacentHTML('beforeend', `

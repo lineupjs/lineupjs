@@ -3,8 +3,7 @@
  */
 
 import {extent, mean, histogram} from 'd3-array';
-import {ICategoricalStatistics, IStatistics} from '../model/Column';
-import {IDataRow} from '../model/interfaces';
+import {ICategoricalStatistics, IStatistics} from './model/Column';
 
 
 export function getNumberOfBins(length: number) {
@@ -42,7 +41,7 @@ export function computeStats<T>(arr: T[], acc: (row: T) => number, missing: (row
     return acc(a);
   }).reduce((acc, act) => {
     if (isNaN(act)) {
-      missingCount ++;
+      missingCount++;
     } else {
       acc.push(act);
     }
@@ -100,4 +99,20 @@ export function computeHist<T>(arr: T[], acc: (row: T) => string[], categories: 
     hist: entries,
     missing: missingCount
   };
+}
+
+
+export function round(v: number, precision: number = 0) {
+  if (precision === 0) {
+    return Math.round(v);
+  }
+  const scale = Math.pow(10, precision);
+  return Math.round(v * scale) / scale;
+}
+
+export function similar(a: number, b: number, delta = 0.5) {
+  if (a === b) {
+    return true;
+  }
+  return Math.abs(a - b) < delta;
 }

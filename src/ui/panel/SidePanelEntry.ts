@@ -3,7 +3,7 @@
  */
 import {default as Column, IColumnDesc} from '../../model/Column';
 import SidePanelEntryVis from './SidePanelEntryVis';
-import {IRankingHeaderContext} from '../engine/interfaces';
+import {IRankingHeaderContext} from '../interfaces';
 
 
 export default class SidePanelEntry {

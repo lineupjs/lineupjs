@@ -4,7 +4,7 @@
 import {IDataProvider} from '../../provider/ADataProvider';
 import {AEventDispatcher} from '../../utils';
 import OrderedSet from '../../provider/OrderedSet';
-import {IGroupData, IGroupItem, isGroup} from './interfaces';
+import {IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
 
 interface IPoint {
   x: number;

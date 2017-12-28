@@ -5,7 +5,7 @@ import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import {createData} from './MultiLevelCellRenderer';
 import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
 import {IDataRow, IGroup} from '../model/interfaces';
-import {matchColumns} from '../utils';
+import {matchColumns} from './utils';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 

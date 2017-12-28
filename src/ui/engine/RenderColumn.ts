@@ -5,7 +5,7 @@ import {IColumn} from 'lineupengine/src';
 import Column from '../../model/Column';
 import {createHeader, updateHeader} from './header';
 import {IDOMCellRenderer, IDOMGroupRenderer} from '../../renderer/IDOMCellRenderers';
-import {IRankingContext} from './interfaces';
+import {IRankingContext} from '../interfaces';
 import {isSupportType} from '../../model/Ranking';
 
 

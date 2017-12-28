@@ -1,6 +1,6 @@
 import IRenderContext from './IRenderContext';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
-import {ITextRenderHints} from '../utils';
+import {ITextRenderHints} from './utils';
 import Column from '../model/Column';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IGroup} from '../model/interfaces';

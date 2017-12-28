@@ -3,7 +3,7 @@ import {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IDataRow, IGroup} from '../model/interfaces';
-import {clipText} from '../utils';
+import {clipText} from './utils';
 import ICellRendererFactory from './ICellRendererFactory';
 
 

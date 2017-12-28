@@ -2,7 +2,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow, IGroup} from '../model/interfaces';
-import {attr} from '../utils';
+import {attr} from './utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {ICategoricalColumn, isCategoricalColumn} from '../model/ICategoricalColumn';
 import Column from '../model/Column';

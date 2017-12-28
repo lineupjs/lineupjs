@@ -3,7 +3,7 @@
  */
 import Column from '../../model/Column';
 import {createHeader, updateHeader} from './header';
-import {IRankingContext} from './interfaces';
+import {IRankingContext} from '../interfaces';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import {IMultiLevelColumn} from '../../model/CompositeColumn';
 import {round} from '../../utils';

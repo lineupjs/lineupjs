@@ -1,6 +1,6 @@
 import {ICanvasRenderContext} from './RendererContexts';
 import Column from '../model/Column';
-import {attr, forEachChild} from '../utils';
+import {attr, forEachChild} from './utils';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
 

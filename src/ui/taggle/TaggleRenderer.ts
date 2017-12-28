@@ -1,12 +1,11 @@
-import {IGroupData, IGroupItem, isGroup} from '../engine/interfaces';
-import EngineRenderer, {IEngineRendererOptions} from '../engine/EngineRenderer';
 import {IRule} from './LineUpRuleSet';
 import {defaultConfig} from '../../config';
-import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
+import {IRankingHeaderContext, RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import {GROUP_SPACING} from './lod';
 import DataProvider from '../../provider/ADataProvider';
 import {AEventDispatcher, merge} from '../../utils';
-import {IRankingHeaderContext} from '../engine/interfaces';
+import EngineRenderer from '../engine/EngineRenderer';
+import {IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;

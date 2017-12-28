@@ -5,7 +5,7 @@ import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow, IGroup} from '../model/interfaces';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {clipText} from '../utils';
+import {clipText} from './utils';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 /**
