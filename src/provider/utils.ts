@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 15.08.2017.
  */
 import {default as Column, IColumnDesc} from '../model/Column';
-import {extent} from 'd3';
+import {extent} from 'd3-array';
 import {isNumberColumn, isSupportType} from '../model';
 import Ranking from '../model/Ranking';
 

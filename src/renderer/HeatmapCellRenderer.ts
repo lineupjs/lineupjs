@@ -5,7 +5,7 @@ import IDOMCellRenderer from './IDOMCellRenderers';
 import {IDataRow} from '../provider/ADataProvider';
 import {clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {hsl} from 'd3';
+import {hsl} from 'd3-color';
 import ICellRendererFactory from './ICellRendererFactory';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {colorOf, IImposer} from './impose';

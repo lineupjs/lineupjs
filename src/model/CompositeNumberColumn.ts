@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {format} from 'd3';
+import {format} from 'd3-format';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';

@@ -4,7 +4,7 @@
 
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {FIRST_IS_NAN, isMissingValue} from './missing';
-import {time} from 'd3';
+import {timeFormat, timeParse} from 'd3-time-format';
 
 export interface IDateDesc {
   /**
@@ -23,13 +23,13 @@ export interface IDateDesc {
 export declare type IDateColumnDesc = IValueColumnDesc<Date|string> & IDateDesc;
 
 export default class DateColumn extends ValueColumn<Date|string> {
-  private readonly format: time.Format;
-  private readonly parse: (date: string)=>Date;
+  private readonly format: (date: Date) => string;
+  private readonly parse: (date: string) => Date | null;
 
   constructor(id: string, desc: IDateColumnDesc) {
     super(id, desc);
-    this.format = time.format(desc.dateFormat || '%x');
-    this.parse = desc.dateParse ? time.format(desc.dateParse).parse : this.format.parse;
+    this.format = timeFormat(desc.dateFormat || '%x');
+    this.parse = desc.dateParse ? timeParse(desc.dateParse) : timeParse(desc.dateFormat || '%x');
     this.setDefaultRenderer('default');
   }
 

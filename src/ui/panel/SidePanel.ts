@@ -3,7 +3,7 @@
  */
 
 import {suffix} from '../../utils';
-import {nest} from 'd3';
+import {nest} from 'd3-collection';
 import Ranking, {isSupportType} from '../../model/Ranking';
 import {default as Column, IColumnDesc} from '../../model/Column';
 import SidePanelEntry from './SidePanelEntry';

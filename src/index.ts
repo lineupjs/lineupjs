@@ -8,7 +8,6 @@ import * as model_ from './model';
 import * as provider_ from './provider';
 import * as renderer_ from './renderer/index';
 import * as ui_ from './ui';
-import {Selection} from 'd3';
 import LineUp, {ILineUpConfig} from './lineup';
 
 export {deriveColors} from './lineup';
@@ -41,7 +40,7 @@ export function createLocalStorage(data: any[], columns: model_.IColumnDesc[], o
   return new provider_.LocalDataProvider(data, columns, options);
 }
 
-export function create(data: provider_.DataProvider, container: Selection<any> | Element, config: Partial<ILineUpConfig> = {}) {
+export function create(data: provider_.DataProvider, container: HTMLElement, config: Partial<ILineUpConfig> = {}) {
   return new LineUp(container, data, config);
 }
 

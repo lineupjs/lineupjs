@@ -1,7 +1,8 @@
 import {FIRST_IS_NAN, isMissingValue} from './missing';
 import Column, {IColumnDesc} from './Column';
 import {IDataRow} from '../provider/ADataProvider';
-import {ascending, format, mean, median, quantile} from 'd3';
+import {ascending, mean, median, quantile} from 'd3-array';
+import {format} from 'd3-format';
 import {IMappingFunction} from './NumberColumn';
 import {similar} from '../utils';
 

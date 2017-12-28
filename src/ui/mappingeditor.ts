@@ -2,10 +2,12 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {behavior, event as d3event, mouse, scale, select, selectAll, Selection} from 'd3';
-import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './model/NumberColumn';
-import {filterMissingText} from './dialogs/AFilterDialog';
-import {INumberFilter} from './model/INumberColumn';
+import {event as d3event, mouse, select, selectAll, Selection} from 'd3-selection';
+import {D3DragEvent, drag} from 'd3-drag';
+import {scaleLinear} from 'd3-scale';
+import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from '../model/NumberColumn';
+import {filterMissingText} from '../dialogs/AFilterDialog';
+import {INumberFilter} from '../model/INumberColumn';
 
 
 function clamp(v: number, min: number, max: number) {
@@ -70,7 +72,7 @@ export default class MappingEditor {
     return this.computeFilter();
   }
 
-  private build($root: Selection<any>) {
+  private build($root: Selection<any, any, any, any>) {
     const options = this.options,
       that = this;
     $root = $root.append('div').classed('lu-mapping-editor', true);
@@ -150,9 +152,9 @@ export default class MappingEditor {
     </form>`;
 
 
-    const raw2pixel = scale.linear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
+    const raw2pixel = scaleLinear().domain([Math.min(this.scale.domain[0], this.original.domain[0]), Math.max(this.scale.domain[this.scale.domain.length - 1], this.original.domain[this.original.domain.length - 1])])
       .range([0, width]);
-    const normal2pixel = scale.linear().domain([0, 1])
+    const normal2pixel = scaleLinear().domain([0, 1])
       .range([0, width]);
 
     const inputDomain = raw2pixel.domain();
@@ -188,44 +190,44 @@ export default class MappingEditor {
 
     //lines that show mapping of individual data items
     let datalines = $root.select('g.samples').selectAll('line').data(<number[]>[]);
+    let datalinesUpdate = datalines;
     this.dataPromise.then((data) => {
       //to unique values
       data = unique(data);
 
       datalines = datalines.data(data);
-      datalines.enter()
+      datalinesUpdate = datalines.merge(datalines.enter()
         .append('line')
-        .attr({
-          x1: (d) => normal2pixel(that.scale.apply(d)),
-          y1: 0,
-          x2: raw2pixel,
-          y2: height
-        }).style('visibility', (d) => {
-        const domain = that.scale.domain;
-        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null!;
-      });
+        .attr('x1', (d) => normal2pixel(that.scale.apply(d)))
+        .attr('y1', 0)
+        .attr('x2', raw2pixel)
+        .attr('y2', height)
+        .style('visibility', (d) => {
+          const domain = that.scale.domain;
+          return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null!;
+        }));
     });
 
     function updateDataLines() {
-      datalines.attr({
-        x1: (d) => normal2pixel(that.scale.apply(d)),
-        x2: raw2pixel
-      }).style('visibility', (d) => {
+      datalinesUpdate
+        .attr('x1', (d) => normal2pixel(that.scale.apply(d)))
+        .attr('x2', raw2pixel)
+        .style('visibility', (d) => {
         const domain = that.scale.domain;
         return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null!;
       });
     }
 
     function createDrag<T>(move: (d: T, index: number) => void) {
-      return behavior.drag()
-        .on('dragstart', function (this: HTMLElement) {
+      return drag<HTMLElement, T>()
+        .on('start', function (this: HTMLElement) {
           select(this)
             .classed('dragging', true)
             .attr('r', options.radius * 1.1);
           select(`#me${options.idPrefix}mapping-overlay`).classed('hide', true);
         })
         .on('drag', move)
-        .on('dragend', function (this: HTMLElement) {
+        .on('end', function (this: HTMLElement) {
           select(this)
             .classed('dragging', false)
             .attr('r', options.radius);
@@ -285,7 +287,7 @@ export default class MappingEditor {
       });
 
       $root.selectAll('rect.adder').on('click', () => {
-        addPoint(mouse($root.select('svg > g').node())[0]);
+        addPoint(mouse($root.select<SVGGElement>('svg > g').node()!)[0]);
       });
 
       function createOverlay(this: SVGGElement, d: { n: number, r: number }) {
@@ -367,10 +369,8 @@ export default class MappingEditor {
         (<MouseEvent>d3event).stopPropagation();
         removePoint(i);
       });
-      $mappingEnter.append('line').attr({
-        y1: 0,
-        y2: height
-      }).call(createDrag<IMappingLine>(function (this: SVGLineElement, d) {
+      $mappingEnter.append('line')
+        .attr('y1', 0).attr('y2', height).call(createDrag<IMappingLine>(function (this: SVGLineElement, d) {
         //drag the line shifts both point in parallel
         const dx = (<any>d3event).dx;
         const nx = clamp(normal2pixel(d.n) + dx, 0, width);
@@ -409,12 +409,12 @@ export default class MappingEditor {
         updateScale();
       }));
 
-      $mapping.select('line').attr({
-        x1: (d) => normal2pixel(d.n),
-        x2: (d) => raw2pixel(d.r)
-      });
-      $mapping.select('circle.normalized').attr('cx', (d) => normal2pixel(d.n));
-      $mapping.select('circle.raw').attr('cx', (d) => raw2pixel(d.r));
+      const $mappingUpdate = $mapping.merge($mappingEnter);
+      $mappingUpdate.select('line')
+        .attr('x1', (d) => normal2pixel(d.n))
+        .attr('x2', (d) => raw2pixel(d.r));
+      $mappingUpdate.select('circle.normalized').attr('cx', (d) => normal2pixel(d.n));
+      $mappingUpdate.select('circle.raw').attr('cx', (d) => raw2pixel(d.r));
       $mapping.exit().remove();
     }
 
@@ -480,7 +480,7 @@ export default class MappingEditor {
         .attr('transform', (_d, i) => `translate(${i === 0 ? minFilter : maxFilter},0)`).call(createDrag(function (this: SVGGElement, _d, i) {
 
         //drag normalized
-        const px = clamp((<DragEvent>d3event).x, 0, width);
+        const px = clamp((<D3DragEvent<any,any, any>>d3event).x, 0, width);
         const v = raw2pixel.invert(px);
         const which = i === 0 ? 'min' : 'max';
         const filter = (px <= 0 && which === 'min' ? -Infinity : (px >= width && which === 'max' ? Infinity : v));

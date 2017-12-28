@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {scale} from 'd3';
+import {scaleOrdinal, schemeCategory10} from 'd3-scale';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import CategoricalColumn from './CategoricalColumn';
@@ -26,7 +26,7 @@ function min(v: number[]) {
 export default class CategoricalNumberColumn extends ValueColumn<number> implements INumberColumn, ICategoricalColumn {
   static readonly EVENT_MAPPING_CHANGED = NumberColumn.EVENT_MAPPING_CHANGED;
 
-  private colors = scale.category10();
+  private colors = scaleOrdinal<string, string>(schemeCategory10);
 
   /**
    * category labels by default the category name itself
@@ -34,7 +34,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
    */
   private catLabels = new Map<string, string>();
 
-  private readonly scale = scale.ordinal().rangeRoundPoints([0, 1]);
+  private readonly scale = scaleOrdinal<string, number>();
 
   private currentFilter: ICategoricalFilter | null = null;
   /**
@@ -63,7 +63,7 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return super.createEventList().concat([CategoricalNumberColumn.EVENT_MAPPING_CHANGED]);
   }
 
-  get categories() {
+  get categories(): string[] {
     return this.colors.domain().slice();
   }
 

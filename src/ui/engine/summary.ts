@@ -10,12 +10,13 @@ import StringColumn from '../../model/StringColumn';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../../dialogs/AFilterDialog';
 import {stringFilter} from '../../dialogs/StringFilterDialog';
-import {behavior, DragEvent, event as d3event, select, selectAll} from 'd3';
+import {drag, D3DragEvent} from 'd3-drag';
+import {event as d3event, selectAll} from 'd3-selection';
 import {round} from '../../utils';
 import {IRankingHeaderContext} from './interfaces';
 import AggregateGroupColumn from '../../model/AggregateGroupColumn';
-import {ISummaryFunction} from '../interfaces';
 import {DENSE_HISTOGRAM} from '../../renderer/HistogramRenderer';
+import {ISummaryFunction} from '../../interfaces';
 
 export const defaultSummaries: {[key: string]: ISummaryFunction} = {
   stringLike: summaryString,
@@ -235,12 +236,12 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
 
   filterMissing.onchange = () => update();
 
-  selectAll([min, max]).call(behavior.drag()
-    .on('dragstart', function (this: HTMLElement) {
-      select(this).classed('lu-dragging', true);
+  selectAll([min, max]).call(drag()
+    .on('start', function (this: HTMLElement) {
+      this.classList.add('lu-dragging');
     })
     .on('drag', function (this: HTMLElement) {
-      const evt = (<DragEvent>d3event);
+      const evt = (<D3DragEvent<any, any, any>>d3event);
       const total = node.clientWidth;
       const px = Math.max(0, Math.min(evt.x, total));
       const percent = Math.round(100 * px / total);
@@ -256,8 +257,8 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
       this.style.right = `${100 - percent}%`;
       maxHint.style.width = `${100 - percent}%`;
     })
-    .on('dragend', function (this: HTMLElement) {
-      select(this).classed('lu-dragging', false);
+    .on('end', function (this: HTMLElement) {
+      this.classList.remove('lu-dragging');
       update();
     }));
 }

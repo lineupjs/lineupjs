@@ -7,7 +7,6 @@ import Column from './model/Column';
 import DataProvider from './provider/ADataProvider';
 import PoolRenderer, {IPoolRendererOptions} from './ui/PoolRenderer';
 import {AEventDispatcher, merge} from './utils';
-import {select, selection, Selection} from 'd3';
 import {defaultConfig} from './config';
 import {ILineUpRenderer, RENDERER_EVENT_HOVER_CHANGED, RENDERER_EVENT_RENDER_FINISHED} from './ui/interfaces';
 import {ILineUpConfig, IRenderingOptions} from './interfaces';

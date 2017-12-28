@@ -2,7 +2,8 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {dispatch, Dispatch, scale as d3scale} from 'd3';
+import {dispatch, Dispatch} from 'd3-dispatch';
+import {schemeCategory10} from 'd3-scale';
 import Column, {IColumnDesc} from './model/Column';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
 
@@ -95,7 +96,7 @@ export interface IEventContext {
  * base class for event dispatching using d3 event mechanism
  */
 export class AEventDispatcher {
-  private listeners: Dispatch;
+  private listeners: Dispatch<any>;
   private forwarder: (...args: any[]) => void;
 
   constructor() {
@@ -144,7 +145,7 @@ export class AEventDispatcher {
         primaryType, //in case of multi propagation the 'main' event type
         args //the arguments to the listener
       };
-      this.listeners[t].apply(context, args);
+      this.listeners.apply(t, context, args);
     };
     if (Array.isArray(type)) {
       type.forEach(fireImpl.bind(this));
@@ -568,7 +569,7 @@ export function equalArrays<T>(a: T[], b: T[]) {
  * @returns {IColumnDesc[]}
  */
 export function deriveColors(columns: IColumnDesc[]) {
-  const colors = d3scale.category10().range().slice();
+  const colors = schemeCategory10.slice();
   columns.forEach((col: any) => {
     switch (col.type) {
       case 'number':

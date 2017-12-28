@@ -1,7 +1,7 @@
 {
   "name": "lineupjs",
   "description": "LineUp is an interactive technique designed to create, visualize and explore rankings of items based on a set of heterogeneous attributes.",
-  "version": "2.0.0-SNAPSHOT",
+  "version": "3.0.0-SNAPSHOT",
   "author": {
     "name": "Caleydo Team",
     "email": "contact@caleydo.org",
@@ -19,16 +19,11 @@
     {
       "name": "Holger Stitz",
       "email": "kontakt@holgerstitz.de"
-    },
-    {
-      "name": "Hendrik Strobelt",
-      "email": "hendrik@strobelt.com"
     }
   ],
   "engines": {
     "npm": ">= 3",
-    "node": ">= 6",
-    "iojs": ">= 3"
+    "node": ">= 6"
   },
   "license": "BSD-3-Clause",
   "bugs": {
@@ -40,9 +35,7 @@
     "build",
     "!build/docs",
     "src/**/*.ts",
-    "src/assets/**/*.png",
-    "src/assets/**/*.jpg",
-    "src/assets/**/*.svg",
+    "src/assets/**/",
     "src/**/*.tsx",
     "src/**/*.scss"
   ],
@@ -109,13 +102,25 @@
     "webpack-dev-server": "^2.7.1"
   },
   "dependencies": {
-    "@types/d3": "^3.5.36",
+    "@types/d3-array": "^1.2.1",
+    "@types/d3-collection": "^1.0.5",
+    "@types/d3-color": "^1.0.5",
     "@types/d3-dispatch": "^1.0.5",
-    "@types/d3-drag": "^1.1.0",
+    "@types/d3-drag": "^1.2.0",
+    "@types/d3-format": "^1.2.1",
+    "@types/d3-scale": "^1.0.11",
     "@types/d3-selection": "^1.1.0",
-    "d3": "^3.5.17",
+    "@types/d3-time": "^1.0.7",
+    "@types/d3-time-format": "^2.1.0",
+    "d3-array": "^1.2.1",
+    "d3-collection": "^1.0.4",
+    "d3-color": "^1.0.3",
     "d3-dispatch": "^1.0.3",
-    "d3-drag": "^1.1.1",
+    "d3-drag": "^1.2.1",
+    "d3-format": "^1.2.1",
+    "d3-scale": "^1.0.7",
+    "d3-time": "^1.0.8",
+    "d3-time-format": "^2.1.1",
     "font-awesome": "^4.7.0",
     "lineupengine": "github:sgratzl/lineupengine",
     "popper.js": "^1.12.5"

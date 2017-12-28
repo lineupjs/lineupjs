@@ -5,7 +5,7 @@ import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import Column from '../model/Column';
 import {IGroup} from '../model/Group';
-import {mean} from 'd3';
+import {mean} from 'd3-array';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isMissingValue} from '../model/missing';
 import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';

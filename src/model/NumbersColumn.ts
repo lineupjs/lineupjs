@@ -1,7 +1,7 @@
 /**
  * Created by bikramkawan on 24/11/2016.
  */
-import {scale as d3scale} from 'd3';
+import {scaleLinear} from 'd3-scale';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import NumberColumn, {
@@ -110,7 +110,7 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
   }
 
   getRawColorScale() {
-    const colorScale = d3scale.linear<string, string>();
+    const colorScale = scaleLinear<string, string>();
     const domain = this.mapping.domain;
     if (domain[0] < 0) {
       colorScale

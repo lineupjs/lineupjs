@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 28.06.2017.
  */
-import {scale} from 'd3';
+import {} from 'd3-scale';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';

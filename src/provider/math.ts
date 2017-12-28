@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 10.08.2017.
  */
 
-import {layout, extent, mean} from 'd3';
+import {extent, mean} from 'd3-array';
 import {ICategoricalStatistics, IStatistics} from '../model/Column';
 
 

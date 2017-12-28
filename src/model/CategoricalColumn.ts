@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {scale} from 'd3';
+import {scaleOrdinal, schemeCategory10, schemeCategory20} from 'd3-scale';
 import Column from './Column';
 import ValueColumn from './ValueColumn';
 import StringColumn from './StringColumn';
@@ -15,7 +15,7 @@ import {
 
 function colorPool() {
   // dark, bright, and repeat
-  const colors = scale.category10().range().concat(scale.category20().range().filter((_d,i) => i % 2 === 1));
+  const colors = schemeCategory10.concat(schemeCategory20.filter((_d,i) => i % 2 === 1));
   let act = 0;
   return () => colors[(act ++) % colors.length];
 }
@@ -28,7 +28,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
    * colors for each category
    * @type {Ordinal<string, string>}
    */
-  private colors = scale.category10();
+  private colors = scaleOrdinal(schemeCategory10);
 
   /**
    * category labels by default the category name itself
