@@ -1,9 +1,9 @@
-import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
 import {IDataProvider} from '../provider/ADataProvider';
 import {IFilterDialog} from '../dialogs/AFilterDialog';
-import {ICategoricalColumn} from '../model/ICategoricalColumn';
-import {INumberColumn} from '../model/INumberColumn';
-import {IGroupData, IGroupItem} from '../model/interfaces';
+import {
+  IGroupData, IGroupItem, Column, INumberColumn, ICategoricalColumn, ICategoricalStatistics,
+  IStatistics
+} from '../model';
 import {IDOMRenderContext} from '../renderer/RendererContexts';
 
 export const RENDERER_EVENT_HOVER_CHANGED = 'hoverChanged';

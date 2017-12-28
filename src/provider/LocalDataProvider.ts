@@ -2,15 +2,12 @@
  * Created by sam on 04.11.2016.
  */
 
-import Column, {IColumnDesc} from '../model/Column';
-import {INumberColumn} from '../model/INumberColumn';
+import Column, {INumberColumn, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData} from '../model';
 import Ranking from '../model/Ranking';
-import {ICategoricalColumn} from '../model/ICategoricalColumn';
 import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
-import {computeHist, computeStats} from './math';
+import {computeHist, computeStats} from '../math';
 import {defaultGroup, IOrderedGroup} from '../model/Group';
-import {IDataRow, IGroup, IGroupData} from '../model/interfaces';
 
 
 export interface ILocalDataProviderOptions {
@@ -129,7 +126,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return [];
     }
     //wrap in a helper and store the initial index
-    let helper = this._data.map((r, i) => ({v: r, dataIndex: i, group: <IGroup | null>null}));
+    let helper = this._data.map((r, i) => ({v: r, i, group: <IGroup | null>null}));
 
     //do the optional filtering step
     if (this.options.filterGlobally) {
@@ -154,7 +151,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       helper.sort((a, b) => ranking.comparator(a, b));
 
       //store the ranking index and create an argsort version, i.e. rank 0 -> index i
-      const order = helper.map((r) => r.dataIndex);
+      const order = helper.map((r) => r.i);
       return [Object.assign({order}, group!)];
     }
     //sort by group and within by order
@@ -172,10 +169,10 @@ export default class LocalDataProvider extends ACommonDataProvider {
     helper.forEach((row) => {
       const rowGroup = row.group!;
       if (rowGroup.name === group.name) {
-        group.order.push(row.dataIndex);
+        group.order.push(row.i);
         group.rows.push(row);
       } else { // change in groups
-        group = Object.assign({order: [row.dataIndex], rows: [row]}, rowGroup);
+        group = Object.assign({order: [row.i], rows: [row]}, rowGroup);
         groups.push(group);
       }
     });
@@ -260,5 +257,5 @@ export default class LocalDataProvider extends ACommonDataProvider {
 }
 
 function toRows(data: any[]) {
-  return data.map((v, dataIndex) => ({v, dataIndex}));
+  return data.map((v, i) => ({v, i}));
 }

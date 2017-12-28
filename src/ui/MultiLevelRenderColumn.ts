@@ -1,14 +1,14 @@
 /**
  * Created by Samuel Gratzl on 25.07.2017.
  */
-import Column from '../../model/Column';
+import Column from '../model/Column';
 import {createHeader, updateHeader} from './header';
-import {IRankingContext} from '../interfaces';
+import {IRankingContext} from './interfaces';
 import RenderColumn, {IRenderers} from './RenderColumn';
-import {IMultiLevelColumn} from '../../model/CompositeColumn';
-import {round} from '../../utils';
+import {IMultiLevelColumn} from '../model/CompositeColumn';
+import {round} from '../math';
 import {isEdge, StyleManager} from 'lineupengine/src/style';
-import {gridClass} from '../../renderer/MultiLevelCellRenderer';
+import {gridClass} from '../renderer/MultiLevelCellRenderer';
 
 
 export default class MultiLevelRenderColumn extends RenderColumn {

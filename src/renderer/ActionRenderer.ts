@@ -51,7 +51,7 @@ export default class ActionRenderer implements ICellRendererFactory {
   createCanvas(col: ActionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     const actions = (<IAction[]>context.option('actions', [])).concat(col.actions);
     return (_ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, dx: number, dy: number) => {
-      const hovered = context.hovered(d.dataIndex);
+      const hovered = context.hovered(d.i);
       if (!hovered) {
         return;
       }

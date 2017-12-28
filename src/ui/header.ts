@@ -1,41 +1,41 @@
 /**
  * Created by Samuel Gratzl on 25.07.2017.
  */
-import Column from '../../model/Column';
-import {createNestedDesc, createStackDesc, isSupportType} from '../../model';
-import NumbersColumn from '../../model/NumbersColumn';
-import BoxPlotColumn from '../../model/BoxPlotColumn';
-import SortDialog from '../../dialogs/SortDialog';
-import RenameDialog from '../../dialogs/RenameDialog';
-import ChangeRendererDialog from '../../dialogs/ChangeRendererDialog';
-import LinkColumn from '../../model/LinkColumn';
-import ADialog from '../../dialogs/ADialog';
-import ScriptColumn from '../../model/ScriptColumn';
-import ScriptEditDialog from '../../dialogs/ScriptEditDialog';
-import EditLinkDialog from '../../dialogs/EditLinkDialog';
-import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../../model/CompositeColumn';
-import RankColumn from '../../model/RankColumn';
-import WeightsEditDialog from '../../dialogs/WeightsEditDialog';
-import StackColumn from '../../model/StackColumn';
-import CutOffHierarchyDialog from '../../dialogs/CutOffHierarchyDialog';
-import SearchDialog from '../../dialogs/SearchDialog';
-import SortGroupDialog from '../../dialogs/SortGroupDialog';
-import HierarchyColumn from '../../model/HierarchyColumn';
-import {dragAble, dropAble, IDropResult} from './dnd';
-import NumberColumn from '../../model/NumberColumn';
-import {isNumberColumn} from '../../model';
-import Ranking from '../../model/Ranking';
-import {isCategoricalColumn} from '../../model';
-import StratifyThresholdDialog from '../../dialogs/StratifyThresholdDialog';
-import {IRankingHeaderContext} from '../interfaces';
-import {equalArrays} from '../../utils';
-import MoreColumnOptionsDialog from '../../dialogs/MoreColumnOptionsDialog';
-import {findTypeLike} from '../../model/utils';
-import SelectionColumn from '../../model/SelectionColumn';
-import CompositeChildrenDialog from '../../dialogs/CompositeChildrenDialog';
-import StringColumn from '../../model/StringColumn';
-import ImpositionCompositeColumn from '../../model/ImpositionCompositeColumn';
-import GroupColumn from '../../model/GroupColumn';
+import Column from '../model/Column';
+import {createNestedDesc, createStackDesc, isSupportType} from '../model';
+import NumbersColumn from '../model/NumbersColumn';
+import BoxPlotColumn from '../model/BoxPlotColumn';
+import SortDialog from '../dialogs/SortDialog';
+import RenameDialog from '../dialogs/RenameDialog';
+import ChangeRendererDialog from '../dialogs/ChangeRendererDialog';
+import LinkColumn from '../model/LinkColumn';
+import ADialog from '../dialogs/ADialog';
+import ScriptColumn from '../model/ScriptColumn';
+import ScriptEditDialog from '../dialogs/ScriptEditDialog';
+import EditLinkDialog from '../dialogs/EditLinkDialog';
+import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
+import RankColumn from '../model/RankColumn';
+import WeightsEditDialog from '../dialogs/WeightsEditDialog';
+import StackColumn from '../model/StackColumn';
+import CutOffHierarchyDialog from '../dialogs/CutOffHierarchyDialog';
+import SearchDialog from '../dialogs/SearchDialog';
+import SortGroupDialog from '../dialogs/SortGroupDialog';
+import HierarchyColumn from '../model/HierarchyColumn';
+import {dragAble, dropAble, IDropResult} from '../internal/dnd';
+import NumberColumn from '../model/NumberColumn';
+import {isNumberColumn} from '../model';
+import Ranking from '../model/Ranking';
+import {isCategoricalColumn} from '../model';
+import StratifyThresholdDialog from '../dialogs/StratifyThresholdDialog';
+import {IRankingHeaderContext} from './interfaces';
+import {equalArrays} from '../utils';
+import MoreColumnOptionsDialog from '../dialogs/MoreColumnOptionsDialog';
+import {findTypeLike} from '../model/utils';
+import SelectionColumn from '../model/SelectionColumn';
+import CompositeChildrenDialog from '../dialogs/CompositeChildrenDialog';
+import StringColumn from '../model/StringColumn';
+import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
+import GroupColumn from '../model/GroupColumn';
 
 
 /**
@@ -242,7 +242,7 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
 
   if (col instanceof LinkColumn) {
     //edit link
-    addIcon('Edit Link Pattern &hellip;', EditLinkDialog, ctx.idPrefix, (<string[]>[]).concat((<any>col.desc).templates || [], ctx.linkTemplates));
+    addIcon('Edit Link Pattern &hellip;', EditLinkDialog, ctx.idPrefix, col.templates);
   }
 
   if (col instanceof ScriptColumn) {
@@ -261,7 +261,7 @@ export function createToolbarMenuItems(addIcon: IAddIcon, col: Column, ctx: IRan
     addIcon('Set Cut Off &hellip;', CutOffHierarchyDialog, ctx.idPrefix);
   }
 
-  if (ctx.searchAble(col)) {
+  if (col instanceof StringColumn) {
     //search
     addIcon('Search &hellip;', SearchDialog, ctx.provider);
   }

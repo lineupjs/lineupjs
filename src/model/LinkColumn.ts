@@ -33,9 +33,12 @@ export default class LinkColumn extends StringColumn {
    */
   private link: string | null = null;
 
+  readonly templates: string[];
+
   constructor(id: string, desc: ILinkColumnDesc) {
     super(id, desc);
     this.link = desc.link || null;
+    this.templates = desc.templates || [];
   }
 
   get headerCssClass() {

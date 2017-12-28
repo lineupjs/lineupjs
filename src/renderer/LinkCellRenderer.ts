@@ -37,7 +37,7 @@ export default class LinkCellRenderer extends ANoGroupRenderer implements ICellR
         clipText(ctx, col.getLabel(d), 0, 0, context.colWidth(col), context.textHints);
         return;
       }
-      const hovered = context.hovered(d.dataIndex);
+      const hovered = context.hovered(d.i);
       if (hovered) {
         const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
         overlay.style.width = `${context.colWidth(col)}px`;

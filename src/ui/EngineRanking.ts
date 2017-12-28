@@ -4,21 +4,22 @@
 import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 import {ACellTableSection, ICellRenderContext} from 'lineupengine/src/table/ACellTableSection';
 import GridStyleManager from 'lineupengine/src/style/GridStyleManager';
-import Ranking from '../../model/Ranking';
+import Ranking from '..//model/Ranking';
 import RenderColumn, {IRenderers} from './RenderColumn';
-import Column, {IFlatColumn} from '../../model/Column';
+import Column, {IFlatColumn} from '../model/Column';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import {IExceptionContext, nonUniformContext, uniformContext} from 'lineupengine/src/logic';
-import StackColumn from '../../model/StackColumn';
-import {isMultiLevelColumn} from '../../model/CompositeColumn';
-import {IDOMRenderContext} from '../../renderer/RendererContexts';
-import {AEventDispatcher, debounce} from '../../utils';
+import StackColumn from '../model/StackColumn';
+import {isMultiLevelColumn} from '../model/CompositeColumn';
+import {IDOMRenderContext} from '../renderer/RendererContexts';
 import SelectionManager from './SelectionManager';
 import {lineupAnimation} from './animation';
 import PrefetchMixin from 'lineupengine/src/mixin/PrefetchMixin';
 import {setColumn} from 'lineupengine/src/style/GridStyleManager';
-import {IRankingBodyContext, IRankingHeaderContextContainer} from '../interfaces';
-import {IDataRow, IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
+import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces';
+import {IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
+import AEventDispatcher from '../internal/AEventDispatcher';
+import debounce from '../internal/debounce';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   columnPadding: number;
@@ -199,12 +200,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return;
     }
 
-    const {dataIndex, meta} = this.renderCtx.getRow(rowIndex);
-    node.dataset.dataIndex = dataIndex.toString();
+    const {i, meta} = this.renderCtx.getRow(rowIndex);
+    node.dataset.i = i.toString();
     node.dataset.agg = 'detail'; //or 'group'
     node.dataset.meta = meta || '';
 
-    this.selection.updateState(node, dataIndex);
+    this.selection.updateState(node, i);
     this.selection.add(node);
   }
 
@@ -221,7 +222,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       // adapt body
       node.dataset.agg = isGroup ? 'group' : 'detail';
       if (isGroup) {
-        node.dataset.dataIndex = '';
+        node.dataset.i = '';
         this.selection.remove(node);
       } else {
         this.selection.add(node);
@@ -229,16 +230,16 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
 
     if (!isGroup) {
-      const {dataIndex, meta} = this.renderCtx.getRow(rowIndex);
-      node.dataset.dataIndex = dataIndex.toString();
+      const {i, meta} = this.renderCtx.getRow(rowIndex);
+      node.dataset.i = i.toString();
       node.dataset.meta = meta || '';
-      this.selection.updateState(node, dataIndex);
+      this.selection.updateState(node, i);
     }
 
     super.updateRow(node, rowIndex);
   }
 
-  updateSelection(selectedDataIndices: {has(dataIndex: number): boolean}) {
+  updateSelection(selectedDataIndices: {has(i: number): boolean}) {
     this.forEachRow((node: HTMLElement, rowIndex: number) => {
       if(this.renderCtx.isGroup(rowIndex)) {
         this.updateRow(node, rowIndex);
@@ -355,11 +356,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   fakeHover(dataIndex: number) {
-    const old = this.body.querySelector(`[data-data-index].lu-hovered`);
+    const old = this.body.querySelector(`[data-i].lu-hovered`);
     if (old) {
       old.classList.remove('lu-hovered');
     }
-    const item = this.body.querySelector(`[data-data-index="${dataIndex}"]`);
+    const item = this.body.querySelector(`[data-i="${dataIndex}"]`);
     if (item) {
       item.classList.add('lu-hovered');
     }

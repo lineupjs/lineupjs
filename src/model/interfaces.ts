@@ -9,7 +9,7 @@ export interface IDataRow {
   /**
    * the underlying data index
    */
-  dataIndex: number;
+  i: number;
 }
 
 

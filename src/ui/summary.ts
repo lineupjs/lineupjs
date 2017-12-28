@@ -1,21 +1,21 @@
 /**
  * Created by Samuel Gratzl on 25.07.2017.
  */
-import Column, {ICategoricalStatistics, IStatistics} from '../../model/Column';
-import {default as CategoricalColumn} from '../../model/CategoricalColumn';
-import {ICategoricalColumn} from '../../model/ICategoricalColumn';
-import NumberColumn, {INumberColumn, isMapAbleColumn} from '../../model/NumberColumn';
-import SelectionColumn from '../../model/SelectionColumn';
-import StringColumn from '../../model/StringColumn';
-import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
-import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../../dialogs/AFilterDialog';
-import {stringFilter} from '../../dialogs/StringFilterDialog';
+import Column from '../model/Column';
+import CategoricalColumn from '../model/CategoricalColumn';
+import {ICategoricalColumn, ICategoricalStatistics, IStatistics} from '../model';
+import NumberColumn, {INumberColumn, isMapAbleColumn} from '../model/NumberColumn';
+import SelectionColumn from '../model/SelectionColumn';
+import StringColumn from '../model/StringColumn';
+import CategoricalNumberColumn from '../model/CategoricalNumberColumn';
+import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../dialogs/AFilterDialog';
+import {stringFilter} from '../dialogs/StringFilterDialog';
 import {drag, D3DragEvent} from 'd3-drag';
 import {event as d3event, selectAll} from 'd3-selection';
-import {round} from '../../utils';
-import AggregateGroupColumn from '../../model/AggregateGroupColumn';
-import {DENSE_HISTOGRAM} from '../../renderer/HistogramRenderer';
-import {IRankingHeaderContext, ISummaryFunction} from '../interfaces';
+import {round} from '../math';
+import AggregateGroupColumn from '../model/AggregateGroupColumn';
+import {DENSE_HISTOGRAM} from '../renderer/HistogramRenderer';
+import {IRankingHeaderContext, ISummaryFunction} from './interfaces';
 
 export const defaultSummaries: {[key: string]: ISummaryFunction} = {
   stringLike: summaryString,

@@ -151,7 +151,7 @@ export function exportRanking(ranking: Ranking, data: any[], options: Partial<IE
     r.push(columns.map((d) => quote(`${d.label}${opts.verboseColumnHeaders && d.description ? `\n${d.description}` : ''}`)).join(opts.separator));
   }
   data.forEach((row, i) => {
-    r.push(columns.map((c) => quote(c.getLabel({v: row, dataIndex: order[i]}), c)).join(opts.separator));
+    r.push(columns.map((c) => quote(c.getLabel({v: row, i: order[i]}), c)).join(opts.separator));
   });
   return r.join(opts.newline);
 }

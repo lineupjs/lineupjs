@@ -47,7 +47,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
       ctx.arc(posx, posy, (context.rowHeight(i) / 2) * value, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
-      if (context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
+      if (context.hovered(d.i) || context.selected(d.i)) {
         ctx.fillStyle = context.option('style.text', 'black');
         clipText(ctx, col.getLabel(d), 1, 0, context.colWidth(col) - 1, context.textHints);
       }

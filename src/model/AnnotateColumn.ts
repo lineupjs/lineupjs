@@ -23,8 +23,8 @@ export default class AnnotateColumn extends StringColumn {
   }
 
   getValue(row: IDataRow) {
-    if (this.annotations.has(row.dataIndex)) {
-      return this.annotations.get(row.dataIndex)!;
+    if (this.annotations.has(row.i)) {
+      return this.annotations.get(row.i)!;
     }
     return super.getValue(row);
   }
@@ -54,11 +54,11 @@ export default class AnnotateColumn extends StringColumn {
       return true;
     }
     if (value === '' || value == null) {
-      this.annotations.delete(row.dataIndex);
+      this.annotations.delete(row.i);
     } else {
-      this.annotations.set(row.dataIndex, value);
+      this.annotations.set(row.i, value);
     }
-    this.fire([AnnotateColumn.EVENT_VALUE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], row.dataIndex, old, value);
+    this.fire([AnnotateColumn.EVENT_VALUE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], row.i, old, value);
     return true;
   }
 }

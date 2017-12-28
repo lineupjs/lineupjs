@@ -11,22 +11,21 @@ import {
   IColumnDesc,
   createGroupDesc,
   isSupportType,
-  models
+  models,
+  Column,
+  IDataRow, IGroup, INumberColumn, ICategoricalColumn, ICategoricalStatistics, IStatistics
 } from '../model';
-import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
 import Ranking from '../model/Ranking';
 import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
-import {ICategoricalColumn} from '../model/ICategoricalColumn';
-import {INumberColumn} from '../model/INumberColumn';
-import {AEventDispatcher, debounce, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
 import {IOrderedGroup, toGroupID, unifyParents} from '../model/Group';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
-import OrderedSet from './OrderedSet';
+import OrderedSet from '../internal/OrderedSet';
 import {IExportOptions, exportRanking} from './utils';
-import {IDataRow, IGroup} from '../model/interfaces';
+import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
+import debounce from '../internal/debounce';
 export {IExportOptions} from './utils';
 
 export interface IStatsBuilder {
@@ -59,9 +58,9 @@ export interface IDataProvider extends AEventDispatcher {
 
   setSelection(dataIndices: number[]): void;
 
-  toggleSelection(dataIndex: number, additional?: boolean): boolean;
+  toggleSelection(i: number, additional?: boolean): boolean;
 
-  isSelected(dataIndex: number): boolean;
+  isSelected(i: number): boolean;
 
   removeRanking(ranking: Ranking): void;
 
@@ -329,9 +328,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (desc.type === 'rank') {
       (<IValueColumnDesc<number>>desc).accessor = this.rankAccessor.bind(this);
     } else if (desc.type === 'selection') {
-      (<ISelectionColumnDesc>desc).accessor = (row: IDataRow) => this.isSelected(row.dataIndex);
-      (<ISelectionColumnDesc>desc).setter = (row: IDataRow, value: boolean) => value ? this.select(row.dataIndex) : this.deselect(row.dataIndex);
-      (<ISelectionColumnDesc>desc).setterAll = (rows: IDataRow[], value: boolean) => value ? this.selectAll(rows.map((d) => d.dataIndex)) : this.deselectAll(rows.map((d) => d.dataIndex));
+      (<ISelectionColumnDesc>desc).accessor = (row: IDataRow) => this.isSelected(row.i);
+      (<ISelectionColumnDesc>desc).setter = (row: IDataRow, value: boolean) => value ? this.select(row.i) : this.deselect(row.i);
+      (<ISelectionColumnDesc>desc).setterAll = (rows: IDataRow[], value: boolean) => value ? this.selectAll(rows.map((d) => d.i)) : this.deselectAll(rows.map((d) => d.i));
     } else if (desc.type === 'aggregate') {
       (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.isAggregated(ranking, group);
       (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: boolean) => this.setAggregated(ranking, group, value);

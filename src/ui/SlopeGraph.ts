@@ -3,8 +3,8 @@
  */
 import {IExceptionContext, range} from 'lineupengine/src/logic';
 import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
-import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
-import {IRankingHeaderContextContainer} from '../interfaces';
+import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup} from '../model';
+import {IRankingHeaderContextContainer} from './interfaces';
 
 interface ISlope {
   isSelected(selection: {has(dataIndex: number):boolean}): boolean;
@@ -230,7 +230,7 @@ export default class SlopeGraph implements ITableSection {
         gr = r;
       } else {
         const item =  (<IGroupItem>r);
-        const dataIndex = item.dataIndex;
+        const dataIndex = item.i;
         const right = lookup.get(dataIndex);
 
         if (!right) { // no match
@@ -255,27 +255,27 @@ export default class SlopeGraph implements ITableSection {
       }
 
       // free group items to share
-      const free = new Set(gr.rows.map((d) => d.dataIndex));
+      const free = new Set(gr.rows.map((d) => d.i));
 
       const heightPerRow = padded / gr.rows.length;
 
       gr.rows.forEach((d) => {
-        if (!free.has(d.dataIndex)) {
+        if (!free.has(d.i)) {
           return; // already handled
         }
-        free.delete(d.dataIndex);
-        const right = lookup.get(d.dataIndex);
+        free.delete(d.i);
+        const right = lookup.get(d.i);
         if (!right) {
           return; // no matching
         }
         // find all of this group
         const intersection = right.rows.filter((r) => free.delete(r));
-        intersection.push(d.dataIndex); //self
+        intersection.push(d.i); //self
 
         const common = intersection.length;
         let s: ISlope;
         if (common === 1) {
-          s = new ItemSlope(start + offset + heightPerRow / 2, right.start + right.offset + right.heightPerRow / 2, [d.dataIndex]);
+          s = new ItemSlope(start + offset + heightPerRow / 2, right.start + right.offset + right.heightPerRow / 2, [d.i]);
         } else if (mode === EMode.ITEM) {
           // fake item
           s = new ItemSlope(start + offset + heightPerRow * common / 2, right.start + right.offset + right.heightPerRow * common / 2, intersection);
@@ -309,17 +309,17 @@ export default class SlopeGraph implements ITableSection {
       };
       if (isGroup(r)) {
         const p = Object.assign(base, {
-          rows: r.rows.map((d) => d.dataIndex),
+          rows: r.rows.map((d) => d.i),
           heightPerRow: padded / r.rows.length,
           group: r
         });
 
-        r.rows.forEach((ri) => lookup.set(ri.dataIndex, p));
+        r.rows.forEach((ri) => lookup.set(ri.i, p));
         return slopes;
       }
       // item
       const item = (<IGroupItem>r);
-      const dataIndex = r.dataIndex;
+      const dataIndex = r.i;
 
       let p = Object.assign(base, {
         rows: [dataIndex],

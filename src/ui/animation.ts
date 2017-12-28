@@ -1,4 +1,4 @@
-import {IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
+import {IGroupData, IGroupItem, isGroup} from '../model';
 import {defaultPhases, EAnimationMode, IAnimationContext, IAnimationItem, IPhase, KeyFinder} from 'lineupengine/src/animation';
 import {IExceptionContext} from 'lineupengine/src/logic';
 
@@ -17,7 +17,7 @@ function toGroupLookup(items: (IGroupItem | IGroupData)[]): IGroupLookUp {
   const group2firstItemIndex = new Map<string, number>();
   items.forEach((item, i) => {
     if (isGroup(item)) {
-      item.rows.forEach((d) => item2groupIndex.set(d.dataIndex, i));
+      item.rows.forEach((d) => item2groupIndex.set(d.i, i));
     } else if (item.group && item.relativeIndex === 0) {
       group2firstItemIndex.set(item.group.name, i);
     }
@@ -29,7 +29,7 @@ function toKey(item: IGroupItem | IGroupData) {
   if (isGroup(item)) {
     return item.name;
   }
-  return (<IGroupItem>item).dataIndex.toString();
+  return (<IGroupItem>item).i.toString();
 }
 
 export function lineupAnimation(previous: IExceptionContext, previousData: (IGroupItem | IGroupData)[], currentData: (IGroupItem | IGroupData)[]): IAnimationContext {
@@ -53,7 +53,7 @@ export function lineupAnimation(previous: IExceptionContext, previousData: (IGro
       prevHelper = toGroupLookup(previousData);
     }
     const item = currentData[currentRowIndex];
-    const referenceIndex = isGroup(item) ? prevHelper.group2firstItemIndex.get(item.name) : prevHelper.item2groupIndex.get(item.dataIndex);
+    const referenceIndex = isGroup(item) ? prevHelper.group2firstItemIndex.get(item.name) : prevHelper.item2groupIndex.get(item.i);
     if (referenceIndex === undefined) {
       return defaultValue;
     }
@@ -68,7 +68,7 @@ export function lineupAnimation(previous: IExceptionContext, previousData: (IGro
       currHelper = toGroupLookup(currentData);
     }
     const item = previousData[previousRowIndex];
-    const referenceIndex = isGroup(item) ? currHelper.group2firstItemIndex.get(item.name) : currHelper.item2groupIndex.get(item.dataIndex);
+    const referenceIndex = isGroup(item) ? currHelper.group2firstItemIndex.get(item.name) : currHelper.item2groupIndex.get(item.i);
     if (referenceIndex === undefined) {
       return defaultValue;
     }

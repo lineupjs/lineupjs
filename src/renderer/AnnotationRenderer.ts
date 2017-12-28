@@ -36,7 +36,7 @@ export default class AnnotationRenderer extends ANoGroupRenderer implements ICel
 
   createCanvas(col: AnnotateColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
     return (ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, dx: number, dy: number) => {
-      const hovered = context.hovered(d.dataIndex);
+      const hovered = context.hovered(d.i);
       if (!hovered) {
         clipText(ctx, col.getLabel(d), 0, 0, context.colWidth(col), context.textHints);
         return;

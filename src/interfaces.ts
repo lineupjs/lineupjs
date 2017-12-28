@@ -3,7 +3,7 @@ import {IDataProvider} from './provider/ADataProvider';
 import {ISummaryFunction} from './ui/interfaces';
 import {IFilterDialog} from './dialogs/AFilterDialog';
 import Ranking from './model/Ranking';
-import {IGroupData, IGroupItem} from './model/interfaces';
+import {IGroupData, IGroupItem} from './model';
 
 
 export interface ILineUpConfig {

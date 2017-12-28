@@ -35,6 +35,11 @@ import {IImposer} from './IRenderContext';
 import CategoricalStackedDistributionlRenderer from './CategoricalStackedDistributionlRenderer';
 import GroupCellRenderer from './GroupCellRenderer';
 
+export {default as ICanvasCellRenderer, ICanvasGroupRenderer} from './ICanvasCellRenderer';
+export {default as ICellRenderFactory} from './ICellRendererFactory';
+export {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
+export {default as IRenderContext, IImposer} from './IRenderContext';
+export {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();

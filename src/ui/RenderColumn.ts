@@ -2,11 +2,11 @@
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import {IColumn} from 'lineupengine/src';
-import Column from '../../model/Column';
+import Column from '../model/Column';
 import {createHeader, updateHeader} from './header';
-import {IDOMCellRenderer, IDOMGroupRenderer} from '../../renderer/IDOMCellRenderers';
-import {IRankingContext} from '../interfaces';
-import {isSupportType} from '../../model/Ranking';
+import {IDOMCellRenderer, IDOMGroupRenderer} from '../renderer';
+import {IRankingContext} from './interfaces';
+import {isSupportType} from '../model';
 
 
 export interface IRenderers {
@@ -40,7 +40,7 @@ export default class RenderColumn implements IColumn {
   }
 
   updateHeader(node: HTMLElement, ctx: IRankingContext) {
-    node.className = `lu-header ${this.c.cssClass ? ` ${this.c.cssClass}` : ''} ${this.c.headerCssClass}${ctx.autoRotateLabels ? ' rotateable' : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
+    node.className = `lu-header ${this.c.cssClass ? ` ${this.c.cssClass}` : ''} ${this.c.headerCssClass}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
     node.classList.toggle('frozen', this.frozen);
     updateHeader(node, this.c, ctx);
   }

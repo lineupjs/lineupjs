@@ -2,12 +2,11 @@
  * Created by sam on 04.11.2016.
  */
 
-import Column, {IColumnDesc} from '../model/Column';
+import Column, {IColumnDesc, IDataRow} from '../model';
 import Ranking from '../model/Ranking';
 import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 import {defaultGroup, IOrderedGroup} from '../model/Group';
-import {IDataRow} from '../model/interfaces';
 
 /**
  * interface what the server side has to provide
@@ -112,7 +111,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     const v = this.loadFromServer(missing);
     missing.forEach((_m, i) => {
       const dataIndex = missing[i];
-      this.cache.set(dataIndex, v.then((loaded) => ({v: loaded[i], dataIndex})));
+      this.cache.set(dataIndex, v.then((loaded) => ({v: loaded[i], i: dataIndex})));
     });
   }
 
@@ -121,7 +120,7 @@ export default class RemoteDataProvider extends ACommonDataProvider {
     this.loadInCache(toLoad);
 
     return orders.map((order) =>
-      order.map((dataIndex) => this.cache.get(dataIndex)!));
+      order.map((i) => this.cache.get(i)!));
   }
 
 

@@ -28,11 +28,12 @@ import DateColumn from './DateColumn';
 import ImpositionCompositeColumn from './ImpositionCompositeColumn';
 import GroupColumn from './GroupColumn';
 
-export {default as Column, IColumnDesc} from './Column';
+export {default, default as Column, IColumnDesc, ICategoricalStatistics, IStatistics, IColumnMetaData, IColumnParent, IFlatColumn, fixCSS} from './Column';
 export {default as CompositeColumn} from './CompositeColumn';
-export {createMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './NumberColumn';
-export {isNumberColumn} from './INumberColumn';
-export {isCategoricalColumn} from './ICategoricalColumn';
+export {createMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './MappingFunction';
+export {IDataRow, IGroup, IGroupData, IGroupItem, isGroup, IGroupParent} from './interfaces';
+export {isNumberColumn, INumberColumn, INumbersColumn} from './INumberColumn';
+export {isCategoricalColumn, ICategoricalColumn, ICategory} from './ICategoricalColumn';
 export {default as Ranking, isSupportType} from './Ranking';
 export {createDesc as createMinDesc} from './MinColumn';
 export {createDesc as createMaxDesc} from './MaxColumn';
@@ -46,6 +47,7 @@ export {createDesc as createActionDesc} from './ActionColumn';
 export {createDesc as createAggregateDesc} from './AggregateGroupColumn';
 export {createDesc as createImpositionDesc} from './ImpositionCompositeColumn';
 export {createDesc as createGroupDesc} from './GroupColumn';
+export {isMissingValue, isUnknown} from './missing';
 
 /**
  * defines a new column type

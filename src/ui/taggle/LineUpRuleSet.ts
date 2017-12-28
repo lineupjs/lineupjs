@@ -1,4 +1,4 @@
-import {IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
+import {IGroupData, IGroupItem, isGroup} from '../../model';
 import {GROUP_SPACING, levelOfDetailInner, levelOfDetailLeaf} from './lod';
 
 const defaultItemHeight = 18;
@@ -33,7 +33,7 @@ function spacefillingItemHeight(data: (IGroupData | IGroupItem)[], availableHeig
   const items = <IGroupItem[]>data.filter((d) => !isGroup(d));
   const groups = data.length - items.length;
   const lastItems = items.reduce((a, d) => a + (d.meta === 'last' || d.meta === 'first last' ? 1 : 0), 0);
-  const selected = items.reduce((a, d) => a + (selection.has(d.dataIndex) ? 1 : 0), 0);
+  const selected = items.reduce((a, d) => a + (selection.has(d.i) ? 1 : 0), 0);
   const unselected = items.length - selected;
   const groupSeparators = groups + lastItems;
 
@@ -74,7 +74,7 @@ export const spacefilling: IRule = {
     const {violation, height} = spacefillingItemHeight(data, availableHeight, selection);
 
     const item = (item: IGroupItem) => {
-      if (selection.has(item.dataIndex)) {
+      if (selection.has(item.i)) {
         return defaultItemHeight;
       }
       return height;

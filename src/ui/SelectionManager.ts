@@ -1,10 +1,10 @@
 /**
  * Created by Samuel Gratzl on 11.10.2017.
  */
-import {IDataProvider} from '../../provider/ADataProvider';
-import {AEventDispatcher} from '../../utils';
-import OrderedSet from '../../provider/OrderedSet';
-import {IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
+import {IDataProvider} from '../provider/ADataProvider';
+import AEventDispatcher from '../internal/AEventDispatcher';
+import OrderedSet from '../internal/OrderedSet';
+import {IGroupData, IGroupItem, isGroup} from '../model';
 
 interface IPoint {
   x: number;
@@ -104,8 +104,8 @@ export default class SelectionManager extends AEventDispatcher {
 
   add(node: HTMLElement) {
     node.onclick = (evt) => {
-      const dataIndex = parseInt(node.dataset.dataIndex!, 10);
-      this.ctx.provider.toggleSelection(dataIndex, evt.ctrlKey);
+      const i = parseInt(node.dataset.i!, 10);
+      this.ctx.provider.toggleSelection(i, evt.ctrlKey);
     };
     node.onmousedown = () => {
       this.startNode = node;
@@ -128,9 +128,9 @@ export default class SelectionManager extends AEventDispatcher {
     };
     rows.forEach((d) => {
       if (isGroup(d)) {
-        d.rows.forEach((r) => toggle(r.dataIndex));
+        d.rows.forEach((r) => toggle(r.i));
       } else {
-        toggle(d.dataIndex);
+        toggle(d.i);
       }
     });
     this.ctx.provider.setSelection(Array.from(current));
@@ -144,7 +144,7 @@ export default class SelectionManager extends AEventDispatcher {
     }
   }
   update(node: HTMLElement, selectedDataIndices: {has(dataIndex: number): boolean}) {
-    const dataIndex = parseInt(node.dataset.dataIndex!, 10);
+    const dataIndex = parseInt(node.dataset.i!, 10);
     if (selectedDataIndices.has(dataIndex)) {
       node.classList.add('lu-selected');
     } else {

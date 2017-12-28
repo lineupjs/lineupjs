@@ -64,7 +64,7 @@ export default class BarCellRenderer implements ICellRendererFactory {
       ctx.fillStyle = colorOf(col, d, imposer) || Column.DEFAULT_COLOR;
       const width = context.colWidth(col) * col.getNumber(d);
       ctx.fillRect(0, paddingTop, isNaN(width) ? 0 : width, context.rowHeight(i) - (paddingTop + paddingBottom));
-      if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
+      if (this.renderValue || context.hovered(d.i) || context.selected(d.i)) {
         ctx.fillStyle = context.option('style.text', 'black');
         clipText(ctx, col.getLabel(d), 1, 0, context.colWidth(col) - 1, context.textHints);
       }

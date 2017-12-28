@@ -5,9 +5,10 @@
 import Column, {fixCSS, IColumnDesc, IColumnParent, IFlatColumn} from './Column';
 import StringColumn from './StringColumn';
 import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
-import {AEventDispatcher, equalArrays, suffix} from '../utils';
 import {IDataRow, IGroupData} from './interfaces';
 import {isCategoricalColumn} from './ICategoricalColumn';
+import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
+import {equalArrays} from '../utils';
 
 export interface ISortCriteria {
   readonly col: Column;
@@ -66,7 +67,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
         return sort.asc ? r : -r;
       }
     }
-    return a.dataIndex - b.dataIndex; //to have a deterministic order
+    return a.i - b.i; //to have a deterministic order
   };
 
   readonly groupComparator = (a: IGroupData, b: IGroupData) => {

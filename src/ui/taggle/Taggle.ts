@@ -1,13 +1,13 @@
-import {IEngineRendererOptions} from '../engine/EngineRenderer';
 import {regular, spacefilling} from './LineUpRuleSet';
 import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import SidePanel from '../panel/SidePanel';
 import DataProvider from '../../provider/ADataProvider';
-import {AEventDispatcher} from '../../utils';
+import AEventDispatcher from '../../internal/AEventDispatcher';
 import SidePanelEntry from '../panel/SidePanelEntry';
 import TaggleRenderer from './TaggleRenderer';
+import {ILineUpConfig} from '../../interfaces';
 
-export declare type ITaggleOptions = IEngineRendererOptions;
+export declare type ITaggleOptions = ILineUpConfig;
 
 export default class Taggle extends AEventDispatcher {
   /**
@@ -27,7 +27,7 @@ export default class Taggle extends AEventDispatcher {
   private readonly panel: SidePanel;
 
 
-  constructor(public readonly node: HTMLElement, public data: DataProvider, options: Partial<IEngineRendererOptions> = {}) {
+  constructor(public readonly node: HTMLElement, public data: DataProvider, options: Partial<ITaggleOptions> = {}) {
     super();
 
     this.node.classList.add('lu-taggle');

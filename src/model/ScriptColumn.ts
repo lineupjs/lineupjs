@@ -205,6 +205,6 @@ export default class ScriptColumn extends CompositeNumberColumn {
       const cols = this.findMyRanker()!.flatColumns;
       return new ColumnContext(cols.map((c) =>  new ColumnWrapper(c, c.getValue(row), isNumberColumn(c) ? c.getRawNumber(row): null)));
     });
-    return this.f.call(this, children, values, raws, col, row.v, row.dataIndex);
+    return this.f.call(this, children, values, raws, col, row.v, row.i);
   }
 }

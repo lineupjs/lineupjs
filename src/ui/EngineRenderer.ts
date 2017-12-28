@@ -1,27 +1,26 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {AEventDispatcher, findOption, round, suffix} from '../../utils';
-import DataProvider, {default as ADataProvider} from '../../provider/ADataProvider';
-import {default as Column, ICategoricalStatistics, IStatistics} from '../../model/Column';
-import {createDOM, createDOMGroup, possibleGroupRenderer, possibleRenderer} from '../../renderer';
-import {ICategoricalColumn, isCategoricalColumn} from '../../model/ICategoricalColumn';
-import NumberColumn from '../../model/NumberColumn';
+import {findOption} from '../utils';
+import DataProvider, {default as ADataProvider} from '../provider/ADataProvider';
+import {createDOM, IImposer, IDOMRenderContext, createDOMGroup, possibleGroupRenderer, possibleRenderer} from '../renderer';
+import {ICategoricalColumn, Column, ICategoricalStatistics, IStatistics, isCategoricalColumn, IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
+import NumberColumn from '../model/NumberColumn';
 import {nonUniformContext} from 'lineupengine/src/logic';
-import {IDOMRenderContext} from '../../renderer/RendererContexts';
 import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer';
-import Ranking from '../../model/Ranking';
+import Ranking from '../model/Ranking';
 import SlopeGraph from './SlopeGraph';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
-import {IImposer} from '../../renderer/IRenderContext';
-import {IRankingHeaderContext, IRankingHeaderContextContainer} from '../interfaces';
-import {IDataRow, IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
+import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
+import {ILineUpConfig} from '../interfaces';
+import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
+import {round} from '../math';
 
 
 export default class EngineRenderer extends AEventDispatcher {
   static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
 
-  protected readonly options: Readonly<IEngineRendererOptions>;
+  protected readonly options: Readonly<ILineUpConfig>;
 
   private readonly histCache = new Map<string, IStatistics | ICategoricalStatistics | null | Promise<IStatistics | ICategoricalStatistics>>();
 
@@ -35,7 +34,7 @@ export default class EngineRenderer extends AEventDispatcher {
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
 
-  constructor(protected data: DataProvider, parent: Element, options: Readonly<IEngineRendererOptions>) {
+  constructor(protected data: DataProvider, parent: Element, options: Readonly<ILineUpConfig>) {
     super();
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');
@@ -43,12 +42,9 @@ export default class EngineRenderer extends AEventDispatcher {
 
     this.ctx = {
       provider: data,
-      filters: this.options.header.filters!,
-      summaries: this.options.header.summaries ? this.options.header.summaries! : {},
-      linkTemplates: this.options.header.linkTemplates!,
-      autoRotateLabels: false,
-      searchAble: this.options.header.searchAble!,
-      option: findOption(Object.assign({useGridLayout: true}, this.options.body)),
+      filters: this.options.filters!,
+      summaries: this.options.summaries ? this.options.summaries! : {},
+      option: findOption(Object.assign({useGridLayout: true}, this.options)),
       statsOf: (col: Column) => {
         const r = this.histCache.get(col.id);
         if (r == null || r instanceof Promise) {
@@ -66,7 +62,7 @@ export default class EngineRenderer extends AEventDispatcher {
         return {single, group, singleId: col.getRenderer(), groupId: col.getGroupRenderer()};
       },
       getPossibleRenderer: (col: Column) => ({item: possibleRenderer(col, this.options.renderers), group: possibleGroupRenderer(col, this.options.renderers)}),
-      columnPadding: this.options.body.columnPadding || 5
+      columnPadding: this.options.columnPadding
     };
 
     this.node.id = this.options.idPrefix;
@@ -101,7 +97,7 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   protected createEventList() {
-    return super.createEventList().concat([EngineRenderer.EVENT_HOVER_CHANGED, EngineRenderer.EVENT_RENDER_FINISHED]);
+    return super.createEventList().concat([EngineRenderer.EVENT_HOVER_CHANGED]);
   }
 
   changeDataStorage(data: DataProvider) {
@@ -148,7 +144,7 @@ export default class EngineRenderer extends AEventDispatcher {
   }
 
   private updateHist(ranking?: EngineRanking, col?: Column) {
-    if (!this.options.header.summary) {
+    if (!this.options.summary) {
       return;
     }
     const rankings = ranking ? [ranking] : this.rankings;
@@ -177,8 +173,8 @@ export default class EngineRenderer extends AEventDispatcher {
     }
 
     const r = this.table.pushTable((header, body, tableId, style) => new EngineRanking(ranking, header, body, tableId, style, this.ctx, {
-      animation: this.options.body.animation,
-      customRowUpdate: this.options.body.customRowUpdate || (() => undefined)
+      animation: this.options.animation,
+      customRowUpdate: this.options.customRowUpdate || (() => undefined)
     }));
     r.on(EngineRanking.EVENT_WIDTH_CHANGED, () => this.table.widthChanged());
     r.on(EngineRanking.EVENT_UPDATE_DATA, () => this.update([r]));
@@ -224,22 +220,22 @@ export default class EngineRenderer extends AEventDispatcher {
 
 
     const heightsFor = (ranking: Ranking, data: (IGroupItem|IGroupData)[]) => {
-      if (this.options.body.dynamicHeight) {
-        const impl = this.options.body.dynamicHeight(data, ranking);
+      if (this.options.dynamicHeight) {
+        const impl = this.options.dynamicHeight(data, ranking);
         return {
           defaultHeight: round2(this.zoomFactor * impl.defaultHeight),
           height: (d: IGroupItem|IGroupData) => round2(this.zoomFactor * impl.height(d))
         };
       }
-      const item = round2(this.zoomFactor * this.options.body.rowHeight!);
-      const group = round2(this.zoomFactor * this.options.body.groupHeight!);
+      const item = round2(this.zoomFactor * this.options.rowHeight!);
+      const group = round2(this.zoomFactor * this.options.groupHeight!);
       return {
         defaultHeight: item,
         height: (d: IGroupItem|IGroupData) => isGroup(d) ? group : item
       };
     };
-    const groupPadding = round2(this.zoomFactor * this.options.body.groupPadding!);
-    const rowPadding = round2(this.zoomFactor * this.options.body.rowPadding!);
+    const groupPadding = round2(this.zoomFactor * this.options.groupPadding!);
+    const rowPadding = round2(this.zoomFactor * this.options.rowPadding!);
 
     rankings.forEach((r, i) => {
       const grouped = r.groupData(localData[i]);

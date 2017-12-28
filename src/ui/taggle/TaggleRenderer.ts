@@ -3,9 +3,11 @@ import {defaultConfig} from '../../config';
 import {IRankingHeaderContext, RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import {GROUP_SPACING} from './lod';
 import DataProvider from '../../provider/ADataProvider';
-import {AEventDispatcher, merge} from '../../utils';
 import EngineRenderer from '../engine/EngineRenderer';
-import {IGroupData, IGroupItem, isGroup} from '../../model/interfaces';
+import {IGroupData, IGroupItem, isGroup} from '../../model';
+import {ILineUpConfig} from '../../interfaces';
+import AEventDispatcher from '../../internal/AEventDispatcher';
+import merge from '../../internal/merge';
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;
@@ -25,13 +27,13 @@ export default class TaggleRenderer extends AEventDispatcher {
   private readonly resizeListener = () => this.update();
   private readonly renderer: EngineRenderer;
 
-  private readonly config: IEngineRendererOptions;
+  private readonly config: ILineUpConfig;
 
   private readonly options: Readonly<ITaggleOptions> = {
     violationChanged: () => undefined
   };
 
-  constructor(parent: HTMLElement, public data: DataProvider, options: Partial<ITaggleOptions & IEngineRendererOptions> = {}) {
+  constructor(parent: HTMLElement, public data: DataProvider, options: Partial<ITaggleOptions & ILineUpConfig> = {}) {
     super();
 
     this.options = Object.assign(this.options, options);
@@ -45,7 +47,7 @@ export default class TaggleRenderer extends AEventDispatcher {
     .lineup-engine [data-lod=low][data-agg=detail]:hover,
     .lineup-engine [data-lod=medium][data-agg=detail]:hover {
         /* show regular height for hovered rows in low + medium LOD */
-        height: ${this.config.body.rowHeight}px !important;
+        height: ${this.config.rowHeight}px !important;
       }
     `);
 
@@ -67,7 +69,7 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.pushUpdateAble(updateAble);
   }
 
-  private createConfig(options: Partial<IEngineRendererOptions>): IEngineRendererOptions {
+  private createConfig(options: Partial<ILineUpConfig>): ILineUpConfig {
     return merge(defaultConfig(), options, {
       header: {
         summary: true
@@ -94,8 +96,8 @@ export default class TaggleRenderer extends AEventDispatcher {
         row.dataset.lod = 'high';
       };
       return {
-        defaultHeight: this.config.body.rowHeight,
-        height: (item: IGroupItem | IGroupData) => isGroup(item) ? this.config.body.groupHeight : this.config.body.rowHeight
+        defaultHeight: this.config.rowHeight,
+        height: (item: IGroupItem | IGroupData) => isGroup(item) ? this.config.groupHeight : this.config.rowHeight
       };
     }
 
