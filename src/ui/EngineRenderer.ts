@@ -12,7 +12,7 @@ import Ranking from '../model/Ranking';
 import SlopeGraph from './SlopeGraph';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
-import {ILineUpConfig} from '../interfaces';
+import {ILineUpOptions} from '../interfaces';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import {round} from '../internal/math';
 
@@ -20,7 +20,7 @@ import {round} from '../internal/math';
 export default class EngineRenderer extends AEventDispatcher {
   static readonly EVENT_HOVER_CHANGED = 'hoverChanged';
 
-  protected readonly options: Readonly<ILineUpConfig>;
+  protected readonly options: Readonly<ILineUpOptions>;
 
   private readonly histCache = new Map<string, IStatistics | ICategoricalStatistics | null | Promise<IStatistics | ICategoricalStatistics>>();
 
@@ -34,7 +34,7 @@ export default class EngineRenderer extends AEventDispatcher {
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
 
-  constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpConfig>) {
+  constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpOptions>) {
     super();
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');

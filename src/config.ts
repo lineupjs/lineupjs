@@ -4,12 +4,12 @@
 import {renderers as defaultRenderers} from './renderer';
 import {filters as defaultFilters} from './dialogs';
 import {defaultSummaries} from './ui/summary';
-import {ILineUpConfig} from './interfaces';
+import {ILineUpOptions} from './interfaces';
 
 export const COLUMN_PADDING = 5; // see also vars -> $lu_engine_grip_gap
 export const SLOPEGRAPH_WIDTH = 200;
 
-export function defaultConfig(): ILineUpConfig {
+export function defaultOptions(): ILineUpOptions {
   const idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
   return {
     idPrefix,

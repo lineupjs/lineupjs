@@ -5,3 +5,4 @@
 
 import './style.scss';
 export * from './common';
+export {default, ILineUpOptions} from './ui/LineUp';

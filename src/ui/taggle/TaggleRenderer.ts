@@ -2,7 +2,7 @@ import {IRankingHeaderContext, RENDERER_EVENT_HOVER_CHANGED} from '../interfaces
 import DataProvider from '../../provider/ADataProvider';
 import EngineRenderer from '../EngineRenderer';
 import {IGroupData, IGroupItem, isGroup} from '../../model';
-import {ILineUpConfig} from '../../interfaces';
+import {ILineUpOptions} from '../../interfaces';
 import AEventDispatcher from '../../internal/AEventDispatcher';
 import {IRule} from './interfaces';
 import Ranking from '../../model/Ranking';
@@ -30,7 +30,7 @@ export default class TaggleRenderer extends AEventDispatcher {
     violationChanged: () => undefined
   };
 
-  constructor(parent: HTMLElement, public data: DataProvider, options: (Partial<ITaggleOptions> & Readonly<ILineUpConfig>)) {
+  constructor(parent: HTMLElement, public data: DataProvider, options: (Partial<ITaggleOptions> & Readonly<ILineUpOptions>)) {
     super();
 
 

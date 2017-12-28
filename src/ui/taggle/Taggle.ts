@@ -3,12 +3,12 @@ import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import SidePanel from '../panel/SidePanel';
 import DataProvider from '../../provider/ADataProvider';
 import TaggleRenderer from './TaggleRenderer';
-import {ILineUpConfig} from '../../interfaces';
+import {ILineUpOptions} from '../../interfaces';
 import {ALineUp} from '../ALineUp';
-import {defaultConfig} from '../../config';
+import {defaultOptions} from '../../config';
 import merge from '../../internal/merge';
 
-export declare type ITaggleOptions = ILineUpConfig;
+export declare type ITaggleOptions = ILineUpOptions;
 
 export default class Taggle extends ALineUp {
   private readonly spaceFilling: HTMLElement;
@@ -27,7 +27,7 @@ export default class Taggle extends ALineUp {
         </div>
     </aside>`;
 
-    const config = merge(defaultConfig(), options, {
+    const config = merge(defaultOptions(), options, {
       violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
     });
 

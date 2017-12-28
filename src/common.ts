@@ -5,11 +5,13 @@
 
 import * as model_ from './model';
 import * as provider_ from './provider';
-import * as renderer_ from './renderer/index';
-import LineUp, {ILineUpConfig} from './ui/LineUp';
+import * as renderer_ from './renderer';
+import * as ui_ from './ui';
+import LineUp, {ILineUpOptions} from './ui/LineUp';
 
 export {deriveColors} from './provider/utils';
 export {deriveColumnDescriptions} from './provider';
+export {default as LocalDataProvider} from './provider/LocalDataProvider';
 /**
  * access to the model module
  */
@@ -22,6 +24,10 @@ export const provider = provider_;
  * access to the renderer module
  */
 export const renderer = renderer_;
+/**
+ * access to the ui module
+ */
+export const ui = ui_;
 
 /**
  * creates a local storage provider
@@ -34,7 +40,7 @@ export function createLocalDataProvider(data: any[], columns: model_.IColumnDesc
   return new provider_.LocalDataProvider(data, columns, options);
 }
 
-export function createLineUp(data: provider_.DataProvider, container: HTMLElement, config: Partial<ILineUpConfig> = {}) {
+export function createLineUp(container: HTMLElement, data: provider_.DataProvider, config: Partial<ILineUpOptions> = {}) {
   return new LineUp(container, data, config);
 }
 

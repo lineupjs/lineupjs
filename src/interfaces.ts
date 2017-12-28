@@ -6,7 +6,7 @@ import Ranking from './model/Ranking';
 import {IGroupData, IGroupItem} from './model';
 
 
-export interface ILineUpConfig {
+export interface ILineUpOptions {
   idPrefix: string;
 
   filters: { [type: string]: IFilterDialog };
