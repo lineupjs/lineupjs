@@ -20,10 +20,9 @@ import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces'
 import {IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
 import AEventDispatcher from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
+import {COLUMN_PADDING} from '../config';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
-  columnPadding: number;
-
   createRenderer(c: Column): IRenderers;
 }
 
@@ -112,7 +111,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const columns = this.createColumns();
     this._context = Object.assign({
       columns,
-      column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
+      column: nonUniformContext(columns.map((w) => w.width), 100, COLUMN_PADDING)
     }, uniformContext(0, 20));
   }
 
@@ -166,7 +165,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     this._context = Object.assign({},this._context,{
       columns,
-      column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
+      column: nonUniformContext(columns.map((w) => w.width), 100, COLUMN_PADDING)
     });
 
     super.recreate();
@@ -252,7 +251,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   updateColumnWidths() {
     // update the column context in place
-    (<any>this._context).column = nonUniformContext(this._context.columns.map((w) => w.width), 100, this.ctx.columnPadding);
+    (<any>this._context).column = nonUniformContext(this._context.columns.map((w) => w.width), 100, COLUMN_PADDING);
     super.updateColumnWidths();
     const {columns} = this.context;
     //no data update needed since just width changed
@@ -349,7 +348,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     this._context = Object.assign({
       columns,
-      column: nonUniformContext(columns.map((w) => w.width), 100, this.ctx.columnPadding)
+      column: nonUniformContext(columns.map((w) => w.width), 100, COLUMN_PADDING)
     }, rowContext);
 
     return super.recreate(this.options.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
@@ -387,7 +386,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     });
 
     if (isMultiLevelColumn(c) && !c.getCollapsed()) {
-      const r = new MultiLevelRenderColumn(c, renderers, i, this.ctx.columnPadding);
+      const r = new MultiLevelRenderColumn(c, renderers, i);
       c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
         r.updateWidthRule(this.style);
       });

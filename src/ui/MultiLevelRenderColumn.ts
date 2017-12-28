@@ -9,10 +9,11 @@ import {IMultiLevelColumn} from '../model/CompositeColumn';
 import {round} from '../internal/math';
 import {isEdge, StyleManager} from 'lineupengine/src/style';
 import {gridClass} from '../renderer/MultiLevelCellRenderer';
+import {COLUMN_PADDING} from '../config';
 
 
 export default class MultiLevelRenderColumn extends RenderColumn {
-  constructor(c: IMultiLevelColumn & Column, renderers: IRenderers, index: number, private readonly columnPadding: number) {
+  constructor(c: IMultiLevelColumn & Column, renderers: IRenderers, index: number) {
     super(c, renderers, index);
   }
 
@@ -21,7 +22,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
   }
 
   get width() {
-    return this.c.getWidth() + this.columnPadding * this.mc.length;
+    return this.c.getWidth() + COLUMN_PADDING * this.mc.length;
   }
 
   createHeader(document: Document, ctx: IRankingContext) {
@@ -37,7 +38,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     }
     mc.children.forEach((c, i) => {
       const n = createHeader(c, document, ctx);
-      n.style.marginLeft = i > 0 ? `${this.columnPadding * 2}px`: null;
+      n.style.marginLeft = i > 0 ? `${COLUMN_PADDING * 2}px`: null;
       n.classList.add('lu-header');
       if (isEdge) {
         n.style.msGridColumn = (i + 1).toString();

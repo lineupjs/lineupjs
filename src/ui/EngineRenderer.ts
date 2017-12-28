@@ -34,10 +34,11 @@ export default class EngineRenderer extends AEventDispatcher {
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
 
-  constructor(protected data: DataProvider, parent: Element, options: Readonly<ILineUpConfig>) {
+  constructor(protected data: DataProvider, parent: HTMLElement, options: Readonly<ILineUpConfig>) {
     super();
     this.options = options;
     this.node = parent.ownerDocument.createElement('main');
+    this.node.id = this.options.idPrefix;
     parent.appendChild(this.node);
 
     this.ctx = {
@@ -61,12 +62,19 @@ export default class EngineRenderer extends AEventDispatcher {
         const group = createDOMGroup(col, this.options.renderers, this.ctx, imposer);
         return {single, group, singleId: col.getRenderer(), groupId: col.getGroupRenderer()};
       },
-      getPossibleRenderer: (col: Column) => ({item: possibleRenderer(col, this.options.renderers), group: possibleGroupRenderer(col, this.options.renderers)}),
-      columnPadding: this.options.columnPadding
+      getPossibleRenderer: (col: Column) => ({item: possibleRenderer(col, this.options.renderers), group: possibleGroupRenderer(col, this.options.renderers)})
     };
 
-    this.node.id = this.options.idPrefix;
     this.table = new MultiTableRowRenderer(this.node, `#${options.idPrefix}`);
+
+    //apply rules
+    {
+      this.style.addRule('lineup_groupPadding', `
+       #${options.idPrefix} > main > article > [data-agg=group],
+       #${options.idPrefix} > main > article > [data-meta~=last] {
+        margin-bottom: ${options.groupPadding}px;
+       }`);
+    }
 
     this.initProvider(data);
   }
@@ -222,10 +230,12 @@ export default class EngineRenderer extends AEventDispatcher {
     const heightsFor = (ranking: Ranking, data: (IGroupItem|IGroupData)[]) => {
       if (this.options.dynamicHeight) {
         const impl = this.options.dynamicHeight(data, ranking);
-        return {
-          defaultHeight: round2(this.zoomFactor * impl.defaultHeight),
-          height: (d: IGroupItem|IGroupData) => round2(this.zoomFactor * impl.height(d))
-        };
+        if (impl) {
+          return {
+            defaultHeight: round2(this.zoomFactor * impl.defaultHeight),
+            height: (d: IGroupItem | IGroupData) => round2(this.zoomFactor * impl.height(d))
+          };
+        }
       }
       const item = round2(this.zoomFactor * this.options.rowHeight!);
       const group = round2(this.zoomFactor * this.options.groupHeight!);

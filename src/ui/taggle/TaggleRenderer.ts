@@ -1,13 +1,11 @@
-import {IRule} from './LineUpRuleSet';
-import {defaultConfig} from '../../config';
 import {IRankingHeaderContext, RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
-import {GROUP_SPACING} from './lod';
 import DataProvider from '../../provider/ADataProvider';
 import EngineRenderer from '../EngineRenderer';
 import {IGroupData, IGroupItem, isGroup} from '../../model';
 import {ILineUpConfig} from '../../interfaces';
 import AEventDispatcher from '../../internal/AEventDispatcher';
-import merge from '../../internal/merge';
+import {IRule} from './interfaces';
+import Ranking from '../../model/Ranking';
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;
@@ -20,34 +18,45 @@ export default class TaggleRenderer extends AEventDispatcher {
    */
   static readonly EVENT_HOVER_CHANGED = RENDERER_EVENT_HOVER_CHANGED;
 
-  private isDynamicLeafHeight: boolean = true;
+  private isDynamicLeafHeight: boolean = false;
 
   private rule: IRule|null = null;
   private levelOfDetail: (row: HTMLElement, rowIndex: number) => void;
   private readonly resizeListener = () => this.update();
   private readonly renderer: EngineRenderer;
 
-  private readonly config: ILineUpConfig;
-
   private readonly options: Readonly<ITaggleOptions> = {
     violationChanged: () => undefined
   };
 
-  constructor(parent: HTMLElement, public data: DataProvider, options: Partial<ITaggleOptions & ILineUpConfig> = {}) {
+  constructor(parent: HTMLElement, public data: DataProvider, options: (Partial<ITaggleOptions> & Readonly<ILineUpConfig>)) {
     super();
 
-    this.options = Object.assign(this.options, options);
 
-    this.config = this.createConfig(options);
-
-    this.renderer = new EngineRenderer(data, parent, this.config);
+    this.renderer = new EngineRenderer(data, parent, Object.assign({}, options, {
+      dynamicHeight: (data: (IGroupData | IGroupItem)[], ranking: Ranking) => {
+        const r = this.dynamicHeight(data);
+        if (r) {
+          return r;
+        }
+        return options.dynamicHeight ? options.dynamicHeight(data, ranking) : null;
+      },
+      customRowUpdate: (row: HTMLElement, rowIndex: number) => {
+        if (this.levelOfDetail) {
+          this.levelOfDetail(row, rowIndex);
+        }
+        if (options.customRowUpdate) {
+          options.customRowUpdate(row, rowIndex);
+        }
+      }
+    }));
 
     //
     this.renderer.style.addRule('taggle_lod_rule', `
-    .lineup-engine [data-lod=low][data-agg=detail]:hover,
-    .lineup-engine [data-lod=medium][data-agg=detail]:hover {
+      #${options.idPrefix} [data-lod=low][data-agg=detail]:hover,
+      #${options.idPrefix} [data-lod=medium][data-agg=detail]:hover {
         /* show regular height for hovered rows in low + medium LOD */
-        height: ${this.config.rowHeight}px !important;
+        height: ${options.rowHeight}px !important;
       }
     `);
 
@@ -69,36 +78,12 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.pushUpdateAble(updateAble);
   }
 
-  private createConfig(options: Partial<ILineUpConfig>): ILineUpConfig {
-    return merge(defaultConfig(), options, {
-      header: {
-        summary: true
-      },
-      body: {
-        animation: true,
-        rowPadding: 0, //since padding is used
-        groupPadding: GROUP_SPACING,
-        dynamicHeight: this.dynamicHeight.bind(this),
-        customRowUpdate: this.customRowUpdate.bind(this)
-      }
-    });
-  }
-
-  private customRowUpdate(row: HTMLElement, rowIndex: number) {
-    if (this.levelOfDetail) {
-      this.levelOfDetail(row, rowIndex);
-    }
-  }
-
   private dynamicHeight(data: (IGroupData | IGroupItem)[]) {
     if (!this.rule) {
       this.levelOfDetail = (row: HTMLElement) => {
         row.dataset.lod = 'high';
       };
-      return {
-        defaultHeight: this.config.rowHeight,
-        height: (item: IGroupItem | IGroupData) => isGroup(item) ? this.config.groupHeight : this.config.rowHeight
-      };
+      return null;
     }
 
     const availableHeight = this.renderer ? this.renderer.node.querySelector('main')!.clientHeight : 100;
@@ -137,7 +122,7 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.zoomIn();
   }
 
-  switchRule(rule: IRule) {
+  switchRule(rule: IRule|null) {
     if (this.rule === rule) {
       return;
     }

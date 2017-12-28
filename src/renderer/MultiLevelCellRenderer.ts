@@ -13,6 +13,7 @@ import Column from '../model/Column';
 import {isEdge} from 'lineupengine/src/style';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {default as INumberColumn, isNumberColumn, medianIndex} from '../model/INumberColumn';
+import {COLUMN_PADDING} from '../config';
 
 export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;
@@ -20,7 +21,7 @@ export function gridClass(column: Column) {
 
 export function createData(col: {children: Column[]} & Column, context: IRenderContext<any, any>, nestingPossible: boolean, imposer?: IImposer) {
   const stacked = nestingPossible && context.option('stacked', true);
-  const padding = context.option('columnPadding', 0);
+  const padding = COLUMN_PADDING;
   let offset = 0;
   const cols = col.children.map((d) => {
     const shift = offset;

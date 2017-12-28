@@ -5,6 +5,7 @@ import {IExceptionContext, range} from 'lineupengine/src/logic';
 import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup} from '../model';
 import {IRankingHeaderContextContainer} from './interfaces';
+import {SLOPEGRAPH_WIDTH} from '../config';
 
 interface ISlope {
   isSelected(selection: {has(dataIndex: number):boolean}): boolean;
@@ -68,7 +69,7 @@ export default class SlopeGraph implements ITableSection {
 
   private scrollListener: () => void;
 
-  readonly width = 200;
+  readonly width = SLOPEGRAPH_WIDTH;
 
   private current: {
     left: (IGroupItem | IGroupData)[];

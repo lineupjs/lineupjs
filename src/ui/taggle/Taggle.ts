@@ -1,10 +1,12 @@
-import {regular, spacefilling} from './LineUpRuleSet';
+import {spaceFillingRule} from './LineUpRuleSet';
 import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import SidePanel from '../panel/SidePanel';
 import DataProvider from '../../provider/ADataProvider';
 import TaggleRenderer from './TaggleRenderer';
 import {ILineUpConfig} from '../../interfaces';
 import {ALineUp} from '../ALineUp';
+import {defaultConfig} from '../../config';
+import merge from '../../internal/merge';
 
 export declare type ITaggleOptions = ILineUpConfig;
 
@@ -25,17 +27,20 @@ export default class Taggle extends ALineUp {
         </div>
     </aside>`;
 
+    const config = merge(defaultConfig(), options, {
+      violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
+    });
+
     {
+      const spaceFilling = spaceFillingRule(config);
       this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser')!;
       this.spaceFilling.addEventListener('click', () => {
         const selected = this.spaceFilling.classList.toggle('chosen');
-        this.renderer.switchRule(selected ? spacefilling : regular);
+        this.renderer.switchRule(selected ?  spaceFilling: null);
       });
     }
 
-    this.renderer = new TaggleRenderer(this.node, data, Object.assign({
-      violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
-    }, options));
+    this.renderer = new TaggleRenderer(this.node, data, config);
     this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument);
     this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
     this.node.firstElementChild!.appendChild(this.panel.node);

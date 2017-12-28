@@ -16,13 +16,12 @@ export interface ILineUpConfig {
   summary: boolean;
   animation: boolean;
 
-  columnPadding: number;
   groupHeight: number;
   groupPadding: number;
   rowPadding: number;
   rowHeight: number;
 
-  dynamicHeight?: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => { defaultHeight: number, height: (item: IGroupItem | IGroupData) => number };
+  dynamicHeight?: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => { defaultHeight: number, height: (item: IGroupItem | IGroupData) => number }|null;
   customRowUpdate?: (row: HTMLElement, rowIndex: number) => void;
 
 }
