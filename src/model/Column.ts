@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import {similar} from '../math';
+import {similar} from '../internal/math';
 import Ranking, {ISortCriteria} from './Ranking';
 import {defaultGroup} from './Group';
 import {isMissingValue} from './missing';

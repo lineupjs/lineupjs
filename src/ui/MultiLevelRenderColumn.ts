@@ -6,7 +6,7 @@ import {createHeader, updateHeader} from './header';
 import {IRankingContext} from './interfaces';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import {IMultiLevelColumn} from '../model/CompositeColumn';
-import {round} from '../math';
+import {round} from '../internal/math';
 import {isEdge, StyleManager} from 'lineupengine/src/style';
 import {gridClass} from '../renderer/MultiLevelCellRenderer';
 

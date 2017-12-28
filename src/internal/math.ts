@@ -3,7 +3,7 @@
  */
 
 import {extent, mean, histogram} from 'd3-array';
-import {ICategoricalStatistics, IStatistics} from './model';
+import {ICategoricalStatistics, IStatistics} from '../model';
 
 
 export function getNumberOfBins(length: number) {

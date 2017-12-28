@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
-import {findOption} from '../utils';
+import {findOption} from '../internal/utils';
 import DataProvider, {default as ADataProvider} from '../provider/ADataProvider';
 import {createDOM, IImposer, IDOMRenderContext, createDOMGroup, possibleGroupRenderer, possibleRenderer} from '../renderer';
 import {ICategoricalColumn, Column, ICategoricalStatistics, IStatistics, isCategoricalColumn, IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
@@ -14,7 +14,7 @@ import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import {ILineUpConfig} from '../interfaces';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
-import {round} from '../math';
+import {round} from '../internal/math';
 
 
 export default class EngineRenderer extends AEventDispatcher {
@@ -100,7 +100,7 @@ export default class EngineRenderer extends AEventDispatcher {
     return super.createEventList().concat([EngineRenderer.EVENT_HOVER_CHANGED]);
   }
 
-  changeDataStorage(data: DataProvider) {
+  setDataProvider(data: DataProvider) {
     this.takeDownProvider();
 
     this.data = data;

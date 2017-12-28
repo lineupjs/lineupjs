@@ -6,7 +6,7 @@ import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColu
 import {IMultiLevelColumn} from './CompositeColumn';
 import Column, {IFlatColumn} from './Column';
 import {isNumberColumn} from './INumberColumn';
-import {similar} from '../utils';
+import {similar} from '../internal/math';
 import {IDataRow} from './interfaces';
 
 /**

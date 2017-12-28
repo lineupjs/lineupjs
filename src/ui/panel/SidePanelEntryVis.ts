@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 05.09.2017.
  */
 import Column from '../../model/Column';
-import {createToolbar, dragAbleColumn, updateHeader} from '../engine/header';
+import {createToolbar, dragAbleColumn, updateHeader} from '../header';
 import {IRankingHeaderContext} from '../interfaces';
 
 

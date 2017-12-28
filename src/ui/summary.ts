@@ -12,7 +12,7 @@ import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../dia
 import {stringFilter} from '../dialogs/StringFilterDialog';
 import {drag, D3DragEvent} from 'd3-drag';
 import {event as d3event, selectAll} from 'd3-selection';
-import {round} from '../math';
+import {round} from '../internal/math';
 import AggregateGroupColumn from '../model/AggregateGroupColumn';
 import {DENSE_HISTOGRAM} from '../renderer/HistogramRenderer';
 import {IRankingHeaderContext, ISummaryFunction} from './interfaces';

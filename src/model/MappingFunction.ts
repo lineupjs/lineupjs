@@ -1,5 +1,5 @@
 import {scaleLinear, scaleLog, scalePow, scaleSqrt} from 'd3-scale';
-import {similar} from '../utils';
+import {similar} from '../internal/math';
 
 /**
  * interface of a d3 scale
@@ -214,4 +214,14 @@ export function createMappingFunction(dump: any): IMappingFunction {
   const l = new ScaleMappingFunction();
   l.restore(dump);
   return l;
+}
+
+export function restoreMapping(desc: {map?: any, domain?: [number, number], range?: [number, number]}): IMappingFunction {
+  if (desc.map) {
+    return createMappingFunction(desc.map);
+  }
+  if (desc.domain) {
+    return new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
+  }
+  return new ScaleMappingFunction([0, 1], 'linear', [0, 1]);
 }

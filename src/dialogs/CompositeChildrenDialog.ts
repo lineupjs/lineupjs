@@ -1,9 +1,10 @@
 import ADialog from './ADialog';
 import CompositeColumn from '../model/CompositeColumn';
-import {createHeader, updateHeader} from '../ui/engine/header';
-import {IRankingHeaderContext} from '../ui/engine/interfaces';
-import {debounce, suffix} from '../utils';
+import {createHeader, updateHeader} from '../ui/header';
+import {IRankingHeaderContext} from '../ui/interfaces';
+import debounce from '../internal/debounce';
 import Column from '../model/Column';
+import {suffix} from '../internal/AEventDispatcher';
 
 export default class CompositeChildrenDialog extends ADialog {
 

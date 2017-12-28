@@ -1,12 +1,11 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import {ICategoricalColumn, isCategoricalColumn} from '../model/ICategoricalColumn';
 import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow, IGroup} from '../model/interfaces';
+import {IDataRow, IGroup, ICategoricalColumn, isCategoricalColumn} from '../model';
 import {forEachChild} from './utils';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {computeHist} from '../provider/math';
+import {computeHist} from '../internal/math';
 
 /**
  * renders categorical columns as a colored rect with label

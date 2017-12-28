@@ -2,8 +2,8 @@ import {FIRST_IS_NAN, isMissingValue} from './missing';
 import Column, {IColumnDesc} from './Column';
 import {ascending, mean, median, quantile} from 'd3-array';
 import {format} from 'd3-format';
-import {IMappingFunction} from './NumberColumn';
-import {similar} from '../utils';
+import {IMappingFunction} from './MappingFunction';
+import {similar} from '../internal/math';
 import {IDataRow} from './interfaces';
 
 

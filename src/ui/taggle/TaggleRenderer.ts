@@ -3,7 +3,7 @@ import {defaultConfig} from '../../config';
 import {IRankingHeaderContext, RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import {GROUP_SPACING} from './lod';
 import DataProvider from '../../provider/ADataProvider';
-import EngineRenderer from '../engine/EngineRenderer';
+import EngineRenderer from '../EngineRenderer';
 import {IGroupData, IGroupItem, isGroup} from '../../model';
 import {ILineUpConfig} from '../../interfaces';
 import AEventDispatcher from '../../internal/AEventDispatcher';
@@ -164,7 +164,7 @@ export default class TaggleRenderer extends AEventDispatcher {
         this.update();
       }
     });
-    this.renderer.changeDataStorage(data);
+    this.renderer.setDataProvider(data);
     this.update();
   }
 }

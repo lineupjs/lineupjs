@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {suffix} from '../../utils';
+import {suffix} from '../../internal/AEventDispatcher';
 import {nest} from 'd3-collection';
 import Ranking, {isSupportType} from '../../model/Ranking';
 import {default as Column, IColumnDesc} from '../../model/Column';
@@ -30,7 +30,8 @@ export default class SidePanel {
       createImpositionDesc()
     ],
     chooser: true,
-    placeholder: 'Add Column...'
+    placeholder: 'Add Column...',
+    formatItem: (item: SidePanelEntry) => `<span data-type="${item.desc ? item.desc.type : item.text}"><span>${item.text}</span></span>`
   };
 
   readonly node: HTMLElement;

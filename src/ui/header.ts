@@ -28,7 +28,7 @@ import Ranking from '../model/Ranking';
 import {isCategoricalColumn} from '../model';
 import StratifyThresholdDialog from '../dialogs/StratifyThresholdDialog';
 import {IRankingHeaderContext} from './interfaces';
-import {equalArrays} from '../utils';
+import {equalArrays} from '../internal/utils';
 import MoreColumnOptionsDialog from '../dialogs/MoreColumnOptionsDialog';
 import {findTypeLike} from '../model/utils';
 import SelectionColumn from '../model/SelectionColumn';

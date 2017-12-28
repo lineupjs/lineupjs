@@ -1,7 +1,7 @@
 import Column from '../model/Column';
 import ADialog from './ADialog';
-import {addIconDOM, createToolbarMenuItems} from '../ui/engine/header';
-import {IRankingHeaderContext} from '../ui/engine/interfaces';
+import {addIconDOM, createToolbarMenuItems} from '../ui/header';
+import {IRankingHeaderContext} from '../ui/interfaces';
 
 
 export default class MoreColumnOptionsDialog extends ADialog {

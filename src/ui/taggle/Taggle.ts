@@ -2,33 +2,20 @@ import {regular, spacefilling} from './LineUpRuleSet';
 import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import SidePanel from '../panel/SidePanel';
 import DataProvider from '../../provider/ADataProvider';
-import AEventDispatcher from '../../internal/AEventDispatcher';
-import SidePanelEntry from '../panel/SidePanelEntry';
 import TaggleRenderer from './TaggleRenderer';
 import {ILineUpConfig} from '../../interfaces';
+import {ALineUp} from '../ALineUp';
 
 export declare type ITaggleOptions = ILineUpConfig;
 
-export default class Taggle extends AEventDispatcher {
-  /**
-   * triggered when the mouse is over a specific row
-   * @argument data_index:number the selected data index or <0 if no row
-   */
-  static readonly EVENT_HOVER_CHANGED = RENDERER_EVENT_HOVER_CHANGED;
-
-  /**
-   * triggered when the user click on a row
-   * @argument data_index:number the selected data index or <0 if no row
-   */
-  static readonly EVENT_SELECTION_CHANGED = DataProvider.EVENT_SELECTION_CHANGED;
-
+export default class Taggle extends ALineUp {
   private readonly spaceFilling: HTMLElement;
   private readonly renderer: TaggleRenderer;
   private readonly panel: SidePanel;
 
 
-  constructor(public readonly node: HTMLElement, public data: DataProvider, options: Partial<ITaggleOptions> = {}) {
-    super();
+  constructor(node: HTMLElement, data: DataProvider, options: Partial<ITaggleOptions> = {}) {
+    super(node, data);
 
     this.node.classList.add('lu-taggle');
     this.node.innerHTML = `<aside class="panel">
@@ -49,18 +36,11 @@ export default class Taggle extends AEventDispatcher {
     this.renderer = new TaggleRenderer(this.node, data, Object.assign({
       violationChanged: (_rule: any, violation?: string) => this.setViolation(violation)
     }, options));
-    this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument, {
-      formatItem: (item: SidePanelEntry) => `<span data-type="${item.desc ? item.desc.type : item.text}"><span>${item.text}</span></span>`
-    });
+    this.panel = new SidePanel(this.renderer.ctx, this.node.ownerDocument);
     this.renderer.pushUpdateAble((ctx) => this.panel.update(ctx));
     this.node.firstElementChild!.appendChild(this.panel.node);
 
-    this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.main`);
     this.forward(this.renderer, `${RENDERER_EVENT_HOVER_CHANGED}.main`);
-  }
-
-  protected createEventList() {
-    return super.createEventList().concat([Taggle.EVENT_HOVER_CHANGED, Taggle.EVENT_SELECTION_CHANGED]);
   }
 
   private setViolation(violation?: string) {
@@ -71,11 +51,7 @@ export default class Taggle extends AEventDispatcher {
 
   destroy() {
     this.renderer.destroy();
-    this.node.remove();
-  }
-
-  dump() {
-    return this.data.dump();
+    super.destroy();
   }
 
   update() {
@@ -83,14 +59,7 @@ export default class Taggle extends AEventDispatcher {
   }
 
   setDataProvider(data: DataProvider, dump?: any) {
-    if (this.data) {
-      this.unforward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
-    }
-    this.data = data;
-    if (dump) {
-      this.data.restore(dump);
-    }
-    this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
+    super.setDataProvider(data, dump);
     this.renderer.setDataProvider(data);
     this.update();
     this.panel.update(this.renderer.ctx);

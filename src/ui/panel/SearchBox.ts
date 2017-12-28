@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 25.10.2017.
  */
-import {AEventDispatcher} from '../../utils';
+import AEventDispatcher from '../../internal/AEventDispatcher';
 
 export interface IItem {
   id: string;

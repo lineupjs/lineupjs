@@ -1,11 +1,12 @@
 import AFilterDialog from './AFilterDialog';
-import {IMapAbleColumn, IMappingFunction} from '../model/NumberColumn';
+import {IMapAbleColumn} from '../model/NumberColumn';
 import Column from '../model/Column';
 import {IDataProvider} from '../provider/ADataProvider';
-import MappingEditor from '../mappingeditor';
+import MappingEditor from '../ui/mappingeditor';
 import Popper from 'popper.js';
 import ADialog from './ADialog';
 import {noNumberFilter} from '../model/INumberColumn';
+import {IMappingFunction} from '../model/MappingFunction';
 
 export default class MappingsFilterDialog extends AFilterDialog<IMapAbleColumn & Column> {
 

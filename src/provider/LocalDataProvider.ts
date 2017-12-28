@@ -6,7 +6,7 @@ import Column, {INumberColumn, ICategoricalColumn, IColumnDesc, IDataRow, IGroup
 import Ranking from '../model/Ranking';
 import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
-import {computeHist, computeStats} from '../math';
+import {computeHist, computeStats} from '../internal/math';
 import {defaultGroup, IOrderedGroup} from '../model/Group';
 
 

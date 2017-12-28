@@ -4,12 +4,7 @@
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
 import {format} from 'd3-format';
-import NumberColumn, {
-  createMappingFunction,
-  IMapAbleColumn,
-  IMappingFunction,
-  ScaleMappingFunction
-} from './NumberColumn';
+import NumberColumn, {IMapAbleColumn} from './NumberColumn';
 import {
   compareBoxPlot, getBoxPlotNumber, IBoxPlotColumn, IBoxPlotData, INumberFilter, isSameFilter, noNumberFilter,
   restoreFilter,
@@ -17,6 +12,7 @@ import {
   SortMethod
 } from './INumberColumn';
 import {IDataRow} from './interfaces';
+import {createMappingFunction, IMappingFunction, ScaleMappingFunction, restoreMapping} from './MappingFunction';
 
 
 export function isBoxPlotColumn(col: any): col is IBoxPlotColumn {
@@ -64,11 +60,7 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   constructor(id: string, desc: IBoxPlotColumnDesc) {
     super(id, desc);
-    if (desc.map) {
-      this.mapping = createMappingFunction(desc.map);
-    } else if (desc.domain) {
-      this.mapping = new ScaleMappingFunction(desc.domain, 'linear', desc.range || [0, 1]);
-    }
+    this.mapping = restoreMapping(desc);
     this.original = this.mapping.clone();
 
     this.sort = desc.sort || SORT_METHOD.min;
@@ -79,24 +71,24 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     return compareBoxPlot(this, a, b);
   }
 
-  getBoxPlotData(row: any, index: number): IBoxPlotData | null {
-    return this.getValue(row, index);
+  getBoxPlotData(row: IDataRow): IBoxPlotData | null {
+    return this.getValue(row);
   }
 
   getRange() {
     return this.mapping.getRange(BoxPlotColumn.DEFAULT_FORMATTER);
   }
 
-  getRawBoxPlotData(row: any, index: number): IBoxPlotData | null {
-    return this.getRawValue(row, index);
+  getRawBoxPlotData(row: IDataRow): IBoxPlotData | null {
+    return this.getRawValue(row);
   }
 
-  getRawValue(row: any, index: number) {
-    return super.getValue(row, index);
+  getRawValue(row: IDataRow) {
+    return super.getValue(row);
   }
 
-  getValue(row: any, index: number) {
-    const v = this.getRawValue(row, index);
+  getValue(row: IDataRow) {
+    const v = this.getRawValue(row);
     if (v === null) {
       return v;
     }
@@ -109,16 +101,16 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     };
   }
 
-  getNumber(row: any, index: number): number {
-    return getBoxPlotNumber(this, row, index, 'normalized');
+  getNumber(row: IDataRow): number {
+    return getBoxPlotNumber(this, row, 'normalized');
   }
 
-  getRawNumber(row: any, index: number): number {
-    return getBoxPlotNumber(this, row, index, 'raw');
+  getRawNumber(row: IDataRow): number {
+    return getBoxPlotNumber(this, row, 'raw');
   }
 
-  getLabel(row: any, index: number): string {
-    const v = this.getRawValue(row, index);
+  getLabel(row: IDataRow): string {
+    const v = this.getRawValue(row);
     if (v === null) {
       return '';
     }
@@ -195,8 +187,8 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
     NumberColumn.prototype.setFilter.call(this, value);
   }
 
-  filter(row: any, index: number) {
-    return NumberColumn.prototype.filter.call(this, row, index);
+  filter(row: IDataRow) {
+    return NumberColumn.prototype.filter.call(this, row);
   }
 }
 

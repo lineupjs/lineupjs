@@ -4,34 +4,10 @@
  */
 
 import './taggle.scss';
-import * as model_ from './model';
-import * as provider_ from './provider';
-import LineUp, {ILineUpConfig} from './lineup';
-import Taggle, {ITaggleOptions} from './ui/taggle/index';
+export * from './common';
+import Taggle, {ITaggleOptions} from './ui/taggle';
+import ADataProvider from './provider/ADataProvider';
 
-export {deriveColors} from './utils';
-export {deriveColumnDescriptions} from './provider';
-/**
- * access to the model module
- */
-export const model = model_;
-
-/**
- * creates a local storage provider
- * @param data
- * @param columns
- * @param options
- * @returns {LocalDataProvider}
- */
-export function createLocalStorage(data: any[], columns: model_.IColumnDesc[], options: Partial<provider_.ILocalDataProviderOptions> = {}) {
-  return new provider_.LocalDataProvider(data, columns, options);
-}
-
-export function createLineUp(data: provider_.DataProvider, container: HTMLElement, config: Partial<ILineUpConfig> = {}) {
-  return new LineUp(container, data, config);
-}
-
-export function createTaggle(data: provider_.DataProvider, container: HTMLElement, config: Partial<ITaggleOptions> = {}) {
+export function createTaggle(data: ADataProvider, container: HTMLElement, config: Partial<ITaggleOptions> = {}) {
   return new Taggle(container, data, config);
 }
-

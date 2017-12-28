@@ -11,7 +11,7 @@ import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 import {IExceptionContext, nonUniformContext, uniformContext} from 'lineupengine/src/logic';
 import StackColumn from '../model/StackColumn';
 import {isMultiLevelColumn} from '../model/CompositeColumn';
-import {IDOMRenderContext} from '../renderer/RendererContexts';
+import {IDOMRenderContext} from '../renderer';
 import SelectionManager from './SelectionManager';
 import {lineupAnimation} from './animation';
 import PrefetchMixin from 'lineupengine/src/mixin/PrefetchMixin';

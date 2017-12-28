@@ -3,7 +3,7 @@
  */
 import {renderers as defaultRenderers} from './renderer';
 import {filters as defaultFilters} from './dialogs';
-import {defaultSummaries} from './ui/engine/summary';
+import {defaultSummaries} from './ui/summary';
 import {ILineUpConfig} from './interfaces';
 
 export function defaultConfig(): ILineUpConfig {

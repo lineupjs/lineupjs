@@ -5,7 +5,7 @@
 import Column, {IColumnParent, IFlatColumn} from './Column';
 import {isNumberColumn} from './INumberColumn';
 import ValueColumn from './ValueColumn';
-import {suffix} from '../utils';
+import {suffix} from '../internal/AEventDispatcher';
 import {IDataRow} from './interfaces';
 
 export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn&Column {

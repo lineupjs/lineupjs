@@ -5,7 +5,7 @@
 import {format} from 'd3-format';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import {equalArrays} from '../utils';
+import {equalArrays} from '../internal/utils';
 import {isMissingValue, isUnknown, missingGroup} from './missing';
 import {
   default as INumberColumn, INumberDesc, numberCompare, groupCompare,
