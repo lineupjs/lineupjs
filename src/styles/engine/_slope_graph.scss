@@ -1,9 +1,12 @@
 @import '../vars';
+@import '../icons/index';
 
 section.#{$lu-css_prefix}-slopegraph {
+
   svg {
     shape-rendering: geometricprecision;
     height: 100%;
+    width: 100%;
 
     path {
       &.#{$lu-css_prefix}-slope {
@@ -32,5 +35,39 @@ section.#{$lu-css_prefix}-slopegraph {
         }
       }
     }
+  }
+}
+
+section.#{$lu-css_prefix}-slopegraph-header {
+  display: flex;
+  padding-top: 1.4em;
+  justify-content: center;
+
+  i {
+    padding: 2px 4px;
+    transition: all 0.5s ease;
+    cursor: pointer;
+    color: $lu_toolbar_color_base2;
+
+    &:hover {
+      color: $lu_toolbar_color_hover;
+    }
+
+    &.active {
+      color: $lu_selected_color;
+      cursor: not-allowed;
+    }
+  }
+
+  i::before {
+    @include lu_icons();
+  }
+
+  i[title=Item]::before {
+    content: $lu_icon_align_justify;
+  }
+
+  i[title=Band]::before {
+    content: $lu_icon_bars;
   }
 }

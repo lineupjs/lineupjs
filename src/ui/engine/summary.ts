@@ -42,12 +42,12 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
   if (!old || !old.endsWith('hist')) {
     stats.hist.forEach(({cat, y}) => {
       const i = cats.indexOf(cat);
-      node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}" title="${labels[i]}: ${y}" data-cat="${cat}" ${interactive ? `data-title="${labels[i]}"` : ''}></div>`);
+      node.insertAdjacentHTML('beforeend', `<div title="${labels[i]}: ${y}" data-cat="${cat}" ${interactive ? `data-title="${labels[i]}"` : ''}><div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}"></div></div>`);
     });
   } else {
     const bins = <HTMLElement[]>Array.from(node.querySelectorAll('div[data-cat]'));
     for(let i = bins.length; i < stats.hist.length; ++i) {
-      node.insertAdjacentHTML('beforeend', `<div style="background-color: ${colors[i]}" data-cat="${stats.hist[i].cat}" ${interactive ? `data-title="${labels[i]}"` : ''}></div>`);
+      node.insertAdjacentHTML('beforeend', `<div data-cat="${stats.hist[i].cat}" ${interactive ? `data-title="${labels[i]}"` : ''}><div style="background-color: ${colors[i]}"></div></div>`);
       const n = <HTMLElement>node.lastElementChild!;
       if (bins.length === 0) {
         node.insertBefore(node.firstElementChild!, n);
@@ -58,7 +58,7 @@ function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement,
     }
     stats.hist.forEach(({y}, i) => {
       const bin = bins[i];
-      bin.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
+      (<HTMLElement>bin.firstElementChild!).style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
       bin.title = `${labels[i]}: ${y}`;
     });
   }
@@ -154,7 +154,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
     node.dataset.summary = 'hist';
     node.innerHTML = '';
     stats.hist.forEach(({x, y}, i) => {
-      node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${col.getMetaData().color};" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
+      node.insertAdjacentHTML('beforeend', `<div title="Bin ${i}: ${y}" data-x="${x}"><div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${col.getMetaData().color};"></div></div>`);
     });
     if (isMapAbleColumn(col)) {
       const range = col.getRange();
@@ -173,13 +173,14 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
   if (old === 'slider-hist') {
     const bins = <HTMLElement[]>Array.from(node.querySelectorAll('div[data-x]'));
     for(let i = bins.length; i < stats.hist.length; ++i) {
-      node.insertAdjacentHTML('afterbegin', `<div></div>`);
+      node.insertAdjacentHTML('afterbegin', `<div><div></div></div>`);
       bins.unshift(<HTMLElement>node.firstElementChild!);
     }
     stats.hist.forEach(({x, y}, i) => {
       const bin = bins[i];
-      bin.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
-      bin.style.backgroundColor = col.getMetaData().color;
+      const inner = <HTMLElement>bin.firstElementChild!;
+      inner.style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
+      inner.style.backgroundColor = col.getMetaData().color;
       bin.title = `Bin ${i}: ${y}`;
       bin.dataset.x = String(x);
     });
@@ -189,7 +190,7 @@ function summaryNumerical(col: INumberColumn & Column, node: HTMLElement, intera
   } else {
     node.dataset.summary = 'slider-hist';
     stats.hist.forEach(({x, y}, i) => {
-      node.insertAdjacentHTML('beforeend', `<div style="height: ${Math.round(y * 100 / stats.maxBin)}%" title="Bin ${i}: ${y}" data-x="${x}"></div>`);
+      node.insertAdjacentHTML('beforeend', `<div title="Bin ${i}: ${y}" data-x="${x}"><div style="height: ${Math.round(y * 100 / stats.maxBin)}%"></div></div>`);
     });
 
     node.insertAdjacentHTML('beforeend', `

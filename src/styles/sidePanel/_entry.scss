@@ -77,11 +77,6 @@
     height: 50px;
     font-size: small;
 
-    &[data-summary=slider-hist] > div,
-    &[data-summary=hist] > div {
-      background: $lu_hist_color;
-    }
-
     &[data-summary=interactive-filter-hist] {
       margin-bottom: 3em;
     }

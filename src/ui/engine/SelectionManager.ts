@@ -36,24 +36,32 @@ export default class SelectionManager extends AEventDispatcher {
     }
     this.hr = hr;
 
-    body.addEventListener('mousemove', (evt) => {
-      if (!this.start) {
+    const mouseMove = (evt: MouseEvent) => {
+      this.showHint(this.start!, evt);
+    };
+    let enabled = false;
+    const mouseUp = (evt: MouseEvent) => {
+      if (!enabled) {
         return;
       }
-      this.showHint(this.start, evt);
-    });
+      this.select(evt.ctrlKey);
+      this.start = this.startNode = this.endNode = null;
+      enabled = false;
+      this.body.classList.remove('lu-selection-active');
+      this.hr.classList.remove('lu-selection-active');
+      this.body.removeEventListener('mousemove', mouseMove);
+      this.body.removeEventListener('mouseup', mouseUp);
+      this.body.removeEventListener('mouseleave', mouseUp);
+    };
+
     body.addEventListener('mousedown', (evt) => {
       const r = root.getBoundingClientRect();
       this.start = {x: evt.x, y: evt.y, xShift: r.left, yShift: r.top};
+      enabled = true;
+      body.addEventListener('mousemove', mouseMove);
+      body.addEventListener('mouseup', mouseUp);
+      body.addEventListener('mouseleave', mouseUp);
     });
-    const end = (evt: MouseEvent) => {
-      this.select(evt.ctrlKey);
-      this.start = this.startNode = this.endNode = null;
-      this.body.classList.remove('lu-selection-active');
-      this.hr.classList.remove('lu-selection-active');
-    };
-    body.addEventListener('mouseup', end);
-    body.addEventListener('mouseleave', end);
   }
 
   protected createEventList() {

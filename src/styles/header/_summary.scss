@@ -2,24 +2,26 @@
 
 &[data-summary$=hist] {
   display: flex;
-  align-items: flex-end;
 
   > div {
     flex: 1 1 auto;
     position: relative;
     margin: 0 1px;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
 
     &[data-filtered=filtered] {
       opacity: 0.2;
     }
 
+    > div {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 0;
+      width: 100%;
+    }
+
     > .#{$lu_css_prefix}-selected {
-      flex: 1 1 auto;
       background-color: $lu_selected_color;
-      border-radius: 5px 5px 0 0;
     }
 
     &[data-title]::before {
@@ -81,13 +83,10 @@
   margin-bottom: 2.75em;
   position: relative;
 
-  > div {
-    background: $lu_hist_color;
-  }
-
   > [data-handle=min],
   > [data-handle=max] {
     position: absolute;
+    top: 0;
     height: 100%;
     border-right: 1px solid black;
     transition: border-width 0.2s ease;
@@ -129,6 +128,7 @@
   > [data-handle$=hint] {
     pointer-events: none;
     position: absolute;
+    top: 0;
     height: 100%;
     background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7) 7px, #bababa 7px, #bababa 10px);
 

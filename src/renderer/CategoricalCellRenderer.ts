@@ -51,7 +51,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
   createGroupDOM(col: ICategoricalColumn & Column): IDOMGroupRenderer {
     const colors = col.categoryColors;
     const labels = col.categoryLabels;
-    const bins = col.categories.map((c, i) => `<div style="height: 0; background-color: ${colors[i]}" title="${labels[i]}: 0" data-cat="${c}"></div>`).join('');
+    const bins = col.categories.map((c, i) => `<div title="${labels[i]}: 0" data-cat="${c}"><div style="height: 0; background-color: ${colors[i]}"></div></div>`).join('');
 
     return {
       template: `<div>${bins}</div>`,
@@ -61,8 +61,9 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
         const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
         forEachChild(n, (d: HTMLElement, i) => {
           const {y} = hist[i];
-          d.style.height = `${Math.round(y * 100 / max)}%`;
           d.title = `${labels[i]}: ${y}`;
+          const inner = <HTMLElement>d.firstElementChild!;
+          inner.style.height = `${Math.round(y * 100 / max)}%`;
         });
       }
     };
