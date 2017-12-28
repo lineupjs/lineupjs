@@ -48,7 +48,7 @@ export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
     this.forward(this.data, `${DataProvider.EVENT_SELECTION_CHANGED}.taggle`);
   }
 
-   /**
+  /**
    * sorts LineUp by he given column
    * @param column callback function finding the column to sort
    * @param ascending

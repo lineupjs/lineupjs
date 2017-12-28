@@ -27,6 +27,7 @@
 
   &::before {
     @include lu_icons();
+
     margin-top: -1px;
     content: $lu_icon_square_o;
   }
@@ -39,7 +40,7 @@
     > div {
       display: block;
       position: absolute;
-      background: lighten(#FFD700, 45%);
+      background: lighten(#ffd700, 45%);
       border: 1px solid black;
       top: 110%;
       left: 5px;
@@ -67,10 +68,11 @@
 
     &::after {
       @include lu_icons();
+
       content: $lu_icon_exclamation_triangle;
       margin-top: -1px;
       margin-left: 5px;
-      color: #FFD700;
+      color: #ffd700;
     }
   }
 }

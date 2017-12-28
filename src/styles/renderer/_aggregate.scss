@@ -1,5 +1,6 @@
 @import '../vars';
 @import '../icons/index';
+
 /**
  * Creates a background that displays an opening square bracket using multiple linear gradients.
  */
@@ -8,16 +9,13 @@
   $top-stroke: linear-gradient(to bottom, $stroke-color $stroke-width, transparent $stroke-width);
   $bottom-stroke: linear-gradient(to top, $stroke-color $stroke-width, transparent $stroke-width);
 
-  @if($top == true and $bottom == true) {
+  @if ($top == true and $bottom == true) {
     background-image: $vertical-stroke, $top-stroke, $bottom-stroke;
-  }
-  @else if($top == true and $bottom == false) {
+  } @else if ($top == true and $bottom == false) {
     background-image: $vertical-stroke, $top-stroke;
-  }
-  @else if($top == false and $bottom == true) {
+  } @else if ($top == false and $bottom == true) {
     background-image: $vertical-stroke, $bottom-stroke;
-  }
-  @else {
+  } @else {
     background-image: $vertical-stroke;
   }
 

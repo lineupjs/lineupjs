@@ -23,7 +23,6 @@
     margin-top: -1px;
     transition: all linear 0.5s;
     list-style: none;
-
     border: 1px solid $lu_side_panel_input_border;
     border-radius: 0 0 $lu_side_panel_input_border_radius $lu_side_panel_input_border_radius;
 
@@ -59,6 +58,7 @@
         background-color: #f8f8f8;
       }
     }
+
     li.#{$lu_css_prefix}-search-highlighted > span {
       background-color: #f8f8f8;
     }

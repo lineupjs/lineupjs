@@ -12,6 +12,7 @@
   }
 
   .#{$lu_css_prefix}-missing {
+
     // transform the dash to a square
     background-size: $lu_missing_dash_height $lu_missing_dash_height;
   }

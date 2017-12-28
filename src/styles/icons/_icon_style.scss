@@ -8,7 +8,7 @@
 #{$lu-css_prefix}-sort-desc::before,
 #{$lu-css_prefix}-caret-down::before,
 #{$lu-css_prefix}-caret-right::before {
-  @include lu_icons;
+  @include lu_icons();
 }
 
 #{$lu-css_prefix}-checked::before {
