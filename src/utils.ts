@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {dispatch, Dispatch, event as d3event, select, Selection, scale as d3scale} from 'd3';
+import {dispatch, Dispatch, select, scale as d3scale} from 'd3';
 import Column, {IColumnDesc} from './model/Column';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './renderer/IDOMCellRenderers';
 
