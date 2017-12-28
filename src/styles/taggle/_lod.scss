@@ -1,10 +1,6 @@
 
 .lineup-engine {
-  [data-lod=low][data-agg=detail]:hover,
-  [data-lod=medium][data-agg=detail]:hover {
-    /* show regular height for hovered rows in low + medium LOD */
-    height: 18px !important;
-  }
+  /* since the row height should be configurable -> dynamic rule, see TaggleRenderer */
 
   [data-lod=low][data-agg=detail]:not(:hover),
   [data-lod=medium][data-agg=detail]:not(:hover) {

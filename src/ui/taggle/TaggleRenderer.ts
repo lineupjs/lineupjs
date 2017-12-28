@@ -1,6 +1,6 @@
 import {IGroupData, IGroupItem, isGroup} from '../engine/interfaces';
 import EngineRenderer, {IEngineRendererOptions} from '../engine/EngineRenderer';
-import {IRule, regular} from './LineUpRuleSet';
+import {IRule} from './LineUpRuleSet';
 import {defaultConfig} from '../../config';
 import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import {GROUP_SPACING} from './lod';
@@ -21,10 +21,12 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   private isDynamicLeafHeight: boolean = true;
 
-  private rule: IRule = regular;
+  private rule: IRule|null = null;
   private levelOfDetail: (row: HTMLElement, rowIndex: number) => void;
   private readonly resizeListener = () => this.update();
   private readonly renderer: EngineRenderer;
+
+  private readonly config: IEngineRendererOptions;
 
   private readonly options: Readonly<ITaggleOptions> = {
     violationChanged: () => undefined
@@ -35,9 +37,18 @@ export default class TaggleRenderer extends AEventDispatcher {
 
     this.options = Object.assign(this.options, options);
 
-    const config = this.createConfig(options);
+    this.config = this.createConfig(options);
 
-    this.renderer = new EngineRenderer(data, parent, config);
+    this.renderer = new EngineRenderer(data, parent, this.config);
+
+    //
+    this.renderer.style.addRule('taggle_lod_rule', `
+    .lineup-engine [data-lod=low][data-agg=detail]:hover,
+    .lineup-engine [data-lod=medium][data-agg=detail]:hover {
+        /* show regular height for hovered rows in low + medium LOD */
+        height: ${this.config.body.rowHeight}px !important;
+      }
+    `);
 
     this.data.on(`${DataProvider.EVENT_SELECTION_CHANGED}.rule`, () => {
       if (this.isDynamicLeafHeight) {
@@ -79,6 +90,16 @@ export default class TaggleRenderer extends AEventDispatcher {
   }
 
   private dynamicHeight(data: (IGroupData | IGroupItem)[]) {
+    if (!this.rule) {
+      this.levelOfDetail = (row: HTMLElement) => {
+        row.dataset.lod = 'high';
+      };
+      return {
+        defaultHeight: this.config.body.rowHeight,
+        height: (item: IGroupItem | IGroupData) => isGroup(item) ? this.config.body.groupHeight : this.config.body.rowHeight
+      };
+    }
+
     const availableHeight = this.renderer ? this.renderer.node.querySelector('main')!.clientHeight : 100;
     const instance = this.rule.apply(data, availableHeight, new Set(this.data.getSelection()));
     this.isDynamicLeafHeight = typeof instance.item === 'function';
@@ -94,7 +115,7 @@ export default class TaggleRenderer extends AEventDispatcher {
 
     this.levelOfDetail = (row: HTMLElement, rowIndex: number) => {
       const item = data[rowIndex];
-      row.dataset.lod = this.rule.levelOfDetail(item, height(item));
+      row.dataset.lod = this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
     };
 
     return {
