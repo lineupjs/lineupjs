@@ -4,7 +4,7 @@
 import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 import {ACellTableSection, ICellRenderContext} from 'lineupengine/src/table/ACellTableSection';
 import GridStyleManager from 'lineupengine/src/style/GridStyleManager';
-import Ranking from '..//model/Ranking';
+import Ranking from '../model/Ranking';
 import RenderColumn, {IRenderers} from './RenderColumn';
 import Column, {IFlatColumn} from '../model/Column';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
@@ -281,10 +281,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   destroy() {
     super.destroy();
-    this.ranking.flatColumns.forEach((c) => this.disableListener(c));
+    this.ranking.flatColumns.forEach((c) => EngineRanking.disableListener(c));
   }
 
-  private disableListener(c: Column) {
+  private static disableListener(c: Column) {
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
     c.on(`${Column.EVENT_DATA_LOADED}.hist`, null);
     c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
@@ -339,7 +339,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     const previous = this._context;
-    previous.columns.forEach((c) => this.disableListener(c.c));
+    previous.columns.forEach((c) => EngineRanking.disableListener(c.c));
     const previousData = this.data;
     this.data = data;
     (<any>this.renderCtx).totalNumberOfRows = data.length;

@@ -1,4 +1,4 @@
-import {spaceFillingRule} from './LineUpRuleSet';
+import spaceFillingRule from './spaceFillingRule';
 import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import SidePanel from '../panel/SidePanel';
 import DataProvider from '../../provider/ADataProvider';

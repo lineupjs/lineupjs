@@ -1,7 +1,7 @@
 import {IGroupData, IGroupItem, isGroup} from '../../model';
 import {IRule} from './interfaces';
 
-export function spaceFillingRule(config: { groupHeight: number, rowHeight: number, groupPadding: number, rowPadding: number }) {
+export default function spaceFillingRule(config: { groupHeight: number, rowHeight: number, groupPadding: number, rowPadding: number }) {
   function levelOfDetail(item: IGroupData | IGroupItem, height: number): 'high' | 'medium' | 'low' {
     const group = isGroup(item);
     const maxHeight = group ? config.groupHeight : config.rowHeight;
@@ -14,7 +14,7 @@ export function spaceFillingRule(config: { groupHeight: number, rowHeight: numbe
     return 'low';
   }
 
-  function spacefillingItemHeight(data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>) {
+  function itemHeight(data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>) {
     const visibleHeight = availableHeight - config.rowHeight - 5; // some padding for hover
     const items = <IGroupItem[]>data.filter((d) => !isGroup(d));
     const groups = data.length - items.length;
@@ -49,7 +49,7 @@ export function spaceFillingRule(config: { groupHeight: number, rowHeight: numbe
   return <IRule>{
     apply: (data: (IGroupData | IGroupItem)[], availableHeight: number, selection: Set<number>) => {
 
-      const {violation, height} = spacefillingItemHeight(data, availableHeight, selection);
+      const {violation, height} = itemHeight(data, availableHeight, selection);
 
       const item = (item: IGroupItem) => {
         if (selection.has(item.i)) {
