@@ -116,6 +116,9 @@ export default class TaggleRenderer extends AEventDispatcher {
   }
 
   switchRule(rule: IRule) {
+    if (this.rule === rule) {
+      return;
+    }
     this.rule = rule;
     this.update();
   }
