@@ -36,8 +36,8 @@ export default class SelectionManager extends AEventDispatcher {
     }
     this.hr = hr;
 
-    const mouseMove = (evt) => {
-      this.showHint(this.start, evt);
+    const mouseMove = (evt: MouseEvent) => {
+      this.showHint(this.start!, evt);
     };
     let enabled = false;
     const mouseUp = (evt: MouseEvent) => {
