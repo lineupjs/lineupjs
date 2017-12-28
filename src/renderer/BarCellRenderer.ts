@@ -3,11 +3,11 @@ import Column from '../model/Column';
 import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {colorOf, IImposer} from './impose';
+import {IDataRow} from '../model/interfaces';
 
 
 /**
@@ -36,10 +36,10 @@ export default class BarCellRenderer implements ICellRendererFactory {
           </div>
         </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
-        const value = col.getNumber(d.v, d.dataIndex);
+        const value = col.getNumber(d);
         const missing = renderMissingDOM(n, col, d);
         const w = isNaN(value) ? 0 : Math.round(value * 100 * 100) / 100;
-        const title = col.getLabel(d.v, d.dataIndex);
+        const title = col.getLabel(d);
         n.title = title;
 
         const bar = n.firstElementChild!;
@@ -62,11 +62,11 @@ export default class BarCellRenderer implements ICellRendererFactory {
         return;
       }
       ctx.fillStyle = colorOf(col, d, imposer) || Column.DEFAULT_COLOR;
-      const width = context.colWidth(col) * col.getNumber(d.v, d.dataIndex);
+      const width = context.colWidth(col) * col.getNumber(d);
       ctx.fillRect(0, paddingTop, isNaN(width) ? 0 : width, context.rowHeight(i) - (paddingTop + paddingBottom));
       if (this.renderValue || context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, context.colWidth(col) - 1, context.textHints);
+        clipText(ctx, col.getLabel(d), 1, 0, context.colWidth(col) - 1, context.textHints);
       }
     };
   }

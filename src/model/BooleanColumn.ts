@@ -5,6 +5,7 @@
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './ICategoricalColumn';
+import {IDataRow} from './interfaces';
 
 export interface IBooleanDesc {
   /**
@@ -51,8 +52,8 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return ['green', 'red'];
   }
 
-  getValue(row: any, index: number) {
-    const v: any = super.getValue(row, index);
+  getValue(row: IDataRow) {
+    const v: any = super.getValue(row);
     if (typeof(v) === 'undefined' || v == null) {
       return false;
     }
@@ -63,18 +64,18 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return false;
   }
 
-  getCategories(row: any, index: number) {
-    const v = this.getValue(row, index);
+  getCategories(row: IDataRow) {
+    const v = this.getValue(row);
     return v ? [this.trueMarker] : [this.falseMarker];
   }
 
-  getColor(row: any, index: number) {
-    const flagged = this.getValue(row, index);
+  getColor(row: IDataRow) {
+    const flagged = this.getValue(row);
     return flagged ? this.categoryColors[0]: this.categoryColors[1];
   }
 
-  getLabel(row: any, index: number) {
-    const v = this.getValue(row, index);
+  getLabel(row: IDataRow) {
+    const v = this.getValue(row);
     return v ? this.trueMarker : this.falseMarker;
   }
 
@@ -97,11 +98,11 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return this.currentFilter !== null;
   }
 
-  filter(row: any, index: number) {
+  filter(row: IDataRow) {
     if (!this.isFiltered()) {
       return true;
     }
-    const r = this.getValue(row, index);
+    const r = this.getValue(row);
     return r === this.currentFilter;
   }
 
@@ -116,14 +117,14 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    const av = this.getValue(a, aIndex);
-    const bv = this.getValue(b, bIndex);
+  compare(a: IDataRow, b: IDataRow) {
+    const av = this.getValue(a);
+    const bv = this.getValue(b);
     return av === bv ? 0 : (av < bv ? -1 : +1);
   }
 
-  group(row: any, index: number) {
-    const enabled = this.getValue(row, index);
+  group(row: IDataRow) {
+    const enabled = this.getValue(row);
     return enabled ? BooleanColumn.GROUP_TRUE : BooleanColumn.GROUP_FALSE;
   }
 }

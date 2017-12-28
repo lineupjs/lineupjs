@@ -1,10 +1,9 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import Column from '../model/Column';
-import {IGroup} from '../model/Group';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {mean} from 'd3-array';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isMissingValue} from '../model/missing';
@@ -26,13 +25,13 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
    * @return {number[]}
    */
   private static choose(col: INumbersColumn & Column, rows: IDataRow[]) {
-    const data = rows.map((r) => col.getRawNumbers(r.v, r.dataIndex));
+    const data = rows.map((r) => col.getRawNumbers(r));
     const cols = col.getDataLength();
     const r = <number[]>[];
     // mean column
     for(let i = 0; i < cols; ++i) {
       const col = data.map((d) => d[i]).filter((d) => !isMissingValue(d));
-      r.push(mean(col));
+      r.push(mean(col)!);
     }
     return r;
   }
@@ -45,7 +44,7 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        render(n, col.getRawNumbers(d.v,d.dataIndex));
+        render(n, col.getRawNumbers(d));
       }
     };
   }
@@ -71,7 +70,7 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
         return;
       }
       const rowHeight = context.rowHeight(i);
-      render(ctx, col.getRawNumbers(d.v, d.dataIndex), 0, rowHeight);
+      render(ctx, col.getRawNumbers(d), 0, rowHeight);
     };
   }
 

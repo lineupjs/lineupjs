@@ -2,10 +2,9 @@ import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {attr, forEachChild} from '../utils';
 import {renderMissingDOM} from './missing';
-import {IGroup} from '../model/Group';
 import {isMissingValue} from '../model/missing';
 import {colorOf, IImposer} from './impose';
 import {IDOMRenderContext} from './RendererContexts';
@@ -62,9 +61,9 @@ export default class DotCellRenderer implements ICellRendererFactory {
           return;
         }
         const color = colorOf(col, row, imposer);
-        const v = col.getValue(row.v, row.dataIndex);
+        const v = col.getValue(row);
         if (!isNumbersColumn(col)) {
-          return render(n, [v], [col.getLabel(row.v, row.dataIndex)], [color]);
+          return render(n, [v], [col.getLabel(row)], [color]);
         }
         const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
         return render(n, vs, vs.map(DEFAULT_FORMATTER), vs.map((_: any) => color));
@@ -77,11 +76,11 @@ export default class DotCellRenderer implements ICellRendererFactory {
     return {
       template,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const vs = rows.map((r) => col.getValue(r.v, r.dataIndex));
+        const vs = rows.map((r) => col.getValue(r));
         const colors = rows.map((r) => colorOf(col, r, imposer));
 
         if (!isNumbersColumn(col)) {
-          return render(n, vs, rows.map((r) => col.getLabel(r.v, r.dataIndex)), colors);
+          return render(n, vs, rows.map((r) => col.getLabel(r)), colors);
         }
         // concatenate all columns
         const all = (<number[]>[]).concat(...vs.filter((vi: number) => !isMissingValue(vi)));

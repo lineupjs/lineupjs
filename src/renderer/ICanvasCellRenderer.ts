@@ -1,5 +1,4 @@
-import {IDataRow} from '../provider/ADataProvider';
-import {IGroup} from '../model/Group';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {ICategoricalStatistics, IStatistics} from '../model/Column';
 
 interface ICanvasCellRenderer {

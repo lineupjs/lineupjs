@@ -1,7 +1,7 @@
 import LinkColumn from '../model/LinkColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow} from '../model/interfaces';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {clipText, showOverlay} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
@@ -22,7 +22,7 @@ export default class LinkCellRenderer extends ANoGroupRenderer implements ICellR
       template: `<div class='link text'></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
-        n.innerHTML = col.isLink(d.v, d.dataIndex) ? `<a class="link" href="${col.getValue(d.v, d.dataIndex)}" target="_blank">${col.getLabel(d.v, d.dataIndex)}</a>` : col.getLabel(d.v, d.dataIndex);
+        n.innerHTML = col.isLink(d) ? `<a class="link" href="${col.getValue(d)}" target="_blank">${col.getLabel(d)}</a>` : col.getLabel(d);
       }
     };
   }
@@ -32,20 +32,20 @@ export default class LinkCellRenderer extends ANoGroupRenderer implements ICellR
       if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
-      const isLink = col.isLink(d.v, d.dataIndex);
+      const isLink = col.isLink(d);
       if (!isLink) {
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, context.colWidth(col), context.textHints);
+        clipText(ctx, col.getLabel(d), 0, 0, context.colWidth(col), context.textHints);
         return;
       }
       const hovered = context.hovered(d.dataIndex);
       if (hovered) {
         const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
         overlay.style.width = `${context.colWidth(col)}px`;
-        overlay.innerHTML = `<a class='link' href='${col.getValue(d.v, d.dataIndex)}' target='_blank'>${col.getLabel(d.v, d.dataIndex)}</a>`;
+        overlay.innerHTML = `<a class='link' href='${col.getValue(d)}' target='_blank'>${col.getLabel(d)}</a>`;
       } else {
         const bak = ctx.fillStyle;
         ctx.fillStyle = context.option('style.link', context.option('style.text', 'black'));
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, context.colWidth(col), context.textHints);
+        clipText(ctx, col.getLabel(d), 0, 0, context.colWidth(col), context.textHints);
         ctx.fillStyle = bak;
       }
     };

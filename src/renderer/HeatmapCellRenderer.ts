@@ -2,7 +2,7 @@ import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberCo
 import Column from '../model/Column';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow} from '../model/interfaces';
 import {clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {hsl} from 'd3-color';
@@ -11,7 +11,7 @@ import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {colorOf, IImposer} from './impose';
 
 export function toHeatMapColor(row: IDataRow, col: INumberColumn & Column, imposer?: IImposer) {
-  let v = col.getNumber(row.v, row.dataIndex);
+  let v = col.getNumber(row);
   if (isNaN(v)) {
     v = 1; // max = brightest
   }
@@ -35,7 +35,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);
-        n.title = col.getLabel(d.v, d.dataIndex);
+        n.title = col.getLabel(d);
         (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = missing ? null : toHeatMapColor(d, col, imposer);
         setText(<HTMLSpanElement>n.lastElementChild!, n.title);
       }
@@ -52,7 +52,7 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
       const cell = Math.min(context.colWidth(col) * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
       ctx.fillRect(0, 0, cell, cell);
       ctx.fillStyle = context.option('style.text', 'black');
-      clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
+      clipText(ctx, col.getLabel(d), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
     };
   }
 }

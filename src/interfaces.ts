@@ -1,11 +1,8 @@
 import ICellRendererFactory from './renderer/ICellRendererFactory';
 import {IDataProvider} from './provider/ADataProvider';
-import {IGroupData, IGroupItem, IRankingHeaderContext} from './ui/engine/interfaces';
-import Column from './model/Column';
+import {IGroupData, IGroupItem, ISummaryFunction} from './ui/interfaces';
 import {IFilterDialog} from './dialogs/AFilterDialog';
 import Ranking from './model/Ranking';
-
-export declare type ISummaryFunction = ((col: Column, node: HTMLElement, interactive: boolean, ctx: IRankingHeaderContext)=>void);
 
 
 export interface ILineUpConfig {

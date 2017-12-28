@@ -3,10 +3,9 @@ import {ICategoricalColumn, isCategoricalColumn} from '../model/ICategoricalColu
 import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {forEachChild} from '../utils';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IGroup} from '../model/Group';
 import {computeHist} from '../provider/math';
 
 /**
@@ -27,7 +26,7 @@ export default class CategoricalStackedDistributionlRenderer implements ICellRen
     return {
       template: `<div>${bins}<div title="Missing Values"></div></div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        const {hist, missing} = computeHist(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getCategories(r.v, r.dataIndex), col.categories);
+        const {hist, missing} = computeHist(rows, (r: IDataRow) => col.getCategories(r), col.categories);
 
         const total = hist.reduce((acc, {y}) => acc + y, missing);
         forEachChild(n, (d: HTMLElement, i) => {
@@ -52,7 +51,7 @@ export default class CategoricalStackedDistributionlRenderer implements ICellRen
     const colors = col.categoryColors;
 
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      const {missing, hist} = computeHist(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getCategories(r.v, r.dataIndex), col.categories);
+      const {missing, hist} = computeHist(rows, (r: IDataRow) => col.getCategories(r), col.categories);
 
       const total = hist.reduce((acc, {y}) => acc + y, missing);
       const height = context.groupHeight(group) - padding;

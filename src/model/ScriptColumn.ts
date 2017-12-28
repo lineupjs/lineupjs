@@ -5,6 +5,7 @@
 import Column from './Column';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {isNumberColumn} from './INumberColumn';
+import {IDataRow} from './interfaces';
 
 const DEFAULT_SCRIPT = `let s = 0;
 col.forEach((c) => s += c.v);
@@ -193,29 +194,17 @@ export default class ScriptColumn extends CompositeNumberColumn {
     super.restore(dump, factory);
   }
 
-  protected compute(row: any, index: number) {
+  protected compute(row: IDataRow) {
     if (this.f == null) {
       this.f = new Function('children', 'values', 'raws', 'col', 'row', 'index', wrapWithContext(this.script));
     }
     const children = this._children;
-    const values = this._children.map((d) => d.getValue(row, index));
-    const raws = <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row, index) : null);
+    const values = this._children.map((d) => d.getValue(row));
+    const raws = <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row) : null);
     const col = new ColumnContext(children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])), () => {
       const cols = this.findMyRanker()!.flatColumns;
-      return new ColumnContext(cols.map((c) =>  new ColumnWrapper(c, c.getValue(row, index), isNumberColumn(c) ? c.getRawNumber(row, index): null)));
+      return new ColumnContext(cols.map((c) =>  new ColumnWrapper(c, c.getValue(row), isNumberColumn(c) ? c.getRawNumber(row): null)));
     });
-    return this.f.call(this, children, values, raws, col, row, index);
-  }
-
-  /**
-   * describe the column if it is a sorting criteria
-   * @param toId helper to convert a description to an id
-   * @return {string} json compatible
-   */
-  toSortingDesc(toId: (desc: any) => string): any {
-    return {
-      code: this.script,
-      operands: this._children.map((c) => c.toSortingDesc(toId))
-    };
+    return this.f.call(this, children, values, raws, col, row.v, row.dataIndex);
   }
 }

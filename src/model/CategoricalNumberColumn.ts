@@ -8,7 +8,7 @@ import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import CategoricalColumn from './CategoricalColumn';
 import {ICategoricalColumn, IBaseCategoricalDesc, ICategoricalFilter} from './ICategoricalColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
-import {IGroupData} from '../ui/engine/interfaces';
+import {IDataRow, IGroupData} from './interfaces';
 
 export declare type ICategoricalNumberColumnDesc = IBaseCategoricalDesc & IValueColumnDesc<number>;
 
@@ -84,47 +84,47 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.colors(cat);
   }
 
-  getLabel(row: any, index: number) {
-    return CategoricalColumn.prototype.getLabel.call(this, row, index);
+  getLabel(row: IDataRow) {
+    return CategoricalColumn.prototype.getLabel.call(this, row);
   }
 
-  getFirstLabel(row: any, index: number) {
-    return CategoricalColumn.prototype.getFirstLabel.call(this, row, index);
+  getFirstLabel(row: IDataRow) {
+    return CategoricalColumn.prototype.getFirstLabel.call(this, row);
   }
 
-  getLabels(row: any, index: number) {
-    return CategoricalColumn.prototype.getLabels.call(this, row, index);
+  getLabels(row: IDataRow) {
+    return CategoricalColumn.prototype.getLabels.call(this, row);
   }
 
-  getValue(row: any, index: number) {
-    const r = this.getValues(row, index);
+  getValue(row: IDataRow) {
+    const r = this.getValues(row);
     return r.length > 0 ? this.combiner(r) : 0;
   }
 
-  getValues(row: any, index: number) {
-    const r = CategoricalColumn.prototype.getValues.call(this, row, index);
+  getValues(row: IDataRow) {
+    const r = CategoricalColumn.prototype.getValues.call(this, row);
     return r.map(this.scale);
   }
 
-  getCategories(row: any, index: number) {
-    return CategoricalColumn.prototype.getValues.call(this, row, index);
+  getCategories(row: IDataRow) {
+    return CategoricalColumn.prototype.getValues.call(this, row);
   }
 
-  getNumber(row: any, index: number) {
-    return this.getValue(row, index);
+  getNumber(row: IDataRow) {
+    return this.getValue(row);
   }
 
-  isMissing(row: any, index: number) {
-    return this.getLabels(row, index).length === 0;
+  isMissing(row: IDataRow) {
+    return this.getLabels(row).length === 0;
   }
 
-  getRawNumber(row: any, index: number) {
-    return this.getNumber(row, index);
+  getRawNumber(row: IDataRow) {
+    return this.getNumber(row);
   }
 
-  getColor(row: any, index: number): string | null {
-    const vs = this.getValues(row, index);
-    const cs = this.getColors(row, index);
+  getColor(row: IDataRow): string | null {
+    const vs = this.getValues(row);
+    const cs = this.getColors(row);
     if (this.combiner === max) {
       //use the max color
       return cs.slice(1).reduce((prev, act, i) => vs[i + 1] > prev.v ? {c: act, v: vs[i + 1]} : prev, {
@@ -143,8 +143,8 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return cs[0] || null;
   }
 
-  getColors(row: any, index: number): string[] {
-    return CategoricalColumn.prototype.getColors.call(this, row, index);
+  getColors(row: IDataRow): string[] {
+    return CategoricalColumn.prototype.getColors.call(this, row);
   }
 
   dump(toDescRef: (desc: any) => any): any {
@@ -186,12 +186,12 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return this.currentFilter != null;
   }
 
-  filter(row: any, index: number): boolean {
-    return CategoricalColumn.prototype.filter.call(this, row, index);
+  filter(row: IDataRow): boolean {
+    return CategoricalColumn.prototype.filter.call(this, row);
   }
 
-  group(row: any, index: number) {
-    return CategoricalColumn.prototype.group.call(this, row, index);
+  group(row: IDataRow) {
+    return CategoricalColumn.prototype.group.call(this, row);
   }
 
   getFilter() {
@@ -202,15 +202,15 @@ export default class CategoricalNumberColumn extends ValueColumn<number> impleme
     return CategoricalColumn.prototype.setFilter.call(this, filter);
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return NumberColumn.prototype.compare.call(this, a, b, aIndex, bIndex);
+  compare(a: IDataRow, b: IDataRow) {
+    return NumberColumn.prototype.compare.call(this, a, b);
   }
 
   groupCompare(a: IGroupData, b: IGroupData) {
     return NumberColumn.prototype.groupCompare.call(this, a, b);
   }
 
-  getRendererType(): string {
-    return NumberColumn.prototype.getRendererType.call(this);
+  getRenderer(): string {
+    return NumberColumn.prototype.getRenderer.call(this);
   }
 }

@@ -3,10 +3,9 @@ import {ICategoricalColumn, isCategoricalColumn} from '../model/ICategoricalColu
 import Column, {ICategoricalStatistics} from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {clipText, forEachChild, setText} from '../utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IGroup} from '../model/Group';
 import {computeHist} from '../provider/math';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
@@ -28,8 +27,8 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
       </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
-        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = col.getColor(d.v, d.dataIndex);
-        setText(<HTMLSpanElement>n.lastElementChild!, col.getLabel(d.v, d.dataIndex));
+        (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = col.getColor(d);
+        setText(<HTMLSpanElement>n.lastElementChild!, col.getLabel(d));
       }
     };
   }
@@ -40,11 +39,11 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
       if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
-      ctx.fillStyle = col.getColor(d.v, d.dataIndex) || '';
+      ctx.fillStyle = col.getColor(d) || '';
       const cell = Math.min(context.colWidth(col) * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
       ctx.fillRect(0, 0, cell, cell);
       ctx.fillStyle = context.option('style.text', 'black');
-      clipText(ctx, col.getLabel(d.v, d.dataIndex), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
+      clipText(ctx, col.getLabel(d), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
     };
   }
 
@@ -56,7 +55,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     return {
       template: `<div>${bins}</div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: ICategoricalStatistics | null) => {
-        const {maxBin, hist} = computeHist(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getCategories(r.v, r.dataIndex), col.categories);
+        const {maxBin, hist} = computeHist(rows, (r: IDataRow) => col.getCategories(r), col.categories);
 
         const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
         forEachChild(n, (d: HTMLElement, i) => {
@@ -76,7 +75,7 @@ export default class CategoricalCellRenderer implements ICellRendererFactory {
     const widthPerBin = context.colWidth(col) / cats.length;
 
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], _dx: number, _dy: number, globalHist: ICategoricalStatistics | null) => {
-      const {maxBin, hist} = computeHist(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getCategories(r.v, r.dataIndex), col.categories);
+      const {maxBin, hist} = computeHist(rows, (r: IDataRow) => col.getCategories(r), col.categories);
       const max = Math.max(maxBin, globalHist ? globalHist.maxBin : 0);
 
       const total = context.groupHeight(group) - padding;

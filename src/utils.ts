@@ -506,7 +506,7 @@ export function hideOverlays(parentElement: HTMLElement) {
  * @param {string} helperType create types of
  */
 export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer, groupRenderer: IDOMGroupRenderer }[], render: 'group' | 'detail', helperType = 'svg') {
-  const renderer = render === 'detail' ? (col: { column: Column }) => col.column.getRendererType() : (col: { column: Column }) => col.column.getGroupRenderer();
+  const renderer = render === 'detail' ? (col: { column: Column }) => col.column.getRenderer() : (col: { column: Column }) => col.column.getGroupRenderer();
   if (node.childElementCount === 0) {
     // initial call fast method
     node.innerHTML = columns.map((c) => (render === 'detail' ? c.renderer : c.groupRenderer).template).join('');

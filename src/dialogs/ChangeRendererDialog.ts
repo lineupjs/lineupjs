@@ -9,7 +9,7 @@ export default class ChangeRendererDialog extends ADialog {
   }
 
   openDialog() {
-    const current = this.column.getRendererType();
+    const current = this.column.getRenderer();
 
     const currentGroup = this.column.getGroupRenderer();
     const {item: possible, group: possibleGroup} = this.ctx.getPossibleRenderer(this.column);
@@ -32,7 +32,7 @@ export default class ChangeRendererDialog extends ADialog {
     const popup = this.makeChoosePopup(html);
 
     Array.from(popup.querySelectorAll('input[name="renderertype"]')).forEach((n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setRendererType(n.value));
+      n.addEventListener('change', () => this.column.setRenderer(n.value));
     });
     Array.from(popup.querySelectorAll('input[name="grouptype"]')).forEach((n: HTMLInputElement) => {
       n.addEventListener('change', () => this.column.setGroupRenderer(n.value));

@@ -3,8 +3,8 @@
  */
 
 import Column from './Column';
-import {IGroupData} from '../ui/engine/interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
+import {IGroupData} from './interfaces';
 
 export function createDesc(label = 'Group') {
   return {type: 'group', label};

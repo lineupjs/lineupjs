@@ -2,8 +2,7 @@ import Column from '../model/Column';
 import ICellRendererFactory from './ICellRendererFactory';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IDataRow} from '../provider/ADataProvider';
-import {IGroup} from '../model/Group';
+import {IDataRow, IGroup} from '../model/interfaces';
 
 export class EmptyCellRenderer implements ICellRendererFactory {
   readonly title = 'Nothing';
@@ -16,7 +15,7 @@ export class EmptyCellRenderer implements ICellRendererFactory {
     return {
       template: `<div title=""></div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {
-        n.title = col.getLabel(d.v, d.dataIndex);
+        n.title = col.getLabel(d);
       }
     };
   }

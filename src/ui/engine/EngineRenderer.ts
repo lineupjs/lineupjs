@@ -69,7 +69,7 @@ export default class EngineRenderer extends AEventDispatcher {
       createRenderer: (col: Column, imposer?: IImposer) => {
         const single = createDOM(col, this.options.renderers, this.ctx, imposer);
         const group = createDOMGroup(col, this.options.renderers, this.ctx, imposer);
-        return {single, group, singleId: col.getRendererType(), groupId: col.getGroupRenderer()};
+        return {single, group, singleId: col.getRenderer(), groupId: col.getGroupRenderer()};
       },
       getPossibleRenderer: (col: Column) => ({item: possibleRenderer(col, this.options.renderers), group: possibleGroupRenderer(col, this.options.renderers)}),
       columnPadding: this.options.body.columnPadding || 5

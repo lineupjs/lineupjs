@@ -3,9 +3,8 @@ import ICellRendererFactory from './ICellRendererFactory';
 import {ICanvasRenderContext} from './RendererContexts';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {clipText, setText} from '../utils';
-import {IGroup} from '../model/Group';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 /**
@@ -30,9 +29,9 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       update: (n: HTMLDivElement, d: IDataRow) => {
         renderMissingDOM(n, col, d);
         if (this.escape) {
-          setText(n, col.getLabel(d.v, d.dataIndex));
+          setText(n, col.getLabel(d));
         } else {
-          n.innerHTML = col.getLabel(d.v, d.dataIndex);
+          n.innerHTML = col.getLabel(d);
         }
       }
     };
@@ -52,7 +51,7 @@ export class DefaultCellRenderer implements ICellRendererFactory {
       } else if (this.align === 'right') {
         shift = w;
       }
-      clipText(ctx, col.getLabel(d.v, d.dataIndex), shift, 0, w, context.textHints);
+      clipText(ctx, col.getLabel(d), shift, 0, w, context.textHints);
       ctx.textAlign = bak;
     };
   }

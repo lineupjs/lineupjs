@@ -2,10 +2,11 @@
  * Created by sam on 04.11.2016.
  */
 
-import Column, {IColumnDesc, IColumnParent, IFlatColumn} from './Column';
+import Column, {IColumnParent, IFlatColumn} from './Column';
 import {isNumberColumn} from './INumberColumn';
 import ValueColumn from './ValueColumn';
 import {suffix} from '../utils';
+import {IDataRow} from './interfaces';
 
 export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn&Column {
   return typeof ((<any>col).getCollapsed) === 'function';
@@ -16,10 +17,6 @@ export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn&Column
  */
 export default class CompositeColumn extends Column implements IColumnParent {
   protected readonly _children: Column[] = [];
-
-  constructor(id: string, desc: IColumnDesc) {
-    super(id, desc);
-  }
 
   assignNewId(idGenerator: () => string) {
     super.assignNewId(idGenerator);
@@ -157,7 +154,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return true;
   }
 
-  getColor(_row: any, _index: number) {
+  getColor(_row: IDataRow) {
     return this.color;
   }
 
@@ -165,21 +162,12 @@ export default class CompositeColumn extends Column implements IColumnParent {
     return this._children.some((d) => d.isFiltered());
   }
 
-  filter(row: any, index: number) {
-    return this._children.every((d) => d.filter(row, index));
+  filter(row: IDataRow) {
+    return this._children.every((d) => d.filter(row));
   }
 
   isLoaded(): boolean {
     return this._children.every((c) => !(c instanceof ValueColumn || c instanceof CompositeColumn) || (<ValueColumn<any> | CompositeColumn>c).isLoaded());
-  }
-
-  /**
-   * describe the column if it is a sorting criteria
-   * @param toId helper to convert a description to an id
-   * @return {string} json compatible
-   */
-  toSortingDesc(toId: (desc: any) => string): any {
-    return this._children.map((c) => c.toSortingDesc(toId));
   }
 
   get canJustAddNumbers() {

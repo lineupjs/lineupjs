@@ -1,8 +1,7 @@
 import {DefaultCellRenderer} from './DefaultCellRenderer';
 import {ICanvasRenderContext} from './RendererContexts';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IDataRow} from '../provider/ADataProvider';
-import {IGroup} from '../model/Group';
+import {IDataRow, IGroup} from '../model/interfaces';
 import RankColumn from '../model/RankColumn';
 import {clipText} from '../utils';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';
@@ -30,8 +29,8 @@ export default class RankCellRenderer extends DefaultCellRenderer {
           toTSpan.textContent = '';
           return;
         }
-        fromTSpan.textContent = col.getLabel(rows[0].v, rows[0].dataIndex);
-        toTSpan.textContent = col.getLabel(rows[rows.length - 1].v, rows[rows.length - 1].dataIndex);
+        fromTSpan.textContent = col.getLabel(rows[0]);
+        toTSpan.textContent = col.getLabel(rows[rows.length - 1],);
       }
     };
   }
@@ -41,8 +40,8 @@ export default class RankCellRenderer extends DefaultCellRenderer {
       if (rows.length === 0) {
         return;
       }
-      const fromRank = col.getLabel(rows[0].v, rows[0].dataIndex);
-      const toRank = col.getLabel(rows[rows.length - 1].v, rows[rows.length - 1].dataIndex);
+      const fromRank = col.getLabel(rows[0]);
+      const toRank = col.getLabel(rows[rows.length - 1]);
       const bak = ctx.textAlign;
       ctx.textAlign = 'right';
       const w = col.getWidth();

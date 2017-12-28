@@ -4,9 +4,10 @@
 
 import Column, {IColumnDesc} from '../model/Column';
 import Ranking from '../model/Ranking';
-import {IDataProviderOptions, IDataRow, IStatsBuilder} from './ADataProvider';
+import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
 import ACommonDataProvider from './ACommonDataProvider';
 import {defaultGroup, IOrderedGroup} from '../model/Group';
+import {IDataRow} from '../model/interfaces';
 
 /**
  * interface what the server side has to provide
@@ -14,9 +15,9 @@ import {defaultGroup, IOrderedGroup} from '../model/Group';
 export interface IServerData {
   /**
    * sort the dataset by the given description
-   * @param desc
+   * @param ranking
    */
-  sort(desc: any): Promise<number[]>;
+  sort(ranking: Ranking): Promise<number[]>;
 
   /**
    * returns a slice of the data array identified by a list of indices
@@ -65,10 +66,8 @@ export default class RemoteDataProvider extends ACommonDataProvider {
   }
 
   sortImpl(ranking: Ranking): Promise<IOrderedGroup[]> {
-    //generate a description of what to sort
-    const desc = ranking.toSortingDesc((desc) => desc.column);
     //use the server side to sort
-    return this.server.sort(desc).then((order) => [Object.assign({order}, defaultGroup)]);
+    return this.server.sort(ranking).then((order) => [Object.assign({order}, defaultGroup)]);
   }
 
   private loadFromServer(indices: number[]) {

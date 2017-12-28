@@ -1,12 +1,13 @@
 /**
  * Created by Samuel Gratzl on 28.06.2017.
  */
-import {} from 'd3-scale';
+import {schemeCategory10} from 'd3-scale';
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import StringColumn from './StringColumn';
 import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
 import {FIRST_IS_NAN, missingGroup} from './missing';
+import {IDataRow} from './interfaces';
 
 export interface ICategoryNode extends ICategory {
   readonly children: ICategoryNode[];
@@ -65,7 +66,7 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
   }
 
   initHierarchy(root: ICategoryNode) {
-    const colors = scale.category10().range().slice();
+    const colors = schemeCategory10.slice();
     const s = this.hierarchySeparator;
     const add = (prefix: string, node: ICategoryNode): ICategoryInternalNode => {
       const name = node.name === undefined ? node.value : node.name;
@@ -130,8 +131,8 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     this.fire([HierarchyColumn.EVENT_CUTOFF_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], bak, this.getCutOff());
   }
 
-  private resolveCategories(row: any, index: number): ICategoryInternalNode[] {
-    const base: string = StringColumn.prototype.getValue.call(this, row, index);
+  private resolveCategories(row: IDataRow): ICategoryInternalNode[] {
+    const base: string = StringColumn.prototype.getValue.call(this, row);
     if (base === null || base === '') {
       return [];
     }
@@ -150,47 +151,47 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     }).filter((v) => Boolean(v));
   }
 
-  private resolveCategory(row: any, index: number) {
-    const base = this.resolveCategories(row, index);
+  private resolveCategory(row: IDataRow) {
+    const base = this.resolveCategories(row);
     return base.length > 0 ? base[0]: null;
   }
 
-  getValue(row: any, index: number) {
-    const base = this.getValues(row, index);
+  getValue(row: IDataRow) {
+    const base = this.getValues(row);
     return base.length > 0 ? base[0]: null;
   }
 
-  getValues(row: any, index: number) {
-    const base = this.resolveCategories(row, index);
+  getValues(row: IDataRow) {
+    const base = this.resolveCategories(row);
     return base.map((d) => d.name);
   }
 
-  getLabel(row: any, index: number) {
-    return this.getLabels(row, index).join(this.separator);
+  getLabel(row: IDataRow) {
+    return this.getLabels(row).join(this.separator);
   }
 
-  getLabels(row: any, index: number) {
-    const base = this.resolveCategories(row, index);
+  getLabels(row: IDataRow) {
+    const base = this.resolveCategories(row);
     return base.map((d) => d.label);
   }
 
-  getFirstLabel(row: any, index: number) {
-    const l = this.getLabels(row, index);
+  getFirstLabel(row: IDataRow) {
+    const l = this.getLabels(row);
     return l.length > 0 ? l[0] : null;
   }
 
-  getCategories(row: any, index: number) {
-    return this.getValues(row, index);
+  getCategories(row: IDataRow) {
+    return this.getValues(row);
   }
 
-  getColor(row: any, index: number) {
-    const base = this.resolveCategory(row, index);
+  getColor(row: IDataRow) {
+    const base = this.resolveCategory(row);
     return base ? base.color : null;
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    const va = this.resolveCategories(a, aIndex);
-    const vb = this.resolveCategories(b, bIndex);
+  compare(a: IDataRow, b: IDataRow) {
+    const va = this.resolveCategories(a);
+    const vb = this.resolveCategories(b);
     if (va.length === 0) {
       // missing
       return vb.length === 0 ? 0 : FIRST_IS_NAN;
@@ -209,13 +210,13 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
     return va.length - vb.length;
   }
 
-  group(row: any, index: number) {
-    if (this.isMissing(row, index)) {
+  group(row: IDataRow) {
+    if (this.isMissing(row)) {
       return missingGroup;
     }
-    const base = this.resolveCategory(row, index);
+    const base = this.resolveCategory(row);
     if (!base) {
-      return super.group(row, index);
+      return super.group(row);
     }
     return {name: base.name, color: base.color};
   }

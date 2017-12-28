@@ -5,6 +5,7 @@
 import Column from './Column';
 import StringColumn, {IStringColumnDesc} from './StringColumn';
 import {isMissingValue} from './missing';
+import {IDataRow} from './interfaces';
 
 
 export interface ILinkDesc {
@@ -75,24 +76,24 @@ export default class LinkColumn extends StringColumn {
     }
   }
 
-  getLabel(row: any, index: number) {
-    const v: any = super.getRaw(row, index);
+  getLabel(row: IDataRow) {
+    const v: any = super.getRaw(row);
     if (v && v.alt) {
       return v.alt;
     }
     return String(v);
   }
 
-  isLink(row: any, index: number) {
+  isLink(row: IDataRow) {
     //get original value
-    const v: any = super.getRaw(row, index);
+    const v: any = super.getRaw(row);
     //convert to link
     return !isMissingValue(v) && (v.href != null || this.link);
   }
 
-  getValue(row: any, index: number) {
+  getValue(row: IDataRow) {
     //get original value
-    const v: any = super.getRaw(row, index);
+    const v: any = super.getRaw(row);
     //convert to link
     if (v && v.href) {
       return v.href;

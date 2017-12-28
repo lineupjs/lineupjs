@@ -6,7 +6,7 @@ import {AEventDispatcher, similar} from '../utils';
 import Ranking, {ISortCriteria} from './Ranking';
 import {defaultGroup} from './Group';
 import {isMissingValue} from './missing';
-import {IGroupData} from '../ui/engine/interfaces';
+import {IDataRow, IGroupData} from './interfaces';
 
 /**
  * converts a given id to css compatible one
@@ -14,7 +14,7 @@ import {IGroupData} from '../ui/engine/interfaces';
  * @return {string|void}
  */
 export function fixCSS(id: string) {
-  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]\^`{|}~]/g, '_'); //replace non css stuff to _
+  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '_'); //replace non css stuff to _
 }
 
 export interface IFlatColumn {
@@ -74,7 +74,7 @@ export interface IColumnDesc {
   /**
    * default renderer to use
    */
-  readonly rendererType?: string;
+  readonly renderer?: string;
 
   /**
    * default group renderer to use
@@ -88,7 +88,7 @@ export interface IStatistics {
   readonly mean: number;
   readonly count: number;
   readonly maxBin: number;
-  readonly hist: { x: number; dx: number; y: number; }[];
+  readonly hist: { x0: number; x1: number; length: number; }[];
   readonly missing: number;
 }
 
@@ -103,18 +103,6 @@ export interface IColumnMetaData {
   readonly description: string;
   readonly color: string | null;
 }
-
-
-export interface IRendererInfo {
-
-  /*
-   name of the current renderer
-   */
-  renderer: string;
-
-  groupRenderer: string;
-}
-
 
 /**
  * a column in LineUp
@@ -171,16 +159,15 @@ export default class Column extends AEventDispatcher {
    */
   readonly cssClass: string;
 
-  private readonly rendererInfo: IRendererInfo;
+  private renderer: string;
+  private groupRenderer: string;
 
 
   constructor(id: string, public readonly desc: IColumnDesc) {
     super();
     this.uid = fixCSS(id);
-    this.rendererInfo = {
-      renderer: this.desc.rendererType || this.desc.type,
-      groupRenderer: this.desc.groupRenderer || this.desc.type
-    };
+    this.renderer = this.desc.renderer|| this.desc.type;
+    this.groupRenderer = this.desc.groupRenderer || this.desc.type;
 
     this.cssClass = desc.cssClass || '';
     this.metadata = {
@@ -452,8 +439,11 @@ export default class Column extends AEventDispatcher {
     if (this.color !== ((<any>this.desc).color || Column.DEFAULT_COLOR) && this.color) {
       r.color = this.color;
     }
-    if (this.getRendererType() !== this.desc.type) {
-      r.rendererType = this.getRendererType();
+    if (this.getRenderer() !== this.desc.type) {
+      r.renderer = this.getRenderer();
+    }
+    if (this.getGroupRenderer() !== this.desc.type) {
+      r.groupRenderer = this.getGroupRenderer();
     }
     return r;
   }
@@ -470,57 +460,52 @@ export default class Column extends AEventDispatcher {
       color: dump.color || this.color,
       description: this.description
     };
-    if (dump.rendererType) {
-      this.rendererInfo.renderer = dump.rendererType;
+    if (dump.renderer || dump.rendererType) {
+      this.renderer = dump.renderer || dump.rendererType;
     }
     if (dump.groupRenderer) {
-      this.rendererInfo.groupRenderer = dump.groupRenderer;
+      this.groupRenderer = dump.groupRenderer;
     }
   }
 
   /**
    * return the label of a given row for the current column
    * @param row the current row
-   * @param index its row index
    * @return {string} the label of this column at the specified row
    */
-  getLabel(row: any, index: number): string {
-    return String(this.getValue(row, index));
+  getLabel(row: IDataRow): string {
+    return String(this.getValue(row));
   }
 
   /**
    * return the value of a given row for the current column
    * @param _row the current row
-   * @param _index its row index
    * @return the value of this column at the specified row
    */
-  getValue(_row: any, _index: number): any {
+  getValue(_row: IDataRow): any {
     return ''; //no value
   }
 
-  isMissing(row: any, index: number) {
-    return isMissingValue(this.getValue(row, index));
+  isMissing(row: IDataRow) {
+    return isMissingValue(this.getValue(row));
   }
 
   /**
    * compare function used to determine the order according to the values of the current column
    * @param _a first element
    * @param _b second element
-   * @param _aIndex index of the first element
-   * @param _bIndex index of the second element
    * @return {number}
    */
-  compare(_a: any, _b: any, _aIndex: number, _bIndex: number) {
+  compare(_a: IDataRow, _b: IDataRow) {
     return 0; //can't compare
   }
 
   /**
    * group the given row into a bin/group
    * @param _row
-   * @param _index
    * @return {IGroup}
    */
-  group(_row: any, _index: number) {
+  group(_row: IDataRow) {
     return defaultGroup;
   }
 
@@ -545,10 +530,9 @@ export default class Column extends AEventDispatcher {
   /**
    * predicate whether the current row should be included
    * @param row
-   * @param _index the row index
    * @return {boolean}
    */
-  filter(row: any, _index: number) {
+  filter(row: IDataRow) {
     return row !== null;
   }
 
@@ -556,50 +540,41 @@ export default class Column extends AEventDispatcher {
    * determines the renderer type that should be used to render this column. By default the same type as the column itself
    * @return {string}
    */
-  getRendererType(): string {
-    return this.rendererInfo.renderer;
+  getRenderer(): string {
+    return this.renderer;
   }
 
   getGroupRenderer(): string {
-    return this.rendererInfo.groupRenderer;
+    return this.groupRenderer;
   }
 
-  setRendererType(renderer: string) {
-    if (renderer === this.rendererInfo.renderer) {
+  setRenderer(renderer: string) {
+    if (renderer === this.renderer) {
       // nothing changes
       return;
     }
-    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.renderer, this.rendererInfo.renderer = renderer);
+    this.fire([Column.EVENT_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.renderer, this.renderer = renderer);
   }
 
   protected setDefaultRenderer(renderer: string) {
-    if (this.rendererInfo.renderer !== this.desc.type) {
+    if (this.renderer !== this.desc.type) {
       return;
     }
-    return this.setRendererType(renderer);
+    return this.setRenderer(renderer);
   }
 
   setGroupRenderer(renderer: string) {
-    if (renderer === this.rendererInfo.groupRenderer) {
+    if (renderer === this.groupRenderer) {
       // nothing changes
       return;
     }
-    this.fire([Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.rendererInfo.groupRenderer, this.rendererInfo.groupRenderer = renderer);
+    this.fire([Column.EVENT_GROUP_RENDERER_TYPE_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.groupRenderer, this.groupRenderer = renderer);
   }
 
   protected setDefaultGroupRenderer(renderer: string) {
-    if (this.rendererInfo.groupRenderer !== this.desc.type) {
+    if (this.groupRenderer !== this.desc.type) {
       return;
     }
     return this.setGroupRenderer(renderer);
-  }
-
-  /**
-   * describe the column if it is a sorting criteria
-   * @param toId helper to convert a description to an id
-   * @return {string} json compatible
-   */
-  toSortingDesc(toId: (desc: any) => string): any {
-    return toId(this.desc);
   }
 }

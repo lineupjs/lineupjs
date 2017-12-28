@@ -6,10 +6,10 @@
 import CompositeColumn from './CompositeColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 import {IColumnDesc} from './Column';
-import {IGroupData} from '../ui/engine/interfaces';
 import Column from './Column';
 import {isNumberColumn} from './INumberColumn';
 import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
+import {IDataRow, IGroupData} from './interfaces';
 
 
 /**
@@ -32,42 +32,42 @@ export default class ImpositionCompositeColumn extends CompositeColumn implement
     this.setDefaultGroupRenderer('boxplot');
   }
 
-  getLabel(row: any, index: number) {
+  getLabel(row: IDataRow) {
     const c = this._children;
     if (c.length === 0) {
       return '';
     }
     if (c.length === 1) {
-      return c[0].getLabel(row, index);
+      return c[0].getLabel(row);
     }
-    return `${c[0].getLabel(row, index)} (${c.slice(1).map((c) => `${c.label} = ${c.getLabel(row, index)}`)})`;
+    return `${c[0].getLabel(row)} (${c.slice(1).map((c) => `${c.label} = ${c.getLabel(row)}`)})`;
   }
 
-  getValue(row: any, index: number) {
+  getValue(row: IDataRow) {
     const c = this._children;
-    return c.length === 0 ? NaN : c[0].getValue(row, index);
+    return c.length === 0 ? NaN : c[0].getValue(row);
   }
 
-  getColor(row: any, index: number) {
+  getColor(row: IDataRow) {
     const c = this._children;
-    return c.length < 2 ? this.color : (<ICategoricalColumn><any>c[1]).getColor(row, index);
+    return c.length < 2 ? this.color : (<ICategoricalColumn><any>c[1]).getColor(row);
   }
 
-  getNumber(row: any, index: number) {
-    const r = this.getValue(row, index);
+  getNumber(row: IDataRow) {
+    const r = this.getValue(row);
     return r === null ? NaN : r;
   }
 
-  getRawNumber(row: any, index: number) {
-    return this.getNumber(row, index);
+  getRawNumber(row: IDataRow) {
+    return this.getNumber(row);
   }
 
-  isMissing(row: any, index: number) {
-    return this._children.length === 0 || this._children[0].isMissing(row, index);
+  isMissing(row: IDataRow) {
+    return this._children.length === 0 || this._children[0].isMissing(row);
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return NumberColumn.prototype.compare.call(this, a, b, aIndex, bIndex);
+  compare(a: IDataRow, b: IDataRow) {
+    return NumberColumn.prototype.compare.call(this, a, b);
   }
 
   groupCompare(a: IGroupData, b: IGroupData) {

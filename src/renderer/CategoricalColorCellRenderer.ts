@@ -3,9 +3,8 @@ import {ICategoricalColumn} from '../model/ICategoricalColumn';
 import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IGroup} from '../model/Group';
 import {clipText} from '../utils';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
@@ -24,8 +23,8 @@ export default class CategoricalColorCellRenderer implements ICellRendererFactor
       template: `<div style="background-color: transparent" title=""></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);
-        n.style.backgroundColor = missing ? null : col.getColor(d.v, d.dataIndex);
-        n.title = col.getLabel(d.v, d.dataIndex);
+        n.style.backgroundColor = missing ? null : col.getColor(d);
+        n.title = col.getLabel(d);
       }
     };
   }
@@ -35,7 +34,7 @@ export default class CategoricalColorCellRenderer implements ICellRendererFactor
       if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
-      ctx.fillStyle = col.getColor(d.v, d.dataIndex) || '';
+      ctx.fillStyle = col.getColor(d) || '';
       ctx.fillRect(0, 0, context.colWidth(col), context.rowHeight(i));
     };
   }
@@ -44,7 +43,7 @@ export default class CategoricalColorCellRenderer implements ICellRendererFactor
     const hist = new Map<string, number>();
     col.categories.forEach((cat) => hist.set(cat, 0));
     rows.forEach((row) =>
-      col.getCategories(row.v, row.dataIndex).forEach((cat) =>
+      col.getCategories(row).forEach((cat) =>
         hist.set(cat, (hist.get(cat) || 0) + 1)));
 
     let max = 0, maxCat = 0;

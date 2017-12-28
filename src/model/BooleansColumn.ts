@@ -4,6 +4,7 @@
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './ICategoricalColumn';
 import {FIRST_IS_NAN} from './missing';
+import {IDataRow} from './interfaces';
 
 export interface IBooleansDesc {
   readonly dataLength: number;
@@ -34,20 +35,20 @@ export default class BooleansColumn extends ValueColumn<boolean[]> implements IC
     return ['green', 'red'];
   }
 
-  getCategories(row: any, index: number): string[] {
-    const flagged = this.getValue(row, index);
+  getCategories(row: IDataRow): string[] {
+    const flagged = this.getValue(row);
     return this.categories.filter((_d, i) => flagged != null && flagged[i]);
   }
 
-  getColor(row: any, index: number) {
-    const flagged = this.getValue(row, index);
+  getColor(row: IDataRow) {
+    const flagged = this.getValue(row);
     return flagged ? 'green' : 'red';
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
+  compare(a: IDataRow, b: IDataRow) {
 
-    const aVal = this.getValue(a, aIndex);
-    const bVal = this.getValue(b, bIndex);
+    const aVal = this.getValue(a);
+    const bVal = this.getValue(b);
     if (aVal === null) {
       return bVal === null ? 0 : FIRST_IS_NAN;
     }

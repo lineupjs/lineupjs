@@ -5,8 +5,7 @@ import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {IDataRow} from '../provider/ADataProvider';
-import {IGroup} from '../model/Group';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {clipText} from '../utils';
 
 
@@ -44,7 +43,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
     const numExampleRows = 5;
     let examples = rows
       .slice(0, numExampleRows)
-      .map((r) => col.getLabel(r.v, r.dataIndex))
+      .map((r) => col.getLabel(r))
       .join(', ');
 
     if(rows.length > numExampleRows) {

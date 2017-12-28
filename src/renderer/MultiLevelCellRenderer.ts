@@ -3,10 +3,9 @@ import StackColumn from '../model/StackColumn';
 import IRenderContext, {IImposer} from './IRenderContext';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {matchColumns, round} from '../utils';
-import {IGroup} from '../model/Group';
 import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
 import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import Column from '../model/Column';
@@ -81,7 +80,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
           }
           col.renderer.update(cnode, d, i, group);
           if (stacked) {
-            missingWeight += (1 - col.column.getValue(d.v, d.dataIndex)) * weight;
+            missingWeight += (1 - col.column.getValue(d)) * weight;
           }
         });
       }
@@ -102,7 +101,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         col.renderer(ctx, d, i, dx + shift, dy, group);
         ctx.translate(-shift, 0);
         if (stacked) {
-          stackShift += col.width * (1 - col.column.getValue(d.v, d.dataIndex));
+          stackShift += col.width * (1 - col.column.getValue(d));
         }
       });
     };

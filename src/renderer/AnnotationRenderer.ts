@@ -1,7 +1,7 @@
 import AnnotateColumn from '../model/AnnotateColumn';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow} from '../model/interfaces';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {clipText, showOverlay} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
@@ -24,12 +24,12 @@ export default class AnnotationRenderer extends ANoGroupRenderer implements ICel
       update: (n: HTMLElement, d: IDataRow) => {
         const input: HTMLInputElement = <HTMLInputElement>n.firstElementChild!;
         input.onchange = () => {
-          col.setValue(d.v, d.dataIndex, input.value);
+          col.setValue(d, input.value);
         };
         input.onclick = (event) => {
           event.stopPropagation();
         };
-        n.lastElementChild!.textContent = input.value = col.getLabel(d.v, d.dataIndex);
+        n.lastElementChild!.textContent = input.value = col.getLabel(d);
       }
     };
   }
@@ -38,15 +38,15 @@ export default class AnnotationRenderer extends ANoGroupRenderer implements ICel
     return (ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, dx: number, dy: number) => {
       const hovered = context.hovered(d.dataIndex);
       if (!hovered) {
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, context.colWidth(col), context.textHints);
+        clipText(ctx, col.getLabel(d), 0, 0, context.colWidth(col), context.textHints);
         return;
       }
       const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
       overlay.style.width = `${context.colWidth(col)}px`;
-      overlay.innerHTML = `<input type='text' value='${col.getValue(d.v, d.dataIndex)}' style='width:${context.colWidth(col)}px'>`;
+      overlay.innerHTML = `<input type='text' value='${col.getValue(d)}' style='width:${context.colWidth(col)}px'>`;
       const input = <HTMLInputElement>overlay.childNodes[0];
       input.onchange = function () {
-        col.setValue(d.v, d.dataIndex, input.value);
+        col.setValue(d, input.value);
       };
       input.onclick = function (event) {
         event.stopPropagation();

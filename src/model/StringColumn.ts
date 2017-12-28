@@ -4,6 +4,7 @@
 
 import Column from './Column';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
+import {IDataRow} from './interfaces';
 
 export interface IStringDesc {
   /**
@@ -48,8 +49,8 @@ export default class StringColumn extends ValueColumn<string> {
     return this._escape;
   }
 
-  getValue(row: any, index: number) {
-    const v: any = super.getValue(row, index);
+  getValue(row: IDataRow) {
+    const v: any = super.getValue(row);
     if (typeof(v) === 'undefined' || v == null) {
       return '';
     }
@@ -83,12 +84,12 @@ export default class StringColumn extends ValueColumn<string> {
     return this.currentFilter != null;
   }
 
-  filter(row: any, index: number) {
+  filter(row: IDataRow) {
     if (!this.isFiltered()) {
       return true;
     }
-    const r = this.getLabel(row, index),
-      filter = this.currentFilter;
+    const r = this.getLabel(row);
+    const filter = this.currentFilter;
 
     if (filter === StringColumn.FILTER_MISSING) { //filter empty
       return r != null && r.trim() !== '';
@@ -116,9 +117,9 @@ export default class StringColumn extends ValueColumn<string> {
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    const aValue = this.getValue(a, aIndex);
-    const bValue = this.getValue(b, bIndex);
+  compare(a: IDataRow, b: IDataRow) {
+    const aValue = this.getValue(a);
+    const bValue = this.getValue(b);
     if (aValue === '') {
       return bValue === '' ? 0 : +1; //same = 0
     }

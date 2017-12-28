@@ -1,16 +1,16 @@
 import {FIRST_IS_NAN, isMissingValue} from './missing';
 import Column, {IColumnDesc} from './Column';
-import {IDataRow} from '../provider/ADataProvider';
 import {ascending, mean, median, quantile} from 'd3-array';
 import {format} from 'd3-format';
 import {IMappingFunction} from './NumberColumn';
 import {similar} from '../utils';
+import {IDataRow} from './interfaces';
 
 
 export interface INumberColumn {
-  getNumber(row: any, index: number): number;
+  getNumber(row: IDataRow): number;
 
-  getRawNumber(row: any, index: number): number;
+  getRawNumber(row: IDataRow): number;
 }
 
 export const DEFAULT_FORMATTER = format('.3n');
@@ -64,9 +64,9 @@ export interface IBoxPlotData {
   readonly outlier?: number[];
 }
 
-export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: number, bIndex: number) {
-  const aVal = col.getBoxPlotData(a, aIndex);
-  const bVal = col.getBoxPlotData(b, bIndex);
+export function compareBoxPlot(col: IBoxPlotColumn, a: IDataRow, b: IDataRow) {
+  const aVal = col.getBoxPlotData(a);
+  const bVal = col.getBoxPlotData(b);
   if (aVal === null) {
     return bVal === null ? 0 : FIRST_IS_NAN;
   }
@@ -77,8 +77,8 @@ export function compareBoxPlot(col: IBoxPlotColumn, a: any, b: any, aIndex: numb
   return numberCompare(<number>aVal[method], <number>bVal[method]);
 }
 
-export function getBoxPlotNumber(col: IBoxPlotColumn, row: any, index: number, mode: 'raw' | 'normalized'): number {
-  const data = mode === 'normalized' ? col.getBoxPlotData(row, index) : col.getRawBoxPlotData(row, index);
+export function getBoxPlotNumber(col: IBoxPlotColumn, row: IDataRow, mode: 'raw' | 'normalized'): number {
+  const data = mode === 'normalized' ? col.getBoxPlotData(row) : col.getRawBoxPlotData(row);
   if (data === null) {
     return NaN;
   }
@@ -98,11 +98,11 @@ export declare type SortMethod = string;
 
 
 export interface IBoxPlotColumn extends INumberColumn {
-  getBoxPlotData(row: any, index: number): IBoxPlotData | null;
+  getBoxPlotData(row: IDataRow): IBoxPlotData | null;
 
   getMapping(): IMappingFunction;
 
-  getRawBoxPlotData(row: any, index: number): IBoxPlotData | null;
+  getRawBoxPlotData(row: IDataRow): IBoxPlotData | null;
 
   getSortMethod(): string;
 
@@ -118,16 +118,16 @@ export const ADVANCED_SORT_METHOD = Object.assign({
 }, SORT_METHOD);
 
 export interface IAdvancedBoxPlotColumn extends IBoxPlotColumn {
-  getBoxPlotData(row: any, index: number): IAdvancedBoxPlotData | null;
+  getBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null;
 
-  getRawBoxPlotData(row: any, index: number): IAdvancedBoxPlotData | null;
+  getRawBoxPlotData(row: IDataRow): IAdvancedBoxPlotData | null;
 }
 
 /**
  * helper class to lazily compute box plotdata out of a given number array
  */
 export class LazyBoxPlotData implements IAdvancedBoxPlotData {
-  private _sorted: number[] | null = null;
+  private _sorted: number[];
   private _outlier: number[] | null = null;
   private readonly values: number[];
 
@@ -140,15 +140,15 @@ export class LazyBoxPlotData implements IAdvancedBoxPlotData {
    * lazy compute sorted array
    * @returns {number[]}
    */
-  private get sorted() {
-    if (this._sorted === null) {
+  private get sorted(): number[] {
+    if (this._sorted == null) {
       this._sorted = this.values.slice().sort(ascending);
     }
     return this._sorted;
   }
 
-  private map(v: number) {
-    return this.scale ? this.scale.apply(v) : v;
+  private map(v: number|undefined) {
+    return this.scale && v !== null ? this.scale.apply(v!) : v!;
   }
 
   get min() {
@@ -179,8 +179,8 @@ export class LazyBoxPlotData implements IAdvancedBoxPlotData {
     if (this._outlier) {
       return this._outlier;
     }
-    const q1 = quantile(this.sorted, 0.25);
-    const q3 = quantile(this.sorted, 0.75);
+    const q1 = quantile(this.sorted, 0.25)!;
+    const q3 = quantile(this.sorted, 0.75)!;
     const iqr = q3 - q1;
     const left = q1 - 1.5 * iqr;
     const right = q3 + 1.5 * iqr;
@@ -194,9 +194,9 @@ export class LazyBoxPlotData implements IAdvancedBoxPlotData {
 }
 
 export interface INumbersColumn extends INumberColumn {
-  getNumbers(row: any, index: number): number[];
+  getNumbers(row: IDataRow): number[];
 
-  getRawNumbers(row: any, index: number): number[];
+  getRawNumbers(row: IDataRow): number[];
 
   getDataLength(): number;
 
@@ -235,7 +235,7 @@ export function numberCompare(a: number | null, b: number | null, aMissing = fal
 
 export function medianIndex(rows: IDataRow[], col: INumberColumn & Column): number {
   //return the median row
-  const data = rows.map((r, i) => ({i, v: col.getNumber(r.v, r.dataIndex), m: col.isMissing(r.v, r.dataIndex)}));
+  const data = rows.map((r, i) => ({i, v: col.getNumber(r), m: col.isMissing(r)}));
   const sorted = data.filter((r) => !r.m).sort((a, b) => numberCompare(a.v, b.v));
   const index = sorted[Math.floor(sorted.length / 2.0)];
   if (index === undefined) {
@@ -245,8 +245,8 @@ export function medianIndex(rows: IDataRow[], col: INumberColumn & Column): numb
 }
 
 export function groupCompare(a: IDataRow[], b: IDataRow[], col: INumberColumn & Column, sortMethod: keyof LazyBoxPlotData) {
-  const va = new LazyBoxPlotData(a.map((row) => col.getNumber(row.v, row.dataIndex)));
-  const vb = new LazyBoxPlotData(b.map((row) => col.getNumber(row.v, row.dataIndex)));
+  const va = new LazyBoxPlotData(a.map((row) => col.getNumber(row)));
+  const vb = new LazyBoxPlotData(b.map((row) => col.getNumber(row)));
   return numberCompare(<number>va[sortMethod], <number>vb[sortMethod]);
 }
 

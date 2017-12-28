@@ -5,6 +5,7 @@
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {FIRST_IS_NAN, isMissingValue} from './missing';
 import {timeFormat, timeParse} from 'd3-time-format';
+import {IDataRow} from './interfaces';
 
 export interface IDateDesc {
   /**
@@ -33,8 +34,8 @@ export default class DateColumn extends ValueColumn<Date|string> {
     this.setDefaultRenderer('default');
   }
 
-  getValue(row: any, index: number): Date|null {
-    const v = super.getValue(row, index);
+  getValue(row: IDataRow): Date|null {
+    const v = super.getValue(row);
     if (isMissingValue(v)) {
       return null;
     }
@@ -44,17 +45,17 @@ export default class DateColumn extends ValueColumn<Date|string> {
     return this.parse(String(v));
   }
 
-  getLabel(row: any, index: number) {
-    const v = this.getValue(row, index);
+  getLabel(row: IDataRow) {
+    const v = this.getValue(row);
     if (!(v instanceof Date)) {
       return '';
     }
     return this.format(v);
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    const av = this.getValue(a, aIndex);
-    const bv = this.getValue(b, bIndex);
+  compare(a: IDataRow, b: IDataRow) {
+    const av = this.getValue(a);
+    const bv = this.getValue(b);
     if (av === bv) {
       return 0;
     }

@@ -1,16 +1,8 @@
 /**
  * Created by Samuel Gratzl on 24.05.2017.
  */
+import {IGroup, IGroupParent} from './interfaces';
 
-export interface IGroup {
-  name: string;
-  color: string;
-  parent?: IGroupParent|null;
-}
-
-export interface IGroupParent extends IGroup {
-  subGroups: (IGroupParent | IGroup)[];
-}
 
 export interface IOrderedGroup extends IGroup {
   order: number[];

@@ -3,14 +3,13 @@
  */
 
 import Column, {IColumnDesc} from './Column';
-import {IGroup} from './Group';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from './interfaces';
 
 export interface IAction {
   name: string;
   icon: string;
 
-  action(v: any, dataIndex: number): void;
+  action(row: IDataRow): void;
 }
 
 export interface IGroupAction {

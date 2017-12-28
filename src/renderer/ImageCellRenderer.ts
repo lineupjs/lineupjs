@@ -1,6 +1,6 @@
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow} from '../model/interfaces';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
@@ -19,11 +19,11 @@ export default class ImageCellRenderer extends ANoGroupRenderer implements ICell
     return col instanceof LinkColumn;
   }
 
-  private getImage(col: LinkColumn, row: any, index: number) {
-    if (!col.isLink(row, index)) {
+  private getImage(col: LinkColumn, row: IDataRow) {
+    if (!col.isLink(row)) {
       return null;
     }
-    const url = col.getValue(row, index);
+    const url = col.getValue(row);
     if (!this.imageCache.has(url)) {
       // start loading
       const image = new Image();
@@ -38,8 +38,8 @@ export default class ImageCellRenderer extends ANoGroupRenderer implements ICell
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         const missing = renderMissingDOM(n, col, d);
-        n.title = col.getLabel(d.v, d.dataIndex);
-        n.style.backgroundImage = missing || !col.isLink(d.v, d.dataIndex) ? null : `url('${col.getValue(d.v, d.dataIndex)}')`;
+        n.title = col.getLabel(d);
+        n.style.backgroundImage = missing || !col.isLink(d) ? null : `url('${col.getValue(d)}')`;
       }
     };
   }
@@ -49,12 +49,12 @@ export default class ImageCellRenderer extends ANoGroupRenderer implements ICell
       if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
         return;
       }
-      const isLink = col.isLink(d.v, d.dataIndex);
+      const isLink = col.isLink(d);
       if (!isLink) {
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 0, 0, context.colWidth(col), context.textHints);
+        clipText(ctx, col.getLabel(d), 0, 0, context.colWidth(col), context.textHints);
         return;
       }
-      const image = this.getImage(col, d.v, d.dataIndex);
+      const image = this.getImage(col, d);
       if (!image) {
         return;
       }

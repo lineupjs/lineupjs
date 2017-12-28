@@ -11,6 +11,7 @@ import {
   IBaseCategoricalDesc, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter,
   isEqualFilter,
 } from './ICategoricalColumn';
+import {IDataRow} from './interfaces';
 
 
 function colorPool() {
@@ -105,21 +106,21 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.categories.map((c) => this.catLabels.has(c) ? this.catLabels.get(c)! : c);
   }
 
-  getLabel(row: any, index: number) {
+  getLabel(row: IDataRow) {
     //no mapping
     if (this.catLabels === null || this.catLabels.size === 0) {
-      return StringColumn.prototype.getValue.call(this, row, index);
+      return StringColumn.prototype.getValue.call(this, row);
     }
-    return this.getLabels(row, index).join(this.separator);
+    return this.getLabels(row).join(this.separator);
   }
 
-  getFirstLabel(row: any, index: number) {
-    const l = this.getLabels(row, index);
+  getFirstLabel(row: IDataRow) {
+    const l = this.getLabels(row);
     return l.length > 0 ? l[0] : null;
   }
 
-  getLabels(row: any, index: number) {
-    const v = StringColumn.prototype.getValue.call(this, row, index);
+  getLabels(row: IDataRow) {
+    const v = StringColumn.prototype.getValue.call(this, row);
     const r = v ? v.split(this.separator) : [];
 
     const mapToLabel = (values: string[]) => {
@@ -131,35 +132,35 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return mapToLabel(r);
   }
 
-  getValue(row: any, index: number) {
-    const r = this.getValues(row, index);
+  getValue(row: IDataRow) {
+    const r = this.getValues(row);
     return r.length > 0 ? r[0] : null;
   }
 
-  getValues(row: any, index: number): string[] {
-    const v = StringColumn.prototype.getValue.call(this, row, index);
+  getValues(row: IDataRow): string[] {
+    const v = StringColumn.prototype.getValue.call(this, row);
     return v ? v.split(this.separator) : [];
   }
 
-  isMissing(row: any, index: number) {
-    const v = this.getValues(row, index);
+  isMissing(row: IDataRow) {
+    const v = this.getValues(row);
     return !v || v.length === 0;
   }
 
-  getCategories(row: any, index: number) {
-    return this.getValues(row, index);
+  getCategories(row: IDataRow) {
+    return this.getValues(row);
   }
 
-  getColor(row: any, index: number) {
-    const cat = this.getValue(row, index);
+  getColor(row: IDataRow) {
+    const cat = this.getValue(row);
     if (cat === null || cat === '') {
       return null;
     }
     return this.colors(cat);
   }
 
-  getColors(row: any, index: number) {
-    return this.getCategories(row, index).map(this.colors);
+  getColors(row: IDataRow) {
+    return this.getCategories(row).map(this.colors);
   }
 
   dump(toDescRef: (desc: any) => any): any {
@@ -222,11 +223,11 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return true;
   }
 
-  filter(row: any, index: number): boolean {
+  filter(row: IDataRow): boolean {
     if (!this.isFiltered()) {
       return true;
     }
-    const vs = this.getCategories(row, index);
+    const vs = this.getCategories(row);
 
     if (this.currentFilter!.filterMissing && vs.length === 0) {
       return false;
@@ -246,9 +247,9 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     this.fire([Column.EVENT_FILTER_CHANGED, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.currentFilter, this.currentFilter = filter);
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    const va = this.getValues(a, aIndex);
-    const vb = this.getValues(b, bIndex);
+  compare(a: IDataRow, b: IDataRow) {
+    const va = this.getValues(a);
+    const vb = this.getValues(b);
     if (va.length === 0) {
       // missing
       return vb.length === 0 ? 0 : FIRST_IS_NAN;
@@ -267,15 +268,15 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return va.length - vb.length;
   }
 
-  group(row: any, index: number) {
-    if (this.isMissing(row, index)) {
+  group(row: IDataRow) {
+    if (this.isMissing(row)) {
       return missingGroup;
     }
-    const name = this.getValue(row, index);
+    const name = this.getValue(row);
     if (!name) {
-      return super.group(row, index);
+      return super.group(row);
     }
-    const color = this.getColor(row, index)!;
+    const color = this.getColor(row)!;
     return {name, color};
   }
 

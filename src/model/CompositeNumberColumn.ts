@@ -7,7 +7,7 @@ import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
 import NumberColumn, {INumberColumn} from './NumberColumn';
 import {isMissingValue} from './missing';
-import {IGroupData} from '../ui/engine/interfaces';
+import {IDataRow, IGroupData} from './interfaces';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**
@@ -65,53 +65,53 @@ export default class CompositeNumberColumn extends CompositeColumn implements IN
     super.restore(dump, factory);
   }
 
-  getLabel(row: any, index: number) {
+  getLabel(row: IDataRow) {
     if (!this.isLoaded()) {
       return '';
     }
-    const v = this.getValue(row, index);
+    const v = this.getValue(row);
     //keep non number if it is not a number else convert using formatter
     return String(typeof v === 'number' && !isNaN(v) && isFinite(v) ? this.numberFormat(v) : v);
   }
 
-  getValue(row: any, index: number) {
+  getValue(row: IDataRow) {
     if (!this.isLoaded()) {
       return null;
     }
     //weighted sum
-    const v = this.compute(row, index);
+    const v = this.compute(row);
     if (isMissingValue(v)) {
       return this.missingValue;
     }
     return v;
   }
 
-  protected compute(_row: any, _index: number) {
+  protected compute(_row: IDataRow) {
     return NaN;
   }
 
-  getNumber(row: any, index: number) {
-    const r = this.getValue(row, index);
+  getNumber(row: IDataRow) {
+    const r = this.getValue(row);
     return r === null ? NaN : r;
   }
 
-  getRawNumber(row: any, index: number) {
-    return this.getNumber(row, index);
+  getRawNumber(row: IDataRow) {
+    return this.getNumber(row);
   }
 
-  isMissing(row: any, index: number) {
-    return isMissingValue(this.compute(row, index));
+  isMissing(row: IDataRow) {
+    return isMissingValue(this.compute(row));
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number) {
-    return NumberColumn.prototype.compare.call(this, a, b, aIndex, bIndex);
+  compare(a: IDataRow, b: IDataRow) {
+    return NumberColumn.prototype.compare.call(this, a, b);
   }
 
   groupCompare(a: IGroupData, b: IGroupData) {
     return NumberColumn.prototype.groupCompare.call(this, a, b);
   }
 
-  getRendererType(): string {
-    return NumberColumn.prototype.getRendererType.call(this);
+  getRenderer(): string {
+    return NumberColumn.prototype.getRenderer.call(this);
   }
 }

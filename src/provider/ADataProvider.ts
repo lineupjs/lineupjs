@@ -22,26 +22,12 @@ import {INumberColumn} from '../model/INumberColumn';
 import {AEventDispatcher, debounce, suffix} from '../utils';
 import {IValueColumnDesc} from '../model/ValueColumn';
 import {ISelectionColumnDesc} from '../model/SelectionColumn';
-import {IGroup, IOrderedGroup, toGroupID, unifyParents} from '../model/Group';
+import {IOrderedGroup, toGroupID, unifyParents} from '../model/Group';
 import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
 import OrderedSet from './OrderedSet';
 import {IExportOptions, exportRanking} from './utils';
+import {IDataRow, IGroup} from '../model/interfaces';
 export {IExportOptions} from './utils';
-
-/**
- * a data row for rendering
- */
-export interface IDataRow {
-  /**
-   * the value
-   */
-  v: any;
-  /**
-   * the underlying data index
-   */
-  dataIndex: number;
-}
-
 
 export interface IStatsBuilder {
   stats(col: INumberColumn): Promise<IStatistics> | IStatistics;
@@ -343,9 +329,9 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     if (desc.type === 'rank') {
       (<IValueColumnDesc<number>>desc).accessor = this.rankAccessor.bind(this);
     } else if (desc.type === 'selection') {
-      (<ISelectionColumnDesc>desc).accessor = (_row: any, index: number) => this.isSelected(index);
-      (<ISelectionColumnDesc>desc).setter = (_row: any, index: number, value: boolean) => value ? this.select(index) : this.deselect(index);
-      (<ISelectionColumnDesc>desc).setterAll = (_rows: any[], indices: number[], value: boolean) => value ? this.selectAll(indices) : this.deselectAll(indices);
+      (<ISelectionColumnDesc>desc).accessor = (row: IDataRow) => this.isSelected(row.dataIndex);
+      (<ISelectionColumnDesc>desc).setter = (row: IDataRow, value: boolean) => value ? this.select(row.dataIndex) : this.deselect(row.dataIndex);
+      (<ISelectionColumnDesc>desc).setterAll = (rows: IDataRow[], value: boolean) => value ? this.selectAll(rows.map((d) => d.dataIndex)) : this.deselectAll(rows.map((d) => d.dataIndex));
     } else if (desc.type === 'aggregate') {
       (<IAggregateGroupColumnDesc>desc).isAggregated = (ranking: Ranking, group: IGroup) => this.isAggregated(ranking, group);
       (<IAggregateGroupColumnDesc>desc).setAggregated = (ranking: Ranking, group: IGroup, value: boolean) => this.setAggregated(ranking, group, value);

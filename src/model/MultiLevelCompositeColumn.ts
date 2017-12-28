@@ -7,6 +7,7 @@ import Column, {IColumnDesc, IFlatColumn} from './Column';
 import StackColumn from './StackColumn';
 import {isNumberColumn} from './INumberColumn';
 import {similar} from '../utils';
+import {IDataRow} from './interfaces';
 
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;
@@ -106,16 +107,16 @@ export default class MultiLevelCompositeColumn extends CompositeColumn implement
     super.setWidth(value);
   }
 
-  getRendererType() {
+  getRenderer() {
     if (this.getCollapsed()) {
       return MultiLevelCompositeColumn.EVENT_COLLAPSE_CHANGED;
     }
-    return super.getRendererType();
+    return super.getRenderer();
   }
 
-  isMissing(row: any, index: number) {
+  isMissing(row: IDataRow) {
     if (this.getCollapsed()) {
-      return this._children.some((c) => (isNumberColumn(c) || isMultiLevelColumn(c)) && c.isMissing(row, index));
+      return this._children.some((c) => (isNumberColumn(c) || isMultiLevelColumn(c)) && c.isMissing(row));
     }
     return false;
   }

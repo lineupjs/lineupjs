@@ -2,7 +2,7 @@ import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow} from '../model/interfaces';
 import {attr, clipText, setText} from '../utils';
 import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
@@ -21,13 +21,13 @@ export default class CircleCellRenderer implements ICellRendererFactory {
               <div class="lu-hover-only"></div>
           </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        const v = col.getNumber(d.v, d.dataIndex);
+        const v = col.getNumber(d);
         const p = Math.round(v * 100);
         const missing = renderMissingDOM(n, col, d);
         attr(<HTMLElement>n, {}, {
           background: missing ? null : `radial-gradient(circle closest-side, ${colorOf(col, d, imposer)} ${p}%, transparent ${p}%)`
         },);
-        setText(n.firstElementChild!, col.getLabel(d.v, d.dataIndex));
+        setText(n.firstElementChild!, col.getLabel(d));
       }
     };
   }
@@ -39,7 +39,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
         return;
       }
 
-      const value = col.getNumber(d.v, d.dataIndex);
+      const value = col.getNumber(d);
       const posy = (context.rowHeight(i) / 2);
       const posx = (context.colWidth(col) / 2);
       ctx.strokeStyle = ctx.fillStyle = colorOf(col, d, imposer) || Column.DEFAULT_COLOR;
@@ -49,7 +49,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
       ctx.stroke();
       if (context.hovered(d.dataIndex) || context.selected(d.dataIndex)) {
         ctx.fillStyle = context.option('style.text', 'black');
-        clipText(ctx, col.getLabel(d.v, d.dataIndex), 1, 0, context.colWidth(col) - 1, context.textHints);
+        clipText(ctx, col.getLabel(d), 1, 0, context.colWidth(col) - 1, context.textHints);
       }
     };
   }

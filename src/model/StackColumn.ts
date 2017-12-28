@@ -7,6 +7,7 @@ import {IMultiLevelColumn} from './CompositeColumn';
 import Column, {IFlatColumn} from './Column';
 import {isNumberColumn} from './INumberColumn';
 import {similar} from '../utils';
+import {IDataRow} from './interfaces';
 
 /**
  * factory for creating a description creating a stacked column
@@ -43,8 +44,8 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
       that.adaptWidthChange(this.source, oldValue, newValue);
     };
 
-    if (this.getRendererType() === 'interleaving') {
-      this.setRendererType('stack');
+    if (this.getRenderer() === 'interleaving') {
+      this.setRenderer('stack');
     }
     if (this.getGroupRenderer() === 'interleaving') {
       this.setGroupRenderer('stack');
@@ -210,29 +211,19 @@ export default class StackColumn extends CompositeNumberColumn implements IMulti
     super.setWidth(value);
   }
 
-  protected compute(row: any, index: number) {
+  protected compute(row: IDataRow) {
     const w = this.getWidth();
-    return this._children.reduce((acc, d) => acc + d.getValue(row, index) * (d.getWidth() / w), 0);
+    return this._children.reduce((acc, d) => acc + d.getValue(row) * (d.getWidth() / w), 0);
   }
 
-  getRendererType() {
+  getRenderer() {
     if (this.getCollapsed() && this.isLoaded()) {
       return StackColumn.COLLAPSED_RENDERER;
     }
-    return super.getRendererType();
+    return super.getRenderer();
   }
 
-  /**
-   * describe the column if it is a sorting criteria
-   * @param toId helper to convert a description to an id
-   * @return {string} json compatible
-   */
-  toSortingDesc(toId: (desc: any) => string): any {
-    const w = this.getWeights();
-    return this._children.map((c, i) => ({weight: w[i], id: c.toSortingDesc(toId)}));
-  }
-
-  isMissing(row: any, index: number) {
-    return this._children.some((c) => isNumberColumn(c) && c.isMissing(row, index));
+  isMissing(row: IDataRow) {
+    return this._children.some((c) => isNumberColumn(c) && c.isMissing(row));
   }
 }

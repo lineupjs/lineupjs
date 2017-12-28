@@ -75,7 +75,7 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
 
 
 function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
-  const r = renderers[col.getRendererType()];
+  const r = renderers[col.getRenderer()];
   return r || defaultCellRenderer;
 }
 

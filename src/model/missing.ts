@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 11.10.2017.
  */
-import {IGroup} from './Group';
+import {IGroup} from './interfaces';
 
 
 export function isMissingValue(v: any) : boolean {

@@ -1,11 +1,10 @@
 import AggregateGroupColumn from '../model/AggregateGroupColumn';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
-import {IGroup} from '../model/Group';
+import {IDataRow, IGroup} from '../model/interfaces';
 import Column from '../model/Column';
 
 function render(ctx: CanvasRenderingContext2D, icon: string, col: AggregateGroupColumn, context: ICanvasRenderContext) {

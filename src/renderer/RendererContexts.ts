@@ -3,7 +3,7 @@ import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {ITextRenderHints} from '../utils';
 import Column from '../model/Column';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IGroup} from '../model/Group';
+import {IGroup} from '../model/interfaces';
 
 export declare type IDOMRenderContext = IRenderContext<IDOMCellRenderer, IDOMGroupRenderer>;
 

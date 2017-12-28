@@ -2,10 +2,9 @@ import Column from '../model/Column';
 import {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {ICanvasRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {clipText} from '../utils';
 import ICellRendererFactory from './ICellRendererFactory';
-import {IGroup} from '../model/Group';
 
 
 export default class LoadingCellRenderer implements ICellRendererFactory {
@@ -45,7 +44,7 @@ function renderLoading(ctx: CanvasRenderingContext2D, base: number, i: number, h
   clipText(ctx, 'Loading…', 10, 0, context.colWidth(col) - 10, context.textHints);
   const angle = (base + i * 45) * (Math.PI / 180);
   ctx.save();
-  ctx.font = '10pt FontAwesome';
+  ctx.font = '10pt FontAwesome'; // TODO fix for custom font
   ctx.textAlign = 'center';
   const shift = (height - context.textHints.spinnerWidth) * 0.5;
   ctx.translate(2, shift + context.textHints.spinnerWidth * 0.5);

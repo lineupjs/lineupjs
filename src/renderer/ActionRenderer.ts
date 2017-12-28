@@ -25,7 +25,7 @@ export default class ActionRenderer implements ICellRendererFactory {
           ni.onclick = function (event) {
             event.preventDefault();
             event.stopPropagation();
-            actions[i].action(d.v, d.dataIndex);
+            actions[i].action(d);
           };
         });
       }
@@ -63,7 +63,7 @@ export default class ActionRenderer implements ICellRendererFactory {
         ni.onclick = function (event) {
           event.preventDefault();
           event.stopPropagation();
-          actions[i].action(d.v, d.dataIndex);
+          actions[i].action(d);
         };
       });
     };

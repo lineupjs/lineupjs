@@ -2,18 +2,17 @@ import ICellRendererFactory from './ICellRendererFactory';
 import {default as BoxPlotColumn, isBoxPlotColumn} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {
   IBoxPlotColumn, IBoxPlotData, INumberColumn, INumbersColumn, isNumbersColumn,
   LazyBoxPlotData
 } from '../model/INumberColumn';
-import {IGroup} from '../model/Group';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isNumberColumn} from '../model';
 import NumberColumn from '../model/NumberColumn';
 import {colorOf, IImposer} from './impose';
+import {IDataRow, IGroup} from '../model/interfaces';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v === null) {
@@ -38,12 +37,12 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
                     <div><div></div><div></div></div>
                  </div>`,
       update: (n: HTMLElement, d: IDataRow) => {
-        const data = col.getBoxPlotData(d.v, d.dataIndex);
+        const data = col.getBoxPlotData(d);
         const missing = !data || renderMissingDOM(n, col, d);
         if (missing) {
           return;
         }
-        const label = col.getRawBoxPlotData(d.v, d.dataIndex)!;
+        const label = col.getRawBoxPlotData(d)!;
         renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       }
     };
@@ -63,7 +62,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       }
 
       // Rectangle
-      const data = col.getBoxPlotData(d.v, d.dataIndex);
+      const data = col.getBoxPlotData(d);
       if (!data) {
         return;
       }
@@ -82,7 +81,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
 
   private static createAggregatedBoxPlot(col: INumbersColumn & Column, rows: IDataRow[], raw = false): IBoxPlotData {
     // concat all values
-    const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers(r.v, r.dataIndex) : col.getNumber(r.v, r.dataIndex))));
+    const vs = (<number[]>[]).concat(...rows.map((r) => (raw ? col.getRawNumbers(r) : col.getNumber(r))));
     return new LazyBoxPlotData(vs);
   }
 
@@ -93,7 +92,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
                     <div><div></div><div></div></div>
                  </div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
-        if (rows.every((row) => col.isMissing(row.v, row.dataIndex))) {
+        if (rows.every((row) => col.isMissing(row))) {
           renderMissingDOM(n, col, rows[0]); // doesn't matter since all
           return;
         }
@@ -103,8 +102,8 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           box = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows);
           label = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows, true);
         } else {
-          box = new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
-          label = new LazyBoxPlotData(rows.map((row) => col.getRawNumber(row.v, row.dataIndex)));
+          box = new LazyBoxPlotData(rows.map((row) => col.getNumber(row)));
+          label = new LazyBoxPlotData(rows.map((row) => col.getRawNumber(row)));
         }
         renderDOMBoxPlot(n, box, label, sort, colorOf(col, null, imposer));
       }
@@ -117,7 +116,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
       const height = context.groupHeight(group);
-      if (rows.every((row) => col.isMissing(row.v, row.dataIndex))) {
+      if (rows.every((row) => col.isMissing(row))) {
         renderMissingCanvas(ctx, col, rows[0], height); // doesn't matter since all
         return;
       }
@@ -126,7 +125,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
       if (isNumbersColumn(col)) {
         box = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows);
       } else {
-        box = new LazyBoxPlotData(rows.map((row) => col.getNumber(row.v, row.dataIndex)));
+        box = new LazyBoxPlotData(rows.map((row) => col.getNumber(row)));
       }
       const scaled = {
         min: box.min * width,

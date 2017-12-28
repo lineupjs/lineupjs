@@ -1,5 +1,5 @@
 import Column from '../model/Column';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow} from '../model/interfaces';
 
 export interface IImposer {
   color?(row: IDataRow|null): string|null;

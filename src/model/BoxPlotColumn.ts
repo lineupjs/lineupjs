@@ -16,6 +16,7 @@ import {
   SORT_METHOD,
   SortMethod
 } from './INumberColumn';
+import {IDataRow} from './interfaces';
 
 
 export function isBoxPlotColumn(col: any): col is IBoxPlotColumn {
@@ -74,8 +75,8 @@ export default class BoxPlotColumn extends ValueColumn<IBoxPlotData> implements 
 
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number): number {
-    return compareBoxPlot(this, a, b, aIndex, bIndex);
+  compare(a: IDataRow, b: IDataRow): number {
+    return compareBoxPlot(this, a, b);
   }
 
   getBoxPlotData(row: any, index: number): IBoxPlotData | null {

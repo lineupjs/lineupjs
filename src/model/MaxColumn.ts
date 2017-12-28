@@ -3,6 +3,7 @@
  */
 
 import CompositeNumberColumn, {ICompositeNumberColumnDesc} from './CompositeNumberColumn';
+import {IDataRow} from './interfaces';
 
 /**
  *  factory for creating a description creating a max column
@@ -23,15 +24,15 @@ export default class MaxColumn extends CompositeNumberColumn {
     this.setDefaultRenderer('interleaving');
   }
 
-  getColor(row: any, index: number) {
+  getColor(row: IDataRow) {
     //compute the index of the maximal one
     const c = this._children;
     if (c.length === 0) {
       return this.color;
     }
-    let maxIndex = 0, maxValue = c[0].getValue(row, index);
+    let maxIndex = 0, maxValue = c[0].getValue(row);
     for (let i = 1; i < c.length; ++i) {
-      const v = c[i].getValue(row, index);
+      const v = c[i].getValue(row);
       if (v > maxValue) {
         maxIndex = i;
         maxValue = v;
@@ -40,20 +41,8 @@ export default class MaxColumn extends CompositeNumberColumn {
     return c[maxIndex].color;
   }
 
-  protected compute(row: any, index: number) {
-    return Math.max(...this._children.map((d) => d.getValue(row, index)));
-  }
-
-  /**
-   * describe the column if it is a sorting criteria
-   * @param toId helper to convert a description to an id
-   * @return {string} json compatible
-   */
-  toSortingDesc(toId: (desc: any) => string): any {
-    return {
-      operation: 'max',
-      operands: this._children.map((c) => c.toSortingDesc(toId))
-    };
+  protected compute(row: IDataRow) {
+    return Math.max(...this._children.map((d) => d.getValue(row)));
   }
 
   get canJustAddNumbers() {

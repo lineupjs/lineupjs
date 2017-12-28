@@ -4,12 +4,6 @@
 import {scaleLinear} from 'd3-scale';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
-import NumberColumn, {
-  createMappingFunction,
-  IMapAbleColumn,
-  IMappingFunction,
-  ScaleMappingFunction
-} from './NumberColumn';
 import {isMissingValue} from './missing';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberFilter, INumbersColumn,
@@ -19,6 +13,9 @@ import {
   SORT_METHOD,
   SortMethod
 } from './INumberColumn';
+import {IDataRow} from './interfaces';
+import {createMappingFunction, IMappingFunction, ScaleMappingFunction} from './MappingFunction';
+import NumberColumn, {IMapAbleColumn} from './NumberColumn';
 
 
 export interface INumbersDesc {
@@ -101,8 +98,8 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return this.splicer;
   }
 
-  compare(a: any, b: any, aIndex: number, bIndex: number): number {
-    return compareBoxPlot(this, a, b, aIndex, bIndex);
+  compare(a: IDataRow, b: IDataRow): number {
+    return compareBoxPlot(this, a, b);
   }
 
   getColorRange() {
@@ -125,8 +122,8 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return colorScale;
   }
 
-  getRawNumbers(row: any, index: number) {
-    return this.getRawValue(row, index);
+  getRawNumbers(row: IDataRow) {
+    return this.getRawValue(row);
   }
 
   getDataLength() {
@@ -140,8 +137,8 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return this.threshold;
   }
 
-  getBoxPlotData(row: any, index: number) {
-    const data = this.getRawValue(row, index);
+  getBoxPlotData(row: IDataRow) {
+    const data = this.getRawValue(row);
     if (data === null) {
       return null;
     }
@@ -152,41 +149,41 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     return this.mapping.getRange(DEFAULT_FORMATTER);
   }
 
-  getRawBoxPlotData(row: any, index: number) {
-    const data = this.getRawValue(row, index);
+  getRawBoxPlotData(row: IDataRow) {
+    const data = this.getRawValue(row);
     if (data === null) {
       return null;
     }
     return new LazyBoxPlotData(data);
   }
 
-  getNumbers(row: any, index: number) {
-    return this.getValue(row, index);
+  getNumbers(row: IDataRow) {
+    return this.getValue(row);
   }
 
-  getNumber(row: any, index: number): number {
-    return getBoxPlotNumber(this, row, index, 'normalized');
+  getNumber(row: IDataRow): number {
+    return getBoxPlotNumber(this, row, 'normalized');
   }
 
-  getRawNumber(row: any, index: number): number {
-    return getBoxPlotNumber(this, row, index, 'raw');
+  getRawNumber(row: IDataRow): number {
+    return getBoxPlotNumber(this, row, 'raw');
   }
 
-  getValue(row: any, index: number) {
-    const values = this.getRawValue(row, index);
+  getValue(row: IDataRow) {
+    const values = this.getRawValue(row);
     return values.map((d) => isMissingValue(d) ? NaN : this.mapping.apply(d));
   }
 
-  getRawValue(row: any, index: number) {
-    let r = super.getValue(row, index);
+  getRawValue(row: IDataRow) {
+    let r = super.getValue(row);
     if (this.splicer && r !== null) {
       r = this.splicer.splice(r);
     }
     return r === null ? [] : r;
   }
 
-  getLabel(row: any, index: number): string {
-    const v = this.getRawValue(row, index);
+  getLabel(row: IDataRow): string {
+    const v = this.getRawValue(row);
     if (v === null) {
       return '';
     }
@@ -262,8 +259,8 @@ export default class NumbersColumn extends ValueColumn<number[]> implements IAdv
     NumberColumn.prototype.setFilter.call(this, value);
   }
 
-  filter(row: any, index: number) {
-    return NumberColumn.prototype.filter.call(this, row, index);
+  filter(row: IDataRow) {
+    return NumberColumn.prototype.filter.call(this, row);
   }
 }
 

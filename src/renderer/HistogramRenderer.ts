@@ -3,9 +3,8 @@ import Column, {IStatistics} from '../model/Column';
 import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {IGroup} from '../model/Group';
 import {computeStats, getNumberOfBins} from '../provider/math';
 import {forEachChild} from '../utils';
 import NumbersColumn from '../model/NumbersColumn';
@@ -48,10 +47,10 @@ export default class HistogramRenderer implements ICellRendererFactory {
       }
       n.classList.toggle('lu-dense', bins > DENSE_HISTOGRAM);
       forEachChild(n, (d: HTMLElement, i) => {
-        const {x, dx, y} = hist[i];
+        const {x0, x1, length} = hist[i];
         const inner = <HTMLElement>d.firstElementChild!;
-        d.title = `${DEFAULT_FORMATTER(x)} - ${DEFAULT_FORMATTER(x + dx)} (${y})`;
-        inner.style.height = `${Math.round(y * 100 / max)}%`;
+        d.title = `${DEFAULT_FORMATTER(x0)} - ${DEFAULT_FORMATTER(x1)} (${length})`;
+        inner.style.height = `${Math.round(length * 100 / max)}%`;
         inner.style.backgroundColor = colorOf(col, null, imposer);
       });
     };
@@ -91,8 +90,8 @@ export default class HistogramRenderer implements ICellRendererFactory {
       const total = height - padding;
 
       ctx.fillStyle = colorOf(col, null, imposer) || context.option('style.histogram', 'lightgray');
-      hist.forEach(({y}, i) => {
-        const height = (y / max) * total;
+      hist.forEach(({length}, i) => {
+        const height = (length / max) * total;
         ctx.fillRect(i * widthPerBin + padding, (total - height) + padding, widthPerBin - 2 * padding, height);
       });
     };
@@ -103,10 +102,10 @@ export default class HistogramRenderer implements ICellRendererFactory {
     let stats: IStatistics;
     if (isNumbersColumn(col)) {
       //multiple values
-      const values = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r.v, r.dataIndex)));
-      stats = computeStats(values, [], (v: number) => v,  isMissingValue, [0, 1], bins);
+      const values = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r)));
+      stats = computeStats(values, (v: number) => v,  isMissingValue, [0, 1], bins);
     } else {
-      stats = computeStats(rows, rows.map((r) => r.dataIndex), (r: IDataRow) => col.getNumber(r.v, r.dataIndex), (r: IDataRow) => col.isMissing(r.v, r.dataIndex), [0, 1], bins);
+      stats = computeStats(rows, (r: IDataRow) => col.getNumber(r), (r: IDataRow) => col.isMissing(r), [0, 1], bins);
     }
 
     const max = Math.max(stats.maxBin, globalHist ? globalHist.maxBin : 0);

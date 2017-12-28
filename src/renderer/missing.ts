@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 11.10.2017.
  */
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow} from '../model/interfaces';
 import Column from '../model/Column';
 
 
@@ -16,13 +16,13 @@ export function renderMissingValue(ctx: CanvasRenderingContext2D, width: number,
 }
 
 export function renderMissingDOM(node: HTMLElement, col: Column, d: IDataRow) {
-  const missing = col.isMissing(d.v, d.dataIndex);
+  const missing = col.isMissing(d);
   node.classList.toggle('lu-missing', missing);
   return missing;
 }
 
 export function renderMissingCanvas(ctx: CanvasRenderingContext2D, col: Column, d: IDataRow, height: number, x = 0, y = 0) {
-  const missing = col.isMissing(d.v, d.dataIndex);
+  const missing = col.isMissing(d);
   if (missing) {
     renderMissingValue(ctx, col.getWidth(), height, x, y);
   }

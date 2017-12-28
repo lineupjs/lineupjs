@@ -4,8 +4,7 @@ import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import GroupColumn from '../model/GroupColumn';
-import {IGroup} from '../model/Group';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {clipText} from '../utils';
 
 

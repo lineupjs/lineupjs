@@ -1,12 +1,11 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import Column from '../model/Column';
 import {matchRows} from './ANumbersCellRenderer';
 import {forEachChild} from '../utils';
-import {IGroup} from '../model/Group';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {isMissingValue} from '../model/missing';
 import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
@@ -46,7 +45,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        const data = col.getNumbers(d.v, d.dataIndex);
+        const data = col.getNumbers(d);
         n.querySelector('path')!.setAttribute('d', line(data));
       }
     };
@@ -58,7 +57,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
       if (renderMissingCanvas(ctx, col, d, h)) {
         return;
       }
-      const data = col.getNumbers(d.v, d.dataIndex);
+      const data = col.getNumbers(d);
       if (data.length === 0) {
         return;
       }
@@ -109,7 +108,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
         matchRows(n, rows, `<path></path>`);
         forEachChild(n, ((row, i) => {
           const d = rows[i];
-          row.setAttribute('d', line(col.getNumbers(d.v, d.dataIndex)));
+          row.setAttribute('d', line(col.getNumbers(d)));
         }));
       }
     };
@@ -132,7 +131,7 @@ export default class SparklineCellRenderer implements ICellRendererFactory {
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
 
       rows.forEach((d) => {
-        const data = col.getNumbers(d.v, d.dataIndex);
+        const data = col.getNumbers(d);
         if (data.length === 0) {
           return;
         }

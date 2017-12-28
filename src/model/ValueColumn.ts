@@ -3,6 +3,7 @@
  */
 import Column, {IColumnDesc} from './Column';
 import Ranking from './Ranking';
+import {IDataRow} from './interfaces';
 
 
 export interface IValueColumnDesc<T> extends IColumnDesc {
@@ -15,12 +16,11 @@ export interface IValueColumnDesc<T> extends IColumnDesc {
   /**
    * value accessor of this column
    * @param row the current row
-   * @param index its data index
    * @param id the id of this column
    * @param desc the description of this column
    * @param ranking the ranking of this column
    */
-  accessor?(row: any, index: number, id: string, desc: any, ranking: Ranking): T;
+  accessor?(row: IDataRow, id: string, desc: any, ranking: Ranking): T;
 }
 
 /**
@@ -29,7 +29,7 @@ export interface IValueColumnDesc<T> extends IColumnDesc {
 export default class ValueColumn<T> extends Column {
   static readonly RENDERER_LOADING = 'loading';
 
-  private readonly accessor: (row: any, index: number, id: string, desc: any, ranking: Ranking | null) => T;
+  private readonly accessor: (row: IDataRow, id: string, desc: any, ranking: Ranking | null) => T;
 
   /**
    * is the data available
@@ -44,22 +44,22 @@ export default class ValueColumn<T> extends Column {
     this.loaded = desc.lazyLoaded !== true;
   }
 
-  getLabel(row: any, index: number) {
+  getLabel(row: IDataRow) {
     if (!this.isLoaded()) {
       return '';
     }
-    return String(this.getValue(row, index));
+    return String(this.getValue(row));
   }
 
-  getRaw(row: any, index: number) {
+  getRaw(row: IDataRow) {
     if (!this.isLoaded()) {
       return null;
     }
-    return this.accessor(row, index, this.id, this.desc, this.findMyRanker());
+    return this.accessor(row, this.id, this.desc, this.findMyRanker());
   }
 
-  getValue(row: any, index: number) {
-    return this.getRaw(row, index);
+  getValue(row: IDataRow) {
+    return this.getRaw(row);
   }
 
   isLoaded() {
@@ -73,11 +73,11 @@ export default class ValueColumn<T> extends Column {
     this.fire([Column.EVENT_DATA_LOADED, Column.EVENT_DIRTY_HEADER, Column.EVENT_DIRTY_VALUES, Column.EVENT_DIRTY], this.loaded, this.loaded = loaded);
   }
 
-  getRendererType(): string {
+  getRenderer(): string {
     if (!this.isLoaded()) {
       return ValueColumn.RENDERER_LOADING;
     }
-    return super.getRendererType();
+    return super.getRenderer();
   }
 
 

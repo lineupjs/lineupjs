@@ -1,12 +1,11 @@
 import ICellRendererFactory from './ICellRendererFactory';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow} from '../provider/ADataProvider';
+import {IDataRow, IGroup} from '../model/interfaces';
 import {attr} from '../utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {ICategoricalColumn, isCategoricalColumn} from '../model/ICategoricalColumn';
 import Column from '../model/Column';
-import {IGroup} from '../model/Group';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 
@@ -57,7 +56,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
   private static union(col: ICategoricalColumn, rows: IDataRow[]) {
     const values = new Set<string>();
     rows.forEach((d) => {
-      col.getCategories(d.v, d.dataIndex).forEach((cat) => values.add(cat));
+      col.getCategories(d).forEach((cat) => values.add(cat));
     });
     return col.categories.map((cat) => values.has(cat));
   }
@@ -74,7 +73,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        const values = new Set(col.getCategories(d.v, d.dataIndex));
+        const values = new Set(col.getCategories(d));
         const value = col.categories.map((cat) => values.has(cat));
         render(n, value);
       }
@@ -135,7 +134,7 @@ export default class UpSetCellRenderer implements ICellRendererFactory {
         return;
       }
       // Circle
-      const values = new Set(col.getCategories(d.v, d.dataIndex));
+      const values = new Set(col.getCategories(d));
       const data = col.categories.map((cat) => values.has(cat));
       const rowHeight = context.rowHeight(i);
       render(ctx, data, rowHeight);

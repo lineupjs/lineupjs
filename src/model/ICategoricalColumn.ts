@@ -1,5 +1,6 @@
 import Column, {IColumnDesc} from './Column';
 import {IValueColumnDesc} from './ValueColumn';
+import {IDataRow} from './interfaces';
 
 export interface IBaseCategoricalDesc {
   /**
@@ -18,9 +19,9 @@ export interface ICategoricalColumn {
   readonly categoryLabels: string[];
   readonly categoryColors: string[];
 
-  getCategories(row: any, index: number): string[];
+  getCategories(row: IDataRow): string[];
 
-  getColor(row: any, index: number): string | null;
+  getColor(row: IDataRow): string | null;
 }
 
 export interface ICategory {

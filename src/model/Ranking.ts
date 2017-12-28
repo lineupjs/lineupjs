@@ -6,7 +6,7 @@ import Column, {fixCSS, IColumnDesc, IColumnParent, IFlatColumn} from './Column'
 import StringColumn from './StringColumn';
 import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
 import {AEventDispatcher, equalArrays, suffix} from '../utils';
-import {IGroupData} from '../ui/engine/interfaces';
+import {IDataRow, IGroupData} from './interfaces';
 import {isCategoricalColumn} from './ICategoricalColumn';
 
 export interface ISortCriteria {
@@ -56,17 +56,17 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
    */
   private readonly columns: Column[] = [];
 
-  readonly comparator = (a: any, b: any, aIndex: number, bIndex: number) => {
+  readonly comparator = (a: IDataRow, b: IDataRow) => {
     if (this.sortCriteria.length === 0) {
       return 0;
     }
     for (const sort of this.sortCriteria) {
-      const r = sort.col!.compare(a, b, aIndex, bIndex);
+      const r = sort.col!.compare(a, b);
       if (r !== 0) {
         return sort.asc ? r : -r;
       }
     }
-    return aIndex - bIndex; //to have a deterministic order
+    return a.dataIndex - b.dataIndex; //to have a deterministic order
   };
 
   readonly groupComparator = (a: IGroupData, b: IGroupData) => {
@@ -82,13 +82,13 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return a.name.localeCompare(b.name);
   };
 
-  readonly grouper = (row: any, index: number) => {
+  readonly grouper = (row: IDataRow) => {
     const g = this.groupColumns;
     switch(g.length) {
       case 0: return defaultGroup;
-      case 1: return g[0].group(row, index);
+      case 1: return g[0].group(row);
       default:
-        const groups = g.map((gi) => gi.group(row, index));
+        const groups = g.map((gi) => gi.group(row));
         return joinGroups(groups);
     }
   };
@@ -612,38 +612,12 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     return null;
   }
 
-  /**
-   * converts the sorting criteria to a json compatible notation for transferring it to the server
-   * @param toId
-   */
-  toSortingDesc(toId: (desc: any) => string) {
-    //TODO describe also all the filter settings
-    const resolve = (s: Column): any => {
-      if (s === null) {
-        return null;
-      }
-      return s.toSortingDesc(toId);
-    };
-    const primary = this.primarySortCriteria;
-    if (primary === null) {
-      return null;
-    }
-    const id = resolve(primary.col);
-    if (id === null) {
-      return null;
-    }
-    return {
-      id,
-      asc: primary.asc
-    };
-  }
-
   isFiltered() {
     return this.columns.some((d) => d.isFiltered());
   }
 
-  filter(row: any, index: number) {
-    return this.columns.every((d) => d.filter(row, index));
+  filter(row: IDataRow) {
+    return this.columns.every((d) => d.filter(row));
   }
 
   findMyRanker() {
