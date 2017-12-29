@@ -1,23 +1,29 @@
 import SelectionColumn from '../../model/SelectionColumn';
 import {IRankingHeaderContext} from '../interfaces';
 
-export default function summarySelection(col: SelectionColumn, node: HTMLElement, _interactive: boolean, ctx: IRankingHeaderContext) {
-  const provider = ctx.provider;
-  const old = node.dataset.summary;
-  node.dataset.summary = 'selection';
-  if (old !== 'selection') {
-    //init
+export default class SelectionSummary {
+  private ctx: IRankingHeaderContext;
+
+  constructor(col: SelectionColumn, node: HTMLElement) {
+    node.dataset.summary = 'selection';
     node.innerHTML = `<i class='lu-unchecked' title='(Un)Select All'></i>`;
+    const button = (<HTMLElement>node.firstElementChild);
+    button.onclick = (evt) => {
+      evt.stopPropagation();
+      if (!this.ctx) {
+        return;
+      }
+      if (button.classList.contains('lu-unchecked')) {
+        this.ctx.provider.selectAllOf(col.findMyRanker()!);
+      } else {
+        this.ctx.provider.setSelection([]);
+      }
+      button.classList.toggle('lu-unchecked');
+      button.classList.toggle('lu-checked');
+    };
   }
-  const button = (<HTMLElement>node.firstElementChild);
-  button.onclick = (evt) => {
-    evt.stopPropagation();
-    if (button.classList.contains('lu-unchecked')) {
-      provider.selectAllOf(col.findMyRanker()!);
-    } else {
-      provider.setSelection([]);
-    }
-    button.classList.toggle('lu-unchecked');
-    button.classList.toggle('lu-checked');
-  };
+
+  update(ctx: IRankingHeaderContext) {
+    this.ctx = ctx;
+  }
 }

@@ -6,116 +6,161 @@ import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import CategoricalColumn from '../../model/CategoricalColumn';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
 
-export default function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement, interactive: boolean, ctx: IRankingHeaderContext) {
-  const stats = <ICategoricalStatistics>ctx.statsOf(col);
-  const old = node.dataset.summary;
 
-  if (!stats || stats.hist.length > 50) {
-    node.innerHTML = '';
-    return;
-  }
-  const cats = col.categories;
-  const colors = col.categoryColors;
-  const labels = col.categoryLabels;
+export default class CategoricalSummary {
+  update: (ctx: IRankingHeaderContext) => void;
 
-  node.classList.toggle('lu-dense', cats.length > DENSE_HISTOGRAM);
-
-  if (!old || !old.endsWith('hist')) {
-    stats.hist.forEach(({cat, y}) => {
-      const i = cats.indexOf(cat);
-      node.insertAdjacentHTML('beforeend', `<div title="${labels[i]}: ${y}" data-cat="${cat}" ${interactive ? `data-title="${labels[i]}"` : ''}><div style="height: ${Math.round(y * 100 / stats.maxBin)}%; background-color: ${colors[i]}"></div></div>`);
-    });
-  } else {
-    const bins = <HTMLElement[]>Array.from(node.querySelectorAll('div[data-cat]'));
-    for (let i = bins.length; i < stats.hist.length; ++i) {
-      node.insertAdjacentHTML('beforeend', `<div data-cat="${stats.hist[i].cat}" ${interactive ? `data-title="${labels[i]}"` : ''}><div style="background-color: ${colors[i]}"></div></div>`);
-      const n = <HTMLElement>node.lastElementChild!;
-      if (bins.length === 0) {
-        node.insertBefore(node.firstElementChild!, n);
-      } else {
-        node.insertBefore(node.children[i]!, n);
-      }
-      bins.push(n);
+  constructor(private readonly col: ICategoricalColumn & Column, private readonly node: HTMLElement, interactive: boolean) {
+    if (col.categories.length > DENSE_HISTOGRAM * 2) {
+      // no rendering at all
+      this.update = () => undefined;
+      return;
     }
-    stats.hist.forEach(({y}, i) => {
-      const bin = bins[i];
-      (<HTMLElement>bin.firstElementChild!).style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
-      bin.title = `${labels[i]}: ${y}`;
+    if (!interactive) {
+      this.update = (col instanceof CategoricalColumn || col instanceof CategoricalNumberColumn) ? this.initStaticFilter() : this.initStatic();
+      return;
+    }
+    this.update = this.initInteractive();
+  }
+
+  private initCommon(showLabels: boolean) {
+    const cats = this.col.categories;
+    const colors = this.col.categoryColors;
+    const labels = this.col.categoryLabels;
+
+    this.node.classList.toggle('lu-dense', cats.length > DENSE_HISTOGRAM);
+
+    cats.forEach((cat, i) => {
+      this.node.insertAdjacentHTML('beforeend', `<div title="${labels[i]}" data-cat="${cat}" ${showLabels ? `data-title="${labels[i]}"` : ''}><div style="height: 0; background-color: ${colors[i]}"></div></div>`);
     });
-  }
 
-  if (!(col instanceof CategoricalColumn || col instanceof CategoricalNumberColumn)) {
-    node.dataset.summary = 'hist';
-    return;
-  }
+    const bins = <HTMLElement[]>Array.from(this.node.querySelectorAll('[data-cat]'));
 
-  node.dataset.summary = interactive ? 'interactive-filter-hist' : 'interactive-hist';
-  // make histogram interactive
-  const ccol = <CategoricalColumn | CategoricalNumberColumn>col;
-  const start = ccol.getFilter();
-
-  let filterMissing: HTMLInputElement | null = null;
-
-  Array.from(node.children).slice(0, cats.length).forEach((bin: HTMLElement, i) => {
-    const cat = bin.dataset.cat!;
-    bin.dataset.filtered = CategoricalColumn.filter(start, cat) ? '' : 'filtered';
-    bin.onclick = (evt) => {
-      evt.preventDefault();
-      evt.stopPropagation();
-
-      // toggle filter
-      const old = ccol.getFilter();
-      if (old === null || !Array.isArray(old.filter)) {
-        // deselect
-        const without = cats.slice();
-        bin.dataset.filtered = 'filtered';
-        without.splice(i, 1);
-        ccol.setFilter({
-          filterMissing: filterMissing ? filterMissing.checked : false,
-          filter: without
-        });
+    return (stats?: ICategoricalStatistics) => {
+      if (!stats) {
+        this.node.classList.add('lu-invalid-hist');
         return;
       }
-      const filter = old.filter.slice();
-      const contained = filter.indexOf(cat);
-      if (contained >= 0) {
-        // remove
-        bin.dataset.filtered = 'filtered';
-        filter.splice(contained, 1);
-      } else {
-        // readd
-        bin.dataset.filtered = '';
-        filter.push(cat);
-      }
-      ccol.setFilter({
-        filterMissing: filterMissing ? filterMissing.checked : old.filterMissing,
-        filter
+      const lookup = new Map(stats.hist.map((d) => (<[string, number]>[d.cat, d.y])));
+
+      cats.forEach((cat, i) => {
+        const y = lookup.get(cat) || 0;
+        const bin = bins[i];
+        (<HTMLElement>bin.firstElementChild!).style.height = `${Math.round(y * 100 / stats.maxBin)}%`;
+        bin.title = `${labels[i]}: ${y}`;
       });
     };
-  });
-
-  if (!interactive) {
-    return;
   }
 
-  if (old !== 'interactive-filter-hist') {
-    node.insertAdjacentHTML('beforeend', filterMissingNumberMarkup(start !== null && start.filterMissing, stats.missing));
-    filterMissing = <HTMLInputElement>node.querySelector('input');
-  } else {
-    filterMissing = <HTMLInputElement>node.querySelector('input');
-    updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, stats.missing);
-    filterMissing = <HTMLInputElement>node.querySelector('input');
-    filterMissing.checked = start !== null && start.filterMissing;
+  private initStatic() {
+    this.node.dataset.summary = 'hist';
+
+    const common = this.initCommon(false);
+
+    return (ctx: IRankingHeaderContext) => {
+      const stats = <ICategoricalStatistics>ctx.statsOf(this.col);
+      common(stats);
+    };
   }
 
+  private interactiveHist(col: CategoricalColumn | CategoricalNumberColumn) {
+    const bins = <HTMLElement[]>Array.from(this.node.querySelectorAll('[data-cat]'));
+    const cats = this.col.categories;
 
-  filterMissing.onchange = () => {
-    // toggle filter
-    const old = ccol.getFilter();
-    if (old === null) {
-      ccol.setFilter({filterMissing: filterMissing!.checked, filter: cats});
-    } else {
-      ccol.setFilter({filterMissing: filterMissing!.checked, filter: old.filter});
-    }
-  };
+    bins.forEach((bin, i) => {
+      const cat = cats[i];
+
+      bin.onclick = (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        // toggle filter
+        const old = col.getFilter();
+        if (old === null || !Array.isArray(old.filter)) {
+          // deselect
+          const without = cats.slice();
+          bin.dataset.filtered = 'filtered';
+          without.splice(i, 1);
+          col.setFilter({
+            filterMissing: old ? old.filterMissing : false,
+            filter: without
+          });
+          return;
+        }
+        const filter = old.filter.slice();
+        const contained = filter.indexOf(cat);
+        if (contained >= 0) {
+          // remove
+          bin.dataset.filtered = 'filtered';
+          filter.splice(contained, 1);
+        } else {
+          // readd
+          delete bin.dataset.filtered;
+          filter.push(cat);
+        }
+        col.setFilter({
+          filterMissing: old.filterMissing,
+          filter
+        });
+      };
+    });
+
+    return () => {
+      const f = col.getFilter();
+      bins.forEach((bin, i) => {
+        if (CategoricalColumn.filter(f, cats[i])) {
+          bin.dataset.filtered = 'filtered';
+        } else {
+          delete bin.dataset.filtered;
+        }
+      });
+    };
+  }
+
+  private initStaticFilter() {
+    const col = <CategoricalColumn | CategoricalNumberColumn>this.col;
+    this.node.dataset.summary = 'interactive-hist';
+
+    const common = this.initCommon(false);
+
+    const interactive = this.interactiveHist(col);
+
+    return (ctx: IRankingHeaderContext) => {
+      const stats = <ICategoricalStatistics>ctx.statsOf(this.col);
+      common(stats);
+      interactive();
+    };
+  }
+
+  private initInteractive() {
+    const col = <CategoricalColumn | CategoricalNumberColumn>this.col;
+    this.node.dataset.summary = 'interactive-filter-hist';
+
+    const common = this.initCommon(true);
+    const interactive = this.interactiveHist(col);
+
+    const f = col.getFilter();
+    this.node.insertAdjacentHTML('beforeend', filterMissingNumberMarkup(f != null && f.filterMissing, 0));
+    const filterMissing = <HTMLInputElement>this.node.querySelector('input')!;
+
+    filterMissing.onchange = () => {
+      // toggle filter
+      const v = filterMissing.checked;
+      const old = col.getFilter();
+      if (old === null) {
+        col.setFilter(v ? {filterMissing: v, filter: col.categories} : null);
+      } else {
+        col.setFilter({filterMissing: v, filter: old.filter});
+      }
+    };
+
+    return (ctx: IRankingHeaderContext) => {
+      const stats = <ICategoricalStatistics>ctx.statsOf(this.col);
+      common(stats);
+      interactive();
+      const f = col.getFilter();
+      filterMissing.checked = f != null && f.filterMissing;
+      updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, stats ? stats.missing: 0);
+    };
+  }
 }
