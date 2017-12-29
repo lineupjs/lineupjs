@@ -41,6 +41,7 @@ export default class CategoricalSummary {
         this.node.classList.add('lu-invalid-hist');
         return;
       }
+      this.node.classList.remove('lu-invalid-hist');
       const lookup = new Map(stats.hist.map((d) => (<[string, number]>[d.cat, d.y])));
 
       cats.forEach((cat, i) => {

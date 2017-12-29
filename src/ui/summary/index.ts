@@ -1,17 +1,19 @@
 /**
  * Created by Samuel Gratzl on 25.07.2017.
  */
-import {ISummaryFunction} from '../interfaces';
 import summaryString from './string';
 import summaryCategorical from './categorical';
 import summaryNumerical from './number';
-import summarySelection from './selection';
-import summaryAggregation from './aggregation';
+import selection from './selection';
+import aggregate from './aggregation';
+import hierarchy from './hierarchy';
+import { ISummaryRenderer } from './interfaces';
 
-export const defaultSummaries: {[key: string]: ISummaryFunction} = {
+export const defaultSummaries: {[key: string]: ISummaryRenderer<any>} = {
   stringLike: summaryString,
   categoricalLike: summaryCategorical,
   numberLike: summaryNumerical,
-  selection: summarySelection,
-  aggregate: summaryAggregation
+  selection,
+  hierarchy,
+  aggregate
 };

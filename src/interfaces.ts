@@ -1,6 +1,6 @@
 import ICellRendererFactory from './renderer/ICellRendererFactory';
 import {IDataProvider} from './provider/ADataProvider';
-import {ISummaryFunction, IFilterDialog} from './ui/interfaces';
+import {ISummaryRenderer, IFilterDialog} from './ui/interfaces';
 import Ranking from './model/Ranking';
 import {IGroupData, IGroupItem} from './model';
 
@@ -9,7 +9,7 @@ export interface ILineUpOptions {
   idPrefix: string;
 
   filters: { [type: string]: IFilterDialog };
-  summaries: { [type: string]: ISummaryFunction };
+  summaries: { [type: string]: ISummaryRenderer<any> };
   renderers: { [type: string]: ICellRendererFactory };
 
   summary: boolean;
