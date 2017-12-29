@@ -1,6 +1,7 @@
 import CategoricalColumn from '../../model/CategoricalColumn';
-import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
+import AFilterDialog from './AFilterDialog';
 import {sortByProperty} from './ADialog';
+import {filterMissingMarkup} from '../missing';
 
 export default class CategoricalFilterDialog extends AFilterDialog<CategoricalColumn> {
 
