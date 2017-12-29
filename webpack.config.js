@@ -60,15 +60,14 @@ const isWorkspaceContext = fs.existsSync(resolve(__dirname, '..', 'phovea_regist
 /**
  * generate a webpack configuration
  */
-function generateWebpack(bundle, options) {
+function generateWebpack(options) {
   const base = {
     entry: {
-      'LineUpJS': './src/index.ts',
-      'TaggleJS': './src/taggle.ts'
+      'LineUpJS': './src/index.ts'
     },
     output: {
       path: resolve(__dirname, 'build'),
-      filename: `[name]${bundle ? '_bundle' : ''}${options.min && !options.nosuffix ? '.min' : ''}.js`,
+      filename: `[name]${options.min && !options.nosuffix ? '.min' : ''}.js`,
       chunkFilename: '[chunkhash].js',
       publicPath: '', //no public path = relative
       library: 'LineUpJS',
@@ -78,9 +77,6 @@ function generateWebpack(bundle, options) {
     resolve: {
       // Add `.ts` and `.tsx` as a resolvable extension.
       extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
-      alias: {
-        d3: 'd3/d3'
-      },
       symlinks: false,
       //fallback to the directory above if they are siblings just in the workspace context
       modules: isWorkspaceContext ? [
@@ -118,10 +114,6 @@ function generateWebpack(bundle, options) {
       ignored: /node_modules/
     }
   };
-  if (!bundle) {
-    //don't bundle d3
-    base.externals.d3 = 'd3';
-  }
 
   if (options.isProduction) {
       base.plugins.unshift(new webpack.BannerPlugin({
@@ -134,7 +126,7 @@ function generateWebpack(bundle, options) {
       new webpack.optimize.AggressiveMergingPlugin());
   }
 
-  if (!options.isTest && !bundle) {
+  if (!options.isTest) {
     //extract the included css file to own file
     let p = new ExtractTextPlugin({
       filename: `[name]${options.min && !options.nosuffix ? '.min' : ''}.css`,
@@ -175,30 +167,20 @@ function generateWebpackConfig(env) {
   const isDev = !isProduction && !isTest;
 
   const base = {
-    isProduction: isProduction,
-    isDev: isDev,
-    isTest: isTest
+    isProduction,
+    isDev,
+    isTest
   };
 
-  if (isTest) {
-    return generateWebpack(false, base);
-  }
-
   //single generation
-  if (isDev) {
-    return generateWebpack(false, base);
+  if (isDev || isTest) {
+    return generateWebpack(base);
   } else { //isProduction
     return [
       //plain
-      generateWebpack(false, base),
+      generateWebpack(base),
       //minified
-      generateWebpack(false, Object.assign({}, base, {
-        min: true
-      })),
-      //plain
-      generateWebpack(true, base),
-      //minified
-      generateWebpack(true, Object.assign({}, base, {
+      generateWebpack(Object.assign({}, base, {
         min: true
       }))
     ];
