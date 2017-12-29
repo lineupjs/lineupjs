@@ -1,4 +1,4 @@
-@import 'vars';
+@import './vars';
 
 .lineup-engine,
 .#{$lu_css_prefix},
@@ -9,7 +9,7 @@
     display: none;
   }
 
-  *[draggable] {
+  [draggable] {
     cursor: pointer;
     cursor: -moz-grab;
     cursor: -webkit-grab; // indicate grab able

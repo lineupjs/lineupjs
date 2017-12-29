@@ -71,6 +71,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
     super(header, body, tableId, style, PrefetchMixin);
     Object.assign(this.options, options);
+    body.classList.add('lu-row-body');
 
     const that = this;
     this.delayedUpdate = debounce((function(this: {type: string, primaryType: string}) {
@@ -203,6 +204,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.dataset.i = i.toString();
     node.dataset.agg = 'detail'; //or 'group'
     node.dataset.meta = meta || '';
+    node.classList.add('lu-row');
 
     this.selection.updateState(node, i);
     this.selection.add(node);

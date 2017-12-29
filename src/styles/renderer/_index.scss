@@ -1,5 +1,6 @@
+@import '../vars';
 
-%lu-renderer {
+.#{$lu_css_prefix}-row-body {
   @import './aggregate';
   @import './bar';
   @import './boxplot';

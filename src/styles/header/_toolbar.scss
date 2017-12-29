@@ -53,130 +53,117 @@
   }
 }
 
-&.filtered .#{$lu_css_prefix}-toolbar i[title='Filter'] {
-  color: $lu_header_active_filter_color;
-}
+.#{$lu_css_prefix}-toolbar,
+.#{$lu_css_prefix}-more-options {
+  i {
+    &::before {
+      @include lu_icons();
+    }
 
-&.grouped .#{$lu_css_prefix}-toolbar i[title='Stratify by'] {
-  color: $lu_header_active_filter_color;
-}
+    &[title^='Rename + Color']::before {
+      content: $lu_icon_pencil_square_o;
+    }
 
-@at-root {
-  .#{$lu_css_prefix}-toolbar,
-  .#{$lu_css_prefix}-more-options {
-    i {
-      &::before {
-        @include lu_icons();
-      }
+    &[title='Generate Snapshot']::before {
+      content: $lu_icon_code_fork;
+    }
 
-      &[title^='Rename + Color']::before {
-        content: $lu_icon_pencil_square_o;
-      }
+    &[title^='Sort by']::before {
+      content: $lu_icon_sort;
+    }
 
-      &[title='Generate Snapshot']::before {
-        content: $lu_icon_code_fork;
-      }
+    &[title^='Visualization']::before {
+      content: $lu_icon_exchange;
+    }
 
-      &[title^='Sort by']::before {
-        content: $lu_icon_sort;
-      }
+    &[title^='Edit Link Pattern']::before {
+      content: $lu_icon_external_link;
+    }
 
-      &[title^='Visualization']::before {
-        content: $lu_icon_exchange;
-      }
+    &[title^='Sort Group by']::before {
+      content: $lu_icon_sort;
+    }
 
-      &[title^='Edit Link Pattern']::before {
-        content: $lu_icon_external_link;
-      }
+    &[title^='Edit Combine Script']::before {
+      content: $lu_icon_gears;
+    }
 
-      &[title^='Sort Group by']::before {
-        content: $lu_icon_sort;
-      }
+    &[title='Split Combined Column']::before {
+      content: $lu_icon_window_restore;
+    }
 
-      &[title^='Edit Combine Script']::before {
-        content: $lu_icon_gears;
-      }
+    &[title^='Filter']::before {
+      content: $lu_icon_filter;
+    }
 
-      &[title='Split Combined Column']::before {
-        content: $lu_icon_window_restore;
-      }
+    &[title^='Stratify']::before {
+      content: $lu_icon_columns;
+      transform: rotate(-90deg);
+      height: 14px;
+    }
 
-      &[title^='Filter']::before {
-        content: $lu_icon_filter;
-      }
+    &[title='Sort']::before {
+      content: $lu_icon_sort_amount_asc;
+    }
 
-      &[title^='Stratify']::before {
-        content: $lu_icon_columns;
-        transform: rotate(-90deg);
-        height: 14px;
-      }
+    &[title='Sort'][data-sort='desc']::before {
+      content: $lu_icon_sort_amount_desc;
+    }
 
-      &[title='Sort']::before {
-        content: $lu_icon_sort_amount_asc;
-      }
+    &[title='Sort'][data-sort$='sc']::before,
+    &[title^='Stratify'][data-stratify='true']::before {
+      color: $lu_selected_color;
+    }
 
-      &[title='Sort'][data-sort='desc']::before {
-        content: $lu_icon_sort_amount_desc;
-      }
+    &[title^='Set Cut Off']::before {
+      content: $lu_icon_scissors;
+    }
 
-      &[title='Sort'][data-sort$='sc']::before,
-      &[title^='Stratify'][data-stratify='true']::before {
-        color: $lu_selected_color;
-      }
+    &[title^='Search']::before {
+      content: $lu_icon_search;
+    }
 
-      &[title^='Set Cut Off']::before {
-        content: $lu_icon_scissors;
-      }
+    &[title='Edit Weights']::before {
+      content: $lu_icon_tasks;
+    }
 
-      &[title^='Search']::before {
-        content: $lu_icon_search;
-      }
+    &[title='UnCollapse']::before {
+      content: $lu_icon_toggle_right;
+    }
 
-      &[title='Edit Weights']::before {
-        content: $lu_icon_tasks;
-      }
+    &[title='Collapse']::before {
+      content: $lu_icon_toggle_left;
+    }
 
-      &[title='UnCollapse']::before {
-        content: $lu_icon_toggle_right;
-      }
+    &[title='Expand']::before {
+      content: $lu_icon_expand;
+    }
 
-      &[title='Collapse']::before {
-        content: $lu_icon_toggle_left;
-      }
+    &[title='Compress']::before {
+      content: $lu_icon_compress;
+    }
 
-      &[title='Expand']::before {
-        content: $lu_icon_expand;
-      }
+    &[title='Remove']::before {
+      content: $lu_icon_trash;
+    }
 
-      &[title='Compress']::before {
-        content: $lu_icon_compress;
-      }
+    &[title^='More']::before {
+      content: $lu_icon_ellipsis_h;
+    }
 
-      &[title='Remove']::before {
-        content: $lu_icon_trash;
-      }
-
-      &[title^='More']::before {
-        content: $lu_icon_ellipsis_h;
-      }
-
-      &[title^='Contained Columns']::before {
-        content: $lu_icon_sitemap;
-      }
+    &[title^='Contained Columns']::before {
+      content: $lu_icon_sitemap;
     }
   }
+}
 
+.#{$lu_css_prefix}-header {
   /* Override alphabetical sort icons */
-  .categorical,
-  .string,
-  .link,
-  .annotate,
-  .hierarchy,
-  [data-type='string'],
-  [data-type='categorical'],
-  [data-type='link'],
-  [data-type='annotate'],
-  [data-type='hierarchy'] {
+  &[data-type='string'],
+  &[data-type='categorical'],
+  &[data-type='link'],
+  &[data-type='annotate'],
+  &[data-type='hierarchy'] {
     .#{$lu_css_prefix}-toolbar i,
     .#{$lu_css_prefix}-more-options i {
       &[title='Sort']::before {
@@ -190,16 +177,15 @@
   }
 
   /* Override numerical sort icons */
-  .rank,
-  .number,
-  [data-type='number'],
-  [data-type='numbers'],
-  [data-type='ordinal'],
-  [data-type='boxplot'],
-  [data-type='script'],
-  [data-type='min'],
-  [data-type='max'],
-  [data-type='stack'] {
+  &[data-type='rank'],
+  &[data-type='number'],
+  &[data-type='numbers'],
+  &[data-type='ordinal'],
+  &[data-type='boxplot'],
+  &[data-type='script'],
+  &[data-type='min'],
+  &[data-type='max'],
+  &[data-type='stack'] {
     .#{$lu_css_prefix}-toolbar i,
     .#{$lu_css_prefix}-more-options i {
       &[title='Sort']::before {
@@ -211,30 +197,30 @@
       }
     }
   }
+}
 
-  .#{$lu_css_prefix}-more-options {
-    font-size: $lu_toolbar_font_size;
-    padding: 0;
+.#{$lu_css_prefix}-more-options {
+  font-size: $lu_toolbar_font_size;
+  padding: 0;
 
-    > i {
-      display: flex;
-      padding: 5px 10px 5px 5px;
-      align-items: center;
-      cursor: pointer;
+  > i {
+    display: flex;
+    padding: 5px 10px 5px 5px;
+    align-items: center;
+    cursor: pointer;
 
-      &:hover {
-        background: $lu_hover_color;
-      }
+    &:hover {
+      background: $lu_hover_color;
+    }
 
-      &::before {
-        width: 19px;
-        text-align: center;
-      }
+    &::before {
+      width: 19px;
+      text-align: center;
+    }
 
-      > span {
-        font-style: normal;
-        margin-left: 3px;
-      }
+    > span {
+      font-style: normal;
+      margin-left: 3px;
     }
   }
 }

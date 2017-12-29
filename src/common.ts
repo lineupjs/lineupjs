@@ -12,6 +12,7 @@ import LineUp, {ILineUpOptions} from './ui/LineUp';
 export {deriveColors} from './provider/utils';
 export {deriveColumnDescriptions} from './provider';
 export {default as LocalDataProvider} from './provider/LocalDataProvider';
+export {default as LineUp, ILineUpOptions} from './ui/LineUp';
 /**
  * access to the model module
  */

@@ -40,7 +40,7 @@ export default class RenderColumn implements IColumn {
   }
 
   updateHeader(node: HTMLElement, ctx: IRankingContext) {
-    node.className = `lu-header ${this.c.cssClass ? ` ${this.c.cssClass}` : ''} ${this.c.headerCssClass}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
+    node.className = `lu-header${this.c.cssClass ? ` ${this.c.cssClass}` : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
     node.classList.toggle('frozen', this.frozen);
     updateHeader(node, this.c, ctx);
   }

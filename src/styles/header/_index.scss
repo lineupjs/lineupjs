@@ -1,13 +1,12 @@
 @import '../vars';
 
-%lu-header {
+.#{$lu_css_prefix}-header,
+.#{$lu_css_prefix}-side-panel-entry {
   position: relative;
   user-select: none;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-
-  @import './toolbar';
 
   .#{$lu_css_prefix}-label {
     white-space: nowrap;
@@ -41,15 +40,24 @@
     flex: 1;
   }
 
-  .#{$lu_css_prefix}-summary {
-    position: relative;
-    display: none;
-    font-size: x-small;
+  &.filtered .#{$lu_css_prefix}-toolbar i[title='Filter'] {
+    color: $lu_header_active_filter_color;
+  }
 
-    @import './summary';
+  &.grouped .#{$lu_css_prefix}-toolbar i[title='Stratify by'] {
+    color: $lu_header_active_filter_color;
   }
 
   .#{$lu_css_prefix}-nested {
     position: relative;
   }
+
+  .#{$lu_css_prefix}-summary {
+    position: relative;
+    display: none;
+    font-size: x-small;
+  }
 }
+
+@import './summary';
+@import './toolbar';

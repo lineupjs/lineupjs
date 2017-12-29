@@ -2,7 +2,7 @@
 @import '../icons/index';
 
 .#{$lu_css_prefix}-side-panel {
-  > div > main > article > header .#{$lu_css_prefix}-label {
+  .#{$lu_css_prefix}-label {
     padding: 0 0 0 0.2em;
 
     &::before {
@@ -20,7 +20,7 @@
   }
 
   .#{$lu_css_prefix}-search [data-type='categorical']::before,
-  > div > main > article[data-type='categorical'] > header .#{$lu_css_prefix}-label::before {
+  [data-type='categorical'] .#{$lu_css_prefix}-label::before {
     @if $lu_use_font_awesome == true {
       background-image: url('#{$lu_assets}/icon_categorical.svg');
     } @else {
@@ -30,7 +30,7 @@
 
   .#{$lu_css_prefix}-search [data-type='numerical']::before,
   .#{$lu_css_prefix}-search [data-type='number']::before,
-  > div > main > article[data-type='number'] > header .#{$lu_css_prefix}-label::before {
+  [data-type='number'] .#{$lu_css_prefix}-label::before {
     @if $lu_use_font_awesome == true {
       background-image: url('#{$lu_assets}/icon_numerical.svg');
     } @else {
@@ -40,7 +40,7 @@
 
   .#{$lu_css_prefix}-search [data-type='matrix']::before,
   .#{$lu_css_prefix}-search [data-type='numbers']::before,
-  > div > main > article[data-type='numbers'] > header .#{$lu_css_prefix}-label::before {
+  [data-type='numbers'] .#{$lu_css_prefix}-label::before {
     @if $lu_use_font_awesome == true {
       background-image: url('#{$lu_assets}/icon_matrix.svg');
     } @else {
@@ -50,7 +50,7 @@
 
   .#{$lu_css_prefix}-search [data-type='label']::before,
   .#{$lu_css_prefix}-search [data-type='string']::before,
-  > div > main > article[data-type='string'] > header .#{$lu_css_prefix}-label::before {
+  [data-type='string'] .#{$lu_css_prefix}-label::before {
     @if $lu_use_font_awesome == true {
       background-image: url('#{$lu_assets}/icon_string.svg');
     } @else {

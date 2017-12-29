@@ -21,7 +21,7 @@ export default class CompositeChildrenDialog extends ADialog {
         mergeDropAble: false,
         resizeable: false
       });
-      n.className = `lu-header ${c.cssClass ? ` ${c.cssClass}` : ''}${c.headerCssClass}${c.isFiltered() ? ' lu-filtered' : ''}`;
+      n.className = `lu-header${c.cssClass ? ` ${c.cssClass}` : ''}${c.isFiltered() ? ' lu-filtered' : ''}`;
       updateHeader(n, c, this.ctx);
       wrapper.appendChild(n);
     });

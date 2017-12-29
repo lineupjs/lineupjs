@@ -1,16 +1,9 @@
 @import '../vars';
-@import '../header/index';
 
-> article {
-  @extend %lu-header;
-
+article.#{$lu_css_prefix}-side-panel-entry {
   counter-increment: side-panel-counter;
   background-color: #fff;
   margin-bottom: 0.8em;
-
-  &.#{$lu_css_prefix}-dragover::after {
-    display: none;
-  }
 
   &::before {
     content: 'Drop here to change the sorting';
@@ -31,6 +24,10 @@
     border: 2px dashed $lu_drag_over;
     background-color: lighten($lu_drag_over, 35%);
     transition: height 0.2s ease, opacity 0.2s ease;
+  }
+
+  &.#{$lu_css_prefix}-dragover::after {
+    display: none;
   }
 
   &.#{$lu_css_prefix}-dragover::before {
@@ -54,21 +51,18 @@
       padding-right: 0.2em;
       content: counter(side-panel-counter);
     }
+  }
 
-    .#{$lu_css_prefix}-label {
-      margin: 0 1em 0 0;
-      padding: 0 0 0 0.4em;
-      overflow: hidden !important;
-      cursor: pointer;
-      flex: 1;
-    }
-
-    > .#{$lu_css_prefix}-toolbar {
-      color: $lu_toolbar_color_base2;
-    }
+  .#{$lu_css_prefix}-label {
+    margin: 0 1em 0 0;
+    padding: 0 0 0 0.4em;
+    overflow: hidden !important;
+    cursor: pointer;
+    flex: 1;
   }
 
   .#{$lu_css_prefix}-toolbar {
+    color: $lu_toolbar_color_base2;
     padding: 0;
   }
 

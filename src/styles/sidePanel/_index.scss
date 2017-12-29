@@ -10,6 +10,7 @@
     flex: 0 0 auto;
     text-align: center;
     padding: 1em 0.5em;
+    border-bottom: 2px solid #dedede;
 
     form {
       position: relative;
@@ -19,8 +20,6 @@
         font-size: 120%;
       }
     }
-
-    border-bottom: 2px solid #dedede;
   }
 
   > div {
@@ -30,13 +29,11 @@
 
     > main {
       counter-reset: side-panel-counter;
-
-      @import './entry';
     }
   }
-
-  @import './search';
 }
 
+@import './search';
+@import './entry';
 @import './panel';
 

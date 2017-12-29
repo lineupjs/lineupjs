@@ -1,12 +1,8 @@
 @import '../vars';
-@import '../header/index';
-
 /**
   needs to be the full path without any super import otherwise the @extend won't work properly
  */
 section.#{$lu_css_prefix}-header {
-  @extend %lu-header;
-
   text-align: center;
   color: black;
   overflow: unset !important;
@@ -34,12 +30,6 @@ section.#{$lu_css_prefix}-header {
     > .#{$lu_css_prefix}-toolbar {
       color: $lu_toolbar_color_base2;
     }
-  }
-
-  &[draggable=true] {
-    cursor: pointer;
-    cursor: -moz-grab;
-    cursor: -webkit-grab; // indicate grab able
   }
 
   > .#{$lu_css_prefix}-toolbar {

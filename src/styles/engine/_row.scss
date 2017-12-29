@@ -1,43 +1,45 @@
 @import '../vars';
 @import '~lineupengine/src/styles/mixins';
 
-.#{$lu_css_prefix}-hover-only,
-.#{$lu_css_prefix}-selection-only {
-  display: none;
-}
-
-&:hover,
-&.#{$lu_css_prefix}-selected,
-&.#{$lu_css_prefix}-hovered {
-  .#{$lu_css_prefix}-not-hover {
+.#{$lu-css_prefix}-row {
+  .#{$lu_css_prefix}-hover-only,
+  .#{$lu_css_prefix}-selection-only {
     display: none;
   }
 
-  .#{$lu_css_prefix}-hover-only {
-    display: block;
-    padding-left: 4px;
+  &:hover,
+  &.#{$lu_css_prefix}-selected,
+  &.#{$lu_css_prefix}-hovered {
+    .#{$lu_css_prefix}-not-hover {
+      display: none;
+    }
+
+    .#{$lu_css_prefix}-hover-only {
+      display: block;
+      padding-left: 4px;
+    }
   }
-}
 
-/**
-  selected state extends hover state
- */
-&.#{$lu_css_prefix}-selected {
-  z-index: 10;
-  position: relative;
+  /**
+    selected state extends hover state
+   */
+  &.#{$lu_css_prefix}-selected {
+    z-index: 10;
+    position: relative;
 
-  @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
+    @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
 
-  .#{$lu_css_prefix}-selection-only {
-    display: block;
+    .#{$lu_css_prefix}-selection-only {
+      display: block;
+    }
   }
-}
 
-[data-renderer] {
-  overflow-x: hidden;
-  text-overflow: ellipsis;
-}
+  [data-renderer] {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+  }
 
-.#{$lu_css_prefix}-grid-space {
-  grid-column-gap: $lu_engine_grip_gap;
+  .#{$lu_css_prefix}-grid-space {
+    grid-column-gap: $lu_engine_grip_gap;
+  }
 }

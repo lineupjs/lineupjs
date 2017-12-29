@@ -2,7 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
-import {createRankDesc, IColumnDesc} from '../model';
+import {createRankDesc, IColumnDesc, IDataRow} from '../model';
 import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
 import {IOrderedGroup} from '../model/Group';
@@ -26,12 +26,12 @@ function resolveComplex(column: string, row: any) {
   return column.split('.').reduce(resolve, row);
 }
 
-function rowGetter(row: any, _index: number, _id: string, desc: any) {
+function rowGetter(row: IDataRow, _id: string, desc: any) {
   const column = desc.column;
   if (isComplexAccessor(column)) {
-    return resolveComplex(<string>column, row);
+    return resolveComplex(<string>column, row.v);
   }
-  return row[column];
+  return row.v[column];
 }
 
 /**
@@ -55,11 +55,11 @@ abstract class ACommonDataProvider extends ADataProvider {
     });
   }
 
-  protected rankAccessor(_row: any, index: number, _id: string, _desc: IColumnDesc, ranking: Ranking) {
+  protected rankAccessor(row: IDataRow, _id: string, _desc: IColumnDesc, ranking: Ranking) {
     const groups = this.ranks.get(ranking.id) || [];
     let acc = 0;
     for (const group of groups) {
-      const rank = group.order.indexOf(index);
+      const rank = group.order.indexOf(row.i);
       if (rank >= 0) {
         return acc + rank + 1; // starting with 1
       }

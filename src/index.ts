@@ -4,5 +4,13 @@
  */
 
 import './style.scss';
+import {ILineUpOptions} from './ui/LineUp';
+import * as provider_ from './provider';
+import LineUp from './ui/LineUp';
 export * from './common';
-export {default, ILineUpOptions} from './ui/LineUp';
+export {default} from './ui/LineUp';
+
+
+export function create(container: HTMLElement, data: provider_.DataProvider, config: Partial<ILineUpOptions> = {}) {
+  return new LineUp(container, data, config);
+}

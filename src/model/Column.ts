@@ -199,14 +199,6 @@ export default class Column extends AEventDispatcher {
   }
 
   /**
-   * return the css class to use for the header
-   * @return {string}
-   */
-  get headerCssClass() {
-    return this.desc.type;
-  }
-
-  /**
    * returns the fully qualified id i.e. path the parent
    * @returns {string}
    */

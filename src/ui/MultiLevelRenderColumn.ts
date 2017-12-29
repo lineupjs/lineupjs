@@ -82,7 +82,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
     const children = <HTMLElement[]>Array.from(wrapper.children);
     sub.forEach((c, i) => {
       const node = children[i];
-      node.className = `lu-header ${c.cssClass ? ` ${c.cssClass}` : ''}${this.c.headerCssClass}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
+      node.className = `lu-header${c.cssClass ? ` ${c.cssClass}` : ''}${this.c.isFiltered() ? ' lu-filtered' : ''}`;
       updateHeader(node, c, ctx);
     });
   }

@@ -321,7 +321,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     return `col${this.uid++}`;
   }
 
-  protected abstract rankAccessor(row: any, index: number, id: string, desc: IColumnDesc, ranking: Ranking): number;
+  protected abstract rankAccessor(row: IDataRow, id: string, desc: IColumnDesc, ranking: Ranking): number;
 
   private fixDesc(desc: IColumnDesc) {
     //hacks for provider dependent descriptors

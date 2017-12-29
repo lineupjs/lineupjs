@@ -10,13 +10,13 @@
     position: absolute;
     top: 0;
     height: 50%;
-    border-bottom: 1px solid $lu_upset_stroke; // line
+    border-bottom: 1px solid $lu_renderer_upset_stroke; // line
   }
 
   > div:nth-child(n + 2) { // circles
     border-radius: 50%;
-    background-color: $lu_upset_circle_color;
-    opacity: $lu_upset_inactive_opacity;
+    background-color: $lu_renderer_upset_circle_color;
+    opacity: $lu_renderer_upset_inactive_opacity;
     width: 15px;
     height: 15px;
 
@@ -26,7 +26,7 @@
   }
 
   path {
-    stroke: $lu_upset_stroke;
+    stroke: $lu_renderer_upset_stroke;
     fill: none;
   }
 }

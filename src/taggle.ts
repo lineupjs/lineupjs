@@ -12,3 +12,7 @@ export {default, ITaggleOptions} from './ui/taggle';
 export function createTaggle(container: HTMLElement, data: ADataProvider, config: Partial<ITaggleOptions> = {}) {
   return new Taggle(container, data, config);
 }
+
+export function create(container: HTMLElement, data: ADataProvider, config: Partial<ITaggleOptions> = {}) {
+  return new Taggle(container, data, config);
+}
