@@ -62,6 +62,7 @@ section.#{$lu-css_prefix}-slopegraph-header {
     &[title=Item]::before {
       content: $lu_icon_align_justify;
     }
+
     &[title=Band]::before {
       content: $lu_icon_bars;
     }

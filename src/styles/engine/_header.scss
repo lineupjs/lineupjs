@@ -1,7 +1,5 @@
 @import '../vars';
-/**
-  needs to be the full path without any super import otherwise the @extend won't work properly
- */
+
 section.#{$lu_css_prefix}-header {
   text-align: center;
   color: black;
