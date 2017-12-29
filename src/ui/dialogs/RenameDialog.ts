@@ -1,4 +1,4 @@
-import Column from '../model/Column';
+import Column from '../../model/Column';
 import ADialog from './ADialog';
 
 

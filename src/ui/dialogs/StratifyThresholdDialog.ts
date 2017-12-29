@@ -1,5 +1,5 @@
 import ADialog from './ADialog';
-import NumberColumn from '../model/NumberColumn';
+import NumberColumn from '../../model/NumberColumn';
 
 export default class StratifyThresholdDialog extends ADialog {
 

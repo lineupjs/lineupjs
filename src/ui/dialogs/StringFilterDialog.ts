@@ -1,4 +1,4 @@
-import StringColumn from '../model/StringColumn';
+import StringColumn from '../../model/StringColumn';
 import AFilterDialog, {filterMissingMarkup} from './AFilterDialog';
 
 

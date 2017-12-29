@@ -1,10 +1,5 @@
 import ADialog from './ADialog';
-import Column from '../model/Column';
-import {IDataProvider} from '../provider/ADataProvider';
-
-export interface IFilterDialog {
-  new(column: Column, header: HTMLElement, title: string, data: IDataProvider, idPrefix: string): AFilterDialog<Column>;
-}
+import Column from '../../model/Column';
 
 abstract class AFilterDialog<T extends Column> extends ADialog {
 

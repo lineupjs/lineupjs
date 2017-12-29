@@ -1,5 +1,5 @@
 import ADialog from './ADialog';
-import ScriptColumn from '../model/ScriptColumn';
+import ScriptColumn from '../../model/ScriptColumn';
 
 
 export default class ScriptEditDialog extends ADialog {

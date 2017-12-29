@@ -1,16 +1,19 @@
+import Column from '../../model/Column';
 import ADialog from './ADialog';
-import GroupColumn from '../model/GroupColumn';
+import NumberColumn from '../../model/NumberColumn';
+import {ADVANCED_SORT_METHOD, IBoxPlotColumn, SORT_METHOD} from '../../model/INumberColumn';
+import BoxPlotColumn from '../../model/BoxPlotColumn';
 
 export default class SortDialog extends ADialog {
-  constructor(private readonly column: GroupColumn, header: HTMLElement, title = 'Change Sort Criteria') {
+  constructor(private readonly column: (IBoxPlotColumn|NumberColumn) & Column, header: HTMLElement, title = 'Sort Criteria') {
     super(header, title);
   }
 
   openDialog() {
     const bak = this.column.getSortMethod();
-    const valueString = ['name', 'count'];
+    const valueString = Object.keys(this.column instanceof BoxPlotColumn ? SORT_METHOD: ADVANCED_SORT_METHOD);
 
-    const order = this.column.isGroupSortedByMe().asc;
+    const order = this.column instanceof NumberColumn ? this.column.isGroupSortedByMe().asc : this.column.isSortedByMe().asc;
 
     const sortMethods = valueString.map((d) => {
       return `<label><input type="radio" name="multivaluesort" value="${d}"  ${(bak === d) ? 'checked' : ''} > ${d.slice(0, 1).toUpperCase() + d.slice(1)}</label><br>`;
@@ -22,11 +25,15 @@ export default class SortDialog extends ADialog {
     const popup = this.makeChoosePopup( `${sortMethods}<strong>Sort Order</strong><br>${sortOrders}`);
 
     Array.from(popup.querySelectorAll('input[name=multivaluesort]')).forEach((n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setSortMethod(<'name'|'count'>n.value));
+      n.addEventListener('change', () => this.column.setSortMethod(n.value));
     });
     Array.from(popup.querySelectorAll('input[name=sortorder]')).forEach((n: HTMLInputElement) => {
       n.addEventListener('change', () => {
-        this.column.groupSortByMe(n.value === 'asc');
+        if (this.column instanceof NumberColumn) {
+          this.column.groupSortByMe(n.value === 'asc');
+        } else {
+          this.column.sortByMe(n.value === 'asc');
+        }
       });
     });
   }

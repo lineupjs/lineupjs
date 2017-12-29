@@ -1,4 +1,4 @@
-import BooleanColumn from '../model/BooleanColumn';
+import BooleanColumn from '../../model/BooleanColumn';
 import AFilterDialog from './AFilterDialog';
 
 export default class BooleanFilterDialog extends AFilterDialog<BooleanColumn> {

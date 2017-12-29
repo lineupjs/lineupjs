@@ -4,7 +4,7 @@ import {IRankingHeaderContext} from '../interfaces';
 import {DENSE_HISTOGRAM} from '../../renderer/HistogramRenderer';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import CategoricalColumn from '../../model/CategoricalColumn';
-import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../../dialogs/AFilterDialog';
+import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../dialogs/AFilterDialog';
 
 export default function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement, interactive: boolean, ctx: IRankingHeaderContext) {
   const stats = <ICategoricalStatistics>ctx.statsOf(col);

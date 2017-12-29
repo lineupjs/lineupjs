@@ -1,13 +1,16 @@
 import {IDataProvider} from '../provider/ADataProvider';
-import {IFilterDialog} from '../dialogs/AFilterDialog';
 import {
   IGroupData, IGroupItem, Column, INumberColumn, ICategoricalColumn, ICategoricalStatistics,
   IStatistics
 } from '../model';
-import {IDOMRenderContext} from '../renderer/RendererContexts';
+import {IDOMRenderContext} from '../renderer';
+import AFilterDialog from './dialogs/AFilterDialog';
 
 export const RENDERER_EVENT_HOVER_CHANGED = 'hoverChanged';
 
+export interface IFilterDialog {
+  new(column: Column, header: HTMLElement, title: string, data: IDataProvider, idPrefix: string): AFilterDialog<Column>;
+}
 
 export declare type ISummaryFunction = ((col: Column, node: HTMLElement, interactive: boolean, ctx: IRankingHeaderContext)=>void);
 

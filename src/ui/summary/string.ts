@@ -1,5 +1,5 @@
 import StringColumn from '../../model/StringColumn';
-import {stringFilter} from '../../dialogs/StringFilterDialog';
+import {stringFilter} from '../dialogs/StringFilterDialog';
 
 export default function summaryString(col: StringColumn, node: HTMLElement, interactive: boolean) {
   const old = node.dataset.summary;

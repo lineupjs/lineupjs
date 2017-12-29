@@ -1,6 +1,6 @@
-import Column from '../model/Column';
+import Column from '../../model/Column';
 import ADialog from './ADialog';
-import {IDataProvider} from '../provider/ADataProvider';
+import {IDataProvider} from '../../provider/ADataProvider';
 
 export default class SearchDialog extends ADialog {
 

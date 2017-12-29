@@ -1,4 +1,4 @@
-import StackColumn from '../model/StackColumn';
+import StackColumn from '../../model/StackColumn';
 import ADialog from './ADialog';
 
 

@@ -1,4 +1,4 @@
-import HierarchyColumn, {resolveInnerNodes} from '../model/HierarchyColumn';
+import HierarchyColumn, {resolveInnerNodes} from '../../model/HierarchyColumn';
 import ADialog from './ADialog';
 
 export default class CutOffHierarchyDialog extends ADialog {

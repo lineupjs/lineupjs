@@ -1,7 +1,7 @@
 /**
  * Created by Samuel Gratzl on 02.08.2017.
  */
-import {IFilterDialog} from './AFilterDialog';
+import {IFilterDialog} from '../interfaces';
 import StringFilterDialog from './StringFilterDialog';
 import BooleanFilterDialog from './BooleanFilterDialog';
 import CategoricalFilterDialog from './CategoricalFilterDialog';
