@@ -2,170 +2,173 @@
 mapping editor
  */
 @import './vars';
+@import '~lineupengine/src/styles/import_once';
 
-.#{$lu_css_prefix}-mapping-editor {
-  $sample_color: black;
-  $mapping_color: blue;
-  $mapping_color_hover: #0000cf;
+@include exports('lineupjs/mappingeditor') {
+  .#{$lu_css_prefix}-mapping-editor {
+    $sample_color: black;
+    $mapping_color: blue;
+    $mapping_color_hover: #0000cf;
 
-  margin-bottom: 5px;
-  clear: both;
+    margin-bottom: 5px;
+    clear: both;
 
-  div {
-    &.filter_part {
-      margin-top: 15px;
+    div {
+      &.filter_part {
+        margin-top: 15px;
+      }
+
+      &.filter_part2 {
+        position: relative;
+        top: -25px;
+        height: 0;
+      }
+
+      span.title {
+        font-weight: bold;
+      }
     }
 
-    &.filter_part2 {
-      position: relative;
-      top: -25px;
-      height: 0;
+    .raw_min,
+    .raw_max {
+      width: 3em;
+      display: block;
     }
 
-    span.title {
-      font-weight: bold;
-    }
-  }
-
-  .raw_min,
-  .raw_max {
-    width: 3em;
-    display: block;
-  }
-
-  .mapping_area {
-    display: flex;
-    align-items: stretch;
-
-    > div {
+    .mapping_area {
       display: flex;
-      flex-direction: column;
-      margin-bottom: 40px;
+      align-items: stretch;
 
-      &:first-child {
-        text-align: right;
-      }
+      > div {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 40px;
 
-      > span:first-of-type {
-        flex-grow: 1;
-      }
-    }
-  }
+        &:first-child {
+          text-align: right;
+        }
 
-  svg {
-    z-index: 1;
-    position: relative;
-
-    > rect {
-      fill: white;
-      opacity: 0;
-    }
-
-    g.samples {
-      line {
-        stroke: $sample_color;
-        opacity: 0.5;
+        > span:first-of-type {
+          flex-grow: 1;
+        }
       }
     }
 
-    g.mapping {
-      &:hover {
-        cursor: ew-resize;
+    svg {
+      z-index: 1;
+      position: relative;
+
+      > rect {
+        fill: white;
+        opacity: 0;
+      }
+
+      g.samples {
+        line {
+          stroke: $sample_color;
+          opacity: 0.5;
+        }
+      }
+
+      g.mapping {
+        &:hover {
+          cursor: ew-resize;
+
+          line {
+            stroke: $mapping_color_hover;
+          }
+
+          circle {
+            fill: $mapping_color_hover;
+          }
+        }
 
         line {
-          stroke: $mapping_color_hover;
+          stroke: $mapping_color;
         }
 
         circle {
-          fill: $mapping_color_hover;
+          fill: $mapping_color;
         }
       }
 
-      line {
-        stroke: $mapping_color;
-      }
+      g.filter {
+        text {
+          font-size: 8pt;
+        }
 
-      circle {
-        fill: $mapping_color;
+        path {
+          fill: gray;
+        }
+
+        rect {
+          fill: white;
+          stroke: gray;
+          stroke-width: 1;
+        }
+
+        > g {
+          cursor: pointer;
+          cursor: -moz-grab;
+          cursor: -webkit-grab; // indicate grab able
+
+          &:hover {
+            path {
+              fill: darkgray;
+            }
+
+            rect {
+              stroke: darkgray;
+            }
+          }
+        }
       }
     }
 
-    g.filter {
-      text {
+    div.script {
+      clear: both;
+
+      textarea {
+        height: 4em;
+        width: 98%;
         font-size: 8pt;
-      }
-
-      path {
-        fill: gray;
-      }
-
-      rect {
-        fill: white;
-        stroke: gray;
-        stroke-width: 1;
-      }
-
-      > g {
-        cursor: pointer;
-        cursor: -moz-grab;
-        cursor: -webkit-grab; // indicate grab able
-
-        &:hover {
-          path {
-            fill: darkgray;
-          }
-
-          rect {
-            stroke: darkgray;
-          }
-        }
+        display: block;
       }
     }
-  }
 
-  div.script {
-    clear: both;
+    div[id$='mapping-overlay'] { // id ends with mapping-overlay
+      position: absolute;
+      padding: 10px;
+      background-color: white;
+      border: 1px solid rgb(193, 193, 193);
+      border-radius: 5px;
+      z-index: 10;
 
-    textarea {
-      height: 4em;
-      width: 98%;
-      font-size: 8pt;
-      display: block;
-    }
-  }
+      &.hide {
+        opacity: 0.2;
+      }
 
-  div[id$='mapping-overlay'] { // id ends with mapping-overlay
-    position: absolute;
-    padding: 10px;
-    background-color: white;
-    border: 1px solid rgb(193, 193, 193);
-    border-radius: 5px;
-    z-index: 10;
+      div input {
+        display: block;
+      }
 
-    &.hide {
-      opacity: 0.2;
-    }
+      input {
+        width: 75px;
+      }
 
-    div input {
-      display: block;
+      div:first-child {
+        margin-bottom: 10px;
+      }
     }
 
-    input {
+    div[id$='filter_inputs'] {
+      display: flex;
+      justify-content: space-around;
+      padding: 0 30px 10px;
+    }
+
+    div input[id$='_filter_input'] {
       width: 75px;
     }
-
-    div:first-child {
-      margin-bottom: 10px;
-    }
-  }
-
-  div[id$='filter_inputs'] {
-    display: flex;
-    justify-content: space-around;
-    padding: 0 30px 10px;
-  }
-
-  div input[id$='_filter_input'] {
-    width: 75px;
   }
 }

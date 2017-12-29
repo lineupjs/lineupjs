@@ -1,9 +1,4 @@
 /**
- * Created by Samuel Gratzl on 27.12.2016.
- */
-
-
-/**
  * utility for drag-n-drop support
  * @param e
  * @param typesToCheck

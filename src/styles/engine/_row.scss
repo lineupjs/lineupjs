@@ -1,19 +1,19 @@
 @import '../vars';
 @import '~lineupengine/src/styles/mixins';
 
-.lu-hover-only,
-.lu-selection-only {
+.#{$lu_css_prefix}-hover-only,
+.#{$lu_css_prefix}-selection-only {
   display: none;
 }
 
 &:hover,
-&.lu-selected,
-&.lu-hovered {
-  .lu-not-hover {
+&.#{$lu_css_prefix}-selected,
+&.#{$lu_css_prefix}-hovered {
+  .#{$lu_css_prefix}-not-hover {
     display: none;
   }
 
-  .lu-hover-only {
+  .#{$lu_css_prefix}-hover-only {
     display: block;
     padding-left: 4px;
   }
@@ -22,13 +22,13 @@
 /**
   selected state extends hover state
  */
-&.lu-selected {
+&.#{$lu_css_prefix}-selected {
   z-index: 10;
   position: relative;
 
   @include collapsing-row-border($lu_engine_row_outline_width, $lu_selected_color);
 
-  .lu-selection-only {
+  .#{$lu_css_prefix}-selection-only {
     display: block;
   }
 }
