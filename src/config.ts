@@ -23,6 +23,6 @@ export function defaultOptions(): ILineUpOptions {
     rowHeight: 18,
     groupHeight: 40,
     groupPadding: 5,
-    rowPadding: 0
+    rowPadding: 2
   };
 }

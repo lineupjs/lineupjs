@@ -74,6 +74,11 @@ export default class EngineRenderer extends AEventDispatcher {
        #${options.idPrefix} > main > article > [data-meta~=last] {
         margin-bottom: ${options.groupPadding}px;
        }`);
+
+      this.style.addRule('lineup_rowPadding', `
+       #${options.idPrefix} > main > article > div {
+         padding-top: ${options.rowPadding}px;
+       }`);
     }
 
     this.initProvider(data);
