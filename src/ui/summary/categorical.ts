@@ -1,10 +1,10 @@
 import {ICategoricalColumn, ICategoricalStatistics} from '../../model';
 import Column from '../../model/Column';
 import {IRankingHeaderContext} from '../interfaces';
-import {DENSE_HISTOGRAM} from '../../renderer/HistogramRenderer';
+import {DENSE_HISTOGRAM} from '../../config';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import CategoricalColumn from '../../model/CategoricalColumn';
-import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../dialogs/AFilterDialog';
+import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
 
 export default function summaryCategorical(col: ICategoricalColumn & Column, node: HTMLElement, interactive: boolean, ctx: IRankingHeaderContext) {
   const stats = <ICategoricalStatistics>ctx.statsOf(col);

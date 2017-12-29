@@ -12,11 +12,8 @@ import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {IImposer} from './IRenderContext';
 import {colorOf} from './impose';
+import {DENSE_HISTOGRAM} from '../config';
 
-
-/** number of bins before switching to dense mode
- */
-export const DENSE_HISTOGRAM = 19;
 /**
  * a renderer rendering a bar for numerical columns
  */

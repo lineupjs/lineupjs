@@ -1,9 +1,9 @@
 import {INumberColumn, IStatistics} from '../../model';
 import Column from '../../model/Column';
 import {IRankingHeaderContext} from '../interfaces';
-import {DENSE_HISTOGRAM} from '../../renderer/HistogramRenderer';
+import {DENSE_HISTOGRAM} from '../../config';
 import NumberColumn, {isMapAbleColumn} from '../../model/NumberColumn';
-import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../dialogs/AFilterDialog';
+import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
 import {round} from '../../internal/math';
 import {D3DragEvent, drag} from 'd3-drag';
 import {selectAll, event as d3event} from 'd3-selection';

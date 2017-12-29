@@ -37,8 +37,14 @@
       }
     }
 
-    &.#{$lu_css_prefix}-dense > div {
-      margin: 0;
+    &.#{$lu_css_prefix}-dense {
+      & > div {
+        margin: 0;
+      }
+
+      label {
+        display: none;
+      }
     }
 
     > span {

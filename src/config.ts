@@ -9,6 +9,10 @@ import {ILineUpOptions} from './interfaces';
 export const COLUMN_PADDING = 5; // see also vars -> $lu_engine_grip_gap
 export const SLOPEGRAPH_WIDTH = 200;
 
+/** number of bins before switching to dense mode
+ */
+export const DENSE_HISTOGRAM = 19;
+
 export function defaultOptions(): ILineUpOptions {
   const idPrefix = `lu${Math.random().toString(36).slice(-8).substr(0, 3)}`; //generate a random string with length3;
   return {
