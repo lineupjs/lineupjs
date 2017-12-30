@@ -6,8 +6,7 @@ import {ACellTableSection, ICellRenderContext} from 'lineupengine/src/table/ACel
 import GridStyleManager from 'lineupengine/src/style/GridStyleManager';
 import Ranking from '../model/Ranking';
 import RenderColumn, {IRenderers} from './RenderColumn';
-import Column, {IFlatColumn} from '../model/Column';
-import MultiLevelRenderColumn from './MultiLevelRenderColumn';
+import Column from '../model/Column';
 import {IExceptionContext, nonUniformContext, uniformContext} from 'lineupengine/src/logic';
 import StackColumn from '../model/StackColumn';
 import {isMultiLevelColumn} from '../model/CompositeColumn';
@@ -21,6 +20,7 @@ import {IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
 import AEventDispatcher from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
 import {COLUMN_PADDING} from '../config';
+import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
   createRenderer(c: Column): IRenderers;
@@ -67,6 +67,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   };
 
   private readonly delayedUpdate: (this: {type: string})=>void;
+  private readonly columns: RenderColumn[];
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
     super(header, body, tableId, style, PrefetchMixin);
@@ -88,12 +89,23 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       return currentEvent === Ranking.EVENT_ORDER_CHANGED ? current : next;
     });
 
-    ranking.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, debounce(() => this.updateHeaders(), 50));
-    ranking.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, this.delayedUpdate);
-    ranking.on([`${Ranking.EVENT_ADD_COLUMN}.body`, `${Ranking.EVENT_REMOVE_COLUMN}.body`, `${Ranking.EVENT_MOVE_COLUMN}.body`], debounce(() => this.updateAll(), 50));
-    ranking.on(`${Ranking.EVENT_ADD_COLUMN}.hist`, (col) => {
-      col.on(`${Column.EVENT_DATA_LOADED}.hist`, () => this.updateHist(col));
-      this.updateHist(col);
+    const updateAll = debounce(() => this.updateAll(), 50);
+    ranking.on(`${Ranking.EVENT_ADD_COLUMN}.hist`, (col: Column, index: number) => {
+      this.columns.splice(index, 0, this.createCol(col, index));
+      updateAll();
+    });
+    ranking.on(`${Ranking.EVENT_REMOVE_COLUMN}.body`, (col: Column, index: number) => {
+      EngineRanking.disableListener(col);
+      this.columns.splice(index, 1);
+      updateAll();
+    });
+    ranking.on(`${Ranking.EVENT_MOVE_COLUMN}.body`, (col: Column, index: number, old: number) => {
+      //delete first
+      const c = this.columns.splice(old, 1)[0];
+      console.assert(c.c === col);
+      // adapt target index based on previous index, i.e shift by one
+      this.columns.splice(old < index ? index -1 : index, 0, c);
+      updateAll();
     });
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, this.delayedUpdate);
 
@@ -109,10 +121,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }, ctx);
 
     // default context
-    const columns = this.createColumns();
+    this.columns = ranking.children.filter((c) => !c.isHidden()).map((c, i) => this.createCol(c, i));
     this._context = Object.assign({
-      columns,
-      column: nonUniformContext(columns.map((w) => w.width), 100, COLUMN_PADDING)
+      columns: this.columns,
+      column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     }, uniformContext(0, 20));
   }
 
@@ -139,34 +151,30 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return this._context;
   }
 
-  protected createHeader(document: Document, column: RenderColumn) {
-    if (column instanceof MultiLevelRenderColumn) {
-      column.updateWidthRule(this.style);
-    }
-    return column.createHeader(document, this.renderCtx);
+  protected createHeader(_document: Document, column: RenderColumn) {
+    return column.createHeader();
   }
 
   protected updateHeader(node: HTMLElement, column: RenderColumn) {
     if (column instanceof MultiLevelRenderColumn) {
       column.updateWidthRule(this.style);
     }
-    return column.updateHeader(node, this.renderCtx);
+    return column.updateHeader(node);
   }
 
-  protected createCell(document: Document, index: number, column: RenderColumn) {
-    return column.createCell(index, document, this.renderCtx);
+  protected createCell(_document: Document, index: number, column: RenderColumn) {
+    return column.createCell(index);
   }
 
   protected updateCell(node: HTMLElement, index: number, column: RenderColumn) {
-    return column.updateCell(node, index, this.renderCtx);
+    return column.updateCell(node, index);
   }
 
   updateAll() {
-    const columns = this.createColumns();
+    this.columns.forEach((c, i) => c.index = i);
 
     this._context = Object.assign({},this._context,{
-      columns,
-      column: nonUniformContext(columns.map((w) => w.width), 100, COLUMN_PADDING)
+      column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     });
 
     super.recreate();
@@ -183,9 +191,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   updateHeaderOf(i: number) {
     const node = <HTMLElement>this.header.children[i]!;
     const column = this._context.columns[i];
-    if (column instanceof MultiLevelRenderColumn) {
-      column.updateWidthRule(this.style);
-    }
     this.updateHeader(node, column);
   }
 
@@ -286,17 +291,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.ranking.flatColumns.forEach((c) => EngineRanking.disableListener(c));
   }
 
-  private static disableListener(c: Column) {
-    c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
-    c.on(`${Column.EVENT_DATA_LOADED}.hist`, null);
-    c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
-    if (!(isMultiLevelColumn(c))) {
-      return;
-    }
-    c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
-    c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
-  }
-
   groupData(data: IDataRow[]): (IGroupItem | IGroupData)[] {
     const groups = this.ranking.getGroups();
     const provider = this.ctx.provider;
@@ -341,16 +335,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   render(data: (IGroupItem | IGroupData)[], rowContext: IExceptionContext) {
     const previous = this._context;
-    previous.columns.forEach((c) => EngineRanking.disableListener(c.c));
     const previousData = this.data;
     this.data = data;
     (<any>this.renderCtx).totalNumberOfRows = data.length;
 
-    const columns = this.createColumns();
-
+    this.columns.forEach((c, i) => c.index = i);
     this._context = Object.assign({
-      columns,
-      column: nonUniformContext(columns.map((w) => w.width), 100, COLUMN_PADDING)
+      columns: this.columns,
+      column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     }, rowContext);
 
     return super.recreate(this.options.animation ? lineupAnimation(previous, previousData, this.data) : undefined);
@@ -367,35 +359,43 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     }
   }
 
-  private createColumns() {
-    const flatCols: IFlatColumn[] = [];
-    this.ranking.flatten(flatCols, 0, 1, 0);
-    const cols = flatCols.map((c) => c.col);
-    return cols.map((c, i) => this.createColumn(c, i));
-  }
-
-  private createColumn(c: Column, i: number) {
-    const renderers = this.ctx.createRenderer(c);
+  private createCol(c: Column, index: number) {
+    const col = (isMultiLevelColumn(c) && !c.getCollapsed()) ? new MultiLevelRenderColumn(c, index, this.renderCtx) : new RenderColumn(c, index, this.renderCtx);
 
     c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, () => {
       this.updateColumnWidths();
     });
     c.on(`${Column.EVENT_DATA_LOADED}.hist`, () => this.updateHist(c));
-    c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], () => {
+    const debounceUpdate = debounce(() => this.updateColumn(col.index), 25);
+    c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`], () => {
       // replace myself upon renderer type change
-      this._context.columns[i] = this.createColumn(c, i);
-      this.updateColumn(i);
+      col.renderers = this.ctx.createRenderer(c);
+      debounceUpdate();
     });
+    c.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, () => this.updateHeaderOf(col.index));
+    c.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, debounceUpdate);
 
     if (isMultiLevelColumn(c) && !c.getCollapsed()) {
-      const r = new MultiLevelRenderColumn(c, renderers, i);
       c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, () => {
-        r.updateWidthRule(this.style);
+        (<MultiLevelRenderColumn>col).updateWidthRule(this.style);
       });
-      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounce(() => this.updateColumn(i), 25));
-
-      return r;
+      c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, debounceUpdate);
     }
-    return new RenderColumn(c, renderers, i);
+
+    return col;
+  }
+
+  private static disableListener(c: Column) {
+    c.on(`${Column.EVENT_WIDTH_CHANGED}.body`, null);
+    c.on(`${Column.EVENT_DATA_LOADED}.hist`, null);
+    c.on([`${Column.EVENT_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_GROUP_RENDERER_TYPE_CHANGED}.body`, `${Column.EVENT_LABEL_CHANGED}.body`], null);
+    c.on(`${Ranking.EVENT_DIRTY_HEADER}.body`, null);
+    c.on(`${Ranking.EVENT_DIRTY_VALUES}.body`, null);
+
+    if (!(isMultiLevelColumn(c))) {
+      return;
+    }
+    c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.body`, null);
+    c.on(`${StackColumn.EVENT_MULTI_LEVEL_CHANGED}.bodyUpdate`, null);
   }
 }

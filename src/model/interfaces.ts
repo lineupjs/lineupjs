@@ -1,3 +1,5 @@
+import {IColumnDesc} from './Column';
+
 /**
  * a data row for rendering
  */
@@ -35,4 +37,8 @@ export interface IGroupData extends IGroup {
 
 export function isGroup(item: IGroupData | IGroupItem): item is IGroupData {
   return item && (<IGroupData>item).name !== undefined; // use .name as separator
+}
+
+export function isSupportType(col: IColumnDesc) {
+  return ['rank', 'selection', 'actions', 'aggregate', 'group'].indexOf(col.type) >= 0;
 }

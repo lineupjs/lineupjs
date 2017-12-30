@@ -13,8 +13,7 @@ import {
   isSupportType,
   models,
   Column,
-  IDataRow, IGroup, INumberColumn, ICategoricalColumn, ICategoricalStatistics, IStatistics
-} from '../model';
+  IDataRow, IGroup, INumberColumn, ICategoricalColumn} from '../model';
 import Ranking from '../model/Ranking';
 import RankColumn from '../model/RankColumn';
 import StackColumn from '../model/StackColumn';
@@ -26,6 +25,7 @@ import OrderedSet from '../internal/OrderedSet';
 import {IExportOptions, exportRanking} from './utils';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
 export {IExportOptions} from './utils';
 
 export interface IStatsBuilder {

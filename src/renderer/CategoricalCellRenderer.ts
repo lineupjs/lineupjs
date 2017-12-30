@@ -1,11 +1,11 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import Column, {ICategoricalStatistics} from '../model/Column';
+import Column from '../model/Column';
 import {ICanvasRenderContext} from './RendererContexts';
 import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow, IGroup, ICategoricalColumn, isCategoricalColumn} from '../model';
 import {clipText, forEachChild, setText} from './utils';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {computeHist} from '../internal/math';
+import {computeHist, ICategoricalStatistics} from '../internal/math';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 /**

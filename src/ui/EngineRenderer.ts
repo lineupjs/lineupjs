@@ -4,7 +4,7 @@
 import {findOption} from '../internal/utils';
 import DataProvider, {default as ADataProvider} from '../provider/ADataProvider';
 import {createDOM, IImposer, IDOMRenderContext, createDOMGroup, possibleGroupRenderer, possibleRenderer} from '../renderer';
-import {ICategoricalColumn, Column, ICategoricalStatistics, IStatistics, isCategoricalColumn, IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
+import {ICategoricalColumn, Column, isCategoricalColumn, IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
 import NumberColumn from '../model/NumberColumn';
 import {nonUniformContext} from 'lineupengine/src/logic';
 import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer';
@@ -14,7 +14,7 @@ import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
 import {ILineUpOptions} from '../interfaces';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
-import {round} from '../internal/math';
+import {round, ICategoricalStatistics, IStatistics} from '../internal/math';
 
 
 export default class EngineRenderer extends AEventDispatcher {
@@ -42,6 +42,7 @@ export default class EngineRenderer extends AEventDispatcher {
     parent.appendChild(this.node);
 
     this.ctx = {
+      document: parent.ownerDocument,
       provider: data,
       filters: this.options.filters!,
       summaries: this.options.summaries ? this.options.summaries! : {},

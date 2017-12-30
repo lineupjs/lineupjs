@@ -10,6 +10,14 @@ import {isMultiLevelColumn} from './CompositeColumn';
 import CompositeColumn from './CompositeColumn';
 import CompositeNumberColumn from './CompositeNumberColumn';
 
+/**
+ * converts a given id to css compatible one
+ * @param id
+ * @return {string|void}
+ */
+export function fixCSS(id: string) {
+  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '_'); //replace non css stuff to _
+}
 
 export function findTypeLike<T>(col: Column, lookup: { [key: string]: T }): T|undefined {
   const type = col.desc.type;

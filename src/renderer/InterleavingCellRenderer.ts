@@ -3,10 +3,11 @@ import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {renderMissingDOM, renderMissingCanvas} from './missing';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import {createData} from './MultiLevelCellRenderer';
-import {Column, IDataRow, IGroup, ICategoricalStatistics, IStatistics} from '../model';
+import {Column, IDataRow, IGroup} from '../model';
 import {matchColumns} from './utils';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 
 /**

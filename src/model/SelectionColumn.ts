@@ -44,6 +44,10 @@ export default class SelectionColumn extends ValueColumn<boolean> {
     this.setWidth(20);
   }
 
+  get frozen() {
+    return this.desc.frozen !== false;
+  }
+
   protected createEventList() {
     return super.createEventList().concat([SelectionColumn.EVENT_SELECT]);
   }

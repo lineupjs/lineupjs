@@ -1,10 +1,11 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import Column, {ICategoricalStatistics, IStatistics} from '../model/Column';
+import Column from '../model/Column';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import {default as ICanvasCellRenderer, ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IImposer} from './IRenderContext';
-import {IDataRow, IGroup} from '../model/interfaces';
+import {IDataRow, IGroup} from '../model';
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 /**
  * helper class that renders a group renderer as a selected (e.g. median) single item

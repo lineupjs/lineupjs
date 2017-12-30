@@ -4,13 +4,16 @@
 
 import {suffix} from '../../internal/AEventDispatcher';
 import {nest} from 'd3-collection';
-import Ranking, {isSupportType} from '../../model/Ranking';
+import Ranking from '../../model/Ranking';
 import {default as Column, IColumnDesc} from '../../model/Column';
 import SidePanelEntry from './SidePanelEntry';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../interfaces';
 import SearchBox, {ISearchBoxOptions} from './SearchBox';
-import {createStackDesc, createScriptDesc, createNestedDesc, createMaxDesc, createMeanDesc, createMinDesc, createImpositionDesc} from '../../model';
+import {
+  createStackDesc, createScriptDesc, createNestedDesc, createMaxDesc, createMeanDesc, createMinDesc,
+  createImpositionDesc, isSupportType
+} from '../../model';
 
 export interface ISidePanelOptions extends Partial<ISearchBoxOptions<SidePanelEntry>> {
   additionalDescs: IColumnDesc[];

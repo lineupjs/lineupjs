@@ -1,10 +1,9 @@
 import {IDataProvider} from '../provider/ADataProvider';
 import {
-  IGroupData, IGroupItem, Column, INumberColumn, ICategoricalColumn, ICategoricalStatistics,
-  IStatistics
-} from '../model';
+  IGroupData, IGroupItem, Column, INumberColumn, ICategoricalColumn} from '../model';
 import {IDOMRenderContext} from '../renderer';
 import AFilterDialog from './dialogs/AFilterDialog';
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 export const RENDERER_EVENT_HOVER_CHANGED = 'hoverChanged';
 
@@ -12,14 +11,23 @@ export interface IFilterDialog {
   new(column: Column, header: HTMLElement, title: string, data: IDataProvider, idPrefix: string): AFilterDialog<Column>;
 }
 
-export declare type ISummaryFunction = ((col: Column, node: HTMLElement, interactive: boolean, ctx: IRankingHeaderContext)=>void);
+export interface ISummaryRenderer<T extends Column> {
+  new(col: T, node: HTMLElement, interactive: boolean): ISummaryUpdater;
+
+}
+
+export interface ISummaryUpdater {
+  update(ctx: IRankingHeaderContext): void;
+}
+
 
 export interface IRankingHeaderContextContainer {
   readonly idPrefix: string;
+  readonly document: Document;
   provider: IDataProvider;
 
   filters: { [type: string]: IFilterDialog };
-  summaries: { [type: string]: ISummaryFunction };
+  summaries: { [type: string]: ISummaryRenderer<any> };
 
   statsOf(col: (INumberColumn | ICategoricalColumn) & Column): ICategoricalStatistics | IStatistics | null;
 

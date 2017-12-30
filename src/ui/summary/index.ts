@@ -7,9 +7,9 @@ import summaryNumerical from './number';
 import selection from './selection';
 import aggregate from './aggregation';
 import hierarchy from './hierarchy';
-import { ISummaryRenderer } from './interfaces';
+import {ISummaryRenderer} from '../interfaces';
 
-export const defaultSummaries: {[key: string]: ISummaryRenderer<any>} = {
+export const defaultSummaries: { [key: string]: ISummaryRenderer<any> } = {
   stringLike: summaryString,
   categoricalLike: summaryCategorical,
   numberLike: summaryNumerical,

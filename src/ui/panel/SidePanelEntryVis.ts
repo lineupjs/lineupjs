@@ -3,11 +3,13 @@
  */
 import Column from '../../model/Column';
 import {createToolbar, dragAbleColumn, updateHeader} from '../header';
-import {IRankingHeaderContext} from '../interfaces';
+import {IRankingHeaderContext, ISummaryUpdater} from '../interfaces';
+import {findTypeLike} from '../../model/utils';
 
 
 export default class SidePanelEntryVis {
   readonly node: HTMLElement;
+  private summary: ISummaryUpdater;
 
   constructor(public readonly column: Column, private ctx: IRankingHeaderContext, document: Document) {
     this.node = document.createElement('article');
@@ -27,12 +29,20 @@ export default class SidePanelEntryVis {
       <main class="lu-summary"></main>`;
     createToolbar(<HTMLElement>this.node.querySelector('.lu-toolbar'), this.column, this.ctx);
     dragAbleColumn(<HTMLElement>this.node.querySelector('header'), this.column, this.ctx);
+
+    const summary = findTypeLike(this.column, this.ctx.summaries);
+    if (summary) {
+      this.summary = new summary(this.column, <HTMLElement>this.node.querySelector('.lu-summary')!, true);
+    }
     // resortDropAble(<HTMLElement>this.node, this.column, this.ctx, 'before', false);
   }
 
   update(ctx: IRankingHeaderContext = this.ctx) {
     this.ctx = ctx;
-    updateHeader(this.node, this.column, this.ctx, true);
+    updateHeader(this.node, this.column);
+    if (this.summary) {
+      this.summary.update(this.ctx);
+    }
   }
 
   destroy() {

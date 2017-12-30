@@ -8,15 +8,9 @@ import {defaultGroup} from './Group';
 import {isMissingValue} from './missing';
 import {IDataRow, IGroupData} from './interfaces';
 import AEventDispatcher from '../internal/AEventDispatcher';
+import {fixCSS} from './utils';
 
-/**
- * converts a given id to css compatible one
- * @param id
- * @return {string|void}
- */
-export function fixCSS(id: string) {
-  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '_'); //replace non css stuff to _
-}
+
 
 export interface IFlatColumn {
   readonly col: Column;
@@ -73,6 +67,12 @@ export interface IColumnDesc {
   readonly cssClass?: string;
 
   /**
+   * frozen column
+   * @default isSupportType
+   */
+  readonly frozen?: boolean;
+
+  /**
    * default renderer to use
    */
   readonly renderer?: string;
@@ -83,21 +83,6 @@ export interface IColumnDesc {
   readonly groupRenderer?: string;
 }
 
-export interface IStatistics {
-  readonly min: number;
-  readonly max: number;
-  readonly mean: number;
-  readonly count: number;
-  readonly maxBin: number;
-  readonly hist: { x0: number; x1: number; length: number; }[];
-  readonly missing: number;
-}
-
-export interface ICategoricalStatistics {
-  readonly maxBin: number;
-  readonly hist: { cat: string; y: number }[];
-  readonly missing: number;
-}
 
 export interface IColumnMetaData {
   readonly label: string;
@@ -176,6 +161,10 @@ export default class Column extends AEventDispatcher {
       description: desc.description || '',
       color: desc.color || (this.cssClass !== '' ? null : Column.DEFAULT_COLOR)
     };
+  }
+
+  get frozen() {
+    return Boolean(this.desc.frozen);
   }
 
   get id() {

@@ -23,4 +23,8 @@ export default class RankColumn extends ValueColumn<number> {
     super(id, desc);
     this.setWidthImpl(50);
   }
+
+  get frozen() {
+    return this.desc.frozen !== false;
+  }
 }

@@ -1,11 +1,11 @@
 import ICellRendererFactory from './ICellRendererFactory';
-import Column, {IStatistics} from '../model/Column';
+import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
 import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow, IGroup, isMissingValue} from '../model';
 import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {computeStats, getNumberOfBins} from '../internal/math';
+import {computeStats, getNumberOfBins, IStatistics} from '../internal/math';
 import {forEachChild} from './utils';
 import NumbersColumn from '../model/NumbersColumn';
 import ICanvasCellRenderer from './ICanvasCellRenderer';

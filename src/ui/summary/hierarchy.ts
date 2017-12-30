@@ -1,4 +1,4 @@
-import {ICategoricalStatistics} from '../../model';
+import {ICategoricalStatistics} from '../../internal/math';
 import {IRankingHeaderContext} from '../interfaces';
 import {DENSE_HISTOGRAM} from '../../config';
 import HierarchyColumn from '../../model/HierarchyColumn';
@@ -17,12 +17,12 @@ export default class HierarchySummary {
       this.node.classList.add('lu-invalid-hist');
       return;
     }
-    
+
     const colors = this.col.categoryColors;
     const labels = this.col.categoryLabels;
     this.node.classList.remove('lu-invalid-hist');
     this.node.classList.toggle('lu-dense', cats.length > DENSE_HISTOGRAM);
-    
+
     const bins = <HTMLElement[]>Array.from(this.node.querySelectorAll('div[data-cat]'));
     if (bins.length >  cats.length) {
       bins.splice(0, bins.length -  cats.length).forEach((d) => d.remove());
@@ -31,7 +31,7 @@ export default class HierarchySummary {
       this.node.insertAdjacentHTML('afterbegin', `<div><div></div></div>`);
       bins.unshift(<HTMLElement>this.node.firstElementChild!);
     }
-    
+
     const lookup = new Map(stats.hist.map((d) => (<[string, number]>[d.cat, d.y])));
     cats.forEach((cat, i) => {
       const y = lookup.get(cat) || 0;
@@ -59,7 +59,7 @@ export default class HierarchySummary {
     this.node.dataset.summary = 'cutoff-hist';
 
     // const f = this.col.getCutOff();
-    
+
     return (ctx: IRankingHeaderContext) => {
       const stats = <ICategoricalStatistics>ctx.statsOf(this.col);
       this.updateHist(stats, true);

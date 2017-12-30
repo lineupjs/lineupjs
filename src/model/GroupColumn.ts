@@ -13,6 +13,10 @@ export function createDesc(label = 'Group') {
 export default class GroupColumn extends Column {
   private groupSortMethod: 'name'|'count' = 'name';
 
+  get frozen() {
+    return this.desc.frozen !== false;
+  }
+
   getLabel() {
     return '';
   }

@@ -17,12 +17,12 @@ export default class CompositeChildrenDialog extends ADialog {
 
     const wrapper = <HTMLDivElement>popup.querySelector('.lu-sub-nested')!;
     this.column.children.forEach((c) => {
-      const n = createHeader(c, popup.ownerDocument, this.ctx, {
+      const n = createHeader(c, this.ctx, {
         mergeDropAble: false,
         resizeable: false
       });
       n.className = `lu-header${c.cssClass ? ` ${c.cssClass}` : ''}${c.isFiltered() ? ' lu-filtered' : ''}`;
-      updateHeader(n, c, this.ctx);
+      updateHeader(n, c);
       wrapper.appendChild(n);
     });
 
@@ -40,12 +40,13 @@ export default class CompositeChildrenDialog extends ADialog {
       }
       wrapper.innerHTML = '';
       this.column.children.forEach((c) => {
-        const n = createHeader(c, popup.ownerDocument, this.ctx, {
+        const n = createHeader(c, this.ctx, {
           mergeDropAble: false,
           resizeable: false
         });
         n.className = `lu-header${c.cssClass ? ` ${c.cssClass}` : ''}${c.isFiltered() ? ' lu-filtered' : ''}`;
-        updateHeader(n, c, this.ctx);
+        updateHeader(n, c);
+        // TODO summary
         wrapper.appendChild(n);
       });
     }));

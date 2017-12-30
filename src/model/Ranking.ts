@@ -2,21 +2,18 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import Column, {fixCSS, IColumnDesc, IColumnParent, IFlatColumn} from './Column';
+import Column, {IColumnParent, IFlatColumn} from './Column';
 import StringColumn from './StringColumn';
 import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
-import {IDataRow, IGroupData} from './interfaces';
+import {IDataRow, IGroupData, isSupportType} from './interfaces';
 import {isCategoricalColumn} from './ICategoricalColumn';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import {equalArrays} from '../internal/utils';
+import {fixCSS} from './utils';
 
 export interface ISortCriteria {
   readonly col: Column;
   readonly asc: boolean;
-}
-
-export function isSupportType(col: IColumnDesc) {
-  return ['rank', 'selection', 'actions', 'aggregate', 'group'].indexOf(col.type) >= 0;
 }
 
 /**

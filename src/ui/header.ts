@@ -57,14 +57,14 @@ export interface IHeaderOptions {
   resizeable: boolean;
 }
 
-export function createHeader(col: Column, document: Document, ctx: IRankingHeaderContext, options: Partial<IHeaderOptions> = {}) {
+export function createHeader(col: Column, ctx: IRankingHeaderContext, options: Partial<IHeaderOptions> = {}) {
   options = Object.assign({
     dragAble: true,
     mergeDropAble: true,
     rearrangeAble: true,
     resizeable: true
   }, options);
-  const node = document.createElement('section');
+  const node = ctx.document.createElement('section');
   node.innerHTML = `
     <div class="lu-label">${col.label}</div>
     <div class="lu-toolbar"></div>
@@ -91,7 +91,7 @@ export function createHeader(col: Column, document: Document, ctx: IRankingHeade
   return node;
 }
 
-export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeaderContext, interactive: boolean = false) {
+export function updateHeader(node: HTMLElement, col: Column) {
   node.querySelector('.lu-label')!.innerHTML = col.label;
   node.title = toFullTooltip(col);
 
@@ -107,19 +107,15 @@ export function updateHeader(node: HTMLElement, col: Column, ctx: IRankingHeader
   }
 
   const stratify = <HTMLElement>node.querySelector(`i[title^='Stratify']`)!;
-  if(stratify) {
-    const groupedBy = col.isGroupedBy();
-    stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
-    if(groupedBy >= 0) {
-      stratify.dataset.priority = (groupedBy + 1).toString();
-    } else {
-      delete stratify.dataset.priority;
-    }
+  if (!stratify) {
+    return;
   }
-
-  const summary = findTypeLike(col, ctx.summaries);
-  if (summary) {
-    summary(col, <HTMLElement>node.querySelector('.lu-summary')!, interactive, ctx);
+  const groupedBy = col.isGroupedBy();
+  stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
+  if(groupedBy >= 0) {
+    stratify.dataset.priority = (groupedBy + 1).toString();
+  } else {
+    delete stratify.dataset.priority;
   }
 }
 

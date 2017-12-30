@@ -1,10 +1,11 @@
-import {ICategoricalColumn, ICategoricalStatistics} from '../../model';
+import {ICategoricalColumn} from '../../model';
 import Column from '../../model/Column';
 import {IRankingHeaderContext} from '../interfaces';
 import {DENSE_HISTOGRAM} from '../../config';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import CategoricalColumn from '../../model/CategoricalColumn';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
+import {ICategoricalStatistics} from '../../internal/math';
 
 
 export default class CategoricalSummary {

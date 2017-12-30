@@ -1,5 +1,5 @@
-import {IDataRow, IGroup} from '../model/interfaces';
-import {ICategoricalStatistics, IStatistics} from '../model/Column';
+import {IDataRow, IGroup} from '../model';
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 interface ICanvasCellRenderer {
   /**
