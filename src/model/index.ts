@@ -48,7 +48,6 @@ export {createDesc as createAggregateDesc} from './AggregateGroupColumn';
 export {createDesc as createImpositionDesc} from './ImpositionCompositeColumn';
 export {createDesc as createGroupDesc} from './GroupColumn';
 export {isMissingValue, isUnknown} from './missing';
-export {fixCSS} from './utils';
 
 /**
  * defines a new column type

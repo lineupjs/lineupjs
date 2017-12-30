@@ -8,8 +8,7 @@ import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
 import {IDataRow, IGroupData, isSupportType} from './interfaces';
 import {isCategoricalColumn} from './ICategoricalColumn';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
-import {equalArrays} from '../internal/utils';
-import {fixCSS} from './utils';
+import {equalArrays, fixCSS} from '../internal/utils';
 
 export interface ISortCriteria {
   readonly col: Column;

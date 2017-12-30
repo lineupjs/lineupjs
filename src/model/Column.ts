@@ -8,7 +8,7 @@ import {defaultGroup} from './Group';
 import {isMissingValue} from './missing';
 import {IDataRow, IGroupData} from './interfaces';
 import AEventDispatcher from '../internal/AEventDispatcher';
-import {fixCSS} from './utils';
+import {fixCSS} from '../internal/utils';
 
 
 

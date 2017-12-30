@@ -26,3 +26,13 @@ export function equalArrays<T>(a: T[], b: T[]) {
   }
   return a.every((ai, i) => ai === b[i]);
 }
+
+
+/**
+ * converts a given id to css compatible one
+ * @param id
+ * @return {string|void}
+ */
+export function fixCSS(id: string) {
+  return id.replace(/[\s!#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '_'); //replace non css stuff to _
+}
