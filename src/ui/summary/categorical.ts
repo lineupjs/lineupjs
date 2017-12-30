@@ -110,7 +110,7 @@ export default class CategoricalSummary {
     return () => {
       const f = col.getFilter();
       bins.forEach((bin, i) => {
-        if (CategoricalColumn.filter(f, cats[i])) {
+        if (!CategoricalColumn.filter(f, cats[i])) {
           bin.dataset.filtered = 'filtered';
         } else {
           delete bin.dataset.filtered;

@@ -171,7 +171,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   updateAll() {
-    this.columns.forEach((c, i) => c.index = i);
+    this.columns.forEach((c, i) => {
+      c.index = i;
+      c.renderers = this.ctx.createRenderer(c.c);
+    });
 
     this._context = Object.assign({},this._context,{
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
@@ -266,6 +269,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       if (column instanceof MultiLevelRenderColumn) {
         column.updateWidthRule(this.style);
       }
+      column.renderers = this.ctx.createRenderer(column.c);
     });
     this.events.fire(EngineRanking.EVENT_WIDTH_CHANGED);
   }
@@ -339,7 +343,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.data = data;
     (<any>this.renderCtx).totalNumberOfRows = data.length;
 
-    this.columns.forEach((c, i) => c.index = i);
+    this.columns.forEach((c, i) => {
+      c.index = i;
+      c.renderers = this.ctx.createRenderer(c.c);
+    });
     this._context = Object.assign({
       columns: this.columns,
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)

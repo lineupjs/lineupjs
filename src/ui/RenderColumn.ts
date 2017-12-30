@@ -45,6 +45,7 @@ export default class RenderColumn implements IColumn {
     if (summary) {
       this.summary = new summary(this.c, <HTMLElement>node.querySelector('.lu-summary')!, false);
     }
+    this.updateHeader(node);
     return node;
   }
 
