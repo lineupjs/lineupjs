@@ -3,10 +3,10 @@
  */
 
 import Column, {IColumnDesc, IDataRow} from '../model';
-import Ranking from '../model/Ranking';
-import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
-import ACommonDataProvider from './ACommonDataProvider';
 import {defaultGroup, IOrderedGroup} from '../model/Group';
+import Ranking from '../model/Ranking';
+import ACommonDataProvider from './ACommonDataProvider';
+import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
 
 /**
  * interface what the server side has to provide

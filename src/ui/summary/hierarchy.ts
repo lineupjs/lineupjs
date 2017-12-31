@@ -1,7 +1,7 @@
-import {ICategoricalStatistics} from '../../internal/math';
-import {IRankingHeaderContext} from '../interfaces';
 import {DENSE_HISTOGRAM} from '../../config';
+import {ICategoricalStatistics} from '../../internal/math';
 import HierarchyColumn from '../../model/HierarchyColumn';
+import {IRankingHeaderContext} from '../interfaces';
 
 
 export default class HierarchySummary {
@@ -24,8 +24,8 @@ export default class HierarchySummary {
     this.node.classList.toggle('lu-dense', cats.length > DENSE_HISTOGRAM);
 
     const bins = <HTMLElement[]>Array.from(this.node.querySelectorAll('div[data-cat]'));
-    if (bins.length >  cats.length) {
-      bins.splice(0, bins.length -  cats.length).forEach((d) => d.remove());
+    if (bins.length > cats.length) {
+      bins.splice(0, bins.length - cats.length).forEach((d) => d.remove());
     }
     for (let i = bins.length; i < cats.length; ++i) {
       this.node.insertAdjacentHTML('afterbegin', `<div><div></div></div>`);

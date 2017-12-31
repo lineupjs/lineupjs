@@ -1,5 +1,5 @@
-import ADialog from './ADialog';
 import GroupColumn from '../../model/GroupColumn';
+import ADialog from './ADialog';
 
 export default class SortDialog extends ADialog {
   constructor(private readonly column: GroupColumn, header: HTMLElement, title = 'Change Sort Criteria') {
@@ -19,10 +19,10 @@ export default class SortDialog extends ADialog {
         <label><input type="radio" name="sortorder" value="asc"  ${(order === 'asc') ? 'checked' : ''} > Ascending</label><br>
         <label><input type="radio" name="sortorder" value="desc"  ${(order === 'desc') ? 'checked' : ''} > Decending</label><br>`;
 
-    const popup = this.makeChoosePopup( `${sortMethods}<strong>Sort Order</strong><br>${sortOrders}`);
+    const popup = this.makeChoosePopup(`${sortMethods}<strong>Sort Order</strong><br>${sortOrders}`);
 
     Array.from(popup.querySelectorAll('input[name=multivaluesort]')).forEach((n: HTMLInputElement) => {
-      n.addEventListener('change', () => this.column.setSortMethod(<'name'|'count'>n.value));
+      n.addEventListener('change', () => this.column.setSortMethod(<'name' | 'count'>n.value));
     });
     Array.from(popup.querySelectorAll('input[name=sortorder]')).forEach((n: HTMLInputElement) => {
       n.addEventListener('change', () => {

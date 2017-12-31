@@ -1,7 +1,7 @@
 import CategoricalColumn from '../../model/CategoricalColumn';
-import AFilterDialog from './AFilterDialog';
-import {sortByProperty} from './ADialog';
 import {filterMissingMarkup} from '../missing';
+import {sortByProperty} from './ADialog';
+import AFilterDialog from './AFilterDialog';
 
 export default class CategoricalFilterDialog extends AFilterDialog<CategoricalColumn> {
 
@@ -58,6 +58,7 @@ export default class CategoricalFilterDialog extends AFilterDialog<CategoricalCo
     function redrawSelectAll() {
       (<HTMLElement>popup.querySelector('.selectAll')).innerHTML = `<i class="lu-${(isCheckedAll) ? 'checked' : 'unchecked'}"></i>`;
     }
+
     popup.querySelector('thead')!.addEventListener('click', () => {
       isCheckedAll = !isCheckedAll;
       trData.forEach((row) => row.isChecked = isCheckedAll);

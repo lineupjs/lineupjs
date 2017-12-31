@@ -1,41 +1,39 @@
+import {dragAble, dropAble, IDropResult} from '../internal/dnd';
+import {equalArrays} from '../internal/utils';
+import {createNestedDesc, createStackDesc, isCategoricalColumn, isNumberColumn, isSupportType} from '../model';
+import BoxPlotColumn from '../model/BoxPlotColumn';
 /**
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import Column from '../model/Column';
-import {createNestedDesc, createStackDesc, isSupportType} from '../model';
-import NumbersColumn from '../model/NumbersColumn';
-import BoxPlotColumn from '../model/BoxPlotColumn';
-import SortDialog from './dialogs/SortDialog';
-import RenameDialog from './dialogs/RenameDialog';
-import ChangeRendererDialog from './dialogs/ChangeRendererDialog';
-import LinkColumn from '../model/LinkColumn';
-import ADialog from './dialogs/ADialog';
-import ScriptColumn from '../model/ScriptColumn';
-import ScriptEditDialog from './dialogs/ScriptEditDialog';
-import EditLinkDialog from './dialogs/EditLinkDialog';
 import {default as CompositeColumn, IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import RankColumn from '../model/RankColumn';
-import WeightsEditDialog from './dialogs/WeightsEditDialog';
-import StackColumn from '../model/StackColumn';
-import CutOffHierarchyDialog from './dialogs/CutOffHierarchyDialog';
-import SearchDialog from './dialogs/SearchDialog';
-import SortGroupDialog from './dialogs/SortGroupDialog';
-import HierarchyColumn from '../model/HierarchyColumn';
-import {dragAble, dropAble, IDropResult} from '../internal/dnd';
-import NumberColumn from '../model/NumberColumn';
-import {isNumberColumn} from '../model';
-import Ranking from '../model/Ranking';
-import {isCategoricalColumn} from '../model';
-import StratifyThresholdDialog from './dialogs/StratifyThresholdDialog';
-import {IRankingHeaderContext} from './interfaces';
-import {equalArrays} from '../internal/utils';
-import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
-import {findTypeLike} from '../model/utils';
-import SelectionColumn from '../model/SelectionColumn';
-import CompositeChildrenDialog from './dialogs/CompositeChildrenDialog';
-import StringColumn from '../model/StringColumn';
-import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
 import GroupColumn from '../model/GroupColumn';
+import HierarchyColumn from '../model/HierarchyColumn';
+import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
+import LinkColumn from '../model/LinkColumn';
+import NumberColumn from '../model/NumberColumn';
+import NumbersColumn from '../model/NumbersColumn';
+import RankColumn from '../model/RankColumn';
+import Ranking from '../model/Ranking';
+import ScriptColumn from '../model/ScriptColumn';
+import SelectionColumn from '../model/SelectionColumn';
+import StackColumn from '../model/StackColumn';
+import StringColumn from '../model/StringColumn';
+import {findTypeLike} from '../model/utils';
+import ADialog from './dialogs/ADialog';
+import ChangeRendererDialog from './dialogs/ChangeRendererDialog';
+import CompositeChildrenDialog from './dialogs/CompositeChildrenDialog';
+import CutOffHierarchyDialog from './dialogs/CutOffHierarchyDialog';
+import EditLinkDialog from './dialogs/EditLinkDialog';
+import MoreColumnOptionsDialog from './dialogs/MoreColumnOptionsDialog';
+import RenameDialog from './dialogs/RenameDialog';
+import ScriptEditDialog from './dialogs/ScriptEditDialog';
+import SearchDialog from './dialogs/SearchDialog';
+import SortDialog from './dialogs/SortDialog';
+import SortGroupDialog from './dialogs/SortGroupDialog';
+import StratifyThresholdDialog from './dialogs/StratifyThresholdDialog';
+import WeightsEditDialog from './dialogs/WeightsEditDialog';
+import {IRankingHeaderContext} from './interfaces';
 
 
 /**
@@ -96,10 +94,10 @@ export function updateHeader(node: HTMLElement, col: Column) {
   node.title = toFullTooltip(col);
 
   const sort = <HTMLElement>node.querySelector(`i[title='Sort']`)!;
-  if(sort) {
+  if (sort) {
     const {asc, priority} = col.isSortedByMe();
     sort.dataset.sort = asc !== undefined ? asc : '';
-    if(priority !== undefined) {
+    if (priority !== undefined) {
       sort.dataset.priority = (parseInt(priority, 10) + 1).toString();
     } else {
       delete sort.dataset.priority;
@@ -112,7 +110,7 @@ export function updateHeader(node: HTMLElement, col: Column) {
   }
   const groupedBy = col.isGroupedBy();
   stratify.dataset.stratify = groupedBy >= 0 ? 'true' : 'false';
-  if(groupedBy >= 0) {
+  if (groupedBy >= 0) {
     stratify.dataset.priority = (groupedBy + 1).toString();
   } else {
     delete stratify.dataset.priority;
@@ -121,7 +119,7 @@ export function updateHeader(node: HTMLElement, col: Column) {
 
 export function addIconDOM(node: HTMLElement, col: Column, showLabel: boolean) {
   return (title: string, dialogClass?: { new(col: any, header: HTMLElement, ...args: any[]): ADialog }, ...dialogArgs: any[]) => {
-    node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"': ''}>${title}</span> </i>`);
+    node.insertAdjacentHTML('beforeend', `<i title="${title}"><span${!showLabel ? ' aria-hidden="true"' : ''}>${title}</span> </i>`);
     const i = <HTMLElement>node.lastElementChild;
     if (!dialogClass) {
       return i;

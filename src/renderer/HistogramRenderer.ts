@@ -1,13 +1,13 @@
+import {DENSE_HISTOGRAM} from '../config';
+import {computeStats, getNumberOfBins, IStatistics} from '../internal/math';
+import {IDataRow, IGroup, isMissingValue} from '../model';
 import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
-import {IDataRow, IGroup, isMissingValue} from '../model';
-import {computeStats, getNumberOfBins, IStatistics} from '../internal/math';
-import {forEachChild, noop} from './utils';
 import NumbersColumn from '../model/NumbersColumn';
-import {renderMissingDOM} from './missing';
 import {colorOf} from './impose';
-import {DENSE_HISTOGRAM} from '../config';
-import {ICellRendererFactory, IImposer, default as IRenderContext} from './interfaces';
+import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {forEachChild, noop} from './utils';
 
 /**
  * a renderer rendering a bar for numerical columns

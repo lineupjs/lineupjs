@@ -3,23 +3,21 @@
  */
 
 import {format} from 'd3-format';
-import Column from './Column';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {equalArrays} from '../internal/utils';
-import {isMissingValue, isUnknown, missingGroup} from './missing';
+import Column from './Column';
+import {IDataRow, IGroupData} from './interfaces';
 import {
-  default as INumberColumn, INumberDesc, numberCompare, groupCompare,
-  SortMethod, ADVANCED_SORT_METHOD, INumberFilter, noNumberFilter, isSameFilter, restoreFilter
+  ADVANCED_SORT_METHOD, default as INumberColumn, groupCompare, INumberDesc, INumberFilter, isSameFilter,
+  noNumberFilter, numberCompare, restoreFilter, SortMethod
 } from './INumberColumn';
 import {createMappingFunction, IMappingFunction, ScaleMappingFunction} from './MappingFunction';
-import {IDataRow, IGroupData} from './interfaces';
+import {isMissingValue, isUnknown, missingGroup} from './missing';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export {default as INumberColumn, isNumberColumn} from './INumberColumn';
 
 
-
 export declare type INumberColumnDesc = INumberDesc & IValueColumnDesc<number>;
-
 
 
 export interface IMapAbleColumn {

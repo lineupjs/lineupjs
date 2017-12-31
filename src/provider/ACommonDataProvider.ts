@@ -3,9 +3,9 @@
  */
 
 import {createRankDesc, IColumnDesc, IDataRow} from '../model';
+import {IOrderedGroup} from '../model/Group';
 import Ranking from '../model/Ranking';
 import ADataProvider, {IDataProviderOptions} from './ADataProvider';
-import {IOrderedGroup} from '../model/Group';
 
 
 function isComplexAccessor(column: any) {

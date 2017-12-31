@@ -1,10 +1,10 @@
+import AEventDispatcher from '../internal/AEventDispatcher';
+import OrderedSet from '../internal/OrderedSet';
+import {IGroupData, IGroupItem, isGroup} from '../model';
 /**
  * Created by Samuel Gratzl on 11.10.2017.
  */
 import {IDataProvider} from '../provider/ADataProvider';
-import AEventDispatcher from '../internal/AEventDispatcher';
-import OrderedSet from '../internal/OrderedSet';
-import {IGroupData, IGroupItem, isGroup} from '../model';
 
 interface IPoint {
   x: number;
@@ -22,11 +22,11 @@ export default class SelectionManager extends AEventDispatcher {
 
   private readonly hr: HTMLHRElement;
 
-  private start: (IPoint & IShift)|null = null;
-  private startNode: HTMLElement|null = null;
-  private endNode: HTMLElement|null = null;
+  private start: (IPoint & IShift) | null = null;
+  private startNode: HTMLElement | null = null;
+  private endNode: HTMLElement | null = null;
 
-  constructor(private readonly ctx: {provider: IDataProvider}, private readonly body: HTMLElement) {
+  constructor(private readonly ctx: { provider: IDataProvider }, private readonly body: HTMLElement) {
     super();
     const root = body.parentElement!.parentElement!;
     let hr = <HTMLHRElement>root.querySelector('hr');
@@ -95,7 +95,7 @@ export default class SelectionManager extends AEventDispatcher {
     const visible = Math.abs(sy - ey) > SelectionManager.MIN_DISTANCE;
     this.body.classList.toggle('lu-selection-active', visible);
     this.hr.classList.toggle('lu-selection-active', visible);
-    this.hr.style.transform = `translate(${start.x - start.xShift}px,${sy - start.yShift}px)scale(1,${Math.abs(ey - sy)})rotate(${ey>sy ? 90 : -90}deg)`;
+    this.hr.style.transform = `translate(${start.x - start.xShift}px,${sy - start.yShift}px)scale(1,${Math.abs(ey - sy)})rotate(${ey > sy ? 90 : -90}deg)`;
   }
 
   remove(node: HTMLElement) {
@@ -117,8 +117,8 @@ export default class SelectionManager extends AEventDispatcher {
     };
   }
 
-  selectRange(rows: {forEach: (c: (item: (IGroupItem|IGroupData))=>void)=>void}, additional: boolean = false) {
-    const current = new OrderedSet<number>(additional ? this.ctx.provider.getSelection(): []);
+  selectRange(rows: { forEach: (c: (item: (IGroupItem | IGroupData)) => void) => void }, additional: boolean = false) {
+    const current = new OrderedSet<number>(additional ? this.ctx.provider.getSelection() : []);
     const toggle = (dataIndex: number) => {
       if (current.has(dataIndex)) {
         current.delete(dataIndex);
@@ -143,7 +143,8 @@ export default class SelectionManager extends AEventDispatcher {
       node.classList.remove('lu-selected');
     }
   }
-  update(node: HTMLElement, selectedDataIndices: {has(dataIndex: number): boolean}) {
+
+  update(node: HTMLElement, selectedDataIndices: { has(dataIndex: number): boolean }) {
     const dataIndex = parseInt(node.dataset.i!, 10);
     if (selectedDataIndices.has(dataIndex)) {
       node.classList.add('lu-selected');

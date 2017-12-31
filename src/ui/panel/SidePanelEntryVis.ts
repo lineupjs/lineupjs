@@ -2,9 +2,9 @@
  * Created by Samuel Gratzl on 05.09.2017.
  */
 import Column from '../../model/Column';
+import {findTypeLike} from '../../model/utils';
 import {createToolbar, dragAbleColumn, updateHeader} from '../header';
 import {IRankingHeaderContext, ISummaryUpdater} from '../interfaces';
-import {findTypeLike} from '../../model/utils';
 
 
 export default class SidePanelEntryVis {

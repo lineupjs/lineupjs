@@ -1,7 +1,7 @@
-import {ICellRendererFactory, default as IRenderContext} from './interfaces';
-import Column from '../model/Column';
-import {IDataRow, IGroup, INumbersColumn, isMissingValue, isNumbersColumn} from '../model';
 import {mean} from 'd3-array';
+import {IDataRow, IGroup, INumbersColumn, isMissingValue, isNumbersColumn} from '../model';
+import Column from '../model/Column';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export abstract class ANumbersCellRenderer implements ICellRendererFactory {
@@ -28,7 +28,7 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
     const cols = col.getDataLength();
     const r = <number[]>[];
     // mean column
-    for(let i = 0; i < cols; ++i) {
+    for (let i = 0; i < cols; ++i) {
       const col = data.map((d) => d[i]).filter((d) => !isMissingValue(d));
       r.push(mean(col)!);
     }

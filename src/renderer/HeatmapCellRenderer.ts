@@ -1,12 +1,12 @@
-import {INumberColumn, isNumberColumn, isNumbersColumn, IDataRow} from '../model';
-import Column from '../model/Column';
-import {noRenderer, setText} from './utils';
 import {hsl} from 'd3-color';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {colorOf} from './impose';
-import {ICellRendererFactory, default as IRenderContext, IImposer} from './interfaces';
-import {CANVAS_HEIGHT} from '../styles';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {IDataRow, INumberColumn, isNumberColumn, isNumbersColumn} from '../model';
+import Column from '../model/Column';
+import {CANVAS_HEIGHT} from '../styles';
+import {colorOf} from './impose';
+import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {noRenderer, setText} from './utils';
 
 export function toHeatMapColor(row: IDataRow, col: INumberColumn & Column, imposer?: IImposer) {
   let v = col.getNumber(row);

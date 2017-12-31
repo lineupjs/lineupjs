@@ -15,7 +15,7 @@ export default class WeightsEditDialog extends ADialog {
 
   openDialog() {
     const weights = this.column.getWeights();
-    const children = this.column.children.map((d, i) => ({col: d, weight: Math.round(weights[i] * 100)} ));
+    const children = this.column.children.map((d, i) => ({col: d, weight: Math.round(weights[i] * 100)}));
 
     //map weights to pixels
     const scale = (v: number) => Math.round((v / 100) * 120);

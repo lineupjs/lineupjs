@@ -1,8 +1,8 @@
-import {forEachChild, noop} from './utils';
+import {IDataRow, IGroup} from '../model';
 import {default as ActionColumn} from '../model/ActionColumn';
-import {IGroup, IDataRow} from '../model';
 import Column from '../model/Column';
 import {ICellRendererFactory} from './interfaces';
+import {forEachChild, noop} from './utils';
 
 
 export default class ActionRenderer implements ICellRendererFactory {

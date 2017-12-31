@@ -1,12 +1,12 @@
-import spaceFillingRule from './spaceFillingRule';
+import {defaultOptions} from '../../config';
+import {ILineUpOptions} from '../../interfaces';
+import merge from '../../internal/merge';
+import DataProvider from '../../provider/ADataProvider';
+import {ALineUp} from '../ALineUp';
 import {RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
 import SidePanel from '../panel/SidePanel';
-import DataProvider from '../../provider/ADataProvider';
+import spaceFillingRule from './spaceFillingRule';
 import TaggleRenderer from './TaggleRenderer';
-import {ILineUpOptions} from '../../interfaces';
-import {ALineUp} from '../ALineUp';
-import {defaultOptions} from '../../config';
-import merge from '../../internal/merge';
 
 export declare type ITaggleOptions = ILineUpOptions;
 
@@ -36,7 +36,7 @@ export default class Taggle extends ALineUp {
       this.spaceFilling = <HTMLElement>this.node.querySelector('.lu-rule-button-chooser')!;
       this.spaceFilling.addEventListener('click', () => {
         const selected = this.spaceFilling.classList.toggle('chosen');
-        this.renderer.switchRule(selected ?  spaceFilling: null);
+        this.renderer.switchRule(selected ? spaceFilling : null);
       });
     }
 

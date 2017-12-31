@@ -6,17 +6,17 @@ abstract class ADialog {
 
   static removePopup(popup: HTMLElement) {
     const index = ADialog.visiblePopups.indexOf(popup);
-    if(index > -1 && popup) {
+    if (index > -1 && popup) {
       ADialog.visiblePopups.splice(index, 1);
       popup.remove();
     }
-    if(ADialog.visiblePopups.length === 0) {
+    if (ADialog.visiblePopups.length === 0) {
       popup.ownerDocument.removeEventListener('keyup', escKeyListener);
     }
   }
 
   private static removeAllPopups() {
-    if(ADialog.visiblePopups.length === 0) {
+    if (ADialog.visiblePopups.length === 0) {
       return;
     }
 
@@ -27,15 +27,15 @@ abstract class ADialog {
   }
 
   protected static registerPopup(popup: HTMLElement, popper: Popper, replace: boolean, enableCloseOnOutside = true) {
-    if(replace) {
+    if (replace) {
       ADialog.removeAllPopups();
     }
-    if(ADialog.visiblePopups.length === 0) {
+    if (ADialog.visiblePopups.length === 0) {
       popup.ownerDocument.addEventListener('keyup', escKeyListener);
     }
 
     const closePopupOnMouseLeave = () => {
-      if(ADialog.visiblePopups[ADialog.visiblePopups.length - 1] !== popup) {
+      if (ADialog.visiblePopups[ADialog.visiblePopups.length - 1] !== popup) {
         return;
       }
       popup.removeEventListener('mouseleave', closePopupOnMouseLeave);
@@ -82,7 +82,7 @@ abstract class ADialog {
    * @param enableCloseOnOutside hide when the user it outside the visible one
    * @returns {Selection<any>}
    */
-  makePopup(body: string, enableCloseOnOutside= true) {
+  makePopup(body: string, enableCloseOnOutside = true) {
     const parent = this.attachment.ownerDocument.body;
     parent.insertAdjacentHTML('beforeend', `<div class="lu-popup2">${this.dialogForm(body)}</div>`);
     const popup = <HTMLElement>parent.lastElementChild!;
@@ -180,7 +180,7 @@ export function sortByProperty(prop: string) {
 
 export default ADialog;
 
-function escKeyListener(evt:KeyboardEvent) {
+function escKeyListener(evt: KeyboardEvent) {
   if (evt.which === 27 && ADialog.visiblePopups.length > 0) {
     const popup = ADialog.visiblePopups[ADialog.visiblePopups.length - 1];
     ADialog.removePopup(popup);

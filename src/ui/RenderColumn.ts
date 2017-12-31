@@ -3,10 +3,10 @@
  */
 import {IColumn} from 'lineupengine/src';
 import Column from '../model/Column';
-import {createHeader, updateHeader} from './header';
-import {ICellRenderer, IGroupCellRenderer} from '../renderer';
-import {IRankingContext, ISummaryUpdater} from './interfaces';
 import {findTypeLike} from '../model/utils';
+import {ICellRenderer, IGroupCellRenderer} from '../renderer';
+import {createHeader, updateHeader} from './header';
+import {IRankingContext, ISummaryUpdater} from './interfaces';
 
 
 export interface IRenderers {

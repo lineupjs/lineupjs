@@ -1,10 +1,10 @@
+import {ILineUpOptions} from './interfaces';
 /**
  * Created by Samuel Gratzl on 15.08.2017.
  */
 import {renderers as defaultRenderers} from './renderer';
 import {filters as defaultFilters} from './ui/dialogs';
 import {defaultSummaries} from './ui/summary';
-import {ILineUpOptions} from './interfaces';
 
 /** number of bins before switching to dense mode
  */

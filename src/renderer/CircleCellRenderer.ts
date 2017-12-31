@@ -1,10 +1,10 @@
-import Column from '../model/Column';
-import {INumberColumn, isNumberColumn, isNumbersColumn, IDataRow} from '../model';
-import {attr, noop, noRenderer, setText} from './utils';
-import {renderMissingDOM} from './missing';
-import {colorOf} from './impose';
-import {ICellRendererFactory, default as IRenderContext, IImposer} from './interfaces';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {IDataRow, INumberColumn, isNumberColumn, isNumbersColumn} from '../model';
+import Column from '../model/Column';
+import {colorOf} from './impose';
+import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {attr, noop, noRenderer, setText} from './utils';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
   readonly title = 'Proportional Symbol';

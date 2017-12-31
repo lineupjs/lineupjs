@@ -1,7 +1,6 @@
-
 export const filterMissingText = 'Filter out rows containing missing values';
 export const filterMissingMarkup = (bakMissing: boolean) => `<label><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''}>${filterMissingText}</label>`;
-export const filterMissingNumberMarkup = (bakMissing: boolean, count: number) => `<label ${count===0 ? 'class="lu-disabled"': ''}><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''} ${count===0 ? 'disabled': ''}>Filter out ${count} missing value rows</label>`;
+export const filterMissingNumberMarkup = (bakMissing: boolean, count: number) => `<label ${count === 0 ? 'class="lu-disabled"' : ''}><input class="lu_filter_missing" type="checkbox" ${bakMissing ? 'checked="checked"' : ''} ${count === 0 ? 'disabled' : ''}>Filter out ${count} missing value rows</label>`;
 
 export function updateFilterMissingNumberMarkup(element: HTMLElement, count: number) {
   const checked = element.querySelector('input')!;

@@ -1,7 +1,7 @@
-import SelectionColumn from '../model/SelectionColumn';
-import Column from '../model/Column';
-import {ICellRendererFactory} from './interfaces';
 import {IDataRow, IGroup} from '../model';
+import Column from '../model/Column';
+import SelectionColumn from '../model/SelectionColumn';
+import {ICellRendererFactory} from './interfaces';
 import {noop} from './utils';
 
 export default class SelectionRenderer implements ICellRendererFactory {

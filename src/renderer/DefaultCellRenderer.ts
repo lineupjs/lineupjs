@@ -1,8 +1,8 @@
-import Column from '../model/Column';
 import {IDataRow} from '../model';
-import {noop, noRenderer, setText} from './utils';
-import {renderMissingDOM} from './missing';
+import Column from '../model/Column';
 import {ICellRendererFactory} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {noop, noRenderer, setText} from './utils';
 
 /**
  * default renderer instance rendering the value as a text

@@ -1,10 +1,10 @@
+import {ICategoricalColumn} from './ICategoricalColumn';
+import {IDataRow} from './interfaces';
+import {FIRST_IS_NAN} from './missing';
 /**
  * Created by bikramkawan on 24/11/2016.
  */
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import {ICategoricalColumn} from './ICategoricalColumn';
-import {FIRST_IS_NAN} from './missing';
-import {IDataRow} from './interfaces';
 
 export interface IBooleansDesc {
   readonly dataLength: number;

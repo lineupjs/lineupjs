@@ -3,36 +3,42 @@
  */
 
 import Column from '../model/Column';
-import {ICellRendererFactory} from './interfaces';
-import BarCellRenderer from './BarCellRenderer';
-import {DefaultCellRenderer} from './DefaultCellRenderer';
-import StringCellRenderer from './StringCellRenderer';
-import SelectionRenderer from './SelectionRenderer';
-import LinkCellRenderer from './LinkCellRenderer';
-import AnnotationRenderer from './AnnotationRenderer';
 import ActionRenderer from './ActionRenderer';
-import MultiLevelCellRenderer from './MultiLevelCellRenderer';
-import CategoricalCellRenderer from './CategoricalCellRenderer';
-import NumbersCellRenderer from './NumbersCellRenderer';
-import SparklineCellRenderer from './SparklineCellRenderer';
-import VerticalBarCellRenderer from './VerticalBarCellRenderer';
-import UpSetCellRenderer from './UpSetCellRenderer';
-import CircleCellRenderer from './CircleCellRenderer';
-import BoxplotCellRenderer from './BoxplotCellRenderer';
-import LoadingCellRenderer from './LoadingCellRenderer';
-import HeatmapCellRenderer from './HeatmapCellRenderer';
-import RankCellRenderer from './RankCellRenderer';
-import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
+import AnnotationRenderer from './AnnotationRenderer';
+import BarCellRenderer from './BarCellRenderer';
+import BooleanCellRenderer from './BooleanCellRenderer';
+import BoxplotCellRenderer from './BoxplotCellRenderer';
+import CategoricalCellRenderer from './CategoricalCellRenderer';
+import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
+import CategoricalStackedDistributionlRenderer from './CategoricalStackedDistributionlRenderer';
+import CircleCellRenderer from './CircleCellRenderer';
+import {DefaultCellRenderer} from './DefaultCellRenderer';
+import DotCellRenderer from './DotCellRenderer';
+import GroupCellRenderer from './GroupCellRenderer';
+import HeatmapCellRenderer from './HeatmapCellRenderer';
 import HistogramRenderer from './HistogramRenderer';
 import ImageCellRenderer from './ImageCellRenderer';
-import BooleanCellRenderer from './BooleanCellRenderer';
+import {ICellRendererFactory} from './interfaces';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
-import DotCellRenderer from './DotCellRenderer';
-import CategoricalStackedDistributionlRenderer from './CategoricalStackedDistributionlRenderer';
-import GroupCellRenderer from './GroupCellRenderer';
+import LinkCellRenderer from './LinkCellRenderer';
+import LoadingCellRenderer from './LoadingCellRenderer';
+import MultiLevelCellRenderer from './MultiLevelCellRenderer';
+import NumbersCellRenderer from './NumbersCellRenderer';
+import RankCellRenderer from './RankCellRenderer';
+import SelectionRenderer from './SelectionRenderer';
+import SparklineCellRenderer from './SparklineCellRenderer';
+import StringCellRenderer from './StringCellRenderer';
+import UpSetCellRenderer from './UpSetCellRenderer';
+import VerticalBarCellRenderer from './VerticalBarCellRenderer';
 
-export {default as IRenderContext, IImposer, IGroupCellRenderer, ICellRenderer, ICellRendererFactory} from './interfaces';
+export {
+  default as IRenderContext,
+  IImposer,
+  IGroupCellRenderer,
+  ICellRenderer,
+  ICellRendererFactory
+} from './interfaces';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -81,14 +87,17 @@ export function chooseGroupRenderer(col: Column, renderers: { [key: string]: ICe
   return r || defaultCellRenderer;
 }
 
-export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, isGroup: boolean = false): {type: string, label: string}[] {
+export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, isGroup: boolean = false): { type: string, label: string }[] {
   const valid = Object.keys(renderers).filter((type) => {
     const factory = renderers[type];
     return factory.canRender(col, isGroup);
   });
   // TODO some magic to remove and order
 
-  return valid.map((type) => ({type, label: !isGroup ? renderers[type].title : (renderers[type].groupTitle || renderers[type].title)}));
+  return valid.map((type) => ({
+    type,
+    label: !isGroup ? renderers[type].title : (renderers[type].groupTitle || renderers[type].title)
+  }));
 }
 
 export function possibleGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }) {

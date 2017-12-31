@@ -18,7 +18,7 @@ export default class MeanColumn extends CompositeNumberColumn {
 
   protected compute(row: IDataRow) {
     const vs = this._children.map((d) => d.getValue(row)).filter((d) => !isNaN(d));
-    return vs.length === 0 ? NaN: vs.reduce((a, b) => a + b, 0) / vs.length;
+    return vs.length === 0 ? NaN : vs.reduce((a, b) => a + b, 0) / vs.length;
   }
 
   get canJustAddNumbers() {

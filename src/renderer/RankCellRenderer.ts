@@ -1,9 +1,9 @@
-import RankColumn from '../model/RankColumn';
-import Column from '../model/Column';
 import {IDataRow, IGroup} from '../model';
-import {noop, setText} from './utils';
-import {renderMissingDOM} from './missing';
+import Column from '../model/Column';
+import RankColumn from '../model/RankColumn';
 import {ICellRendererFactory} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {noop, setText} from './utils';
 
 export default class RankCellRenderer implements ICellRendererFactory {
   readonly title = 'Default';
@@ -12,7 +12,7 @@ export default class RankCellRenderer implements ICellRendererFactory {
     return col instanceof RankColumn;
   }
 
-    create(col: Column) {
+  create(col: Column) {
     return {
       template: `<div class="lu-right"> </div>`,
       update: (n: HTMLDivElement, d: IDataRow) => {

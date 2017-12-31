@@ -1,11 +1,11 @@
+import {extent} from 'd3-array';
+import {schemeCategory10} from 'd3-scale';
+import {isNumberColumn, isSupportType} from '../model';
 /**
  * Created by Samuel Gratzl on 15.08.2017.
  */
 import {default as Column, IColumnDesc} from '../model/Column';
-import {extent} from 'd3-array';
-import {isNumberColumn, isSupportType} from '../model';
 import Ranking from '../model/Ranking';
-import {schemeCategory10} from 'd3-scale';
 
 
 export interface IDeriveOptions {
@@ -61,7 +61,6 @@ export function deriveColumnDescriptions(data: any[], options: Partial<IDeriveOp
   //objects
   return Object.keys(first).map((key) => deriveType(key, first[key], key, data, config));
 }
-
 
 
 /**

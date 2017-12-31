@@ -64,7 +64,7 @@ export function stringFilter(col: StringColumn) {
         input.value = (bak instanceof RegExp) ? bak.source : bak;
       }
     },
-   init(node: HTMLElement, filterCallback?: (filtered: boolean) => void) {
+    init(node: HTMLElement, filterCallback?: (filtered: boolean) => void) {
 
       const isRegex = <HTMLInputElement>node.querySelector('input[type="checkbox"]:first-of-type');
       const filterMissing = <HTMLInputElement>node.querySelector('input[type="checkbox"].lu_filter_missing');

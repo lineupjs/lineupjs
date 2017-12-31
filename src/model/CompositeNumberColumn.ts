@@ -5,9 +5,9 @@
 import {format} from 'd3-format';
 import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import NumberColumn, {INumberColumn} from './NumberColumn';
-import {isMissingValue} from './missing';
 import {IDataRow, IGroupData} from './interfaces';
+import {isMissingValue} from './missing';
+import NumberColumn, {INumberColumn} from './NumberColumn';
 
 export interface ICompositeNumberDesc extends IColumnDesc {
   /**

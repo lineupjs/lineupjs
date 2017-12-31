@@ -2,20 +2,16 @@
  * Created by bikramkawan on 24/11/2016.
  */
 import {scaleLinear} from 'd3-scale';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import Column from './Column';
-import {isMissingValue} from './missing';
+import {IDataRow} from './interfaces';
 import {
   compareBoxPlot, DEFAULT_FORMATTER, getBoxPlotNumber, IAdvancedBoxPlotColumn, INumberFilter, INumbersColumn,
-  isSameFilter,
-  LazyBoxPlotData,
-  noNumberFilter, restoreFilter,
-  SORT_METHOD,
-  SortMethod
+  isSameFilter, LazyBoxPlotData, noNumberFilter, restoreFilter, SORT_METHOD, SortMethod
 } from './INumberColumn';
-import {IDataRow} from './interfaces';
 import {createMappingFunction, IMappingFunction, ScaleMappingFunction} from './MappingFunction';
+import {isMissingValue} from './missing';
 import NumberColumn, {IMapAbleColumn} from './NumberColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 
 export interface INumbersDesc {
@@ -43,6 +39,7 @@ export declare type INumbersColumnDesc = INumbersDesc & IValueColumnDesc<number[
 
 export interface ISplicer {
   length: number;
+
   splice(values: number[]): number[];
 }
 

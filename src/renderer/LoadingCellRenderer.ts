@@ -1,5 +1,5 @@
-import {noop} from './utils';
 import {ICellRendererFactory} from './interfaces';
+import {noop} from './utils';
 
 
 export default class LoadingCellRenderer implements ICellRendererFactory {

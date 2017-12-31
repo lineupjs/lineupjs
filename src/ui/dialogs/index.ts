@@ -2,11 +2,11 @@
  * Created by Samuel Gratzl on 02.08.2017.
  */
 import {IFilterDialog} from '../interfaces';
-import StringFilterDialog from './StringFilterDialog';
 import BooleanFilterDialog from './BooleanFilterDialog';
 import CategoricalFilterDialog from './CategoricalFilterDialog';
-import MappingsFilterDialog from './MappingsFilterDialog';
 import CategoricalMappingFilterDialog from './CategoricalMappingFilterDialog';
+import MappingsFilterDialog from './MappingsFilterDialog';
+import StringFilterDialog from './StringFilterDialog';
 
 
 export const filters = <{ [type: string]: IFilterDialog }>{

@@ -1,16 +1,16 @@
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {IDataRow, IGroup, isNumberColumn} from '../model';
 import {default as BoxPlotColumn, isBoxPlotColumn} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
 import {
   IBoxPlotColumn, IBoxPlotData, INumberColumn, INumbersColumn, isNumbersColumn,
   LazyBoxPlotData
 } from '../model/INumberColumn';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {IDataRow, IGroup, isNumberColumn} from '../model';
 import NumberColumn from '../model/NumberColumn';
+import {BOX_PLOT, CANVAS_HEIGHT, DOT} from '../styles';
 import {colorOf} from './impose';
 import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
-import {BOX_PLOT, CANVAS_HEIGHT, DOT} from '../styles';
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v === null) {
@@ -197,6 +197,6 @@ function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: s
   ctx.fillStyle = BOX_PLOT.outlier;
   box.outlier.forEach((v) => {
     // currently dots with 3px
-    ctx.fillRect(Math.max(v - DOT.size/2, 0), middlePos - DOT.size/2, DOT.size, DOT.size);
+    ctx.fillRect(Math.max(v - DOT.size / 2, 0), middlePos - DOT.size / 2, DOT.size, DOT.size);
   });
 }

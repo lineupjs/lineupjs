@@ -1,8 +1,8 @@
-import LinkColumn from '../model/LinkColumn';
-import {renderMissingDOM} from './missing';
-import Column from '../model/Column';
-import {ICellRendererFactory} from './interfaces';
 import {IDataRow} from '../model';
+import Column from '../model/Column';
+import LinkColumn from '../model/LinkColumn';
+import {ICellRendererFactory} from './interfaces';
+import {renderMissingDOM} from './missing';
 import {noop, noRenderer} from './utils';
 
 

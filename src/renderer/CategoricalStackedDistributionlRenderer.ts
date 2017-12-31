@@ -1,8 +1,8 @@
-import Column from '../model/Column';
-import {IDataRow, IGroup, ICategoricalColumn, isCategoricalColumn} from '../model';
-import {forEachChild, noRenderer} from './utils';
 import {computeHist} from '../internal/math';
+import {ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn} from '../model';
+import Column from '../model/Column';
 import {ICellRendererFactory} from './interfaces';
+import {forEachChild, noRenderer} from './utils';
 
 /**
  * renders categorical columns as a colored rect with label

@@ -1,18 +1,16 @@
+import {format} from 'd3-format';
+import Column from './Column';
+import {IDataRow} from './interfaces';
+import {
+  compareBoxPlot, getBoxPlotNumber, IBoxPlotColumn, IBoxPlotData, INumberFilter, isSameFilter, noNumberFilter,
+  restoreFilter, SORT_METHOD, SortMethod
+} from './INumberColumn';
+import {createMappingFunction, IMappingFunction, restoreMapping, ScaleMappingFunction} from './MappingFunction';
+import NumberColumn, {IMapAbleColumn} from './NumberColumn';
 /**
  * Created by bikramkawan on 24/11/2016.
  */
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import Column from './Column';
-import {format} from 'd3-format';
-import NumberColumn, {IMapAbleColumn} from './NumberColumn';
-import {
-  compareBoxPlot, getBoxPlotNumber, IBoxPlotColumn, IBoxPlotData, INumberFilter, isSameFilter, noNumberFilter,
-  restoreFilter,
-  SORT_METHOD,
-  SortMethod
-} from './INumberColumn';
-import {IDataRow} from './interfaces';
-import {createMappingFunction, IMappingFunction, ScaleMappingFunction, restoreMapping} from './MappingFunction';
 
 
 export function isBoxPlotColumn(col: any): col is IBoxPlotColumn {

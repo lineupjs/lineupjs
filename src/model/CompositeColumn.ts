@@ -2,13 +2,13 @@
  * Created by sam on 04.11.2016.
  */
 
+import {suffix} from '../internal/AEventDispatcher';
 import Column, {IColumnParent, IFlatColumn} from './Column';
+import {IDataRow} from './interfaces';
 import {isNumberColumn} from './INumberColumn';
 import ValueColumn from './ValueColumn';
-import {suffix} from '../internal/AEventDispatcher';
-import {IDataRow} from './interfaces';
 
-export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn&Column {
+export function isMultiLevelColumn(col: Column): col is IMultiLevelColumn & Column {
   return typeof ((<any>col).getCollapsed) === 'function';
 }
 
@@ -93,7 +93,7 @@ export default class CompositeColumn extends Column implements IColumnParent {
     //delete first
     this._children.splice(old, 1);
     // adapt target index based on previous index, i.e shift by one
-    this._children.splice(old < index ? index -1 : index, 0, col);
+    this._children.splice(old < index ? index - 1 : index, 0, col);
     //listen and propagate events
     return this.moveImpl(col, index, old);
   }

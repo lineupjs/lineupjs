@@ -1,9 +1,9 @@
-import StringColumn from '../model/StringColumn';
-import Column from '../model/Column';
 import {IDataRow, IGroup} from '../model';
-import {noop, setText} from './utils';
-import {renderMissingDOM} from './missing';
+import Column from '../model/Column';
+import StringColumn from '../model/StringColumn';
 import {ICellRendererFactory} from './interfaces';
+import {renderMissingDOM} from './missing';
+import {noop, setText} from './utils';
 
 
 /**
@@ -40,7 +40,7 @@ export default class StringCellRenderer implements ICellRendererFactory {
       .map((r) => col.getLabel(r))
       .join(', ');
 
-    if(rows.length > numExampleRows) {
+    if (rows.length > numExampleRows) {
       examples += ', &hellip;';
     }
     return examples;

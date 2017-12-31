@@ -4,11 +4,11 @@
 import {IExceptionContext, range} from 'lineupengine/src/logic';
 import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup} from '../model';
-import {IRankingHeaderContextContainer} from './interfaces';
 import {SLOPEGRAPH_WIDTH} from '../styles';
+import {IRankingHeaderContextContainer} from './interfaces';
 
 interface ISlope {
-  isSelected(selection: {has(dataIndex: number):boolean}): boolean;
+  isSelected(selection: { has(dataIndex: number): boolean }): boolean;
 
   update(path: SVGPathElement, width: number): void;
 
@@ -20,7 +20,7 @@ class ItemSlope implements ISlope {
 
   }
 
-  isSelected(selection: {has(dataIndex: number):boolean}) {
+  isSelected(selection: { has(dataIndex: number): boolean }) {
     return this.dataIndices.length === 1 ? selection.has(this.dataIndices[0]) : this.dataIndices.some((s) => selection.has(s));
   }
 
@@ -35,7 +35,7 @@ class GroupSlope implements ISlope {
 
   }
 
-  isSelected(selection: {has(dataIndex: number):boolean}) {
+  isSelected(selection: { has(dataIndex: number): boolean }) {
     return this.dataIndices.some((s) => selection.has(s));
   }
 
@@ -183,7 +183,7 @@ export default class SlopeGraph implements ITableSection {
       let height = 0;
       const rows: IDataRow[] = [];
       // find all items in this group, assuming that they are in order
-      for(let i = first; i < left.length; ++i) {
+      for (let i = first; i < left.length; ++i) {
         const item = left[i];
         if (isGroup(item) || (<IGroupItem>item).group !== group) {
           break;
@@ -230,7 +230,7 @@ export default class SlopeGraph implements ITableSection {
       if (isGroup(r)) {
         gr = r;
       } else {
-        const item =  (<IGroupItem>r);
+        const item = (<IGroupItem>r);
         const dataIndex = item.i;
         const right = lookup.get(dataIndex);
 

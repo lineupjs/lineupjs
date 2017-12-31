@@ -1,10 +1,10 @@
-import Column from '../model/Column';
-import {IDataRow, IGroup, ICategoricalColumn, isCategoricalColumn} from '../model';
-import {forEachChild, setText} from './utils';
 import {computeHist, ICategoricalStatistics} from '../internal/math';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {ICellRendererFactory, default as IRenderContext} from './interfaces';
+import {ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn} from '../model';
+import Column from '../model/Column';
 import {CANVAS_HEIGHT} from '../styles';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {forEachChild, setText} from './utils';
 
 /**
  * renders categorical columns as a colored rect with label

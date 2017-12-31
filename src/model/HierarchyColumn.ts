@@ -3,11 +3,11 @@
  */
 import {schemeCategory10} from 'd3-scale';
 import Column from './Column';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import StringColumn from './StringColumn';
 import {ICategoricalColumn, ICategory} from './ICategoricalColumn';
-import {FIRST_IS_NAN, missingGroup} from './missing';
 import {IDataRow} from './interfaces';
+import {FIRST_IS_NAN, missingGroup} from './missing';
+import StringColumn from './StringColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface ICategoryNode extends ICategory {
   readonly children: ICategoryNode[];
@@ -153,12 +153,12 @@ export default class HierarchyColumn extends ValueColumn<string> implements ICat
 
   private resolveCategory(row: IDataRow) {
     const base = this.resolveCategories(row);
-    return base.length > 0 ? base[0]: null;
+    return base.length > 0 ? base[0] : null;
   }
 
   getValue(row: IDataRow) {
     const base = this.getValues(row);
-    return base.length > 0 ? base[0]: null;
+    return base.length > 0 ? base[0] : null;
   }
 
   getValues(row: IDataRow) {
@@ -259,7 +259,7 @@ export function resolveInnerNodes(node: ICategoryInternalNode) {
   return queue;
 }
 
-export function isHierarchical(categories: (string|ICategory)[]) {
+export function isHierarchical(categories: (string | ICategory)[]) {
   if (categories.length === 0 || typeof categories[0] === 'string') {
     return false;
   }
@@ -267,12 +267,12 @@ export function isHierarchical(categories: (string|ICategory)[]) {
   return categories.some((c) => (<any>c).parent != null);
 }
 
-export function deriveHierarchy(categories: (ICategory&{parent: string|null})[]) {
+export function deriveHierarchy(categories: (ICategory & { parent: string | null })[]) {
   const lookup = new Map<string, ICategoryNode>();
   categories.forEach((c) => {
     const p = c.parent || '';
     // set and fill up proxy
-    const item = Object.assign({ children: []}, lookup.get(c.name) || {}, c);
+    const item = Object.assign({children: []}, lookup.get(c.name) || {}, c);
     lookup.set(c.name, item);
 
     if (!lookup.has(p)) {

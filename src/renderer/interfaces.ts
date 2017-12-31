@@ -1,9 +1,9 @@
-import Column from '../model/Column';
-import {IDataRow, IGroup} from '../model';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {IDataRow, IGroup} from '../model';
+import Column from '../model/Column';
 
 export interface IImposer {
-  color?(row: IDataRow|null): string|null;
+  color?(row: IDataRow | null): string | null;
 }
 
 

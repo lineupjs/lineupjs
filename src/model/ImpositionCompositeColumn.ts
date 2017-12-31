@@ -3,13 +3,12 @@
  */
 
 
+import Column, {IColumnDesc} from './Column';
 import CompositeColumn from './CompositeColumn';
-import NumberColumn, {INumberColumn} from './NumberColumn';
-import {IColumnDesc} from './Column';
-import Column from './Column';
-import {isNumberColumn} from './INumberColumn';
 import {ICategoricalColumn, isCategoricalColumn} from './ICategoricalColumn';
 import {IDataRow, IGroupData} from './interfaces';
+import {isNumberColumn} from './INumberColumn';
+import NumberColumn, {INumberColumn} from './NumberColumn';
 
 
 /**

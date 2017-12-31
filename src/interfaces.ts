@@ -1,8 +1,8 @@
-import {ICellRendererFactory} from './renderer';
-import {IDataProvider} from './provider/ADataProvider';
-import {ISummaryRenderer, IFilterDialog} from './ui/interfaces';
-import Ranking from './model/Ranking';
 import {IGroupData, IGroupItem} from './model';
+import Ranking from './model/Ranking';
+import {IDataProvider} from './provider/ADataProvider';
+import {ICellRendererFactory} from './renderer';
+import {IFilterDialog, ISummaryRenderer} from './ui/interfaces';
 
 
 export interface ILineUpOptions {
@@ -20,7 +20,7 @@ export interface ILineUpOptions {
   rowPadding: number;
   rowHeight: number;
 
-  dynamicHeight?: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => { defaultHeight: number, height: (item: IGroupItem | IGroupData) => number }|null;
+  dynamicHeight?: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => { defaultHeight: number, height: (item: IGroupItem | IGroupData) => number } | null;
   customRowUpdate?: (row: HTMLElement, rowIndex: number) => void;
 
 }

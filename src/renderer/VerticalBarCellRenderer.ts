@@ -1,9 +1,9 @@
 import Column from '../model/Column';
-import {attr, forEachChild} from './utils';
-import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
-import IRenderContext from './interfaces';
 import {CANVAS_HEIGHT} from '../styles';
+import {ANumbersCellRenderer} from './ANumbersCellRenderer';
+import IRenderContext from './interfaces';
+import {attr, forEachChild} from './utils';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
   readonly title = 'Bar Chart';

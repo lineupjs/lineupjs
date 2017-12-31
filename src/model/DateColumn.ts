@@ -2,10 +2,10 @@
  * Created by sam on 04.11.2016.
  */
 
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import {FIRST_IS_NAN, isMissingValue} from './missing';
 import {timeFormat, timeParse} from 'd3-time-format';
 import {IDataRow} from './interfaces';
+import {FIRST_IS_NAN, isMissingValue} from './missing';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface IDateDesc {
   /**
@@ -21,9 +21,9 @@ export interface IDateDesc {
   readonly dateParse?: string;
 }
 
-export declare type IDateColumnDesc = IValueColumnDesc<Date|string> & IDateDesc;
+export declare type IDateColumnDesc = IValueColumnDesc<Date | string> & IDateDesc;
 
-export default class DateColumn extends ValueColumn<Date|string> {
+export default class DateColumn extends ValueColumn<Date | string> {
   private readonly format: (date: Date) => string;
   private readonly parse: (date: string) => Date | null;
 
@@ -34,7 +34,7 @@ export default class DateColumn extends ValueColumn<Date|string> {
     this.setDefaultRenderer('default');
   }
 
-  getValue(row: IDataRow): Date|null {
+  getValue(row: IDataRow): Date | null {
     const v = super.getValue(row);
     if (isMissingValue(v)) {
       return null;

@@ -1,9 +1,9 @@
 import {IDataRow, IGroup, INumbersColumn, isMissingValue, isNumbersColumn} from '../model';
-import {ICellRendererFactory} from './interfaces';
 import Column from '../model/Column';
+import {matchRows} from './ANumbersCellRenderer';
+import {ICellRendererFactory} from './interfaces';
 import {renderMissingDOM} from './missing';
 import {forEachChild, noop} from './utils';
-import {matchRows} from './ANumbersCellRenderer';
 
 export function line(data: number[]) {
   if (data.length === 0) {

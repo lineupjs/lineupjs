@@ -1,12 +1,12 @@
-import {IRankingHeaderContext, RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
-import DataProvider from '../../provider/ADataProvider';
-import EngineRenderer from '../EngineRenderer';
-import {IGroupData, IGroupItem, isGroup} from '../../model';
 import {ILineUpOptions} from '../../interfaces';
 import AEventDispatcher from '../../internal/AEventDispatcher';
-import {IRule} from './interfaces';
-import Ranking from '../../model/Ranking';
 import debounce from '../../internal/debounce';
+import {IGroupData, IGroupItem, isGroup} from '../../model';
+import Ranking from '../../model/Ranking';
+import DataProvider from '../../provider/ADataProvider';
+import EngineRenderer from '../EngineRenderer';
+import {IRankingHeaderContext, RENDERER_EVENT_HOVER_CHANGED} from '../interfaces';
+import {IRule} from './interfaces';
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;
@@ -21,7 +21,7 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   private isDynamicLeafHeight: boolean = false;
 
-  private rule: IRule|null = null;
+  private rule: IRule | null = null;
   private levelOfDetail: (row: HTMLElement, rowIndex: number) => void;
   private readonly resizeListener = () => debounce(() => this.update(), 100);
   private readonly renderer: EngineRenderer;
@@ -123,7 +123,7 @@ export default class TaggleRenderer extends AEventDispatcher {
     this.renderer.zoomIn();
   }
 
-  switchRule(rule: IRule|null) {
+  switchRule(rule: IRule | null) {
     if (this.rule === rule) {
       return;
     }

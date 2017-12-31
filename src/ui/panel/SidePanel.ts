@@ -2,18 +2,18 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {suffix} from '../../internal/AEventDispatcher';
 import {nest} from 'd3-collection';
-import Ranking from '../../model/Ranking';
+import {suffix} from '../../internal/AEventDispatcher';
+import {
+  createImpositionDesc, createMaxDesc, createMeanDesc, createMinDesc, createNestedDesc, createScriptDesc,
+  createStackDesc, isSupportType
+} from '../../model';
 import {default as Column, IColumnDesc} from '../../model/Column';
-import SidePanelEntry from './SidePanelEntry';
+import Ranking from '../../model/Ranking';
 import DataProvider, {IDataProvider} from '../../provider/ADataProvider';
 import {IRankingHeaderContext} from '../interfaces';
 import SearchBox, {ISearchBoxOptions} from './SearchBox';
-import {
-  createStackDesc, createScriptDesc, createNestedDesc, createMaxDesc, createMeanDesc, createMinDesc,
-  createImpositionDesc, isSupportType
-} from '../../model';
+import SidePanelEntry from './SidePanelEntry';
 
 export interface ISidePanelOptions extends Partial<ISearchBoxOptions<SidePanelEntry>> {
   additionalDescs: IColumnDesc[];

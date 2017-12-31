@@ -1,11 +1,11 @@
-import {attr, forEachChild} from './utils';
-import Column from '../model/Column';
-import {ANumbersCellRenderer} from './ANumbersCellRenderer';
-import {renderMissingValue} from './missing';
 import {isMissingValue} from '../model';
+import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
-import IRenderContext from './interfaces';
 import {CANVAS_HEIGHT} from '../styles';
+import {ANumbersCellRenderer} from './ANumbersCellRenderer';
+import IRenderContext from './interfaces';
+import {renderMissingValue} from './missing';
+import {attr, forEachChild} from './utils';
 
 export default class NumbersCellRenderer extends ANumbersCellRenderer {
   readonly title = 'Heatmap';
@@ -32,15 +32,15 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
       },
       render: (ctx: CanvasRenderingContext2D, data: number[]) => {
         data.forEach((d: number, j: number) => {
-        const x = j * cellDimension;
-        if (isMissingValue(d)) {
-          renderMissingValue(ctx, cellDimension, CANVAS_HEIGHT, x, 0);
-          return;
-        }
-        ctx.beginPath();
-        ctx.fillStyle = colorScale(d);
-        ctx.fillRect(x, 0, cellDimension, CANVAS_HEIGHT);
-      });
+          const x = j * cellDimension;
+          if (isMissingValue(d)) {
+            renderMissingValue(ctx, cellDimension, CANVAS_HEIGHT, x, 0);
+            return;
+          }
+          ctx.beginPath();
+          ctx.fillStyle = colorScale(d);
+          ctx.fillRect(x, 0, cellDimension, CANVAS_HEIGHT);
+        });
       }
     };
   }

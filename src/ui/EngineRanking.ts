@@ -1,26 +1,25 @@
 /**
  * Created by Samuel Gratzl on 27.09.2017.
  */
-import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
-import {ACellTableSection, ICellRenderContext} from 'lineupengine/src/table/ACellTableSection';
-import GridStyleManager from 'lineupengine/src/style/GridStyleManager';
-import Ranking from '../model/Ranking';
-import RenderColumn, {IRenderers} from './RenderColumn';
-import Column from '../model/Column';
 import {IExceptionContext, nonUniformContext, uniformContext} from 'lineupengine/src/logic';
-import StackColumn from '../model/StackColumn';
-import {isMultiLevelColumn} from '../model/CompositeColumn';
-import {IRenderContext} from '../renderer';
-import SelectionManager from './SelectionManager';
-import {lineupAnimation} from './animation';
 import PrefetchMixin from 'lineupengine/src/mixin/PrefetchMixin';
-import {setColumn} from 'lineupengine/src/style/GridStyleManager';
-import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces';
-import {IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
+import GridStyleManager, {setColumn} from 'lineupengine/src/style/GridStyleManager';
+import {ACellTableSection, ICellRenderContext} from 'lineupengine/src/table/ACellTableSection';
+import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 import AEventDispatcher from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
+import {IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
+import Column from '../model/Column';
+import {isMultiLevelColumn} from '../model/CompositeColumn';
+import Ranking from '../model/Ranking';
+import StackColumn from '../model/StackColumn';
+import {IRenderContext} from '../renderer';
 import {COLUMN_PADDING} from '../styles';
+import {lineupAnimation} from './animation';
+import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
+import RenderColumn, {IRenderers} from './RenderColumn';
+import SelectionManager from './SelectionManager';
 
 export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column): IRenderers;
@@ -29,9 +28,8 @@ export interface IEngineRankingContext extends IRankingHeaderContextContainer, I
 
 export interface IEngineRankingOptions {
   animation: boolean;
-  customRowUpdate: (row: HTMLElement, rowIndex: number)=>void;
+  customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
 }
-
 
 
 class RankingEvents extends AEventDispatcher {
@@ -42,6 +40,7 @@ class RankingEvents extends AEventDispatcher {
   fire(type: string | string[], ...args: any[]) {
     super.fire(type, ...args);
   }
+
   protected createEventList() {
     return super.createEventList().concat([RankingEvents.EVENT_WIDTH_CHANGED, RankingEvents.EVENT_UPDATE_DATA, RankingEvents.EVENT_UPDATE_HIST]);
   }
@@ -66,7 +65,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     customRowUpdate: () => undefined
   };
 
-  private readonly delayedUpdate: (this: {type: string})=>void;
+  private readonly delayedUpdate: (this: { type: string }) => void;
   private readonly columns: RenderColumn[];
 
   constructor(public readonly ranking: Ranking, header: HTMLElement, body: HTMLElement, tableId: string, style: GridStyleManager, private readonly ctx: IEngineRankingContext, options: Partial<IEngineRankingOptions> = {}) {
@@ -75,7 +74,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     body.classList.add('lu-row-body');
 
     const that = this;
-    this.delayedUpdate = debounce((function(this: {type: string, primaryType: string}) {
+    this.delayedUpdate = debounce((function (this: { type: string, primaryType: string }) {
       if (this.type !== Ranking.EVENT_DIRTY_VALUES) {
         that.events.fire(EngineRanking.EVENT_UPDATE_DATA);
         return;
@@ -104,7 +103,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       const c = this.columns.splice(old, 1)[0];
       console.assert(c.c === col);
       // adapt target index based on previous index, i.e shift by one
-      this.columns.splice(old < index ? index -1 : index, 0, c);
+      this.columns.splice(old < index ? index - 1 : index, 0, c);
       updateAll();
     });
     ranking.on(`${Ranking.EVENT_ORDER_CHANGED}.body`, this.delayedUpdate);
@@ -176,7 +175,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       c.renderers = this.ctx.createRenderer(c.c);
     });
 
-    this._context = Object.assign({},this._context,{
+    this._context = Object.assign({}, this._context, {
       column: nonUniformContext(this.columns.map((w) => w.width), 100, COLUMN_PADDING)
     });
 
@@ -248,9 +247,9 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     super.updateRow(node, rowIndex);
   }
 
-  updateSelection(selectedDataIndices: {has(i: number): boolean}) {
+  updateSelection(selectedDataIndices: { has(i: number): boolean }) {
     this.forEachRow((node: HTMLElement, rowIndex: number) => {
-      if(this.renderCtx.isGroup(rowIndex)) {
+      if (this.renderCtx.isGroup(rowIndex)) {
         this.updateRow(node, rowIndex);
       } else {
         // fast pass for item
@@ -298,14 +297,14 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   groupData(data: IDataRow[]): (IGroupItem | IGroupData)[] {
     const groups = this.ranking.getGroups();
     const provider = this.ctx.provider;
-    const toMeta = (relativeIndex: number, length: number): 'first'|'last'|'first last'|undefined => {
+    const toMeta = (relativeIndex: number, length: number): 'first' | 'last' | 'first last' | undefined => {
       if (length === 1) {
         return 'first last';
       }
       if (relativeIndex === 0) {
         return 'first';
       }
-      if (relativeIndex === length -1) {
+      if (relativeIndex === length - 1) {
         return 'last';
       }
       return undefined;
@@ -331,7 +330,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       if (provider.isAggregated(this.ranking, group)) {
         r.push(Object.assign({rows: groupData}, group));
       } else {
-        r.push(...groupData.map((r, i) => Object.assign({group, relativeIndex: i, meta: toMeta(i, groupData.length)}, r)));
+        r.push(...groupData.map((r, i) => Object.assign({
+          group,
+          relativeIndex: i,
+          meta: toMeta(i, groupData.length)
+        }, r)));
       }
     });
     return r;

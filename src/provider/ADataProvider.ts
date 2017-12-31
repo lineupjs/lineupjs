@@ -2,30 +2,23 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {
-  createActionDesc,
-  createRankDesc,
-  createSelectionDesc,
-  createStackDesc,
-  createAggregateDesc,
-  IColumnDesc,
-  createGroupDesc,
-  isSupportType,
-  models,
-  Column,
-  IDataRow, IGroup, INumberColumn, ICategoricalColumn} from '../model';
-import Ranking from '../model/Ranking';
-import RankColumn from '../model/RankColumn';
-import StackColumn from '../model/StackColumn';
-import {IValueColumnDesc} from '../model/ValueColumn';
-import {ISelectionColumnDesc} from '../model/SelectionColumn';
-import {IOrderedGroup, toGroupID, unifyParents} from '../model/Group';
-import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
-import OrderedSet from '../internal/OrderedSet';
-import {IExportOptions, exportRanking} from './utils';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import OrderedSet from '../internal/OrderedSet';
+import {
+  Column, createActionDesc, createAggregateDesc, createGroupDesc, createRankDesc, createSelectionDesc,
+  createStackDesc, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, INumberColumn, isSupportType, models
+} from '../model';
+import AggregateGroupColumn, {IAggregateGroupColumnDesc} from '../model/AggregateGroupColumn';
+import {IOrderedGroup, toGroupID, unifyParents} from '../model/Group';
+import RankColumn from '../model/RankColumn';
+import Ranking from '../model/Ranking';
+import {ISelectionColumnDesc} from '../model/SelectionColumn';
+import StackColumn from '../model/StackColumn';
+import {IValueColumnDesc} from '../model/ValueColumn';
+import {exportRanking, IExportOptions} from './utils';
+
 export {IExportOptions} from './utils';
 
 export interface IStatsBuilder {
@@ -576,7 +569,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
   }
 
   isAggregated(ranking: Ranking, group: IGroup) {
-    let g: IGroup|undefined|null = group;
+    let g: IGroup | undefined | null = group;
     while (g) {
       const key = `${ranking.id}@${toGroupID(g)}`;
       if (this.aggregations.has(key)) {
@@ -627,7 +620,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
    */
   abstract view(indices: number[]): Promise<any[]> | any[];
 
-  abstract fetch(orders: number[][]): (Promise<IDataRow>|IDataRow)[][];
+  abstract fetch(orders: number[][]): (Promise<IDataRow> | IDataRow)[][];
 
   /**
    * returns a data sample used for the mapping editor
@@ -752,6 +745,7 @@ abstract class ADataProvider extends AEventDispatcher implements IDataProvider {
     this.selection.delete(index);
     this.fire(ADataProvider.EVENT_SELECTION_CHANGED, this.getSelection());
   }
+
   /**
    * also select all the given rows
    * @param indices

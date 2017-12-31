@@ -2,8 +2,8 @@
  * Created by sam on 04.11.2016.
  */
 import Column, {IColumnDesc} from './Column';
-import Ranking from './Ranking';
 import {IDataRow} from './interfaces';
+import Ranking from './Ranking';
 
 
 export interface IValueColumnDesc<T> extends IColumnDesc {

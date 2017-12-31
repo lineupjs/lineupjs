@@ -1,11 +1,11 @@
+import {IDataRow, isCategoricalColumn} from '../model';
 import Column from '../model/Column';
 import CompositeNumberColumn from '../model/CompositeNumberColumn';
-import {isCategoricalColumn, IDataRow} from '../model';
 import ImpositionCompositeColumn from '../model/ImpositionCompositeColumn';
 import {IImposer} from './interfaces';
 
 
-export function colorOf(col: Column, row: IDataRow|null, imposer?: IImposer) {
+export function colorOf(col: Column, row: IDataRow | null, imposer?: IImposer) {
   if (imposer && imposer.color) {
     return imposer.color(row);
   }

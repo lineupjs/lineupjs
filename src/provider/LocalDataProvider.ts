@@ -2,12 +2,12 @@
  * Created by sam on 04.11.2016.
  */
 
-import Column, {INumberColumn, ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData} from '../model';
-import Ranking from '../model/Ranking';
-import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
-import ACommonDataProvider from './ACommonDataProvider';
 import {computeHist, computeStats} from '../internal/math';
+import Column, {ICategoricalColumn, IColumnDesc, IDataRow, IGroup, IGroupData, INumberColumn} from '../model';
 import {defaultGroup, IOrderedGroup} from '../model/Group';
+import Ranking from '../model/Ranking';
+import ACommonDataProvider from './ACommonDataProvider';
+import {IDataProviderOptions, IStatsBuilder} from './ADataProvider';
 
 
 export interface ILocalDataProviderOptions {
@@ -164,7 +164,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
       return ranking.comparator(a, b);
     });
     //iterate over groups and create within orders
-    const groups: (IOrderedGroup&IGroupData)[] = [Object.assign({order: [], rows: []}, helper[0].group!)];
+    const groups: (IOrderedGroup & IGroupData)[] = [Object.assign({order: [], rows: []}, helper[0].group!)];
     let group = groups[0];
     helper.forEach((row) => {
       const rowGroup = row.group!;
@@ -178,7 +178,7 @@ export default class LocalDataProvider extends ACommonDataProvider {
     });
 
     // sort groups
-    groups.sort((a,b) => ranking.groupComparator(a, b));
+    groups.sort((a, b) => ranking.groupComparator(a, b));
 
     return groups;
   }
@@ -217,8 +217,8 @@ export default class LocalDataProvider extends ACommonDataProvider {
     };
 
     return {
-      stats: (col: INumberColumn&Column) => computeStats(getD(), col.getNumber.bind(col), col.isMissing.bind(col), [0, 1]),
-      hist: (col: ICategoricalColumn&Column) => computeHist(getD(), col.getCategories.bind(col), col.categories)
+      stats: (col: INumberColumn & Column) => computeStats(getD(), col.getNumber.bind(col), col.isMissing.bind(col), [0, 1]),
+      hist: (col: ICategoricalColumn & Column) => computeHist(getD(), col.getCategories.bind(col), col.categories)
     };
   }
 

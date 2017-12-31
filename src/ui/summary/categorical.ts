@@ -1,11 +1,11 @@
+import {DENSE_HISTOGRAM} from '../../config';
+import {ICategoricalStatistics} from '../../internal/math';
 import {ICategoricalColumn} from '../../model';
+import CategoricalColumn from '../../model/CategoricalColumn';
+import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
 import Column from '../../model/Column';
 import {IRankingHeaderContext} from '../interfaces';
-import {DENSE_HISTOGRAM} from '../../config';
-import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
-import CategoricalColumn from '../../model/CategoricalColumn';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
-import {ICategoricalStatistics} from '../../internal/math';
 
 
 export default class CategoricalSummary {
@@ -162,7 +162,7 @@ export default class CategoricalSummary {
       interactive();
       const f = col.getFilter();
       filterMissing.checked = f != null && f.filterMissing;
-      updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, stats ? stats.missing: 0);
+      updateFilterMissingNumberMarkup(<HTMLElement>filterMissing.parentElement, stats ? stats.missing : 0);
     };
   }
 }

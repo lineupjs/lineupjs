@@ -2,31 +2,31 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
-import NumberColumn from './NumberColumn';
-import StringColumn from './StringColumn';
-import StackColumn from './StackColumn';
+import ActionColumn from './ActionColumn';
+import AggregateGroupColumn from './AggregateGroupColumn';
 import AnnotateColumn from './AnnotateColumn';
 import BooleanColumn from './BooleanColumn';
+import BooleansColumn from './BooleansColumn';
+import BoxPlotColumn from './BoxPlotColumn';
 import CategoricalColumn from './CategoricalColumn';
-import MinColumn from './MinColumn';
+import CategoricalNumberColumn from './CategoricalNumberColumn';
+import DateColumn from './DateColumn';
+import GroupColumn from './GroupColumn';
+import HierarchyColumn from './HierarchyColumn';
+import ImpositionCompositeColumn from './ImpositionCompositeColumn';
+import LinkColumn from './LinkColumn';
 import MaxColumn from './MaxColumn';
 import MeanColumn from './MeanColumn';
-import RankColumn from './RankColumn';
-import SelectionColumn from './SelectionColumn';
-import ScriptColumn from './ScriptColumn';
-import CategoricalNumberColumn from './CategoricalNumberColumn';
+import MinColumn from './MinColumn';
 import NestedColumn from './NestedColumn';
-import ActionColumn from './ActionColumn';
-import LinkColumn from './LinkColumn';
-import BooleansColumn from './BooleansColumn';
+import NumberColumn from './NumberColumn';
 import NumbersColumn from './NumbersColumn';
-import BoxPlotColumn from './BoxPlotColumn';
-import AggregateGroupColumn from './AggregateGroupColumn';
-import HierarchyColumn from './HierarchyColumn';
-import DateColumn from './DateColumn';
-import ImpositionCompositeColumn from './ImpositionCompositeColumn';
-import GroupColumn from './GroupColumn';
+import RankColumn from './RankColumn';
+import ScriptColumn from './ScriptColumn';
+import SelectionColumn from './SelectionColumn';
+import StackColumn from './StackColumn';
+import StringColumn from './StringColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export {default, default as Column, IColumnDesc, IColumnMetaData, IColumnParent, IFlatColumn} from './Column';
 export {default as CompositeColumn} from './CompositeColumn';

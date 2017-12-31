@@ -1,5 +1,5 @@
-import AnnotateColumn from '../model/AnnotateColumn';
 import {IDataRow} from '../model';
+import AnnotateColumn from '../model/AnnotateColumn';
 import Column from '../model/Column';
 import {ICellRendererFactory} from './interfaces';
 import {noop, noRenderer} from './utils';

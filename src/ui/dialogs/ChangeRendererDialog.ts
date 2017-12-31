@@ -1,6 +1,6 @@
 import Column from '../../model/Column';
-import ADialog from './ADialog';
 import {IRankingHeaderContext} from '../interfaces';
+import ADialog from './ADialog';
 
 
 export default class ChangeRendererDialog extends ADialog {

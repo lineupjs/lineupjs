@@ -3,12 +3,12 @@
  */
 
 import {scaleOrdinal, schemeCategory10} from 'd3-scale';
-import Column from './Column';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import CategoricalColumn from './CategoricalColumn';
-import {ICategoricalColumn, IBaseCategoricalDesc, ICategoricalFilter} from './ICategoricalColumn';
-import NumberColumn, {INumberColumn} from './NumberColumn';
+import Column from './Column';
+import {IBaseCategoricalDesc, ICategoricalColumn, ICategoricalFilter} from './ICategoricalColumn';
 import {IDataRow, IGroupData} from './interfaces';
+import NumberColumn, {INumberColumn} from './NumberColumn';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export declare type ICategoricalNumberColumnDesc = IBaseCategoricalDesc & IValueColumnDesc<number>;
 

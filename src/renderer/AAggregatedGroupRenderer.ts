@@ -1,9 +1,9 @@
-import Column from '../model/Column';
-import {IDataRow, IGroup} from '../model';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {IDataRow, IGroup} from '../model';
+import Column from '../model/Column';
 import {
-  ICellRendererFactory, default as IRenderContext, IImposer, ICellRenderer,
-  IGroupCellRenderer
+  default as IRenderContext, ICellRenderer, ICellRendererFactory, IGroupCellRenderer,
+  IImposer
 } from './interfaces';
 
 /**
@@ -11,6 +11,7 @@ import {
  */
 export abstract class AAggregatedGroupRenderer<T extends Column> implements ICellRendererFactory {
   abstract readonly title: string;
+
   abstract canRender(col: Column): boolean;
 
   abstract create(col: T, context: IRenderContext, hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer): ICellRenderer;

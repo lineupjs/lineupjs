@@ -216,7 +216,7 @@ export function createMappingFunction(dump: any): IMappingFunction {
   return l;
 }
 
-export function restoreMapping(desc: {map?: any, domain?: [number, number], range?: [number, number]}): IMappingFunction {
+export function restoreMapping(desc: { map?: any, domain?: [number, number], range?: [number, number] }): IMappingFunction {
   if (desc.map) {
     return createMappingFunction(desc.map);
   }

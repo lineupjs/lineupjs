@@ -2,13 +2,13 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import Column, {IColumnParent, IFlatColumn} from './Column';
-import StringColumn from './StringColumn';
-import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
-import {IDataRow, IGroupData, isSupportType} from './interfaces';
-import {isCategoricalColumn} from './ICategoricalColumn';
 import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
 import {equalArrays, fixCSS} from '../internal/utils';
+import Column, {IColumnParent, IFlatColumn} from './Column';
+import {defaultGroup, IOrderedGroup, joinGroups} from './Group';
+import {isCategoricalColumn} from './ICategoricalColumn';
+import {IDataRow, IGroupData, isSupportType} from './interfaces';
+import StringColumn from './StringColumn';
 
 export interface ISortCriteria {
   readonly col: Column;
@@ -81,9 +81,11 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
 
   readonly grouper = (row: IDataRow) => {
     const g = this.groupColumns;
-    switch(g.length) {
-      case 0: return defaultGroup;
-      case 1: return g[0].group(row);
+    switch (g.length) {
+      case 0:
+        return defaultGroup;
+      case 1:
+        return g[0].group(row);
       default:
         const groups = g.map((gi) => gi.group(row));
         return joinGroups(groups);
@@ -486,7 +488,7 @@ export default class Ranking extends AEventDispatcher implements IColumnParent {
     //delete first
     this.columns.splice(old, 1);
     // adapt target index based on previous index, i.e shift by one
-    this.columns.splice(old < index ? index -1 : index, 0, col);
+    this.columns.splice(old < index ? index - 1 : index, 0, col);
 
     this.fire([Ranking.EVENT_MOVE_COLUMN, Ranking.EVENT_DIRTY_HEADER, Ranking.EVENT_DIRTY_VALUES, Ranking.EVENT_DIRTY], col, index, old);
     return col;

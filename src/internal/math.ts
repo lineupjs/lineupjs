@@ -2,7 +2,7 @@
  * Created by Samuel Gratzl on 10.08.2017.
  */
 
-import {extent, mean, histogram} from 'd3-array';
+import {extent, histogram, mean} from 'd3-array';
 
 export interface IStatistics {
   readonly min: number;

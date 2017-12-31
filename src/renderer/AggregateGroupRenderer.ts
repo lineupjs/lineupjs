@@ -1,7 +1,7 @@
+import {IDataRow, IGroup} from '../model';
 import AggregateGroupColumn from '../model/AggregateGroupColumn';
 import Column from '../model/Column';
 import {ICellRendererFactory} from './interfaces';
-import {IDataRow, IGroup} from '../model';
 import {noop} from './utils';
 
 export default class AggregateGroupRenderer implements ICellRendererFactory {

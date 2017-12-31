@@ -1,6 +1,6 @@
 import Column, {IColumnDesc} from './Column';
-import {IValueColumnDesc} from './ValueColumn';
 import {IDataRow} from './interfaces';
+import {IValueColumnDesc} from './ValueColumn';
 
 export interface IBaseCategoricalDesc {
   /**

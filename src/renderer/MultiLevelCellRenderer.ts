@@ -1,20 +1,20 @@
-import {IDataRow, IGroup} from '../model';
-import {matchColumns} from './utils';
-import {ICategoricalStatistics, IStatistics, round} from '../internal/math';
-import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
-import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
-import Column from '../model/Column';
 import {isEdge} from 'lineupengine/src/style';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {ICategoricalStatistics, IStatistics, round} from '../internal/math';
+import {IDataRow, IGroup} from '../model';
+import Column from '../model/Column';
+import {IMultiLevelColumn, isMultiLevelColumn} from '../model/CompositeColumn';
 import {default as INumberColumn, isNumberColumn, medianIndex} from '../model/INumberColumn';
-import {IImposer, default as IRenderContext, ICellRendererFactory} from './interfaces';
 import {COLUMN_PADDING} from '../styles';
+import {AAggregatedGroupRenderer} from './AAggregatedGroupRenderer';
+import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {matchColumns} from './utils';
 
 export function gridClass(column: Column) {
   return `lu-stacked-${column.id}`;
 }
 
-export function createData(col: {children: Column[]} & Column, context: IRenderContext, stacked: boolean, imposer?: IImposer) {
+export function createData(col: { children: Column[] } & Column, context: IRenderContext, stacked: boolean, imposer?: IImposer) {
   const padding = COLUMN_PADDING;
   let offset = 0;
   const cols = col.children.map((d) => {
@@ -53,7 +53,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     const useGrid = context.option('useGridLayout', false);
     const width = context.colWidth(col);
     return {
-      template: `<div class='${useGrid ? gridClass(col): ''}${useGrid && !stacked ? ' lu-grid-space': ''}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
+      template: `<div class='${useGrid ? gridClass(col) : ''}${useGrid && !stacked ? ' lu-grid-space' : ''}'>${cols.map((d) => d.renderer.template).join('')}</div>`,
       update: (n: HTMLDivElement, d: IDataRow, i: number, group: IGroup) => {
         if (renderMissingDOM(n, col, d)) {
           return;
@@ -66,7 +66,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         cols.forEach((col, ci) => {
           const weight = col.column.getWidth() / total;
           const cnode = children[ci];
-          cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)`: null;
+          cnode.style.transform = stacked ? `translate(-${round((missingWeight / weight) * 100, 4)}%,0)` : null;
           if (!useGrid) {
             cnode.style.width = `${round(weight * 100, 2)}%`;
             cnode.style.marginRight = stacked ? null : `${padding}px`;
@@ -82,20 +82,20 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
         });
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number, group: IGroup) => {
-      if (renderMissingCanvas(ctx, col, d, width)) {
-        return;
-      }
-      let stackShift = 0;
-      cols.forEach((col) => {
-        const shift = col.shift - stackShift;
-        ctx.translate(shift, 0);
-        col.renderer.render(ctx, d, i, group);
-        ctx.translate(-shift, 0);
-        if (stacked) {
-          stackShift += col.width * (1 - col.column.getValue(d));
+        if (renderMissingCanvas(ctx, col, d, width)) {
+          return;
         }
-      });
-    }
+        let stackShift = 0;
+        cols.forEach((col) => {
+          const shift = col.shift - stackShift;
+          ctx.translate(shift, 0);
+          col.renderer.render(ctx, d, i, group);
+          ctx.translate(-shift, 0);
+          if (stacked) {
+            stackShift += col.width * (1 - col.column.getValue(d));
+          }
+        });
+      }
     };
   }
 
@@ -108,7 +108,7 @@ export default class MultiLevelCellRenderer extends AAggregatedGroupRenderer<IMu
     const {cols, padding} = createData(col, context, false, imposer);
     const useGrid = context.option('useGridLayout', false);
     return {
-      template: `<div class='${useGrid ? gridClass(col): ''}${useGrid ? ' lu-grid-space': ''}'>${cols.map((d) => d.groupRenderer.template).join('')}</div>`,
+      template: `<div class='${useGrid ? gridClass(col) : ''}${useGrid ? ' lu-grid-space' : ''}'>${cols.map((d) => d.groupRenderer.template).join('')}</div>`,
       update: (n: HTMLElement, group: IGroup, rows: IDataRow[]) => {
         matchColumns(n, cols, 'group', 'html');
 

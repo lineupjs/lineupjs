@@ -4,7 +4,7 @@
 import {IGroup} from './interfaces';
 
 
-export function isMissingValue(v: any) : boolean {
+export function isMissingValue(v: any): boolean {
   return typeof(v) === 'undefined' || v == null || (typeof v === 'number' && isNaN(v)) || v === '' || v === 'NA' || (typeof(v) === 'string' && (v.toLowerCase() === 'na') || (v instanceof Array && v.every((v) => isMissingValue(v))));
 }
 

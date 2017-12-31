@@ -2,14 +2,13 @@
  * Created by Samuel Gratzl on 06.08.2015.
  */
 
-import {similar} from '../internal/math';
-import Ranking, {ISortCriteria} from './Ranking';
-import {defaultGroup} from './Group';
-import {isMissingValue} from './missing';
-import {IDataRow, IGroupData} from './interfaces';
 import AEventDispatcher from '../internal/AEventDispatcher';
+import {similar} from '../internal/math';
 import {fixCSS} from '../internal/utils';
-
+import {defaultGroup} from './Group';
+import {IDataRow, IGroupData} from './interfaces';
+import {isMissingValue} from './missing';
+import Ranking, {ISortCriteria} from './Ranking';
 
 
 export interface IFlatColumn {
@@ -152,7 +151,7 @@ export default class Column extends AEventDispatcher {
   constructor(id: string, public readonly desc: IColumnDesc) {
     super();
     this.uid = fixCSS(id);
-    this.renderer = this.desc.renderer|| this.desc.type;
+    this.renderer = this.desc.renderer || this.desc.type;
     this.groupRenderer = this.desc.groupRenderer || this.desc.type;
 
     this.cssClass = desc.cssClass || '';

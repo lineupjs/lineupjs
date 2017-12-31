@@ -2,12 +2,12 @@
  * Created by sam on 04.11.2016.
  */
 
-import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn} from './CompositeColumn';
-import Column, {IColumnDesc, IFlatColumn} from './Column';
-import StackColumn from './StackColumn';
-import {isNumberColumn} from './INumberColumn';
 import {similar} from '../internal/math';
+import Column, {IColumnDesc, IFlatColumn} from './Column';
+import CompositeColumn, {IMultiLevelColumn, isMultiLevelColumn} from './CompositeColumn';
 import {IDataRow} from './interfaces';
+import {isNumberColumn} from './INumberColumn';
+import StackColumn from './StackColumn';
 
 export default class MultiLevelCompositeColumn extends CompositeColumn implements IMultiLevelColumn {
   static readonly EVENT_COLLAPSE_CHANGED = StackColumn.EVENT_COLLAPSE_CHANGED;

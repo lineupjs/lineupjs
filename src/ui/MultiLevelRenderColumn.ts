@@ -1,20 +1,20 @@
+import {isEdge, StyleManager} from 'lineupengine/src/style';
+import {round} from '../internal/math';
 /**
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import Column from '../model/Column';
+import {IMultiLevelColumn} from '../model/CompositeColumn';
+import {findTypeLike} from '../model/utils';
+import {gridClass} from '../renderer/MultiLevelCellRenderer';
+import {COLUMN_PADDING} from '../styles';
 import {createHeader, updateHeader} from './header';
 import {IRankingContext, ISummaryUpdater} from './interfaces';
 import RenderColumn from './RenderColumn';
-import {IMultiLevelColumn} from '../model/CompositeColumn';
-import {round} from '../internal/math';
-import {isEdge, StyleManager} from 'lineupengine/src/style';
-import {gridClass} from '../renderer/MultiLevelCellRenderer';
-import {COLUMN_PADDING} from '../styles';
-import {findTypeLike} from '../model/utils';
 
 
 export default class MultiLevelRenderColumn extends RenderColumn {
-  private readonly summaries: (ISummaryUpdater|null)[] = [];
+  private readonly summaries: (ISummaryUpdater | null)[] = [];
 
   constructor(c: IMultiLevelColumn & Column, index: number, ctx: IRankingContext) {
     super(c, index, ctx);
@@ -37,7 +37,7 @@ export default class MultiLevelRenderColumn extends RenderColumn {
 
     this.mc.children.forEach((cc, i) => {
       const n = createHeader(cc, this.ctx);
-      n.style.marginLeft = i > 0 ? `${COLUMN_PADDING * 2}px`: null;
+      n.style.marginLeft = i > 0 ? `${COLUMN_PADDING * 2}px` : null;
       n.classList.add('lu-header');
       if (isEdge) {
         n.style.msGridColumn = (i + 1).toString();

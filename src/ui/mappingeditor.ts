@@ -2,12 +2,12 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import {event as d3event, mouse, select, selectAll, Selection} from 'd3-selection';
 import {D3DragEvent, drag} from 'd3-drag';
 import {scaleLinear} from 'd3-scale';
+import {event as d3event, mouse, select, selectAll, Selection} from 'd3-selection';
+import {INumberFilter} from '../model/INumberColumn';
 import {IMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from '../model/MappingFunction';
 import {filterMissingText} from './missing';
-import {INumberFilter} from '../model/INumberColumn';
 
 
 function clamp(v: number, min: number, max: number) {
@@ -213,9 +213,9 @@ export default class MappingEditor {
         .attr('x1', (d) => normal2pixel(that.scale.apply(d)))
         .attr('x2', raw2pixel)
         .style('visibility', (d) => {
-        const domain = that.scale.domain;
-        return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null!;
-      });
+          const domain = that.scale.domain;
+          return (d < domain[0] || d > domain[domain.length - 1]) ? 'hidden' : null!;
+        });
     }
 
     function createDrag<T>(move: (d: T, index: number) => void) {
@@ -480,7 +480,7 @@ export default class MappingEditor {
         .attr('transform', (_d, i) => `translate(${i === 0 ? minFilter : maxFilter},0)`).call(createDrag(function (this: SVGGElement, _d, i) {
 
         //drag normalized
-        const px = clamp((<D3DragEvent<any,any, any>>d3event).x, 0, width);
+        const px = clamp((<D3DragEvent<any, any, any>>d3event).x, 0, width);
         const v = raw2pixel.invert(px);
         const which = i === 0 ? 'min' : 'max';
         const filter = (px <= 0 && which === 'min' ? -Infinity : (px >= width && which === 'max' ? Infinity : v));

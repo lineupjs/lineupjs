@@ -1,6 +1,6 @@
+import BooleanColumn from '../model/BooleanColumn';
 import Column from '../model/Column';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
-import BooleanColumn from '../model/BooleanColumn';
 
 export default class BooleanCellRenderer extends DefaultCellRenderer {
   readonly title = 'Default';

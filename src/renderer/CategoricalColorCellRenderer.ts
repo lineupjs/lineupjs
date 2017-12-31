@@ -1,8 +1,8 @@
+import {ICategoricalColumn, IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
-import {IDataRow, IGroup, ICategoricalColumn} from '../model';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {ICellRendererFactory, default as IRenderContext} from './interfaces';
 import {CANVAS_HEIGHT} from '../styles';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
 
 /**
  * renders categorical columns as a colored rect with label

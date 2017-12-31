@@ -2,12 +2,12 @@
  * Created by sam on 04.11.2016.
  */
 
-import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {IMultiLevelColumn} from './CompositeColumn';
-import Column, {IFlatColumn} from './Column';
-import {isNumberColumn} from './INumberColumn';
 import {similar} from '../internal/math';
+import Column, {IFlatColumn} from './Column';
+import {IMultiLevelColumn} from './CompositeColumn';
+import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
 import {IDataRow} from './interfaces';
+import {isNumberColumn} from './INumberColumn';
 
 /**
  * factory for creating a description creating a stacked column

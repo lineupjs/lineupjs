@@ -2,8 +2,8 @@
  * Created by sam on 04.11.2016.
  */
 
-import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
 import {IDataRow} from './interfaces';
+import MultiLevelCompositeColumn from './MultiLevelCompositeColumn';
 
 /**
  * factory for creating a description creating a mean column

@@ -1,6 +1,6 @@
 import Column, {IColumnDesc} from './Column';
-import Ranking from './Ranking';
 import {IGroup} from './interfaces';
+import Ranking from './Ranking';
 
 /**
  * factory for creating a description creating a rank column

@@ -3,9 +3,9 @@
  */
 
 import Column from './Column';
-import StringColumn, {IStringColumnDesc} from './StringColumn';
-import {isMissingValue} from './missing';
 import {IDataRow} from './interfaces';
+import {isMissingValue} from './missing';
+import StringColumn, {IStringColumnDesc} from './StringColumn';
 
 
 export interface ILinkDesc {

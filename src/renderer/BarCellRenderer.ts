@@ -1,11 +1,11 @@
-import Column from '../model/Column';
-import {attr, noRenderer, setText} from './utils';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {colorOf} from './impose';
-import {IDataRow, INumberColumn, isNumberColumn, isNumbersColumn} from '../model';
-import {CANVAS_HEIGHT} from '../styles';
-import {ICellRendererFactory, default as IRenderContext, IImposer} from './interfaces';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {IDataRow, INumberColumn, isNumberColumn, isNumbersColumn} from '../model';
+import Column from '../model/Column';
+import {CANVAS_HEIGHT} from '../styles';
+import {colorOf} from './impose';
+import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {attr, noRenderer, setText} from './utils';
 
 
 /**

@@ -3,8 +3,8 @@
  */
 
 import Column from './Column';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {IDataRow} from './interfaces';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface IStringDesc {
   /**

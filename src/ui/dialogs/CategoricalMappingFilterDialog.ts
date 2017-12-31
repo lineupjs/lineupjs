@@ -1,7 +1,7 @@
-import AFilterDialog from './AFilterDialog';
 import CategoricalNumberColumn from '../../model/CategoricalNumberColumn';
-import {sortByProperty} from './ADialog';
 import {filterMissingMarkup} from '../missing';
+import {sortByProperty} from './ADialog';
+import AFilterDialog from './AFilterDialog';
 
 
 export default class CategoricalMappingFilterDialog extends AFilterDialog<CategoricalNumberColumn> {
@@ -51,7 +51,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
         d.isChecked = !d.isChecked;
         redraw();
       });
-      row.querySelector('input')!.addEventListener('input', function(this: HTMLInputElement) {
+      row.querySelector('input')!.addEventListener('input', function (this: HTMLInputElement) {
         d.range = parseFloat(this.value);
         redraw();
       });
@@ -74,6 +74,7 @@ export default class CategoricalMappingFilterDialog extends AFilterDialog<Catego
     function redrawSelectAll() {
       (<HTMLElement>popup.querySelector('.selectAll')).innerHTML = `<i class="lu-${isCheckedAll ? 'checked' : 'unchecked'}"></i>`;
     }
+
     popup.querySelector('thead')!.addEventListener('click', () => {
       isCheckedAll = !isCheckedAll;
       trData.forEach((row) => row.isChecked = isCheckedAll);

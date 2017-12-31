@@ -1,10 +1,10 @@
-import SidePanel from './panel/SidePanel';
-import DataProvider from '../provider/ADataProvider';
-import {ILineUpOptions} from '../interfaces';
-import EngineRenderer from './EngineRenderer';
 import {defaultOptions} from '../config';
+import {ILineUpOptions} from '../interfaces';
 import merge from '../internal/merge';
+import DataProvider from '../provider/ADataProvider';
 import {ALineUp} from './ALineUp';
+import EngineRenderer from './EngineRenderer';
+import SidePanel from './panel/SidePanel';
 
 export {ILineUpOptions} from '../interfaces';
 

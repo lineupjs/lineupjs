@@ -1,23 +1,23 @@
+import {nonUniformContext} from 'lineupengine/src/logic';
+import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer';
+import {ILineUpOptions} from '../interfaces';
+import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
+import {ICategoricalStatistics, IStatistics, round} from '../internal/math';
 /**
  * Created by Samuel Gratzl on 18.07.2017.
  */
 import {findOption} from '../internal/utils';
+import {Column, ICategoricalColumn, IDataRow, IGroupData, IGroupItem, isCategoricalColumn, isGroup} from '../model';
+import NumberColumn from '../model/NumberColumn';
+import Ranking from '../model/Ranking';
 import DataProvider, {default as ADataProvider} from '../provider/ADataProvider';
 import {
-  IImposer, possibleGroupRenderer, possibleRenderer, IRenderContext, chooseRenderer,
-  chooseGroupRenderer
+  chooseGroupRenderer, chooseRenderer, IImposer, IRenderContext, possibleGroupRenderer,
+  possibleRenderer
 } from '../renderer';
-import {ICategoricalColumn, Column, isCategoricalColumn, IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
-import NumberColumn from '../model/NumberColumn';
-import {nonUniformContext} from 'lineupengine/src/logic';
-import MultiTableRowRenderer from 'lineupengine/src/table/MultiTableRowRenderer';
-import Ranking from '../model/Ranking';
-import SlopeGraph from './SlopeGraph';
 import EngineRanking, {IEngineRankingContext} from './EngineRanking';
 import {IRankingHeaderContext, IRankingHeaderContextContainer} from './interfaces';
-import {ILineUpOptions} from '../interfaces';
-import AEventDispatcher, {suffix} from '../internal/AEventDispatcher';
-import {round, ICategoricalStatistics, IStatistics} from '../internal/math';
+import SlopeGraph from './SlopeGraph';
 
 
 export default class EngineRenderer extends AEventDispatcher {
@@ -246,7 +246,7 @@ export default class EngineRenderer extends AEventDispatcher {
     const round2 = (v: number) => round(v, 2);
 
 
-    const heightsFor = (ranking: Ranking, data: (IGroupItem|IGroupData)[]) => {
+    const heightsFor = (ranking: Ranking, data: (IGroupItem | IGroupData)[]) => {
       if (this.options.dynamicHeight) {
         const impl = this.options.dynamicHeight(data, ranking);
         if (impl) {
@@ -260,7 +260,7 @@ export default class EngineRenderer extends AEventDispatcher {
       const group = round2(this.zoomFactor * this.options.groupHeight!);
       return {
         defaultHeight: item,
-        height: (d: IGroupItem|IGroupData) => isGroup(d) ? group : item
+        height: (d: IGroupItem | IGroupData) => isGroup(d) ? group : item
       };
     };
     const groupPadding = round2(this.zoomFactor * this.options.groupPadding!);

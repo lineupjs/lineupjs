@@ -1,10 +1,10 @@
-import {renderMissingDOM, renderMissingCanvas} from './missing';
-import CompositeNumberColumn from '../model/CompositeNumberColumn';
-import {createData} from './MultiLevelCellRenderer';
 import {Column, IDataRow, IGroup} from '../model';
-import {matchColumns} from './utils';
-import {ICellRendererFactory, default as IRenderContext} from './interfaces';
+import CompositeNumberColumn from '../model/CompositeNumberColumn';
 import {CANVAS_HEIGHT} from '../styles';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {createData} from './MultiLevelCellRenderer';
+import {matchColumns} from './utils';
 
 
 /**

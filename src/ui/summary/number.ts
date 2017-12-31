@@ -1,12 +1,12 @@
+import {D3DragEvent, drag} from 'd3-drag';
+import {event as d3event, selectAll} from 'd3-selection';
+import {DENSE_HISTOGRAM} from '../../config';
+import {IStatistics, round} from '../../internal/math';
 import {INumberColumn} from '../../model';
 import Column from '../../model/Column';
-import {IRankingHeaderContext} from '../interfaces';
-import {DENSE_HISTOGRAM} from '../../config';
 import NumberColumn, {isMapAbleColumn} from '../../model/NumberColumn';
+import {IRankingHeaderContext} from '../interfaces';
 import {filterMissingNumberMarkup, updateFilterMissingNumberMarkup} from '../missing';
-import {round, IStatistics} from '../../internal/math';
-import {D3DragEvent, drag} from 'd3-drag';
-import {selectAll, event as d3event} from 'd3-selection';
 
 
 export default class NumberSummary {

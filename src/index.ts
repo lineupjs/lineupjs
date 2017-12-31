@@ -3,15 +3,14 @@
  * Created by Samuel Gratzl on 14.08.2015.
  */
 
-import './style.scss';
-import ADataProvider from './provider/ADataProvider';
-import {ITaggleOptions} from './ui/taggle';
-import Taggle from './ui/taggle';
 import * as model_ from './model';
 import * as provider_ from './provider';
+import ADataProvider from './provider/ADataProvider';
 import * as renderer_ from './renderer';
+import './style.scss';
 import * as ui_ from './ui';
 import LineUp, {ILineUpOptions} from './ui/LineUp';
+import Taggle, {ITaggleOptions} from './ui/taggle';
 
 export {deriveColors} from './provider/utils';
 export {deriveColumnDescriptions} from './provider';

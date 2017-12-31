@@ -4,8 +4,8 @@
 
 import Column from './Column';
 import CompositeNumberColumn, {ICompositeNumberDesc} from './CompositeNumberColumn';
-import {isNumberColumn} from './INumberColumn';
 import {IDataRow} from './interfaces';
+import {isNumberColumn} from './INumberColumn';
 
 const DEFAULT_SCRIPT = `let s = 0;
 col.forEach((c) => s += c.v);
@@ -61,7 +61,7 @@ function wrapWithContext(code: string) {
  * wrapper class for simpler column accessing
  */
 class ColumnWrapper {
-  constructor(private readonly c: Column, public readonly v: any, public readonly raw: number|null) {
+  constructor(private readonly c: Column, public readonly v: any, public readonly raw: number | null) {
 
   }
 
@@ -83,9 +83,9 @@ class ColumnWrapper {
  */
 class ColumnContext {
   private readonly lookup = new Map<string, ColumnWrapper>();
-  private _all: ColumnContext|null = null;
+  private _all: ColumnContext | null = null;
 
-  constructor(private readonly children: ColumnWrapper[], private readonly allFactory?: ()=>ColumnContext) {
+  constructor(private readonly children: ColumnWrapper[], private readonly allFactory?: () => ColumnContext) {
     children.forEach((c) => {
       this.lookup.set(`ID@${c.id}`, c);
       this.lookup.set(`NAME@${c.name}`, c);
@@ -119,7 +119,7 @@ class ColumnContext {
     return this.children[index];
   }
 
-  forEach(callback: ((c: ColumnWrapper, index: number)=>void)) {
+  forEach(callback: ((c: ColumnWrapper, index: number) => void)) {
     return this.children.forEach(callback);
   }
 
@@ -203,7 +203,7 @@ export default class ScriptColumn extends CompositeNumberColumn {
     const raws = <number[]>this._children.map((d) => isNumberColumn(d) ? d.getRawNumber(row) : null);
     const col = new ColumnContext(children.map((c, i) => new ColumnWrapper(c, values[i], raws[i])), () => {
       const cols = this.findMyRanker()!.flatColumns;
-      return new ColumnContext(cols.map((c) =>  new ColumnWrapper(c, c.getValue(row), isNumberColumn(c) ? c.getRawNumber(row): null)));
+      return new ColumnContext(cols.map((c) => new ColumnWrapper(c, c.getValue(row), isNumberColumn(c) ? c.getRawNumber(row) : null)));
     });
     return this.f.call(this, children, values, raws, col, row.v, row.i);
   }

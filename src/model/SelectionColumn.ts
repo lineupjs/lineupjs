@@ -2,8 +2,8 @@
  * Created by sam on 04.11.2016.
  */
 
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {IDataRow, IGroup} from './interfaces';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 /**
  * factory for creating a description creating a rank column
@@ -19,6 +19,7 @@ export interface ISelectionColumnDesc extends IValueColumnDesc<boolean> {
    * setter for selecting/deselecting the given row
    */
   setter(row: IDataRow, value: boolean): void;
+
   /**
    * setter for selecting/deselecting the given row
    */
@@ -93,6 +94,6 @@ export default class SelectionColumn extends ValueColumn<boolean> {
 
   group(row: IDataRow) {
     const isSelected = this.getValue(row);
-    return isSelected ? SelectionColumn.SELECTED_GROUP: SelectionColumn.NOT_SELECTED_GROUP;
+    return isSelected ? SelectionColumn.SELECTED_GROUP : SelectionColumn.NOT_SELECTED_GROUP;
   }
 }

@@ -4,21 +4,21 @@
 
 import {scaleOrdinal, schemeCategory10, schemeCategory20} from 'd3-scale';
 import Column from './Column';
-import ValueColumn from './ValueColumn';
-import StringColumn from './StringColumn';
-import {FIRST_IS_NAN, missingGroup} from './missing';
 import {
   IBaseCategoricalDesc, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter,
   isEqualFilter,
 } from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
+import {FIRST_IS_NAN, missingGroup} from './missing';
+import StringColumn from './StringColumn';
+import ValueColumn from './ValueColumn';
 
 
 function colorPool() {
   // dark, bright, and repeat
-  const colors = schemeCategory10.concat(schemeCategory20.filter((_d,i) => i % 2 === 1));
+  const colors = schemeCategory10.concat(schemeCategory20.filter((_d, i) => i % 2 === 1));
   let act = 0;
-  return () => colors[(act ++) % colors.length];
+  return () => colors[(act++) % colors.length];
 }
 
 /**

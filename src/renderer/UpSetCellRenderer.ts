@@ -1,9 +1,9 @@
 import {ICategoricalColumn, IDataRow, IGroup, isCategoricalColumn} from '../model';
-import {attr} from './utils';
 import Column from '../model/Column';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {ICellRendererFactory, default as IRenderContext} from './interfaces';
 import {CANVAS_HEIGHT, UPSET} from '../styles';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {attr} from './utils';
 
 
 export default class UpSetCellRenderer implements ICellRendererFactory {

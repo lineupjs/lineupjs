@@ -1,8 +1,8 @@
-import {RENDERER_EVENT_HOVER_CHANGED} from './interfaces';
-import DataProvider from '../provider/ADataProvider';
-import AEventDispatcher from '../internal/AEventDispatcher';
 import {ILineUpLike} from '../interfaces';
+import AEventDispatcher from '../internal/AEventDispatcher';
 import Column from '../model/Column';
+import DataProvider from '../provider/ADataProvider';
+import {RENDERER_EVENT_HOVER_CHANGED} from './interfaces';
 
 export abstract class ALineUp extends AEventDispatcher implements ILineUpLike {
   /**

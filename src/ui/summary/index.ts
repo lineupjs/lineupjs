@@ -1,13 +1,13 @@
+import {ISummaryRenderer} from '../interfaces';
+import aggregate from './aggregation';
+import summaryCategorical from './categorical';
+import hierarchy from './hierarchy';
+import summaryNumerical from './number';
+import selection from './selection';
 /**
  * Created by Samuel Gratzl on 25.07.2017.
  */
 import summaryString from './string';
-import summaryCategorical from './categorical';
-import summaryNumerical from './number';
-import selection from './selection';
-import aggregate from './aggregation';
-import hierarchy from './hierarchy';
-import {ISummaryRenderer} from '../interfaces';
 
 export const defaultSummaries: { [key: string]: ISummaryRenderer<any> } = {
   stringLike: summaryString,

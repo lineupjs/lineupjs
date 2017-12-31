@@ -1,10 +1,10 @@
-import {FIRST_IS_NAN, isMissingValue} from './missing';
-import Column, {IColumnDesc} from './Column';
 import {ascending, mean, median, quantile} from 'd3-array';
 import {format} from 'd3-format';
-import {IMappingFunction} from './MappingFunction';
 import {similar} from '../internal/math';
+import Column, {IColumnDesc} from './Column';
 import {IDataRow} from './interfaces';
+import {IMappingFunction} from './MappingFunction';
+import {FIRST_IS_NAN, isMissingValue} from './missing';
 
 
 export interface INumberColumn {
@@ -147,7 +147,7 @@ export class LazyBoxPlotData implements IAdvancedBoxPlotData {
     return this._sorted;
   }
 
-  private map(v: number|undefined) {
+  private map(v: number | undefined) {
     return this.scale && v !== null ? this.scale.apply(v!) : v!;
   }
 

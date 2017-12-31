@@ -3,9 +3,9 @@
  */
 
 import Column from './Column';
-import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 import {ICategoricalColumn} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
+import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 export interface IBooleanDesc {
   /**
@@ -71,7 +71,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
 
   getColor(row: IDataRow) {
     const flagged = this.getValue(row);
-    return flagged ? this.categoryColors[0]: this.categoryColors[1];
+    return flagged ? this.categoryColors[0] : this.categoryColors[1];
   }
 
   getLabel(row: IDataRow) {

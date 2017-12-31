@@ -1,6 +1,6 @@
 import Column from '../../model/Column';
-import ADialog from './ADialog';
 import {IDataProvider} from '../../provider/ADataProvider';
+import ADialog from './ADialog';
 
 export default class SearchDialog extends ADialog {
 
@@ -33,7 +33,7 @@ export default class SearchDialog extends ADialog {
     });
 
     const updateImpl = () => {
-      let search: string|RegExp = input.value;
+      let search: string | RegExp = input.value;
       const isRegex = checkbox.checked;
       if (search.length > 0) {
         if (isRegex) {

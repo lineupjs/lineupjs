@@ -1,5 +1,5 @@
-import ADialog from './ADialog';
 import Column from '../../model/Column';
+import ADialog from './ADialog';
 
 export {filterMissingMarkup, filterMissingNumberMarkup} from '../missing';
 

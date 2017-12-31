@@ -1,15 +1,15 @@
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {default as INumberColumn, IDataRow, IGroup, isMissingValue, isNumberColumn} from '../model';
 /**
  * a renderer rendering a bar for numerical columns
  */
 import Column from '../model/Column';
-import {ICellRendererFactory, IImposer, default as IRenderContext} from './interfaces';
-import {default as INumberColumn, IDataRow, IGroup, isMissingValue, isNumberColumn} from '../model';
 import {DEFAULT_FORMATTER, isNumbersColumn} from '../model/INumberColumn';
-import {attr, forEachChild} from './utils';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {colorOf} from './impose';
-import {ICategoricalStatistics, IStatistics} from '../internal/math';
 import {CANVAS_HEIGHT, DOT} from '../styles';
+import {colorOf} from './impose';
+import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {attr, forEachChild} from './utils';
 
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title = 'Dot(s)';
@@ -21,11 +21,11 @@ export default class DotCellRenderer implements ICellRendererFactory {
   private static getDOMRenderer(col: INumberColumn & Column) {
     const dots = isNumbersColumn(col) ? col.getDataLength() : 1;
     let tmp = '';
-    for(let i = 0; i < dots; ++i) {
+    for (let i = 0; i < dots; ++i) {
       tmp += `<div style='background-color: ${col.color}' title=''></div>`;
     }
 
-    const update = (n: HTMLElement, vs: number[], labels: string[], colors: (string|null)[]) => {
+    const update = (n: HTMLElement, vs: number[], labels: string[], colors: (string | null)[]) => {
       //adapt the number of children
       if (n.children.length !== vs.length) {
         let tmp = '';
@@ -39,7 +39,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         attr(<HTMLElement>d, {
           title: labels[i]
         }, {
-          display: isMissingValue(v) ? 'none': null,
+          display: isMissingValue(v) ? 'none' : null,
           left: `${Math.round(v * 100)}%`,
           // jitter
           top: vs.length > 1 ? `${Math.round(Math.random() * 80 + 10)}%` : null,
@@ -48,12 +48,12 @@ export default class DotCellRenderer implements ICellRendererFactory {
       });
     };
 
-    const render = (ctx: CanvasRenderingContext2D, vs: number[], colors: (string|null)[], width: number) => {
+    const render = (ctx: CanvasRenderingContext2D, vs: number[], colors: (string | null)[], width: number) => {
       ctx.save();
       ctx.globalAlpha = DOT.opacity;
       vs.forEach((v, i) => {
         ctx.fillStyle = colors[i] || DOT.color;
-        ctx.fillRect(Math.max(0, v * width - DOT.size/2), 0, DOT.size, CANVAS_HEIGHT);
+        ctx.fillRect(Math.max(0, v * width - DOT.size / 2), 0, DOT.size, CANVAS_HEIGHT);
       });
       ctx.restore();
     };
@@ -79,7 +79,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
         return update(n, vs, vs.map(DEFAULT_FORMATTER), vs.map((_: any) => color));
       },
       render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
-         if (renderMissingCanvas(ctx, col, d, width)) {
+        if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
         const color = colorOf(col, d, imposer);

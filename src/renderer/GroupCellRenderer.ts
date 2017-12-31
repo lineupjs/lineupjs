@@ -1,8 +1,8 @@
+import {IDataRow, IGroup} from '../model';
 import Column from '../model/Column';
 import GroupColumn from '../model/GroupColumn';
 import {ICellRendererFactory} from './interfaces';
 import {noop} from './utils';
-import {IDataRow, IGroup} from '../model';
 
 /**
  * renders a string with additional alignment behavior
