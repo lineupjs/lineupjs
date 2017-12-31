@@ -1,10 +1,9 @@
 import Column from '../model/Column';
-import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
-import {IDataRow} from '../model';
+import {INumberColumn, isNumberColumn, isNumbersColumn, IDataRow} from '../model';
 import {attr, noop, noRenderer, setText} from './utils';
 import {renderMissingDOM} from './missing';
-import {colorOf, IImposer} from './impose';
-import {ICellRendererFactory, default as IRenderContext} from './interfaces';
+import {colorOf} from './impose';
+import {ICellRendererFactory, default as IRenderContext, IImposer} from './interfaces';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 export default class CircleCellRenderer implements ICellRendererFactory {

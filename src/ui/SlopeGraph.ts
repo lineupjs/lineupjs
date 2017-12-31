@@ -5,7 +5,7 @@ import {IExceptionContext, range} from 'lineupengine/src/logic';
 import {ITableSection} from 'lineupengine/src/table/MultiTableRowRenderer';
 import {IDataRow, IGroup, IGroupData, IGroupItem, isGroup} from '../model';
 import {IRankingHeaderContextContainer} from './interfaces';
-import {SLOPEGRAPH_WIDTH} from '../config';
+import {SLOPEGRAPH_WIDTH} from '../styles';
 
 interface ISlope {
   isSelected(selection: {has(dataIndex: number):boolean}): boolean;

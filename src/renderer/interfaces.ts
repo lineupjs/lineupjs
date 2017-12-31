@@ -1,6 +1,5 @@
 import Column from '../model/Column';
 import {IDataRow, IGroup} from '../model';
-import {ITextRenderHints} from './utils';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 export interface IImposer {
@@ -79,9 +78,6 @@ interface IRenderContext {
   readonly totalNumberOfRows: number;
 
   colWidth(col: Column): number;
-
-  readonly textHints: ITextRenderHints;
-
 }
 
 export interface ICellRendererFactory {

@@ -9,7 +9,7 @@ import {IMultiLevelColumn} from '../model/CompositeColumn';
 import {round} from '../internal/math';
 import {isEdge, StyleManager} from 'lineupengine/src/style';
 import {gridClass} from '../renderer/MultiLevelCellRenderer';
-import {COLUMN_PADDING} from '../config';
+import {COLUMN_PADDING} from '../styles';
 import {findTypeLike} from '../model/utils';
 
 

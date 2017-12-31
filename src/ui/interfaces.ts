@@ -1,7 +1,7 @@
 import {IDataProvider} from '../provider/ADataProvider';
 import {
   IGroupData, IGroupItem, Column, INumberColumn, ICategoricalColumn} from '../model';
-import {IDOMRenderContext} from '../renderer';
+import {IRenderContext} from '../renderer';
 import AFilterDialog from './dialogs/AFilterDialog';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
@@ -34,7 +34,7 @@ export interface IRankingHeaderContextContainer {
   getPossibleRenderer(col: Column): { item: { type: string, label: string }[], group: { type: string, label: string }[] };
 }
 
-export interface IRankingBodyContext extends IRankingHeaderContextContainer, IDOMRenderContext {
+export interface IRankingBodyContext extends IRankingHeaderContextContainer, IRenderContext {
   isGroup(index: number): boolean;
 
   getGroup(index: number): IGroupData;

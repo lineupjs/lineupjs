@@ -4,16 +4,16 @@
 import {IColumn} from 'lineupengine/src';
 import Column from '../model/Column';
 import {createHeader, updateHeader} from './header';
-import {IDOMCellRenderer, IDOMGroupRenderer} from '../renderer';
+import {ICellRenderer, IGroupCellRenderer} from '../renderer';
 import {IRankingContext, ISummaryUpdater} from './interfaces';
 import {findTypeLike} from '../model/utils';
 
 
 export interface IRenderers {
   singleId: string;
-  single: IDOMCellRenderer;
+  single: ICellRenderer;
   groupId: string;
-  group: IDOMGroupRenderer;
+  group: IGroupCellRenderer;
 }
 
 export default class RenderColumn implements IColumn {
@@ -81,10 +81,10 @@ export default class RenderColumn implements IColumn {
     }
     if (isGroup) {
       const g = this.ctx.getGroup(index);
-      this.renderers.group.update(node, g, g.rows, this.ctx.statsOf(<any>this.c));
+      this.renderers.group.update(node, g, g.rows);
     } else {
       const r = this.ctx.getRow(index);
-      this.renderers.single.update(node, r, r.relativeIndex, r.group, this.ctx.statsOf(<any>this.c));
+      this.renderers.single.update(node, r, r.relativeIndex, r.group);
     }
     return node;
   }

@@ -3,7 +3,10 @@
  */
 import {findOption} from '../internal/utils';
 import DataProvider, {default as ADataProvider} from '../provider/ADataProvider';
-import {createDOM, IImposer, IDOMRenderContext, createDOMGroup, possibleGroupRenderer, possibleRenderer} from '../renderer';
+import {
+  IImposer, possibleGroupRenderer, possibleRenderer, IRenderContext, chooseRenderer,
+  chooseGroupRenderer
+} from '../renderer';
 import {ICategoricalColumn, Column, isCategoricalColumn, IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
 import NumberColumn from '../model/NumberColumn';
 import {nonUniformContext} from 'lineupengine/src/logic';
@@ -29,7 +32,7 @@ export default class EngineRenderer extends AEventDispatcher {
   private readonly rankings: EngineRanking[] = [];
   private readonly slopeGraphs: SlopeGraph[] = [];
 
-  readonly ctx: IRankingHeaderContextContainer & IDOMRenderContext & IEngineRankingContext;
+  readonly ctx: IRankingHeaderContextContainer & IRenderContext & IEngineRankingContext;
 
   private readonly updateAbles: ((ctx: IRankingHeaderContext) => void)[] = [];
   private zoomFactor = 1;
@@ -41,29 +44,39 @@ export default class EngineRenderer extends AEventDispatcher {
     this.node.id = this.options.idPrefix;
     parent.appendChild(this.node);
 
+    const statsOf = (col: Column) => {
+      const r = this.histCache.get(col.id);
+      if (r == null || r instanceof Promise) {
+        return null;
+      }
+      return r;
+    };
     this.ctx = {
       document: parent.ownerDocument,
       provider: data,
       filters: this.options.filters!,
       summaries: this.options.summaries ? this.options.summaries! : {},
       option: findOption(Object.assign({useGridLayout: true}, this.options)),
-      statsOf: (col: Column) => {
-        const r = this.histCache.get(col.id);
-        if (r == null || r instanceof Promise) {
-          return null;
-        }
-        return r;
+      statsOf,
+      renderer: (col: Column, imposer?: IImposer) => {
+        const r = chooseRenderer(col, this.options.renderers);
+        return r.create(col, this.ctx, statsOf(col), imposer);
       },
-      renderer: (col: Column, imposer?: IImposer) => createDOM(col, this.options.renderers, this.ctx, imposer),
-      groupRenderer: (col: Column, imposer?: IImposer) => createDOMGroup(col, this.options.renderers, this.ctx, imposer),
-      idPrefix: this.options.idPrefix,
+      groupRenderer: (col: Column, imposer?: IImposer) => {
+        const r = chooseGroupRenderer(col, this.options.renderers);
+        return r.createGroup(col, this.ctx, statsOf(col), imposer);
+      }, idPrefix: this.options.idPrefix,
       totalNumberOfRows: 0,
-      createRenderer: (col: Column, imposer?: IImposer) => {
-        const single = createDOM(col, this.options.renderers, this.ctx, imposer);
-        const group = createDOMGroup(col, this.options.renderers, this.ctx, imposer);
+      createRenderer(col: Column, imposer?: IImposer) {
+        const single = this.renderer(col, imposer);
+        const group = this.groupRenderer(col, imposer);
         return {single, group, singleId: col.getRenderer(), groupId: col.getGroupRenderer()};
       },
-      getPossibleRenderer: (col: Column) => ({item: possibleRenderer(col, this.options.renderers), group: possibleGroupRenderer(col, this.options.renderers)})
+      getPossibleRenderer: (col: Column) => ({
+        item: possibleRenderer(col, this.options.renderers),
+        group: possibleGroupRenderer(col, this.options.renderers)
+      }),
+      colWidth: (col: Column) => col.isHidden() ? 0 : col.getWidth()
     };
 
     this.table = new MultiTableRowRenderer(this.node, `#${options.idPrefix}`);

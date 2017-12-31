@@ -10,7 +10,7 @@ import Column from '../model/Column';
 import {IExceptionContext, nonUniformContext, uniformContext} from 'lineupengine/src/logic';
 import StackColumn from '../model/StackColumn';
 import {isMultiLevelColumn} from '../model/CompositeColumn';
-import {IDOMRenderContext} from '../renderer';
+import {IRenderContext} from '../renderer';
 import SelectionManager from './SelectionManager';
 import {lineupAnimation} from './animation';
 import PrefetchMixin from 'lineupengine/src/mixin/PrefetchMixin';
@@ -19,10 +19,10 @@ import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces'
 import {IDataRow, IGroupData, IGroupItem, isGroup} from '../model';
 import AEventDispatcher from '../internal/AEventDispatcher';
 import debounce from '../internal/debounce';
-import {COLUMN_PADDING} from '../config';
+import {COLUMN_PADDING} from '../styles';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
 
-export interface IEngineRankingContext extends IRankingHeaderContextContainer, IDOMRenderContext {
+export interface IEngineRankingContext extends IRankingHeaderContextContainer, IRenderContext {
   createRenderer(c: Column): IRenderers;
 }
 
