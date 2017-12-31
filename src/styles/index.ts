@@ -40,5 +40,12 @@ export const DOT = {
   opacity: parseFloat(getStyle('$lu_renderer_dot_opacity', '0.7'))
 };
 
+export const BOX_PLOT = {
+  box: getStyle('lu_renderer_boxplot_box', '#e0e0e0'),
+  stroke: getStyle('lu_renderer_boxplot_stroke', 'black'),
+  sort: getStyle('lu_renderer_boxplot_sort_indicator', '#ffa500'),
+  outlier: getStyle('lu_renderer_boxplot_outlier', '#e0e0e0')
+};
+
 export const SLOPEGRAPH_WIDTH = 200;
 export const CANVAS_HEIGHT = 1;

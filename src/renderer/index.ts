@@ -3,7 +3,7 @@
  */
 
 import Column from '../model/Column';
-import ICellRendererFactory from './ICellRendererFactory';
+import {ICellRendererFactory} from './interfaces';
 import BarCellRenderer from './BarCellRenderer';
 import {DefaultCellRenderer} from './DefaultCellRenderer';
 import StringCellRenderer from './StringCellRenderer';
@@ -21,8 +21,6 @@ import CircleCellRenderer from './CircleCellRenderer';
 import BoxplotCellRenderer from './BoxplotCellRenderer';
 import LoadingCellRenderer from './LoadingCellRenderer';
 import HeatmapCellRenderer from './HeatmapCellRenderer';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import {EmptyCellRenderer} from './EmptyCellRenderer';
 import RankCellRenderer from './RankCellRenderer';
 import CategoricalColorCellRenderer from './CategoricalColorCellRenderer';
 import AggregateGroupRenderer from './AggregateGroupRenderer';
@@ -31,15 +29,10 @@ import ImageCellRenderer from './ImageCellRenderer';
 import BooleanCellRenderer from './BooleanCellRenderer';
 import InterleavingCellRenderer from './InterleavingCellRenderer';
 import DotCellRenderer from './DotCellRenderer';
-import {IImposer} from './IRenderContext';
 import CategoricalStackedDistributionlRenderer from './CategoricalStackedDistributionlRenderer';
 import GroupCellRenderer from './GroupCellRenderer';
 
-export {default as ICanvasCellRenderer, ICanvasGroupRenderer} from './ICanvasCellRenderer';
-export {default as ICellRenderFactory} from './ICellRendererFactory';
-export {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
-export {default as IRenderContext, IImposer} from './IRenderContext';
-export {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
+export {default as IRenderContext, IImposer, IGroupCellRenderer, ICellRenderer, ICellRendererFactory} from './interfaces';
 
 
 export const defaultCellRenderer = new DefaultCellRenderer();
@@ -69,7 +62,6 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
   circle: new CircleCellRenderer(),
   boxplot: new BoxplotCellRenderer(),
   loading: new LoadingCellRenderer(),
-  empty: new EmptyCellRenderer(),
   aggregate: new AggregateGroupRenderer(),
   histogram: new HistogramRenderer(),
   interleaving: new InterleavingCellRenderer(),
@@ -79,34 +71,14 @@ export const renderers: { [key: string]: ICellRendererFactory } = {
 };
 
 
-function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
+export function chooseRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getRenderer()];
   return r || defaultCellRenderer;
 }
 
-function chooseGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
+export function chooseGroupRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }): ICellRendererFactory {
   const r = renderers[col.getGroupRenderer()];
   return r || defaultCellRenderer;
-}
-
-export function createDOM(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext, imposer?: IImposer) {
-  const r = chooseRenderer(col, renderers);
-  return (r.createDOM ? r.createDOM.bind(r) : defaultCellRenderer.createDOM.bind(defaultCellRenderer))(col, context, imposer);
-}
-
-export function createCanvas(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext, imposer?: IImposer) {
-  const r = chooseRenderer(col, renderers);
-  return (r.createCanvas ? r.createCanvas.bind(r) : defaultCellRenderer.createCanvas.bind(defaultCellRenderer))(col, context, imposer);
-}
-
-export function createDOMGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: IDOMRenderContext, imposer?: IImposer) {
-  const r = chooseGroupRenderer(col, renderers);
-  return (r.createGroupDOM ? r.createGroupDOM.bind(r) : defaultCellRenderer.createGroupDOM.bind(defaultCellRenderer))(col, context, imposer);
-}
-
-export function createCanvasGroup(col: Column, renderers: { [key: string]: ICellRendererFactory }, context: ICanvasRenderContext, imposer?: IImposer) {
-  const r = chooseGroupRenderer(col, renderers);
-  return (r.createGroupCanvas ? r.createGroupCanvas.bind(r) : defaultCellRenderer.createGroupCanvas.bind(defaultCellRenderer))(col, context, imposer);
 }
 
 export function possibleRenderer(col: Column, renderers: { [key: string]: ICellRendererFactory }, isGroup: boolean = false): {type: string, label: string}[] {

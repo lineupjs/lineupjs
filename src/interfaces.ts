@@ -1,4 +1,4 @@
-import ICellRendererFactory from './renderer/ICellRendererFactory';
+import {ICellRendererFactory} from './renderer';
 import {IDataProvider} from './provider/ADataProvider';
 import {ISummaryRenderer, IFilterDialog} from './ui/interfaces';
 import Ranking from './model/Ranking';

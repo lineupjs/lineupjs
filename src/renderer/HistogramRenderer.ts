@@ -2,9 +2,9 @@ import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
 import {IDataRow, IGroup, isMissingValue} from '../model';
 import {computeStats, getNumberOfBins, IStatistics} from '../internal/math';
-import {forEachChild} from './utils';
+import {forEachChild, noop} from './utils';
 import NumbersColumn from '../model/NumbersColumn';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {renderMissingDOM} from './missing';
 import {colorOf} from './impose';
 import {DENSE_HISTOGRAM} from '../config';
 import {ICellRendererFactory, IImposer, default as IRenderContext} from './interfaces';
@@ -19,14 +19,14 @@ export default class HistogramRenderer implements ICellRendererFactory {
     return (isNumberColumn(col) && isGroup) || (isNumbersColumn(col) && !isGroup);
   }
 
-  private static getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn & Column, imposer?: IImposer) {
+  private static getHistDOMRenderer(totalNumberOfRows: number, col: INumberColumn & Column, globalHist: IStatistics | null, imposer?: IImposer) {
     const guessedBins = getNumberOfBins(totalNumberOfRows);
     let bins = '';
     for (let i = 0; i < guessedBins; ++i) {
       bins += `<div title="Bin ${i}: 0"><div style="height: 0" ></div></div>`;
     }
 
-    const render = (n: HTMLElement, rows: IDataRow[], globalHist: IStatistics | null) => {
+    const render = (n: HTMLElement, rows: IDataRow[]) => {
       const {bins, max, hist} = HistogramRenderer.createHist(globalHist, guessedBins, rows, col);
       //adapt the number of children
       if (n.children.length !== bins) {
@@ -45,46 +45,30 @@ export default class HistogramRenderer implements ICellRendererFactory {
         inner.style.backgroundColor = colorOf(col, null, imposer);
       });
     };
-    return {template: `<div${guessedBins > DENSE_HISTOGRAM ? ' class="lu-dense': ''}>${bins}</div>`, render};
+    return {template: `<div${guessedBins > DENSE_HISTOGRAM ? ' class="lu-dense' : ''}>${bins}</div>`, render};
   }
 
-  create(col: NumbersColumn, context: IRenderContext, imposer?: IImposer) {
-    const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
+  create(col: NumbersColumn, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
+    const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, hist, imposer);
     return {
       template,
-      update: (n: HTMLElement, row: IDataRow, _i: number, _group: IGroup, globalHist: IStatistics | null) => {
+      update: (n: HTMLElement, row: IDataRow) => {
         if (renderMissingDOM(n, col, row)) {
           return;
         }
-        render(n, [row], globalHist);
-      }
+        render(n, [row]);
+      },
+      render: noop
     };
   }
 
-  createGroupDOM(col: INumberColumn & Column, context: IDOMRenderContext, imposer?: IImposer): IDOMGroupRenderer {
-    const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
+  createGroup(col: INumberColumn & Column, context: IRenderContext, hist: IStatistics | null, imposer?: IImposer) {
+    const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, hist, imposer);
     return {
       template,
-      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[], globalHist: IStatistics | null) => {
-        render(n, rows, globalHist);
+      update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
+        render(n, rows);
       }
-    };
-  }
-
-  private static getHistCanvasRenderer(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer) {
-    const guessedBins = getNumberOfBins(context.totalNumberOfRows);
-    const padding = guessedBins > DENSE_HISTOGRAM ? 0 : context.option('rowBarPadding', 1);
-
-    return (ctx: CanvasRenderingContext2D, height: number, rows: IDataRow[], globalHist: IStatistics | null) => {
-      const {max, bins, hist} = HistogramRenderer.createHist(globalHist, guessedBins, rows, col);
-      const widthPerBin = context.colWidth(col) / bins;
-      const total = height - padding;
-
-      ctx.fillStyle = colorOf(col, null, imposer) || context.option('style.histogram', 'lightgray');
-      hist.forEach(({length}, i) => {
-        const height = (length / max) * total;
-        ctx.fillRect(i * widthPerBin + padding, (total - height) + padding, widthPerBin - 2 * padding, height);
-      });
     };
   }
 
@@ -94,30 +78,12 @@ export default class HistogramRenderer implements ICellRendererFactory {
     if (isNumbersColumn(col)) {
       //multiple values
       const values = (<number[]>[]).concat(...rows.map((r) => col.getNumbers(r)));
-      stats = computeStats(values, (v: number) => v,  isMissingValue, [0, 1], bins);
+      stats = computeStats(values, (v: number) => v, isMissingValue, [0, 1], bins);
     } else {
       stats = computeStats(rows, (r: IDataRow) => col.getNumber(r), (r: IDataRow) => col.isMissing(r), [0, 1], bins);
     }
 
     const max = Math.max(stats.maxBin, globalHist ? globalHist.maxBin : 0);
     return {bins, max, hist: stats.hist};
-  }
-
-  createCanvas(col: NumbersColumn, context: ICanvasRenderContext, imposer?: IImposer): ICanvasCellRenderer {
-    const r = HistogramRenderer.getHistCanvasRenderer(col, context, imposer);
-    return (ctx: CanvasRenderingContext2D, row: IDataRow, i: number, _dx: number, _dy: number, _group: IGroup, globalHist: IStatistics | null) => {
-      if (renderMissingCanvas(ctx, col, row, context.rowHeight(i))) {
-          return;
-      }
-      return r(ctx, context.rowHeight(i), [row], globalHist);
-    };
-  }
-
-
-  createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer): ICanvasGroupRenderer {
-    const r = HistogramRenderer.getHistCanvasRenderer(col, context, imposer);
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[], _dx: number, _dy: number, globalHist: IStatistics | null) => {
-      return r(ctx, context.groupHeight(group), rows, globalHist);
-    };
   }
 }

@@ -7,9 +7,9 @@ import {
 import {renderMissingCanvas, renderMissingDOM} from './missing';
 import {IDataRow, IGroup, isNumberColumn} from '../model';
 import NumberColumn from '../model/NumberColumn';
-import {colorOf, IImposer} from './impose';
-import {default as IRenderContext, ICellRendererFactory} from './interfaces';
-import {CANVAS_HEIGHT} from '../styles';
+import {colorOf} from './impose';
+import {default as IRenderContext, ICellRendererFactory, IImposer} from './interfaces';
+import {BOX_PLOT, CANVAS_HEIGHT, DOT} from '../styles';
 import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 export function computeLabel(v: IBoxPlotData) {
@@ -44,7 +44,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         const label = col.getRawBoxPlotData(d)!;
         renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
       },
-      render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
         if (renderMissingCanvas(ctx, col, d, width)) {
           return;
         }
@@ -63,7 +63,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
           max: data.max * width,
           outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined
         };
-        renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', colorOf(col, d, imposer), CANVAS_HEIGHT, 0, context);
+        renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', colorOf(col, d, imposer), CANVAS_HEIGHT, 0);
       }
     };
   }
@@ -153,21 +153,14 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
   }
 }
 
-function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: string, color: string | null, height: number, topPadding: number, context: ICanvasRenderContext) {
-  // TODO padding
-  const boxColor = color || context.option('style.boxplot.box', '#e0e0e0');
-  const boxStroke = context.option('style.boxplot.stroke', 'black');
-  const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ffa500');
-
-  const boxTopPadding = topPadding + ((height - topPadding * 2) * 0.1);
-
+function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: string, color: string | null, height: number, topPadding: number) {
   const left = Math.max((box.q1 - 1.5 * (box.q3 - box.q1)), box.min);
   const right = Math.min((box.q3 + 1.5 * (box.q3 - box.q1)), box.max);
 
-  ctx.fillStyle = boxColor;
-  ctx.strokeStyle = boxStroke;
+  ctx.fillStyle = color || BOX_PLOT.box;
+  ctx.strokeStyle = BOX_PLOT.stroke;
   ctx.beginPath();
-  ctx.rect(box.q1, boxTopPadding, box.q3 - box.q1, height - (boxTopPadding * 2));
+  ctx.rect(box.q1, 0, box.q3 - box.q1, height);
   ctx.fill();
   ctx.stroke();
 
@@ -180,8 +173,8 @@ function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: s
   ctx.lineTo(box.q1, middlePos);
   ctx.moveTo(left, topPadding);
   ctx.lineTo(left, bottomPos);
-  ctx.moveTo(box.median, boxTopPadding);
-  ctx.lineTo(box.median, height - boxTopPadding);
+  ctx.moveTo(box.median, 0);
+  ctx.lineTo(box.median, height);
   ctx.moveTo(box.q3, middlePos);
   ctx.lineTo(right, middlePos);
   ctx.moveTo(right, topPadding);
@@ -190,7 +183,7 @@ function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: s
   ctx.fill();
 
   if (sort !== '') {
-    ctx.strokeStyle = boxSortIndicator;
+    ctx.strokeStyle = BOX_PLOT.sort;
     ctx.beginPath();
     ctx.moveTo(<number>box[<keyof IBoxPlotData>sort], topPadding);
     ctx.lineTo(<number>box[<keyof IBoxPlotData>sort], height - topPadding);
@@ -201,8 +194,9 @@ function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: s
   if (!box.outlier) {
     return;
   }
+  ctx.fillStyle = BOX_PLOT.outlier;
   box.outlier.forEach((v) => {
     // currently dots with 3px
-    ctx.fillRect(v - 1, middlePos - 1, 3, 3);
+    ctx.fillRect(Math.max(v - DOT.size/2, 0), middlePos - DOT.size/2, DOT.size, DOT.size);
   });
 }
