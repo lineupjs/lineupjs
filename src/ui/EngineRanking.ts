@@ -28,6 +28,7 @@ export interface IEngineRankingContext extends IRankingHeaderContextContainer, I
 
 export interface IEngineRankingOptions {
   animation: boolean;
+  levelOfDetail: (rowIndex: number) => 'high'|'false';
   customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
 }
 
@@ -62,6 +63,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   private options: Readonly<IEngineRankingOptions> = {
     animation: true,
+    levelOfDetail: () => 'high',
     customRowUpdate: () => undefined
   };
 
@@ -198,6 +200,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   protected createRow(node: HTMLElement, rowIndex: number): void {
     node.classList.add('lu-row');
+    const lod = this.options.levelOfDetail(rowIndex);
+    if (lod === 'high') {
+      delete node.dataset.lod;
+    } else {
+      node.dataset.lod = lod;
+    }
     super.createRow(node, rowIndex);
 
     this.options.customRowUpdate(node, rowIndex);
@@ -328,13 +336,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
       if (provider.isAggregated(this.ranking, group)) {
         r.push(Object.assign({rows: groupData}, group));
-      } else {
-        r.push(...groupData.map((r, i) => Object.assign({
-          group,
-          relativeIndex: i,
-          meta: toMeta(i, groupData.length)
-        }, r)));
+        return;
       }
+      r.push(...groupData.map((r, i) => Object.assign({
+        group,
+        relativeIndex: i,
+        meta: toMeta(i, groupData.length)
+      }, r)));
     });
     return r;
   }

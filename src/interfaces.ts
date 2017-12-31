@@ -20,8 +20,9 @@ export interface ILineUpOptions {
   rowPadding: number;
   rowHeight: number;
 
-  dynamicHeight?: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => { defaultHeight: number, height: (item: IGroupItem | IGroupData) => number } | null;
-  customRowUpdate?: (row: HTMLElement, rowIndex: number) => void;
+  levelOfDetail: (rowIndex: number) => 'high'|'false';
+  dynamicHeight: (data: (IGroupItem | IGroupData)[], ranking: Ranking) => { defaultHeight: number, height: (item: IGroupItem | IGroupData) => number } | null;
+  customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
 
 }
 

@@ -22,7 +22,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   private isDynamicLeafHeight: boolean = false;
 
   private rule: IRule | null = null;
-  private levelOfDetail: (row: HTMLElement, rowIndex: number) => void;
+  private levelOfDetail: ((rowIndex: number) => 'high'|'low')|null = null;
   private readonly resizeListener = () => debounce(() => this.update(), 100);
   private readonly renderer: EngineRenderer;
 
@@ -42,14 +42,7 @@ export default class TaggleRenderer extends AEventDispatcher {
         }
         return options.dynamicHeight ? options.dynamicHeight(data, ranking) : null;
       },
-      customRowUpdate: (row: HTMLElement, rowIndex: number) => {
-        if (this.levelOfDetail) {
-          this.levelOfDetail(row, rowIndex);
-        }
-        if (options.customRowUpdate) {
-          options.customRowUpdate(row, rowIndex);
-        }
-      }
+      levelOfDetail: (rowIndex: number) => this.levelOfDetail ? this.levelOfDetail(rowIndex) : 'high'
     }));
 
     //
@@ -80,9 +73,7 @@ export default class TaggleRenderer extends AEventDispatcher {
 
   private dynamicHeight(data: (IGroupData | IGroupItem)[]) {
     if (!this.rule) {
-      this.levelOfDetail = (row: HTMLElement) => {
-        delete row.dataset.lod;
-      };
+      this.levelOfDetail = null;
       return null;
     }
 
@@ -99,14 +90,9 @@ export default class TaggleRenderer extends AEventDispatcher {
       return typeof instance.item === 'number' ? instance.item : instance.item(item);
     };
 
-    this.levelOfDetail = (row: HTMLElement, rowIndex: number) => {
+    this.levelOfDetail = (rowIndex: number) => {
       const item = data[rowIndex];
-      const lod = this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
-      if (lod === 'high') {
-        delete row.dataset.lod;
-      } else {
-        row.dataset.lod = lod;
-      }
+      return this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
     };
 
     return {
