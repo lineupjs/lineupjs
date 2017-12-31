@@ -2,14 +2,11 @@ import {IGroupData, IGroupItem, isGroup} from '../../model';
 import {IRule} from './interfaces';
 
 export default function spaceFillingRule(config: { groupHeight: number, rowHeight: number, groupPadding: number, rowPadding: number }) {
-  function levelOfDetail(item: IGroupData | IGroupItem, height: number): 'high' | 'medium' | 'low' {
+  function levelOfDetail(item: IGroupData | IGroupItem, height: number): 'high' | 'low' {
     const group = isGroup(item);
     const maxHeight = group ? config.groupHeight : config.rowHeight;
     if (height >= maxHeight * 0.9) {
       return 'high';
-    }
-    if (height >= maxHeight * 0.4) {
-      return 'medium';
     }
     return 'low';
   }

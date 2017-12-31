@@ -197,12 +197,12 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   protected createRow(node: HTMLElement, rowIndex: number): void {
+    node.classList.add('lu-row');
     super.createRow(node, rowIndex);
-    const isGroup = this.renderCtx.isGroup(rowIndex);
 
     this.options.customRowUpdate(node, rowIndex);
 
-    if (isGroup) {
+    if (this.renderCtx.isGroup(rowIndex)) {
       node.dataset.agg = 'group';
       return;
     }
@@ -211,7 +211,6 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     node.dataset.i = i.toString();
     node.dataset.agg = 'detail'; //or 'group'
     node.dataset.meta = meta || '';
-    node.classList.add('lu-row');
 
     this.selection.updateState(node, i);
     this.selection.add(node);

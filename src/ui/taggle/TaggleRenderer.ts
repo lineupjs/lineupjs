@@ -54,8 +54,7 @@ export default class TaggleRenderer extends AEventDispatcher {
 
     //
     this.renderer.style.addRule('taggle_lod_rule', `
-      #${options.idPrefix} [data-lod=low][data-agg=detail]:hover,
-      #${options.idPrefix} [data-lod=medium][data-agg=detail]:hover {
+      #${options.idPrefix} [data-lod=low][data-agg=detail]:hover {
         /* show regular height for hovered rows in low + medium LOD */
         height: ${options.rowHeight}px !important;
       }
@@ -82,7 +81,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   private dynamicHeight(data: (IGroupData | IGroupItem)[]) {
     if (!this.rule) {
       this.levelOfDetail = (row: HTMLElement) => {
-        row.dataset.lod = 'high';
+        delete row.dataset.lod;
       };
       return null;
     }
@@ -102,7 +101,12 @@ export default class TaggleRenderer extends AEventDispatcher {
 
     this.levelOfDetail = (row: HTMLElement, rowIndex: number) => {
       const item = data[rowIndex];
-      row.dataset.lod = this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
+      const lod = this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
+      if (lod === 'high') {
+        delete row.dataset.lod;
+      } else {
+        row.dataset.lod = lod;
+      }
     };
 
     return {
