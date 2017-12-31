@@ -1,5 +1,5 @@
 import Column from '../model/Column';
-import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
+import {ICellRenderer, IGroupCellRenderer} from './interfaces';
 
 /**
  * utility function to sets attributes and styles in a nodes
@@ -24,6 +24,16 @@ export function attr<T extends (HTMLElement | SVGElement)>(node: T, attrs: { [ke
   });
   return setText(node, text);
 }
+
+export function noop() {
+  // no op
+}
+
+export const noRenderer = {
+  template: ``,
+  update: noop,
+  render: noop
+};
 
 export function setText<T extends Node>(node: T, text?: string): T {
   if (text === undefined) {
@@ -121,32 +131,13 @@ export function clipText(ctx: CanvasRenderingContext2D, text: string, x: number,
   return render(text.substring(0, min + 1) + ellipsis);
 }
 
-export function showOverlay(parentElement: HTMLElement, id: string, dx: number, dy: number) {
-  let overlay = <HTMLDivElement>parentElement.querySelector(`div.lu-overlay#O${id}`);
-  if (!overlay) {
-    overlay = parentElement.ownerDocument.createElement('div');
-    overlay.classList.add('lu-overlay');
-    overlay.id = `O${id}`;
-    parentElement.appendChild(overlay);
-  }
-  overlay.style.display = 'block';
-  overlay.style.left = `${dx}px`;
-  overlay.style.top = `${dy}px`;
-  return overlay;
-}
-
-export function hideOverlays(parentElement: HTMLElement) {
-  forEach(parentElement, 'div.lu-overlay', (d: HTMLDivElement) => d.style.display = null);
-}
-
-
 /**
  * matches the columns and the dom nodes representing them
  * @param {SVGGElement | HTMLElement} node row
  * @param {{column: Column; renderer: IDOMCellRenderer}[]} columns columns to check
  * @param {string} helperType create types of
  */
-export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: IDOMCellRenderer, groupRenderer: IDOMGroupRenderer }[], render: 'group' | 'detail', helperType = 'svg') {
+export function matchColumns(node: SVGGElement | HTMLElement, columns: { column: Column, renderer: ICellRenderer, groupRenderer: IGroupCellRenderer }[], render: 'group' | 'detail', helperType = 'svg') {
   const renderer = render === 'detail' ? (col: { column: Column }) => col.column.getRenderer() : (col: { column: Column }) => col.column.getGroupRenderer();
   if (node.childElementCount === 0) {
     // initial call fast method

@@ -1,13 +1,11 @@
-import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import IDOMCellRenderer from './IDOMCellRenderers';
-import {attr, clipText, setText} from './utils';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {attr, noRenderer, setText} from './utils';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {colorOf, IImposer} from './impose';
-import {IDataRow} from '../model/interfaces';
+import {colorOf} from './impose';
+import {IDataRow, INumberColumn, isNumberColumn, isNumbersColumn} from '../model';
+import {CANVAS_HEIGHT} from '../styles';
+import {ICellRendererFactory, default as IRenderContext, IImposer} from './interfaces';
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 
 /**
@@ -28,7 +26,8 @@ export default class BarCellRenderer implements ICellRendererFactory {
     return isNumberColumn(col) && !isGroup && !isNumbersColumn(col);
   }
 
-  createDOM(col: INumberColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
+  create(col: INumberColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+    const width = context.colWidth(col);
     return {
       template: `<div title="">
           <div style='background-color: ${col.color}'>
@@ -50,24 +49,20 @@ export default class BarCellRenderer implements ICellRendererFactory {
           'background-color': missing ? null : colorOf(col, d, imposer)
         });
         setText(bar.firstElementChild!, title);
+      },
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
+        if (renderMissingCanvas(ctx, col, d, width)) {
+          return;
+        }
+        ctx.fillStyle = colorOf(col, d, imposer) || Column.DEFAULT_COLOR;
+        const w = width * col.getNumber(d);
+        ctx.fillRect(0, 0, isNaN(w) ? 0 : w, CANVAS_HEIGHT);
+
       }
     };
   }
 
-  createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer): ICanvasCellRenderer {
-    const paddingTop = context.option('rowBarTopPadding', context.option('rowBarPadding', 1));
-    const paddingBottom = context.option('rowBarBottomPadding', context.option('rowBarPadding', 1));
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
-        return;
-      }
-      ctx.fillStyle = colorOf(col, d, imposer) || Column.DEFAULT_COLOR;
-      const width = context.colWidth(col) * col.getNumber(d);
-      ctx.fillRect(0, paddingTop, isNaN(width) ? 0 : width, context.rowHeight(i) - (paddingTop + paddingBottom));
-      if (this.renderValue || context.hovered(d.i) || context.selected(d.i)) {
-        ctx.fillStyle = context.option('style.text', 'black');
-        clipText(ctx, col.getLabel(d), 1, 0, context.colWidth(col) - 1, context.textHints);
-      }
-    };
+  createGroup() {
+    return noRenderer;
   }
 }

@@ -1,11 +1,8 @@
 import SelectionColumn from '../model/SelectionColumn';
-import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
-import {ICanvasRenderContext} from './RendererContexts';
-import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
-import {clipText} from './utils';
-import ICellRendererFactory from './ICellRendererFactory';
-import {IDataRow, IGroup} from '../model/interfaces';
 import Column from '../model/Column';
+import {ICellRendererFactory} from './interfaces';
+import {IDataRow, IGroup} from '../model';
+import {noop} from './utils';
 
 export default class SelectionRenderer implements ICellRendererFactory {
   readonly title = 'Default';
@@ -14,7 +11,7 @@ export default class SelectionRenderer implements ICellRendererFactory {
     return col instanceof SelectionColumn;
   }
 
-  createDOM(col: SelectionColumn): IDOMCellRenderer {
+  create(col: SelectionColumn) {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, d: IDataRow) => {
@@ -23,27 +20,12 @@ export default class SelectionRenderer implements ICellRendererFactory {
           event.stopPropagation();
           col.toggleValue(d);
         };
-      }
+      },
+      render: noop
     };
   }
 
-  createCanvas(col: SelectionColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow) => {
-      const bak = ctx.font;
-      ctx.font = '10pt FontAwesome'; // TODO
-      clipText(ctx, col.getValue(d) ? '\uf046' : '\uf096', 0, 0, context.colWidth(col), context.textHints);
-      ctx.font = bak;
-    };
-  }
-
-  createGroupCanvas(col: SelectionColumn, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      const selected = rows.reduce((act, r) => col.getValue(r) ? act + 1 : act, 0);
-      clipText(ctx, String(selected), 0, context.groupHeight(group), col.getWidth(), context.textHints);
-    };
-  }
-
-  createGroupDOM(col: SelectionColumn): IDOMGroupRenderer {
+  createGroup(col: SelectionColumn) {
     return {
       template: `<div></div>`,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {

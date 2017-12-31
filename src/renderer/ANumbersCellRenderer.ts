@@ -1,13 +1,8 @@
-import ICellRendererFactory from './ICellRendererFactory';
-import {ICanvasRenderContext} from './RendererContexts';
-import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
+import {ICellRendererFactory, default as IRenderContext} from './interfaces';
 import Column from '../model/Column';
-import {IDataRow, IGroup} from '../model/interfaces';
+import {IDataRow, IGroup, INumbersColumn, isMissingValue, isNumbersColumn} from '../model';
 import {mean} from 'd3-array';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {isMissingValue} from '../model/missing';
-import {INumbersColumn, isNumbersColumn} from '../model/INumberColumn';
 
 export abstract class ANumbersCellRenderer implements ICellRendererFactory {
   abstract readonly title: string;
@@ -16,7 +11,11 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
     return isNumbersColumn(col);
   }
 
-  protected abstract createDOMContext(col: INumbersColumn & Column): { templateRow: string, render: (row: HTMLElement, data: number[]) => void };
+  protected abstract createContext(col: INumbersColumn & Column, context: IRenderContext): {
+    templateRow: string,
+    update: (row: HTMLElement, data: number[]) => void,
+    render: (ctx: CanvasRenderingContext2D, data: number[]) => void,
+  };
 
   /**
    * mean value for now
@@ -36,50 +35,35 @@ export abstract class ANumbersCellRenderer implements ICellRendererFactory {
     return r;
   }
 
-  createDOM(col: INumbersColumn & Column): IDOMCellRenderer {
-    const {templateRow, render} = this.createDOMContext(col);
+  create(col: INumbersColumn & Column, context: IRenderContext) {
+    const width = context.colWidth(col);
+    const {templateRow, render, update} = this.createContext(col, context);
     return {
       template: `<div>${templateRow}</div>`,
       update: (n: HTMLElement, d: IDataRow) => {
         if (renderMissingDOM(n, col, d)) {
           return;
         }
-        render(n, col.getRawNumbers(d));
-      }
+        update(n, col.getRawNumbers(d));
+      },
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
+        if (renderMissingCanvas(ctx, col, d, width)) {
+          return;
+        }
+        render(ctx, col.getRawNumbers(d));
+      },
     };
   }
 
-  createGroupDOM(col: INumbersColumn & Column): IDOMGroupRenderer {
-    const {templateRow, render} = this.createDOMContext(col);
+  createGroup(col: INumbersColumn & Column, context: IRenderContext) {
+    const {templateRow, update} = this.createContext(col, context);
     return {
       template: `<div>${templateRow}</div>`,
       update: (n: HTMLDivElement, _group: IGroup, rows: IDataRow[]) => {
         // render a heatmap
         const chosen = ANumbersCellRenderer.choose(col, rows);
-        render(n, chosen);
+        update(n, chosen);
       }
-    };
-  }
-
-  protected abstract createCanvasContext(col: INumbersColumn & Column, context: ICanvasRenderContext): (ctx: CanvasRenderingContext2D, data: number[], offset: number, rowHeight: number) => void;
-
-  createCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasCellRenderer {
-    const render = this.createCanvasContext(col, context);
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
-        return;
-      }
-      const rowHeight = context.rowHeight(i);
-      render(ctx, col.getRawNumbers(d), 0, rowHeight);
-    };
-  }
-
-  createGroupCanvas(col: INumbersColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const render = this.createCanvasContext(col, context);
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      const rowHeight = context.groupHeight(group);
-      const chosen = ANumbersCellRenderer.choose(col, rows);
-      render(ctx, chosen, 0, rowHeight);
     };
   }
 }

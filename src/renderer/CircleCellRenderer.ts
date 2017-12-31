@@ -1,12 +1,11 @@
-import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import {IDataRow} from '../model/interfaces';
-import {attr, clipText, setText} from './utils';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {IDataRow} from '../model';
+import {attr, noop, noRenderer, setText} from './utils';
+import {renderMissingDOM} from './missing';
 import {colorOf, IImposer} from './impose';
+import {ICellRendererFactory, default as IRenderContext} from './interfaces';
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 export default class CircleCellRenderer implements ICellRendererFactory {
   readonly title = 'Proportional Symbol';
@@ -15,7 +14,7 @@ export default class CircleCellRenderer implements ICellRendererFactory {
     return isNumberColumn(col) && !isGroup && !isNumbersColumn(col);
   }
 
-  createDOM(col: INumberColumn & Column, _context: IDOMRenderContext, imposer?: IImposer) {
+  create(col: INumberColumn & Column, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     return {
       template: `<div style="background: radial-gradient(circle closest-side, red 100%, transparent 100%)" title="">
               <div class="lu-hover-only"></div>
@@ -28,29 +27,12 @@ export default class CircleCellRenderer implements ICellRendererFactory {
           background: missing ? null : `radial-gradient(circle closest-side, ${colorOf(col, d, imposer)} ${p}%, transparent ${p}%)`
         },);
         setText(n.firstElementChild!, col.getLabel(d));
-      }
+      },
+      render: noop
     };
   }
 
-
-  createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
-        return;
-      }
-
-      const value = col.getNumber(d);
-      const posy = (context.rowHeight(i) / 2);
-      const posx = (context.colWidth(col) / 2);
-      ctx.strokeStyle = ctx.fillStyle = colorOf(col, d, imposer) || Column.DEFAULT_COLOR;
-      ctx.beginPath();
-      ctx.arc(posx, posy, (context.rowHeight(i) / 2) * value, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-      if (context.hovered(d.i) || context.selected(d.i)) {
-        ctx.fillStyle = context.option('style.text', 'black');
-        clipText(ctx, col.getLabel(d), 1, 0, context.colWidth(col) - 1, context.textHints);
-      }
-    };
+  createGroup() {
+    return noRenderer;
   }
 }

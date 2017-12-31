@@ -1,18 +1,16 @@
-import ICellRendererFactory from './ICellRendererFactory';
-import Column from '../model/Column';
-import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
-import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {IDataRow, IGroup} from '../model/interfaces';
-import {attr, forEachChild} from './utils';
-import {renderMissingDOM} from './missing';
-import {isMissingValue} from '../model/missing';
-import {colorOf, IImposer} from './impose';
-import {IDOMRenderContext} from './RendererContexts';
-
-
 /**
  * a renderer rendering a bar for numerical columns
  */
+import Column from '../model/Column';
+import {ICellRendererFactory, IImposer, default as IRenderContext} from './interfaces';
+import {default as INumberColumn, IDataRow, IGroup, isMissingValue, isNumberColumn} from '../model';
+import {DEFAULT_FORMATTER, isNumbersColumn} from '../model/INumberColumn';
+import {attr, forEachChild} from './utils';
+import {renderMissingCanvas, renderMissingDOM} from './missing';
+import {colorOf} from './impose';
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
+import {CANVAS_HEIGHT, DOT} from '../styles';
+
 export default class DotCellRenderer implements ICellRendererFactory {
   readonly title = 'Dot(s)';
 
@@ -27,7 +25,7 @@ export default class DotCellRenderer implements ICellRendererFactory {
       tmp += `<div style='background-color: ${col.color}' title=''></div>`;
     }
 
-    const render = (n: HTMLElement, vs: number[], labels: string[], colors: (string|null)[]) => {
+    const update = (n: HTMLElement, vs: number[], labels: string[], colors: (string|null)[]) => {
       //adapt the number of children
       if (n.children.length !== vs.length) {
         let tmp = '';
@@ -49,30 +47,54 @@ export default class DotCellRenderer implements ICellRendererFactory {
         });
       });
     };
-    return {template: `<div>${tmp}</div>`, render};
+
+    const render = (ctx: CanvasRenderingContext2D, vs: number[], colors: (string|null)[], width: number) => {
+      ctx.save();
+      ctx.globalAlpha = DOT.opacity;
+      vs.forEach((v, i) => {
+        ctx.fillStyle = colors[i] || DOT.color;
+        ctx.fillRect(Math.max(0, v * width - DOT.size/2), 0, DOT.size, CANVAS_HEIGHT);
+      });
+      ctx.restore();
+    };
+
+    return {template: `<div>${tmp}</div>`, update, render};
   }
 
-  createDOM(col: INumberColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
-    const {template, render} = DotCellRenderer.getDOMRenderer(col);
+  create(col: INumberColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+    const {template, render, update} = DotCellRenderer.getDOMRenderer(col);
+    const width = context.colWidth(col);
     return {
       template,
-      update: (n: HTMLElement, row: IDataRow) => {
-        if (renderMissingDOM(n, col, row)) {
+      update: (n: HTMLElement, d: IDataRow) => {
+        if (renderMissingDOM(n, col, d)) {
           return;
         }
-        const color = colorOf(col, row, imposer);
-        const v = col.getValue(row);
+        const color = colorOf(col, d, imposer);
+        const v = col.getValue(d);
         if (!isNumbersColumn(col)) {
-          return render(n, [v], [col.getLabel(row)], [color]);
+          return update(n, [v], [col.getLabel(d)], [color]);
         }
         const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
-        return render(n, vs, vs.map(DEFAULT_FORMATTER), vs.map((_: any) => color));
+        return update(n, vs, vs.map(DEFAULT_FORMATTER), vs.map((_: any) => color));
+      },
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
+         if (renderMissingCanvas(ctx, col, d, width)) {
+          return;
+        }
+        const color = colorOf(col, d, imposer);
+        const v = col.getValue(d);
+        if (!isNumbersColumn(col)) {
+          return render(ctx, [v], [color], width);
+        }
+        const vs: number[] = v.filter((vi: number) => !isMissingValue(vi));
+        return render(ctx, vs, vs.map((_: any) => color), width);
       }
     };
   }
 
-  createGroupDOM(col: INumberColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMGroupRenderer {
-    const {template, render} = DotCellRenderer.getDOMRenderer(col);
+  createGroup(col: INumberColumn & Column, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+    const {template, update} = DotCellRenderer.getDOMRenderer(col);
     return {
       template,
       update: (n: HTMLElement, _group: IGroup, rows: IDataRow[]) => {
@@ -80,14 +102,12 @@ export default class DotCellRenderer implements ICellRendererFactory {
         const colors = rows.map((r) => colorOf(col, r, imposer));
 
         if (!isNumbersColumn(col)) {
-          return render(n, vs, rows.map((r) => col.getLabel(r)), colors);
+          return update(n, vs, rows.map((r) => col.getLabel(r)), colors);
         }
         // concatenate all columns
         const all = (<number[]>[]).concat(...vs.filter((vi: number) => !isMissingValue(vi)));
-        return render(n, all, all.map(DEFAULT_FORMATTER), vs.map((_v: number[], i) => colors[i]));
+        return update(n, all, all.map(DEFAULT_FORMATTER), vs.map((_v: number[], i) => colors[i]));
       }
     };
   }
-
-  // TODO canvas
 }

@@ -1,11 +1,8 @@
-import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
-import {ICanvasRenderContext} from './RendererContexts';
-import {IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow, IGroup, ICategoricalColumn, isCategoricalColumn} from '../model';
-import {forEachChild} from './utils';
-import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
+import {forEachChild, noRenderer} from './utils';
 import {computeHist} from '../internal/math';
+import {ICellRendererFactory} from './interfaces';
 
 /**
  * renders categorical columns as a colored rect with label
@@ -17,7 +14,11 @@ export default class CategoricalStackedDistributionlRenderer implements ICellRen
     return isCategoricalColumn(col) && asGroup;
   }
 
-  createGroupDOM(col: ICategoricalColumn & Column): IDOMGroupRenderer {
+  create() {
+    return noRenderer;
+  }
+
+  createGroup(col: ICategoricalColumn & Column) {
     const colors = col.categoryColors;
     const labels = col.categoryLabels;
     const bins = col.categories.map((c, i) => `<div style="background-color: ${colors[i]}" title="${labels[i]}: 0" data-cat="${c}">${labels[i]}</div>`).join('');
@@ -42,26 +43,6 @@ export default class CategoricalStackedDistributionlRenderer implements ICellRen
           d.title = `${label}: ${y}`;
         });
       }
-    };
-  }
-
-  createGroupCanvas(col: ICategoricalColumn & Column, context: ICanvasRenderContext): ICanvasGroupRenderer {
-    const padding = context.option('rowBarPadding', 1);
-    const colors = col.categoryColors;
-
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      const {missing, hist} = computeHist(rows, (r: IDataRow) => col.getCategories(r), col.categories);
-
-      const total = hist.reduce((acc, {y}) => acc + y, missing);
-      const height = context.groupHeight(group) - padding;
-      const width = context.colWidth(col);
-      let acc = padding;
-      hist.forEach(({y}, i) => {
-        const wi = (y / total) * width;
-        ctx.fillStyle = colors[i];
-        ctx.fillRect(acc, padding, wi, height);
-        acc += wi;
-      });
     };
   }
 }

@@ -5,11 +5,13 @@ import BooleanColumn from '../model/BooleanColumn';
 export default class BooleanCellRenderer extends DefaultCellRenderer {
   readonly title = 'Default';
 
-  constructor() {
-    super('boolean', 'center');
-  }
-
   canRender(col: Column) {
     return col instanceof BooleanColumn;
+  }
+
+  create(col: Column) {
+    const r = super.create(col);
+    r.template = `<div class="lu-center"> </div>`;
+    return r;
   }
 }

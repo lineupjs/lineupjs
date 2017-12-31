@@ -1,21 +1,17 @@
 import AnnotateColumn from '../model/AnnotateColumn';
-import {ICanvasRenderContext} from './RendererContexts';
-import IDOMCellRenderer from './IDOMCellRenderers';
-import {IDataRow} from '../model/interfaces';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
-import {clipText, showOverlay} from './utils';
-import ICellRendererFactory from './ICellRendererFactory';
-import {ANoGroupRenderer} from './ANoGroupRenderer';
+import {IDataRow} from '../model';
 import Column from '../model/Column';
+import {ICellRendererFactory} from './interfaces';
+import {noop, noRenderer} from './utils';
 
-export default class AnnotationRenderer extends ANoGroupRenderer implements ICellRendererFactory {
+export default class AnnotationRenderer implements ICellRendererFactory {
   readonly title = 'Default';
 
   canRender(col: Column) {
     return col instanceof AnnotateColumn;
   }
 
-  createDOM(col: AnnotateColumn): IDOMCellRenderer {
+  create(col: AnnotateColumn) {
     return {
       template: `<div class='annotations text'>
         <input class='lu-hover-only'>
@@ -30,27 +26,12 @@ export default class AnnotationRenderer extends ANoGroupRenderer implements ICel
           event.stopPropagation();
         };
         n.lastElementChild!.textContent = input.value = col.getLabel(d);
-      }
+      },
+      render: noop
     };
   }
 
-  createCanvas(col: AnnotateColumn, context: ICanvasRenderContext): ICanvasCellRenderer {
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, _i: number, dx: number, dy: number) => {
-      const hovered = context.hovered(d.i);
-      if (!hovered) {
-        clipText(ctx, col.getLabel(d), 0, 0, context.colWidth(col), context.textHints);
-        return;
-      }
-      const overlay = showOverlay(context.bodyDOMElement, context.idPrefix + col.id, dx, dy);
-      overlay.style.width = `${context.colWidth(col)}px`;
-      overlay.innerHTML = `<input type='text' value='${col.getValue(d)}' style='width:${context.colWidth(col)}px'>`;
-      const input = <HTMLInputElement>overlay.childNodes[0];
-      input.onchange = function () {
-        col.setValue(d, input.value);
-      };
-      input.onclick = function (event) {
-        event.stopPropagation();
-      };
-    };
+  createGroup() {
+    return noRenderer;
   }
 }

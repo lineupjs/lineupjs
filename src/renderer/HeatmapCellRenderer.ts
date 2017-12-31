@@ -1,14 +1,12 @@
-import {INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
+import {INumberColumn, isNumberColumn, isNumbersColumn, IDataRow} from '../model';
 import Column from '../model/Column';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import IDOMCellRenderer from './IDOMCellRenderers';
-import {IDataRow} from '../model/interfaces';
-import {clipText, setText} from './utils';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
+import {noRenderer, setText} from './utils';
 import {hsl} from 'd3-color';
-import ICellRendererFactory from './ICellRendererFactory';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {colorOf, IImposer} from './impose';
+import {colorOf} from './impose';
+import {ICellRendererFactory, default as IRenderContext, IImposer} from './interfaces';
+import {CANVAS_HEIGHT} from '../styles';
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 export function toHeatMapColor(row: IDataRow, col: INumberColumn & Column, imposer?: IImposer) {
   let v = col.getNumber(row);
@@ -28,7 +26,8 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
     return isNumberColumn(col) && !isGroup && !isNumbersColumn(col);
   }
 
-  createDOM(col: INumberColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
+  create(col: INumberColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
+    const width = context.colWidth(col);
     return {
       template: `<div title="">
         <div style="background-color: ${col.color}"></div><div> </div>
@@ -38,21 +37,18 @@ export default class HeatmapCellRenderer implements ICellRendererFactory {
         n.title = col.getLabel(d);
         (<HTMLDivElement>n.firstElementChild!).style.backgroundColor = missing ? null : toHeatMapColor(d, col, imposer);
         setText(<HTMLSpanElement>n.lastElementChild!, n.title);
+      },
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow) => {
+        if (renderMissingCanvas(ctx, col, d, width)) {
+          return;
+        }
+        ctx.fillStyle = toHeatMapColor(d, col, imposer);
+        ctx.fillRect(0, 0, width, CANVAS_HEIGHT);
       }
     };
   }
 
-  createCanvas(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer): ICanvasCellRenderer {
-    const padding = context.option('rowBarPadding', 1);
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
-        return;
-      }
-      ctx.fillStyle = toHeatMapColor(d, col, imposer);
-      const cell = Math.min(context.colWidth(col) * 0.3, Math.max(context.rowHeight(i) - padding * 2, 0));
-      ctx.fillRect(0, 0, cell, cell);
-      ctx.fillStyle = context.option('style.text', 'black');
-      clipText(ctx, col.getLabel(d), cell + 2, 0, context.colWidth(col) - cell - 2, context.textHints);
-    };
+  createGroup() {
+    return noRenderer;
   }
 }

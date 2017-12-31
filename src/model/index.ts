@@ -32,7 +32,7 @@ export {default, default as Column, IColumnDesc, IColumnMetaData, IColumnParent,
 export {default as CompositeColumn} from './CompositeColumn';
 export {createMappingFunction, ScaleMappingFunction, ScriptMappingFunction} from './MappingFunction';
 export {IDataRow, IGroup, IGroupData, IGroupItem, isGroup, IGroupParent, isSupportType} from './interfaces';
-export {isNumberColumn, INumberColumn, INumbersColumn} from './INumberColumn';
+export {isNumberColumn, INumberColumn, INumbersColumn, isNumbersColumn} from './INumberColumn';
 export {isCategoricalColumn, ICategoricalColumn, ICategory} from './ICategoricalColumn';
 export {default as Ranking} from './Ranking';
 export {createDesc as createMinDesc} from './MinColumn';

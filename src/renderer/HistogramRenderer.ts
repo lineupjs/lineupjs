@@ -1,18 +1,13 @@
-import ICellRendererFactory from './ICellRendererFactory';
 import Column from '../model/Column';
 import {DEFAULT_FORMATTER, INumberColumn, isNumberColumn, isNumbersColumn} from '../model/INumberColumn';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import {IDOMCellRenderer, IDOMGroupRenderer} from './IDOMCellRenderers';
 import {IDataRow, IGroup, isMissingValue} from '../model';
-import {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {computeStats, getNumberOfBins, IStatistics} from '../internal/math';
 import {forEachChild} from './utils';
 import NumbersColumn from '../model/NumbersColumn';
-import ICanvasCellRenderer from './ICanvasCellRenderer';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {IImposer} from './IRenderContext';
 import {colorOf} from './impose';
 import {DENSE_HISTOGRAM} from '../config';
+import {ICellRendererFactory, IImposer, default as IRenderContext} from './interfaces';
 
 /**
  * a renderer rendering a bar for numerical columns
@@ -53,7 +48,7 @@ export default class HistogramRenderer implements ICellRendererFactory {
     return {template: `<div${guessedBins > DENSE_HISTOGRAM ? ' class="lu-dense': ''}>${bins}</div>`, render};
   }
 
-  createDOM(col: NumbersColumn, context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
+  create(col: NumbersColumn, context: IRenderContext, imposer?: IImposer) {
     const {template, render} = HistogramRenderer.getHistDOMRenderer(context.totalNumberOfRows, col, imposer);
     return {
       template,

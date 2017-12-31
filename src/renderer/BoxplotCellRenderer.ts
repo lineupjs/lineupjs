@@ -1,18 +1,16 @@
-import ICellRendererFactory from './ICellRendererFactory';
 import {default as BoxPlotColumn, isBoxPlotColumn} from '../model/BoxPlotColumn';
 import Column from '../model/Column';
-import IDOMCellRenderer, {IDOMGroupRenderer} from './IDOMCellRenderers';
-import {ICanvasRenderContext, IDOMRenderContext} from './RendererContexts';
-import ICanvasCellRenderer, {ICanvasGroupRenderer} from './ICanvasCellRenderer';
 import {
   IBoxPlotColumn, IBoxPlotData, INumberColumn, INumbersColumn, isNumbersColumn,
   LazyBoxPlotData
 } from '../model/INumberColumn';
 import {renderMissingCanvas, renderMissingDOM} from './missing';
-import {isNumberColumn} from '../model';
+import {IDataRow, IGroup, isNumberColumn} from '../model';
 import NumberColumn from '../model/NumberColumn';
 import {colorOf, IImposer} from './impose';
-import {IDataRow, IGroup} from '../model/interfaces';
+import {default as IRenderContext, ICellRendererFactory} from './interfaces';
+import {CANVAS_HEIGHT} from '../styles';
+import {ICategoricalStatistics, IStatistics} from '../internal/math';
 
 export function computeLabel(v: IBoxPlotData) {
   if (v === null) {
@@ -29,9 +27,10 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return (isBoxPlotColumn(col) && !isGroup || (isNumberColumn(col) && isGroup));
   }
 
-  createDOM(col: IBoxPlotColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMCellRenderer {
+  create(col: IBoxPlotColumn & Column, context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
     const sortedByMe = col.isSortedByMe().asc !== undefined;
+    const width = context.colWidth(col);
     return {
       template: `<div title="">
                     <div><div></div><div></div></div>
@@ -44,38 +43,28 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         }
         const label = col.getRawBoxPlotData(d)!;
         renderDOMBoxPlot(n, data!, label, sortedByMe ? sortMethod : '', colorOf(col, d, imposer));
+      },
+      render: (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
+        if (renderMissingCanvas(ctx, col, d, width)) {
+          return;
+        }
+
+        // Rectangle
+        const data = col.getBoxPlotData(d);
+        if (!data) {
+          return;
+        }
+
+        const scaled = {
+          min: data.min * width,
+          median: data.median * width,
+          q1: data.q1 * width,
+          q3: data.q3 * width,
+          max: data.max * width,
+          outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined
+        };
+        renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', colorOf(col, d, imposer), CANVAS_HEIGHT, 0, context);
       }
-    };
-  }
-
-  createCanvas(col: IBoxPlotColumn & Column, context: ICanvasRenderContext, imposer?: IImposer): ICanvasCellRenderer {
-    const sortMethod = <keyof IBoxPlotData>col.getSortMethod();
-    const topPadding = context.option('rowBarPadding', 1);
-    const sortedByMe = col.isSortedByMe().asc !== undefined;
-    const width = context.colWidth(col);
-
-    return (ctx: CanvasRenderingContext2D, d: IDataRow, i: number) => {
-      const rowHeight = context.rowHeight(i);
-
-      if (renderMissingCanvas(ctx, col, d, context.rowHeight(i))) {
-        return;
-      }
-
-      // Rectangle
-      const data = col.getBoxPlotData(d);
-      if (!data) {
-        return;
-      }
-
-      const scaled = {
-        min: data.min * width,
-        median: data.median * width,
-        q1: data.q1 * width,
-        q3: data.q3 * width,
-        max: data.max * width,
-        outlier: data.outlier ? data.outlier.map((d) => d * width) : undefined
-      };
-      renderBoxPlot(ctx, scaled, sortedByMe ? sortMethod : '', colorOf(col, d, imposer), rowHeight, topPadding, context);
     };
   }
 
@@ -85,7 +74,7 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
     return new LazyBoxPlotData(vs);
   }
 
-  createGroupDOM(col: INumberColumn & Column, _context: IDOMRenderContext, imposer?: IImposer): IDOMGroupRenderer {
+  createGroup(col: INumberColumn & Column, _context: IRenderContext, _hist: IStatistics | ICategoricalStatistics | null, imposer?: IImposer) {
     const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
     return {
       template: `<div title="">
@@ -107,35 +96,6 @@ export default class BoxplotCellRenderer implements ICellRendererFactory {
         }
         renderDOMBoxPlot(n, box, label, sort, colorOf(col, null, imposer));
       }
-    };
-  }
-
-  createGroupCanvas(col: INumberColumn & Column, context: ICanvasRenderContext, imposer?: IImposer): ICanvasGroupRenderer {
-    const topPadding = context.option('rowBarGroupPadding', 1);
-    const width = context.colWidth(col);
-    const sort = (col instanceof NumberColumn && col.isGroupSortedByMe().asc !== undefined) ? col.getSortMethod() : '';
-    return (ctx: CanvasRenderingContext2D, group: IGroup, rows: IDataRow[]) => {
-      const height = context.groupHeight(group);
-      if (rows.every((row) => col.isMissing(row))) {
-        renderMissingCanvas(ctx, col, rows[0], height); // doesn't matter since all
-        return;
-      }
-      let box: IBoxPlotData;
-
-      if (isNumbersColumn(col)) {
-        box = BoxplotCellRenderer.createAggregatedBoxPlot(col, rows);
-      } else {
-        box = new LazyBoxPlotData(rows.map((row) => col.getNumber(row)));
-      }
-      const scaled = {
-        min: box.min * width,
-        median: box.median * width,
-        q1: box.q1 * width,
-        q3: box.q3 * width,
-        max: box.max * width,
-        outlier: box.outlier ? box.outlier.map((d) => d * width) : undefined
-      };
-      renderBoxPlot(ctx, scaled, sort, colorOf(col, null, imposer), height, topPadding, context);
     };
   }
 }
@@ -186,14 +146,15 @@ function renderDOMBoxPlot(n: HTMLElement, data: IBoxPlotData, label: IBoxPlotDat
 
   if (sort === 'min') {
     whiskers.dataset.sort = '';
-    outliers[0].dataset.sort='min';
+    outliers[0].dataset.sort = 'min';
   } else if (sort === 'max') {
     whiskers.dataset.sort = '';
-    outliers[outliers.length - 1].dataset.sort='max';
+    outliers[outliers.length - 1].dataset.sort = 'max';
   }
 }
 
 function renderBoxPlot(ctx: CanvasRenderingContext2D, box: IBoxPlotData, sort: string, color: string | null, height: number, topPadding: number, context: ICanvasRenderContext) {
+  // TODO padding
   const boxColor = color || context.option('style.boxplot.box', '#e0e0e0');
   const boxStroke = context.option('style.boxplot.stroke', 'black');
   const boxSortIndicator = context.option('style.boxplot.sortIndicator', '#ffa500');

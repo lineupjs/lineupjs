@@ -1,8 +1,9 @@
-import {ICanvasRenderContext} from './RendererContexts';
 import Column from '../model/Column';
 import {attr, forEachChild} from './utils';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
+import IRenderContext from './interfaces';
+import {CANVAS_HEIGHT} from '../styles';
 
 export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
   readonly title = 'Bar Chart';
@@ -20,9 +21,10 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
     return {height: (v - threshold), bottom: (threshold - domain[0])};
   }
 
-  protected createDOMContext(col: INumbersColumn & Column) {
+  protected createContext(col: INumbersColumn & Column, context: IRenderContext) {
     const colorScale = col.getRawColorScale();
     const domain = col.getMapping().domain;
+    const cellDimension = context.colWidth(col) / col.getDataLength();
     const threshold = col.getThreshold();
     const range = domain[1] - domain[0];
     let templateRows = '';
@@ -31,36 +33,28 @@ export default class VerticalBarCellRenderer extends ANumbersCellRenderer {
     }
     return {
       templateRow: templateRows,
-      render: (row: HTMLElement, data: number[]) => {
+      update: (row: HTMLElement, data: number[]) => {
         forEachChild(row, (d, i) => {
           const v = data[i];
           const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, domain);
           attr(<HTMLElement>d, {
             title: DEFAULT_FORMATTER(v)
           }, {
-            'background-color': colorScale(v ),
+            'background-color': colorScale(v),
             bottom: `${Math.round((100 * bottom) / range)}%`,
             height: `${Math.round((100 * height) / range)}%`
           });
         });
+      },
+      render: (ctx: CanvasRenderingContext2D, data: number[]) => {
+        const scale = CANVAS_HEIGHT / range;
+        data.forEach((v, j) => {
+          ctx.fillStyle = colorScale(v);
+          const xpos = (j * cellDimension);
+          const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, domain);
+          ctx.fillRect(xpos, (range - height - bottom) * scale, cellDimension, height * scale);
+        });
       }
-    };
-  }
-
-  protected createCanvasContext(col: INumbersColumn & Column, context: ICanvasRenderContext) {
-    const colorScale = col.getRawColorScale();
-    const cellDimension = context.colWidth(col) / col.getDataLength();
-    const domain = col.getMapping().domain;
-    const threshold = col.getThreshold();
-    const range = domain[1] - domain[0];
-    return (ctx: CanvasRenderingContext2D, data: number[], offset: number, rowHeight: number) => {
-      const scale = rowHeight / range;
-      data.forEach((v, j) => {
-        ctx.fillStyle = colorScale(v);
-        const xpos = (j * cellDimension);
-        const {bottom, height} = VerticalBarCellRenderer.compute(v, threshold, domain);
-        ctx.fillRect(xpos, (range - height - bottom) * scale + offset, cellDimension, height * scale);
-      });
     };
   }
 }

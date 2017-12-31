@@ -1,15 +1,17 @@
-import {ICanvasRenderContext} from './RendererContexts';
 import {attr, forEachChild} from './utils';
 import Column from '../model/Column';
 import {ANumbersCellRenderer} from './ANumbersCellRenderer';
 import {renderMissingValue} from './missing';
-import {isMissingValue} from '../model/missing';
+import {isMissingValue} from '../model';
 import {DEFAULT_FORMATTER, INumbersColumn} from '../model/INumberColumn';
+import IRenderContext from './interfaces';
+import {CANVAS_HEIGHT} from '../styles';
 
 export default class NumbersCellRenderer extends ANumbersCellRenderer {
   readonly title = 'Heatmap';
 
-  protected createDOMContext(col: INumbersColumn & Column) {
+  protected createContext(col: INumbersColumn & Column, context: IRenderContext) {
+    const cellDimension = context.colWidth(col) / col.getDataLength();
     const colorScale = col.getRawColorScale();
     let templateRows = '';
     for (let i = 0; i < col.getDataLength(); ++i) {
@@ -17,7 +19,7 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
     }
     return {
       templateRow: templateRows,
-      render: (row: HTMLElement, data: number[]) => {
+      update: (row: HTMLElement, data: number[]) => {
         forEachChild(row, (d, i) => {
           const v = data[i];
           attr(<HTMLDivElement>d, {
@@ -27,26 +29,19 @@ export default class NumbersCellRenderer extends ANumbersCellRenderer {
             'background-color': isMissingValue(v) ? null : colorScale(v)
           });
         });
-      }
-    };
-  }
-
-  protected createCanvasContext(col: INumbersColumn & Column, context: ICanvasRenderContext) {
-    const cellDimension = context.colWidth(col) / col.getDataLength();
-    const padding = context.option('rowBarPadding', 1);
-    const colorScale = col.getRawColorScale();
-
-    return (ctx: CanvasRenderingContext2D, data: number[], offset: number, rowHeight: number) => {
-      data.forEach((d: number, j: number) => {
+      },
+      render: (ctx: CanvasRenderingContext2D, data: number[]) => {
+        data.forEach((d: number, j: number) => {
         const x = j * cellDimension;
         if (isMissingValue(d)) {
-          renderMissingValue(ctx, cellDimension, rowHeight, x, padding + offset);
+          renderMissingValue(ctx, cellDimension, CANVAS_HEIGHT, x, 0);
           return;
         }
         ctx.beginPath();
         ctx.fillStyle = colorScale(d);
-        ctx.fillRect(x, padding + offset, cellDimension, rowHeight);
+        ctx.fillRect(x, 0, cellDimension, CANVAS_HEIGHT);
       });
+      }
     };
   }
 }

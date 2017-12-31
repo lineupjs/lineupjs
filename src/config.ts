@@ -6,9 +6,6 @@ import {filters as defaultFilters} from './ui/dialogs';
 import {defaultSummaries} from './ui/summary';
 import {ILineUpOptions} from './interfaces';
 
-export const COLUMN_PADDING = 5; // see also vars -> $lu_engine_grip_gap
-export const SLOPEGRAPH_WIDTH = 200;
-
 /** number of bins before switching to dense mode
  */
 export const DENSE_HISTOGRAM = 19;
