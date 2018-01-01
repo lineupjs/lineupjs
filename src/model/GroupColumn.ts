@@ -2,6 +2,7 @@
  * Created by sam on 04.11.2016.
  */
 
+import {SupportType} from './annotations';
 import Column from './Column';
 import {IGroupData} from './interfaces';
 import {FIRST_IS_NAN, missingGroup} from './missing';
@@ -10,6 +11,7 @@ export function createDesc(label = 'Group') {
   return {type: 'group', label};
 }
 
+@SupportType()
 export default class GroupColumn extends Column {
   private groupSortMethod: 'name' | 'count' = 'name';
 

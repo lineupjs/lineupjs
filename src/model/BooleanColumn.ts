@@ -2,6 +2,8 @@
  * Created by sam on 04.11.2016.
  */
 
+import BooleanFilterDialog from '../ui/dialogs/BooleanFilterDialog';
+import {filterBy} from './annotations';
 import Column from './Column';
 import {ICategoricalColumn} from './ICategoricalColumn';
 import {IDataRow} from './interfaces';
@@ -110,6 +112,7 @@ export default class BooleanColumn extends ValueColumn<boolean> implements ICate
     return this.currentFilter;
   }
 
+  @filterBy(BooleanFilterDialog)
   setFilter(filter: boolean | null) {
     if (this.currentFilter === filter) {
       return;

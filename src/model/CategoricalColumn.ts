@@ -3,6 +3,8 @@
  */
 
 import {scaleOrdinal, schemeCategory10, schemeCategory20} from 'd3-scale';
+import CategoricalFilterDialog from '../ui/dialogs/CategoricalFilterDialog';
+import {filterBy} from './annotations';
 import Column from './Column';
 import {
   IBaseCategoricalDesc, ICategoricalColumn, ICategoricalDesc, ICategoricalFilter,
@@ -240,6 +242,7 @@ export default class CategoricalColumn extends ValueColumn<string> implements IC
     return this.currentFilter;
   }
 
+  @filterBy(CategoricalFilterDialog)
   setFilter(filter: ICategoricalFilter | null) {
     if (isEqualFilter(this.currentFilter, filter)) {
       return;

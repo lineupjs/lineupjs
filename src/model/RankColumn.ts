@@ -3,6 +3,7 @@
  */
 
 
+import {SupportType} from './annotations';
 import ValueColumn, {IValueColumnDesc} from './ValueColumn';
 
 /**
@@ -17,6 +18,7 @@ export function createDesc(label: string = 'Rank') {
 /**
  * a rank column
  */
+@SupportType()
 export default class RankColumn extends ValueColumn<number> {
 
   constructor(id: string, desc: IValueColumnDesc<number>) {
