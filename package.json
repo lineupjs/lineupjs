@@ -123,6 +123,7 @@
     "d3-time-format": "^2.1.1",
     "font-awesome": "^4.7.0",
     "lineupengine": "github:sgratzl/lineupengine#cleanup",
-    "popper.js": "^1.12.5"
+    "popper.js": "^1.12.5",
+    "reflect-metadata": "^0.1.10"
   }
 }
