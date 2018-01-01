@@ -34,6 +34,8 @@ export interface IEngineRankingOptions {
 }
 
 
+const WEIRD_CANVAS_OFFSET = 0.6;
+
 class RankingEvents extends AEventDispatcher {
   static readonly EVENT_WIDTH_CHANGED = 'widthChanged';
   static readonly EVENT_UPDATE_DATA = 'updateData';
@@ -216,7 +218,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     ctx.save();
     this.columns.forEach((c) => {
       c.renderCell(ctx, index);
-      const shift = c.width + COLUMN_PADDING + 0.6; // no idea why this magic 0.5;
+      const shift = c.width + COLUMN_PADDING + WEIRD_CANVAS_OFFSET; // no idea why this magic 0.5;
       ctx.translate(shift, 0);
     });
     ctx.restore();
@@ -430,11 +432,10 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const column = columns[index];
     let x = 0;
     for (let i = 0; i < index; ++i) {
-      x += columns[i].width + COLUMN_PADDING;
+      x += columns[i].width + COLUMN_PADDING + WEIRD_CANVAS_OFFSET;
     }
     super.forEachRow((row, rowIndex) => {
-      const lod = row.dataset.lod || 'high';
-      if (lod !== 'high') {
+      if (EngineRanking.isCanvasRenderedRow(row)) {
         this.updateCanvasCell(row.querySelector('canvas')!, rowIndex, column, x);
         return;
       }
