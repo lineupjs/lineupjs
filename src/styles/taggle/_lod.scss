@@ -4,7 +4,6 @@
   .lineup-engine {
     /* since the row height should be configurable -> dynamic rule, see TaggleRenderer */
 
-
     [data-lod=low][data-agg=detail]:not(:hover) {
       &[data-meta~=first] {
         /* change rendering of the first row for a group to show the collapse arrow of `[data-renderer=aggregate]` */
