@@ -13,6 +13,9 @@ const styles = new Map<string, string>();
 }
 
 export default function getStyle(key: string, defaultValue = '') {
+  if (key[0] === '$') {
+    key = key.slice(1);
+  }
   if (styles.has(key)) {
     return styles.get(key)!;
   }
@@ -36,8 +39,8 @@ export const UPSET = {
 
 export const DOT = {
   color: getStyle('lu_renderer_dot_color', 'gray'),
-  size: parseInt(getStyle('$lu_renderer_dot_size', '5px'), 10),
-  opacity: parseFloat(getStyle('$lu_renderer_dot_opacity', '0.7'))
+  size: parseInt(getStyle('lu_renderer_dot_size', '5px'), 10),
+  opacity: parseFloat(getStyle('lu_renderer_dot_opacity', '0.7'))
 };
 
 export const BOX_PLOT = {
@@ -45,6 +48,12 @@ export const BOX_PLOT = {
   stroke: getStyle('lu_renderer_boxplot_stroke', 'black'),
   sort: getStyle('lu_renderer_boxplot_sort_indicator', '#ffa500'),
   outlier: getStyle('lu_renderer_boxplot_outlier', '#e0e0e0')
+};
+
+export const AGGREGATE = {
+  width: parseInt(getStyle('lu_aggregate_square_bracket_width', '4px'), 10),
+  strokeWidth: parseInt(getStyle('lu_aggregate_square_bracket_stroke_width', '1px'), 10),
+  color: getStyle('lu_aggregate_square_bracket_stroke_color', '#000')
 };
 
 export const SLOPEGRAPH_WIDTH = 200;

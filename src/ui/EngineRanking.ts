@@ -265,7 +265,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     const lod = this.options.levelOfDetail(rowIndex);
 
-    if (lod === 'high') {
+    if (lod === 'high' || meta) {
       super.createRow(node, rowIndex);
       return;
     }
@@ -320,7 +320,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.selection.updateState(node, i);
 
     const canvas = <HTMLCanvasElement>Array.from(node.children).find((d) => d.nodeName.toLowerCase() === 'canvas');
-    if (lod === 'high') {
+    if (lod === 'high' || meta) {
       if (canvas) {
         this.canvasPool.push(canvas);
         canvas.remove();
