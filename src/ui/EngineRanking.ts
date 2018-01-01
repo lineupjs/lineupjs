@@ -230,7 +230,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     if (this.hidden) {
       return;
     }
-    this.forEachRow((row, rowIndex) => this.updateRow(row, rowIndex));
+    super.forEachRow((row, rowIndex) => this.updateRow(row, rowIndex));
   }
 
   updateHeaderOf(i: number) {
@@ -342,8 +342,19 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     this.renderRow(canvas2, rowIndex);
   }
 
+  protected forEachRow(callback: (row: HTMLElement, rowIndex: number) => void, inplace: boolean = false) {
+    const adapter = (row: HTMLElement, rowIndex: number) => {
+      if (row.dataset.lod === 'low' && row.childElementCount === 1 && row.firstElementChild!.nodeName.toLowerCase() === 'canvas') {
+        // skip canvas
+        return;
+      }
+      callback(row, rowIndex);
+    };
+    return super.forEachRow(adapter, inplace);
+  }
+
   updateSelection(selectedDataIndices: { has(i: number): boolean }) {
-    this.forEachRow((node: HTMLElement, rowIndex: number) => {
+    super.forEachRow((node: HTMLElement, rowIndex: number) => {
       if (this.renderCtx.isGroup(rowIndex)) {
         this.updateRow(node, rowIndex);
       } else {
@@ -379,7 +390,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     for (let i = 0; i < index; ++i) {
       x += columns[i].width + COLUMN_PADDING;
     }
-    this.forEachRow((row, rowIndex) => {
+    super.forEachRow((row, rowIndex) => {
       const lod = row.dataset.lod || 'high';
       if (lod !== 'high') {
         this.updateCanvasCell(row.querySelector('canvas')!, rowIndex, column, x);
