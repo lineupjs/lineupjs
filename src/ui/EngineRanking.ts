@@ -254,7 +254,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     const {i, meta} = this.renderCtx.getRow(rowIndex);
     node.dataset.i = i.toString();
     node.dataset.agg = 'detail'; //or 'group'
-    node.dataset.meta = meta || '';
+    if (!meta) {
+      delete node.dataset.meta;
+    } else {
+      node.dataset.meta = meta;
+    }
 
     this.selection.updateState(node, i);
     this.selection.add(node);
@@ -308,7 +312,11 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     const {i, meta} = this.renderCtx.getRow(rowIndex);
     node.dataset.i = i.toString();
-    node.dataset.meta = meta || '';
+    if (!meta) {
+      delete node.dataset.meta;
+    } else {
+      node.dataset.meta = meta;
+    }
     this.selection.updateState(node, i);
 
     const canvas = <HTMLCanvasElement>Array.from(node.children).find((d) => d.nodeName.toLowerCase() === 'canvas');

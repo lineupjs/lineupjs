@@ -10,6 +10,7 @@ import {IRule} from './interfaces';
 
 export interface ITaggleOptions {
   violationChanged(rule: IRule, violation: string): void;
+
   rowPadding: number;
 }
 
@@ -23,7 +24,7 @@ export default class TaggleRenderer extends AEventDispatcher {
   private isDynamicLeafHeight: boolean = false;
 
   private rule: IRule | null = null;
-  private levelOfDetail: ((rowIndex: number) => 'high'|'low')|null = null;
+  private levelOfDetail: ((rowIndex: number) => 'high' | 'low') | null = null;
   private readonly resizeListener = () => debounce(() => this.update(), 100);
   private readonly renderer: EngineRenderer;
 
@@ -97,7 +98,10 @@ export default class TaggleRenderer extends AEventDispatcher {
       return this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
     };
 
-    const padding = (item: IGroupData|IGroupItem) => {
+    const padding = (item: IGroupData | IGroupItem | null) => {
+      if (!item) {
+        item = data[0];
+      }
       const lod = this.rule ? this.rule.levelOfDetail(item, height(item)) : 'high';
       return lod === 'high' ? this.options.rowPadding : 0;
     };

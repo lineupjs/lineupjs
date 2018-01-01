@@ -9,7 +9,7 @@ export interface IDynamicHeight {
 
   height(item: IGroupItem | IGroupData): number;
 
-  padding(item: IGroupItem | IGroupData): number;
+  padding(item: IGroupItem | IGroupData | null): number;
 }
 
 export interface ILineUpOptions {

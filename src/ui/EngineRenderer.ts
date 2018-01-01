@@ -91,7 +91,12 @@ export default class EngineRenderer extends AEventDispatcher {
 
       this.style.addRule('lineup_rowPadding', `
        #${options.idPrefix} > main > article > div {
-         margin-top: ${options.rowPadding}px;
+         padding-top: ${options.rowPadding}px;
+       }`);
+
+      this.style.addRule('lineup_rowPadding2', `
+       #${options.idPrefix} > main > article > div[data-lod=low]:not(:hover) {
+         padding-top: 0;
        }`);
     }
 
@@ -274,7 +279,7 @@ export default class EngineRenderer extends AEventDispatcher {
       const {height, defaultHeight, padding} = heightsFor(r.ranking, grouped);
 
       const rowContext = nonUniformContext(grouped.map(height), defaultHeight, (index) => {
-        const pad = index < 0 ? rowPadding : (typeof padding === 'number' ? padding : padding(grouped[index]));
+        const pad = (typeof padding === 'number' ? padding : padding(grouped[index] || null));
         if (index >= 0 && grouped[index] && (isGroup(grouped[index]) || (<IGroupItem>grouped[index]).meta === 'last' || (<IGroupItem>grouped[index]).meta === 'first last')) {
           return groupPadding + pad;
         }

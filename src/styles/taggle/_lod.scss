@@ -4,10 +4,8 @@
   .lineup-engine {
     /* since the row height should be configurable -> dynamic rule, see TaggleRenderer */
 
-    [data-lod=low][data-agg=detail]:not(:hover) {
-      /* shrink rows in low + medium LOD that are not hovered */
-      margin-top: 0 !important;
 
+    [data-lod=low][data-agg=detail]:not(:hover) {
       &[data-meta~=first] {
         /* change rendering of the first row for a group to show the collapse arrow of `[data-renderer=aggregate]` */
         z-index: 11; // 11 overrules the `z-index: 10;` of `.lu-selected` in _row.scss
