@@ -14,7 +14,7 @@ import {isMultiLevelColumn} from '../model/CompositeColumn';
 import Ranking from '../model/Ranking';
 import StackColumn from '../model/StackColumn';
 import {IRenderContext} from '../renderer';
-import {COLUMN_PADDING} from '../styles';
+import {CANVAS_HEIGHT, COLUMN_PADDING} from '../styles';
 import {lineupAnimation} from './animation';
 import {IRankingBodyContext, IRankingHeaderContextContainer} from './interfaces';
 import MultiLevelRenderColumn from './MultiLevelRenderColumn';
@@ -28,7 +28,7 @@ export interface IEngineRankingContext extends IRankingHeaderContextContainer, I
 
 export interface IEngineRankingOptions {
   animation: boolean;
-  levelOfDetail: (rowIndex: number) => 'high'|'false';
+  levelOfDetail: (rowIndex: number) => 'high' | 'low';
   customRowUpdate: (row: HTMLElement, rowIndex: number) => void;
 }
 
@@ -57,6 +57,7 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   private readonly renderCtx: IRankingBodyContext;
   private data: (IGroupItem | IGroupData)[] = [];
   private readonly selection: SelectionManager;
+  private readonly canvasPool: HTMLCanvasElement[] = [];
 
   private readonly events = new RankingEvents();
   readonly on = this.events.on.bind(this.events);
@@ -171,6 +172,35 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
     return column.updateCell(node, index);
   }
 
+  private selectCanvas() {
+    if (this.canvasPool.length > 0) {
+      return this.canvasPool.pop()!;
+    }
+    return this.body.ownerDocument.createElement('canvas');
+  }
+
+  private renderRow(canvas: HTMLCanvasElement, index: number) {
+    canvas.width = this.width;
+    canvas.height = CANVAS_HEIGHT;
+    const ctx = canvas.getContext('2d')!;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    this.columns.forEach((c) => {
+      c.renderCell(ctx, index);
+      ctx.translate(c.width + COLUMN_PADDING, 0);
+    });
+    ctx.restore();
+  }
+
+  protected updateCanvasCell(canvas: HTMLCanvasElement, index: number, column: RenderColumn, x: number) {
+    const ctx = canvas.getContext('2d')!;
+    ctx.clearRect(x, 0, column.width, canvas.height);
+    ctx.save();
+    ctx.translate(x, 0);
+    column.renderCell(ctx, index);
+    ctx.restore();
+  }
+
   updateAll() {
     this.columns.forEach((c, i) => {
       c.index = i;
@@ -200,18 +230,13 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
   protected createRow(node: HTMLElement, rowIndex: number): void {
     node.classList.add('lu-row');
-    const lod = this.options.levelOfDetail(rowIndex);
-    if (lod === 'high') {
-      delete node.dataset.lod;
-    } else {
-      node.dataset.lod = lod;
-    }
-    super.createRow(node, rowIndex);
-
     this.options.customRowUpdate(node, rowIndex);
 
-    if (this.renderCtx.isGroup(rowIndex)) {
+    const isGroup = this.renderCtx.isGroup(rowIndex);
+
+    if (isGroup) {
       node.dataset.agg = 'group';
+      super.createRow(node, rowIndex);
       return;
     }
 
@@ -222,13 +247,28 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
 
     this.selection.updateState(node, i);
     this.selection.add(node);
+
+    const lod = this.options.levelOfDetail(rowIndex);
+
+    if (lod === 'high') {
+      super.createRow(node, rowIndex);
+      return;
+    }
+    // use canvas
+    node.dataset.lod = lod;
+
+    const canvas = this.selectCanvas();
+    node.appendChild(canvas);
+    this.renderRow(canvas, rowIndex);
   }
 
   protected updateRow(node: HTMLElement, rowIndex: number): void {
+    this.options.customRowUpdate(node, rowIndex);
+
+    const lod = this.options.levelOfDetail(rowIndex);
+    const wasLod = node.dataset.lod || 'high';
     const isGroup = this.renderCtx.isGroup(rowIndex);
     const wasGroup = node.dataset.agg === 'group';
-
-    this.options.customRowUpdate(node, rowIndex);
 
     if (isGroup !== wasGroup) {
       // change of mode clear the children to reinitialize them
@@ -244,14 +284,37 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
       }
     }
 
-    if (!isGroup) {
-      const {i, meta} = this.renderCtx.getRow(rowIndex);
-      node.dataset.i = i.toString();
-      node.dataset.meta = meta || '';
-      this.selection.updateState(node, i);
+    if (isGroup) {
+      super.updateRow(node, rowIndex);
+      return;
     }
 
-    super.updateRow(node, rowIndex);
+    const {i, meta} = this.renderCtx.getRow(rowIndex);
+    node.dataset.i = i.toString();
+    node.dataset.meta = meta || '';
+    this.selection.updateState(node, i);
+
+    if (lod === 'high') {
+      if (lod !== wasLod) {
+        const r = node.querySelector('canvas')!;
+        this.canvasPool.push(r);
+        r.remove();
+      }
+      super.updateRow(node, rowIndex);
+      return;
+    }
+    // use canvas
+    if (wasLod !== 'high') {
+      this.renderRow(node.querySelector('canvas')!, rowIndex);
+      return;
+    }
+    // clear old
+    node.innerHTML = '';
+    node.dataset.agg = 'detail';
+    node.dataset.lod = lod;
+    const canvas = this.selectCanvas();
+    node.appendChild(canvas);
+    this.renderRow(canvas, rowIndex);
   }
 
   updateSelection(selectedDataIndices: { has(i: number): boolean }) {
@@ -285,8 +348,18 @@ export default class EngineRanking extends ACellTableSection<RenderColumn> imple
   }
 
   private updateColumn(index: number) {
-    const column = this.context.columns[index];
+    const columns = this.context.columns;
+    const column = columns[index];
+    let x = 0;
+    for (let i = 0; i < index; ++i) {
+      x += columns[i].width + COLUMN_PADDING;
+    }
     this.forEachRow((row, rowIndex) => {
+      const lod = row.dataset.lod || 'high';
+      if (lod !== 'high') {
+        this.updateCanvasCell(row.querySelector('canvas')!, rowIndex, column, x);
+        return;
+      }
       const before = <HTMLElement>row.children[index];
       const after = this.updateCell(before, rowIndex, column);
       if (before !== after && after) {

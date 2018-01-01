@@ -88,6 +88,11 @@ export default class RenderColumn implements IColumn {
     }
     return node;
   }
+
+  renderCell(ctx: CanvasRenderingContext2D, index: number) {
+    const r = this.ctx.getRow(index);
+    this.renderers.single.render(ctx, r, r.relativeIndex, r.group);
+  }
 }
 
 function asElement(doc: Document, html: string): HTMLElement {
